@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -35,6 +35,7 @@ using Microsoft.EntityFrameworkCore;
 
 using Newtonsoft.Json;
 
+using Rock.Configuration;
 using Rock;
 using Rock.Common.Tv;
 using Rock.Data;
@@ -300,7 +301,7 @@ namespace Rock.Rest.v2.Controllers
             var ipAddress = RockRequestContext.ClientInformation.IpAddress;
 #endif
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var interactionChannelService = new InteractionChannelService( rockContext );
                 var interactionComponentService = new InteractionComponentService( rockContext );
@@ -515,7 +516,7 @@ namespace Rock.Rest.v2.Controllers
             var authGenerationCount = 0;
             var maxAuthGenerationAttempts = 50;
 
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var remoteAuthenticationSessionService = new RemoteAuthenticationSessionService( rockContext );
 
             // Get client IP
@@ -623,7 +624,7 @@ namespace Rock.Rest.v2.Controllers
                 var rokuToken = RockRequestContext.GetPageParameter( "RokuToken" )?.AsGuidOrNull();
                 if ( rokuToken.HasValue )
                 {
-                    currentPerson = new UserLoginService( new RockContext() ).Get( rokuToken.Value )?.Person;
+                    currentPerson = new UserLoginService( RockApp.Current.CreateRockContext() ).Get( rokuToken.Value )?.Person;
                 }
             }
 
@@ -785,7 +786,7 @@ namespace Rock.Rest.v2.Controllers
             var deviceData = JsonConvert.DeserializeObject<DeviceData>( this.Request.Headers["X-Rock-DeviceData"] );
 #endif
 
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var remoteAuthenticationSessionService = new RemoteAuthenticationSessionService( rockContext );
 
             // Get client Ip address
@@ -912,7 +913,7 @@ namespace Rock.Rest.v2.Controllers
             // Return the launch packet
             try
             {
-                var rockContext = new RockContext();
+                var rockContext = RockApp.Current.CreateRockContext();
                 var person = GetPerson( rockContext );
 
                 var launchPacket = new AppleLaunchPacket();
@@ -1028,38 +1029,6 @@ namespace Rock.Rest.v2.Controllers
             return new string( Enumerable.Repeat( chars, length )
                 .Select( s => s[random.Next( s.Length )] ).ToArray() );
         }
-
-#if REVIEW_WEBFORMS
-        /// <summary>
-        /// Gets the client ip.
-        /// </summary>
-        /// <param name="request">The request.</param>
-        /// <remarks>We now utilize the global method on the <see cref="WebRequestHelper" /> class.</remarks>
-        /// <returns></returns>
-        [RockObsolete( "1.15" )]
-        private string GetClientIp( HttpRequestMessage request )
-        {
-            // http://stackoverflow.com/questions/735350/how-to-get-a-users-client-ip-address-in-asp-net
-            if ( request.Headers.Contains( "X-FORWARDED-FOR" ) )
-            {
-                return request.Headers.GetValues( "X-FORWARDED-FOR" ).First();
-            }
-            else if ( request.Properties.ContainsKey( "MS_HttpContext" ) )
-            {
-                return ( ( HttpContextWrapper ) request.Properties["MS_HttpContext"] ).Request.UserHostAddress;
-            }
-            else if ( request.Properties.ContainsKey( RemoteEndpointMessageProperty.Name ) )
-            {
-                RemoteEndpointMessageProperty prop;
-                prop = ( RemoteEndpointMessageProperty ) this.Request.Properties[RemoteEndpointMessageProperty.Name];
-                return prop.Address;
-            }
-            else
-            {
-                return null;
-            }
-        }
-#endif
 
         #endregion
     }

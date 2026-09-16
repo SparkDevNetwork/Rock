@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -13,6 +13,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // </copyright>
+
+using System.Collections.Generic;
 
 using Rock.ViewModels.Utility;
 
@@ -49,5 +51,12 @@ namespace Rock.ViewModels.Blocks.Finance.BenevolenceRequestDetail
         /// A <see cref="System.String"/> representing the details of the result.
         /// </value>
         public string ResultSummary { get; set; }
+
+        /// <summary>
+        /// Gets or sets the condensed display values for each of this result's "Show in Grid" attributes, keyed by
+        /// <c>attr_{attributeKey}</c>. Each value contains <c>Html</c> and <c>Text</c> representations in the format
+        /// expected by the grid attribute column renderer.
+        /// </summary>
+        public Dictionary<string, object> AttributeDisplayValues { get; set; }
     }
 }

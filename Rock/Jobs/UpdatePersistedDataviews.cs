@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -25,6 +25,7 @@ using System.Text;
 using Microsoft.Extensions.Logging;
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Logging;
 using Rock.Model;
@@ -85,7 +86,7 @@ namespace Rock.Jobs
             var failedDataViews = new List<string>();
             var exceptions = new List<Exception>();
 
-            using ( var rockContextList = new RockContext() )
+            using ( var rockContextList = RockApp.Current.CreateRockContext() )
             {
                 var currentDateTime = RockDateTime.Now;
                 var dataViewService = new DataViewService( rockContextList );
@@ -141,7 +142,7 @@ namespace Rock.Jobs
 
                 foreach ( var dataViewId in expiredPersistedDataViewIds )
                 {
-                    using ( var persistContext = new RockContext() )
+                    using ( var persistContext = RockApp.Current.CreateRockContext() )
                     {
                         var startDateTime = RockDateTime.Now;
                         var stopwatch = Stopwatch.StartNew();

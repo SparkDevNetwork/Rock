@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -26,12 +26,6 @@ namespace Rock.ViewModels.Blocks.CheckIn.Manager.Roster
         /// not attempt to load any other data.
         /// </summary>
         public string ErrorMessage { get; set; }
-
-        /// <summary>
-        /// Determines if the group column should be displayed when a single
-        /// schedule is selected.
-        /// </summary>
-        public bool IsGroupColumnEnabled { get; set; }
 
         /// <summary>
         /// Determines if the checkout all button should be displayed.

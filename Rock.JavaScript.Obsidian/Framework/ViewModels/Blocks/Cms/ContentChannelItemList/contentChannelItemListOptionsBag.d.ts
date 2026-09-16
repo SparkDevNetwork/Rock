@@ -26,35 +26,60 @@ import { Guid } from "@Obsidian/Types";
 
 /** The additional configuration options for the Content Channel Item List block. */
 export type ContentChannelItemListOptionsBag = {
+    /** Gets or sets the identifier for the content channel. */
     contentChannelId: number;
 
+    /** Gets or sets the name of the content item. */
     contentItemName?: string | null;
 
+    /** Gets or sets the date type for the content channel. */
     dateType: ContentChannelDateType;
 
+    /** Gets or sets whether to include the time in the date/time fields. */
     includeTime: boolean;
 
+    /** Gets or sets whether the content library is enabled. */
     isContentLibraryEnabled: boolean;
 
+    /** Gets or sets whether the items are manually ordered. */
     isManuallyOrdered: boolean;
 
+    /** Gets or sets the unique identifier for the library license. */
     libraryLicenseGuid: Guid;
 
+    /** Gets or sets the name of the library license. */
     libraryLicenseName?: string | null;
 
+    /** Gets or sets whether to show the expiration date/time column. */
     showExpireDateTimeColumn: boolean;
 
+    /** Gets or sets whether to show the filter options. */
     showFilters: boolean;
 
+    /** Gets or sets whether to show the Item URL column. */
+    showItemUrlColumn: boolean;
+
+    /** Gets or sets whether to show the linked media column. */
+    showLinkedMediaColumn: boolean;
+
+    /** Gets or sets whether to show the occurrences column. */
     showOccurrencesColumn: boolean;
 
+    /** Gets or sets whether to show the priority column. */
     showPriorityColumn: boolean;
 
+    /** Gets or sets whether to show the reorder column. */
     showReorderColumn: boolean;
 
+    /** Gets or sets whether to show the security column. */
     showSecurityColumn: boolean;
 
+    /** Gets or sets whether to show the start date/time column. */
     showStartDateTimeColumn: boolean;
 
+    /** Gets or sets whether to show the status column. */
     showStatusColumn: boolean;
+
+    /** Gets or sets whether to show the total views columns. */
+    showTotalViewsColumns: boolean;
 };

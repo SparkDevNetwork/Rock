@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -507,6 +507,31 @@ The answer is {{ x }}.
         }
 
         /// <summary>
+        /// Verify that the {% liquid %} tag correctly parses comments within its content.
+        /// </summary>
+        [TestMethod]
+        public void LiquidTag_WithComment_ShouldParseCorrectly()
+        {
+            var template = @"
+{% 
+   liquid 
+    comment
+      this is a comment
+    endcomment
+
+   echo 
+      'welcome ' | Upcase 
+   echo 'to the liquid tag' 
+    | Upcase 
+%}";
+            var expectedOutput = @"
+WELCOME TO THE LIQUID TAG
+";
+
+            TestHelper.AssertTemplateOutput( typeof( FluidEngine ), expectedOutput, template, ignoreWhitespace: true );
+        }
+
+        /// <summary>
         /// Verify that the {% lava %} tag is correctly aliased to the default {% liquid %} tag.
         /// </summary>
         [TestMethod]
@@ -771,6 +796,103 @@ WELCOME TO THE LAVA TAG
                 TestHelper.AssertTemplateOutput( engine, expectedOutput, template, ignoreWhitespace: true );
             } );
         }
+
+        [TestMethod]
+        public void LavaTag_WithInnerCustomLavaBlock_RendersBlockContentUsingLiquidBodyGrammar()
+        {
+            var template = @"
+{% lava
+    testpassthrough
+        assign greeting = 'hello'
+        echo greeting | Upcase
+    endtestpassthrough
+%}
+";
+
+            var expectedOutput = @"HELLO";
+
+            TestHelper.ExecuteForActiveEngines( ( engine ) =>
+            {
+                engine.RegisterBlock( "testpassthrough", ( blockName ) => new TestPassthroughBlock() );
+
+                TestHelper.AssertTemplateOutput( engine, expectedOutput, template, ignoreWhitespace: true );
+            } );
+        }
+
+        [TestMethod]
+        public void LavaTag_WithInnerCustomLavaBlockContainingForLoop_RendersCorrectly()
+        {
+            var template = @"
+{% lava
+    testpassthrough
+        for i in (1..4)
+            echo i
+        endfor
+    endtestpassthrough
+%}
+";
+
+            var expectedOutput = @"1234";
+
+            TestHelper.ExecuteForActiveEngines( ( engine ) =>
+            {
+                engine.RegisterBlock( "testpassthrough", ( blockName ) => new TestPassthroughBlock() );
+
+                TestHelper.AssertTemplateOutput( engine, expectedOutput, template, ignoreWhitespace: true );
+            } );
+        }
+
+
+        /// <summary>
+        /// Verifies the resolution of Issue #6993 (Part 1).
+        /// Verify that a {% comment %}...{% endcomment %} block written in line-delimited form
+        /// inside a {% lava %} tag parses correctly (this regressed in v19 when Fluid was upgraded).
+        /// The comment body should be skipped, and the statements after it should still run.
+        /// </summary>
+        [TestMethod]
+        public void LavaTag_WithAssignmentCommenttedOut_IsProcessedCorrectly()
+        {
+            var template = @"
+{% lava
+    assign fruit = 'x,y,z' | Split:','
+    comment
+        assign fruit = 'apple,banana,cherry' | Split:','
+    endcomment
+
+    for i in fruit
+        echo i
+    endfor
+%}
+";
+            // If the parser mistakenly executed the commented assignment we would see 'applebananacherry'.
+            // The correct behavior is that only the assignment AFTER the comment block takes effect.
+            var expectedOutput = @"xyz";
+
+            TestHelper.AssertTemplateOutput( typeof( FluidEngine ), expectedOutput, template, ignoreWhitespace: true );
+        }
+
+        /// <summary>
+        /// Verifies the resolution of Issue #6993 (Part 2).
+        /// Control test: the same {% lava %} body without the surrounding {% comment %} block
+        /// should execute normally and echo every value.
+        /// </summary>
+        [TestMethod]
+        public void LavaTag_WithAssignmentWithoutComment_IsProcessedCorrectly()
+        {
+            var template = @"
+{% lava
+    assign fruit = 'x,y,z' | Split:','
+    assign fruit = 'apple,banana,cherry' | Split:','
+    for i in fruit
+        echo i
+    endfor
+%}
+";
+            var expectedOutput = @"applebananacherry";
+
+            TestHelper.AssertTemplateOutput( typeof( FluidEngine ), expectedOutput, template, ignoreWhitespace: true );
+        }
+
         #endregion
 
         #region Raw Tag
@@ -792,5 +914,14 @@ WELCOME TO THE LAVA TAG
 
         #endregion
 
+        private class TestPassthroughBlock : LavaBlockBase
+        {
+            public TestPassthroughBlock()
+            {
+                SourceElementName = "testpassthrough";
+            }
+        }
     }
 }
+
+

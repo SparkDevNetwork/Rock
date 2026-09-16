@@ -1,21 +1,21 @@
-﻿using Rock.Communication.Chat;
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Linq;
+using System.Security.Policy;
+using System.Threading.Tasks;
+
+using Rock.Attribute;
+using Rock.Communication.Chat;
+using Rock.Enums.Communication.Chat;
+using Rock.Mobile;
 using Rock.Model;
 using Rock.SystemGuid;
-
-using System.ComponentModel;
-using System.Threading.Tasks;
-using Rock.Attribute;
-using Rock.ViewModels.Blocks.Communication.Chat.ChatView;
-using Rock.Web.Cache;
-using System;
-using Rock.ViewModels.Controls;
-using Rock.Enums.Communication.Chat;
-using Rock.ViewModels.Utility;
-using System.Collections.Generic;
-using System.Linq;
-using Rock.Mobile;
 using Rock.Utility;
-using System.Security.Policy;
+using Rock.ViewModels.Blocks.Communication.Chat.ChatView;
+using Rock.ViewModels.Controls;
+using Rock.ViewModels.Utility;
+using Rock.Web.Cache;
 
 namespace Rock.Blocks.Communication.Chat
 {
@@ -43,7 +43,7 @@ namespace Rock.Blocks.Communication.Chat
         Description = "Only show channels that match the individual's campus or have no campus set.",
         DefaultBooleanValue = false,
         Key = AttributeKey.FilterSharedChannelsByCampus,
-        ControlType = Field.Types.BooleanFieldType.BooleanControlType.Checkbox,
+        BooleanControlType = Rock.Enums.Controls.BooleanControlType.Checkbox,
         Order = 1 )]
 
     [IntegerField( "Minimum Age",

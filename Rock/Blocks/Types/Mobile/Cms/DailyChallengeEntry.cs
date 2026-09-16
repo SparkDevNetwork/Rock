@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -21,6 +21,7 @@ using System.Data.Entity;
 using System.Linq;
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -132,7 +133,7 @@ namespace Rock.Blocks.Types.Mobile.Cms
         /// <value>
         /// The template to use when rendering the block.
         /// </value>
-        protected string Template => Rock.Field.Types.BlockTemplateFieldType.GetTemplateContent( GetAttributeValue( AttributeKeys.Template ) );
+        protected string Template => Field.Helper.GetBlockTemplateContent( GetAttributeValue( AttributeKeys.Template ) );
 
         #endregion
 
@@ -264,7 +265,7 @@ namespace Rock.Blocks.Types.Mobile.Cms
             {
                 interaction = interactionService.CreateInteraction(
                     componentId,
-                    RequestContext.ClientInformation?.Browser?.String,
+                    RequestContext.ClientInformation?.UserAgent,
                     null,
                     RequestContext.ClientInformation.IpAddress,
                     null );
@@ -315,7 +316,7 @@ namespace Rock.Blocks.Types.Mobile.Cms
             // year.
             var interaction = interactionService.CreateInteraction(
                 componentId,
-                RequestContext.ClientInformation?.Browser?.String,
+                RequestContext.ClientInformation?.UserAgent,
                 null,
                 RequestContext.ClientInformation.IpAddress,
                 null );
@@ -875,7 +876,7 @@ namespace Rock.Blocks.Types.Mobile.Cms
                 return ActionStatusCode( System.Net.HttpStatusCode.Unauthorized );
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var cachedChallenge = GetCachedChallengeOrLoad( ContentChannelGuid ?? Guid.Empty, rockContext );
 
@@ -936,7 +937,7 @@ namespace Rock.Blocks.Types.Mobile.Cms
                 return ActionStatusCode( System.Net.HttpStatusCode.Unauthorized );
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var cachedChallenge = GetCachedChallengeOrLoad( ContentChannelGuid ?? Guid.Empty, rockContext );
 
@@ -984,7 +985,7 @@ namespace Rock.Blocks.Types.Mobile.Cms
                 return ActionStatusCode( System.Net.HttpStatusCode.Unauthorized );
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var cachedChallenge = GetCachedChallengeOrLoad( ContentChannelGuid ?? Guid.Empty, rockContext );
 

@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -20,8 +20,10 @@ using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 
 using Rock.Data;
-using Rock.Web.Cache;
+using Rock.Enums.Security;
 using Rock.Lava;
+using Rock.Security;
+using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -50,6 +52,7 @@ namespace Rock.Model
         [Index( IsUnique = true )]
 #endif
         [DataMember]
+        [StringValidation( StringValidationProfile.Name )]
         public string Name { get; set; }
 
         /// <summary>
@@ -60,6 +63,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 260 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.Name )]
         public string AssemblyName { get; set; }
 
         /// <summary>
@@ -70,6 +74,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 100 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.Name )]
         public string FriendlyName { get; set; }
 
         /// <summary>
@@ -162,6 +167,7 @@ namespace Rock.Model
         /// <value>
         /// The index result template.
         /// </value>
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string IndexResultTemplate { get; set; }
 
         /// <summary>
@@ -170,6 +176,7 @@ namespace Rock.Model
         /// <value>
         /// The index document URL.
         /// </value>
+        [StringValidation( StringValidationProfile.PlainText, ExcludedRules = StringValidationRule.LavaFormatting | StringValidationRule.LavaCommands )]
         public string IndexDocumentUrl { get; set; }
 
         /// <summary>
@@ -178,6 +185,7 @@ namespace Rock.Model
         /// <value>
         /// The link URL.
         /// </value>
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string LinkUrlLavaTemplate { get; set; }
 
         /// <summary>

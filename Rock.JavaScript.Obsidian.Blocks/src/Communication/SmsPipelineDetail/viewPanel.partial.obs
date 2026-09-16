@@ -1,0 +1,52 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <fieldset>
+        <div class="row">
+            <div class="col-md-6">
+                <ValueDetailList :modelValue="primaryValues" />
+            </div>
+            <div class="col-md-6">
+                <ValueDetailList :modelValue="secondaryValues" />
+            </div>
+        </div>
+    </fieldset>
+</template>
+
+<script setup lang="ts">
+    import { computed, PropType } from "vue";
+    import ValueDetailList from "@Obsidian/Controls/valueDetailList.obs";
+    import { ValueDetailListItemBuilder } from "@Obsidian/Core/Controls/valueDetailListItemBuilder";
+    import { ValueDetailListItem } from "@Obsidian/Types/Controls/valueDetailListItem";
+    import { SmsPipelineBag } from "@Obsidian/ViewModels/Blocks/Communication/SmsPipelineDetail/smsPipelineBag";
+
+    const props = defineProps({
+        pipeline: {
+            type: Object as PropType<SmsPipelineBag>,
+            required: true
+        }
+    });
+
+    // #region Computed Values
+
+    const primaryValues = computed((): ValueDetailListItem[] => {
+        const builder = new ValueDetailListItemBuilder();
+
+        if (props.pipeline.description) {
+            builder.addTextValue("Description", props.pipeline.description);
+        }
+
+        return builder.build();
+    });
+
+    const secondaryValues = computed((): ValueDetailListItem[] => {
+        const builder = new ValueDetailListItemBuilder();
+
+        if (props.pipeline.webhookUrl) {
+            builder.addTextValue("Webhook URL", props.pipeline.webhookUrl);
+        }
+
+        return builder.build();
+    });
+
+    // #endregion Computed Values
+</script>

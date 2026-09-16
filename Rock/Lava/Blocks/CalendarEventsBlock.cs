@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -67,7 +67,7 @@ namespace Rock.Lava.Blocks
 
                 _settings.ParseFromMarkup( _attributesMarkup, context );
 
-                var events = dataSource.GetEventOccurrencesForCalendar( _settings, LavaHelper.GetRockContextFromLavaContext( context ) );
+                var events = dataSource.GetEventOccurrencesForCalendar( _settings, LavaHelper.GetRockContextFromLavaContext( context ), context );
 
                 AddLavaMergeFieldsToContext( context, events );
 

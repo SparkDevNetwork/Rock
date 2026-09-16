@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -15,7 +15,9 @@
 // </copyright>
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Security.Claims;
 using System.Security.Principal;
 using System.ServiceModel.Channels;
@@ -109,6 +111,11 @@ namespace Rock.Rest.Filters
             /// The client identifier
             /// </summary>
             public const string ClientId = "client_id";
+
+            /// <summary>
+            /// The list of scopes, separated by spaces.
+            /// </summary>
+            public const string Scope = "scope";
         }
 
         /// <summary>
@@ -135,13 +142,40 @@ namespace Rock.Rest.Filters
                 if ( claimIdentity != null )
                 {
                     var clientId = claimIdentity.Claims.FirstOrDefault( c => c.Type == Claims.ClientId )?.Value;
+
                     if ( clientId.IsNotNullOrWhiteSpace() )
                     {
-                        using ( var rockContext = new RockContext() )
+                        var scopes = claimIdentity.Claims.FirstOrDefault( c => c.Type == Claims.Scope )?.Value?.SplitDelimitedValues( " " ) ?? Array.Empty<string>();
+                        IReadOnlyList<string> requiredScopes = Array.Empty<string>();
+
+                        // Check for any scopes defined on the action method.
+                        // This is used to allow OAuth clients to be approved
+                        // for specific APIs instead of the entire API set.
+                        if ( actionContext.ActionDescriptor is ReflectedHttpActionDescriptor reflectedActionDescriptor )
+                        {
+                            var methodInfo = reflectedActionDescriptor.MethodInfo;
+
+                            if ( methodInfo.GetCustomAttribute<RequiredScopeAttribute>() is RequiredScopeAttribute requiredScopeAttribute )
+                            {
+                                requiredScopes = requiredScopeAttribute.Scopes;
+                            }
+                        }
+
+                        using ( var rockContext = RockApp.Current.CreateRockContext() )
                         {
                             var authClientService = new AuthClientService( rockContext );
                             var authClient = authClientService.GetByClientId( clientId );
-                            if ( authClient.AllowUserApiAccess )
+                            var isScopeApproved = false;
+
+                            // If we have any scopes defined on the action method
+                            // then check to see if any of them are included with
+                            // the token.
+                            if ( requiredScopes.Any() )
+                            {
+                                isScopeApproved = requiredScopes.Any( rs => scopes.Contains( rs ) );
+                            }
+
+                            if ( authClient.AllowUserApiAccess || isScopeApproved )
                             {
                                 var userName = claimIdentity.Claims.FirstOrDefault( c => c.Type == Claims.Username )?.Value;
 
@@ -178,7 +212,7 @@ namespace Rock.Rest.Filters
 
             if ( !string.IsNullOrWhiteSpace( authToken ) )
             {
-                var userLoginService = new UserLoginService( new Rock.Data.RockContext() );
+                var userLoginService = new UserLoginService( RockApp.Current.CreateRockContext() );
                 var userLogin = userLoginService.Queryable().Where( u => u.ApiKey == authToken ).FirstOrDefault();
                 if ( userLogin != null )
                 {
@@ -193,8 +227,19 @@ namespace Rock.Rest.Filters
             // If still not successful, check for a JSON Web Token
             if ( TryRetrieveHeader( actionContext, HeaderTokens.JWT, out var jwtString ) )
             {
+                UserLogin userLogin;
+                try
+                {
+                    userLogin = JwtHelper.GetUserLoginByJSONWebToken( RockApp.Current.CreateRockContext(), jwtString );
+                }
+                catch ( Microsoft.IdentityModel.Tokens.SecurityTokenMalformedException )
+                {
+                    // Silently ignore this exception. It means the JWT was
+                    // malformed and we will just treat it as an anonymous request.
+                    userLogin = null;
+                }
+
                 // If the JSON Web Token is in the header, we can determine the User from that
-                var userLogin = JwtHelper.GetUserLoginByJSONWebToken( new RockContext(), jwtString );
                 if ( userLogin != null )
                 {
                     var identity = new GenericIdentity( userLogin.UserName );

@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -30,6 +30,7 @@ using Rock.Attribute;
 using Rock.BulkImport;
 using Rock.Chart;
 using Rock.Communication;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Enums;
 using Rock.Enums.Event;
@@ -560,7 +561,7 @@ namespace Rock.Model
         /// <summary>
         /// Gets the attendance analytics attendee first dates.
         /// </summary>
-        /// <param name="GroupTypeIds">The group type ids.</param>
+        /// <param name="groupTypeIds">The group type ids.</param>
         /// <param name="groupIds">The group ids.</param>
         /// <param name="start">The start.</param>
         /// <param name="end">The end.</param>
@@ -568,10 +569,10 @@ namespace Rock.Model
         /// <param name="includeNullCampusIds">The include null campus ids.</param>
         /// <param name="scheduleIds">The schedule ids.</param>
         /// <returns></returns>
-        public DataSet GetAttendanceAnalyticsAttendeeFirstDatesDataSet( List<int> GroupTypeIds, List<int> groupIds, DateTime? start, DateTime? end,
+        public DataSet GetAttendanceAnalyticsAttendeeFirstDatesDataSet( List<int> groupTypeIds, List<int> groupIds, DateTime? start, DateTime? end,
             List<int> campusIds, bool? includeNullCampusIds, List<int> scheduleIds )
         {
-            var parameters = GetAttendanceAnalyticsParameters( GroupTypeIds, groupIds, start, end, campusIds, includeNullCampusIds, scheduleIds );
+            var parameters = GetAttendanceAnalyticsParameters( groupTypeIds, groupIds, start, end, campusIds, includeNullCampusIds, scheduleIds );
             return new DbService( this.Context ).GetDataSetFromSqlCommand( "spCheckin_AttendanceAnalyticsQuery_AttendeeFirstDates", System.Data.CommandType.StoredProcedure, parameters );
         }
 
@@ -601,57 +602,57 @@ namespace Rock.Model
         /// <param name="campusIds">The campus ids.</param>
         /// <param name="includeNullCampusIds">The include null campus ids.</param>
         /// <param name="scheduleIds">The schedule ids.</param>
-        /// <param name="IncludeParentsWithChild">The include parents with child.</param>
-        /// <param name="IncludeChildrenWithParents">The include children with parents.</param>
+        /// <param name="includeParentsWithChild">The include parents with child.</param>
+        /// <param name="includeChildrenWithParents">The include children with parents.</param>
         /// <returns></returns>
         public DataSet GetAttendanceAnalyticsAttendeesDataSet( List<int> groupIds, DateTime? start, DateTime? end,
-            List<int> campusIds, bool? includeNullCampusIds, List<int> scheduleIds, bool? IncludeParentsWithChild, bool? IncludeChildrenWithParents )
+            List<int> campusIds, bool? includeNullCampusIds, List<int> scheduleIds, bool? includeParentsWithChild, bool? includeChildrenWithParents )
         {
-            var parameters = GetAttendanceAnalyticsParameters( null, groupIds, start, end, campusIds, includeNullCampusIds, scheduleIds, IncludeParentsWithChild, IncludeChildrenWithParents );
+            var parameters = GetAttendanceAnalyticsParameters( null, groupIds, start, end, campusIds, includeNullCampusIds, scheduleIds, includeParentsWithChild, includeChildrenWithParents );
             return new DbService( this.Context ).GetDataSetFromSqlCommand( "spCheckin_AttendanceAnalyticsQuery_Attendees", System.Data.CommandType.StoredProcedure, parameters );
         }
 
         /// <summary>
         /// Gets the attendance analytics non attendees.
         /// </summary>
-        /// <param name="GroupTypeIds">The group type ids.</param>
+        /// <param name="groupTypeIds">The group type ids.</param>
         /// <param name="groupIds">The group ids.</param>
         /// <param name="start">The start.</param>
         /// <param name="end">The end.</param>
         /// <param name="campusIds">The campus ids.</param>
         /// <param name="includeNullCampusIds">The include null campus ids.</param>
         /// <param name="scheduleIds">The schedule ids.</param>
-        /// <param name="IncludeParentsWithChild">The include parents with child.</param>
-        /// <param name="IncludeChildrenWithParents">The include children with parents.</param>
+        /// <param name="includeParentsWithChild">The include parents with child.</param>
+        /// <param name="includeChildrenWithParents">The include children with parents.</param>
         /// <returns></returns>
-        public DataSet GetAttendanceAnalyticsNonAttendeesDataSet( List<int> GroupTypeIds, List<int> groupIds, DateTime? start, DateTime? end,
-            List<int> campusIds, bool? includeNullCampusIds, List<int> scheduleIds, bool? IncludeParentsWithChild, bool? IncludeChildrenWithParents )
+        public DataSet GetAttendanceAnalyticsNonAttendeesDataSet( List<int> groupTypeIds, List<int> groupIds, DateTime? start, DateTime? end,
+            List<int> campusIds, bool? includeNullCampusIds, List<int> scheduleIds, bool? includeParentsWithChild, bool? includeChildrenWithParents )
         {
-            var parameters = GetAttendanceAnalyticsParameters( GroupTypeIds, groupIds, start, end, campusIds, includeNullCampusIds, scheduleIds, IncludeParentsWithChild, IncludeChildrenWithParents );
+            var parameters = GetAttendanceAnalyticsParameters( groupTypeIds, groupIds, start, end, campusIds, includeNullCampusIds, scheduleIds, includeParentsWithChild, includeChildrenWithParents );
             return new DbService( this.Context ).GetDataSetFromSqlCommand( "spCheckin_AttendanceAnalyticsQuery_NonAttendees", System.Data.CommandType.StoredProcedure, parameters );
         }
 
         /// <summary>
         /// Gets the attendance analytics parameters.
         /// </summary>
-        /// <param name="GroupTypeIds">The group type ids.</param>
+        /// <param name="groupTypeIds">The group type ids.</param>
         /// <param name="groupIds">The group ids.</param>
         /// <param name="start">The start.</param>
         /// <param name="end">The end.</param>
         /// <param name="campusIds">The campus ids.</param>
         /// <param name="includeNullCampusIds">The include null campus ids.</param>
         /// <param name="scheduleIds">The schedule ids.</param>
-        /// <param name="IncludeParentsWithChild">The include parents with child.</param>
-        /// <param name="IncludeChildrenWithParents">The include children with parents.</param>
+        /// <param name="includeParentsWithChild">The include parents with child.</param>
+        /// <param name="includeChildrenWithParents">The include children with parents.</param>
         /// <returns></returns>
-        private static Dictionary<string, object> GetAttendanceAnalyticsParameters( List<int> GroupTypeIds, List<int> groupIds, DateTime? start, DateTime? end,
-            List<int> campusIds, bool? includeNullCampusIds, List<int> scheduleIds, bool? IncludeParentsWithChild = null, bool? IncludeChildrenWithParents = null )
+        private static Dictionary<string, object> GetAttendanceAnalyticsParameters( List<int> groupTypeIds, List<int> groupIds, DateTime? start, DateTime? end,
+            List<int> campusIds, bool? includeNullCampusIds, List<int> scheduleIds, bool? includeParentsWithChild = null, bool? includeChildrenWithParents = null )
         {
             Dictionary<string, object> parameters = new Dictionary<string, object>();
 
-            if ( GroupTypeIds != null && GroupTypeIds.Any() )
+            if ( groupTypeIds != null && groupTypeIds.Any() )
             {
-                parameters.Add( "GroupTypeIds", GroupTypeIds.AsDelimited( "," ) );
+                parameters.Add( "GroupTypeIds", groupTypeIds.AsDelimited( "," ) );
             }
 
             if ( groupIds != null && groupIds.Any() )
@@ -684,123 +685,18 @@ namespace Rock.Model
                 parameters.Add( "ScheduleIds", scheduleIds.AsDelimited( "," ) );
             }
 
-            if ( IncludeParentsWithChild.HasValue )
+            if ( includeParentsWithChild.HasValue )
             {
-                parameters.Add( "IncludeParentsWithChild", IncludeParentsWithChild.Value );
+                parameters.Add( "IncludeParentsWithChild", includeParentsWithChild.Value );
             }
 
-            if ( IncludeChildrenWithParents.HasValue )
+            if ( includeChildrenWithParents.HasValue )
             {
-                parameters.Add( "IncludeChildrenWithParents", IncludeChildrenWithParents.Value );
+                parameters.Add( "IncludeChildrenWithParents", includeChildrenWithParents.Value );
             }
 
             return parameters;
         }
-
-        #region Obsolete
-
-        /// <summary>
-        /// Gets the attendance analytics attendee dates.
-        /// </summary>
-        /// <param name="groupIds">The group ids.</param>
-        /// <param name="start">The start.</param>
-        /// <param name="end">The end.</param>
-        /// <param name="campusIds">The campus ids.</param>
-        /// <param name="includeNullCampusIds">The include null campus ids.</param>
-        /// <param name="scheduleIds">The schedule ids.</param>
-        /// <returns></returns>
-        [RockObsolete( "1.13" )]
-        [Obsolete( "Use non-static GetAttendanceAnalyticsAttendeeDatesDataSet instead." )]
-        public static DataSet GetAttendanceAnalyticsAttendeeDates( List<int> groupIds, DateTime? start, DateTime? end,
-            List<int> campusIds, bool? includeNullCampusIds, List<int> scheduleIds )
-        {
-            var parameters = GetAttendanceAnalyticsParameters( null, groupIds, start, end, campusIds, includeNullCampusIds, scheduleIds );
-            return DbService.GetDataSet( "spCheckin_AttendanceAnalyticsQuery_AttendeeDates", System.Data.CommandType.StoredProcedure, parameters, 300 );
-        }
-
-        /// <summary>
-        /// Gets the attendance analytics attendee first dates.
-        /// </summary>
-        /// <param name="GroupTypeIds">The group type ids.</param>
-        /// <param name="groupIds">The group ids.</param>
-        /// <param name="start">The start.</param>
-        /// <param name="end">The end.</param>
-        /// <param name="campusIds">The campus ids.</param>
-        /// <param name="includeNullCampusIds">The include null campus ids.</param>
-        /// <param name="scheduleIds">The schedule ids.</param>
-        /// <returns></returns>
-        [RockObsolete( "1.13" )]
-        [Obsolete( "Use non-static GetAttendanceAnalyticsAttendeeFirstDatesDataSet instead." )]
-        public static DataSet GetAttendanceAnalyticsAttendeeFirstDates( List<int> GroupTypeIds, List<int> groupIds, DateTime? start, DateTime? end,
-            List<int> campusIds, bool? includeNullCampusIds, List<int> scheduleIds )
-        {
-            var parameters = GetAttendanceAnalyticsParameters( GroupTypeIds, groupIds, start, end, campusIds, includeNullCampusIds, scheduleIds );
-            return DbService.GetDataSet( "spCheckin_AttendanceAnalyticsQuery_AttendeeFirstDates", System.Data.CommandType.StoredProcedure, parameters, 300 );
-        }
-
-        /// <summary>
-        /// Gets the attendance analytics attendee last attendance.
-        /// </summary>
-        /// <param name="groupIds">The group ids.</param>
-        /// <param name="start">The start.</param>
-        /// <param name="end">The end.</param>
-        /// <param name="campusIds">The campus ids.</param>
-        /// <param name="includeNullCampusIds">The include null campus ids.</param>
-        /// <param name="scheduleIds">The schedule ids.</param>
-        /// <returns></returns>
-        [RockObsolete( "1.13" )]
-        [Obsolete( "Use non-static GetAttendanceAnalyticsAttendeeLastAttendanceDataSet instead." )]
-        public static DataSet GetAttendanceAnalyticsAttendeeLastAttendance( List<int> groupIds, DateTime? start, DateTime? end,
-            List<int> campusIds, bool? includeNullCampusIds, List<int> scheduleIds )
-        {
-            var parameters = GetAttendanceAnalyticsParameters( null, groupIds, start, end, campusIds, includeNullCampusIds, scheduleIds );
-            return DbService.GetDataSet( "spCheckin_AttendanceAnalyticsQuery_AttendeeLastAttendance", System.Data.CommandType.StoredProcedure, parameters, 300 );
-        }
-
-        /// <summary>
-        /// Gets the attendance analytics attendees.
-        /// </summary>
-        /// <param name="groupIds">The group ids.</param>
-        /// <param name="start">The start.</param>
-        /// <param name="end">The end.</param>
-        /// <param name="campusIds">The campus ids.</param>
-        /// <param name="includeNullCampusIds">The include null campus ids.</param>
-        /// <param name="scheduleIds">The schedule ids.</param>
-        /// <param name="IncludeParentsWithChild">The include parents with child.</param>
-        /// <param name="IncludeChildrenWithParents">The include children with parents.</param>
-        /// <returns></returns>
-        [RockObsolete( "1.13" )]
-        [Obsolete( "Use non-static GetAttendanceAnalyticsAttendeesDataSet instead." )]
-        public static DataSet GetAttendanceAnalyticsAttendees( List<int> groupIds, DateTime? start, DateTime? end,
-            List<int> campusIds, bool? includeNullCampusIds, List<int> scheduleIds, bool? IncludeParentsWithChild, bool? IncludeChildrenWithParents )
-        {
-            var parameters = GetAttendanceAnalyticsParameters( null, groupIds, start, end, campusIds, includeNullCampusIds, scheduleIds, IncludeParentsWithChild, IncludeChildrenWithParents );
-            return DbService.GetDataSet( "spCheckin_AttendanceAnalyticsQuery_Attendees", System.Data.CommandType.StoredProcedure, parameters, 300 );
-        }
-
-        /// <summary>
-        /// Gets the attendance analytics non attendees.
-        /// </summary>
-        /// <param name="GroupTypeIds">The group type ids.</param>
-        /// <param name="groupIds">The group ids.</param>
-        /// <param name="start">The start.</param>
-        /// <param name="end">The end.</param>
-        /// <param name="campusIds">The campus ids.</param>
-        /// <param name="includeNullCampusIds">The include null campus ids.</param>
-        /// <param name="scheduleIds">The schedule ids.</param>
-        /// <param name="IncludeParentsWithChild">The include parents with child.</param>
-        /// <param name="IncludeChildrenWithParents">The include children with parents.</param>
-        /// <returns></returns>
-        [RockObsolete( "1.13" )]
-        [Obsolete( "Use non-static GetAttendanceAnalyticsNonAttendeesDataSet instead." )]
-        public static DataSet GetAttendanceAnalyticsNonAttendees( List<int> GroupTypeIds, List<int> groupIds, DateTime? start, DateTime? end,
-            List<int> campusIds, bool? includeNullCampusIds, List<int> scheduleIds, bool? IncludeParentsWithChild, bool? IncludeChildrenWithParents )
-        {
-            var parameters = GetAttendanceAnalyticsParameters( GroupTypeIds, groupIds, start, end, campusIds, includeNullCampusIds, scheduleIds, IncludeParentsWithChild, IncludeChildrenWithParents );
-            return DbService.GetDataSet( "spCheckin_AttendanceAnalyticsQuery_NonAttendees", System.Data.CommandType.StoredProcedure, parameters, 300 );
-        }
-
-        #endregion Obsolete
 
         /// <summary>
         /// 
@@ -825,161 +721,6 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Sends the scheduled attendance confirmation emails and marks ScheduleConfirmationSent = true, then returns the number of emails sent.
-        /// Make sure to call rockContext.SaveChanges() after running this.
-        /// NOTE: This doesn't check <see cref="Attendance.ScheduleConfirmationSent" />, so you'll need to add that condition to the sendConfirmationAttendancesQuery parameter
-        /// </summary>
-        /// <param name="sendConfirmationAttendancesQuery">The send confirmation attendances query.</param>
-        /// <param name="errorMessages">The error messages.</param>
-        /// <returns></returns>
-        [Obsolete( "Use SendScheduleConfirmationCommunication instead." )]
-        [RockObsolete( "1.13" )]
-        public int SendScheduleConfirmationSystemEmails( IQueryable<Attendance> sendConfirmationAttendancesQuery, out List<string> errorMessages )
-        {
-            int emailsSent = 0;
-            errorMessages = new List<string>();
-
-            sendConfirmationAttendancesQuery = sendConfirmationAttendancesQuery.Where( a =>
-                a.PersonAlias.Person.Email != null
-                && a.PersonAlias.Person.Email != string.Empty
-                && a.PersonAlias.Person.EmailPreference != EmailPreference.DoNotEmail
-                && a.PersonAlias.Person.IsEmailActive );
-
-            var sendConfirmationAttendancesQueryList = sendConfirmationAttendancesQuery.ToList();
-            var attendancesBySystemEmailTypeList = sendConfirmationAttendancesQueryList
-                .GroupBy( a => a.Occurrence.Group.GroupType.ScheduleConfirmationSystemCommunicationId )
-                .Where( a => a.Key.HasValue )
-                .Select( s => new
-                {
-                    ScheduleConfirmationSystemCommunicationId = s.Key.Value,
-                    Attendances = s.ToList()
-                } ).ToList();
-
-            var rockContext = this.Context as RockContext;
-
-            List<Exception> exceptionList = new List<Exception>();
-
-            foreach ( var attendancesBySystemEmailType in attendancesBySystemEmailTypeList )
-            {
-                var scheduleConfirmationSystemEmail = new SystemCommunicationService( rockContext ).GetNoTracking( attendancesBySystemEmailType.ScheduleConfirmationSystemCommunicationId );
-
-                var attendancesByPersonList = attendancesBySystemEmailType.Attendances.GroupBy( a => a.PersonAlias.Person ).Select( s => new
-                {
-                    Person = s.Key,
-                    Attendances = s.ToList()
-                } );
-
-                foreach ( var attendancesByPerson in attendancesByPersonList )
-                {
-                    try
-                    {
-                        var emailMessage = new RockEmailMessage( scheduleConfirmationSystemEmail );
-                        var recipient = attendancesByPerson.Person;
-                        var attendances = attendancesByPerson.Attendances;
-
-                        var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( null );
-                        mergeFields.Add( "Attendance", attendances.FirstOrDefault() );
-                        mergeFields.Add( "Attendances", attendances );
-                        emailMessage.AddRecipient( new RockEmailMessageRecipient( recipient, mergeFields ) );
-                        List<string> sendErrors;
-                        bool sendSuccess = emailMessage.Send( out sendErrors );
-
-                        if ( sendSuccess )
-                        {
-                            emailsSent++;
-                            foreach ( var attendance in attendances )
-                            {
-                                attendance.ScheduleConfirmationSent = true;
-                            }
-                        }
-                        else
-                        {
-                            errorMessages.AddRange( sendErrors );
-                        }
-                    }
-                    catch ( Exception ex )
-                    {
-                        var emailException = new Exception( $"Exception occurred when trying to send Schedule Confirmation Email to {attendancesByPerson.Person}", ex );
-                        errorMessages.Add( emailException.Message );
-                        exceptionList.Add( emailException );
-                    }
-                }
-            }
-
-            // group messages that are exactly the same and put a count of those in the message
-            errorMessages = errorMessages.GroupBy( a => a ).Select( s => s.Count() > 1 ? $"{s.Key}  ({s.Count()})" : s.Key ).ToList();
-
-            if ( exceptionList.Any() )
-            {
-                ExceptionLogService.LogException( new AggregateException( "Errors Occurred sending schedule confirmation emails", exceptionList ) );
-            }
-
-            return emailsSent;
-        }
-
-        /// <summary>
-        /// Sends the scheduled attendance reminder emails and marks ScheduleReminderSent = true, then returns the number of emails sent.
-        /// </summary>
-        /// <param name="sendReminderAttendancesQuery">The send reminder attendances query.</param>
-        /// <returns></returns>
-        [Obsolete( "Use SendScheduleReminderSystemCommunication instead." )]
-        [RockObsolete( "1.13" )]
-        public int SendScheduleReminderSystemEmails( IQueryable<Attendance> sendReminderAttendancesQuery )
-        {
-            int emailsSent = 0;
-            var sendReminderAttendancesQueryList = sendReminderAttendancesQuery.ToList();
-            var attendancesBySystemEmailTypeList = sendReminderAttendancesQueryList
-                .GroupBy( a => a.Occurrence.Group.GroupType.ScheduleReminderSystemCommunicationId )
-                .Where( a => a.Key.HasValue ).Select( s => new
-                {
-                    ScheduleReminderSystemCommunicationId = s.Key.Value,
-                    Attendances = s.ToList()
-                } )
-                .ToList();
-
-            var rockContext = this.Context as RockContext;
-
-            foreach ( var attendancesBySystemEmailType in attendancesBySystemEmailTypeList )
-            {
-                var scheduleReminderSystemEmail = new SystemCommunicationService( rockContext ).GetNoTracking( attendancesBySystemEmailType.ScheduleReminderSystemCommunicationId );
-
-                var attendancesByPersonList = attendancesBySystemEmailType.Attendances.GroupBy( a => a.PersonAlias.Person ).Select( s => new
-                {
-                    Person = s.Key,
-                    Attendances = s.ToList()
-                } );
-
-                foreach ( var attendancesByPerson in attendancesByPersonList )
-                {
-                    try
-                    {
-                        var emailMessage = new RockEmailMessage( scheduleReminderSystemEmail );
-                        var recipient = attendancesByPerson.Person;
-                        var attendances = attendancesByPerson.Attendances;
-
-                        foreach ( var attendance in attendances )
-                        {
-                            attendance.ScheduleReminderSent = true;
-                        }
-
-                        var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( null );
-                        mergeFields.Add( "Attendance", attendances.FirstOrDefault() );
-                        mergeFields.Add( "Attendances", attendances );
-                        emailMessage.AddRecipient( new RockEmailMessageRecipient( recipient, mergeFields ) );
-                        emailMessage.Send();
-                        emailsSent++;
-                    }
-                    catch ( Exception ex )
-                    {
-                        ExceptionLogService.LogException( new Exception( $"Exception occurred trying to send SendScheduleReminderSystemEmails to {attendancesByPerson.Person}", ex ) );
-                    }
-                }
-            }
-
-            return emailsSent;
-        }
-
-        /// <summary>
         /// Sends the schedule confirmation communication.
         /// <para>
         /// The caller of this method is responsible for calling SaveChanges() on the RockContext in order
@@ -997,9 +738,10 @@ namespace Rock.Model
         /// <summary>
         /// Sends the schedule confirmation communication.
         /// <para>
-        /// The caller of this method is responsible for calling SaveChanges() on the RockContext in order
-        /// to save the Attendance.ScheduleConfirmationSent values in the database, for those records having
-        /// a successfully-sent confirmation communication.
+        /// As of Rock 19.1, this overload persists <see cref="Attendance.ScheduleConfirmationSent"/> per
+        /// successful send (rather than waiting for the caller's terminal SaveChanges) by delegating to
+        /// the IProgress-aware overload with a null progress callback. Calling SaveChanges again after
+        /// this method returns is harmless but no longer required for confirmation-sent tracking.
         /// </para>
         /// </summary>
         /// <param name="sendConfirmationAttendancesQuery">The send confirmation attendances query.</param>
@@ -1011,6 +753,33 @@ namespace Rock.Model
         /// <returns>An object detailing the outcome of the send attempt.</returns>
         [RockInternal( "1.16.1" )]
         public SendMessageResult SendScheduleConfirmationCommunication( IQueryable<Attendance> sendConfirmationAttendancesQuery, bool includePeopleMissingContactInfo )
+        {
+            return SendScheduleConfirmationCommunication( sendConfirmationAttendancesQuery, includePeopleMissingContactInfo, null );
+        }
+
+        /// <summary>
+        /// Sends the schedule confirmation communication and optionally reports per-individual progress through
+        /// the supplied <see cref="Rock.Utility.TaskActivityProgress"/> reporter.
+        /// <para>
+        /// This overload persists <see cref="Attendance.ScheduleConfirmationSent"/> per successful send so a mid-loop
+        /// crash (or proxy timeout that disconnects the originating client) cannot cause duplicate sends on a retry.
+        /// </para>
+        /// </summary>
+        /// <param name="sendConfirmationAttendancesQuery">The send confirmation attendances query.</param>
+        /// <param name="includePeopleMissingContactInfo">
+        /// Whether to include people who are missing contact info in this send attempt. Include these people if you
+        /// want this method to return specific warnings about which people are missing the email address or phone
+        /// number needed to send their confirmation, according to the specified communication preferences.
+        /// </param>
+        /// <param name="progress">
+        /// Optional progress reporter. Each successful send calls <see cref="Rock.Utility.TaskActivityProgress.ReportProgressUpdate(long, long, string)"/>
+        /// with the running count and the individual's name, and each new error string calls
+        /// <see cref="Rock.Utility.TaskActivityProgress.LogMessage(string)"/>. Pass null to skip reporting (e.g. for the legacy
+        /// synchronous block action).
+        /// </param>
+        /// <returns>An object detailing the outcome of the send attempt.</returns>
+        [RockInternal( "19.1" )]
+        public SendMessageResult SendScheduleConfirmationCommunication( IQueryable<Attendance> sendConfirmationAttendancesQuery, bool includePeopleMissingContactInfo, Rock.Utility.TaskActivityProgress progress )
         {
             sendConfirmationAttendancesQuery = sendConfirmationAttendancesQuery
                 .Where( a => a.Occurrence.Group.GroupType.ScheduleConfirmationSystemCommunicationId.HasValue );
@@ -1038,18 +807,24 @@ namespace Rock.Model
                 var startDateMin = allDistinctAttendanceOccurrence.Min( a => a.OccurrenceDate );
                 var endDateMax = allDistinctAttendanceOccurrence.Max( a => a.OccurrenceDate ).AddDays( 1 );
                 var filteredAttendanceOccurrence = allDistinctAttendanceOccurrence
-                    .GroupBy( o => o.Schedule )
-                    .SelectMany( kvp =>
-                    {
-                        // Remove Schedule Exclusions
-                        var schedule = kvp.Key;
-                        var startDates = schedule.GetScheduledStartTimes( startDateMin, endDateMax )
-                        .Select( dt => dt.Date )
-                        .ToHashSet();
+                    // Occurrences created without a schedule (null) have no recurrence to validate against,
+                    // so pass them through the schedule-exclusion step unchanged instead of dropping them
+                    // (which would also throw a NullReferenceException below) (Fixes #7032).
+                    .Where( o => o.Schedule == null )
+                    .Concat( allDistinctAttendanceOccurrence
+                        .Where( o => o.Schedule != null )
+                        .GroupBy( o => o.Schedule )
+                        .SelectMany( kvp =>
+                        {
+                            // Remove Schedule Exclusions
+                            var schedule = kvp.Key;
+                            var startDates = schedule.GetScheduledStartTimes( startDateMin, endDateMax )
+                            .Select( dt => dt.Date )
+                            .ToHashSet();
 
-                        return kvp
-                            .Where( ao => startDates.Contains( ao.OccurrenceDate.Date ) );
-                    } )
+                            return kvp
+                                .Where( ao => startDates.Contains( ao.OccurrenceDate.Date ) );
+                        } ) )
                     .GroupBy( o => o.Group.GroupType)
                     .SelectMany( kvp =>
                     {
@@ -1058,7 +833,7 @@ namespace Rock.Model
                         var groupTypeExclusions = groupType.GroupScheduleExclusions;
                         return kvp
                             .Where( ao => !groupTypeExclusions.Any( e => e.StartDate <= ao.OccurrenceDate.Date && e.EndDate >= ao.OccurrenceDate ) );
-                    } ) 
+                    } )
                     .ToHashSet();
 
                 sendConfirmationAttendancesQueryList = sendConfirmationAttendancesQueryList.Where( a => filteredAttendanceOccurrence.Contains( a.Occurrence ) )
@@ -1099,7 +874,7 @@ namespace Rock.Model
                     Attendances = s.ToList()
                 } );
 
-            var sendMessageResults = SendSystemCommunications( sendConfirmationIndividuals, ( attendance ) => attendance.ScheduleConfirmationSent = true );
+            var sendMessageResults = SendSystemCommunications( sendConfirmationIndividuals, ( attendance ) => attendance.ScheduleConfirmationSent = true, saveAfterEachIndividual: true, progress: progress );
 
             // group messages that are exactly the same and put a count of those in the message
             sendMessageResults.Errors = sendMessageResults.Errors.GroupBy( a => a ).Select( s => s.Count() > 1 ? $"{s.Key}  ({s.Count()})" : s.Key ).ToList();
@@ -1140,18 +915,24 @@ namespace Rock.Model
                 var startDateMin = allDistinctAttendanceOccurrence.Min( a => a.OccurrenceDate );
                 var endDateMax = allDistinctAttendanceOccurrence.Max( a => a.OccurrenceDate ).AddDays( 1 );
                 var filteredAttendanceOccurrence = allDistinctAttendanceOccurrence
-                    .GroupBy( o => o.Schedule )
-                    .SelectMany( kvp =>
-                    {
-                        // Remove Schedule Exclusions
-                        var schedule = kvp.Key;
-                        var startDates = schedule.GetScheduledStartTimes( startDateMin, endDateMax )
-                        .Select( dt => dt.Date )
-                        .ToHashSet();
+                    // Occurrences created without a schedule (null) have no recurrence to validate against,
+                    // so pass them through the schedule-exclusion step unchanged instead of dropping them
+                    // (which would also throw a NullReferenceException below) (Fixes #7032).
+                    .Where( o => o.Schedule == null )
+                    .Concat( allDistinctAttendanceOccurrence
+                        .Where( o => o.Schedule != null )
+                        .GroupBy( o => o.Schedule )
+                        .SelectMany( kvp =>
+                        {
+                            // Remove Schedule Exclusions
+                            var schedule = kvp.Key;
+                            var startDates = schedule.GetScheduledStartTimes( startDateMin, endDateMax )
+                            .Select( dt => dt.Date )
+                            .ToHashSet();
 
-                        return kvp
-                            .Where( ao => startDates.Contains( ao.OccurrenceDate.Date ) );
-                    } )
+                            return kvp
+                                .Where( ao => startDates.Contains( ao.OccurrenceDate.Date ) );
+                        } ) )
                     .GroupBy( o => o.Group.GroupType )
                     .SelectMany( kvp =>
                     {
@@ -1214,13 +995,19 @@ namespace Rock.Model
             return sendMessageResults;
         }
 
-        private SendMessageResult SendSystemCommunications( IEnumerable<SendSystemCommunicationIndividual> sendSystemCommunicationIndividuals, Action<Attendance> updateAttendanceRecord )
+        private SendMessageResult SendSystemCommunications( IEnumerable<SendSystemCommunicationIndividual> sendSystemCommunicationIndividuals, Action<Attendance> updateAttendanceRecord, bool saveAfterEachIndividual = false, Rock.Utility.TaskActivityProgress progress = null )
         {
             var communicationMap = new Dictionary<int, SystemCommunication>();
             var rockContext = this.Context as RockContext;
             var sendMessageResults = new SendMessageResult();
 
-            foreach ( var individualNotification in sendSystemCommunicationIndividuals )
+            // Materialize the list so we can report a meaningful TotalCount without
+            // re-enumerating an upstream query.
+            var individuals = sendSystemCommunicationIndividuals.ToList();
+            var totalCount = individuals.Count;
+            var processedCount = 0;
+
+            foreach ( var individualNotification in individuals )
             {
                 SystemCommunication communicationMessage = null;
                 if ( !communicationMap.TryGetValue( individualNotification.SystemCommunicationId, out communicationMessage ) )
@@ -1271,6 +1058,9 @@ namespace Rock.Model
                                    forceCommunicationType,
                                    individualNotification.GroupCommunicationPreference,
                                    individualNotification.Individual.CommunicationPreference );
+                var errorCountBeforeIteration = sendMessageResults.Errors.Count;
+                var sentDuringThisIteration = false;
+
                 try
                 {
                     var sendIndividualMessageResult = CommunicationHelper.SendMessage( individualNotification.Individual, mediumType, communicationMessage, mergeFields );
@@ -1281,6 +1071,7 @@ namespace Rock.Model
                     if ( sendIndividualMessageResult.MessagesSent > 0 )
                     {
                         sendMessageResults.MessagesSent += sendIndividualMessageResult.MessagesSent;
+                        sentDuringThisIteration = true;
                         foreach ( var attendance in attendances )
                         {
                             updateAttendanceRecord( attendance );
@@ -1292,6 +1083,36 @@ namespace Rock.Model
                     var emailException = new Exception( $"Exception occurred when trying to send Schedule Confirmation Email to {individualNotification.Individual}", ex );
                     sendMessageResults.Errors.Add( emailException.Message );
                     sendMessageResults.Exceptions.Add( emailException );
+                }
+
+                // Persist the flags (ScheduleConfirmationSent, ScheduleReminderSent, etc.) for this individual's
+                // attendances immediately so a mid-loop crash, App Pool recycle, or proxy timeout that
+                // disconnects the caller cannot result in duplicate sends on a retry.
+                if ( saveAfterEachIndividual && sentDuringThisIteration && rockContext != null )
+                {
+                    try
+                    {
+                        rockContext.SaveChanges();
+                    }
+                    catch ( Exception ex )
+                    {
+                        var saveException = new Exception( $"Exception occurred while saving the Schedule Confirmation Sent flag for {individualNotification.Individual}", ex );
+                        sendMessageResults.Errors.Add( saveException.Message );
+                        sendMessageResults.Exceptions.Add( saveException );
+                    }
+                }
+
+                processedCount++;
+
+                if ( progress != null )
+                {
+                    progress.ReportProgressUpdate( processedCount, totalCount, individualNotification.Individual?.FullName );
+
+                    // Push each new error onto the live log so the client's progress UI can show them as they happen.
+                    for ( int errIdx = errorCountBeforeIteration; errIdx < sendMessageResults.Errors.Count; errIdx++ )
+                    {
+                        progress.LogMessage( sendMessageResults.Errors[errIdx] );
+                    }
                 }
             }
 
@@ -2511,7 +2332,7 @@ namespace Rock.Model
             }
 
             // use a new RockContext to use for adding attending resources so that get can get saved to the database without saving any changes associated with the current rockContext
-            var groupAssignmentAttendanceRockContext = new RockContext();
+            var groupAssignmentAttendanceRockContext = RockApp.Current.CreateRockContext();
             var groupAssignmentAttendanceService = new AttendanceService( groupAssignmentAttendanceRockContext );
 
             /* 2020-08-03 MDP
@@ -2680,17 +2501,6 @@ namespace Rock.Model
         /// Updates attendance record to indicate person is not pending, or confirmed, or declined
         /// </summary>
         /// <param name="attendanceId">The attendance identifier.</param>
-        [Obsolete( "Use ScheduledPersonClear instead." )]
-        [RockObsolete( "1.14.2" )]
-        public void ScheduledPersonRemove( int attendanceId )
-        {
-            ScheduledPersonClear( attendanceId );
-        }
-
-        /// <summary>
-        /// Updates attendance record to indicate person is not pending, or confirmed, or declined
-        /// </summary>
-        /// <param name="attendanceId">The attendance identifier.</param>
         public void ScheduledPersonClear( int attendanceId )
         {
             var scheduledAttendance = this.Get( attendanceId );
@@ -2734,13 +2544,20 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Updates attendance record to indicate person is Scheduled To Attend (Confirmed)
+        /// Updates attendance record to indicate person is Scheduled To Attend (Confirmed).
         /// </summary>
         /// <param name="attendanceId">The attendance identifier.</param>
         public void ScheduledPersonConfirm( int attendanceId )
         {
-            var scheduledAttendance = this.Get( attendanceId );
+            ScheduledPersonConfirm( this.Get( attendanceId ) );
+        }
 
+        /// <summary>
+        /// Updates attendance record to indicate person is Scheduled To Attend (Confirmed).
+        /// </summary>
+        /// <param name="scheduledAttendance">The attendance record to confirm.</param>
+        public void ScheduledPersonConfirm( Attendance scheduledAttendance )
+        {
             if ( scheduledAttendance == null )
             {
                 return;
@@ -3282,7 +3099,7 @@ namespace Rock.Model
             }
 
             var attendanceImportList = attendancesImport.Attendances;
-            RockContext rockContext = new RockContext();
+            RockContext rockContext = RockApp.Current.CreateRockContext();
 
             DateTime importDateTime = RockDateTime.Now;
 
@@ -3447,7 +3264,7 @@ namespace Rock.Model
                 return;
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 try
                 {
@@ -3517,7 +3334,7 @@ namespace Rock.Model
                 return;
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 try
                 {

@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -23,6 +23,7 @@ using System.Reflection;
 
 using Rock.Attribute;
 using Rock.Communication;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Follow;
 using Rock.Lava;
@@ -37,8 +38,14 @@ namespace Rock.Jobs
     [DisplayName( "Send Following Suggestion Notification" )]
     [Description( "Calculates and sends any following suggestions to those people that are eligible for following." )]
 
-    [SystemCommunicationField( "Following Suggestion Notification Email Template", required: true, order: 0, key: "EmailTemplate" )]
-    [SecurityRoleField( "Eligible Followers", "The group that contains individuals who should receive following suggestions", true, order: 1 )]
+    [SystemCommunicationField( "Following Suggestion Notification Email Template",
+        IsRequired = true,
+        Order = 0,
+        Key = "EmailTemplate" )]
+    [SecurityRoleField( "Eligible Followers",
+        Description = "The group that contains individuals who should receive following suggestions",
+        IsRequired = true,
+        Order = 1 )]
     public class SendFollowingSuggestions : RockJob
     {
         /// <summary> 
@@ -64,7 +71,7 @@ namespace Rock.Jobs
 
             if ( groupGuid.HasValue && systemEmailGuid.HasValue )
             {
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     var followingService = new FollowingService( rockContext );
 
@@ -314,7 +321,7 @@ namespace Rock.Jobs
         /// <param name="timestamp">The timestamp.</param>
         private void ProcessFollowerPersonId( int followerPersonId, SuggestionTypeComponent suggestionTypeComponent, Dictionary<int, int> primaryAliasIds, List<int> entityIds, int entityTypeId, DateTime timestamp )
         {
-            using ( var suggestionContext = new RockContext() )
+            using ( var suggestionContext = RockApp.Current.CreateRockContext() )
             {
                 var followingSuggestedService = new FollowingSuggestedService( suggestionContext );
 
@@ -463,7 +470,7 @@ namespace Rock.Jobs
                 addSuggestion = false;
                 entityIdToBeSavedAsSuggestions.Remove( followedEntityId );
 
-                using ( var followingContext = new RockContext() )
+                using ( var followingContext = RockApp.Current.CreateRockContext() )
                 {
                     var following = new FollowingService( followingContext )
                         .GetByEntityAndPerson( personAliasEntityTypeId, existingFollowingPersonAliasId, followerPersonId )

@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -18,6 +18,8 @@ using System;
 using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
+
+using Rock.Configuration;
 using Rock.Data;
 
 namespace Rock.Model
@@ -166,7 +168,7 @@ namespace Rock.Model
         /// </summary>
         public static void UpdateStepProgramCompletion( List<Step> stepSet, int personAliasId, int stepProgramId, RockContext rockContext = null )
         {
-            rockContext = rockContext ?? new RockContext();
+            rockContext = rockContext ?? RockApp.Current.CreateRockContext();
             var campusId = stepSet.Where( a => a.CampusId.HasValue ).Select( a => a.CampusId ).FirstOrDefault();
             var startDateTime = stepSet.Select( a => a.StartDateTime ?? a.CreatedDateTime ).OrderBy( a => a ).FirstOrDefault();
             var endDateTime = stepSet.Select( a => a.CompletedDateTime ?? a.EndDateTime ).OrderByDescending( a => a ).FirstOrDefault();

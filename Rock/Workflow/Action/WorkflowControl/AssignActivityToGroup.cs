@@ -33,7 +33,9 @@ namespace Rock.Workflow.Action
     [Export(typeof(ActionComponent))]
     [ExportMetadata( "ComponentName", "Activity Assign to Group" )]
 
-    [GroupTypeGroupField( "Group", "Select group type, then group, to set the group to assign this activity to.", "Group")] 
+    [GroupTypeGroupField( "Group",
+        Description = "Select group type, then group, to set the group to assign this activity to.",
+        GroupPickerLabel = "Group")] 
     [Rock.SystemGuid.EntityTypeGuid( "DB2D8C44-6E57-4B45-8973-5DE327D61554")]
     public class AssignActivityToGroup : ActionComponent
     {

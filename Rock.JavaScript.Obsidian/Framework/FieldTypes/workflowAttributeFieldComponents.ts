@@ -18,7 +18,7 @@ import { computed, defineComponent, ref, watch } from "vue";
 import { getFieldConfigurationProps, getFieldEditorProps } from "./utils";
 import DropDownList from "@Obsidian/Controls/dropDownList.obs";
 import TextBox from "@Obsidian/Controls/textBox.obs";
-import { ConfigurationValueKey } from "./workflowAttributeField.partial";
+import { ConfigurationKey } from "./workflowAttributeField.partial";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { updateRefValue } from "@Obsidian/Utility/component";
 
@@ -37,7 +37,7 @@ export const EditComponent = defineComponent({
 
         // The options to choose from.
         const options = computed((): ListItemBag[] => {
-            const options = JSON.parse(props.configurationValues[ConfigurationValueKey.ClientValues] || "[]") as ListItemBag[];
+            const options = JSON.parse(props.configurationValues[ConfigurationKey.ClientValues] || "[]") as ListItemBag[];
             return options;
         });
 
@@ -92,11 +92,11 @@ export const ConfigurationComponent = defineComponent({
 
             // Construct the new value that will be emitted if it is different
             // than the current value.
-            newValue[ConfigurationValueKey.AttributeFieldTypes] = fieldTypes.value ?? "";
-            newValue[ConfigurationValueKey.ClientValues] = props.modelValue[ConfigurationValueKey.ClientValues];
+            newValue[ConfigurationKey.AttributeFieldTypes] = fieldTypes.value ?? "";
+            newValue[ConfigurationKey.ClientValues] = props.modelValue[ConfigurationKey.ClientValues];
 
             // Compare the new value and the old value.
-            const anyValueChanged = newValue[ConfigurationValueKey.AttributeFieldTypes] !== (props.modelValue[ConfigurationValueKey.AttributeFieldTypes]);
+            const anyValueChanged = newValue[ConfigurationKey.AttributeFieldTypes] !== (props.modelValue[ConfigurationKey.AttributeFieldTypes]);
 
             // If any value changed then emit the new model value.
             if (anyValueChanged) {
@@ -123,7 +123,7 @@ export const ConfigurationComponent = defineComponent({
         // Watch for changes coming in from the parent component and update our
         // data to match the new information.
         watch(() => [props.modelValue, props.configurationProperties], () => {
-            fieldTypes.value = props.modelValue[ConfigurationValueKey.AttributeFieldTypes];
+            fieldTypes.value = props.modelValue[ConfigurationKey.AttributeFieldTypes];
         }, {
             immediate: true
         });
@@ -137,7 +137,7 @@ export const ConfigurationComponent = defineComponent({
         });
 
         // Watch for changes in properties that only require a local UI update.
-        watch(fieldTypes, () => maybeUpdateConfiguration(ConfigurationValueKey.AttributeFieldTypes, fieldTypes.value ?? ""));
+        watch(fieldTypes, () => maybeUpdateConfiguration(ConfigurationKey.AttributeFieldTypes, fieldTypes.value ?? ""));
 
         return {
             fieldTypes

@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -80,7 +80,10 @@ namespace Rock.Lms
         {
             if ( presentation == PresentedFor.Configuration )
             {
-                return new Dictionary<string, string>();
+                return new Dictionary<string, string>
+                {
+                    [BaseConfigurationKey.SupportsRetake] = "true"
+                };
             }
             else
             {
@@ -133,7 +136,7 @@ namespace Rock.Lms
         public override bool RequiresGrading( LearningClassActivityCompletion completion, Dictionary<string, string> completionData, Dictionary<string, string> componentData, RockContext rockContext, RockRequestContext requestContext )
         {
             // It has already been graded.
-            if ( completion.PointsEarned.HasValue )
+            if ( completion.GradedByPersonAliasId.HasValue )
             {
                 return false;
             }
@@ -141,8 +144,8 @@ namespace Rock.Lms
             var isPastDue = completion.DueDate.HasValue
                 && completion.DueDate.Value.IsPast();
 
-            // If it is past due or completed then it needs to be graded.
-            return isPastDue || completion.CompletedDateTime.HasValue;
+            // If it is past due or completed by the student then it needs to be graded.
+            return isPastDue || completion.IsStudentCompleted;
         }
 
         #endregion

@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -22,7 +22,10 @@ using System.Data.Entity.Infrastructure;
 using System.Data.Entity.ModelConfiguration;
 using System.Linq;
 using System.Runtime.Serialization;
+
 using Rock.Data;
+using Rock.Enums.Security;
+using Rock.Security;
 using Rock.Web.Cache;
 
 namespace Rock.Model
@@ -74,6 +77,7 @@ namespace Rock.Model
 #if REVIEW_WEBFORMS
         [Index( "IX_SearchTypeValueId_SearchValue", IsUnique = false, Order = 2 )]
 #endif
+        [StringValidation( StringValidationProfile.PlainText )]
         public string SearchValue { get; set; }
 
         /// <summary>

@@ -1,0 +1,22 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <span v-if="url">
+        (Inherited from
+        <a :href="url" target="_blank" rel="noopener noreferrer" class="fw-bold">
+            {{ name }}
+        </a>)
+    </span>
+    <span v-else class="fw-bold">
+        (Inherited from {{ name }})
+    </span>
+</template>
+
+<script setup lang="ts">
+    defineProps<{
+        /** The name of the ancestor entity (group type) the row inherits from. */
+        name?: string | null;
+
+        /** Optional link to the ancestor entity's detail page. */
+        url?: string | null;
+    }>();
+</script>

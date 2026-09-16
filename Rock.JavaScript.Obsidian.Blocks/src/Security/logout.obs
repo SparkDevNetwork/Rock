@@ -1,0 +1,72 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div>
+        <div v-if="isAdminUser && !hasLoggedOut">
+            <div class="alert alert-warning">
+                Since you have edit access to this page we have taken the liberty to not log you out.
+            </div>
+
+            <RockButton :btnType="BtnType.Warning" @click="onLogoutClick">
+                Logout
+            </RockButton>
+        </div>
+
+        <div v-if="message" v-html="message"></div>
+    </div>
+</template>
+
+<script setup lang="ts">
+    import { ref } from "vue";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import { BtnType } from "@Obsidian/Enums/Controls/btnType";
+    import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
+    import { LogoutBag } from "@Obsidian/ViewModels/Blocks/Security/Logout/logoutBag";
+    import { LogoutOptionsBag } from "@Obsidian/ViewModels/Blocks/Security/Logout/logoutOptionsBag";
+    import { CustomBlockBox } from "@Obsidian/ViewModels/Blocks/customBlockBox";
+
+    const config = useConfigurationValues<CustomBlockBox<LogoutBag, LogoutOptionsBag>>();
+    const invokeBlockAction = useInvokeBlockAction();
+
+    // #region Values
+
+    const isAdminUser = ref<boolean>(config.options?.isAdminUser ?? false);
+    const message = ref<string | null>(config.bag?.message ?? null);
+    const hasLoggedOut = ref<boolean>(false);
+
+    // #endregion Values
+
+    // #region Functions
+
+    /**
+     * Handles the redirect if a URL was provided, otherwise does nothing.
+     */
+    function handleRedirect(redirectUrl: string | null | undefined): void {
+        if (redirectUrl) {
+            window.location.href = redirectUrl;
+        }
+    }
+
+    // #endregion Functions
+
+    // #region Event Handlers
+
+    /**
+     * Event handler for the admin Logout button click.
+     */
+    async function onLogoutClick(): Promise<void> {
+        const result = await invokeBlockAction<LogoutBag>("LogoutUser");
+
+        if (result.isSuccess && result.data) {
+            hasLoggedOut.value = true;
+            message.value = result.data.message ?? null;
+            handleRedirect(result.data.redirectUrl);
+        }
+    }
+
+    // #endregion Event Handlers
+
+    // Handle redirect on initial load for non-admin users.
+    handleRedirect(config.bag?.redirectUrl);
+
+    onConfigurationValuesChanged(useReloadBlock());
+</script>

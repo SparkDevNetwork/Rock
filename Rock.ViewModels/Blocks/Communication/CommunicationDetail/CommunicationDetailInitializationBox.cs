@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -28,6 +28,11 @@ namespace Rock.ViewModels.Blocks.Communication.CommunicationDetail
         /// Gets or sets whether the communication detail block should be hidden.
         /// </summary>
         public bool IsHidden { get; set; }
+
+        /// <summary>
+        /// Gets or sets the URL to redirect to on load when the current page cannot edit the communication; empty when it can.
+        /// </summary>
+        public string RedirectUrl { get; set; }
 
         /// <summary>
         /// Gets or sets the detail of this communication.

@@ -1,0 +1,5 @@
+/bin
+/obj
+
+# Do not commit the test settings that might have sensitive data.
+/app.TestSettings.config

@@ -43,6 +43,9 @@ export type LocationItemPickerGetActiveChildrenOptionsBag = {
      */
     guid: Guid;
 
+    /** Determines if inactive locations should be included in the results. */
+    includeInactive: boolean;
+
     /**
      * Gets or sets the root location unique identifier. This is used if Rock.ViewModels.Rest.Controls.LocationItemPickerGetActiveChildrenOptionsBag.Guid
      * is empty to specify the root location to limit the tree to.

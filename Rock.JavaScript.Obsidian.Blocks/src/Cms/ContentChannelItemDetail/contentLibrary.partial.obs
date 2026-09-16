@@ -1,0 +1,262 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <NotificationBox v-if="libraryStatus === ContentChannelItemLibraryStatus.Uploaded" alertType="info">
+        <div v-if="licenseName" class="mb-2">
+            <span class="label label-default">{{ licenseName }}</span>
+        </div>
+        <p class="mb-0">This content channel item was uploaded to the library{{ byPersonFragment }}{{ onDateFragment }}.</p>
+    </NotificationBox>
+
+    <NotificationBox v-else-if="libraryStatus === ContentChannelItemLibraryStatus.Downloaded" alertType="info">
+        <div class="d-flex align-items-center mb-2">
+            <RockButton v-if="licenseName"
+                        btnType="default"
+                        btnSize="xs"
+                        class="mr-2"
+                        @click="onLicenseClick">
+                {{ licenseName }}
+            </RockButton>
+            <RockButton btnType="default"
+                        btnSize="xs"
+                        :disabled="isRedownloading"
+                        @click="onRedownloadClick">
+                <i class="ti ti-refresh"></i>
+                Re-download and Refresh
+            </RockButton>
+        </div>
+        <p class="mb-0">
+            This content channel item was downloaded from the library{{ onDateFragment }}{{ byPersonFragment }}.
+            Be sure to follow all of the license requirements.
+        </p>
+    </NotificationBox>
+
+    <NotificationBox v-if="redownloadError" alertType="danger">{{ redownloadError }}</NotificationBox>
+
+    <div class="row">
+        <div class="col-md-6">
+            <DropDownList v-model="selectedTopicGuid"
+                          label="Content Topic"
+                          rules="required"
+                          help="Categorizes this content for easier discovery in the Content Library."
+                          :items="contentTopics"
+                          grouped
+                          showBlankItem
+                          enhanceForLongLists />
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6">
+            <RadioButtonList v-model="selectedExperienceLevel"
+                             label="Content Experience Level"
+                             rules="required"
+                             help="Required to add this item to the Content Library. Specifies the intended experience level for the audience."
+                             :items="experienceLevelItems" />
+        </div>
+    </div>
+
+    <Modal v-model="isRedownloadModalShown"
+           title="Re-download and Refresh"
+           saveText="Yes"
+           @save="onRedownloadConfirm">
+        <NotificationBox alertType="warning">
+            The action you are about to perform will overwrite the existing content of the article. Any changes will be lost. Are you sure you want to proceed with the update?
+        </NotificationBox>
+    </Modal>
+</template>
+
+<script setup lang="ts">
+    import { computed, PropType, ref } from "vue";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import RadioButtonList from "@Obsidian/Controls/radioButtonList.obs";
+    import Modal from "@Obsidian/Controls/modal.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import { useInvokeContentChannelItemDetailBlockAction } from "./utils.partial";
+    import { enumToListItemBag } from "@Obsidian/Utility/enumUtils";
+    import { toNumberOrNull } from "@Obsidian/Utility/numberUtils";
+    import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
+    import { ContentChannelItemLibraryStatus } from "@Obsidian/Enums/Cms/contentChannelItemLibraryStatus";
+    import { ContentLibraryItemExperienceLevel, ContentLibraryItemExperienceLevelDescription } from "@Obsidian/Enums/Cms/contentLibraryItemExperienceLevel";
+    import { ContentChannelItemBag } from "@Obsidian/ViewModels/Blocks/Cms/ContentChannelItemDetail/contentChannelItemBag";
+    import { ContentChannelItemDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Cms/ContentChannelItemDetail/contentChannelItemDetailOptionsBag";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
+
+    const props = defineProps({
+        /** The selected Content Topic Guid (two-way), or empty when none is selected. */
+        contentTopicGuid: {
+            type: String as PropType<string>,
+            required: true
+        },
+
+        /** The selected Content Experience Level (two-way), or null when none is selected. */
+        experienceLevel: {
+            type: Number as PropType<ContentLibraryItemExperienceLevel | null>,
+            default: null
+        },
+
+        /** Which status panel renders: Uploaded, Downloaded, or None. Read-only display. */
+        libraryStatus: {
+            type: Number as PropType<ContentChannelItemLibraryStatus>,
+            default: ContentChannelItemLibraryStatus.None
+        },
+
+        /** The license display name ("{name} License") for the status chip, or empty. */
+        libraryLicenseName: {
+            type: String as PropType<string>,
+            default: ""
+        },
+
+        /** The by-person display name for the status panel, or empty. */
+        libraryByPersonName: {
+            type: String as PropType<string>,
+            default: ""
+        },
+
+        /** The ISO on-date for the status panel, or null. */
+        libraryOnDateTime: {
+            type: String as PropType<string | null>,
+            default: null
+        },
+
+        /** The item IdKey used as the Redownload block-action key. */
+        itemIdKey: {
+            type: String as PropType<string>,
+            default: ""
+        },
+
+        options: {
+            type: Object as PropType<ContentChannelItemDetailOptionsBag>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:contentTopicGuid", value: string): void,
+        (e: "update:experienceLevel", value: ContentLibraryItemExperienceLevel | null): void,
+        (e: "redownload", value: ValidPropertiesBox<ContentChannelItemBag>): void
+    }>();
+
+    // #region Values
+
+    const libraryLicensesUrl = "https://rockrms.com/library/licenses?utm_source=rock-item-download";
+
+    const invoker = useInvokeContentChannelItemDetailBlockAction();
+
+    const isRedownloadModalShown = ref(false);
+    const isRedownloading = ref(false);
+    const redownloadError = ref("");
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    /**
+     * Resolved license name for the status chip.
+     */
+    const licenseName = computed((): string => props.libraryLicenseName ?? "");
+
+    /**
+     * Content topic list items sourced from block options.
+     */
+    const contentTopics = computed((): ListItemBag[] => props.options.contentTopics ?? []);
+
+    /**
+     * Experience level radio items built from the enum description map.
+     */
+    const experienceLevelItems = computed((): ListItemBag[] =>
+        enumToListItemBag(ContentLibraryItemExperienceLevelDescription));
+
+    /**
+     * " by {name}" sentence fragment, or empty when no person is set.
+     */
+    const byPersonFragment = computed((): string =>
+        props.libraryByPersonName ? ` by ${props.libraryByPersonName}` : "");
+
+    /**
+     * " on {date}" sentence fragment using the short-date format, or empty when no date is set.
+     */
+    const onDateFragment = computed((): string => {
+        const onDate = props.libraryOnDateTime;
+
+        if (!onDate) {
+            return "";
+        }
+
+        const formatted = RockDateTime.parseISO(onDate)?.toASPString("d");
+
+        return formatted ? ` on ${formatted}` : "";
+    });
+
+    /**
+     * Writable computed bridging the contentTopicGuid prop to its emit.
+     * The parent owns the value; this just connects the DropDownList binding.
+     */
+    const selectedTopicGuid = computed<string>({
+        get(): string {
+            return props.contentTopicGuid ?? "";
+        },
+        set(value: string) {
+            emit("update:contentTopicGuid", value);
+        }
+    });
+
+    /**
+     * Writable computed bridging the experienceLevel prop to its emit.
+     * The radio binds a string, so the value round-trips through toString() / toNumberOrNull.
+     */
+    const selectedExperienceLevel = computed<string>({
+        get(): string {
+            return props.experienceLevel?.toString() ?? "";
+        },
+        set(value: string) {
+            emit("update:experienceLevel", toNumberOrNull(value) as ContentLibraryItemExperienceLevel | null);
+        }
+    });
+
+    // #endregion Computed Values
+
+    // #region Event Handlers
+
+    /**
+     * Opens the Content Library licenses page in a new tab.
+     */
+    function onLicenseClick(): void {
+        window.open(libraryLicensesUrl, "_blank", "noopener");
+    }
+
+    /**
+     * Opens the re-download confirmation modal.
+     */
+    function onRedownloadClick(): void {
+        redownloadError.value = "";
+        isRedownloadModalShown.value = true;
+    }
+
+    /**
+     * Invokes the Redownload block action and emits the refreshed bag to the parent.
+     */
+    async function onRedownloadConfirm(): Promise<void> {
+        isRedownloadModalShown.value = false;
+        isRedownloading.value = true;
+        redownloadError.value = "";
+
+        try {
+            const result = await invoker.redownload(props.itemIdKey);
+
+            if (result.isSuccess && result.data) {
+                // Hand the refreshed box up so the parent swaps it into the reactive edit bag.
+                emit("redownload", result.data);
+            }
+            else {
+                redownloadError.value = result.errorMessage ?? "Unable to re-download the content library item.";
+            }
+        }
+        finally {
+            isRedownloading.value = false;
+        }
+    }
+
+    // #endregion Event Handlers
+</script>

@@ -440,8 +440,6 @@ export const DefinedValue = {
     PersonConnectionStatusProspect: "368DD475-242C-49C4-A42C-7278BE690CC2",
     /** Person Connection Status - Visitor */
     PersonConnectionStatusVisitor: "B91BA046-BC1E-400C-B85D-638C1F4E0CE2",
-    /** Person Connection Status - Web Prospect */
-    PersonConnectionStatusWebProspect: "368DD475-242C-49C4-A42C-7278BE690CC2",
     /** Person Ethnicity - Hispanic or Latino */
     PersonEthnicityHispanicOrLatino: "05762BE9-32D4-4C30-9CF1-E1513C5C8360",
     /** Person Ethnicity - Not Hispanic or Latino */
@@ -514,6 +512,8 @@ export const DefinedValue = {
     ProjectTypeProjectDue: "C999D489-5B8F-4892-BCC3-90DFFBC524F5",
     /** The Apple TV app record source. */
     RecordSourceTypeAppleTvApp: "96884743-3C6B-41D9-A8FD-5DDEE65A7983",
+    /** The benevolence request record source. */
+    RecordSourceTypeBenevolenceRequest: "BF2EB0CB-7B23-4E2D-87D6-C1F9106CEE00",
     /** The check-in record source. */
     RecordSourceTypeCheckIn: "12A138E7-6D93-4D84-B99A-545395694553",
     /** The event registration record source. */

@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -14,14 +14,14 @@
 // limitations under the License.
 // </copyright>
 //
-using Rock.DownhillCss.Utility;
-
 using System;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.RegularExpressions;
+
+using Rock.DownhillCss.Utility;
 
 namespace Rock.DownhillCss
 {
@@ -764,10 +764,6 @@ namespace Rock.DownhillCss
     background-color: transparent;
 }
 
-^Page {
-    -rock-status-bar-text: light;
-}
-
 ^ContentPage {
     background-color: ?color-interface-softer;
 }
@@ -796,6 +792,13 @@ icon {
 }
 
 /*** Buttons ***/
+
+/* Softest */
+.btn.btn-softest {
+    background-color: ?color-interface-softest;
+    color: ?color-interface-strongest;
+}
+
 /* Primary */
 .btn.btn-primary {
     background-color: ?color-primary-strong;
@@ -1129,15 +1132,15 @@ icon {
 }
 
 .rounded-sm {
-    border-radius: 4;
+    border-radius: 16;
 }
 
 .rounded {
-    border-radius: 8;
+    border-radius: 24;
 }
 
 .rounded-lg {
-    border-radius: 16;
+    border-radius: 32;
 }
 
 .rounded-full {
@@ -1202,7 +1205,23 @@ formfield.required .required-indicator,
 ^editor,
 ^personpicker {
     color: ?color-interface-strong;
+}
+
+^datepicker,
+^picker,
+^personpicker {
     rock-placeholder-text-color: ?color-interface-medium;
+}
+
+/*
+    The InputView types use MAUI's own placeholder property so that a PlaceholderColor
+    set in page XAML still wins. The shell's rock-placeholder-text-color bridge assigns
+    PlaceholderColor directly, and a manual assignment outranks any stylesheet value.
+*/
+^borderlessentry,
+^entry,
+^editor {
+    -maui-placeholder-color: ?color-interface-medium;
 }
 
 .dark-mode ^borderlessentry,
@@ -1271,14 +1290,24 @@ formfield.required .required-indicator,
   margin: 12, 0;    
 }
 
-/* Divider */
+/*
+    Divider
+
+    These are intentionally literal semi-transparent values rather than palette
+    tokens. Apple's HIG uses a translucent separator so the line keeps a
+    consistent visual weight over any parent background, instead of only looking
+    right over pure white / pure black. #4A3C3C43 is rgba( 60, 60, 67, 0.29 ) in
+    ARGB; #4AFFFFFF is the white equivalent for dark mode. Do not convert these
+    back to ?color-interface-* tokens - opaque tokens are what caused the
+    per-instance color overrides this replaced.
+*/
 .divider {
-    background-color: ?color-interface-soft;
+    background-color: #4A3C3C43;
     height: 1;
 }
 
 .dark-mode .divider {
-    background-color: ?color-interface-strong;
+    background-color: #4AFFFFFF;
 }
 
 .divider-thick {
@@ -1369,10 +1398,6 @@ Resets
 
 ^radiobutton {
     background-color: transparent;
-}
-
-^Page {
-    -rock-status-bar-text: light;
 }
 
 ^contentpage {

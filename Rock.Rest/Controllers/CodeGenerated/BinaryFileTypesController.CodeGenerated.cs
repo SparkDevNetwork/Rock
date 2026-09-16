@@ -21,6 +21,7 @@
 // </copyright>
 //
 
+using Rock.Configuration;
 using Rock.Model;
 using Rock.SystemGuid;
 
@@ -35,6 +36,6 @@ namespace Rock.Rest.Controllers
         /// <summary>
         /// Initializes a new instance of the <see cref="BinaryFileTypesController"/> class.
         /// </summary>
-        public BinaryFileTypesController() : base( new Rock.Model.BinaryFileTypeService( new Rock.Data.RockContext() ) ) { } 
+        public BinaryFileTypesController() : base( new Rock.Model.BinaryFileTypeService( RockApp.Current.CreateRockContext() ) ) { } 
     }
 }

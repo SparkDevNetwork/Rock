@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -33,6 +33,7 @@ using RestSharp;
 using RestSharp.Authenticators;
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security.Authentication;
@@ -48,8 +49,10 @@ namespace Rock.Security.ExternalAuthentication
     [Export( typeof( AuthenticationComponent ) )]
     [ExportMetadata( "ComponentName", "Twitter" )]
 
-    [TextField( "Consumer Key", "The Twitter Consumer Key" )]
-    [TextField( "Consumer Secret", "The Twitter Consumer Secret" )]
+    [TextField( "Consumer Key",
+        Description = "The Twitter Consumer Key" )]
+    [TextField( "Consumer Secret",
+        Description = "The Twitter Consumer Secret" )]
 
     [Rock.SystemGuid.EntityTypeGuid( "CE5C0844-4020-45E8-9777-1EE13CB890BF")]
     public class Twitter : AuthenticationComponent, IExternalRedirectAuthentication
@@ -266,7 +269,7 @@ namespace Rock.Security.ExternalAuthentication
             string userName = "Twitter_" + twitterId;
             UserLogin user = null;
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 // Query for an existing user
                 var userLoginService = new UserLoginService( rockContext );

@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -20,8 +20,10 @@ using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Web;
+
 using Rock.Attribute;
 using Rock.Communication;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 
@@ -46,7 +48,11 @@ namespace Rock.Jobs
         IsRequired = true,
         Order = 1 )]
 
-    [GroupRoleField( null, "Group Role Filter", "Optional group role to filter the absent members by. To select the role you'll need to select a group type.", false, null, null, 2, AttributeKey.GroupRoleFilter )]
+    [GroupRoleField( null, "Group Role Filter",
+        Description = "Optional group role to filter the absent members by. To select the role you'll need to select a group type.",
+        IsRequired = false,
+        Order = 2,
+        Key = AttributeKey.GroupRoleFilter )]
 
     [IntegerField( "Minimum Absences",
         Key = AttributeKey.MinimumAbsences,
@@ -112,7 +118,7 @@ namespace Rock.Jobs
             int sendFailed = 0;
 
             // get groups set to sync
-            RockContext rockContext = new RockContext();
+            RockContext rockContext = RockApp.Current.CreateRockContext();
 
             Guid? groupTypeGuid = GetAttributeValue( AttributeKey.GroupType ).AsGuidOrNull();
             Guid? systemEmailGuid = GetAttributeValue( AttributeKey.NotificationEmail ).AsGuidOrNull();

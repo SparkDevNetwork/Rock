@@ -18,7 +18,6 @@
                       title="Person"
                       field="person"
                       :filter="textValueFilter"
-                      filterValue="{{ row.person.nickName }} {{ row.person.lastName }}"
                       width="15%"
                       visiblePriority="xs" />
 

@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -27,6 +27,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 using Rock.Communication.Chat;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Enums.Crm;
 using Rock.Lava;
@@ -487,38 +488,13 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets the age.
-        /// </summary>
-        /// <param name="birthDate">The birth date.</param>
-        /// <returns></returns>
-        [RockObsolete( "1.13" )]
-        [Obsolete( "Use GetAge( birthDate, deceasedDate ) instead." )]
-        public static int? GetAge( DateTime? birthDate )
-        {
-            if ( birthDate.HasValue && birthDate.Value.Year != DateTime.MinValue.Year )
-            {
-                DateTime today = RockDateTime.Today;
-                int age = today.Year - birthDate.Value.Year;
-                if ( birthDate.Value > today.AddYears( -age ) )
-                {
-                    // their birthdate is after today's date, so they aren't a year older yet
-                    age--;
-                }
-
-                return age;
-            }
-
-            return null;
-        }
-
-        /// <summary>
         /// Formats the age with unit (year, month, day) suffix depending on the age of the individual.
         /// </summary>
         /// <param name="condensed">if set to <c>true</c> age in years is returned without a unit suffix.</param>
         /// <returns></returns>
         public string FormatAge( bool condensed = false )
         {
-            if (BirthDate > DateTime.Now)
+            if (BirthDate > RockDateTime.Now)
             {
                 return string.Empty;
             }
@@ -1164,7 +1140,7 @@ namespace Rock.Model
                 HttpWebRequest imageRequest = ( HttpWebRequest ) HttpWebRequest.Create( photoUri );
                 HttpWebResponse imageResponse = ( HttpWebResponse ) imageRequest.GetResponse();
                 var imageStream = imageResponse.GetResponseStream();
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     var binaryFileType = new BinaryFileTypeService( rockContext ).GetNoTracking( binaryFileTypeGuid );
                     using ( MemoryStream photoData = new MemoryStream() )
@@ -1278,7 +1254,7 @@ namespace Rock.Model
         {
             if ( Signals != null )
             {
-                var rockContext = new RockContext();
+                var rockContext = RockApp.Current.CreateRockContext();
                 var topSignal = Signals
                     .Where( s => !s.ExpirationDate.HasValue || s.ExpirationDate >= RockDateTime.Now )
                     .Select( s => new
@@ -1421,7 +1397,7 @@ namespace Rock.Model
             string familySalutation = null;
             if ( person.PrimaryFamilyId.HasValue )
             {
-                var primaryFamily = person.PrimaryFamily ?? new GroupService( new RockContext() ).Get( person.PrimaryFamilyId.Value );
+                var primaryFamily = person.PrimaryFamily ?? new GroupService( RockApp.Current.CreateRockContext() ).Get( person.PrimaryFamilyId.Value );
                 if ( primaryFamily != null )
                 {
                     familySalutation = GroupService.CalculateFamilySalutation( primaryFamily, calculateFamilySalutationArgs );
@@ -1480,7 +1456,7 @@ namespace Rock.Model
                 }
             }
 
-            using ( RockContext rockContext = new RockContext() )
+            using ( RockContext rockContext = RockApp.Current.CreateRockContext() )
             {
                 Person person = new PersonService( rockContext ).Get( personId );
                 return GetPersonPhotoUrl( person, size );
@@ -1598,7 +1574,7 @@ namespace Rock.Model
             var canCheckInRole = knownRelationshipGroupType.Roles.FirstOrDefault( r => r.Guid.Equals( new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_CAN_CHECK_IN ) ) );
             if ( canCheckInRole != null )
             {
-                rockContext = rockContext ?? new RockContext();
+                rockContext = rockContext ?? RockApp.Current.CreateRockContext();
                 var groupMemberService = new GroupMemberService( rockContext );
                 groupMemberService.CreateKnownRelationship( personId, relatedPersonId, canCheckInRole.Id );
             }
@@ -1801,7 +1777,7 @@ namespace Rock.Model
 
             if ( personIds != null )
             {
-                rockContext = rockContext ?? new RockContext();
+                rockContext = rockContext ?? RockApp.Current.CreateRockContext();
 
                 Guid? homeAddressGuid = Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME.AsGuidOrNull();
                 Guid? familyGuid = new Guid( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY );
@@ -1978,7 +1954,7 @@ namespace Rock.Model
         /// <param name="isBusiness">If <c>true</c>, indexes business records instead of person records.</param>
         private void IndexBulkQueryInSegments( int segmentCount, int bulkChunkSize, bool isBusiness )
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
 #if REVIEW_WEBFORMS
             rockContext.Database.CommandTimeout = 180; // Set a longer timeout for indexing operations
 #else
@@ -2057,7 +2033,7 @@ namespace Rock.Model
         /// <param name="id"></param>
         public void IndexDocument( int id )
         {
-            var personEntity = new PersonService( new RockContext() ).Get( id );
+            var personEntity = new PersonService( RockApp.Current.CreateRockContext() ).Get( id );
 
             if ( personEntity != null )
             {
@@ -2080,7 +2056,7 @@ namespace Rock.Model
         /// <param name="id"></param>
         public void DeleteIndexedDocument( int id )
         {
-            var personEntity = new PersonService( new RockContext() ).Get( id );
+            var personEntity = new PersonService( RockApp.Current.CreateRockContext() ).Get( id );
 
             if ( personEntity != null )
             {

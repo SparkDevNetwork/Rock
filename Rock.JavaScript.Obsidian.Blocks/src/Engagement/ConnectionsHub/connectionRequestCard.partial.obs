@@ -1,0 +1,492 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <template v-if="connectionRequestRow.requestDetails">
+        <PersonCard :photoUrl="connectionRequestRow.requestDetails.photoUrl ?? ''"
+                    :name="`${connectionRequestRow.requestDetails.nickName} ${connectionRequestRow.requestDetails.lastName}`"
+                    :campusShortCode="campusLabel?.shortCode"
+                    :campusColor="campusLabel?.color"
+                    :hideCampusLabel="hideCampusLabel"
+                    :nameTooltip="`Requester: ${connectionRequestRow.requestDetails.nickName} ${connectionRequestRow.requestDetails.lastName}`"
+                    :campusTooltip="`Campus: ${connectionRequestRow.campus}`"
+                    class="connection-request-card"
+                    :class="{ 'completed': connectionRequestRow.connectionState === ConnectionState.Connected, 'selected': isSelected }"
+                    @click="onCardClick">
+            <template #secondaryHeaderActions>
+                <template v-if="canEditConnectionRequests">
+                    <div class="dropdown-content-item py-spacing-xs px-spacing-md font-weight-semibold"
+                         @click="emit('changeState', ConnectionState.Active, connectionRequest)">
+                        <i class="ti ti-user pr-spacing-sm text-interface-medium"></i>Set as Active
+                    </div>
+                    <div class="dropdown-content-item py-spacing-xs px-spacing-md font-weight-semibold"
+                         @click="emit('changeState', ConnectionState.Inactive, connectionRequest)">
+                        <i class="ti ti-user-off pr-spacing-sm text-interface-medium"></i>Set as Inactive
+                    </div>
+                    <div v-if="connectionTypeOptions?.isFutureFollowUpEnabled"
+                         class="dropdown-content-item py-spacing-xs px-spacing-md font-weight-semibold"
+                         @click="emit('changeState', ConnectionState.FutureFollowUp, connectionRequest)">
+                        <i class="ti ti-calendar pr-spacing-sm text-interface-medium"></i>Set as Future Follow-Up
+                    </div>
+                    <div class="dropdown-content-item py-spacing-xs px-spacing-md font-weight-semibold"
+                         @click="emit('changeState', ConnectionState.Connected, connectionRequest)">
+                        <i class="ti ti-circle-check pr-spacing-sm text-interface-medium"></i>Mark Complete
+                    </div>
+                </template>
+                <div class="dropdown-content-item py-spacing-xs px-spacing-md font-weight-semibold"
+                     @click="emit('launchWorkflow', connectionRequest)">
+                    <i class="ti ti-settings-cog pr-spacing-sm text-interface-medium"></i>Launch Workflow
+                </div>
+                <template v-if="canEditConnectionRequests">
+                    <div v-if="!connectionRequestRow?.isRequestSecurityDisabled"
+                         class="dropdown-content-item py-spacing-xs px-spacing-md font-weight-semibold"
+                         @click="emit('showSecurity', connectionRequestRow.idKey)">
+                        <i class="ti ti-lock pr-spacing-sm text-interface-medium"></i>Security
+                    </div>
+                    <div class="dropdown-content-item py-spacing-xs px-spacing-md font-weight-semibold text-danger"
+                         @click="emit('delete', connectionRequest)">
+                        <i class="ti ti-trash pr-spacing-sm text-danger"></i>Delete
+                    </div>
+                </template>
+            </template>
+            <template v-if="connectionState !== ConnectionState.Active" #subheader>
+                <div class="connection-request-card-subheader"
+                     :class="stateColorClasses"
+                     v-tooltip="stateTooltip">
+                    <template v-if="connectionState === ConnectionState.FutureFollowUp">
+                        Future Follow-Up: {{ daysElapsed(connectionRequestRow.followUpDate) }}
+                    </template>
+                    <template v-else>
+                        {{ ConnectionStateDescription[connectionState] }}
+                    </template>
+                </div>
+            </template>
+            <template #body>
+                <div class="details-container connection-request-card-body">
+                    <dl>
+                        <dt v-tooltip.overflow="connectionRequestRow.connectionOpportunity">Opportunity</dt>
+                        <dd class="text-semibold"
+                            v-tooltip.overflow="connectionRequestRow.connectionOpportunity">
+                            <i v-if="connectionRequestRow.connectionOpportunityIconCssClass"
+                               :class="connectionRequestRow.connectionOpportunityIconCssClass"
+                               class="mr-spacing-tiny"></i>
+                            {{ connectionRequestRow.connectionOpportunity }}
+                        </dd>
+                        <template v-if="viewOptions.isRequestSourceShown">
+                            <dt>Source</dt>
+                            <dd v-if="!isNullOrWhiteSpace(connectionRequestRow.connectionTypeSource)"
+                                v-tooltip.overflow="connectionRequestRow.connectionTypeSource">
+                                {{ connectionRequestRow.connectionTypeSource }}
+                            </dd>
+                            <dd v-else>
+                                <i class="ti ti-minus"></i>
+                            </dd>
+                        </template>
+                        <dt>
+                            <span v-tooltip="dueDateTooltip">
+                                Due Date
+                            </span>
+                        </dt>
+                        <dd :class="getDueDateColor(connectionRequestRow.dueStatus, connectionState === ConnectionState.Connected)">
+                            <span v-tooltip="dueDateTooltip">
+                                <template v-if="!isNullOrWhiteSpace(connectionRequestRow.dueDate) && connectionState !== ConnectionState.Inactive">
+                                    <template v-if="connectionState === ConnectionState.Connected">
+                                        {{ getCustomDateMedium(connectionRequestRow.dueDate) }}
+                                    </template>
+                                    <template v-else>
+                                        {{ daysElapsed(connectionRequestRow.dueDate, true) }}
+                                    </template>
+                                </template>
+                                <template v-else>
+                                    <i class="ti ti-minus"></i>
+                                </template>
+                            </span>
+                        </dd>
+                    </dl>
+                </div>
+                <div v-if="attributesToShow?.length && attributesToShow.length > 0"
+                     class="details-container connection-request-card-body bg-interface-softer border-top">
+                    <dl>
+                        <template v-for="attrFieldValue in attributesToShow">
+                            <dt>
+                                <span v-tooltip.html="getAttributeTooltip(attrFieldValue)">
+                                    {{ attrFieldValue.title }}
+                                </span>
+                            </dt>
+                            <dd>
+                                <span v-tooltip.html="getAttributeTooltip(attrFieldValue)">
+                                    <template v-if="!isNullOrWhiteSpace(getAttributeTextValue(attrFieldValue))">
+                                        {{ getAttributeTextValue(attrFieldValue) }}
+                                    </template>
+                                    <template v-else>
+                                        <i class="ti ti-minus"></i>
+                                    </template>
+                                </span>
+                            </dd>
+                        </template>
+                    </dl>
+                </div>
+            </template>
+            <template #footer>
+                <div class="connection-request-card-footer">
+                    <HighlightLabel :labelType="getConnectorLabelType()"
+                                    iconCssClass="ti ti-user-circle"
+                                    v-tooltip="connectorTooltip">
+                        {{ connectionRequestRow.connectorDetails?.text }}
+                    </HighlightLabel>
+                    <div class="connection-request-card-footer-info">
+                        <div class="connection-request-card-footer-info-item" v-tooltip="createdDateTooltip">
+                            <i class="ti ti-calendar-plus"></i>
+                            {{ getElapsedShortTime(connectionRequestRow.createdDateTime) }}
+                        </div>
+                        <div class="connection-request-card-footer-info-item" v-tooltip.html="activitiesTooltip">
+                            <i class="ti ti-bolt"></i>
+                            {{ connectionRequestRow.activityCount }}
+                        </div>
+                    </div>
+                </div>
+            </template>
+        </PersonCard>
+    </template>
+</template>
+
+<script setup lang="ts">
+    import PersonCard from "@Obsidian/Controls/Internal/personCard.obs";
+    import HighlightLabel from "@Obsidian/Controls/highlightLabel.obs";
+    import { ref, PropType, watch, computed } from "vue";
+    import { PersonFieldBag } from "@Obsidian/ViewModels/Core/Grid/personFieldBag";
+    import { ConnectionState, ConnectionStateDescription } from "@Obsidian/Enums/Connection/connectionState";
+    import { DateTimeFormat, RockDateTime } from "@Obsidian/Utility/rockDateTime";
+    import { ConnectionsHubOptionsBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/connectionsHubOptionsBag";
+    import { CampusLabelBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/campusLabelBag";
+    import { isNullOrWhiteSpace } from "@Obsidian/Utility/stringUtils";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { ConnectionStatusBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/connectionStatusBag";
+    import { DueStatus } from "@Obsidian/Enums/Connection/dueStatus";
+    import { AttributeFieldDefinitionBag } from "@Obsidian/ViewModels/Core/Grid/attributeFieldDefinitionBag";
+    import { vTooltip } from "@Obsidian/Directives/tooltip";
+    import { ViewOptions } from "./types.partial";
+    import { ConnectionTypeOptionsBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/connectionTypeOptionsBag";
+
+    type ConnectionRequestCardRow = {
+        idKey?: string | null;
+        connectorGrouping?: string | null;
+        campusGrouping?: string | null;
+        opportunityGrouping?: string | null;
+        statusGrouping?: string | null;
+        stateGrouping?: string | null;
+        dueStatusGrouping?: string | null;
+        connectorDetails?: ListItemBag | null;
+        requestDetails?: PersonFieldBag | null;
+        requesterPersonAliasGuid?: string | null;
+        connectionOpportunity?: string | null;
+        connectionOpportunityIconCssClass?: string | null;
+        connectionOpportunityGuid?: string | null;
+        connectionTypeSource?: string | null;
+        campus?: string | null;
+        campusGuid?: string | null;
+        group?: string | null;
+        connectionStatus?: ConnectionStatusBag | null;
+        lastActivityDateTime?: string | null;
+        activityCount?: number | null;
+        createdDateTime?: string | null;
+        dueDate?: string | null;
+        dueSoonDate?: string | null;
+        completedDateTime?: string | null;
+        dueStatus?: DueStatus | null;
+        followUpDate?: string | null;
+        connectionState?: ConnectionState | null;
+        celebrationText?: string | null;
+        reminderCount?: number | null;
+        hasPlacementGroup?: boolean | null;
+        hasRequiredGroupRequirements?: boolean | null;
+        isRequestSecurityDisabled?: boolean | null;
+    };
+
+    /**
+     * Maps a raw grid row to a typed ConnectionRequestCardRow.
+     */
+    function toConnectionRequestCardRow(row: Record<string, unknown>): ConnectionRequestCardRow {
+        return {
+            idKey: row.idKey as string | null | undefined,
+            connectorGrouping: row.connectorGrouping as string | null | undefined,
+            campusGrouping: row.campusGrouping as string | null | undefined,
+            opportunityGrouping: row.opportunityGrouping as string | null | undefined,
+            statusGrouping: row.statusGrouping as string | null | undefined,
+            stateGrouping: row.stateGrouping as string | null | undefined,
+            dueStatusGrouping: row.dueStatusGrouping as string | null | undefined,
+            connectorDetails: row.connectorDetails as ListItemBag | null | undefined,
+            requestDetails: row.requestDetails as PersonFieldBag | null | undefined,
+            requesterPersonAliasGuid: row.requesterPersonAliasGuid as string | null | undefined,
+            connectionOpportunity: row.connectionOpportunity as string | null | undefined,
+            connectionOpportunityIconCssClass: row.connectionOpportunityIconCssClass as string | null | undefined,
+            connectionOpportunityGuid: row.connectionOpportunityGuid as string | null | undefined,
+            connectionTypeSource: row.connectionTypeSource as string | null | undefined,
+            campus: row.campus as string | null | undefined,
+            campusGuid: row.campusGuid as string | null | undefined,
+            group: row.group as string | null | undefined,
+            connectionStatus: row.connectionStatus as ConnectionStatusBag | null | undefined,
+            lastActivityDateTime: row.lastActivityDateTime as string | null | undefined,
+            activityCount: row.activityCount as number | null | undefined,
+            createdDateTime: row.createdDateTime as string | null | undefined,
+            dueDate: row.dueDate as string | null | undefined,
+            dueSoonDate: row.dueSoonDate as string | null | undefined,
+            completedDateTime: row.completedDateTime as string | null | undefined,
+            dueStatus: row.dueStatus as DueStatus | null | undefined,
+            followUpDate: row.followUpDate as string | null | undefined,
+            connectionState: row.connectionState as ConnectionState | null | undefined,
+            celebrationText: row.celebrationText as string | null | undefined,
+            reminderCount: row.reminderCount as number | null | undefined,
+            hasPlacementGroup: row.hasPlacementGroup as boolean | null | undefined,
+            hasRequiredGroupRequirements: row.hasRequiredGroupRequirements as boolean | null | undefined,
+            isRequestSecurityDisabled: row.isRequestSecurityDisabled as boolean | null | undefined
+        };
+    }
+
+    const props = defineProps({
+        connectionRequest: {
+            type: Object as PropType<Record<string, unknown>>,
+            default: {}
+        },
+
+        options: {
+            type: Object as PropType<ConnectionsHubOptionsBag | null | undefined>,
+            default: {}
+        },
+
+        connectionTypeOptions: {
+            type: Object as PropType<ConnectionTypeOptionsBag | null | undefined>,
+            default: {}
+        },
+
+        canEditConnectionRequests: {
+            type: Boolean as PropType<boolean>,
+            required: true
+        },
+
+        hideCampusLabel: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        viewOptions: {
+            type: Object as PropType<ViewOptions>,
+            required: true
+        },
+
+        attributesToShow: {
+            type: Array as PropType<AttributeFieldDefinitionBag[] | undefined>,
+            required: true
+        },
+
+        currentPersonIdKey: {
+            type: String as PropType<string | null | undefined>,
+            default: ""
+        },
+
+        isSelected: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "selectItem", value: string): void;
+        (e: "toggleSelection", groupingKey: string, value: string): void;
+        (e: "changeState", state: ConnectionState, row: Record<string, unknown>): void;
+        (e: "launchWorkflow", row: Record<string, unknown>): void;
+        (e: "showSecurity", value: string | null | undefined): void;
+        (e: "delete", row: Record<string, unknown>): void;
+    }>();
+
+    // Map the raw grid row to a typed view for use within this component.
+    const connectionRequestRow = computed<ConnectionRequestCardRow>(() => toConnectionRequestCardRow(props.connectionRequest));
+    const connectionState = computed<ConnectionState>(() => (props.connectionRequest["connectionState"] as ConnectionState | undefined) ?? ConnectionState.Active);
+
+    const campusLabel = computed<CampusLabelBag | undefined>(() => {
+        const campusGuid = connectionRequestRow.value.campusGuid;
+
+        if (!campusGuid || !props.options?.campusLabels) {
+            return;
+        }
+
+        return props.options.campusLabels.find(c => c.guid === campusGuid);
+    });
+    const stateColorClasses = computed<string>(() => {
+        switch (connectionRequestRow.value.connectionState) {
+            case ConnectionState.Inactive: {
+                return "bg-warning-soft text-warning-strong";
+            }
+            case ConnectionState.FutureFollowUp: {
+                return "bg-info-soft text-info-strong";
+            }
+            case ConnectionState.Connected: {
+                return "bg-success-soft text-success-strong";
+            }
+            default: {
+                return "";
+            }
+        }
+    });
+
+    const stateTooltip = (): string | null | undefined => {
+        if (!connectionRequestRow.value.connectionState || connectionRequestRow.value.connectionState === ConnectionState.Inactive) {
+            return;
+        }
+
+        if (connectionRequestRow.value.connectionState === ConnectionState.FutureFollowUp) {
+            return `Future Follow-Up: ${getShortDate(connectionRequestRow.value.followUpDate)}`;
+        }
+        else {
+            return `Completed on: ${getShortDate(connectionRequestRow.value.completedDateTime)}`;
+        }
+    };
+
+    const dueDateTooltip = (): string | null | undefined => {
+        if (!connectionRequestRow.value.dueDate) {
+            return "Due Date: <i class='ti ti-minus'></i>";
+        }
+        return `Due Date: ${getShortDate(connectionRequestRow.value.dueDate)}`;
+    };
+
+    const getAttributeTooltip = (attributeFieldValue: AttributeFieldDefinitionBag): string | null | undefined => {
+        const textValue = getAttributeTextValue(attributeFieldValue);
+
+        if (isNullOrWhiteSpace(textValue)) {
+            return `${attributeFieldValue.title}: <i class="ti ti-minus"></i>`;
+        }
+        return `${attributeFieldValue.title}: ${textValue}`;
+    };
+
+    const connectorTooltip = (): string => {
+        if (!connectionRequestRow.value.connectorDetails?.text) {
+            return `Connector: Unassigned`;
+        }
+        return `Connector: ${connectionRequestRow.value.connectorDetails.text}`;
+    };
+
+    const createdDateTooltip = (): string | null | undefined => {
+        if (!connectionRequestRow.value.createdDateTime) {
+            return;
+        }
+        return `Created on: ${getShortDate(connectionRequestRow.value.createdDateTime)}`;
+    };
+
+    const activitiesTooltip = (): string | null | undefined => {
+        let tooltip = `Activities: ${connectionRequestRow.value.activityCount ?? 0}`;
+
+        if (!isNullOrWhiteSpace(connectionRequestRow.value.lastActivityDateTime)) {
+            tooltip += `.<br>Last Activity: ${getShortDate(connectionRequestRow.value.lastActivityDateTime)}`;
+        }
+
+        return tooltip;
+    };
+
+    const daysElapsed = (dateTimeIsoToCheck: string | null | undefined, isDueDateCheck: boolean = false): string => {
+        if (!dateTimeIsoToCheck) {
+            return "";
+        }
+
+        const dateTimeToCheck = RockDateTime.parseISO(dateTimeIsoToCheck);
+        if (!dateTimeToCheck) {
+            return "";
+        }
+
+        const referenceDate = RockDateTime.now();
+        const dateToCheck = dateTimeToCheck.date;
+
+        const msPerDay = 1000 * 60 * 60 * 24;
+
+        const diffDays = Math.round((dateToCheck.toMilliseconds() - referenceDate.toMilliseconds()) / msPerDay);
+
+        if (diffDays > 0) {
+            const pre = isDueDateCheck ? "Due in" : "In";
+            return `${pre} ${diffDays} ${diffDays === 1 ? "Day" : "Days"}`;
+        }
+        else if (diffDays < 0) {
+            const pastDays = Math.abs(diffDays);
+            const pastDateTerm = isDueDateCheck ? "Overdue" : "Ago";
+            return `${pastDays} ${pastDays === 1 ? "Day" : "Days"} ${pastDateTerm}`;
+        }
+        else {
+            return "Today";
+        }
+    };
+
+    function getDueDateColor(dueStatus: DueStatus | null | undefined, isCompleted: boolean): string {
+        switch (dueStatus) {
+            case DueStatus.DueLater:
+                return isCompleted ? "text-emerald text-semibold" : "text-interface-strong";
+            case DueStatus.DueSoon:
+                return "text-warning text-semibold";
+            case DueStatus.Overdue:
+                return "text-danger text-semibold";
+            default:
+                return "text-interface-strong";
+        }
+    }
+
+    function getConnectorLabelType(): "warning" | "info" | "default" {
+        if (connectionRequestRow.value.connectorDetails?.value === "unassigned") {
+            return "warning";
+        }
+        else if (connectionRequestRow.value.connectorDetails?.value === props.currentPersonIdKey) {
+            return "info";
+        }
+        return "default";
+    }
+
+    function onCardClick(event: MouseEvent): void {
+        // Connection Request cards can only be grouped by status currently.
+        const groupingKey = connectionRequestRow.value.statusGrouping;
+        const requestIdKey = connectionRequestRow.value.idKey;
+
+        if (!groupingKey || isNullOrWhiteSpace(groupingKey) || !requestIdKey || isNullOrWhiteSpace(requestIdKey)) {
+            return;
+        }
+
+        // Ctrl+click (Windows/Linux) or Cmd+click (Mac) toggles multi-select
+        // without opening the docked detail panel.
+        if (event.ctrlKey || event.metaKey) {
+            emit("toggleSelection", groupingKey, requestIdKey);
+            return;
+        }
+
+        emit("selectItem", requestIdKey);
+    }
+
+    /**
+     * Gets the text value for the atttribute field
+     * @param column The column.
+     * @returns A string value or undefined if there is no value.
+     */
+    function getAttributeTextValue(fieldBag: AttributeFieldDefinitionBag): string | undefined {
+        if (!fieldBag.name) {
+            return undefined;
+        }
+
+        const value = props.connectionRequest[fieldBag.name];
+
+        if (!value || typeof value !== "object") {
+            return undefined;
+        }
+
+        if (typeof value["text"] !== "string") {
+            return undefined;
+        }
+
+        return value["text"];
+    }
+
+    function getShortDate(date: string | null | undefined): string {
+        return RockDateTime.parseISO(date ?? "")?.toLocaleString(DateTimeFormat.DateShort) ?? "";
+    }
+
+    function getCustomDateMedium(date: string | null | undefined): string {
+        return RockDateTime.parseISO(date ?? "")?.toLocaleString({ month: "short", day: "numeric" }) ?? "";
+    }
+
+    /** The time elapsed since the specified date in a human-readable format. */
+    function getElapsedShortTime(date: string | null | undefined): string {
+        return RockDateTime.parseISO(date ?? "")?.localDateTime.toElapsedShortString() ?? "";
+    }
+
+</script>

@@ -3,11 +3,11 @@
     <div class="filtervisibilityrules-container">
         <div class="filtervisibilityrules-rulesheader">
             <div class="filtervisibilityrules-type form-inline form-inline-all">
-                <DropDownList v-model="showHide" :items="showHideOptions" :show-blank-item="false" formControlClasses="input-width-sm margin-r-sm" />
-                <div class="form-control-static margin-r-sm">
+                <DropDownList v-model="showHide" :items="showHideOptions" :show-blank-item="false" formControlClasses="input-width-sm" />
+                <div class="form-control-static">
                     <span class="filtervisibilityrules-fieldname">{{ title }}</span><span class="filtervisibilityrules-if"> if</span>
                 </div>
-                <DropDownList v-model="allAny" :items="allAnyOptions" :show-blank-item="false" formControlClasses="input-width-sm margin-r-sm" />
+                <DropDownList v-model="allAny" :items="allAnyOptions" :show-blank-item="false" formControlClasses="input-width-sm" />
                 <span class="form-control-static">of the following match:</span>
             </div>
         </div>
@@ -28,6 +28,15 @@
         </div>
     </div>
 </template>
+
+<style scoped>
+.filtervisibilityrules-type {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--spacing-tiny);
+}
+</style>
 
 <script setup lang="ts">
     import { PropType, ref, watch } from "vue";

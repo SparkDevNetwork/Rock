@@ -1,0 +1,139 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Modal v-model="isVisible"
+           title="Settings"
+           saveText="Save"
+           @save="onSave">
+        <SectionHeader title="Filters" />
+
+        <div class="row">
+            <div class="col-md-12">
+                <SlidingDateRangePicker v-model="dateRange" label="Date Range" />
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-lg-6 col-md-6">
+                <DropDownList v-model="campus" label="Campus" :items="campusItems" :showBlankItem="true" />
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-lg-6 col-md-6">
+                <DropDownList v-model="connectionStatus" label="Connection Status" :items="connectionStatusItems" :showBlankItem="true" />
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-lg-6 col-md-6">
+                <DropDownList v-model="source" label="Original Source" :items="sourceItems" :showBlankItem="true" />
+            </div>
+        </div>
+    </Modal>
+</template>
+
+<script setup lang="ts">
+    import Modal from "@Obsidian/Controls/modal.obs";
+    import SectionHeader from "@Obsidian/Controls/sectionHeader.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import SlidingDateRangePicker from "@Obsidian/Controls/slidingDateRangePicker.obs";
+    import { PropType, ref, watch } from "vue";
+    import { GridSettingsOptions } from "./types.partial";
+    import { useVModelPassthrough } from "@Obsidian/Utility/component";
+    import { deepEqual } from "@Obsidian/Utility/util";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { SlidingDateRange } from "@Obsidian/Utility/slidingDateRange";
+
+    // #region Types
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<GridSettingsOptions>,
+            required: true
+        },
+
+        visible: {
+            type: Boolean as PropType<boolean>,
+            required: true
+        },
+
+        defaultSlidingDateRange: {
+            type: Object as PropType<SlidingDateRange>,
+            required: true
+        },
+
+        campusItems: {
+            type: Array as PropType<ListItemBag[]>,
+            default: () => []
+        },
+
+        connectionStatusItems: {
+            type: Array as PropType<ListItemBag[]>,
+            default: () => []
+        },
+
+        sourceItems: {
+            type: Array as PropType<ListItemBag[]>,
+            default: () => []
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: GridSettingsOptions): void;
+        (e: "update:visible", value: boolean): void;
+        (e: "close"): void;
+    }>();
+
+    // #endregion Types
+
+    // #region Values
+
+    const dateRange = ref<SlidingDateRange | null>(props.modelValue.dateRange ?? props.defaultSlidingDateRange);
+    const campus = ref(props.modelValue.campus ?? "");
+    const connectionStatus = ref(props.modelValue.connectionStatus ?? "");
+    const source = ref(props.modelValue.source ?? "");
+
+    const isVisible = useVModelPassthrough(props, "visible", emit);
+
+    // #endregion Values
+
+    // #region Event Handlers
+
+    /**
+     * Commits the edited filters back to the parent when the modal is saved.
+     */
+    function onSave(): void {
+        const value: GridSettingsOptions = {
+            dateRange: dateRange.value,
+            campus: campus.value,
+            connectionStatus: connectionStatus.value,
+            source: source.value
+        };
+
+        if (!deepEqual(value, props.modelValue, true)) {
+            emit("update:modelValue", value);
+        }
+
+        isVisible.value = false;
+    }
+
+    // #endregion Event Handlers
+
+    // #region Watchers
+
+    // Reset the working copies whenever the bound settings change from the parent.
+    watch(() => props.modelValue, () => {
+        dateRange.value = props.modelValue.dateRange ?? props.defaultSlidingDateRange;
+        campus.value = props.modelValue.campus ?? "";
+        connectionStatus.value = props.modelValue.connectionStatus ?? "";
+        source.value = props.modelValue.source ?? "";
+    });
+
+    watch(isVisible, () => {
+        if (!isVisible.value) {
+            emit("close");
+        }
+    });
+
+    // #endregion Watchers
+</script>

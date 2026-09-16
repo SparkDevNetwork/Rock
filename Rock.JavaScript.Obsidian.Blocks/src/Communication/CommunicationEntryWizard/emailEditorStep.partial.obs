@@ -41,17 +41,19 @@
                 </HighlightLabel>
 
                 <button class="btn btn-panel-action clickable"
-                      :disabled="isDisabled"
-                      @click="onClickPreview">
+                        :disabled="isDisabled"
+                        type="button"
+                        @click="onClickPreview">
                     <i ref="previewElement"
                        data-toggle="tooltip"
                        title="Preview"
                        class="ti ti-eye"></i>
-            </button>
+                </button>
 
                 <button class="btn btn-panel-action clickable"
-                      :disabled="isDisabled"
-                      @click="onSaveCommunication">
+                        :disabled="isDisabled"
+                        type="button"
+                        @click="onSaveCommunication">
                     <i ref="saveElement"
                        data-toggle="tooltip"
                        title="Save Draft"

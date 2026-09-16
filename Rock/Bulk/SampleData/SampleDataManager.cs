@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -14,14 +14,6 @@
 // limitations under the License.
 // </copyright>
 
-using Rock;
-using Rock.Attribute;
-using Rock.Communication;
-using Rock.Data;
-using Rock.Lava;
-using Rock.Logging;
-using Rock.Model;
-using Rock.Web.Cache;
 using System;
 using System.Collections.Generic;
 using System.Data.Entity;
@@ -31,13 +23,23 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Text;
+using System.Threading.Tasks;
 using System.Web;
 using System.Web.UI.WebControls;
 using System.Xml.Linq;
 
-using Microsoft.Extensions.Logging;
-using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
+
+using Rock;
+using Rock.Attribute;
+using Rock.Communication;
+using Rock.Configuration;
+using Rock.Data;
+using Rock.Lava;
+using Rock.Logging;
+using Rock.Model;
+using Rock.Web.Cache;
 
 namespace Rock.Utility
 {
@@ -105,12 +107,12 @@ namespace Rock.Utility
         /// <summary>
         /// Holds the Person Image binary file type.
         /// </summary>
-        private readonly static BinaryFileType _personImageBinaryFileType = new BinaryFileTypeService( new RockContext() ).Get( Rock.SystemGuid.BinaryFiletype.PERSON_IMAGE.AsGuid() );
+        private readonly static BinaryFileType _personImageBinaryFileType = new BinaryFileTypeService( RockApp.Current.CreateRockContext() ).Get( Rock.SystemGuid.BinaryFiletype.PERSON_IMAGE.AsGuid() );
 
         /// <summary>
         /// Holds the Person Image binary file type.
         /// </summary>
-        private readonly static BinaryFileType _checkImageBinaryFileType = new BinaryFileTypeService( new RockContext() ).Get( Rock.SystemGuid.BinaryFiletype.CONTRIBUTION_IMAGE.AsGuid() );
+        private readonly static BinaryFileType _checkImageBinaryFileType = new BinaryFileTypeService( RockApp.Current.CreateRockContext() ).Get( Rock.SystemGuid.BinaryFiletype.CONTRIBUTION_IMAGE.AsGuid() );
 
         /// <summary>
         /// The Person image binary file type settings
@@ -125,12 +127,12 @@ namespace Rock.Utility
         /// <summary>
         /// The id for the "child" role of a family.
         /// </summary>
-        private readonly static int _childRoleId = new GroupTypeRoleService( new RockContext() ).Get( Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_CHILD.AsGuid() ).Id;
+        private readonly static int _childRoleId = new GroupTypeRoleService( RockApp.Current.CreateRockContext() ).Get( Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_CHILD.AsGuid() ).Id;
 
         /// <summary>
         /// The id for the "adult" role of a family.
         /// </summary>
-        private readonly static int _adultRoleId = new GroupTypeRoleService( new RockContext() ).Get( Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT.AsGuid() ).Id;
+        private readonly static int _adultRoleId = new GroupTypeRoleService( RockApp.Current.CreateRockContext() ).Get( Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT.AsGuid() ).Id;
 
         /// <summary>
         /// The Entity Type Id for the Person entities.
@@ -501,7 +503,7 @@ namespace Rock.Utility
                 }
 
                 // since some PostSaveChanges was disabled, call these cleanup tasks
-                using ( var personRockContext = new Rock.Data.RockContext() )
+                using ( var personRockContext = RockApp.Current.CreateRockContext() )
                 {
                     // these should all be pretty quick, but just in case
                     personRockContext.Database.SetCommandTimeout( 180 );
@@ -526,7 +528,7 @@ namespace Rock.Utility
                     // Fire-and-forget in background to prevent blocking
                     Task.Run( () =>
                     {
-                        using ( var backgroundContext = new RockContext() )
+                        using ( var backgroundContext = RockApp.Current.CreateRockContext() )
                         {
                             var serviceJobService = new ServiceJobService( backgroundContext );
                             var job = serviceJobService.Get( Rock.SystemGuid.ServiceJob.UPDATE_PERSISTED_ATTRIBUTE_VALUE );
@@ -975,7 +977,7 @@ namespace Rock.Utility
 
                         attributeState.Key = attributeState.Name.RemoveSpecialCharacters().Replace( " ", string.Empty );
 
-                        new CategoryService( new RockContext() ).Queryable().Where( c => categoryGuids.Contains( c.Guid.ToString() ) ).ToList().ForEach( c => attributeState.Categories.Add( c ) );
+                        new CategoryService( RockApp.Current.CreateRockContext() ).Queryable().Where( c => categoryGuids.Contains( c.Guid.ToString() ) ).ToList().ForEach( c => attributeState.Categories.Add( c ) );
 
                         var attribute = Helper.SaveAttributeEdits( attributeState, new Registration().TypeId, "RegistrationTemplateId", registrationTemplate.Id.ToString(), rockContext );
 
@@ -2208,6 +2210,7 @@ namespace Rock.Utility
             PersonPreviousNameService personPreviousNameService = new PersonPreviousNameService( rockContext );
             ConnectionRequestService connectionRequestService = new ConnectionRequestService( rockContext );
             ConnectionRequestActivityService connectionRequestActivityService = new ConnectionRequestActivityService( rockContext );
+            FollowingService followingService = new FollowingService( rockContext );
 
             // delete the batch data
             List<int> imageIds = new List<int>();
@@ -2261,9 +2264,12 @@ namespace Rock.Utility
                         }
 
                         // delete communication
-                        foreach ( var communication in communicationService.Queryable().Where( c => c.SenderPersonAliasId == person.PrimaryAlias.Id ) )
+                        if ( person.PrimaryAlias != null )
                         {
-                            communicationService.Delete( communication );
+                            foreach ( var communication in communicationService.Queryable().Where( c => c.SenderPersonAliasId == person.PrimaryAlias.Id ) )
+                            {
+                                communicationService.Delete( communication );
+                            }
                         }
 
                         // delete person viewed records
@@ -2273,7 +2279,7 @@ namespace Rock.Utility
                         }
 
                         // delete notes created by them or on their record.
-                        foreach ( var note in noteService.Queryable().Where( n => n.CreatedByPersonAlias.PersonId == person.Id
+                        foreach ( var note in noteService.Queryable().Where( n => ( n.CreatedByPersonAlias != null && n.CreatedByPersonAlias.PersonId == person.Id )
                            || ( n.NoteType.EntityTypeId == _personEntityTypeId && n.EntityId == person.Id ) ) )
                         {
                             noteService.Delete( note );
@@ -2303,10 +2309,16 @@ namespace Rock.Utility
                         }
 
                         // delete any connection requests tied to them
-                        foreach ( var request in connectionRequestService.Queryable().Where( r => r.PersonAlias.PersonId == person.Id || r.ConnectorPersonAlias.PersonId == person.Id ) )
+                        foreach ( var request in connectionRequestService.Queryable().Where( r => ( r.PersonAlias != null && r.PersonAlias.PersonId == person.Id ) || ( r.ConnectorPersonAlias != null && r.ConnectorPersonAlias.PersonId == person.Id ) ) )
                         {
                             connectionRequestActivityService.DeleteRange( request.ConnectionRequestActivities );
                             connectionRequestService.Delete( request );
+                        }
+
+                        // delete any following records tied to them
+                        foreach ( var following in followingService.Queryable().Where( f => f.PersonAlias != null && f.PersonAlias.PersonId == person.Id ) )
+                        {
+                            followingService.Delete( following );
                         }
 
                         // Save these changes so the CanDelete passes the check...
@@ -2460,6 +2472,30 @@ namespace Rock.Utility
                                             attributeService.Delete( attribute );
                                         }
                                     }
+                                }
+                            }
+
+                            /*
+                                3/24/2026 - MSE
+
+                                Delete registration-level attributes tied to this template.
+                                AddRegistrationTemplates creates attributes qualified by
+                                RegistrationTemplateId, but these were not being removed
+                                during the delete phase. On reload, SaveAttributeEdits
+                                attempted to insert a new attribute with the same Guid,
+                                causing a unique index violation on dbo.Attribute.
+
+                                Reason: Prevent duplicate Guid errors when reloading sample data.
+                            */
+                            var registrationEntityTypeId = EntityTypeCache.GetId<Registration>();
+                            if ( registrationEntityTypeId.HasValue )
+                            {
+                                var registrationAttributes = attributeService
+                                    .GetByEntityTypeQualifier( registrationEntityTypeId.Value, "RegistrationTemplateId", registrationTemplate.Id.ToString(), true );
+
+                                foreach ( var attr in registrationAttributes.ToList() )
+                                {
+                                    attributeService.Delete( attr );
                                 }
                             }
 
@@ -2812,6 +2848,8 @@ namespace Rock.Utility
         /// <param name="rockContext">The rock context.</param>
         private void CreateAttendance( ICollection<GroupMember> familyMembers, DateTime startingDate, DateTime endDate, int pctAttendance, int pctAttendedRegularService, int scheduleId, int altScheduleId, Dictionary<Guid, List<Attendance>> attendanceData, RockContext rockContext )
         {
+            var generatedAttendanceCodes = attendanceData.SelectMany( kvp => kvp.Value ).Select( a => a.AttendanceCode.Code ).ToList();
+
             // for each weekend between the starting and ending date...
             for ( DateTime date = startingDate; date <= endDate; date = date.AddDays( 7 ) )
             {
@@ -2857,9 +2895,10 @@ namespace Rock.Utility
                     // Only create one attendance record per day for each person/schedule/group/location
                     AttendanceCode attendanceCode = new AttendanceCode()
                     {
-                        Code = GenerateRandomCode( _securityCodeLength ),
+                        Code = GenerateRandomCode( _securityCodeLength, generatedAttendanceCodes ),
                         IssueDateTime = _args.AttendanceCodeIssuedDateTime ?? RockDateTime.Now,
                     };
+                    Trace.WriteLine( $"Creating Attendance Code {attendanceCode.Code}." );
 
                     var attendance = attendanceService.AddOrUpdate( member.Person.PrimaryAliasId, checkinDateTime, item.GroupId, item.LocationId, scheduleId, 1, _kioskDeviceId, null, null, null, null );
                     attendance.AttendanceCode = attendanceCode;
@@ -2878,12 +2917,24 @@ namespace Rock.Utility
         /// A little method to generate a random sequence of characters of a certain length.
         /// </summary>
         /// <param name="len">length of code to generate</param>
+        /// <param name="existingCodes">The existing codes that have already been generated.</param>
         /// <returns>a random sequence of alpha numeric characters</returns>
-        private static string GenerateRandomCode( int len )
+        private static string GenerateRandomCode( int len, List<string> existingCodes )
         {
-            string chars = "BCDFGHJKMNPQRTVWXYZ0123456789";
-            var code = Enumerable.Range( 0, len ).Select( x => chars[_random.Next( 0, chars.Length )] );
-            return new string( code.ToArray() );
+            string randomCode;
+
+            do
+            {
+                string chars = "BCDFGHJKMNPQRTVWXYZ0123456789";
+                var code = Enumerable.Range( 0, len ).Select( x => chars[_random.Next( 0, chars.Length )] );
+
+                randomCode = new string( code.ToArray() );
+
+            } while ( existingCodes.Contains( randomCode ) );
+
+            existingCodes.Add( randomCode );
+
+            return randomCode;
         }
 
         /// <summary>
@@ -3511,7 +3562,7 @@ namespace Rock.Utility
         }
         private RockContext GetConfiguredDataContext()
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
 
             // Set the timeout to 30 mins, to allow processing of very large datasets.
             rockContext.Database.SetCommandTimeout( 1800 );

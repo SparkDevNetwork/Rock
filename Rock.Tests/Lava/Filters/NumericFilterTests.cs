@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -20,13 +20,25 @@ using System.Globalization;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using Rock.Lava.Fluid;
-using Rock.Tests.Shared;
+using Rock.Tests.Shared.Utility;
 
 namespace Rock.Tests.Lava.Filters
 {
     [TestClass]
     public class NumericFilterTests : LavaUnitTestBase
     {
+        [TestMethod]
+        public void BigIntegerInput_ProducesValidValues()
+        {
+            TestHelper.AssertTemplateOutput( typeof( FluidEngine ), "3536345354364353525", "{{ 3536345354364353525 | Abs }}" );
+            TestHelper.AssertTemplateOutput( typeof( FluidEngine ), "true", "{% if 3536345354364353525 > 3536345354364353520 %}true{% else %}false{% endif %}" );
+            TestHelper.AssertTemplateOutput( typeof( FluidEngine ), "false", "{% if 3536345354364353525 < 3536345354364353520 %}true{% else %}false{% endif %}" );
+            TestHelper.AssertTemplateOutput( typeof( FluidEngine ), "true", "{% if 3536345354364353520 < 3536345354364353525 %}true{% else %}false{% endif %}" );
+            TestHelper.AssertTemplateOutput( typeof( FluidEngine ), "false", "{% if 3536345354364353520 > 3536345354364353525 %}true{% else %}false{% endif %}" );
+            TestHelper.AssertTemplateOutput( typeof( FluidEngine ), $"{9_000_000_000_000_000_000}", $"{{{{ {4_500_000_000_000_000_000} | Times:2 }}}}" );
+            TestHelper.AssertTemplateOutput( typeof( FluidEngine ), "353634535436435352.5", "{{ 3536345354364353525 | DividedBy:10,2 }}" );
+        }
+
         [TestMethod]
         public void Abs_DocumentationExample_ProducesExpectedOutput()
         {

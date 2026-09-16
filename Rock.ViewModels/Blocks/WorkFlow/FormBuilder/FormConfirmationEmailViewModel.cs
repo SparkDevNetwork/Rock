@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -37,6 +37,14 @@ namespace Rock.ViewModels.Blocks.WorkFlow.FormBuilder
         /// recipient of the confirmation e-mail.
         /// </summary>
         public Guid? RecipientAttributeGuid { get; set; }
+
+        /// <summary>
+        /// Identifies whether the resolved primary person, the primary
+        /// person's spouse, or both receive the confirmation e-mail.
+        /// Defaults to <see cref="FormConfirmationEmailRecipientType.Person"/>
+        /// for backward compatibility.
+        /// </summary>
+        public FormConfirmationEmailRecipientType Recipient { get; set; } = FormConfirmationEmailRecipientType.Person;
 
         /// <summary>
         /// Determines how the content of the e-mail will be generated.

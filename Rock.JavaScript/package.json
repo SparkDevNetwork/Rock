@@ -1,5 +1,9 @@
 {
   "private": true,
+  "engines": {
+    "node": ">=24.5.0",
+    "npm": ">=11.5.0"
+  },
   "scripts": {
     "prebuild": "rimraf ../RockWeb/Scripts/Rock/Monaco",
     "build": "webpack --no-color && webpack --config ./webpack.config.monaco.js --no-color",

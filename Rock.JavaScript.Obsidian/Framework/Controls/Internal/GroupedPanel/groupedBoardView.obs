@@ -1,0 +1,432 @@
+<template>
+    <div ref="boardViewRef" class="grouped-board-view">
+        <GroupedBoardColumn v-for="group in groups"
+                            :key="group.key ?? ''"
+                            :group="group"
+                            :dragSourceOptions="dragSourceOptions"
+                            :isDragging="isDragging">
+            <template #boardCard="slotProps">
+                <slot name="boardCard" v-bind="slotProps" />
+            </template>
+            <template #emptyColumn>
+                <slot name="emptyColumn" />
+            </template>
+        </GroupedBoardColumn>
+    </div>
+</template>
+
+<style scoped>
+.grouped-board-view {
+    display: flex;
+    gap: var(--spacing-large);
+    overflow-x: auto;
+    height: 100%;
+    padding-bottom: var(--spacing-xsmall);
+}
+</style>
+
+<style>
+/* Dragula mirror and transit styles — must not be scoped. */
+.gu-mirror {
+    cursor: grabbing;
+    box-shadow: 0 0 0 1px var(--color-primary);
+    border-radius: var(--rounded-small);
+    transform: rotate(-5deg);
+}
+
+.gu-transit {
+    opacity: 0.3;
+    pointer-events: none;
+}
+
+body.is-dragging,
+body.is-dragging * {
+    cursor: grabbing !important;
+}
+
+/* Let the pointer fall through the drag mirror so edge auto-scroll can resolve
+   the column beneath the cursor via elementFromPoint. Dragula hides the mirror
+   during its own hit testing, so this does not affect drop detection. */
+body.is-dragging .gu-mirror {
+    pointer-events: none;
+}
+
+/* Group-drag styling — only applied when multiple selected cards are moving together. */
+.gu-mirror.multi-drag-preview {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--color-interface-softest);
+    border: 1px solid var(--color-primary);
+    border-radius: var(--rounded-small);
+    color: var(--color-primary);
+    opacity: 0.9;
+    pointer-events: none;
+}
+
+.gu-mirror.multi-drag-preview .multi-drag-icon {
+    font-size: var(--font-size-h3);
+}
+
+.gu-mirror.multi-drag-preview .multi-drag-badge {
+    position: absolute;
+    top: -10px;
+    right: -10px;
+    min-width: 26px;
+    height: 26px;
+    padding: 0 var(--spacing-xsmall);
+    border-radius: 999px;
+    background-color: var(--color-primary);
+    color: var(--color-primary-text, #fff);
+    font-size: var(--font-size-xsmall);
+    font-weight: var(--font-weight-semibold);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+    z-index: 1;
+}
+</style>
+
+<script setup lang="ts">
+    import { computed, nextTick, onBeforeUnmount, PropType, ref } from "vue";
+    import { IDragSourceOptions } from "@Obsidian/Directives/dragDrop";
+    import { newGuid } from "@Obsidian/Utility/guid";
+    import { GroupedGrid } from "./types.partial";
+    import GroupedBoardColumn from "./groupedBoardColumn.partial.obs";
+
+    const props = defineProps({
+        /** The pre-computed groups to render as board columns. */
+        groups: {
+            type: Array as PropType<GroupedGrid[]>,
+            required: true
+        },
+
+        /**
+         * Optional callback that determines whether a card from
+         * sourceGroupKey can be dropped onto targetGroupKey. When
+         * undefined all columns accept drops (default behavior).
+         */
+        canDropOnGroup: {
+            type: Function as PropType<((sourceGroupKey: string, targetGroupKey: string) => boolean) | undefined>,
+            required: false,
+            default: undefined
+        },
+
+        /**
+         * Optional callback invoked at drag start to determine whether
+         * the card being dragged is part of a multi-card selection. When
+         * true, the drag mirror and transit preview get group-drag styling.
+         */
+        isGroupDrag: {
+            type: Function as PropType<((idKey: string) => boolean) | undefined>,
+            required: false,
+            default: undefined
+        },
+
+        /** Number of selected cards to display on the group-drag badge. */
+        selectedCount: {
+            type: Number,
+            required: false,
+            default: 0
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "cardMoved", idKey: string, fromGroupKey: string, toGroupKey: string, beforeIdKey: string | null): void;
+    }>();
+
+    const boardViewRef = ref<HTMLElement | null>(null);
+
+    /** True while a card is being dragged; passed to columns so they render
+     *  every row (disable virtualization) for the duration of the drag. */
+    const isDragging = ref(false);
+
+    // #region Auto Scroll
+
+    /** Distance from an edge, in pixels, at which auto-scroll begins. */
+    const autoScrollEdgeSize = 60;
+
+    /** The fastest a surface scrolls (pixels per frame) at the very edge. */
+    const autoScrollMaxSpeed = 18;
+
+    let autoScrollPointerX = 0;
+    let autoScrollPointerY = 0;
+    let autoScrollFrameId: number | null = null;
+
+    /**
+     * Converts a pointer's distances to the two edges of an axis into a signed
+     * scroll delta: negative toward the start edge, positive toward the end
+     * edge, and zero when the pointer is clear of both edges. Speed ramps up the
+     * closer the pointer gets to an edge.
+     */
+    function edgeScrollDelta(distanceFromStart: number, distanceFromEnd: number): number {
+        if (distanceFromStart < autoScrollEdgeSize) {
+            const intensity = Math.min(Math.max((autoScrollEdgeSize - distanceFromStart) / autoScrollEdgeSize, 0), 1);
+            return -autoScrollMaxSpeed * intensity;
+        }
+
+        if (distanceFromEnd < autoScrollEdgeSize) {
+            const intensity = Math.min(Math.max((autoScrollEdgeSize - distanceFromEnd) / autoScrollEdgeSize, 0), 1);
+            return autoScrollMaxSpeed * intensity;
+        }
+
+        return 0;
+    }
+
+    /**
+     * How far to scroll the board strip horizontally this frame, based on the
+     * pointer's proximity to the strip's left/right edges. Zero when the strip
+     * has no horizontal overflow or the pointer is above or below it.
+     */
+    function getHorizontalScrollDelta(): number {
+        const container = boardViewRef.value;
+
+        if (!container || container.scrollWidth <= container.clientWidth) {
+            return 0;
+        }
+
+        const rect = container.getBoundingClientRect();
+
+        if (autoScrollPointerY < rect.top || autoScrollPointerY > rect.bottom) {
+            return 0;
+        }
+
+        return edgeScrollDelta(autoScrollPointerX - rect.left, rect.right - autoScrollPointerX);
+    }
+
+    /**
+     * The column body currently under the pointer, or null when the pointer is
+     * not over one. Resolved via elementFromPoint so the correct column scrolls
+     * as the cursor crosses between columns; the drag mirror has pointer-events
+     * disabled (see the stylesheet) so it never masks the column beneath it.
+     */
+    function getColumnUnderPointer(): HTMLElement | null {
+        const elementUnderPointer = document.elementFromPoint(autoScrollPointerX, autoScrollPointerY);
+
+        return (elementUnderPointer?.closest(".board-column-body") as HTMLElement | null) ?? null;
+    }
+
+    /**
+     * How far to scroll the given column vertically this frame, based on the
+     * pointer's proximity to the column's top/bottom edges. Zero when the column
+     * has no vertical overflow.
+     */
+    function getVerticalScrollDelta(column: HTMLElement): number {
+        if (column.scrollHeight <= column.clientHeight) {
+            return 0;
+        }
+
+        const rect = column.getBoundingClientRect();
+
+        return edgeScrollDelta(autoScrollPointerY - rect.top, rect.bottom - autoScrollPointerY);
+    }
+
+    /**
+     * Applies one frame of scrolling to whichever surfaces the pointer is
+     * pressing against and reschedules itself while any edge stays active. Once
+     * the pointer leaves every edge the loop ends, so no frames are spent while
+     * idle. Holding still at an edge keeps scrolling because the tick reschedules
+     * on its own, not on pointer movement.
+     */
+    function autoScrollTick(): void {
+        const horizontalDelta = getHorizontalScrollDelta();
+
+        const column = getColumnUnderPointer();
+        const verticalDelta = column ? getVerticalScrollDelta(column) : 0;
+
+        if (horizontalDelta === 0 && verticalDelta === 0) {
+            autoScrollFrameId = null;
+            return;
+        }
+
+        if (horizontalDelta !== 0 && boardViewRef.value) {
+            boardViewRef.value.scrollLeft += horizontalDelta;
+        }
+
+        if (verticalDelta !== 0 && column) {
+            column.scrollTop += verticalDelta;
+        }
+
+        autoScrollFrameId = requestAnimationFrame(autoScrollTick);
+    }
+
+    /**
+     * Records the pointer position during a drag and, only on the transition
+     * into an edge zone, starts the scroll loop. While idle no frames run.
+     *
+     * @param event The pointer move event fired during the drag.
+     */
+    function onAutoScrollPointerMove(event: PointerEvent): void {
+        autoScrollPointerX = event.clientX;
+        autoScrollPointerY = event.clientY;
+
+        if (autoScrollFrameId !== null) {
+            return;
+        }
+
+        const column = getColumnUnderPointer();
+        const needsScroll = getHorizontalScrollDelta() !== 0
+            || (column !== null && getVerticalScrollDelta(column) !== 0);
+
+        if (needsScroll) {
+            autoScrollFrameId = requestAnimationFrame(autoScrollTick);
+        }
+    }
+
+    /** Starts listening for pointer moves so edges can trigger auto-scroll. */
+    function startAutoScroll(): void {
+        document.addEventListener("pointermove", onAutoScrollPointerMove);
+        document.addEventListener("pointerup", stopAutoScroll);
+        document.addEventListener("pointercancel", stopAutoScroll);
+    }
+
+    /** Stops the pointer listeners and any in-progress scroll loop. */
+    function stopAutoScroll(): void {
+        document.removeEventListener("pointermove", onAutoScrollPointerMove);
+        document.removeEventListener("pointerup", stopAutoScroll);
+        document.removeEventListener("pointercancel", stopAutoScroll);
+
+        if (autoScrollFrameId !== null) {
+            cancelAnimationFrame(autoScrollFrameId);
+            autoScrollFrameId = null;
+        }
+    }
+
+    // A drag can be interrupted by the component unmounting, so always clean up.
+    onBeforeUnmount(stopAutoScroll);
+
+    // #endregion Auto Scroll
+
+    // #region Drag and Drop
+
+    const dragId = newGuid();
+
+    /** Shared drag source options for all board columns. A single id links
+     *  every column as both a source and a target so cards can move freely. */
+    const dragSourceOptions = computed<IDragSourceOptions>(() => ({
+        id: dragId,
+        copyElement: false,
+
+        startDrag(operation) {
+            // Prevent the empty-column placeholder from being dragged.
+            return !(operation.element as HTMLElement).classList.contains("board-column-empty");
+        },
+
+        acceptDrop(operation) {
+            if (!props.canDropOnGroup) {
+                return true;
+            }
+
+            const sourceKey = (operation.sourceContainer as HTMLElement)?.dataset.groupKey;
+            const targetKey = (operation.targetContainer as HTMLElement)?.dataset.groupKey;
+
+            if (!sourceKey || !targetKey) {
+                return false;
+            }
+
+            return props.canDropOnGroup(sourceKey, targetKey);
+        },
+
+        dragBegin(operation) {
+            document.body.classList.add("is-dragging");
+
+            // Render every card for the duration of the drag, then start
+            // watching the pointer for edge auto-scroll. Expanding the columns
+            // before the first drag move keeps the rendered set constant, so the
+            // virtual scroller never churns the DOM while Dragula is
+            // manipulating it (which would corrupt reordering).
+            isDragging.value = true;
+            startAutoScroll();
+
+            // Detect group drag: dragged card is part of a multi-card selection.
+            // Enables body.is-group-drag CSS styling for transit, and decorates
+            // the mirror with a stacked look and a count badge.
+            const idKey = (operation.element as HTMLElement).dataset.idKey;
+            const isGroup = !!(idKey && props.isGroupDrag?.(idKey));
+
+            if (isGroup) {
+                // Dragula clones the mirror after this hook; wait a tick before
+                // decorating it.
+                const count = props.selectedCount;
+                nextTick(() => {
+                    const mirror = document.querySelector(".gu-mirror") as HTMLElement | null;
+                    if (!mirror) {
+                        return;
+                    }
+
+                    mirror.classList.add("multi-drag-preview");
+                    mirror.innerHTML = `
+                        <div class="multi-drag-icon">
+                            <i class="ti ti-users"></i>
+                        </div>
+                        <div class="multi-drag-badge">${count}</div>
+                    `;
+                });
+            }
+
+            // When a drop constraint callback is provided, mark columns
+            // that cannot accept the dragged card so they appear disabled.
+            if (props.canDropOnGroup) {
+                const sourceKey = (operation.sourceContainer as HTMLElement)?.dataset.groupKey ?? "";
+
+                boardViewRef.value?.querySelectorAll<HTMLElement>(".board-column-body").forEach(body => {
+                    const targetKey = body.dataset.groupKey ?? "";
+
+                    if (targetKey !== sourceKey && !props.canDropOnGroup!(sourceKey, targetKey)) {
+                        body.closest(".board-column")?.classList.add("drag-disabled");
+                    }
+                });
+            }
+        },
+
+        dragOver(operation) {
+            operation.targetContainer?.closest(".board-column")?.classList.add("drag-over");
+        },
+
+        dragOut(operation) {
+            operation.targetContainer?.closest(".board-column")?.classList.remove("drag-over");
+        },
+
+        dragEnd() {
+            document.body.classList.remove("is-dragging");
+            stopAutoScroll();
+            isDragging.value = false;
+
+            // Safety cleanup of all highlights.
+            document.querySelectorAll(".board-column.drag-over")
+                .forEach(el => el.classList.remove("drag-over"));
+            document.querySelectorAll(".board-column.drag-disabled")
+                .forEach(el => el.classList.remove("drag-disabled"));
+        },
+
+        dragDrop(operation) {
+            const element = operation.element as HTMLElement;
+            const sourceContainer = operation.sourceContainer as HTMLElement;
+            const targetContainer = operation.targetContainer as HTMLElement | undefined;
+
+            const idKey = element.dataset.idKey;
+            const fromGroupKey = sourceContainer.dataset.groupKey;
+            const toGroupKey = targetContainer?.dataset.groupKey;
+
+            // Get the idKey of the card this was dropped before (null = end of column).
+            const targetSibling = operation.targetSibling as HTMLElement | undefined;
+            const beforeIdKey = targetSibling?.dataset?.idKey ?? null;
+
+            if (!idKey || !fromGroupKey || !toGroupKey) {
+                return;
+            }
+
+            // Revert Dragula's DOM mutation — let Vue re-render from data.
+            operation.element.remove();
+            operation.sourceContainer.insertBefore(
+                operation.element,
+                operation.sourceSibling ?? null
+            );
+
+            emit("cardMoved", idKey, fromGroupKey, toGroupKey, beforeIdKey);
+        }
+    }));
+
+    // #endregion
+</script>

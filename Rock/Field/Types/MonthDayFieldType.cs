@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -19,6 +19,7 @@ using System.Linq;
 #if WEBFORMS
 using System.Web.UI;
 #endif
+
 using Rock.Attribute;
 using Rock.Web.UI.Controls;
 
@@ -34,6 +35,20 @@ namespace Rock.Field.Types
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.MONTH_DAY )]
     public class MonthDayFieldType : FieldType
     {
+        #region Value Hinting
+
+        /// <inheritdoc/>
+        internal override FieldTypeHints GetFieldHints( Dictionary<string, string> privateConfigurationValues )
+        {
+            return new FieldTypeHints
+            {
+                IsCompleteList = false,
+                ValueFormat = "A month and a day separated by a slash, written as M/d and never with a year, as in 3/14 for the fourteenth of March. The order is always month then day regardless of the server's culture, even though the value is displayed in culture specific form."
+            };
+        }
+
+        #endregion
+
         #region WebForms
 #if WEBFORMS
 

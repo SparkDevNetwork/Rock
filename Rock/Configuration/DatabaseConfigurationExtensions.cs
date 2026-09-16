@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -58,6 +58,10 @@ namespace Rock.Configuration
             else if ( database.VersionNumber.StartsWith( "16.0" ) )
             {
                 return "SQL Server 2022";
+            }
+            else if ( database.VersionNumber.StartsWith( "17.0" ) )
+            {
+                return "SQL Server 2025";
             }
             else
             {

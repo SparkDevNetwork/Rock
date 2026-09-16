@@ -1,0 +1,542 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <fieldset>
+        <div class="row">
+            <div class="col-md-6 d-flex flex-column gap-2">
+                <div class="row">
+                    <div class="col-md-6">
+                        <PersonPicker v-model="personAlias"
+                                      label="Person"
+                                      rules="required" />
+                    </div>
+                    <div class="col-md-6">
+                        <Toggle v-if="props.modelValue.bag?.isWaitListEnabled"
+                                v-model="isOnWaitList"
+                                label="Status"
+                                trueText="Wait List"
+                                falseText="Registrant"
+                                activeButtonCssClass="btn-info"
+                                buttonSizeCssClass="btn-xs"
+                                help="Moving someone from a wait list here will not send any emails to them. To send a formatted email use the Wait List tab." />
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <CurrencyBox v-model="cost"
+                                     label="Cost" />
+                    </div>
+
+                    <div class="col-md-6">
+                        <CheckBox v-model="discountApplies"
+                                  label="Discount Applies"
+                                  help="If there was a discount code used for the registration, should it apply to this registrant?" />
+                    </div>
+                </div>
+
+                <AttributeValuesContainer v-if="hasAttributes"
+                                          v-model="attributeValues"
+                                          :attributes="visibleAttributes"
+                                          isEditMode
+                                          :numberOfColumns="1" />
+                <FileUploader v-if="props.modelValue.bag?.signatureDocumentTemplateName"
+                              v-model="signatureDocumentBinaryFile"
+                              :label="props.modelValue.bag?.signatureDocumentTemplateName ?? 'Signature Document'"
+                              :binaryFileTypeGuid="props.modelValue.bag?.signatureDocumentTemplateBinaryFileTypeGuid ?? undefined"
+                              :uploadAsTemporary="true"
+                              :showDeleteButton="false" />
+            </div>
+
+            <div class="col-md-6" v-if="props.options.fees && props.options.fees.length > 0">
+                <ContentSection title="Fees" :disableCollapse="true">
+                    <ContentStack v-for="fee in props.options.fees" :key="fee.id">
+
+                        <!-- Multiple Items - Pick One -->
+                        <template v-if="fee.feeType === RegistrationFeeType.Multiple && !fee.allowMultiple">
+                            <div v-if="!isFeeHidden(fee)" class="dropdown-container">
+                                <DropDownList
+                                              :disabled="isFeeDisabled(fee)"
+                                              :modelValue="getSelectedFeeItemId(fee)"
+                                              @update:modelValue="setSelectedFeeItem(fee, $event)"
+                                              :label="fee.name ?? ''"
+                                              :items="feeDropdownItems(fee)"
+                                              showBlankItem />
+                            </div>
+                        </template>
+
+                        <!-- Multiple Items - Allow Pick Quantity -->
+                        <template v-else-if="fee.feeType === RegistrationFeeType.Multiple && fee.allowMultiple">
+                            <template v-if="!isFeeHidden(fee)">
+                                <template v-for="item in fee.items ?? []" :key="item.id">
+                                    <NumberUpDown
+                                                  v-if="!isFeeItemHidden(fee, item)"
+                                                  :disabled="isFeeItemDisabled(fee, item)"
+                                                  :modelValue="getFeeQuantity(fee.id, item.id)"
+                                                  @update:modelValue="setFeeQuantity(fee.id, item.id, $event)"
+                                                  :label="feeItemLabel(fee.id, item)"
+                                                  :min="0"
+                                                  :max="getMaxQuantity(fee.id, item) ?? undefined" />
+                                </template>
+                            </template>
+                        </template>
+
+                        <!-- Single Item - Only 1 Allowed -->
+                        <div v-else-if="fee.feeType === RegistrationFeeType.Single
+                            && !fee.allowMultiple
+                            && fee.items
+                            && fee.items.length > 0
+                            && !isFeeHidden(fee)"
+                             :class="{ 'disabled': isFeeDisabled(fee) }">
+                            <CheckBox
+                                      :modelValue="getFeeChecked(fee.id, fee.items[0].id)"
+                                      @update:modelValue="setFeeChecked(fee.id, fee.items[0], $event)"
+                                      :label="feeItemLabel(fee.id, fee.items[0], fee.name ?? '')" />
+                        </div>
+
+                        <!-- Single Item - Multiple Allowed -->
+                        <NumberUpDown v-else-if="fee.feeType === RegistrationFeeType.Single
+                            && fee.allowMultiple
+                            && fee.items
+                            && fee.items.length > 0"
+                                      :modelValue="getFeeQuantity(fee.id, fee.items[0].id)"
+                                      @update:modelValue="setFeeQuantity(fee.id, fee.items[0].id, $event)"
+                                      :label="feeItemLabel(fee.id, fee.items[0], fee.name ?? '')"
+                                      :min="0"
+                                      :max="getMaxQuantity(fee.id, fee.items[0]) ?? undefined" />
+                    </ContentStack>
+                </ContentSection>
+            </div>
+        </div>
+
+        <NotificationBox v-if="props.modelValue.bag?.hasExistingSignatureDocument"
+                         alertType="info">
+            An existing valid signature document was found for this person and will be associated with this registrant.
+        </NotificationBox>
+    </fieldset>
+</template>
+
+<style scoped>
+.disabled {
+    opacity: 0.6;
+    pointer-events: none;
+}
+
+.dropdown-container {
+    min-width: 150px;
+    width: fit-content;
+}
+</style>
+
+<script setup lang="ts">
+    import { computed, PropType, ref, watch } from "vue";
+    import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import CurrencyBox from "@Obsidian/Controls/currencyBox.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import FileUploader from "@Obsidian/Controls/fileUploader.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import NumberUpDown from "@Obsidian/Controls/numberUpDown.obs";
+    import PersonPicker from "@Obsidian/Controls/personPicker.obs";
+    import Toggle from "@Obsidian/Controls/toggle.obs";
+    import { setPropertiesBoxValue, watchPropertyChanges } from "@Obsidian/Utility/block";
+    import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
+    import { getFieldType } from "@Obsidian/Utility/fieldTypes";
+    import { toCurrencyOrNull } from "@Obsidian/Utility/numberUtils";
+    import { ComparisonValue } from "@Obsidian/Types/Reporting/comparisonValue";
+    import { FilterExpressionType } from "@Obsidian/Enums/Reporting/filterExpressionType";
+    import { RegistrationFeeType } from "@Obsidian/Enums/Event/registrationFeeType";
+    import { RegistrantAttributeVisibilityBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrantDetail/registrantAttributeVisibilityBag";
+    import { RegistrantAttributeVisibilityRuleBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrantDetail/registrantAttributeVisibilityRuleBag";
+    import { RegistrantBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrantDetail/registrantBag";
+    import { RegistrantDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrantDetail/registrantDetailOptionsBag";
+    import { RegistrantFeeBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrantDetail/registrantFeeBag";
+    import { RegistrationTemplateFeeBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrantDetail/registrationTemplateFeeBag";
+    import { RegistrationTemplateFeeItemBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrantDetail/registrationTemplateFeeItemBag";
+    import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
+    import { PublicComparisonValueBag } from "@Obsidian/ViewModels/Utility/publicComparisonValueBag";
+    import ContentSection from "@Obsidian/Controls/contentSection.obs";
+    import ContentStack from "@Obsidian/Controls/contentStack.obs";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<ValidPropertiesBox<RegistrantBag>>,
+            required: true
+        },
+
+        options: {
+            type: Object as PropType<RegistrantDetailOptionsBag>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: ValidPropertiesBox<RegistrantBag>): void,
+        (e: "propertyChanged", value: string): void
+    }>();
+
+    // #region Values
+
+    const personAlias = propertyRef<ListItemBag | undefined>(props.modelValue.bag?.personAlias ?? undefined, "PersonAlias");
+    const cost = propertyRef(props.modelValue.bag?.cost ?? 0, "Cost");
+    const discountApplies = propertyRef(props.modelValue.bag?.discountApplies ?? false, "DiscountApplies");
+    const isOnWaitList = propertyRef(props.modelValue.bag?.isOnWaitList ?? false, "IsOnWaitList");
+
+    const signatureDocumentBinaryFile = propertyRef<ListItemBag | null>(
+        props.modelValue.bag?.signatureDocumentBinaryFileId
+            ? { value: props.modelValue.bag.signatureDocumentBinaryFileId, text: props.modelValue.bag.signatureDocumentBinaryFileName ?? "" }
+            : null,
+        "SignatureDocumentBinaryFileId"
+    );
+
+    const attributes = ref(props.modelValue.bag?.attributes ?? {});
+    const attributeValues = ref(props.modelValue.bag?.attributeValues ?? {});
+
+    // Keyed as "feeId_feeItemId" → quantity (0 = not selected).
+    const feeQuantities = ref<Record<string, number>>(buildFeeQuantities());
+
+    // Snapshot of the DB-loaded quantities taken once at init. Used by the hide
+    // logic so that an item the registrant already held stays visible for the whole
+    // editing session, even if they reduce its quantity to zero mid-edit.
+    const initialFeeQuantities = buildFeeQuantities();
+
+    const propRefs = [personAlias, cost, discountApplies, isOnWaitList, signatureDocumentBinaryFile];
+
+    // #endregion
+
+    // #region Computed Values
+
+    const hasAttributes = computed((): boolean => {
+        return Object.keys(attributes.value).length > 0;
+    });
+
+    /**
+     * The attributes to actually render, with any whose field visibility rules are
+     * not currently met filtered out. Because this derives from attributeValues, it
+     * recomputes as the user edits, so dependent fields show and hide live — mirroring
+     * the legacy WebForms FieldVisibilityWrapper behavior.
+     */
+    const visibleAttributes = computed((): Record<string, PublicAttributeBag> => {
+        const rules = props.modelValue.bag?.attributeVisibilityRules ?? {};
+        const result: Record<string, PublicAttributeBag> = {};
+
+        for (const [key, attribute] of Object.entries(attributes.value)) {
+            if (isAttributeVisible(rules[key])) {
+                result[key] = attribute;
+            }
+        }
+
+        return result;
+    });
+
+    // #endregion
+
+    // #region Attribute Visibility
+
+    /**
+     * Determines whether an attribute should be shown given its visibility rule set.
+     * Attributes with no rules are always visible. The rules are combined according to
+     * the filter expression type (all, any, all-false, any-false).
+     */
+    function isAttributeVisible(visibility: RegistrantAttributeVisibilityBag | undefined): boolean {
+        if (!visibility?.rules || visibility.rules.length === 0) {
+            return true;
+        }
+
+        switch (visibility.filterExpressionType) {
+            case FilterExpressionType.GroupAll:
+                return visibility.rules.every(rule => isRuleMet(rule));
+            case FilterExpressionType.GroupAllFalse:
+                return visibility.rules.every(rule => !isRuleMet(rule));
+            case FilterExpressionType.GroupAny:
+                return visibility.rules.some(rule => isRuleMet(rule));
+            case FilterExpressionType.GroupAnyFalse:
+                return visibility.rules.some(rule => !isRuleMet(rule));
+            default:
+                return true;
+        }
+    }
+
+    /**
+     * Evaluates a single visibility rule against the current value of its compared-to
+     * attribute, delegating the actual comparison to that attribute's field type.
+     */
+    function isRuleMet(rule: RegistrantAttributeVisibilityRuleBag): boolean {
+        const comparedToKey = rule.comparedToAttributeKey;
+        if (!comparedToKey) {
+            return false;
+        }
+
+        const comparedToAttribute = attributes.value[comparedToKey];
+        if (!comparedToAttribute?.fieldTypeGuid) {
+            return false;
+        }
+
+        const fieldType = getFieldType(comparedToAttribute.fieldTypeGuid);
+        if (!fieldType || !rule.comparisonValue) {
+            return false;
+        }
+
+        const value = attributeValues.value[comparedToKey] ?? "";
+
+        return fieldType.doesValueMatchFilter(
+            value,
+            convertComparisonValue(rule.comparisonValue),
+            comparedToAttribute.configurationValues ?? {});
+    }
+
+    /** Converts the bag comparison value into the shape the field type filter expects. */
+    function convertComparisonValue(value: PublicComparisonValueBag): ComparisonValue {
+        return {
+            value: value.value ?? "",
+            comparisonType: value.comparisonType
+        };
+    }
+
+    // #endregion
+
+    // #region Fee Helpers
+
+    /**
+     * Returns the maximum quantity this registrant may select for a fee item.
+     * Used as the :max binding on NumberUpDown.
+     *
+     * The server's countRemaining already deducts this registrant's initialQty,
+     * so the true ceiling is countRemaining + initialQty (open slots plus what
+     * they already hold). This value is static for the life of the edit session.
+     */
+    function getMaxQuantity(feeId: number, item: RegistrationTemplateFeeItemBag): number | null {
+        if (item.countRemaining == null) {
+            return null;
+        }
+
+        const initialQty = initialFeeQuantities[feeKey(feeId, item.id)] ?? 0;
+        return item.countRemaining + initialQty;
+    }
+
+    /**
+     * Returns how many more of this fee item can be added given the registrant's
+     * current quantity. Used for labels and disable/hide decisions.
+     *
+     *   effectiveRemaining = getMaxQuantity - currentQty
+     */
+    function getEffectiveCountRemaining(feeId: number, item: RegistrationTemplateFeeItemBag): number | null {
+        const max = getMaxQuantity(feeId, item);
+        if (max == null) {
+            return null;
+        }
+
+        return Math.max(0, max - getFeeQuantity(feeId, item.id));
+    }
+
+    /**
+     * Returns true when the fee wrapper should be hidden.
+     * Hides only when HideWhenNoneRemaining is set and every item has zero
+     * effective remaining and zero current quantity.
+     */
+    function isFeeHidden(fee: RegistrationTemplateFeeBag): boolean {
+        if (!fee.hideWhenNoneRemaining) {
+            return false;
+        }
+
+        return (fee.items ?? []).every(item => {
+            const remaining = getEffectiveCountRemaining(fee.id, item);
+            return remaining != null && remaining <= 0 && getFeeQuantity(fee.id, item.id) === 0;
+        });
+    }
+
+    /**
+     * Returns true when the fee control should be shown disabled.
+     * Disables only when HideWhenNoneRemaining is NOT set and every item has
+     * zero effective remaining and zero current quantity.
+     */
+    function isFeeDisabled(fee: RegistrationTemplateFeeBag): boolean {
+        if (fee.hideWhenNoneRemaining) {
+            return false;
+        }
+
+        return (fee.items ?? []).every(item => {
+            const remaining = getEffectiveCountRemaining(fee.id, item);
+            return remaining != null && remaining <= 0 && getFeeQuantity(fee.id, item.id) === 0;
+        });
+    }
+
+    function isFeeItemDisabled(fee: RegistrationTemplateFeeBag, item: RegistrationTemplateFeeItemBag): boolean {
+        const remaining = getEffectiveCountRemaining(fee.id, item);
+        return remaining != null && remaining <= 0 && getFeeQuantity(fee.id, item.id) === 0;
+    }
+
+    function isFeeItemHidden(fee: RegistrationTemplateFeeBag, item: RegistrationTemplateFeeItemBag): boolean {
+        return fee.hideWhenNoneRemaining && isFeeItemDisabled(fee, item);
+    }
+
+    function feeKey(feeId: number, feeItemId: number): string {
+        return `${feeId}_${feeItemId}`;
+    }
+
+    function getFeeQuantity(feeId: number, feeItemId: number): number {
+        return feeQuantities.value[feeKey(feeId, feeItemId)] ?? 0;
+    }
+
+    function setFeeQuantity(feeId: number, feeItemId: number, quantity: number): void {
+        feeQuantities.value = { ...feeQuantities.value, [feeKey(feeId, feeItemId)]: quantity };
+    }
+
+    function getFeeChecked(feeId: number, feeItemId: number): boolean {
+        return getFeeQuantity(feeId, feeItemId) > 0;
+    }
+
+    function setFeeChecked(feeId: number, item: RegistrationTemplateFeeItemBag, checked: boolean): void {
+        setFeeQuantity(feeId, item.id, checked ? 1 : 0);
+    }
+
+    /** Returns the string feeItemId of the currently selected item for a dropdown fee, or "" if none. */
+    function getSelectedFeeItemId(fee: RegistrationTemplateFeeBag): string {
+        for (const item of fee.items ?? []) {
+            if (getFeeQuantity(fee.id, item.id) > 0) {
+                return item.id.toString();
+            }
+        }
+
+        return "";
+    }
+
+    /** Sets quantity=1 on the selected item and clears all other items for a dropdown fee. */
+    function setSelectedFeeItem(fee: RegistrationTemplateFeeBag, itemIdValue: string | string[]): void {
+        const itemIdStr = Array.isArray(itemIdValue)
+            ? itemIdValue[0] ?? ""
+            : itemIdValue;
+
+        const selectedId = parseInt(itemIdStr) || 0;
+        const updates: Record<string, number> = {};
+
+        for (const item of fee.items ?? []) {
+            updates[feeKey(fee.id, item.id)] = item.id === selectedId ? 1 : 0;
+        }
+
+        feeQuantities.value = { ...feeQuantities.value, ...updates };
+    }
+
+    /** Builds ListItemBag[] for a Multiple/!AllowMultiple fee dropdown. */
+    function feeDropdownItems(fee: RegistrationTemplateFeeBag): ListItemBag[] {
+        return (fee.items ?? []).map(item => ({
+            value: item.id.toString(),
+            text: feeItemLabel(fee.id, item),
+            disabled: isFeeItemDisabled(fee, item)
+        }));
+    }
+
+    function buildFeeQuantities(): Record<string, number> {
+        const map: Record<string, number> = {};
+
+        for (const fee of props.modelValue.bag?.fees ?? []) {
+            if (fee.registrationTemplateFeeItemId != null) {
+                map[feeKey(fee.registrationTemplateFeeId, fee.registrationTemplateFeeItemId)] = fee.quantity;
+            }
+            else {
+                // Maintaining Web Forms logic for legacy fees with no item id
+                // if legacy fee with no item id and if single-type, display in form and update item id on save
+                const templateFee = props.options.fees?.find(f => f.id === fee.registrationTemplateFeeId);
+                if (templateFee?.feeType === RegistrationFeeType.Single && (templateFee.items?.length ?? 0) > 0) {
+                    const firstItem = templateFee.items![0];
+                    const key = feeKey(fee.registrationTemplateFeeId, firstItem.id);
+                    if (!(key in map)) {
+                        map[key] = fee.quantity;
+                    }
+                }
+            }
+        }
+
+        return map;
+    }
+
+    function buildFees(): RegistrantFeeBag[] {
+        const fees: RegistrantFeeBag[] = [];
+
+        for (const fee of props.options.fees ?? []) {
+            for (const item of fee.items ?? []) {
+                const qty = getFeeQuantity(fee.id, item.id);
+
+                if (qty > 0) {
+                    fees.push({
+                        registrationTemplateFeeId: fee.id,
+                        registrationTemplateFeeItemId: item.id,
+                        quantity: qty,
+                        cost: item.cost,
+                        option: item.name ?? ""
+                    });
+                }
+            }
+        }
+
+        return fees;
+    }
+
+    function feeItemLabel(feeId: number, item: RegistrationTemplateFeeItemBag, feeName?: string): string {
+        let label = item.name || feeName || "";
+
+        if (item.cost > 0) {
+            label += ` (${formatCurrency(item.cost)})`;
+        }
+
+        const remaining = getEffectiveCountRemaining(feeId, item);
+        if (remaining != null) {
+            if (remaining > 0) {
+                label += ` (${remaining} Remaining)`;
+            }
+            else if (getFeeQuantity(feeId, item.id) === 0) {
+                label += " (None Remaining)";
+            }
+        }
+
+        return label;
+    }
+
+    function formatCurrency(value: number): string {
+        return toCurrencyOrNull(value) ?? `$${value.toFixed(2)}`;
+    }
+
+    // #endregion
+
+    // Watch for parental changes in our model value and update all our values.
+    watch(() => props.modelValue, () => {
+        updateRefValue(personAlias, props.modelValue.bag?.personAlias ?? undefined);
+        updateRefValue(cost, props.modelValue.bag?.cost ?? 0);
+        updateRefValue(discountApplies, props.modelValue.bag?.discountApplies ?? false);
+        updateRefValue(isOnWaitList, props.modelValue.bag?.isOnWaitList ?? false);
+        updateRefValue(signatureDocumentBinaryFile,
+            props.modelValue.bag?.signatureDocumentBinaryFileId
+                ? { value: props.modelValue.bag.signatureDocumentBinaryFileId, text: props.modelValue.bag.signatureDocumentBinaryFileName ?? "" }
+                : null);
+        updateRefValue(attributes, props.modelValue.bag?.attributes ?? {});
+        updateRefValue(attributeValues, props.modelValue.bag?.attributeValues ?? {});
+        updateRefValue(feeQuantities, buildFeeQuantities());
+    });
+
+    // Emit the updated bag whenever any tracked value changes.
+    watch([attributeValues, feeQuantities, ...propRefs], () => {
+        const newValue: ValidPropertiesBox<RegistrantBag> = {
+            bag: { ...props.modelValue.bag } as RegistrantBag
+        };
+
+        setPropertiesBoxValue(newValue, "personAlias", personAlias.value);
+        setPropertiesBoxValue(newValue, "cost", cost.value);
+        setPropertiesBoxValue(newValue, "discountApplies", discountApplies.value);
+        setPropertiesBoxValue(newValue, "isOnWaitList", isOnWaitList.value);
+        setPropertiesBoxValue(newValue, "signatureDocumentBinaryFileId", signatureDocumentBinaryFile.value?.value ?? null);
+
+        // Keep the display-only file name in sync with the selected/uploaded file so it is not
+        // lost when the bag round-trips and the file ref is rebuilt from these two bag fields.
+        if (newValue.bag) {
+            newValue.bag.signatureDocumentBinaryFileName = signatureDocumentBinaryFile.value?.text ?? null;
+        }
+
+        setPropertiesBoxValue(newValue, "attributeValues", attributeValues.value);
+        setPropertiesBoxValue(newValue, "fees", buildFees());
+
+        emit("update:modelValue", newValue);
+    });
+
+    watchPropertyChanges(propRefs, emit);
+</script>

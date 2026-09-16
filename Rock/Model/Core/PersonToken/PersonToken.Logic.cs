@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -17,6 +17,7 @@
 
 using System;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Web.Cache;
 
@@ -65,7 +66,7 @@ namespace Rock.Model
                 return null;
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var person = personAlias.Person;
                 if ( person == null )

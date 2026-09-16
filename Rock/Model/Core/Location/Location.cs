@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -26,8 +26,12 @@ using NetTopologySuite.Geometries;
 using System.Data.Entity.Spatial;
 #endif
 using System.Runtime.Serialization;
+
+using Rock.Configuration;
 using Rock.Data;
+using Rock.Enums.Security;
 using Rock.Lava;
+using Rock.Security;
 using Rock.Web.Cache;
 
 namespace Rock.Model
@@ -63,6 +67,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 100 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.Name )]
         public string Name { get; set; }
 
         /// <summary>
@@ -128,6 +133,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 100 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string Street1 { get; set; }
 
         /// <summary>
@@ -139,6 +145,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 100 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string Street2 { get; set; }
 
         /// <summary>
@@ -150,6 +157,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 50 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string City { get; set; }
 
         /// <summary>
@@ -160,6 +168,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 50 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string County { get; set; }
 
         /// <summary>
@@ -171,6 +180,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 50 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string State { get; set; }
 
         /// <summary>
@@ -182,6 +192,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 50 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string Country { get; set; }
 
         /// <summary>
@@ -193,6 +204,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 50 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string PostalCode { get; set; }
 
         /// <summary>
@@ -203,6 +215,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 40 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string Barcode { get; set; }
 
         /// <summary>
@@ -214,6 +227,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 50 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string AssessorParcelId { get; set; }
 
         /// <summary>
@@ -235,6 +249,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 50 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string StandardizeAttemptedServiceType { get; set; }
 
         /// <summary>
@@ -246,6 +261,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 200 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string StandardizeAttemptedResult { get; set; }
 
         /// <summary>
@@ -277,6 +293,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 50 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string GeocodeAttemptedServiceType { get; set; }
 
         /// <summary>
@@ -288,6 +305,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 200 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string GeocodeAttemptedResult { get; set; }
 
         /// <summary>
@@ -359,6 +377,7 @@ namespace Rock.Model
         /// generated from the location’s address.
         /// </summary>
         [DataMember]
+        [StringValidation( StringValidationProfile.LavaAndBasicHtml )]
         public string Description { get; set; }
 
         #endregion Entity Properties
@@ -470,7 +489,7 @@ namespace Rock.Model
         {
             get
             {
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     return GetCampusId( rockContext );
                 }

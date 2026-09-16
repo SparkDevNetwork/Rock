@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -24,6 +24,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Utility.ExtensionMethods;
 using Rock.Web.Cache;
@@ -291,7 +292,7 @@ namespace Rock
 
             if ( contextType == typeof( Rock.Data.RockContext ) )
             {
-                return new Rock.Data.RockContext();
+                return RockApp.Current.CreateRockContext();
             }
             else
             {
@@ -443,7 +444,7 @@ namespace Rock
                 return null;
             }
 
-            var serviceInstance = GetServiceForEntityType( type, dbContext ?? new RockContext() );
+            var serviceInstance = GetServiceForEntityType( type, dbContext ?? RockApp.Current.CreateRockContext() );
             var getMethod = serviceInstance?.GetType().GetMethod( "Get", new Type[] { typeof( Guid ) } );
             var entity = getMethod?.Invoke( serviceInstance, new object[] { entityGuid } ) as IEntity;
             return entity;
@@ -465,7 +466,7 @@ namespace Rock
                 return null;
             }
 
-            var serviceInstance = GetServiceForEntityType( type, dbContext ?? new RockContext() );
+            var serviceInstance = GetServiceForEntityType( type, dbContext ?? RockApp.Current.CreateRockContext() );
             var getMethod = serviceInstance?.GetType().GetMethod( "Get", new Type[] { typeof( int ) } );
 
             return getMethod?.Invoke( serviceInstance, new object[] { entityId } ) as IEntity;
@@ -554,7 +555,7 @@ namespace Rock
             // If we didn't find the entity id in cache, look it up in the database.
             if ( !entityId.HasValue )
             {
-                var serviceInstance = GetServiceForEntityType( type, dbContext ?? new RockContext() );
+                var serviceInstance = GetServiceForEntityType( type, dbContext ?? RockApp.Current.CreateRockContext() );
                 var getIdMethod = serviceInstance?.GetType().GetMethod( "GetId", new Type[] { typeof( Guid ) } );
 
                 entityId = getIdMethod?.Invoke( serviceInstance, new object[] { entityGuid } ) as int?;
@@ -665,7 +666,7 @@ namespace Rock
             // If we didn't find the entity id in cache, look it up in the database.
             if ( !entityGuid.HasValue )
             {
-                var serviceInstance = GetServiceForEntityType( type, dbContext ?? new RockContext() );
+                var serviceInstance = GetServiceForEntityType( type, dbContext ?? RockApp.Current.CreateRockContext() );
                 var getIdMethod = serviceInstance?.GetType().GetMethod( "GetGuid", new Type[] { typeof( int ) } );
 
                 entityGuid = getIdMethod?.Invoke( serviceInstance, new object[] { entityId } ) as Guid?;
@@ -730,7 +731,7 @@ namespace Rock
 
                 if ( dbContext == null )
                 {
-                    dbContext = new RockContext();
+                    dbContext = RockApp.Current.CreateRockContext();
                     disposeOfContext = true;
                 }
 
@@ -902,7 +903,7 @@ namespace Rock
             // If we didn't find the entity id in cache, look it up in the database.
             if ( !entityId.HasValue )
             {
-                var serviceInstance = GetServiceForEntityType( type, dbContext ?? new RockContext() );
+                var serviceInstance = GetServiceForEntityType( type, dbContext ?? RockApp.Current.CreateRockContext() );
                 var getIdMethod = serviceInstance?.GetType().GetMethod( "GetId", new Type[] { typeof( Guid ) } );
 
                 entityId = getIdMethod?.Invoke( serviceInstance, new object[] { entityGuid.Value } ) as int?;
@@ -1131,7 +1132,7 @@ namespace Rock
                         }
                     }
 
-                    if ( isRockAssembly )
+                    if ( isRockAssembly && IsPluginAssemblyValid( assembly ) )
                     {
                         pluginAssemblies.Add( assembly );
                     }
@@ -1143,6 +1144,39 @@ namespace Rock
             return _pluginAssemblies.ToList();
         }
 
+        /// <summary>
+        /// Makes a best effort check on if the assembly is a valid plugin assembly.
+        /// This is designed to catch things like an out of date plugin that is
+        /// referencing an older version of Rock and has types that cannot be
+        /// resolved. Without this, EF will blow up when trying to build the model
+        /// and prevent Rock from starting up.
+        /// </summary>
+        /// <param name="assembly">The plugin assembly to check.</param>
+        /// <returns><c>true</c> if the assembly appears to be valid; otherwise <c>false</c>.</returns>
+        private static bool IsPluginAssemblyValid( Assembly assembly )
+        {
+            try
+            {
+                var modelTypes = assembly.GetTypes()
+                    .Where( t => typeof( IEntity ).IsAssignableFrom( t ) );
+
+                foreach ( var type in modelTypes )
+                {
+                    foreach ( var prop in type.GetProperties() )
+                    {
+                        // Force access to the property type to ensure it is
+                        // a type that can be resolved.
+                        _ = prop.PropertyType.FullName;
+                    }
+                }
+
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+        }
 
         /// <summary>
         /// Gets the name of the type in a "friendly" manner.

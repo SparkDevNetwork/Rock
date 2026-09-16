@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -14,8 +14,9 @@
 // limitations under the License.
 // </copyright>
 //
-using Rock.ViewModels.Utility;
 using System;
+
+using Rock.ViewModels.Utility;
 
 namespace Rock.ViewModels.Blocks.Finance.BenevolenceTypeDetail
 {

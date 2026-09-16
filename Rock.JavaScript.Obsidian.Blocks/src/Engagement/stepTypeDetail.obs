@@ -23,6 +23,7 @@
                  :isEditVisible="isEditable"
                  :isFollowVisible="false"
                  :isSecurityHidden="!isEditable"
+                 :showExperienceMode="true"
                  :isFullScreenVisible="false"
                  :footerSecondaryActions="footerSecondaryActions"
                  additionalDeleteMessage="This will also delete the associated step participants."
@@ -45,11 +46,6 @@
                        :availableStepPrograms="config.options?.stepPrograms ?? []" />
 </template>
 
-<style scoped>
-.campus-slicer {
-    margin-bottom: var(--spacing-large);
-}
-</style>
 
 <script setup lang="ts">
     import { computed, ref } from "vue";

@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -21,6 +21,7 @@ using System.Linq.Expressions;
 using System.Threading.Tasks;
 
 using Rock.Communication;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Web.Cache;
 
@@ -175,7 +176,7 @@ namespace Rock.Model
         /// <returns>A Task representing the asynchronous operation.</returns>
         internal static async Task SendBadgeCountUpdatesAsync( List<int> personIds )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var messageService = new NotificationMessageService( rockContext );
                 List<(int PersonId, int SiteId, List<string> DeviceRegistrationIds)> personSites;

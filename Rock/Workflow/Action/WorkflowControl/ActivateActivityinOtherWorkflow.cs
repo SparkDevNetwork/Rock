@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -22,6 +22,7 @@ using System.Linq;
 
 using Rock;
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -36,8 +37,15 @@ namespace Rock.Workflow.Action
     [Export( typeof( ActionComponent ) )]
     [ExportMetadata( "ComponentName", "Activate Activity in Other Workflow" )]
 
-    [WorkflowAttribute( "Activity", "The activity that should be activated", true, fieldTypeClassNames: new string[] { "Rock.Field.Types.WorkflowActivityFieldType" } )]
-    [WorkflowTextOrAttribute( "Workflow", "Workflow Attribute", "The ID or Guid of the workflow that should be activated", true, key: "WorkflowReference" )]
+    [WorkflowAttribute( "Activity",
+        Description = "The activity that should be activated",
+        IsRequired = true,
+        FieldTypeClassNames =  new string[] { "Rock.Field.Types.WorkflowActivityFieldType" } )]
+    [WorkflowTextOrAttribute( "Workflow",
+        "Workflow Attribute",
+        Description = "The ID or Guid of the workflow that should be activated",
+        IsRequired = true,
+        Key = "WorkflowReference" )]
     [Rock.SystemGuid.EntityTypeGuid( "DD266CDB-7D60-4312-B727-C2AA95C21128" )]
     public class ActivateOtherActivity : ActionComponent
     {
@@ -64,7 +72,7 @@ namespace Rock.Workflow.Action
             Rock.Model.Workflow workflow = null;
 
             // Use new context so only changes made to the activity by this action are persisted
-            using ( var newRockContext = new RockContext() )
+            using ( var newRockContext = RockApp.Current.CreateRockContext() )
             {
                 if ( reference.AsGuidOrNull() != null )
                 {

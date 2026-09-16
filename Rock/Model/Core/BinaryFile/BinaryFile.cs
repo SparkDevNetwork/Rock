@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -19,8 +19,11 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
+
 using Rock.Data;
+using Rock.Enums.Security;
 using Rock.Lava;
+using Rock.Security;
 using Rock.Storage;
 using Rock.Web.Cache;
 
@@ -77,6 +80,7 @@ namespace Rock.Model
         [Required]
         [MaxLength( 255 )]
         [DataMember( IsRequired = true )]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string FileName { get; set; }
 
         /// <summary>
@@ -97,6 +101,7 @@ namespace Rock.Model
         [Required]
         [MaxLength( 255 )]
         [DataMember( IsRequired = true )]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string MimeType { get; set; }
 
         /// <summary>
@@ -106,6 +111,7 @@ namespace Rock.Model
         /// A <see cref="System.String"/> representing the user defined description of the file.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.LavaAndBasicHtml )]
         public string Description { get; set; }
 
         /// <summary>
@@ -153,6 +159,7 @@ namespace Rock.Model
         /// saved need to be stored with the binary file so that the storage provider is still able to 
         /// retrieve the file using these settings
         /// </remarks>
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string StorageEntitySettings { get; set; }
 
         /// <summary>
@@ -166,6 +173,7 @@ namespace Rock.Model
         /// </remarks>
         [MaxLength( 2083 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string Path { get; set; }
 
         /// <summary>
@@ -206,6 +214,7 @@ namespace Rock.Model
         /// </summary>
         /// <value>The additional information.</value>
         [DataMember]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string AdditionalInformation { get; set; }
 
         /// <summary>

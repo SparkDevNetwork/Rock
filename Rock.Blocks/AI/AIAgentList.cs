@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -124,6 +124,12 @@ namespace Rock.Blocks.AI
         }
 
         /// <inheritdoc/>
+        protected override IQueryable<AIAgent> GetOrderedListQueryable( IQueryable<AIAgent> queryable, RockContext rockContext )
+        {
+            return queryable.OrderBy( a => a.Name );
+        }
+
+        /// <inheritdoc/>
         protected override GridBuilder<AIAgent> GetGridBuilder()
         {
             return new GridBuilder<AIAgent>()
@@ -134,6 +140,7 @@ namespace Rock.Blocks.AI
                 .AddTextField( "role", a => a.AgentType == AgentType.Chat ? a.GetAdditionalSettings<ChatAgentSettings>().Role.ToString() : string.Empty )
                 .AddTextField( "type", a => a.AgentType.GetDisplayName() )
                 .AddTextField( "audience", a => a.AudienceType.GetDisplayName() )
+                .AddField( "isSystem", a => a.IsSystem )
                 .AddField( "isSecurityDisabled", a => !a.IsAuthorized( Authorization.ADMINISTRATE, RequestContext.CurrentPerson ) );
         }
 
@@ -160,6 +167,11 @@ namespace Rock.Blocks.AI
             if ( !entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
             {
                 return ActionBadRequest( $"Not authorized to delete {AIAgent.FriendlyTypeName}." );
+            }
+
+            if ( entity.IsSystem )
+            {
+                return ActionBadRequest( $"This {AIAgent.FriendlyTypeName} is a system agent and cannot be deleted." );
             }
 
             if ( !entityService.CanDelete( entity, out var errorMessage ) )

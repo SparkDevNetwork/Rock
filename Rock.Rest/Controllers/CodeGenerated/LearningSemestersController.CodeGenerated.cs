@@ -21,6 +21,7 @@
 // </copyright>
 //
 
+using Rock.Configuration;
 using Rock.Model;
 using Rock.SystemGuid;
 
@@ -35,6 +36,6 @@ namespace Rock.Rest.Controllers
         /// <summary>
         /// Initializes a new instance of the <see cref="LearningSemestersController"/> class.
         /// </summary>
-        public LearningSemestersController() : base( new Rock.Model.LearningSemesterService( new Rock.Data.RockContext() ) ) { } 
+        public LearningSemestersController() : base( new Rock.Model.LearningSemesterService( RockApp.Current.CreateRockContext() ) ) { } 
     }
 }

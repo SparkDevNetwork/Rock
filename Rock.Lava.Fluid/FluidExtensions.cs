@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -27,6 +28,13 @@ namespace Rock.Lava.Fluid
 {
     public static class FluidExtensions
     {
+        private static readonly ConcurrentDictionary<Type, FieldInfo> _dictionaryFieldCache = new();
+
+        private static FieldInfo GetDictionaryField( Type type )
+        {
+            return _dictionaryFieldCache.GetOrAdd( type, t => t.GetField( "_dictionary", BindingFlags.NonPublic | BindingFlags.Instance ) );
+        }
+
         /// <summary>
         /// Convert a string to a FluidValue object.
         /// </summary>
@@ -232,7 +240,7 @@ namespace Rock.Lava.Fluid
             {
                 var dictionary = value.ToObjectValue();
 
-                var fieldInfo = dictionary.GetType().GetField( "_dictionary", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance );
+                var fieldInfo = GetDictionaryField( dictionary.GetType() );
 
                 return fieldInfo.GetValue( dictionary );
             }
@@ -249,7 +257,14 @@ namespace Rock.Lava.Fluid
 
                 if ( placeCount == 0 )
                 {
-                    return ( int ) d;
+                    if ( d >= int.MinValue && d <= int.MaxValue )
+                    {
+                        return ( int ) d;
+                    }
+                    else
+                    {
+                        return ( long ) d;
+                    }
                 }
 
                 return d;
@@ -307,7 +322,7 @@ namespace Rock.Lava.Fluid
 
             foreach ( var arg in arguments )
             {
-                var value = arg.Expression.EvaluateAsync( context ).Result;
+                var value = arg.Expression.EvaluateAsync( context ).GetAwaiter().GetResult();
 
                 parameters.Add( arg.Name ?? string.Empty, value.ToRealObjectValue() );
             }

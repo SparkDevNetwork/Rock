@@ -1,0 +1,204 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Grid :definition="config.gridDefinition ?? undefined"
+          :data="gridDataSource"
+          keyField="idKey"
+          itemTerm="Interactive Experience"
+          title="Experiences"
+          :entityTypeGuid="EntityType.InteractiveExperience"
+          stickyHeader
+          liveUpdates
+          gridSettings
+          :gridSettingsActive="hasSettingsFilters"
+          @gridSettingsClick="onClickGridSetting"
+          :onAddItem="config.isAddEnabled ? onAddItem : undefined"
+          @selectItem="onSelectItem">
+
+        <TextColumn name="name"
+                    title="Name"
+                    field="name"
+                    :filter="textValueFilter" />
+
+        <DateTimeColumn name="nextStartDateTime"
+                        title="Next Start"
+                        field="nextStartDateTime"
+                        :filter="dateValueFilter" />
+
+        <NumberColumn name="actionCount"
+                      title="Actions"
+                      field="actionCount"
+                      :filter="numberValueFilter" />
+
+        <TextColumn name="campus"
+                    title="Campus"
+                    field="campus"
+                    :filter="pickExistingValueFilter" />
+
+        <BooleanColumn name="isActive"
+                       title="Active"
+                       field="isActive"
+                       :filter="booleanValueFilter"
+                       width="110px" />
+
+        <Column v-if="config.options?.isManagerButtonVisible"
+                name="experienceManager"
+                :excludeFromExport="true"
+                itemClass="grid-columncommand"
+                width="52">
+            <template #format="{ row }">
+                <a v-if="row.hasOccurrences"
+                   class="btn btn-default btn-sm"
+                   title="Open Experience Manager"
+                   @click.stop.prevent="onManagerClick(row.idKey)">
+                    <i class="ti ti-device-desktop"></i>
+                </a>
+            </template>
+        </Column>
+
+        <DeleteColumn v-if="config.isDeleteEnabled" @click="onDeleteClick" />
+    </Grid>
+
+    <GridSettingsModal v-model="gridSettings"
+                       v-model:visible="isGridSettingsVisible" />
+</template>
+
+<script setup lang="ts">
+    import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, usePersonPreferences, useReloadBlock } from "@Obsidian/Utility/block";
+    import { EntityType } from "@Obsidian/SystemGuids/entityType";
+    import Grid, { BooleanColumn, booleanValueFilter, Column, DateTimeColumn, dateValueFilter, DeleteColumn, NumberColumn, numberValueFilter, pickExistingValueFilter, TextColumn, textValueFilter } from "@Obsidian/Controls/grid";
+    import { alert } from "@Obsidian/Utility/dialogs";
+    import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
+    import { InteractiveExperienceListOptionsBag } from "@Obsidian/ViewModels/Blocks/Event/InteractiveExperiences/InteractiveExperienceList/interactiveExperienceListOptionsBag";
+    import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
+    import { NavigationUrlKey, GridSettingsOptions, PreferenceKey } from "./InteractiveExperienceList/types.partial";
+    import GridSettingsModal from "./InteractiveExperienceList/gridSettingsModal.partial.obs";
+    import { asBooleanOrNull, asTrueOrFalseString } from "@Obsidian/Utility/booleanUtils";
+    import { safeParseJson } from "@Obsidian/Utility/stringUtils";
+    import { computed, reactive, ref, watch } from "vue";
+
+    const config = useConfigurationValues<ListBlockBox<InteractiveExperienceListOptionsBag>>();
+    const invokeBlockAction = useInvokeBlockAction();
+    const preferences = usePersonPreferences().blockPreferences;
+
+    // All blocks auto reload when changing block settings unless there is an
+    // explicit reason not to (like using a custom reload function instead),
+    // in which case you can remove this code.
+    onConfigurationValuesChanged(useReloadBlock());
+
+    // #region Values
+
+    const gridDataSource = ref<Promise<GridDataBag>>();
+    let gridData: GridDataBag | undefined;
+
+    const isGridSettingsVisible = ref(false);
+    const gridSettings = ref<GridSettingsOptions>({
+        campus: safeParseJson(preferences.getValue(PreferenceKey.FilterCampus)) ?? null,
+        includeInactive: asBooleanOrNull(preferences.getValue(PreferenceKey.FilterIncludeInactive)) ?? false,
+    });
+
+    // #endregion
+
+    // #region Computed Values
+
+    /** `true` if the grid settings is performing any filtering. */
+    const hasSettingsFilters = computed((): boolean => {
+        return !!gridSettings.value.campus || !!gridSettings.value.includeInactive;
+    });
+
+    // #endregion
+
+    // #region Functions
+
+    /**
+     * Called when the grid is requesting the row data be loaded.
+     */
+    async function loadGridData(): Promise<GridDataBag> {
+        const result = await invokeBlockAction<GridDataBag>("GetGridData");
+
+        if (result.isSuccess && result.data) {
+            gridData = reactive(result.data);
+            return gridData;
+        }
+        else {
+            throw new Error(result.errorMessage ?? "Unknown error while trying to load grid data.");
+        }
+    }
+
+    // #endregion
+
+    // #region Event Handlers
+
+    /**
+     * Called when a row has been selected by the individual.
+     *
+     * @param key The key of the row that was selected.
+     */
+    function onSelectItem(key: string): void {
+        if (config.navigationUrls?.[NavigationUrlKey.DetailPage]) {
+            window.location.href = config.navigationUrls[NavigationUrlKey.DetailPage].replace("((Key))", key);
+        }
+    }
+
+    /**
+     * Called when a row's delete button has been clicked by the individual. This
+     * happens only if they have confirmed the delete action.
+     */
+    async function onDeleteClick(key: string): Promise<void> {
+        const result = await invokeBlockAction<string>("Delete", {
+            key
+        });
+
+        if (result.isSuccess) {
+            if (gridData && gridData.rows) {
+                const index = gridData.rows.findIndex(r => r["idKey"] === key);
+
+                if (index !== -1) {
+                    gridData.rows?.splice(index, 1);
+                }
+            }
+        }
+        else {
+            await alert(result.errorMessage ?? "Unknown error while trying to delete interactive experience.");
+        }
+    }
+
+    /**
+     * Called when the Add button has been clicked by the individual.
+     */
+    function onAddItem(): void {
+        if (config.navigationUrls?.[NavigationUrlKey.DetailPage]) {
+            window.location.href = config.navigationUrls[NavigationUrlKey.DetailPage].replace("((Key))", "0");
+        }
+    }
+
+    /**
+     * Called when the Experience Manager button has been clicked on a row.
+     *
+     * @param key The key of the row that was clicked.
+     */
+    function onManagerClick(key: string): void {
+        if (config.navigationUrls?.[NavigationUrlKey.OccurrenceChooserPage]) {
+            window.location.href = config.navigationUrls[NavigationUrlKey.OccurrenceChooserPage].replace("((Key))", key);
+        }
+    }
+
+    /**
+     * Called when the grid setting icon is clicked, displays the block filters.
+     */
+    function onClickGridSetting(): void {
+        isGridSettingsVisible.value = true;
+    }
+
+    // #endregion
+
+    watch(gridSettings, async () => {
+        preferences.setValue(PreferenceKey.FilterCampus, JSON.stringify(gridSettings.value.campus));
+        preferences.setValue(PreferenceKey.FilterIncludeInactive, asTrueOrFalseString(gridSettings.value.includeInactive));
+
+        await preferences.save();
+
+        gridDataSource.value = loadGridData();
+    });
+
+    gridDataSource.value = loadGridData();
+</script>

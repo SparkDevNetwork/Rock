@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -23,9 +23,11 @@ using System.Linq.Expressions;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Net;
+using Rock.Obsidian.UI.GridField;
 using Rock.Utility;
 using Rock.ViewModels.Controls;
 using Rock.ViewModels.Utility;
@@ -104,6 +106,12 @@ namespace Rock.Reporting.DataSelect.Person
             return new ListDelimitedField();
         }
 #endif
+
+        /// <inheritdoc/>
+        public override ObsidianGridField GetObsidianGridField( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
+        {
+            return new ListObsidianGridField();
+        }
 
         /// <summary>
         /// Gets the default column header text.
@@ -207,7 +215,7 @@ namespace Rock.Reporting.DataSelect.Person
 
             if ( settings.DataViewGuid.HasValue )
             {
-                var dsService = new DataViewService( new RockContext() );
+                var dsService = new DataViewService( RockApp.Current.CreateRockContext() );
                 var dataView = dsService.Get( settings.DataViewGuid.Value );
 
                 if ( dataView != null )
@@ -476,7 +484,7 @@ namespace Rock.Reporting.DataSelect.Person
 
             if ( settings.DataViewGuid.HasValue )
             {
-                var dsService = new DataViewService( new RockContext() );
+                var dsService = new DataViewService( RockApp.Current.CreateRockContext() );
 
                 var dataView = dsService.Get( settings.DataViewGuid.Value );
                 dvpDataView.SetValue( dataView );

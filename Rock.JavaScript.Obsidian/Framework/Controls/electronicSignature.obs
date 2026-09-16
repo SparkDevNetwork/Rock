@@ -57,7 +57,8 @@
                     <RockButton type="submit"
                                 btnType="primary"
                                 btnSize="xs"
-                                :disabled="disableButton">
+                                :disabled="disableButton"
+                                :isLoading="disableButton">
                         Complete
                     </RockButton>
                 </div>

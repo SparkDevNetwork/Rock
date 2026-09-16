@@ -21,7 +21,7 @@ import NumberBox from "@Obsidian/Controls/numberBox.obs";
 import CheckBox from "@Obsidian/Controls/checkBox.obs";
 import { asBoolean, asBooleanOrNull, asTrueFalseOrNull } from "@Obsidian/Utility/booleanUtils";
 import { toNumberOrNull, toNumber } from "@Obsidian/Utility/numberUtils";
-import { ConfigurationValueKey } from "./memoField.partial";
+import { ConfigurationKey } from "./memoField.partial";
 import { useVModelPassthrough } from "@Obsidian/Utility/component";
 
 export const EditComponent = defineComponent({
@@ -43,19 +43,19 @@ export const EditComponent = defineComponent({
         const configAttributes = computed((): Record<string, number | boolean> => {
             const attributes: Record<string, number | boolean> = {};
 
-            const maxCharsConfig = props.configurationValues[ConfigurationValueKey.MaxCharacters];
+            const maxCharsConfig = props.configurationValues[ConfigurationKey.MaxCharacters];
             const maxCharsValue = toNumber(maxCharsConfig);
 
             if (maxCharsValue) {
                 attributes.maxLength = maxCharsValue;
             }
 
-            const showCountDownConfig = props.configurationValues[ConfigurationValueKey.ShowCountDown];
+            const showCountDownConfig = props.configurationValues[ConfigurationKey.ShowCountDown];
             const showCountDownValue = asBooleanOrNull(showCountDownConfig) || false;
 
-            const allowHtmlConfig = props.configurationValues[ConfigurationValueKey.AllowHtml];
+            const allowHtmlConfig = props.configurationValues[ConfigurationKey.AllowHtml];
             const allowHtmlValue = asBooleanOrNull(allowHtmlConfig) || false;
-            if(allowHtmlValue){
+            if (allowHtmlValue) {
                 attributes.allowHtml = allowHtmlValue;
             }
 
@@ -64,7 +64,7 @@ export const EditComponent = defineComponent({
                 attributes.showCountDown = showCountDownValue;
             }
 
-            const rowsConfig = props.configurationValues[ConfigurationValueKey.NumberOfRows];
+            const rowsConfig = props.configurationValues[ConfigurationKey.NumberOfRows];
             const rows = toNumber(rowsConfig || null) || 3;
 
             if (rows > 0) {
@@ -147,16 +147,16 @@ export const ConfigurationComponent = defineComponent({
 
             // Construct the new value that will be emitted if it is different
             // than the current value.
-            newValue[ConfigurationValueKey.NumberOfRows] = numberOfRows.value?.toString() ?? "";
-            newValue[ConfigurationValueKey.AllowHtml] = asTrueFalseOrNull(allowHtml.value) ?? "False";
-            newValue[ConfigurationValueKey.MaxCharacters] = maxCharacters.value?.toString() ?? "";
-            newValue[ConfigurationValueKey.ShowCountDown] = asTrueFalseOrNull(showCountdown.value) ?? "False";
+            newValue[ConfigurationKey.NumberOfRows] = numberOfRows.value?.toString() ?? "";
+            newValue[ConfigurationKey.AllowHtml] = asTrueFalseOrNull(allowHtml.value) ?? "False";
+            newValue[ConfigurationKey.MaxCharacters] = maxCharacters.value?.toString() ?? "";
+            newValue[ConfigurationKey.ShowCountDown] = asTrueFalseOrNull(showCountdown.value) ?? "False";
 
             // Compare the new value and the old value.
-            const anyValueChanged = newValue[ConfigurationValueKey.NumberOfRows] !== (props.modelValue[ConfigurationValueKey.NumberOfRows] ?? "")
-                || newValue[ConfigurationValueKey.AllowHtml] !== (props.modelValue[ConfigurationValueKey.AllowHtml] ?? "False")
-                || newValue[ConfigurationValueKey.MaxCharacters] !== (props.modelValue[ConfigurationValueKey.MaxCharacters] ?? "")
-                || newValue[ConfigurationValueKey.ShowCountDown] !== (props.modelValue[ConfigurationValueKey.ShowCountDown] ?? "False");
+            const anyValueChanged = newValue[ConfigurationKey.NumberOfRows] !== (props.modelValue[ConfigurationKey.NumberOfRows] ?? "")
+                || newValue[ConfigurationKey.AllowHtml] !== (props.modelValue[ConfigurationKey.AllowHtml] ?? "False")
+                || newValue[ConfigurationKey.MaxCharacters] !== (props.modelValue[ConfigurationKey.MaxCharacters] ?? "")
+                || newValue[ConfigurationKey.ShowCountDown] !== (props.modelValue[ConfigurationKey.ShowCountDown] ?? "False");
 
             // If any value changed then emit the new model value.
             if (anyValueChanged) {
@@ -183,10 +183,10 @@ export const ConfigurationComponent = defineComponent({
         // Watch for changes coming in from the parent component and update our
         // data to match the new information.
         watch(() => [props.modelValue, props.configurationProperties], () => {
-            numberOfRows.value = toNumberOrNull(props.modelValue[ConfigurationValueKey.NumberOfRows]);
-            allowHtml.value = asBoolean(props.modelValue[ConfigurationValueKey.AllowHtml]);
-            maxCharacters.value = toNumberOrNull(props.modelValue[ConfigurationValueKey.MaxCharacters]);
-            showCountdown.value = asBoolean(props.modelValue[ConfigurationValueKey.ShowCountDown]);
+            numberOfRows.value = toNumberOrNull(props.modelValue[ConfigurationKey.NumberOfRows]);
+            allowHtml.value = asBoolean(props.modelValue[ConfigurationKey.AllowHtml]);
+            maxCharacters.value = toNumberOrNull(props.modelValue[ConfigurationKey.MaxCharacters]);
+            showCountdown.value = asBoolean(props.modelValue[ConfigurationKey.ShowCountDown]);
         }, {
             immediate: true
         });
@@ -202,10 +202,10 @@ export const ConfigurationComponent = defineComponent({
         });
 
         // Watch for changes in properties that only require a local UI update.
-        watch(numberOfRows, val => maybeUpdateConfiguration(ConfigurationValueKey.NumberOfRows, val?.toString() ?? ""));
-        watch(allowHtml, val => maybeUpdateConfiguration(ConfigurationValueKey.AllowHtml, asTrueFalseOrNull(val) ?? "False"));
-        watch(maxCharacters, val => maybeUpdateConfiguration(ConfigurationValueKey.MaxCharacters, val?.toString() ?? ""));
-        watch(showCountdown, val => maybeUpdateConfiguration(ConfigurationValueKey.ShowCountDown, asTrueFalseOrNull(val) ?? "False"));
+        watch(numberOfRows, val => maybeUpdateConfiguration(ConfigurationKey.NumberOfRows, val?.toString() ?? ""));
+        watch(allowHtml, val => maybeUpdateConfiguration(ConfigurationKey.AllowHtml, asTrueFalseOrNull(val) ?? "False"));
+        watch(maxCharacters, val => maybeUpdateConfiguration(ConfigurationKey.MaxCharacters, val?.toString() ?? ""));
+        watch(showCountdown, val => maybeUpdateConfiguration(ConfigurationKey.ShowCountDown, asTrueFalseOrNull(val) ?? "False"));
 
         return {
             numberOfRows,

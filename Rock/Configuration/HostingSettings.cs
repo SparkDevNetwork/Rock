@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -42,6 +42,9 @@ namespace Rock.Configuration
         /// <inheritdoc/>
         public string NodeName { get; }
 
+        /// <inheritdoc/>
+        public bool IsDevelopmentEnvironment { get; }
+
         public HostingSettings( IInitializationSettings initializationSettings )
         {
             ApplicationStartDateTime = RockDateTime.Now;
@@ -58,6 +61,8 @@ namespace Rock.Configuration
             VirtualRootPath = System.Web.Hosting.HostingEnvironment.ApplicationVirtualPath?.EnsureTrailingForwardslash()
                 ?? "/";
 #endif
+
+            IsDevelopmentEnvironment = System.Web.Hosting.HostingEnvironment.IsDevelopmentEnvironment;
 
             NodeName = initializationSettings.NodeName;
 

@@ -1,0 +1,258 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <NotificationBox v-if="errorMessage" :alertType="AlertType.Danger">{{ errorMessage }}</NotificationBox>
+
+    <LoadingIndicator v-else-if="isLoading" />
+
+    <template v-else-if="diagnostics">
+        <h4>Details</h4>
+
+        <p v-if="diagnostics.database">
+            <strong>Database:</strong><br />
+            <template v-for="(line, index) in databaseLines" :key="index">{{ line }}<br /></template>
+        </p>
+
+        <p>
+            <strong>Lava Engine:</strong><br />
+            {{ diagnostics.lavaEngineName }}
+        </p>
+
+        <p>
+            <strong>System Date Time:</strong><br />
+            {{ diagnostics.systemDateTime }}
+        </p>
+
+        <p>
+            <strong>Rock Time:</strong><br />
+            {{ diagnostics.rockTime }}
+        </p>
+
+        <p>
+            <strong>Process Start Time:</strong><br />
+            {{ diagnostics.processStartTime }}
+        </p>
+
+        <p>
+            <strong>Rock Application Start Time:</strong><br />
+            {{ diagnostics.rockApplicationStartTime }}
+        </p>
+
+        <p>
+            <strong>Installation Date Time:</strong><br />
+            {{ diagnostics.installDateTime }}
+        </p>
+
+        <p>
+            <strong>Executing Location:</strong><br />
+            Machine Name: {{ diagnostics.machineName }}<br />
+            {{ diagnostics.executingLocation }}<br />
+            {{ diagnostics.webRootPath }}
+        </p>
+
+        <div>
+            <strong>Last Migration(s):</strong><br />
+            <span v-if="diagnostics.lastCoreMigration">Last Core Migration: {{ diagnostics.lastCoreMigration }}</span>
+            <table v-if="diagnostics.pluginMigrations && diagnostics.pluginMigrations.length > 0" class="table table-condensed margin-t-sm">
+                <tbody>
+                    <tr>
+                        <th>Plugin Assembly</th>
+                        <th>Migration Name</th>
+                        <th>Number</th>
+                    </tr>
+                    <tr v-for="(migration, index) in diagnostics.pluginMigrations" :key="index">
+                        <td>{{ migration.pluginAssemblyName }}</td>
+                        <td>{{ migration.migrationName }}</td>
+                        <td>{{ migration.migrationNumber }}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div>
+            <h4>Transaction Queue</h4>
+            <div>
+                <template v-for="(stat, index) in diagnostics.transactionQueue" :key="index">{{ stat.name }}: {{ stat.count }}<br /></template>
+            </div>
+            <RockButton v-if="isAdministrator"
+                        :btnType="BtnType.Default"
+                        :btnSize="BtnSize.ExtraSmall"
+                        :onClick="onDrainQueue"
+                        autoLoading
+                        autoDisable
+                        title="Drain Queue now instead of waiting for the scheduled drain.">
+                Drain Queue
+            </RockButton>
+        </div>
+
+        <div>
+            <h4>Routes</h4>
+            <p><a href="#" @click.prevent="areRoutesShown = !areRoutesShown">{{ areRoutesShown ? "Hide Routes" : "Show Routes" }}</a></p>
+            <div v-if="areRoutesShown" class="system-info-routes">
+                <table class="table table-condensed">
+                    <tbody>
+                        <tr>
+                            <th>Route</th>
+                            <th>Pages</th>
+                        </tr>
+                        <tr v-for="(routeInfo, index) in diagnostics.routes" :key="index">
+                            <td>{{ routeInfo.route }}</td>
+                            <td>
+                                <template v-for="(page, pageIndex) in routeInfo.pages" :key="pageIndex">{{ page }}<br /></template>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <h4>Cache</h4>
+        <template v-if="diagnostics.isCacheStatisticsEnabled">
+            <p><a href="#" @click.prevent="areCacheStatsShown = !areCacheStatsShown">{{ areCacheStatsShown ? "Hide Cache Statistics" : "Show Cache Statistics" }}</a></p>
+            <div v-if="areCacheStatsShown">
+                <p v-for="(cache, index) in diagnostics.cacheStatistics" :key="index">
+                    <strong>{{ cache.name }}:</strong><br />
+                    {{ (cache.statistics ?? []).join(", ") }}
+                </p>
+            </div>
+        </template>
+        <p v-else>
+            <a href="/cachemanager" target="_top">Cache Statistics (disabled)</a>
+        </p>
+
+        <div>
+            <h4>Threads</h4>
+            <span :class="diagnostics.threads?.badgeCssClass ?? ''">{{ diagnostics.threads?.threadsInUse }}</span>
+            out of {{ diagnostics.threads?.maxThreads }} worker threads in use ({{ diagnostics.threads?.percentInUse }}%)
+        </div>
+
+        <RockButton :btnType="BtnType.Action"
+                    class="margin-t-lg"
+                    :onClick="onDownload"
+                    title="Generates a diagnostics file for sharing with others.">
+            <i class="ti ti-download"></i> Download Diagnostics File
+        </RockButton>
+    </template>
+</template>
+
+<script setup lang="ts">
+    import { computed, onMounted, PropType, ref } from "vue";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import LoadingIndicator from "@Obsidian/Controls/loadingIndicator.obs";
+    import { useInvokeBlockAction, useBlockActionUrl } from "@Obsidian/Utility/block";
+    import { alert } from "@Obsidian/Utility/dialogs";
+    import { AlertType } from "@Obsidian/Enums/Controls/alertType";
+    import { BtnType } from "@Obsidian/Enums/Controls/btnType";
+    import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
+    import { SystemDiagnosticsBag } from "@Obsidian/ViewModels/Blocks/Administration/SystemInformation/systemDiagnosticsBag";
+
+    defineProps({
+        isAdministrator: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        }
+    });
+
+    const invokeBlockAction = useInvokeBlockAction();
+    const blockActionUrl = useBlockActionUrl();
+
+    const diagnostics = ref<SystemDiagnosticsBag | null>(null);
+    const isLoading = ref(true);
+    const errorMessage = ref("");
+    const areRoutesShown = ref(false);
+    const areCacheStatsShown = ref(false);
+
+    /**
+     * Builds the database information as an array of display lines, matching the
+     * field order used by the plain-text diagnostics download. Returns the error
+     * message as a single line when the database could not be read.
+     */
+    const databaseLines = computed((): string[] => {
+        const db = diagnostics.value?.database;
+
+        if (!db) {
+            return [];
+        }
+
+        if (db.errorMessage) {
+            return [db.errorMessage];
+        }
+
+        const lines: string[] = [
+            `Name: ${db.name ?? ""}`,
+            `Server: ${db.serverName ?? ""}`,
+            `Database Version: ${db.version ?? ""}`
+        ];
+
+        if (db.friendlyVersion) {
+            lines.push(`Database Friendly Version: ${db.friendlyVersion}`);
+        }
+
+        lines.push(`Database Compatibility Version: ${db.compatibilityVersion ?? ""}`);
+        lines.push(`Database Size: ${db.databaseSizeMb ?? ""} MB`);
+        lines.push(`Log File Size: ${db.logSizeMb ?? ""} MB`);
+        lines.push(`Recovery Model: ${db.recoveryModel ?? ""}`);
+        lines.push(`Allow Snapshot Isolation: ${db.allowSnapshotIsolation ? "Yes" : "No"}`);
+        lines.push(`Is Read Committed Snapshot On: ${db.isReadCommittedSnapshotOn ? "Yes" : "No"}`);
+
+        if (db.isAzure) {
+            lines.push(`Azure Service Tier Objective: ${db.serviceObjective ?? ""}`);
+        }
+
+        if (db.readOnlyContextStatus) {
+            lines.push(`RockContextReadOnly: ${db.readOnlyContextStatus}`);
+        }
+
+        return lines;
+    });
+
+    /**
+     * Loads the diagnostics information from the server. Called when the
+     * Diagnostics tab is first shown.
+     */
+    async function loadDiagnostics(): Promise<void> {
+        isLoading.value = true;
+        errorMessage.value = "";
+
+        const result = await invokeBlockAction<SystemDiagnosticsBag>("GetDiagnostics");
+
+        if (result.isSuccess && result.data) {
+            diagnostics.value = result.data;
+        }
+        else {
+            errorMessage.value = result.errorMessage ?? "Unable to load diagnostics.";
+        }
+
+        isLoading.value = false;
+    }
+
+    /**
+     * Drains the standard transaction queue immediately and refreshes the
+     * diagnostics with the result returned by the server.
+     */
+    async function onDrainQueue(): Promise<void> {
+        const result = await invokeBlockAction<SystemDiagnosticsBag>("DrainQueue");
+
+        if (result.isSuccess && result.data) {
+            diagnostics.value = result.data;
+        }
+        else {
+            await alert(result.errorMessage ?? "Unable to drain the queue.");
+        }
+    }
+
+    /**
+     * Navigates to the download action to retrieve the plain-text diagnostics file.
+     */
+    function onDownload(): void {
+        window.location.href = blockActionUrl("DownloadDiagnostics");
+    }
+
+    onMounted(loadDiagnostics);
+</script>
+
+<style>
+.system-info-routes table td {
+    word-break: break-all;
+}
+</style>

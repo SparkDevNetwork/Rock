@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -20,6 +20,7 @@ using System.Linq;
 
 using Microsoft.EntityFrameworkCore;
 
+using Rock.Configuration;
 using Rock.Data;
 
 namespace Rock.Model
@@ -128,7 +129,7 @@ namespace Rock.Model
         {
             if ( rockContext == null )
             {
-                rockContext = new RockContext();
+                rockContext = RockApp.Current.CreateRockContext();
             }
 
             var updateSql = @"

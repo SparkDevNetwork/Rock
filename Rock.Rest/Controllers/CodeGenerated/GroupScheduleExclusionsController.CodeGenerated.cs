@@ -21,6 +21,7 @@
 // </copyright>
 //
 
+using Rock.Configuration;
 using Rock.Model;
 using Rock.SystemGuid;
 
@@ -35,6 +36,6 @@ namespace Rock.Rest.Controllers
         /// <summary>
         /// Initializes a new instance of the <see cref="GroupScheduleExclusionsController"/> class.
         /// </summary>
-        public GroupScheduleExclusionsController() : base( new Rock.Model.GroupScheduleExclusionService( new Rock.Data.RockContext() ) ) { } 
+        public GroupScheduleExclusionsController() : base( new Rock.Model.GroupScheduleExclusionService( RockApp.Current.CreateRockContext() ) ) { } 
     }
 }

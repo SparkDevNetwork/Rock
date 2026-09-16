@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -15,21 +15,23 @@
 // </copyright>
 //
 
-using System.IO.Compression;
+using System;
+using System.Collections.Generic;
 using System.IO;
+using System.IO.Compression;
 using System.Linq;
-using System.Net.Http;
 using System.Net;
+using System.Net.Http;
 using System.Web;
+
 #if REVIEW_WEBFORMS
 using Rock.Common.Tv;
 #endif
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Tv.Classes;
 using Rock.Web.Cache;
-using System;
-using System.Collections.Generic;
 
 namespace Rock.Tv
 {
@@ -81,7 +83,7 @@ namespace Rock.Tv
                     return null;
                 }
 
-                rockContext = rockContext ?? new RockContext();
+                rockContext = rockContext ?? RockApp.Current.CreateRockContext();
 
                 // Get user login for the app and verify that it matches the request's key
                 var appUserLogin = new UserLoginService( rockContext ).Get( additionalSettings.ApiKeyId.Value );
@@ -184,7 +186,7 @@ namespace Rock.Tv
                 username = Rock.Security.Authentication.Database.GenerateUsername( person.NickName, person.LastName );
 
                 var userLogin = UserLoginService.Create(
-                                new RockContext(),
+                                RockApp.Current.CreateRockContext(),
                                 person,
                                 AuthenticationServiceType.Internal,
                                 EntityTypeCache.Get( Rock.SystemGuid.EntityType.AUTHENTICATION_DATABASE.AsGuid() ).Id,

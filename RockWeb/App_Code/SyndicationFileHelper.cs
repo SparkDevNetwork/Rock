@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -24,6 +24,7 @@ using System.Web;
 using System.Xml;
 using System.Xml.Linq;
 
+using Rock.Configuration;
 using Rock.Web;
 using Rock.Web.Cache;
 
@@ -105,7 +106,7 @@ public class SyndicationFeedHelper
 
                 if(!String.IsNullOrEmpty(detailPage))
                 {
-                    detailPageID = new Rock.Model.PageService( new Rock.Data.RockContext() ).Get( new Guid( detailPage ) ).Id;
+                    detailPageID = new Rock.Model.PageService( RockApp.Current.CreateRockContext() ).Get( new Guid( detailPage ) ).Id;
 
                     detailPageBaseUrl = new PageReference( detailPageID ).BuildUrl();
                 }

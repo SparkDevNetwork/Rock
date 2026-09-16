@@ -1,0 +1,364 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Panel type="block"
+           title="Cache Manager"
+           titleIconCssClass="ti ti-brand-speedtest">
+        <template #headerActions>
+            <button class="btn btn-primary btn-xs" @click="onClearCache">
+                <i class="ti ti-repeat"></i> Clear Cache
+            </button>
+        </template>
+
+        <NotificationBox v-if="notificationMessage"
+                         :alertType="notificationType"
+                         :dismissible="true"
+                         @dismiss="notificationMessage = ''">
+            {{ notificationMessage }}
+        </NotificationBox>
+
+        <div class="row">
+            <div class="col-md-6">
+                <h4 class="mt-0">Cache Tags
+                    <HelpBlock text="These Cache Tags values are written to the 'Cache Tags' Defined Type. You can delete the values there, but you should make sure they are not being used in any HTML content or Lava templates." />
+                </h4>
+
+                <Grid :definition="config.gridDefinition ?? undefined"
+                      :data="gridDataSource"
+                      keyField="idKey"
+                      itemTerm="Cache Tag"
+                      light
+                      liveUpdates
+                      :showMergeTemplate="false"
+                      :onAddItem="config.options?.isEditAuthorized ? onAddTag : undefined"
+                      @selectItem="onSelectTag">
+
+                    <TextColumn name="tagName"
+                                title="Tag Name"
+                                field="tagName"
+                                :filter="textValueFilter"
+                                visiblePriority="xs" />
+
+                    <TextColumn name="tagDescription"
+                                title="Description"
+                                field="tagDescription"
+                                :filter="textValueFilter"
+                                :maxLength="255"
+                                visiblePriority="xs" />
+
+                    <NumberColumn name="linkedKeys"
+                                  title="Linked Keys"
+                                  field="linkedKeys"
+                                  :filter="numberValueFilter"
+                                  visiblePriority="md" />
+
+                    <ButtonColumn name="clearTag"
+                                  @click="onClearTagCache"
+                                  iconClass="ti ti-eraser"
+                                  tooltip="Flushes all items from cache that are tied to this tag." />
+                </Grid>
+            </div>
+
+            <div class="col-md-6">
+                <div class="row d-flex">
+                    <div class="col-md-6">
+                        <h4 class="mt-0">Cache Statistics</h4>
+                    </div>
+                    <div class="col-md-6 my-auto">
+                        <InlineCheckBox v-model="isStatisticsEnabled"
+                                        label="Enable Statistics"
+                                        @update:modelValue="onEnableStatisticsChanged" />
+                    </div>
+                </div>
+
+                <DropDownList v-model="selectedCacheType"
+                              :items="cacheTypes"
+                              label="Cache Types"
+                              :showBlankItem="false"
+                              @update:modelValue="onCacheTypeChanged" />
+
+                <table class="grid-table table table-condensed table-light">
+                    <thead>
+                        <tr>
+                            <th>Stat</th>
+                            <th>Count</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Hits</td>
+                            <td>{{ formatNumber(statistics.hits) }}</td>
+                        </tr>
+                        <tr>
+                            <td>Misses</td>
+                            <td>{{ formatNumber(statistics.misses) }}</td>
+                        </tr>
+                        <tr>
+                            <td>Adds</td>
+                            <td>{{ formatNumber(statistics.adds) }}</td>
+                        </tr>
+                        <tr>
+                            <td>Gets</td>
+                            <td>{{ formatNumber(statistics.gets) }}</td>
+                        </tr>
+                        <tr>
+                            <td>Clears</td>
+                            <td>{{ formatNumber(statistics.clears) }}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </Panel>
+
+    <Modal v-model="isTagModalVisible"
+           :title="isEditingTag ? 'Edit Tag' : 'Add Tag'"
+           saveText="Save"
+           @save="onSaveTag">
+        <NotificationBox v-if="modalErrorMessage" alertType="warning">
+            {{ modalErrorMessage }}
+        </NotificationBox>
+
+        <div class="row">
+            <div class="col-md-6">
+                <TextBox v-model="tagName"
+                         label="Tag Name"
+                         :disabled="isEditingTag"
+                         rules="required" />
+            </div>
+            <div class="col-md-6">
+                <TextBox v-model="tagDescription"
+                         label="Description"
+                         textMode="multiLine"
+                         :rows="3" />
+            </div>
+        </div>
+    </Modal>
+</template>
+
+<script setup lang="ts">
+    import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
+    import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
+    import { nextTick, reactive, ref } from "vue";
+    import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
+    import { CacheManagerOptionsBag } from "@Obsidian/ViewModels/Blocks/Cms/CacheManager/cacheManagerOptionsBag";
+    import { CacheStatisticsBag } from "@Obsidian/ViewModels/Blocks/Cms/CacheManager/cacheStatisticsBag";
+    import Grid, { TextColumn, NumberColumn, ButtonColumn, textValueFilter, numberValueFilter } from "@Obsidian/Controls/grid";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import Panel from "@Obsidian/Controls/panel.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import InlineCheckBox from "@Obsidian/Controls/inlineCheckBox.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import Modal from "@Obsidian/Controls/modal.obs";
+    import HelpBlock from "@Obsidian/Controls/helpBlock.obs";
+    import { alert, confirm } from "@Obsidian/Utility/dialogs";
+    import { AlertType } from "@Obsidian/Enums/Controls/alertType";
+
+    const config = useConfigurationValues<ListBlockBox<CacheManagerOptionsBag>>();
+    const invokeBlockAction = useInvokeBlockAction();
+
+    onConfigurationValuesChanged(useReloadBlock());
+
+    // #region Values
+
+    const gridDataSource = ref<Promise<GridDataBag>>();
+    let gridData: GridDataBag | undefined;
+
+    const cacheTypes = ref<ListItemBag[]>(config.options?.cacheTypes ?? []);
+    const selectedCacheType = ref("all");
+    const isStatisticsEnabled = ref(config.options?.isStatisticsEnabled ?? false);
+
+    const statistics = reactive<CacheStatisticsBag>({
+        hits: 0,
+        misses: 0,
+        adds: 0,
+        gets: 0,
+        clears: 0
+    });
+
+    const notificationMessage = ref("");
+    const notificationType = ref<string>(AlertType.Success);
+
+    // Guard to prevent re-entrancy when reverting the statistics checkbox.
+    let isUpdatingStatistics = false;
+
+    // Modal state
+    const isTagModalVisible = ref(false);
+    const isEditingTag = ref(false);
+    const editingTagIdKey = ref("");
+    const tagName = ref("");
+    const tagDescription = ref("");
+    const modalErrorMessage = ref("");
+
+    // #endregion
+
+    // #region Functions
+
+    /** Loads the grid data from the server. */
+    async function loadGridData(): Promise<GridDataBag> {
+        const result = await invokeBlockAction<GridDataBag>("GetGridData");
+
+        if (result.isSuccess && result.data) {
+            gridData = reactive(result.data);
+            return gridData;
+        }
+        else {
+            throw new Error(result.errorMessage ?? "Unknown error while trying to load grid data.");
+        }
+    }
+
+    /** Loads cache statistics for the currently selected cache type. */
+    async function loadStatistics(): Promise<void> {
+        const result = await invokeBlockAction<CacheStatisticsBag>("GetCacheStatistics", {
+            cacheType: selectedCacheType.value
+        });
+
+        if (result.isSuccess && result.data) {
+            statistics.hits = result.data.hits ?? 0;
+            statistics.misses = result.data.misses ?? 0;
+            statistics.adds = result.data.adds ?? 0;
+            statistics.gets = result.data.gets ?? 0;
+            statistics.clears = result.data.clears ?? 0;
+        }
+    }
+
+    /** Formats a number with locale-specific thousand separators. */
+    function formatNumber(value: number | undefined): string {
+        return (value ?? 0).toLocaleString();
+    }
+
+    /** Shows a notification message at the top of the block. */
+    function showNotification(message: string, type: string = AlertType.Success): void {
+        notificationMessage.value = message;
+        notificationType.value = type;
+    }
+
+    // #endregion
+
+    // #region Event Handlers
+
+    /** Called when the Add button on the grid is clicked. */
+    function onAddTag(): void {
+        editingTagIdKey.value = "";
+        tagName.value = "";
+        tagDescription.value = "";
+        modalErrorMessage.value = "";
+        isEditingTag.value = false;
+        isTagModalVisible.value = true;
+    }
+
+    /** Called when a row in the cache tags grid is clicked. */
+    function onSelectTag(key: string): void {
+        if (!config.options?.isEditAuthorized) {
+            return;
+        }
+
+        if (gridData?.rows) {
+            const row = gridData.rows.find(r => r["idKey"] === key);
+
+            if (row) {
+                editingTagIdKey.value = key;
+                tagName.value = (row["tagName"] as string) ?? "";
+                tagDescription.value = (row["tagDescription"] as string) ?? "";
+                modalErrorMessage.value = "";
+                isEditingTag.value = true;
+                isTagModalVisible.value = true;
+            }
+        }
+    }
+
+    /** Called when the Save button in the tag modal is clicked. */
+    async function onSaveTag(): Promise<void> {
+        modalErrorMessage.value = "";
+
+        const result = await invokeBlockAction("SaveCacheTag", {
+            idKey: editingTagIdKey.value || null,
+            tagName: tagName.value,
+            description: tagDescription.value
+        });
+
+        if (result.isSuccess) {
+            isTagModalVisible.value = false;
+            gridDataSource.value = loadGridData();
+        }
+        else {
+            modalErrorMessage.value = result.errorMessage ?? "An error occurred while saving the tag.";
+        }
+    }
+
+    /** Called when the clear cache button on a grid row is clicked. */
+    async function onClearTagCache(key: string): Promise<void> {
+        const result = await invokeBlockAction<string>("ClearCacheForTag", { idKey: key });
+
+        if (result.isSuccess) {
+            showNotification(result.data ?? "Cache cleared for tag.");
+            gridDataSource.value = loadGridData();
+        }
+        else {
+            await alert(result.errorMessage ?? "Unknown error while clearing cache for tag.");
+        }
+    }
+
+    /** Called when the Clear Cache button in the panel header is clicked. */
+    async function onClearCache(): Promise<void> {
+        const result = await invokeBlockAction<string>("ClearCache", {
+            cacheType: selectedCacheType.value
+        });
+
+        if (result.isSuccess) {
+            showNotification(result.data ?? "All cached items have been cleared.");
+            await loadStatistics();
+            gridDataSource.value = loadGridData();
+        }
+        else {
+            await alert(result.errorMessage ?? "Unknown error while clearing cache.");
+        }
+    }
+
+    /** Called when the cache type dropdown selection changes. */
+    async function onCacheTypeChanged(): Promise<void> {
+        await loadStatistics();
+    }
+
+    /** Called when the Enable Statistics checkbox is toggled. */
+    async function onEnableStatisticsChanged(newValue: boolean): Promise<void> {
+        if (isUpdatingStatistics) {
+            return;
+        }
+
+        isUpdatingStatistics = true;
+
+        try {
+            const confirmed = await confirm("Changing this setting will cause Rock to restart. Are you sure you want to modify this setting?");
+
+            if (!confirmed) {
+                // Revert the checkbox to its previous value.
+                isStatisticsEnabled.value = !newValue;
+                return;
+            }
+
+            const result = await invokeBlockAction("SetEnableStatistics", {
+                enabled: newValue
+            });
+
+            if (result.isSuccess) {
+                await alert("The Rock application will be restarted. Please wait while this page is reloaded.");
+                window.location.reload();
+            }
+            else {
+                isStatisticsEnabled.value = !newValue;
+                await alert(result.errorMessage ?? "Unknown error while updating statistics setting.");
+            }
+        }
+        finally {
+            await nextTick();
+            isUpdatingStatistics = false;
+        }
+    }
+
+    // #endregion
+
+    // Initial data load.
+    gridDataSource.value = loadGridData();
+    loadStatistics();
+</script>

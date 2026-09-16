@@ -1,0 +1,246 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div :class="columnClasses">
+        <div class="panel">
+            <div class="panel-body">
+                <div v-if="title" class="dashboard-title">{{ title }}</div>
+                <div v-if="subtitle" class="dashboard-subtitle">{{ subtitle }}</div>
+
+                <NotificationBox v-if="errorMessage" :alertType="AlertType.Warning">
+                    {{ errorMessage }}
+                </NotificationBox>
+
+                <template v-else-if="hasChartData">
+                    <PieChart v-if="chartType === 'pie'"
+                              :labels="labels"
+                              :series="pieChartSeries"
+                              :innerRadius="pieInnerRadius"
+                              :showDataLabels="arePieLabelsShown"
+                              :hideLegend="!isLegendShown"
+                              :legendPosition="legendPosition"
+                              :legendAlign="legendAlign"
+                              :height="chartHeight" />
+
+                    <BarChart v-else-if="chartType === 'bar'"
+                              :labels="labels"
+                              :series="barChartSeries"
+                              :hideLegend="!isLegendShown"
+                              :legendPosition="legendPosition"
+                              :legendAlign="legendAlign"
+                              :height="chartHeight"
+                              type="number" />
+
+                    <LineChart v-else
+                               :labels="labels"
+                               :series="lineChartSeries"
+                               :labelDateFormat="isTimeSeries ? LabelDateFormat.Auto : undefined"
+                               :hideLegend="!isLegendShown"
+                               :legendPosition="legendPosition"
+                               :legendAlign="legendAlign"
+                               :height="chartHeight"
+                               type="number" />
+                </template>
+            </div>
+        </div>
+    </div>
+</template>
+
+<script setup lang="ts">
+    import { computed } from "vue";
+    import BarChart from "@Obsidian/Controls/barChart.obs";
+    import LineChart from "@Obsidian/Controls/lineChart.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import PieChart from "@Obsidian/Controls/pieChart.obs";
+    import {
+        BarSeries,
+        LabelDateFormat,
+        LegendAlign,
+        LegendPosition,
+        LineSeries,
+        PieSeries
+    } from "@Obsidian/Core/Controls/chart";
+    import { AlertType } from "@Obsidian/Enums/Controls/alertType";
+    import { onConfigurationValuesChanged, useConfigurationValues, useReloadBlock } from "@Obsidian/Utility/block";
+    import { DynamicChartOptionsBag } from "@Obsidian/ViewModels/Blocks/Reporting/DynamicChart/dynamicChartOptionsBag";
+    import { DynamicChartSeriesBag } from "@Obsidian/ViewModels/Blocks/Reporting/DynamicChart/dynamicChartSeriesBag";
+
+    const config = useConfigurationValues<DynamicChartOptionsBag>();
+
+    onConfigurationValuesChanged(useReloadBlock());
+
+    // #region Computed Values
+
+    /** The configuration or data error to display instead of the chart. */
+    const errorMessage = computed((): string => {
+        return config.errorMessage ?? "";
+    });
+
+    /** The title of the widget. */
+    const title = computed((): string => {
+        return config.title ?? "";
+    });
+
+    /** The subtitle of the widget. */
+    const subtitle = computed((): string => {
+        return config.subtitle ?? "";
+    });
+
+    /** The type of chart to render. Anything other than "pie" or "bar" renders a line chart. */
+    const chartType = computed((): string => {
+        return config.chartType ?? "line";
+    });
+
+    /** The CSS height of the chart. */
+    const chartHeight = computed((): string => {
+        return `${config.chartHeight || 200}px`;
+    });
+
+    /** `true` if the chart legend should be shown. */
+    const isLegendShown = computed((): boolean => {
+        return config.isLegendShown;
+    });
+
+    /** The inner radius of the pie chart as a fraction (0-1) of the outer radius. */
+    const pieInnerRadius = computed((): number => {
+        return config.pieInnerRadius;
+    });
+
+    /** `true` if a pie chart should render a label on each slice. */
+    const arePieLabelsShown = computed((): boolean => {
+        return config.arePieLabelsShown;
+    });
+
+    /** `true` if the labels are ISO date strings to plot as a time series. */
+    const isTimeSeries = computed((): boolean => {
+        return config.isTimeSeries;
+    });
+
+    /** The category (or date/time) labels shared by every series. */
+    const labels = computed((): string[] => {
+        return config.labels ?? [];
+    });
+
+    /** The raw data series provided by the block. */
+    const chartSeries = computed((): DynamicChartSeriesBag[] => {
+        return config.series ?? [];
+    });
+
+    /** `true` if there is chart data to render. */
+    const hasChartData = computed((): boolean => {
+        return labels.value.length > 0 && chartSeries.value.length > 0;
+    });
+
+    /** The chart legend position based on the configured compass point. */
+    const legendPosition = computed((): LegendPosition | undefined => {
+        switch (config.legendPosition) {
+            case "n":
+            case "ne":
+            case "nw":
+                return LegendPosition.Top;
+
+            case "s":
+            case "se":
+            case "sw":
+                return LegendPosition.Bottom;
+
+            case "e":
+                return LegendPosition.Right;
+
+            case "w":
+                return LegendPosition.Left;
+
+            default:
+                return undefined;
+        }
+    });
+
+    /** The chart legend alignment based on the configured compass point. */
+    const legendAlign = computed((): LegendAlign | undefined => {
+        switch (config.legendPosition) {
+            case "ne":
+            case "se":
+                return LegendAlign.End;
+
+            case "nw":
+            case "sw":
+                return LegendAlign.Start;
+
+            case "n":
+            case "s":
+                return LegendAlign.Center;
+
+            default:
+                return undefined;
+        }
+    });
+
+    /** The data series formatted for the line chart. */
+    const lineChartSeries = computed((): LineSeries[] => {
+        return chartSeries.value.map(series => ({
+            label: series.name ?? "",
+            data: series.values ?? []
+        }));
+    });
+
+    /** The data series formatted for the bar chart. */
+    const barChartSeries = computed((): BarSeries[] => {
+        return chartSeries.value.map(series => ({
+            label: series.name ?? "",
+            data: series.values ?? []
+        }));
+    });
+
+    /** The data series formatted for the pie chart, which cannot contain value gaps. */
+    const pieChartSeries = computed((): PieSeries[] => {
+        return chartSeries.value.map(series => ({
+            label: series.name ?? "",
+            data: (series.values ?? []).map(value => value ?? 0)
+        }));
+    });
+
+    /** The responsive column classes that size the widget, derived from the configured medium column width. */
+    const columnClasses = computed((): string[] => {
+        const classes: string[] = [];
+        const mediumColumnWidth = config.columnWidth;
+
+        if (!mediumColumnWidth) {
+            return classes;
+        }
+
+        // Derive reasonable small and extra-small column widths from the
+        // configured medium width so the widget stays usable on narrow screens.
+        let xsmallColumnWidth: number | undefined;
+        let smallColumnWidth: number | undefined;
+
+        switch (mediumColumnWidth) {
+            case 1:
+                xsmallColumnWidth = 4;
+                smallColumnWidth = 2;
+                break;
+
+            case 2:
+            case 3:
+                xsmallColumnWidth = 6;
+                smallColumnWidth = 4;
+                break;
+
+            case 4:
+                smallColumnWidth = 6;
+                break;
+        }
+
+        classes.push(`col-md-${mediumColumnWidth}`);
+
+        if (xsmallColumnWidth) {
+            classes.push(`col-xs-${xsmallColumnWidth}`);
+        }
+
+        if (smallColumnWidth) {
+            classes.push(`col-sm-${smallColumnWidth}`);
+        }
+
+        return classes;
+    });
+
+    // #endregion Computed Values
+</script>

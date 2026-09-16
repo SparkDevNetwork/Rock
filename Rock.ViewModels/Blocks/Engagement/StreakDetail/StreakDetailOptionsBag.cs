@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -38,8 +38,8 @@ namespace Rock.ViewModels.Blocks.Engagement.StreakDetail
         public string ChartHTML { get; set; }
 
         /// <summary>
-        /// The person HTML to be displayed on the front end 
+        /// The person HTML to be displayed on the front end
         /// </summary>
-        public string personHTML { get; set; }
+        public string PersonHtml { get; set; }
     }
 }

@@ -18,7 +18,7 @@ import { defineAsyncComponent } from "@Obsidian/Utility/component";
 import { FieldTypeBase } from "./fieldType";
 import { Component } from "vue";
 
-export const enum ConfigurationValueKey {
+export const enum ConfigurationKey {
     MediaItems = "mediaitems",
     Mode = "modetype",
     ItemWidth = "itemwidth"

@@ -21,6 +21,7 @@
 // </copyright>
 //
 
+using Rock.Configuration;
 using Rock.Model;
 using Rock.SystemGuid;
 
@@ -35,6 +36,6 @@ namespace Rock.Rest.Controllers
         /// <summary>
         /// Initializes a new instance of the <see cref="TaggedItemsController"/> class.
         /// </summary>
-        public TaggedItemsController() : base( new Rock.Model.TaggedItemService( new Rock.Data.RockContext() ) ) { } 
+        public TaggedItemsController() : base( new Rock.Model.TaggedItemService( RockApp.Current.CreateRockContext() ) ) { } 
     }
 }

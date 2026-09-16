@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -67,7 +67,7 @@ namespace Rock.Blocks.Lms
         Description = "If selected, all non-public classes will be excluded.",
         IsRequired = false,
         DefaultBooleanValue = true,
-        ControlType = Field.Types.BooleanFieldType.BooleanControlType.Toggle,
+        BooleanControlType = Rock.Enums.Controls.BooleanControlType.Toggle,
         Key = AttributeKey.PublicOnly,
         Order = 5 )]
 
@@ -119,6 +119,11 @@ namespace Rock.Blocks.Lms
     }
 
 </style>
+
+{% if CourseInfo.Id == 0 %}
+    <div class=""alert alert-warning"">You are not authorized to view this content.</div>
+    {% return %}
+{% endif %}
 
 <div class=""d-flex flex-column gap-4"">
     

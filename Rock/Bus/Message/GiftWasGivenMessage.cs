@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -14,16 +14,18 @@
 // limitations under the License.
 // </copyright>
 //
-using Rock;
-using Rock.Bus.Queue;
-using Rock.Data;
-using Rock.Financial;
-using Rock.Model;
-using Rock.Web.Cache;
 using System;
 using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
+
+using Rock;
+using Rock.Bus.Queue;
+using Rock.Configuration;
+using Rock.Data;
+using Rock.Financial;
+using Rock.Model;
+using Rock.Web.Cache;
 
 namespace Rock.Bus.Message
 {
@@ -86,7 +88,7 @@ namespace Rock.Bus.Message
         /// <param name="gatewayCurrencyUnitMultiple">[Optional] The <see cref="Guid"/> of the <see cref="DefinedValue"/> that indicates the "unit multiple" (e.g., 100 for dollars) of the currency specified by the gatway.</param>
         public static void PublishTransactionEvent( int transactionId, string eventType = null, Guid? gatewaySupportedCardTypesDefinedValueGuid = null, Guid? gatewayCurrencyUnitMultiple = null )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var transactionService = new FinancialTransactionService( rockContext );
                 var gateway = transactionService.Queryable()

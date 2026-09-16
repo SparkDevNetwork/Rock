@@ -41,6 +41,7 @@
     import { ChartTypeValue, ChartTypeKey } from "./TithingOverview/types.partial";
     import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
     import { toCurrencyOrNull } from "@Obsidian/Utility/numberUtils";
+    import { getCssVariableValue } from "@Obsidian/Utility/cssUtils";
 
     declare module "@Obsidian/Libs/chart" {
         // eslint-disable-next-line @typescript-eslint/naming-convention, @typescript-eslint/no-unused-vars
@@ -54,23 +55,30 @@
 
     // #region Values
 
-    const chartData = ref<ChartData<keyof ChartTypeRegistry, number[]>>(JSON.parse(config.chartDataJson || "{}"));
+    const chartData = ref<ChartData<keyof ChartTypeRegistry, number[]>>(resolveChartDataColors(JSON.parse(config.chartDataJson || "{}")));
     const chartType = ref<ChartTypeValue>(config.chartType as ChartTypeValue);
     const toolTipData = ref(config.toolTipData ?? {});
-    const legendLabelColorMap = ref(config.legendData ?? {
-        "0-2 yrs": "#BAE6FD",
-        "3-6 yrs": "#38BDF8",
-        "7-11 yrs": "#0284C7",
-        "11+": "#075985",
-        "Unknown": "#A3A3A3",
-    });
+    const legendLabelColorMap = ref(resolveLegendColors(config.legendData ?? {
+        "0-2 yrs": "--color-metric-3",
+        "3-6 yrs": "--color-metric-5",
+        "7-11 yrs": "--color-metric-7",
+        "11+": "--color-metric-9",
+        "Unknown": "--color-neutral-primary",
+    }));
 
     const canvasElement = shallowRef<HTMLCanvasElement | null>(null);
     let chart: Chart<keyof ChartTypeRegistry, number[]> | null = null;
 
     // Colors pulled from CSS variables so dark mode is supported
-    const textColor = getComputedStyle(document.documentElement).getPropertyValue("--color-interface-strongest").trim() || "#0a0a0a";
-    const gridColor = getComputedStyle(document.documentElement).getPropertyValue("--color-interface-soft").trim() || "#D9D9E3";
+    const textColor = getCssVariableValue("--color-interface-strongest", "#0a0a0a");
+    const gridColor = getCssVariableValue("--color-interface-soft", "#D9D9E3");
+
+    // The custom tooltip is a plain DOM element (not canvas), so it can resolve CSS
+    // variables directly rather than needing them pre-resolved to a literal color.
+    // --color-interface-strongest/softest already flip per theme, so pairing them as
+    // background/text keeps the tooltip legible in both light and dark mode.
+    const tooltipBackgroundColor = "var(--color-interface-strongest, #0a0a0a)";
+    const tooltipTextColor = "var(--color-interface-softest, #ffffff)";
 
     const options = ref<ChartOptions>({
         responsive: true,
@@ -245,7 +253,7 @@
             }
 
             if (result.isSuccess && result.data && canvasElement.value) {
-                chartData.value = JSON.parse(result.data.chartDataJson || "{}") as ChartData<keyof ChartTypeRegistry, number[]>;
+                chartData.value = resolveChartDataColors(JSON.parse(result.data.chartDataJson || "{}") as ChartData<keyof ChartTypeRegistry, number[]>);
                 chartType.value = selectedChartType;
                 toolTipData.value = result.data.toolTipData ?? {};
 
@@ -289,10 +297,10 @@
             return;
         }
 
-        tooltipEl.style.backgroundColor = "rgba(0, 0, 0, 0.5)";
+        tooltipEl.style.backgroundColor = `color-mix(in srgb, ${tooltipBackgroundColor} 50%, transparent)`;
         tooltipEl.style.borderRadius = "10px";
         tooltipEl.style.padding = "20px";
-        tooltipEl.style.color = "white";
+        tooltipEl.style.color = tooltipTextColor;
         // Set caret Position
         tooltipEl.classList.remove("above", "below", "no-transform");
         if (tooltipModel.yAlign) {
@@ -340,6 +348,46 @@
         tooltipEl.style.left = position.left + window.pageXOffset + tooltipModel.caretX + "px";
         tooltipEl.style.top = position.top + window.pageYOffset + tooltipModel.caretY + "px";
         tooltipEl.style.pointerEvents = "none";
+    }
+
+    /**
+     * Resolves the CSS variable names supplied by the server (e.g. "--color-metric-3")
+     * into their literal computed colors, since Chart.js draws to a canvas and can't
+     * resolve CSS custom properties on its own.
+     * @param colorMap A map of label to CSS variable name.
+     */
+    function resolveLegendColors(colorMap: Record<string, string>): Record<string, string> {
+        return Object.fromEntries(
+            Object.entries(colorMap).map(([label, variableName]) => [label, getCssVariableValue(variableName, variableName)])
+        );
+    }
+
+    /**
+     * Resolves the CSS variable names supplied by the server for each dataset's
+     * background/border colors into their literal computed colors, for the same
+     * reason as {@link resolveLegendColors}.
+     * @param data The chart data as parsed from the server-supplied JSON.
+     */
+    function resolveChartDataColors(data: ChartData<keyof ChartTypeRegistry, number[]>): ChartData<keyof ChartTypeRegistry, number[]> {
+        const resolveColor = (color: string): string => getCssVariableValue(color, color);
+
+        data.datasets?.forEach(dataset => {
+            if (Array.isArray(dataset.backgroundColor)) {
+                dataset.backgroundColor = dataset.backgroundColor.map(c => typeof c === "string" ? resolveColor(c) : c);
+            }
+            else if (typeof dataset.backgroundColor === "string") {
+                dataset.backgroundColor = resolveColor(dataset.backgroundColor);
+            }
+
+            if (Array.isArray(dataset.borderColor)) {
+                dataset.borderColor = dataset.borderColor.map(c => typeof c === "string" ? resolveColor(c) : c);
+            }
+            else if (typeof dataset.borderColor === "string") {
+                dataset.borderColor = resolveColor(dataset.borderColor);
+            }
+        });
+
+        return data;
     }
 
     /**

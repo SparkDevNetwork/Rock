@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -17,11 +17,15 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
+
 using Rock.Data;
+using Rock.Enums.Security;
+using Rock.Security;
 using Rock.Utility;
 using Rock.Web.Cache;
 
@@ -48,6 +52,7 @@ namespace Rock.Model
         [MaxLength( 50 )]
         [DataMember]
         [IncludeForReporting]
+        [StringValidation( StringValidationProfile.Name )]
         public string Name { get; set; }
 
         /// <summary>
@@ -57,6 +62,7 @@ namespace Rock.Model
         /// A <see cref="System.String"/> representing the Description of the Schedule.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.LavaAndBasicHtml )]
         public string Description { get; set; }
 
         /// <summary>
@@ -205,6 +211,19 @@ namespace Rock.Model
 #if REVIEW_NET5_0_OR_GREATER
         public virtual ICollection<GroupLocation> GroupLocations { get; set; } = new System.Collections.ObjectModel.Collection<GroupLocation>();
 #endif
+
+        /// <summary>
+        /// The set of specific dates that this schedule has. This list only
+        /// includes a few years in the past and in the future.
+        /// </summary>
+        [DataMember]
+        public virtual ICollection<ScheduleDate> ScheduleDates
+        {
+            get => _scheduleDates ?? ( _scheduleDates = new Collection<ScheduleDate>() );
+            set => _scheduleDates = value;
+        }
+
+        private ICollection<ScheduleDate> _scheduleDates;
 
         #endregion
 

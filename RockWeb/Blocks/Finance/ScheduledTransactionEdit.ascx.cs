@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -27,6 +27,7 @@ using System.Web.UI.WebControls;
 using Rock;
 using Rock.Attribute;
 using Rock.Bus.Message;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Financial;
 using Rock.Model;
@@ -48,33 +49,70 @@ namespace RockWeb.Blocks.Finance
     [Description( "Edit an existing scheduled transaction." )]
 
     [BooleanField(
-        name: "Impersonation",
-        trueText: "Allow (only use on an internal page used by staff)",
-        falseText: "Don't Allow",
-        description: "Should the current user be able to view and edit other people's transactions?  IMPORTANT: This should only be enabled on an internal page that is secured to trusted users",
-        defaultValue: false,
-        key: AttributeKey.Impersonation )]
+        "Impersonation",
+        TrueText = "Allow (only use on an internal page used by staff)",
+        FalseText = "Don't Allow",
+        Description = "Should the current user be able to view and edit other people's transactions?  IMPORTANT: This should only be enabled on an internal page that is secured to trusted users",
+        DefaultBooleanValue = false,
+        Key = AttributeKey.Impersonation )]
 
     [BooleanField(
-        name: "Impersonator can see saved accounts",
-        trueText: "Allow (only use on an internal page used by staff)",
-        falseText: "Don't Allow",
-        description: "Should the current user be able to view other people's saved accounts?  IMPORTANT: This should only be enabled on an internal page that is secured to trusted users",
-        defaultValue: false,
-        key: AttributeKey.ImpersonatorCanSeeSavedAccounts )]
+        "Impersonator can see saved accounts",
+        TrueText = "Allow (only use on an internal page used by staff)",
+        FalseText = "Don't Allow",
+        Description = "Should the current user be able to view other people's saved accounts?  IMPORTANT: This should only be enabled on an internal page that is secured to trusted users",
+        DefaultBooleanValue = false,
+        Key = AttributeKey.ImpersonatorCanSeeSavedAccounts )]
 
-    [AccountsField( "Accounts", "The accounts to display.  By default all active accounts with a Public Name will be displayed", false, "", "", 1 )]
-    [BooleanField( "Additional Accounts", "Display option for selecting additional accounts", "Don't display option",
-        "Should users be allowed to select additional accounts?  If so, any active account with a Public Name value will be available", true, "", 2 )]
-    [CustomDropdownListField( "Layout Style", "How the sections of this page should be displayed", "Vertical,Fluid", false, "Vertical", "", 3 )]
+    [AccountsField( "Accounts",
+        Description = "The accounts to display.  By default all active accounts with a Public Name will be displayed",
+        IsRequired = false,
+        Order = 1 )]
+    [BooleanField( "Additional Accounts",
+        TrueText = "Display option for selecting additional accounts",
+        FalseText = "Don't display option",
+        Description = "Should users be allowed to select additional accounts?  If so, any active account with a Public Name value will be available",
+        DefaultBooleanValue = true,
+        Order = 2 )]
+    [CustomDropdownListField( "Layout Style",
+        Description = "How the sections of this page should be displayed",
+        ListSource = "Vertical,Fluid",
+        IsRequired = false,
+        DefaultValue = "Vertical",
+        Order = 3 )]
 
     // Text Options
 
-    [TextField( "Panel Title", "The text to display in panel heading", false, "Scheduled Transaction", "Text Options", 4 )]
-    [TextField( "Contribution Info Title", "The text to display as heading of section for selecting account and amount.", false, "Contribution Information", "Text Options", 5 )]
-    [TextField( "Add Account Text", "The button text to display for adding an additional account", false, "Add Another Account", "Text Options", 6 )]
-    [TextField( "Payment Info Title", "The text to display as heading of section for entering credit card or bank account information.", false, "Payment Information", "Text Options", 7 )]
-    [TextField( "Confirmation Title", "The text to display as heading of section for confirming information entered.", false, "Confirm Information", "Text Options", 8 )]
+    [TextField( "Panel Title",
+        Description = "The text to display in panel heading",
+        IsRequired = false,
+        DefaultValue = "Scheduled Transaction",
+        Category = "Text Options",
+        Order = 4 )]
+    [TextField( "Contribution Info Title",
+        Description = "The text to display as heading of section for selecting account and amount.",
+        IsRequired = false,
+        DefaultValue = "Contribution Information",
+        Category = "Text Options",
+        Order = 5 )]
+    [TextField( "Add Account Text",
+        Description = "The button text to display for adding an additional account",
+        IsRequired = false,
+        DefaultValue = "Add Another Account",
+        Category = "Text Options",
+        Order = 6 )]
+    [TextField( "Payment Info Title",
+        Description = "The text to display as heading of section for entering credit card or bank account information.",
+        IsRequired = false,
+        DefaultValue = "Payment Information",
+        Category = "Text Options",
+        Order = 7 )]
+    [TextField( "Confirmation Title",
+        Description = "The text to display as heading of section for confirming information entered.",
+        IsRequired = false,
+        DefaultValue = "Confirm Information",
+        Category = "Text Options",
+        Order = 8 )]
 
     [CodeEditorField( "Confirmation Header",
         Description = "The text (HTML) to display at the top of the confirmation section.",
@@ -126,12 +164,12 @@ achieve our mission.  We are so grateful for your commitment.
         Order = 12 )]
 
     [WorkflowTypeField(
-        name: "Workflow Trigger",
-        description: "Workflow types to trigger when an edit is submitted for a schedule.",
-        allowMultiple: true,
-        required: false,
-        order: 13,
-        key: AttributeKey.WorkflowType )]
+        "Workflow Trigger",
+        Description = "Workflow types to trigger when an edit is submitted for a schedule.",
+        AllowMultiple = true,
+        IsRequired = false,
+        Order = 13,
+        Key = AttributeKey.WorkflowType )]
 
     [BooleanField(
         "Enable End Date",
@@ -174,9 +212,6 @@ achieve our mission.  We are so grateful for your commitment.
 
         private static class PageParameterKey
         {
-            [RockObsolete( "1.13.1" )]
-            [Obsolete( "Pass the GUID instead using the key ScheduledTransactionGuid.")]
-            public const string ScheduledTransactionId = "ScheduledTransactionId";
             public const string ScheduledTransactionGuid = "ScheduledTransactionGuid";
         }
 
@@ -668,18 +703,9 @@ achieve our mission.  We are so grateful for your commitment.
         {
             var financialScheduledTransactionGuid = PageParameter( PageParameterKey.ScheduledTransactionGuid ).AsGuidOrNull();
 
-#pragma warning disable CS0618
-            var financialScheduledTransactionId = PageParameter( PageParameterKey.ScheduledTransactionId ).AsIntegerOrNull();
-#pragma warning restore CS0618
-
             if ( financialScheduledTransactionGuid.HasValue )
             {
                 return financialScheduledTransactionGuid.Value;
-            }
-
-            if ( financialScheduledTransactionId.HasValue )
-            {
-                return new FinancialScheduledTransactionService( new RockContext() ).GetGuid( financialScheduledTransactionId.Value );
             }
 
             return null;
@@ -695,7 +721,7 @@ achieve our mission.  We are so grateful for your commitment.
             // Default target to the current person
             Person targetPerson = CurrentPerson;
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var financialScheduledTransactionGuid = GetScheduledTransactionGuidFromUrl();
 
@@ -768,7 +794,7 @@ achieve our mission.  We are so grateful for your commitment.
             AvailableAccounts = new List<AccountItem>();
 
             // Enumerate through all active accounts that are public
-            foreach ( var account in new FinancialAccountService( new RockContext() ).Queryable()
+            foreach ( var account in new FinancialAccountService( RockApp.Current.CreateRockContext() ).Queryable()
                 .Where( f =>
                     f.IsActive &&
                     f.IsPublic.HasValue &&
@@ -906,7 +932,7 @@ achieve our mission.  We are so grateful for your commitment.
             if ( canSeeSavedAccounts && Gateway.SupportsSavedAccount( true ) && Gateway.SupportsSavedAccount( currencyType ) )
             {
                 // Get the saved accounts for the target person
-                var rockContext = new RockContext();
+                var rockContext = RockApp.Current.CreateRockContext();
                 var service = new FinancialPersonSavedAccountService( rockContext );
 
                 savedAccountViewModels = service
@@ -996,7 +1022,7 @@ achieve our mission.  We are so grateful for your commitment.
             txtCardName.Visible = !Gateway.SplitNameOnCard;
             txtCardName.Text = authorizedPerson.FullName;
 
-            var groupLocation = new PersonService( new RockContext() ).GetFirstLocation(
+            var groupLocation = new PersonService( RockApp.Current.CreateRockContext() ).GetFirstLocation(
                 authorizedPerson.Id, DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME.AsGuid() ).Id );
             if ( groupLocation != null )
             {
@@ -1021,7 +1047,7 @@ achieve our mission.  We are so grateful for your commitment.
         /// <returns></returns>
         private bool ProcessPaymentInfo( out string errorMessage )
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             errorMessage = string.Empty;
 
             var errorMessages = new List<string>();
@@ -1192,7 +1218,7 @@ achieve our mission.  We are so grateful for your commitment.
         /// <returns></returns>
         private bool ProcessConfirmation( out string errorMessage )
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             errorMessage = string.Empty;
 
             if ( string.IsNullOrWhiteSpace( TransactionCode ) )
@@ -1393,6 +1419,9 @@ achieve our mission.  We are so grateful for your commitment.
             if ( paymentInfo != null )
             {
                 paymentInfo.Amount = SelectedAccounts.Sum( a => a.Amount );
+                paymentInfo.AccountAllocations = SelectedAccounts
+                    .Select( a => new FinancialTransactionService.AccountAllocation( a.Id, a.Amount ) )
+                    .ToList();
                 var authorizedPerson = scheduledTransaction.AuthorizedPersonAlias.Person;
                 paymentInfo.FirstName = authorizedPerson.FirstName;
                 paymentInfo.LastName = authorizedPerson.LastName;
@@ -1462,7 +1491,7 @@ achieve our mission.  We are so grateful for your commitment.
         /// <returns></returns>
         private ReferencePaymentInfo GetReferenceInfo( int savedAccountId )
         {
-            var savedAccount = new FinancialPersonSavedAccountService( new RockContext() ).Get( savedAccountId );
+            var savedAccount = new FinancialPersonSavedAccountService( RockApp.Current.CreateRockContext() ).Get( savedAccountId );
             if ( savedAccount != null )
             {
                 return savedAccount.GetReferencePayment();
@@ -1743,7 +1772,7 @@ achieve our mission.  We are so grateful for your commitment.
             if ( workflowTypeGuids.Any() )
             {
                 // Make sure the workflow types are active and then trigger an instance of each
-                var rockContext = new RockContext();
+                var rockContext = RockApp.Current.CreateRockContext();
                 var service = new WorkflowTypeService( rockContext );
                 var workflowTypes = service.Queryable()
                     .AsNoTracking()

@@ -1,0 +1,127 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="group-map">
+        <NotificationBox v-if="errorMessage" alertType="warning">{{ errorMessage }}</NotificationBox>
+        <template v-else>
+            <Panel title="Group Map">
+                <template #headerActions>
+                    <button type="button"
+                            class="btn btn-default btn-sm"
+                            :class="{ active: hasSettingsFilters }"
+                            title="Settings"
+                            @click="onSettingsClick">
+                        <i class="ti ti-adjustments-horizontal"></i>
+                    </button>
+                </template>
+
+                <MapPanel :bag="bag"
+                          :options="options"
+                          :showChildGroups="showChildGroups"
+                          :groupTypeIds="mapGroupTypeIds" />
+            </Panel>
+
+            <SettingsModal v-model="settings"
+                           v-model:visible="isSettingsModalVisible"
+                           :groupTypes="options.groupTypes ?? []" />
+        </template>
+    </div>
+</template>
+
+<style scoped>
+.group-map :deep(.panel-body) {
+    padding: 0;
+}
+</style>
+
+<script setup lang="ts">
+    import { computed, ref, watch } from "vue";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import Panel from "@Obsidian/Controls/panel.obs";
+    import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
+    import { CustomBlockBox } from "@Obsidian/ViewModels/Blocks/customBlockBox";
+    import { GroupMapInitializationBag } from "@Obsidian/ViewModels/Blocks/Group/GroupMap/groupMapInitializationBag";
+    import { GroupMapOptionsBag } from "@Obsidian/ViewModels/Blocks/Group/GroupMap/groupMapOptionsBag";
+    import MapPanel from "./GroupMap/mapPanel.partial.obs";
+    import SettingsModal from "./GroupMap/settingsModal.partial.obs";
+    import { GroupMapSettings } from "./GroupMap/types.partial";
+
+    // #region Values
+
+    const box = useConfigurationValues<CustomBlockBox<GroupMapInitializationBag, GroupMapOptionsBag>>();
+    const invokeBlockAction = useInvokeBlockAction();
+
+    const bag: GroupMapInitializationBag = box.bag ?? {
+        groupId: 0,
+        groupColor: "",
+        childGroupColor: "",
+        memberColor: "",
+        isShowChildGroupsEnabled: false,
+        selectedGroupTypeIds: [],
+        selectedGroupTypeGuids: []
+    };
+
+    const options: GroupMapOptionsBag = box.options ?? {
+        mapHeight: 600,
+        polygonColors: [],
+        isCampusFilterShown: false,
+        campuses: [],
+        groupTypes: [],
+        connectionStatuses: []
+    };
+
+    const errorMessage = ref(bag.errorMessage ?? "");
+
+    const isSettingsModalVisible = ref(false);
+
+    const settings = ref<GroupMapSettings>({
+        showChildGroups: bag.isShowChildGroupsEnabled ?? false,
+        groupTypeGuids: bag.selectedGroupTypeGuids ?? []
+    });
+
+    // Filter state the map layers read. Kept in sync when the settings modal saves; the
+    // child-groups endpoint is integer-based, so the ids (not the guids) drive the map.
+    const showChildGroups = ref(settings.value.showChildGroups);
+    const mapGroupTypeIds = ref<number[]>(bag.selectedGroupTypeIds ?? []);
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    /** Whether a group-type filter is applied, used to highlight the settings button. */
+    const hasSettingsFilters = computed((): boolean => (settings.value.groupTypeGuids?.length ?? 0) > 0);
+
+    // #endregion Computed Values
+
+    // #region Event Handlers
+
+    /** Opens the settings modal. */
+    function onSettingsClick(): void {
+        isSettingsModalVisible.value = true;
+    }
+
+    // #endregion Event Handlers
+
+    // #region Watchers
+
+    // Persist the settings and refresh the child-groups layer filter when the modal saves.
+    watch(settings, async () => {
+        const result = await invokeBlockAction<number[]>("SavePreferences", {
+            showChildGroups: settings.value.showChildGroups,
+            groupTypeGuids: settings.value.groupTypeGuids
+        });
+
+        showChildGroups.value = settings.value.showChildGroups;
+
+        if (result.isSuccess && result.data) {
+            mapGroupTypeIds.value = result.data;
+        }
+    });
+
+    // #endregion Watchers
+
+    // #region Lifecycle Hooks
+
+    onConfigurationValuesChanged(useReloadBlock());
+
+    // #endregion Lifecycle Hooks
+</script>

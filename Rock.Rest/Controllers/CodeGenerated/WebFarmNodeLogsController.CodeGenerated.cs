@@ -21,6 +21,7 @@
 // </copyright>
 //
 
+using Rock.Configuration;
 using Rock.Model;
 using Rock.SystemGuid;
 
@@ -35,6 +36,6 @@ namespace Rock.Rest.Controllers
         /// <summary>
         /// Initializes a new instance of the <see cref="WebFarmNodeLogsController"/> class.
         /// </summary>
-        public WebFarmNodeLogsController() : base( new Rock.Model.WebFarmNodeLogService( new Rock.Data.RockContext() ) ) { } 
+        public WebFarmNodeLogsController() : base( new Rock.Model.WebFarmNodeLogService( RockApp.Current.CreateRockContext() ) ) { } 
     }
 }

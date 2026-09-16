@@ -1,12 +1,13 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Linq;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Jobs;
 using Rock.Model;
-using Rock.Tests.Shared.TestFramework;
+using Rock.Tests.Integration.TestFramework.Database;
 using Rock.Web.Cache;
 
 namespace Rock.Tests.Integration.Core.Jobs
@@ -25,7 +26,7 @@ namespace Rock.Tests.Integration.Core.Jobs
         [TestMethod]
         public void SendFollowingEventNotification()
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
 
             var groupService = new GroupService( rockContext );
             var groupTypeService = new GroupTypeService( rockContext );

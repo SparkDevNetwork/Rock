@@ -4,10 +4,11 @@
                       :exampleCode="exampleCode"
                       enableReflection>
 
-        <IntervalPicker v-model="value" label="Interval" :selectedBtnType="sbtnType" :unselectedBtnType="ubtnType" />
+        <IntervalPicker v-model="value" label="Interval" :unitPlacement="unitPlacement" :selectedBtnType="sbtnType" :unselectedBtnType="ubtnType" />
 
         <template #settings>
             <div class="row">
+                <DropDownList formGroupClasses="col-md-4" label="Unit Placement" v-model="unitPlacement" :items="unitPlacementOptions" :showBlankItem="false" help="Controls whether the Mins/Hours/Days unit toggle renders above or below the slider." />
                 <DropDownList formGroupClasses="col-md-4" label="Selected Button Type" v-model="sbtnType" :items="typeOptions" :showBlankItem="false" />
                 <DropDownList formGroupClasses="col-md-4" label="Unselected Button Type" v-model="ubtnType" :items="typeOptions" :showBlankItem="false" />
             </div>
@@ -34,9 +35,15 @@
         { text: "Link", value: BtnType.Link },
     ];
 
+    const unitPlacementOptions: ListItemBag[] = [
+        { text: "Below", value: "below" },
+        { text: "Above", value: "above" },
+    ];
+
+    const unitPlacement = ref<"above" | "below">("below");
     const sbtnType = ref(BtnType.Primary);
     const ubtnType = ref(BtnType.Default);
     const value = ref(null);
     const importCode = getSfcControlImportPath("intervalPicker");
-    const exampleCode = `<IntervalPicker v-model="value" label="Interval" :selectedBtnType="sbtnType" :unselectedBtnType="ubtnType" />`;
+    const exampleCode = `<IntervalPicker v-model="value" label="Interval" :unitPlacement="unitPlacement" :selectedBtnType="sbtnType" :unselectedBtnType="ubtnType" />`;
 </script>

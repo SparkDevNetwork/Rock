@@ -21,6 +21,7 @@
 // </copyright>
 //
 
+using Rock.Configuration;
 using Rock.Model;
 using Rock.SystemGuid;
 
@@ -35,6 +36,6 @@ namespace Rock.Rest.Controllers
         /// <summary>
         /// Initializes a new instance of the <see cref="ContentChannelsController"/> class.
         /// </summary>
-        public ContentChannelsController() : base( new Rock.Model.ContentChannelService( new Rock.Data.RockContext() ) ) { } 
+        public ContentChannelsController() : base( new Rock.Model.ContentChannelService( RockApp.Current.CreateRockContext() ) ) { } 
     }
 }

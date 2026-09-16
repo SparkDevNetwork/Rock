@@ -160,9 +160,7 @@
                       visiblePriority="xl"
                       :hideAvatar="true"
                       :showAsLink="true"
-                      :filter="pickExistingValueFilter"
-                      :filterValue="getSentByPersonTextValue"
-                      :quickFilterValue="getSentByPersonTextValue" />
+                      :filter="pickExistingValueFilter" />
 
         <DeleteColumn v-if="config.isDeleteEnabled"
                       visiblePriority="xl"
@@ -178,19 +176,6 @@
                        :defaultSlidingDateRange="defaultSlidingDateRange" />
 </template>
 
-<style scoped>
-.communication-list-grid-header-button-filters {
-    background-color: var(--color-interface-softer);
-}
-
-.communication-list-grid-cell-recipients {
-    font-size: var(--font-size-small);
-}
-
-.communication-list-grid-cell-label {
-    display: block;
-}
-</style>
 
 <script setup lang="ts">
     import { computed, reactive, ref, watch } from "vue";
@@ -214,7 +199,6 @@
     import { asBooleanOrNull, asTrueOrFalseString } from "@Obsidian/Utility/booleanUtils";
     import { CancellationTokenSource, ICancellationToken } from "@Obsidian/Utility/cancellation";
     import { alert } from "@Obsidian/Utility/dialogs";
-    import { Enumerable } from "@Obsidian/Utility/linq";
     import { asFormattedString, toNumberOrNull } from "@Obsidian/Utility/numberUtils";
     import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
     import { parseSlidingDateRangeString, RangeType, SlidingDateRange, slidingDateRangeToString, TimeUnit } from "@Obsidian/Utility/slidingDateRange";
@@ -558,16 +542,6 @@
     }
 
     /**
-     * Gets the text value for the "Sent By" column.
-     *
-     * @param row The row whose value to get.
-     */
-    function getSentByPersonTextValue(row: Record<string, unknown>): string {
-        const person = (row as Row).sentByPerson;
-        return !person ? "" : `${person.nickName} ${person.lastName}`;
-    }
-
-    /**
      * `true` if delete is disabled for this row.
      *
      * @param row The row whose delete disabled status to get.
@@ -651,25 +625,10 @@
      * @param key The key of the row that was selected.
      */
     function onSelectItem(key: string): void {
-        const row = findRow(key);
-        if (row?.isLegacyCommunication) {
-            if (config.navigationUrls?.[NavigationUrlKey.LegacyDetailPage]) {
-                window.location.href = config.navigationUrls[NavigationUrlKey.LegacyDetailPage].replace("((Key))", key);
-                return;
-            }
-        }
-
         if (config.navigationUrls?.[NavigationUrlKey.DetailPage]) {
             window.location.href = config.navigationUrls[NavigationUrlKey.DetailPage].replace("((Key))", key);
             return;
         }
-    }
-
-    function findRow(key: string): Row | undefined {
-        return Enumerable.from(gridData?.rows ?? [])
-            .cast<Row>((r): r is Row => true)
-            .where(r => r.idKey === key)
-            .firstOrDefault();
     }
 
     /**

@@ -1,0 +1,51 @@
+// <copyright>
+// Copyright by the Spark Development Network
+//
+// Licensed under the Rock Community License (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.rockrms.com/license
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// </copyright>
+//
+
+using System;
+using System.Collections.Generic;
+
+using Rock.ViewModels.Core.Grid;
+using Rock.ViewModels.Utility;
+
+namespace Rock.ViewModels.Blocks.Finance.TransactionDetail
+{
+    /// <summary>
+    /// The collection of transaction detail line items together with the attribute
+    /// definitions and pending deletions, passed between the client and server
+    /// during save operations.
+    /// </summary>
+    public class TransactionDetailsBag : EntityBagBase
+    {
+        /// <summary>
+        /// Gets or sets the current set of account allocation line items.
+        /// </summary>
+        public List<TransactionLineItemBag> Rows { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Guids of line items that have been explicitly removed
+        /// by the user and should be deleted from the database on save.
+        /// </summary>
+        public List<Guid> RowsToDelete { get; set; }
+
+        /// <summary>
+        /// Gets or sets the attribute field definitions for the allocations grid.
+        /// Each entry describes one attribute column: its field key (<c>attr_{attributeKey}</c>),
+        /// display title, and field type, matching the format used by <see cref="GridDefinitionBag.AttributeFields"/>.
+        /// </summary>
+        public List<AttributeFieldDefinitionBag> AttributeFields { get; set; }
+    }
+}

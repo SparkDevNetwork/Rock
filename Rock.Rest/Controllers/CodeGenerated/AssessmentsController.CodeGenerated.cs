@@ -21,6 +21,7 @@
 // </copyright>
 //
 
+using Rock.Configuration;
 using Rock.Model;
 using Rock.SystemGuid;
 
@@ -35,6 +36,6 @@ namespace Rock.Rest.Controllers
         /// <summary>
         /// Initializes a new instance of the <see cref="AssessmentsController"/> class.
         /// </summary>
-        public AssessmentsController() : base( new Rock.Model.AssessmentService( new Rock.Data.RockContext() ) ) { } 
+        public AssessmentsController() : base( new Rock.Model.AssessmentService( RockApp.Current.CreateRockContext() ) ) { } 
     }
 }

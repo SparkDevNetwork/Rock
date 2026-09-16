@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -16,7 +16,9 @@
 //
 using System;
 using System.ComponentModel;
+
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.UniversalSearch;
@@ -31,10 +33,21 @@ namespace Rock.Jobs
     [DisplayName( "Index Rock Site" )]
     [Description( "This job indexes the specified site." )]
 
-
-    [SiteField( "Site", "The site that will be indexed", true, order: 0 )]
-    [TextField( "Login Id", "The login to impersonate when navigating to secured pages. Leave blank if secured pages should not be indexed.", false, "", "", 1, "LoginId" )]
-    [TextField( "Password", "The password associated with the Login Id.", false, "", "", 2, "Password", true )]
+    [SiteField( "Site",
+        Description = "The site that will be indexed",
+        IsRequired = true,
+        Order = 0 )]
+    [TextField( "Login Id",
+        Description = "The login to impersonate when navigating to secured pages. Leave blank if secured pages should not be indexed.",
+        IsRequired = false,
+        Order = 1,
+        Key = "LoginId" )]
+    [TextField( "Password",
+        Description = "The password associated with the Login Id.",
+        IsRequired = false,
+        Order = 2,
+        Key = "Password",
+        IsPassword = true )]
 
     public class IndexRockSite : RockJob
     {
@@ -63,7 +76,7 @@ namespace Rock.Jobs
 
             if ( siteId.HasValue )
             {
-                _site = new SiteService( new RockContext() ).Get( siteId.Value );
+                _site = new SiteService( RockApp.Current.CreateRockContext() ).Get( siteId.Value );
 
                 if ( _site != null )
                 {

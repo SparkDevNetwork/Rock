@@ -1,12 +1,13 @@
-﻿using System.Linq;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
-using Rock.Tests.Shared.TestFramework;
+using Rock.Tests.Integration.TestFramework.Database;
 
 namespace Rock.Tests.Integration.Engagement.Connections
 {
@@ -18,7 +19,7 @@ namespace Rock.Tests.Integration.Engagement.Connections
         {
             var testStartDateTime = RockDateTime.Now;
 
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
 
             var connectionRequestService = new ConnectionRequestService( rockContext );
 
@@ -67,7 +68,7 @@ namespace Rock.Tests.Integration.Engagement.Connections
                 Thread.Sleep( 1000 );
             } );
 
-            using ( var rockContext2 = new RockContext() )
+            using ( var rockContext2 = RockApp.Current.CreateRockContext() )
             {
                 var connectionRequestWorkflowService = new ConnectionRequestWorkflowService( rockContext2 );
                 bool producedConnectionRequestWorkflow = false;

@@ -17,9 +17,7 @@
           disablePreferences>
 
         <PersonColumn name="person" title="Name" field="person"
-                      :filter="pickExistingValueFilter"
-                      :filterValue="getPersonNameFilterValue"
-                      :quickFilterValue="getPersonNameFilterValue" />
+                      :filter="pickExistingValueFilter" />
 
         <NumberColumn name="messageCount" title="Messages Received" field="messageCount" />
 
@@ -41,7 +39,6 @@
     import NothingToShow from "./nothingToShow.partial.obs";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
     import { GridDefinitionBag } from "@Obsidian/ViewModels/Core/Grid/gridDefinitionBag";
-    import { PersonFieldBag } from "@Obsidian/ViewModels/Core/Grid/personFieldBag";
     import { isPromise } from "@Obsidian/Utility/promiseUtils";
     import { makeUrlRedirectSafe } from "@Obsidian/Utility/url";
 
@@ -72,16 +69,6 @@
             hasResults.value = (props.gridData?.rows?.length ?? 0) > 0;
         }
     }, { immediate: true });
-
-    /**
-    * Gets the filter value text to use for the name column.
-    *
-    * @param row The row to be filtered.
-    */
-    function getPersonNameFilterValue(row: Record<string, unknown>): string {
-        const person = row["person"] as PersonFieldBag;
-        return !person ? "" : `${person.nickName} ${person.lastName}`;
-    }
 
     /**
     * Gets the filter value text to use for the connection status column.

@@ -1,5 +1,5 @@
 <template>
-    <div class="chart-container" :style="`height: ${height}; width: ${width};`">
+    <div class="chart-container" :style="`height: ${height || '100%'}; width: ${width || '100%'};`">
         <Chart :data="chartData" :options="chartOptions" type="line" />
     </div>
 </template>
@@ -7,7 +7,7 @@
 <script setup lang="ts">
     import { computed, PropType } from "vue";
     import Chart from "./chart.obs";
-    import { LabelDateFormat, LegendAlign, LegendPosition, LineSeries, LineStyle, TooltipCallback } from "@Obsidian/Core/Controls/chart";
+    import { LabelDateFormat, LegendAlign, LegendPosition, LineSeries, LineStyle, TitleAlign, TooltipCallback } from "@Obsidian/Core/Controls/chart";
     import { RockColor } from "@Obsidian/Core/Utilities/rockColor";
     import { Chart as ChartJs, ChartData, ChartOptions, Color, LegendItem, ScriptableContext, TooltipItem, TooltipLabelStyle } from "@Obsidian/Libs/chart";
     import { Enumerable } from "@Obsidian/Utility/linq";
@@ -25,6 +25,13 @@
          */
         categoryLabel: {
             type: String as PropType<string | undefined>
+        },
+
+        /**
+         * Whether to hide the category axis line. Shown by default.
+         */
+        categoryHideAxisLine: {
+            type: Boolean as PropType<boolean | undefined>
         },
 
         /**
@@ -116,6 +123,13 @@
         },
 
         /**
+         * Whether to show a point marker at each data point. Points are shown only on hover by default.
+         */
+        showPoints: {
+            type: Boolean as PropType<boolean | undefined>
+        },
+
+        /**
          * Whether the chart has stacked lines.
          */
         stack: {
@@ -127,6 +141,13 @@
          */
         title: {
             type: String as PropType<string | undefined>
+        },
+
+        /**
+         * The alignment of the chart title.
+         */
+        titleAlign: {
+            type: String as PropType<TitleAlign | undefined>
         },
 
         /**
@@ -159,6 +180,13 @@
          * The per series property, `props.data[n].isUnfilled`, overrides this setting.
          */
         unfilled: {
+            type: Boolean as PropType<boolean | undefined>
+        },
+
+        /**
+         * Whether to hide the value axis line. Shown by default.
+         */
+        valueHideAxisLine: {
             type: Boolean as PropType<boolean | undefined>
         },
 
@@ -418,8 +446,16 @@
                     // set the colors to "transparent" and the hover colors to the series color.
                     // This is the way as going the `options.elements.point.radius: 0` route
                     // causes hovered points to be clipped when they are min or max values.
-                    pointBackgroundColor: Enumerable.from(series.data).where(d => typeof d === "number").count() > 1 ? "transparent" : seriesColor,
-                    pointBorderColor: Enumerable.from(series.data).where(d => typeof d === "number").count() > 1 ? "transparent" : seriesColor,
+                    // When `showPoints` is set, render a hollow point at every data point
+                    // using the same style as the hovered point.
+                    pointRadius: props.showPoints === true ? hoverPointRadius : undefined,
+                    pointBorderWidth: props.showPoints === true ? hoverPointBorderWidth : undefined,
+                    pointBackgroundColor: props.showPoints === true
+                        ? getCssVar("--color-interface-softest")
+                        : Enumerable.from(series.data).where(d => typeof d === "number").count() > 1 ? "transparent" : seriesColor,
+                    pointBorderColor: props.showPoints === true
+                        ? seriesColor
+                        : Enumerable.from(series.data).where(d => typeof d === "number").count() > 1 ? "transparent" : seriesColor,
                     pointHoverBackgroundColor: getCssVar("--color-interface-softest"),
                     pointHoverBorderColor: seriesColor,
                     pointHoverBorderWidth: hoverPointBorderWidth,
@@ -491,6 +527,7 @@
                 },
 
                 title: {
+                    align: props.titleAlign ?? undefined,
                     color: getCssVar("--color-interface-strong"),
                     display: !!props.title,
 
@@ -499,6 +536,12 @@
                         size: parseInt(getCssVar("--font-size-small")) || undefined,
                         weight: getCssVar("--font-weight-semibold") as "bold" | "normal" | "bolder" | "lighter"
                     },
+
+                    // When the title alignment is centered,
+                    // it should be centered according to the full width of the canvas.
+                    // When it is right or left aligned, it should be left or right aligned
+                    // with the chart data area.
+                    fullSize: !props.titleAlign || props.titleAlign === "center",
 
                     text: props.title ?? undefined
                 },
@@ -657,7 +700,10 @@
             scales: {
                 x: {
                     border: {
-                        color: getCssVar("--color-interface-soft")
+                        color: getCssVar("--color-interface-soft"),
+
+                        // Show/hide the category axis line.
+                        display: props.categoryHideAxisLine !== true
                     },
 
                     grid: {
@@ -715,7 +761,10 @@
                     beginAtZero: internalValueSuggestedMin.value === 0,
 
                     border: {
-                        color: getCssVar("--color-interface-soft")
+                        color: getCssVar("--color-interface-soft"),
+
+                        // Show/hide the value axis line.
+                        display: props.valueHideAxisLine !== true
                     },
 
                     grid: {

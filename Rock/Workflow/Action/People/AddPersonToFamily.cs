@@ -21,6 +21,7 @@ using System.ComponentModel.Composition;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
@@ -52,16 +53,16 @@ namespace Rock.Workflow.Action.People
         FieldTypeClassNames = new string[] { "Rock.Field.Types.PersonFieldType" } )]
     [WorkflowTextOrAttribute(
         "Family Role",
-        attributeLabel: "Attribute Value",
-        fieldTypeClassNames: new string[] { "Rock.Field.Types.GroupRoleFieldType" },
+        "Attribute Value",
+        FieldTypeClassNames = new string[] { "Rock.Field.Types.GroupRoleFieldType" },
         Description = "The group role GUID or attribute that contains the family role to assign the person to.",
         IsRequired = true,
         Order = 2,
         Key = AttributeKey.FamilyRole )]
     [WorkflowTextOrAttribute(
         "Remove Person From Current Family",
-        attributeLabel: "Attribute Value",
-        fieldTypeClassNames: new string[] { "Rock.Field.Types.BooleanFieldType" },
+        "Attribute Value",
+        FieldTypeClassNames = new string[] { "Rock.Field.Types.BooleanFieldType" },
         Description = "The Value True/False or an attribute that determines whether the person should be kept in their current family.",
         IsRequired = true,
         Order = 3,

@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -56,5 +56,10 @@ namespace Rock.ViewModels.Rest.Controls
         /// </summary>
 
         public List<string> ExpandToValues { get; set; }
+
+        /// <summary>
+        /// Determines if inactive locations should be included in the results.
+        /// </summary>
+        public bool IncludeInactive { get; set; }
     }
 }

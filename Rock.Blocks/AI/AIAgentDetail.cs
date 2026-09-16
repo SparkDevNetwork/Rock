@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -26,6 +26,7 @@ using Rock;
 using Rock.AI.Agent;
 using Rock.AI.Agent.Mcp;
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Enums.AI.Agent;
@@ -248,6 +249,7 @@ namespace Rock.Blocks.AI
                 IsExcludingSystemSkills = entity.AgentType == AgentType.Chat
                     ? chatSettings.IsExcludingSystemSkills
                     : mcpSettings.IsExcludingSystemSkills,
+                IsSystem = entity.IsSystem,
                 Role = chatSettings.Role,
                 CurrentPersonTemplate = chatSettings.CurrentPersonTemplate,
                 Slug = mcpSettings.Slug,
@@ -306,11 +308,7 @@ namespace Rock.Blocks.AI
             {
                 var settings = agentSkill.GetAdditionalSettings<AgentSkillSettings>();
 
-                bag.EnabledTools = agentSkill.AISkill
-                    .AISkillTools
-                    .Select( f => f.Guid )
-                    .Where( g => !settings.DisabledTools.Contains( g ) )
-                    .ToList();
+                bag.EnabledTools = settings.EnabledTools;
 
                 if ( agentSkill.AISkill.CodeEntityTypeId.HasValue )
                 {
@@ -357,8 +355,14 @@ namespace Rock.Blocks.AI
             box.IfValidProperty( nameof( box.Bag.Name ),
                 () => entity.Name = box.Bag.Name );
 
-            box.IfValidProperty( nameof( box.Bag.Instructions ),
-                () => entity.Instructions = box.Bag.Instructions );
+            // The instructions of a system agent are owned by Rock and must
+            // not be changed through the UI, so silently ignore any value sent
+            // from the client for those agents.
+            if ( !entity.IsSystem )
+            {
+                box.IfValidProperty( nameof( box.Bag.Instructions ),
+                    () => entity.Instructions = box.Bag.Instructions );
+            }
 
             if ( entity.AgentType == AgentType.Chat )
             {
@@ -514,7 +518,7 @@ namespace Rock.Blocks.AI
             }
 
             // Ensure navigation properties will work now.
-            using ( var rockContext2 = new RockContext() )
+            using ( var rockContext2 = RockApp.Current.CreateRockContext() )
             {
                 entity = new AIAgentService( rockContext2 ).Get( entity.Id );
 
@@ -541,6 +545,11 @@ namespace Rock.Blocks.AI
             if ( !TryGetEntityForEditAction( key, out var entity, out var actionError ) )
             {
                 return actionError;
+            }
+
+            if ( entity.IsSystem )
+            {
+                return ActionBadRequest( $"This {AIAgent.FriendlyTypeName} is a system agent and cannot be deleted." );
             }
 
             if ( !entityService.CanDelete( entity, out var errorMessage ) )
@@ -646,11 +655,7 @@ namespace Rock.Blocks.AI
 
             var settings = agentSkill.GetAdditionalSettings<AgentSkillSettings>();
 
-            settings.DisabledTools = agentSkill.AISkill
-                .AISkillTools
-                .Select( f => f.Guid )
-                .Where( g => !bag.EnabledTools.Contains( g ) )
-                .ToList();
+            settings.EnabledTools = bag.EnabledTools;
 
             if ( agentSkill.AISkill.CodeEntityTypeId.HasValue )
             {

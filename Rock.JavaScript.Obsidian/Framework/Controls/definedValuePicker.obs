@@ -53,6 +53,11 @@
             default: false
         },
 
+        includeInactive: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
         ...standardAsyncPickerProps
     });
 
@@ -73,7 +78,7 @@
         const options: DefinedValuePickerGetDefinedValuesOptionsBag = {
             definedTypeGuid: toGuidOrNull(props.definedTypeGuid) ?? emptyGuid,
             securityGrantToken: securityGrantToken.value,
-            includeInactive: false,
+            includeInactive: props.includeInactive,
         };
         const url = "/api/v2/Controls/DefinedValuePickerGetDefinedValues";
         const result = await http.post<ListItemBag[]>(url, undefined, options);
@@ -91,7 +96,7 @@
         itemsSource.value = () => loadItems();
     }
 
-    watch(() => props.definedTypeGuid, fetchValues);
+    watch(() => [props.definedTypeGuid, props.includeInactive], fetchValues);
 
     fetchValues();
 

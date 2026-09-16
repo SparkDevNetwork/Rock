@@ -21,6 +21,7 @@
 // </copyright>
 //
 
+import { Guid } from "@Obsidian/Types";
 import { EventCalendarItemAttributeBag } from "@Obsidian/ViewModels/Blocks/Event/EventItemDetail/eventCalendarItemAttributeBag";
 import { EventItemOccurenceAttributeBag } from "@Obsidian/ViewModels/Blocks/Event/EventItemDetail/eventItemOccurenceAttributeBag";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
@@ -69,6 +70,12 @@ export type EventItemBag = {
     /** Gets or sets the is active. */
     isActive: boolean;
 
+    /**
+     * Gets or sets a value indicating whether the current individual may change the
+     * approval status. When false, the approval status is presented read-only.
+     */
+    isApprovalConfigurable: boolean;
+
     /** Gets or sets a flag indicating if the event has been approved. */
     isApproved: boolean;
 
@@ -83,6 +90,12 @@ export type EventItemBag = {
 
     /** Gets or sets the selected calendar names. */
     selectedCalendarNames?: string[] | null;
+
+    /** Gets or sets the Guids of the request filters this event item is targeted to. */
+    selectedRequestFilterGuids?: Guid[] | null;
+
+    /** Gets or sets the Guids of the personalization segments this event item is targeted to. */
+    selectedSegmentGuids?: Guid[] | null;
 
     /** Gets or sets the Summary of the EventItem. */
     summary?: string | null;

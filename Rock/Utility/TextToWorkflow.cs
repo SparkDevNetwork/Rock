@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -14,15 +14,13 @@
 // limitations under the License.
 // </copyright>
 //
-using System;
 using System.Collections.Generic;
-using System.Data.Entity;
 using System.Linq;
 using System.Text.RegularExpressions;
 
 using Rock;
+using Rock.Configuration;
 using Rock.Data;
-using Rock.Field.Types;
 using Rock.Model;
 using Rock.Web.Cache;
 
@@ -95,15 +93,11 @@ namespace Rock.Utility
                 var workflowAttributes = dvWorkflow.Attributes["WorkflowAttributes"];
                 if ( workflowAttributes != null )
                 {
-                    var keyValueField = workflowAttributes.FieldType.Field as KeyValueListFieldType;
-                    if ( keyValueField != null )
+                    if ( workflowAttributes.FieldType.Guid == SystemGuid.FieldType.KEY_VALUE_LIST.AsGuid() )
                     {
-#if REVIEW_WEBFORMS
-                        workflowAttributesSettings = keyValueField.GetValuesFromString( null,
-#else
-                        workflowAttributesSettings = keyValueField.GetValuesFromString(
-#endif
-                            dvWorkflow.GetAttributeValue( "WorkflowAttributes" ), workflowAttributes.QualifierValues,
+                        workflowAttributesSettings = Field.Helper.GetKeyValueListValuesFromString(
+                            dvWorkflow.GetAttributeValue( "WorkflowAttributes" ),
+                            workflowAttributes.ConfigurationValues,
                             false );
                     }
                 }
@@ -120,7 +114,7 @@ namespace Rock.Utility
 
                 // Try to find a person associated with phone number received
                 Person fromPerson;
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     var personService = new PersonService( rockContext );
                     fromPerson = personService.GetPersonFromMobilePhoneNumber( fromPhone, false );
@@ -164,7 +158,7 @@ namespace Rock.Utility
         /// <param name="response">The response to be sent back to the user.</param>
         private static void LaunchWorkflow( WorkflowTypeCache workflowType, string nameTemplate, Person fromPerson, string fromPhone, string toPhone, string message, List<string> matchGroups, List<BinaryFile> attachments, List<KeyValuePair<string, object>> workflowAttributesSettings, out string response )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 // Activate a new workflow
                 var workflow = Model.Workflow.Activate( workflowType, "Request from " + ( fromPhone ?? "??" ), rockContext );

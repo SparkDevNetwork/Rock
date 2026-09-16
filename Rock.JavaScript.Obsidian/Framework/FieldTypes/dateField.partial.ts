@@ -26,7 +26,7 @@ import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
 import { FieldTypeBase } from "./fieldType";
 import { getStandardFilterComponent } from "./utils";
 
-export const enum ConfigurationValueKey {
+export const enum ConfigurationKey {
     Format = "format",
     DisplayDiff = "displayDiff",
     DisplayCurrentOption = "displayCurrentOption",
@@ -60,12 +60,12 @@ export class DateFieldType extends FieldTypeBase {
         }
         else if (value) {
             const dateValue = RockDateTime.parseISO(value);
-            const dateFormatTemplate = configurationValues[ConfigurationValueKey.Format] || "MM/dd/yyy";
+            const dateFormatTemplate = configurationValues[ConfigurationKey.Format] || "MM/dd/yyy";
 
             if (dateValue !== null) {
                 let textValue = dateValue.toASPString(dateFormatTemplate);
 
-                const displayDiff = asBoolean(configurationValues[ConfigurationValueKey.DisplayDiff]);
+                const displayDiff = asBoolean(configurationValues[ConfigurationKey.DisplayDiff]);
 
                 if (displayDiff === true) {
                     textValue = `${textValue} ${dateValue.toElapsedString()}`;

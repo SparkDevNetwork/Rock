@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -22,8 +22,12 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
+
 using Newtonsoft.Json;
+
 using Rock.Data;
+using Rock.Enums.Security;
+using Rock.Security;
 using Rock.Utility;
 using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
@@ -48,12 +52,14 @@ namespace Rock.Model
         [MaxLength( 250 )]
         [DataMember( IsRequired = true )]
         [Required]
+        [StringValidation( StringValidationProfile.Name )]
         public string Name { get; set; }
 
         /// <summary>
         /// Gets or sets a description of the Streak Type.
         /// </summary>
         [DataMember]
+        [StringValidation( StringValidationProfile.LavaAndBasicHtml )]
         public string Description { get; set; }
 
         /// <summary>
@@ -127,6 +133,7 @@ namespace Rock.Model
         /// </summary>
         /// <value>The structure settings JSON.</value>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string StructureSettingsJSON
         {
             get

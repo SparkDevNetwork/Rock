@@ -20,7 +20,7 @@ import HtmlEditor from "@Obsidian/Controls/htmlEditor.obs";
 import CheckBox from "@Obsidian/Controls/checkBox.obs";
 import DropDownList from "@Obsidian/Controls/dropDownList.obs";
 import TextBox from "@Obsidian/Controls/textBox.obs";
-import { ConfigurationValueKey } from "./htmlField.partial";
+import { ConfigurationKey } from "./htmlField.partial";
 import { asBoolean, asTrueFalseOrNull } from "@Obsidian/Utility/booleanUtils";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
@@ -39,23 +39,23 @@ export const EditComponent = defineComponent({
         const refreshKey = ref(0);
 
         const toolbar = computed(() => {
-            return (props.configurationValues[ConfigurationValueKey.Toolbar] ?? "Light").toLocaleLowerCase();
+            return (props.configurationValues[ConfigurationKey.Toolbar] ?? "Light").toLocaleLowerCase();
         });
 
         const documentFolderRoot = computed(() => {
-            return props.configurationValues[ConfigurationValueKey.EncryptedDocumentFolderRoot] ?? "";
+            return props.configurationValues[ConfigurationKey.EncryptedDocumentFolderRoot] ?? "";
         });
 
         const imageFolderRoot = computed(() => {
-            return props.configurationValues[ConfigurationValueKey.EncryptedImageFolderRoot] ?? "";
+            return props.configurationValues[ConfigurationKey.EncryptedImageFolderRoot] ?? "";
         });
 
         const userSpecificRoot = computed(() => {
-            return props.configurationValues[ConfigurationValueKey.UserSpecificRoot] === "True";
+            return props.configurationValues[ConfigurationKey.UserSpecificRoot] === "True";
         });
 
         const enableAssetManager = computed(() => {
-            return asBoolean(props.configurationValues[ConfigurationValueKey.EnableAssetManager]);
+            return asBoolean(props.configurationValues[ConfigurationKey.EnableAssetManager]);
         });
 
         // Watch for changes from the parent component and update the text editor.
@@ -139,16 +139,16 @@ export const ConfigurationComponent = defineComponent({
 
             // Construct the new value that will be emitted if it is different
             // than the current value.
-            newValue[ConfigurationValueKey.Toolbar] = toolbar.value?.toString() || "Light";
-            newValue[ConfigurationValueKey.DocumentFolderRoot] = documentFolderRoot.value?.toString() ?? "";
-            newValue[ConfigurationValueKey.ImageFolderRoot] = imageFolderRoot.value?.toString() ?? "";
-            newValue[ConfigurationValueKey.UserSpecificRoot] = asTrueFalseOrNull(userSpecificRoot.value) ?? "False";
+            newValue[ConfigurationKey.Toolbar] = toolbar.value?.toString() || "Light";
+            newValue[ConfigurationKey.DocumentFolderRoot] = documentFolderRoot.value?.toString() ?? "";
+            newValue[ConfigurationKey.ImageFolderRoot] = imageFolderRoot.value?.toString() ?? "";
+            newValue[ConfigurationKey.UserSpecificRoot] = asTrueFalseOrNull(userSpecificRoot.value) ?? "False";
 
             // Compare the new value and the old value.
-            const anyValueChanged = newValue[ConfigurationValueKey.Toolbar] !== (props.modelValue[ConfigurationValueKey.Toolbar] ?? "Light")
-                || newValue[ConfigurationValueKey.DocumentFolderRoot] !== (props.modelValue[ConfigurationValueKey.DocumentFolderRoot] ?? "")
-                || newValue[ConfigurationValueKey.ImageFolderRoot] !== (props.modelValue[ConfigurationValueKey.ImageFolderRoot] ?? "")
-                || newValue[ConfigurationValueKey.UserSpecificRoot] !== (props.modelValue[ConfigurationValueKey.ImageFolderRoot] ?? "False");
+            const anyValueChanged = newValue[ConfigurationKey.Toolbar] !== (props.modelValue[ConfigurationKey.Toolbar] ?? "Light")
+                || newValue[ConfigurationKey.DocumentFolderRoot] !== (props.modelValue[ConfigurationKey.DocumentFolderRoot] ?? "")
+                || newValue[ConfigurationKey.ImageFolderRoot] !== (props.modelValue[ConfigurationKey.ImageFolderRoot] ?? "")
+                || newValue[ConfigurationKey.UserSpecificRoot] !== (props.modelValue[ConfigurationKey.ImageFolderRoot] ?? "False");
 
             // If any value changed then emit the new model value.
             if (anyValueChanged) {
@@ -175,10 +175,10 @@ export const ConfigurationComponent = defineComponent({
         // Watch for changes coming in from the parent component and update our
         // data to match the new information.
         watch(() => [props.modelValue, props.configurationProperties], () => {
-            toolbar.value = props.modelValue[ConfigurationValueKey.Toolbar] ?? "Light";
-            documentFolderRoot.value = props.modelValue[ConfigurationValueKey.DocumentFolderRoot] ?? "";
-            imageFolderRoot.value = props.modelValue[ConfigurationValueKey.ImageFolderRoot] ?? "";
-            userSpecificRoot.value = asBoolean(props.modelValue[ConfigurationValueKey.UserSpecificRoot]);
+            toolbar.value = props.modelValue[ConfigurationKey.Toolbar] ?? "Light";
+            documentFolderRoot.value = props.modelValue[ConfigurationKey.DocumentFolderRoot] ?? "";
+            imageFolderRoot.value = props.modelValue[ConfigurationKey.ImageFolderRoot] ?? "";
+            userSpecificRoot.value = asBoolean(props.modelValue[ConfigurationKey.UserSpecificRoot]);
         }, {
             immediate: true
         });
@@ -192,10 +192,10 @@ export const ConfigurationComponent = defineComponent({
         });
 
         // Watch for changes in properties that only require a local UI update.
-        watch(toolbar, () => maybeUpdateConfiguration(ConfigurationValueKey.Toolbar, toolbar.value ?? "Light"));
-        watch(documentFolderRoot, () => maybeUpdateConfiguration(ConfigurationValueKey.DocumentFolderRoot, documentFolderRoot.value?.toString() ?? ""));
-        watch(imageFolderRoot, () => maybeUpdateConfiguration(ConfigurationValueKey.ImageFolderRoot, imageFolderRoot.value?.toString() ?? ""));
-        watch(userSpecificRoot, () => maybeUpdateConfiguration(ConfigurationValueKey.UserSpecificRoot, asTrueFalseOrNull(userSpecificRoot.value) ?? "False"));
+        watch(toolbar, () => maybeUpdateConfiguration(ConfigurationKey.Toolbar, toolbar.value ?? "Light"));
+        watch(documentFolderRoot, () => maybeUpdateConfiguration(ConfigurationKey.DocumentFolderRoot, documentFolderRoot.value?.toString() ?? ""));
+        watch(imageFolderRoot, () => maybeUpdateConfiguration(ConfigurationKey.ImageFolderRoot, imageFolderRoot.value?.toString() ?? ""));
+        watch(userSpecificRoot, () => maybeUpdateConfiguration(ConfigurationKey.UserSpecificRoot, asTrueFalseOrNull(userSpecificRoot.value) ?? "False"));
 
         return {
             toolbar,

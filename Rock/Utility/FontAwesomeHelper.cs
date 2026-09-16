@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -24,6 +24,7 @@ using System.Web.Hosting;
 using Humanizer;
 
 using Rock;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web;
@@ -117,7 +118,7 @@ namespace Rock.Utility
         /// <returns></returns>
         public static bool ExtractFontAwesomePackage( int binaryFileId )
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             BinaryFileService binaryFileService = new BinaryFileService( rockContext );
             BinaryFile fontawesomePackageBinaryFile = binaryFileService.Get( binaryFileId );
 

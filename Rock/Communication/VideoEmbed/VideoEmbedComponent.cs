@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -18,6 +18,8 @@ using System;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.Linq;
+
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Extension;
 using Rock.Model;
@@ -56,7 +58,7 @@ namespace Rock.Communication.VideoEmbed
         /// <returns></returns>
         public string OverlayImage( Image image, string fileName, string overlay )
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var binaryFileTypeService = new BinaryFileTypeService( rockContext );
             var binaryFileType = binaryFileTypeService.Get( Rock.SystemGuid.BinaryFiletype.COMMUNICATION_IMAGE.AsGuid() );
             var binaryFileService = new BinaryFileService( rockContext );

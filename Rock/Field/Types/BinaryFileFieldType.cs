@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -22,7 +22,9 @@ using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 #endif
+
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Reporting;
@@ -57,7 +59,7 @@ namespace Rock.Field.Types
         {
             var configurationProperties = new Dictionary<string, string>();
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var binaryFileTypes = new BinaryFileTypeService( rockContext )
                     .Queryable()
@@ -95,7 +97,7 @@ namespace Rock.Field.Types
                 return "";
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var binaryFileInfo = new BinaryFileService( rockContext )
                     .Queryable()
@@ -113,28 +115,72 @@ namespace Rock.Field.Types
                     return "";
                 }
 
-                if ( !formatAsHtml )
-                {
-                    return binaryFileInfo.FileName;
-                }
-                else
-                {
-                    var filePath = FileUrlHelper.GetFileUrl( binaryFileInfo.Guid );
-                    return string.Format( "<a href='{0}' title='{1}' class='btn btn-xs btn-default'>View</a>", filePath, System.Web.HttpUtility.HtmlEncode( binaryFileInfo.FileName ) );
-                }
+                return GetFormattedValue( binaryFileInfo.Guid, binaryFileInfo.FileName, formatAsHtml );
             }
         }
 
+        /// <summary>
+        /// Get the formatted value as either a plain text string or an HTML formatted string.
+        /// </summary>
+        /// <param name="guid">The unique identifier of the file to be formatted.</param>
+        /// <param name="fileName">The name of the file to be formatted.</param>
+        /// <param name="formatAsHtml"><c>true</c> if the output should be formatted as HTML; otherwise <c>false</c>.</param>
+        /// <returns>A string that represents the value.</returns>
+        private string GetFormattedValue( Guid guid, string fileName, bool formatAsHtml )
+        {
+            if ( !formatAsHtml )
+            {
+                return fileName;
+            }
+            else
+            {
+                var filePath = FileUrlHelper.GetFileUrl( guid );
+                return string.Format( "<a href='{0}' title='{1}' class='btn btn-xs btn-default'>View</a>", filePath, System.Web.HttpUtility.HtmlEncode( fileName ) );
+            }
+        }
+
+        /// <remarks>
+        ///     <inheritdoc/>
+        ///     <para>
+        ///     Returns the value as a JSON <see cref="ListItemBag"/> (the binary file's Guid and
+        ///     file name) instead of just the file name. Obsidian renders attribute values on the
+        ///     client, so the client component formats this value itself and needs the Guid to
+        ///     build the file's "View" link. (WebForms does not need this because it renders the
+        ///     HTML server side through FormatValue.) This matches the public value already
+        ///     returned by the Image, Audio, and Video file field types.
+        ///     </para>
+        /// </remarks>
         /// <inheritdoc/>
         public override string GetPublicValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
         {
-            return GetTextValue( privateValue, privateConfigurationValues );
+            var guid = privateValue.AsGuidOrNull();
+
+            if ( !guid.HasValue || guid.Value.IsEmpty() )
+            {
+                return string.Empty;
+            }
+
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
+            {
+                var fileName = new BinaryFileService( rockContext ).GetSelect( guid.Value, f => f.FileName );
+
+                if ( fileName == null )
+                {
+                    return string.Empty;
+                }
+
+                return new ListItemBag
+                {
+                    Text = fileName,
+                    Value = guid.Value.ToString()
+                }.ToCamelCaseJson( false, true );
+            }
         }
 
         /// <inheritdoc/>
         public override string GetPublicEditValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
         {
-            return new BinaryFileService( new Data.RockContext() )
+            return new BinaryFileService( RockApp.Current.CreateRockContext() )
                 .Get( privateValue.AsGuid() )
                 .ToListItemBag()
                 .ToCamelCaseJson( false, true );
@@ -181,7 +227,7 @@ namespace Rock.Field.Types
         {
             if ( usage != ConfigurationValueUsage.View )
             {
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     var configurationValues = base.GetPublicConfigurationValues( privateConfigurationValues, usage, value );
 
@@ -279,7 +325,7 @@ namespace Rock.Field.Types
             Guid? guid = value.AsGuidOrNull();
             if ( guid.HasValue )
             {
-                rockContext = rockContext ?? new RockContext();
+                rockContext = rockContext ?? RockApp.Current.CreateRockContext();
                 return new BinaryFileService( rockContext ).Get( guid.Value );
             }
 
@@ -300,7 +346,7 @@ namespace Rock.Field.Types
                 return null;
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var binaryFileId = new BinaryFileService( rockContext ).GetId( guid.Value );
 
@@ -329,6 +375,51 @@ namespace Rock.Field.Types
 
         #endregion
 
+        #region Persistence
+
+        /// <inheritdoc/>
+        public override PersistedValues GetPersistedValues( string privateValue, Dictionary<string, string> privateConfigurationValues, IDictionary<string, object> cache )
+        {
+            var guid = privateValue.AsGuidOrNull();
+
+            if ( !guid.HasValue || guid.Value.IsEmpty() )
+            {
+                return PersistedValues.Empty();
+            }
+
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
+            {
+                var binaryFileInfo = new BinaryFileService( rockContext )
+                    .Queryable()
+                    .AsNoTracking()
+                    .Where( f => f.Guid == guid.Value )
+                    .Select( f => new
+                    {
+                        f.FileName,
+                        f.Guid
+                    } )
+                    .FirstOrDefault();
+
+                if ( binaryFileInfo == null )
+                {
+                    return PersistedValues.Empty();
+                }
+
+                var textValue = GetFormattedValue( binaryFileInfo.Guid, binaryFileInfo.FileName, false );
+                var htmlValue = GetFormattedValue( binaryFileInfo.Guid, binaryFileInfo.FileName, true );
+
+                return new PersistedValues
+                {
+                    TextValue = textValue,
+                    HtmlValue = htmlValue,
+                    CondensedTextValue = textValue.Truncate( CondensedTruncateLength ),
+                    CondensedHtmlValue = htmlValue,
+                };
+            }
+        }
+
+        #endregion
+
         #region ISecurityGrantFieldType
 
         /// <inheritdoc/>
@@ -347,6 +438,39 @@ namespace Rock.Field.Types
             {
                 grant.AddRule( new EntitySecurityGrantRule( binaryFileType.TypeId, binaryFileType.Id, Authorization.VIEW ) );
             }
+        }
+
+        #endregion
+
+        #region Value Hinting
+
+        /// <inheritdoc/>
+        /// <remarks>
+        /// Implemented here rather than on each descendant because they all store the
+        /// same thing. File, Image, Label, Audio File, Video File and Background Check
+        /// differ in what they will accept and how they render, not in the shape of
+        /// the value.
+        /// </remarks>
+        internal override FieldTypeHints GetFieldHints( Dictionary<string, string> privateConfigurationValues )
+        {
+            var binaryFileTypeGuid = privateConfigurationValues.GetValueOrNull( BINARY_FILE_TYPE ).AsGuidOrNull();
+            var binaryFileType = binaryFileTypeGuid.HasValue
+                ? BinaryFileTypeCache.Get( binaryFileTypeGuid.Value )
+                : null;
+
+            var valueFormat = "The guid of a row in the BinaryFile table. Not its id or idKey, and not a file name or url.";
+
+            if ( binaryFileType != null )
+            {
+                valueFormat += $" The file must belong to the '{binaryFileType.Name}' binary file type.";
+            }
+
+            return new FieldTypeHints
+            {
+                IsCompleteList = false,
+                ValueFormat = valueFormat,
+                Instructions = "A value here points at a file that has already been uploaded, so it is the guid of an existing BinaryFile rather than file content or a path. A guid that does not match a stored file leaves the field looking empty rather than reporting a problem."
+            };
         }
 
         #endregion
@@ -379,7 +503,7 @@ namespace Rock.Field.Types
             ddl.SelectedIndexChanged += OnQualifierUpdated;
             ddl.Items.Clear();
             ddl.Items.Add( new ListItem( string.Empty, string.Empty ) );
-            foreach ( var ft in new BinaryFileTypeService( new RockContext() )
+            foreach ( var ft in new BinaryFileTypeService( RockApp.Current.CreateRockContext() )
                 .Queryable()
                 .OrderBy( f => f.Name )
                 .Select( f => new { f.Guid, f.Name } ) )
@@ -476,7 +600,7 @@ namespace Rock.Field.Types
                 Guid? itemGuid = null;
                 if ( itemId.HasValue )
                 {
-                    using ( var rockContext = new RockContext() )
+                    using ( var rockContext = RockApp.Current.CreateRockContext() )
                     {
                         itemGuid = new BinaryFileService( rockContext ).Queryable().AsNoTracking().Where( a => a.Id == itemId.Value ).Select( a => ( Guid? ) a.Guid ).FirstOrDefault();
                     }
@@ -506,7 +630,7 @@ namespace Rock.Field.Types
                 // get the item (or null) and set it
                 if ( guid.HasValue )
                 {
-                    using ( var rockContext = new RockContext() )
+                    using ( var rockContext = RockApp.Current.CreateRockContext() )
                     {
                         binaryFile = new BinaryFileService( rockContext ).Get( guid.Value );
                     }
@@ -558,7 +682,7 @@ namespace Rock.Field.Types
         public int? GetEditValueAsEntityId( Control control, Dictionary<string, ConfigurationValue> configurationValues )
         {
             Guid guid = GetEditValue( control, configurationValues ).AsGuid();
-            int? itemId = new BinaryFileService( new RockContext() ).Queryable().Where( a => a.Guid == guid ).Select( a => a.Id ).FirstOrDefault();
+            int? itemId = new BinaryFileService( RockApp.Current.CreateRockContext() ).Queryable().Where( a => a.Guid == guid ).Select( a => a.Id ).FirstOrDefault();
             return itemId != null ? itemId : ( int? ) null;
         }
 
@@ -574,7 +698,7 @@ namespace Rock.Field.Types
             Guid? itemGuid = null;
             if ( id.HasValue )
             {
-                itemGuid = new BinaryFileService( new RockContext() ).Queryable().Where( a => a.Id == id.Value ).Select( a => a.Guid ).FirstOrDefault();
+                itemGuid = new BinaryFileService( RockApp.Current.CreateRockContext() ).Queryable().Where( a => a.Id == id.Value ).Select( a => a.Guid ).FirstOrDefault();
             }
 
             string guidValue = itemGuid.HasValue ? itemGuid.ToString() : string.Empty;

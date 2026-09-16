@@ -1,0 +1,258 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <NotificationBox v-if="config.options?.warningMessage"
+                     alertType="warning"
+                     v-html="config.options.warningMessage" />
+
+    <Grid v-if="config.options?.isBlockVisible"
+          :definition="config.gridDefinition ?? undefined"
+          :data="gridDataSource"
+          keyField="idKey"
+          itemTerm="Document"
+          :title="config.options?.title ?? undefined"
+          :entityTypeGuid="EntityType.Document"
+          :showLaunchWorkflow="false"
+          :showMergeTemplate="false"
+          :showExport="false"
+          stickyHeader
+          liveUpdates
+          :onAddItem="config.isAddEnabled ? onAddItem : undefined">
+        <Column name="icon"
+                :excludeFromExport="true"
+                width="48px">
+            <template #format="{ row }">
+                <i class="ti-fw" :class="row.iconCssClass"></i>
+            </template>
+        </Column>
+
+        <TextColumn name="name"
+                    title="Name"
+                    field="name"
+                    :filter="textValueFilter"
+                    visiblePriority="xs" />
+
+        <TextColumn name="documentType"
+                    title="Type"
+                    field="documentType"
+                    :filter="pickExistingValueFilter"
+                    visiblePriority="xs" />
+
+        <PersonColumn name="createdBy"
+                      title="Created By"
+                      field="createdBy"
+                      :hideAvatar="true"
+                      :showAsLink="true"
+                      :filter="pickExistingValueFilter"
+                      visiblePriority="md" />
+
+        <DateTimeColumn name="createdDateTime"
+                        title="Created On"
+                        field="createdDateTime"
+                        :filter="dateValueFilter"
+                        visiblePriority="md" />
+
+        <ButtonColumn name="view"
+                      tooltip="View Document"
+                      iconClass="ti ti-file"
+                      :excludeFromExport="true"
+                      :visible="row => !!row.isViewable"
+                      @click="onViewClick" />
+
+        <ButtonColumn name="download"
+                      tooltip="Download Document"
+                      iconClass="ti ti-download"
+                      :excludeFromExport="true"
+                      @click="onDownloadClick" />
+
+        <EditColumn :rowDisabled="row => !!row.isEditDisabled"
+                    @click="onEditItem" />
+
+        <SecurityColumn v-if="config.options?.isSecurityColumnVisible"
+                        itemTitle="name" />
+
+        <DeleteColumn v-if="config.isDeleteEnabled"
+                      :rowDisabled="row => !!row.isDeleteDisabled"
+                      @click="onDeleteClick" />
+    </Grid>
+
+    <Modal v-model="isEditVisible"
+           title="Document"
+           saveText="Save"
+           @save="onSave">
+        <DocumentEditor v-model="editValue" />
+    </Modal>
+</template>
+
+<script setup lang="ts">
+    import DocumentEditor from "./DocumentList/documentEditor.partial.obs";
+    import Grid, { Column, TextColumn, textValueFilter, pickExistingValueFilter, dateValueFilter, PersonColumn, DateTimeColumn, ButtonColumn, EditColumn, DeleteColumn, SecurityColumn } from "@Obsidian/Controls/grid";
+    import Modal from "@Obsidian/Controls/modal.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import { onConfigurationValuesChanged, setPropertiesBoxValue, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
+    import { EntityType } from "@Obsidian/SystemGuids/entityType";
+    import { alert } from "@Obsidian/Utility/dialogs";
+    import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
+    import { DocumentListOptionsBag } from "@Obsidian/ViewModels/Blocks/Crm/DocumentList/documentListOptionsBag";
+    import { DocumentBag } from "@Obsidian/ViewModels/Blocks/Crm/DocumentList/documentBag";
+    import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
+    import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
+    import { reactive, ref } from "vue";
+
+    const config = useConfigurationValues<ListBlockBox<DocumentListOptionsBag>>();
+    const invokeBlockAction = useInvokeBlockAction();
+
+    // All blocks auto reload when changing block settings unless there is an
+    // explicit reason not to (like using a custom reload tool instead).
+    onConfigurationValuesChanged(useReloadBlock());
+
+    // #region Values
+
+    const gridDataSource = ref<Promise<GridDataBag>>();
+    let gridData: GridDataBag | undefined;
+
+    const isEditVisible = ref(false);
+    const editValue = ref<DocumentBag>({} as DocumentBag);
+
+    // #endregion
+
+    // #region Functions
+
+    /**
+     * Called when the grid is requesting the row data be loaded.
+     */
+    async function loadGridData(): Promise<GridDataBag> {
+        const result = await invokeBlockAction<GridDataBag>("GetGridData");
+
+        if (result.isSuccess && result.data) {
+            gridData = reactive(result.data);
+            return gridData;
+        }
+        else {
+            throw new Error(result.errorMessage ?? "Unknown error while trying to load grid data.");
+        }
+    }
+
+    /**
+     * Finds a grid row by its key.
+     *
+     * @param key The key of the row to find.
+     */
+    function findRow(key: string): Record<string, unknown> | undefined {
+        return gridData?.rows?.find(r => r["idKey"] === key);
+    }
+
+    /**
+     * Opens the modal to add or edit a document.
+     *
+     * @param key The key of the document to edit, or an empty string to add.
+     */
+    async function editDocument(key: string): Promise<void> {
+        const result = await invokeBlockAction<ValidPropertiesBox<DocumentBag>>("Edit", { key });
+
+        if (result.isSuccess && result.data?.bag) {
+            editValue.value = result.data.bag;
+            isEditVisible.value = true;
+        }
+        else {
+            await alert(result.errorMessage || "Unable to open the document for editing.");
+        }
+    }
+
+    // #endregion
+
+    // #region Event Handlers
+
+    /**
+     * Called when the Add button has been clicked by the individual.
+     */
+    async function onAddItem(): Promise<void> {
+        await editDocument("");
+    }
+
+    /**
+     * Called when the edit button on a row has been clicked.
+     *
+     * @param key The key of the row to edit.
+     */
+    async function onEditItem(key: string): Promise<void> {
+        await editDocument(key);
+    }
+
+    /**
+     * Called when the view button on a row has been clicked.
+     *
+     * @param key The key of the row that was clicked.
+     */
+    function onViewClick(key: string): void {
+        const row = findRow(key);
+
+        if (row?.viewUrl) {
+            window.open(row.viewUrl as string, "_blank", "noopener,noreferrer");
+        }
+    }
+
+    /**
+     * Called when the download button on a row has been clicked.
+     *
+     * @param key The key of the row that was clicked.
+     */
+    function onDownloadClick(key: string): void {
+        const row = findRow(key);
+
+        if (row?.downloadUrl) {
+            window.location.href = row.downloadUrl as string;
+        }
+    }
+
+    /**
+     * Called when a row's delete button has been clicked by the individual. This
+     * happens only if they have confirmed the delete action.
+     *
+     * @param key The key of the row to delete.
+     */
+    async function onDeleteClick(key: string): Promise<void> {
+        const result = await invokeBlockAction<string>("Delete", { key });
+
+        if (result.isSuccess) {
+            const index = gridData?.rows?.findIndex(r => r["idKey"] === key) ?? -1;
+
+            if (index !== -1) {
+                gridData?.rows?.splice(index, 1);
+            }
+        }
+        else {
+            await alert(result.errorMessage ?? "Unable to delete the document.");
+        }
+    }
+
+    /**
+     * Called when the Save button in the modal has been clicked.
+     */
+    async function onSave(): Promise<void> {
+        const box: ValidPropertiesBox<DocumentBag> = {};
+
+        setPropertiesBoxValue(box, "idKey", editValue.value.idKey ?? "");
+        setPropertiesBoxValue(box, "name", editValue.value.name);
+        setPropertiesBoxValue(box, "description", editValue.value.description);
+        setPropertiesBoxValue(box, "documentType", editValue.value.documentType);
+        setPropertiesBoxValue(box, "binaryFile", editValue.value.binaryFile);
+
+        const result = await invokeBlockAction("Save", { box });
+
+        if (result.isSuccess) {
+            isEditVisible.value = false;
+            gridDataSource.value = loadGridData();
+        }
+        else {
+            await alert(result.errorMessage ?? "Unable to save the document.");
+        }
+    }
+
+    // #endregion
+
+    // Load the grid data immediately, but only when the block is actually
+    // displayed (there is a valid context entity).
+    if (config.options?.isBlockVisible) {
+        gridDataSource.value = loadGridData();
+    }
+</script>

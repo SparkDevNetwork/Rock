@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -19,10 +19,11 @@ using System.Threading.Tasks;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Lava;
 using Rock.Tests.Integration.TestData.Cms.Shortcodes;
-using Rock.Tests.Shared.Lava;
+using Rock.Tests.Integration.TestFramework.Lava;
 
 namespace Rock.Tests.Integration.Core.Lava.Shortcodes
 {
@@ -385,7 +386,7 @@ This is some literal text containing an invalid shortcode: {[ panel title:'Examp
                      shortcodeTemplate )
                 .WithEnabledCommands( "execute" );
 
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             shortCodeDataManager.SaveDynamicShortcode( shortcodeDefinition, rockContext );
 
             var input = @"

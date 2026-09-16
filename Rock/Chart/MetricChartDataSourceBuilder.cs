@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -15,12 +15,14 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
+using System.Linq;
+
+using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
-using System.Collections.Generic;
-using System.Linq;
-using Rock.Attribute;
 
 namespace Rock.Chart
 {
@@ -73,7 +75,7 @@ namespace Rock.Chart
         /// <returns></returns>
         public List<ChartJsTimeSeriesDataset> GetTimeSeriesDatasets()
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
 
             // Get all of the Metric Values that are associated with the specified partitions.
             // If a filter is not specified for a partition, select all values associated with that partition.
@@ -179,7 +181,7 @@ namespace Rock.Chart
         /// <returns></returns>
         public ChartJsCategorySeriesDataset GetCategorySeriesDataset()
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
 
             // Get all of the Metric Values that are associated with the specified partitions.
             // If a filter is not specified for a partition, select all values associated with that partition.
@@ -268,7 +270,7 @@ namespace Rock.Chart
             _entityTypeEntityNameLookup = new Dictionary<int, Dictionary<int, string>>();
             _entityTypeEntityLookupQry = new Dictionary<int, IQueryable<IEntity>>();
 
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
 
             foreach ( var metricId in metricIdList )
             {

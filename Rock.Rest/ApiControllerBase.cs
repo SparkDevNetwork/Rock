@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -32,6 +32,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 #endif
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Net;
@@ -123,7 +124,7 @@ namespace Rock.Rest
             {
                 if ( principal.Identity.Name.StartsWith( "rckipid=" ) )
                 {
-                    var personService = new Model.PersonService( rockContext ?? new RockContext() );
+                    var personService = new Model.PersonService( rockContext ?? RockApp.Current.CreateRockContext() );
                     Rock.Model.Person impersonatedPerson = personService.GetByImpersonationToken( principal.Identity.Name.Substring( 8 ), false, null );
                     if ( impersonatedPerson != null )
                     {
@@ -132,7 +133,7 @@ namespace Rock.Rest
                 }
                 else
                 {
-                    var userLoginService = new Rock.Model.UserLoginService( rockContext ?? new RockContext() );
+                    var userLoginService = new Rock.Model.UserLoginService( rockContext ?? RockApp.Current.CreateRockContext() );
                     var userLogin = userLoginService.GetByUserName( principal.Identity.Name );
 
                     if ( userLogin != null )

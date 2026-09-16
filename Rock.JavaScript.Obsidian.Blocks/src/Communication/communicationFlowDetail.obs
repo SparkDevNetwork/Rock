@@ -405,6 +405,7 @@
                 communicationTemplate: template,
                 communicationType: CommunicationType.Email,
                 daysToWait: -1,
+                hasPerformanceData: communication?.hasPerformanceData ?? false,
                 name: template.name,
                 order: -1,
                 timeToSend: toTimeOfDayString(RockDateTime.now()),
@@ -472,6 +473,8 @@
                         communicationType: communicationType,
                         // First message defaults to 0 days to wait while subsequent messages default to 1 day to wait.
                         daysToWait: !newCommunications.length ? 0 : 1,
+                        // A newly added message has never been sent, so it has no performance data.
+                        hasPerformanceData: false,
                         order: newCommunications.length,
                         communicationTemplate: result.data,
                         // Copy the template's name to the new communication.
@@ -511,6 +514,7 @@
             communicationTemplate: options.communicationTemplate,
             communicationType: options.communicationType,
             daysToWait: -1,
+            hasPerformanceData: options.communication?.hasPerformanceData ?? false,
             order: -1,
             timeToSend: toTimeOfDayString(RockDateTime.now()),
             testEmailAddress: options.communicationType === CommunicationType.Email ? options.testEmailAddress : null,

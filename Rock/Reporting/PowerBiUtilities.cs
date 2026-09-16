@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -20,10 +20,13 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Linq;
 using System.Web;
+
 using Microsoft.IdentityModel.Clients.ActiveDirectory;
+
 using Newtonsoft.Json;
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Web.Cache;
 
 namespace Rock.Reporting
@@ -212,7 +215,7 @@ namespace Rock.Reporting
                         .Select( a => a.Value )
                         .FirstOrDefault();
 
-                    Helper.SaveAttributeValue( biAccountValue, refreshTokenAttribute, AR.RefreshToken, new Rock.Data.RockContext() );
+                    Helper.SaveAttributeValue( biAccountValue, refreshTokenAttribute, AR.RefreshToken, RockApp.Current.CreateRockContext() );
                 }
                 catch ( Exception ex )
                 {

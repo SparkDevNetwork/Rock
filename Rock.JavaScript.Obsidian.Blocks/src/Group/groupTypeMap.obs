@@ -1,0 +1,93 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="group-type-map">
+        <NotificationBox v-if="errorMessage" alertType="warning">
+            <span v-html="errorMessage"></span>
+        </NotificationBox>
+
+        <template v-else>
+            <MapPanel :bag="bag" :options="options" />
+
+            <div v-if="isUnmappedWarningShown" class="alert alert-warning fade in mt-3">
+                Some groups could not be mapped.
+                <button type="button" class="close" aria-hidden="true" @click="onDismissUnmappedWarning">
+                    <i class="ti ti-x"></i>
+                </button>
+                <small>
+                    <a href="#" @click.prevent="isUnmappedDetailsShown = !isUnmappedDetailsShown">
+                        {{ isUnmappedDetailsShown ? "Hide Details" : "Show Details" }}
+                    </a>
+                </small>
+
+                <div v-if="isUnmappedDetailsShown" class="margin-t-sm">
+                    <strong>Groups That Could Not Be Mapped</strong>
+                    <ul>
+                        <li v-for="(unmappedGroup, index) in unmappedGroups" :key="index">
+                            <a v-if="unmappedGroup.detailPageUrl" :href="unmappedGroup.detailPageUrl">{{ unmappedGroup.name }}</a>
+                            <template v-else>{{ unmappedGroup.name }}</template>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </template>
+    </div>
+</template>
+
+<script setup lang="ts">
+    import { computed, ref } from "vue";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import { onConfigurationValuesChanged, useConfigurationValues, useReloadBlock } from "@Obsidian/Utility/block";
+    import { CustomBlockBox } from "@Obsidian/ViewModels/Blocks/customBlockBox";
+    import { GroupTypeMapInitializationBag } from "@Obsidian/ViewModels/Blocks/Group/GroupTypeMap/groupTypeMapInitializationBag";
+    import { GroupTypeMapOptionsBag } from "@Obsidian/ViewModels/Blocks/Group/GroupTypeMap/groupTypeMapOptionsBag";
+    import { GroupTypeMapUnmappedGroupBag } from "@Obsidian/ViewModels/Blocks/Group/GroupTypeMap/groupTypeMapUnmappedGroupBag";
+    import MapPanel from "./GroupTypeMap/mapPanel.partial.obs";
+
+    // #region Values
+
+    const box = useConfigurationValues<CustomBlockBox<GroupTypeMapInitializationBag, GroupTypeMapOptionsBag>>();
+
+    const bag: GroupTypeMapInitializationBag = box.bag ?? {
+        markerColor: "",
+        groups: [],
+        unmappedGroups: []
+    };
+
+    const options: GroupTypeMapOptionsBag = box.options ?? {
+        mapHeight: 600,
+        isInfoWindowShown: true
+    };
+
+    const errorMessage = ref(bag.errorMessage ?? "");
+
+    // Whether the collapsible "some groups could not be mapped" warning is still shown (it can
+    // be dismissed) and whether its details list is expanded.
+    const isUnmappedWarningDismissed = ref(false);
+    const isUnmappedDetailsShown = ref(false);
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    const unmappedGroups = computed((): GroupTypeMapUnmappedGroupBag[] => bag.unmappedGroups ?? []);
+
+    /** Whether the unmapped-groups warning should be shown (there are some, and it is not dismissed). */
+    const isUnmappedWarningShown = computed((): boolean => !isUnmappedWarningDismissed.value && unmappedGroups.value.length > 0);
+
+    // #endregion Computed Values
+
+    // #region Event Handlers
+
+    /** Dismisses the unmapped-groups warning. */
+    function onDismissUnmappedWarning(): void {
+        isUnmappedWarningDismissed.value = true;
+    }
+
+    // #endregion Event Handlers
+
+    // #region Lifecycle Hooks
+
+    onConfigurationValuesChanged(useReloadBlock());
+
+    // #endregion Lifecycle Hooks
+</script>

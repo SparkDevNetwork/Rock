@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -26,11 +26,15 @@ using System.Runtime.Serialization;
 
 using Rock.Attribute;
 using Rock.Cms.ContentCollection.Attributes;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Enums.Cms;
+using Rock.Enums.Security;
 using Rock.Lava;
+using Rock.Security;
 using Rock.UniversalSearch;
 using Rock.UniversalSearch.IndexModels;
+using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -43,7 +47,7 @@ namespace Rock.Model
     [CodeGenerateRest]
     [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.CONTENT_CHANNEL_ITEM )]
     [ContentCollectionIndexable( typeof( Rock.Cms.ContentCollection.Indexers.ContentChannelItemIndexer ), typeof( Rock.Cms.ContentCollection.IndexDocuments.ContentChannelItemDocument ) )]
-    public partial class ContentChannelItem : Model<ContentChannelItem>, IOrdered, IRockIndexable, IHasAdditionalSettings
+    public partial class ContentChannelItem : Model<ContentChannelItem>, IOrdered, IRockIndexable, IHasAdditionalSettings, ICacheable
     {
         #region Entity Properties
 
@@ -78,6 +82,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 200 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.Name )]
         public string Title { get; set; }
 
         /// <summary>
@@ -87,6 +92,7 @@ namespace Rock.Model
         /// The content.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string Content { get; set; }
 
         /// <summary>
@@ -96,6 +102,7 @@ namespace Rock.Model
         /// The structured content.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string StructuredContent { get; set; }
 
         /// <summary>
@@ -162,6 +169,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 200 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string Permalink { get; set; }
 
         /// <summary>
@@ -181,6 +189,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 200 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string ItemGlobalKey { get; set; }
 
         /// <summary>
@@ -248,6 +257,7 @@ namespace Rock.Model
 
         /// <inheritdoc/>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string AdditionalSettingsJson { get; set; }
 
         #endregion Entity Properties
@@ -389,7 +399,7 @@ namespace Rock.Model
             List<ContentChannelItemIndex> indexableChannelItems = new List<ContentChannelItemIndex>();
 
             // return all approved content channel items that are in content channels that should be indexed
-            RockContext rockContext = new RockContext();
+            RockContext rockContext = RockApp.Current.CreateRockContext();
             var contentChannelItems = new ContentChannelItemService( rockContext ).Queryable()
                                             .Where( i =>
                                                 i.ContentChannel.IsIndexEnabled
@@ -421,7 +431,7 @@ namespace Rock.Model
         /// <param name="id"></param>
         public void IndexDocument( int id )
         {
-            var itemEntity = new ContentChannelItemService( new RockContext() ).Get( id );
+            var itemEntity = new ContentChannelItemService( RockApp.Current.CreateRockContext() ).Get( id );
 
             // only index if the content channel is set to be indexed
             if ( itemEntity.ContentChannel != null && itemEntity.ContentChannel.IsIndexEnabled )
@@ -468,7 +478,7 @@ namespace Rock.Model
         public ModelFieldFilterConfig GetIndexFilterConfig()
         {
             ModelFieldFilterConfig filterConfig = new ModelFieldFilterConfig();
-            filterConfig.FilterValues = new ContentChannelService( new RockContext() ).Queryable().AsNoTracking().Where( c => c.IsIndexEnabled ).Select( c => c.Name ).ToList();
+            filterConfig.FilterValues = new ContentChannelService( RockApp.Current.CreateRockContext() ).Queryable().AsNoTracking().Where( c => c.IsIndexEnabled ).Select( c => c.Name ).ToList();
             filterConfig.FilterLabel = "Content Channels";
             filterConfig.FilterField = "contentChannel";
 

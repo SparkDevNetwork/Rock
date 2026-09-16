@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -20,6 +20,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Enums.Lms;
 
@@ -61,7 +62,7 @@ namespace Rock.Model
         /// <returns>A string representing the text for the percentage and earned grade.</returns>
         public string GetGradeText( IEnumerable<LearningGradingSystemScale> scales = null, int decimalPlaces = 0 )
         {
-            if ( !IsStudentCompleted && !IsFacilitatorCompleted )
+            if ( !IsCompleted )
             {
                 // If incomplete return an empty string.
                 return string.Empty;
@@ -140,6 +141,13 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Gets whether the assigned party (student or facilitator) has completed the activity.
+        /// </summary>
+        public bool IsCompleted =>
+            ( IsStudentCompleted && LearningClassActivity?.AssignTo == AssignTo.Student )
+            || ( IsFacilitatorCompleted && LearningClassActivity?.AssignTo == AssignTo.Facilitator );
+
+        /// <summary>
         /// Determines if the activity was completed late or is currently incomplete and late.
         /// </summary>
         [NotAudited]
@@ -186,6 +194,17 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Determines whether the earned score is below the activity's configured Retake Threshold.
+        /// A null threshold (retakes disabled) or an as-yet-unscored completion returns false, so a
+        /// retake is never warranted until there is a final score to compare.
+        /// </summary>
+        [NotAudited]
+        internal bool IsScoreBelowRetakeThreshold =>
+            LearningClassActivity?.RetakeThreshold != null
+            && PointsEarned.HasValue
+            && PointsEarned.Value < LearningClassActivity.RetakeThreshold.Value;
+
+        /// <summary>
         /// Gets the parent authority.
         /// </summary>
         /// <value>
@@ -203,7 +222,7 @@ namespace Rock.Model
                 else
                 {
                     return this.LearningClassActivityId > 0 ?
-                        new LearningClassActivityService( new Data.RockContext() ).Get( this.LearningClassActivityId ) :
+                        new LearningClassActivityService( RockApp.Current.CreateRockContext() ).Get( this.LearningClassActivityId ) :
                         base.ParentAuthority;
                 }
             }

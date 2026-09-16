@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -17,6 +17,8 @@
 
 using System.Collections.Generic;
 using System.Data.Entity;
+
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Web.Cache;
 
@@ -46,7 +48,7 @@ namespace Rock.Model
         {
             var triggers = new List<BenevolenceWorkflow>();
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 foreach ( var trigger in new BenevolenceWorkflowService( rockContext )
                     .Queryable().AsNoTracking() )

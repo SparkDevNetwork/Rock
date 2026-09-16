@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -46,6 +46,9 @@ namespace Rock.Blocks.AI
     #region Block Attributes
 
     #endregion
+
+    [Obsolete( "This feature has been deprecated and is no longer used by Rock. AI configuration happens automatically." )]
+    [RockObsolete( "21.0" )]
 
     [SystemGuid.EntityTypeGuid( "c2d6ec62-4076-43bc-a458-6daa2c246b48" )]
     [SystemGuid.BlockTypeGuid( "13f49f94-d9bc-434a-bb20-a6ba87bbe81f" )]

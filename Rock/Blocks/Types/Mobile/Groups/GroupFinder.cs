@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -24,6 +24,7 @@ using System.Linq.Expressions;
 using Rock.Attribute;
 using Rock.ClientService.Core.Campus;
 using Rock.ClientService.Core.Campus.Options;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Utility;
@@ -67,7 +68,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
         "Hide Overcapacity Groups",
         Description = "Hides groups that have already reached their capacity limit.",
         IsRequired = false,
-        ControlType = Field.Types.BooleanFieldType.BooleanControlType.Toggle,
+        BooleanControlType = Rock.Enums.Controls.BooleanControlType.Toggle,
         DefaultBooleanValue = true,
         Key = AttributeKey.HideOvercapacityGroups,
         Order = 2 )]
@@ -76,7 +77,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
         "Show Results on Initial Page Load",
         Description = "Bypasses the filter and shows results immediately. Can also be set in query string with LoadResults=true.",
         IsRequired = false,
-        ControlType = Field.Types.BooleanFieldType.BooleanControlType.Toggle,
+        BooleanControlType = Rock.Enums.Controls.BooleanControlType.Toggle,
         DefaultBooleanValue = false,
         Key = AttributeKey.ShowResultsOnInitialPageLoad,
         Order = 3 )]
@@ -110,7 +111,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
         "Show Location Filter",
         Description = "Shows the location search filter and enables ordering results by distance.",
         IsRequired = false,
-        ControlType = Field.Types.BooleanFieldType.BooleanControlType.Toggle,
+        BooleanControlType = Rock.Enums.Controls.BooleanControlType.Toggle,
         DefaultBooleanValue = true,
         Key = AttributeKey.ShowLocationFilter,
         Order = 7 )]
@@ -119,7 +120,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
         "Show Campus Filter",
         Description = "Shows the campus search filter and enables filtering by campus.",
         IsRequired = false,
-        ControlType = Field.Types.BooleanFieldType.BooleanControlType.Toggle,
+        BooleanControlType = Rock.Enums.Controls.BooleanControlType.Toggle,
         DefaultBooleanValue = true,
         Key = AttributeKey.ShowCampusFilter,
         Order = 8 )]
@@ -146,7 +147,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
         "Show Day of Week Filter",
         Description = "Shows the day of week filter and enables filtering to groups that meet on the selected day.",
         IsRequired = false,
-        ControlType = Field.Types.BooleanFieldType.BooleanControlType.Toggle,
+        BooleanControlType = Rock.Enums.Controls.BooleanControlType.Toggle,
         DefaultBooleanValue = true,
         Key = AttributeKey.ShowDayOfWeekFilter,
         Order = 11 )]
@@ -155,7 +156,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
         "Show Time Period Filter",
         Description = "Shows a filter that enables filtering based on morning, afternoon and evening.",
         IsRequired = false,
-        ControlType = Field.Types.BooleanFieldType.BooleanControlType.Toggle,
+        BooleanControlType = Rock.Enums.Controls.BooleanControlType.Toggle,
         DefaultBooleanValue = true,
         Key = AttributeKey.ShowTimePeriodFilter,
         Order = 12 )]
@@ -164,7 +165,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
         "Campus Context Enabled",
         Description = "Automatically sets the campus filter to the current campus context.",
         IsRequired = false,
-        ControlType = Field.Types.BooleanFieldType.BooleanControlType.Toggle,
+        BooleanControlType = Rock.Enums.Controls.BooleanControlType.Toggle,
         DefaultBooleanValue = false,
         Key = AttributeKey.CampusContextEnabled,
         Order = 13 )]
@@ -313,7 +314,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
         /// <value>
         /// The template.
         /// </value>
-        protected string Template => Rock.Field.Types.BlockTemplateFieldType.GetTemplateContent( GetAttributeValue( AttributeKey.Template ) );
+        protected string Template => Field.Helper.GetBlockTemplateContent( GetAttributeValue( AttributeKey.Template ) );
 
         /// <summary>
         /// Gets the maximum results to be returned.
@@ -439,7 +440,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
         /// </returns>
         public override object GetMobileConfigurationValues()
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var attributes = AttributeFiltersGuids.Select( a => AttributeCache.Get( a ) )
                     .Where( a => a != null )
@@ -880,7 +881,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
         [BlockAction]
         public BlockActionResult GetInitialData()
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var showResults = ShouldShowInitialResults();
                 var validLocations = GetValidNamedLocations( rockContext );
@@ -909,7 +910,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
         [BlockAction]
         public BlockActionResult GetGroups( GroupFinderFilter filter )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 return ActionOk( new GetGroupsResult
                 {

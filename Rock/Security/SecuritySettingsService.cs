@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
+
 using Rock.Data;
 using Rock.Model;
 using Rock.Utility.Enums;
@@ -31,6 +32,12 @@ namespace Rock.Security
     /// </summary>
     public class SecuritySettingsService
     {
+        /// <summary>
+        /// Stable cache key for the fully-built <see cref="SecuritySettings"/>. Invalidated by the
+        /// Attribute cache hook whenever the ROCK_SECURITY_SETTINGS system setting is written.
+        /// </summary>
+        internal const string SecuritySettingsCacheKey = "Rock.Core.SecuritySettings";
+
         private readonly List<ValidationResult> _validationResults;
 
         /// <summary>
@@ -59,21 +66,23 @@ namespace Rock.Security
         {
             _validationResults = new List<ValidationResult>();
 
-            var securitySettingsJson = SystemSettings.GetValue( Rock.SystemKey.SystemSetting.ROCK_SECURITY_SETTINGS );
-            var cacheKey = $"Rock.Core.SecuritySettings:{securitySettingsJson.XxHash()}";
-            var shouldAddToCache = false;
-
-            var securitySettings = RockCache.Get( cacheKey ) as SecuritySettings;
-            if ( securitySettings == null )
+            // On a warm cache, skip the expensive JSON read, hash, and deserialize, but
+            // still refresh the role caches so security-group membership stays current.
+            // Membership changes do not rewrite the settings JSON, so the cached entry
+            // would otherwise serve stale roles to authorization checks.
+            var cachedSecuritySettings = RockCache.Get( SecuritySettingsCacheKey ) as SecuritySettings;
+            if ( cachedSecuritySettings != null )
             {
-                securitySettings = securitySettingsJson.FromJsonOrNull<SecuritySettings>();
-                shouldAddToCache = true;
+                RefreshSecurityGroups( cachedSecuritySettings );
+                this.SecuritySettings = cachedSecuritySettings;
+                return;
             }
 
+            var securitySettingsJson = SystemSettings.GetValue( Rock.SystemKey.SystemSetting.ROCK_SECURITY_SETTINGS );
+            var securitySettings = securitySettingsJson.FromJsonOrNull<SecuritySettings>();
+
             if ( securitySettings == null )
             {
-                shouldAddToCache = true;
-
                 securitySettings = GetDefaultSecuritySettings();
                 this.SecuritySettings = securitySettings;
 
@@ -101,10 +110,9 @@ namespace Rock.Security
                 RefreshSecurityGroups( securitySettings );
             }
 
-            if ( shouldAddToCache )
-            {
-                RockCache.AddOrUpdate( cacheKey, null, securitySettings, RockDateTime.Now.AddSeconds( 300 ) );
-            }
+            // Cache the fully-built settings under a stable key. The Attribute cache hook
+            // removes this entry when the setting is written; the expiry bounds staleness otherwise.
+            RockCache.AddOrUpdate( SecuritySettingsCacheKey, null, securitySettings, RockDateTime.Now.AddSeconds( 300 ) );
 
             this.SecuritySettings = securitySettings;
         }

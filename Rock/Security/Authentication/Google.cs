@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -22,12 +22,13 @@ using System.Net;
 using System.Web;
 #if REVIEW_WEBFORMS
 using System.Web.Security;
-#endif
+
 using Newtonsoft.Json;
 
 using RestSharp;
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security.Authentication;
@@ -44,8 +45,10 @@ namespace Rock.Security.ExternalAuthentication
     [Export( typeof( AuthenticationComponent ) )]
     [ExportMetadata( "ComponentName", "Google" )]
 
-    [TextField( "Client ID", "The Google Client ID" )]
-    [TextField( "Client Secret", "The Google Client Secret" )]
+    [TextField( "Client ID",
+        Description = "The Google Client ID" )]
+    [TextField( "Client Secret",
+        Description = "The Google Client Secret" )]
 
     [Rock.SystemGuid.EntityTypeGuid( "9E678E8B-D9C4-4772-BED8-390C5E85DA76")]
     public class Google : AuthenticationComponent, IExternalRedirectAuthentication
@@ -342,7 +345,7 @@ namespace Rock.Security.ExternalAuthentication
             string userName = "Google_" + googleId;
             UserLogin user = null;
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 // Query for an existing user
                 var userLoginService = new UserLoginService( rockContext );

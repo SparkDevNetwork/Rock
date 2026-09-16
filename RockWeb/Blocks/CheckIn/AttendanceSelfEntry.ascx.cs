@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -25,6 +25,7 @@ using System.Web.UI.WebControls;
 using Newtonsoft.Json;
 using Rock;
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
@@ -50,7 +51,7 @@ namespace RockWeb.Blocks.CheckIn
         Key = AttributeKey.Location )]
     [GroupTypeField(
         "Check-in Configuration",
-        groupTypePurposeValueGuid: Rock.SystemGuid.DefinedValue.GROUPTYPE_PURPOSE_CHECKIN_TEMPLATE,
+        GroupTypePurposeValueGuid = Rock.SystemGuid.DefinedValue.GROUPTYPE_PURPOSE_CHECKIN_TEMPLATE,
         Description = "This will be the group type that we will use to determine where to check them in.",
         IsRequired = true,
         DefaultValue = Rock.SystemGuid.GroupType.GROUPTYPE_SERVICE_ATTENDANCE,
@@ -118,8 +119,8 @@ namespace RockWeb.Blocks.CheckIn
         Key = AttributeKey.OtherPersonMobilePhoneRequired )]
     [CustomEnhancedListField(
         "Known Relationship Types",
-        description: "A checkbox list of Known Relationship types that should be included in the Relation dropdown.",
-        listSource: @"
+        Description = "A checkbox list of Known Relationship types that should be included in the Relation dropdown.",
+        ListSource = @"
 SELECT 
 	R.[Guid] AS [Value],
 	R.[Name] AS [Text]
@@ -504,7 +505,7 @@ ORDER BY [Text]",
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void btnPrimaryNext_Click( object sender, EventArgs e )
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var personService = new PersonService( rockContext );
             var personQuery = new PersonService.PersonMatchQuery( tbFirstName.Text.Trim(), tbLastName.Text.Trim(), tbEmail.Text.Trim(), pnbPhone.Text.Trim(), birthDate: bpBirthDay.SelectedDate );
             var person = personService.FindPerson( personQuery, true );
@@ -685,7 +686,7 @@ ORDER BY [Text]",
             Person primaryPerson = null;
             if ( isLoggedIn )
             {
-                var rockContext = new RockContext();
+                var rockContext = RockApp.Current.CreateRockContext();
                 primaryPerson = GetLoggedInPerson( rockContext );
                 var family = primaryPerson.GetFamily( rockContext );
 
@@ -737,7 +738,7 @@ ORDER BY [Text]",
         protected void btnAccountNext_Click( object sender, EventArgs e )
         {
             var isAccountRequired = txtUserName.Text.IsNotNullOrWhiteSpace() || txtPassword.Text.IsNotNullOrWhiteSpace();
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
 
             if ( isAccountRequired )
             {
@@ -913,7 +914,7 @@ ORDER BY [Text]",
             pnlKnownIndividual.Visible = false;
 
             var configuredGroupTypeGuid = GetAttributeValue( AttributeKey.CheckinConfiguration ).AsGuid();
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
 
             var groupType = GroupTypeCache.Get( configuredGroupTypeGuid );
             var descendantGroupTypeIds = new GroupTypeService( rockContext ).GetCheckinAreaDescendants( groupType.Id ).Select( a => a.Id ).ToList();
@@ -1117,7 +1118,7 @@ ORDER BY [Text]",
         /// </summary>
         private Person GetLoggedInPerson( RockContext rockContext = null )
         {
-            rockContext = rockContext ?? new RockContext();
+            rockContext = rockContext ?? RockApp.Current.CreateRockContext();
             Person person = null;
 
             if ( CurrentPersonId.HasValue )
@@ -1147,7 +1148,7 @@ ORDER BY [Text]",
         /// </summary>
         private void ShowKnownIndividual()
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var person = GetLoggedInPerson();
             var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, person );
             lKnownIndividualTitle.Text = GetAttributeValue( AttributeKey.KnownIndividualPanel1Title ).ResolveMergeFields( mergeFields );
@@ -1201,7 +1202,7 @@ ORDER BY [Text]",
         /// </summary>
         private void ShowSuccess()
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var person = GetLoggedInPerson();
             var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, person );
             lSuccessTitle.Text = GetAttributeValue( AttributeKey.KnownIndividualPanel2Title ).ResolveMergeFields( mergeFields );
@@ -1283,7 +1284,7 @@ ORDER BY [Text]",
         private List<Watcher> GetKnownRelationshipWatchers( Person person, List<GroupTypeRoleCache> configuredKnownRelationships, RockContext rockContext = null )
         {
             var otherIndividuals = new List<Watcher>();
-            rockContext = rockContext ?? new RockContext();
+            rockContext = rockContext ?? RockApp.Current.CreateRockContext();
 
             if ( configuredKnownRelationships.Any() )
             {
@@ -1668,7 +1669,7 @@ ORDER BY [Text]",
         /// </summary>
         private void GetData( Person person, RockContext rockContext = null )
         {
-            rockContext = rockContext ?? new RockContext();
+            rockContext = rockContext ?? RockApp.Current.CreateRockContext();
             var personService = new PersonService( rockContext );
             var family = person.GetFamily( rockContext );
 

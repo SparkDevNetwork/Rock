@@ -1,4 +1,4 @@
-﻿using System.IdentityModel.Tokens.Jwt;
+using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using System.Security.Claims;
 
@@ -7,10 +7,11 @@ using IdentityModel;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security.ExternalAuthentication;
-using Rock.Tests.Shared.TestFramework;
+using Rock.Tests.Integration.TestFramework.Database;
 using Rock.Web.Cache;
 
 namespace Rock.Tests.Integration.Security
@@ -40,7 +41,7 @@ namespace Rock.Tests.Integration.Security
             var oidcClient = new OidcClient();
             var userName = oidcClient.HandleOidcUserAddUpdate( token, "test" );
 
-            var userLoginService = new UserLoginService( new RockContext() );
+            var userLoginService = new UserLoginService( RockApp.Current.CreateRockContext() );
             var actualUserLogin = userLoginService.Queryable().Where( ul => ul.UserName == userName ).FirstOrDefault();
 
             Assert.IsNotNull( actualUserLogin );
@@ -57,7 +58,7 @@ namespace Rock.Tests.Integration.Security
             var expectedUserName = System.Guid.NewGuid().ToString( "N" );
 
             var typeId = EntityTypeCache.Get( typeof( OidcClient ) ).Id;
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var expectedUserLogin = UserLoginService.Create( rockContext, expectedPerson, AuthenticationServiceType.External, typeId, "OIDC_" + expectedUserName, "oidc", true );
 
             var tokenHandler = new JwtSecurityTokenHandler();
@@ -77,7 +78,7 @@ namespace Rock.Tests.Integration.Security
             var oidcClient = new OidcClient();
             var userName = oidcClient.HandleOidcUserAddUpdate( token, "test" );
 
-            var userLoginService = new UserLoginService( new RockContext() );
+            var userLoginService = new UserLoginService( RockApp.Current.CreateRockContext() );
             var actualUserLogin = userLoginService.Queryable().Where( ul => ul.UserName == userName ).FirstOrDefault();
 
             Assert.IsNotNull( actualUserLogin );
@@ -116,7 +117,7 @@ namespace Rock.Tests.Integration.Security
             var oidcClient = new OidcClient();
             var userName = oidcClient.HandleOidcUserAddUpdate( token, "test" );
 
-            var userLoginService = new UserLoginService( new RockContext() );
+            var userLoginService = new UserLoginService( RockApp.Current.CreateRockContext() );
             var actualUserLogin = userLoginService.Queryable().Where( ul => ul.UserName == userName ).FirstOrDefault();
 
             Assert.IsNotNull( actualUserLogin );
@@ -166,7 +167,7 @@ namespace Rock.Tests.Integration.Security
             var oidcClient = new OidcClient();
             var userName = oidcClient.HandleOidcUserAddUpdate( token, "test" );
 
-            var userLoginService = new UserLoginService( new RockContext() );
+            var userLoginService = new UserLoginService( RockApp.Current.CreateRockContext() );
             var actualUserLogin = userLoginService.Queryable().Where( ul => ul.UserName == userName ).FirstOrDefault();
 
             Assert.IsNotNull( actualUserLogin );
@@ -241,7 +242,7 @@ namespace Rock.Tests.Integration.Security
             var oidcClient = new OidcClient();
             var userName = oidcClient.HandleOidcUserAddUpdate( token, "test" );
 
-            var userLoginService = new UserLoginService( new RockContext() );
+            var userLoginService = new UserLoginService( RockApp.Current.CreateRockContext() );
             var actualUserLogin = userLoginService.Queryable().Where( ul => ul.UserName == userName ).FirstOrDefault();
 
             Assert.IsNotNull( actualUserLogin );
@@ -271,7 +272,7 @@ namespace Rock.Tests.Integration.Security
                 LastName = "User"
             };
 
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             new PersonService( rockContext ).Add( person );
             rockContext.SaveChanges();
 
@@ -316,7 +317,7 @@ namespace Rock.Tests.Integration.Security
             var oidcClient = new OidcClient();
             var userName = oidcClient.HandleOidcUserAddUpdate( token, "test" );
 
-            var userLoginService = new UserLoginService( new RockContext() );
+            var userLoginService = new UserLoginService( RockApp.Current.CreateRockContext() );
             var actualUserLogin = userLoginService.Queryable().Where( ul => ul.UserName == userName ).FirstOrDefault();
 
             Assert.IsNotNull( actualUserLogin );
@@ -363,7 +364,7 @@ namespace Rock.Tests.Integration.Security
             var oidcClient = new OidcClient();
             var userName = oidcClient.HandleOidcUserAddUpdate( token, "test" );
 
-            var userLoginService = new UserLoginService( new RockContext() );
+            var userLoginService = new UserLoginService( RockApp.Current.CreateRockContext() );
             var actualUserLogin = userLoginService.Queryable().Where( ul => ul.UserName == userName ).FirstOrDefault();
 
             Assert.IsNotNull( actualUserLogin );

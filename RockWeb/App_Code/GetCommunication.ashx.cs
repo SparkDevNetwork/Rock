@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -21,9 +21,13 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Web;
 
+using Microsoft.Extensions.DependencyInjection;
+
 using Rock;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
+using Rock.Net;
 using Rock.Security;
 
 namespace RockWeb
@@ -55,7 +59,7 @@ namespace RockWeb
             Guid? communicationGuid = context.Request.QueryString["c"].AsGuidOrNull();
             if ( communicationGuid.HasValue )
             {
-                var rockContext = new RockContext();
+                var rockContext = RockApp.Current.CreateRockContext();
                 var communication = new CommunicationService( rockContext ).Get( communicationGuid.Value );
 
                 if ( communication != null )
@@ -84,7 +88,7 @@ namespace RockWeb
                         var principal = context.User;
                         if ( principal != null && principal.Identity != null )
                         {
-                            var userLoginService = new Rock.Model.UserLoginService( new RockContext() );
+                            var userLoginService = new Rock.Model.UserLoginService( RockApp.Current.CreateRockContext() );
                             var userLogin = userLoginService.GetByUserName( principal.Identity.Name );
 
                             if ( userLogin != null )
@@ -139,10 +143,10 @@ namespace RockWeb
 
                             var userAgent = context.Request.UserAgent ?? "";
 
-                            UAParser.ClientInfo client = UAParser.Parser.GetDefault().Parse( userAgent );
-                            var clientOs = client.OS.ToString();
-                            var clientBrowser = client.UA.ToString();
-                            var clientType = InteractionDeviceType.GetClientType( userAgent );
+                            var browserInfo = RockApp.Current.GetRequiredService<IUserAgentParser>().Parse( userAgent );
+                            var clientOs = browserInfo.GetOSFamilyVersion();
+                            var clientBrowser = browserInfo.GetBrowserFamilyVersion();
+                            var clientType = browserInfo.ClientType;
 
                             interactionService.AddInteraction( interactionComponent.Id, recipient.Id, "Opened", "", recipient.PersonAliasId, RockDateTime.Now, clientBrowser, clientOs, clientType, userAgent, ipAddress, null );
 

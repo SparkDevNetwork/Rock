@@ -21,7 +21,8 @@
 // </copyright>
 //
 
-/** The additional configuration options for the Person List block. */
+/** The additional configuration options for the Personalization Segment Results block. */
 export type PersonalizationSegmentResultsOptionsBag = {
+    /** The name of the segment being viewed. */
     segmentName?: string | null;
 };

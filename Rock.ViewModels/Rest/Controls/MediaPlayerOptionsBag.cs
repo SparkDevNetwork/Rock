@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -220,6 +220,17 @@ namespace Rock.ViewModels.Rest.Controls
         /// The initial volume for playback between 0 and 1.0.
         /// </value>
         public double Volume { get; set; }
+
+        /// <summary>
+        /// Gets or sets the percentage (between 0 and 1) of the media that the
+        /// person has already watched, taken from their existing watch history.
+        /// This lets a consumer reflect prior progress on load without requiring
+        /// playback. It is <c>null</c> when no watch history is available.
+        /// </summary>
+        /// <value>
+        /// The previously watched percentage between 0 and 1.
+        /// </value>
+        public double? WatchedPercentage { get; set; }
 
         /// <summary>
         /// Determines if the user's session should be tracked and stored as an

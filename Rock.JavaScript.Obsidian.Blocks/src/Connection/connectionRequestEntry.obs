@@ -1,0 +1,711 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="connection-request-entry">
+        <NotificationBox v-if="config.errorMessage" alertType="danger">
+            {{ config.errorMessage }}
+        </NotificationBox>
+
+        <NotificationBox v-else-if="config.configurationMessage" alertType="warning">
+            {{ config.configurationMessage }}
+        </NotificationBox>
+
+        <template v-else-if="isSuccess">
+            <NotificationBox alertType="success">
+                <h4 v-if="config.submissionSuccessTitle">{{ config.submissionSuccessTitle }}</h4>
+                <p v-if="config.submissionSuccessDescription" v-html="config.submissionSuccessDescription"></p>
+            </NotificationBox>
+        </template>
+
+        <template v-else-if="config.isConfigured && !hasOpportunities && !config.isFirstTimeGuestOpportunityConfigured">
+            <NotificationBox v-if="config.opportunitiesAdminMessage" alertType="warning">{{ config.opportunitiesAdminMessage }}</NotificationBox>
+            <NotificationBox alertType="info">{{ emptyOpportunitiesMessage }}</NotificationBox>
+        </template>
+
+        <template v-else-if="config.isConfigured">
+            <div v-if="config.isBannerVisible" class="connection-request-entry-banner">
+                <i v-if="config.bannerIconCssClass"
+                   class="connection-request-entry-banner-icon"
+                   :class="config.bannerIconCssClass"></i>
+                <h2 v-if="config.bannerTitle" class="connection-request-entry-banner-title">{{ config.bannerTitle }}</h2>
+                <div v-if="config.bannerDescription"
+                     class="connection-request-entry-banner-description"
+                     v-html="config.bannerDescription"></div>
+            </div>
+
+            <RockForm @submit="onSubmit">
+                <div v-if="submitError" ref="submitErrorElement">
+                    <NotificationBox alertType="danger">{{ submitError }}</NotificationBox>
+                </div>
+
+                <!-- Disable every field while a submission is in flight. The wrapper is layout-transparent (display: contents). -->
+                <fieldset class="connection-request-entry-fields" :disabled="isSubmitting">
+                    <ContentSectionContainer :sidebar="false">
+                        <ContentSection v-if="config.isCampusVisible" title="Pick a Campus" icon="ti ti-map-pin" disableCollapse light>
+                            <template #description>
+                                Select a campus to set content and preferences to your location.
+                            </template>
+
+                            <ContentStack>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <CampusPicker v-model="campus"
+                                                      label="Campus"
+                                                      forceVisible
+                                                      :disabled="isSubmitting"
+                                                      rules="required" />
+                                    </div>
+                                </div>
+                            </ContentStack>
+                        </ContentSection>
+
+                        <ContentSection :title="config.personalInformationTitle || 'Personal Information'" icon="ti ti-user-circle" disableCollapse>
+                            <template v-if="config.personalInformationDescription" #description>
+                                {{ config.personalInformationDescription }}
+                            </template>
+
+                            <ContentStack>
+
+                                <div v-if="isFieldVisible(config.firstTimeGuestVisibility)" class="form-group">
+                                        <InlineCheckBox v-model="isFirstTimeGuest"
+                                                        label="I am a first time guest" />
+                                </div>
+
+                                <div v-if="isFieldVisible(config.titleVisibility)" class="row">
+                                    <div class="col-md-3">
+                                        <DropDownList v-model="title"
+                                                      label="Title"
+                                                      :items="config.titleOptions ?? []"
+                                                      :rules="fieldRules(config.titleVisibility)"
+                                                      :disabled="isSubmitting"
+                                                      showBlankItem />
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <FirstNameTextBox v-model="firstName"
+                                                          label="First Name"
+                                                          rules="required" />
+                                    </div>
+                                    <div class="col-md-6">
+                                        <TextBox v-model="lastName" label="Last Name" rules="required" />
+                                    </div>
+                                </div>
+
+                                <div v-if="isFieldVisible(config.suffixVisibility)" class="row">
+                                    <div class="col-md-3">
+                                        <DropDownList v-model="suffix"
+                                                      label="Suffix"
+                                                      :items="config.suffixOptions ?? []"
+                                                      :rules="fieldRules(config.suffixVisibility)"
+                                                      :disabled="isSubmitting"
+                                                      showBlankItem />
+                                    </div>
+                                </div>
+
+                                <div v-if="isFieldVisible(config.birthDateVisibility)" class="row">
+                                    <div class="col-md-6">
+                                        <BirthdayPicker v-model="birthDate"
+                                                        label="Birthdate"
+                                                        :disabled="isSubmitting"
+                                                        :rules="fieldRules(config.birthDateVisibility)" />
+                                    </div>
+                                </div>
+
+                                <div v-if="isFieldVisible(config.genderVisibility)" class="row">
+                                    <div class="col-md-6">
+                                        <RadioButtonList v-model="gender"
+                                                         label="Gender"
+                                                         :items="genderOptions"
+                                                         :disabled="isSubmitting"
+                                                         :rules="fieldRules(config.genderVisibility)" />
+                                    </div>
+                                </div>
+
+                                <div v-if="isFieldVisible(config.profilePhotoVisibility)" class="row">
+                                    <div class="col-md-6">
+                                        <ImageUploader v-model="photo"
+                                                       label="Profile Photo"
+                                                       :binaryFileTypeGuid="profilePhotoFileTypeGuid"
+                                                       :disabled="isSubmitting"
+                                                       :rules="fieldRules(config.profilePhotoVisibility)" />
+                                    </div>
+                                </div>
+
+                                <div v-if="isFieldVisible(config.maritalStatusVisibility)" class="row">
+                                    <div class="col-md-6">
+                                        <DropDownList v-model="maritalStatus"
+                                                      label="Marital Status"
+                                                      :items="config.maritalStatusOptions ?? []"
+                                                      :rules="fieldRules(config.maritalStatusVisibility)"
+                                                      :disabled="isSubmitting"
+                                                      showBlankItem />
+                                    </div>
+                                </div>
+
+                                <TransitionVerticalCollapse>
+                                    <ConditionalWell v-if="isSpouseSectionVisible">
+                                        <div class="row">
+                                            <div v-if="isFieldVisible(config.spouseFirstNameVisibility)" class="col-md-6">
+                                                <TextBox v-model="spouseFirstName"
+                                                         label="Spouse First Name"
+                                                         :rules="fieldRules(config.spouseFirstNameVisibility)" />
+                                            </div>
+                                            <div v-if="isFieldVisible(config.spouseLastNameVisibility)" class="col-md-6">
+                                                <TextBox v-model="spouseLastName"
+                                                         label="Spouse Last Name"
+                                                         :rules="fieldRules(config.spouseLastNameVisibility)" />
+                                            </div>
+                                        </div>
+                                        <div v-if="isFieldVisible(config.spouseGenderVisibility)" class="row">
+                                            <div class="col-md-6">
+                                                <RadioButtonList v-model="spouseGender"
+                                                                 label="Spouse Gender"
+                                                                 :items="genderOptions"
+                                                                 :disabled="isSubmitting"
+                                                                 :rules="fieldRules(config.spouseGenderVisibility)" />
+                                            </div>
+                                        </div>
+                                    </ConditionalWell>
+                                </TransitionVerticalCollapse>
+                            </ContentStack>
+                        </ContentSection>
+
+                        <ContentSection :title="config.contactInformationTitle || 'Contact Information'" icon="ti ti-messages" disableCollapse>
+                            <template v-if="config.contactInformationDescription" #description>
+                                {{ config.contactInformationDescription }}
+                            </template>
+
+                            <ContentStack>
+                                <div class="row">
+                                    <div v-if="isFieldVisible(config.emailVisibility)" class="col-md-6">
+                                        <EmailBox v-model="email"
+                                                  label="Email"
+                                                  :rules="fieldRules(config.emailVisibility)" />
+                                    </div>
+                                    <div v-if="isMarried && isFieldVisible(config.spouseEmailVisibility)" class="col-md-6">
+                                        <EmailBox v-model="spouseEmail"
+                                                  label="Spouse Email"
+                                                  :rules="fieldRules(config.spouseEmailVisibility)" />
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div v-if="isFieldVisible(config.mobilePhoneVisibility)" class="col-md-6">
+                                        <PhoneNumberBoxWithSms v-model="mobilePhone"
+                                                               label="Mobile Phone"
+                                                               :rules="fieldRules(config.mobilePhoneVisibility)"
+                                                               :disabled="isSubmitting"
+                                                               :hideSms="!isFieldVisible(config.smsConsentVisibility)" />
+                                    </div>
+                                    <div v-if="isMarried && isFieldVisible(config.spouseMobilePhoneVisibility)" class="col-md-6">
+                                        <PhoneNumberBoxWithSms v-model="spouseMobilePhone"
+                                                               label="Spouse Mobile Phone"
+                                                               :rules="fieldRules(config.spouseMobilePhoneVisibility)"
+                                                               :disabled="isSubmitting"
+                                                               :hideSms="!isFieldVisible(config.smsConsentVisibility)" />
+                                    </div>
+                                </div>
+
+                                <div v-if="isFieldVisible(config.addressVisibility)" class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-group connection-request-entry-address">
+                                            <label class="control-label" :class="{ 'required-indicator': isFieldRequired(config.addressVisibility) }">Address</label>
+                                            <AddressControl v-model="address"
+                                                            :disabled="isSubmitting"
+                                                            :rules="fieldRules(config.addressVisibility)" />
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div v-if="isFieldVisible(config.preferredServiceTimeVisibility)" class="row">
+                                    <div class="col-md-6">
+                                        <DropDownList v-model="preferredServiceTime"
+                                                      label="Preferred Service Time"
+                                                      help="Let us know which service you usually attend or plan to attend so we can help get you better connected."
+                                                      :items="config.preferredServiceTimeOptions ?? []"
+                                                      :rules="fieldRules(config.preferredServiceTimeVisibility)"
+                                                      :disabled="isSubmitting"
+                                                      showBlankItem />
+                                    </div>
+                                </div>
+
+                                <TextBox v-if="isFieldVisible(config.additionalCommentsVisibility)"
+                                         v-model="additionalComments"
+                                         :label="additionalCommentsLabel"
+                                         textMode="multiline"
+                                         :rows="3"
+                                         :rules="fieldRules(config.additionalCommentsVisibility)" />
+                            </ContentStack>
+                        </ContentSection>
+
+                        <ContentSection :title="config.connectionOpportunitiesTitle || 'Connection Opportunities'" icon="ti ti-plug">
+                            <template v-if="config.connectionOpportunitiesDescription" #description>
+                                {{ config.connectionOpportunitiesDescription }}
+                            </template>
+
+                            <ContentStack>
+                                <DisplayCardContainer v-if="hasOpportunities">
+                                    <ConnectionOpportunityCard v-for="opportunity in opportunities"
+                                                               :key="opportunity.idKey ?? ''"
+                                                               :opportunity="opportunity"
+                                                               :selected="isOpportunitySelected(opportunity)"
+                                                               :modelValue="opportunityAttributeValues[opportunity.idKey ?? '']"
+                                                               :disabled="isSubmitting"
+                                                               @update:selected="onOpportunitySelectedChange(opportunity, $event)"
+                                                               @update:modelValue="onOpportunityAttributesChange(opportunity, $event)" />
+                                </DisplayCardContainer>
+
+                                <template v-else>
+                                    <NotificationBox v-if="config.opportunitiesAdminMessage" alertType="warning">{{ config.opportunitiesAdminMessage }}</NotificationBox>
+                                    <NotificationBox alertType="info">{{ emptyOpportunitiesMessage }}</NotificationBox>
+                                </template>
+                            </ContentStack>
+                        </ContentSection>
+
+                        <ContentSection v-if="hasPersonAttributes" :title="config.additionalInformationTitle || 'Additional Information'" icon="ti ti-info-circle" disableCollapse>
+                            <template v-if="config.additionalInformationDescription" #description>
+                                {{ config.additionalInformationDescription }}
+                            </template>
+
+                            <ContentStack>
+                                <AttributeValuesContainer v-model="personAttributeValues"
+                                                          :attributes="config.personAttributes ?? {}"
+                                                          :disabled="isSubmitting"
+                                                          isEditMode />
+                            </ContentStack>
+                        </ContentSection>
+                    </ContentSectionContainer>
+                </fieldset>
+
+                <div class="connection-request-entry-footer">
+                    <div v-if="config.isCaptchaEnabled" v-show="!isCaptchaComplete">
+                        <Captcha ref="captchaElement" validationTitle="Captcha" />
+                    </div>
+                    <RockButton v-if="!config.isCaptchaEnabled || isCaptchaComplete"
+                                btnType="primary"
+                                :disabled="isSubmitting"
+                                type="submit">Submit</RockButton>
+                    <RockButton btnType="link"
+                                type="reset"
+                                @click="onClear">Clear</RockButton>
+                </div>
+            </RockForm>
+        </template>
+    </div>
+</template>
+
+<script setup lang="ts">
+    import { computed, nextTick, onMounted, ref } from "vue";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import RockForm from "@Obsidian/Controls/rockForm.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import FirstNameTextBox from "@Obsidian/Controls/firstNameTextBox.obs";
+    import EmailBox from "@Obsidian/Controls/emailBox.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import RadioButtonList from "@Obsidian/Controls/radioButtonList.obs";
+    import InlineCheckBox from "@Obsidian/Controls/inlineCheckBox.obs";
+    import CampusPicker from "@Obsidian/Controls/campusPicker.obs";
+    import BirthdayPicker from "@Obsidian/Controls/birthdayPicker.obs";
+    import ImageUploader from "@Obsidian/Controls/imageUploader.obs";
+    import AddressControl from "@Obsidian/Controls/addressControl.obs";
+    import PhoneNumberBoxWithSms from "@Obsidian/Controls/phoneNumberBoxWithSms.obs";
+    import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
+    import Captcha from "@Obsidian/Controls/captcha.obs";
+    import ContentSectionContainer from "@Obsidian/Controls/contentSectionContainer.obs";
+    import ContentSection from "@Obsidian/Controls/contentSection.obs";
+    import ContentStack from "@Obsidian/Controls/contentStack.obs";
+    import DisplayCardContainer from "@Obsidian/Controls/displayCardContainer.obs";
+    import ConditionalWell from "@Obsidian/Controls/conditionalWell.obs";
+    import TransitionVerticalCollapse from "@Obsidian/Controls/transitionVerticalCollapse.obs";
+    import ConnectionOpportunityCard from "./connectionRequestEntry/connectionOpportunityCard.partial.obs";
+    import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
+    import { makeUrlRedirectSafe } from "@Obsidian/Utility/url";
+    import { scrollElementStartToTop } from "@Obsidian/Utility/dom";
+    import { toGuidOrNull } from "@Obsidian/Utility/guid";
+    import { ConnectionRequestEntryFieldVisibility } from "@Obsidian/Enums/Blocks/Connection/ConnectionRequestEntry/connectionRequestEntryFieldVisibility";
+    import { ConnectionRequestEntryInitializationBox } from "@Obsidian/ViewModels/Blocks/Connection/ConnectionRequestEntry/connectionRequestEntryInitializationBox";
+    import { ConnectionRequestEntryRequestBag } from "@Obsidian/ViewModels/Blocks/Connection/ConnectionRequestEntry/connectionRequestEntryRequestBag";
+    import { ConnectionRequestEntryResultBag } from "@Obsidian/ViewModels/Blocks/Connection/ConnectionRequestEntry/connectionRequestEntryResultBag";
+    import { ConnectionRequestEntryOpportunityBag } from "@Obsidian/ViewModels/Blocks/Connection/ConnectionRequestEntry/connectionRequestEntryOpportunityBag";
+    import { ConnectionRequestEntrySelectedOpportunityBag } from "@Obsidian/ViewModels/Blocks/Connection/ConnectionRequestEntry/connectionRequestEntrySelectedOpportunityBag";
+    import { AddressControlBag } from "@Obsidian/ViewModels/Controls/addressControlBag";
+    import { PhoneNumberBoxWithSmsControlBag } from "@Obsidian/ViewModels/Controls/phoneNumberBoxWithSmsControlBag";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { DatePartsPickerValue } from "@Obsidian/Types/Controls/datePartsPicker";
+    import { BlockActionContextBag } from "@Obsidian/ViewModels/Blocks/blockActionContextBag";
+    import { BinaryFiletype } from "@Obsidian/SystemGuids/binaryFiletype";
+
+    // #region Types
+
+    const profilePhotoFileTypeGuid = BinaryFiletype.PersonImage;
+
+    // #endregion Types
+
+    const config = useConfigurationValues<ConnectionRequestEntryInitializationBox>();
+    const invokeBlockAction = useInvokeBlockAction();
+
+    // Reload the block when its settings change so configuration edits take effect immediately.
+    onConfigurationValuesChanged(useReloadBlock());
+
+    // #region Values
+
+    const prefill = config.prefilledValues;
+
+    const genderOptions: ListItemBag[] = [
+        { text: "Male", value: "Male" },
+        { text: "Female", value: "Female" }
+    ];
+
+    const campus = ref<ListItemBag | undefined>(config.selectedCampus ?? undefined);
+    const firstName = ref<string>(prefill?.firstName ?? "");
+    const lastName = ref<string>(prefill?.lastName ?? "");
+    const email = ref<string>(prefill?.email ?? "");
+    const title = ref<string>(prefill?.title?.value ?? "");
+    const suffix = ref<string>(prefill?.suffix?.value ?? "");
+    const birthDate = ref<DatePartsPickerValue | undefined>(isoToDateParts(prefill?.birthDate));
+    const gender = ref<string>(prefill?.gender ?? "");
+    const maritalStatus = ref<string>(prefill?.maritalStatus?.value ?? "");
+    const photo = ref<ListItemBag | undefined>(prefill?.photoGuid ? { value: prefill.photoGuid } : undefined);
+    const mobilePhone = ref<PhoneNumberBoxWithSmsControlBag | undefined>(prefill?.mobilePhone ?? undefined);
+    const address = ref<AddressControlBag>(prefill?.address ?? {});
+    const preferredServiceTime = ref<string>(prefill?.preferredServiceTime?.value ?? "");
+    const isFirstTimeGuest = ref<boolean>(prefill?.isFirstTimeGuest ?? false);
+    const additionalComments = ref<string>(prefill?.additionalComments ?? "");
+
+    const spouseFirstName = ref<string>(prefill?.spouseFirstName ?? "");
+    const spouseLastName = ref<string>(prefill?.spouseLastName ?? "");
+    const spouseGender = ref<string>(prefill?.spouseGender ?? "");
+    const spouseEmail = ref<string>(prefill?.spouseEmail ?? "");
+    const spouseMobilePhone = ref<PhoneNumberBoxWithSmsControlBag | undefined>(prefill?.spouseMobilePhone ?? undefined);
+
+    const personAttributeValues = ref<Record<string, string>>(prefill?.personAttributeValues ?? {});
+
+    const opportunities = config.opportunities ?? [];
+    const hasOpportunities = opportunities.length > 0;
+
+    // Friendly empty-state shown when the configured connection type(s) currently offer nothing.
+    const emptyOpportunitiesMessage = "There aren't any connection opportunities available right now. Please check back soon.";
+
+    const selectedOpportunityKeys = ref<string[]>(prefilledSelectedKeys());
+    const opportunityAttributeValues = ref<Record<string, Record<string, string>>>(prefilledOpportunityAttributes());
+
+    const isSuccess = ref<boolean>(false);
+    const isSubmitting = ref<boolean>(false);
+    const submitError = ref<string>("");
+    const submitErrorElement = ref<HTMLElement | undefined>();
+    const captchaElement = ref<InstanceType<typeof Captcha> | undefined>();
+    const isCaptchaComplete = ref<boolean>(false);
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    const additionalCommentsLabel = computed<string>(() => config.additionalCommentsLabel || "Additional Comments");
+
+    const hasPersonAttributes = computed<boolean>(() => {
+        return !!config.personAttributes && Object.keys(config.personAttributes).length > 0;
+    });
+
+    const isSpouseSectionVisible = computed<boolean>(() => {
+        if (!isMarried.value) {
+            return false;
+        }
+
+        return isFieldVisible(config.spouseFirstNameVisibility)
+            || isFieldVisible(config.spouseLastNameVisibility)
+            || isFieldVisible(config.spouseGenderVisibility)
+            || isFieldVisible(config.spouseEmailVisibility)
+            || isFieldVisible(config.spouseMobilePhoneVisibility);
+    });
+
+    const isMarried = computed<boolean>(() => {
+        const selected = config.maritalStatusOptions?.find(o => o.value === maritalStatus.value);
+        return (selected?.text ?? "").toLowerCase() === "married";
+    });
+
+    // #endregion Computed Values
+
+    // #region Event Handlers
+
+    /**
+     * Builds the request bag and invokes the Save block action, then either
+     * redirects or shows the success state.
+     */
+    async function onSubmit(): Promise<void> {
+        submitError.value = "";
+
+        // A request needs at least one opportunity, unless the visitor is a first-time
+        // guest and a First Time Guest Opportunity is configured to stand in for one.
+        const hasOpportunitySelected = selectedOpportunityKeys.value.length > 0;
+        const isFirstTimeGuestAlone = isFirstTimeGuest.value && config.isFirstTimeGuestOpportunityConfigured;
+
+        if (!hasOpportunitySelected && !isFirstTimeGuestAlone) {
+            submitError.value = "Please select at least one connection opportunity to continue.";
+            scrollToError();
+            return;
+        }
+
+        try {
+            isSubmitting.value = true;
+
+            const actionContext: BlockActionContextBag = {};
+            let captchaToken = "";
+
+            if (config.isCaptchaEnabled && captchaElement.value) {
+                captchaToken = (await captchaElement.value.getToken()) ?? "";
+                actionContext.captcha = captchaToken;
+            }
+
+            const bag: ConnectionRequestEntryRequestBag = {
+                firstName: firstName.value,
+                lastName: lastName.value,
+                email: email.value,
+                title: optionToListItem(config.titleOptions, title.value),
+                suffix: optionToListItem(config.suffixOptions, suffix.value),
+                birthDate: datePartsToIso(birthDate.value),
+                gender: gender.value,
+                maritalStatus: optionToListItem(config.maritalStatusOptions, maritalStatus.value),
+                photoGuid: photo.value?.value ?? null,
+                mobilePhone: mobilePhone.value ?? null,
+                address: address.value,
+                preferredServiceTime: optionToListItem(config.preferredServiceTimeOptions, preferredServiceTime.value),
+                isFirstTimeGuest: isFirstTimeGuest.value,
+                additionalComments: additionalComments.value,
+                spouseFirstName: spouseFirstName.value,
+                spouseLastName: spouseLastName.value,
+                spouseGender: spouseGender.value,
+                spouseEmail: spouseEmail.value,
+                spouseMobilePhone: spouseMobilePhone.value ?? null,
+                personAttributeValues: personAttributeValues.value,
+                campusGuid: toGuidOrNull(campus.value?.value),
+                captchaToken,
+                selectedOpportunities: buildSelectedOpportunities()
+            };
+
+            const result = await invokeBlockAction<ConnectionRequestEntryResultBag>("Save", { bag }, actionContext);
+
+            if (result.isError) {
+                submitError.value = result.errorMessage || "Something went wrong submitting your request. Please try again.";
+                scrollToError();
+                return;
+            }
+
+            if (result.data?.redirectUrl) {
+                window.location.href = makeUrlRedirectSafe(result.data.redirectUrl);
+                return;
+            }
+
+            isSuccess.value = true;
+        }
+        finally {
+            isSubmitting.value = false;
+        }
+    }
+
+    /**
+     * Resets every entered value back to its prefill default and clears the
+     * opportunity selection.
+     */
+    function onClear(): void {
+        campus.value = config.selectedCampus ?? undefined;
+        firstName.value = prefill?.firstName ?? "";
+        lastName.value = prefill?.lastName ?? "";
+        email.value = prefill?.email ?? "";
+        title.value = prefill?.title?.value ?? "";
+        suffix.value = prefill?.suffix?.value ?? "";
+        birthDate.value = isoToDateParts(prefill?.birthDate);
+        gender.value = prefill?.gender ?? "";
+        maritalStatus.value = prefill?.maritalStatus?.value ?? "";
+        photo.value = prefill?.photoGuid ? { value: prefill.photoGuid } : undefined;
+        mobilePhone.value = prefill?.mobilePhone ?? undefined;
+        address.value = prefill?.address ?? {};
+        preferredServiceTime.value = prefill?.preferredServiceTime?.value ?? "";
+        isFirstTimeGuest.value = prefill?.isFirstTimeGuest ?? false;
+        additionalComments.value = prefill?.additionalComments ?? "";
+        spouseFirstName.value = prefill?.spouseFirstName ?? "";
+        spouseLastName.value = prefill?.spouseLastName ?? "";
+        spouseGender.value = prefill?.spouseGender ?? "";
+        spouseEmail.value = prefill?.spouseEmail ?? "";
+        spouseMobilePhone.value = prefill?.spouseMobilePhone ?? undefined;
+        personAttributeValues.value = prefill?.personAttributeValues ?? {};
+        selectedOpportunityKeys.value = prefilledSelectedKeys();
+        opportunityAttributeValues.value = prefilledOpportunityAttributes();
+        submitError.value = "";
+    }
+
+    /**
+     * Adds or removes an opportunity from the selection set.
+     */
+    function onOpportunitySelectedChange(opportunity: ConnectionRequestEntryOpportunityBag, selected: boolean): void {
+        const idKey = opportunity.idKey ?? "";
+        const existing = selectedOpportunityKeys.value.filter(k => k !== idKey);
+
+        if (selected) {
+            existing.push(idKey);
+        }
+
+        selectedOpportunityKeys.value = existing;
+    }
+
+    /**
+     * Records the per-opportunity request-attribute values entered on a card.
+     */
+    function onOpportunityAttributesChange(opportunity: ConnectionRequestEntryOpportunityBag, values: Record<string, string>): void {
+        const idKey = opportunity.idKey ?? "";
+        opportunityAttributeValues.value = {
+            ...opportunityAttributeValues.value,
+            [idKey]: values
+        };
+    }
+
+    // #endregion Event Handlers
+
+    // #region Functions
+
+    /**
+     * Indicates whether a configurable field should be rendered at all.
+     */
+    function isFieldVisible(visibility: ConnectionRequestEntryFieldVisibility): boolean {
+        return visibility !== ConnectionRequestEntryFieldVisibility.Hidden;
+    }
+
+    /**
+     * Indicates whether a configurable field is required.
+     */
+    function isFieldRequired(visibility: ConnectionRequestEntryFieldVisibility): boolean {
+        return visibility === ConnectionRequestEntryFieldVisibility.Required;
+    }
+
+    /**
+     * Returns the validation rules for a field based on its visibility setting.
+     */
+    function fieldRules(visibility: ConnectionRequestEntryFieldVisibility): string {
+        return isFieldRequired(visibility) ? "required" : "";
+    }
+
+    /**
+     * Indicates whether the given opportunity is currently selected.
+     */
+    function isOpportunitySelected(opportunity: ConnectionRequestEntryOpportunityBag): boolean {
+        return selectedOpportunityKeys.value.includes(opportunity.idKey ?? "");
+    }
+
+    /**
+     * Resolves a DropDownList string value back to its matching option bag.
+     */
+    function optionToListItem(options: ListItemBag[] | null | undefined, value: string): ListItemBag | null {
+        if (!value) {
+            return null;
+        }
+
+        return options?.find(o => o.value === value) ?? null;
+    }
+
+    /**
+     * Converts the picker's date parts into an ISO 8601 date string.
+     */
+    function datePartsToIso(value: DatePartsPickerValue | undefined): string | null {
+        if (!value || !value.year || !value.month || !value.day) {
+            return null;
+        }
+
+        const month = ("0" + value.month).slice(-2);
+        const day = ("0" + value.day).slice(-2);
+        return `${value.year}-${month}-${day}`;
+    }
+
+    /**
+     * Converts an ISO 8601 date string into picker date parts.
+     */
+    function isoToDateParts(value: string | null | undefined): DatePartsPickerValue | undefined {
+        if (!value) {
+            return undefined;
+        }
+
+        const parts = value.split("T")[0].split("-");
+        if (parts.length < 3) {
+            return undefined;
+        }
+
+        return {
+            year: Number(parts[0]),
+            month: Number(parts[1]),
+            day: Number(parts[2])
+        };
+    }
+
+    /**
+     * Builds the selected-opportunity request bags from the current selection
+     * and the per-opportunity attribute values.
+     */
+    function buildSelectedOpportunities(): ConnectionRequestEntrySelectedOpportunityBag[] {
+        return selectedOpportunityKeys.value.map(idKey => ({
+            opportunityIdKey: idKey,
+            attributeValues: opportunityAttributeValues.value[idKey] ?? {}
+        }));
+    }
+
+    /**
+     * Reads any prefilled opportunity selection into the selection set.
+     */
+    function prefilledSelectedKeys(): string[] {
+        return (prefill?.selectedOpportunities ?? [])
+            .map(o => o.opportunityIdKey ?? "")
+            .filter(k => k.length > 0);
+    }
+
+    /**
+     * Reads any prefilled per-opportunity attribute values into a keyed map.
+     */
+    function prefilledOpportunityAttributes(): Record<string, Record<string, string>> {
+        const map: Record<string, Record<string, string>> = {};
+
+        for (const selected of prefill?.selectedOpportunities ?? []) {
+            if (selected.opportunityIdKey) {
+                map[selected.opportunityIdKey] = selected.attributeValues ?? {};
+            }
+        }
+
+        return map;
+    }
+
+    /**
+     * Brings the submit-error notification into view once it renders. Submit lives in
+     * a sticky footer, so a visitor submitting from the bottom of a long form would
+     * otherwise never see the error surface at the top.
+     */
+    async function scrollToError(): Promise<void> {
+        await nextTick();
+
+        if (submitErrorElement.value) {
+            scrollElementStartToTop(submitErrorElement.value);
+        }
+    }
+
+    /**
+     * Waits for a captcha token, then reveals the Submit button. The captcha widget
+     * stands in for Submit until solved. In invisible mode the token resolves on its
+     * own, so Submit appears without any visitor interaction.
+     */
+    async function waitForCaptcha(): Promise<void> {
+        if (!config.isCaptchaEnabled || !captchaElement.value) {
+            isCaptchaComplete.value = true;
+            return;
+        }
+
+        const token = await captchaElement.value.getToken();
+        isCaptchaComplete.value = !!token;
+    }
+
+    // #endregion Functions
+
+    // #region Lifecycle Hooks
+
+    onMounted(() => {
+        waitForCaptcha();
+    });
+
+    // #endregion Lifecycle Hooks
+</script>

@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -23,6 +23,7 @@ using Microsoft.Extensions.Logging;
 
 using Rock.Attribute;
 using Rock.Communication;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Enums.Blocks.Security.Login;
 using Rock.Enums.Security;
@@ -780,7 +781,7 @@ namespace Rock.Blocks.Security
                 return;
             }
 
-            var systemCommunication = new SystemCommunicationService( new RockContext() ).Get( systemCommunicationGuid.Value );
+            var systemCommunication = new SystemCommunicationService( RockApp.Current.CreateRockContext() ).Get( systemCommunicationGuid.Value );
             if ( systemCommunication == null )
             {
                 Logger.LogError( "Login Confirmation Alert could not be sent for person @personId, because the System Communication @systemCommunicationGuid does not exist. Please check the login block configuration.", person.Id, systemCommunicationGuid );
@@ -909,7 +910,7 @@ namespace Rock.Blocks.Security
         /// <param name="userLoginId">The user login identifier.</param>
         private void ConfirmUserLogin( int userLoginId )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var userLoginService = new UserLoginService( rockContext );
                 var userLogin = userLoginService.Get( userLoginId );
@@ -1379,7 +1380,7 @@ namespace Rock.Blocks.Security
                     continue;
                 }
 
-                var userLogin = new UserLoginService( new RockContext() ).GetByUserName( result.UserName );
+                var userLogin = new UserLoginService( RockApp.Current.CreateRockContext() ).GetByUserName( result.UserName );
 
                 // The old block would stop processing external auth providers if one successfully authenticated the user,
                 // but the userLogin doesn't. The block should load as if no login occurred at all.
@@ -1602,7 +1603,7 @@ namespace Rock.Blocks.Security
                 validationResults.IsPasswordlessLoginInactive = true;
             }
 
-            validationResults.PasswordlessLoginSystemCommunication = new SystemCommunicationService( new RockContext() ).Get( securitySettings.PasswordlessConfirmationCommunicationTemplateGuid );
+            validationResults.PasswordlessLoginSystemCommunication = new SystemCommunicationService( RockApp.Current.CreateRockContext() ).Get( securitySettings.PasswordlessConfirmationCommunicationTemplateGuid );
 
             if ( validationResults.PasswordlessLoginSystemCommunication == null )
             {
@@ -1693,7 +1694,7 @@ namespace Rock.Blocks.Security
                 );
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var userLoginService = new UserLoginService( rockContext );
                 var userLogin = userLoginService.GetByUserName( bag.Username );
@@ -1876,7 +1877,7 @@ namespace Rock.Blocks.Security
                 return response;
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var responseBag = new PasswordlessLoginStartResponseBag();
 
@@ -2182,7 +2183,7 @@ namespace Rock.Blocks.Security
 
             if ( databaseEntityTypeId.HasValue )
             {
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     var userLoginService = new UserLoginService( rockContext );
                     isUsernameAndPasswordMissing = !userLoginService

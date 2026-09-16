@@ -1,0 +1,255 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <ContentSection :title="channel.name ?? ''"
+                    :icon="channel.iconCssClass || 'ti ti-speakerphone'"
+                    :isCollapsed="!(channel.isExpanded ?? false)">
+        <Grid light
+              :definition="channel.gridDefinition ?? undefined"
+              :data="gridDataSource"
+              keyField="idKey"
+              itemTerm="Item"
+              emptyDataText="No items linked"
+              :entityTypeGuid="EntityType.ContentChannelItem"
+              :showLaunchWorkflow="true"
+              :customActions="customActions"
+              :onAddItem="channel.isAddEnabled ? onAddItem : undefined"
+              @selectItem="onSelectItem">
+
+            <TextColumn name="title"
+                        title="Title"
+                        field="title"
+                        width="30%" />
+
+            <DateTimeColumn v-if="showStartDateTime && includeTime"
+                            name="startDateTime"
+                            :title="startDateTitle"
+                            field="startDateTime" />
+
+            <DateColumn v-else-if="showStartDateTime && !includeTime"
+                        name="startDateTime"
+                        :title="startDateTitle"
+                        field="startDateTime" />
+
+            <DateTimeColumn v-if="showExpireDateTime && includeTime"
+                            name="expireDateTime"
+                            title="Expire"
+                            field="expireDateTime" />
+
+            <DateColumn v-else-if="showExpireDateTime && !includeTime"
+                        name="expireDateTime"
+                        title="Expire"
+                        field="expireDateTime" />
+
+            <NumberColumn v-if="channel.showPriorityColumn"
+                          name="priority"
+                          title="Priority"
+                          field="priority" />
+
+            <AttributeColumns :attributes="channel.gridDefinition?.attributeFields ?? []" />
+
+            <LabelColumn v-if="channel.showStatusColumn"
+                         name="status"
+                         title="Status"
+                         field="status"
+                         :textSource="ContentChannelItemStatusDescription"
+                         :classSource="statusLabelColors" />
+
+            <DeleteColumn v-if="channel.isDeleteEnabled"
+                          disableConfirmation
+                          @click="onDeleteClick" />
+        </Grid>
+    </ContentSection>
+</template>
+
+<script setup lang="ts">
+    import { computed, PropType, ref, watch } from "vue";
+    import ContentSection from "@Obsidian/Controls/contentSection.obs";
+    import Grid, { AttributeColumns, DateColumn, DateTimeColumn, DeleteColumn, LabelColumn, NumberColumn, TextColumn } from "@Obsidian/Controls/grid";
+    import {
+        ContentChannelItemStatus,
+        ContentChannelItemStatusDescription
+    } from "@Obsidian/Enums/Cms/contentChannelItemStatus";
+    import { EntityType } from "@Obsidian/SystemGuids/entityType";
+    import { GridAction } from "@Obsidian/Types/Controls/grid";
+    import { useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { alert, confirm } from "@Obsidian/Utility/dialogs";
+    import { CalendarContentChannelItemListContentChannelBag } from "@Obsidian/ViewModels/Blocks/Event/CalendarContentChannelItemList/calendarContentChannelItemListContentChannelBag";
+    import { CalendarContentChannelItemListDeleteResponseBag } from "@Obsidian/ViewModels/Blocks/Event/CalendarContentChannelItemList/calendarContentChannelItemListDeleteResponseBag";
+    import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
+    import { NavigationUrlKey } from "./types.partial";
+
+    const props = defineProps({
+        channel: {
+            type: Object as PropType<CalendarContentChannelItemListContentChannelBag>,
+            required: true
+        },
+
+        navigationUrls: {
+            type: Object as PropType<Record<string, string> | null | undefined>,
+            default: null
+        },
+
+        /**
+         * Bumped by the parent after a successful Link Existing so this panel
+         * can soft-refresh without remounting the block.
+         */
+        refreshToken: {
+            type: Number as PropType<number>,
+            default: 0
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "linkExisting", contentChannelKey: string): void;
+        (e: "unlinkedOnly", response: CalendarContentChannelItemListDeleteResponseBag): void;
+    }>();
+
+    // #region Values
+
+    const invokeBlockAction = useInvokeBlockAction();
+    const gridDataSource = ref(Promise.resolve(props.channel.gridData ?? { rows: [] } as GridDataBag));
+
+    const statusLabelColors: Record<string, string> = {
+        [ContentChannelItemStatusDescription[ContentChannelItemStatus.PendingApproval]]: "default",
+        [ContentChannelItemStatusDescription[ContentChannelItemStatus.Approved]]: "success",
+        [ContentChannelItemStatusDescription[ContentChannelItemStatus.Denied]]: "danger"
+    };
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    const showStartDateTime = computed((): boolean => !!props.channel.showStartDateTimeColumn);
+    const showExpireDateTime = computed((): boolean => !!props.channel.showExpireDateTimeColumn);
+    const includeTime = computed((): boolean => !!props.channel.includeTime);
+
+    const startDateTitle = computed((): string => {
+        return showExpireDateTime.value ? "Start" : "Active";
+    });
+
+    // Link Existing is available with channel VIEW (not EDIT).
+    // Primary so it appears inline in the light footer next to Add.
+    // Add/Delete remain gated by isAddEnabled / isDeleteEnabled.
+    const customActions = computed((): GridAction[] => {
+        if (!props.channel.idKey) {
+            return [];
+        }
+
+        const contentChannelKey = props.channel.idKey;
+
+        return [
+            {
+                title: "Link Existing Item",
+                tooltip: "Link Existing Item",
+                iconCssClass: "ti ti-link",
+                isPrimary: true,
+                handler: () => {
+                    emit("linkExisting", contentChannelKey);
+                }
+            }
+        ];
+    });
+
+    // #endregion Computed Values
+
+    // #region Functions
+
+    /**
+     * Soft-refreshes this channel's grid rows from the server.
+     * On failure the promise rejects so the Grid keeps its previous rows
+     * (returning an empty bag would wipe the UI).
+     */
+    async function loadGridData(): Promise<GridDataBag> {
+        if (!props.channel.idKey) {
+            return { rows: [] };
+        }
+
+        const result = await invokeBlockAction<GridDataBag>("GetChannelGridData", {
+            contentChannelKey: props.channel.idKey
+        });
+
+        if (result.isSuccess && result.data) {
+            return result.data;
+        }
+
+        const message = result.errorMessage ?? "Unable to refresh content channel items.";
+        await alert(message);
+        throw new Error(message);
+    }
+
+    /**
+     * Reassigns the grid data source so the Grid reloads rows without remounting.
+     */
+    function refreshGrid(): void {
+        gridDataSource.value = loadGridData();
+    }
+
+    // #endregion Functions
+
+    // #region Event Handlers
+
+    /**
+     * Navigates to the detail page for the selected content channel item.
+     */
+    function onSelectItem(key: string): void {
+        const url = props.navigationUrls?.[NavigationUrlKey.DetailPage];
+        if (url) {
+            window.location.href = url.replace("((Key))", key);
+        }
+    }
+
+    /**
+     * Navigates to the detail page to add a new content channel item for this channel.
+     */
+    function onAddItem(): void {
+        const url = props.navigationUrls?.[NavigationUrlKey.NewItemPage];
+        if (url && props.channel.idKey) {
+            window.location.href = url.replace("((Key))", props.channel.idKey);
+        }
+    }
+
+    /**
+     * Removes the content channel item from this occurrence (unlinks when still
+     * used elsewhere; otherwise deletes the item).
+     */
+    async function onDeleteClick(key: string): Promise<void> {
+        // Confirm copy matches actual behavior: always remove from this occurrence;
+        // full content-item delete only when it has no other occurrence links.
+        const confirmed = await confirm(
+            "Are you sure you want to remove this content channel item from this occurrence? If it is not linked to any other occurrences, the content channel item will also be deleted."
+        );
+
+        if (!confirmed) {
+            return;
+        }
+
+        const result = await invokeBlockAction<CalendarContentChannelItemListDeleteResponseBag>("Delete", {
+            contentItemKey: key,
+            contentChannelKey: props.channel.idKey
+        });
+
+        if (!result.isSuccess) {
+            await alert(result.errorMessage ?? "Unable to remove the content channel item.");
+            return;
+        }
+
+        if (result.data?.wasUnlinkedOnly) {
+            emit("unlinkedOnly", result.data);
+        }
+
+        refreshGrid();
+    }
+
+    // #endregion Event Handlers
+
+    // #region Watchers
+
+    watch(() => props.refreshToken, (token, previousToken) => {
+        // Parent bumps this after Link Existing; skip the initial default (0).
+        if (token > 0 && token !== previousToken) {
+            refreshGrid();
+        }
+    });
+
+    // #endregion Watchers
+</script>

@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -21,11 +21,13 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
+
 using Newtonsoft.Json;
 
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Enums.Cms;
+using Rock.Enums.Security;
 using Rock.Lava;
 using Rock.Security;
 using Rock.Utility;
@@ -58,6 +60,7 @@ namespace Rock.Model
         [Required]
         [MaxLength( 100 )]
         [DataMember( IsRequired = true )]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string InternalName { get; set; }
 
         /// <summary>
@@ -68,6 +71,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 100 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string PageTitle { get; set; }
 
 
@@ -85,6 +89,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 100 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string BrowserTitle { get; set; }
 
         /// <summary>
@@ -324,6 +329,7 @@ namespace Rock.Model
         /// A <see cref="System.String"/> that represents the Page description.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.LavaAndBasicHtml )]
         public string Description { get; set; }
 
         /// <summary>
@@ -333,6 +339,7 @@ namespace Rock.Model
         /// The key words.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string KeyWords { get; set; }
 
         /// <summary>
@@ -342,6 +349,7 @@ namespace Rock.Model
         /// The content of the header.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string HeaderContent { get; set; }
 
         /// <summary>
@@ -367,6 +375,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [MaxLength( 100 )]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string IconCssClass { get; set; }
 
         /// <summary>
@@ -393,6 +402,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [MaxLength( 100 )]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string BodyCssClass { get; set; }
 
         /// <summary>
@@ -413,10 +423,12 @@ namespace Rock.Model
         [Obsolete( "Use AdditionalSettingsJson instead." )]
         [RockObsolete( "1.16" )]
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string AdditionalSettings { get; set; }
 
         /// <inheritdoc/>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string AdditionalSettingsJson { get; set; }
 
         /// <summary>
@@ -439,6 +451,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 500 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string CacheControlHeaderSettings
         {
             get => _cacheControlHeaderSettings;
@@ -640,6 +653,25 @@ namespace Rock.Model
         public override string ToString()
         {
             return PageTitle;
+        }
+
+        /// <summary>
+        /// Sets the <see cref="SiteId"/> so that site qualified Page attributes
+        /// resolve correctly when <see cref="Rock.Attribute.IHasAttributes"/>
+        /// attributes are loaded on an unsaved Page.
+        /// </summary>
+        /// <remarks>
+        /// <see cref="SiteId"/> is normally derived from the Page's Layout by the
+        /// save hook, so a transient Page has no site until it is saved. This lets
+        /// callers that need the qualified attribute set before saving (such as
+        /// previewing the attributes of a page about to be created) supply the site
+        /// the page will belong to. It does not affect what is persisted, the save
+        /// hook always re-derives <see cref="SiteId"/> from the Layout.
+        /// </remarks>
+        /// <param name="siteId">The identifier of the site the page will belong to.</param>
+        internal void SetSiteIdForLoadingAttributes( int siteId )
+        {
+            SiteId = siteId;
         }
 
         #endregion Methods

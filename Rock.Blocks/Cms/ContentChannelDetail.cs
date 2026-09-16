@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -22,6 +22,7 @@ using System.Data.Entity;
 using System.Linq;
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
@@ -99,7 +100,7 @@ namespace Rock.Blocks.Cms
 
             if ( contentChannelId != null )
             {
-                var contentChannelName = new ContentChannelService( new RockContext() ).GetSelect( contentChannelId.Value, c => c.Name );
+                var contentChannelName = new ContentChannelService( RockApp.Current.CreateRockContext() ).GetSelect( contentChannelId.Value, c => c.Name );
                 var breadCrumbPageRef = new PageReference( pageReference.PageId, 0, pageReference.Parameters );
                 breadCrumbs.Add( new BreadCrumbLink( contentChannelName ?? "New Content Channel", breadCrumbPageRef ) );
             }
@@ -130,10 +131,93 @@ namespace Rock.Blocks.Cms
                 AvailableLicenses = GetLicenses(),
                 ContentChannelList = GetContentChannelList( rockContext ),
                 CurrentPageUrl = this.GetCurrentPageUrl().UrlEncode(),
-                DisableContentField = entity.ContentChannelType?.DisableContentField ?? false
+                DisableContentField = entity.ContentChannelType?.DisableContentField ?? false,
+                ContentLibraryInheritedItemAttributes = GetContentLibraryInheritedItemAttributes( entity.ContentChannelTypeId, rockContext ),
+                ContentChannelTypeItemAttributeKeys = GetContentChannelTypeItemAttributeKeys( entity.ContentChannelTypeId, rockContext )
             };
 
             return options;
+        }
+
+        /// <summary>
+        /// Gets Content Channel Item attribute keys defined on the specified Content Channel Type.
+        /// </summary>
+        /// <param name="contentChannelTypeId">The content channel type identifier.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns>A distinct list of attribute keys.</returns>
+        private List<string> GetContentChannelTypeItemAttributeKeys( int contentChannelTypeId, RockContext rockContext )
+        {
+            if ( contentChannelTypeId <= 0 )
+            {
+                return new List<string>();
+            }
+
+            /*
+                7/17/26 - MSE
+
+                Content Channel Item attributes can be defined on both the type and the channel.
+                Reserve type-level keys when editing channel item attributes so the same Key
+                cannot be introduced from either side (matching Connection Type/Opportunity).
+
+                Reason: Prevent duplicate ContentChannelItem attribute Keys across type and channel.
+            */
+            var contentChannelItemEntityTypeId = EntityTypeCache.Get<ContentChannelItem>().Id;
+
+            return new AttributeService( rockContext )
+                .GetByEntityTypeId( contentChannelItemEntityTypeId, true )
+                .AsNoTracking()
+                .Where( a =>
+                    a.EntityTypeQualifierColumn.Equals( "ContentChannelTypeId", StringComparison.OrdinalIgnoreCase ) &&
+                    a.EntityTypeQualifierValue.Equals( contentChannelTypeId.ToString() ) &&
+                    a.Key != null &&
+                    a.Key != string.Empty )
+                .Select( a => a.Key )
+                .Distinct()
+                .ToList();
+        }
+
+        /// <summary>
+        /// Validates that channel item attribute keys do not conflict with item attributes
+        /// already defined on the content channel type.
+        /// </summary>
+        private bool ValidateItemAttributeKeysAgainstType( ContentChannel contentChannel, List<PublicEditableAttributeBag> itemAttributes, out string errorMessage )
+        {
+            errorMessage = null;
+
+            if ( itemAttributes == null || !itemAttributes.Any() || contentChannel.ContentChannelTypeId <= 0 )
+            {
+                return true;
+            }
+
+            var typeKeys = GetContentChannelTypeItemAttributeKeys( contentChannel.ContentChannelTypeId, RockContext );
+            if ( !typeKeys.Any() )
+            {
+                return true;
+            }
+
+            var typeKeySet = new HashSet<string>( typeKeys, StringComparer.OrdinalIgnoreCase );
+            var conflictingKeys = itemAttributes
+                .Where( a => a.Key.IsNotNullOrWhiteSpace() && typeKeySet.Contains( a.Key ) )
+                .Select( a => a.Key )
+                .Distinct( StringComparer.OrdinalIgnoreCase )
+                .OrderBy( k => k )
+                .ToList();
+
+            if ( !conflictingKeys.Any() )
+            {
+                return true;
+            }
+
+            if ( conflictingKeys.Count == 1 )
+            {
+                errorMessage = $"An item attribute with the key '{conflictingKeys[0]}' already exists on the Content Channel Type. Please use a different key.";
+            }
+            else
+            {
+                errorMessage = $"The following item attribute keys already exist on the Content Channel Type: {conflictingKeys.AsDelimited( ", " )}. Please use different keys.";
+            }
+
+            return false;
         }
 
         /// <summary>
@@ -703,6 +787,81 @@ namespace Rock.Blocks.Cms
         }
 
         /// <summary>
+        /// Gets the inherited item attributes from the Content Channel Type
+        /// for use within the Content Library section.
+        /// </summary>
+        /// <param name="contentChannelTypeId">The content channel type identifier.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns>A list of attributes qualified by the Content Channel Type.</returns>
+        private List<ListItemBag> GetContentLibraryInheritedItemAttributes( int contentChannelTypeId, RockContext rockContext )
+        {
+            if ( contentChannelTypeId == 0 )
+            {
+                return new List<ListItemBag>();
+            }
+
+            var attributeService = new AttributeService( rockContext );
+            return attributeService
+                .GetByEntityTypeId( new ContentChannelItem().TypeId, true )
+                .AsQueryable()
+                .Where( a =>
+                    a.EntityTypeQualifierColumn.Equals( "ContentChannelTypeId", StringComparison.OrdinalIgnoreCase ) &&
+                    a.EntityTypeQualifierValue.Equals( contentChannelTypeId.ToString() ) )
+                .Select( a => new ListItemBag() { Text = a.Name, Value = a.Guid.ToString() } )
+                .ToList();
+        }
+
+        /// <summary>
+        /// Validates that the content library configuration attribute guids
+        /// (summary, author, image) reference attributes that actually belong
+        /// to this content channel or its content channel type. Any guid that
+        /// does not match a valid attribute is cleared to prevent stale
+        /// references from being persisted.
+        /// </summary>
+        /// <param name="entity">The content channel being saved.</param>
+        /// <param name="bag">The bag containing the values from the client.</param>
+        private void ValidateContentLibraryAttributeGuids( ContentChannel entity, ContentChannelBag bag )
+        {
+            var validAttributeGuids = new HashSet<Guid>();
+
+            // Collect guids from channel-specific item attributes.
+            if ( bag.ItemAttributes != null )
+            {
+                foreach ( var attr in bag.ItemAttributes.Where( a => a.Guid.HasValue && a.Guid.Value != Guid.Empty ) )
+                {
+                    validAttributeGuids.Add( attr.Guid.Value );
+                }
+            }
+
+            // Collect guids from content channel type inherited attributes.
+            var inheritedAttributes = GetContentLibraryInheritedItemAttributes( entity.ContentChannelTypeId, RockContext );
+            foreach ( var attr in inheritedAttributes )
+            {
+                var guid = attr.Value.AsGuidOrNull();
+                if ( guid.HasValue )
+                {
+                    validAttributeGuids.Add( guid.Value );
+                }
+            }
+
+            var config = entity.ContentLibraryConfiguration;
+            if ( config.SummaryAttributeGuid.HasValue && !validAttributeGuids.Contains( config.SummaryAttributeGuid.Value ) )
+            {
+                config.SummaryAttributeGuid = null;
+            }
+
+            if ( config.AuthorAttributeGuid.HasValue && !validAttributeGuids.Contains( config.AuthorAttributeGuid.Value ) )
+            {
+                config.AuthorAttributeGuid = null;
+            }
+
+            if ( config.ImageAttributeGuid.HasValue && !validAttributeGuids.Contains( config.ImageAttributeGuid.Value ) )
+            {
+                config.ImageAttributeGuid = null;
+            }
+        }
+
+        /// <summary>
         /// Saves the attributes.
         /// </summary>
         /// <param name="channelId">The channel identifier.</param>
@@ -798,7 +957,19 @@ namespace Rock.Blocks.Cms
                 return ActionBadRequest( validationMessage );
             }
 
+            if ( !ValidateItemAttributeKeysAgainstType( entity, box.Bag.ItemAttributes, out validationMessage ) )
+            {
+                return ActionBadRequest( validationMessage );
+            }
+
             var isNew = entity.Id == 0;
+
+            // Validate that content library attribute guids reference
+            // attributes that belong to this channel or its channel type.
+            if ( entity.ContentLibraryConfiguration?.IsEnabled == true )
+            {
+                ValidateContentLibraryAttributeGuids( entity, box.Bag );
+            }
 
             RockContext.WrapTransaction( () =>
             {
@@ -877,7 +1048,7 @@ namespace Rock.Blocks.Cms
         [BlockAction]
         public BlockActionResult GetContentChannelStatus( string guid )
         {
-            var contentChannelType = new ContentChannelTypeService( new RockContext() ).Get( guid.AsGuid() );
+            var contentChannelType = new ContentChannelTypeService( RockApp.Current.CreateRockContext() ).Get( guid.AsGuid() );
             return ActionOk( new { contentChannelType?.DisableStatus, contentChannelType?.DisableContentField } );
         }
 
@@ -903,17 +1074,32 @@ namespace Rock.Blocks.Cms
                 return ActionOk( new List<ListItemBag>() );
             }
 
-            var attributeService = new AttributeService( RockContext );
-            var attributes = attributeService
-                .GetByEntityTypeId( new ContentChannelItem().TypeId, true )
-                .AsQueryable()
-                .Where( a =>
-                    a.EntityTypeQualifierColumn.Equals( "ContentChannelTypeId", StringComparison.OrdinalIgnoreCase ) &&
-                    a.EntityTypeQualifierValue.Equals( contentChannelTypeId.Value.ToString() ) )
-                .Select( a => new ListItemBag() { Text = a.Name, Value = a.Guid.ToString() } )
-                .ToList();
+            return ActionOk( GetContentLibraryInheritedItemAttributes( contentChannelTypeId.Value, RockContext ) );
+        }
 
-            return ActionOk( attributes );
+        /// <summary>
+        /// Gets Content Channel Item attribute keys defined on the selected Content Channel Type
+        /// so the channel item attribute editor can reserve them.
+        /// </summary>
+        /// <param name="guid">The selected content channel type guid.</param>
+        [BlockAction]
+        public BlockActionResult GetContentChannelTypeItemAttributeKeys( string guid )
+        {
+            var contentChannelTypeGuid = guid.AsGuidOrNull();
+            if ( !contentChannelTypeGuid.HasValue )
+            {
+                return ActionOk( new List<string>() );
+            }
+
+            var contentChannelTypeId = new ContentChannelTypeService( RockContext )
+                .GetSelect( contentChannelTypeGuid.Value, t => ( int? ) t.Id );
+
+            if ( !contentChannelTypeId.HasValue )
+            {
+                return ActionOk( new List<string>() );
+            }
+
+            return ActionOk( GetContentChannelTypeItemAttributeKeys( contentChannelTypeId.Value, RockContext ) );
         }
 
         /// <summary>

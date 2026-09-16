@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -14,6 +14,8 @@
 // limitations under the License.
 // </copyright>
 //
+
+using System.ComponentModel;
 
 using Rock.Enums;
 
@@ -80,8 +82,9 @@ namespace Rock.Model
         RequestAssigned = 8,
 
         /// <summary>
-        /// Future Follow-up Date Reached
+        /// Future Follow-Up Date Reached
         /// </summary>
+        [Description( "Future Follow-Up Date Reached" )]
         [EnumOrder( 15 )]
         FutureFollowupDateReached = 9,
         /// <summary>

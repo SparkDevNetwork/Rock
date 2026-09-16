@@ -21,6 +21,7 @@
 // </copyright>
 //
 
+using Rock.Configuration;
 using Rock.Model;
 using Rock.SystemGuid;
 
@@ -35,6 +36,6 @@ namespace Rock.Rest.Controllers
         /// <summary>
         /// Initializes a new instance of the <see cref="AttributeMatricesController"/> class.
         /// </summary>
-        public AttributeMatricesController() : base( new Rock.Model.AttributeMatrixService( new Rock.Data.RockContext() ) ) { } 
+        public AttributeMatricesController() : base( new Rock.Model.AttributeMatrixService( RockApp.Current.CreateRockContext() ) ) { } 
     }
 }

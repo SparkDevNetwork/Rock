@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -22,8 +22,11 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
+
 using Rock.Data;
+using Rock.Enums.Security;
 using Rock.Lava;
+using Rock.Security;
 
 namespace Rock.Model
 {
@@ -68,6 +71,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 200 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string Location { get; set; }
 
         /// <summary>
@@ -96,7 +100,8 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 20 )]
         [DataMember]
-        public String ContactPhone { get; set; }
+        [StringValidation( StringValidationProfile.PlainText )]
+        public string ContactPhone { get; set; }
 
         /// <summary>
         /// Gets or sets the Contact Person's email address.
@@ -111,6 +116,7 @@ namespace Rock.Model
 #if REVIEW_WEBFORMS
         [Index( "IX_Email" )]
 #endif
+        [StringValidation( StringValidationProfile.PlainText )]
         public string ContactEmail { get; set; }
 
         /// <summary>
@@ -120,6 +126,7 @@ namespace Rock.Model
         /// A <see cref="System.String"/> representing the campus note.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.BasicHtml )]
         public string Note { get; set; }
 
         /// <summary>

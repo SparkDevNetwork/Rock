@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -22,6 +22,7 @@ using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
 
 using Rock;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Field;
 using Rock.Model;
@@ -175,6 +176,13 @@ namespace Rock.Web.UI.Controls
         /// Qualifiers control
         /// </summary>
         protected DynamicPlaceholder _phQualifiers;
+
+        /// <summary>
+        /// Displayed when a configuration error is detected, this is typically
+        /// triggered by an exception when creating the default value edit
+        /// control.
+        /// </summary>
+        protected Literal _ltConfigurationError;
 
         /// <summary>
         /// Default value control
@@ -1102,6 +1110,7 @@ namespace Rock.Web.UI.Controls
             _hfReadOnlyFieldTypeId.Value = fieldTypeId.ToString();
             _lFieldType.Text = FieldTypeCache.Get( fieldTypeId )?.Name;
 
+            _ltConfigurationError.Visible = false;
             _phDefaultValue.Controls.Clear();
             _phQualifiers.Controls.Clear();
             CreateFieldTypeQualifierControls( fieldTypeId );
@@ -1447,6 +1456,14 @@ namespace Rock.Web.UI.Controls
             _phQualifiers.ID = "phQualifiers";
             Controls.Add( _phQualifiers );
 
+            _ltConfigurationError = new Literal
+            {
+                ID = "ltConfigurationError",
+                Visible = false,
+                Text = "<div class='alert alert-warning'>Unable to create default value control. This is likely due to a configuration error.</div>",
+            };
+            Controls.Add( _ltConfigurationError );
+
             _phDefaultValue = new DynamicPlaceholder();
             _phDefaultValue.ID = "phDefaultValue";
             Controls.Add( _phDefaultValue );
@@ -1769,6 +1786,7 @@ namespace Rock.Web.UI.Controls
             _ddlFieldType.RenderControl( writer );
             _lFieldType.RenderControl( writer );
             _phQualifiers.RenderControl( writer );
+            _ltConfigurationError.RenderControl( writer );
             _phDefaultValue.RenderControl( writer );
             _lValueFormat.RenderControl( writer );
             writer.RenderEndTag();
@@ -2030,7 +2048,7 @@ namespace Rock.Web.UI.Controls
                 attribute.IsSuppressHistoryLogging = this.IsSuppressHistoryLogging;
 
                 attribute.Categories.Clear();
-                new CategoryService( new RockContext() ).Queryable().Where( c => this.CategoryIds.Contains( c.Id ) ).ToList().ForEach( c =>
+                new CategoryService( RockApp.Current.CreateRockContext() ).Queryable().Where( c => this.CategoryIds.Contains( c.Id ) ).ToList().ForEach( c =>
                     attribute.Categories.Add( c ) );
 
                 // Since changes to Categories isn't tracked by ChangeTracker, set the ModifiedDateTime just in case Categories changed
@@ -2113,7 +2131,22 @@ namespace Rock.Web.UI.Controls
                 qualifiers?.TryAdd( "DataEntryMode", new ConfigurationValue { Name = "DataEntryMode", Value = "DefaultValue" } );
 
                 // make sure each default control has a unique/predictable ID to help avoid viewstate issues
-                var defaultControl = field.EditControl( qualifiers, $"defaultValue_{fieldTypeId}_{this.AttributeGuid.ToString("N")}" );
+                Control defaultControl;
+                try
+                {
+                    defaultControl = field.EditControl( qualifiers, $"defaultValue_{fieldTypeId}_{this.AttributeGuid.ToString( "N" )}" );
+                    _ltConfigurationError.Visible = false;
+                }
+                catch
+                {
+                    // If the edit control cannot be created with the current
+                    // qualifiers, just don't show it. Otherwise the admin is
+                    // prevented from fixing the qualifiers that are causing
+                    // the issue.
+                    defaultControl = null;
+                    _ltConfigurationError.Visible = true;
+                }
+
                 if ( defaultControl != null )
                 {
                     _phDefaultValue.Controls.Add( defaultControl );

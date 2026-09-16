@@ -29,7 +29,7 @@
                                label="Accounts" />
             </div>
             <div class="col-md-4">
-                <CheckBox v-model="includeActiveSchedules" label="Include Active Schedules" />
+                <CheckBox v-model="includeInactiveSchedules" label="Include Inactive Schedules" />
             </div>
         </div>
     </Modal>
@@ -70,7 +70,7 @@
     }>();
 
     const account = ref(props.modelValue.account);
-    const includeActiveSchedules = ref(props.modelValue.includeInactiveSchedules ?? "");
+    const includeInactiveSchedules = ref(props.modelValue.includeInactiveSchedules ?? "");
     const frequency = ref(props.modelValue.frequency ?? null);
     const dateRange = ref<DateRangeParts | undefined>({
         lowerValue: props.modelValue.startDate,
@@ -81,7 +81,7 @@
 
     function onSave(): void {
         const value: GridSettingsOptions = {
-            includeInactiveSchedules: includeActiveSchedules.value,
+            includeInactiveSchedules: includeInactiveSchedules.value,
             amountRange: amountRange.value,
             account: account.value,
             frequency: frequency.value,
@@ -99,7 +99,7 @@
 
     watch(() => props.modelValue, () => {
         frequency.value = props.modelValue.frequency ?? null;
-        includeActiveSchedules.value = props.modelValue.includeInactiveSchedules ?? "";
+        includeInactiveSchedules.value = props.modelValue.includeInactiveSchedules ?? "";
         account.value = props.modelValue.account;
         dateRange.value = {
             lowerValue: props.modelValue.startDate,

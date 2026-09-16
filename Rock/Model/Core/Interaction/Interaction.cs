@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -20,8 +20,11 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
+
 using Rock.Data;
+using Rock.Enums.Security;
 using Rock.Lava;
+using Rock.Security;
 
 namespace Rock.Model
 {
@@ -105,6 +108,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [MaxLength( 25 )]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string Operation { get; set; }
 
         /// <summary>
@@ -184,6 +188,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [MaxLength( 500 )]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string InteractionSummary { get; set; }
 
         /// <summary>
@@ -193,6 +198,7 @@ namespace Rock.Model
         /// The interaction data.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string InteractionData { get; set; }
 
         /// <summary>
@@ -221,6 +227,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [MaxLength( 500 )]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string ChannelCustom1 { get; set; }
 
         /// <summary>
@@ -231,6 +238,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [MaxLength( 2000 )]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string ChannelCustom2 { get; set; }
 
         /// <summary>
@@ -244,6 +252,7 @@ namespace Rock.Model
 #if REVIEW_WEBFORMS
         [Index( "IX_ChannelCustomIndexed1" )]
 #endif
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string ChannelCustomIndexed1 { get; set; }
 
         /// <summary>
@@ -310,6 +319,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [MaxLength( 25 )]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string Source { get; set; }
 
         /// <summary>
@@ -320,6 +330,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [MaxLength( 25 )]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string Medium { get; set; }
 
         /// <summary>
@@ -330,6 +341,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [MaxLength( 50 )]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string Campaign { get; set; }
 
         /// <summary>
@@ -340,6 +352,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [MaxLength( 50 )]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string Content { get; set; }
 
         /// <summary>
@@ -350,6 +363,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [MaxLength( 50 )]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string Term { get; set; }
 
         /// <summary>

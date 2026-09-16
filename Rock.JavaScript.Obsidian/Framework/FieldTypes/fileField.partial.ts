@@ -33,7 +33,7 @@ export const enum ConfigurationPropertyKey {
 /**
  * The configuration value keys used by the configuraiton and edit controls.
  */
-export const enum ConfigurationValueKey {
+export const enum ConfigurationKey {
     /** The unique identifier of the BinaryFileType to use for uploads. */
     BinaryFileType = "binaryFileType",
 }

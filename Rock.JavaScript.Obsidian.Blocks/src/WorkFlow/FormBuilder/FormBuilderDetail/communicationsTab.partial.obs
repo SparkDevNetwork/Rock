@@ -3,15 +3,26 @@
     <div class="form-builder-scroll">
         <div class="panel-body">
             <RockForm v-model:submit="formSubmit" @validationChanged="onValidationChanged">
-                <ConfirmationEmail v-if="!isConfirmationEmailForced" v-model="confirmationEmail" :sourceTemplateOptions="sourceTemplateOptions" :recipientOptions="recipientOptions" />
-                <NotificationBox v-else alertType="info">
-                    <h4 class="alert-heading">Confirmation Email</h4>
-                    <p>
-                        The confirmation e-mail is defined on the template and cannot be changed.
-                    </p>
-                </NotificationBox>
+                <ContentSectionContainer :sidebar="false">
+                    <ConfirmationEmail v-if="!isConfirmationEmailForced"
+                                       v-model="confirmationEmail"
+                                       :sourceTemplateOptions="sourceTemplateOptions"
+                                       :recipientOptions="recipientOptions"
+                                       :isPersonEntryEnabled="isPersonEntryEnabled" />
+                    <NotificationBox v-else alertType="info">
+                        <h4 class="alert-heading">Confirmation Email</h4>
+                        <p>
+                            The confirmation e-mail is defined on the template and cannot be changed.
+                        </p>
+                    </NotificationBox>
 
-                <NotificationEmail v-model="notificationEmail" :sourceTemplateOptions="sourceTemplateOptions" :campusTopicOptions="campusTopicOptions" />
+                    <NotificationEmail v-model="notificationEmail" :sourceTemplateOptions="sourceTemplateOptions" :campusTopicOptions="campusTopicOptions" />
+
+                    <ConnectionRequests v-model="connectionRequests"
+                                        :isPersonEntryEnabled="isPersonEntryEnabled"
+                                        :formFields="formFields"
+                                        :connectionTypeOptions="connectionTypeOptions" />
+                </ContentSectionContainer>
             </RockForm>
         </div>
     </div>
@@ -21,12 +32,15 @@
     import { computed } from "vue";
     import { PropType, ref, watch } from "vue";
     import RockForm from "@Obsidian/Controls/rockForm.obs";
+    import ContentSectionContainer from "@Obsidian/Controls/contentSectionContainer.obs";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import { FormError } from "@Obsidian/Utility/form";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import ConfirmationEmail from "../Shared/confirmationEmail.partial.obs";
+    import ConnectionRequests from "../Shared/connectionRequests.partial.obs";
     import NotificationEmail from "./notificationEmail.partial.obs";
     import { FormCommunication, FormTemplateListItem } from "./types.partial";
+    import { FormField } from "../Shared/types.partial";
     import { useFormSources } from "./utils.partial";
 
     const props = defineProps({
@@ -48,6 +62,25 @@
         submit: {
             type: Boolean as PropType<boolean>,
             default: false
+        },
+
+        /**
+         * Whether the Form Builder tab has Person Entry enabled. The
+         * Connection Requests section disables itself when this is false.
+         */
+        isPersonEntryEnabled: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        /**
+         * The form fields available for the Connection Requests attribute
+         * matching list. Provided by the parent so the editor reflects the
+         * current state of the Form Builder tab.
+         */
+        formFields: {
+            type: Array as PropType<FormField[]>,
+            default: () => []
         }
     });
 
@@ -57,8 +90,8 @@
     }>();
 
     const confirmationEmail = ref(props.modelValue.confirmationEmail ?? {});
-
     const notificationEmail = ref(props.modelValue.notificationEmail ?? {});
+    const connectionRequests = ref(props.modelValue.connectionRequests ?? {});
 
     const formSubmit = ref(false);
 
@@ -66,6 +99,7 @@
 
     const sourceTemplateOptions = sources.emailTemplateOptions ?? [];
     const campusTopicOptions = sources.campusTopicOptions ?? [];
+    const connectionTypeOptions = sources.connectionTypeOptions ?? [];
 
     const isConfirmationEmailForced = computed((): boolean => props.templateOverrides?.isConfirmationEmailConfigured ?? false);
 
@@ -81,13 +115,15 @@
     watch(() => props.modelValue, () => {
         confirmationEmail.value = props.modelValue.confirmationEmail ?? {};
         notificationEmail.value = props.modelValue.notificationEmail ?? {};
+        connectionRequests.value = props.modelValue.connectionRequests ?? {};
     });
 
-    watch([confirmationEmail, notificationEmail], () => {
+    watch([confirmationEmail, notificationEmail, connectionRequests], () => {
         const newValue: FormCommunication = {
             ...props.modelValue,
             confirmationEmail: confirmationEmail.value,
-            notificationEmail: notificationEmail.value
+            notificationEmail: notificationEmail.value,
+            connectionRequests: connectionRequests.value
         };
 
         emit("update:modelValue", newValue);

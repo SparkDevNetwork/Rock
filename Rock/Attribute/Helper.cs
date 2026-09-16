@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -138,7 +138,17 @@ namespace Rock.Attribute
                     string propertyKeyName = string.Format( "ContextEntityType{0}", properties > 0 ? properties.ToString() : "" );
                     properties++;
 
-                    entityProperties.Add( new EntityTypeFieldAttribute( "Entity Type", false, "The type of entity that will provide context for this block", false, "Context", 0, propertyKeyName ) );
+                    var newAttribute = new EntityTypeFieldAttribute( "Entity Type" )
+                    {
+                        Category = "Context",
+                        Description = "The type of entity that will provide context for this block",
+                        IncludeGlobalAttributeOption = false,
+                        IsRequired = false,
+                        Key = propertyKeyName,
+                        Order = 0,
+                    };
+
+                    entityProperties.Add( newAttribute );
                 }
             }
 
@@ -156,20 +166,35 @@ namespace Rock.Attribute
             bool customGridColumnsBlock = typeof( Rock.Web.UI.ICustomGridColumns ).IsAssignableFrom( type );
             if ( customGridColumnsBlock || customizedGrid?.IsCustomColumnsSupported == true )
             {
-                entityProperties.Add( new TextFieldAttribute( CustomGridColumnsConfig.AttributeKey, category: "CustomSetting" ) );
+                entityProperties.Add( new TextFieldAttribute( CustomGridColumnsConfig.AttributeKey )
+                {
+                    AllowHtml = true,
+                    AllowLava = true,
+                    Category = "CustomSetting",
+                } );
             }
 
             bool customGridOptionsBlock = typeof( Rock.Web.UI.ICustomGridOptions ).IsAssignableFrom( type );
 
             if ( customGridOptionsBlock || customizedGrid?.IsStickyHeaderSupported == true )
             {
-                entityProperties.Add( new BooleanFieldAttribute( CustomGridOptionsConfig.EnableStickyHeadersAttributeKey, category: "CustomSetting" ) );
+                entityProperties.Add( new BooleanFieldAttribute( CustomGridOptionsConfig.EnableStickyHeadersAttributeKey )
+                {
+                    Category = "CustomSetting",
+                } );
             }
 
             if ( customGridOptionsBlock || customizedGrid?.IsCustomActionsSupported == true )
             {
-                entityProperties.Add( new TextFieldAttribute( CustomGridOptionsConfig.CustomActionsConfigsAttributeKey, category: "CustomSetting" ) );
-                entityProperties.Add( new BooleanFieldAttribute( CustomGridOptionsConfig.EnableDefaultWorkflowLauncherAttributeKey, category: "CustomSetting", defaultValue: true ) );
+                entityProperties.Add( new TextFieldAttribute( CustomGridOptionsConfig.CustomActionsConfigsAttributeKey )
+                {
+                    Category = "CustomSetting",
+                } );
+                entityProperties.Add( new BooleanFieldAttribute( CustomGridOptionsConfig.EnableDefaultWorkflowLauncherAttributeKey )
+                {
+                    Category = "CustomSetting",
+                    DefaultBooleanValue = true,
+                } );
             }
 #endif
 
@@ -236,6 +261,7 @@ namespace Rock.Attribute
             var categoryService = new CategoryService( rockContext );
 
             var propertyCategories = property.Category.SplitDelimitedValues( false ).ToList();
+            var abbreviatedName = property.Name.Truncate( 100, false );
 
             // Look for an existing attribute record based on the entity, entityQualifierColumn and entityQualifierValue
             var attributeCache = AttributeCache.GetByEntityTypeQualifier( entityTypeId, entityQualifierColumn, entityQualifierValue, true )
@@ -249,19 +275,19 @@ namespace Rock.Attribute
 
                 // Check to see if the existing attribute record needs to be updated
                 if ( attributeCache.Name != property.Name ||
-                    attributeCache.DefaultValue != property.DefaultValue ||
-                    attributeCache.Description != property.Description ||
+                    attributeCache.AbbreviatedName != abbreviatedName ||
+                    attributeCache.DefaultValue != ( property.DefaultValue ?? string.Empty ) ||
+                    attributeCache.Description != ( property.Description ?? string.Empty ) ||
                     attributeCache.Order != property.Order ||
-                    attributeCache.FieldType.Assembly != property.FieldTypeAssembly ||
-                    attributeCache.FieldType.Class != property.FieldTypeClass ||
+                    attributeCache.FieldType.Guid != property.FieldTypeGuid ||
                     attributeCache.IsRequired != property.IsRequired )
                 {
                     updated = true;
                 }
 
                 // Check category
-                else if ( attributeCache.Categories.Select( c => c.Name ).Except( propertyCategories ).Any() ||
-                    propertyCategories.Except( attributeCache.Categories.Select( c => c.Name ) ).Any() )
+                else if ( attributeCache.Categories.Select( c => c.Name ).Except( propertyCategories, StringComparer.OrdinalIgnoreCase ).Any() ||
+                    propertyCategories.Except( attributeCache.Categories.Select( c => c.Name ), StringComparer.OrdinalIgnoreCase ).Any() )
                 {
                     updated = true;
                 }
@@ -321,8 +347,9 @@ namespace Rock.Attribute
 
             // Update the attribute
             attribute.Name = property.Name;
-            attribute.Description = property.Description;
-            attribute.DefaultValue = property.DefaultValue;
+            attribute.AbbreviatedName = abbreviatedName;
+            attribute.Description = property.Description ?? string.Empty;
+            attribute.DefaultValue = property.DefaultValue ?? string.Empty;
             attribute.Order = property.Order;
             attribute.IsRequired = property.IsRequired;
 
@@ -365,12 +392,10 @@ namespace Rock.Attribute
             }
 
             // Try to set the field type by searching for an existing field type with the same assembly and class name
-            if ( attribute.FieldType == null || attribute.FieldType.Assembly != property.FieldTypeAssembly ||
-                attribute.FieldType.Class != property.FieldTypeClass )
+            if ( attribute.FieldType == null || attribute.FieldType.Guid != property.FieldTypeGuid )
             {
-                attribute.FieldType = fieldTypeService.Queryable().FirstOrDefault( f =>
-                    f.Assembly == property.FieldTypeAssembly &&
-                    f.Class == property.FieldTypeClass );
+                attribute.FieldType = fieldTypeService.Queryable()
+                    .FirstOrDefault( f => f.Guid == property.FieldTypeGuid );
             }
 
             // Set all additional settings.
@@ -2345,8 +2370,7 @@ SET [PersistedTextValue] = @TextValue,
     [IsPersistedValueDirty] = 0
 WHERE [AttributeId] = @AttributeId
   AND [ValueChecksum] = CHECKSUM(@Value)
-  AND [Value] = @Value
-  AND [IsPersistedValueDirty] = 1",
+  AND [Value] = @Value",
                 textValueParameter,
                 htmlValueParameter,
                 condensedTextValueParameter,
@@ -3192,11 +3216,21 @@ INSERT INTO [AttributeValueReferencedEntity] ([AttributeValueId], [EntityTypeId]
 
                             The attributeCol controls helps add the Attributes to the page.
                             But, not having the attributeCol.ID set causes the Page to throw View State Exception as DynamicControlsHtmlGenericControl instances are required to have an Id.
-                            
+
                             Reason: https://github.com/SparkDevNetwork/Rock/issues/3867
+
+                            4/10/2026 - MSE
+
+                            Changed from attribute.Key to attribute.Id to prevent duplicate
+                            control ID errors. ASP.NET control IDs are case-insensitive, so
+                            two attributes whose keys differ only in case (e.g. "Image" vs
+                            "image") would collide. Using the integer Id guarantees uniqueness.
+
+                            Reason: Prevents HttpException when the same entity has attributes
+                            from different qualifier sources with the same key.
                          */
 
-                        attributeCol.ID = "attributeCol_" + attribute.Key;
+                        attributeCol.ID = "attributeCol_" + attribute.Id;
 
                         attributeRow.Controls.Add( attributeCol );
                         attributeCol.AddCssClass( $"col-md-{colSize}" );

@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -17,6 +17,7 @@
 #if REVIEW_WEBFORMS
 using System;
 using System.Web.UI;
+
 using Rock.Model;
 
 namespace Rock.Financial

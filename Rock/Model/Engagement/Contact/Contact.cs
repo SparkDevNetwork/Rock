@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -21,6 +21,8 @@ using System.Runtime.Serialization;
 
 using Rock.Data;
 using Rock.Enums.Engagement;
+using Rock.Enums.Security;
+using Rock.Security;
 using Rock.Utility;
 
 namespace Rock.Model
@@ -49,6 +51,7 @@ namespace Rock.Model
         /// </summary>
         [MaxLength( 50 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.Name )]
         public string FirstName { get; set; }
 
         /// <summary>
@@ -56,6 +59,7 @@ namespace Rock.Model
         ///</summary>
         [MaxLength( 50 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.Name )]
         public string LastName { get; set; }
 
         /// <summary>
@@ -93,6 +97,7 @@ namespace Rock.Model
         /// </summary>
         [MaxLength( 75 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string Email { get; set; }
 
         /// <summary>
@@ -100,6 +105,7 @@ namespace Rock.Model
         /// </summary>
         [MaxLength( 20 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string MobilePhone { get; set; }
 
         /// <summary>
@@ -145,18 +151,12 @@ namespace Rock.Model
         public RelationshipFocus RelationshipFocus { get; set; }
 
         /// <summary>
-        /// Gets or sets the connection note.
-        /// </summary>
-        [MaxLength( 500 )]
-        [DataMember]
-        public string ConnectionNote { get; set; }
-
-        /// <summary>
         /// Gets or sets the prayer note.
         /// </summary>
         [MaxLength( 500 )]
         [DataMember]
-        public string PrayerNote { get; set; }
+        [StringValidation( StringValidationProfile.PlainText )]
+        public string ContactNote { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether this contact has accepted Jesus as their personal savior.
@@ -211,6 +211,7 @@ namespace Rock.Model
         /// </summary>
         [MaxLength( 75 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string InstagramProfileUrl { get; set; }
 
         /// <summary>
@@ -218,6 +219,7 @@ namespace Rock.Model
         /// </summary>
         [MaxLength( 75 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string FacebookProfileUrl { get; set; }
 
         /// <summary>
@@ -225,6 +227,7 @@ namespace Rock.Model
         /// </summary>
         [MaxLength( 75 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string LinkedInProfileUrl { get; set; }
 
         /// <summary>
@@ -232,6 +235,7 @@ namespace Rock.Model
         /// </summary>
         [MaxLength( 75 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string XProfileUrl { get; set; }
 
         /// <summary>
@@ -239,6 +243,7 @@ namespace Rock.Model
         /// </summary>
         [MaxLength( 75 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string TikTokProfileUrl { get; set; }
 
         #endregion

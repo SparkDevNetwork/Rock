@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Web;
+
 using Rock.Web.Cache;
 
 namespace Rock.Lava
@@ -48,47 +49,6 @@ namespace Rock.Lava
         public void Initialize( string cacheKeyPrefix )
         {
             _cacheKeyPrefix = cacheKeyPrefix;
-        }
-
-        /// <summary>
-        /// Returns LavaTemplate object from cache.  If template does not already exist in cache, it
-        /// will be read and added to cache
-        /// </summary>
-        /// <param name="engine">The key.</param>
-        /// <param name="key">The key.</param>
-        /// <param name="content">The content.</param>
-        /// <returns></returns>
-        [Obsolete]
-        [RockObsolete( "1.15.1" )]
-        public WebsiteLavaTemplateCache Get( ILavaEngine engine, string key, string content )
-        {
-            WebsiteLavaTemplateCache template;
-
-            var fromCache = true;
-            template = WebsiteLavaTemplateCache.GetOrAddExisting( key, () =>
-            {
-                fromCache = false;
-
-                var parseResult = CompileLavaTemplate( engine, content );
-
-                var cacheEntry = new WebsiteLavaTemplateCache
-                {
-                    Template = parseResult.Template
-                };
-
-                return cacheEntry;
-            } );
-
-            if ( fromCache )
-            {
-                Interlocked.Increment( ref _cacheHits );
-            }
-            else
-            {
-                Interlocked.Increment( ref _cacheMisses );
-            }
-
-            return template;
         }
 
         /// <summary>

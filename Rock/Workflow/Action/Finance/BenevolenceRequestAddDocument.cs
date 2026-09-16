@@ -33,11 +33,17 @@ namespace Rock.Workflow.Action
     [Export( typeof( ActionComponent ) )]
     [ExportMetadata( "ComponentName", "Benevolence Request Add Document" )]
     
-    [WorkflowAttribute( "Benevolence Request", "Workflow attribute to set the returned benevolence request to.", true, "", "", 0, null,
-        new string[] { "Rock.Field.Types.BenevolenceRequestFieldType" } )]
+    [WorkflowAttribute( "Benevolence Request",
+        Description = "Workflow attribute to set the returned benevolence request to.",
+        IsRequired = true,
+        Order = 0,
+        FieldTypeClassNames = new string[] { "Rock.Field.Types.BenevolenceRequestFieldType" } )]
 
-    [WorkflowAttribute( "Document", "Workflow attribute that contains the document to be added.", true, "", "", 1, null,
-        new string[] { "Rock.Field.Types.FileFieldType" } )]
+    [WorkflowAttribute( "Document",
+        Description = "Workflow attribute that contains the document to be added.",
+        IsRequired = true,
+        Order = 1,
+        FieldTypeClassNames = new string[] { "Rock.Field.Types.FileFieldType" } )]
     [Rock.SystemGuid.EntityTypeGuid( "A965D3CA-D00A-42EC-8097-CF15108B2DB4")]
     public class BenevolenceRequestAddDocument : ActionComponent
     {

@@ -1,0 +1,84 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="row directory-person padding-v-md align-items-center">
+        <div class="col-sm-6 col-md-4">
+            <div class="d-flex align-items-center">
+                <PersonAvatar :photoUrl="person.photoUrl ?? ''"
+                              :personIdKey="person.idKey ?? ''"
+                              photoSize="sm"
+                              :alwaysShowAvatar="true" />
+                <div>
+                    <strong>
+                        <a v-if="profileUrl" :href="profileUrl">{{ person.fullName }}</a>
+                        <template v-else>{{ person.fullName }}</template>
+                    </strong>
+                    <div v-if="options.isEmailShown && person.email">{{ person.email }}</div>
+                </div>
+            </div>
+        </div>
+
+        <div v-if="isAddressColumnShown" class="col-sm-6 col-md-3">
+            <span v-html="person.formattedHtmlAddress"></span>
+        </div>
+
+        <div v-if="isPhoneColumnShown" class="col-sm-6 col-md-3">
+            <div v-for="(phone, index) in person.phoneNumbers" :key="index">
+                {{ phone.numberFormatted }} <small class="text-muted">{{ phone.typeName }}</small>
+            </div>
+        </div>
+
+        <div v-if="isDetailColumnShown" class="col-sm-6 col-md-2">
+            <div v-if="person.birthdayText">Birthday: {{ person.birthdayText }}</div>
+            <div v-if="person.genderText">Gender: {{ person.genderText }}</div>
+            <div v-if="person.grade">Grade: {{ person.grade }}</div>
+            <div v-if="person.envelopeNumber">Envelope #: {{ person.envelopeNumber }}</div>
+        </div>
+    </div>
+</template>
+
+<script setup lang="ts">
+    import { computed, PropType } from "vue";
+    import PersonAvatar from "@Obsidian/Controls/personAvatar.obs";
+    import { PersonDirectoryOptionsBag } from "@Obsidian/ViewModels/Blocks/Crm/PersonDirectory/personDirectoryOptionsBag";
+    import { PersonDirectoryPersonBag } from "@Obsidian/ViewModels/Blocks/Crm/PersonDirectory/personDirectoryPersonBag";
+
+    const props = defineProps({
+        person: {
+            type: Object as PropType<PersonDirectoryPersonBag>,
+            required: true
+        },
+
+        options: {
+            type: Object as PropType<PersonDirectoryOptionsBag>,
+            required: true
+        },
+
+        /** The person profile page URL with the "((Key))" placeholder, or empty if linking is disabled. */
+        profileUrlTemplate: {
+            type: String as PropType<string>,
+            default: ""
+        }
+    });
+
+    const profileUrl = computed((): string => {
+        if (!props.profileUrlTemplate || !props.person.idKey) {
+            return "";
+        }
+
+        return props.profileUrlTemplate.replace("((Key))", props.person.idKey);
+    });
+
+    const isAddressColumnShown = computed((): boolean => {
+        // The address column appears per-person only in individual mode; in family mode the address is shown once on the family.
+        return !!props.options.isAddressShown && !props.options.isShowByFamily;
+    });
+
+    const isPhoneColumnShown = computed((): boolean => {
+        // The phone column is reserved whenever phone display is enabled so rows stay aligned even when a person has no phones.
+        return !!props.options.arePhonesShown;
+    });
+
+    const isDetailColumnShown = computed((): boolean => {
+        return !!(props.options.isBirthdayShown || props.options.isGenderShown || props.options.isGradeShown || props.options.isEnvelopeNumberShown);
+    });
+</script>

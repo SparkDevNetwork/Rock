@@ -21,6 +21,7 @@
 // </copyright>
 //
 
+using Rock.Configuration;
 using Rock.Model;
 using Rock.SystemGuid;
 
@@ -35,6 +36,6 @@ namespace Rock.Rest.Controllers
         /// <summary>
         /// Initializes a new instance of the <see cref="ContentChannelItemSlugsController"/> class.
         /// </summary>
-        public ContentChannelItemSlugsController() : base( new Rock.Model.ContentChannelItemSlugService( new Rock.Data.RockContext() ) ) { } 
+        public ContentChannelItemSlugsController() : base( new Rock.Model.ContentChannelItemSlugService( RockApp.Current.CreateRockContext() ) ) { } 
     }
 }

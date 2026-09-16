@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -19,20 +19,21 @@ using System.Linq;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Lava;
 using Rock.Lava.Fluid;
 using Rock.Model;
 using Rock.Tests.Integration.TestData;
-using Rock.Tests.Shared;
-using Rock.Tests.Shared.Lava;
+using Rock.Tests.Integration.TestFramework.Lava;
+using Rock.Tests.Shared.Constants;
 
 namespace Rock.Tests.Integration.Core.Lava.Filters
 {
     [TestClass]
     public class EncodingFilterTests : LavaIntegrationTestBase
     {
-        #region Filter Tests: Base64Encode (for BinaryFile)
+        #region Filter Tests: Base64Encode (for BinaryFile) and ToBase64 (for text/binary data)
 
         /// <summary>
         /// Applying the Base64Encode filter to a BinaryFile object returns a Base64 encoded string.
@@ -40,7 +41,7 @@ namespace Rock.Tests.Integration.Core.Lava.Filters
         [TestMethod]
         public void Base64EncodeFilter_WithBinaryFileObjectParameter_ReturnsExpectedEncoding()
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
 
             var contentChannelItem = new ContentChannelItemService( rockContext )
                 .Queryable()
@@ -56,6 +57,31 @@ Base64Format: {{ image | Base64Encode }}<br/>
 ";
 
             var expectedOutput = @"Base64Format: /9j/4AAQSkZJRgABAQEAAAAAAAD/{moreBase64Data}<br/>";
+
+            var options = new LavaTestRenderOptions() { MergeFields = values, Wildcards = new List<string> { "{moreBase64Data}" } };
+
+            TestHelper.AssertTemplateOutput( expectedOutput, input, options );
+        }
+
+        [TestMethod]
+        public void ToBase64Filter_WithBinaryDataParameter_ReturnsExpectedEncoding()
+        {
+            var rockContext = RockApp.Current.CreateRockContext();
+
+            var contentChannelItem = new ContentChannelItemService( rockContext )
+                .Queryable()
+                .FirstOrDefault( x => x.ContentChannel.Name == "External Website Ads" && x.Title == "SAMPLE: Easter" );
+
+            Assert.IsNotNull( contentChannelItem, "Required test data not found." );
+
+            var values = new LavaDataDictionary { { "Item", contentChannelItem } };
+
+            var input = @"
+{% assign image = Item | Attribute:'Image','Object' %}
+ToBase64: {{ image.DatabaseData.Content | ToBase64 }}<br/>
+";
+
+            var expectedOutput = @"ToBase64: /9j/4AAQSkZJRgABAQEAAAAAAAD/{moreBase64Data}<br/>";
 
             var options = new LavaTestRenderOptions() { MergeFields = values, Wildcards = new List<string> { "{moreBase64Data}" } };
 

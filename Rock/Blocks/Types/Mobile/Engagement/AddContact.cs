@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -116,9 +116,8 @@ namespace Rock.Blocks.Types.Mobile.Engagement
                 RelationshipStrength = saveContactBag.RelationshipStrength.ToNative(),
                 RelationshipFocus = saveContactBag.RelationshipFocus.ToNative(),
                 PrayerCadence = saveContactBag.PrayerCadence.ToNative(),
-                PrayerNote = saveContactBag.PrayerNote,
+                ContactNote = saveContactBag.ContactNote,
                 ConnectionCadence = saveContactBag.ConnectionCadence.ToNative(),
-                ConnectionNote = saveContactBag.ConnectionNote,
                 HasAcceptedJesus = saveContactBag.HasAcceptedJesus,
                 SalvationDay = saveContactBag.SalvationDay,
                 SalvationMonth = saveContactBag.SalvationMonth,

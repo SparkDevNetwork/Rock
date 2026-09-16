@@ -1,0 +1,45 @@
+// <copyright>
+// Copyright by the Spark Development Network
+//
+// Licensed under the Rock Community License (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.rockrms.com/license
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// </copyright>
+//
+
+namespace Rock.ViewModels.Blocks.Crm.PersonDetail.GroupMembers
+{
+    /// <summary>
+    /// Options for the Group Members block.
+    /// </summary>
+    public class GroupMembersOptionsBag
+    {
+        /// <summary>
+        /// Gets or sets a value indicating whether the current person is
+        /// authorized to edit, which shows the group edit and location
+        /// settings buttons.
+        /// </summary>
+        public bool IsEditAllowed { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether an address verification
+        /// component is active, which shows the verify address button.
+        /// </summary>
+        public bool IsAddressVerificationAvailable { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether the drag-to-reorder handle
+        /// is shown. Only true when the person belongs to more than one group
+        /// and the current person is authorized to edit.
+        /// </summary>
+        public bool IsReorderVisible { get; set; }
+    }
+}

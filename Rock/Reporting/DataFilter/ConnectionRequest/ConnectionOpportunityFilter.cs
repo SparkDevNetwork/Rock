@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -16,20 +16,22 @@
 //
 
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
-using System.Web.UI;
-using System.Web.UI.WebControls;
-using Rock.Data;
-using Rock.Model;
-using Rock.Web.UI.Controls;
 using System.Linq;
 using System.Linq.Expressions;
-using System.Collections.Generic;
+using System.Web.UI;
+using System.Web.UI.WebControls;
+
+using Rock.Configuration;
+using Rock.Data;
+using Rock.Model;
 using Rock.Net;
-using Rock.Web.Cache;
-using Rock.ViewModels.Utility;
 using Rock.ViewModels.Controls;
+using Rock.ViewModels.Utility;
+using Rock.Web.Cache;
+using Rock.Web.UI.Controls;
 
 namespace Rock.Reporting.DataFilter.ConnectionRequest
 {
@@ -186,7 +188,7 @@ function() {
             var selectionConfig = SelectionConfig.Parse( selection );
             if ( selectionConfig != null && selectionConfig.ConnectionOpportunityGuid.HasValue )
             {
-                var connectionOpportunity = new ConnectionOpportunityService( new RockContext() ).Get( selectionConfig.ConnectionOpportunityGuid.Value );
+                var connectionOpportunity = new ConnectionOpportunityService( RockApp.Current.CreateRockContext() ).Get( selectionConfig.ConnectionOpportunityGuid.Value );
                 if ( connectionOpportunity != null )
                 {
                     result = string.Format( "Connection Opportunity: {0} in {1} Connection Type", connectionOpportunity.Name, connectionOpportunity.ConnectionType.Name );
@@ -212,7 +214,7 @@ function() {
             connectionTypePicker.CssClass = "js-connectiontype-picker";
             connectionTypePicker.Items.Clear();
             connectionTypePicker.Items.Insert( 0, new ListItem() );
-            var connectionTypeList = new ConnectionTypeService( new RockContext() ).Queryable()
+            var connectionTypeList = new ConnectionTypeService( RockApp.Current.CreateRockContext() ).Queryable()
                 .OrderBy( a => a.Order )
                 .ThenBy( a => a.Name )
                 .ToList();
@@ -261,7 +263,7 @@ function() {
             var connectionTypeId = connectionTypePicker.SelectedValueAsId();
             if ( connectionTypeId.HasValue && connectionOpportunityId.HasValue )
             {
-                var connectionOpportunity = new ConnectionOpportunityService( new RockContext() ).Get( connectionOpportunityId.Value );
+                var connectionOpportunity = new ConnectionOpportunityService( RockApp.Current.CreateRockContext() ).Get( connectionOpportunityId.Value );
                 if ( connectionOpportunity != null )
                 {
                     selectionConfig.ConnectionTypeGuid = connectionOpportunity.ConnectionType.Guid;
@@ -286,7 +288,7 @@ function() {
                 if ( controls.Length > 0 && selectionConfig.ConnectionOpportunityGuid.HasValue )
                 {
                     var connectionTypePicker = controls[0] as RockDropDownList;
-                    var connectionType = new ConnectionTypeService( new RockContext() ).Get( selectionConfig.ConnectionTypeGuid.Value );
+                    var connectionType = new ConnectionTypeService( RockApp.Current.CreateRockContext() ).Get( selectionConfig.ConnectionTypeGuid.Value );
                     if ( connectionType != null )
                     {
                         connectionTypePicker.SetValue( connectionType.Id );
@@ -296,7 +298,7 @@ function() {
 
                     var connectionOpportunityGuid = selectionConfig.ConnectionOpportunityGuid.Value;
                     var connectionOpportunityPicker = controls[1] as RockDropDownList;
-                    var connectionOpportunity = new ConnectionOpportunityService( new RockContext() ).Get( connectionOpportunityGuid );
+                    var connectionOpportunity = new ConnectionOpportunityService( RockApp.Current.CreateRockContext() ).Get( connectionOpportunityGuid );
                     if ( connectionOpportunity != null )
                     {
                         connectionOpportunityPicker.SetValue( connectionOpportunity.Id );
@@ -323,7 +325,7 @@ function() {
                 return null;
             }
 
-            var connectionOpportunity = new ConnectionOpportunityService( new RockContext() ).Get( selectionConfig.ConnectionOpportunityGuid.Value );
+            var connectionOpportunity = new ConnectionOpportunityService( RockApp.Current.CreateRockContext() ).Get( selectionConfig.ConnectionOpportunityGuid.Value );
             int? connectionOpportunityId = null;
             if ( connectionOpportunity != null )
             {
@@ -363,7 +365,7 @@ function() {
             if ( connectionTypeId.HasValue )
             {
                 connectionOpportunityPicker.Items.Clear();
-                var connectionOpportunityList = new ConnectionOpportunityService( new RockContext() ).Queryable().Where( a => a.ConnectionTypeId == connectionTypeId.Value && a.IsActive )
+                var connectionOpportunityList = new ConnectionOpportunityService( RockApp.Current.CreateRockContext() ).Queryable().Where( a => a.ConnectionTypeId == connectionTypeId.Value && a.IsActive )
                  .OrderBy( a => a.Order )
                  .ThenBy( a => a.Name )
                  .ToList();

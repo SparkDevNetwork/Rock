@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -50,5 +50,11 @@ namespace Rock.ViewModels.Finance
         /// The Guid for the currency type of this account.
         /// </summary>
         public Guid? CurrencyTypeGuid { get; set; }
+
+        /// <summary>
+        /// Gets or sets a display label for the payment method's account type,
+        /// such as the credit card brand (e.g., "Visa").
+        /// </summary>
+        public string AccountTypeName { get; set; }
     }
 }

@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -14,9 +14,11 @@
 // limitations under the License.
 // </copyright>
 //
-using Rock.Data;
 using System.Data.SqlClient;
 using System.Diagnostics;
+
+using Rock.Configuration;
+using Rock.Data;
 
 namespace Rock.Tasks
 {
@@ -31,7 +33,7 @@ namespace Rock.Tasks
         /// <param name="message"></param>
         public override void Execute( Message message )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var sql = $@"
 DECLARE @batchId INT

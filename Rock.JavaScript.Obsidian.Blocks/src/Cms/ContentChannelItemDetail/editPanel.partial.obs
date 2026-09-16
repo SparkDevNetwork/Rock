@@ -1,0 +1,652 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <ContentSectionContainer :sidebar="false">
+        <ContentSection light>
+            <div class="basic-fields">
+                <div class="row">
+                    <div class="col-md-6">
+                        <TextBox v-model="title"
+                                 label="Title"
+                                 help="The public title shown in lists, navigation, and page headers."
+                                 rules="required"
+                                 :maxLength="200"
+                                 @blur="onTitleBlur" />
+                    </div>
+
+                    <div v-if="options.isApprovalToggleShown" class="col-md-6">
+                        <ButtonGroup v-model="statusButtonValue"
+                                     label="Approval Status"
+                                     help="Controls whether this content is pending review, approved, or denied."
+                                     formGroupClasses="d-flex flex-column align-items-start"
+                                     :items="statusButtonItems" />
+                    </div>
+
+                    <div v-else-if="isReadOnlyStatusShown" class="col-md-6">
+                        <StaticFormControl label="Approval Status" modelValue="">
+                            <HighlightLabel :labelType="readOnlyStatusLabelType" :tooltip="approvalSubtext" tooltipPlacement="top">{{ readOnlyStatusText }}</HighlightLabel>
+                        </StaticFormControl>
+                    </div>
+                </div>
+
+                <div v-if="isDateSectionShown" class="row">
+                    <div class="col-md-6">
+                        <DateTimePicker v-if="options.includeTime"
+                                        v-model="startDateTime"
+                                        :label="startDateLabel"
+                                        help="The date and time this content becomes visible."
+                                        rules="required" />
+                        <DatePicker v-else
+                                    v-model="startDateTime"
+                                    :label="startDateLabel"
+                                    help="The date and time this content becomes visible."
+                                    rules="required" />
+                    </div>
+                </div>
+
+                <div v-if="isExpireShown" class="row">
+                    <div class="col-md-6">
+                        <DateTimePicker v-if="options.includeTime"
+                                        v-model="expireDateTime"
+                                        label="Publish End"
+                                        help="Optional. After this date, the content will no longer be visible." />
+                        <DatePicker v-else
+                                    v-model="expireDateTime"
+                                    label="Publish End"
+                                    help="Optional. After this date, the content will no longer be visible." />
+                    </div>
+                </div>
+            </div>
+        </ContentSection>
+
+        <ContentSection title="Settings"
+                        icon="ti ti-settings"
+                        :isCollapsed="isEditMode">
+            <ContentStack title="Metadata &amp; Organization" description="Define how this item is identified, categorized, and organized.">
+                <div class="row">
+                    <div class="col-md-6">
+                        <DropDownList v-if="options.isContentIntentShown"
+                                      v-model="selectedIntentGuids"
+                                      label="Content Intent"
+                                      help="Describes the purpose of this content (for example: Inform, Invite, or Inspire). Used for interaction tracking and reporting."
+                                      :items="intentOptions"
+                                      multiple />
+                    </div>
+                </div>
+
+                <UrlSlugList v-model="urlSlugs"
+                             :itemIdKey="itemIdKey"
+                             :urlPrefix="slugUrlPrefix" />
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <NumberBox v-if="!options.isPriorityHidden"
+                                   v-model="priority"
+                                   label="Sort Priority"
+                                   help="Used to order content when manual sorting is enabled. Higher numbers appear first. If left blank, then priority is set to 0." />
+                    </div>
+                </div>
+
+                <div v-if="itemGlobalKey" class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <RockLabel help="The item identifier is a system unique key to the content channel item">Item Global Key</RockLabel>
+                            <div class="d-flex align-items-center">
+                                <span>{{ itemGlobalKey }}</span>
+                                <RockButton :btnType="BtnType.Default"
+                                            :btnSize="BtnSize.ExtraSmall"
+                                            class="ml-2"
+                                            title="Regenerate the item identifier"
+                                            @click="onRegenerateGlobalKey">
+                                    <i class="ti ti-refresh"></i>
+                                </RockButton>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div v-if="options.isTaggingShown" class="form-group">
+                    <RockLabel help="Add keywords to help organize and find this item. Tags can be used to filter content lists.">Tags</RockLabel>
+                    <TagList ref="tagListRef"
+                             :entityTypeGuid="EntityType.ContentChannelItem"
+                             :entityKey="itemIdKey"
+                             :categoryGuid="tagCategoryGuid"
+                             delaySave />
+                </div>
+            </ContentStack>
+
+            <ContentStack v-if="options.isContentLibraryEnabled"
+                          title="Content Library"
+                          description="Settings that enable organizations to share and access content across other organizations.">
+                <ContentLibrary v-model:contentTopicGuid="contentLibraryContentTopicGuid"
+                                v-model:experienceLevel="experienceLevel"
+                                :libraryStatus="libraryStatus"
+                                :libraryLicenseName="libraryLicenseName"
+                                :libraryByPersonName="libraryByPersonName"
+                                :libraryOnDateTime="libraryOnDateTime"
+                                :itemIdKey="itemIdKey"
+                                :options="options"
+                                @redownload="onContentLibraryRedownload" />
+            </ContentStack>
+
+            <ContentStack v-if="options.isPersonalizationShown"
+                          title="Personalization Options"
+                          description="Control when and for whom this content appears by targeting specific audiences and request conditions.">
+                <DropDownList v-model="selectedSegmentGuids"
+                              label="Audience Segments"
+                              help="Limit this content to specific audience segments."
+                              :items="segmentOptions"
+                              multiple />
+
+                <DropDownList v-model="selectedRequestFilterGuids"
+                              label="Request Filters"
+                              help="Show this content only when certain request conditions are met (such as device or context)."
+                              :items="requestFilterOptions"
+                              multiple />
+            </ContentStack>
+        </ContentSection>
+
+        <ContentSection v-if="editorType !== ContentChannelItemContentEditor.None"
+                        title="Content Body"
+                        icon="ti ti-file-text"
+                        :isCollapsed="false">
+            <StructuredContentEditor v-if="editorType === ContentChannelItemContentEditor.Structured"
+                                     v-model="structuredContent"
+                                     :toolsGuid="toolsGuid"
+                                     label="Content" />
+
+            <HtmlEditor v-else-if="editorType === ContentChannelItemContentEditor.Html"
+                        v-model="content"
+                        label="Content"
+                        :startInCodeEditorMode="isContentEditorStartingInCodeMode"
+                        :mergeFields="mergeFields"
+                        :encryptedImageRootFolder="encryptedImageRootFolder"
+                        :encryptedDocumentRootFolder="encryptedDocumentRootFolder"
+                        :editorHeight="300" />
+        </ContentSection>
+
+        <ContentSection v-if="hasAttributes"
+                        title="Attributes"
+                        icon="ti ti-binary-tree"
+                        :isCollapsed="false">
+            <ContentStack title="Set Additional Attributes"
+                          description="Configure additional fields and settings for this item. These attributes store extra information and can be used for filtering, personalization, or display.">
+                <div class="row">
+                    <div class="col-md-6">
+                        <AttributeValuesContainer v-model="attributeValues"
+                                                  :attributes="attributes"
+                                                  isEditMode
+                                                  :numberOfColumns="1"
+                                                  :showCategoryLabel="true" />
+                    </div>
+                </div>
+            </ContentStack>
+        </ContentSection>
+
+        <ContentSection v-if="isRelatedItemsSectionShown"
+                        title="Related Channel Content Items"
+                        icon="ti ti-circles-relation"
+                        :isCollapsed="isEditMode">
+            <RelatedItems :modelValue="modelValue" :options="options" />
+        </ContentSection>
+    </ContentSectionContainer>
+</template>
+
+
+<script setup lang="ts">
+    import { computed, PropType, ref, watch } from "vue";
+    import ContentSectionContainer from "@Obsidian/Controls/contentSectionContainer.obs";
+    import ContentSection from "@Obsidian/Controls/contentSection.obs";
+    import ContentStack from "@Obsidian/Controls/contentStack.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import NumberBox from "@Obsidian/Controls/numberBox.obs";
+    import DatePicker from "@Obsidian/Controls/datePicker.obs";
+    import DateTimePicker from "@Obsidian/Controls/dateTimePicker.obs";
+    import ButtonGroup from "@Obsidian/Controls/buttonGroup.obs";
+    import HighlightLabel from "@Obsidian/Controls/highlightLabel.obs";
+    import HtmlEditor from "@Obsidian/Controls/htmlEditor.obs";
+    import StructuredContentEditor from "@Obsidian/Controls/structuredContentEditor.obs";
+    import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import TagList from "@Obsidian/Controls/tagList.obs";
+    import StaticFormControl from "@Obsidian/Controls/staticFormControl.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import RockLabel from "@Obsidian/Controls/rockLabel.obs";
+    import UrlSlugList from "./urlSlugList.partial.obs";
+    import ContentLibrary from "./contentLibrary.partial.obs";
+    import RelatedItems from "./relatedItems.partial.obs";
+    import { useInvokeContentChannelItemDetailBlockAction } from "./utils.partial";
+    import { Guid } from "@Obsidian/Types";
+    import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
+    import { setPropertiesBoxValue, watchPropertyChanges } from "@Obsidian/Utility/block";
+    import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
+    import { confirm } from "@Obsidian/Utility/dialogs";
+    import { BtnType } from "@Obsidian/Enums/Controls/btnType";
+    import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
+    import { EntityType } from "@Obsidian/SystemGuids/entityType";
+    import { ContentChannelDateType } from "@Obsidian/Enums/Cms/contentChannelDateType";
+    import { ContentChannelItemContentEditor } from "@Obsidian/Enums/Cms/contentChannelItemContentEditor";
+    import { ContentChannelItemLibraryStatus } from "@Obsidian/Enums/Cms/contentChannelItemLibraryStatus";
+    import { ContentChannelItemStatus, ContentChannelItemStatusDescription } from "@Obsidian/Enums/Cms/contentChannelItemStatus";
+    import { ContentLibraryItemExperienceLevel } from "@Obsidian/Enums/Cms/contentLibraryItemExperienceLevel";
+    import { ContentChannelItemBag } from "@Obsidian/ViewModels/Blocks/Cms/ContentChannelItemDetail/contentChannelItemBag";
+    import { ContentChannelItemDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Cms/ContentChannelItemDetail/contentChannelItemDetailOptionsBag";
+    import { UrlSlugBag } from "@Obsidian/ViewModels/Blocks/Cms/ContentChannelItemDetail/urlSlugBag";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<ValidPropertiesBox<ContentChannelItemBag>>,
+            required: true
+        },
+
+        options: {
+            type: Object as PropType<ContentChannelItemDetailOptionsBag>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: ValidPropertiesBox<ContentChannelItemBag>): void,
+        (e: "propertyChanged", value: string): void,
+        (e: "redownload", value: ValidPropertiesBox<ContentChannelItemBag>): void
+    }>();
+
+    // #region Values
+
+    const invoker = useInvokeContentChannelItemDetailBlockAction();
+
+    const attributes = ref(props.modelValue.bag?.attributes ?? {});
+    const attributeValues = ref(props.modelValue.bag?.attributeValues ?? {});
+    const title = propertyRef(props.modelValue.bag?.title ?? "", "Title");
+    const startDateTime = propertyRef<string | null>(props.modelValue.bag?.startDateTime ?? null, "StartDateTime");
+    const expireDateTime = propertyRef<string | null>(props.modelValue.bag?.expireDateTime ?? null, "ExpireDateTime");
+    const priority = propertyRef(props.modelValue.bag?.priority ?? 0, "Priority");
+    const content = propertyRef(props.modelValue.bag?.content ?? "", "Content");
+    const structuredContent = propertyRef(props.modelValue.bag?.structuredContent ?? "{}", "StructuredContent");
+    const contentLibraryContentTopicGuid = propertyRef(props.modelValue.bag?.contentLibraryContentTopicGuid ?? "", "ContentLibraryContentTopicGuid");
+    const experienceLevel = propertyRef<ContentLibraryItemExperienceLevel | null>(props.modelValue.bag?.experienceLevel ?? null, "ExperienceLevel");
+    const selectedSegmentGuids = propertyRef<string[]>(props.modelValue.bag?.selectedSegmentGuids ?? [], "SelectedSegmentGuids");
+    const selectedRequestFilterGuids = propertyRef<string[]>(props.modelValue.bag?.selectedRequestFilterGuids ?? [], "SelectedRequestFilterGuids");
+    const selectedIntentGuids = propertyRef<string[]>(props.modelValue.bag?.selectedIntentGuids ?? [], "SelectedIntentGuids");
+    const itemGlobalKey = propertyRef(props.modelValue.bag?.itemGlobalKey ?? "", "ItemGlobalKey");
+    const status = propertyRef<ContentChannelItemStatus>(props.modelValue.bag?.status ?? ContentChannelItemStatus.PendingApproval, "Status");
+
+    const persistedStatus = ref<ContentChannelItemStatus>(props.modelValue.bag?.status ?? ContentChannelItemStatus.PendingApproval);
+    const urlSlugs = ref<UrlSlugBag[]>(props.modelValue.bag?.urlSlugs ?? []);
+
+    // Exposes saveTagValues() for the post-Save tag commit flow.
+    const tagListRef = ref<InstanceType<typeof TagList> | null>(null);
+
+    const propRefs = [title, startDateTime, expireDateTime, priority, status, content, structuredContent, contentLibraryContentTopicGuid, experienceLevel, selectedSegmentGuids, selectedRequestFilterGuids, selectedIntentGuids, itemGlobalKey];
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    /**
+     * Whether the form is editing an existing item (vs. adding a new one).
+     */
+    const isEditMode = computed((): boolean => !!props.modelValue.bag?.idKey);
+
+    /**
+     * Whether the child items stack should be shown, per server-computed bag flags.
+     */
+    const isChildItemsStackShown = computed((): boolean => props.modelValue.bag?.isChildItemsStackShown === true);
+
+    /**
+     * Whether the parent items stack should be shown, per server-computed bag flags.
+     */
+    const isParentItemsStackShown = computed((): boolean => props.modelValue.bag?.isParentItemsStackShown === true);
+
+    /**
+     * Whether the Related Items section is shown (requires at least one related stack).
+     */
+    const isRelatedItemsSectionShown = computed((): boolean => isChildItemsStackShown.value || isParentItemsStackShown.value);
+
+    /**
+     * Whether the item has any attributes to display.
+     */
+    const hasAttributes = computed((): boolean => {
+        return Object.keys(attributes.value).length > 0;
+    });
+
+    /**
+     * The IdKey of the current item, empty for a new item.
+     */
+    const itemIdKey = computed((): string => props.modelValue.bag?.idKey ?? "");
+
+    /**
+     * The channel URL prefix for slug display (the ItemUrl with the trailing slug token stripped).
+     */
+    const slugUrlPrefix = computed((): string => props.modelValue.bag?.slugUrlPrefix ?? "");
+
+    /**
+     * The item's current Content Library status.
+     */
+    const libraryStatus = computed((): ContentChannelItemLibraryStatus =>
+        props.modelValue.bag?.libraryStatus ?? ContentChannelItemLibraryStatus.None);
+
+    /**
+     * The license name for the Content Library entry.
+     */
+    const libraryLicenseName = computed((): string => props.modelValue.bag?.libraryLicenseName ?? "");
+
+    /**
+     * The name of the person who submitted to the Content Library.
+     */
+    const libraryByPersonName = computed((): string => props.modelValue.bag?.libraryByPersonName ?? "");
+
+    /**
+     * The ISO date/time when the item was submitted to the Content Library.
+     */
+    const libraryOnDateTime = computed((): string | null => props.modelValue.bag?.libraryOnDateTime ?? null);
+
+    /**
+     * Whether the publish date pickers are shown (hidden for NoDates channels).
+     */
+    const isDateSectionShown = computed((): boolean =>
+        props.options?.dateRangeType !== ContentChannelDateType.NoDates);
+
+    /**
+     * Whether the expire date picker is shown (DateRange channels only).
+     */
+    const isExpireShown = computed((): boolean =>
+        props.options?.dateRangeType === ContentChannelDateType.DateRange);
+
+    /**
+     * Label for the start date field: "Publish Start" for DateRange, "Active" for SingleDate.
+     */
+    const startDateLabel = computed((): string =>
+        props.options?.dateRangeType === ContentChannelDateType.DateRange ? "Publish Start" : "Active");
+
+    /**
+     * String adapter for the ButtonGroup, which binds a string while the bag status is a numeric enum.
+     */
+    const statusButtonValue = computed<string>({
+        get(): string {
+            return String(status.value);
+        },
+        set(value: string) {
+            status.value = Number(value) as ContentChannelItemStatus;
+        }
+    });
+
+    /**
+     * Whether the read-only status label is shown (non-approver view).
+     */
+    const isReadOnlyStatusShown = computed((): boolean =>
+        props.modelValue.bag?.isReadOnlyStatusShown ?? false);
+
+    /**
+     * Human-readable status text from the generated enum description.
+     */
+    const readOnlyStatusText = computed((): string =>
+        ContentChannelItemStatusDescription[props.modelValue.bag?.status ?? ContentChannelItemStatus.PendingApproval]);
+
+    /**
+     * HighlightLabel type mapped from the current approval status.
+     */
+    const readOnlyStatusLabelType = computed((): "success" | "danger" | "warning" | "default" => {
+        switch (props.modelValue.bag?.status) {
+            case ContentChannelItemStatus.Approved:
+                return "success";
+            case ContentChannelItemStatus.Denied:
+                return "danger";
+            case ContentChannelItemStatus.PendingApproval:
+                return "warning";
+            default:
+                return "default";
+        }
+    });
+
+    const statusButtonItems = [
+        { value: String(ContentChannelItemStatus.PendingApproval), text: "Pending", selectedBtnType: BtnType.Warning },
+        { value: String(ContentChannelItemStatus.Approved), text: "Approved", selectedBtnType: BtnType.Success },
+        { value: String(ContentChannelItemStatus.Denied), text: "Denied", selectedBtnType: BtnType.Danger }
+    ];
+
+    /**
+     * Tooltip text showing who approved/denied the item and when. Uses the persisted
+     * status so the verb stays fixed while the user toggles the button. Returns an
+     * empty string when neither approver name nor date is available.
+     */
+    const approvalSubtext = computed((): string => {
+        const bag = props.modelValue.bag;
+        const verb = persistedStatus.value === ContentChannelItemStatus.Denied ? "Denied" : "Approved";
+        const name = bag?.approvedByName;
+        const formattedDate = bag?.approvedDateTime
+            ? RockDateTime.parseISO(bag.approvedDateTime)?.toASPString("D")
+            : null;
+
+        if (name && formattedDate) {
+            return `${verb} by ${name} on ${formattedDate}`;
+        }
+
+        if (name) {
+            return `${verb} by ${name}`;
+        }
+
+        if (formattedDate) {
+            return `${verb} on ${formattedDate}`;
+        }
+
+        return "";
+    });
+
+    /**
+     * The editor surface type resolved by the server (Structured, Html, or None).
+     * Server-computed from the channel config, so it's a plain computed rather than a propertyRef.
+     */
+    const editorType = computed((): ContentChannelItemContentEditor =>
+        props.modelValue.bag?.contentEditorType ?? ContentChannelItemContentEditor.None);
+
+    /**
+     * The Guid of the structured content tools set for this channel.
+     */
+    const toolsGuid = computed((): Guid | null =>
+        props.modelValue.bag?.structuredContentToolValueGuid ?? null);
+
+    /**
+     * Whether the HTML editor should open in code (source) mode by default.
+     */
+    const isContentEditorStartingInCodeMode = computed((): boolean =>
+        props.modelValue.bag?.isContentEditorStartingInCodeMode ?? false);
+
+    /**
+     * Encrypted root folder path for image uploads in the HTML editor.
+     */
+    const encryptedImageRootFolder = computed((): string =>
+        props.modelValue.bag?.encryptedContentImageRootFolder ?? "");
+
+    /**
+     * Encrypted root folder path for document uploads in the HTML editor.
+     */
+    const encryptedDocumentRootFolder = computed((): string =>
+        props.modelValue.bag?.encryptedContentDocumentRootFolder ?? "");
+
+    /**
+     * Audience segment options for the personalization dropdown.
+     */
+    const segmentOptions = computed((): ListItemBag[] => props.options?.segmentOptions ?? []);
+
+    /**
+     * Request filter options for the personalization dropdown.
+     */
+    const requestFilterOptions = computed((): ListItemBag[] => props.options?.requestFilterOptions ?? []);
+
+    /**
+     * Content Intent options, including any inactive value the item already has selected.
+     */
+    const intentOptions = computed((): ListItemBag[] => props.options?.intentOptions ?? []);
+
+    /**
+     * The channel's tag category Guid filter, or undefined for no category filter.
+     */
+    const tagCategoryGuid = computed((): string | undefined => props.options?.tagCategoryGuid ?? undefined);
+
+    // Fixed merge-field list for the HTML editor's Lava picker.
+    const mergeFields = [
+        "GlobalAttribute",
+        "Rock.Model.ContentChannelItem|Current Item",
+        "Rock.Model.Person|Current Person",
+        "Campuses",
+        "RockVersion"
+    ];
+
+    // #endregion Computed Values
+
+    // #region Functions
+
+    /**
+     * Relays the Content Library partial's refreshed bag up to the parent, which swaps
+     * it into the edit bag; the modelValue watch then re-seeds every field (including
+     * persistedStatus) from the refreshed data.
+     */
+    function onContentLibraryRedownload(value: ValidPropertiesBox<ContentChannelItemBag>): void {
+        emit("redownload", value);
+    }
+
+    /**
+     * Commits pending tag values via the delaySave contract. Called by the root
+     * block after a successful Save, before any redirect. On a new item the root
+     * sets the idKey from the Save response first so tags save against the persisted
+     * entity. No-op when the tag control is not rendered.
+     */
+    async function saveTagValues(): Promise<void> {
+        await tagListRef.value?.saveTagValues();
+    }
+
+    defineExpose({ saveTagValues });
+
+    // #endregion Functions
+
+    // #region Event Handlers
+
+    // Guards the Title-blur slug seed against overlapping runs.
+    let isSeedingSlug = false;
+
+    /**
+     * Auto-generates the first URL slug from the Title when the Title loses focus,
+     * so a new item shows its slug as soon as the person moves on. Seeds only when
+     * no slug exists yet and the Title is non-empty.
+     *
+     * When focus is moving to a button or link (Save, Cancel, the slug Add
+     * affordance, etc.) the seed is skipped. Those are actions rather than the
+     * next field, and for Save in particular, inserting a slug row here would push
+     * the Save button out from under the pointer between mousedown and mouseup and
+     * swallow the click. The ContentChannelItem save hook generates the slug from
+     * the Title on save, so skipping the client seed loses nothing.
+     */
+    async function onTitleBlur(event: FocusEvent): Promise<void> {
+        if (isSeedingSlug || urlSlugs.value.length !== 0 || title.value.trim() === "") {
+            return;
+        }
+
+        // Focus heading to an action (button/link), not the next field: leave the
+        // slug to the server so the click that caused this blur is not disrupted.
+        const focusTarget = event.relatedTarget;
+        if (focusTarget instanceof HTMLButtonElement || focusTarget instanceof HTMLAnchorElement) {
+            return;
+        }
+
+        isSeedingSlug = true;
+
+        try {
+            const titleValue = title.value.trim();
+
+            if (itemIdKey.value === "") {
+                // New item: compute a unique candidate and stage it (no write).
+                const result = await invoker.getUniqueSlug({ idKey: "", slug: titleValue, contentChannelItemSlugId: null });
+
+                if (result.isSuccess && result.data?.slug) {
+                    urlSlugs.value = [...urlSlugs.value, { id: 0, slug: result.data.slug }];
+                }
+            }
+            else {
+                // Existing item: persist immediately.
+                const result = await invoker.saveSlug({ idKey: itemIdKey.value, slug: titleValue, contentChannelItemSlugId: null });
+
+                if (result.isSuccess && result.data) {
+                    urlSlugs.value = [...urlSlugs.value, { id: result.data.id, slug: result.data.slug }];
+                }
+            }
+        }
+        finally {
+            isSeedingSlug = false;
+        }
+    }
+
+    /**
+     * Regenerates the Item Global Key from the current title after confirmation.
+     * Restages the server-computed candidate without persisting; it is written on Save.
+     * A failed regenerate leaves the current key untouched.
+     */
+    async function onRegenerateGlobalKey(): Promise<void> {
+        const confirmed = await confirm("Are you sure you wish to update the item identifier? If the current value is being used elsewhere it will break the link.");
+
+        if (!confirmed) {
+            return;
+        }
+
+        const result = await invoker.refreshItemGlobalKey(itemIdKey.value, title.value);
+
+        if (result.isSuccess && result.data?.itemGlobalKey) {
+            itemGlobalKey.value = result.data.itemGlobalKey;
+        }
+    }
+
+    // #endregion Event Handlers
+
+    // #region Watchers
+
+    // Sync all local refs when the parent replaces the model value.
+    watch(() => props.modelValue, () => {
+        updateRefValue(title, props.modelValue.bag?.title ?? "");
+        updateRefValue(startDateTime, props.modelValue.bag?.startDateTime ?? null);
+        updateRefValue(expireDateTime, props.modelValue.bag?.expireDateTime ?? null);
+        updateRefValue(priority, props.modelValue.bag?.priority ?? 0);
+        updateRefValue(status, props.modelValue.bag?.status ?? ContentChannelItemStatus.PendingApproval);
+        updateRefValue(persistedStatus, props.modelValue.bag?.status ?? ContentChannelItemStatus.PendingApproval);
+        updateRefValue(content, props.modelValue.bag?.content ?? "");
+        updateRefValue(structuredContent, props.modelValue.bag?.structuredContent ?? "{}");
+        updateRefValue(contentLibraryContentTopicGuid, props.modelValue.bag?.contentLibraryContentTopicGuid ?? "");
+        updateRefValue(experienceLevel, props.modelValue.bag?.experienceLevel ?? null);
+        updateRefValue(selectedSegmentGuids, props.modelValue.bag?.selectedSegmentGuids ?? []);
+        updateRefValue(selectedRequestFilterGuids, props.modelValue.bag?.selectedRequestFilterGuids ?? []);
+        updateRefValue(selectedIntentGuids, props.modelValue.bag?.selectedIntentGuids ?? []);
+        updateRefValue(itemGlobalKey, props.modelValue.bag?.itemGlobalKey ?? "");
+        updateRefValue(urlSlugs, props.modelValue.bag?.urlSlugs ?? []);
+        updateRefValue(attributes, props.modelValue.bag?.attributes ?? {});
+        updateRefValue(attributeValues, props.modelValue.bag?.attributeValues ?? {});
+    });
+
+    // Emit an updated model value whenever any tracked field changes.
+    watch([attributeValues, urlSlugs, ...propRefs], () => {
+        const newValue: ValidPropertiesBox<ContentChannelItemBag> = {
+            bag: { ...props.modelValue.bag } as ContentChannelItemBag
+        };
+
+        setPropertiesBoxValue(newValue, "title", title.value);
+        setPropertiesBoxValue(newValue, "startDateTime", startDateTime.value);
+        setPropertiesBoxValue(newValue, "expireDateTime", expireDateTime.value);
+        setPropertiesBoxValue(newValue, "priority", priority.value);
+        setPropertiesBoxValue(newValue, "status", status.value);
+        setPropertiesBoxValue(newValue, "content", content.value);
+        setPropertiesBoxValue(newValue, "structuredContent", structuredContent.value);
+        setPropertiesBoxValue(newValue, "contentLibraryContentTopicGuid", contentLibraryContentTopicGuid.value);
+        setPropertiesBoxValue(newValue, "experienceLevel", experienceLevel.value);
+        setPropertiesBoxValue(newValue, "selectedSegmentGuids", selectedSegmentGuids.value);
+        setPropertiesBoxValue(newValue, "selectedRequestFilterGuids", selectedRequestFilterGuids.value);
+        setPropertiesBoxValue(newValue, "selectedIntentGuids", selectedIntentGuids.value);
+        setPropertiesBoxValue(newValue, "itemGlobalKey", itemGlobalKey.value);
+        setPropertiesBoxValue(newValue, "urlSlugs", urlSlugs.value);
+        setPropertiesBoxValue(newValue, "attributeValues", attributeValues.value);
+
+        emit("update:modelValue", newValue);
+    });
+
+    watchPropertyChanges(propRefs, emit);
+
+    // #endregion Watchers
+</script>

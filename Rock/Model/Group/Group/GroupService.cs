@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -26,8 +26,9 @@ using System.Text;
 using Rock.Attribute;
 using Rock.Communication.Chat;
 using Rock.Communication.Chat.DTO;
-using Rock.Data;
+using Rock.Configuration;
 using Rock.Core.Geography.Classes;
+using Rock.Data;
 using Rock.Model.Groups.Group.Options;
 using Rock.Web.Cache;
 
@@ -1120,7 +1121,7 @@ namespace Rock.Model
             List<string> familyMemberNames = new List<string>();
             string primaryLastName = string.Empty;
 
-            var groupMemberService = new GroupMemberService( calculateFamilySalutationArgs.RockContext ?? new RockContext() );
+            var groupMemberService = new GroupMemberService( calculateFamilySalutationArgs.RockContext ?? RockApp.Current.CreateRockContext() );
             var groupId = group.Id;
 
             var familyMembersQry = groupMemberService.Queryable( false ).Where( a => a.GroupId == groupId );
@@ -1900,7 +1901,7 @@ namespace Rock.Model
                 return null;
             }
 
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var groupService = new GroupService( rockContext );
 
             var group = groupService.Queryable()
@@ -1959,6 +1960,13 @@ namespace Rock.Model
             targetGroup.CreatedByPersonAliasId = copyGroupOptions.CreatedByPersonAliasId;
             targetGroup.ModifiedByPersonAliasId = copyGroupOptions.CreatedByPersonAliasId;
             targetGroup.IsSystem = false;
+
+            // Clear the chat channel key so the copy doesn't share the source group's external chat channel. Each
+            // group must have its own unique key; leaving the source's value here would cause both groups to resolve
+            // to the same channel, incorrectly-populating a group. If enabled, the next ChatSync will assign this
+            // copy its own key.
+            // See https://github.com/SparkDevNetwork/Rock/issues/7007
+            targetGroup.ChatChannelKey = null;
 
             groupGuidDictionary.Add( sourceGroup.Guid, targetGroup.Guid );
 
@@ -2080,8 +2088,8 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Copies the group member attributes and qualifiers from one group to another.
-        /// The qualifier value is set to the targetGroup.Id.
+        /// Copies the group member attributes and qualifiers that were created specifically on the
+        /// source group to the target group. The qualifier value is set to the targetGroup.Id.
         /// </summary>
         /// <param name="rockContext">The rockContext to use for the operation.</param>
         /// <param name="sourceGroup">The group from which to copy.</param>
@@ -2091,8 +2099,20 @@ namespace Rock.Model
         {
             var attributeService = new AttributeService( rockContext );
 
-            // Get the attributes for inherited and current group members.
-            var sourceGroupMemberAttributes = attributeService.GetGroupMemberAttributesCombined( sourceGroup.Id, sourceGroup.GroupTypeId );
+            /*
+                06/01/2026 - MSE
+
+                Only copy the group member attributes that were created specifically on the source group
+                (qualified by GroupId). Inherited group member attributes (qualified by GroupTypeId) must
+                not be copied: the target group has the same GroupTypeId and therefore already inherits
+                them. Cloning an inherited attribute and overwriting its EntityTypeQualifierValue with the
+                target GroupId would leave EntityTypeQualifierColumn as "GroupTypeId" while the value is a
+                GroupId, producing an orphaned attribute that never matches a real group type and degrades
+                Group Member List performance.
+
+                Reason: https://github.com/SparkDevNetwork/Rock/issues/6853
+            */
+            var sourceGroupMemberAttributes = attributeService.GetByEntityTypeQualifier( new GroupMember().TypeId, "GroupId", sourceGroup.Id.ToString(), true );
 
             foreach ( var attribute in sourceGroupMemberAttributes )
             {
@@ -2199,7 +2219,7 @@ namespace Rock.Model
         /// <param name="groupId">The group identifier.</param>
         public static void DeleteSecurityRoleGroup( int groupId )
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             rockContext.WrapTransaction( () =>
             {
                 // Get the target group.

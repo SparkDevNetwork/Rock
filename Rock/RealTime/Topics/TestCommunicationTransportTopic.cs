@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -19,7 +19,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+
 using Rock.Communication;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Utility;
@@ -32,7 +34,7 @@ namespace Rock.RealTime.Topics
         /// <inheritdoc/>
         public override Task OnConnectedAsync()
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var transport = new EntityTypeService( rockContext ).Get( new Guid( "c50fb8f9-6ada-4c4b-88ee-ed7bc93b1819" ) );
 
@@ -81,7 +83,7 @@ namespace Rock.RealTime.Topics
             }
             else
             {
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     var pipelineId = new SmsPipelineService( rockContext ).GetId( message.PipelineGuid.Value );
 

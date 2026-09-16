@@ -16,7 +16,7 @@
 
 import { computed, defineComponent, ref, watch } from "vue";
 import { getFieldConfigurationProps, getFieldEditorProps } from "./utils";
-import { ConfigurationValueKey } from "./communicationFlowField.partial";
+import { ConfigurationKey } from "./communicationFlowField.partial";
 import { CommunicationFlowTriggerType, CommunicationFlowTriggerTypeDescription } from "@Obsidian/Enums/Communication/communicationFlowTriggerType";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import DropDownList from "@Obsidian/Controls/dropDownList.obs";
@@ -37,7 +37,7 @@ export const EditComponent = defineComponent({
         // The CommunicationTemplate options.
         // The available options to choose from.
         const options = computed((): ListItemBag[] => {
-            const options = JSON.parse(props.configurationValues[ConfigurationValueKey.Values] || "[]") as ListItemBag[];
+            const options = JSON.parse(props.configurationValues[ConfigurationKey.Values] || "[]") as ListItemBag[];
             return options;
         });
 
@@ -49,7 +49,7 @@ export const EditComponent = defineComponent({
         });
 
         // Watch for changes to the filter trigger types and update the options.
-        watch(() => props.configurationValues[ConfigurationValueKey.FilterTriggerTypes], () => {
+        watch(() => props.configurationValues[ConfigurationKey.FilterTriggerTypes], () => {
             emit("updateConfigurationValue",);
         });
 
@@ -119,11 +119,11 @@ export const ConfigurationComponent = defineComponent({
 
             // Construct the new value that will be emitted if it is different
             // than the current value.
-            newValue[ConfigurationValueKey.FilterTriggerTypes] = filterTriggerTypes.value.join(",");
+            newValue[ConfigurationKey.FilterTriggerTypes] = filterTriggerTypes.value.join(",");
 
             // Compare the new value and the old value.
             const anyValueChanged =
-                newValue[ConfigurationValueKey.FilterTriggerTypes] !== (props.modelValue[ConfigurationValueKey.FilterTriggerTypes] ?? "");
+                newValue[ConfigurationKey.FilterTriggerTypes] !== (props.modelValue[ConfigurationKey.FilterTriggerTypes] ?? "");
 
             // If any value changed then emit the new model value.
             if (anyValueChanged) {
@@ -150,7 +150,7 @@ export const ConfigurationComponent = defineComponent({
         // Watch for changes coming in from the parent component and update our
         // data to match the new information.
         watch(() => [props.modelValue, props.configurationProperties], () => {
-            filterTriggerTypes.value = (props.modelValue[ConfigurationValueKey.FilterTriggerTypes]?.split(",") ?? []).filter(s => s !== "");
+            filterTriggerTypes.value = (props.modelValue[ConfigurationKey.FilterTriggerTypes]?.split(",") ?? []).filter(s => s !== "");
         }, {
             immediate: true
         });
@@ -165,7 +165,7 @@ export const ConfigurationComponent = defineComponent({
 
         // Watch for changes in properties that only require a local UI update.
         watch([], () => {
-            maybeUpdateConfiguration(ConfigurationValueKey.FilterTriggerTypes, filterTriggerTypes.value.join(","));
+            maybeUpdateConfiguration(ConfigurationKey.FilterTriggerTypes, filterTriggerTypes.value.join(","));
         });
 
         return {

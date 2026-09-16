@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -19,9 +19,13 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
+
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
+using Rock.Enums.Security;
 using Rock.Lava;
+using Rock.Security;
 
 namespace Rock.Model
 {
@@ -56,6 +60,7 @@ namespace Rock.Model
         [Required]
         [MaxLength( 50 )]
         [DataMember( IsRequired = true )]
+        [StringValidation( StringValidationProfile.Name )]
         public string Token { get; set; }
 
         /// <summary>
@@ -66,10 +71,12 @@ namespace Rock.Model
         /// </value>
         [Required]
         [DataMember( IsRequired = true )]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string Url { get; set; }
 
         /// <inheritdoc/>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string AdditionalSettingsJson { get; set; }
 
         /// <summary>
@@ -140,7 +147,7 @@ namespace Rock.Model
             get
             {
                 string domain = this.Site?.DefaultDomainUri?.ToString()
-                    ?? new SiteService( new RockContext() ).GetDefaultDomainUri( this.SiteId ).ToString();
+                    ?? new SiteService( RockApp.Current.CreateRockContext() ).GetDefaultDomainUri( this.SiteId ).ToString();
                 return domain.EnsureTrailingForwardslash() + this.Token;
             }
         }

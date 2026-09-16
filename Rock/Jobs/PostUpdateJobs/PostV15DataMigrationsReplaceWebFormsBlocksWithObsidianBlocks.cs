@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -21,10 +21,11 @@ using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
 using System.Text;
-#if REVIEW_WEBFORMS
+
 using EntityFramework.Utilities;
-#endif
+
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.SystemGuid;
@@ -80,11 +81,7 @@ namespace Rock.Jobs
         {
             get
             {
-#if REVIEW_WEBFORMS
-                return new Field.Types.KeyValueListFieldType().GetValuesFromString( null, GetAttributeValue( AttributeKey.BlockTypeGuidReplacementPairs ), null, false )
-#else
-                return new Field.Types.KeyValueListFieldType().GetValuesFromString( GetAttributeValue( AttributeKey.BlockTypeGuidReplacementPairs ), null, false )
-#endif
+                return Field.Helper.GetKeyValueListValuesFromString( GetAttributeValue( AttributeKey.BlockTypeGuidReplacementPairs ), null, false )
                     // Calling Guid?.Value intentionally on the next line so that exceptions are thrown if the field value is invalid.
                     .ToDictionary( kvp => kvp.Key.AsGuidOrNull().Value, kvp => kvp.Value.ToString().AsGuidOrNull().Value );
             }
@@ -107,7 +104,7 @@ namespace Rock.Jobs
             var commandTimeout = GetAttributeValue( AttributeKey.CommandTimeout ).AsIntegerOrNull() ?? 14400;
             var jobMigration = new JobMigration( commandTimeout );
             var migrationHelper = new MigrationHelper( jobMigration );
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 ReplaceBlocks( rockContext, migrationHelper );
             }
@@ -288,7 +285,7 @@ namespace Rock.Jobs
         /// </summary>
         private void DeleteJob()
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var jobService = new ServiceJobService( rockContext );
                 var job = jobService.Get( GetJobId() );

@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -16,6 +16,7 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 
 using Ical.Net;
@@ -27,7 +28,10 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using Rock.Lava;
 using Rock.Lava.Fluid;
-using Rock.Tests.Shared;
+using Rock.Tests.Shared.Core.Schedules;
+using Rock.Tests.Shared.Utility;
+
+using Calendar = Ical.Net.Calendar;
 
 namespace Rock.Tests.Lava.Filters
 {
@@ -604,7 +608,97 @@ namespace Rock.Tests.Lava.Filters
             // Verify that the Lava Date filter formats the DateTime value as a Rock time, including the correct offset.
             TestHelper.AssertTemplateOutput( rockTimeString, "{{ dateTimeInput | Date:'yyyy-MM-ddTHH:mm:sszzz' }}", parameters );
         }
-        /// <summary>  
+
+        /// <summary>
+        /// Setting <see cref="LavaRenderParameters.TimeZone"/> to a value that differs from
+        /// <see cref="RockDateTime.OrgTimeZoneInfo"/> should not change the rendered date, because Rock
+        /// inherently uses the Rock org timezone for DateTime values: the Date filter routes DateTime
+        /// input through <see cref="LavaDateTime.ConvertToRockOffset(DateTime)"/>, which always uses
+        /// <see cref="RockDateTime.OrgTimeZoneInfo"/> regardless of any per-render timezone parameter.
+        /// </summary>
+        /// <remarks>
+        /// This test is a proof of CURRENT functionality, not a proof of CORRECT functionality. It is
+        /// meant as a catch against unintended consequences of future changes to the Lava timezone.
+        /// Before making any changes to this unit test that change this assertion, please make sure it
+        /// is discussed and agreed upon by the core team.
+        /// </remarks>
+        [TestMethod]
+        public void Render_WithRenderParameterTimeZoneDifferentFromOrgTimeZone_RendersExpectedDate()
+        {
+            var dtoInput = LavaDateTime.NewDateTimeOffset( 2020, 3, 30, 10, 0, 0 );
+            var datetimeInput = dtoInput.DateTime;
+            var expectedOutput = dtoInput.ToString( "yyyy-MM-ddTHH:mm:sszzz" );
+
+            // Pick a timezone that is deliberately distinct from the typical Rock org timezone used in
+            // tests. If the configured org timezone happens to be UTC, fall back to a fixed-offset zone
+            // so the explicit timezone still differs from the current one.
+            var explicitTimeZone = RockDateTime.OrgTimeZoneInfo.Equals( TimeZoneInfo.Utc )
+                ? TimeZoneInfo.FindSystemTimeZoneById( "Pacific Standard Time" )
+                : TimeZoneInfo.Utc;
+
+            var mergeValues = new LavaDataDictionary() { { "dateTimeInput", datetimeInput } };
+
+            var parameters = new LavaRenderParameters
+            {
+                Context = LavaRenderContext.FromMergeValues( mergeValues ),
+                TimeZone = explicitTimeZone
+            };
+
+            TestHelper.AssertTemplateOutput( expectedOutput, "{{ dateTimeInput | Date:'yyyy-MM-ddTHH:mm:sszzz' }}", parameters );
+        }
+
+        /// <summary>
+        /// Setting <see cref="LavaRenderParameters.Culture"/> to the current thread culture
+        /// should render culture-sensitive output using that culture.
+        /// </summary>
+        [TestMethod]
+        public void Render_WithRenderParameterCultureMatchingCurrentCulture_RendersExpectedDate()
+        {
+            var datetimeInput = LavaDateTime.NewDateTimeOffset( 2020, 3, 30, 10, 0, 0 );
+            var currentCulture = CultureInfo.CurrentCulture;
+            var expectedOutput = LavaDateTime.ToString( datetimeInput, "G", currentCulture );
+
+            var mergeValues = new LavaDataDictionary() { { "dateTimeInput", datetimeInput } };
+
+            var parameters = new LavaRenderParameters
+            {
+                Context = LavaRenderContext.FromMergeValues( mergeValues ),
+                Culture = currentCulture
+            };
+
+            TestHelper.AssertTemplateOutput( expectedOutput, "{{ dateTimeInput }}", parameters );
+        }
+
+        /// <summary>
+        /// Setting <see cref="LavaRenderParameters.Culture"/> to a culture that differs from
+        /// the current thread culture should render the bare datetime using the explicit culture.
+        /// </summary>
+        [TestMethod]
+        public void Render_WithRenderParameterCultureDifferentFromCurrentCulture_RendersExpectedDate()
+        {
+            var datetimeInput = LavaDateTime.NewDateTimeOffset( 2020, 3, 30, 10, 0, 0 );
+
+            // Pick a culture that is deliberately distinct from the typical en-US test environment so
+            // the formatted output differs from the default. If the test environment happens to be
+            // de-DE, fall back to en-US so the explicit culture still differs from the current one.
+            var explicitCulture = CultureInfo.CurrentCulture.Name == "de-DE"
+                ? new CultureInfo( "en-US" )
+                : new CultureInfo( "de-DE" );
+
+            var expectedOutput = LavaDateTime.ToString( datetimeInput, "G", explicitCulture );
+
+            var mergeValues = new LavaDataDictionary() { { "dateTimeInput", datetimeInput } };
+
+            var parameters = new LavaRenderParameters
+            {
+                Context = LavaRenderContext.FromMergeValues( mergeValues ),
+                Culture = explicitCulture
+            };
+
+            TestHelper.AssertTemplateOutput( expectedOutput, "{{ dateTimeInput }}", parameters );
+        }
+
+        /// <summary>
         /// Create a DateTime for a specific timezone.
         /// </summary>
         public struct DateTimeWithZone
@@ -1126,34 +1220,57 @@ BEGIN:VCALENDAR
 PRODID:-//github.com/SparkDevNetwork/Rock//NONSGML Rock//EN
 VERSION:2.0
 BEGIN:VEVENT
-DTEND:20260301T130000
+DTEND:{YEAR}0301T130000
 DTSTAMP:20251231T101650
-DTSTART:20260301T120000
+DTSTART:{YEAR}0301T120000
 SEQUENCE:0
 UID:a9cbe528-f619-4c5d-aa72-128fb6c5ddcb
 END:VEVENT
 END:VCALENDAR
-", "2026-3-1 12:00", "2026-3-1 13:00" )]
+", "{YEAR}-3-1 12:00", "{YEAR}-3-1 13:00" )]
         [DataRow( @"
 BEGIN:VCALENDAR
 PRODID:-//github.com/SparkDevNetwork/Rock//NONSGML Rock//EN
 VERSION:2.0
 BEGIN:VEVENT
-DTEND:20260401T130000
+DTEND:{YEAR}0401T130000
 DTSTAMP:20251231T101650
-DTSTART:20260401T120000
+DTSTART:{YEAR}0401T120000
 SEQUENCE:0
 UID:b0a0f562-b14c-46a6-9891-e52e275a5e5a
 END:VEVENT
 END:VCALENDAR
-", "2026-4-1 12:00", "2026-4-1 13:00" )] // this date is during DST in certain time zones
-        public void DatesFromICal_WithEndDateTimeParameter_ReturnsEndDateTimeOfEvent_WithCorrectOffset_PerIssue6626( string iCalString, string expectedStartDateTimeString, string expectedEndDateTimeString )
+", "{YEAR}-4-1 12:00", "{YEAR}-4-1 13:00" )] // this date is during DST in certain time zones
+        public void DatesFromICal_WithEndDateTimeParameter_ReturnsEndDateTimeOfEvent_WithCorrectOffset_PerIssue6626(
+    string iCalString,
+    string expectedStartDateTimeString,
+    string expectedEndDateTimeString )
         {
+            var year = ResolveFutureYearFromExpectedStart( expectedStartDateTimeString );
+            var yearText = year.ToString( "0000" );
+
+            iCalString = iCalString.Replace( "{YEAR}", yearText );
+            expectedStartDateTimeString = expectedStartDateTimeString.Replace( "{YEAR}", yearText );
+            expectedEndDateTimeString = expectedEndDateTimeString.Replace( "{YEAR}", yearText );
+
             LavaTestHelper.ExecuteForTimeZones( ( timeZone ) =>
             {
-                // Get the iCalendar and expected datetime for the test time zone.
                 var expectedStartDateTime = LocalExpected( timeZone, expectedStartDateTimeString );
-                var expectedEndDateTime =   LocalExpected( timeZone, expectedEndDateTimeString );
+                var expectedEndDateTime = LocalExpected( timeZone, expectedEndDateTimeString );
+
+                /* This test is only valid if the current time zone's time is not already PAST the expected start date time
+                 * on the DATE of the expected test's start datetime value, and not a year in the future.
+                 */
+                DateTime currentLocalTime = TimeZoneInfo.ConvertTimeFromUtc( DateTime.UtcNow, timeZone );
+
+                bool sameDateAndAlreadyPastStart = currentLocalTime.Date == expectedStartDateTime.Date && currentLocalTime > expectedStartDateTime;
+                bool expectedStartIsMoreThanOneYearInFuture = expectedStartDateTime.Date >= currentLocalTime.Date.AddYears( 1 );
+
+                if ( sameDateAndAlreadyPastStart || expectedStartIsMoreThanOneYearInFuture )
+                {
+                    // Skip this test.
+                    return;
+                }
 
                 var schedule = new Rock.Model.Schedule();
                 schedule.iCalendarContent = iCalString;
@@ -1185,8 +1302,31 @@ End: {{ iCalString | DatesFromICal:1,'enddatetime' | First | ToJSON }}
                         Assert.Fail( $"Lava Output\n'{output}' does not contain string 'End: \"{rockEndDateTimeString}\"'.\n[SystemDateTime = {DateTime.Now:O}, RockDateTime = {_now:O}, Time Zone = {timeZone.DisplayName}]" );
                     }
                 } );
-
             } );
+        }
+
+        private static int ResolveFutureYearFromExpectedStart( string expectedStartDateTimeString )
+        {
+            // expected format: "{YEAR}-M-d HH:mm"
+            var parts = expectedStartDateTimeString.Split( ' ' );
+            var dateParts = parts[0].Split( '-' );
+
+            var month = int.Parse( dateParts[1], System.Globalization.CultureInfo.InvariantCulture );
+            var day = int.Parse( dateParts[2], System.Globalization.CultureInfo.InvariantCulture );
+
+            var timeParts = parts[1].Split( ':' );
+            var hour = int.Parse( timeParts[0], System.Globalization.CultureInfo.InvariantCulture );
+            var minute = int.Parse( timeParts[1], System.Globalization.CultureInfo.InvariantCulture );
+
+            var year = DateTime.Today.Year;
+            var candidate = new DateTime( year, month, day, hour, minute, 0 );
+
+            if ( candidate < DateTime.Now )
+            {
+                year++;
+            }
+
+            return year;
         }
 
         // Treat iCal DTSTART/DTEND as "floating" local time in the given TimeZoneInfo.
@@ -2163,6 +2303,40 @@ End: {{ iCalString | DatesFromICal:1,'enddatetime' | First | ToJSON }}
                 maximumDelta: null,
                 mergeValues );
             } );
+        }
+
+        /// <summary>
+        /// Applying the filter to a Friday returns the previous Sunday if the week starts on a Sunday.
+        /// </summary>
+        [TestMethod]
+        public void SundayDate_InputDateIsFriday_YieldsNextSunday()
+        {
+            // This filter returns the Sunday associated with the current week.
+            // Rock considers Sunday to be the last day of the week by default, so any other day should return a future date.
+            TestHelper.AssertTemplateOutputDate( "3-May-2020",
+                                      "{{ '1-May-2020' | SundayDate }}" );
+        }
+
+        /// <summary>
+        /// Applying the filter to a Sunday returns the same day.
+        /// </summary>
+        [TestMethod]
+        public void SundayDate_InputDateIsSunday_YieldsSameDay()
+        {
+            TestHelper.AssertTemplateOutputDate( "3-May-2020",
+                                      "{{ '3-May-2020' | SundayDate }}" );
+        }
+
+        /// <summary>
+        /// Applying the filter to the 'Now' keyword yields the Sunday of the current week.
+        /// </summary>
+        [TestMethod]
+        public void SundayDate_InputParameterIsNow_YieldsNextSunday()
+        {
+            var nextSunday = RockDateTime.Now.SundayDate();
+
+            TestHelper.AssertTemplateOutputDate( nextSunday,
+                                      "{{ 'Now' | SundayDate }}" );
         }
 
         #endregion

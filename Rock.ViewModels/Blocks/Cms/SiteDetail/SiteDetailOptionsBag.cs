@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -15,8 +15,9 @@
 // </copyright>
 //
 
-using Rock.ViewModels.Utility;
 using System.Collections.Generic;
+
+using Rock.ViewModels.Utility;
 
 namespace Rock.ViewModels.Blocks.Cms.SiteDetail
 {
@@ -37,5 +38,12 @@ namespace Rock.ViewModels.Blocks.Cms.SiteDetail
         /// The reserved key names.
         /// </value>
         public List<string> ReservedKeyNames { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether the Site entity type
+        /// has indexing enabled. When false, the "Is Indexed" checkbox
+        /// should be hidden.
+        /// </summary>
+        public bool IsIndexingEnabled { get; set; }
     }
 }

@@ -21,6 +21,7 @@
 // </copyright>
 //
 
+using Rock.Configuration;
 using Rock.Model;
 using Rock.SystemGuid;
 
@@ -35,6 +36,6 @@ namespace Rock.Rest.Controllers
         /// <summary>
         /// Initializes a new instance of the <see cref="AnalyticsSourceCampusController"/> class.
         /// </summary>
-        public AnalyticsSourceCampusController() : base( new Rock.Model.AnalyticsSourceCampusService( new Rock.Data.RockContext() ) ) { } 
+        public AnalyticsSourceCampusController() : base( new Rock.Model.AnalyticsSourceCampusService( RockApp.Current.CreateRockContext() ) ) { } 
     }
 }

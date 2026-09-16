@@ -22,7 +22,7 @@ import ListItems from "@Obsidian/Controls/listItems.obs";
 import { toNumberOrNull } from "@Obsidian/Utility/numberUtils";
 import { updateRefValue } from "@Obsidian/Utility/component";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
-import { ConfigurationValueKey } from "./checkListField.partial";
+import { ConfigurationKey } from "./checkListField.partial";
 import { getFieldConfigurationProps, getFieldEditorProps } from "./utils";
 import { KeyValueItem } from "@Obsidian/Types/Controls/keyValueItem";
 
@@ -52,7 +52,7 @@ export const EditComponent = defineComponent({
         /** The options to choose from */
         options(): ListItemBag[] {
             try {
-                const listItems = JSON.parse(this.configurationValues[ConfigurationValueKey.ListItems] ?? "[]") as KeyValueItem[];
+                const listItems = JSON.parse(this.configurationValues[ConfigurationKey.ListItems] ?? "[]") as KeyValueItem[];
 
                 return listItems.map(v => {
                     return {
@@ -69,7 +69,7 @@ export const EditComponent = defineComponent({
         /** Any additional attributes that will be assigned to the check box list control */
         checkBoxListConfigAttributes(): Record<string, number | boolean> {
             const attributes: Record<string, number | boolean> = {};
-            const repeatColumnsConfig = this.configurationValues[ConfigurationValueKey.RepeatColumns];
+            const repeatColumnsConfig = this.configurationValues[ConfigurationKey.RepeatColumns];
 
             if (repeatColumnsConfig) {
                 attributes["repeatColumns"] = toNumberOrNull(repeatColumnsConfig) || 0;
@@ -113,7 +113,7 @@ export const FilterComponent = defineComponent({
 
         const options = computed((): ListItemBag[] => {
             try {
-                const providedOptions = JSON.parse(props.configurationValues[ConfigurationValueKey.Values] ?? "[]") as ListItemBag[];
+                const providedOptions = JSON.parse(props.configurationValues[ConfigurationKey.Values] ?? "[]") as ListItemBag[];
 
                 return providedOptions;
             }
@@ -171,16 +171,16 @@ export const ConfigurationComponent = defineComponent({
          * @returns true if a new modelValue was emitted to the parent component.
          */
         const maybeUpdateModelValue = (): boolean => {
-            const newValue: Record<string, string> = {...props.modelValue};
+            const newValue: Record<string, string> = { ...props.modelValue };
 
             // Construct the new value that will be emitted if it is different
             // than the current value.
-            newValue[ConfigurationValueKey.ListItems] = listItems.value ?? "[]";
-            newValue[ConfigurationValueKey.RepeatColumns] = repeatColumns.value?.toString() ?? "";
+            newValue[ConfigurationKey.ListItems] = listItems.value ?? "[]";
+            newValue[ConfigurationKey.RepeatColumns] = repeatColumns.value?.toString() ?? "";
 
             // Compare the new value and the old value.
-            const anyValueChanged = newValue[ConfigurationValueKey.ListItems] !== (props.modelValue[ConfigurationValueKey.ListItems] ?? "[]")
-                || newValue[ConfigurationValueKey.RepeatColumns] !== (props.modelValue[ConfigurationValueKey.RepeatColumns] ?? "");
+            const anyValueChanged = newValue[ConfigurationKey.ListItems] !== (props.modelValue[ConfigurationKey.ListItems] ?? "[]")
+                || newValue[ConfigurationKey.RepeatColumns] !== (props.modelValue[ConfigurationKey.RepeatColumns] ?? "");
 
 
             // If any value changed then emit the new model value.
@@ -208,8 +208,8 @@ export const ConfigurationComponent = defineComponent({
         // Watch for changes coming in from the parent component and update our
         // data to match the new information.
         watch(() => [props.modelValue, props.configurationProperties], () => {
-            listItems.value = props.modelValue[ConfigurationValueKey.ListItems] ?? "[]";
-            repeatColumns.value = toNumberOrNull(props.modelValue[ConfigurationValueKey.RepeatColumns]);
+            listItems.value = props.modelValue[ConfigurationKey.ListItems] ?? "[]";
+            repeatColumns.value = toNumberOrNull(props.modelValue[ConfigurationKey.RepeatColumns]);
         }, {
             immediate: true
         });
@@ -223,7 +223,7 @@ export const ConfigurationComponent = defineComponent({
         });
 
         // Watch for changes in properties that only require a local UI update.
-        watch(repeatColumns, () => maybeUpdateConfiguration(ConfigurationValueKey.RepeatColumns, repeatColumns.value?.toString() ?? ""));
+        watch(repeatColumns, () => maybeUpdateConfiguration(ConfigurationKey.RepeatColumns, repeatColumns.value?.toString() ?? ""));
 
         return {
             listItems,

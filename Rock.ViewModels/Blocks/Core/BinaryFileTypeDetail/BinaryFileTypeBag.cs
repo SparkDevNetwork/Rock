@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -15,10 +15,11 @@
 // </copyright>
 //
 
-using Rock.ViewModels.Utility;
-using Rock.Model;
 using System.Collections.Generic;
+
+using Rock.Model;
 using Rock.ViewModels.Controls;
+using Rock.ViewModels.Utility;
 
 namespace Rock.ViewModels.Blocks.Core.BinaryFileTypeDetail
 {
@@ -115,5 +116,10 @@ namespace Rock.ViewModels.Blocks.Core.BinaryFileTypeDetail
         /// The edit mode message.
         /// </value>
         public string EditModeMessage { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether the type is publicly viewable.
+        /// </summary>
+        public bool IsPublicViewable { get; set; }
     }
 }

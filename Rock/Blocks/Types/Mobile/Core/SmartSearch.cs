@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -14,19 +14,20 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Linq;
+
 using Rock.Attribute;
 using Rock.Common.Mobile.Blocks.Core.SmartSearch;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Mobile;
 using Rock.Model;
 using Rock.Search;
 using Rock.Web.Cache;
 using Rock.Web.UI;
-
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Linq;
 
 namespace Rock.Blocks.Types.Mobile.Core
 {
@@ -52,7 +53,7 @@ namespace Rock.Blocks.Types.Mobile.Core
     #region Block Attributes
 
     [ComponentsField( "Rock.Search.SearchContainer, Rock",
-        Name = "Search Component(s)",
+        "Search Component(s)",
         Description = "The search components to offer for searches.",
         IsRequired = true,
         Key = AttributeKey.SearchComponents,
@@ -83,7 +84,7 @@ namespace Rock.Blocks.Types.Mobile.Core
         Description = "Determines if the keyboard should auto-focus into the search field when the page is attached.",
         IsRequired = false,
         DefaultBooleanValue = true,
-        ControlType = Field.Types.BooleanFieldType.BooleanControlType.Toggle,
+        BooleanControlType = Rock.Enums.Controls.BooleanControlType.Toggle,
         Key = AttributeKey.AutoFocusKeyboard,
         Order = 4 )]
 
@@ -102,7 +103,7 @@ namespace Rock.Blocks.Types.Mobile.Core
         Description = "Determines if the person's birthdate should be displayed in the search results.",
         IsRequired = false,
         DefaultBooleanValue = false,
-        ControlType = Field.Types.BooleanFieldType.BooleanControlType.Toggle,
+        BooleanControlType = Rock.Enums.Controls.BooleanControlType.Toggle,
         Key = AttributeKey.ShowBirthdate,
         Category = AttributeCategory.PersonSearch,
         Order = 6 )]
@@ -111,7 +112,7 @@ namespace Rock.Blocks.Types.Mobile.Core
         Description = "Determines if the person's age should be displayed in the search results.",
         IsRequired = false,
         DefaultBooleanValue = true,
-        ControlType = Field.Types.BooleanFieldType.BooleanControlType.Toggle,
+        BooleanControlType = Rock.Enums.Controls.BooleanControlType.Toggle,
         Key = AttributeKey.ShowAge,
         Category = AttributeCategory.PersonSearch,
         Order = 7 )]
@@ -120,7 +121,7 @@ namespace Rock.Blocks.Types.Mobile.Core
         Description = "Determines if the person's spouse should be displayed in the search results.",
         IsRequired = false,
         DefaultBooleanValue = true,
-        ControlType = Field.Types.BooleanFieldType.BooleanControlType.Toggle,
+        BooleanControlType = Rock.Enums.Controls.BooleanControlType.Toggle,
         Key = AttributeKey.ShowSpouse,
         Category = AttributeCategory.PersonSearch,
         Order = 8 )]
@@ -129,7 +130,7 @@ namespace Rock.Blocks.Types.Mobile.Core
         Description = "Determines if the person's phone number should be displayed in the search results.",
         IsRequired = false,
         DefaultBooleanValue = true,
-        ControlType = Field.Types.BooleanFieldType.BooleanControlType.Toggle,
+        BooleanControlType = Rock.Enums.Controls.BooleanControlType.Toggle,
         Key = AttributeKey.ShowPhoneNumber,
         Category = AttributeCategory.PersonSearch,
         Order = 9 )]
@@ -138,7 +139,7 @@ namespace Rock.Blocks.Types.Mobile.Core
         Description = "Determines if the person's address should be displayed in the search results.",
         IsRequired = false,
         DefaultBooleanValue = true,
-        ControlType = Field.Types.BooleanFieldType.BooleanControlType.Toggle,
+        BooleanControlType = Rock.Enums.Controls.BooleanControlType.Toggle,
         Key = AttributeKey.ShowAddress,
         Category = AttributeCategory.PersonSearch,
         Order = 10 )]
@@ -147,7 +148,7 @@ namespace Rock.Blocks.Types.Mobile.Core
         Description = "Determines if the person's age should be displayed in the search results.",
         IsRequired = false,
         DefaultBooleanValue = true,
-        ControlType = Field.Types.BooleanFieldType.BooleanControlType.Toggle,
+        BooleanControlType = Rock.Enums.Controls.BooleanControlType.Toggle,
         Key = AttributeKey.ShowAge,
         Category = AttributeCategory.PersonSearch,
         Order = 11 )]
@@ -714,7 +715,7 @@ namespace Rock.Blocks.Types.Mobile.Core
         [BlockAction( "Search" )]
         public BlockActionResult GetSearchResults( SearchRequestBag requestBag )
         {
-            using( var rockContext = new RockContext() )
+            using( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var searchComponent = SearchContainer.Instance.Components
                                    .Select( c => c.Value.Value )

@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -21,7 +21,7 @@ namespace Rock.AI.Agent.Annotations
     /// inappropriately. This can be specified multiple times.
     /// </summary>
     [System.AttributeUsage( System.AttributeTargets.Class | System.AttributeTargets.Method, Inherited = false, AllowMultiple = true )]
-    internal class AgentGuardrailAttribute : System.Attribute
+    public class AgentGuardrailAttribute : System.Attribute
     {
         /// <summary>
         /// The guardrail guidance for the tool.

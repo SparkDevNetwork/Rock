@@ -8,7 +8,7 @@
                               :browseMode="config?.browseMode as 'image' | 'doc' | undefined ?? 'doc'"
                               :enableAssetManager="config?.enableAssetProviders ?? false"
                               :enableFileManager="config?.enableFileManager ?? true"
-                              :enableZipUpload="config?.enableZipUploader ?? true"
+                              :enableZipUpload="config?.enableZipUploader ?? false"
                               :encryptedRootFolder="config?.rootFolder ?? undefined"
                               :editFilePage="config?.fileEditorPage ?? undefined" />
         </div>

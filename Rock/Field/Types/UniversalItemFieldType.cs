@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -18,12 +18,12 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
-using System.Reflection;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
 using Rock.Attribute;
 using Rock.Data;
+using Rock.Enums.Security;
 using Rock.Model;
 using Rock.Reporting;
 using Rock.ViewModels.Utility;
@@ -97,6 +97,33 @@ namespace Rock.Field.Types
             }
 
             return privateValue.Split( new[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).ToList();
+        }
+
+        /// <inheritdoc/>
+        /// <remarks>
+        /// <para>
+        /// Describes the shape only, which is all this level knows. Whether the value
+        /// holds one item or several comes from
+        /// <see cref="IsMultipleSelection"/>, and that is the part a caller is most
+        /// likely to get wrong, because the two shapes look identical until a second
+        /// item is added.
+        /// </para>
+        /// <para>
+        /// Says nothing about which items exist, because this has no way to find out
+        /// without a subclass telling it, and asking would cost a query on every
+        /// attribute described. A subclass that can answer cheaply should override
+        /// this and add them, the way the picker below does.
+        /// </para>
+        /// </remarks>
+        internal override FieldTypeHints GetFieldHints( Dictionary<string, string> privateConfigurationValues )
+        {
+            return new FieldTypeHints
+            {
+                IsCompleteList = false,
+                ValueFormat = IsMultipleSelection
+                    ? "One or more item values separated by commas. Each is a guid in nearly every implementation, and never a display name."
+                    : "The value of a single item, a guid in nearly every implementation and never a display name. Only one is stored, so a comma separated list is not valid here."
+            };
         }
 
         /// <summary>
@@ -248,6 +275,12 @@ namespace Rock.Field.Types
         }
 
         /// <inheritdoc/>
+        public sealed override StringValidationRule GetValidationRules( Dictionary<string, string> privateConfigurationValues )
+        {
+            return base.GetValidationRules( privateConfigurationValues );
+        }
+
+        /// <inheritdoc/>
         public sealed override object ValueAsFieldType( string value, Dictionary<string, ConfigurationValue> configurationValues )
         {
             return value;
@@ -356,27 +389,19 @@ namespace Rock.Field.Types
         /// <inheritdoc/>
         public sealed override string GetHtmlValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
         {
-            return GetTextValue( privateValue, privateConfigurationValues );
+            return GetTextValue( privateValue, privateConfigurationValues ).EncodeHtml();
         }
 
         /// <inheritdoc/>
         public sealed override string GetCondensedHtmlValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
         {
-            return GetTextValue( privateValue, privateConfigurationValues );
+            return GetTextValue( privateValue, privateConfigurationValues ).EncodeHtml();
         }
 
         /// <inheritdoc/>
         public sealed override PersistedValues GetPersistedValues( string privateValue, Dictionary<string, string> privateConfigurationValues, IDictionary<string, object> cache )
         {
-            var textValue = GetTextValue( privateValue, privateConfigurationValues );
-
-            return new PersistedValues
-            {
-                TextValue = textValue,
-                HtmlValue = textValue,
-                CondensedTextValue = textValue,
-                CondensedHtmlValue = textValue
-            };
+            return GetSimpleTextPersistedValues( privateValue, privateConfigurationValues );
         }
 
         /// <inheritdoc/>
@@ -430,8 +455,9 @@ namespace Rock.Field.Types
             // each of the field type attributes defined on this instance.
             foreach ( var fieldTypeAttribute in fieldTypeAttributes )
             {
-                var fieldTypeCache = FieldTypeCache.All().FirstOrDefault( c => c.Class == fieldTypeAttribute.FieldTypeClass );
-                if ( fieldTypeCache == null || fieldTypeCache.Field == null )
+                var field = FieldTypeCache.Get( fieldTypeAttribute.FieldTypeGuid )?.Field;
+
+                if ( field == null )
                 {
                     continue;
                 }
@@ -444,7 +470,7 @@ namespace Rock.Field.Types
                 var configurationValues = fieldTypeAttribute.FieldConfigurationValues
                     .ToDictionary( k => k.Key, k => k.Value.Value );
 
-                privateConfigurationValues[fieldTypeAttribute.Key] = fieldTypeCache.Field.GetPrivateEditValue( publicValue, configurationValues );
+                privateConfigurationValues[fieldTypeAttribute.Key] = field.GetPrivateEditValue( publicValue, configurationValues );
             }
 
             return privateConfigurationValues;
@@ -462,8 +488,9 @@ namespace Rock.Field.Types
                 // each of the field type attributes defined on this instance.
                 foreach ( var fieldTypeAttribute in fieldTypeAttributes )
                 {
-                    var fieldTypeCache = FieldTypeCache.All().FirstOrDefault( c => c.Class == fieldTypeAttribute.FieldTypeClass );
-                    if ( fieldTypeCache == null || fieldTypeCache.Field == null )
+                    var field = FieldTypeCache.Get( fieldTypeAttribute.FieldTypeGuid )?.Field;
+
+                    if ( field == null )
                     {
                         continue;
                     }
@@ -476,7 +503,7 @@ namespace Rock.Field.Types
                     var configurationValues = fieldTypeAttribute.FieldConfigurationValues
                         .ToDictionary( k => k.Key, k => k.Value.Value );
 
-                    publicConfigurationValues[fieldTypeAttribute.Key] = fieldTypeCache.Field.GetPublicEditValue( privateValue, configurationValues );
+                    publicConfigurationValues[fieldTypeAttribute.Key] = field.GetPublicEditValue( privateValue, configurationValues );
                 }
 
                 return publicConfigurationValues;
@@ -497,7 +524,8 @@ namespace Rock.Field.Types
             // the client can present them with standard logic.
             foreach ( var fieldTypeAttribute in fieldTypeAttributes )
             {
-                var fieldTypeCache = FieldTypeCache.All().FirstOrDefault( c => c.Class == fieldTypeAttribute.FieldTypeClass );
+                var fieldTypeCache = FieldTypeCache.Get( fieldTypeAttribute.FieldTypeGuid );
+
                 if ( fieldTypeCache == null || fieldTypeCache.Field == null )
                 {
                     continue;
@@ -567,7 +595,7 @@ namespace Rock.Field.Types
             for ( int i = 0; i < fieldTypeAttributes.Count; i++ )
             {
                 var fieldTypeAttribute = fieldTypeAttributes[i];
-                var field = Helper.InstantiateFieldType( fieldTypeAttribute.FieldTypeAssembly, fieldTypeAttribute.FieldTypeClass );
+                var field = FieldTypeCache.Get( fieldTypeAttribute.FieldTypeGuid )?.Field;
 
                 if ( field != null )
                 {
@@ -602,7 +630,7 @@ namespace Rock.Field.Types
             for ( int i = 0; i < fieldTypeAttributes.Count; i++ )
             {
                 var fieldTypeAttribute = fieldTypeAttributes[i];
-                var field = Helper.InstantiateFieldType( fieldTypeAttribute.FieldTypeAssembly, fieldTypeAttribute.FieldTypeClass );
+                var field = FieldTypeCache.Get( fieldTypeAttribute.FieldTypeGuid )?.Field;
 
                 if ( field != null && controls.Count > i )
                 {
@@ -622,7 +650,7 @@ namespace Rock.Field.Types
             for ( int i = 0; i < fieldTypeAttributes.Count; i++ )
             {
                 var fieldTypeAttribute = fieldTypeAttributes[i];
-                var field = Helper.InstantiateFieldType( fieldTypeAttribute.FieldTypeAssembly, fieldTypeAttribute.FieldTypeClass );
+                var field = FieldTypeCache.Get( fieldTypeAttribute.FieldTypeGuid )?.Field;
 
                 if ( field != null && controls.Count > i )
                 {

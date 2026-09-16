@@ -21,6 +21,7 @@
 // </copyright>
 //
 
+using Rock.Configuration;
 using Rock.Model;
 using Rock.SystemGuid;
 
@@ -35,6 +36,6 @@ namespace Rock.Rest.Controllers
         /// <summary>
         /// Initializes a new instance of the <see cref="LearningClassAnnouncementsController"/> class.
         /// </summary>
-        public LearningClassAnnouncementsController() : base( new Rock.Model.LearningClassAnnouncementService( new Rock.Data.RockContext() ) ) { } 
+        public LearningClassAnnouncementsController() : base( new Rock.Model.LearningClassAnnouncementService( RockApp.Current.CreateRockContext() ) ) { } 
     }
 }

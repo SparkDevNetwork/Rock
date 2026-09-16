@@ -144,7 +144,9 @@
                         id: location.id,
                         name: location.name,
                         count: data.attendance?.filter(a => a.groupId === group.id && a.locationId === location.id).length ?? 0,
-                        children: []
+                        children: [],
+                        softThreshold: location.softRoomThreshold ?? undefined,
+                        firmThreshold: location.firmRoomThreshold ?? undefined,
                     };
 
                     groupCounts.children.push(locationCounts);
@@ -175,7 +177,9 @@
                 id: location.id,
                 name: location.name,
                 count: 0,
-                children: []
+                children: [],
+                softThreshold: location.softRoomThreshold ?? undefined,
+                firmThreshold: location.firmRoomThreshold ?? undefined,
             };
 
             locations.push(locationCounts);

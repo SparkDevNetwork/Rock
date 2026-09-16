@@ -1,0 +1,194 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Block title="Tag List">
+        <template v-if="config.options?.isEntityTypePickerVisible" #headerActions>
+            <div class="form-inline panel-labels entity-type-picker-lg">
+                <EntityTypePicker v-model="selectedEntityType"
+                                  label="Type"
+                                  :showBlankItem="true"
+                                  enhanceForLongLists />
+            </div>
+        </template>
+
+        <div class="d-flex flex-wrap align-items-center justify-content-between mb-3">
+            <ul class="nav nav-pills">
+                <li :class="{ active: activeTab === TagOwnershipType.Personal }">
+                    <a href="#" @click.prevent="activeTab = TagOwnershipType.Personal">Personal Tags</a>
+                </li>
+                <li :class="{ active: activeTab === TagOwnershipType.Organization }">
+                    <a href="#" @click.prevent="activeTab = TagOwnershipType.Organization">Organizational Tags</a>
+                </li>
+            </ul>
+
+            <Toggle v-model="includeInactive"
+                    trueText="All"
+                    falseText="Active"
+                    :btnSize="BtnSize.ExtraSmall"
+                    onButtonActiveCssClass="btn-success"
+                    offButtonActiveCssClass="btn-success" />
+        </div>
+
+        <template v-if="hasAnyTags">
+            <ul class="list-inline tag-letterlist">
+                <template v-for="letter in allLetters" :key="letter">
+                    <li v-if="hasTagsForLetter(letter)">
+                        <a :href="'#letter-' + letter">{{ letter }}</a>
+                    </li>
+                    <li v-else>
+                        {{ letter }}
+                    </li>
+                </template>
+            </ul>
+
+            <ul class="list-unstyled taglist">
+                <template v-for="letter in allLetters" :key="letter">
+                    <li v-if="hasTagsForLetter(letter)" class="clearfix">
+                        <h3>
+                            <a :id="'letter-' + letter"></a>
+                            {{ letter }}
+                        </h3>
+                        <ul class="list-inline">
+                            <li v-for="(tag, index) in getTagsForLetter(letter)" :key="tag.idKey ?? index">
+                                <a :href="getDetailUrl(tag.idKey ?? '')">
+                                    <span class="tag">{{ tag.name }} <small>({{ tag.count }})</small></span>
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+                </template>
+            </ul>
+        </template>
+
+        <NotificationBox v-else :alertType="AlertType.Info">
+            No {{ activeTab === TagOwnershipType.Personal ? 'personal' : 'organizational' }} tags found.
+        </NotificationBox>
+    </Block>
+</template>
+
+<style scoped>
+.entity-type-picker-lg :deep(.form-control) {
+    width: 250px;
+}
+
+.entity-type-picker-lg :deep(.form-group label) {
+    margin-right: 8px;
+}
+</style>
+
+
+<script setup lang="ts">
+    import { computed, ref, watch } from "vue";
+    import Block from "@Obsidian/Templates/block";
+    import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, usePersonPreferences, useReloadBlock } from "@Obsidian/Utility/block";
+    import { CustomBlockBox } from "@Obsidian/ViewModels/Blocks/customBlockBox";
+    import { TagsByLetterBag } from "@Obsidian/ViewModels/Blocks/Core/TagsByLetter/tagsByLetterBag";
+    import { TagsByLetterOptionsBag } from "@Obsidian/ViewModels/Blocks/Core/TagsByLetter/tagsByLetterOptionsBag";
+    import { TagItemBag } from "@Obsidian/ViewModels/Blocks/Core/TagsByLetter/tagItemBag";
+    import { GetTagsRequestBag } from "@Obsidian/ViewModels/Blocks/Core/TagsByLetter/getTagsRequestBag";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { NavigationUrlKey, PreferenceKey } from "./TagsByLetter/types.partial";
+    import { AlertType } from "@Obsidian/Enums/Controls/alertType";
+    import { TagOwnershipType } from "@Obsidian/Enums/Core/tagOwnershipType";
+    import EntityTypePicker from "@Obsidian/Controls/entityTypePicker.obs";
+    import Toggle from "@Obsidian/Controls/toggle.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
+
+    const config = useConfigurationValues<CustomBlockBox<TagsByLetterBag, TagsByLetterOptionsBag>>();
+    const invokeBlockAction = useInvokeBlockAction();
+    const preferences = usePersonPreferences().blockPreferences;
+
+    // #region Values
+
+    const activeTab = ref<TagOwnershipType>(Number(preferences.getValue(PreferenceKey.ActiveTab)) as TagOwnershipType || TagOwnershipType.Personal);
+    const includeInactive = ref(false);
+    const tagsByLetter = ref<Record<string, TagItemBag[]>>({});
+
+    const initialEntityTypeGuid = preferences.getValue(PreferenceKey.SelectedEntityType) || config.options?.defaultEntityTypeGuid;
+    const selectedEntityType = ref<ListItemBag | null>(initialEntityTypeGuid ? { value: initialEntityTypeGuid, text: "" } : null);
+
+    const allLetters: string[] = [
+        ..."ABCDEFGHIJKLMNOPQRSTUVWXYZ".split(""),
+        "#",
+        "*"
+    ];
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    /** Whether any letter group contains at least one tag. */
+    const hasAnyTags = computed((): boolean => {
+        const data = tagsByLetter.value;
+        return Object.keys(data).some(letter => (data[letter]?.length ?? 0) > 0);
+    });
+
+    /** The selected entity type GUID, used as a stable watcher source. */
+    const selectedEntityTypeGuid = computed((): string => selectedEntityType.value?.value ?? "");
+
+    // #endregion Computed Values
+
+    // #region Functions
+
+    /**
+     * Determines whether the given letter group contains any tags.
+     * @param letter The single-character letter key (A-Z, #, or *).
+     */
+    function hasTagsForLetter(letter: string): boolean {
+        return (tagsByLetter.value[letter]?.length ?? 0) > 0;
+    }
+
+    /**
+     * Returns the list of tags whose names start with the given letter.
+     * @param letter The single-character letter key (A-Z, #, or *).
+     */
+    function getTagsForLetter(letter: string): TagItemBag[] {
+        return tagsByLetter.value[letter] ?? [];
+    }
+
+    /**
+     * Builds the detail page URL for a tag by replacing the ((Key))
+     * placeholder in the configured navigation URL template.
+     * @param idKey The IdKey of the tag.
+     */
+    function getDetailUrl(idKey: string): string {
+        const urlTemplate = config.navigationUrls?.[NavigationUrlKey.DetailPage] ?? "";
+        return urlTemplate.replace("((Key))", idKey);
+    }
+
+    /**
+     * Fetches tags from the server using the current filter state
+     * (active tab, entity type, and inactive toggle) and replaces
+     * the displayed tag data.
+     */
+    async function loadTags(): Promise<void> {
+        const request: GetTagsRequestBag = {
+            ownerType: activeTab.value,
+            entityTypeGuid: selectedEntityTypeGuid.value || null,
+            includeInactive: includeInactive.value
+        };
+
+        const result = await invokeBlockAction<TagsByLetterBag>("GetTags", { request });
+
+        if (result.isSuccess && result.data) {
+            tagsByLetter.value = result.data.tagsByLetter ?? {};
+        }
+    }
+
+    // #endregion Functions
+
+    // #region Watchers
+
+    watch([activeTab, selectedEntityTypeGuid, includeInactive], () => {
+        // Persist the active tab and entity type selections as person preferences.
+        preferences.setValue(PreferenceKey.ActiveTab, activeTab.value.toString());
+        preferences.setValue(PreferenceKey.SelectedEntityType, selectedEntityTypeGuid.value);
+        preferences.save();
+
+        loadTags();
+    }, { immediate: true });
+
+    // #endregion Watchers
+
+    onConfigurationValuesChanged(useReloadBlock());
+</script>

@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -20,7 +20,9 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
+
 using Rock.Data;
+using Rock.Enums.Security;
 using Rock.Lava;
 using Rock.Security;
 using Rock.Web.Cache;
@@ -79,6 +81,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 50 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string EntityTypeQualifierColumn { get; set; }
 
         /// <summary>
@@ -89,6 +92,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 200 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string EntityTypeQualifierValue { get; set; }
 
         /// <summary>
@@ -110,6 +114,7 @@ namespace Rock.Model
         [Required( ErrorMessage = "Name is required" )]
         [MaxLength( 100 )]
         [DataMember( IsRequired = true )]
+        [StringValidation( StringValidationProfile.Name )]
         public string Name { get; set; }
 
         /// <summary>
@@ -119,6 +124,7 @@ namespace Rock.Model
         /// The description.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.LavaAndBasicHtml )]
         public string Description { get; set; }
 
         /// <summary>
@@ -129,6 +135,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 100 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string IconCssClass { get; set; }
 
         /// <summary>
@@ -139,6 +146,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 50 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string HighlightColor { get; set; }
 
         #endregion
@@ -194,6 +202,15 @@ namespace Rock.Model
                                 var supportedActions = new Dictionary<string, string>();
                                 supportedActions.Add( Authorization.VIEW, "The roles and/or users that have access to view." );
                                 supportedActions.Add( Authorization.TAG, "The roles and/or users that have access to tag items." );
+                                supportedActions.Add( Authorization.EDIT, "The roles and/or users that have access to edit." );
+                                supportedActions.Add( Authorization.ADMINISTRATE, "The roles and/or users that have access to administrate." );
+                                return supportedActions;
+                            }
+                        case "Rock.Model.WorkflowType":
+                            {
+                                var supportedActions = new Dictionary<string, string>();
+                                supportedActions.Add( Authorization.VIEW, "The roles and/or users that have access to view." );
+                                supportedActions.Add( Authorization.VIEW_LIST, "The roles and/or users that have access to view the workflow lists of this type." );
                                 supportedActions.Add( Authorization.EDIT, "The roles and/or users that have access to edit." );
                                 supportedActions.Add( Authorization.ADMINISTRATE, "The roles and/or users that have access to administrate." );
                                 return supportedActions;

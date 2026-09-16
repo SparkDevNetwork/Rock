@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -14,13 +14,16 @@
 // limitations under the License.
 // </copyright>
 //
-using Rock.Data;
-using Rock.Utility;
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
+
+using Rock.Data;
+using Rock.Enums.Security;
+using Rock.Security;
+using Rock.Utility;
 
 namespace Rock.Model
 {
@@ -54,6 +57,7 @@ namespace Rock.Model
         [Required]
         [MaxLength( 50 )]
         [DataMember( IsRequired = true )]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string Name { get; set; }
 
         /// <summary>
@@ -88,6 +92,7 @@ namespace Rock.Model
         /// When this value is <c>BatchStatus.Closed</c> it means that the batch has balanced and has been closed.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string Status { get; set; }
 
         /// <summary>
@@ -97,6 +102,7 @@ namespace Rock.Model
         /// The campus.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string Campus { get; set; }
 
         /// <summary>
@@ -107,6 +113,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 100 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string AccountingSystemCode { get; set; }
 
         /// <summary>

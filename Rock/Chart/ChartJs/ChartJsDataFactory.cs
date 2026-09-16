@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -16,8 +16,10 @@
 //
 using System;
 using System.Collections.Generic;
+
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+
 using Rock.Utility;
 using Rock.Web.UI.Controls;
 
@@ -59,13 +61,6 @@ namespace Rock.Chart
         }
 
         private ChartColorPaletteGenerator _chartColorGenerator = null;
-
-        /// <summary>
-        /// Display legend?
-        /// </summary>
-        [RockObsolete( "1.15" )]
-        [Obsolete]
-        public bool DisplayLegend { get; set; } = true;
 
         /// <summary>
         /// Size to fit container width?
@@ -415,79 +410,6 @@ function(tooltipModel) {
             return jsonString;
         }
 
-        #region Obsolete
-
-        /// <summary>
-        /// Legend position: {top|left|bottom|right}
-        /// </summary>
-        [Obsolete( "Use the GetJsonArgs parameter instead." )]
-        [RockObsolete( "1.15" )]
-        public string LegendPosition { get; set; } = "bottom";
-
-        /// <summary>
-        /// Legend alignment: {start|center|end}
-        /// </summary>
-        [Obsolete( "Use the GetJsonArgs parameter instead." )]
-        [RockObsolete("1.15")]
-        public string LegendAlignment { get; set; } = "center";
-
-        /// <summary>
-        /// Apply a Rock Chart Style to the settings of the ChartJs factory.
-        /// </summary>
-        /// <param name="chartStyle">The chart style.</param>
-        [Obsolete( "Use the GetJsonArgs parameters instead." )]
-        [RockObsolete( "1.15" )]
-        public virtual void SetChartStyle( ChartStyle chartStyle )
-        {
-            if ( chartStyle == null )
-            {
-                return;
-            }
-
-            // Set the chart Legend style.
-            if ( chartStyle.Legend != null )
-            {
-                this.DisplayLegend = chartStyle.Legend.Show ?? true;
-
-                SetLegendPositionAndAlignment( chartStyle.Legend.Position );
-            }
-        }
-
-        [Obsolete]
-        [RockObsolete( "1.15" )]
-        private void SetLegendPositionAndAlignment( string rockLegendPosition )
-        {
-            rockLegendPosition = rockLegendPosition?.ToLower() ?? string.Empty;
-
-            if ( rockLegendPosition == "ne" )
-            {
-                this.LegendPosition = "top";
-                this.LegendAlignment = "end";
-            }
-            else if ( rockLegendPosition.StartsWith( "nw" ) )
-            {
-                this.LegendPosition = "top";
-                this.LegendAlignment = "start";
-            }
-            else if ( rockLegendPosition.StartsWith( "se" ) )
-            {
-                this.LegendPosition = "bottom";
-                this.LegendAlignment = "end";
-            }
-            else if ( rockLegendPosition.StartsWith( "sw" ) )
-            {
-                this.LegendPosition = "bottom";
-                this.LegendAlignment = "start";
-            }
-            else
-            {
-                this.LegendPosition = "bottom";
-                this.LegendAlignment = "center";
-            }
-        }
-
-        #endregion
-
         #region Helper Classes
 
         /// <summary>
@@ -495,13 +417,6 @@ function(tooltipModel) {
         /// </summary>
         public class GetJsonArgs
         {
-            /// <summary>
-            /// A Rock chart configuration settings object.
-            /// </summary>
-            [RockObsolete( "1.15" )]
-            [Obsolete]
-            public ChartStyle ChartStyle { get; set; }
-
             /// <summary>
             /// Size to fit container width?
             /// </summary>

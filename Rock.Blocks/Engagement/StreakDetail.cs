@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -22,6 +22,7 @@ using System.Linq;
 using System.Text;
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
@@ -44,7 +45,7 @@ namespace Rock.Blocks.Engagement
     [Category( "Engagement" )]
     [Description( "Displays the details of a particular streak." )]
     [IconCssClass( "ti ti-question-mark" )]
-    // [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( Model.SiteType.Web )]
 
     #region Block Attributes
 
@@ -52,7 +53,8 @@ namespace Rock.Blocks.Engagement
 
     [Rock.Cms.DefaultBlockRole( Rock.Enums.Cms.BlockRole.Primary )]
     [Rock.SystemGuid.EntityTypeGuid( "867abce8-47a9-46fa-8a35-47ebbc60c4fe" )]
-    [Rock.SystemGuid.BlockTypeGuid( "1c98107f-dfbf-44bd-a860-0c9df2e6c495" )]
+    [Rock.SystemGuid.BlockTypeGuid( "EA9857FF-6703-4E4E-A6FF-65C23EBD2216" )]
+    // was [Rock.SystemGuid.BlockTypeGuid( "1c98107f-dfbf-44bd-a860-0c9df2e6c495" )]
     public class StreakDetail : RockDetailBlockType, IBreadCrumbBlock
     {
         private readonly int ChartBitsToShow = 350;
@@ -78,7 +80,7 @@ namespace Rock.Blocks.Engagement
         /// <inheritdoc/>
         public override object GetObsidianBlockInitialization()
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var box = new DetailBlockBox<StreakBag, StreakDetailOptionsBag>();
 
@@ -88,7 +90,7 @@ namespace Rock.Blocks.Engagement
                     return box;
                 }
 
-                box.NavigationUrls = GetBoxNavigationUrls( StreakTypeCache.GetId( box.Entity.StreakType.Value.AsGuid() ).ToString() );
+                box.NavigationUrls = GetBoxNavigationUrls( StreakTypeCache.Get( box.Entity.StreakType.Value.AsGuid() )?.IdKey ?? string.Empty );
                 box.Options = GetBoxOptions( box.IsEditable, box.Entity, rockContext );
                 box.QualifiedAttributeProperties = AttributeCache.GetAttributeQualifiedColumns<Streak>();
 
@@ -110,7 +112,7 @@ namespace Rock.Blocks.Engagement
                 CurrentStreak = GetStreakStateString( entity.CurrentStreakCount, entity.CurrentStreakStartDate ),
                 LongestStreak = GetStreakStateString( entity.LongestStreakCount, entity.LongestStreakStartDate, entity.LongestStreakEndDate ),
                 ChartHTML = StreakChartHTML( rockContext, entity ),
-                personHTML = GetPersonHtml( rockContext, entity )
+                PersonHtml = GetPersonHtml( rockContext, entity )
             };
 
             return options;
@@ -220,7 +222,7 @@ namespace Rock.Blocks.Engagement
             var streakTypeId = entity.StreakTypeId;
             if ( streakTypeId == 0 )
             {
-                streakTypeId = GetInitialEntity<Rock.Model.StreakType, StreakTypeService>( new RockContext(), PageParameterKey.StreakTypeId )?.Id ?? 0;
+                streakTypeId = GetInitialEntity<Rock.Model.StreakType, StreakTypeService>( RockApp.Current.CreateRockContext(), PageParameterKey.StreakTypeId )?.Id ?? 0;
             }
             ListItemBag streakType = entity.StreakType?.ToListItemBag() ?? StreakTypeCache.Get( streakTypeId ).ToListItemBag() ?? new ListItemBag();
             return new StreakBag
@@ -337,7 +339,7 @@ namespace Rock.Blocks.Engagement
         /// <inheritdoc/>
         protected override string RenewSecurityGrantToken()
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var entity = GetInitialEntity( rockContext );
 
@@ -418,7 +420,7 @@ namespace Rock.Blocks.Engagement
         [BlockAction]
         public BlockActionResult Edit( string key )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 if ( !TryGetEntityForEditAction( key, rockContext, out var entity, out var actionError ) )
                 {
@@ -444,7 +446,7 @@ namespace Rock.Blocks.Engagement
         [BlockAction]
         public BlockActionResult Save( DetailBlockBox<StreakBag, StreakDetailOptionsBag> box )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var entityService = new StreakService( rockContext );
 
@@ -526,7 +528,7 @@ namespace Rock.Blocks.Engagement
         [BlockAction]
         public BlockActionResult Delete( string key )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var entityService = new StreakService( rockContext );
 
@@ -540,13 +542,13 @@ namespace Rock.Blocks.Engagement
                     return ActionBadRequest( errorMessage );
                 }
 
-                var streakTypeId = entity.StreakType?.Id ?? entity.StreakTypeId;
+                var streakTypeId = entity.StreakType.IdKey;
 
                 entityService.Delete( entity );
                 rockContext.SaveChanges();
 
                 return ActionOk( this.GetParentPageUrl( new Dictionary<string, string> {
-                    { PageParameterKey.StreakTypeId, streakTypeId.ToString() }
+                    { PageParameterKey.StreakTypeId, streakTypeId }
                 } ) );
             }
         }
@@ -713,7 +715,7 @@ namespace Rock.Blocks.Engagement
             {
                 return ActionNotFound();
             }
-            using ( RockContext rockContext = new RockContext() )
+            using ( RockContext rockContext = RockApp.Current.CreateRockContext() )
             {
                 var streakService = new StreakService( rockContext );
                 var streak = streakService.Get( key, !PageCache.Layout.Site.DisablePredictableIds );
@@ -738,7 +740,7 @@ namespace Rock.Blocks.Engagement
 
         public BreadCrumbResult GetBreadCrumbs( PageReference pageReference )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var enrollmentId = pageReference.GetPageParameter( PageParameterKey.StreakId );
                 var enrollment = new StreakService( rockContext ).Get( enrollmentId );

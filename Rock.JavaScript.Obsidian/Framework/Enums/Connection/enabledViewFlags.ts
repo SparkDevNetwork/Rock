@@ -52,7 +52,7 @@ export const EnabledViewFlagsDescription: Record<number, string> = {
 
     4: "Grid",
 
-    8: "Snapshot",
+    8: "Operational Snapshot",
 
     16: "Analytics"
 };

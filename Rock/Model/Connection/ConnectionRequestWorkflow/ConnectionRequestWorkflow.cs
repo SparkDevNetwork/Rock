@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -19,8 +19,11 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
+
 using Rock.Data;
+using Rock.Enums.Security;
 using Rock.Lava;
+using Rock.Security;
 
 namespace Rock.Model
 {
@@ -53,8 +56,17 @@ namespace Rock.Model
         /// <value>
         /// The connection workflow identifier.
         /// </value>
+        /// <remarks>
+        /// This is marked with <see cref="IgnoreCanDelete"/> so the code generator does not add a
+        /// "CanDelete" check that would block deleting a <see cref="Rock.Model.ConnectionWorkflow"/>
+        /// while ConnectionRequestWorkflow rows still point to it.
+        ///
+        /// Skipping that check is safe because the ConnectionWorkflow save hook automatically deletes
+        /// these related rows first whenever a ConnectionWorkflow is deleted, so none are left orphaned.
+        /// </remarks>
         [Required]
         [DataMember]
+        [IgnoreCanDelete]
         public int ConnectionWorkflowId { get; set; }
 
         /// <summary>
@@ -83,7 +95,8 @@ namespace Rock.Model
         /// The trigger qualifier.
         /// </value>
         [DataMember]
-        public String TriggerQualifier { get; set; }
+        [StringValidation( StringValidationProfile.PlainText )]
+        public string TriggerQualifier { get; set; }
 
         #endregion
 

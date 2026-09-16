@@ -1,0 +1,134 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <NotificationBox alertType="info">
+        <slot />
+    </NotificationBox>
+
+    <ContentStack v-if="inheritedGridData.rows.length > 0"
+                  title="Inherited Member Attributes"
+                  description="Member attributes inherited from this project's group type."
+                  headerLocation="top">
+        <Grid :data="inheritedGridData" keyField="guid" itemTerm="Inherited Member Attribute" light :isFooterHidden="true">
+            <TextColumn name="name" field="name" title="Attribute" width="15%" />
+            <TextColumn name="description" field="description" title="Description" width="60%" />
+            <TextColumn name="inheritedFrom" field="inheritedFromGroupTypeName" width="25%">
+                <template #format="{ row }">
+                    <span v-if="row.inheritedFromGroupTypeUrl">
+                        (Inherited from <a :href="row.inheritedFromGroupTypeUrl" target="_blank" rel="noopener noreferrer">{{ row.inheritedFromGroupTypeName }}</a>)
+                    </span>
+                    <span v-else>(Inherited from {{ row.inheritedFromGroupTypeName }})</span>
+                </template>
+            </TextColumn>
+        </Grid>
+    </ContentStack>
+
+    <ContentStack :title="title" headerLocation="top">
+        <EditableAttributesGrid v-model="attributes"
+                                :itemTerm="itemTerm"
+                                :modalTitle="modalTitle"
+                                :attributeEntityTypeGuid="attributeEntityTypeGuid"
+                                :reservedKeyNames="inheritedKeyNames"
+                                :isAddHidden="isAddHidden" />
+    </ContentStack>
+</template>
+
+<script setup lang="ts">
+    import { computed, PropType } from "vue";
+    import Grid, { TextColumn } from "@Obsidian/Controls/grid";
+    import ContentStack from "@Obsidian/Controls/contentStack.obs";
+    import EditableAttributesGrid from "@Obsidian/Controls/editableAttributesGrid.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import { Guid } from "@Obsidian/Types";
+    import { PublicEditableAttributeBag } from "@Obsidian/ViewModels/Utility/publicEditableAttributeBag";
+    import { SignUpProjectInheritedMemberAttributeBag } from "@Obsidian/ViewModels/Blocks/Engagement/SignUp/SignUpProjectDetail/signUpProjectInheritedMemberAttributeBag";
+
+    const props = defineProps({
+        /** The editable attributes defined for this project. */
+        modelValue: {
+            type: Array as PropType<PublicEditableAttributeBag[]>,
+            required: true
+        },
+
+        /** The read-only attributes inherited from the project's group type. */
+        inheritedAttributes: {
+            type: Array as PropType<SignUpProjectInheritedMemberAttributeBag[] | null>,
+            default: () => [] as SignUpProjectInheritedMemberAttributeBag[]
+        },
+
+        /** The unique identifier of the entity type the attributes are attached to. */
+        attributeEntityTypeGuid: {
+            type: String as PropType<Guid>,
+            required: true
+        },
+
+        /** The title of the editable attributes stack. */
+        title: {
+            type: String as PropType<string>,
+            required: true
+        },
+
+        /** The name that describes a single attribute in the grid. */
+        itemTerm: {
+            type: String as PropType<string>,
+            required: true
+        },
+
+        /** The title of the add and edit attribute modal. */
+        modalTitle: {
+            type: String as PropType<string>,
+            required: true
+        },
+
+        /**
+         * True when the group type does not allow attributes to be defined
+         * for a specific project. Existing attributes remain editable, but no
+         * new ones can be added.
+         */
+        isAddHidden: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: PublicEditableAttributeBag[]): void
+    }>();
+
+    // #region Computed Values
+
+    /** Two-way proxy for the parent's editable attributes. */
+    const attributes = computed({
+        get(): PublicEditableAttributeBag[] {
+            return props.modelValue ?? [];
+        },
+        set(value: PublicEditableAttributeBag[]) {
+            emit("update:modelValue", value);
+        }
+    });
+
+    /** Row data for the read-only inherited attributes grid. */
+    const inheritedGridData = computed(() => {
+        const rows = (props.inheritedAttributes ?? []).map(a => ({
+            guid: a.guid,
+            name: a.name ?? "",
+            description: a.description ?? "",
+            inheritedFromGroupTypeName: a.inheritedFromGroupTypeName ?? "",
+            inheritedFromGroupTypeUrl: a.inheritedFromGroupTypeUrl ?? ""
+        }));
+
+        return { rows };
+    });
+
+    /**
+     * Keys of the inherited attributes, reserved so this project cannot define
+     * an attribute that collides with one of them. The keys of the editable
+     * attributes are reserved by the grid itself.
+     */
+    const inheritedKeyNames = computed((): string[] => {
+        return (props.inheritedAttributes ?? [])
+            .map(a => a.key)
+            .filter((k): k is string => !!k);
+    });
+
+    // #endregion Computed Values
+</script>

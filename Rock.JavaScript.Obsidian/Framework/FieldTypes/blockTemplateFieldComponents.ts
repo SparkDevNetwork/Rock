@@ -18,7 +18,7 @@ import { computed, defineComponent, ref, watch } from "vue";
 import { getFieldConfigurationProps, getFieldEditorProps } from "./utils";
 import DefinedValuePicker from "@Obsidian/Controls/definedValuePicker.obs";
 import BlockTemplatePicker from "@Obsidian/Controls/blockTemplatePicker.obs";
-import { ConfigurationValueKey } from "./blockTemplateField.partial";
+import { ConfigurationKey } from "./blockTemplateField.partial";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { updateRefValue } from "@Obsidian/Utility/component";
 import { DefinedType } from "@Obsidian/SystemGuids/definedType";
@@ -38,7 +38,7 @@ export const EditComponent = defineComponent({
         const templateKey = ref<string>();
 
         const templateBlockValueGuid = computed(() => {
-            const templateBlock = JSON.parse(props.configurationValues[ConfigurationValueKey.TemplateBlock] || "{}") as ListItemBag;
+            const templateBlock = JSON.parse(props.configurationValues[ConfigurationKey.TemplateBlock] || "{}") as ListItemBag;
             return templateBlock?.value;
         });
 
@@ -108,10 +108,10 @@ export const ConfigurationComponent = defineComponent({
 
             // Construct the new value that will be emitted if it is different
             // than the current value.
-            newValue[ConfigurationValueKey.TemplateBlock] = JSON.stringify(internalValue.value);
+            newValue[ConfigurationKey.TemplateBlock] = JSON.stringify(internalValue.value);
 
             // Compare the new value and the old value.
-            const anyValueChanged = newValue[ConfigurationValueKey.TemplateBlock] !== (props.modelValue[ConfigurationValueKey.TemplateBlock]);
+            const anyValueChanged = newValue[ConfigurationKey.TemplateBlock] !== (props.modelValue[ConfigurationKey.TemplateBlock]);
 
             // If any value changed then emit the new model value.
             if (anyValueChanged) {
@@ -138,13 +138,13 @@ export const ConfigurationComponent = defineComponent({
         // Watch for changes coming in from the parent component and update our
         // data to match the new information.
         watch(() => [props.modelValue, props.configurationProperties], () => {
-            internalValue.value = JSON.parse(props.modelValue[ConfigurationValueKey.TemplateBlock] || "{}");
+            internalValue.value = JSON.parse(props.modelValue[ConfigurationKey.TemplateBlock] || "{}");
         }, {
             immediate: true
         });
 
         // Watch for changes in properties that only require a local UI update.
-        watch(internalValue, () => maybeUpdateConfiguration(ConfigurationValueKey.TemplateBlock, JSON.stringify(internalValue.value)));
+        watch(internalValue, () => maybeUpdateConfiguration(ConfigurationKey.TemplateBlock, JSON.stringify(internalValue.value)));
 
         return {
             internalValue,

@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -22,6 +22,7 @@ using System.IO;
 using System.Linq;
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -36,8 +37,14 @@ namespace Rock.Badge.Component
     [Export( typeof( BadgeComponent ) )]
     [ExportMetadata( "ComponentName", "Attended Group Of Type" )]
 
-    [GroupTypeField( "Group Type", "The type of group to use.", true, order: 1 )]
-    [SlidingDateRangeField( "Date Range", "The date range in which the person attended.", required: false, order: 2 )]
+    [GroupTypeField( "Group Type",
+        Description = "The type of group to use.",
+        IsRequired = true,
+        Order = 1 )]
+    [SlidingDateRangeField( "Date Range",
+        Description = "The date range in which the person attended.",
+        IsRequired = false,
+        Order = 2 )]
     [CodeEditorField( "Lava Template",
         Description = "The lava template to use for the badge display",
         EditorMode = CodeEditorMode.Lava,
@@ -99,7 +106,7 @@ namespace Rock.Badge.Component
 
                 var mergeFields = Lava.LavaHelper.GetCommonMergeFields( null, null, new Lava.CommonMergeFieldsOptions() );
                 mergeFields.Add( "Person", person );
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     var groupType = GroupTypeCache.Get( groupTypeGuid.Value );
                     int groupTypeId = groupType?.Id ?? 0;

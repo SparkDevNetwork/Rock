@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -25,8 +25,8 @@ using Rock;
 using Rock.Attribute;
 using Rock.Constants;
 using Rock.Data;
-using Rock.Model;
 using Rock.Enums.Connection;
+using Rock.Model;
 using Rock.Security;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Engagement.ConnectionOpportunityDetail;
@@ -116,6 +116,12 @@ namespace Rock.Blocks.Engagement
             options.DueDateCalculationMode = connectionType?.DueDateCalculationMode;
             options.IsGroupPlacementEnabled = connectionType?.EnabledFeatures.HasFlag( EnabledFeatureFlags.GroupPlacement ) ?? false;
             options.IsReOrderColumnVisible = BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson );
+
+            options.AllActiveCampuses = CampusCache.All()
+                .Where( c => c.IsActive ?? true )
+                .OrderBy( c => c.Order )
+                .ThenBy( c => c.Name )
+                .ToListItemBagList();
 
             return options;
         }
@@ -444,8 +450,12 @@ namespace Rock.Blocks.Engagement
                 return;
             }
 
-            var isViewable = entity.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson );
-            box.IsEditable = entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson );
+            var isViewable = BlockCache.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson );
+
+            // Match the WebForms behavior: editing is allowed by block-level Edit rights or View
+            // rights on the connection opportunity itself.
+            box.IsEditable = BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson )
+                || entity.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson );
 
             if ( entity.Id != 0 )
             {
@@ -487,9 +497,11 @@ namespace Rock.Blocks.Engagement
                 return null;
             }
 
-            var connectionType = GetConnectionType();
+            var connectionType = new ConnectionTypeService( RockContext ).Get( entity.ConnectionTypeId );
             string connectionTypeName = null;
             string connectionTypeUrl = null;
+            int? requestDueDateOffsetInDays = entity.RequestDueDateOffsetInDays;
+            int? requestDueSoonOffsetInDays = entity.RequestDueSoonOffsetInDays;
             if ( connectionType != null )
             {
                 connectionTypeName = connectionType.Name;
@@ -514,6 +526,16 @@ namespace Rock.Blocks.Engagement
                         ["autoEdit"] = "true"
                     } );
                 }
+
+                var additionalSettings = connectionType.GetConnectionTypeAdditionalSettings();
+                if ( !requestDueDateOffsetInDays.HasValue || requestDueDateOffsetInDays.Value <= 0 )
+                {
+                    requestDueDateOffsetInDays = additionalSettings?.DefaultOpportunityDueDateOffsetInDays;
+                }
+                if ( !requestDueSoonOffsetInDays.HasValue || requestDueSoonOffsetInDays.Value <= 0)
+                {
+                    requestDueSoonOffsetInDays = additionalSettings?.DefaultOpportunityDueSoonOffsetInDays;
+                }
             }
 
             return new ConnectionOpportunityBag
@@ -530,8 +552,8 @@ namespace Rock.Blocks.Engagement
                 ShowCampusOnTransfer = entity.ShowCampusOnTransfer,
                 ShowStatusOnTransfer = entity.ShowStatusOnTransfer,
                 Summary = entity.Summary,
-                RequestDueDateOffsetInDays = entity.RequestDueDateOffsetInDays,
-                RequestDueSoonOffsetInDays = entity.RequestDueSoonOffsetInDays
+                RequestDueDateOffsetInDays = requestDueDateOffsetInDays,
+                RequestDueSoonOffsetInDays = requestDueSoonOffsetInDays
             };
         }
 
@@ -631,6 +653,15 @@ namespace Rock.Blocks.Engagement
                 } )
                 .ToList();
 
+            // The Activity Type qualifier dropdown uses ConnectionActivityType Guid values,
+            // but the QualifierValue column stores the integer Id (which is what the workflow
+            // launch transaction matches on), so map Ids to Guids for display.
+            var activityTypeIdToGuidMap = new ConnectionActivityTypeService( RockContext ).Queryable()
+                .Where( a => a.ConnectionTypeId == entity.ConnectionTypeId )
+                .Select( a => new { a.Id, a.Guid } )
+                .ToList()
+                .ToDictionary( a => a.Id, a => a.Guid );
+
             var workflows = new ConnectionWorkflowService( RockContext ).Queryable()
                 .AsNoTracking()
                 .Where( wf => wf.ConnectionOpportunityId == entity.Id && wf.WorkflowTypeId.HasValue )
@@ -643,7 +674,7 @@ namespace Rock.Blocks.Engagement
                         Guid = wf.Guid,
                         WorkflowType = wf.WorkflowType != null ? new ListItemBag { Value = wf.WorkflowType.Guid.ToString(), Text = wf.WorkflowType.Name } : null,
                         TriggerType = wf.TriggerType,
-                        QualifierValue = ParseQualifierValue( wf.QualifierValue ),
+                        QualifierValue = ConvertPrimaryQualifierIdToGuid( wf.TriggerType, wf.QualifierValue, activityTypeIdToGuidMap ),
                         ManualTriggerFilterConnectionStatusId = wf.ManualTriggerFilterConnectionStatusId,
                         AppliesToAgeClassification = ( int ) wf.AppliesToAgeClassification,
                         IncludeDataViewId = wf.IncludeDataView != null ? new ListItemBag { Value = wf.IncludeDataView.Guid.ToString(), Text = wf.IncludeDataView.Name } : null,
@@ -717,6 +748,142 @@ namespace Rock.Blocks.Engagement
             var secondary = qualifierValue.SecondaryQualifier ?? string.Empty;
 
             return $"|{primary}|{secondary}|";
+        }
+
+        /*
+             8/20/2026 - MSE
+
+             The Activity Type qualifier dropdown for the Activity Added trigger uses
+             ConnectionActivityType Guid values, but the QualifierValue column stores the
+             integer Id because that is what ConnectionRequestActivityChangeTransaction
+             matches on when launching workflows. The two methods below translate between
+             those representations, mirroring the same conversion in ConnectionTypeDetail.
+             Status based triggers are not converted because their dropdowns in this block
+             already use Id values end-to-end.
+
+             Reason: Opportunity-level "Activity Added" workflows never fired when the
+             qualifier was stored as a Guid. (Fixes #6986)
+        */
+
+        /// <summary>
+        /// Converts the stored qualifier value into a structured bag, translating the primary
+        /// qualifier from a ConnectionActivityType Id to its Guid for Activity Added triggers
+        /// so the Activity Type dropdown can display the saved selection.
+        /// </summary>
+        /// <param name="triggerType">The workflow trigger type.</param>
+        /// <param name="qualifierValue">The stored qualifier value.</param>
+        /// <param name="activityTypeIdToGuidMap">Map of activity type Ids to their Guids.</param>
+        /// <returns>A structured qualifier value bag.</returns>
+        private ConnectionWorkflowQualifierValueBag ConvertPrimaryQualifierIdToGuid( ConnectionWorkflowTriggerType triggerType, string qualifierValue, Dictionary<int, Guid> activityTypeIdToGuidMap )
+        {
+            var qualifierValueBag = ParseQualifierValue( qualifierValue );
+
+            if ( triggerType == ConnectionWorkflowTriggerType.ActivityAdded
+                && int.TryParse( qualifierValueBag.PrimaryQualifier, out var activityTypeId )
+                && activityTypeIdToGuidMap.TryGetValue( activityTypeId, out var activityTypeGuid ) )
+            {
+                qualifierValueBag.PrimaryQualifier = activityTypeGuid.ToString();
+            }
+
+            return qualifierValueBag;
+        }
+
+        /// <summary>
+        /// Converts a structured qualifier value into the delimited storage format, translating
+        /// the primary qualifier from a ConnectionActivityType Guid to its Id for Activity Added
+        /// triggers so the workflow launch transaction can match it.
+        /// </summary>
+        /// <param name="triggerType">The workflow trigger type.</param>
+        /// <param name="qualifierValue">The structured qualifier value.</param>
+        /// <param name="activityTypeGuidToIdMap">Map of activity type Guids to their Ids.</param>
+        /// <returns>The delimited qualifier string.</returns>
+        private string ConvertPrimaryQualifierGuidToId( ConnectionWorkflowTriggerType triggerType, ConnectionWorkflowQualifierValueBag qualifierValue, Dictionary<Guid, int> activityTypeGuidToIdMap )
+        {
+            if ( qualifierValue == null )
+            {
+                return string.Empty;
+            }
+
+            if ( triggerType == ConnectionWorkflowTriggerType.ActivityAdded
+                && Guid.TryParse( qualifierValue.PrimaryQualifier, out var activityTypeGuid )
+                && activityTypeGuidToIdMap.TryGetValue( activityTypeGuid, out var activityTypeId ) )
+            {
+                var secondary = qualifierValue.SecondaryQualifier ?? string.Empty;
+
+                return $"|{activityTypeId}|{secondary}|";
+            }
+
+            return ToDelimitedQualifierValue( qualifierValue );
+        }
+
+        /// <summary>
+        /// Validates that any activity type referenced by an Activity Added workflow trigger
+        /// still exists on this opportunity's connection type. Mirrors the equivalent
+        /// validation in ConnectionTypeDetail so a save cannot persist a qualifier that
+        /// references a deleted activity type, which would result in a trigger that never fires.
+        /// </summary>
+        /// <param name="box">The box containing the incoming workflow values.</param>
+        /// <param name="entity">The connection opportunity being saved.</param>
+        /// <param name="errorMessage">The validation error message, if validation fails.</param>
+        /// <returns><c>true</c> if the workflows are valid; otherwise <c>false</c>.</returns>
+        private bool TryValidateConnectionWorkflows( ValidPropertiesBox<ConnectionOpportunityBag> box, ConnectionOpportunity entity, out string errorMessage )
+        {
+            errorMessage = null;
+
+            if ( !box.IsValidProperty( nameof( box.Bag.ConnectionWorkflows ) ) )
+            {
+                return true;
+            }
+
+            var activityAddedWorkflows = ( box.Bag.ConnectionWorkflows ?? new List<ConnectionWorkflowBag>() )
+                .Where( wf => wf != null && wf.TriggerType == ConnectionWorkflowTriggerType.ActivityAdded )
+                .ToList();
+
+            if ( !activityAddedWorkflows.Any() )
+            {
+                return true;
+            }
+
+            var activityTypeGuids = new HashSet<Guid>( new ConnectionActivityTypeService( RockContext ).Queryable()
+                .Where( a => a.ConnectionTypeId == entity.ConnectionTypeId )
+                .Select( a => a.Guid )
+                .ToList() );
+
+            var workflowErrors = new List<string>();
+
+            foreach ( var workflow in activityAddedWorkflows )
+            {
+                var workflowName = workflow.WorkflowType?.Text ?? "Workflow";
+
+                if ( IsInvalidActivityGuid( workflow.QualifierValue?.PrimaryQualifier, activityTypeGuids ) )
+                {
+                    workflowErrors.Add( $"• Workflow <strong>{workflowName}</strong> references an activity type that does not exist." );
+                }
+            }
+
+            if ( workflowErrors.Any() )
+            {
+                errorMessage = "One or more workflows are invalid:<br>" + string.Join( "<br>", workflowErrors );
+                return false;
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// Determines whether the given value is an invalid or non-existent activity type GUID.
+        /// </summary>
+        /// <param name="value">The string value to check (expected to be a GUID).</param>
+        /// <param name="activityTypeGuids">The set of valid activity type GUIDs.</param>
+        /// <returns><c>true</c> if the value is non-empty and either not a valid GUID or not in the activity type set; otherwise <c>false</c>.</returns>
+        private bool IsInvalidActivityGuid( string value, HashSet<Guid> activityTypeGuids )
+        {
+            if ( string.IsNullOrWhiteSpace( value ) )
+            {
+                return false;
+            }
+
+            return !Guid.TryParse( value, out var guid ) || !activityTypeGuids.Contains( guid );
         }
 
         /// <inheritdoc/>
@@ -856,7 +1023,10 @@ namespace Rock.Blocks.Engagement
                 return false;
             }
 
-            if ( !entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
+            // Match the WebForms behavior: editing is allowed by block-level Edit rights or View
+            // rights on the connection opportunity itself.
+            if ( !BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson )
+                && !entity.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson ) )
             {
                 error = ActionBadRequest( $"Not authorized to edit {ConnectionOpportunity.FriendlyTypeName}." );
                 return false;
@@ -923,6 +1093,11 @@ namespace Rock.Blocks.Engagement
                 return ActionBadRequest( validationMessage );
             }
 
+            if ( !TryValidateConnectionWorkflows( box, entity, out var workflowValidationMessage ) )
+            {
+                return ActionBadRequest( workflowValidationMessage );
+            }
+
             var isNew = entity.Id == 0;
 
             RockContext.WrapTransaction( () =>
@@ -943,6 +1118,27 @@ namespace Rock.Blocks.Engagement
                         .Where( id => id.HasValue )
                         .Select( id => id.Value )
                         .ToList();
+
+                    /*
+                        5/27/26 - MSE
+
+                        When the user leaves the Campuses selection empty, fall back to all active
+                        campuses. This preserves the pre-v19 ( WebForms ) behavior where "no campuses
+                        selected" implicitly meant "all campuses", which is what makes the per-campus
+                        Default Connector dropdowns persistable.
+
+                        Without this, the user can pick a Default Connector for a campus but it gets
+                        silently dropped because no ConnectionOpportunityCampus row exists to hang it on.
+
+                        Reason: https://github.com/SparkDevNetwork/Rock/issues/6840
+                    */
+                    if ( !incomingCampusIds.Any() )
+                    {
+                        incomingCampusIds = CampusCache.All()
+                            .Where( c => c.IsActive ?? true )
+                            .Select( c => c.Id )
+                            .ToList();
+                    }
 
                     SyncRelatedEntities(
                         connectionOpportunityCampusService,
@@ -1066,6 +1262,15 @@ namespace Rock.Blocks.Engagement
                         bag.Guid = Guid.NewGuid();
                     }
 
+                    // The Activity Type qualifier dropdown uses ConnectionActivityType Guid
+                    // values, but the QualifierValue column must store the integer Id because
+                    // that is what the workflow launch transaction matches on.
+                    var activityTypeGuidToIdMap = new ConnectionActivityTypeService( RockContext ).Queryable()
+                        .Where( a => a.ConnectionTypeId == entity.ConnectionTypeId )
+                        .Select( a => new { a.Id, a.Guid } )
+                        .ToList()
+                        .ToDictionary( a => a.Guid, a => a.Id );
+
                     SyncRelatedEntities(
                         workflowService,
                         workflowService.Queryable().Where( wf => wf.ConnectionOpportunityId == entity.Id ),
@@ -1078,7 +1283,7 @@ namespace Rock.Blocks.Engagement
                             wf.ConnectionOpportunityId = entity.Id;
                             wf.WorkflowTypeId = bag.WorkflowType.GetEntityId<WorkflowType>( RockContext );
                             wf.TriggerType = bag.TriggerType;
-                            wf.QualifierValue = ToDelimitedQualifierValue( bag.QualifierValue );
+                            wf.QualifierValue = ConvertPrimaryQualifierGuidToId( bag.TriggerType, bag.QualifierValue, activityTypeGuidToIdMap );
 
                             if ( bag.TriggerType != ConnectionWorkflowTriggerType.Manual )
                             {

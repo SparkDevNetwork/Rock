@@ -1,5 +1,14 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
+    <div class="d-flex mb-spacing-sm">
+        <Toggle v-model="filterExpressionType"
+                trueText="All"
+                falseText="Any"
+                :btnSize="BtnSize.ExtraSmall"
+                onButtonActiveCssClass="btn-info"
+                offButtonActiveCssClass="btn-info" />
+    </div>
+
     <Grid :data="gridData"
           light
           keyField="guid"
@@ -14,80 +23,67 @@
         <DeleteColumn @click="onDelete" />
     </Grid>
 
-    <div class="d-flex justify-content-end">
-        <Toggle v-model="filterExpressionType"
-                trueText="All"
-                falseText="Any"
-                :btnSize="BtnSize.ExtraSmall"
-                onButtonActiveCssClass="btn-info"
-                offButtonActiveCssClass="btn-info" />
-    </div>
-
     <Modal
            v-model="isModalVisible"
            :title="`${isEditing ? 'Edit' : 'Add'} Interaction Filter`"
            saveText="Save"
            cancelText="Cancel"
            :onSave="onSave">
-        <section class="row form-row d-flex flex-wrap align-items-center form-group">
-            <div class="col flex-grow-0">
-                <div class="form-group">
-                    <DropDownList
-                                  :modelValue="theFilter.comparisonType?.toString() ?? ''"
-                                  @update:modelValue="val => theFilter.comparisonType = Number(val)"
-                                  :items="comparisonTypes"
-                                  class="input-width-xl"
-                                  :showBlankItem="false" />
-                </div>
-            </div>
-            <div class="col flex-grow-0">
-                <div class="form-group">
-                    <NumberBox
-                               v-model="theFilter.comparisonValue"
-                               class="input-width-sm" />
-                </div>
-            </div>
-            <div class="col flex-sm-grow-0">
-                <div class="form-group">
-                    <span class="text-nowrap">interactions in the channel/component</span>
-                </div>
-            </div>
-        </section>
-        <section>
-            <div class="row form-row">
+
+        <div class="row">
+            <div class="col-sm-6">
                 <InteractionChannelPicker v-model="theFilter.interactionChannel"
                                           label="Channel"
                                           rules="required"
-                                          :showBlankItem="true" />
+                                          :showBlankItem="true"
+                                          help="The interaction channel where the activity occurred." />
             </div>
-            <div class="row form-row">
+        </div>
+
+        <div class="row">
+            <div class="col-sm-6">
                 <InteractionComponentPicker v-model="theFilter.interactionComponent"
                                             label="Component"
                                             :interactionChannelGuid="theFilter.interactionChannel?.value ?? ''"
-                                            :showBlankItem="true" />
+                                            :showBlankItem="true"
+                                            help="The specific feature or element where the interaction took place." />
             </div>
-            <div class="row form-row">
+        </div>
+
+        <div class="row">
+            <div class="col-sm-6">
                 <DropDownList
                               :modelValue="theFilter.operation ? theFilter.operation.split(',').map(s => s.trim()).filter(s => s) : []"
                               @update:modelValue="val => theFilter.operation = Array.isArray(val) && val.length > 0 ? val.join(',') : ''"
-                              label="Operation" multiple
+                              label="Interaction Type(s)"
+                              multiple
                               :items="operationOptions"
                               :showBlankItem="true"
-                              help="Select the type of interaction operation to filter by." />
+                              help="The type of action performed during the interaction." />
             </div>
-        </section>
-        <section class="row form-row d-flex flex-wrap align-items-center">
-            <div class="col flex-grow-0">
-                <div class="form-group">
-                    <span class="text-nowrap">In the following date range</span>
-                </div>
+        </div>
+
+        <div class="row form-row d-flex flex-wrap align-items-center">
+            <div class="col-sm-3">
+                <DropDownList
+                              :modelValue="theFilter.comparisonType?.toString() ?? ''"
+                              @update:modelValue="val => theFilter.comparisonType = Number(val)"
+                              :items="comparisonTypes"
+                              label="Interaction Count"
+                              :showBlankItem="false"
+                              help="The number of times the interaction occurred for the selected criteria." />
             </div>
-            <div class="col">
-                <div class="form-group">
-                    <SlidingDateRangePicker v-model="slidingDateRange" previewLocation="Right" />
-                </div>
+            <div class="col-sm-2 mt-spacing-xs">
+                <NumberBox
+                           v-model="theFilter.comparisonValue" />
             </div>
-        </section>
+        </div>
+
+        <SlidingDateRangePicker
+                                v-model="slidingDateRange"
+                                previewLocation="Right"
+                                label="Date Range"
+                                help="The timeframe when the interactions occurred." />
     </Modal>
 
 </template>

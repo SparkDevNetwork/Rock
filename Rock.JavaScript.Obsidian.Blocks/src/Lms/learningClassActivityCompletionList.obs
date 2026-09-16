@@ -16,7 +16,6 @@
                       title="Student"
                       field="student"
                       :filter="pickExistingValueFilter"
-                      :filterValue="getPersonNameFilterValue"
                       width="15%"
                       visiblePriority="xs">
         </PersonColumn>
@@ -94,7 +93,6 @@
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
     import { NavigationUrlKey } from "./LearningClassActivityCompletionList/types.partial";
     import { computed, reactive, ref } from "vue";
-    import { PersonFieldBag } from "@Obsidian/ViewModels/Core/Grid/personFieldBag";
 
     const config = useConfigurationValues<ListBlockBox<LearningClassActivityCompletionListOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
@@ -125,16 +123,6 @@
      */
     function getGradePercentFilterValue(row: Record<string, unknown>): number {
         return row.isCompleted ? (row.gradePercent as number) : -1;
-    }
-
-    /**
-    * Gets the filter value text to use for the name column.
-    *
-    * @param row The row to be filtered.
-    */
-    function getPersonNameFilterValue(row: Record<string, unknown>): string {
-        const person = row["individual"] as PersonFieldBag;
-        return !person ? "" : `${person.nickName} ${person.lastName}`;
     }
 
     /**

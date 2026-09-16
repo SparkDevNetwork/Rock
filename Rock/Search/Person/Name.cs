@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -20,6 +20,7 @@ using System.ComponentModel.Composition;
 using System.Linq;
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -32,7 +33,11 @@ namespace Rock.Search.Person
     [Description("Person Name Search")]
     [Export(typeof(SearchComponent))]
     [ExportMetadata("ComponentName", "Person Name")]
-    [BooleanField("Allow Search by Only First Name", "By default, when searching with only one name (without a space or comma), only people with a matching Last Names will be included.  Select this option to also include people with a matching First Name", false, "", 4, "FirstNameSearch")]
+    [BooleanField("Allow Search by Only First Name",
+        Description = "By default, when searching with only one name (without a space or comma), only people with a matching Last Names will be included.  Select this option to also include people with a matching First Name",
+        DefaultBooleanValue = false,
+        Order = 4,
+        Key = "FirstNameSearch")]
     [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.SEARCH_COMPONENT_PERSON_NAME )]
     public class Name : SearchComponent
     {
@@ -81,7 +86,7 @@ namespace Rock.Search.Person
 
             bool allowFirstNameSearch = GetAttributeValue( "FirstNameSearch" ).AsBooleanOrNull() ?? false;
 
-            return new PersonService( new RockContext() )
+            return new PersonService( RockApp.Current.CreateRockContext() )
                 .GetByFullNameOrdered( searchTerm, true, false, allowFirstNameSearch, out _);
         }
 
@@ -100,7 +105,7 @@ namespace Rock.Search.Person
             bool allowFirstNameSearch = GetAttributeValue( "FirstNameSearch" ).AsBooleanOrNull() ?? false;
 
             bool reversed = false;
-            var qry = new PersonService( new RockContext() ).GetByFullNameOrdered( searchterm, true, false, allowFirstNameSearch, out reversed );
+            var qry = new PersonService( RockApp.Current.CreateRockContext() ).GetByFullNameOrdered( searchterm, true, false, allowFirstNameSearch, out reversed );
 
             IQueryable<string> resultQry;
 

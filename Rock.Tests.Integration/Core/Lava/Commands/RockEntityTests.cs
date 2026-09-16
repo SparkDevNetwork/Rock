@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -20,14 +20,16 @@ using System.Linq;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Lava;
 using Rock.Lava.Blocks;
 using Rock.Model;
 using Rock.Tests.Integration.TestData;
 using Rock.Tests.Integration.TestData.Core;
+using Rock.Tests.Integration.TestFramework.Lava;
 using Rock.Tests.Shared;
-using Rock.Tests.Shared.Lava;
+using Rock.Tests.Shared.Constants;
 using Rock.Web.Cache;
 
 namespace Rock.Tests.Integration.Core.Lava.Commands
@@ -166,6 +168,22 @@ Occurrence Collection Type = {{ occurrence | TypeName }}
             } );
         }
 
+        [TestMethod]
+        public void EntityCommandBlock_WrappedInLavaTag_RendersInnerRockEntityBlockContent()
+        {
+            var template = @"
+{% lava
+    contentchannelitem where:'Id == 34' limit:'1' securityenabled:'false'
+        assign item = contentchannelitem
+        echo item.Title
+    endcontentchannelitem
+%}
+";
+
+            TestHelper.AssertTemplateOutput( typeof( Rock.Lava.Fluid.FluidEngine ), "Of Myths and Money", template,
+                new LavaTestRenderOptions { EnabledCommands = "rockentity", IgnoreWhiteSpace = true } );
+        }
+
         private const string _Count1AttributeGuid = "38850248-49DE-44B0-A150-1BA447AE35D0";
         private const string _Count2AttributeGuid = "32BAD99A-049E-4BC6-ABE7-786BF187484D";
 
@@ -208,7 +226,7 @@ Occurrence Collection Type = {{ occurrence | TypeName }}
 
         private void AddDefinedTypesWithDuplicateAttribute()
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
 
             // Add Attribute "Count" to multiple Defined Types.
             var definedTypeTitle = DefinedTypeCache.All().FirstOrDefault( c => c.Name == "Title" );
@@ -339,7 +357,7 @@ Occurrence Collection Type = {{ occurrence | TypeName }}
 {% endperson %}
 ";
 
-            var tedDecker = new PersonService( new RockContext() )
+            var tedDecker = new PersonService( RockApp.Current.CreateRockContext() )
                 .Get( TestGuids.TestPeople.TedDecker );
 
             var expectedOutput = $"{tedDecker.NickName} {tedDecker.LastName} ({tedDecker.BirthDate:yyyy-MM-dd})";
@@ -353,6 +371,66 @@ Occurrence Collection Type = {{ occurrence | TypeName }}
                 };
                 TestHelper.AssertTemplateOutput( engine, expectedOutput, template, options );
             } );
+        }
+
+        [TestMethod]
+        public void EntityCommandBlock_WrappedInLavaTag_WithInnerForLoop_RendersCorrectly()
+        {
+            var template = @"
+{% lava
+    person where:'LastName == ""Decker""'
+        for person in personItems
+            echo person.FullName
+        endfor
+    endperson
+%}
+";
+            var expectedOutput = @"Ted Decker"; // Should contain Ted
+
+            TestHelper.AssertTemplateOutput( typeof( Rock.Lava.Fluid.FluidEngine ), expectedOutput, template,
+                new LavaTestRenderOptions { EnabledCommands = "rockentity", IgnoreWhiteSpace = true, OutputMatchType = LavaTestOutputMatchTypeSpecifier.Contains } );
+        }
+
+        [TestMethod]
+        public void EntityCommandBlock_WrappedInLavaTag_WithInnerForLoopWithIf_RendersCorrectly()
+        {
+            var template = @"
+{% lava
+    person where:'LastName == ""Decker""'
+        for person in personItems
+            if person.FullName == 'Ted Decker'
+                echo ""I found Ted!""
+            endif
+        endfor
+    endperson
+%}
+";
+            var expectedOutput = @"I found Ted!";
+
+            TestHelper.AssertTemplateOutput( typeof( Rock.Lava.Fluid.FluidEngine ), expectedOutput, template,
+                new LavaTestRenderOptions { EnabledCommands = "rockentity", IgnoreWhiteSpace = true, OutputMatchType = LavaTestOutputMatchTypeSpecifier.Contains } );
+        }
+
+        [TestMethod]
+        public void EntityCommandBlock_WrappedInLavaTag_WithInnerForLoopWithIfElse_RendersCorrectly()
+        {
+            var template = @"
+{% lava
+    person where:'LastName == ""Decker""'
+        for person in personItems
+            if person.FullName == 'Ted Decker'
+                echo ""I found Ted!""
+            else
+                echo person.FullName
+            endif
+        endfor
+    endperson
+%}
+";
+            var expectedOutput = @"I found Ted!";
+
+            TestHelper.AssertTemplateOutput( typeof( Rock.Lava.Fluid.FluidEngine ), expectedOutput, template,
+                new LavaTestRenderOptions { EnabledCommands = "rockentity", IgnoreWhiteSpace = true, OutputMatchType = LavaTestOutputMatchTypeSpecifier.Contains } );
         }
 
         /// <summary>
@@ -454,3 +532,6 @@ TedDecker<br/>
         }
     }
 }
+
+
+

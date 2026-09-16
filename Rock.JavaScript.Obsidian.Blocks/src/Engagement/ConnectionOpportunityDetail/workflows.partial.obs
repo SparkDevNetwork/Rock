@@ -161,7 +161,7 @@
 </template>
 
 <script setup lang="ts">
-    import { ref, PropType, computed, watch } from "vue";
+    import { ref, PropType, computed } from "vue";
     import Grid, { EditColumn, TextColumn, DeleteColumn, ReorderColumn } from "@Obsidian/Controls/grid";
     import Modal from "@Obsidian/Controls/modal.obs";
     import ContentStack from "@Obsidian/Controls/contentStack.obs";
@@ -288,7 +288,21 @@
             return theConnectionWorkflow.value.triggerType.toString() ?? ConnectionWorkflowTriggerType.RequestStarted.toString();
         },
         set(value: string) {
-            theConnectionWorkflow.value.triggerType = parseInt(value, 10) as ConnectionWorkflowTriggerType;
+            const trigger = parseInt(value, 10) as ConnectionWorkflowTriggerType;
+            theConnectionWorkflow.value.triggerType = trigger;
+
+            // A qualifier from one trigger type is meaningless for another, so
+            // clearing the options clears the selections before the reload.
+            qualifierOptions.value = [];
+
+            if (trigger === ConnectionWorkflowTriggerType.ActivityAdded
+                || trigger === ConnectionWorkflowTriggerType.StatusBecomesDue
+                || trigger === ConnectionWorkflowTriggerType.StatusBecomesDueSoon
+                || trigger === ConnectionWorkflowTriggerType.RequestBecomesOverdue) {
+                secondaryQualifier.value = "";
+            }
+
+            void loadQualifierOptions(trigger);
         }
     });
 
@@ -379,6 +393,33 @@
         return ConnectionWorkflowTriggerTypeDescription[triggerType] ?? "";
     }
 
+    /**
+     * Loads the qualifier options for the specified trigger type. Only trigger
+     * types that qualify on a connection status or activity type have options.
+     * @param trigger The trigger type to load the options for.
+     */
+    async function loadQualifierOptions(trigger: ConnectionWorkflowTriggerType): Promise<void> {
+        const hasQualifierOptions = trigger === ConnectionWorkflowTriggerType.StatusChanged
+            || trigger === ConnectionWorkflowTriggerType.StatusBecomesDue
+            || trigger === ConnectionWorkflowTriggerType.StatusBecomesDueSoon
+            || trigger === ConnectionWorkflowTriggerType.StatusBecomesOverdue
+            || trigger === ConnectionWorkflowTriggerType.ActivityAdded
+            || trigger === ConnectionWorkflowTriggerType.Manual;
+
+        if (!hasQualifierOptions) {
+            qualifierOptions.value = [];
+            return;
+        }
+
+        const response = await invokeBlockAction<ConnectionWorkflowQualifierOptionsResponseBag>("GetConnectionWorkflowQualifierOptions", {
+            triggerType: trigger
+        });
+
+        qualifierOptions.value = response.isSuccess && response.data
+            ? response.data.qualifierOptions ?? []
+            : [];
+    }
+
     // #endregion Functions
 
     // #region Event Handlers
@@ -387,23 +428,34 @@
      * Opens the modal to add a new connection workflow.
      */
     function onAdd(): void {
-        isModalVisible.value = true;
-        errorMessage.value = null;
         theConnectionWorkflow.value = createNewConnectionWorkflow();
         primaryQualifier.value = "";
         secondaryQualifier.value = "";
+        qualifierOptions.value = [];
+        errorMessage.value = null;
+        isModalVisible.value = true;
     }
 
     /**
      * Opens the modal to edit an existing connection workflow.
      * @param key The GUID of the connection workflow to edit.
      */
-    function onEdit(key: string): void {
+    async function onEdit(key: string): Promise<void> {
         const selected = connectionWorkflows.value.find(wf => wf.guid === key);
 
         if (!selected) {
             return;
         }
+
+        /*
+            8/26/2026 - MSE
+
+            The DropDownList discards any value that is not in its item list. If the
+            modal renders while the qualifier options are still loading, the saved
+            Activity Type or Status is cleared before the options arrive, so load the
+            options first and only then populate and open the modal.
+        */
+        await loadQualifierOptions(selected.triggerType);
 
         theConnectionWorkflow.value = {
             ...selected,
@@ -413,8 +465,8 @@
             }
         };
 
-        primaryQualifier.value = theConnectionWorkflow.value?.qualifierValue?.primaryQualifier ?? "";
-        secondaryQualifier.value = theConnectionWorkflow.value?.qualifierValue?.secondaryQualifier ?? "";
+        primaryQualifier.value = theConnectionWorkflow.value.qualifierValue?.primaryQualifier ?? "";
+        secondaryQualifier.value = theConnectionWorkflow.value.qualifierValue?.secondaryQualifier ?? "";
 
         errorMessage.value = null;
         isModalVisible.value = true;
@@ -523,39 +575,4 @@
         connectionWorkflows.value = currentItems;
         return true;
     }
-
-    // #region Watchers
-
-    /**
-     * Watches for changes in the workflow trigger type to fetch relevant qualifier options.
-     */
-    watch(() => theConnectionWorkflow.value?.triggerType, async (trigger) => {
-        qualifierOptions.value = [];
-
-        if (trigger === ConnectionWorkflowTriggerType.StatusChanged
-            || trigger === ConnectionWorkflowTriggerType.StatusBecomesDue
-            || trigger === ConnectionWorkflowTriggerType.StatusBecomesDueSoon
-            || trigger === ConnectionWorkflowTriggerType.StatusBecomesOverdue
-            || trigger === ConnectionWorkflowTriggerType.ActivityAdded
-            || trigger === ConnectionWorkflowTriggerType.Manual) {
-
-            const response = await invokeBlockAction<ConnectionWorkflowQualifierOptionsResponseBag>("GetConnectionWorkflowQualifierOptions", {
-                triggerType: trigger
-            });
-
-            if (response.isSuccess && response.data) {
-                qualifierOptions.value = response.data.qualifierOptions ?? [];
-            }
-        }
-
-        if (trigger === ConnectionWorkflowTriggerType.ActivityAdded
-            || trigger === ConnectionWorkflowTriggerType.StatusBecomesDue
-            || trigger === ConnectionWorkflowTriggerType.StatusBecomesDueSoon
-            || trigger === ConnectionWorkflowTriggerType.RequestBecomesOverdue) {
-            secondaryQualifier.value = "";
-        }
-
-    }, { immediate: true });
-
-    // #endregion Watchers
 </script>

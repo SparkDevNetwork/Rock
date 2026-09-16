@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -23,6 +23,7 @@ using System.Web;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using Rock.Communication;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Lava;
 using Rock.Logging;
@@ -30,8 +31,9 @@ using Rock.Model;
 using Rock.Tests.Integration.Communications.Transport;
 using Rock.Tests.Integration.TestData;
 using Rock.Tests.Integration.TestData.Communications;
+using Rock.Tests.Integration.TestFramework.Lava;
 using Rock.Tests.Shared;
-using Rock.Tests.Shared.Lava;
+using Rock.Tests.Shared.Constants;
 using Rock.Utility;
 using Rock.Web.Cache;
 
@@ -187,6 +189,26 @@ Employer:
 ";
 
             TestHelper.AssertTemplateOutput( excludedOutput, templateInput, new LavaTestRenderOptions { MergeFields = mergeFields, OutputMatchType = LavaTestOutputMatchTypeSpecifier.DoesNotContain } );
+        }
+
+        /// <summary>
+        /// Test the Where filter using a 'contains' comparison on a collection of phone numbers for a test person.
+        /// The filter should return only the phone number that contains the specified value.
+        /// </summary>
+        [TestMethod]
+        public void Where_WithSingleContainsCondition_ReturnsContainedValues()
+        {
+            var mergeFields = new Dictionary<string, object> { { "CurrentPerson", GetWhereFilterTestPersonSarahSimmons() } };
+
+            var templateInput = @"
+{{ CurrentPerson.PhoneNumbers | Where:'Number', 555, 'contains' | Select:'NumberFormatted' | Join:', ' }}
+";
+
+            var expectedOutput = @"
+(623) 555-8888
+";
+
+            TestHelper.AssertTemplateOutput( expectedOutput, templateInput, new LavaTestRenderOptions { MergeFields = mergeFields } );
         }
 
         /// <summary>
@@ -385,7 +407,7 @@ Ted Decker<br/>Cindy Decker<br/>Noah Decker<br/>Alex Decker<br/>
 
         private Person GetWhereFilterTestPersonTedDecker()
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
 
             var personTedDecker = new PersonService( rockContext ).Queryable()
                 .FirstOrDefault( x => x.LastName == "Decker" && x.NickName == "Ted" );
@@ -395,6 +417,19 @@ Ted Decker<br/>Cindy Decker<br/>Noah Decker<br/>Alex Decker<br/>
             Assert.IsNotNull( personTedDecker, "Test person not found in current database." );
 
             return personTedDecker;
+        }
+        private Person GetWhereFilterTestPersonSarahSimmons()
+        {
+            var rockContext = RockApp.Current.CreateRockContext();
+
+            var personSarahSimmons = new PersonService( rockContext ).Queryable()
+                .FirstOrDefault( x => x.LastName == "Simmons" && x.NickName == "Sarah" );
+
+            var phones = personSarahSimmons.PhoneNumbers;
+
+            Assert.IsNotNull( personSarahSimmons, "Test person not found in current database." );
+
+            return personSarahSimmons;
         }
 
         private class TestWhereFilterCollectionItem : RockDynamic
@@ -884,7 +919,7 @@ Ted Decker<br/>Cindy Decker<br/>Noah Decker<br/>Alex Decker<br/>
         {
             // If the new page reference has a specific route, it should be returned in preference
             // to the default "/page/{pageId}" route.
-            var dataContext = new RockContext();
+            var dataContext = RockApp.Current.CreateRockContext();
             var routeService = new PageRouteService( dataContext );
 
             var loginRoute = routeService.Queryable()

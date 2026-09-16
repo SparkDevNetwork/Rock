@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -28,12 +28,13 @@ using System.Linq;
 using System.Runtime.Serialization;
 using System.Text;
 using System.Threading.Tasks;
+
 using Rock.Attribute;
+using Rock.Lava;
 using Rock.Model;
 using Rock.Security;
 using Rock.Transactions;
 using Rock.Web.Cache;
-using Rock.Lava;
 
 namespace Rock.Data
 {
@@ -519,24 +520,6 @@ namespace Rock.Data
         /// </remarks>
         /// <param name="key">The key.</param>
         /// <returns></returns>
-        [Obsolete("Use ContainsKey(string) instead.")]
-        [RockObsolete( "1.13.0" )]
-        public override bool ContainsKey( object key )
-        {
-            return ContainsKey( key.ToStringSafe() );
-        }
-
-        /// <summary>
-        /// Determines whether the specified key contains key.
-        /// </summary>
-        /// <remarks>
-        /// This method is only necessary to support the old way of getting attribute values in
-        /// liquid templates (e.g. {{ Person.BaptismData }} ).  Once support for this method is
-        /// deprecated ( in v4.0 ), and only the new method of using the Attribute filter is
-        /// supported (e.g. {{ Person | Attribute:'BaptismDate' }} ), this method can be removed
-        /// </remarks>
-        /// <param name="key">The key.</param>
-        /// <returns></returns>
         public override bool ContainsKey( string key )
         {
             if ( key == "AttributeValues" )
@@ -718,23 +701,6 @@ namespace Rock.Data
         /// <returns>A list of all inherited AttributeCache objects.</returns>
         public virtual List<AttributeCache> GetInheritedAttributes( Rock.Data.RockContext rockContext )
         {
-            return null;
-        }
-
-        /// <summary>
-        /// Get any alternate Ids that should be used when loading attribute values for this entity.
-        /// </summary>
-        /// <returns>A list of any alternate entity Ids that should be used when loading attribute values.</returns>
-        [Obsolete( "Use GetAlternateEntityIdsByType instead." )]
-        [RockObsolete( "1.13" )]
-        public virtual List<int> GetAlternateEntityIds( Rock.Data.RockContext rockContext )
-        {
-            var entitiesByType = GetAlternateEntityIdsByType( rockContext );
-
-            if ( entitiesByType != null && entitiesByType.Any() )
-            {
-                return entitiesByType[0];
-            }
             return null;
         }
 

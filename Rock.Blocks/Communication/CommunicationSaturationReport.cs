@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -23,6 +23,7 @@ using System.Data.Entity;
 using System.Linq;
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Obsidian.UI;
@@ -201,7 +202,7 @@ namespace Rock.Blocks.Communication
         {
             return new GridBuilder<CommunicationGridDataBag>()
                 //.WithBlock( this )
-                .AddField( "id", a => a.Id )
+                .AddField( "idKey", a => a.Id.AsIdKey() )
                 .AddTextField( "name", a => a.Name )
                 .AddDateTimeField( "dateSent", a => a.SendDateTime )
                 .AddField( "messageCount", a => a.MessageCount )
@@ -399,7 +400,7 @@ namespace Rock.Blocks.Communication
         [BlockAction]
         public virtual BlockActionResult GetBlockData()
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
 
             var bag = new CommunicationSaturationReportBlockDataBag
             {

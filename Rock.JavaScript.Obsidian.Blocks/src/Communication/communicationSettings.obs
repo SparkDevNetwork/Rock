@@ -1,0 +1,107 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <RockForm @submit="onSave">
+        <Panel title="Communication Settings">
+            <template #default>
+                <NotificationBox v-if="errorMessage" :alertType="AlertType.Danger">{{ errorMessage }}</NotificationBox>
+                <div class="row">
+                    <div class="col-md-6">
+                        <DropDownList v-model="approvalEmailTemplate"
+                                      :items="approvalEmailTemplateOptions"
+                                      :showBlankItem="false"
+                                      label="Communication Approval Email Template"
+                                      help="The system communication to use for emailing approval notifications when a new message is pending approval."
+                                      rules="required" />
+                    </div>
+                </div>
+            </template>
+            <template #footerActions>
+                <div class="d-flex gap-3">
+                    <RockButton type="submit" :btnType="BtnType.Primary" :isLoading="isSaving" loadingText="Saving...">
+                        Save
+                    </RockButton>
+                    <Transition name="fade">
+                        <div v-if="saveSuccess" class="d-flex gap-1 align-items-center text-success">
+                            <span>Changes have been saved.</span>
+                            <i class="ti ti-circle-check"></i>
+                        </div>
+                    </Transition>
+                </div>
+            </template>
+        </Panel>
+    </RockForm>
+</template>
+
+<style scoped>
+.fade-enter-active,
+.fade-leave-active {
+    transition: opacity 0.4s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+    opacity: 0;
+}
+</style>
+
+<script setup lang="ts">
+    import { ref } from "vue";
+    import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
+    import { CommunicationSettingsBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationSettings/communicationSettingsBag";
+    import { AlertType } from "@Obsidian/Enums/Controls/alertType";
+    import { BtnType } from "@Obsidian/Enums/Controls/btnType";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import Panel from "@Obsidian/Controls/panel.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import RockForm from "@Obsidian/Controls/rockForm.obs";
+
+    const config = useConfigurationValues<CommunicationSettingsBag>();
+    const invokeBlockAction = useInvokeBlockAction();
+
+    onConfigurationValuesChanged(useReloadBlock());
+
+    // #region Values
+
+    const errorMessage = ref("");
+    const isSaving = ref(false);
+    const saveSuccess = ref(false);
+    const approvalEmailTemplate = ref(config.approvalEmailTemplate ?? "");
+    const approvalEmailTemplateOptions = config.approvalEmailTemplateOptions ?? [];
+
+    // #endregion Values
+
+    // #region Event Handlers
+
+    async function onSave(): Promise<void> {
+        const bag: CommunicationSettingsBag = {
+            approvalEmailTemplate: approvalEmailTemplate.value
+        };
+
+        isSaving.value = true;
+
+        try {
+            const result = await invokeBlockAction("SaveSettings", { bag });
+
+            if (!result.isSuccess) {
+                errorMessage.value = result.errorMessage ?? "An unknown error occurred while saving.";
+                return;
+            }
+        }
+        catch {
+            errorMessage.value = "An unexpected error occurred. Please try again.";
+            return;
+        }
+        finally {
+            isSaving.value = false;
+        }
+
+        errorMessage.value = "";
+        saveSuccess.value = true;
+        setTimeout(() => {
+            saveSuccess.value = false;
+        }, 3000);
+    }
+
+    // #endregion Event Handlers
+</script>

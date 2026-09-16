@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -23,7 +23,9 @@ using System.Text.RegularExpressions;
 using System.Web.Hosting;
 #endif
 using System.Web.UI.WebControls;
+
 using Humanizer;
+
 using Rock.Utility;
 using Rock.Web.UI.Controls;
 

@@ -90,6 +90,11 @@ export type CompletionExtraValues = {
  */
 type LearningActivityComponentBaseEmits = {
     /**
+     * Emitted when the component has loaded fully into the DOM.
+     */
+    loaded(): void;
+
+    /**
      * Emitted when the screen's complete or cancel button has been clicked.
      *
      * @param isSuccess True if the button click was for a completion; false if cancelled.
@@ -155,6 +160,7 @@ export const learningActivityProps: LearningActivityComponentBaseProps = {
  * Get the standard emits that all learning activity components must support.
  */
 export const learningActivityEmits: LearningActivityComponentBaseEmits = {
+    loaded(): void { },
     completed(_isSuccess: boolean): void { },
     closed(): void { },
     activitySettingsChanged(_settings: Record<string, string>): void { },
@@ -261,10 +267,10 @@ export function useLearningComponent(
     /** Determines if the actiivty has been graded by a facilitator. */
     const hasBeenGraded = computed(() => isValidGuid(toValue(completionBag)?.gradedByPersonAlias?.value ?? ""));
 
-    /** Whether the student or facilitator has completed the activity. */
+    /** Whether the assigned party (student or facilitator) has completed the activity. */
     const isCompleted = computed(() => {
         const completion = toValue(completionBag);
-        return completion?.isStudentCompleted || completion?.isFacilitatorCompleted;
+        return completion?.isCompleted;
     });
 
     /**

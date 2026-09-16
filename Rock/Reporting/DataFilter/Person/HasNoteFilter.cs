@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -24,13 +24,13 @@ using System.Web.UI;
 using System.Web.UI.WebControls;
 
 using Rock;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Net;
 using Rock.ViewModels.Controls;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
-
 // This is to get the enums without the prefix
 using static Rock.Web.UI.Controls.SlidingDateRangePicker;
 
@@ -263,7 +263,7 @@ namespace Rock.Reporting.DataFilter.Person
             ddlNoteType.Label = "Note Type";
             filterControl.Controls.Add( ddlNoteType );
 
-            var noteTypeService = new NoteTypeService( new RockContext() );
+            var noteTypeService = new NoteTypeService( RockApp.Current.CreateRockContext() );
             var entityTypeIdPerson = EntityTypeCache.GetId<Rock.Model.Person>();
             var noteTypes = noteTypeService.Queryable().Where( a => a.EntityTypeId == entityTypeIdPerson )
                 .OrderBy( a => a.Order )
@@ -571,8 +571,8 @@ namespace Rock.Reporting.DataFilter.Person
                 return string.Format(
                     "{0}|{1}|{2}|{3}|{4}",
                     this.DateRangeMode,
-                    ( SlidingDateRangeType.Last | SlidingDateRangeType.Previous | SlidingDateRangeType.Next | SlidingDateRangeType.Upcoming ).HasFlag( DateRangeMode ) ? this.NumberOfTimeUnits : ( int? ) null,
-                    ( SlidingDateRangeType.Last | SlidingDateRangeType.Previous | SlidingDateRangeType.Next | SlidingDateRangeType.Upcoming | SlidingDateRangeType.Current ).HasFlag( this.DateRangeMode ) ? this.TimeUnit : ( TimeUnitType? ) null,
+                    DateRangeMode.HasValue && ( SlidingDateRangeType.Last | SlidingDateRangeType.Previous | SlidingDateRangeType.Next | SlidingDateRangeType.Upcoming ).HasFlag( DateRangeMode.Value ) ? this.NumberOfTimeUnits : ( int? ) null,
+                    DateRangeMode.HasValue && ( SlidingDateRangeType.Last | SlidingDateRangeType.Previous | SlidingDateRangeType.Next | SlidingDateRangeType.Upcoming | SlidingDateRangeType.Current ).HasFlag( DateRangeMode.Value ) ? this.TimeUnit : ( TimeUnitType? ) null,
                     this.DateRangeMode == SlidingDateRangeType.DateRange ? this.StartDate : null,
                     this.DateRangeMode == SlidingDateRangeType.DateRange ? this.EndDate : null );
             }

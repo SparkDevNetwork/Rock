@@ -1,0 +1,471 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <ContentSection title="Connection Requests"
+                    icon="ti ti-plug"
+                    hideToggleButton
+                    unmountOnCollapse
+                    :isCollapsed="!enabled"
+                    @update:isCollapsed="onHeaderToggle">
+        <template #description>
+            Open a Connection Request when this form is submitted, using the form's Person Entry primary person as the requestor.
+        </template>
+        <template #headerActions>
+            <InlineSwitch v-model="enabled" :disabled="!isPersonEntryEnabled" label="Enable" />
+        </template>
+
+        <template #preBody>
+            <NotificationBox v-if="!isPersonEntryEnabled" alertType="warning" class="mb-3">
+                Person Entry must be enabled on the Form Builder tab. The primary person will be used as the connection requestor.
+            </NotificationBox>
+        </template>
+
+        <ContentStack title="Configuration"
+                      description="The connection details applied to requests opened by this form.">
+            <div class="row">
+                <div class="col-md-6">
+                    <DropDownList v-model="connectionTypeGuid"
+                                  label="Connection Type"
+                                  :items="connectionTypeOptions"
+                                  :showBlankItem="true"
+                                  rules="required" />
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6">
+                    <DropDownList v-model="connectionOpportunityGuid"
+                                  label="Connection Opportunity"
+                                  :items="connectionOpportunityOptions"
+                                  :showBlankItem="true"
+                                  :disabled="!connectionTypeGuid"
+                                  rules="required" />
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6">
+                    <DropDownList v-model="connectionStatusGuid"
+                                  label="Status"
+                                  :items="connectionStatusOptions"
+                                  :showBlankItem="true"
+                                  :disabled="!connectionTypeGuid"
+                                  help="Leave blank to use the Connection Type's default status." />
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6">
+                    <DropDownList v-model="connectionSourceValueGuid"
+                                  label="Connection Source"
+                                  :items="connectionSourceOptions"
+                                  :showBlankItem="true"
+                                  :disabled="!connectionTypeGuid"
+                                  help="Optional source recorded on the new Connection Request." />
+                </div>
+            </div>
+        </ContentStack>
+
+        <ContentStack title="Attribute Matching"
+                      description="Maps form responses to attribute fields on the connection request.">
+            <div v-if="!formFields.length" class="text-muted">
+                Add fields on the Form Builder tab to map them here.
+            </div>
+            <div v-else-if="!connectionOpportunityGuid" class="text-muted">
+                Choose a Connection Opportunity to load the available target attributes.
+            </div>
+            <div v-else>
+                <div v-for="field in formFields" :key="field.guid" class="row">
+                    <div class="col-md-6">
+                        <DropDownList :modelValue="getMappingValue(field.guid)"
+                                      :label="field.name || field.key"
+                                      help="Leave blank to skip this field. Pick 'Add to Connection Request Comment' to fold the value into the request's Comment, or select a specific connection attribute to set."
+                                      :items="getMappingOptions(field)"
+                                      showBlankItem
+                                      @update:modelValue="onMappingChanged(field.guid, $event as string)" />
+                    </div>
+                </div>
+            </div>
+        </ContentStack>
+    </ContentSection>
+</template>
+
+<script setup lang="ts">
+    import { nextTick, PropType, ref, watch } from "vue";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import ContentSection from "@Obsidian/Controls/contentSection.obs";
+    import ContentStack from "@Obsidian/Controls/contentStack.obs";
+    import InlineSwitch from "@Obsidian/Controls/inlineSwitch.obs";
+    import { alert } from "@Obsidian/Utility/dialogs";
+    import { useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { toGuidOrNull } from "@Obsidian/Utility/guid";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { FormConnectionRequests, FormField, FormFieldAttributeMapping } from "./types.partial";
+
+    /*
+        Sentinel values for the mapping dropdown:
+
+        - `unmappedValue` (empty string) is the blank/unselected option from
+          showBlankItem. Choosing it means "no mapping for this form field"
+          and the runtime should skip the field entirely (no attribute set,
+          no comment line appended).
+        - `commentTargetValue` is the explicit "Add to Connection Request
+          Comment" option. The runtime treats a saved mapping whose
+          TargetAttributeGuid is null as an append-to-comment instruction.
+    */
+    const unmappedValue = "";
+    const commentTargetValue = ":comment";
+
+    type OpportunityAttribute = {
+        attributeGuid: string;
+        name: string;
+        fieldTypeGuid: string;
+    };
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<FormConnectionRequests>,
+            required: true
+        },
+
+        /**
+         * Whether the Form Builder tab has Person Entry enabled. When false,
+         * the Enable switch is disabled and the alert is rendered in error
+         * tone.
+         */
+        isPersonEntryEnabled: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        /**
+         * The form fields available for attribute mapping. Provided by the
+         * parent so the section can re-render when fields are added /
+         * removed on the Form Builder tab.
+         */
+        formFields: {
+            type: Array as PropType<FormField[]>,
+            default: () => []
+        },
+
+        /** Static list of all Connection Types. */
+        connectionTypeOptions: {
+            type: Array as PropType<ListItemBag[]>,
+            default: () => []
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: FormConnectionRequests): void;
+    }>();
+
+    const invokeBlockAction = useInvokeBlockAction();
+
+    // #region Values
+
+    const enabled = ref(props.modelValue.enabled ?? false);
+    const connectionTypeGuid = ref<string>(toGuidOrNull(props.modelValue.connectionTypeGuid) ?? "");
+    const connectionOpportunityGuid = ref<string>(toGuidOrNull(props.modelValue.connectionOpportunityGuid) ?? "");
+    const connectionStatusGuid = ref<string>(toGuidOrNull(props.modelValue.connectionStatusGuid) ?? "");
+    const connectionSourceValueGuid = ref<string>(toGuidOrNull(props.modelValue.connectionSourceValueGuid) ?? "");
+    const attributeMappings = ref<FormFieldAttributeMapping[]>([...(props.modelValue.attributeMappings ?? [])]);
+
+    const connectionOpportunityOptions = ref<ListItemBag[]>([]);
+    const connectionStatusOptions = ref<ListItemBag[]>([]);
+    const connectionSourceOptions = ref<ListItemBag[]>([]);
+    const opportunityAttributes = ref<OpportunityAttribute[]>([]);
+
+    /*
+        5/18/26 - JMH
+
+        Flag set while the modelValue watcher is hydrating the local refs from
+        the parent's form data. The connectionTypeGuid watcher uses this to
+        skip its cascading clear of Opportunity/Status/Source, since those
+        values are being legitimately restored from saved state (not a fresh
+        user pick of a new Connection Type).
+
+        Reason: form load was wiping the user's saved Opportunity selection
+        on every reload because setting the Type ref tripped the cascade.
+    */
+    let isHydratingFromProps = false;
+
+    // #endregion
+
+    // #region Functions
+
+    /**
+     * Loads the Connection Opportunities, Statuses, and Sources for the
+     * selected Connection Type. Clears all three dropdowns when no type is
+     * selected. Sources are type-scoped (`ConnectionTypeSource` entity) so
+     * they ride along with opportunities and statuses.
+     */
+    async function loadTypeDependents(): Promise<void> {
+        if (!connectionTypeGuid.value) {
+            connectionOpportunityOptions.value = [];
+            connectionStatusOptions.value = [];
+            connectionSourceOptions.value = [];
+            return;
+        }
+
+        const [opportunitiesResult, statusesResult, sourcesResult] = await Promise.all([
+            invokeBlockAction<ListItemBag[]>("GetConnectionOpportunities", { connectionTypeGuid: connectionTypeGuid.value }),
+            invokeBlockAction<ListItemBag[]>("GetConnectionStatuses", { connectionTypeGuid: connectionTypeGuid.value }),
+            invokeBlockAction<ListItemBag[]>("GetConnectionSources", { connectionTypeGuid: connectionTypeGuid.value })
+        ]);
+
+        connectionOpportunityOptions.value = opportunitiesResult.isSuccess && opportunitiesResult.data ? opportunitiesResult.data : [];
+        connectionStatusOptions.value = statusesResult.isSuccess && statusesResult.data ? statusesResult.data : [];
+        connectionSourceOptions.value = sourcesResult.isSuccess && sourcesResult.data ? sourcesResult.data : [];
+    }
+
+    /**
+     * Loads the target-attribute list for the currently selected Connection
+     * Opportunity. Mapping rows whose target attribute is no longer on the
+     * opportunity are reset to the Comment fallback, with a one-time toast.
+     */
+    async function loadOpportunityAttributes(): Promise<void> {
+        if (!connectionOpportunityGuid.value) {
+            opportunityAttributes.value = [];
+            return;
+        }
+
+        const result = await invokeBlockAction<OpportunityAttribute[]>("GetOpportunityAttributes", { opportunityGuid: connectionOpportunityGuid.value });
+        opportunityAttributes.value = result.isSuccess && result.data ? result.data : [];
+
+        const availableTargets = new Set(opportunityAttributes.value.map(a => a.attributeGuid.toLowerCase()));
+        const droppedFieldNames: string[] = [];
+
+        attributeMappings.value = attributeMappings.value.map(mapping => {
+            if (!mapping.targetAttributeGuid) {
+                return mapping;
+            }
+
+            if (availableTargets.has(mapping.targetAttributeGuid.toLowerCase())) {
+                return mapping;
+            }
+
+            const fieldName = props.formFields.find(f => f.guid === mapping.formAttributeGuid)?.name ?? "Field";
+            droppedFieldNames.push(fieldName);
+            return { ...mapping, targetAttributeGuid: null };
+        });
+
+        if (droppedFieldNames.length > 0) {
+            alert(`The following field mapping${droppedFieldNames.length === 1 ? "" : "s"} no longer match an attribute on the selected Opportunity and ${droppedFieldNames.length === 1 ? "was" : "were"} reset to "Add to Connection Request Comment": ${droppedFieldNames.join(", ")}.`);
+        }
+    }
+
+    /** Returns the dropdown options for a single form-field mapping row. */
+    function getMappingOptions(field: FormField): ListItemBag[] {
+        const compatible = opportunityAttributes.value.filter(a => {
+            return isTextFieldType(a.fieldTypeGuid) || a.fieldTypeGuid.toLowerCase() === field.fieldTypeGuid.toLowerCase();
+        });
+
+        return [
+            { value: commentTargetValue, text: "Add to Connection Request Comment" },
+            ...compatible.map(a => ({ value: a.attributeGuid, text: a.name }))
+        ];
+    }
+
+    /**
+     * Looks up the currently selected target attribute for a form field.
+     * Returns the unmapped (blank) sentinel when no mapping entry exists,
+     * the Comment sentinel when an entry exists with a null target, or the
+     * target attribute Guid when one has been picked.
+     */
+    function getMappingValue(formAttributeGuid: string): string {
+        const mapping = attributeMappings.value.find(m => m.formAttributeGuid === formAttributeGuid);
+
+        if (!mapping) {
+            return unmappedValue;
+        }
+
+        return mapping.targetAttributeGuid ?? commentTargetValue;
+    }
+
+    /**
+     * Persists a mapping change locally:
+     *
+     *  - Blank / unmapped → drop the mapping entry from the array so the
+     *    runtime skips the field entirely.
+     *  - Comment sentinel → keep an entry with a null TargetAttributeGuid;
+     *    the runtime appends the field's value to the Connection Request Comment.
+     *  - Real Guid → keep an entry pointing at that target attribute.
+     */
+    function onMappingChanged(formAttributeGuid: string, targetGuid: string): void {
+        const existingIndex = attributeMappings.value.findIndex(m => m.formAttributeGuid === formAttributeGuid);
+
+        if (targetGuid === unmappedValue) {
+            if (existingIndex >= 0) {
+                attributeMappings.value = attributeMappings.value.filter((_, i) => i !== existingIndex);
+            }
+
+            return;
+        }
+
+        const targetAttributeGuid = targetGuid === commentTargetValue ? null : targetGuid;
+
+        if (existingIndex >= 0) {
+            const next = [...attributeMappings.value];
+            next[existingIndex] = { formAttributeGuid, targetAttributeGuid };
+            attributeMappings.value = next;
+        }
+        else {
+            attributeMappings.value = [...attributeMappings.value, { formAttributeGuid, targetAttributeGuid }];
+        }
+    }
+
+    /**
+     * True when the supplied field-type guid represents the Text field type.
+     * Text targets accept any source value via ToString() coercion, so they
+     * are always offered as a mapping option regardless of the form field's
+     * own type.
+     */
+    function isTextFieldType(fieldTypeGuid: string): boolean {
+        return fieldTypeGuid.toLowerCase() === "9c204cd0-1233-41c5-818a-c5da439445aa";
+    }
+
+    // #endregion
+
+    /**
+     * Handles a header click forwarded by ContentSection in
+     * hideToggleButton mode. Ignored when Person Entry is off (the Enable
+     * switch is locked off in that state) so a header click can't open a
+     * section the user can't configure.
+     */
+    function onHeaderToggle(newIsCollapsed: boolean): void {
+        if (!props.isPersonEntryEnabled) {
+            return;
+        }
+
+        enabled.value = !newIsCollapsed;
+    }
+
+    // #region Watchers
+
+    // When Person Entry is turned off, force the section off too so we don't
+    // save an enabled-but-broken configuration.
+    watch(() => props.isPersonEntryEnabled, (newValue) => {
+        if (!newValue && enabled.value) {
+            enabled.value = false;
+        }
+    });
+
+    // Reload opportunities + statuses + sources whenever the type changes,
+    // and clear dependent selections so the user reconfigures cleanly. The
+    // dependent clear is skipped when the new value matches the parent's
+    // persisted value (a prop-driven sync rather than a fresh user pick),
+    // so saved Opportunity / Status / Source selections survive a reload.
+    watch(connectionTypeGuid, async (newValue, oldValue) => {
+        if (newValue === oldValue) {
+            return;
+        }
+
+        const parentTypeGuid = toGuidOrNull(props.modelValue.connectionTypeGuid) ?? "";
+        const isUserPick = !isHydratingFromProps && newValue !== parentTypeGuid;
+
+        if (isUserPick) {
+            connectionOpportunityGuid.value = "";
+            connectionStatusGuid.value = "";
+            connectionSourceValueGuid.value = "";
+        }
+
+        await loadTypeDependents();
+    });
+
+    // Reload target-attribute options whenever the opportunity changes.
+    watch(connectionOpportunityGuid, async (newValue, oldValue) => {
+        if (newValue === oldValue) {
+            return;
+        }
+
+        await loadOpportunityAttributes();
+    });
+
+    // Push changes back to the parent.
+    watch([enabled, connectionTypeGuid, connectionOpportunityGuid, connectionStatusGuid, connectionSourceValueGuid, attributeMappings], () => {
+        const newValue: FormConnectionRequests = {
+            ...props.modelValue,
+            enabled: enabled.value,
+            connectionTypeGuid: toGuidOrNull(connectionTypeGuid.value),
+            connectionOpportunityGuid: toGuidOrNull(connectionOpportunityGuid.value),
+            connectionStatusGuid: toGuidOrNull(connectionStatusGuid.value),
+            connectionSourceValueGuid: toGuidOrNull(connectionSourceValueGuid.value),
+            attributeMappings: attributeMappings.value
+        };
+
+        emit("update:modelValue", newValue);
+    });
+
+    // Pull changes from the parent. Scalars are value-compared by Vue's ref
+    // so identical primitives don't re-trigger the emit watcher. The array
+    // pull-down is guarded by a structural-equality check; otherwise the
+    // `[...x]` spread creates a fresh array on every pass and loops with
+    // the parent's emit cycle.
+    watch(() => props.modelValue, async () => {
+        isHydratingFromProps = true;
+
+        enabled.value = props.modelValue.enabled ?? false;
+        connectionTypeGuid.value = toGuidOrNull(props.modelValue.connectionTypeGuid) ?? "";
+        connectionOpportunityGuid.value = toGuidOrNull(props.modelValue.connectionOpportunityGuid) ?? "";
+        connectionStatusGuid.value = toGuidOrNull(props.modelValue.connectionStatusGuid) ?? "";
+        connectionSourceValueGuid.value = toGuidOrNull(props.modelValue.connectionSourceValueGuid) ?? "";
+
+        const incomingMappings = props.modelValue.attributeMappings ?? [];
+        const sameReference = incomingMappings === attributeMappings.value;
+        const sameContents = !sameReference
+            && JSON.stringify(incomingMappings) === JSON.stringify(attributeMappings.value);
+        if (!sameReference && !sameContents) {
+            attributeMappings.value = [...incomingMappings];
+        }
+
+        // Yield so the connectionTypeGuid / connectionOpportunityGuid watchers
+        // run with the flag still set, then release it for subsequent user edits.
+        await nextTick();
+        isHydratingFromProps = false;
+    });
+
+    // #endregion
+
+    /*
+        5/19/26 - JMH
+
+        Prime the cascading dropdowns when the section first mounts with a
+        configured type / opportunity.
+
+        Capture the saved Opportunity / Status / Source guids before the
+        DropDownList children mount. Each DropDownList runs its own
+        syncInternalValue at setup; when its `items` prop is still the
+        empty initial array, it cannot find the saved guid and emits an
+        empty value upward, clearing the v-modeled ref. After
+        loadTypeDependents populates the options we restore any ref that
+        was wiped that way, so the user's saved selection survives the
+        page load.
+
+        Reason: saved Connection Opportunity (and Status / Source) were
+        silently dropped on every reload because the dropdowns rendered
+        with empty items before the API call completed.
+    */
+    const savedConnectionOpportunityGuid = connectionOpportunityGuid.value;
+    const savedConnectionStatusGuid = connectionStatusGuid.value;
+    const savedConnectionSourceValueGuid = connectionSourceValueGuid.value;
+
+    if (connectionTypeGuid.value) {
+        loadTypeDependents().then(() => {
+            if (savedConnectionOpportunityGuid && !connectionOpportunityGuid.value) {
+                connectionOpportunityGuid.value = savedConnectionOpportunityGuid;
+            }
+
+            if (savedConnectionStatusGuid && !connectionStatusGuid.value) {
+                connectionStatusGuid.value = savedConnectionStatusGuid;
+            }
+
+            if (savedConnectionSourceValueGuid && !connectionSourceValueGuid.value) {
+                connectionSourceValueGuid.value = savedConnectionSourceValueGuid;
+            }
+
+            if (connectionOpportunityGuid.value) {
+                return loadOpportunityAttributes();
+            }
+        });
+    }
+</script>

@@ -1,0 +1,281 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Block title="Share Workflow">
+        <NotificationBox v-if="blockErrorMessage" alertType="danger" class="mb-3">
+            {{ blockErrorMessage }}
+        </NotificationBox>
+
+        <div class="row">
+            <div class="col-md-6">
+                <RockForm @submit="onExportSubmit">
+                    <WorkflowTypePicker v-model="selectedWorkflowType"
+                                        label="Workflow Type"
+                                        help="The workflow type to be exported."
+                                        rules="required" />
+                    <div class="mt-3">
+                        <RockButton :btnType="BtnType.Primary"
+                                    type="submit"
+                                    :isLoading="isExporting"
+                                    :disabled="isPreviewing"
+                                    loadingText="Exporting..."
+                                    @click="pendingExportAction = 'export'">
+                            Export
+                        </RockButton>
+                        <RockButton :btnType="BtnType.Default"
+                                    type="submit"
+                                    class="ml-2"
+                                    :isLoading="isPreviewing"
+                                    :disabled="isExporting"
+                                    loadingText="Loading..."
+                                    @click="pendingExportAction = 'preview'">
+                            Preview
+                        </RockButton>
+                    </div>
+                </RockForm>
+            </div>
+
+            <div class="col-md-6">
+                <RockForm @submit="onImportSubmit">
+                    <FileUploader v-model="importFile"
+                                  label="File"
+                                  :binaryFileTypeGuid="BinaryFiletype.Default"
+                                  rules="required"
+                                  :uploadAsTemporary="true" />
+
+                    <CategoryPicker v-model="importCategory"
+                                    label="Category"
+                                    :entityTypeGuid="EntityType.WorkflowType"
+                                    rules="required" />
+
+                    <CheckBox v-model="isTestOnly"
+                              label="Test Only"
+                              help="If checked, then the import will only be tested, no changes to the database will be made." />
+
+                    <div class="mt-3">
+                        <RockButton :btnType="BtnType.Primary"
+                                    type="submit"
+                                    :isLoading="isImporting"
+                                    loadingText="Importing...">
+                            Import
+                        </RockButton>
+                    </div>
+                </RockForm>
+            </div>
+        </div>
+
+        <Grid v-if="showPreview"
+              :data="previewGridData"
+              keyField="guid"
+              itemTerm="Entity"
+              light
+              :isFooterHidden="true"
+              class="mt-4">
+            <TextColumn name="name" field="name" title="Name" />
+            <TextColumn name="shortType" field="shortType" title="Type" />
+            <Column name="references" title="References">
+                <template #format="{ row }">
+                    <span v-for="(path, index) in ((row.paths as string[]) ?? [])" :key="index">
+                        {{ path }}<br />
+                    </span>
+                </template>
+            </Column>
+            <BooleanColumn name="isCritical" field="isCritical" title="Critical" />
+            <BooleanColumn name="isNewGuid" field="isNewGuid" title="New Guid" />
+        </Grid>
+
+        <div v-if="showImportResults" class="mt-4">
+            <pre>{{ importResultsText }}</pre>
+        </div>
+    </Block>
+</template>
+
+<script setup lang="ts">
+    import { computed, ref } from "vue";
+    import Block from "@Obsidian/Templates/block";
+    import Grid, { BooleanColumn, Column, TextColumn } from "@Obsidian/Controls/grid";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import RockForm from "@Obsidian/Controls/rockForm.obs";
+    import WorkflowTypePicker from "@Obsidian/Controls/workflowTypePicker.obs";
+    import FileUploader from "@Obsidian/Controls/fileUploader.obs";
+    import CategoryPicker from "@Obsidian/Controls/categoryPicker.obs";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import { BtnType } from "@Obsidian/Enums/Controls/btnType";
+    import { EntityType } from "@Obsidian/SystemGuids/entityType";
+    import { BinaryFiletype } from "@Obsidian/SystemGuids/binaryFiletype";
+    import { downloadFile } from "@Obsidian/Utility/file";
+    import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
+    import { CustomBlockBox } from "@Obsidian/ViewModels/Blocks/customBlockBox";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { ShareWorkflowBag } from "@Obsidian/ViewModels/Blocks/Workflow/ShareWorkflow/shareWorkflowBag";
+    import { ShareWorkflowOptionsBag } from "@Obsidian/ViewModels/Blocks/Workflow/ShareWorkflow/shareWorkflowOptionsBag";
+    import { ShareWorkflowPreviewEntityBag } from "@Obsidian/ViewModels/Blocks/Workflow/ShareWorkflow/shareWorkflowPreviewEntityBag";
+    import { ShareWorkflowExportResultBag } from "@Obsidian/ViewModels/Blocks/Workflow/ShareWorkflow/shareWorkflowExportResultBag";
+    import { ShareWorkflowImportRequestBag } from "@Obsidian/ViewModels/Blocks/Workflow/ShareWorkflow/shareWorkflowImportRequestBag";
+    import { ShareWorkflowImportResultBag } from "@Obsidian/ViewModels/Blocks/Workflow/ShareWorkflow/shareWorkflowImportResultBag";
+
+    // #region Values
+
+    const config = useConfigurationValues<CustomBlockBox<ShareWorkflowBag, ShareWorkflowOptionsBag>>();
+    const invokeBlockAction = useInvokeBlockAction();
+    const reloadBlock = useReloadBlock();
+
+    const selectedWorkflowType = ref<ListItemBag | null>(config.bag?.initialWorkflowType ?? null);
+    const importFile = ref<ListItemBag | null>(null);
+    const importCategory = ref<ListItemBag | null>(null);
+    const isTestOnly = ref(false);
+
+    const previewRows = ref<ShareWorkflowPreviewEntityBag[]>([]);
+    const showPreview = ref(false);
+
+    const importMessages = ref<string[]>([]);
+    const showImportResults = ref(false);
+
+    const blockErrorMessage = ref("");
+
+    const pendingExportAction = ref<"export" | "preview">("export");
+    const isExporting = ref(false);
+    const isPreviewing = ref(false);
+    const isImporting = ref(false);
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    const previewGridData = computed(() => {
+        const rows = previewRows.value.map(entity => ({
+            guid: entity.guid,
+            name: entity.name,
+            shortType: entity.shortType,
+            isCritical: entity.isCritical,
+            isNewGuid: entity.isNewGuid,
+            paths: entity.paths ?? []
+        }));
+
+        return { rows };
+    });
+
+    const importResultsText = computed((): string => importMessages.value.join("\n"));
+
+    // #endregion Computed Values
+
+    // #region Event Handlers
+
+    /**
+     * Dispatches the export form submission to the export or preview handler based
+     * on which button was clicked.
+     */
+    async function onExportSubmit(): Promise<void> {
+        if (pendingExportAction.value === "preview") {
+            await preview();
+        }
+        else {
+            await exportWorkflow();
+        }
+    }
+
+    /**
+     * Handles the import form submission.
+     */
+    async function onImportSubmit(): Promise<void> {
+        await importWorkflow();
+    }
+
+    // #endregion Event Handlers
+
+    // #region Functions
+
+    /**
+     * Requests a preview of the entities that would be exported and shows the grid.
+     */
+    async function preview(): Promise<void> {
+        blockErrorMessage.value = "";
+        showImportResults.value = false;
+        importMessages.value = [];
+        isPreviewing.value = true;
+
+        try {
+            const result = await invokeBlockAction<ShareWorkflowPreviewEntityBag[]>("Preview", {
+                workflowTypeValue: selectedWorkflowType.value?.value
+            });
+
+            if (result.isSuccess && result.data) {
+                previewRows.value = result.data;
+                showPreview.value = true;
+            }
+            else {
+                blockErrorMessage.value = result.errorMessage || "Unable to preview the workflow type.";
+            }
+        }
+        finally {
+            isPreviewing.value = false;
+        }
+    }
+
+    /**
+     * Exports the selected workflow type and triggers a browser download of the JSON file.
+     */
+    async function exportWorkflow(): Promise<void> {
+        blockErrorMessage.value = "";
+        isExporting.value = true;
+
+        try {
+            const result = await invokeBlockAction<ShareWorkflowExportResultBag>("Export", {
+                workflowTypeValue: selectedWorkflowType.value?.value
+            });
+
+            if (result.isSuccess && result.data?.json) {
+                const data = new Blob([result.data.json], { type: "application/json" });
+                await downloadFile(data, result.data.fileName ?? "workflow.json");
+            }
+            else {
+                blockErrorMessage.value = result.errorMessage || "Unable to export the workflow type.";
+            }
+        }
+        finally {
+            isExporting.value = false;
+        }
+    }
+
+    /**
+     * Imports the uploaded workflow file into the selected category and shows the result messages.
+     */
+    async function importWorkflow(): Promise<void> {
+        blockErrorMessage.value = "";
+        showPreview.value = false;
+        isImporting.value = true;
+
+        try {
+            const bag: ShareWorkflowImportRequestBag = {
+                file: importFile.value,
+                category: importCategory.value,
+                isTestOnly: isTestOnly.value
+            };
+
+            const result = await invokeBlockAction<ShareWorkflowImportResultBag>("Import", { bag });
+
+            if (result.isSuccess && result.data) {
+                importMessages.value = result.data.messages ?? [];
+                showImportResults.value = true;
+
+                if (result.data.isSuccess) {
+                    importFile.value = null;
+                }
+            }
+            else {
+                blockErrorMessage.value = result.errorMessage || "Unable to import the workflow file.";
+            }
+        }
+        finally {
+            isImporting.value = false;
+        }
+    }
+
+    // #endregion Functions
+
+    // #region Lifecycle Hooks
+
+    onConfigurationValuesChanged(reloadBlock);
+
+    // #endregion Lifecycle Hooks
+</script>

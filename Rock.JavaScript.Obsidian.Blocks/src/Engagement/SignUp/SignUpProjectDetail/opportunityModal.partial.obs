@@ -1,0 +1,337 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Modal v-model="isVisible"
+           :title="title"
+           saveText="Save"
+           :onSave="onSave">
+        <NotificationBox v-if="errorMessage" alertType="danger">
+            {{ errorMessage }}
+        </NotificationBox>
+
+        <NotificationBox v-if="isScheduleTypeWarningVisible" alertType="warning">
+            The <strong>{{ groupTypeName }}</strong> group type does not allow this opportunity's current schedule; please add a new schedule below.
+        </NotificationBox>
+
+        <NotificationBox v-if="isLocationModeWarningVisible" alertType="warning">
+            The <strong>{{ groupTypeName }}</strong> group type does not allow this opportunity's current location; please add a new location below.
+        </NotificationBox>
+
+        <TextBox v-model="name"
+                 label="Opportunity Name"
+                 help="Optional name for the opportunity. This is helpful to provide if your project will have several opportunities configured." />
+
+        <div class="row">
+            <div class="col-md-8">
+                <div v-if="isScheduleTypeToggleVisible" class="form-group">
+                    <ButtonGroup v-model="scheduleTypeValue" :items="scheduleTypeItems" :btnSize="BtnSize.ExtraSmall" />
+                </div>
+
+                <ScheduleBuilder v-if="isCustomSchedule"
+                                 v-model="iCalendarContent"
+                                 label="Schedule"
+                                 rules="required"
+                                 displayScheduleFriendlyTextBesideLabel />
+
+                <SchedulePicker v-else
+                                v-model="namedSchedule"
+                                label="Schedule"
+                                rules="required" />
+
+                <LocationPicker v-model="location"
+                                v-model:currentPickerMode="pickerMode"
+                                :allowedPickerModes="allowedPickerModes"
+                                label="Location"
+                                rules="required" />
+            </div>
+
+            <div class="col-md-4">
+                <div class="well">
+                    <NumberBox v-model="slotsMinimum" label="Minimum Attendance" />
+                    <NumberBox v-model="slotsDesired" label="Desired Attendance" />
+                    <NumberBox v-model="slotsMaximum" label="Maximum Attendance" />
+                </div>
+            </div>
+        </div>
+
+        <HtmlEditor v-if="isProjectTypeInPerson"
+                    v-model="reminderAdditionalDetails"
+                    label="Reminder Details"
+                    :editorHeight="200"
+                    help="Optional additional project details that will be appended to the reminder communication." />
+
+        <HtmlEditor v-model="confirmationAdditionalDetails"
+                    label="Confirmation Details"
+                    :editorHeight="200"
+                    help="Optional additional project details that will be appended to the communication that is sent when registering." />
+    </Modal>
+</template>
+
+<script setup lang="ts">
+    import { computed, PropType, ref, watch } from "vue";
+    import ButtonGroup from "@Obsidian/Controls/buttonGroup.obs";
+    import HtmlEditor from "@Obsidian/Controls/htmlEditor.obs";
+    import LocationPicker from "@Obsidian/Controls/locationPicker.obs";
+    import Modal from "@Obsidian/Controls/modal.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import NumberBox from "@Obsidian/Controls/numberBox.obs";
+    import ScheduleBuilder from "@Obsidian/Controls/scheduleBuilder.obs";
+    import SchedulePicker from "@Obsidian/Controls/schedulePicker.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
+    import { LocationPickerMode, LocationPickerModeFlag, SingleLocationPickerMode } from "@Obsidian/Enums/Controls/locationPickerMode";
+    import { GroupLocationPickerMode } from "@Obsidian/Enums/Group/groupLocationPickerMode";
+    import { ScheduleType } from "@Obsidian/Enums/Group/scheduleType";
+    import { useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { useVModelPassthrough } from "@Obsidian/Utility/component";
+    import { AddressControlBag } from "@Obsidian/ViewModels/Controls/addressControlBag";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { SignUpOpportunityBag } from "@Obsidian/ViewModels/Blocks/Engagement/SignUp/SignUpProjectDetail/signUpOpportunityBag";
+    import { SignUpProjectGroupTypeOptionsBag } from "@Obsidian/ViewModels/Blocks/Engagement/SignUp/SignUpProjectDetail/signUpProjectGroupTypeOptionsBag";
+
+    // #region Types
+
+    type LocationPickerValue = AddressControlBag | ListItemBag | string | undefined;
+
+    // #endregion Types
+
+    const props = defineProps({
+        /** Whether the modal is visible. */
+        modelValue: {
+            type: Boolean as PropType<boolean>,
+            required: true
+        },
+
+        /** The opportunity to edit, or null to add an opportunity. */
+        opportunity: {
+            type: Object as PropType<SignUpOpportunityBag | null>,
+            default: null
+        },
+
+        /** The identifier key of the project. */
+        groupIdKey: {
+            type: String as PropType<string>,
+            required: true
+        },
+
+        /** The options that depend on the project's group type. */
+        groupTypeOptions: {
+            type: Object as PropType<SignUpProjectGroupTypeOptionsBag>,
+            required: true
+        },
+
+        /** Whether the project is an in-person project, which is the only project type that sends reminders. */
+        isProjectTypeInPerson: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: boolean): void,
+        (e: "save", value: SignUpOpportunityBag[]): void
+    }>();
+
+    // #region Values
+
+    const invokeBlockAction = useInvokeBlockAction();
+    const isVisible = useVModelPassthrough(props, "modelValue", emit);
+
+    const errorMessage = ref("");
+    const isScheduleTypeWarningVisible = ref(false);
+    const isLocationModeWarningVisible = ref(false);
+
+    const name = ref("");
+    const scheduleTypeValue = ref<string>(ScheduleType.Custom.toString());
+    const scheduleTypeItems: { text: string, value: string }[] = [
+        { text: "Custom Schedule", value: ScheduleType.Custom.toString() },
+        { text: "Named Schedule", value: ScheduleType.Named.toString() }
+    ];
+    const iCalendarContent = ref("");
+    const namedSchedule = ref<ListItemBag | null>(null);
+    const location = ref<LocationPickerValue>(undefined);
+    const pickerMode = ref<SingleLocationPickerMode>(LocationPickerMode.Named);
+    const slotsMinimum = ref<number | null>(null);
+    const slotsDesired = ref<number | null>(null);
+    const slotsMaximum = ref<number | null>(null);
+    const reminderAdditionalDetails = ref("");
+    const confirmationAdditionalDetails = ref("");
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    const title = computed((): string => props.opportunity ? "Edit Opportunity" : "Add Opportunity");
+
+    const groupTypeName = computed((): string => props.groupTypeOptions.groupTypeName ?? "");
+
+    const isCustomScheduleAllowed = computed((): boolean => {
+        return ((props.groupTypeOptions.allowedScheduleTypes ?? 0) & ScheduleType.Custom) !== 0;
+    });
+
+    const isNamedScheduleAllowed = computed((): boolean => {
+        return ((props.groupTypeOptions.allowedScheduleTypes ?? 0) & ScheduleType.Named) !== 0;
+    });
+
+    /** The schedule type toggle is only needed when both types are allowed. */
+    const isScheduleTypeToggleVisible = computed((): boolean => isCustomScheduleAllowed.value && isNamedScheduleAllowed.value);
+
+    const isCustomSchedule = computed((): boolean => scheduleTypeValue.value === ScheduleType.Custom.toString());
+
+    /**
+     * The location modes the group type allows, as the flags the location
+     * picker understands. The group member mode does not apply to opportunities.
+     */
+    const allowedPickerModes = computed((): LocationPickerModeFlag => {
+        const modes = (props.groupTypeOptions.locationSelectionMode ?? 0) & LocationPickerMode.All;
+
+        return (modes === 0 ? LocationPickerMode.Named : modes) as LocationPickerModeFlag;
+    });
+
+    // #endregion Computed Values
+
+    // #region Functions
+
+    /**
+     * Maps a group location picker mode to the matching single location picker
+     * mode, or null when the mode cannot be used for an opportunity.
+     *
+     * @param mode The group location picker mode.
+     */
+    function toSinglePickerMode(mode: GroupLocationPickerMode): SingleLocationPickerMode | null {
+        switch (mode) {
+            case GroupLocationPickerMode.Address:
+            case GroupLocationPickerMode.Named:
+            case GroupLocationPickerMode.Point:
+            case GroupLocationPickerMode.Polygon:
+                return mode as SingleLocationPickerMode;
+
+            default:
+                return null;
+        }
+    }
+
+    /**
+     * Gets the first location picker mode the group type allows.
+     */
+    function getDefaultPickerMode(): SingleLocationPickerMode {
+        const preferredModes: SingleLocationPickerMode[] = [
+            LocationPickerMode.Named,
+            LocationPickerMode.Address,
+            LocationPickerMode.Point,
+            LocationPickerMode.Polygon
+        ];
+
+        return preferredModes.find(mode => (allowedPickerModes.value & mode) === mode) ?? LocationPickerMode.Named;
+    }
+
+    /**
+     * Fills the fields from the opportunity being edited, or resets them when
+     * adding an opportunity. A schedule or location the group type no longer
+     * allows is left blank and flagged with a warning.
+     */
+    function initialize(): void {
+        const opportunity = props.opportunity;
+
+        errorMessage.value = "";
+        name.value = opportunity?.name ?? "";
+        slotsMinimum.value = opportunity?.slotsMinimum ?? null;
+        slotsDesired.value = opportunity?.slotsDesired ?? null;
+        slotsMaximum.value = opportunity?.slotsMaximum ?? null;
+        reminderAdditionalDetails.value = opportunity?.reminderAdditionalDetails ?? "";
+        confirmationAdditionalDetails.value = opportunity?.confirmationAdditionalDetails ?? "";
+
+        // A custom schedule is the preferred default when the group type allows it.
+        let selectedScheduleType: ScheduleType = isCustomScheduleAllowed.value ? ScheduleType.Custom : ScheduleType.Named;
+        iCalendarContent.value = "";
+        namedSchedule.value = null;
+        isScheduleTypeWarningVisible.value = false;
+
+        if (opportunity) {
+            if (opportunity.scheduleType === ScheduleType.Custom && isCustomScheduleAllowed.value) {
+                iCalendarContent.value = opportunity.iCalendarContent ?? "";
+                selectedScheduleType = ScheduleType.Custom;
+            }
+            else if (opportunity.scheduleType === ScheduleType.Named && isNamedScheduleAllowed.value) {
+                namedSchedule.value = opportunity.namedSchedule ?? null;
+                selectedScheduleType = ScheduleType.Named;
+            }
+            else {
+                isScheduleTypeWarningVisible.value = true;
+            }
+        }
+
+        scheduleTypeValue.value = selectedScheduleType.toString();
+
+        location.value = undefined;
+        pickerMode.value = getDefaultPickerMode();
+        isLocationModeWarningVisible.value = false;
+
+        if (opportunity) {
+            const currentPickerMode = toSinglePickerMode(opportunity.locationPickerMode);
+
+            if (currentPickerMode !== null && (allowedPickerModes.value & currentPickerMode) === currentPickerMode) {
+                pickerMode.value = currentPickerMode;
+                location.value = (opportunity.location as LocationPickerValue) ?? undefined;
+            }
+            else {
+                isLocationModeWarningVisible.value = true;
+            }
+        }
+    }
+
+    // #endregion Functions
+
+    // #region Event Handlers
+
+    /**
+     * Saves the opportunity and closes the modal, or shows the reason the
+     * opportunity could not be saved.
+     */
+    async function onSave(): Promise<void> {
+        errorMessage.value = "";
+
+        const bag: SignUpOpportunityBag = {
+            groupLocationIdKey: props.opportunity?.groupLocationIdKey ?? null,
+            locationIdKey: props.opportunity?.locationIdKey ?? null,
+            scheduleIdKey: props.opportunity?.scheduleIdKey ?? null,
+            name: name.value,
+            scheduleType: Number(scheduleTypeValue.value),
+            iCalendarContent: isCustomSchedule.value ? iCalendarContent.value : null,
+            namedSchedule: isCustomSchedule.value ? null : namedSchedule.value,
+            location: location.value ?? null,
+            locationPickerMode: pickerMode.value as GroupLocationPickerMode,
+            slotsMinimum: slotsMinimum.value,
+            slotsDesired: slotsDesired.value,
+            slotsMaximum: slotsMaximum.value,
+            slotsFilled: props.opportunity?.slotsFilled ?? 0,
+            isUpcoming: props.opportunity?.isUpcoming ?? false,
+            reminderAdditionalDetails: props.isProjectTypeInPerson ? reminderAdditionalDetails.value : null,
+            confirmationAdditionalDetails: confirmationAdditionalDetails.value
+        };
+
+        const result = await invokeBlockAction<SignUpOpportunityBag[]>("SaveOpportunity", {
+            key: props.groupIdKey,
+            bag
+        });
+
+        if (result.isSuccess && result.data) {
+            emit("save", result.data);
+            isVisible.value = false;
+        }
+        else {
+            errorMessage.value = result.errorMessage ?? "Unknown error while trying to save the opportunity.";
+        }
+    }
+
+    // #endregion Event Handlers
+
+    // #region Watchers
+
+    watch(isVisible, (visible) => {
+        if (visible) {
+            initialize();
+        }
+    });
+
+    // #endregion Watchers
+</script>

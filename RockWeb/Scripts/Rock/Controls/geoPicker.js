@@ -19,7 +19,6 @@
             obj.mapId = options.mapId;
 
             // An array of styles that controls the look of the Google Map
-            // http://gmaps-samples-v3.googlecode.com/svn/trunk/styledmaps/wizard/index.html
             obj.styles = options.mapStyle;
 
             // This is used to temporarily store in case of user cancel.
@@ -27,6 +26,9 @@
 
             // the selected polygon or point
             obj.selectedShape = null;
+
+            // the shape currently on the map (independent of whether it is selected)
+            obj.shapeOnMap = null;
 
             // these are used to set the map's viewport boundary
             obj.minLat = null;
@@ -37,45 +39,19 @@
             // our google Map
             obj.map = null;
 
-            // an instance of the Google Maps drawing manager
-            obj.drawingManager = null;
+            // custom drawing controller state (replaces the deprecated DrawingManager)
+            obj.isDrawing = false;
+            obj.workingVertices = [];
+            obj.workingPolyline = null;
+            obj.firstVertexMarker = null;
+            obj.mapClickListener = null;
+            obj.mapDblclickListener = null;
+            obj.mapMousemoveListener = null;
 
-            // An array of styles that controls the look of the Google Map
-            // http://gmaps-samples-v3.googlecode.com/svn/trunk/styledmaps/wizard/index.html
-            //obj.styles = [
-            //  {
-            //      "stylers": [
-            //        { "visibility": "simplified" },
-            //        { "saturation": -100 }
-            //      ]
-            //  }, {
-            //      "featureType": "road",
-            //      "elementType": "labels",
-            //      "stylers": [
-            //        { "visibility": "on" }
-            //      ]
-            //  }, {
-            //      "featureType": "poi",
-            //      "stylers": [
-            //        { "visibility": "off" }
-            //      ]
-            //  }, {
-            //      "featureType": "landscape",
-            //      "stylers": [
-            //        { "visibility": "off" }
-            //      ]
-            //  }, {
-            //      "featureType": "administrative.province",
-            //      "stylers": [
-            //        { "visibility": "on" }
-            //      ]
-            //  }, {
-            //      "featureType": "administrative.locality",
-            //      "stylers": [
-            //        { "visibility": "on" }
-            //      ]
-            //  }
-            //];
+            // toolbar buttons (constructed in buildToolbar)
+            obj.$panBtn = null;
+            obj.$drawBtn = null;
+            obj.$clearBtn = null;
 
             /**
             * Initializes the map viewport boundary coordinates.
@@ -97,8 +73,8 @@
                     }
                     obj.selectedShape = null;
                 }
-                $('#gmnoprint-delete-button_' + obj.controlId).attr('disabled', '')
-                    .find('.ti-x').css("color", "#aaa");
+
+                obj.updateToolbarState();
             }
 
             /**
@@ -109,11 +85,8 @@
             this.setSelection = function (shape, type) {
                 obj.clearSelection();
 
-                // enable delete button
-                $('#gmnoprint-delete-button_' + obj.controlId).prop("disabled", false)
-                    .find('.ti-x').css("color", "");
-
                 obj.selectedShape = shape;
+                obj.shapeOnMap = shape;
 
                 if (type == "polygon") {
                     shape.setEditable(true);
@@ -137,6 +110,8 @@
                 else if (type == "marker") {
                     obj.path = shape.getPosition().toUrlValue();
                 }
+
+                obj.updateToolbarState();
             }
 
             /**
@@ -149,28 +124,10 @@
                     obj.clearSelection();
 
                     // delete the path
+                    obj.shapeOnMap = null;
                     obj.path = null;
 
-                    // enable the drawing controls again
-                    obj.drawingManager.setOptions({
-                        drawingControlOptions: {
-                            drawingModes: obj.getDrawingModes()
-                        }
-                    });
-                }
-            }
-
-            /**
-            * Returns the appropriate mode array for use with the map's DrawingManager
-            * drawing control options.
-            */
-            this.getDrawingModes = function getDrawingModes() {
-
-                if (obj.drawingMode == "Polygon") {
-                    return [google.maps.drawing.OverlayType.POLYGON];
-                }
-                else if (obj.drawingMode == "Point") {
-                    return [google.maps.drawing.OverlayType.MARKER];
+                    obj.updateToolbarState();
                 }
             }
 
@@ -245,24 +202,348 @@
             }
 
             /**
-            * Disables the drawing manager so they cannot add anything to the map.
+            * Build the three on-map toolbar buttons (Pan, Draw, Clear) and push
+            * them into the map's TOP_LEFT control slot. The buttons are kept in
+            * sync with the state machine via updateToolbarState().
             */
-            this.disableDrawingManager = function () {
-                // Switch back to non-drawing mode after drawing a shape.
-                if (!obj.drawingManager) {
+            this.buildToolbar = function () {
+                var drawIcon = obj.drawingMode == "Polygon" ? "ti-polygon" : "ti-map-pin";
+                var drawTitle = obj.drawingMode == "Polygon" ? "Draw a geo-fence" : "Draw point";
+
+                obj.$panBtn = $('<button type="button" class="gm-tool-button" title="Cancel drawing" aria-label="Cancel drawing"><i class="ti ti-hand-stop"></i></button>');
+                obj.$drawBtn = $('<button type="button" class="gm-tool-button" title="' + drawTitle + '" aria-label="' + drawTitle + '"><i class="ti ' + drawIcon + '"></i></button>');
+                obj.$clearBtn = $('<button type="button" class="gm-tool-button" title="Delete selected shape" aria-label="Delete selected shape"><i class="ti ti-x"></i></button>');
+
+                obj.$panBtn.on('click', function (e) {
+                    e.preventDefault();
+                    if (obj.isDrawing) {
+                        obj.cancelDrawing();
+                    }
+                });
+
+                obj.$drawBtn.on('click', function (e) {
+                    e.preventDefault();
+                    if (!obj.isDrawing && !obj.shapeOnMap) {
+                        obj.startDrawing();
+                    }
+                });
+
+                obj.$clearBtn.on('click', function (e) {
+                    e.preventDefault();
+                    if (obj.selectedShape) {
+                        obj.deleteSelectedShape();
+                    }
+                });
+
+                obj.map.controls[google.maps.ControlPosition.TOP_LEFT].push(obj.$panBtn[0]);
+                obj.map.controls[google.maps.ControlPosition.TOP_LEFT].push(obj.$drawBtn[0]);
+                obj.map.controls[google.maps.ControlPosition.TOP_LEFT].push(obj.$clearBtn[0]);
+            }
+
+            /**
+            * Apply the current state machine to the three toolbar buttons.
+            *   pan   -> active only while drawing
+            *   draw  -> active only when no shape exists and we are not drawing
+            *   clear -> active only when a shape is currently selected
+            */
+            this.updateToolbarState = function () {
+                function setActive($btn, isActive) {
+                    if (!$btn) {
+                        return;
+                    }
+                    $btn.prop('disabled', !isActive);
+                }
+
+                setActive(obj.$panBtn, obj.isDrawing);
+                setActive(obj.$drawBtn, !obj.isDrawing && !obj.shapeOnMap);
+                setActive(obj.$clearBtn, !!obj.selectedShape);
+
+                // Signal "this mode is currently in use" on the Draw button while
+                // the user is actively drawing (button is disabled but colored).
+                // Also hide the Draw button entirely once a shape exists on the
+                // map; it reappears when the shape is cleared via the X.
+                if (obj.$drawBtn) {
+                    obj.$drawBtn.toggleClass('text-info', obj.isDrawing);
+                    obj.$drawBtn.toggle(!obj.shapeOnMap);
+                }
+            }
+
+            /**
+            * Enter drawing mode. Sets the crosshair cursor and binds the map
+            * listeners that collect a single point click or a sequence of
+            * polygon vertices.
+            */
+            this.startDrawing = function () {
+                if (obj.isDrawing || obj.shapeOnMap || !obj.map) {
                     return;
                 }
 
-                obj.drawingManager.setDrawingMode(null);
+                obj.isDrawing = true;
+                obj.map.setOptions({ draggableCursor: 'crosshair' });
+                obj.updateToolbarState();
 
-                // disable the drawing controls so we only get one polygon
-                // and we'll add it back on deleting the existing polygon.
-                obj.drawingManager.setOptions({
-                    drawingControlOptions: {
-                        drawingModes: [
-                        ]
-                    }
+                if (obj.drawingMode == "Point") {
+                    obj.mapClickListener = google.maps.event.addListener(obj.map, 'click', function (e) {
+                        if (!e.latLng) {
+                            return;
+                        }
+                        obj.finishPoint(e.latLng);
+                    });
+                }
+                else {
+                    // While the user is laying down polygon vertices, suppress
+                    // Google's default dblclick-to-zoom so the dblclick that
+                    // finalizes the polygon doesn't also zoom the map. Restored
+                    // on finish/cancel.
+                    obj.map.setOptions({ disableDoubleClickZoom: true });
+
+                    obj.workingVertices = [];
+                    obj.workingPolyline = new google.maps.Polyline({
+                        path: [],
+                        strokeColor: obj.strokeColor,
+                        strokeWeight: 2,
+                        // The rubber-band line follows the cursor; if it were
+                        // clickable Google Maps would treat clicks on it as
+                        // polyline hits and swallow the map click that should
+                        // be adding the next vertex.
+                        clickable: false,
+                        map: obj.map
+                    });
+
+                    obj.mapClickListener = google.maps.event.addListener(obj.map, 'click', function (e) {
+                        if (!e.latLng) {
+                            return;
+                        }
+                        obj.addPolygonVertex(e.latLng);
+                    });
+
+                    // Double-clicking the map places a final vertex at the
+                    // dblclick position and then closes the polygon back to
+                    // the first vertex, mirroring the legacy DrawingManager.
+                    // Browsers fire two click events before dblclick, so the
+                    // second click would leave a redundant trailing vertex
+                    // that we strip before closing.
+                    obj.mapDblclickListener = google.maps.event.addListener(obj.map, 'dblclick', function () {
+                        obj.dedupeTrailingVertex();
+                        obj.tryFinishPolygon();
+                    });
+
+                    // Rubber-band the working polyline from the last placed
+                    // vertex to the cursor so the user can see where the next
+                    // segment will land.
+                    obj.mapMousemoveListener = google.maps.event.addListener(obj.map, 'mousemove', function (e) {
+                        if (!e.latLng || obj.workingVertices.length === 0) {
+                            return;
+                        }
+                        obj.workingPolyline.setPath(obj.workingVertices.concat([e.latLng]));
+                    });
+                }
+            }
+
+            /**
+            * Append a vertex to the in-progress polyline. The first vertex also
+            * gets a small marker that the user can click to snap-close the polygon.
+            */
+            this.addPolygonVertex = function (latLng) {
+                obj.workingVertices.push(latLng);
+                obj.workingPolyline.setPath(obj.workingVertices);
+
+                if (obj.workingVertices.length === 1) {
+                    obj.firstVertexMarker = new google.maps.Marker({
+                        position: latLng,
+                        map: obj.map,
+                        icon: {
+                            path: google.maps.SymbolPath.CIRCLE,
+                            scale: 6,
+                            fillColor: obj.fillColor,
+                            fillOpacity: 1,
+                            strokeColor: obj.strokeColor,
+                            strokeWeight: 2
+                        },
+                        zIndex: 100
+                    });
+
+                    google.maps.event.addListener(obj.firstVertexMarker, 'click', function () {
+                        obj.tryFinishPolygon();
+                    });
+                }
+            }
+
+            /**
+            * Close the polygon if at least 3 vertices have been placed. Otherwise
+            * the user is still drawing and the click/double-click is ignored.
+            */
+            this.tryFinishPolygon = function () {
+                if (obj.workingVertices.length < 3) {
+                    return;
+                }
+
+                obj.finishPolygon();
+            }
+
+            /**
+            * Pop the trailing vertex if it is a near-duplicate of the one before
+            * it. A double-click delivers two click events at the same position
+            * followed by a dblclick; the second click would otherwise leave a
+            * redundant vertex at the dblclick site.
+            */
+            this.dedupeTrailingVertex = function () {
+                if (obj.workingVertices.length < 2) {
+                    return;
+                }
+
+                var last = obj.workingVertices[obj.workingVertices.length - 1];
+                var secondLast = obj.workingVertices[obj.workingVertices.length - 2];
+
+                if (Math.abs(last.lat() - secondLast.lat()) < 0.00001
+                    && Math.abs(last.lng() - secondLast.lng()) < 0.00001) {
+                    obj.workingVertices.pop();
+                    obj.workingPolyline.setPath(obj.workingVertices);
+                }
+            }
+
+            /**
+            * Build the final editable Polygon and commit it as the current shape.
+            */
+            this.finishPolygon = function () {
+                obj.removeMapDrawListeners();
+                obj.map.setOptions({ draggableCursor: null, disableDoubleClickZoom: false });
+
+                var polygon = new google.maps.Polygon({
+                    paths: obj.workingVertices,
+                    clickable: true,
+                    editable: true,
+                    strokeColor: obj.strokeColor,
+                    fillColor: obj.fillColor,
+                    strokeWeight: 2,
+                    map: obj.map
                 });
+
+                obj.cleanupWorkingShapes();
+                obj.isDrawing = false;
+                obj.setSelection(polygon, "polygon");
+
+                // add listener for moving polygon points.
+                google.maps.event.addListener(polygon.getPath(), 'set_at', function () {
+                    obj.setSelection(polygon, "polygon");
+                });
+
+                // add listener for adding new points.
+                google.maps.event.addListener(polygon.getPath(), 'insert_at', function () {
+                    obj.setSelection(polygon, "polygon");
+                });
+
+                // Add an event listener to implement right-click to delete node
+                google.maps.event.addListener(polygon, 'rightclick', function (ev) {
+                    if (ev.vertex != null) {
+                        polygon.getPath().removeAt(ev.vertex);
+                    }
+                    obj.setSelection(polygon, "polygon");
+                });
+
+                google.maps.event.addListener(polygon, 'click', function () {
+                    obj.setSelection(polygon, "polygon");
+                });
+            }
+
+            /**
+            * Commit the single point click as the current shape.
+            */
+            this.finishPoint = function (latLng) {
+                obj.removeMapDrawListeners();
+                obj.map.setOptions({ draggableCursor: null });
+
+                var point;
+                if (!obj.mapId) {
+                    point = new google.maps.Marker({
+                        position: latLng,
+                        map: obj.map,
+                        clickable: true,
+                        icon: obj.getMarkerImage()
+                    });
+                }
+                else {
+                    var pin = new google.maps.marker.PinElement({
+                        background: '#FE7569',
+                        borderColor: '#000',
+                        scale: 1,
+                        glyph: ''
+                    });
+
+                    point = {
+                        position: latLng,
+                        map: obj.map,
+                        clickable: true,
+                        icon: obj.getMarkerImage(),
+                        marker_element: new google.maps.marker.AdvancedMarkerElement({
+                            position: latLng,
+                            map: obj.map,
+                            content: pin.element
+                        }),
+                        setMap: function (newMap) {
+                            this.map = newMap;
+                            this.marker_element.map = newMap;
+                        },
+                        getPosition: function () {
+                            return this.position;
+                        },
+                        setPosition: function (newPosition) {
+                            this.position = newPosition;
+                            this.marker_element.position = newPosition;
+                        }
+                    };
+                }
+
+                obj.isDrawing = false;
+                obj.setSelection(point, "marker");
+
+                google.maps.event.addListener(point, 'click', function () {
+                    obj.setSelection(point, "marker");
+                });
+            }
+
+            /**
+            * Cancel an in-progress draw (Pan button while active, or Done clicked
+            * mid-draw). Discards working state and returns to idle. The committed
+            * shape state (if any from before the draw started) is untouched.
+            */
+            this.cancelDrawing = function () {
+                if (!obj.isDrawing) {
+                    return;
+                }
+
+                obj.removeMapDrawListeners();
+                obj.map.setOptions({ draggableCursor: null, disableDoubleClickZoom: false });
+                obj.cleanupWorkingShapes();
+                obj.isDrawing = false;
+                obj.updateToolbarState();
+            }
+
+            this.removeMapDrawListeners = function () {
+                if (obj.mapClickListener) {
+                    google.maps.event.removeListener(obj.mapClickListener);
+                    obj.mapClickListener = null;
+                }
+                if (obj.mapDblclickListener) {
+                    google.maps.event.removeListener(obj.mapDblclickListener);
+                    obj.mapDblclickListener = null;
+                }
+                if (obj.mapMousemoveListener) {
+                    google.maps.event.removeListener(obj.mapMousemoveListener);
+                    obj.mapMousemoveListener = null;
+                }
+            }
+
+            this.cleanupWorkingShapes = function () {
+                if (obj.workingPolyline) {
+                    obj.workingPolyline.setMap(null);
+                    obj.workingPolyline = null;
+                }
+                if (obj.firstVertexMarker) {
+                    obj.firstVertexMarker.setMap(null);
+                    obj.firstVertexMarker = null;
+                }
+                obj.workingVertices = [];
             }
 
             /**
@@ -302,19 +583,16 @@
                             polygon.setMap(map);
 
                             // Select the polygon
-                            obj.setSelection(polygon, google.maps.drawing.OverlayType.POLYGON);
-
-                            // Disable the drawing manager
-                            obj.disableDrawingManager();
+                            obj.setSelection(polygon, "polygon");
 
                             // add listener for moving polygon points.
                             google.maps.event.addListener(polygon.getPath(), 'set_at', function (e) {
-                                obj.setSelection(polygon, google.maps.drawing.OverlayType.POLYGON);
+                                obj.setSelection(polygon, "polygon");
                             });
 
                             // add listener for adding new points.
                             google.maps.event.addListener(polygon.getPath(), 'insert_at', function (e) {
-                                obj.setSelection(polygon, google.maps.drawing.OverlayType.POLYGON);
+                                obj.setSelection(polygon, "polygon");
                             });
 
                             // Add an event listener to implement right-click to delete node
@@ -322,13 +600,13 @@
                                 if (ev.vertex != null) {
                                     polygon.getPath().removeAt(ev.vertex);
                                 }
-                                obj.setSelection(polygon, google.maps.drawing.OverlayType.POLYGON);
+                                obj.setSelection(polygon, "polygon");
                             });
 
                             // add listener for "selecting" the polygon
                             // because that's where we stuff the coordinates into the hidden variable
                             google.maps.event.addListener(polygon, 'click', function () {
-                                obj.setSelection(polygon, google.maps.drawing.OverlayType.POLYGON);
+                                obj.setSelection(polygon, "polygon");
                             });
                         }
                         else if (obj.drawingMode == "Point") {
@@ -375,15 +653,12 @@
                             }
 
                             // Select the point
-                            obj.setSelection(point, google.maps.drawing.OverlayType.MARKER);
-
-                            // Disable the drawing manager
-                            obj.disableDrawingManager();
+                            obj.setSelection(point, "marker");
 
                             // add listener for "selecting" the point
                             // because that's where we stuff the coordinates into the hidden variable
                             google.maps.event.addListener(point, 'click', function () {
-                                obj.setSelection(point, google.maps.drawing.OverlayType.MARKER);
+                                obj.setSelection(point, "marker");
                             });
                         }
                     }
@@ -495,20 +770,25 @@
             /**
             * Handle the toggle expand fullscreen button click.
             */
+            // Namespace the ESC-to-exit-fullscreen binding per control so it
+            // can be installed when entering fullscreen and removed when leaving.
+            var escEventName = 'keydown.geoPickerFullscreenEsc_' + controlId;
+
             $('#btnExpandToggle_' + controlId).on('click', function () {
 
                 var $myElement = $('#geoPicker_' + self.controlId);
+                var $btn = $(this);
 
                 var isExpaned = $myElement.data("fullscreen");
 
-                $(this).children('i').toggleClass("ti-maximize", isExpaned);
-                $(this).children('i').toggleClass("ti-minimize", ! isExpaned);
+                $btn.children('i').toggleClass("ti-maximize", isExpaned);
+                $btn.children('i').toggleClass("ti-minimize", ! isExpaned);
 
                 // Shrink to regular size
                 if ( isExpaned ) {
                     $myElement.data("fullscreen", false);
 
-                    $(this).closest('.picker-menu').css({
+                    $btn.closest('.picker-menu').css({
                         position: 'absolute',
                         top: 0,
                         left: 0,
@@ -521,11 +801,8 @@
                         width: 500
                     });
 
-                    // move the delete button
-                    $('#gmnoprint-delete-button_' + self.controlId).css({
-                        left: '200px',
-                    });
-
+                    // No longer in fullscreen; stop listening for ESC.
+                    $(document).off(escEventName);
                 }
                 else {
 
@@ -533,7 +810,7 @@
 
                     $myElement.data("fullscreen", true);
                     // resize the container
-                    $(this).closest('.picker-menu').css({
+                    $btn.closest('.picker-menu').css({
                         position: 'fixed',
                         top: 0,
                         left: 0,
@@ -547,9 +824,15 @@
                         width: '100%'
                     });
 
-                    // move the delete button
-                    $('#gmnoprint-delete-button_' + self.controlId).css({
-                        left: '200px',
+                    // Pressing ESC while fullscreen should drop back to the
+                    // normal popup size (without closing the picker). The
+                    // toggle button already handles the shrink path, so we
+                    // just trigger a click on it.
+                    $(document).off(escEventName).on(escEventName, function (e) {
+                        if (e.key === 'Escape' && $myElement.data("fullscreen")) {
+                            e.stopPropagation();
+                            $('#btnExpandToggle_' + controlId).trigger('click');
+                        }
                     });
                 }
 
@@ -569,18 +852,18 @@
                     Rock.dialogs.updateModalScrollBar(controlId);
                 });
 
+                // Discard any in-progress draw state without committing.
+                if (self.isDrawing) {
+                    self.cancelDrawing();
+                }
+
                 self.path = self.pathTemp;
 
-                if ( self.selectedShape ) {
-                    self.selectedShape.setMap(null);
-                    self.clearSelection();
-
-                    // enable the drawing controls again
-                    self.drawingManager.setOptions({
-                        drawingControlOptions: {
-                            drawingModes: self.getDrawingModes()
-                        }
-                    });
+                if ( self.shapeOnMap ) {
+                    self.shapeOnMap.setMap(null);
+                    self.shapeOnMap = null;
+                    self.selectedShape = null;
+                    self.updateToolbarState();
                 }
                 self.plotPath(self.map);
             });
@@ -592,8 +875,14 @@
 
             /**
             * Handle the Select button click by stuffing the RockGoogleGeoPicker's path value into the hidden field.
+            * If the user is mid-draw with an incomplete polygon, discard the partial vertices
+            * rather than serializing an invalid WKT (which used to throw on the server).
             */
             $control.find('.js-geopicker-select').on('click', function () {
+                if (self.isDrawing) {
+                    self.cancelDrawing();
+                }
+
                 var geoInput = $('#' + controlId).find('input:checked'),
                     selectedValue = self.path,
                     selectedGeographyLabel = $('#selectedGeographyLabel_' + controlId);
@@ -617,6 +906,17 @@
                 $(this).closest('form').submit();
             });
 
+
+            /**
+            * Clear the hidden field on mousedown (before the click event), so the
+            * field is empty by the time ASP.NET's inline __doPostBack runs as the
+            * inline onclick handler that ServerClick wires up. Without this, the
+            * form submits with the previous value and the picker re-renders with
+            * the geofence still set.
+            */
+            $control.find('.picker-select-none').on('mousedown', function () {
+                $hiddenField.val("");
+            });
 
             /**
             * Clear the selection when X is clicked
@@ -646,7 +946,6 @@
         GeoPicker.prototype.initialize = function () {
             var self = this;
             var $hiddenField = $('#' + self.controlId + '_hfGeoPath');
-            var deleteButtonId = 'gmnoprint-delete-button_' + self.controlId;
 
             // Pull anything in the hidden field onto this object's path
             self.path = $hiddenField.val();
@@ -684,80 +983,23 @@
             self.map.mapTypes.set('map_style', styledMap);
             self.map.setMapTypeId('map_style');
 
+            // Build our custom drawing toolbar and push the buttons into the
+            // map's TOP_LEFT control slot.
+            self.buildToolbar();
+            self.updateToolbarState();
+
             // If we have coordinates we should plot them here...
             self.plotPath(self.map);
 
-            // Set up the Drawing Manager for creating polygons, circles, etc.
-            self.drawingManager = new google.maps.drawing.DrawingManager({
-                drawingControl: true,
-                drawingControlOptions: {
-                    drawingModes: self.getDrawingModes()
-                },
-                polygonOptions: {
-                    editable: true,
-                    strokeColor: self.strokeColor,
-                    fillColor: self.fillColor,
-                    strokeWeight: 2
-                },
-                markerOptions: {
-                    icon: self.getMarkerImage()
+            // Clicking the map in empty space deselects the current shape so
+            // the X button goes inactive, matching the legacy DrawingManager
+            // behavior. Guard against firing during an active draw, where map
+            // clicks are how we collect vertices.
+            google.maps.event.addListener(self.map, 'click', function () {
+                if (self.isDrawing) {
+                    return;
                 }
-            });
-
-            self.drawingManager.setMap(self.map);
-
-            // but disable the drawing manager if we already have a point/polygon selected:
-            if (self.path) {
-                self.disableDrawingManager();
-            }
-
-            // Handle when the polygon shape drawing is "complete"
-            google.maps.event.addListener(self.drawingManager, 'overlaycomplete', function (e) {
-                if (e.type == google.maps.drawing.OverlayType.POLYGON || e.type == google.maps.drawing.OverlayType.MARKER ) {
-                    // Disable the drawing manager once they've drawn an overlay.
-                    self.disableDrawingManager();
-
-                    // Add an event listener that selects the newly-drawn shape when the user mouses down on it.
-                    var newShape = e.overlay;
-                    newShape.type = e.type;
-                    google.maps.event.addListener(newShape, 'click', function () {
-                        self.setSelection(newShape, e.type);
-                    });
-                    self.setSelection(newShape, e.type);
-
-                    if (e.type == google.maps.drawing.OverlayType.POLYGON) {
-                        // add listener for moving polygon points.
-                        google.maps.event.addListener(newShape.getPath(), 'set_at', function (e) {
-                            self.setSelection(newShape, google.maps.drawing.OverlayType.POLYGON);
-                        });
-
-                        // add listener for adding new points.
-                        google.maps.event.addListener(newShape.getPath(), 'insert_at', function (e) {
-                            self.setSelection(newShape, google.maps.drawing.OverlayType.POLYGON);
-                        });
-
-                        // Add an event listener to implement right-click to delete node
-                        google.maps.event.addListener(newShape, 'rightclick', function (ev) {
-                            if (ev.vertex != null) {
-                                newShape.getPath().removeAt(ev.vertex);
-                            }
-                            self.setSelection(newShape, google.maps.drawing.OverlayType.POLYGON);
-                        });
-                    }
-                }
-            });
-
-            // Clear the current selection when the drawing mode is changed, or when the map is clicked.
-            google.maps.event.addListener(self.drawingManager, 'drawingmode_changed', self.clearSelection);
-            google.maps.event.addListener(self.map, 'click', self.clearSelection);
-
-            // Move our custom delete button into place once the map is idle.
-            // as per http://stackoverflow.com/questions/832692/how-to-check-if-google-maps-is-fully-loaded
-            google.maps.event.addListenerOnce(self.map, 'idle', function () {
-                $('#' + deleteButtonId).fadeIn();
-
-                // wire up an event handler to the delete button
-                document.getElementById(deleteButtonId).addEventListener('click', self.deleteSelectedShape);
+                self.clearSelection();
             });
 
             self.initializeEventHandlers();

@@ -22,6 +22,7 @@
 //
 
 import { AdultsOrChildrenSelectionMode } from "@Obsidian/Enums/CheckIn/adultsOrChildrenSelectionMode";
+import { SkipScreenBehavior } from "@Obsidian/Enums/CheckIn/skipScreenBehavior";
 import { CameraBarcodeConfiguration } from "@Obsidian/Enums/Core/cameraBarcodeConfiguration";
 import { KioskType } from "@Obsidian/Enums/Core/kioskType";
 
@@ -59,6 +60,12 @@ export type WebKioskBag = {
 
     /** Gets or sets the display name of this item. */
     name?: string | null;
+
+    /**
+     * Determines when the "skip" screen is shown when there is no valid
+     * opportunity for the current attendee.
+     */
+    skipScreenBehavior: SkipScreenBehavior;
 
     /** Gets or sets the kiosk type. */
     type?: KioskType | null;

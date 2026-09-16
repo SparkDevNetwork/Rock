@@ -1,0 +1,501 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <RockForm hideErrors
+              @visibleValidationChanged="onFormValidationChanged"
+              @submit="onSubmit">
+        <div class="area-group-pane-header">
+            <div class="heading">
+                <i class="heading-icon ti ti-stack-2"></i>
+                <div class="heading-text">
+                    <h5 class="heading-title">{{ area?.name ?? "" }}</h5>
+                </div>
+            </div>
+        </div>
+
+        <div class="area-group-pane-body" ref="bodyEl">
+            <NotificationBox v-if="saveSuccessMessage"
+                             :alertType="AlertType.Success">
+                {{ saveSuccessMessage }}
+            </NotificationBox>
+
+            <NotificationBox v-if="errorMessage"
+                             :alertType="AlertType.Warning"
+                             v-html="errorMessage" />
+
+            <RockValidation :errors="formErrors" />
+
+            <ContentSectionContainer :sidebar="false">
+                <ContentSection light>
+                    <ContentStack>
+                        <TextBox v-model="name"
+                                 label="Area Name"
+                                 rules="required" />
+
+                        <InlineCheckBox v-model="isConcurrentCheckInPrevented"
+                                        label="Prevent Concurrent Check-in"
+                                        help="Prevents checking into groups in this area if the person already has an attendance record for the same scheduled service. Only supported in next-gen check-in." />
+                    </ContentStack>
+                </ContentSection>
+
+                <ContentSection title="Group Check-in Settings" icon="ti ti-checkup-list" :order="1">
+                    <ContentStack>
+                        <DropDownList v-model="inheritedGroupTypeGuid"
+                                      label="Inherit Check-in Setup Type From"
+                                      help='Choose how you want to configure groups in this area. For example, selecting "Check in by Grade" enables grade-specific options when setting up groups.'
+                                      :items="inheritedGroupTypeOptions ?? []"
+                                      :showBlankItem="true" />
+
+                        <ConditionalWell v-if="inheritedGroupTypeGuid && hasAttributesForCurrentInheritFrom">
+                            <AttributeValuesContainer v-model="attributeValues"
+                                                      :attributes="attributesForCurrentInheritFrom"
+                                                      isEditMode />
+                        </ConditionalWell>
+
+                        <RadioButtonList v-model="attendanceRule"
+                                         label="Group Membership Requirement"
+                                         help="Defines if a person must already belong to the group to check in, or if they will be auto-added at check-in."
+                                         :items="attendanceRuleOptions" />
+
+                        <ConditionalWell v-if="attendanceRule === alreadyEnrolledRuleValue">
+                            <RadioButtonList v-model="alreadyEnrolledMatchingLogic"
+                                             label="Matching Logic"
+                                             help='Only supported by next-gen check-in. "Must Be Enrolled" simply requires that the person be an active member of the group. "Prefer Enrolled Groups" will additionally exclude non-preferred groups if the person is a member of one of these preferred groups.'
+                                             :items="matchingLogicOptions" />
+                        </ConditionalWell>
+                    </ContentStack>
+                </ContentSection>
+
+                <ContentSection title="Printing &amp; Label Settings" icon="ti ti-printer" :order="2">
+                    <ContentStack>
+                        <RadioButtonList v-model="attendancePrintTo"
+                                         label="Print To"
+                                         help="When printing check-in labels, should the device's printer or the location's printer be used?  Note: the device has a similar setting which takes precedence over this setting."
+                                         :items="printToOptions" />
+
+                        <LabelGrid :modelValue="checkInLabels"
+                                   @update:modelValue="onCheckInLabelsChanged"
+                                   title="Check-in Labels"
+                                   itemTerm="Label"
+                                   selectLabelText="Select Check-in Label"
+                                   createLabelText="Create Label"
+                                   :createLabelUrl="checkInLabelDetailUrl"
+                                   pickerActionName="GetAvailableCheckInLabels"
+                                   :pickerRequestPayload="labelPickerPayload" />
+
+                        <LabelGrid v-if="shouldShowClassicLabelsGrid"
+                                   :modelValue="classicCheckInLabels"
+                                   @update:modelValue="onClassicCheckInLabelsChanged"
+                                   title="Classic Check-in Labels"
+                                   itemTerm="Classic Label"
+                                   selectLabelText="Select Classic Check-in Label"
+                                   createLabelText="Create Classic Label"
+                                   :createLabelUrl="classicCheckInLabelDetailUrl"
+                                   pickerActionName="GetAvailableClassicCheckInLabels"
+                                   :pickerRequestPayload="labelPickerPayload" />
+                    </ContentStack>
+                </ContentSection>
+            </ContentSectionContainer>
+        </div>
+
+        <div class="area-group-pane-footer">
+            <RockButton type="submit"
+                        btnType="primary"
+                        :isLoading="isSaving"
+                        loadingText="Saving">
+                Save
+            </RockButton>
+            <RockButton btnType="link"
+                        :disabled="isSaving"
+                        @click="onDeleteClick">
+                {{ isPersisted ? "Delete" : "Cancel" }}
+            </RockButton>
+        </div>
+    </RockForm>
+</template>
+
+<script setup lang="ts">
+    import { computed, onBeforeUnmount, onMounted, PropType, ref, watch } from "vue";
+    import LabelGrid from "./labelGrid.partial.obs";
+    import { NavigationUrlKey } from "./types.partial";
+    import { useUpdateEditorIsDirty } from "./utils.partial";
+    import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
+    import ConditionalWell from "@Obsidian/Controls/conditionalWell.obs";
+    import ContentSection from "@Obsidian/Controls/contentSection.obs";
+    import ContentSectionContainer from "@Obsidian/Controls/contentSectionContainer.obs";
+    import ContentStack from "@Obsidian/Controls/contentStack.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import InlineCheckBox from "@Obsidian/Controls/inlineCheckBox.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import RadioButtonList from "@Obsidian/Controls/radioButtonList.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import RockForm from "@Obsidian/Controls/rockForm.obs";
+    import RockValidation from "@Obsidian/Controls/rockValidation.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import { AlreadyEnrolledMatchingLogic, AlreadyEnrolledMatchingLogicDescription } from "@Obsidian/Enums/CheckIn/alreadyEnrolledMatchingLogic";
+    import { AlertType } from "@Obsidian/Enums/Controls/alertType";
+    import { PrintTo } from "@Obsidian/Enums/Core/printTo";
+    import { AttendanceRule, AttendanceRuleDescription } from "@Obsidian/Enums/Group/attendanceRule";
+    import { Guid } from "@Obsidian/Types";
+    import { useConfigurationValues } from "@Obsidian/Utility/block";
+    import { confirm } from "@Obsidian/Utility/dialogs";
+    import { enumToListItemBag } from "@Obsidian/Utility/enumUtils";
+    import { FormError } from "@Obsidian/Utility/form";
+    import { AreaDetailBag } from "@Obsidian/ViewModels/Blocks/CheckIn/Configuration/CheckInAreasAndGroups/areaDetailBag";
+    import { CheckInAreasAndGroupsInitializationBox } from "@Obsidian/ViewModels/Blocks/CheckIn/Configuration/CheckInAreasAndGroups/checkInAreasAndGroupsInitializationBox";
+    import { CheckInLabelBag } from "@Obsidian/ViewModels/Blocks/CheckIn/Configuration/CheckInAreasAndGroups/checkInLabelBag";
+    import { ClassicCheckInLabelBag } from "@Obsidian/ViewModels/Blocks/CheckIn/Configuration/CheckInAreasAndGroups/classicCheckInLabelBag";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
+
+    const config = useConfigurationValues<CheckInAreasAndGroupsInitializationBox>();
+    const updateEditorIsDirty = useUpdateEditorIsDirty();
+
+    const props = defineProps({
+        /**
+         * The area being edited. Identity changes (e.g., the individual selecting
+         * a different area) re-seed the form's local working copy.
+         */
+        area: {
+            type: Object as PropType<AreaDetailBag | null>,
+            default: null
+        },
+
+        /**
+         * The check-in setup types selectable in the "Inherit Check-in Setup
+         * Type From" dropdown. Same list both the Area and Group editors use.
+         */
+        inheritedGroupTypeOptions: {
+            type: Array as PropType<ListItemBag[]>,
+            default: () => []
+        },
+
+        /**
+         * Public attribute schemas keyed by inherit-from setup type Guid. The
+         * conditional well's AVC swaps schema reactively as the individual changes
+         * the dropdown, no server round-trip required.
+         */
+        inheritedAttributesByGuid: {
+            type: Object as PropType<Record<Guid, Record<string, PublicAttributeBag>>>,
+            default: () => ({})
+        },
+
+        /**
+         * Whether the Classic Check-in Labels section should be shown.
+         */
+        isClassicCheckInLabelsEnabled: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        /**
+         * True while the parent has a save in flight. Drives the Save button's
+         * loading state and disables Delete so the individual can't double-submit.
+         */
+        isSaving: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        /**
+         * An error message to display at the top of the editor. Bound through
+         * the parent so save/delete failures surface inside the editor without
+         * stealing the panel's terminal error slot.
+         */
+        errorMessage: {
+            type: String as PropType<string>,
+            default: ""
+        },
+
+        /**
+         * A success message to display at the top of the editor after a
+         * save completes. The parent sets it on a successful save and
+         * clears it when a new save starts or a different node is selected.
+         */
+        saveSuccessMessage: {
+            type: String as PropType<string>,
+            default: ""
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "save", bag: AreaDetailBag): void;
+        (e: "delete"): void;
+    }>();
+
+    /**
+     * Exclude default and give friendlier text for the print-to options.
+     */
+    const printToOptions: ListItemBag[] = [
+        { value: PrintTo.Kiosk.toString(), text: "Device Printer" },
+        { value: PrintTo.Location.toString(), text: "Location Printer" }
+    ];
+
+    // #region Values
+
+    const bodyEl = ref<HTMLElement | null>(null);
+    const formErrors = ref<FormError[]>([]);
+
+    /**
+     * True once the individual has actually interacted with the form. Driven by
+     * DOM input / change events on the body plus explicit marks from the
+     * non-DOM controls (the label grids). Programmatic value changes, such
+     * as AttributeValuesContainer's async children emitting on mount, do NOT
+     * fire DOM input / change events, so they leave this false; this is what
+     * prevents an untouched editor from reading dirty after seeding.
+     */
+    const wasFormTouched = ref<boolean>(false);
+
+    const name = ref<string>("");
+    const isConcurrentCheckInPrevented = ref<boolean>(false);
+    const inheritedGroupTypeGuid = ref<string>("");
+    const attendanceRule = ref<string>(AttendanceRule.None.toString());
+    const alreadyEnrolledMatchingLogic = ref<string>(AlreadyEnrolledMatchingLogic.MustBeEnrolled.toString());
+    const attendancePrintTo = ref<string>(PrintTo.Default.toString());
+    const attributeValues = ref<Record<string, string>>({});
+    const checkInLabels = ref<ListItemBag[]>([]);
+    const classicCheckInLabels = ref<ListItemBag[]>([]);
+
+    const alreadyEnrolledRuleValue = AttendanceRule.AlreadyEnrolledInGroup.toString();
+    const attendanceRuleOptions = enumToListItemBag(AttendanceRuleDescription);
+    const matchingLogicOptions = enumToListItemBag(AlreadyEnrolledMatchingLogicDescription);
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    /**
+     * True once the area has been persisted. Drives the footer button's label
+     * (Delete vs Cancel) and whether the click prompts before discarding.
+     */
+    const isPersisted = computed((): boolean => !!props.area?.idKey);
+
+    /**
+     * The attribute schema applicable to whichever inherit-from setup type is
+     * currently selected. Switches reactively as the individual changes the
+     * dropdown.
+     */
+    const attributesForCurrentInheritFrom = computed((): Record<string, PublicAttributeBag> => {
+        const guid = inheritedGroupTypeGuid.value;
+        if (!guid) {
+            return {};
+        }
+        return props.inheritedAttributesByGuid?.[guid] ?? {};
+    });
+
+    /**
+     * True when the current inherit-from has at least one attribute to display.
+     */
+    const hasAttributesForCurrentInheritFrom = computed((): boolean =>
+        Object.keys(attributesForCurrentInheritFrom.value).length > 0
+    );
+
+    /**
+     * Picker payload identifying the area being edited. Empty IdKey on a new area.
+     */
+    const labelPickerPayload = computed((): Record<string, unknown> => ({
+        areaIdKey: props.area?.idKey ?? ""
+    }));
+
+    /** URL the Check-in Labels grid's "Create Label" link opens. */
+    const checkInLabelDetailUrl = computed((): string =>
+        config.navigationUrls?.[NavigationUrlKey.CreateCheckInLabel] ?? ""
+    );
+
+    /** URL the Classic Check-in Labels grid's "Create Label" link opens. */
+    const classicCheckInLabelDetailUrl = computed((): string =>
+        config.navigationUrls?.[NavigationUrlKey.CreateClassicCheckInLabel] ?? ""
+    );
+
+    /**
+     * Whether the Classic Check-in Labels grid should render. True when the
+     * loaded area has classic labels attached, or when the block setting is on.
+     */
+    const shouldShowClassicLabelsGrid = computed((): boolean =>
+        props.isClassicCheckInLabelsEnabled
+        || (props.area?.classicCheckInLabels?.length ?? 0) > 0
+    );
+
+    /**
+     * True when the editor has unsaved work: either a never-saved placeholder
+     * (empty idKey) sits in the form, or the individual has interacted with a
+     * persisted area's form.
+     */
+    const isDirty = computed((): boolean => {
+        if (!props.area) {
+            return false;
+        }
+        return !props.area.idKey || wasFormTouched.value;
+    });
+
+    // #endregion Computed Values
+
+    // #region Functions
+
+    /** Scrolls the editor body back to the top. */
+    function scrollBodyToTop(): void {
+        bodyEl.value?.scrollTo({ top: 0 });
+    }
+
+    /** Re-seeds every working-copy ref from the supplied bag. */
+    function seedFromBag(bag: AreaDetailBag | null): void {
+        name.value = bag?.name ?? "";
+        isConcurrentCheckInPrevented.value = bag?.isConcurrentCheckInPrevented ?? false;
+        inheritedGroupTypeGuid.value = bag?.inheritedGroupTypeGuid ?? "";
+        attendanceRule.value = (bag?.attendanceRule ?? AttendanceRule.None).toString();
+        alreadyEnrolledMatchingLogic.value = (bag?.alreadyEnrolledMatchingLogic ?? AlreadyEnrolledMatchingLogic.MustBeEnrolled).toString();
+
+        // Normalize Default (or unset) to Kiosk.
+        const incomingPrintTo = bag?.attendancePrintTo ?? PrintTo.Default;
+        attendancePrintTo.value = (incomingPrintTo === PrintTo.Default ? PrintTo.Kiosk : incomingPrintTo).toString();
+
+        attributeValues.value = { ...(bag?.attributeValues ?? {}) };
+
+        checkInLabels.value = (bag?.checkInLabels ?? []).map(label => ({
+            value: label.idKey ?? "",
+            text: label.name ?? ""
+        }));
+
+        classicCheckInLabels.value = (bag?.classicCheckInLabels ?? []).map(label => ({
+            value: label.binaryFileGuid ?? "",
+            text: label.fileName ?? ""
+        }));
+
+        wasFormTouched.value = false;
+    }
+
+    /** Builds the bag for the parent to persist. */
+    function buildBag(): AreaDetailBag {
+        const checkInLabelBags: CheckInLabelBag[] = checkInLabels.value.map(item => ({
+            idKey: item.value ?? "",
+            name: item.text ?? ""
+        }));
+
+        const classicCheckInLabelBags: ClassicCheckInLabelBag[] = classicCheckInLabels.value.map(item => ({
+            binaryFileGuid: (item.value ?? "") as Guid,
+            fileName: item.text ?? ""
+        }));
+
+        return {
+            idKey: props.area?.idKey ?? "",
+            name: name.value,
+            isConcurrentCheckInPrevented: isConcurrentCheckInPrevented.value,
+            inheritedGroupTypeGuid: inheritedGroupTypeGuid.value || null,
+            attendanceRule: parseInt(attendanceRule.value) as AttendanceRule,
+            alreadyEnrolledMatchingLogic: parseInt(alreadyEnrolledMatchingLogic.value) as AlreadyEnrolledMatchingLogic,
+            attendancePrintTo: parseInt(attendancePrintTo.value) as PrintTo,
+            attributeValues: { ...attributeValues.value },
+            checkInLabels: checkInLabelBags,
+            classicCheckInLabels: classicCheckInLabelBags
+        };
+    }
+
+    // #endregion Functions
+
+    // #region Event Handlers
+
+    /**
+     * Handles the form submit (RockForm only fires this when validation passes).
+     */
+    function onSubmit(): void {
+        emit("save", buildBag());
+    }
+
+    /**
+     * Handles the footer button click. Cancel on an unsaved area discards
+     * without confirmation; Delete prompts.
+     */
+    async function onDeleteClick(): Promise<void> {
+        if (!isPersisted.value) {
+            emit("delete");
+            return;
+        }
+        const confirmed = await confirm(`Are you sure you want to delete this "${props.area?.name ?? ""}" check-in area? This action cannot be undone.`);
+        if (confirmed) {
+            emit("delete");
+        }
+    }
+
+    /**
+     * Receives the current validation errors from RockForm so we can render
+     * them inside the body.
+     */
+    function onFormValidationChanged(errors: FormError[]): void {
+        formErrors.value = errors;
+    }
+
+    /** Marks the form as touched by the individual. */
+    function markFormTouched(): void {
+        wasFormTouched.value = true;
+    }
+
+    /**
+     * Applies a Check-in Labels change from the grid and marks the form
+     * as touched.
+     */
+    function onCheckInLabelsChanged(value: ListItemBag[]): void {
+        checkInLabels.value = value;
+        markFormTouched();
+    }
+
+    /**
+     * Applies a Classic Check-in Labels change from the grid and marks the form
+     * as touched.
+     */
+    function onClassicCheckInLabelsChanged(value: ListItemBag[]): void {
+        classicCheckInLabels.value = value;
+        markFormTouched();
+    }
+
+    // #endregion Event Handlers
+
+    // #region Watchers
+
+    // Re-seed (and reset scroll) whenever the area reference itself changes:
+    // a new node selected, a placeholder created, or the same node's data
+    // refreshed after a save. Refreshing on save is what clears the dirty
+    // snapshot so the navigation guard doesn't fire after a successful save.
+    watch(() => props.area, () => {
+        seedFromBag(props.area);
+        scrollBodyToTop();
+    }, { immediate: true });
+
+    // Scroll the body to top when a status message (success, error, or
+    // validation errors) first appears so it lands in view regardless of
+    // where the individual was scrolled.
+    watch(
+        [() => props.saveSuccessMessage, () => props.errorMessage, () => formErrors.value.length],
+        (newVals, oldVals) => {
+            const justAppeared = newVals.some((value, i) => value && !oldVals[i]);
+            if (justAppeared) {
+                scrollBodyToTop();
+            }
+        }
+    );
+
+    // Push the dirty state up through the provided updater so the parent's
+    // navigation guard sees it without a v-model chain through DetailPane.
+    watch(isDirty, (value) => {
+        updateEditorIsDirty(value);
+    }, { immediate: true });
+
+    // #endregion Watchers
+
+    // #region Lifecycle Hooks
+
+    // Listen for genuine user interaction on the form body.
+    onMounted(() => {
+        bodyEl.value?.addEventListener("input", markFormTouched);
+        bodyEl.value?.addEventListener("change", markFormTouched);
+    });
+
+    // Clear the parent's dirty tracking on unmount.
+    // Without this, the dirty flag would linger and the navigation guard
+    // would prompt on the next selection even though no editor is open.
+    onBeforeUnmount(() => {
+        bodyEl.value?.removeEventListener("input", markFormTouched);
+        bodyEl.value?.removeEventListener("change", markFormTouched);
+        updateEditorIsDirty(false);
+    });
+
+    // #endregion Lifecycle Hooks
+</script>

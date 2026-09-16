@@ -1,0 +1,154 @@
+<template>
+    <div ref="tokenRef"
+         :class="{
+            'pill': true,
+            [`pill-${tokenType}`]: true,
+            'is-removable': canRemove,
+            'is-disabled': disabled
+        }"
+         :data-original-title="tooltip"
+         role="listitem"
+         @click="onClick">
+        <div class="pill-content">
+            <slot></slot>
+        </div>
+
+        <button v-if="canRemove"
+                class="pill-remove"
+                :disabled="disabled"
+                type="button"
+                aria-label="Remove"
+                @click.stop="onRemove">
+            <slot name="remove-icon">
+                ×
+            </slot>
+        </button>
+    </div>
+</template>
+
+<style scoped>
+.pill {
+    display: inline-flex;
+    align-items: center;
+    /* Don't allow a single pill from getting truncated in the list */
+    max-width: 100%;
+    padding: var(--spacing-tiny) var(--spacing-xsmall);
+    border-radius: 100px;
+    border: 1px solid var(--color-interface-soft);
+    background: var(--color-interface-softer);
+    gap: var(--spacing-xsmall);
+    white-space: nowrap;
+    /* Don't allow shrinking or growing so the parent PillList can calculate widths correctly. */
+    flex: 0 0 auto;
+
+    font-size: var(--font-size-small);
+}
+
+.pill-danger {
+    background-color: var(--color-danger-soft);
+    color: var(--color-danger-strong);
+    border-color: 1px solid var(--color-danger-soft);
+}
+
+.pill-default {
+    background-color: var(--color-interface-softer);
+    color: var(--color-interface-strongest);
+}
+
+.pill-content {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-xsmall);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    min-width: 0;
+}
+
+.pill-remove {
+    border: none;
+    background: none;
+    cursor: pointer;
+    padding: 0;
+    font-size: 0.875rem;
+    line-height: 1;
+}
+
+.pill.is-disabled {
+    opacity: 0.5;
+    pointer-events: none;
+}
+</style>
+
+<script setup lang="ts">
+    import { onMounted, PropType, ref, watch } from "vue";
+    import { tooltip as initializeTooltip } from "@Obsidian/Utility/tooltip";
+
+    const props = defineProps({
+        canRemove: {
+            type: Boolean,
+            default: false
+        },
+
+        disabled: {
+            type: Boolean,
+            default: false
+        },
+
+        tokenType: {
+            type: String as PropType<"default" | "danger">,
+            default: "default"
+        },
+
+        tooltip: {
+            type: String as PropType<string>,
+            default: ""
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "remove"): void
+        (e: "click"): void
+    }>();
+
+    // #region Values
+
+    const tokenRef = ref<HTMLElement | undefined>();
+
+    // #endregion Values
+
+    // #region Event Handlers
+
+    function onRemove(): void {
+        if (props.disabled) {
+            return;
+        }
+
+        emit("remove");
+    }
+
+    function onClick(): void {
+        if (props.disabled) {
+            return;
+        }
+
+        emit("click");
+    }
+
+    // #endregion Event Handlers
+
+    // #region Watchers
+
+    watch(() => props.tooltip, () => {
+        if (tokenRef.value) {
+            initializeTooltip(tokenRef.value);
+        }
+    });
+
+    // #endregion Watchers
+
+    onMounted(() => {
+        if (tokenRef.value) {
+            initializeTooltip(tokenRef.value);
+        }
+    });
+</script>

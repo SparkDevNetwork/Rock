@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -103,8 +103,8 @@ namespace Rock.RealTime.AspNet
 
                 // Register some logic to handle adding a claim for the anonymous
                 // person identifier if we have one.
-                subApp.Use( RegisterSignalRClaims );
-                subApp.Use( FixNegotiateConnectionData );
+                Owin.AppBuilderUseExtensions.Use( subApp, RegisterSignalRClaims );
+                Owin.AppBuilderUseExtensions.Use( subApp, FixNegotiateConnectionData );
 
                 if ( azureEndpoint.IsNullOrWhiteSpace() || azureAccessKey.IsNullOrWhiteSpace() )
                 {

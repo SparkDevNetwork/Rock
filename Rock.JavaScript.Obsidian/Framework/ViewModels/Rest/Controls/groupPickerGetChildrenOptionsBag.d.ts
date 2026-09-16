@@ -24,12 +24,27 @@
 import { Guid } from "@Obsidian/Types";
 
 /**
- * The options that can be passed to the GetGroupMembers API action of
- * the GroupMemberPicker control.
+ * The options that can be passed to the GroupPickerGetChildren API action
+ * of the Group Picker control (and Group Tree View).
  */
 export type GroupPickerGetChildrenOptionsBag = {
+    /** Optional campus Guid used to filter groups by campus. */
+    campusGuid?: Guid | null;
+
+    /**
+     * The count mode to attach to each node: 0 = None, 1 = Child Groups, 2 = Group Members.
+     * Counts are written to TreeItemBag.ChildCount.
+     */
+    countsType: number;
+
     /** When true, show no groups unless IncludedGroupTypeGuids has values. */
     excludeAllByDefault: boolean;
+
+    /**
+     * List of group type Guids to exclude. Only applied when
+     * Rock.ViewModels.Rest.Controls.GroupPickerGetChildrenOptionsBag.IncludedGroupTypeGuids is empty.
+     */
+    excludedGroupTypeGuids?: Guid[] | null;
 
     /**
      * Gets or sets the values that need to be expanded to. This is used
@@ -40,20 +55,32 @@ export type GroupPickerGetChildrenOptionsBag = {
      */
     expandToValues?: string[] | null;
 
-    /** GUID of the group the member is part of. */
+    /**
+     * Guid of the parent group whose children should be loaded.
+     * When null or empty, children of the root (or top-level groups) are returned.
+     */
     guid?: Guid | null;
 
-    /** List of group types IDs to limit to groups of those types. */
+    /** List of group type Guids to limit results to groups of those types. */
     includedGroupTypeGuids?: Guid[] | null;
 
     /** Whether to include inactive groups or not. */
     includeInactiveGroups: boolean;
+
+    /** When a campus filter is set, whether to also include groups that have no campus. */
+    includeNoCampus: boolean;
+
+    /** Whether to limit results to public groups only. */
+    limitToPublic: boolean;
 
     /** Whether to limit to only groups that have RSVPs enabled. */
     limitToRSVPEnabled: boolean;
 
     /** Whether to limit to only groups that have scheduling enabled. */
     limitToSchedulingEnabled: boolean;
+
+    /** Whether to limit results to security-role groups only. */
+    limitToSecurityRoleGroups: boolean;
 
     /** GUID of the group you want to use as the root. */
     rootGroupGuid?: Guid | null;

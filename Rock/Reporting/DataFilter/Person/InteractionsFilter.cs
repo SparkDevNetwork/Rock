@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -23,6 +23,7 @@ using System.Linq.Expressions;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Net;
@@ -226,7 +227,7 @@ function() {
             string[] selectionValues = selection.Split( '|' );
             if ( selectionValues.Length >= 2 )
             {
-                var rockContext = new RockContext();
+                var rockContext = RockApp.Current.CreateRockContext();
                 var interactionChannel = new InteractionChannelService( rockContext ).Get( selectionValues[0].AsGuid() );
 
                 if ( interactionChannel != null )
@@ -281,7 +282,7 @@ function() {
             ddlInteractionChannel.SelectedIndexChanged += ddlInteractionChannel_SelectedIndexChanged;
             filterControl.Controls.Add( ddlInteractionChannel );
 
-            var interactionChannelService = new InteractionChannelService( new RockContext() );
+            var interactionChannelService = new InteractionChannelService( RockApp.Current.CreateRockContext() );
             var interactionChannels = interactionChannelService.Queryable().OrderBy( a => a.Name ).Select( a => new
             {
                 a.Id,
@@ -329,7 +330,7 @@ function() {
         {
             if ( interactionChannelId.HasValue )
             {
-                var interactionComponentService = new InteractionComponentService( new RockContext() );
+                var interactionComponentService = new InteractionComponentService( RockApp.Current.CreateRockContext() );
                 var interactionComponents = interactionComponentService.Queryable()
                                     .Where( a => a.InteractionChannelId == ( interactionChannelId ?? 0 ) )
                                     .OrderBy( a => a.Name ).
@@ -393,7 +394,7 @@ function() {
 
 
             int interactionChannelId = ddlInteractionChannel.SelectedValueAsId() ?? 0;
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var interactionChannel = new InteractionChannelService( rockContext ).Get( interactionChannelId );
             Guid? interactionChannelGuid = null;
             if ( interactionChannel != null )
@@ -427,7 +428,7 @@ function() {
             if ( selectionValues.Length >= 1 )
             {
                 Guid interactionChannelGuid = selectionValues[0].AsGuid();
-                var rockContext = new RockContext();
+                var rockContext = RockApp.Current.CreateRockContext();
                 var interactionChannel = new InteractionChannelService( rockContext ).Get( interactionChannelGuid );
                 var ddlInteractionChannel = ( controls[0] as RockDropDownList );
                 ddlInteractionChannel.SetValue( interactionChannel != null ? interactionChannel.Id : ( int? ) null );

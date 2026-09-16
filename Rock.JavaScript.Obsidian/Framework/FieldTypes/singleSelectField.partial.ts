@@ -22,7 +22,7 @@ import { FieldTypeBase } from "./fieldType";
 import { getStandardFilterComponent } from "./utils";
 import { ComparisonType } from "@Obsidian/Enums/Reporting/comparisonType";
 
-export const enum ConfigurationValueKey {
+export const enum ConfigurationKey {
     Values = "values",
     FieldType = "fieldtype",
     RepeatColumns = "repeatColumns",
@@ -57,7 +57,7 @@ export class SingleSelectFieldType extends FieldTypeBase {
         }
 
         try {
-            const values = JSON.parse(configurationValues[ConfigurationValueKey.Values] ?? "[]") as ListItemBag[];
+            const values = JSON.parse(configurationValues[ConfigurationKey.Values] ?? "[]") as ListItemBag[];
             const selectedValues = values.filter(v => v.value === value);
 
             if (selectedValues.length >= 1) {
@@ -91,7 +91,7 @@ export class SingleSelectFieldType extends FieldTypeBase {
 
         try {
             const rawValues = value.value.split(",");
-            const values = JSON.parse(configurationValues?.[ConfigurationValueKey.Values] ?? "[]") as ListItemBag[];
+            const values = JSON.parse(configurationValues?.[ConfigurationKey.Values] ?? "[]") as ListItemBag[];
             const selectedValues = values.filter(v => rawValues.includes(v.value ?? ""));
 
             if (selectedValues.length >= 1) {

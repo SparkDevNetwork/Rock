@@ -1,0 +1,316 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Grid :definition="config.gridDefinition ?? undefined"
+          :data="gridData"
+          keyField="guid"
+          title="Reminder Types"
+          itemTerm="Reminder Type"
+          :entityTypeGuid="EntityType.ReminderType"
+          stickyHeader
+          liveUpdates
+          :showLaunchWorkflow="false"
+          :onAddItem="config.isAddEnabled ? onAddItem : undefined"
+          @selectItem="onSelectItem">
+
+        <ReorderColumn v-if="config.isAddEnabled" @orderChanged="onOrderChanged" />
+
+        <TextColumn name="name"
+                    title="Name"
+                    field="name"
+                    :filter="textValueFilter" />
+
+        <TextColumn name="entityType"
+                    title="Entity Type"
+                    field="entityType"
+                    :filter="textValueFilter" />
+
+        <BooleanColumn name="isActive"
+                       title="Active"
+                       field="isActive"
+                       :filter="booleanValueFilter" />
+
+        <SecurityColumn itemTitle="name" />
+
+        <DeleteColumn v-if="config.isDeleteEnabled" @click="onDeleteClick" />
+    </Grid>
+
+    <Modal v-model="isEditVisible"
+           :title="modalTitle"
+           @save="onSave"
+           saveText="Save">
+        <NotificationBox v-if="errorMessage" alertType="warning">{{ errorMessage }}</NotificationBox>
+
+        <div class="row">
+            <div class="col-md-6">
+                <TextBox v-model="nameValue"
+                         label="Name"
+                         rules="required" />
+            </div>
+            <div class="col-md-6">
+                <CheckBox v-model="theReminderType.isActive"
+                          label="Active" />
+            </div>
+        </div>
+
+        <TextBox v-model="descriptionValue"
+                 label="Description"
+                 textMode="multiline" />
+
+        <div class="row">
+            <div class="col-md-6">
+                <DropDownList v-model="notificationTypeValue"
+                              :items="notificationTypeItems"
+                              label="Notification Type"
+                              rules="required" />
+            </div>
+            <div class="col-md-6">
+                <WorkflowTypePicker v-model="theReminderType.notificationWorkflowType"
+                                    label="Notification Workflow"
+                                    :rules="theReminderType.notificationType === ReminderNotificationType.Workflow ? 'required' : ''" />
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6">
+                <CheckBox v-model="theReminderType.shouldShowNote"
+                          label="Should Show Note" />
+            </div>
+            <div class="col-md-6">
+                <EntityTypePicker v-model="theReminderType.entityType"
+                                  label="Entity Type"
+                                  rules="required"
+                                  :multiple="false"
+                                  enhanceForLongLists />
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6">
+                <CheckBox v-model="theReminderType.shouldAutoCompleteWhenNotified"
+                          label="Should Auto-Complete When Notified" />
+            </div>
+            <div class="col-md-6">
+                <ColorPicker v-model="highlightColorValue"
+                             label="Highlight Color" />
+            </div>
+        </div>
+    </Modal>
+</template>
+
+<script setup lang="ts">
+    import Grid, { BooleanColumn, booleanValueFilter, TextColumn, textValueFilter, DeleteColumn, ReorderColumn, SecurityColumn } from "@Obsidian/Controls/grid";
+    import Modal from "@Obsidian/Controls/modal.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import WorkflowTypePicker from "@Obsidian/Controls/workflowTypePicker.obs";
+    import EntityTypePicker from "@Obsidian/Controls/entityTypePicker.obs";
+    import ColorPicker from "@Obsidian/Controls/colorPicker.obs";
+    import { onConfigurationValuesChanged, setPropertiesBoxValue, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
+    import { enumToListItemBag } from "@Obsidian/Utility/enumUtils";
+    import { EntityType } from "@Obsidian/SystemGuids/entityType";
+    import { alert } from "@Obsidian/Utility/dialogs";
+    import { ReminderNotificationType, ReminderNotificationTypeDescription } from "@Obsidian/Enums/Core/reminderNotificationType";
+    import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
+    import { ReminderTypeListOptionsBag } from "@Obsidian/ViewModels/Blocks/Reminders/ReminderTypeList/reminderTypeListOptionsBag";
+    import { ReminderTypeBag } from "@Obsidian/ViewModels/Blocks/Reminders/ReminderTypeList/reminderTypeBag";
+    import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
+    import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
+    import { computed, ref } from "vue";
+
+    const config = useConfigurationValues<ListBlockBox<ReminderTypeListOptionsBag>>();
+    const invokeBlockAction = useInvokeBlockAction();
+
+    onConfigurationValuesChanged(useReloadBlock());
+
+    // #region Values
+
+    const gridData = ref<Promise<GridDataBag>>(loadGridData());
+
+    const theReminderType = ref<ReminderTypeBag>(createNewReminderType());
+
+    const isEditVisible = ref(false);
+    const isEditing = ref(false);
+    const errorMessage = ref("");
+
+    const notificationTypeItems = enumToListItemBag(ReminderNotificationTypeDescription);
+
+    // #endregion
+
+    // #region Computed Values
+
+    const modalTitle = computed((): string => {
+        return isEditing.value ? "Edit Reminder Type" : "Add Reminder Type";
+    });
+
+    const nameValue = computed({
+        get(): string {
+            return theReminderType.value.name ?? "";
+        },
+        set(value: string) {
+            theReminderType.value.name = value;
+        }
+    });
+
+    const descriptionValue = computed({
+        get(): string {
+            return theReminderType.value.description ?? "";
+        },
+        set(value: string) {
+            theReminderType.value.description = value;
+        }
+    });
+
+    const highlightColorValue = computed({
+        get(): string {
+            return theReminderType.value.highlightColor ?? "";
+        },
+        set(value: string) {
+            theReminderType.value.highlightColor = value;
+        }
+    });
+
+    const notificationTypeValue = computed({
+        get(): string {
+            return theReminderType.value.notificationType?.toString() ?? "";
+        },
+        set(value: string) {
+            theReminderType.value.notificationType = value ? parseInt(value) as ReminderNotificationType : null;
+        }
+    });
+
+    // #endregion
+
+    // #region Functions
+
+    /**
+     * Loads the grid data from the server.
+     */
+    async function loadGridData(): Promise<GridDataBag> {
+        const result = await invokeBlockAction<GridDataBag>("GetGridData");
+
+        if (result.isSuccess && result.data) {
+            return result.data;
+        }
+
+        throw new Error(result.errorMessage || "Unknown error while trying to load grid data.");
+    }
+
+    /**
+     * Creates a new reminder type instance with default values for the edit modal.
+     */
+    function createNewReminderType(): ReminderTypeBag {
+        return {
+            name: "",
+            description: "",
+            isActive: true,
+            notificationType: null,
+            notificationWorkflowType: null,
+            shouldShowNote: true,
+            entityType: null,
+            shouldAutoCompleteWhenNotified: false,
+            highlightColor: ""
+        };
+    }
+
+    async function editReminderType(key: string): Promise<void> {
+        errorMessage.value = "";
+
+        const result = await invokeBlockAction<ValidPropertiesBox<ReminderTypeBag>>("Edit", {
+            key
+        });
+
+        if (result.isSuccess && result.data?.bag) {
+            theReminderType.value = result.data.bag;
+            isEditing.value = true;
+            isEditVisible.value = true;
+        }
+        else {
+            await alert(result.errorMessage || "Unknown error while trying to load reminder type for editing.");
+        }
+    }
+
+    // #endregion
+
+    // #region Event Handlers
+
+    /**
+     * Called when the Add button has been clicked by the individual.
+     */
+    function onAddItem(): void {
+        theReminderType.value = createNewReminderType();
+        errorMessage.value = "";
+        isEditing.value = false;
+        isEditVisible.value = true;
+    }
+
+    /**
+     * Called when the edit button on a row has been selected by the individual.
+     *
+     * @param key The key of the row that was selected.
+     */
+    async function onSelectItem(key: string): Promise<void> {
+        await editReminderType(key);
+    }
+
+    /**
+     * Called when a row's delete button has been clicked by the individual.
+     */
+    async function onDeleteClick(key: string): Promise<void> {
+        const result = await invokeBlockAction<string>("Delete", {
+            key
+        });
+
+        if (result.isSuccess) {
+            gridData.value = loadGridData();
+        }
+        else {
+            await alert(result.errorMessage ?? "Unknown error while trying to delete reminder type.");
+        }
+    }
+
+    /**
+     * Called when the Save button on the modal has been clicked.
+     */
+    async function onSave(): Promise<void> {
+        const box: ValidPropertiesBox<ReminderTypeBag> = {};
+
+        setPropertiesBoxValue(box, "guid", theReminderType.value.guid ?? "");
+        setPropertiesBoxValue(box, "name", theReminderType.value.name);
+        setPropertiesBoxValue(box, "description", theReminderType.value.description);
+        setPropertiesBoxValue(box, "isActive", theReminderType.value.isActive);
+        setPropertiesBoxValue(box, "notificationType", theReminderType.value.notificationType);
+        setPropertiesBoxValue(box, "notificationWorkflowType", theReminderType.value.notificationWorkflowType);
+        setPropertiesBoxValue(box, "shouldShowNote", theReminderType.value.shouldShowNote);
+        setPropertiesBoxValue(box, "entityType", theReminderType.value.entityType);
+        setPropertiesBoxValue(box, "shouldAutoCompleteWhenNotified", theReminderType.value.shouldAutoCompleteWhenNotified);
+        setPropertiesBoxValue(box, "highlightColor", theReminderType.value.highlightColor);
+
+        const result = await invokeBlockAction<ValidPropertiesBox<ReminderTypeBag>>("Save", {
+            box
+        });
+
+        if (result.isSuccess) {
+            isEditVisible.value = false;
+            gridData.value = loadGridData();
+        }
+        else {
+            errorMessage.value = result.errorMessage ?? "Unknown error while trying to save reminder type.";
+        }
+    }
+
+    /**
+     * Called when the grid rows have been reordered.
+     */
+    async function onOrderChanged(item: Record<string, unknown>, beforeItem: Record<string, unknown> | null): Promise<boolean> {
+        const result = await invokeBlockAction("ReorderItem", {
+            key: item["guid"],
+            beforeKey: beforeItem?.["guid"] ?? null
+        });
+
+        return result.isSuccess;
+    }
+
+    // #endregion
+</script>

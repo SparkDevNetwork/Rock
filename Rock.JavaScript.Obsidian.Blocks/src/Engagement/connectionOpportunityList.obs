@@ -11,7 +11,7 @@
           liveUpdates
           :onAddItem="config.isAddEnabled ? onAddItem : undefined"
           @selectItem="onSelectItem">
-        <ReorderColumn @orderChanged="onOrderChanged" />
+        <ReorderColumn v-if="config.options?.isReOrderColumnVisible" @orderChanged="onOrderChanged" />
 
         <TextColumn name="name"
                     title="Name"

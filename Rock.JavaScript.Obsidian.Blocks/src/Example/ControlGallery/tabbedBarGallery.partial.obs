@@ -1,12 +1,30 @@
 <template>
-    <GalleryAndResult :importCode="importCode" :exampleCode="exampleCode">
+    <GalleryAndResult :importCode="importCode"
+                      :exampleCode="exampleCode">
 
-        <TabbedBar v-model="selectedTab" :tabs="list" :type="type" />
+        <TabbedBar :key="useCustomTabSlot ? 'slotted' : 'plain'"
+                   v-model="selectedTab"
+                   :tabs="list"
+                   :type="type"
+                   :allowPillWrapping="allowPillWrapping">
+            <template v-if="useCustomTabSlot" #tab="{ tab }">
+                <i class="ti ti-book-2 mr-1"></i>
+                {{ tab }}
+            </template>
+        </TabbedBar>
 
         <template #settings>
             <div class="row">
                 <div class="col-md-4">
                     <DropDownList label="Type" v-model="type" :items="typeItems" :showBlankItem="false" />
+                </div>
+                <div class="col-md-8">
+                    <CheckBoxList v-model="simulateValues"
+                                  label="Simulate"
+                                  :items="simulateOptions"
+                                  :itemsHelpText="simulateOptionsHelp"
+                                  horizontal
+                                  :repeatColumns="2" />
                 </div>
             </div>
         </template>
@@ -14,16 +32,72 @@
 </template>
 
 <script setup lang="ts">
-    import { ref } from "vue";
+    import { computed, ref } from "vue";
     import GalleryAndResult from "./common/galleryAndResult.partial.obs";
+    import { ComponentUsage, getSfcControlImportPath } from "./common/utils.partial";
     import TabbedBar from "@Obsidian/Controls/tabbedBar.obs";
+    import CheckBoxList from "@Obsidian/Controls/checkBoxList.obs";
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
-    import { getSfcControlImportPath } from "./common/utils.partial";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+
+    // #region Values
 
     const list = ["Matthew", "Mark", "Luke", "John", "Acts", "Romans", "1 Corinthians", "2 Corinthians", "Galatians", "Ephesians", "Philippians", "Colossians"];
     const selectedTab = ref("");
     const type = ref<"tabs" | "pills">("tabs");
     const typeItems = [{ value: "tabs", text: "Tabs" }, { value: "pills", text: "Pills" }];
+    const simulateValues = ref<string[]>([]);
+
+    const simulateOptions: ListItemBag[] = [
+        { value: "allowPillWrapping", text: "Allow Pill Wrapping" },
+        { value: "customTabSlot", text: "Custom Tab Slot" }
+    ];
+
+    const simulateOptionsHelp: Record<string, string> = {
+        allowPillWrapping: "Pill tabs wrap onto multiple lines when they exceed the container width, instead of collapsing into a \"More\" overflow dropdown. Applies only when Type is Pills.",
+        customTabSlot: "Replaces each tab's content via the #tab scoped slot. The default renders the tab text; the slot exposes the tab so the consumer can render an icon, avatar, or anything else."
+    };
+
     const importCode = getSfcControlImportPath("tabbedBar");
-    const exampleCode = `<TabbedBar v-model="selectedTab" :tabs="arrayOfItems" :type="type" />`;
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    /**
+     * Whether pill tabs wrap onto multiple lines instead of overflowing into
+     * the "More" dropdown.
+     */
+    const allowPillWrapping = computed((): boolean =>
+        simulateValues.value.includes("allowPillWrapping")
+    );
+
+    /**
+     * Whether each tab's content is rendered via the `#tab` scoped slot.
+     */
+    const useCustomTabSlot = computed((): boolean =>
+        simulateValues.value.includes("customTabSlot")
+    );
+
+    /** Live template snippet reflecting the current settings. */
+    const exampleCode = computed((): string => {
+        const usage = new ComponentUsage("TabbedBar");
+        usage.addAttribute("v-model", "selectedTab");
+        usage.addAttribute(":tabs", "arrayOfItems");
+        usage.addAttribute("type", type.value, "tabs");
+        usage.addAttribute("allowPillWrapping", allowPillWrapping.value, false);
+
+        if (useCustomTabSlot.value) {
+            usage.addBody(
+                `<template #tab="{ tab }">\n` +
+                `    <i class="ti ti-book-2 mr-1"></i>\n` +
+                `    {{ tab }}\n` +
+                `</template>`
+            );
+        }
+
+        return usage.toString();
+    });
+
+    // #endregion Computed Values
 </script>

@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -16,14 +16,14 @@
 //
 using System.Collections.Generic;
 using System.Linq;
-
-using Rock.Attribute;
-using Rock.Reporting;
-using Rock.Web.UI.Controls;
 #if WEBFORMS
 using System.Web.UI.WebControls;
 using System.Web.UI;
 #endif
+
+using Rock.Attribute;
+using Rock.Reporting;
+using Rock.Web.UI.Controls;
 
 namespace Rock.Field.Types
 {
@@ -101,6 +101,20 @@ namespace Rock.Field.Types
             {
                 return ComparisonHelper.NumericFilterComparisonTypes;
             }
+        }
+
+        #endregion
+
+        #region Value Hinting
+
+        /// <inheritdoc/>
+        internal override FieldTypeHints GetFieldHints( Dictionary<string, string> privateConfigurationValues )
+        {
+            return new FieldTypeHints
+            {
+                IsCompleteList = false,
+                ValueFormat = "A number on its own, with no currency symbol, no thousands separators and no currency code. The symbol shown alongside it comes from Rock's organization currency setting rather than from the value."
+            };
         }
 
         #endregion

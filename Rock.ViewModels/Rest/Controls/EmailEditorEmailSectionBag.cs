@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -25,6 +25,16 @@ namespace Rock.ViewModels.Rest.Controls
     /// </summary>
     public class EmailEditorEmailSectionBag
     {
+        /// <summary>
+        /// Gets or sets a value indicating whether the current person can delete this email section.
+        /// </summary>
+        public bool CanDelete { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether the current person can edit this email section.
+        /// </summary>
+        public bool CanEdit { get; set; }
+
         /// <summary>
         /// Gets or sets the email section category.
         /// </summary>

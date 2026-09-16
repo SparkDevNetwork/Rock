@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -84,6 +84,11 @@ namespace Rock.Blocks.Example
             securityGrant.AddRule( new AssetAndFileManagerSecurityGrantRule( Rock.Security.Authorization.DELETE ) );
             securityGrant.AddRule( new EmailEditorSecurityGrantRule() );
             securityGrant.AddRule( new ConnectionRequestPickerSecurityGrantRule() );
+            securityGrant.AddRule( new DataViewFilterEditorSecurityGrantRule()
+            {
+                // Only allow the gallery's Data View Filter Editor to be used for editing Person data view filters.
+                EntityTypeGuid = Rock.SystemGuid.EntityType.PERSON.AsGuid()
+            } );
 
             return securityGrant.ToToken();
         }

@@ -16,7 +16,7 @@
 
 import { computed, defineComponent, ref, watch } from "vue";
 import { getFieldConfigurationProps, getFieldEditorProps } from "./utils";
-import { ConfigurationPropertyKey, ConfigurationValueKey } from "./valueFilterField.partial";
+import { ConfigurationPropertyKey, ConfigurationKey } from "./valueFilterField.partial";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import ValueFilter from "@Obsidian/Controls/valueFilter.obs";
 import CheckBoxList from "@Obsidian/Controls/checkBoxList.obs";
@@ -38,7 +38,7 @@ export const EditComponent = defineComponent({
         const internalValue = ref<CompoundFilterExpression>({} as CompoundFilterExpression);
 
         const hideFilterMode = computed((): boolean => {
-            return asBoolean(props.configurationValues[ConfigurationValueKey.HideFilterMode]);
+            return asBoolean(props.configurationValues[ConfigurationKey.HideFilterMode]);
         });
 
         // Watch for changes from the parent component and update the text editor.
@@ -100,12 +100,12 @@ export const ConfigurationComponent = defineComponent({
 
             // Construct the new value that will be emitted if it is different
             // than the current value.
-            newValue[ConfigurationValueKey.HideFilterMode] = asTrueOrFalseString(hideFilterMode.value);
-            newValue[ConfigurationValueKey.ComparisonTypes] = JSON.stringify(comparisonTypes.value);
+            newValue[ConfigurationKey.HideFilterMode] = asTrueOrFalseString(hideFilterMode.value);
+            newValue[ConfigurationKey.ComparisonTypes] = JSON.stringify(comparisonTypes.value);
 
             // Compare the new value and the old value.
-            const anyValueChanged = newValue[ConfigurationValueKey.ComparisonTypes] !== (props.modelValue[ConfigurationValueKey.ComparisonTypes])
-                || newValue[ConfigurationValueKey.HideFilterMode] !== (props.modelValue[ConfigurationValueKey.HideFilterMode]);
+            const anyValueChanged = newValue[ConfigurationKey.ComparisonTypes] !== (props.modelValue[ConfigurationKey.ComparisonTypes])
+                || newValue[ConfigurationKey.HideFilterMode] !== (props.modelValue[ConfigurationKey.HideFilterMode]);
 
             // If any value changed then emit the new model value.
             if (anyValueChanged) {
@@ -132,15 +132,15 @@ export const ConfigurationComponent = defineComponent({
         // Watch for changes coming in from the parent component and update our
         // data to match the new information.
         watch(() => [props.modelValue, props.configurationProperties], () => {
-            hideFilterMode.value = asBoolean(props.modelValue[ConfigurationValueKey.HideFilterMode]);
-            comparisonTypes.value = JSON.parse(props.modelValue[ConfigurationValueKey.ComparisonTypes] || "[]");
+            hideFilterMode.value = asBoolean(props.modelValue[ConfigurationKey.HideFilterMode]);
+            comparisonTypes.value = JSON.parse(props.modelValue[ConfigurationKey.ComparisonTypes] || "[]");
         }, {
             immediate: true
         });
 
         // Watch for changes in properties that only require a local UI update.
-        watch(hideFilterMode, () => maybeUpdateConfiguration(ConfigurationValueKey.HideFilterMode, asTrueOrFalseString(hideFilterMode.value)));
-        watch(comparisonTypes, () => maybeUpdateConfiguration(ConfigurationValueKey.ComparisonTypes, JSON.stringify(comparisonTypes.value)));
+        watch(hideFilterMode, () => maybeUpdateConfiguration(ConfigurationKey.HideFilterMode, asTrueOrFalseString(hideFilterMode.value)));
+        watch(comparisonTypes, () => maybeUpdateConfiguration(ConfigurationKey.ComparisonTypes, JSON.stringify(comparisonTypes.value)));
 
         return {
             hideFilterMode,

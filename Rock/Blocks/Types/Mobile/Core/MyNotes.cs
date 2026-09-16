@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -22,6 +22,7 @@ using System.Linq;
 
 using Rock.Attribute;
 using Rock.Common.Mobile.Blocks.Core.MyNotes;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Mobile;
 using Rock.Model;
@@ -55,7 +56,7 @@ namespace Rock.Blocks.Types.Mobile.Core
         Description = "When enabled, swipe actions will be available for each note.",
         IsRequired = false,
         DefaultBooleanValue = true,
-        ControlType = Field.Types.BooleanFieldType.BooleanControlType.Toggle,
+        BooleanControlType = Rock.Enums.Controls.BooleanControlType.Toggle,
         Key = AttributeKey.EnableSwipeForOptions,
         Order = 1 )]
 
@@ -111,7 +112,7 @@ namespace Rock.Blocks.Types.Mobile.Core
         Description = "When enabled, notes will be grouped by date.",
         IsRequired = false,
         DefaultBooleanValue = true,
-        ControlType = Field.Types.BooleanFieldType.BooleanControlType.Toggle,
+        BooleanControlType = Rock.Enums.Controls.BooleanControlType.Toggle,
         Key = AttributeKey.GroupNotesByDate,
         Order = 9 )]
 
@@ -189,7 +190,7 @@ namespace Rock.Blocks.Types.Mobile.Core
         /// <value>
         /// The XAML template to parse on the shell.
         /// </value>
-        protected string NoteItemTemplate => Field.Types.BlockTemplateFieldType.GetTemplateContent( GetAttributeValue( AttributeKey.NoteItemTemplate ) );
+        protected string NoteItemTemplate => Field.Helper.GetBlockTemplateContent( GetAttributeValue( AttributeKey.NoteItemTemplate ) );
 
         /// <summary>
         /// Whether or not to enable swipe for options.
@@ -665,7 +666,7 @@ namespace Rock.Blocks.Types.Mobile.Core
                 return ActionUnauthorized();
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var notesBag = GetNotesCreatedByPerson( RequestContext.CurrentPerson.Guid, options.BeforeDate?.Date, options.Index, options.Filter, options.Count );
                 PopulateNoteItemsInformation( notesBag.Notes );

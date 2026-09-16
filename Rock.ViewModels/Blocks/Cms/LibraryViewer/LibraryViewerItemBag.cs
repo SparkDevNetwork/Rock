@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -15,9 +15,10 @@
 // </copyright>
 //
 
+using System;
+
 using Rock.Enums.Cms;
 using Rock.ViewModels.Utility;
-using System;
 
 namespace Rock.ViewModels.Blocks.Cms.LibraryViewer
 {

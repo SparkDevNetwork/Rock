@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -20,7 +20,9 @@ using System.Linq;
 #if WEBFORMS
 using System.Web.UI;
 #endif
+
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.ViewModels.Rest.Controls;
@@ -145,19 +147,24 @@ namespace Rock.Field.Types
         {
             var jsonValue = publicValue.FromJsonOrNull<PageRouteValueBag>();
 
-            if ( jsonValue != null )
+            if ( jsonValue == null )
             {
-                if ( jsonValue.Route != null )
-                {
-                    return $"{jsonValue.Page.Value},{jsonValue.Route.Value}";
-                }
-                else
-                {
-                    return jsonValue.Page.Value;
-                }
+                return base.GetPrivateEditValue( publicValue, privateConfigurationValues );
             }
 
-            return base.GetPrivateEditValue( publicValue, privateConfigurationValues );
+            var pageGuid = jsonValue.Page?.Value;
+            if ( pageGuid.IsNullOrWhiteSpace() )
+            {
+                return string.Empty;
+            }
+
+            var routeGuid = jsonValue.Route?.Value;
+            if ( routeGuid.IsNullOrWhiteSpace() )
+            {
+                return pageGuid;
+            }
+
+            return $"{pageGuid},{routeGuid}";
         }
 
         #endregion
@@ -230,6 +237,22 @@ namespace Rock.Field.Types
 
         #endregion
 
+        #region Field Type Hints
+
+        /// <inheritdoc/>
+        internal override FieldTypeHints GetFieldHints( Dictionary<string, string> privateConfigurationValues )
+        {
+            // No Values. The set is unbounded or depends on other configuration, so
+            // the shape of the value and where to get one is what can be described.
+            return new FieldTypeHints
+            {
+                IsCompleteList = false,
+                ValueFormat = "Either a page guid on its own, or a page guid and a route guid separated by a comma, in the order Page.Guid,PageRoute.Guid.",
+                Instructions = "To find the correct value, look up the page and take its guid, adding the guid of a specific route after a comma only when the route matters."
+            };
+        }
+
+        #endregion
         #region WebForms
 #if WEBFORMS
 
@@ -261,7 +284,7 @@ namespace Rock.Field.Types
         }
 
         /// <summary>
-        /// Reads new values entered by the user for the field.  Returns with Page.Guid,PageRoute.Guid or just Page.Guid 
+        /// Reads new values entered by the user for the field.  Returns with Page.Guid,PageRoute.Guid or just Page.Guid
         /// </summary>
         /// <param name="control">Parent control that controls were added to in the CreateEditControl() method</param>
         /// <param name="configurationValues">The configuration values.</param>
@@ -276,7 +299,7 @@ namespace Rock.Field.Types
                 //// Value is in format "Page.Guid,PageRoute.Guid"
                 //// If only a Page is specified, this is just a reference to a page without a special route
 
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
 
                     if ( ppPage.IsPageRoute )
@@ -324,7 +347,7 @@ namespace Rock.Field.Types
                 //// If only the Page.Guid is specified this is just a reference to a page without a special route
                 //// In case the PageRoute record can't be found from PageRoute.Guid (maybe the pageroute was deleted), fall back to the Page without a PageRoute
 
-                var rockContext = new RockContext();
+                var rockContext = RockApp.Current.CreateRockContext();
 
                 if ( valuePair.Length == 2 )
                 {

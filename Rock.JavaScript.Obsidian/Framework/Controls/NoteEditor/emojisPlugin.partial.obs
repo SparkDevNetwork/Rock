@@ -28,7 +28,7 @@
      * (/script)
      */
     import { watch } from "vue";
-    import { usePluginHelper } from "./utils.partial";
+    import { usePluginHelper } from "../Internal/NoteEditor/utils";
     import { Editor, RawEditorOptions, Ui } from "@Obsidian/Libs/tinymce";
     import { newGuid } from "@Obsidian/Utility/guid";
 

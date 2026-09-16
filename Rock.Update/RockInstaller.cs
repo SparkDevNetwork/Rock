@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -20,7 +20,9 @@ using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Net;
+
 using Microsoft.Web.XmlTransform;
+
 using Rock.Model;
 using Rock.Update.Exceptions;
 using Rock.Update.Helpers;
@@ -185,8 +187,6 @@ namespace Rock.Update
         /// <param name="packageZip">The package zip.</param>
         private void ProcessDeleteFiles( ZipArchive packageZip )
         {
-            DeleteLegacyUpdateNugetPackages();
-
             // process deletefile.lst
             var deleteListEntry = packageZip
                 .Entries
@@ -239,17 +239,6 @@ namespace Rock.Update
 
                 HandleFileDeletes( deleteItemFullPath, backupFilePath );
             }
-        }
-
-        /// <summary>
-        /// Clean out the Packages folder for any left over Rock Update NuGet packages.
-        /// Marking this obsolete so it will be removed later.
-        /// </summary>
-        [RockObsolete( "1.13.3" )]
-        private void DeleteLegacyUpdateNugetPackages()
-        {
-            var packagesFolderPath = Path.Combine( FileManagementHelper.ROOT_PATH, LOCAL_ROCK_PACKAGE_FOLDER );
-            Directory.EnumerateFiles( packagesFolderPath, "*.nupkg" ).ToList().ForEach( f => File.Delete( f ) );
         }
 
         /// <summary>

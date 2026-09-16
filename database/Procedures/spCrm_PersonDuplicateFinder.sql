@@ -94,7 +94,7 @@ BEGIN
         Email
         ,PersonAliasId
         )
-   SELECT [e].[Email] [Email]
+  SELECT [e].[Email] [Email]
         ,[pa].[Id] [PersonAliasId]
     FROM (
         SELECT [a].[Email]
@@ -197,7 +197,7 @@ BEGIN
                 ,[pn].[Extension]
                 ,[pn].[CountryCode]
                 ,[pn].[NumberTypeValueId]
-           ,[p].[Gender]
+     ,[p].[Gender]
             ) [a]
         WHERE [a].[MatchCount] > 1
         ) [m]
@@ -739,6 +739,8 @@ BEGIN
     INNER JOIN Person p1 ON p1.Id = pa1.PersonId
     INNER JOIN Person p2 ON p2.Id = pa2.PersonId
     WHERE p1.BirthDate = p2.BirthDate
+        AND p1.BirthDate IS NOT NULL
+        AND p2.BirthDate IS NOT NULL
         AND @compareByBirthDate = 1
  --PRINT'Update score for birthday matches: ' + CAST(DATEDIFF(s, @ms, GETDATE()) as varchar)
  --SET @ms = GETDATE()
@@ -786,6 +788,8 @@ BEGIN
     JOIN Person p1 ON p1.Id = pa1.PersonId
     JOIN Person p2 ON p2.Id = pa2.PersonId
     WHERE p1.MaritalStatusValueId = p2.MaritalStatusValueId
+        AND p1.MaritalStatusValueId IS NOT NULL
+        AND p2.MaritalStatusValueId IS NOT NULL
         AND @compareByMaritalStatus = 1
  --PRINT'Update score for marital status matches: ' + CAST(DATEDIFF(s, @ms, GETDATE()) as varchar)
  --SET @ms = GETDATE()
@@ -799,6 +803,8 @@ BEGIN
     INNER JOIN Person p1 ON p1.Id = pa1.PersonId
     INNER JOIN Person p2 ON p2.Id = pa2.PersonId
     WHERE p1.SuffixValueId = p2.SuffixValueId
+        AND p1.SuffixValueId IS NOT NULL
+        AND p2.SuffixValueId IS NOT NULL
         AND @compareBySuffix = 1
  --PRINT'Update score for suffix matches: ' + CAST(DATEDIFF(s, @ms, GETDATE()) as varchar)
  --SET @ms = GETDATE()

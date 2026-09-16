@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -19,10 +19,12 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+
 using CsvHelper;
+
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
-
 // Alias Slingshot.Core namespace to avoid conflict with Rock.Slingshot.*
 using SlingshotCore = global::Slingshot.Core;
 
@@ -295,7 +297,7 @@ namespace Rock.Slingshot
         /// </summary>
         public void AddPersonCSVImportErrorNotes()
         {
-            using ( RockContext rockContext = new RockContext() )
+            using ( RockContext rockContext = RockApp.Current.CreateRockContext() )
             {
                 PersonService personService = new PersonService( rockContext );
                 NoteService noteService = new NoteService( rockContext );

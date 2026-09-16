@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -24,10 +24,14 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+using Microsoft.Extensions.DependencyInjection;
+
 using Rock.Attribute;
 using Rock.BulkImport;
+using Rock.Configuration;
 using Rock.Core;
 using Rock.Data;
+using Rock.Net;
 using Rock.Net.Geolocation;
 using Rock.Transactions;
 using Rock.Utility;
@@ -330,11 +334,6 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// The ua parser
-        /// </summary>
-        private static UAParser.Parser _uaParser = UAParser.Parser.GetDefault();
-
-        /// <summary>
         /// Parse the user agent string from a HTTP Request to extract information about the client device.
         /// See https://learn.microsoft.com/en-us/microsoft-edge/web-platform/how-to-detect-win11
         /// </summary>
@@ -368,9 +367,10 @@ namespace Rock.Model
         {
             userAgent = userAgent ?? string.Empty;
 
-            deviceOs = _uaParser.ParseOS( userAgent ).ToString();
-            deviceApplication = _uaParser.ParseUserAgent( userAgent ).ToString();
-            deviceClientType = InteractionDeviceType.GetClientType( userAgent );
+            var browserInfo = RockApp.Current.GetRequiredService<IUserAgentParser>().Parse( userAgent );
+            deviceOs = browserInfo.GetOSFamilyVersion();
+            deviceApplication = browserInfo.GetBrowserFamilyVersion();
+            deviceClientType = browserInfo.ClientType;
         }
 
         /// <summary>
@@ -556,7 +556,7 @@ namespace Rock.Model
         /// <returns>InteractionDeveiceType.Id</returns>
         private int GetOrCreateInteractionDeviceTypeId( string application, string operatingSystem, string clientType, string deviceTypeData )
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             InteractionDeviceTypeService interactionDeviceTypeService = new InteractionDeviceTypeService( rockContext );
             InteractionDeviceType interactionDeviceType = interactionDeviceTypeService.Queryable()
                 .Where( a => a.Application == application && a.OperatingSystem == operatingSystem && a.ClientType == clientType )
@@ -696,7 +696,7 @@ namespace Rock.Model
                     .Where( i => i.PersonAliasId == null );
 
                 // Use BulkUpdate to set the PersonAliasId
-                new RockContext().BulkUpdate( interactions, i => new Interaction { PersonAliasId = personAliasId } );
+                RockApp.Current.CreateRockContext().BulkUpdate( interactions, i => new Interaction { PersonAliasId = personAliasId } );
             }
 
             return interactionsCount;
@@ -1236,7 +1236,7 @@ namespace Rock.Model
                 interactionsToInsert.Add( interaction );
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 rockContext.BulkInsert( interactionsToInsert );
             }
@@ -1253,7 +1253,7 @@ namespace Rock.Model
                 // Read their ids from their guids and append the id.
                 var insertedGuids = interactionsToInsert.Select( i => i.Guid ).ToList();
 
-                var interactionIds = new InteractionService( new RockContext() ).Queryable()
+                var interactionIds = new InteractionService( RockApp.Current.CreateRockContext() ).Queryable()
                                         .Where( i => insertedGuids.Contains( i.Guid ) )
                                         .Select( i => new { i.Id, i.Guid } )
                                         .ToList();

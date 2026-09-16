@@ -25,7 +25,7 @@
     import { KeyValueItem } from "@Obsidian/Types/Controls/keyValueItem";
 
     const items = ref([""]);
-    const mediaItems = [] as KeyValueItem[];
+    const mediaItems = ref<KeyValueItem[]>([]);
     const modeOptions = [
         {
             text: "Image",

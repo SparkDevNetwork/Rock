@@ -19,7 +19,7 @@ import { computed, defineComponent, ref, watch } from "vue";
 import { getFieldEditorProps } from "./utils";
 import DropDownList from "@Obsidian/Controls/dropDownList.obs";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
-import { ConfigurationValueKey } from "./timeZoneField.partial";
+import { ConfigurationKey } from "./timeZoneField.partial";
 
 export const EditComponent = defineComponent({
     name: "TimeZoneField.Edit",
@@ -34,7 +34,7 @@ export const EditComponent = defineComponent({
         const internalValue = ref("");
 
         const timeZones = computed((): ListItemBag[] => {
-            return JSON.parse(props.configurationValues[ConfigurationValueKey.TimeZones] || "[]");
+            return JSON.parse(props.configurationValues[ConfigurationKey.TimeZones] || "[]");
         });
 
         watch(() => props.modelValue, () => {

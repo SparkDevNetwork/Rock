@@ -37,7 +37,9 @@ namespace Rock.Workflow.Action.CheckIn
     [Description( "Removes (or excludes) the groups for each selected family member that are not specific to their gender. This filter looks for a 'Gender' type Group attributes with a key of 'Gender' to determine a match." )]
     [Export( typeof( ActionComponent ) )]
     [ExportMetadata( "ComponentName", "Filter Groups By Gender" )]
-    [BooleanField( "Remove", "Select 'Yes' if groups should be removed.  Select 'No' if they should just be marked as excluded.", true )]
+    [BooleanField( "Remove",
+        Description = "Select 'Yes' if groups should be removed.  Select 'No' if they should just be marked as excluded.",
+        DefaultBooleanValue = true )]
     [Rock.SystemGuid.EntityTypeGuid( "B16E3329-49F4-4DA0-9802-E7BA75F5FD42")]
     public class FilterGroupsByGender : CheckInActionComponent
     {

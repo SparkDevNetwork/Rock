@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -20,7 +20,7 @@ namespace Rock.AI.Agent.Annotations
     /// understand the order of operations that must be performed
     /// </summary>
     [System.AttributeUsage( System.AttributeTargets.Method, Inherited = false, AllowMultiple = true )]
-    internal class AgentToolPrerequisiteAttribute : System.Attribute
+    public class AgentToolPrerequisiteAttribute : System.Attribute
     {
         /// <summary>
         /// The prerequisite information for the tool.

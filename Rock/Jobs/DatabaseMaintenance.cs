@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -314,9 +314,9 @@ namespace Rock.Jobs
         private bool IntegrityCheck( int commandTimeout, string alertEmail)
         {
 #if REVIEW_WEBFORMS
-            string databaseName = new RockContext().Database.Connection.Database;
+            string databaseName = RockApp.Current.CreateRockContext().Database.Connection.Database;
 #else
-            var databaseName = RelationalDatabaseFacadeExtensions.GetDbConnection( new RockContext().Database ).Database;
+            var databaseName = RelationalDatabaseFacadeExtensions.GetDbConnection( RockApp.Current.CreateRockContext().Database ).Database;
 #endif
             string integrityQuery = $"DBCC CHECKDB('{ databaseName }',NOINDEX) WITH PHYSICAL_ONLY, NO_INFOMSGS";
             bool checkPassed = true;

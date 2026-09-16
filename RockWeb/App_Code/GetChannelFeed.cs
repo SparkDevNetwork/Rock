@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -20,6 +20,7 @@ using System.Data.Entity;
 using System.Linq;
 using System.Web;
 using Rock;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Utility;
@@ -47,7 +48,7 @@ namespace RockWeb
             public const string LastModified = "Last-Modified";
         }
 
-        #endregion Attribute Keys
+        #endregion Attribute Keys
 
         #region Page Parameter Keys
 
@@ -231,7 +232,7 @@ namespace RockWeb
             }
 
             // get channel items
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             ContentChannelItemService contentService = new ContentChannelItemService( rockContext );
 
             var content = contentService.Queryable().AsNoTracking().Where( c =>

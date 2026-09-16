@@ -21,6 +21,7 @@
 // </copyright>
 //
 
+using Rock.Configuration;
 using Rock.Model;
 using Rock.SystemGuid;
 
@@ -35,6 +36,6 @@ namespace Rock.Rest.Controllers
         /// <summary>
         /// Initializes a new instance of the <see cref="CommunicationResponseAttachmentsController"/> class.
         /// </summary>
-        public CommunicationResponseAttachmentsController() : base( new Rock.Model.CommunicationResponseAttachmentService( new Rock.Data.RockContext() ) ) { } 
+        public CommunicationResponseAttachmentsController() : base( new Rock.Model.CommunicationResponseAttachmentService( RockApp.Current.CreateRockContext() ) ) { } 
     }
 }

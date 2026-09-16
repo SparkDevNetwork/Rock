@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -28,6 +28,7 @@ using Newtonsoft.Json;
 using Rock;
 using Rock.Attribute;
 using Rock.ClientService.Connection.ConnectionType;
+using Rock.Configuration;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
@@ -171,7 +172,7 @@ namespace RockWeb.Blocks.Connection
         /// </summary>
         private void GetConnectionTypes()
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 // Get the connection types.
                 var connectionTypeService = new ConnectionTypeService( rockContext );

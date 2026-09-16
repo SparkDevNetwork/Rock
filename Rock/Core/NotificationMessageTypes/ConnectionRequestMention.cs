@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -21,6 +21,7 @@ using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.Linq;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Enums.Core;
 using Rock.Model;
@@ -63,7 +64,7 @@ namespace Rock.Core.NotificationMessageTypes
                 return;
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var messageType = GetOrCreateMessageType( rockContext );
                 var connectionOpportunity = request.ConnectionOpportunity ?? new ConnectionOpportunityService( rockContext ).GetNoTracking( request.ConnectionOpportunityId );

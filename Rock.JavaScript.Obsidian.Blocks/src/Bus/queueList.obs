@@ -4,13 +4,14 @@
           :data="gridDataSource"
           keyField="idKey"
           itemTerm="Queue"
+          title="Queues"
           stickyHeader
           liveUpdates
           @selectItem="onSelectItem"
           :showLaunchWorkflow="false">
 
         <TextColumn name="queueName"
-                    title="Name"
+                    title="Queue"
                     field="queueName"
                     :filter="textValueFilter"
                     visiblePriority="xs"
@@ -49,9 +50,9 @@
                 visiblePriority="xs" />
 
         <!-- Will only appear in the Excel/CSV Export -->
-        <Column name="idKey"
+        <Column name="queueTypeName"
                 title="Queue Type Name"
-                field="idKey"
+                field="queueTypeName"
                 :hideOnScreen="true"
                 visiblePriority="xs" />
     </Grid>
@@ -103,8 +104,8 @@
      * @param key The key of the row that was selected.
      */
     function onSelectItem(key: string): void {
-        if (config.navigationUrls?.[NavigationUrlKey.DetailPage]) {
-            window.location.href = config.navigationUrls[NavigationUrlKey.DetailPage].replace("((Key))", key);
+        if (config.navigationUrls?.[NavigationUrlKey.QueueDetailPage]) {
+            window.location.href = config.navigationUrls[NavigationUrlKey.QueueDetailPage].replace("((Key))", key);
         }
     }
 

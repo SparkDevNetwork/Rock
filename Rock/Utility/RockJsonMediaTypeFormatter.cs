@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -23,6 +23,7 @@ using System.Net.Http.Formatting;
 using System.Text;
 using System.Web;
 
+using Rock.Configuration;
 using Rock.Web.Cache;
 
 namespace Rock.Utility
@@ -219,7 +220,7 @@ namespace Rock.Utility
 
                 if ( items != null )
                 {
-                    using ( var rockContext = new Rock.Data.RockContext() )
+                    using ( var rockContext = RockApp.Current.CreateRockContext() )
                     {
                         foreach ( var item in items )
                         {
@@ -237,7 +238,7 @@ namespace Rock.Utility
             //  2) Only non-virtual,non-inherited fields were included (for example: Person.PrimaryAliasId, etc, wasn't getting included) if $expand was specified
             if ( isSelectAndExpand )
             {
-                using ( var rockContext = new Rock.Data.RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     List<Dictionary<string, object>> valueAsDictionary = GetSelectAndExpandDictionaryObject( type, selectAndExpandList, rockContext, loadAttributesOptions );
                     base.WriteToStream( type, valueAsDictionary, writeStream, effectiveEncoding );

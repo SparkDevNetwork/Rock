@@ -104,19 +104,22 @@
         else if (isEnabled && hasValidKey && !isRunning) {
             labels.push({
                 title: "Ready (Restart Rock)",
-                type: "warning"
+                type: "warning",
+                iconCssClass: "ti ti-refresh"
             });
         }
         else if (isEnabled && hasValidKey) {
             labels.push({
                 title: "Active",
-                type: "success"
+                type: "success",
+                iconCssClass: "ti ti-bulb-filled"
             });
         }
         else {
             labels.push({
                 title: "Inactive",
-                type: "danger"
+                type: "danger",
+                iconCssClass: "ti ti-bulb"
             });
         }
 

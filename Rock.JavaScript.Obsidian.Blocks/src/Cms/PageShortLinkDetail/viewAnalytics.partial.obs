@@ -6,7 +6,7 @@
         </div>
 
         <div class="col-lg-3 col-md-2 col-sm-6">
-            <DropDownList label="Time Grouping"
+            <DropDownList label="Time Interval"
                           v-model="groupingBy"
                           :items="groupingByItems"
                           :showBlankItem="false" />
@@ -27,26 +27,24 @@
             <LineChart :data="chartData" />
         </div>
 
-        <div class="row">
-            <div class="col-md-6 col-md-push-6 col-lg-4 col-lg-push-8">
-                <Grid :data="partitionGridData" light>
-                    <TextColumn name="partition" title="Partition">
-                        <template #format="{ row }">
-                            <span :class="{ 'text-bold': row.isTotal }">
-                                {{ row.partition }}
-                            </span>
-                        </template>
-                    </TextColumn>
+        <div class="col-md-6 col-lg-4">
+            <Grid :data="partitionGridData" class="inherited-attributes" :light="true">
+                <TextColumn name="partition" title="Partition">
+                    <template #format="{ row }">
+                        <span :class="{ 'text-bold': row.isTotal }">
+                            {{ row.partition }}
+                        </span>
+                    </template>
+                </TextColumn>
 
-                    <NumberColumn name="clicks" title="Clicks" width="90px">
-                        <template #format="{ row }">
-                            <span :class="{ 'text-bold': row.isTotal }">
-                                {{ row.clicks.toLocaleString() }}
-                            </span>
-                        </template>
-                    </NumberColumn>
-                </Grid>
-            </div>
+                <NumberColumn name="clicks" title="Clicks" width="90px">
+                    <template #format="{ row }">
+                        <span :class="{ 'text-bold': row.isTotal }">
+                            {{ row.clicks.toLocaleString() }}
+                        </span>
+                    </template>
+                </NumberColumn>
+            </Grid>
         </div>
     </div>
 </template>
@@ -54,6 +52,21 @@
 <style scoped>
 .usage-chart {
     height: 240px;
+}
+
+:deep(.inherited-attributes .grid-column-header-container) {
+    background-color: var(--color-interface-softer) !important;
+}
+
+:deep(.inherited-attributes .grid-row) {
+    border-top: none;
+    border-left: none !important;
+    border-right: none !important;
+    border-bottom: 1px solid var(--color-interface-softer) !important;
+}
+
+:deep(.inherited-attributes .grid-footing) {
+    display: none;
 }
 </style>
 
@@ -69,7 +82,6 @@
     import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
-
     type ChartRow = {
         bucket: string;
         partition: string;

@@ -136,7 +136,31 @@
   --rounded-large: 12px;
   --rounded-xlarge: 16px;
   --rounded-huge: 24px;
+  /*
+      8/28/26 - CLAUDE
+
+      --rounded-full is declared in the styles-v2 SCSS token set but was never mirrored here, the
+      same parity gap noted below for --box-shadow-strong. A var() that references an undeclared
+      custom property makes the whole declaration invalid at computed-value time, so a LESS-based
+      theme would drop the border-radius entirely rather than fall back to a square corner.
+      Value matches _css-variable.scss.
+
+      Reason: Token parity gap between the LESS and SCSS pipelines.
+  */
+  --rounded-full: 9999px;
   --box-shadow: ~"rgba(145, 158, 171, 0.2) 0px 0px 2px 0px,rgba(145, 158, 171, 0.12) 0px 12px 24px -4px";
+  /*
+      8/27/26 - CLAUDE
+
+      --box-shadow-strong has always been declared in the styles-v2 SCSS token set but was
+      never mirrored here, so any LESS-based theme (Stark, Flat, LandingPage and every theme
+      derived from them) resolved it to nothing. A var() that references an undeclared custom
+      property makes the whole declaration invalid at computed-value time, so blocks using it
+      rendered with no shadow at all rather than a fallback one. Value matches _css-variable.scss.
+
+      Reason: Token parity gap between the LESS and SCSS pipelines.
+  */
+  --box-shadow-strong: ~"rgba(145, 158, 171, 0.2) 0px 20px 25px -5px,rgba(145, 158, 171, 0.12) 0px 10px 10px -5px";
   // GENDER COLORS
   /*
   --color-gender-male-bg: #E8F3FC;
@@ -1427,6 +1451,22 @@ div.aspNetDisabled {
 .icon-fw {
   width: (18em / 14); // font-awesome
   text-align: center;
+}
+
+/*
+    7/23/26 - CLAUDE
+
+    FontAwesome's `.fa`/`.fas`/etc. classes already get `display: inline-block;
+    line-height: 1;` from FontAwesome/_core.less, which keeps their icon boxes
+    square. Tabler's `.ti` class never got the same reset here, so it inherits
+    the page's line-height and renders taller than wide wherever equal padding
+    is applied on all sides (e.g. contentsection-header-icon).
+
+    Reason: matches the reset already applied to `.ti` in styles-v2/icons/_core-icon.scss.
+*/
+.ti {
+  display:      inline-block;
+  line-height:  1;
 }
 
 

@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -20,6 +20,7 @@ using System.Linq;
 
 using Rock;
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.UI.Controls;
@@ -38,8 +39,14 @@ namespace RockWeb.Blocks.Groups
     [Category( "Groups" )]
     [Description( "Block adds or updates a person into the configured group with the configured status and role, and sets group member attribute values that are given as name-value pairs in the querystring." )]
 
-    [GroupField("Group", "The group this block will be adding or updating people into.", true )]
-    [EnumField( "Group Member Status", "The group member status you want to set for the person.", typeof(GroupMemberStatus), true, "2" )]
+    [GroupField( "Group",
+        Description = "The group this block will be adding or updating people into.",
+        IsRequired = true )]
+    [EnumField( "Group Member Status",
+        Description = "The group member status you want to set for the person.",
+        EnumSourceType = typeof( GroupMemberStatus ),
+        IsRequired = true,
+        DefaultValue = "2" )]
 
     [CodeEditorField( "Success Message",
         Description = "The text (HTML) to display when a person is successfully added to the group.",
@@ -49,8 +56,13 @@ namespace RockWeb.Blocks.Groups
         DefaultValue = @"<h1>You're in!</h1>
 <p>You have been added to the group.</p>" )]
 
-    [LinkedPage( "Success Page", "The page to redirect to if the person was registered successfully. (If set, this overrides the Success Message setting.)", false )]
-    [TextField("Error Message", "The text to display when a valid person key is NOT provided", false, "There was a problem with your registration.  Please try to register again.")]
+    [LinkedPage( "Success Page",
+        Description = "The page to redirect to if the person was registered successfully. (If set, this overrides the Success Message setting.)",
+        IsRequired = false )]
+    [TextField("Error Message",
+        Description = "The text to display when a valid person key is NOT provided",
+        IsRequired = false,
+        DefaultValue = "There was a problem with your registration.  Please try to register again.")]
 
     [Rock.SystemGuid.BlockTypeGuid( "9AAA967C-D0B0-4E42-89DE-2AE6AAFC17EF" )]
     public partial class GroupMemberLink : Rock.Web.UI.RockBlock
@@ -80,7 +92,7 @@ namespace RockWeb.Blocks.Groups
                 }
                 else
                 {
-                    RockContext rockContext = new RockContext();
+                    RockContext rockContext = RockApp.Current.CreateRockContext();
                     Person targetPerson = null;
                     targetPerson = new PersonService( rockContext ).GetByUrlEncodedKey( personKey );
 

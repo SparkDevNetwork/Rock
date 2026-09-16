@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -24,7 +24,9 @@ using System.Runtime.Serialization;
 
 using Newtonsoft.Json;
 
+using Rock.Attribute;
 using Rock.Data;
+using Rock.Enums.Security;
 using Rock.Lava;
 using Rock.Security;
 
@@ -38,7 +40,7 @@ namespace Rock.Model
     [DataContract]
     [CodeGenerateRest]
     [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.REGISTRATION_TEMPLATE )]
-    public partial class RegistrationTemplate : Model<RegistrationTemplate>, IHasActiveFlag, ICategorized, ICampusFilterable
+    public partial class RegistrationTemplate : Model<RegistrationTemplate>, IHasActiveFlag, ICategorized, ICampusFilterable, IHasAdditionalSettings
     {
         #region Entity Properties
 
@@ -52,6 +54,7 @@ namespace Rock.Model
         [MaxLength( 100 )]
         [DataMember( IsRequired = true )]
         [IncludeForReporting]
+        [StringValidation( StringValidationProfile.Name )]
         public string Name { get; set; }
 
         /// <summary>
@@ -61,6 +64,7 @@ namespace Rock.Model
         /// A <see cref="System.String"/> that represents the description of the registration template.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.LavaAndBasicHtml )]
         public string Description { get; set; }
 
         /// <summary>
@@ -117,6 +121,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [MaxLength( 100 )]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string FeeTerm { get; set; }
 
         /// <summary>
@@ -127,6 +132,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [MaxLength( 100 )]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string RegistrantTerm { get; set; }
 
         /// <summary>
@@ -137,6 +143,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [MaxLength( 100 )]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string RegistrationTerm { get; set; }
 
         /// <summary>
@@ -147,6 +154,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [MaxLength( 100 )]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string DiscountCodeTerm { get; set; }
 
         /// <summary>
@@ -157,6 +165,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [MaxLength( 200 )]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string RegistrationAttributeTitleStart { get; set; }
 
         /// <summary>
@@ -167,6 +176,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [MaxLength( 200 )]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string RegistrationAttributeTitleEnd { get; set; }
 
         /// <summary>
@@ -177,6 +187,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [MaxLength( 200 )]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string ConfirmationFromName { get; set; }
 
         /// <summary>
@@ -187,6 +198,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [MaxLength( 200 )]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string ConfirmationFromEmail { get; set; }
 
         /// <summary>
@@ -197,6 +209,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [MaxLength( 200 )]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string ConfirmationSubject { get; set; }
 
         /// <summary>
@@ -206,6 +219,7 @@ namespace Rock.Model
         /// The confirmation email template.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string ConfirmationEmailTemplate { get; set; }
 
         /// <summary>
@@ -216,6 +230,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [MaxLength( 200 )]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string ReminderFromName { get; set; }
 
         /// <summary>
@@ -226,6 +241,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [MaxLength( 200 )]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string ReminderFromEmail { get; set; }
 
         /// <summary>
@@ -236,6 +252,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [MaxLength( 200 )]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string ReminderSubject { get; set; }
 
         /// <summary>
@@ -245,6 +262,7 @@ namespace Rock.Model
         /// The reminder email template.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string ReminderEmailTemplate { get; set; }
 
         /// <summary>
@@ -255,6 +273,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [MaxLength( 200 )]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string WaitListTransitionFromName { get; set; }
 
         /// <summary>
@@ -265,6 +284,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [MaxLength( 200 )]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string WaitListTransitionFromEmail { get; set; }
 
         /// <summary>
@@ -275,6 +295,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [MaxLength( 200 )]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string WaitListTransitionSubject { get; set; }
 
         /// <summary>
@@ -284,6 +305,7 @@ namespace Rock.Model
         /// The wait list transition email template.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string WaitListTransitionEmailTemplate { get; set; }
 
         /// <summary>
@@ -357,6 +379,7 @@ namespace Rock.Model
         /// The name of the request entry.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string RequestEntryName { get; set; }
 
         /// <summary>
@@ -366,6 +389,7 @@ namespace Rock.Model
         /// The registration instructions.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string RegistrationInstructions { get; set; }
 
         /// <summary>
@@ -375,6 +399,7 @@ namespace Rock.Model
         /// The success title.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.PlainText, ExcludedRules = StringValidationRule.LavaFormatting | StringValidationRule.LavaCommands )]
         public string SuccessTitle { get; set; }
 
         /// <summary>
@@ -384,6 +409,7 @@ namespace Rock.Model
         /// The success text.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string SuccessText { get; set; }
 
         /// <summary>
@@ -456,6 +482,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [MaxLength( 200 )]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string PaymentReminderFromName { get; set; }
 
         /// <summary>
@@ -466,6 +493,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [MaxLength( 200 )]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string PaymentReminderFromEmail { get; set; }
 
         /// <summary>
@@ -476,6 +504,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [MaxLength( 200 )]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string PaymentReminderSubject { get; set; }
 
         /// <summary>
@@ -485,6 +514,7 @@ namespace Rock.Model
         /// The payment reminder email template.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string PaymentReminderEmailTemplate { get; set; }
 
         /// <summary>
@@ -503,6 +533,7 @@ namespace Rock.Model
         /// The batch name prefix.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string BatchNamePrefix { get; set; }
 
         /// <summary>
@@ -610,7 +641,46 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [MaxLength( 50 )]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string PaymentPlanFrequencyValueIds { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether a registrant must either pay the registration in full
+        /// or establish a valid payment plan that covers the remaining balance before saving the registration.
+        /// <para>
+        ///     Only meaningful when <see cref="IsPaymentPlanAllowed"/> is <see langword="true"/>. When this is enabled,
+        ///     the Registration Entry block enforces (on the final Submit/Finish step) the equation:
+        ///     <c>amount_to_pay_today + (amount_per_payment * number_of_payments) == AmountRemaining</c> with strict equality.
+        ///     This setting takes precedence over other payment-related settings (such as
+        ///     <see cref="MinimumInitialPayment"/>); those still apply as floors but cannot relax this requirement.
+        /// </para>
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if full payment or a valid payment plan is required to save the registration; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool IsFullPaymentOrPaymentPlanRequired { get; set; }
+
+        /// <summary>
+        /// Gets or sets the message displayed to a registrant when validation fails for the
+        /// <see cref="IsFullPaymentOrPaymentPlanRequired"/> rule on the Registration Entry block.
+        /// <para>
+        ///     Supports HTML and Markdown. Lava-enabled with the following context:
+        ///     <c>RegistrationInstance</c> (always) and <c>Registration</c> (always; for new registrations, a transient unsaved
+        ///     <see cref="Registration"/> is materialized from the current wizard state, so authors should avoid
+        ///     referencing <c>Registration.Id</c>, <c>Registration.Guid</c>, or <c>Registration.Payments</c> in this
+        ///     message because those are not meaningful pre-save).
+        /// </para>
+        /// <para>
+        ///     Only meaningful when <see cref="IsFullPaymentOrPaymentPlanRequired"/> is <see langword="true"/>.
+        /// </para>
+        /// </summary>
+        /// <value>
+        /// The Lava-enabled validation failure message, or <see langword="null"/> if no configured message is set.
+        /// </value>
+        [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
+        public string FullPaymentOrPaymentPlanRequiredMessage { get; set; }
 
         /// <summary>
         /// Gets or sets the connection status value identifier.
@@ -633,7 +703,127 @@ namespace Rock.Model
         [DefinedValue( SystemGuid.DefinedType.RECORD_SOURCE_TYPE )]
         public int? RegistrantRecordSourceValueId { get; set; }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether duplicate registrants are prevented.
+        /// When <see langword="true"/>, a Person may only be associated once with a given Registration Instance.
+        /// When <see langword="false"/>, duplicate registrants are allowed.
+        /// </summary>
+        [DataMember]
+        public bool AreDuplicateRegistrantsPrevented { get; set; }
+
+        /// <inheritdoc/>
+        [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
+        public string AdditionalSettingsJson { get; set; }
+
         #endregion Entity Properties
+        
+        #region IHasAdditionalSettings Models
+
+        /// <summary>
+        /// Defines the eligibility filters used to determine whether an individual
+        /// may register for an event or opportunity.
+        /// </summary>
+        /// <remarks>
+        /// All configured filters use an <c>AND</c> relationship. An individual must meet
+        /// every non-null requirement to be considered eligible.
+        /// 
+        /// These settings also determine which family members appear in the
+        /// <c>Family Member to Register</c> list when that option is enabled.
+        /// 
+        /// If the Registration Entry form does not collect the required information
+        /// (such as birthdate, grade, or gender), eligibility cannot be evaluated
+        /// and the individual will not be allowed to register.
+        /// </remarks>
+        /// <remarks>
+        ///     <para>
+        ///         <strong>This is an internal API</strong> that supports the Rock
+        ///         infrastructure and not subject to the same compatibility standards
+        ///         as public APIs. It may be changed or removed without notice in any
+        ///         release and should therefore not be directly used in any plug-ins.
+        ///     </para>
+        /// </remarks>
+        [RockInternal( "19.0" )]
+        public partial class RegistrantEligibilitySettings
+        {
+            /// <summary>
+            /// Gets or sets the minimum age required for eligibility.
+            /// </summary>
+            /// <value>
+            /// The minimum age in years. If <c>null</c>, no minimum age restriction is applied.
+            /// </value>
+            public decimal? MinimumAge { get; set; }
+
+            /// <summary>
+            /// Gets or sets the maximum age allowed for eligibility.
+            /// </summary>
+            /// <value>
+            /// The maximum age in years. If <c>null</c>, no maximum age restriction is applied.
+            /// </value>
+            public decimal? MaximumAge { get; set; }
+
+            /// <summary>
+            /// Gets or sets the age classification required for eligibility.
+            /// </summary>
+            /// <value>
+            /// The required <see cref="AgeClassification"/> value. If <c>null</c>, 
+            /// age classification is not evaluated.
+            /// </value>
+            public AgeClassification? AgeClassification { get; set; }
+
+            /// <summary>
+            /// Gets or sets the maximum <see cref="Person.GradeOffset"/> allowed for eligibility.
+            /// </summary>
+            /// <remarks>
+            /// <see cref="Person.GradeOffset"/> represents the number of years until graduation:
+            /// <list type="bullet">
+            /// <item><description><c>0</c> = Senior</description></item>
+            /// <item><description><c>1</c> = Junior</description></item>
+            /// <item><description><c>2</c> = Sophomore</description></item>
+            /// <item><description>Increasing positive values represent younger grades</description></item>
+            /// <item><description>Negative values indicate the individual has already graduated</description></item>
+            /// </list>
+            /// 
+            /// If <c>null</c>, no maximum GradeOffset restriction is applied.
+            /// </remarks>
+            public int? MaximumGradeOffset { get; set; }
+
+            /// <summary>
+            /// Gets or sets the minimum <see cref="Person.GradeOffset"/> required for eligibility.
+            /// </summary>
+            /// <remarks>
+            /// <see cref="Person.GradeOffset"/> represents the number of years until graduation:
+            /// <list type="bullet">
+            /// <item><description><c>0</c> = Senior</description></item>
+            /// <item><description><c>1</c> = Junior</description></item>
+            /// <item><description><c>2</c> = Sophomore</description></item>
+            /// <item><description>Increasing positive values represent younger grades</description></item>
+            /// <item><description>Negative values indicate the individual has already graduated</description></item>
+            /// </list>
+            /// 
+            /// If <c>null</c>, no minimum GradeOffset restriction is applied.
+            /// </remarks>
+            public int? MinimumGradeOffset { get; set; }
+
+            /// <summary>
+            /// Gets or sets the required gender for eligibility.
+            /// </summary>
+            /// <value>
+            /// The required <see cref="Gender"/> value. If <c>null</c>, gender is not evaluated.
+            /// </value>
+            public Gender? Gender { get; set; }
+
+            /// <summary>
+            /// Gets or sets the Data View used to further restrict eligibility.
+            /// </summary>
+            /// <value>
+            /// The Guid of the Data View that an individual must match to be eligible.
+            /// If <c>null</c>, no Data View filtering is applied.
+            /// </value>
+            public Guid? EligibilityDataViewGuid { get; set; }
+        }
+
+        #endregion IHasAdditionalSettings Models
 
         #region Navigation Properties
 

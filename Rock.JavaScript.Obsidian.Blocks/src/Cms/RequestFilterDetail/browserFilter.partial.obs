@@ -17,39 +17,36 @@
            saveText="Save"
            cancelText="Cancel"
            :onSave="onSave">
-        <div class="row form-row d-flex flex-wrap align-items-center">
-            <div class="col col flex-grow-0">
-                <div class="form-group">
-                    <span class="text-nowrap">Where</span>
-                </div>
+        <div class="row">
+            <div class="col-sm-6">
+                <DropDownList :modelValue="theFilter.browserFamily?.toString() ?? ''"
+                              @update:modelValue="val => theFilter.browserFamily = Number(val)"
+                              :items="browserFamilies"
+                              label="Browser Family"
+                              help="The browser type used by the visitor making the request."
+                              :showBlankItem="false" />
             </div>
-            <div class="col flex-grow-0">
-                <div class="form-group">
-                    <DropDownList :modelValue="theFilter.browserFamily?.toString() ?? ''"
-                                  @update:modelValue="val => theFilter.browserFamily = Number(val)"
-                                  :items="browserFamilies"
-                                  class="input-width-lg"
-                                  :showBlankItem="false" />
-                </div>
+        </div>
+
+        <div class="row">
+            <div class="col-sm-3">
+                <DropDownList :modelValue="theFilter.versionComparisonType?.toString() ?? ''"
+                              @update:modelValue="val => theFilter.versionComparisonType = Number(val)"
+                              :items="comparisonTypes"
+                              label="Match Type"
+                              help="How the browser version should be compared to the value provided."
+                              :showBlankItem="false" />
             </div>
-            <div class="col flex-grow-0">
-                <div class="form-group">
-                    <span class="text-nowrap">version</span>
-                </div>
-            </div>
-            <div class="col flex-grow-0">
-                <div class="form-group">
-                    <DropDownList :modelValue="theFilter.versionComparisonType?.toString() ?? ''"
-                                  @update:modelValue="val => theFilter.versionComparisonType = Number(val)"
-                                  :items="comparisonTypes"
-                                  class="input-width-lg"
-                                  :showBlankItem="false" />
-                </div>
-            </div>
-            <div class="col">
-                <div class="form-group">
-                    <NumberBox v-model="theFilter.majorVersion" rules="required" validationTitle="Major Version" :maxLength="9" />
-                </div>
+        </div>
+
+        <div class="row">
+            <div class="col-sm-6">
+                <NumberBox v-model="theFilter.majorVersion"
+                           label="Major Version"
+                           help="The primary version number of the visitor’s browser."
+                           rules="required"
+                           validationTitle="Major Version"
+                           :maxLength="9" />
             </div>
         </div>
     </Modal>

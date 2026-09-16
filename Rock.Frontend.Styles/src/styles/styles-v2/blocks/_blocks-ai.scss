@@ -1,0 +1,483 @@
+//  imported by _core.scss
+
+//  AI BLOCK STYLES
+
+
+// =============================================================
+// Table of Content
+//  + Chat Bot
+// =============================================================
+
+.btn-chat-toggle.active {
+    background-color: var(--color-info-soft);
+}
+
+
+// ============ CHAT BOT =========================
+.chat-bot {
+
+  .chat-container {
+    display: flex;
+    flex-direction: row;
+    gap: var(--spacing-medium);
+    margin-right: 0;
+    margin-left: 0;
+    /*
+     * Bound the block to the viewport height so the conversation column scrolls
+     * internally instead of growing to fit all messages. The page chrome only
+     * constrains height at wider (desktop) widths; below the ~992px breakpoint
+     * it lets content flow, so without an explicit height the conversation
+     * container expands to its full content height and pushes the page's
+     * content-wrapper past the viewport (a scrollbar with no visible overflow).
+     * The 140px offset accounts for the header, breadcrumb, and surrounding
+     * padding above the block.
+     */
+    height: calc(100vh - 140px);
+  }
+
+  .sessions-column {
+    display: flex;
+    flex-direction: column;
+    width: 25%;
+    gap: var(--spacing-large);
+    flex: 0 1 auto;
+  }
+
+  .sessions-container {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-small);
+    overflow-y: auto;
+  }
+
+  .session {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-tiny);
+    color: var(--color-interface-strong);
+    padding: var(--spacing-small);
+    border-radius: var(--rounded-small);
+    cursor: pointer;
+    border: 1px solid transparent;
+
+    &.active {
+      background-color: var(--color-interface-soft);
+      cursor: initial;
+    }
+
+    &:hover {
+      border: 1px solid var(--color-interface-soft);
+    }
+
+    &:hover .session-delete {
+      opacity: 1;
+      border: none;
+    }
+  }
+
+  .session-delete {
+    opacity: 0;
+    cursor: pointer;
+    font-size: var(--font-size-xsmall);
+    background-color: transparent;
+    color: var(--color-danger-strong);
+    align-content: center;
+    text-align: center;
+    border-radius: var(--rounded-small);
+    border: 1px solid transparent;
+    transition: opacity 0.2s ease-in-out, background-color 0.2s ease-in-out, color 0.2s ease-in-out;
+
+    &:hover {
+      background-color: var(--color-danger-strong);
+      color: var(--color-danger-soft);
+    }
+  }
+
+  .session-item {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-tiny);
+  }
+
+  .session-title {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    gap: var(--spacing-tiny);
+  }
+
+  .session-name {
+    line-height: var(--line-height-normal);
+    width: 100%;
+    font-weight: var(--font-weight-medium);
+    /*
+     * Clamp long session names to a single line with a trailing ellipsis. The
+     * -webkit-box display with line-clamp is the cross-browser way to limit
+     * the line count; overflow: hidden is required for the ellipsis to show.
+     */
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 1;
+            line-clamp: 1;
+    overflow: hidden;
+  }
+
+  .session-date {
+    grid-row: 2;
+    grid-column: 1 / 3;
+    font-size: small;
+    opacity: 0.7;
+  }
+
+  .conversation-container {
+    display: flex;
+    flex-direction: column;
+    width: 75%;
+    overflow-y: auto;
+    background-color: var(--color-interface-softest);
+    border: 1px solid var(--color-interface-soft);
+    border-radius: var(--rounded-small);
+    flex-grow: 1;
+    /*
+     * Allow the conversation column to shrink below its content's intrinsic
+     * width. Without this, a long line in a message (URL, code, etc.) forces
+     * the flex item wider and steals width from the sessions column, so the
+     * two columns visibly resize when switching sessions.
+     */
+    min-width: 0;
+    gap: var(--spacing-small);
+    position: relative;
+
+    /*
+     * Edge fades for the scrolling message list. The conversation container is
+     * the scroll element, so these overlays use position: sticky to stay pinned
+     * to the top and bottom of the viewport as the content scrolls (absolute
+     * positioning would scroll away with the content). They fade only the
+     * message text - a mask-image on the scroller would also fade its
+     * background, border, and scrollbar. A negative margin pulls each overlay
+     * out of the flow (and cancels the flex gap) so it sits on top of the
+     * messages instead of taking up space. Stretching to the content width
+     * already excludes the scrollbar, so no right inset is needed.
+     */
+    &::before,
+    &::after {
+      content: "";
+      position: sticky;
+      z-index: 1;
+      flex-shrink: 0;
+      pointer-events: none;
+    }
+
+    /*
+     * Top fade only appears once the user has scrolled away from the top. The
+     * "is-scrolled" class is toggled from script based on scroll position,
+     * which keeps the behavior consistent across all browsers (scroll-driven
+     * CSS animation timelines are not yet supported in Safari or Firefox).
+     */
+    &::before {
+      top: 0;
+      height: 40px;
+      margin-bottom: calc((40px + var(--spacing-small)) * -1);
+      background: linear-gradient(
+        to bottom,
+        var(--color-interface-softest),
+        transparent
+      );
+      opacity: 0;
+      transition: opacity 0.15s ease;
+    }
+
+    &.is-scrolled::before {
+      opacity: 1;
+    }
+
+    /* Bottom fade is always present so messages dissolve under the chat bar. */
+    &::after {
+      bottom: 0;
+      height: 200px;
+      margin-top: calc((200px + var(--spacing-small)) * -1);
+      background: linear-gradient(
+        to top,
+        var(--color-interface-softest),
+        transparent
+      );
+    }
+
+    h1 {
+      font-size: var(--font-size-h4);
+    }
+
+    h2 {
+      font-size: var(--font-size-h5);
+    }
+
+    h3,
+    h4,
+    h5,
+    h6 {
+      font-size: var(--font-size-h6);
+    }
+  }
+
+  .footer-actions {
+    /* this is ugly, don't use as final */
+    bottom: 1px;
+    left: 1px;
+    right: var(--spacing-medium); /* don't cover the scrollbar */
+    z-index: 2; /* Sit above the bottom message fade so the input stays crisp. */
+    padding: var(--spacing-large);
+    border-radius: var(--rounded-small); /* Don't clip the container corners. */
+    position: sticky;
+    // background: linear-gradient(
+    //   to top,
+    //   var(--color-interface-softest) 50%,
+    //   color-mix(in srgb, var(--color-interface-softest) 70%, transparent) 70%,
+    //   color-mix(in srgb, var(--color-interface-softest) 90%, transparent) 80%,
+    //   transparent 100%);
+  }
+
+  .action-bar {
+    .btn-chat-debug {
+      &,
+      &:active {
+        background: none;
+        color: var(--color-warning-strong);
+        box-shadow: unset !important;
+        border: 0;
+        padding: 0 var(--spacing-tiny);
+        margin: 0 var(--spacing-tiny);
+      }
+
+      &:hover {
+        background: none;
+        color: var(--color-warning-shade);
+        box-shadow: unset !important;
+        border: 0;
+        padding: 0 var(--spacing-tiny);
+        margin: 0 var(--spacing-tiny);
+      }
+    }
+
+    .btn-chat-clear {
+      background: none;
+      color: var(--color-interface-medium);
+      box-shadow: unset;
+      border: 0;
+      padding: 0 var(--spacing-tiny);
+      margin: 0 var(--spacing-tiny);
+      &:hover {
+        color: var(--color-interface-strong);
+      }
+    }
+
+    .btn-chat-submit {
+      border-radius: 100px;
+      padding: var(--spacing-xsmall) var(--spacing-small);
+      margin-left: var(--spacing-xsmall);
+      border-bottom-left-radius: 100px !important;
+      border-top-left-radius: 100px !important;
+    }
+
+    .btn {
+      box-shadow: none !important;
+    }
+  }
+
+  .action-bar-container {
+    display: flex;
+    align-items: center;
+    background-color: var(--color-interface-softest);
+    border: 1px solid var(--color-interface-soft);
+    padding: var(--spacing-small);
+    border-radius: var(--rounded-huge);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+
+    :first-child {
+      flex-grow: 1;
+    }
+
+    textarea {
+      flex-grow: 1;
+      resize: none;
+      border: none;
+      box-shadow: none;
+    }
+  }
+
+  .messages-container {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+    gap: var(--spacing-large);
+    margin-bottom: 0;
+    padding: var(--spacing-medium);
+    padding-top: var(--spacing-xlarge); // Add extra padding to the top of the messages container
+  }
+
+  .message {
+    padding: var(--spacing-tiny) var(--spacing-small);
+    border-radius: var(--rounded-xlarge);
+  }
+
+  .message-user {
+    background-color: var(--color-interface-softer);
+    color: var(--color-interface-strong);
+    margin-left: auto;
+    max-width: 75%;
+    margin-right: var(--spacing-small);
+    border: 1px solid var(--color-interface-soft);
+
+    .message-text p {
+      margin: 0;
+      padding: var(--spacing-small);
+      font-weight: var(--font-weight-medium); // Strengthen the user message text to make it more readable and distinct from the assistant messages.
+    }
+  }
+
+  .message-assistant {
+    margin-right: auto;
+
+    .message-text p {
+      color: var(--color-interface-stronger);
+    }
+  }
+
+  .message-preamble {
+    font-size: var(--font-size-small);
+    background-color: var(--color-interface-softest);
+    border: 1px solid var(--color-interface-soft);
+    border-radius: var(--rounded-medium);
+    color: var(--color-interface-strong);
+    padding: var(--spacing-tiny) var(--spacing-small);
+  }
+
+  .message-thinking {
+    font-size: var(--font-size-h4);
+    opacity: 0.5;
+  }
+
+  .message-debug {
+    display: flex;
+    gap: var(--spacing-tiny);
+
+    .label,
+    .btn {
+      background: none;
+      padding: 0;
+      color: var(--color-interface-medium);
+      margin-right: var(--spacing-small);
+      font-size: var(--font-size-xsmall);
+    }
+
+    .btn {
+      display: flex;
+      align-items: center;
+    }
+  }
+
+  .anchors-container {
+    display: flex;
+    gap: var(--spacing-xsmall);
+    margin: var(--spacing-small) var(--spacing-large);
+    justify-content: center;
+  }
+
+  .anchor {
+    border: 1px solid var(--color-success-strong);
+    background-color: var(--color-success-soft);
+    color: var(--color-success-strong);
+    font-size: var(--font-size-small);
+    display: flex;
+    border-radius: var(--rounded-large);
+    height: 24px;
+    overflow: hidden;
+    line-height: 1.5em;
+    align-items: center;
+    padding: 0 var(--spacing-xsmall) 0 var(--spacing-small);
+    gap: var(--spacing-xsmall);
+  }
+
+  .anchor-type {
+    font-weight: var(--font-weight-semibold);
+    text-wrap: nowrap;
+
+    &::after {
+      content: ":";
+    }
+  }
+
+  .anchor-text {
+    text-overflow: ellipsis;
+    overflow: hidden;
+    text-wrap: nowrap;
+  }
+
+  .anchor-clear {
+    font-size: calc(0.77 * var(--font-size-xsmall));
+    padding-top: 2px;
+    cursor: pointer;
+  }
+
+}
+
+/* Message Debug Modal */
+.chat-bot-debug-modal {
+  .message-debug-log > pre {
+    display: grid;
+    grid-template-columns: auto auto 1fr;
+    column-gap: var(--spacing-medium);
+    max-height: calc(100vh - 300px);
+  }
+
+  .message-debug-tool-calls {
+    max-height: calc(100vh - 300px);
+    overflow-y: auto;
+  }
+}
+
+/* When chat bot inside docked panel. */
+.docked-panel .chat-bot {
+  .conversation-container {
+    border: 0;
+    border-radius: 0;
+  }
+  .messages-container {
+    padding: var(--spacing-medium);
+    padding-top: var(--spacing-xlarge);
+  }
+}
+
+body[data-docked-panel-mode="push"] {
+  .chat-bot-header {
+    display: none;
+    border-bottom: 1px solid var(--color-interface-soft);
+
+    .chat-bot-close-panel {
+      margin-left: auto;
+      width: 56px;
+      height: 56px;
+      border-left: 1px solid var(--color-interface-soft);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      color: var(--color-interface-medium);
+
+      &:hover {
+        color: var(--color-interface-stronger);
+        background-color: var(--color-interface-soft);
+        transition: color 0.2s ease, background-color 0.2s ease;
+      }
+    }
+
+    /*
+     * When the docked panel is in push mode and the screen is narrower than
+     * 1440px, show the header so the panel can be closed.
+     */
+    @media (max-width: 1439px) {
+      display: block;
+    }
+  }
+}
+
+// ================END CHAT BOT==========================

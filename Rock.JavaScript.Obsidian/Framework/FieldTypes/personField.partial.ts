@@ -19,7 +19,7 @@ import { defineAsyncComponent } from "@Obsidian/Utility/component";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { FieldTypeBase } from "./fieldType";
 
-export const enum ConfigurationValueKey {
+export const enum ConfigurationKey {
     EnableSelfSelection = "EnableSelfSelection",
     IncludeBusinesses = "includeBusinesses"
 }

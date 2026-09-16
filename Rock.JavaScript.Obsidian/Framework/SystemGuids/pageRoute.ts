@@ -44,6 +44,8 @@ export const PageRoute = {
     GroupPlacement: "C00ECC2D-8067-44DE-8947-A87B2CC4D575",
     /** The library viewer route 'admin/cms/content-library'. */
     LibraryViewer: "36648CBD-A1F6-4DF4-81FB-D36DB0932919",
+    /** The Ncoa Process route */
+    NcoaProcess: "20A7BA14-BC22-48B2-AF82-063F428B66E4",
     /** The oidc authorize route. */
     OidcAuthorize: "E35CD82E-C162-444E-AC5F-E42F20DA79F3",
     /** The oidc logout route. */

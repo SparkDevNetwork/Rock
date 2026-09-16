@@ -31,6 +31,7 @@
     import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
     import { MessageBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationFlowPerformance/messageBag";
     import { isNullish } from "@Obsidian/Utility/util";
+    import { getCssVariableValue } from "@Obsidian/Utility/cssUtils";
 
     /**
      * In terms of metrics, the percentage of PEOPLE who achieved the conversion goal is most important,
@@ -175,12 +176,12 @@
                 {
                     label: SeriesName.ConversionRate,
                     data: alignedData.values[0],
-                    color: "#68D391"
+                    color: getCssVariableValue("--color-categorical-1", "#68D391")
                 },
                 {
                     label: SeriesName.UnsubscribeRate,
                     data: alignedData.values[1],
-                    color: "#FC8181"
+                    color: getCssVariableValue("--color-categorical-2", "#FC8181")
                 }
             ]
         };

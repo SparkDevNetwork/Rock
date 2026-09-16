@@ -160,6 +160,10 @@
 
     // #region Values
 
+    const isRadioButtonListStyle = computed((): boolean => {
+        return props.displayStyle === PickerDisplayStyle.List && !props.multiple;
+    });
+
     const internalValue = ref(modelValueToInternalValue(props.modelValue, props.multiple));
     const loadedItems = ref<ListItemBag[] | null>(null);
     const isLoading = ref(false);
@@ -218,10 +222,6 @@
 
     const isCheckBoxListStyle = computed((): boolean => {
         return props.displayStyle === PickerDisplayStyle.List && props.multiple;
-    });
-
-    const isRadioButtonListStyle = computed((): boolean => {
-        return props.displayStyle === PickerDisplayStyle.List && !props.multiple;
     });
 
     const isHorizontal = computed((): boolean => {

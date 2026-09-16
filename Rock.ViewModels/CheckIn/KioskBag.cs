@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -63,5 +63,11 @@ namespace Rock.ViewModels.CheckIn
         /// Determines if editing new families in registration mode is enabled.
         /// </summary>
         public bool IsEditingFamiliesEnabled { get; set; }
+
+        /// <summary>
+        /// Determines when the "skip" screen is shown when there is no valid
+        /// opportunity for the current attendee.
+        /// </summary>
+        public SkipScreenBehavior SkipScreenBehavior { get; set; }
     }
 }

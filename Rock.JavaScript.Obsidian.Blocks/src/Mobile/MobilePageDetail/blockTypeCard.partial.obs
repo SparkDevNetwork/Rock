@@ -1,0 +1,63 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="block-type-card" :data-block-type-key="blockType.idKey ?? undefined" :title="blockType.name ?? undefined">
+        <i :class="iconClass" class="block-type-card-icon"></i>
+        <span class="block-type-card-name">{{ blockType.name }}</span>
+    </div>
+</template>
+
+<style scoped>
+.block-type-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 96px;
+    background-color: var(--color-interface-softest);
+    border: 1px solid var(--color-interface-soft);
+    border-radius: var(--rounded-small);
+    cursor: grab;
+    user-select: none;
+    padding: var(--spacing-xsmall);
+}
+
+.block-type-card:active {
+    cursor: grabbing;
+}
+
+.block-type-card-icon {
+    font-size: var(--font-size-h4);
+    text-align: center;
+    color: var(--color-interface-strong);
+}
+
+.block-type-card-name {
+    font-size: var(--font-size-small);
+    text-align: center;
+    text-overflow: ellipsis;
+}
+</style>
+
+<script setup lang="ts">
+    // #region Types
+
+    import { computed, PropType } from "vue";
+    import { MobilePageBlockTypeBag } from "@Obsidian/ViewModels/Blocks/Mobile/MobilePageDetail/mobilePageBlockTypeBag";
+
+    const props = defineProps({
+        blockType: {
+            type: Object as PropType<MobilePageBlockTypeBag>,
+            required: true
+        }
+    });
+
+    // #endregion Types
+
+    // #region Computed Values
+
+    const iconClass = computed((): string => {
+        return props.blockType.iconCssClass || "ti ti-square-plus";
+    });
+
+    // #endregion Computed Values
+</script>

@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -21,6 +21,7 @@ using System.Reflection;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 #endif
+
 using Rock.Attribute;
 using Rock.Web.UI.Controls;
 
@@ -45,6 +46,20 @@ namespace Rock.Field.Types
         #endregion
 
         #region Edit Control
+
+        #endregion
+
+        #region Value Hinting
+
+        /// <inheritdoc/>
+        internal override FieldTypeHints GetFieldHints( Dictionary<string, string> privateConfigurationValues )
+        {
+            return new FieldTypeHints
+            {
+                IsCompleteList = false,
+                ValueFormat = "A single CSS colour. A hex value such as #4a90d9 is always accepted; whether a named colour is accepted depends on how the field is configured."
+            };
+        }
 
         #endregion
 

@@ -1,0 +1,55 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="row">
+        <div class="col-md-8 col-lg-8">
+            <fieldset>
+                <p v-if="modelValue?.description" v-text="modelValue.description" />
+
+                <div v-if="options?.applicationDetailsHtml" v-html="options.applicationDetailsHtml" />
+
+                <AttributeValuesContainer :modelValue="modelValue?.attributeValues ?? {}"
+                                          :attributes="modelValue?.attributes ?? {}"
+                                          :numberOfColumns="2" />
+            </fieldset>
+        </div>
+
+        <div v-if="options?.previewThumbnailUrl" class="col-md-4 hidden-sm hidden-xs">
+            <div class="mobile-app-preview">
+                <img :src="options.previewThumbnailUrl" alt="Application Preview" />
+            </div>
+        </div>
+    </div>
+</template>
+
+<style scoped>
+.mobile-app-preview {
+    padding: 20px;
+}
+
+.mobile-app-preview img {
+    width: 100%;
+    height: auto;
+    display: block;
+    min-height: 50px;
+    background-color: #ddd;
+}
+</style>
+
+<script setup lang="ts">
+    import { PropType } from "vue";
+    import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
+    import { MobileApplicationBag } from "@Obsidian/ViewModels/Blocks/Mobile/MobileApplicationDetail/mobileApplicationBag";
+    import { MobileApplicationDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Mobile/MobileApplicationDetail/mobileApplicationDetailOptionsBag";
+
+    defineProps({
+        modelValue: {
+            type: Object as PropType<MobileApplicationBag | null>,
+            required: false
+        },
+
+        options: {
+            type: Object as PropType<MobileApplicationDetailOptionsBag>,
+            required: true
+        }
+    });
+</script>

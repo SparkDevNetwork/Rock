@@ -1,0 +1,146 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <fieldset>
+        <NotificationBox v-if="modelValue?.isSystem" alertType="info">
+            <strong>Note</strong> Because this group is used by Rock, editing is restricted.
+        </NotificationBox>
+
+        <ValueDetailList :modelValue="descriptionValues" />
+
+        <AttributeValuesContainer :modelValue="attributeValues"
+                                  :attributes="attributes"
+                                  :numberOfColumns="2"
+                                  :showEmptyValues="false"
+                                  :showCategoryLabel="false" />
+
+        <ValueDetailList :modelValue="requirementValues" />
+
+        <Opportunities v-model="opportunities"
+                       :groupIdKey="modelValue?.idKey ?? ''"
+                       :canSchedule="modelValue?.canSchedule ?? false"
+                       :groupTypeOptions="groupTypeOptions"
+                       :isProjectTypeInPerson="isProjectTypeInPerson"
+                       :attendeeListUrl="attendeeListUrl" />
+    </fieldset>
+</template>
+
+<script setup lang="ts">
+    import { computed, PropType, ref, watch } from "vue";
+    import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import ValueDetailList from "@Obsidian/Controls/valueDetailList.obs";
+    import { ValueDetailListItemBuilder } from "@Obsidian/Core/Controls/valueDetailListItemBuilder";
+    import { DefinedValue } from "@Obsidian/SystemGuids/definedValue";
+    import { ValueDetailListItem } from "@Obsidian/Types/Controls/valueDetailListItem";
+    import { escapeHtml } from "@Obsidian/Utility/stringUtils";
+    import { SignUpOpportunityBag } from "@Obsidian/ViewModels/Blocks/Engagement/SignUp/SignUpProjectDetail/signUpOpportunityBag";
+    import { SignUpProjectDetailBag } from "@Obsidian/ViewModels/Blocks/Engagement/SignUp/SignUpProjectDetail/signUpProjectDetailBag";
+    import { SignUpProjectDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Engagement/SignUp/SignUpProjectDetail/signUpProjectDetailOptionsBag";
+    import { SignUpProjectGroupTypeOptionsBag } from "@Obsidian/ViewModels/Blocks/Engagement/SignUp/SignUpProjectDetail/signUpProjectGroupTypeOptionsBag";
+    import Opportunities from "./opportunities.partial.obs";
+    import { NavigationUrlKey } from "./types.partial";
+
+    const props = defineProps({
+        /** The project being viewed. */
+        modelValue: {
+            type: Object as PropType<SignUpProjectDetailBag | null>,
+            required: false
+        },
+
+        /** The additional options of the block. */
+        options: {
+            type: Object as PropType<SignUpProjectDetailOptionsBag>,
+            required: true
+        },
+
+        /** The navigation URLs provided by the block. */
+        navigationUrls: {
+            type: Object as PropType<Record<string, string> | null>,
+            required: false
+        },
+
+        /** The project's opportunities. Refreshed when an opportunity is saved or deleted. */
+        opportunities: {
+            type: Array as PropType<SignUpOpportunityBag[]>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:opportunities", value: SignUpOpportunityBag[]): void
+    }>();
+
+    // #region Values
+
+    const attributes = ref(props.modelValue?.attributes ?? {});
+    const attributeValues = ref(props.modelValue?.attributeValues ?? {});
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    /** Two-way proxy for the parent's opportunities. */
+    const opportunities = computed({
+        get(): SignUpOpportunityBag[] {
+            return props.opportunities ?? [];
+        },
+        set(value: SignUpOpportunityBag[]) {
+            emit("update:opportunities", value);
+        }
+    });
+
+    const groupTypeOptions = computed((): SignUpProjectGroupTypeOptionsBag => {
+        return props.options.groupTypeOptions ?? {} as SignUpProjectGroupTypeOptionsBag;
+    });
+
+    /** Whether the project is an in-person project, which is the only project type that sends reminders. */
+    const isProjectTypeInPerson = computed((): boolean => {
+        return (props.modelValue?.projectTypeValue ?? "").toUpperCase() === DefinedValue.ProjectTypeInPerson;
+    });
+
+    const attendeeListUrl = computed((): string | null => {
+        return props.navigationUrls?.[NavigationUrlKey.SignUpOpportunityAttendeeListPage] ?? null;
+    });
+
+    /** The description of the project, when it has one. */
+    const descriptionValues = computed((): ValueDetailListItem[] => {
+        const valueBuilder = new ValueDetailListItemBuilder();
+
+        if (props.modelValue?.description) {
+            valueBuilder.addTextValue("Description", props.modelValue.description);
+        }
+
+        return valueBuilder.build();
+    });
+
+    /** The requirements that apply to the project, flagging those that require a login to register. */
+    const requirementValues = computed((): ValueDetailListItem[] => {
+        const valueBuilder = new ValueDetailListItemBuilder();
+        const summaries = props.modelValue?.requirementSummaries ?? [];
+
+        if (summaries.length > 0) {
+            const items = summaries.map(summary => {
+                const badge = summary.isLoginRequiredToRegister
+                    ? " <span class=\"badge badge-warning\">Requires Login to Register</span>"
+                    : "";
+
+                return `<li>${escapeHtml(summary.name ?? "")}${badge}</li>`;
+            });
+
+            valueBuilder.addHtmlValue("Group Requirements", `<ul>${items.join("")}</ul>`);
+        }
+
+        return valueBuilder.build();
+    });
+
+    // #endregion Computed Values
+
+    // #region Watchers
+
+    watch(() => props.modelValue, () => {
+        attributes.value = props.modelValue?.attributes ?? {};
+        attributeValues.value = props.modelValue?.attributeValues ?? {};
+    });
+
+    // #endregion Watchers
+</script>

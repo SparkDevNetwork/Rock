@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -15,6 +15,10 @@
 // </copyright>
 //
 
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
@@ -22,9 +26,6 @@ using Rock.Security;
 using Rock.ViewModels.Blocks.Reporting.InteractionDetail;
 using Rock.Web;
 using Rock.Web.Cache;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
 
 namespace Rock.Blocks.Reporting
 {
@@ -171,8 +172,10 @@ namespace Rock.Blocks.Reporting
         /// <returns>A string of the Interaction HTML Content</returns>
         private string GetInteractionContent()
         {
-            var interactionId = PageParameter( PageParameterKey.InteractionId ).AsInteger();
-            var interaction = new InteractionService( RockContext ).Get( interactionId );
+            var interaction = new InteractionService( RockContext ).Get(
+                PageParameter( PageParameterKey.InteractionId ),
+                !PageCache.Layout.Site.DisablePredictableIds
+            );
 
             if ( interaction != null )
             {

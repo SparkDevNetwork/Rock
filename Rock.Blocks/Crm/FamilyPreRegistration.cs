@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -24,6 +24,7 @@ using Microsoft.Extensions.Logging;
 
 using Rock.Attribute;
 using Rock.Communication;
+using Rock.Configuration;
 using Rock.Crm.RecordSource;
 using Rock.Data;
 using Rock.Enums.Blocks.Crm.FamilyPreRegistration;
@@ -53,12 +54,12 @@ namespace Rock.Blocks.Crm
         Order = 0 )]
 
     [CampusField(
-        name: "Default Campus",
-        description: "An optional campus to use by default when adding a new family.",
-        required: false,
-        includeInactive: true,
-        key: AttributeKey.DefaultCampus,
-        order: 1 )]
+        "Default Campus",
+        Description = "An optional campus to use by default when adding a new family.",
+        IsRequired = false,
+        IncludeInactive = true,
+        Key = AttributeKey.DefaultCampus,
+        Order = 1 )]
 
     [BooleanField(
         "Require Campus",
@@ -854,7 +855,7 @@ namespace Rock.Blocks.Crm
 
             var scheduleDates = new HashSet<DateTime>();
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var schedules = campusScheduleAttributeValue.Split( ',' ).Select( g => new ScheduleService( rockContext ).Get( g.AsGuid() ) );
                 var daysAhead = GetAttributeValue( AttributeKey.ScheduledDaysAhead ).AsIntegerOrNull() ?? 28;
@@ -907,12 +908,12 @@ namespace Rock.Blocks.Crm
         [BlockAction( "GetNewChild" )]
         public BlockActionResult GetNewChild()
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var person = new Person();
                 person.LoadAttributes();
 
-                var personAttributes = GetAttributeCategoryAttributes( rockContext, this.ChildAttributeCategoryGuids );
+                var personAttributes = GetAttributeCategoryAttributes( rockContext, this.ChildAttributeCategoryGuids, this.GetCurrentPerson() );
                 var bag = GetFamilyPreRegistrationPersonBag( person, Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_CHILD.AsGuid(), this.GetCurrentPerson(), personAttributes );
 
                 return ActionOk( bag );
@@ -957,7 +958,7 @@ namespace Rock.Blocks.Crm
             var createFirstAdultAccount = GetFieldBag( AttributeKey.FirstAdultCreateAccount ).IsShown;
 
             // ...and some service objects
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var personService = new PersonService( rockContext );
                 var groupService = new GroupService( rockContext );
@@ -1202,7 +1203,7 @@ namespace Rock.Blocks.Crm
                 var isChildGradeShown = GetFieldBag( AttributeKey.ChildGrade ).IsShown;
                 var isChildProfileShown = GetFieldBag( AttributeKey.ChildProfilePhoto ).IsShown;
 
-                var childAttributes = GetAttributeCategoryAttributes( rockContext, this.ChildAttributeCategoryGuids );
+                var childAttributes = GetAttributeCategoryAttributes( rockContext, this.ChildAttributeCategoryGuids, this.GetCurrentPerson() );
 
                 var binaryFileService = new BinaryFileService( rockContext );
                 var groupTypeRoleService = new GroupTypeRoleService( rockContext );
@@ -1581,7 +1582,7 @@ namespace Rock.Blocks.Crm
         /// <returns></returns>
         private Rock.Model.UserLogin CreateUser( Person person, string username, string password )
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var user = UserLoginService.Create(
                 rockContext,
                 person,
@@ -1846,7 +1847,7 @@ namespace Rock.Blocks.Crm
 
                 if ( UserLoginService.IsPasswordValid( bag.CreateAccount.Password ) )
                 {
-                    var userLoginService = new UserLoginService( new RockContext() );
+                    var userLoginService = new UserLoginService( RockApp.Current.CreateRockContext() );
                     var userLogin = userLoginService.GetByUserName( bag.CreateAccount.Username );
 
                     if ( userLogin != null )
@@ -1908,12 +1909,13 @@ namespace Rock.Blocks.Crm
         }
 
         /// <summary>
-        /// Gets the attributes for the specified attribute categories.
+        /// Gets the attributes for the specified attribute categories that the current person is authorized to view.
         /// </summary>
         /// <param name="rockContext">The rock context.</param>
         /// <param name="attributeCategoryGuids">The attribute category guids.</param>
-        /// <returns>The attributes for the specified attribute categories.</returns>
-        private List<AttributeCache> GetAttributeCategoryAttributes( RockContext rockContext, List<Guid> attributeCategoryGuids )
+        /// <param name="currentPerson">The person whose view authorization is evaluated against each attribute.</param>
+        /// <returns>The viewable attributes for the specified attribute categories.</returns>
+        private List<AttributeCache> GetAttributeCategoryAttributes( RockContext rockContext, List<Guid> attributeCategoryGuids, Person currentPerson )
         {
             var attributeService = new AttributeService( rockContext );
             var attributes = new List<AttributeCache>();
@@ -1926,9 +1928,27 @@ namespace Rock.Blocks.Crm
                 {
                     foreach ( var attribute in attributeService.GetByCategoryId( category.Id, false ) )
                     {
-                        if ( !attributes.Any( a => a.Guid == attribute.Guid ) )
+                        var attributeCache = AttributeCache.Get( attribute );
+
+                        /*
+                            6/5/26 - JMH
+
+                            Filter category attributes by VIEW authorization so an attribute with View denied does not
+                            surface on the public registration form. The consumers of this list all pass
+                            enforceSecurity: false (so unauthenticated visitors can populate values), which leaves this
+                            list as the only authorization gate.
+
+                            VIEW is intentional, not EDIT: EDIT defaults to deny for anonymous users, so an EDIT filter
+                            would hide every category attribute here. VIEW defaults to allow, so attributes without an
+                            explicit rule still render while explicit View denies are honored.
+
+                            Reason: Honor person-attribute View security on the public pre-registration form.
+                        */
+                        if ( attributeCache != null
+                            && attributeCache.IsAuthorized( Authorization.VIEW, currentPerson )
+                            && !attributes.Any( a => a.Guid == attributeCache.Guid ) )
                         {
-                            attributes.Add( AttributeCache.Get( attribute ) );
+                            attributes.Add( attributeCache );
                         }
                     }
                 }
@@ -2003,7 +2023,7 @@ namespace Rock.Blocks.Crm
                 ChildLabel = GetAttributeValue( AttributeKey.ChildLabel ),
             };
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var currentPerson = this.GetCurrentPerson();
 
@@ -2015,7 +2035,7 @@ namespace Rock.Blocks.Crm
 
                 var (adult1, adult2, children, family) = GetCurrentOrNewFamily( rockContext, currentPerson, childRelationshipTypes );
 
-                var adultAttributes = GetAttributeCategoryAttributes( rockContext, this.AdultAttributeCategoryGuids );
+                var adultAttributes = GetAttributeCategoryAttributes( rockContext, this.AdultAttributeCategoryGuids, currentPerson );
 
                 box.Adult1 = GetFamilyPreRegistrationPersonBag( adult1, currentPerson, adultAttributes );
                 box.Adult2 = GetFamilyPreRegistrationPersonBag( adult2, currentPerson, adultAttributes );
@@ -2032,7 +2052,7 @@ namespace Rock.Blocks.Crm
                     GradeOffset = null
                 };
                 mockChild.LoadAttributes( rockContext );
-                var childAttributes = GetAttributeCategoryAttributes( rockContext, this.ChildAttributeCategoryGuids );
+                var childAttributes = GetAttributeCategoryAttributes( rockContext, this.ChildAttributeCategoryGuids, currentPerson );
                 box.ChildAttributes = mockChild.GetPublicAttributesForEdit( currentPerson, enforceSecurity: false, attributeFilter: f => childAttributes.Any( a => a.Guid == f.Guid ) );
                 box.Children = children.Select( child => GetFamilyPreRegistrationPersonBag( child.Person, child.FamilyRoleGuid, currentPerson, childAttributes ) ).ToList();
 
@@ -2899,7 +2919,7 @@ namespace Rock.Blocks.Crm
 
             // Save any attribute values
             adult.LoadAttributes( rockContext );
-            var adultAttributes = GetAttributeCategoryAttributes( rockContext, this.AdultAttributeCategoryGuids );
+            var adultAttributes = GetAttributeCategoryAttributes( rockContext, this.AdultAttributeCategoryGuids, this.GetCurrentPerson() );
             adult.SetPublicAttributeValues(
                 bag.AttributeValues,
                 this.GetCurrentPerson(),

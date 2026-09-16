@@ -29,6 +29,7 @@
     import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
     import { alignDataPointsByDate, LineSeries, XYPoint, XYPointEnumerable } from "@Obsidian/Core/Controls/chart";
     import { RecipientMetricsBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationFlowInstanceMessageMetrics/recipientMetricsBag";
+    import { getCssVariableValue } from "@Obsidian/Utility/cssUtils";
 
     enum SeriesName {
         ConversionRate = "Conversion Rate",
@@ -242,7 +243,7 @@
             series.push({
                 label: SeriesName.ConversionRate,
                 data: alignedData.values[0],
-                color: "#68D391"
+                color: getCssVariableValue("--color-categorical-1", "#68D391")
             });
         }
 
@@ -250,17 +251,17 @@
             {
                 label: SeriesName.OpenRate,
                 data: alignedData.values[1],
-                color: "#63B3ED"
+                color: getCssVariableValue("--color-categorical-2", "#63B3ED")
             },
             {
                 label: SeriesName.ClickThroughRate,
                 data: alignedData.values[2],
-                color: "#F6AD55"
+                color: getCssVariableValue("--color-categorical-3", "#F6AD55")
             },
             {
                 label: SeriesName.UnsubscribeRate,
                 data: alignedData.values[3],
-                color: "#FC8181"
+                color: getCssVariableValue("--color-categorical-4", "#FC8181")
             }
         );
 

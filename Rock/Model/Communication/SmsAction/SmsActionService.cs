@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -23,6 +23,7 @@ using System.Web;
 using Rock.Attribute;
 using Rock.Communication.Medium;
 using Rock.Communication.SmsActions;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Transactions;
 using Rock.Web.Cache;
@@ -60,7 +61,7 @@ namespace Rock.Model
         /// </summary>
         private static readonly Lazy<Person> _systemSenderPerson = new Lazy<Person>( () =>
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var systemSenderGuid = Rock.SystemGuid.Person.SYSTEM_SENDER.AsGuid();
 
@@ -148,7 +149,7 @@ namespace Rock.Model
         {
             if ( smsPipelineId == null )
             {
-                var minSmsPipelineId = new SmsPipelineService( new RockContext() )
+                var minSmsPipelineId = new SmsPipelineService( RockApp.Current.CreateRockContext() )
                                         .Queryable()
                                         .Where( p => p.IsActive )
                                         .Select( p => ( int? ) p.Id )
@@ -184,7 +185,7 @@ namespace Rock.Model
 
             SmsPipeline smsPipeline;
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 smsPipeline = new SmsPipelineService( rockContext ).GetNoTracking( smsPipelineId );
             }
@@ -499,6 +500,14 @@ namespace Rock.Model
                 return;
             }
 
+            var isOptOutMessage = IsOptOutMessage( message.Message );
+            if ( isOptOutMessage )
+            {
+                // This particular opt-out tracking should not be driven by configuration, as we always want to try
+                // and identify which communication prompted the person to opt out.
+                new IdentifySmsOptOutCommunicationRecipientTransaction( fromNumber ).Enqueue();
+            }
+
             if ( !message.DisableSmsOptInOutTracking.HasValue )
             {
                 var systemPhoneNumber = Sms.FindRockSmsSystemPhoneNumber( toNumber );
@@ -510,7 +519,7 @@ namespace Rock.Model
                 return;
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 List<PhoneNumber> GetMatchingPhoneNumbers()
                 {
@@ -528,7 +537,7 @@ namespace Rock.Model
 
                 var shouldSaveChanges = false;
 
-                if ( IsOptOutMessage( message.Message ) )
+                if ( isOptOutMessage )
                 {
                     foreach ( var phoneNumber in GetMatchingPhoneNumbers() )
                     {

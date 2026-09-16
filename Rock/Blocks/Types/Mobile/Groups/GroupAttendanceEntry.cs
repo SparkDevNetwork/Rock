@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -22,6 +22,7 @@ using System.Linq;
 
 using Rock.Attribute;
 using Rock.Common.Mobile.Blocks.Groups.GroupAttendanceEntry;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 
@@ -64,7 +65,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
         Description = "If enabled a save button will be shown (recommended for large groups), otherwise no save button will be displayed and a save will be triggered with each selection (recommended for smaller groups).",
         IsRequired = true,
         DefaultBooleanValue = false,
-        ControlType = Field.Types.BooleanFieldType.BooleanControlType.Checkbox,
+        BooleanControlType = Rock.Enums.Controls.BooleanControlType.Checkbox,
         Key = AttributeKeys.ShowSaveButton,
         Order = 3 )]
 
@@ -72,7 +73,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
         Description = "If enabled a date picker will be shown, otherwise a dropdown with only the valid dates will be shown.",
         IsRequired = true,
         DefaultBooleanValue = false,
-        ControlType = Field.Types.BooleanFieldType.BooleanControlType.Checkbox,
+        BooleanControlType = Rock.Enums.Controls.BooleanControlType.Checkbox,
         Key = AttributeKeys.AllowAnyDateSelection,
         Order = 4 )]
 
@@ -80,7 +81,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
         Description = "Enables collecting notes about the attendance. This will automatically show the save button as well.",
         IsRequired = false,
         DefaultBooleanValue = false,
-        ControlType = Field.Types.BooleanFieldType.BooleanControlType.Checkbox,
+        BooleanControlType = Rock.Enums.Controls.BooleanControlType.Checkbox,
         Key = AttributeKeys.ShowAttendanceNotes,
         Order = 5 )]
 
@@ -481,7 +482,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
         [BlockAction]
         public BlockActionResult GetGroupData( Guid groupGuid, DateTimeOffset? date = null )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var group = new GroupService( rockContext ).Get( groupGuid );
 
@@ -564,7 +565,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
         [BlockAction]
         public BlockActionResult SaveAttendance( Guid groupGuid, DateTimeOffset date, List<Attendee> attendees, bool didNotMeet, string notes = null )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var group = new GroupService( rockContext ).Get( groupGuid );
 
@@ -600,7 +601,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
         [BlockAction]
         public BlockActionResult DidNotMeet( Guid groupGuid, DateTimeOffset date, bool didNotMeet )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var attendanceService = new AttendanceService( rockContext );
                 var group = new GroupService( rockContext ).Get( groupGuid );

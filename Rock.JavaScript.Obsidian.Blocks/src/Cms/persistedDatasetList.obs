@@ -63,14 +63,20 @@
                         itemClass="justify-content-end text-right"
                         width="10%" />
 
-        <BooleanColumn name="isActive"
-                       title="Active"
-                       field="isActive"
-                       :filter="booleanValueFilter"
-                       visiblePriority="xs"
-                       headerClass="text-center"
-                       itemClass="justify-content-center text-center"
-                       width="2%" />
+        <LabelColumn name="status"
+                     title="Status"
+                     field="status"
+                     width="150"
+                     :quickFilterValue="getStatusTextValue"
+                     :filter="pickExistingValueFilter"
+                     :sortValue="getStatusTextValue"
+                     :exportValue="getStatusTextValue">
+            <template #format="{ row }">
+                <div :class="getStatusLabelClass(row)">
+                    {{ getStatusTextValue(row) }}
+                </div>
+            </template>
+        </LabelColumn>
 
         <ButtonColumn name="refresh"
                       tooltip="Refresh"
@@ -105,16 +111,17 @@
 <script setup lang="ts">
     import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
-    import Grid, { Column, NumberColumn, BooleanColumn, numberValueFilter, TextColumn, textValueFilter, DeleteColumn, DateTimeColumn, ButtonColumn, booleanValueFilter } from "@Obsidian/Controls/grid";
+    import Grid, { Column, NumberColumn, BooleanColumn, numberValueFilter, TextColumn, textValueFilter, DeleteColumn, DateTimeColumn, ButtonColumn, booleanValueFilter, LabelColumn, pickExistingValueFilter } from "@Obsidian/Controls/grid";
     import { alert } from "@Obsidian/Utility/dialogs";
     import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
     import { PersistedDatasetListOptionsBag } from "@Obsidian/ViewModels/Blocks/Cms/PersistedDatasetList/persistedDatasetListOptionsBag";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
-    import { NavigationUrlKey } from "./PersistedDatasetList/types.partial";
+    import { NavigationUrlKey, Row } from "./PersistedDatasetList/types.partial";
     import { reactive, ref } from "vue";
     import GridPreviewModal from "./PersistedDatasetList/gridPreviewModal.partial.obs";
     import Modal from "@Obsidian/Controls/modal.obs";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import { PersistedDatasetStatus } from "@Obsidian/Enums/Cms/persistedDatasetStatus";
 
     const config = useConfigurationValues<ListBlockBox<PersistedDatasetListOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
@@ -146,6 +153,48 @@
         }
         else {
             throw new Error(result.errorMessage ?? "Unknown error while trying to load grid data.");
+        }
+    }
+
+    /**
+     * Gets the CSS classes for the status of a row.
+     *
+     * @param row The row data.
+     */
+    function getStatusLabelClass(row: Record<string, unknown>): string[] {
+        const r = row as Row;
+
+        const classes = ["label"];
+
+        if (!r.isActive) {
+            classes.push("label-warning");
+        }
+        else if (r.status === PersistedDatasetStatus.Failed) {
+            classes.push("label-danger");
+        }
+        else {
+            classes.push("label-success");
+        }
+
+        return classes;
+    }
+
+    /**
+     * Gets the display text for the status of a row.
+     *
+     * @param row The row data.
+     */
+    function getStatusTextValue(row: Record<string, unknown>): string {
+        const r = row as Row;
+
+        if (!r.isActive) {
+            return "Inactive";
+        }
+        else if (r.status === PersistedDatasetStatus.Failed) {
+            return "Build Failed";
+        }
+        else {
+            return "Active";
         }
     }
 

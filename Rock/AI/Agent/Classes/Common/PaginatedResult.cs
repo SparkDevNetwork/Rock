@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -24,7 +24,7 @@ namespace Rock.AI.Agent.Classes.Common
     /// as well as additional information about the pagination state.
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    internal class PaginatedResult<T>
+    public class PaginatedResult<T>
     {
         #region Properties
 

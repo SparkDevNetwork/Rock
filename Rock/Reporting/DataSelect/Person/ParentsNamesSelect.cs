@@ -20,8 +20,11 @@ using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.Linq;
 using System.Linq.Expressions;
+
 using Rock.Data;
 using Rock.Model;
+using Rock.Net;
+using Rock.Obsidian.UI.GridField;
 using Rock.Web.UI.Controls;
 
 #if REVIEW_NET5_0_OR_GREATER
@@ -109,6 +112,12 @@ namespace Rock.Reporting.DataSelect.Person
             return new ListDelimitedField();
         }
 #endif
+
+        /// <inheritdoc/>
+        public override ObsidianGridField GetObsidianGridField( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
+        {
+            return new ListObsidianGridField();
+        }
 
         /// <summary>
         /// Gets the default column header text.

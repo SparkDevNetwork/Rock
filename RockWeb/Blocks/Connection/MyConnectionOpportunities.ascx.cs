@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -18,13 +18,14 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Entity;
-using System.Data.Entity.SqlServer;
 using System.Linq;
 using System.Text;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+
 using Rock;
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Lava;
 using Rock.Model;
@@ -44,67 +45,51 @@ namespace RockWeb.Blocks.Connection
     [Description( "Block to display the connection opportunities that user is authorized to view, and the opportunities that are currently assigned to the user." )]
 
     #region Block Attributes
+
     [LinkedPage(
         "Configuration Page",
+        Key = AttributeKey.ConfigurationPage,
         Description = "Page used to modify and create connection opportunities.",
         IsRequired = true,
-        Order = 0,
-        Key = AttributeKey.ConfigurationPage )]
+        Order = 0 )]
+
     [LinkedPage(
         "Detail Page",
+        Key = AttributeKey.DetailPage,
         Description = "Page used to view details of an requests.",
         IsRequired = true,
-        Order = 1,
-        Key = AttributeKey.DetailPage )]
+        Order = 1 )]
+
     [BooleanField(
         "Use Connection Request Detail Page From Connection Type",
         Key = AttributeKey.UseConnectionRequestDetailPageFromConnectionType,
         Description = "If enabled, the Connection Request Detail page defined by the Connection Type will be used to view the request(if it's not empty/unset). Otherwise the Connection Request Detail page configured on this block will be used.",
         DefaultBooleanValue = true,
-        Order = 1
-    )]
+        Order = 2 )]
+
     [ConnectionTypesField(
         "Connection Types",
+        Key = AttributeKey.ConnectionTypes,
         Description = "Optional list of connection types to limit the display to (All will be displayed by default).",
         IsRequired = false,
-        Order = 2,
-        Key = AttributeKey.ConnectionTypes )]
+        Order = 3 )]
+
     [BooleanField(
         "Show Request Total",
+        Key = AttributeKey.ShowRequestTotal,
         Description = "If enabled, the block will show the total number of requests.",
         DefaultBooleanValue = true,
-        Order = 3,
-        Key = AttributeKey.ShowRequestTotal )]
+        Order = 4 )]
+
     [BooleanField(
         "Show Last Activity Note",
+        Key = AttributeKey.ShowLastActivityNote,
         Description = "If enabled, the block will show the last activity note for each request in the list.",
         DefaultBooleanValue = false,
-        Order = 4,
-        Key = AttributeKey.ShowLastActivityNote )]
+        Order = 5 )]
 
-    [CodeEditorField(
-        "Status Template",
-        Description = "Lava Template that can be used to customize what is displayed in the status bar. Includes common merge fields plus ConnectionOpportunities, ConnectionTypes and the default IdleTooltip.",
-        EditorMode = CodeEditorMode.Lava,
-        DefaultValue = StatusTemplateDefaultValue,
-        Order = 5,
-        Key = AttributeKey.StatusTemplate )]
-
-    [CodeEditorField(
-        "Opportunity Summary Template",
-        Description = "Lava Template that can be used to customize what is displayed in each Opportunity Summary. Includes common merge fields plus the OpportunitySummary and ConnectionOpportunity.",
-        EditorMode = CodeEditorMode.Lava,
-        DefaultValue = OpportunitySummaryTemplateDefaultValue,
-        Key = AttributeKey.OpportunitySummaryTemplate,
-        Order = 6 )]
-    [CodeEditorField(
-        "Connection Request Status Icons Template",
-        Description = "Lava Template that can be used to customize what is displayed for the status icons in the connection request grid.",
-        EditorMode = CodeEditorMode.Lava,
-        DefaultValue = ConnectionRequestStatusIconsTemplateDefaultValue,
-        Key = AttributeKey.ConnectionRequestStatusIconsTemplate,
-        Order = 7 )]
     #endregion Block Attributes
+
     [Rock.SystemGuid.BlockTypeGuid( "3F69E04F-F966-4CAE-B89D-F97DFEF6407A" )]
     public partial class MyConnectionOpportunities : Rock.Web.UI.RockBlock, ICustomGridColumns
     {
@@ -116,9 +101,6 @@ namespace RockWeb.Blocks.Connection
             public const string ConnectionTypes = "ConnectionTypes";
             public const string ShowRequestTotal = "ShowRequestTotal";
             public const string ShowLastActivityNote = "ShowLastActivityNote";
-            public const string StatusTemplate = "StatusTemplate";
-            public const string ConnectionRequestStatusIconsTemplate = "ConnectionRequestStatusIconsTemplate";
-            public const string OpportunitySummaryTemplate = "OpportunitySummaryTemplate";
             public const string UseConnectionRequestDetailPageFromConnectionType = "UseConnectionRequestDetailPageFromConnectionType";
         }
         #endregion Attribute Keys
@@ -130,48 +112,71 @@ namespace RockWeb.Blocks.Connection
         /// </summary>
         private static class PageParameterKey
         {
-            public const string ConnectionRequestId = "ConnectionRequestId";
-            public const string ConnectionOpportunityId = "ConnectionOpportunityId";
+            public const string Request = "Request";
+            public const string ConnectionOpportunity = "ConnectionOpportunity";
         }
 
         #endregion
 
         #region Attribute Default values
 
-        private const string StatusTemplateDefaultValue = @"
-<div class='pull-left badge-legend padding-r-md'>
-    <span class='pull-left badge badge-info badge-circle js-legend-badge' data-toggle='tooltip' data-original-title='Assigned To You'><span class='sr-only'>Assigned To You</span></span>
-    <span class='pull-left badge badge-warning badge-circle js-legend-badge' data-toggle='tooltip' data-original-title='Unassigned Item'><span class='sr-only'>Unassigned Item</span></span>
-    <span class='pull-left badge badge-critical badge-circle js-legend-badge' data-toggle='tooltip' data-original-title='Critical Status'><span class='sr-only'>Critical Status</span></span>
-    <span class='pull-left badge badge-danger badge-circle js-legend-badge' data-toggle='tooltip' data-original-title='{{ IdleTooltip }}'><span class='sr-only'>{{ IdleTooltip }}</span></span>
+        private const string OpportunitySummaryTemplateDefaultValue = @"
+<i class='opportunity-summary-icon {{ OpportunitySummary.IconCssClass }}'></i>
+<h3>{{ OpportunitySummary.Name }}</h3>
+<div class='status-indicators'>
+    {% if OpportunitySummary.AssignedToYou > 0 %}
+    <span class='label label-info' data-toggle='tooltip' data-original-title='Assigned To You'><i class='ti ti-user-circle'></i> {{ OpportunitySummary.AssignedToYou | Format:'#,###,###' }}</span>
+    {% endif %}
+    {% if OpportunitySummary.ActiveCount > 0 %}
+    <span class='label label-success' data-toggle='tooltip' data-original-title='Active Requests'><i class='ti ti-bolt'></i> {{ OpportunitySummary.ActiveCount | Format:'#,###,###' }}</span>
+    {% endif %}
+    {% if OpportunitySummary.UnassignedCount > 0 %}
+    <span class='label label-default' data-toggle='tooltip' data-original-title='Unassigned Requests'><i class='ti ti-user-off'></i>{{ OpportunitySummary.UnassignedCount | Format:'#,###,###' }}</span>
+    {% endif %}
+    {% if OpportunitySummary.DueSoonCount > 0 %}
+    <span class='label label-warning' data-toggle='tooltip' data-original-title='Due Soon Requests'><i class='ti ti-calendar-due'></i>{{ OpportunitySummary.DueSoonCount | Format:'#,###,###' }}</span>
+    {% endif %}
+    {% if OpportunitySummary.OverdueCount > 0 %}
+    <span class='label label-danger' data-toggle='tooltip' data-original-title='Overdue Requests'><i class='ti ti-exclamation-circle'></i>{{ OpportunitySummary.OverdueCount | Format:'#,###,###' }}</span>
+    {% endif %}
 </div>";
 
-        private const string OpportunitySummaryTemplateDefaultValue = @"
-<span class=""item-count"" title=""There are {{ 'active connection' | ToQuantity:OpportunitySummary.TotalRequests }} in this opportunity."">{{ OpportunitySummary.TotalRequests | Format:'#,###,##0' }}</span>
-<i class='{{ OpportunitySummary.IconCssClass }}'></i>
-<h3>{{ OpportunitySummary.Name }}</h3>
-<div class='status-list'>
-    <span class='badge badge-info'>{{ OpportunitySummary.AssignedToYou | Format:'#,###,###' }}</span>
-    <span class='badge badge-warning'>{{ OpportunitySummary.UnassignedCount | Format:'#,###,###' }}</span>
-    <span class='badge badge-critical'>{{ OpportunitySummary.CriticalCount | Format:'#,###,###' }}</span>
-    <span class='badge badge-danger'>{{ OpportunitySummary.IdleCount | Format:'#,###,###' }}</span>
-</div>
-";
+        private const string ConnectionRequestRowStatusIndicatorsTemplate = @"
+{% assign statusIndicators = '' %}
+{% if ConnectionRequest.IsAssignedToYou %}
+  {% capture assignedToYouLabel -%}
+    <span class=""label label-info"" data-toggle=""tooltip"" title=""Assigned To You"">
+      <i class=""ti ti-user-circle""></i>
+    </span>
+  {%- endcapture %}
+  {% assign statusIndicators = statusIndicators | Append:assignedToYouLabel %}
+{% endif %}
+{% if ConnectionRequest.IsOverdue %}
+  {% capture overdueTitle %}Overdue:<br />By {{ ConnectionRequest.OverdueDays | Format:'N0' }} {{ 'day' | PluralizeForQuantity:ConnectionRequest.OverdueDays }}{% endcapture %}
+  {% capture overdueLabel -%}
+    <span class=""label label-danger"" data-toggle=""tooltip"" title=""{{ overdueTitle | Escape }}"" data-html=""true"">
+      <i class=""ti ti-exclamation-circle""></i>
+    </span>
+  {%- endcapture %}
+  {% assign statusIndicators = statusIndicators | Append:overdueLabel %}
+{% elseif ConnectionRequest.IsDueSoon %}
+  {% assign dueInDaysText = '' %}
+  {% if ConnectionRequest.DueInDays == 0 %}
+    {% assign dueInDaysText = ':<br />Today' %}
+  {% elseif ConnectionRequest.DueInDays > 0 %}
+    {% capture dueInDaysText %}:<br />In {{ ConnectionRequest.DueInDays | Format:'N0' }} {{ 'day' | PluralizeForQuantity:ConnectionRequest.DueInDays }}{% endcapture %}
+  {% endif %}
+  {% capture dueSoonTitle %}Due Soon{{ dueInDaysText }}{% endcapture %}
+  {% capture dueSoonLabel -%}
+    <span class=""label label-warning"" data-toggle=""tooltip"" title=""{{ dueSoonTitle | Escape }}"" data-html=""true"">
+      <i class=""ti ti-calendar-due""></i>
+    </span>
+  {%- endcapture %}
+  {% assign statusIndicators = statusIndicators | Append:dueSoonLabel %}
+{% endif %}
 
-        private const string ConnectionRequestStatusIconsTemplateDefaultValue = @"
-<div class='status-list'>
-    {% if ConnectionRequestStatusIcons.IsAssignedToYou %}
-    <span class='badge badge-info js-legend-badge' data-toggle='tooltip' data-original-title='Assigned To You'><span class='sr-only'>Assigned To You</span></span>
-    {% endif %}
-    {% if ConnectionRequestStatusIcons.IsUnassigned %}
-    <span class='badge badge-warning js-legend-badge' data-toggle='tooltip' data-original-title='Unassigned'><span class='sr-only'>Unassigned</span></span>
-    {% endif %}
-    {% if ConnectionRequestStatusIcons.IsCritical %}
-    <span class='badge badge-critical js-legend-badge' data-toggle='tooltip' data-original-title='Critical'><span class='sr-only'>Critical</span></span>
-    {% endif %}
-    {% if ConnectionRequestStatusIcons.IsIdle %}
-    <span class='badge badge-danger js-legend-badge' data-toggle='tooltip' data-original-title='{{ IdleTooltip }}'><span class='sr-only'>{{ IdleTooltip }}</span></span>
-    {% endif %}
+<div class='status-indicators'>
+    {{ statusIndicators }}
 </div>
 ";
 
@@ -399,22 +404,14 @@ namespace RockWeb.Blocks.Connection
         /// <returns></returns>
         public string GetOpportunitySummaryHtml( OpportunitySummary opportunitySummary )
         {
-            var template = this.GetAttributeValue( AttributeKey.OpportunitySummaryTemplate );
+            var template = OpportunitySummaryTemplateDefaultValue;
 
-            var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson, new Rock.Lava.CommonMergeFieldsOptions() );
-
-            mergeFields.Add( "OpportunitySummary", opportunitySummary );
-
-            string result = null;
-            using ( var rockContext = new RockContext() )
+            var mergeFields = new Dictionary<string, object>
             {
-                var connectionOpportunity = new ConnectionOpportunityService( rockContext ).Queryable().AsNoTracking().FirstOrDefault( a => a.Id == opportunitySummary.Id );
-                mergeFields.Add( "ConnectionOpportunity", connectionOpportunity );
+                ["OpportunitySummary"] = opportunitySummary
+            };
 
-                result = template.ResolveMergeFields( mergeFields );
-            }
-
-            return result;
+            return template.ResolveMergeFields( mergeFields );
         }
 
         /// <summary>
@@ -475,7 +472,7 @@ namespace RockWeb.Blocks.Connection
         /// <param name="e">The e.</param>
         protected void rFilter_DisplayFilterValue( object sender, GridFilter.DisplayFilterValueArgs e )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 if ( e.Key == "Requester" )
                 {
@@ -564,7 +561,7 @@ namespace RockWeb.Blocks.Connection
 
         protected void gRequests_Delete( object sender, RowEventArgs e )
         {
-            using ( RockContext rockContext = new RockContext() )
+            using ( RockContext rockContext = RockApp.Current.CreateRockContext() )
             {
                 var service = new ConnectionRequestService( rockContext );
                 var connectionRequest = service.Get( e.RowKeyId );
@@ -614,31 +611,17 @@ namespace RockWeb.Blocks.Connection
         {
             if ( e.Row.RowType == DataControlRowType.DataRow )
             {
-                Literal lStatusIcons = e.Row.FindControl( "lStatusIcons" ) as Literal;
-                if ( SelectedOpportunityId.HasValue && lStatusIcons != null )
+                var lStatusIndicators = e.Row.FindControl( "lStatusIndicators" ) as Literal;
+                if ( lStatusIndicators != null )
                 {
-                    var opportunitySummary = SummaryState.SelectMany( a => a.Opportunities ).FirstOrDefault( a => a.Id == SelectedOpportunityId.Value );
-                    if ( opportunitySummary != null )
+                    ConnectionRequestInfo connectionRequestInfo = e.Row.DataItem as ConnectionRequestInfo;
+
+                    Dictionary<string, object> mergeFields = new Dictionary<string, object>
                     {
-                        ConnectionRequestInfo connectionRequestInfo = e.Row.DataItem as ConnectionRequestInfo;
-                        int connectionRequestId = connectionRequestInfo.Id;
+                        ["ConnectionRequest"] = connectionRequestInfo
+                    };
 
-                        string connectionRequestStatusIconTemplate = this.GetAttributeValue( AttributeKey.ConnectionRequestStatusIconsTemplate );
-
-                        Dictionary<string, object> mergeFields = new Dictionary<string, object>();
-                        ConnectionRequestStatusIcons connectionRequestStatusIcons = new ConnectionRequestStatusIcons
-                        {
-                            IsAssignedToYou = opportunitySummary.AssignedToYouConnectionRequests.Contains( connectionRequestId ),
-                            IsCritical = opportunitySummary.CriticalConnectionRequests.Contains( connectionRequestId ),
-                            IsIdle = opportunitySummary.IdleConnectionRequests.Contains( connectionRequestId ),
-                            IsUnassigned = opportunitySummary.UnassignedConnectionRequests.Contains( connectionRequestId )
-                        };
-
-                        mergeFields.Add( "ConnectionRequestStatusIcons", LavaDataObject.FromAnonymousObject( connectionRequestStatusIcons ) );
-
-                        mergeFields.Add( "IdleTooltip", string.Format( "Idle (no activity in {0} days)", opportunitySummary.DaysUntilRequestIdle ) );
-                        lStatusIcons.Text = connectionRequestStatusIconTemplate.ResolveMergeFields( mergeFields );
-                    }
+                    lStatusIndicators.Text = ConnectionRequestRowStatusIndicatorsTemplate.ResolveMergeFields( mergeFields );
                 }
             }
         }
@@ -656,7 +639,7 @@ namespace RockWeb.Blocks.Connection
         {
             SummaryState = new List<ConnectionTypeSummary>();
 
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var opportunitiesQuery = new ConnectionOpportunityService( rockContext ).Queryable();
 
             var typeFilter = GetAttributeValue( AttributeKey.ConnectionTypes ).SplitDelimitedValues().AsGuidList();
@@ -766,33 +749,6 @@ namespace RockWeb.Blocks.Connection
                     // only show if the opportunity is active and there are active requests
                     if ( opportunity.IsActive || ( !opportunity.IsActive && activeRequestCount > 0 ) )
                     {
-                        // idle count is:
-                        //  (the request is active OR future follow-up who's time has come)
-                        //  AND
-                        //  (where the activity is more than DaysUntilRequestIdle days old OR no activity but created more than DaysUntilRequestIdle days ago)
-                        List<int> idleConnectionRequests = connectionRequestsQry
-                                            .Where( cr =>
-                                                (
-                                                    cr.ConnectionState == ConnectionState.Active
-                                                    || ( cr.ConnectionState == ConnectionState.FutureFollowUp && cr.FollowupDate.HasValue && cr.FollowupDate.Value < _midnightToday )
-                                                )
-                                                &&
-                                                (
-                                                    ( cr.ConnectionRequestActivities.Any() && cr.ConnectionRequestActivities.Max( ra => ra.CreatedDateTime ) < SqlFunctions.DateAdd( "day", -cr.ConnectionOpportunity.ConnectionType.DaysUntilRequestIdle, currentDateTime ) )
-                                                    || ( !cr.ConnectionRequestActivities.Any() && cr.CreatedDateTime < SqlFunctions.DateAdd( "day", -cr.ConnectionOpportunity.ConnectionType.DaysUntilRequestIdle, currentDateTime ) )
-                                                ) )
-                                            .Select( a => a.Id ).ToList();
-
-                        // get list of requests that have a status that is considered critical.
-                        List<int> criticalConnectionRequests = connectionRequestsQry
-                                                    .Where( r =>
-                                                        r.ConnectionStatus.IsCritical
-                                                        && (
-                                                                r.ConnectionState == ConnectionState.Active
-                                                                || ( r.ConnectionState == ConnectionState.FutureFollowUp && r.FollowupDate.HasValue && r.FollowupDate.Value < _midnightToday )
-                                                           ) )
-                                                    .Select( a => a.Id ).ToList();
-
                         // Add the opportunity
                         var opportunitySummary = new OpportunitySummary
                         {
@@ -800,8 +756,6 @@ namespace RockWeb.Blocks.Connection
                             Name = opportunity.Name,
                             IsActive = opportunity.IsActive,
                             IconCssClass = opportunity.IconCssClass,
-                            IdleConnectionRequests = idleConnectionRequests,
-                            CriticalConnectionRequests = criticalConnectionRequests,
                             DaysUntilRequestIdle = opportunity.ConnectionType.DaysUntilRequestIdle,
                             CanEdit = canEdit,
                             CanSetSecurity = opportunity.ConnectionType.EnableRequestSecurity && opportunity.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson ),
@@ -828,12 +782,15 @@ namespace RockWeb.Blocks.Connection
                     allOpportunities.Contains( r.ConnectionOpportunityId ) &&
                     ( r.ConnectionState == ConnectionState.Active ||
                         ( r.ConnectionState == ConnectionState.FutureFollowUp && r.FollowupDate.HasValue && r.FollowupDate.Value < midnightToday ) ) )
-                .Select( r => new
+                .Select( r => new ConnectionRequestInfo
                 {
-                    r.Id,
-                    r.ConnectionOpportunityId,
-                    r.CampusId,
-                    ConnectorPersonId = r.ConnectorPersonAlias != null ? r.ConnectorPersonAlias.PersonId : -1
+                    Id = r.Id,
+                    ConnectionOpportunityId = r.ConnectionOpportunityId,
+                    CampusId = r.CampusId,
+                    ConnectorPersonId = r.ConnectorPersonAlias != null ? r.ConnectorPersonAlias.PersonId : -1,
+                    ConnectionState = r.ConnectionState,
+                    DueDate = r.DueDate,
+                    DueSoonDate = r.DueSoonDate
                 } );
 
             if ( cpCampusFilterForPage.SelectedCampusId.HasValue )
@@ -859,8 +816,17 @@ namespace RockWeb.Blocks.Connection
                 // The active requests assigned to the current person
                 opportunity.AssignedToYouConnectionRequests = opportunityRequests.Where( r => r.ConnectorPersonId == CurrentPersonId ).Select( a => a.Id ).ToList();
 
+                // All active requests that are actually active
+                opportunity.ActiveConnectionRequests = opportunityRequests.Where( r => r.ConnectionState == ConnectionState.Active ).Select( a => a.Id ).ToList();
+
                 // The active requests that are unassigned
                 opportunity.UnassignedConnectionRequests = opportunityRequests.Where( r => r.ConnectorPersonId == -1 ).Select( a => a.Id ).ToList();
+
+                // The "due soon" requests
+                opportunity.DueSoonRequests = opportunityRequests.Where( r => r.IsDueSoon ).Select( a => a.Id ).ToList();
+
+                // The overdue requests
+                opportunity.OverdueRequests = opportunityRequests.Where( r => r.IsOverdue ).Select( a => a.Id ).ToList();
 
                 // Flag indicating if current user is connector for any of the active types
                 opportunity.HasActiveRequestsForConnector = opportunityRequests.Any( r => r.ConnectorPersonId == CurrentPersonId );
@@ -887,12 +853,6 @@ namespace RockWeb.Blocks.Connection
                 sb.Append( "</ul>" );
             }
 
-            var statusTemplate = this.GetAttributeValue( AttributeKey.StatusTemplate );
-            var statusMergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage );
-            statusMergeFields.Add( "ConnectionOpportunities", allOpportunities );
-            statusMergeFields.Add( "ConnectionTypes", connectionTypes );
-            statusMergeFields.Add( "IdleTooltip", sb.ToString().EncodeHtml() );
-            lStatusBarContent.Text = statusTemplate.ResolveMergeFields( statusMergeFields );
             BindSummaryData();
 
             if ( GetAttributeValue( AttributeKey.ShowRequestTotal ).AsBoolean( true ) )
@@ -950,7 +910,7 @@ namespace RockWeb.Blocks.Connection
         /// </summary>
         private void SetFilter()
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 sdrpLastActivityDateRange.DelimitedValues = rFilter.GetFilterPreference( "LastActivityDateRange" );
                 var personService = new PersonService( rockContext );
@@ -1029,7 +989,7 @@ namespace RockWeb.Blocks.Connection
                 gRequests.IsDeleteEnabled = opportunitySummary.CanEdit;
                 gRequests.ColumnsOfType<DeleteField>().First().Visible = opportunitySummary.CanEdit;
 
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     // Get queryable of all requests that belong to the selected opportunity, and user is authorized to view (based on security or connector group)
                     var requestsQuery = new ConnectionRequestService( rockContext )
@@ -1195,11 +1155,14 @@ namespace RockWeb.Blocks.Connection
                                 GroupStatus = r.AssignedGroupMemberStatus != null ? r.AssignedGroupMemberStatus.ConvertToString() : string.Empty,
                                 GroupRole = r.AssignedGroupMemberRoleId.HasValue ? roles[r.AssignedGroupMemberRoleId.Value] : string.Empty,
                                 Connector = r.ConnectorPersonAlias != null ? r.ConnectorPersonAlias.Person.FullNameReversed : string.Empty,
+                                IsAssignedToYou = r.ConnectorPersonAlias?.PersonId == CurrentPersonId,
 
                                 Status = r.ConnectionStatus.Name,
                                 StatusLabel = r.ConnectionStatus.IsCritical ? "warning" : "info",
                                 ConnectionState = r.ConnectionState,
-                                StateLabel = FormatStateLabel( r.ConnectionState, r.FollowupDate, isExporting )
+                                StateLabel = FormatStateLabel( r.ConnectionState, r.FollowupDate, isExporting ),
+                                DueDate = r.DueDate,
+                                DueSoonDate = r.DueSoonDate
                             };
 
                             var lastConnectionRequestActivity = r.ConnectionRequestActivities.OrderByDescending( a => a.CreatedDateTime ).FirstOrDefault();
@@ -1364,19 +1327,41 @@ namespace RockWeb.Blocks.Connection
         private void NavigateToConnectionPage( int connectionRequestId )
         {
             var connectionType = SummaryState.Where( t => t.Opportunities.Any( o => o.Id == SelectedOpportunityId.Value ) ).FirstOrDefault();
+            var parameters = GetDetailPageParameters( connectionRequestId );
+
             if ( GetAttributeValue( AttributeKey.UseConnectionRequestDetailPageFromConnectionType ).AsBoolean() &&
                  ( connectionType.ConnectionRequestDetailPageId.HasValue || connectionType.ConnectionRequestDetailPageRouteId.HasValue ) )
             {
-                Dictionary<string, string> pageParameters = new Dictionary<string, string>();
-                pageParameters.Add( PageParameterKey.ConnectionRequestId, connectionRequestId.ToString() );
-                pageParameters.Add( PageParameterKey.ConnectionOpportunityId, SelectedOpportunityId.ToStringSafe() );
-                var pageReference = new Rock.Web.PageReference( connectionType.ConnectionRequestDetailPageId ?? 0, connectionType.ConnectionRequestDetailPageRouteId ?? 0, pageParameters );
+                var pageReference = new Rock.Web.PageReference( connectionType.ConnectionRequestDetailPageId ?? 0, connectionType.ConnectionRequestDetailPageRouteId ?? 0, parameters );
                 NavigateToPage( pageReference );
             }
             else
             {
-                NavigateToLinkedPage( AttributeKey.DetailPage, PageParameterKey.ConnectionRequestId, connectionRequestId, PageParameterKey.ConnectionOpportunityId, SelectedOpportunityId );
+                NavigateToLinkedPage( AttributeKey.DetailPage, parameters );
             }
+        }
+
+        /// <summary>
+        /// Gets the page parameter values for a connection request detail page link. A request identifier
+        /// of zero is the add indicator rather than an identifier, so it is passed through.
+        /// </summary>
+        /// <param name="connectionRequestId">The connection request identifier, or zero to add.</param>
+        /// <returns>The page parameter values.</returns>
+        private Dictionary<string, string> GetDetailPageParameters( int connectionRequestId )
+        {
+            var requestParameter = connectionRequestId > 0
+                ? IdHasher.Instance.GetHash( connectionRequestId )
+                : "0";
+
+            var opportunityParameter = SelectedOpportunityId.HasValue
+                ? IdHasher.Instance.GetHash( SelectedOpportunityId.Value )
+                : string.Empty;
+
+            return new Dictionary<string, string>
+            {
+                { PageParameterKey.Request, requestParameter },
+                { PageParameterKey.ConnectionOpportunity, opportunityParameter }
+            };
         }
 
         #endregion
@@ -1430,6 +1415,14 @@ namespace RockWeb.Blocks.Connection
                 }
             }
 
+            public int ActiveCount
+            {
+                get
+                {
+                    return ActiveConnectionRequests.Count();
+                }
+            }
+
             public int UnassignedCount
             {
                 get
@@ -1438,19 +1431,19 @@ namespace RockWeb.Blocks.Connection
                 }
             }
 
-            public int CriticalCount
+            public int DueSoonCount
             {
                 get
                 {
-                    return CriticalConnectionRequests.Count();
+                    return DueSoonRequests.Count();
                 }
             }
 
-            public int IdleCount
+            public int OverdueCount
             {
                 get
                 {
-                    return IdleConnectionRequests.Count();
+                    return OverdueRequests.Count();
                 }
             }
 
@@ -1458,11 +1451,13 @@ namespace RockWeb.Blocks.Connection
 
             public List<int> AssignedToYouConnectionRequests { get; internal set; }
 
+            public List<int> ActiveConnectionRequests { get; internal set; }
+
             public List<int> UnassignedConnectionRequests { get; internal set; }
 
-            public List<int> IdleConnectionRequests { get; internal set; }
+            public List<int> DueSoonRequests { get; internal set; }
 
-            public List<int> CriticalConnectionRequests { get; internal set; }
+            public List<int> OverdueRequests { get; internal set; }
 
             public int TotalRequests { get; internal set; }
 
@@ -1474,11 +1469,9 @@ namespace RockWeb.Blocks.Connection
         {
             public bool IsAssignedToYou { get; set; }
 
-            public bool IsUnassigned { get; set; }
+            public bool IsOverdue { get; set; }
 
-            public bool IsIdle { get; set; }
-
-            public bool IsCritical { get; set; }
+            public bool IsDueSoon { get; set; }
         }
 
         private class ConnectionRequestInfo : RockDynamic
@@ -1486,6 +1479,12 @@ namespace RockWeb.Blocks.Connection
             public int Id { get; internal set; }
 
             public Guid Guid { get; internal set; }
+
+            public int ConnectionOpportunityId { get; set; }
+
+            public int? ConnectorPersonId { get; set; }
+
+            public bool IsAssignedToYou { get; set; }
 
             public int PersonId { get; internal set; }
 
@@ -1527,6 +1526,57 @@ namespace RockWeb.Blocks.Connection
             public ConnectionState ConnectionState { get; internal set; }
 
             public string StateLabel { get; internal set; }
+
+            public DateTime? DueDate { get; set; }
+
+            public DateTime? DueSoonDate { get; set; }
+
+            public bool IsOverdue
+            {
+                get
+                {
+                    return ConnectionState == ConnectionState.Active
+                        && DueDate.HasValue
+                        && DueDate.Value.Date < RockDateTime.Today;
+                }
+            }
+
+            public int? OverdueDays
+            {
+                get
+                {
+                    if ( !IsOverdue )
+                    {
+                        return null;
+                    }
+
+                    return ( RockDateTime.Today - DueDate.Value.Date ).Days;
+                }
+            }
+
+            public int? DueInDays
+            {
+                get
+                {
+                    if ( !DueDate.HasValue || IsOverdue )
+                    {
+                        return null;
+                    }
+
+                    return ( DueDate.Value.Date - RockDateTime.Today ).Days;
+                }
+            }
+
+            public bool IsDueSoon
+            {
+                get
+                {
+                    return !IsOverdue
+                        && ConnectionState == ConnectionState.Active
+                        && DueSoonDate.HasValue
+                        && DueSoonDate.Value.Date <= RockDateTime.Today;
+                }
+            }
         }
 
         #endregion

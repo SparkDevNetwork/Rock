@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -118,6 +118,20 @@ namespace Rock.Field.Types
             {
                 return ComparisonHelper.StringFilterComparisonTypes;
             }
+        }
+
+        #endregion
+
+        #region Value Hinting
+
+        /// <inheritdoc/>
+        internal override FieldTypeHints GetFieldHints( Dictionary<string, string> privateConfigurationValues )
+        {
+            return new FieldTypeHints
+            {
+                IsCompleteList = false,
+                ValueFormat = "A single email address on its own, with no display name and no mailto prefix, as in person@example.com. Several addresses are not valid here."
+            };
         }
 
         #endregion

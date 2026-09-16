@@ -1,0 +1,82 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <NotificationBox v-if="!managerPageUrl" :alertType="AlertType.Warning">
+        The <strong>Check-in Manager Page</strong> block setting is not configured. Contact your administrator to complete setup.
+    </NotificationBox>
+
+    <NotificationBox v-else-if="!areas.length" :alertType="AlertType.Info">
+        There are no check-in areas available. Verify that at least one Check-in Configuration exists, or update the <strong>Check-in Areas</strong> block setting.
+    </NotificationBox>
+
+    <div v-else class="checkin-manager">
+        <ul class="list-group">
+            <li v-for="(area, index) in areas"
+                :key="area.value ?? index"
+                class="list-group-item cursor-pointer"
+                @click="onAreaClick(area)">
+                <div>
+                    {{ area.text }}
+                    <i class="ti ti-chevron-right pull-right"></i>
+                </div>
+            </li>
+        </ul>
+    </div>
+</template>
+
+<script setup lang="ts">
+    import { ref } from "vue";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import { AlertType } from "@Obsidian/Enums/Controls/alertType";
+    import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
+    import { alert } from "@Obsidian/Utility/dialogs";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { SelectAreaOptionsBag } from "@Obsidian/ViewModels/Blocks/CheckIn/Manager/SelectArea/selectAreaOptionsBag";
+
+    // #region Types
+
+    type SelectAreaResponse = {
+        redirectUrl?: string | null;
+    };
+
+    // #endregion Types
+
+    const config = useConfigurationValues<SelectAreaOptionsBag>();
+    const invokeBlockAction = useInvokeBlockAction();
+
+    onConfigurationValuesChanged(useReloadBlock());
+
+    // #region Values
+
+    const areas = ref<ListItemBag[]>(config.areas ?? []);
+    const managerPageUrl = ref<string>(config.managerPageUrl ?? "");
+
+    // #endregion Values
+
+    // #region Event Handlers
+
+    async function onAreaClick(area: ListItemBag): Promise<void> {
+        if (!area.value) {
+            return;
+        }
+
+        const result = await invokeBlockAction<SelectAreaResponse>("SetSelectedArea", { areaGuid: area.value });
+
+        if (!result.isSuccess) {
+            await alert(result.errorMessage ?? "Unable to select the check-in area.");
+            return;
+        }
+
+        // Fall back to the initialization URL if the server response omits
+        // it, then defensively surface a message if neither is available.
+        const target = result.data?.redirectUrl || managerPageUrl.value;
+
+        if (!target) {
+            await alert("The Check-in Manager Page block setting is not configured.");
+            return;
+        }
+
+        window.location.href = target;
+    }
+
+    // #endregion Event Handlers
+</script>

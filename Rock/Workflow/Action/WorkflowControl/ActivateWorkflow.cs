@@ -34,11 +34,31 @@ namespace Rock.Workflow.Action
     [Export( typeof( ActionComponent ) )]
     [ExportMetadata( "ComponentName", "Activate Workflow" )]
 
-    [TextField( "Workflow Name", "The name of your new workflow", true, order: 1 )]
-    [WorkflowTypeField( "Workflow Type", "The workflow type to activate.  To set the Workflow Type from an Attribute, leave this blank and set Workflow Type from Attribute.", false, false, order: 2 )]
-    [WorkflowAttribute( "Workflow Type from Attribute", "The workflow type to activate. Either this or Workflow Type must be set.", false, fieldTypeClassNames: new string[] { "Rock.Field.Types.TextFieldType", "Rock.Field.Types.WorkflowTypeFieldType" }, order: 3 )]
-    [KeyValueListField( "Workflow Attribute Key", "Used to match the current workflow's attribute keys to the keys of the new workflow. The new workflow will inherit the attribute values of the keys provided.", false, keyPrompt: "Source Attribute", valuePrompt: "Target Attribute", order: 4 )]
-    [WorkflowAttribute( "Workflow Attribute", "The attribute to hold the new activated workflow. ", false, "", "", 5, null, new string[] { "Rock.Field.Types.WorkflowFieldType" } )]
+    [TextField( "Workflow Name",
+        Description = "The name of your new workflow",
+        IsRequired = true,
+        Order = 1 )]
+    [WorkflowTypeField( "Workflow Type",
+        Description = "The workflow type to activate.  To set the Workflow Type from an Attribute, leave this blank and set Workflow Type from Attribute.",
+        AllowMultiple = false,
+        IsRequired = false,
+        Order = 2 )]
+    [WorkflowAttribute( "Workflow Type from Attribute",
+        Description = "The workflow type to activate. Either this or Workflow Type must be set.",
+        IsRequired = false,
+        FieldTypeClassNames = new string[] { "Rock.Field.Types.TextFieldType", "Rock.Field.Types.WorkflowTypeFieldType" },
+        Order = 3 )]
+    [KeyValueListField( "Workflow Attribute Key",
+        Description = "Used to match the current workflow's attribute keys to the keys of the new workflow. The new workflow will inherit the attribute values of the keys provided.",
+        IsRequired = false,
+        KeyPrompt = "Source Attribute",
+        ValuePrompt = "Target Attribute",
+        Order = 4 )]
+    [WorkflowAttribute( "Workflow Attribute",
+        Description = "The attribute to hold the new activated workflow. ",
+        IsRequired = false,
+        Order = 5,
+        FieldTypeClassNames = new string[] { "Rock.Field.Types.WorkflowFieldType" } )]
     [Rock.SystemGuid.EntityTypeGuid( "9E3C42B5-792A-4694-8ACE-B84E5E87C800")]
     public class ActivateWorkflow : ActionComponent
     {

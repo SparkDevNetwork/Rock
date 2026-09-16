@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -57,5 +57,12 @@ namespace Rock.Workflow.FormBuilder
         /// automatically set when the form executes.
         /// </summary>
         public CampusSetFrom? CampusSetFrom { get; set; }
+
+        /// <summary>
+        /// The details about opening a Connection Request when the form is
+        /// submitted. <c>null</c> or <c>Enabled = false</c> skips the work
+        /// silently.
+        /// </summary>
+        public FormConnectionRequestsSettings ConnectionRequests { get; set; }
     }
 }

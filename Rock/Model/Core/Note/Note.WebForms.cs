@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -14,11 +14,13 @@
 // limitations under the License.
 // </copyright>
 //
-using Rock.Data;
-using Rock.Lava;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
+
+using Rock.Configuration;
+using Rock.Data;
+using Rock.Lava;
 
 namespace Rock.Model
 {
@@ -65,7 +67,7 @@ namespace Rock.Model
                 var currentPersonId = currentPerson?.Id;
                 if ( currentPersonId.HasValue )
                 {
-                    using ( var rockContext = new RockContext() )
+                    using ( var rockContext = RockApp.Current.CreateRockContext() )
                     {
                         bool isWatching = new NoteWatchService( rockContext ).Queryable()
                                 .Where( a => a.NoteId == this.Id 
@@ -95,7 +97,7 @@ namespace Rock.Model
                 {
                     var currentPerson = System.Web.HttpContext.Current?.Items["CurrentPerson"] as Person;
 
-                    using ( var rockContext = new RockContext() )
+                    using ( var rockContext = RockApp.Current.CreateRockContext() )
                     {
                         var noteDescendents = new NoteService( rockContext ).GetAllDescendents( this.Id ).ToList();
                         var viewableDescendents = noteDescendents.ToList().Where( a => a.IsAuthorized( Rock.Security.Authorization.VIEW, currentPerson ) ).ToList();

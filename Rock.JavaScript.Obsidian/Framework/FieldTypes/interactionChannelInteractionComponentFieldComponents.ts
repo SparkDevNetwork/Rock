@@ -16,7 +16,7 @@
 
 import { computed, defineComponent, ref, watch } from "vue";
 import { getFieldConfigurationProps, getFieldEditorProps } from "./utils";
-import { ConfigurationValueKey } from "./interactionChannelInteractionComponentField.partial";
+import { ConfigurationKey } from "./interactionChannelInteractionComponentField.partial";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import InteractionChannelPicker from "@Obsidian/Controls/interactionChannelPicker.obs";
 import { updateRefValue } from "@Obsidian/Utility/component";
@@ -38,7 +38,7 @@ export const EditComponent = defineComponent({
 
         // The interactionChannel options to choose from.
         const interactionChannelGuid = computed((): string => {
-            const value = props.configurationValues[ConfigurationValueKey.InteractionChannel];
+            const value = props.configurationValues[ConfigurationKey.InteractionChannel];
             const interactionChannel = JSON.parse(value || "{}") as ListItemBag;
             return interactionChannel?.value ?? "";
         });
@@ -104,10 +104,10 @@ export const ConfigurationComponent = defineComponent({
 
             // Construct the new value that will be emitted if it is different
             // than the current value.
-            newValue[ConfigurationValueKey.InteractionChannel] = JSON.stringify(interactionChannel.value);
+            newValue[ConfigurationKey.InteractionChannel] = JSON.stringify(interactionChannel.value);
 
             // Compare the new value and the old value.
-            const anyValueChanged = newValue[ConfigurationValueKey.InteractionChannel] !== (props.modelValue[ConfigurationValueKey.InteractionChannel]);
+            const anyValueChanged = newValue[ConfigurationKey.InteractionChannel] !== (props.modelValue[ConfigurationKey.InteractionChannel]);
 
             // If any value changed then emit the new model value.
             if (anyValueChanged) {
@@ -134,13 +134,13 @@ export const ConfigurationComponent = defineComponent({
         // Watch for changes coming in from the parent component and update our
         // data to match the new information.
         watch(() => [props.modelValue, props.configurationProperties], () => {
-            interactionChannel.value = JSON.parse(props.modelValue[ConfigurationValueKey.InteractionChannel] || "{}");
+            interactionChannel.value = JSON.parse(props.modelValue[ConfigurationKey.InteractionChannel] || "{}");
         }, {
             immediate: true
         });
 
         // Watch for changes in properties that only require a local UI update.
-        watch(interactionChannel, () => maybeUpdateConfiguration(ConfigurationValueKey.InteractionChannel, JSON.stringify(interactionChannel.value)));
+        watch(interactionChannel, () => maybeUpdateConfiguration(ConfigurationKey.InteractionChannel, JSON.stringify(interactionChannel.value)));
 
         return {
             interactionChannel,

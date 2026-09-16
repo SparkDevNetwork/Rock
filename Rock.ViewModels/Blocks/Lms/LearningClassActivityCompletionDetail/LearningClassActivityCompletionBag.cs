@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -98,7 +98,7 @@ namespace Rock.ViewModels.Blocks.Lms.LearningClassActivityCompletionDetail
         /// <summary>
         /// Indicates whether or not the activity is due within a week.
         /// </summary>
-        public bool IsDueSoon => DueDate.HasValue && DueDate >= DateTime.Now && DueDate.Value <= DateTime.Now.AddDays( 7 );
+        public bool IsDueSoon { get; set; }
 
         /// <summary>
         /// Indicates whether or not the grade is a passing grade.
@@ -121,6 +121,12 @@ namespace Rock.ViewModels.Blocks.Lms.LearningClassActivityCompletionDetail
         public bool IsStudentCompleted { get; set; }
 
         /// <summary>
+        /// Indicates whether or not the related activity instance has been completed by the party (student or facilitator)
+        /// who's actually responsible for completing it based on the activity's "assigned to" value.
+        /// </summary>
+        public bool IsCompleted { get; set; }
+
+        /// <summary>
         /// Gets or sets the IdKey of the <see cref="ClassActivityBag"/>.
         /// </summary>
         public string LearningClassActivityIdKey { get; set; }
@@ -129,6 +135,22 @@ namespace Rock.ViewModels.Blocks.Lms.LearningClassActivityCompletionDetail
         /// Gets or sets the number of points the student earned by completing the activity.
         /// </summary>
         public int? PointsEarned { get; set; }
+
+        /// <summary>
+        /// Indicates whether a retake has been assigned for this completion.
+        /// </summary>
+        /// <remarks>
+        /// As an input on the facilitator grading save it carries the facilitator's Assign Retake choice;
+        /// as an output on the student workspace it reports that a retake was assigned automatically.
+        /// Either way, the prior completion is deleted and the activity returns to a not-yet-completed state.
+        /// </remarks>
+        public bool IsRetakeAssigned { get; set; }
+
+        /// <summary>
+        /// Gets or sets the warning message describing an automatically assigned retake, shown to
+        /// the student in the workspace when <see cref="IsRetakeAssigned"/> is set on the response.
+        /// </summary>
+        public string RetakeMessage { get; set; }
 
         /// <summary>
         /// Gets or sets whether the activity requires a facilitator to grade/score it.

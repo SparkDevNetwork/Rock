@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -19,6 +19,7 @@ using System;
 using System.Collections.Generic;
 using System.Net;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Rest.Filters;
 using Rock.Security;
@@ -58,7 +59,7 @@ namespace Rock.Rest.v2
         {
             var contextEntities = new List<ContextEntityItemBag>();
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 foreach ( var entityType in RockRequestContext.GetContextEntityTypes() )
                 {
@@ -98,7 +99,7 @@ namespace Rock.Rest.v2
         [Rock.SystemGuid.RestActionGuid( "002e3602-fc1a-4bba-915e-bd7e344cceb2" )]
         public IActionResult PostContextEntity( string entityTypeKey, string entityKey, string pageKey = null )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 EntityTypeCache entityType;
 
@@ -166,7 +167,7 @@ namespace Rock.Rest.v2
         [Rock.SystemGuid.RestActionGuid( "b7945401-be95-47ab-946a-acc7b5b7dab0" )]
         public IActionResult DeleteContextEntity( string entityTypeKey, string pageKey = null )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 EntityTypeCache entityType;
 

@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -21,8 +21,11 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
+
 using Rock.Data;
+using Rock.Enums.Security;
 using Rock.Media;
+using Rock.Security;
 
 namespace Rock.Model
 {
@@ -58,12 +61,14 @@ namespace Rock.Model
         [Required]
         [MaxLength( 200 )]
         [DataMember( IsRequired = true )]
+        [StringValidation( StringValidationProfile.Name )]
         public string Name { get; set; }
 
         /// <summary>
         /// Gets or sets a description of the Element.
         /// </summary>
         [DataMember]
+        [StringValidation( StringValidationProfile.LavaAndBasicHtml )]
         public string Description { get; set; }
 
         /// <summary>
@@ -100,6 +105,7 @@ namespace Rock.Model
         /// The custom provider data for this instance.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string SourceData { get; set; }
 
         /// <summary>
@@ -109,6 +115,7 @@ namespace Rock.Model
         /// The custom provider metric data for this instance.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string MetricData { get; set; }
 
         /// <summary>
@@ -119,6 +126,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [MaxLength( 60 )]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string SourceKey { get; set; }
 
         /// <summary>
@@ -129,6 +137,7 @@ namespace Rock.Model
         /// The thumbnail data.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string ThumbnailDataJson
         {
             get
@@ -149,6 +158,7 @@ namespace Rock.Model
         /// The file data.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string FileDataJson
         {
             get
@@ -168,6 +178,7 @@ namespace Rock.Model
         /// The Transcription Text
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string TranscriptionText { get; set; }
 
         /// <summary>
@@ -177,6 +188,7 @@ namespace Rock.Model
         /// The Closed Caption
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string CloseCaption { get; set; }
 
         #endregion

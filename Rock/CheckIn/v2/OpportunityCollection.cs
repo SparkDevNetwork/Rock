@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -153,7 +153,8 @@ namespace Rock.CheckIn.v2
                 .Select( id => NamedScheduleCache.Get( id, rockContext ) )
                 .Where( s => s != null
                     && s.IsActive
-                    && s.WasCheckInActive( now ) )
+                    && s.WasCheckInActive( now )
+                    && s.Name.IsNotNullOrWhiteSpace() )
                 .OrderBy( s => s.StartTimeOfDay )
                 .ToList();
 
@@ -204,7 +205,7 @@ namespace Rock.CheckIn.v2
                     .ToList()
             };
 
-            var locationIdsOverCapacity = new HashSet<int>();
+            var locationIdsAtOrOverCapacity = new HashSet<int>();
 
             // Add in all the locations to the opportunities.
             foreach ( var grp in activeGroupLocations.GroupBy( gl => gl.LocationId ) )
@@ -213,14 +214,14 @@ namespace Rock.CheckIn.v2
                 var locationScheduleIds = new HashSet<int>( grp.SelectMany( gl => gl.ScheduleIds ).Distinct() );
                 var attendeeIds = locationCounts.GetValueOrDefault( location.IdKey, new HashSet<string>() );
 
-                // Check if this room is at all valid. If it is over the firm
-                // threshold then not even an override is allowed.
+                // Check if this room is at all valid. If it is at or over the
+                // firm threshold then not even an override is allowed.
                 var isThresholdExceeded = location.FirmRoomThreshold.HasValue
-                    && attendeeIds.Count > location.FirmRoomThreshold.Value;
+                    && attendeeIds.Count >= location.FirmRoomThreshold.Value;
 
                 if ( isThresholdExceeded )
                 {
-                    locationIdsOverCapacity.Add( location.Id );
+                    locationIdsAtOrOverCapacity.Add( location.Id );
 
                     continue;
                 }
@@ -238,7 +239,7 @@ namespace Rock.CheckIn.v2
 
             // Add in all the Groups to the opportunities.
             var activeGroupLocationsUnderCapacity = activeGroupLocations
-                .Where( gl => !locationIdsOverCapacity.Contains( gl.LocationId ) )
+                .Where( gl => !locationIdsAtOrOverCapacity.Contains( gl.LocationId ) )
                 .GroupBy( gl => gl.GroupId )
                 .Select( grp => new
                 {
@@ -415,24 +416,7 @@ namespace Rock.CheckIn.v2
 
             var attendances = CheckInDirector.GetCurrentAttendance( now, locationIds, rockContext );
 
-            // We now have all the attendance records for these locations that
-            // have check-in today but not yet checked out. Now we need to
-            // filter out any that have schedules where check-in is no longer
-            // active.
-
-            var activeAttendances = attendances
-                .GroupBy( a => new { a.ScheduleId, a.CampusId } )
-                .SelectMany( grp =>
-                {
-                    // The vast majority of attendance records for a single
-                    // location should have the same schedule and campus.
-                    var scheduleCache = NamedScheduleCache.GetByIdKey( grp.Key.ScheduleId, rockContext );
-                var campusCache = CampusCache.GetByIdKey( grp.Key.CampusId, rockContext );
-
-                    return grp.Where( a => Attendance.CalculateIsCurrentlyCheckedIn( a.StartDateTime, a.EndDateTime, campusCache, scheduleCache ) );
-                } );
-
-            return activeAttendances
+            return attendances
                 .GroupBy( a => a.LocationId )
                 .ToDictionary( grp => grp.Key, grp => new HashSet<string>( grp.Select( a => a.PersonId ) ) );
         }

@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -14,7 +14,17 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.ComponentModel.Composition;
+using System.Linq;
+using System.Linq.Expressions;
+using System.Web.UI;
+using System.Web.UI.WebControls;
+
 using Rock;
+using Rock.Configuration;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
@@ -25,15 +35,6 @@ using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 using Rock.Web.Utilities;
-
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.ComponentModel.Composition;
-using System.Linq;
-using System.Linq.Expressions;
-using System.Web.UI;
-using System.Web.UI.WebControls;
 
 namespace Rock.Reporting.DataFilter.Person
 {
@@ -314,7 +315,7 @@ function() {
                 return result;
             }
 
-            using ( var context = new RockContext() )
+            using ( var context = RockApp.Current.CreateRockContext() )
             {
                 string locationTypeName = null;
                 string street1 = string.IsNullOrWhiteSpace( settings.Street1 ) ? null : settings.Street1;

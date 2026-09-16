@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -18,6 +18,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Lava;
 using Rock.Security;
@@ -81,7 +82,7 @@ namespace Rock.Model
                 return true;
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 hasFaciltiatorRole = new LearningParticipantService( rockContext )
                     .Queryable()
@@ -117,7 +118,7 @@ namespace Rock.Model
                 else
                 {
                     return this.LearningCourseId > 0 ?
-                        new LearningCourseService( new Data.RockContext() ).Get( this.LearningCourseId ) :
+                        new LearningCourseService( RockApp.Current.CreateRockContext() ).Get( this.LearningCourseId ) :
                         base.ParentAuthority;
                 }
             }

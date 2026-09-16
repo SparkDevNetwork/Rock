@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -24,6 +24,7 @@ using System.Text;
 using Rock.Attribute;
 using Rock.Common.Mobile;
 using Rock.Common.Mobile.Blocks.Content;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Mobile;
 using Rock.Model;
@@ -49,7 +50,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
         Description = "If enabled, a 'Group Member Edit' header will be displayed.",
         IsRequired = true,
         DefaultBooleanValue = true,
-        ControlType = Field.Types.BooleanFieldType.BooleanControlType.Checkbox,
+        BooleanControlType = Rock.Enums.Controls.BooleanControlType.Checkbox,
         Key = AttributeKeys.ShowHeader,
         Order = 0 )]
 
@@ -57,7 +58,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
         Description = "",
         IsRequired = true,
         DefaultBooleanValue = true,
-        ControlType = Field.Types.BooleanFieldType.BooleanControlType.Checkbox,
+        BooleanControlType = Rock.Enums.Controls.BooleanControlType.Checkbox,
         Key = AttributeKeys.AllowRoleChange,
         Order = 1 )]
 
@@ -65,7 +66,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
         Description = "",
         IsRequired = true,
         DefaultBooleanValue = true,
-        ControlType = Field.Types.BooleanFieldType.BooleanControlType.Checkbox,
+        BooleanControlType = Rock.Enums.Controls.BooleanControlType.Checkbox,
         Key = AttributeKeys.AllowMemberStatusChange,
         Order = 2 )]
 
@@ -73,7 +74,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
         Description = "",
         IsRequired = true,
         DefaultBooleanValue = true,
-        ControlType = Field.Types.BooleanFieldType.BooleanControlType.Checkbox,
+        BooleanControlType = Rock.Enums.Controls.BooleanControlType.Checkbox,
         Key = AttributeKeys.AllowCommunicationPreferenceChange,
         Order = 3 )]
 
@@ -81,7 +82,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
         Description = "",
         IsRequired = true,
         DefaultBooleanValue = true,
-        ControlType = Field.Types.BooleanFieldType.BooleanControlType.Checkbox,
+        BooleanControlType = Rock.Enums.Controls.BooleanControlType.Checkbox,
         Key = AttributeKeys.AllowNoteEdit,
         Order = 4 )]
 
@@ -102,7 +103,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
         Description = "Will show or hide the delete button. This will either delete or archive the member depending on the group type configuration.",
         IsRequired = false,
         DefaultBooleanValue = true,
-        ControlType = Field.Types.BooleanFieldType.BooleanControlType.Checkbox,
+        BooleanControlType = Rock.Enums.Controls.BooleanControlType.Checkbox,
         Key = AttributeKeys.EnableDelete,
         Order = 7 )]
 
@@ -325,7 +326,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
         [BlockAction]
         public BlockActionResult GetMemberData( Guid groupMemberGuid )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var groupMemberService = new GroupMemberService( rockContext );
 
@@ -425,7 +426,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
         [BlockAction]
         public BlockActionResult SaveMember( Guid groupMemberGuid, MemberDataViewModel groupMemberData )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var groupMemberService = new GroupMemberService( rockContext );
                 var member = groupMemberService.Get( groupMemberGuid );
@@ -518,7 +519,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
         [BlockAction]
         public BlockActionResult RemoveMember( Guid groupMemberGuid )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var groupMemberService = new GroupMemberService( rockContext );
                 var member = groupMemberService.Queryable()
@@ -607,7 +608,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
             var parameters = new Dictionary<string, string>();
             string fieldsContent;
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var member = new GroupMemberService( rockContext ).Get( groupMemberGuid );
 
@@ -663,7 +664,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
         /// <returns><c>true</c> if the person has a member occurrence with that role, <c>false</c> otherwise.</returns>
         private bool PersonHasGroupMemberRole( int personId, int groupId, int groupTypeRoleId )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var groupMemberRecords = new GroupMemberService( rockContext ).GetByGroupIdAndPersonId( groupId, personId );
                 return groupMemberRecords.Any( gm => gm.GroupRoleId == groupTypeRoleId );
@@ -733,7 +734,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
         /// <returns>The response to send back to the client.</returns>
         private CallbackResponse SaveGroupMember( Dictionary<string, object> parameters )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var groupMemberGuid = RequestContext.GetPageParameter( PageParameterKeys.GroupMemberGuid ).AsGuid();
                 var member = new GroupMemberService( rockContext ).Get( groupMemberGuid );

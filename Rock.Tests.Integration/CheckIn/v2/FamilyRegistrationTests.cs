@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -7,9 +7,12 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 
 using Rock.CheckIn.v2;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
+using Rock.Tests.Integration.TestFramework.Database;
 using Rock.Tests.Shared;
+using Rock.Tests.Shared.Constants;
 using Rock.Tests.Shared.TestFramework;
 using Rock.Utility;
 using Rock.ViewModels.CheckIn;
@@ -32,7 +35,7 @@ namespace Rock.Tests.Integration.CheckIn.v2
         [TestMethod]
         public void GetPersonBag_WithNoConfiguredAttributes_DoesNotIncludeAnyAttributeValues()
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var templateConfigurationDataMock = GetTemplateConfigurationDataMock();
                 var registration = new FamilyRegistration( rockContext, null, templateConfigurationDataMock.Object );
@@ -47,7 +50,7 @@ namespace Rock.Tests.Integration.CheckIn.v2
         [TestMethod]
         public void GetPersonBag_WithAdult_IncludesOptionalAttributes()
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var templateConfigurationDataMock = GetTemplateConfigurationDataMock();
                 templateConfigurationDataMock.SetupGet( m => m.OptionalAttributeGuidsForAdults )
@@ -68,7 +71,7 @@ namespace Rock.Tests.Integration.CheckIn.v2
         [TestMethod]
         public void GetPersonBag_WithAdult_IncludesRequiredAttributes()
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var templateConfigurationDataMock = GetTemplateConfigurationDataMock();
                 templateConfigurationDataMock.SetupGet( m => m.RequiredAttributeGuidsForAdults )
@@ -89,7 +92,7 @@ namespace Rock.Tests.Integration.CheckIn.v2
         [TestMethod]
         public void GetPersonBag_WithChild_IncludesOptionalAttributes()
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var templateConfigurationDataMock = GetTemplateConfigurationDataMock();
                 templateConfigurationDataMock.SetupGet( m => m.OptionalAttributeGuidsForChildren )
@@ -110,7 +113,7 @@ namespace Rock.Tests.Integration.CheckIn.v2
         [TestMethod]
         public void GetPersonBag_WithChild_IncludesRequiredAttributes()
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var templateConfigurationDataMock = GetTemplateConfigurationDataMock();
                 templateConfigurationDataMock.SetupGet( m => m.RequiredAttributeGuidsForChildren )
@@ -132,7 +135,7 @@ namespace Rock.Tests.Integration.CheckIn.v2
         [IsolatedTestDatabase]
         public void GetPersonBag_WithTestPerson_SetsAllBagProperties()
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var personService = new PersonService( rockContext );
                 var personSearchKeyService = new PersonSearchKeyService( rockContext );
@@ -225,7 +228,7 @@ namespace Rock.Tests.Integration.CheckIn.v2
         [TestMethod]
         public void GetFamilyBag_WithDeckerFamily_SetsAllBagProperties()
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var templateConfigurationDataMock = GetTemplateConfigurationDataMock();
                 var registration = new FamilyRegistration( rockContext, null, templateConfigurationDataMock.Object );
@@ -247,7 +250,7 @@ namespace Rock.Tests.Integration.CheckIn.v2
         [TestMethod]
         public void GetFamilyBag_WithAddressUnavailableInTemplate_DoesNotIncludeAddress()
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var templateConfigurationDataMock = GetTemplateConfigurationDataMock();
                 templateConfigurationDataMock.SetupGet( m => m.DisplayAddressOnFamilies ).Returns( Enums.Controls.RequirementLevel.Unavailable );
@@ -268,7 +271,7 @@ namespace Rock.Tests.Integration.CheckIn.v2
         [IsolatedTestDatabase]
         public void SaveRegistration_WithoutChanges_Succeeds()
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var templateConfigurationDataMock = GetTemplateConfigurationDataMock();
                 var registration = new FamilyRegistration( rockContext, null, templateConfigurationDataMock.Object );
@@ -287,7 +290,7 @@ namespace Rock.Tests.Integration.CheckIn.v2
         [IsolatedTestDatabase]
         public void SaveRegistration_WithoutChanges_DoesNotCreateNewRecords()
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var templateConfigurationDataMock = GetTemplateConfigurationDataMock();
                 var registration = new FamilyRegistration( rockContext, null, templateConfigurationDataMock.Object );
@@ -310,7 +313,7 @@ namespace Rock.Tests.Integration.CheckIn.v2
         [TestMethod]
         public void HasAllRequiredValues_WithoutFamilyIdKey_ReturnsError()
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var templateConfigurationDataMock = GetTemplateConfigurationDataMock();
                 var registration = new FamilyRegistration( rockContext, null, templateConfigurationDataMock.Object );
@@ -331,7 +334,7 @@ namespace Rock.Tests.Integration.CheckIn.v2
         [TestMethod]
         public void HasAllRequiredValues_WithoutFamilyName_ReturnsError()
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var templateConfigurationDataMock = GetTemplateConfigurationDataMock();
                 var registration = new FamilyRegistration( rockContext, null, templateConfigurationDataMock.Object );
@@ -352,7 +355,7 @@ namespace Rock.Tests.Integration.CheckIn.v2
         [TestMethod]
         public void HasAllRequiredValues_WithoutPersonIdKey_ReturnsError()
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var templateConfigurationDataMock = GetTemplateConfigurationDataMock();
                 var registration = new FamilyRegistration( rockContext, null, templateConfigurationDataMock.Object );
@@ -374,7 +377,7 @@ namespace Rock.Tests.Integration.CheckIn.v2
         [TestMethod]
         public void HasAllRequiredValues_WithoutPersonNickName_ReturnsError()
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var templateConfigurationDataMock = GetTemplateConfigurationDataMock();
                 var registration = new FamilyRegistration( rockContext, null, templateConfigurationDataMock.Object );
@@ -397,7 +400,7 @@ namespace Rock.Tests.Integration.CheckIn.v2
         [TestMethod]
         public void HasAllRequiredValues_WithoutPersonLastName_ReturnsError()
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var templateConfigurationDataMock = GetTemplateConfigurationDataMock();
                 var registration = new FamilyRegistration( rockContext, null, templateConfigurationDataMock.Object );
@@ -419,7 +422,7 @@ namespace Rock.Tests.Integration.CheckIn.v2
         [TestMethod]
         public void HasAllRequiredValues_WithoutPersonIsAdult_ReturnsError()
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var templateConfigurationDataMock = GetTemplateConfigurationDataMock();
                 var registration = new FamilyRegistration( rockContext, null, templateConfigurationDataMock.Object );
@@ -441,7 +444,7 @@ namespace Rock.Tests.Integration.CheckIn.v2
         [TestMethod]
         public void HasAllRequiredValues_WithoutPersonRelationshipToAdult_ReturnsError()
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var templateConfigurationDataMock = GetTemplateConfigurationDataMock();
                 var registration = new FamilyRegistration( rockContext, null, templateConfigurationDataMock.Object );
@@ -467,7 +470,7 @@ namespace Rock.Tests.Integration.CheckIn.v2
         [TestMethod]
         public void GetPersonMatchQuery_WithoutValidProperties_ExcludesValues()
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var templateConfigurationDataMock = GetTemplateConfigurationDataMock();
                 var registration = new FamilyRegistration( rockContext, null, templateConfigurationDataMock.Object );
@@ -506,7 +509,7 @@ namespace Rock.Tests.Integration.CheckIn.v2
         [TestMethod]
         public void GetPersonMatchQuery_WithValidProperties_IncludesValues()
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var templateConfigurationDataMock = GetTemplateConfigurationDataMock();
                 var registration = new FamilyRegistration( rockContext, null, templateConfigurationDataMock.Object );
@@ -644,7 +647,7 @@ namespace Rock.Tests.Integration.CheckIn.v2
         public void CreatePrimaryFamily_WithAddress_CreatesFamilyAddress()
         {
             // Disable location services.
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 rockContext.Database.ExecuteSqlCommand( @"
 DELETE [AV]
@@ -656,13 +659,13 @@ DELETE [AV]
             }
 
             int familyId;
-            var expectedStreet = "1234 Elm Street";
+            var expectedStreet = "1234 Elm St";
             var expectedCity = "Nowhere";
             var expectedState = "AZ";
             var expectedPostalCode = "12345";
             var expectedCountry = "US";
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var templateConfigurationDataMock = GetTemplateConfigurationDataMock();
                 var registration = new FamilyRegistration( rockContext, null, templateConfigurationDataMock.Object );
@@ -692,7 +695,7 @@ DELETE [AV]
                 familyId = registration.CreatePrimaryFamily( registrationFamily, null, null, saveResult ).Id;
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var family = new GroupService( rockContext ).Get( familyId );
                 Assert.IsNotNull( family );
@@ -710,7 +713,7 @@ DELETE [AV]
         public void CreatePrimaryFamily_WithAddressUnavailableInTemplate_DoesNotCreateFamilyAddress()
         {
             // Disable location services.
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 rockContext.Database.ExecuteSqlCommand( @"
 DELETE [AV]
@@ -728,7 +731,7 @@ DELETE [AV]
             var expectedPostalCode = "12345";
             var expectedCountry = "US";
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var templateConfigurationDataMock = GetTemplateConfigurationDataMock();
                 templateConfigurationDataMock.Setup( m => m.DisplayAddressOnFamilies ).Returns( Enums.Controls.RequirementLevel.Unavailable );
@@ -759,7 +762,7 @@ DELETE [AV]
                 familyId = registration.CreatePrimaryFamily( registrationFamily, null, null, saveResult ).Id;
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var family = new GroupService( rockContext ).Get( familyId );
                 Assert.IsNotNull( family );
@@ -838,7 +841,7 @@ DELETE [AV]
         public void UpdatePrimaryFamily_WithAddress_UpdatesExistingFamilyAddress()
         {
             // Disable location services and ensure Ted has a home address.
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 rockContext.Database.ExecuteSqlCommand( @"
 DELETE [AV]
@@ -855,13 +858,13 @@ DELETE [AV]
                 Assert.AreEqual( homeLocationTypeId, deckerFamily.GroupLocations.First().GroupLocationTypeValueId );
             }
 
-            var expectedStreet = "1234 Elm Street";
+            var expectedStreet = "1234 Elm St";
             var expectedCity = "Nowhere";
             var expectedState = "AZ";
             var expectedPostalCode = "12345";
             var expectedCountry = "US";
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var templateConfigurationDataMock = GetTemplateConfigurationDataMock();
                 var registration = new FamilyRegistration( rockContext, null, templateConfigurationDataMock.Object );
@@ -890,7 +893,7 @@ DELETE [AV]
                 registration.UpdatePrimaryFamily( deckerFamily, registrationFamily, saveResult );
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var family = new PersonService( rockContext ).Get( TestGuids.TestPeople.TedDecker ).PrimaryFamily;
                 Assert.IsNotNull( family );
@@ -908,7 +911,7 @@ DELETE [AV]
         public void UpdatePrimaryFamily_WithEmptyAddress_RemovesFamilyAddress()
         {
             // Disable location services and ensure Ted has a home address.
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 rockContext.Database.ExecuteSqlCommand( @"
 DELETE [AV]
@@ -925,7 +928,7 @@ DELETE [AV]
                 Assert.AreEqual( homeLocationTypeId, deckerFamily.GroupLocations.First().GroupLocationTypeValueId );
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var templateConfigurationDataMock = GetTemplateConfigurationDataMock();
                 var registration = new FamilyRegistration( rockContext, null, templateConfigurationDataMock.Object );
@@ -947,7 +950,7 @@ DELETE [AV]
                 registration.UpdatePrimaryFamily( deckerFamily, registrationFamily, saveResult );
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var family = new PersonService( rockContext ).Get( TestGuids.TestPeople.TedDecker ).PrimaryFamily;
                 Assert.IsNotNull( family );
@@ -966,7 +969,7 @@ DELETE [AV]
             string expectedCountry;
 
             // Disable location services and ensure Ted has a home address.
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 rockContext.Database.ExecuteSqlCommand( @"
 DELETE [AV]
@@ -989,7 +992,7 @@ DELETE [AV]
                 expectedCountry = deckerFamily.GroupLocations.First().Location.Country;
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var templateConfigurationDataMock = GetTemplateConfigurationDataMock();
                 templateConfigurationDataMock.Setup( m => m.DisplayAddressOnFamilies ).Returns( Enums.Controls.RequirementLevel.Unavailable );
@@ -1020,7 +1023,7 @@ DELETE [AV]
                 registration.UpdatePrimaryFamily( deckerFamily, registrationFamily, saveResult );
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var family = new PersonService( rockContext ).Get( TestGuids.TestPeople.TedDecker ).PrimaryFamily;
                 Assert.IsNotNull( family );
@@ -3523,7 +3526,7 @@ DELETE [AV]
             var optionalGuid = new Guid( "56dd71f2-779a-467b-bb71-1eb928aea790" );
             var requiredGuid = new Guid( "5bef7099-99a3-4a19-bb36-a33f0f909337" );
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var attributeService = new AttributeService( rockContext );
 
@@ -3591,7 +3594,7 @@ DELETE [AV]
         {
             var optionalGuid = new Guid( "56dd71f2-779a-467b-bb71-1eb928aea790" );
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var attributeService = new AttributeService( rockContext );
 
@@ -3642,7 +3645,7 @@ DELETE [AV]
         [IsolatedTestDatabase]
         public void EnsurePeopleInPrimaryFamilyAreMembersOfGroup_WithNullRelationshipToAdult_AddsToFamily()
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var expectedRole = GroupTypeCache
                     .Get( SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid(), rockContext )
@@ -3687,7 +3690,7 @@ DELETE [AV]
         [IsolatedTestDatabase]
         public void EnsurePeopleInPrimaryFamilyAreMembersOfGroup_WithSameFamilyRelationshipToAdult_AddsToFamily()
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var expectedRole = GroupTypeCache
                     .Get( SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid(), rockContext )
@@ -3811,7 +3814,7 @@ DELETE [AV]
         [IsolatedTestDatabase]
         public void EnsurePeopleNotInPrimaryFamilyHaveAFamily_WithPersonNotInAnyFamily_CreatesFamily()
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var familyTypeId = GroupTypeCache.GetFamilyGroupType().Id;
                 var templateConfigurationDataMock = GetTemplateConfigurationDataMock();
@@ -3850,7 +3853,7 @@ DELETE [AV]
         [IsolatedTestDatabase]
         public void EnsurePeopleNotInPrimaryFamilyHaveAFamily_WithCanCheckInRelationship_CreatesKnownRelationship()
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var familyTypeId = GroupTypeCache.GetFamilyGroupType().Id;
                 var expectedRelationship = GroupTypeCache.Get( SystemGuid.GroupType.GROUPTYPE_KNOWN_RELATIONSHIPS.AsGuid(), rockContext )
@@ -3907,7 +3910,7 @@ DELETE [AV]
         [IsolatedTestDatabase]
         public void EnsurePeopleNotInPrimaryFamilyHaveAFamily_WithNonCanCheckInRelationship_CreatesCanCheckInRelationship()
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var familyTypeId = GroupTypeCache.GetFamilyGroupType().Id;
                 var expectedRelationship = GroupTypeCache.Get( SystemGuid.GroupType.GROUPTYPE_KNOWN_RELATIONSHIPS.AsGuid(), rockContext )
@@ -3985,7 +3988,7 @@ DELETE [AV]
         [IsolatedTestDatabase]
         public void RemoveFamilyMembers_WithCanCheckInRelationship_RemovesRelationship()
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var personService = new PersonService( rockContext );
                 var groupMemberService = new GroupMemberService( rockContext );
@@ -4050,7 +4053,7 @@ DELETE [AV]
         [IsolatedTestDatabase]
         public void RemoveFamilyMembers_WithFamilyMember_CreatesNewFamilyGroup()
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var personService = new PersonService( rockContext );
                 var groupService = new GroupService( rockContext );
@@ -4092,7 +4095,7 @@ DELETE [AV]
         [IsolatedTestDatabase]
         public void RemoveFamilyMembers_WithMultiFamilyMember_DoesNotCreateNewFamilyGroup()
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var personService = new PersonService( rockContext );
                 var groupService = new GroupService( rockContext );

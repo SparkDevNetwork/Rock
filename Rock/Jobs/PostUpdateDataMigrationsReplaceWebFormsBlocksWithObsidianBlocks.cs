@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -25,6 +25,7 @@ using System.Text;
 using Microsoft.EntityFrameworkCore;
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -92,11 +93,7 @@ namespace Rock.Jobs
         {
             get
             {
-#if REVIEW_WEBFORMS
-                return new Field.Types.KeyValueListFieldType().GetValuesFromString( null, GetAttributeValue( AttributeKey.BlockTypeGuidReplacementPairs ), null, false )
-#else
-                return new Field.Types.KeyValueListFieldType().GetValuesFromString( GetAttributeValue( AttributeKey.BlockTypeGuidReplacementPairs ), null, false )
-#endif
+                return Field.Helper.GetKeyValueListValuesFromString( GetAttributeValue( AttributeKey.BlockTypeGuidReplacementPairs ), null, false )
                     // Calling Guid?.Value intentionally on the next line so that exceptions are thrown if the field value is invalid.
                     .ToDictionary( kvp => kvp.Key.AsGuidOrNull().Value, kvp => kvp.Value.ToString().AsGuidOrNull().Value );
             }
@@ -106,11 +103,7 @@ namespace Rock.Jobs
         {
             get
             {
-#if WEBFORMS
-                return new Field.Types.KeyValueListFieldType().GetValuesFromString( null, GetAttributeValue( AttributeKey.BlockAttributeKeysToIgnore ), null, false )
-#else
-                return new Field.Types.KeyValueListFieldType().GetValuesFromString( GetAttributeValue( AttributeKey.BlockAttributeKeysToIgnore ), null, false )
-#endif
+                return Field.Helper.GetKeyValueListValuesFromString( GetAttributeValue( AttributeKey.BlockAttributeKeysToIgnore ), null, false )
                     // Calling Guid?.Value intentionally on the next line so that exceptions are thrown if the field value is invalid.
                     .ToDictionary( kvp => kvp.Key.AsGuidOrNull().Value, kvp => kvp.Value.ToString().SplitDelimitedValues().ToHashSet() );
             }
@@ -195,7 +188,7 @@ namespace Rock.Jobs
             if ( ErrorMessage.Any() )
             {
                 // If there were errors, fail the job and make it non-system so that the admins may choose to run it again or delete it based on their discretion
-                RockContext rockContext = new RockContext();
+                RockContext rockContext = RockApp.Current.CreateRockContext();
                 var serviceJob = ( new ServiceJobService( rockContext ) ).Get( this.ServiceJobId );
                 serviceJob.IsSystem = false;
                 rockContext.SaveChanges();
@@ -227,7 +220,7 @@ namespace Rock.Jobs
 
             foreach ( var blockTypeGuidPair in BlockTypeGuidReplacementPairs )
             {
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     // Check if the blockTypeGuidPair.Key exists in our AttributeFixes dictionary
                     var oldBlockTypeGuid = blockTypeGuidPair.Key;
@@ -300,12 +293,15 @@ namespace Rock.Jobs
                 .Select( a => a.Key )
                 .ToHashSet( StringComparer.OrdinalIgnoreCase );
 
+            var possibleMissingBlockAttributes = new HashSet<string>( oldBlockTypeAttributeKeys, StringComparer.OrdinalIgnoreCase );
+            possibleMissingBlockAttributes.RemoveAll( newBlockTypeAttributeKeys );
+            // Remove these checks since we're not concerned with these if they are missing from the new block.
+            possibleMissingBlockAttributes.RemoveAll( new[] { "core.CustomGridEnableStickyHeaders", "core.CustomActionsConfigs", "core.EnableDefaultWorkflowLauncher" } );
+
             // If the new block type fails to have all the required attributes of the old block type which it is replacing, skip it.
-            if ( !oldBlockTypeAttributeKeys.IsSubsetOf( newBlockTypeAttributeKeys ) )
+            if ( possibleMissingBlockAttributes.Count > 0 )
             {
-                var missingBlockAttributes = new HashSet<string>( oldBlockTypeAttributeKeys, StringComparer.OrdinalIgnoreCase );
-                missingBlockAttributes.RemoveAll( newBlockTypeAttributeKeys );
-                ErrorMessage.Add( $"The new {BlockTypeCache.Get( newBlockTypeId.Value ).Name} block does not have the attribute(s): {missingBlockAttributes.Select( a => a ).JoinStrings( ", " )} of the previous {BlockTypeCache.Get( oldBlockTypeId.Value ).Name} block. Skipping this block for now." );
+                ErrorMessage.Add( $"The new {BlockTypeCache.Get( newBlockTypeId.Value ).Name} block does not have the attribute(s): {possibleMissingBlockAttributes.Select( a => a ).JoinStrings( ", " )} of the previous {BlockTypeCache.Get( oldBlockTypeId.Value ).Name} block. Skipping this block for now." );
                 return;
             }
 
@@ -557,7 +553,7 @@ namespace Rock.Jobs
         /// </summary>
         private void DeleteJob()
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var jobService = new ServiceJobService( rockContext );
                 var job = jobService.Get( GetJobId() );

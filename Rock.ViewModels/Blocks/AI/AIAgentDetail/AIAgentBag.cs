@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -43,7 +43,7 @@ namespace Rock.ViewModels.Blocks.AI.AIAgentDetail
         /// when a new user message is added. This only applies to persisted
         /// sessions.
         /// </summary>
-        public int AutoSummarizeThreshold { get; set; }
+        public int? AutoSummarizeThreshold { get; set; }
 
         /// <summary>
         /// The binary file that contains the image to use as the avatar to
@@ -70,6 +70,13 @@ namespace Rock.ViewModels.Blocks.AI.AIAgentDetail
         /// required for other skills to operate correctly.
         /// </summary>
         public bool IsExcludingSystemSkills { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this agent is part of the
+        /// Rock core system. System agents cannot be deleted and their
+        /// instructions cannot be modified.
+        /// </summary>
+        public bool IsSystem { get; set; }
 
         /// <summary>
         /// The friendly name of the agent that will be used to identify it in the UI.

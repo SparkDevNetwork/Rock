@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -21,8 +21,10 @@ using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 #endif
+
 using Rock;
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.ViewModels.Utility;
@@ -53,7 +55,7 @@ namespace Rock.Field.Types
             Guid? guid = value.AsGuidOrNull();
             if ( guid.HasValue )
             {
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     var service = new MetricService( rockContext );
                     var metric = service.GetNoTracking( guid.Value );
@@ -98,7 +100,7 @@ namespace Rock.Field.Types
 
             if ( guid.HasValue )
             {
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     var service = new MetricService( rockContext );
                     var metric = service.GetSelect( guid.Value, m => new ListItemBag()
@@ -142,7 +144,7 @@ namespace Rock.Field.Types
             Guid? guid = value.AsGuidOrNull();
             if ( guid.HasValue )
             {
-                rockContext = rockContext ?? new RockContext();
+                rockContext = rockContext ?? RockApp.Current.CreateRockContext();
                 return new MetricService( rockContext ).Get( guid.Value );
             }
 
@@ -163,7 +165,7 @@ namespace Rock.Field.Types
                 return null;
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var metricId = new MetricService( rockContext ).GetId( guid.Value );
 
@@ -187,6 +189,21 @@ namespace Rock.Field.Types
             return new List<ReferencedProperty>
             {
                 new ReferencedProperty( EntityTypeCache.GetId<Metric>().Value, nameof( Metric.Title ) )
+            };
+        }
+
+        #endregion
+
+        #region Value Hinting
+
+        /// <inheritdoc/>
+        internal override FieldTypeHints GetFieldHints( Dictionary<string, string> privateConfigurationValues )
+        {
+            return new FieldTypeHints
+            {
+                IsCompleteList = false,
+                ValueFormat = "The guid of a single row in the Metric table, not its id or idKey and not its name. Only one value is stored, so a comma separated list is not valid here. This is the metric, not one of its partitions or values.",
+                Instructions = "To find the correct value, read the metrics and take the guid of the one you want."
             };
         }
 
@@ -279,7 +296,7 @@ namespace Rock.Field.Types
                 int? id = picker.SelectedValue.AsIntegerOrNull();
                 if ( id.HasValue )
                 {
-                    using ( var rockContext = new RockContext() )
+                    using ( var rockContext = RockApp.Current.CreateRockContext() )
                     {
                         var metric = new MetricService( rockContext ).GetNoTracking( id.Value );
 
@@ -312,7 +329,7 @@ namespace Rock.Field.Types
                 Guid guid = value.AsGuid();
 
                 // get the item (or null) and set it
-                var metric = new MetricService( new RockContext() ).Get( guid );
+                var metric = new MetricService( RockApp.Current.CreateRockContext() ).Get( guid );
                 picker.SetValue( metric );
             }
         }
@@ -326,7 +343,7 @@ namespace Rock.Field.Types
         public int? GetEditValueAsEntityId( Control control, Dictionary<string, ConfigurationValue> configurationValues )
         {
             Guid guid = GetEditValue( control, configurationValues ).AsGuid();
-            var item = new MetricService( new RockContext() ).Get( guid );
+            var item = new MetricService( RockApp.Current.CreateRockContext() ).Get( guid );
             return item != null ? item.Id : ( int? ) null;
         }
 
@@ -338,7 +355,7 @@ namespace Rock.Field.Types
         /// <param name="id">The identifier.</param>
         public void SetEditValueFromEntityId( Control control, Dictionary<string, ConfigurationValue> configurationValues, int? id )
         {
-            var item = new MetricService( new RockContext() ).Get( id ?? 0 );
+            var item = new MetricService( RockApp.Current.CreateRockContext() ).Get( id ?? 0 );
             string guidValue = item != null ? item.Guid.ToString() : string.Empty;
             SetEditValue( control, configurationValues, guidValue );
         }

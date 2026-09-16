@@ -29,17 +29,19 @@ export type MediaPlayerGetPlayerOptionsOptionsBag = {
     /**
      * The number of days back to look for an existing interaction
      * for the media element. Will be used to find where the user left off
-     * previously and resume from that point.
+     * previously and resume from that point. A null value is
+     * treated as 0 (auto-resume disabled).
      */
-    autoResumeInDays: number;
+    autoResumeInDays?: number | null;
 
     /**
      * The number of days back to look for an existing
      * interaction for the media element that should be updated. If one
      * is not found then a new interaction will be created. Set to
-     * 0 to always create a new interaction.
+     * 0 to always create a new interaction. A null value
+     * is treated as 0.
      */
-    combinePlayStatisticsInDays: number;
+    combinePlayStatisticsInDays?: number | null;
 
     /** Identifier for the Media Element to play */
     mediaElementGuid: Guid;

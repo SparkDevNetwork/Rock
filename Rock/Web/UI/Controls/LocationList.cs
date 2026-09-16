@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -20,6 +20,8 @@ using System.Linq;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
+
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 
@@ -311,7 +313,7 @@ namespace Rock.Web.UI.Controls
         {
             ListItem[] locations = null;
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var locationService = new LocationService( rockContext );
                 var locationQuery = locationService
@@ -443,7 +445,7 @@ namespace Rock.Web.UI.Controls
                 IsActive = true,
             };
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var locationService = new LocationService( rockContext );
 

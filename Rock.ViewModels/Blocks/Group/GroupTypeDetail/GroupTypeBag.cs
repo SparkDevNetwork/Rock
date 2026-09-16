@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -18,11 +18,11 @@
 using System;
 using System.Collections.Generic;
 
-using Rock.ViewModels.Utility;
 using Rock.Enums.CheckIn;
-using Rock.Model;
 using Rock.Enums.Communication.Chat;
 using Rock.Enums.Group;
+using Rock.Model;
+using Rock.ViewModels.Utility;
 
 namespace Rock.ViewModels.Blocks.Group.GroupTypeDetail
 {
@@ -65,6 +65,11 @@ namespace Rock.ViewModels.Blocks.Group.GroupTypeDetail
         /// Gets or sets a flag indicating if Groups of this type are allowed to have multiple locations.
         /// </summary>
         public bool AllowMultipleLocations { get; set; }
+
+        /// <summary>
+        /// Gets or sets a flag indicating if the Meeting Style field is available on Groups of this type.
+        /// </summary>
+        public bool IsMeetingStyleEnabled { get; set; }
 
         /// <summary>
         /// Gets or sets a flag indicating if specific groups are allowed to have their own member attributes.

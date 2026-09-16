@@ -1,0 +1,300 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <fieldset>
+        <ContentSectionContainer>
+            <ContentSection :hasTitle=false
+                            light>
+                <div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <TextBox v-model="name"
+                                     label="Name"
+                                     rules="required" />
+                        </div>
+                        <div class="col-md-6">
+                            <TextBox v-model="internalName"
+                                     label="Internal Name"
+                                     help="Used for identifying the page in Rock. Not visible to app users."
+                                     rules="required" />
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col">
+                            <TextBox v-model="description"
+                                     label="Description"
+                                     textMode="multiline" />
+                        </div>
+                    </div>
+                    <div>
+                        <ImageUploader label="Page Icon"
+                                       help=" The icon displayed alongside the page in navigation."
+                                       v-model="pageIcon"></ImageUploader>
+                    </div>
+
+                    <AttributeValuesContainer v-model="attributeValues"
+                                              :attributes="attributes"
+                                              isEditMode
+                                              :numberOfColumns="2" />
+                </div>
+            </ContentSection>
+
+            <ContentSection title="Navigation & Display"
+                            icon="ti ti-compass">
+                <div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <DropDownList label="Layout"
+                                          v-model="layout"
+                                          :items="options.layoutItems ?? []"
+                                          :showBlankItem="false"
+                                          help="The layout template that defines the zones available on this page."
+                                          rules="required" />
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <RadioButtonList label="Show in Navigation"
+                                             v-model="displayInNavWhen"
+                                             :items="options.displayInNavWhenItems ?? []"
+                                             :showBlankItem="false"
+                                             help='Controls when this page appears in the flyout menu and tab bar. "When Allowed" shows the page only to individuals with view access.'
+                                             rules="required" />
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <RadioButtonList label="Page Type"
+                                             v-model="pageType"
+                                             :items="options.pageTypeItems ?? []"
+                                             :showBlankItem="false"
+                                             help="Whether this page is powered by Rock blocks or opens a URL in a browser."
+                                             rules="required" />
+                        </div>
+                    </div>
+                    <div v-if="pageType">
+                        <ConditionalWell>
+                            <div class="w-50" v-if="!isNativePageType">
+                                <TextBox v-model="webPageUrl"
+                                         label="URL"
+                                         help=" The URL opened when a user navigates to this page."
+                                         rules="required" />
+                            </div>
+                            <div class="w-50">
+                                <TextBox v-model="route"
+                                         label="Route"
+                                         help="Maps this mobile page to its web equivalent by matching route paths." />
+                            </div>
+
+                            <div v-if="isNativePageType">
+                                <InlineCheckBox v-model="hideNavigationBar"
+                                                label="Hide Navigation Bar"
+                                                help="Hides the navigation bar and makes the status bar background transparent, extending content to the top edge of the screen" />
+
+                                <InlineCheckBox v-model="showFullScreen"
+                                                label="Full Screen Mode"
+                                                help="Replaces the entire shell when the page is open, preventing access to the flyout and tab bar." />
+
+                                <InlineCheckBox v-model="autoRefresh"
+                                                label="Auto Refresh"
+                                                help="Reloads the page each time it becomes visible." />
+
+                                <div class="w-50">
+                                    <TextBox v-model="bodyCssClass"
+                                             label="Body CSS Class"
+                                             help="One or more CSS classes applied to the page body element, space-separated." />
+                                </div>
+
+                                <CodeEditor label="Page Scoped CSS"
+                                            v-model="cssStyles"
+                                            mode="css"
+                                            help="CSS applied only to elements on this page, scoped away from the rest of the app."
+                                            editor="monaco">
+                                </CodeEditor>
+
+                                <CodeEditor v-if="isTrailblazerModeEnabled"
+                                            label="Event Handler"
+                                            v-model="lavaEventHandler"
+                                            mode="lava"
+                                            help="Lava executed on the client when a page event fires."
+                                            editor="monaco">
+                                </CodeEditor>
+                            </div>
+
+                        </ConditionalWell>
+
+                        <div v-if="contextParameters.length > 0 && isNativePageType" class="w-50">
+                            <h4>Context Parameters</h4>
+                            <p>
+                                There are one or more blocks on this page that can load content based on a 'context' parameter.
+                                Please enter the route parameter name or query string parameter name that will contain the id for
+                                each of the objects below.
+                            </p>
+                            <div class="row">
+                                <div class="col-md-6" v-for="contextParameter in contextParameters" :key="contextParameter.entityTypeName ?? ''">
+                                    <TextBox v-model="contextParameter.parameterName"
+                                             :label="`${contextParameter.entityTypeFriendlyName} Parameter Name`"
+                                             help="The page parameter name that contains the id of this context entity." />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </ContentSection>
+        </ContentSectionContainer>
+    </fieldset>
+</template>
+
+<script setup lang="ts">
+    // #region Types
+
+    import { computed, PropType, ref, watch } from "vue";
+    import { MobilePageDetailsBag } from "@Obsidian/ViewModels/Blocks/Mobile/MobilePageDetail/mobilePageDetailsBag";
+    import { MobilePageDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Mobile/MobilePageDetail/mobilePageDetailOptionsBag";
+    import { MobilePageContextParameterBag } from "@Obsidian/ViewModels/Blocks/Mobile/MobilePageDetail/mobilePageContextParameterBag";
+    import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { DisplayInNavWhen } from "@Obsidian/Enums/Cms/displayInNavWhen";
+    import { MobilePageType } from "@Obsidian/Enums/Cms/mobilePageType";
+    import { setPropertiesBoxValue, watchPropertyChanges } from "@Obsidian/Utility/block";
+    import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
+    import { toNumber } from "@Obsidian/Utility/numberUtils";
+    import { useStore } from "@Obsidian/PageState";
+    import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
+    import ContentSectionContainer from "@Obsidian/Controls/contentSectionContainer.obs";
+    import ContentSection from "@Obsidian/Controls/contentSection.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import ImageUploader from "@Obsidian/Controls/imageUploader.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import RadioButtonList from "@Obsidian/Controls/radioButtonList.obs";
+    import ConditionalWell from "@Obsidian/Controls/conditionalWell.obs";
+    import InlineCheckBox from "@Obsidian/Controls/inlineCheckBox.obs";
+    import CodeEditor from "@Obsidian/Controls/codeEditor.obs";
+
+    // #endregion Types
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<ValidPropertiesBox<MobilePageDetailsBag>>,
+            required: true
+        },
+
+        options: {
+            type: Object as PropType<MobilePageDetailOptionsBag>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: ValidPropertiesBox<MobilePageDetailsBag>): void,
+        (e: "propertyChanged", value: string): void
+    }>();
+
+    const store = useStore();
+
+    // #region Values
+
+    // Attribute metadata is read-only display data, so it's a plain ref that is
+    // never tracked or emitted. Only the values (below) round-trip on save.
+    const attributes = ref(props.modelValue.bag?.attributes ?? {});
+    const attributeValues = ref(props.modelValue.bag?.attributeValues ?? {});
+
+    const name = propertyRef(props.modelValue.bag?.name ?? "", "Name");
+    const internalName = propertyRef(props.modelValue.bag?.internalName ?? "", "InternalName");
+    const description = propertyRef(props.modelValue.bag?.description ?? "", "Description");
+
+    const layout = propertyRef(props.modelValue.bag?.layout?.value ?? "", "Layout");
+
+    const pageIcon = propertyRef(props.modelValue.bag?.pageIcon ?? null as ListItemBag | null, "PageIcon");
+
+    // Tracked as strings so they can drive a DropDownList/RadioButtonList; converted
+    // back to their numeric enum values in setPropertiesBoxValue below.
+    const displayInNavWhen = propertyRef(props.modelValue.bag?.displayInNavWhen?.toString() ?? "", "DisplayInNavWhen");
+    const pageType = propertyRef(props.modelValue.bag?.pageType?.toString() ?? "", "PageType");
+
+    const webPageUrl = propertyRef(props.modelValue.bag?.webPageUrl ?? "", "WebPageUrl");
+    const route = propertyRef(props.modelValue.bag?.route ?? "", "Route");
+    const bodyCssClass = propertyRef(props.modelValue.bag?.bodyCssClass ?? "", "BodyCssClass");
+    const hideNavigationBar = propertyRef(props.modelValue.bag?.hideNavigationBar ?? false, "HideNavigationBar");
+    const showFullScreen = propertyRef(props.modelValue.bag?.showFullScreen ?? false, "ShowFullScreen");
+    const autoRefresh = propertyRef(props.modelValue.bag?.autoRefresh ?? false, "AutoRefresh");
+    const lavaEventHandler = propertyRef(props.modelValue.bag?.lavaEventHandler ?? "", "LavaEventHandler");
+    const cssStyles = propertyRef(props.modelValue.bag?.cssStyles ?? "", "CssStyles");
+
+    // Not security-trimmed on a per-field basis, so this is a plain ref (like
+    // PageProperties' blockContexts) rather than a propertyRef.
+    const contextParameters = ref(props.modelValue.bag?.contextParameters?.map(cp => ({ ...cp, parameterName: cp.parameterName ?? "" })) ?? []);
+
+    // The properties that are being edited. This should only contain
+    // objects returned by propertyRef().
+    const propRefs = [name, internalName, description, layout, pageIcon, displayInNavWhen, pageType,
+        webPageUrl, route, bodyCssClass, hideNavigationBar, showFullScreen, autoRefresh, lavaEventHandler, cssStyles];
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    /** Whether the selected Page Type is Native Page, as opposed to a web page. */
+    const isNativePageType = computed((): boolean => {
+        return toNumber(pageType.value) === MobilePageType.NativePage;
+    });
+
+    const isTrailblazerModeEnabled = computed((): boolean => {
+        return store.state.trailblazerMode;
+    });
+
+    // #endregion Computed Values
+
+    // Watch for parental changes in our model value and update all our values.
+    watch(() => props.modelValue, () => {
+        updateRefValue(attributes, props.modelValue.bag?.attributes ?? {});
+        updateRefValue(attributeValues, props.modelValue.bag?.attributeValues ?? {});
+        updateRefValue(name, props.modelValue.bag?.name ?? "");
+        updateRefValue(internalName, props.modelValue.bag?.internalName ?? "");
+        updateRefValue(description, props.modelValue.bag?.description ?? "");
+        updateRefValue(layout, props.modelValue.bag?.layout?.value ?? "");
+        updateRefValue(pageIcon, props.modelValue.bag?.pageIcon ?? null);
+        updateRefValue(displayInNavWhen, props.modelValue.bag?.displayInNavWhen?.toString() ?? "");
+        updateRefValue(pageType, props.modelValue.bag?.pageType?.toString() ?? "");
+        updateRefValue(webPageUrl, props.modelValue.bag?.webPageUrl ?? "");
+        updateRefValue(route, props.modelValue.bag?.route ?? "");
+        updateRefValue(bodyCssClass, props.modelValue.bag?.bodyCssClass ?? "");
+        updateRefValue(hideNavigationBar, props.modelValue.bag?.hideNavigationBar ?? false);
+        updateRefValue(showFullScreen, props.modelValue.bag?.showFullScreen ?? false);
+        updateRefValue(autoRefresh, props.modelValue.bag?.autoRefresh ?? false);
+        updateRefValue(lavaEventHandler, props.modelValue.bag?.lavaEventHandler ?? "");
+        updateRefValue(cssStyles, props.modelValue.bag?.cssStyles ?? "");
+        updateRefValue(contextParameters, props.modelValue.bag?.contextParameters?.map(cp => ({ ...cp, parameterName: cp.parameterName ?? "" })) ?? []);
+    });
+
+    // Determines which values we want to track changes on (defined in the
+    // array) and then emit a new object defined as newValue.
+    watch([attributeValues, contextParameters, ...propRefs], () => {
+        const newValue: ValidPropertiesBox<MobilePageDetailsBag> = {
+            bag: { ...props.modelValue.bag } as MobilePageDetailsBag
+        };
+
+        setPropertiesBoxValue(newValue, "attributeValues", attributeValues.value);
+        setPropertiesBoxValue(newValue, "name", name.value);
+        setPropertiesBoxValue(newValue, "internalName", internalName.value);
+        setPropertiesBoxValue(newValue, "description", description.value);
+        setPropertiesBoxValue(newValue, "layout", { text: "", value: layout.value } as ListItemBag);
+        setPropertiesBoxValue(newValue, "pageIcon", pageIcon.value);
+        setPropertiesBoxValue(newValue, "displayInNavWhen", toNumber(displayInNavWhen.value) as DisplayInNavWhen);
+        setPropertiesBoxValue(newValue, "pageType", toNumber(pageType.value) as MobilePageType);
+        setPropertiesBoxValue(newValue, "webPageUrl", webPageUrl.value);
+        setPropertiesBoxValue(newValue, "route", route.value);
+        setPropertiesBoxValue(newValue, "bodyCssClass", bodyCssClass.value);
+        setPropertiesBoxValue(newValue, "hideNavigationBar", hideNavigationBar.value);
+        setPropertiesBoxValue(newValue, "showFullScreen", showFullScreen.value);
+        setPropertiesBoxValue(newValue, "autoRefresh", autoRefresh.value);
+        setPropertiesBoxValue(newValue, "lavaEventHandler", lavaEventHandler.value);
+        setPropertiesBoxValue(newValue, "cssStyles", cssStyles.value);
+        setPropertiesBoxValue(newValue, "contextParameters", contextParameters.value as MobilePageContextParameterBag[]);
+
+        emit("update:modelValue", newValue);
+    }, { deep: true });
+
+    // Watch for any changes to props that represent properties and then
+    // automatically emit which property changed.
+    watchPropertyChanges(propRefs, emit);
+</script>

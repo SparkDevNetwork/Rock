@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -16,18 +16,21 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity;
 using System.Linq;
 using System.Runtime.Serialization;
+
 using Ical.Net;
-using Ical.Net.DataTypes;
-using Rock.Lava;
-using Rock.Web.Cache;
 using Ical.Net.CalendarComponents;
-using System.ComponentModel.DataAnnotations;
+using Ical.Net.DataTypes;
+
 using Rock.Attribute;
+using Rock.Enums.Security;
+using Rock.Lava;
 using Rock.Security;
+using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -42,6 +45,7 @@ namespace Rock.Model
         /// A <see cref="System.String"/>representing the  content of the iCalendar.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string iCalendarContent
         {
             get
@@ -313,6 +317,7 @@ namespace Rock.Model
         [LavaVisible]
         [MaxLength( 50 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.Name )]
         public string AbbreviatedName
         {
             get

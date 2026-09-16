@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -17,6 +17,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Tasks;
@@ -49,11 +51,11 @@ namespace Rock.Web.UI
 
             if ( Person == null )
             {
-                var personId = PageParameter( "PersonId" ).AsIntegerOrNull();
+                var personKey = PageParameter( "PersonId" );
 
-                if ( personId.HasValue )
+                if ( personKey.IsNotNullOrWhiteSpace() )
                 {
-                    Person = new PersonService( new RockContext() ).Get( personId.Value );
+                    Person = new PersonService( RockApp.Current.CreateRockContext() ).Get( personKey, !RockPage.Site.DisablePredictableIds );
                     Person?.LoadAttributes();
                 }
 

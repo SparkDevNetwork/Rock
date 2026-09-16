@@ -20,7 +20,7 @@ import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import NumberBox from "@Obsidian/Controls/numberBox.obs";
 import DropDownList from "@Obsidian/Controls/dropDownList.obs";
 import CheckBox from "@Obsidian/Controls/checkBox.obs";
-import { ConfigurationValueKey } from "./connectionTypesField.partial";
+import { ConfigurationKey } from "./connectionTypesField.partial";
 import { getFieldEditorProps, getFieldConfigurationProps } from "./utils";
 import { asBoolean, asTrueFalseOrNull } from "@Obsidian/Utility/booleanUtils";
 import { toNumberOrNull } from "@Obsidian/Utility/numberUtils";
@@ -50,7 +50,7 @@ export const EditComponent = defineComponent({
     computed: {
         options(): ListItemBag[] {
             try {
-                const valuesConfig = JSON.parse(this.configurationValues[ConfigurationValueKey.Values] ?? "[]") as ListItemBag[];
+                const valuesConfig = JSON.parse(this.configurationValues[ConfigurationKey.Values] ?? "[]") as ListItemBag[];
                 return valuesConfig.map(v => {
                     return {
                         text: v.text,
@@ -64,10 +64,10 @@ export const EditComponent = defineComponent({
         },
 
         repeatColumns(): number {
-            return Number(this.configurationValues[ConfigurationValueKey.RepeatColumns]) ?? 1;
+            return Number(this.configurationValues[ConfigurationKey.RepeatColumns]) ?? 1;
         },
         enhance(): boolean {
-            return this.configurationValues[ConfigurationValueKey.EnhancedForLongLists] === "True";
+            return this.configurationValues[ConfigurationKey.EnhancedForLongLists] === "True";
         }
     },
 
@@ -111,11 +111,11 @@ export const ConfigurationComponent = defineComponent({
 
             // Construct the new value that will be emitted if it is different
             // than the current value.
-            newValue[ConfigurationValueKey.EnhancedForLongLists] = asTrueFalseOrNull(enhanceForLongLists.value) ?? "True";
-            newValue[ConfigurationValueKey.RepeatColumns] = repeatColumns.value?.toString() ?? "";
+            newValue[ConfigurationKey.EnhancedForLongLists] = asTrueFalseOrNull(enhanceForLongLists.value) ?? "True";
+            newValue[ConfigurationKey.RepeatColumns] = repeatColumns.value?.toString() ?? "";
             // Compare the new value and the old value.
-            const anyValueChanged = newValue[ConfigurationValueKey.EnhancedForLongLists] !== (props.modelValue[ConfigurationValueKey.EnhancedForLongLists] ?? "True")
-                || newValue[ConfigurationValueKey.RepeatColumns] !== (props.modelValue[ConfigurationValueKey.RepeatColumns] ?? "");
+            const anyValueChanged = newValue[ConfigurationKey.EnhancedForLongLists] !== (props.modelValue[ConfigurationKey.EnhancedForLongLists] ?? "True")
+                || newValue[ConfigurationKey.RepeatColumns] !== (props.modelValue[ConfigurationKey.RepeatColumns] ?? "");
 
             // If any value changed then emit the new model value.
             if (anyValueChanged) {
@@ -142,8 +142,8 @@ export const ConfigurationComponent = defineComponent({
         // Watch for changes coming in from the parent component and update our
         // data to match the new information.
         watch(() => [props.modelValue, props.configurationProperties], () => {
-            enhanceForLongLists.value = asBoolean(props.modelValue[ConfigurationValueKey.EnhancedForLongLists]);
-            repeatColumns.value = toNumberOrNull(props.modelValue[ConfigurationValueKey.RepeatColumns]);
+            enhanceForLongLists.value = asBoolean(props.modelValue[ConfigurationKey.EnhancedForLongLists]);
+            repeatColumns.value = toNumberOrNull(props.modelValue[ConfigurationKey.RepeatColumns]);
         }, {
             immediate: true
         });
@@ -157,8 +157,8 @@ export const ConfigurationComponent = defineComponent({
         });
 
         // Watch for changes in properties that only require a local UI update.
-        watch(enhanceForLongLists, () => maybeUpdateConfiguration(ConfigurationValueKey.EnhancedForLongLists, asTrueFalseOrNull(enhanceForLongLists.value) ?? "True"));
-        watch(repeatColumns, () => maybeUpdateConfiguration(ConfigurationValueKey.RepeatColumns, repeatColumns.value?.toString() ?? ""));
+        watch(enhanceForLongLists, () => maybeUpdateConfiguration(ConfigurationKey.EnhancedForLongLists, asTrueFalseOrNull(enhanceForLongLists.value) ?? "True"));
+        watch(repeatColumns, () => maybeUpdateConfiguration(ConfigurationKey.RepeatColumns, repeatColumns.value?.toString() ?? ""));
 
         return {
             enhanceForLongLists,

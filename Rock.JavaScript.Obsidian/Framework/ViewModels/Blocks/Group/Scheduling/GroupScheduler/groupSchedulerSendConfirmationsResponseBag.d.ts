@@ -29,6 +29,13 @@ export type GroupSchedulerSendConfirmationsResponseBag = {
     /** Gets or sets the count of communications sent. */
     communicationsSentCount: number;
 
+    /**
+     * Gets or sets the count of eligible recipients identified at the start of the run
+     * (before any sending). Useful for distinguishing "we found N people but X failed"
+     * from "we found 0 people."
+     */
+    eligibleRecipientCount: number;
+
     /** Gets or sets the errors encountered while attempting to send communications. */
     errors?: string[] | null;
 

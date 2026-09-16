@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -20,7 +20,9 @@ using System.Linq;
 #if WEBFORMS
 using System.Web.UI;
 #endif
+
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.ViewModels.Utility;
@@ -53,7 +55,7 @@ namespace Rock.Field.Types
                     return formattedValue;
                 }
 
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     var names = new RegistrationTemplateService( rockContext )
                         .Queryable()
@@ -98,7 +100,7 @@ namespace Rock.Field.Types
             {
                 var registrationTemplateValues = new List<ListItemBag>();
 
-                var registrationTemplateService = new RegistrationTemplateService( new RockContext() );
+                var registrationTemplateService = new RegistrationTemplateService( RockApp.Current.CreateRockContext() );
                 foreach ( string guidValue in privateValue.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ) )
                 {
                     Guid? guid = guidValue.AsGuidOrNull();
@@ -154,7 +156,7 @@ namespace Rock.Field.Types
                 return null;
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var registrationTemplateIds = new RegistrationTemplateService( rockContext )
                     .Queryable()
@@ -192,6 +194,21 @@ namespace Rock.Field.Types
         public ICollection<string> SplitMultipleValues( string privateValue )
         {
             return privateValue.Split( ',' );
+        }
+
+        #endregion
+
+        #region Value Hinting
+
+        /// <inheritdoc/>
+        internal override FieldTypeHints GetFieldHints( Dictionary<string, string> privateConfigurationValues )
+        {
+            return new FieldTypeHints
+            {
+                IsCompleteList = false,
+                ValueFormat = "One or more guids identifying rows in the RegistrationTemplate table, separated by commas. Not their ids or idKeys.",
+                Instructions = "To find the correct values, read the registration templates and take the guid of each one you want."
+            };
         }
 
         #endregion
@@ -244,7 +261,7 @@ namespace Rock.Field.Types
             string result = null;
 
             var ids = picker.SelectedValuesAsInt().ToList();
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var registrationTemplates = new RegistrationTemplateService( rockContext ).GetByIds( ids ).ToList();
 
@@ -273,7 +290,7 @@ namespace Rock.Field.Types
 
                 if ( guids.Any() )
                 {
-                    using ( var rockContext = new RockContext() )
+                    using ( var rockContext = RockApp.Current.CreateRockContext() )
                     {
                         var registrationTemplates = new RegistrationTemplateService( rockContext ).GetByGuids( guids ).ToList();
                         picker.SetValues( registrationTemplates );

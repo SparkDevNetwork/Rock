@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -14,15 +14,15 @@
 // limitations under the License.
 // </copyright>
 //
-using Rock.Attribute;
-using Rock.Model;
-using Rock.Web.UI.Controls;
 using System.Collections.Generic;
 using System.Linq;
-
 #if WEBFORMS
 using System.Web.UI;
 #endif
+
+using Rock.Attribute;
+using Rock.Model;
+using Rock.Web.UI.Controls;
 
 namespace Rock.Field.Types
 {
@@ -100,6 +100,20 @@ namespace Rock.Field.Types
             return value;
         }
 
+
+        #region Value Hinting
+
+        /// <inheritdoc/>
+        internal override FieldTypeHints GetFieldHints( Dictionary<string, string> privateConfigurationValues )
+        {
+            return new FieldTypeHints
+            {
+                IsCompleteList = false,
+                ValueFormat = "A phone number as digits, optionally with a country code. Rock parses the number and formats it for display, so punctuation is not required and the stored form is not the formatted version shown on screen."
+            };
+        }
+
+        #endregion
 
         #region WebForms
 #if WEBFORMS

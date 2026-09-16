@@ -38,7 +38,6 @@
                       :detailField="false"
                       :hideOnScreen="isFilteredByDevice"
                       :filter="pickExistingValueFilter"
-                      :filterValue="assignedIndividualFilterValue"
                       visiblePriority="xs" />
 
         <TextColumn name="details"
@@ -97,7 +96,6 @@
     import { GridSettingsOptions, PreferenceKey } from "./PersonalDeviceInteractions/types.partial";
     import GridSettingsModal from "./PersonalDeviceInteractions/gridSettingsModal.partial.obs";
     import { asBooleanOrNull, asTrueOrFalseString } from "@Obsidian/Utility/booleanUtils";
-    import { PersonFieldBag } from "@Obsidian/ViewModels/Core/Grid/personFieldBag";
 
     const config = useConfigurationValues<ListBlockBox<PersonalDeviceInteractionsOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
@@ -156,11 +154,6 @@
         else {
             throw new Error(result.errorMessage ?? "Unknown error while trying to load grid data.");
         }
-    }
-
-    function assignedIndividualFilterValue(row: Record<string, unknown>): string {
-        const person = row["assignedIndividual"] as PersonFieldBag;
-        return !person ? "" : `${person.nickName} ${person.lastName}`;
     }
 
     /**

@@ -1,0 +1,304 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Panel type="block"
+           title="Verify Security"
+           titleIconCssClass="ti ti-lock">
+
+        <NotificationBox v-if="warningMessage"
+                         :alertType="AlertType.Warning"
+                         :dismissible="true"
+                         @dismiss="warningMessage = ''">
+            {{ warningMessage }}
+        </NotificationBox>
+
+        <NotificationBox v-if="isCacheClearedMessageShown"
+                         :alertType="AlertType.Success"
+                         :dismissible="true"
+                         @dismiss="isCacheClearedMessageShown = false">
+            The authorization cache has been successfully cleared.
+        </NotificationBox>
+
+        <NotificationBox v-if="unlockMessage"
+                         :alertType="AlertType.Success"
+                         :dismissible="true"
+                         @dismiss="unlockMessage = ''">
+            {{ unlockMessage }}
+        </NotificationBox>
+
+        <RockForm @submit="onShowSecurityClick">
+            <PersonPicker v-model="person"
+                          label="Person"
+                          help="The person to check security against, if not set then your security is checked." />
+
+            <div class="row">
+                <div class="col-sm-6">
+                    <DropDownList v-model="entityTypeGuid"
+                                  label="Entity Type"
+                                  rules="required"
+                                  :items="entityTypeItems"
+                                  grouped
+                                  enhanceForLongLists
+                                  help="Select the entity type you are wanting to verify access to. If you are trying to check the security on a page then set this to 'Page'." />
+                </div>
+                <div class="col-sm-6">
+                    <TextBox v-model="entityIdentifier"
+                             label="Entity Id"
+                             help="Integer ID, Guid or IdKey of the entity you are trying to check security of. If you are trying to check the security of the default external homepage (which is Id #1) then set this to 1." />
+                </div>
+            </div>
+
+            <RockButton type="submit"
+                        :btnType="BtnType.Primary"
+                        :btnSize="BtnSize.Small"
+                        :isLoading="isCheckLoading">
+                Show Security
+            </RockButton>
+            <RockButton type="button"
+                        :btnSize="BtnSize.Small"
+                        class="ml-1"
+                        @click="onClearCacheClick">
+                Clear Auth Cache
+            </RockButton>
+        </RockForm>
+
+        <div v-if="isResultShown" class="mt-3">
+            <Grid :definition="config.gridDefinition ?? undefined"
+                  :data="gridDataSource"
+                  keyField="action"
+                  itemTerm="Security Result"
+                  liveUpdates
+                  :showMergeTemplate="false">
+
+                <TextColumn name="action"
+                            field="action"
+                            title="Action" />
+
+                <TextColumn name="sourceType"
+                            field="sourceType"
+                            title="Source Type" />
+
+                <TextColumn name="sourceId"
+                            field="sourceId"
+                            title="Source Id" />
+
+                <TextColumn name="sourceName"
+                            field="sourceName"
+                            title="Source Name" />
+
+                <TextColumn name="role"
+                            field="role"
+                            title="User / Role" />
+
+                <LabelColumn name="access"
+                             field="access"
+                             title="Access"
+                             :classSource="accessLabelClasses" />
+
+                <ButtonColumn name="unlock"
+                              iconClass="ti ti-lock-open"
+                              tooltip="Add an explicit Allow rule for this person."
+                              :visible="getIsRowUnlockable"
+                              :excludeFromExport="true"
+                              @click="onUnlockClick" />
+            </Grid>
+        </div>
+    </Panel>
+</template>
+
+<script setup lang="ts">
+    import { computed, reactive, ref } from "vue";
+    import Grid, { ButtonColumn, LabelColumn, TextColumn } from "@Obsidian/Controls/grid";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import Panel from "@Obsidian/Controls/panel.obs";
+    import PersonPicker from "@Obsidian/Controls/personPicker.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import RockForm from "@Obsidian/Controls/rockForm.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import { AlertType } from "@Obsidian/Enums/Controls/alertType";
+    import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
+    import { BtnType } from "@Obsidian/Enums/Controls/btnType";
+    import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
+    import { toGuidOrNull } from "@Obsidian/Utility/guid";
+    import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
+    import { VerifySecurityOptionsBag } from "@Obsidian/ViewModels/Blocks/Security/VerifySecurity/verifySecurityOptionsBag";
+    import { VerifySecuritySelectionBag } from "@Obsidian/ViewModels/Blocks/Security/VerifySecurity/verifySecuritySelectionBag";
+    import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+
+    /** One security result row of the grid. */
+    type Row = {
+        action: string;
+        sourceType?: string | null;
+        sourceId?: string | null;
+        sourceName?: string | null;
+        role?: string | null;
+        access?: string | null;
+        isUnlockable: boolean;
+        authIdKey?: string | null;
+    };
+
+    const config = useConfigurationValues<ListBlockBox<VerifySecurityOptionsBag>>();
+    const invokeBlockAction = useInvokeBlockAction();
+
+    onConfigurationValuesChanged(useReloadBlock());
+
+    // #region Values
+
+    const person = ref<ListItemBag | undefined>();
+    const entityTypeGuid = ref("");
+    const entityIdentifier = ref("");
+
+    const warningMessage = ref("");
+    const unlockMessage = ref("");
+    const isCacheClearedMessageShown = ref(false);
+
+    const isCheckLoading = ref(false);
+    const isResultShown = ref(false);
+
+    const gridDataSource = ref<Promise<GridDataBag>>();
+    let gridData: GridDataBag | undefined;
+
+    /** Maps the access text to the label class used by the Access column. */
+    const accessLabelClasses: Record<string, string> = {
+        Allow: "success",
+        Deny: "danger",
+        Unknown: "default"
+    };
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    /** The secured entity types available for selection. */
+    const entityTypeItems = computed((): ListItemBag[] => {
+        return config.options?.entityTypeItems ?? [];
+    });
+
+    // #endregion Computed Values
+
+    // #region Functions
+
+    /** Clears all notification messages before a new server interaction. */
+    function clearMessages(): void {
+        warningMessage.value = "";
+        unlockMessage.value = "";
+        isCacheClearedMessageShown.value = false;
+    }
+
+    /** Builds the selection that describes the person and entity to check. */
+    function getSelection(): VerifySecuritySelectionBag {
+        return {
+            personAliasGuid: toGuidOrNull(person.value?.value),
+            entityTypeGuid: toGuidOrNull(entityTypeGuid.value),
+            entityIdentifier: entityIdentifier.value
+        };
+    }
+
+    /**
+     * Loads the security results for the current selection. On failure the
+     * warning message is shown and the grid is hidden instead.
+     */
+    async function loadGridData(): Promise<GridDataBag> {
+        const result = await invokeBlockAction<GridDataBag>("CheckSecurity", {
+            selection: getSelection()
+        });
+
+        if (result.isSuccess && result.data) {
+            gridData = reactive(result.data);
+            return gridData;
+        }
+        else {
+            warningMessage.value = result.errorMessage ?? "Unknown error while trying to verify security.";
+            isResultShown.value = false;
+            return {};
+        }
+    }
+
+    /**
+     * Determines if the unlock button should be shown for the row, which is
+     * only the case when the row's access is denied.
+     *
+     * @param row The row whose unlockable state to get.
+     */
+    function getIsRowUnlockable(row: Record<string, unknown>): boolean {
+        return (row as Row).isUnlockable === true;
+    }
+
+    // #endregion Functions
+
+    // #region Event Handlers
+
+    /**
+     * Called when the "Show Security" button is clicked. Runs the security
+     * check and shows the results grid.
+     */
+    async function onShowSecurityClick(): Promise<void> {
+        clearMessages();
+        isCheckLoading.value = true;
+
+        try {
+            const dataPromise = loadGridData();
+
+            isResultShown.value = true;
+            gridDataSource.value = dataPromise;
+
+            await dataPromise;
+        }
+        finally {
+            isCheckLoading.value = false;
+        }
+    }
+
+    /**
+     * Called when the "Clear Auth Cache" button is clicked. Flushes the
+     * authorization cache and re-runs the check when results are showing.
+     */
+    async function onClearCacheClick(): Promise<void> {
+        clearMessages();
+
+        const result = await invokeBlockAction("ClearAuthorizationCache");
+
+        if (!result.isSuccess) {
+            warningMessage.value = result.errorMessage ?? "Unknown error while trying to clear the authorization cache.";
+            return;
+        }
+
+        isCacheClearedMessageShown.value = true;
+
+        if (isResultShown.value) {
+            gridDataSource.value = loadGridData();
+        }
+    }
+
+    /**
+     * Called when a row's unlock button is clicked. Adds an explicit Allow
+     * rule for the person being checked and refreshes the results.
+     *
+     * @param key The key of the row whose unlock button was clicked.
+     */
+    async function onUnlockClick(key: string): Promise<void> {
+        clearMessages();
+
+        const row = gridData?.rows?.find(r => r["action"] === key) as Row | undefined;
+
+        if (!row?.authIdKey) {
+            return;
+        }
+
+        const result = await invokeBlockAction<string>("UnlockAccess", {
+            selection: getSelection(),
+            authIdKey: row.authIdKey
+        });
+
+        if (result.isSuccess) {
+            unlockMessage.value = result.data ?? "An explicit Allow rule has been added.";
+            gridDataSource.value = loadGridData();
+        }
+        else {
+            warningMessage.value = result.errorMessage ?? "Unknown error while trying to add the Allow rule.";
+        }
+    }
+
+    // #endregion Event Handlers
+</script>

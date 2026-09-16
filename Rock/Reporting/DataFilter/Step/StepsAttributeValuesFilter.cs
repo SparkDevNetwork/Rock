@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -25,6 +25,7 @@ using System.Web.UI.WebControls;
 
 using Newtonsoft.Json;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Enums.Reporting;
 using Rock.Field;
@@ -299,7 +300,7 @@ namespace Rock.Reporting.DataFilter.Step
             // First value is StepProgram Guid, second value is StepType Guid, third value is Attribute,
             // remaining values are the field type's filter values
             var values = JsonConvert.DeserializeObject<List<string>>( selection );
-            if ( values.Count >= 2 )
+            if ( values.Count >= 3 )
             {
                 var stepProgram = GetStepProgram( values[0].AsGuid() );
                 var stepType = GetStepType( values[1].AsGuid() );
@@ -759,7 +760,7 @@ namespace Rock.Reporting.DataFilter.Step
                 return null;
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var stepTypeService = new StepProgramService( rockContext );
                 return stepTypeService.Get( stepProgramId.Value );
@@ -778,7 +779,7 @@ namespace Rock.Reporting.DataFilter.Step
                 return null;
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var stepTypeService = new StepProgramService( rockContext );
                 return stepTypeService.Get( stepProgramGuid.Value );
@@ -797,7 +798,7 @@ namespace Rock.Reporting.DataFilter.Step
                 return null;
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var stepTypeService = new StepTypeService( rockContext );
                 return stepTypeService.Get( stepTypeId.Value );
@@ -816,7 +817,7 @@ namespace Rock.Reporting.DataFilter.Step
                 return null;
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var stepTypeService = new StepTypeService( rockContext );
                 return stepTypeService.Get( stepTypeGuid.Value );

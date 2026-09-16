@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -25,6 +25,7 @@ using Microsoft.EntityFrameworkCore;
 using Quartz;
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 
@@ -40,7 +41,7 @@ namespace Rock.Jobs
 
     [IntegerField(
     "Command Timeout",
-    AttributeKey.CommandTimeout,
+    Key = AttributeKey.CommandTimeout,
     Description = "Maximum amount of time (in seconds) to wait for each SQL command to complete. On a large database with lots of transactions, this could take several minutes or more.",
     IsRequired = false,
     DefaultIntegerValue = 14400 )]
@@ -281,7 +282,7 @@ DELETE [Block] WHERE [Id] = @BlockToBeReplacedBlockId
             // get the configured timeout, or default to 240 minutes if it is blank
             var commandTimeout = GetAttributeValue( AttributeKey.CommandTimeout ).AsIntegerOrNull() ?? 14400;
 
-            using ( var rockContext = new Rock.Data.RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 rockContext.Database.SetCommandTimeout( commandTimeout );
 
@@ -415,7 +416,7 @@ DELETE [Block] WHERE [Id] = @BlockToBeReplacedBlockId
         /// <param name="jobId">The job identifier.</param>
         public static void DeleteJob( int jobId )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var jobService = new ServiceJobService( rockContext );
                 var job = jobService.Get( jobId );

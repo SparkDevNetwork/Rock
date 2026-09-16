@@ -1,0 +1,71 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="key-attributes-view">
+        <AttributeValuesContainer :modelValue="attributeValues"
+                                  :attributes="attributes"
+                                  :showCategoryLabel="false" />
+    </div>
+</template>
+
+<style scoped>
+/*
+    Bookmarked image attributes are shown as thumbnails to reproduce the legacy
+    block's condensed image display. The image is rendered by a nested field
+    component, so :deep() is required to reach it. height: auto preserves the
+    aspect ratio when the image tag template does not include img-responsive.
+*/
+.key-attributes-view :deep(img) {
+    max-width: 120px;
+    height: auto;
+}
+
+/* Tighten the spacing between attributes to match the narrower legacy layout. */
+.key-attributes-view :deep(.form-group) {
+    margin-bottom: var(--spacing-small);
+}
+
+/*
+    The static value wrapper carries a min-height and bottom padding intended for
+    form layouts, which adds dead space below short one-line values. Remove both so
+    the gap between attributes is just the form-group margin above.
+*/
+.key-attributes-view :deep(.form-control-static) {
+    min-height: 0;
+    padding-bottom: 0;
+}
+
+/* The final attribute should not add trailing space below the list. */
+.key-attributes-view :deep(.attributevaluescontainer-category-content > :last-child .form-group) {
+    margin-bottom: 0;
+}
+
+/*
+    Align the attribute labels with the panel title. In a panel-flex header the
+    title is inset by --spacing-large while the panel body is inset by
+    --spacing-medium, so the difference is applied to the column here to line the
+    labels up under the title. (The Bootstrap column padding is otherwise 15px and
+    uncompensated because there is no surrounding .row.)
+*/
+.key-attributes-view :deep(.attributevaluescontainer-category-content > [class*="col-"]) {
+    padding-left: calc(var(--spacing-large) - var(--spacing-medium));
+    padding-right: 0;
+}
+</style>
+
+<script setup lang="ts">
+    import { PropType } from "vue";
+    import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
+    import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
+
+    defineProps({
+        attributes: {
+            type: Object as PropType<Record<string, PublicAttributeBag>>,
+            required: true
+        },
+
+        attributeValues: {
+            type: Object as PropType<Record<string, string>>,
+            required: true
+        }
+    });
+</script>

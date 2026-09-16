@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -17,7 +17,9 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Web.Cache;
 using Rock.Web.UI;
@@ -30,7 +32,8 @@ namespace Rock.Jobs
     [DisplayName( "Launch Workflow" )]
     [Description( "This job launches the specified workflow." )]
 
-    [WorkflowTypeField( "Workflow", "The workflow this job should activate." )]
+    [WorkflowTypeField( "Workflow",
+        Description = "The workflow this job should activate." )]
     public class LaunchWorkflow : RockJob
     {
         /// <summary> 
@@ -67,7 +70,7 @@ namespace Rock.Jobs
                     var workflow = Rock.Model.Workflow.Activate( workflowType, workflowName );
 
                     List<string> workflowErrors;
-                    var processed = new Rock.Model.WorkflowService( new RockContext() ).Process( workflow, out workflowErrors );
+                    var processed = new Rock.Model.WorkflowService( RockApp.Current.CreateRockContext() ).Process( workflow, out workflowErrors );
                     this.Result = ( processed ? "Processed " : "Did not process " ) + workflow.ToString();
                 }
             }

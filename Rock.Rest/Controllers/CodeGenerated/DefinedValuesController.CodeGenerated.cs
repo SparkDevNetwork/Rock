@@ -21,6 +21,7 @@
 // </copyright>
 //
 
+using Rock.Configuration;
 using Rock.Model;
 using Rock.SystemGuid;
 
@@ -35,6 +36,6 @@ namespace Rock.Rest.Controllers
         /// <summary>
         /// Initializes a new instance of the <see cref="DefinedValuesController"/> class.
         /// </summary>
-        public DefinedValuesController() : base( new Rock.Model.DefinedValueService( new Rock.Data.RockContext() ) ) { } 
+        public DefinedValuesController() : base( new Rock.Model.DefinedValueService( RockApp.Current.CreateRockContext() ) ) { } 
     }
 }

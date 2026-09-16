@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -17,7 +17,6 @@
 
 using Rock.Attribute;
 using Rock.Data;
-using Rock.Field.Types;
 using Rock.Model;
 using Rock.Reporting;
 using Rock.Utility;
@@ -38,6 +37,8 @@ using System.Data.Entity.Spatial;
 #endif
 using System.Linq;
 using System.Linq.Expressions;
+
+using Rock.Configuration;
 
 namespace Rock.Blocks.Engagement.SignUp
 {
@@ -62,7 +63,7 @@ namespace Rock.Blocks.Engagement.SignUp
         Key = AttributeKey.HideOvercapacityProjects,
         Description = "Determines if projects that are full should be shown.",
         Category = AttributeCategory.CustomSetting,
-        ControlType = BooleanFieldType.BooleanControlType.Checkbox,
+        BooleanControlType = Rock.Enums.Controls.BooleanControlType.Checkbox,
         DefaultBooleanValue = false,
         IsRequired = false )]
 
@@ -70,7 +71,7 @@ namespace Rock.Blocks.Engagement.SignUp
         Key = AttributeKey.LoadResultsOnInitialPageLoad,
         Description = "When enabled the project finder will load with all configured projects (no filters enabled).",
         Category = AttributeCategory.CustomSetting,
-        ControlType = BooleanFieldType.BooleanControlType.Checkbox,
+        BooleanControlType = Rock.Enums.Controls.BooleanControlType.Checkbox,
         DefaultBooleanValue = true,
         IsRequired = false )]
 
@@ -124,7 +125,7 @@ namespace Rock.Blocks.Engagement.SignUp
         Key = AttributeKey.DisplayCampusFilter,
         Description = "Determines if the campus filter should be shown. If there is only one active campus to display then this filter will not be shown, even if enabled.",
         Category = AttributeCategory.CustomSetting,
-        ControlType = BooleanFieldType.BooleanControlType.Checkbox,
+        BooleanControlType = Rock.Enums.Controls.BooleanControlType.Checkbox,
         DefaultBooleanValue = false,
         IsRequired = false )]
 
@@ -132,7 +133,7 @@ namespace Rock.Blocks.Engagement.SignUp
         Key = AttributeKey.HideCampusesWithNoOpportunities,
         Description = @"Determines if campuses should be excluded from the filter list if they don't have any sign-up opportunities. This setting will be ignored if ""Display Campus Filter"" is disabled.",
         Category = AttributeCategory.CustomSetting,
-        ControlType = BooleanFieldType.BooleanControlType.Checkbox,
+        BooleanControlType = Rock.Enums.Controls.BooleanControlType.Checkbox,
         DefaultBooleanValue = false,
         IsRequired = false )]
 
@@ -140,7 +141,7 @@ namespace Rock.Blocks.Engagement.SignUp
         Key = AttributeKey.EnableCampusContext,
         Description = @"If enabled and the page has a campus context, its value will be used as a filter. If ""Display Campus Filter"" is disabled when this setting is enabled, the ""Campus Types"", ""Campus Statuses"" and ""Campuses"" settings will be ignored. However, if ""Display Campus Filter"" is enabled and the campus context is one of the allowed campuses, it will be pre-selected in the filter list.",
         Category = AttributeCategory.CustomSetting,
-        ControlType = BooleanFieldType.BooleanControlType.Checkbox,
+        BooleanControlType = Rock.Enums.Controls.BooleanControlType.Checkbox,
         DefaultBooleanValue = false,
         IsRequired = false )]
 
@@ -174,7 +175,7 @@ namespace Rock.Blocks.Engagement.SignUp
         Key = AttributeKey.DisplayNamedScheduleFilter,
         Description = "When enabled a list of named schedules will be show as a filter.",
         Category = AttributeCategory.CustomSetting,
-        ControlType = BooleanFieldType.BooleanControlType.Checkbox,
+        BooleanControlType = Rock.Enums.Controls.BooleanControlType.Checkbox,
         DefaultBooleanValue = false,
         IsRequired = false )]
 
@@ -200,7 +201,7 @@ namespace Rock.Blocks.Engagement.SignUp
         Key = AttributeKey.DisplayLocationSort,
         Description = "Determines if the location sort field should be shown.",
         Category = AttributeCategory.CustomSetting,
-        ControlType = BooleanFieldType.BooleanControlType.Checkbox,
+        BooleanControlType = Rock.Enums.Controls.BooleanControlType.Checkbox,
         DefaultBooleanValue = true,
         IsRequired = false )]
 
@@ -215,7 +216,7 @@ namespace Rock.Blocks.Engagement.SignUp
         Key = AttributeKey.DisplayLocationRangeFilter,
         Description = "When enabled a filter will be shown to limit results to a specified number of miles from the location selected or their mailing address if logged in. If the Location Sort entry is not enabled to be shown and the individual is not logged in then this filter will not be shown, even if enabled, as we will not be able to honor the filter.",
         Category = AttributeCategory.CustomSetting,
-        ControlType = BooleanFieldType.BooleanControlType.Checkbox,
+        BooleanControlType = Rock.Enums.Controls.BooleanControlType.Checkbox,
         DefaultBooleanValue = true,
         IsRequired = false )]
 
@@ -227,7 +228,7 @@ namespace Rock.Blocks.Engagement.SignUp
         Key = AttributeKey.DisplayDateRange,
         Description = "When enabled, individuals would be able to filter the results by projects occurring inside the provided date range.",
         Category = AttributeCategory.CustomSetting,
-        ControlType = BooleanFieldType.BooleanControlType.Checkbox,
+        BooleanControlType = Rock.Enums.Controls.BooleanControlType.Checkbox,
         DefaultBooleanValue = true,
         IsRequired = false )]
 
@@ -235,7 +236,7 @@ namespace Rock.Blocks.Engagement.SignUp
         Key = AttributeKey.DisplaySlotsAvailableFilter,
         Description = @"When enabled allows the individual to find projects with ""at least"" or ""no more than"" the provided spots available.",
         Category = AttributeCategory.CustomSetting,
-        ControlType = BooleanFieldType.BooleanControlType.Checkbox,
+        BooleanControlType = Rock.Enums.Controls.BooleanControlType.Checkbox,
         DefaultBooleanValue = true,
         IsRequired = false )]
 
@@ -441,7 +442,7 @@ namespace Rock.Blocks.Engagement.SignUp
         /// <inheritdoc/>
         public override object GetObsidianBlockInitialization()
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var box = new SignUpFinderInitializationBox();
 
@@ -936,16 +937,25 @@ namespace Rock.Blocks.Engagement.SignUp
                         }
 
                         var attributeCache = AttributeCache.Get( attributeGuid.Value );
-                        var entityField = EntityHelper.GetEntityFieldForAttribute( attributeCache, false );
 
-                        var values = new List<string>
+                        // A null comparison type is preserved rather than stringified, so
+                        // checkbox-style field types get their natural "any of" filter.
+                        var publicComparisonValue = new ComparisonValue
                         {
-                            filter.ComparisonType.ToString(),
-                            PublicAttributeHelper.GetPrivateValue( attributeCache, filter.Value )
+                            ComparisonType = filter.ComparisonType.HasValue
+                                ? ( ComparisonType ) filter.ComparisonType.Value
+                                : ( ComparisonType? ) null,
+                            Value = filter.Value
                         };
 
-                        // Get the expression for this attribute filter.
-                        var filterExpression = ExpressionHelper.GetAttributeExpression( groupService, parameterExpression, entityField, values );
+                        // Get the expression for this attribute filter. A selection that should
+                        // not filter anything comes back as null and is replaced with a literal
+                        // true, which is neutral inside the AND below while still marking this
+                        // project type as participating so its projects are not ruled out by the
+                        // OR. That preserves the previous shape, where a non-filtering selection
+                        // also produced a term that always matched.
+                        var filterExpression = ExpressionHelper.GetAttributeFilterExpression( groupService, parameterExpression, attributeCache, publicComparisonValue )
+                            ?? ( Expression ) Expression.Constant( true );
 
                         // Combine it with expressions for any other selected filters tied to this project type.
                         projectTypeExpression = projectTypeExpression == null
@@ -1465,7 +1475,7 @@ namespace Rock.Blocks.Engagement.SignUp
         /// <inheritdoc/>
         protected override string RenewSecurityGrantToken()
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 return GetSecurityGrantToken();
             }
@@ -1516,7 +1526,7 @@ namespace Rock.Blocks.Engagement.SignUp
         [BlockAction]
         public BlockActionResult GetUpdatedAttributes( IEnumerable<string> selectedProjectTypeGuidStrings )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 // Load block attributes, as we're going to double-check the provided guid strings against those available according to the settings.
                 var block = new BlockService( rockContext ).Get( this.BlockId );
@@ -1534,7 +1544,7 @@ namespace Rock.Blocks.Engagement.SignUp
         [BlockAction]
         public BlockActionResult GetFilteredProjects( SignUpFinderSelectedFiltersBag bag )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 // Load block attributes, as we're going to double-check that each type of filtering is allowed according to the settings.
                 var block = new BlockService( rockContext ).Get( this.BlockId );
@@ -1559,7 +1569,7 @@ namespace Rock.Blocks.Engagement.SignUp
         [BlockAction]
         public BlockActionResult GetCustomSettings()
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 if ( !BlockCache.IsAuthorized( Rock.Security.Authorization.ADMINISTRATE, this.RequestContext.CurrentPerson ) )
                 {
@@ -1673,7 +1683,7 @@ namespace Rock.Blocks.Engagement.SignUp
         [BlockAction]
         public BlockActionResult SaveCustomSettings( CustomSettingsBox<SignUpFinderCustomSettingsBag, SignUpFinderCustomSettingsOptionsBag> box )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 if ( !BlockCache.IsAuthorized( Rock.Security.Authorization.ADMINISTRATE, this.RequestContext.CurrentPerson ) )
                 {

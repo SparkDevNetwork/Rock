@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -19,8 +19,8 @@ using System;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using Rock.Data;
+using Rock.Tests.Integration.TestFramework.Database;
 using Rock.Tests.Shared;
-using Rock.Tests.Shared.TestFramework;
 
 namespace Rock.Tests.Integration.Web.Utilities
 {

@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -20,10 +20,11 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity;
 using System.Data.Entity.Infrastructure;
-using System.Data.Entity.ModelConfiguration;
+using System.Data.Entity.SqlServer;
 using System.Data.SqlTypes;
 using System.Linq;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Lava;
 using Rock.Web.Cache;
@@ -191,7 +192,7 @@ namespace Rock.Model
             Guid? guid = value.AsGuidOrNull();
             if ( guid.HasValue )
             {
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     attributeValue.ValueAsPersonId = new PersonAliasService( rockContext ).Queryable().Where( a => a.Guid.Equals( guid.Value ) ).Select( a => a.PersonId ).FirstOrDefault();
                 }
@@ -473,14 +474,28 @@ namespace Rock.Model
         /// <returns></returns>
         private AttributeValue GetRootMatrixAttributeValue()
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var attributeMatrixService = new AttributeMatrixService( rockContext );
             var attributeService = new AttributeService( rockContext );
             var attributeValueService = new AttributeValueService( rockContext );
 
-            var matrixGuidQuery = attributeMatrixService.Queryable().AsNoTracking().Where( am =>
-                am.AttributeMatrixItems.Any( ami => ami.Id == EntityId ) )
-                .Select( am => am.Guid.ToString() );
+            // Get the matrix that contains the current entity.
+            var matrixQuery = attributeMatrixService.Queryable().AsNoTracking().Where( am =>
+                am.AttributeMatrixItems.Any( ami => ami.Id == EntityId ) );
+
+            var matrixGuidQuery = matrixQuery.Select( am => am.Guid.ToString() );
+
+            /*
+                3/23/2026 - AI
+
+                Updated the query to use a checksum-based subquery when filtering by matrix GUIDs.
+                This leverages the indexed ValueChecksum column instead of querying directly against
+                AttributeValue.Value, which could cause SQL Server to perform a full table scan.
+
+                Reason: Improve query performance by ensuring index usage and avoiding full table scans. (Fixes #6743)
+            */
+            var matrixGuidChecksumQuery = matrixGuidQuery
+                .Select( g => SqlFunctions.Checksum( g ) );
 
             var matrixFieldType = FieldTypeCache.Get( SystemGuid.FieldType.MATRIX );
             var attributeIdQuery = attributeService.Queryable().AsNoTracking().Where( a =>
@@ -488,7 +503,9 @@ namespace Rock.Model
                 .Select( a => a.Id );
 
             var attributeValue = attributeValueService.Queryable().AsNoTracking().FirstOrDefault( av =>
-                 attributeIdQuery.Contains( av.AttributeId ) && matrixGuidQuery.Contains( av.Value ) );
+                 attributeIdQuery.Contains( av.AttributeId )
+                 && matrixGuidChecksumQuery.Contains( ( int? ) av.ValueChecksum )
+                 && matrixGuidQuery.Contains( av.Value ) );
 
             return attributeValue;
         }

@@ -17,6 +17,7 @@
 using System.Collections.Generic;
 using System.Web.Http;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Rest.Filters;
@@ -41,7 +42,7 @@ namespace Rock.Rest.Controllers
         [Rock.SystemGuid.RestActionGuid( "BB15362D-FF32-448F-804C-7B39543DD934" )]
         public IEnumerable<GroupPlacementRegistrant> GetGroupPlacementRegistrants( [FromBody] GetGroupPlacementRegistrantsParameters options )
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var registrantService = new RegistrationRegistrantService( rockContext );
             return registrantService.GetGroupPlacementRegistrants( options, this.GetPerson() );
         }

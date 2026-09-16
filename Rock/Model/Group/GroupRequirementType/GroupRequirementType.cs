@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -21,7 +21,9 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
+
 using Rock.Data;
+using Rock.Enums.Security;
 using Rock.Lava;
 using Rock.Security;
 
@@ -47,6 +49,7 @@ namespace Rock.Model
         /// </value>
         [Required]
         [DataMember( IsRequired = true )]
+        [StringValidation( StringValidationProfile.Name )]
         public string Name { get; set; }
 
         /// <summary>
@@ -56,6 +59,7 @@ namespace Rock.Model
         /// The description.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.LavaAndBasicHtml )]
         public string Description { get; set; }
 
         /// <summary>
@@ -93,6 +97,7 @@ namespace Rock.Model
         /// The SQL expression.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string SqlExpression { get; set; }
 
         /// <summary>
@@ -111,6 +116,7 @@ namespace Rock.Model
         /// The warning SQL expression.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string WarningSqlExpression { get; set; }
 
         /// <summary>
@@ -130,6 +136,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 150 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string PositiveLabel { get; set; }
 
         /// <summary>
@@ -140,6 +147,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 150 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string NegativeLabel { get; set; }
 
         /// <summary>
@@ -149,6 +157,7 @@ namespace Rock.Model
         /// The warning label.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string WarningLabel { get; set; }
 
         /// <summary>
@@ -159,6 +168,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 150 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string CheckboxLabel { get; set; }
 
         /// <summary>
@@ -169,6 +179,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 100 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string IconCssClass { get; set; }
 
         /// <summary>
@@ -220,6 +231,7 @@ namespace Rock.Model
         /// </summary>
         [MaxLength( 50 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string DoesNotMeetWorkflowLinkText { get; set; }
 
         /// <summary>
@@ -243,6 +255,7 @@ namespace Rock.Model
         /// </summary>
         [MaxLength( 50 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string WarningWorkflowLinkText { get; set; }
 
         /// <summary>
@@ -253,6 +266,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 2000 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string Summary { get; set; }
 
         #endregion

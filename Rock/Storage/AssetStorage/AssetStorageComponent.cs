@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -538,9 +538,11 @@ namespace Rock.Storage.AssetStorage
             string assetFilePath = FileSystemComponentHttpContext.Request.MapPath( asset.Key );
 
             if ( Path.GetExtension( asset.Name ).Equals( ".svg", StringComparison.OrdinalIgnoreCase ) ||
-                Path.GetExtension( asset.Name ).Equals( ".ico", StringComparison.OrdinalIgnoreCase ) )
+                Path.GetExtension( asset.Name ).Equals( ".ico", StringComparison.OrdinalIgnoreCase ) ||
+                Path.GetExtension( asset.Name ).Equals( ".webp", StringComparison.OrdinalIgnoreCase ) )
             {
-                // just save the ico or svg to the thumbnail dir as there is no need to make a thumbnail
+                // SVG and ICO don't need a resized thumbnail, and WebP can't be resized by
+                // GDI+/ImageResizer on .NET Framework, so just copy the original to the thumbnail dir.
                 File.Copy( assetFilePath, physicalThumbPath, true );
                 return;
             }
@@ -572,9 +574,10 @@ namespace Rock.Storage.AssetStorage
             {
                 using ( var resizedStream = new FileStream( physicalThumbPath, FileMode.Create ) )
                 {
-                    if ( Path.GetExtension( asset.Name ).Equals( ".svg", StringComparison.OrdinalIgnoreCase ) )
+                    if ( Path.GetExtension( asset.Name ).Equals( ".svg", StringComparison.OrdinalIgnoreCase ) ||
+                        Path.GetExtension( asset.Name ).Equals( ".webp", StringComparison.OrdinalIgnoreCase ) )
                     {
-                        // just save the svg to the thumbnail dir
+                        // just save the svg or webp to the thumbnail dir
                         asset.AssetStream.CopyTo( resizedStream );
                     }
                     else

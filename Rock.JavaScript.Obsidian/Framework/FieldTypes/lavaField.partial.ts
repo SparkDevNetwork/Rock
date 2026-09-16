@@ -21,7 +21,7 @@ import { ComparisonType } from "@Obsidian/Enums/Reporting/comparisonType";
 import { FieldTypeBase } from "./fieldType";
 import { stringComparisonTypes } from "@Obsidian/Core/Reporting/comparisonType";
 
-export const enum ConfigurationValueKey {
+export const enum ConfigurationKey {
     EditorMode = "editorMode",
     EditorHeight = "editorHeight",
 }

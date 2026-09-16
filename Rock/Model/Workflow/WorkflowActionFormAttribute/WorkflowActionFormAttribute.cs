@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -14,13 +14,16 @@
 // limitations under the License.
 // </copyright>
 //
-using Rock.Data;
-using Rock.Lava;
-using Rock.Web.Cache;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
+
+using Rock.Data;
+using Rock.Enums.Security;
+using Rock.Lava;
+using Rock.Security;
+using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -109,6 +112,7 @@ namespace Rock.Model
         /// The preHTML.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string PreHtml { get; set; }
 
         /// <summary>
@@ -118,6 +122,7 @@ namespace Rock.Model
         /// The post HTML.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string PostHtml { get; set; }
 
         /// <summary>
@@ -128,6 +133,7 @@ namespace Rock.Model
         /// </value>
         /// <remarks>This value should never be used outside of Rock. FieldVisibilityRules should be used. </remarks>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string FieldVisibilityRulesJSON { get; set; }
 
         /// <summary>

@@ -17,7 +17,7 @@
                  textMode="multiline" />
 
         <TextBox v-model="helpText"
-                 label="Help text"
+                 label="Help Text"
                  textMode="multiline" />
 
         <div class="row">

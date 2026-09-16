@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -118,6 +118,12 @@ namespace Rock.Blocks.AI
         protected override IQueryable<AISkill> GetListQueryable( RockContext rockContext )
         {
             return base.GetListQueryable( rockContext );
+        }
+
+        /// <inheritdoc/>
+        protected override IQueryable<AISkill> GetOrderedListQueryable( IQueryable<AISkill> queryable, RockContext rockContext )
+        {
+            return queryable.OrderBy( a => a.Name );
         }
 
         /// <inheritdoc/>

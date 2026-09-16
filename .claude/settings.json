@@ -1,0 +1,49 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(*)",
+      "Edit(*)",
+      "Write(*)",
+      "Glob(*)",
+      "Grep(*)",
+      "Bash(git status*)",
+      "Bash(git diff*)",
+      "Bash(git log*)",
+      "Bash(git show*)",
+      "Bash(git branch*)",
+      "Bash(git blame*)",
+      "Bash(git rev-parse*)",
+      "Bash(git ls-files*)",
+      "Bash(git ls-tree*)",
+      "Bash(git diff-tree*)",
+      "Bash(git remote*)",
+      "Bash(git stash list*)",
+      "Bash(git fetch*)",
+      "Bash(git add *)",
+      "Bash(git checkout -b *)",
+      "Bash(git switch -c *)",
+      "Bash(git push origin*)",
+      "Bash(dotnet build*)",
+      "Bash(dotnet test*)",
+      "Bash(node *)",
+      "Bash(ls*)",
+      "Bash(wc *)",
+      "Bash(mkdir *)",
+      "Bash(find *)"
+    ]
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash ${CLAUDE_PROJECT_DIR}/.claude/hooks/prevent-destructive.sh",
+            "timeout": 5000
+          }
+        ]
+      }
+    ]
+  }
+}

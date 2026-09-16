@@ -1,0 +1,389 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Modal v-model="internalIsOpen"
+           :cancelText="cancelButtonText"
+           :clickBackdropToClose="false"
+           :saveText="saveButtonText"
+           :title="title"
+           @save="onSaveClicked"
+           @closeModal="onCloseModal">
+        <div class="recipient-modal-body">
+            <NotificationBox v-if="disabled && disabledMessage" alertType="warning">
+                {{ disabledMessage }}
+            </NotificationBox>
+
+            <slot name="header" />
+
+            <div v-if="isAddShown" class="d-sm-flex flex-row justify-content-between align-items-center">
+                <PersonPicker :modelValue="personPickerSelection"
+                              :disabled="disabled"
+                              :label="addRecipientLabel"
+                              @update:modelValue="onPersonPicked" />
+                <div class="label label-info">Recipients: {{ pendingItems.length }}</div>
+            </div>
+
+            <Grid :definition="recipientsGridDefinition"
+                  :data="recipientsGridData"
+                  itemTerm="Recipient"
+                  class="recipient-manager-grid"
+                  :disablePreferences="true"
+                  keyField="key"
+                  rowClass="recipient-modal-row">
+
+                <Column name="name" field="name" title="Name" :filter="textValueFilter">
+                    <template #format="{ row }">
+                        <div v-if="!(row as RecipientListItem).isDeceased">
+                            {{ (row as RecipientListItem).name }}
+                        </div>
+                        <div v-else class="text-muted">
+                            <div>{{ (row as RecipientListItem).name }}</div>
+                            <small class="font-weight-light">Deceased Won't Send</small>
+                        </div>
+                    </template>
+                </Column>
+
+                <Column name="isEmailAllowed" field="isEmailAllowed" title="Email">
+                    <template #format="{ row }">
+                        <span :class="['communication-medium-status', getEmailTextCssClass(row as RecipientListItem)]">
+                            {{ getEmailAddress(row as RecipientListItem) }}
+                        </span>
+                    </template>
+                </Column>
+
+                <Column name="isSmsAllowed" field="isSmsAllowed" title="SMS">
+                    <template #format="{ row }">
+                        <span :class="['communication-medium-status', getSmsTextCssClass(row as RecipientListItem)]">
+                            {{ getSmsNumber(row as RecipientListItem) }}
+                        </span>
+                    </template>
+                </Column>
+
+                <Column name="isPushAllowed" field="isPushAllowed" title="Push">
+                    <template #format="{ row }">
+                        <span :class="['communication-medium-status', getPushTextCssClass(row as RecipientListItem)]">
+                            {{ getPushStatus(row as RecipientListItem) }}
+                        </span>
+                    </template>
+                </Column>
+
+                <DeleteColumn v-if="isRemoveShown" name="removeRecipient" itemClass="grid-columncommand remove-button" :disableConfirmation="true" @click="onRemoveRecipientClicked" />
+            </Grid>
+
+            <RockButton v-if="isRemoveAllShown"
+                        btnSize="xs"
+                        class="btn-primary btn-remove"
+                        @click="onRemoveAllClicked">Remove All</RockButton>
+        </div>
+    </Modal>
+</template>
+
+<style scoped>
+.communication-medium-status {
+    white-space: nowrap;
+}
+
+/** Reveal the remove button on hover; on touch devices with no hover, keep it always visible. */
+.recipient-modal-body :deep(.recipient-modal-row .remove-button .btn) {
+    visibility: hidden;
+}
+
+.recipient-modal-body :deep(.recipient-modal-row:hover .remove-button .btn) {
+    visibility: visible;
+}
+
+@media (hover: none) {
+    .recipient-modal-body :deep(.recipient-modal-row .remove-button .btn) {
+        visibility: visible;
+    }
+}
+
+.recipient-manager-grid :deep(.grid-body) {
+    max-height: 400px;
+    height: 400px;
+    overflow: auto;
+}
+
+.recipient-manager-grid :deep(.grid-title-heading) {
+    display: none;
+}
+
+.btn-remove,
+.btn-remove:hover,
+.btn-remove:active {
+    color: var(--color-primary);
+    border: 1px solid var(--color-primary);
+    background-color: var(--color-interface-softest);
+}
+</style>
+
+<script setup lang="ts">
+    import { PropType, computed, ref, watch } from "vue";
+    import Grid, { Column, DeleteColumn, textValueFilter } from "@Obsidian/Controls/grid";
+    import Modal from "@Obsidian/Controls/modal.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import PersonPicker from "@Obsidian/Controls/personPicker.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import { FieldDefinitionBag } from "@Obsidian/ViewModels/Core/Grid/fieldDefinitionBag";
+    import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
+    import { GridDefinitionBag } from "@Obsidian/ViewModels/Core/Grid/gridDefinitionBag";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { formatPhoneNumber } from "@Obsidian/Utility/phone";
+    import { useVModelPassthrough } from "@Obsidian/Utility/component";
+    import { RecipientListItem } from "./types.partial";
+
+    // #region Types
+
+    const props = defineProps({
+        /** Whether the modal is open. */
+        modelValue: {
+            type: Boolean as PropType<boolean>,
+            required: true
+        },
+
+        /** The recipients to display. */
+        recipients: {
+            type: Object as PropType<RecipientListItem[]>,
+            required: true
+        },
+
+        /** The modal title. */
+        title: {
+            type: String as PropType<string>,
+            default: "Recipient Manager"
+        },
+
+        /** Disables the add picker and the save button. */
+        disabled: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        /** A message shown when `disabled` is `true`. */
+        disabledMessage: {
+            type: String as PropType<string | null | undefined>,
+            required: false
+        },
+
+        /** Whether email allowance is evaluated for a bulk communication. */
+        isForBulkCommunication: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        /** Whether the add-recipient picker is shown. */
+        isAddShown: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        /** Whether the per-row remove button is shown. */
+        isRemoveShown: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        /** Whether the Remove All button is shown. */
+        isRemoveAllShown: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        /** The save/confirm button text (e.g. "Save" for an editable list, "OK" for a read-only view). */
+        saveButtonText: {
+            type: String as PropType<string>,
+            default: "OK"
+        },
+
+        /** The cancel button text. Empty hides the cancel button. */
+        cancelButtonText: {
+            type: String as PropType<string>,
+            default: ""
+        },
+
+        /** The label for the add-recipient person picker. */
+        addRecipientLabel: {
+            type: String as PropType<string>,
+            default: "Add Recipient"
+        },
+
+        /** Returns the stable identity for a recipient (the block's identity field). */
+        getKey: {
+            type: Function as PropType<(recipient: RecipientListItem) => string>,
+            required: true
+        },
+
+        /** Resolves a person picker selection into a recipient using the block's own lookup. */
+        resolveRecipient: {
+            type: Function as PropType<(personAliasValue: string) => Promise<RecipientListItem | null>>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: boolean): void,
+        (e: "update:recipients", value: RecipientListItem[]): void
+    }>();
+
+    // #endregion Types
+
+    // #region Values
+
+    const emptyListItemBag: ListItemBag = {};
+
+    const internalIsOpen = useVModelPassthrough(props, "modelValue", emit);
+    const pendingItems = ref<RecipientListItem[]>(keyed(props.recipients));
+    const personPickerSelection = ref<ListItemBag | undefined>();
+
+    const recipientsGridDefinition: GridDefinitionBag = {
+        enableLaunchWorkflow: false,
+        enableStickyHeader: false,
+        fields: [
+            createFieldDefinition("name"),
+            createFieldDefinition("isEmailAllowed"),
+            createFieldDefinition("isSmsAllowed"),
+            createFieldDefinition("isPushAllowed"),
+        ],
+    };
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    const recipientsGridData = computed<GridDataBag>(() => ({
+        rows: pendingItems.value
+    }));
+
+    // #endregion Computed Values
+
+    // #region Functions
+
+    /** Returns copies of the recipients stamped with the grid key from the block-supplied getKey. */
+    function keyed(recipients: RecipientListItem[]): RecipientListItem[] {
+        return recipients.map(recipient => ({ ...recipient, key: props.getKey(recipient) }));
+    }
+
+    function createFieldDefinition(name: string): FieldDefinitionBag {
+        return { name };
+    }
+
+    function getEmailTextCssClass(recipient: RecipientListItem): string {
+        return recipient.isEmailAllowed ? "" : "text-danger";
+    }
+
+    function getSmsTextCssClass(recipient: RecipientListItem): string {
+        return recipient.isSmsAllowed ? "" : "text-danger";
+    }
+
+    function getPushTextCssClass(recipient: RecipientListItem): string {
+        return recipient.isPushAllowed ? "" : "text-danger";
+    }
+
+    function getEmailAddress(recipient: RecipientListItem): string {
+        if (!recipient
+            || (props.isForBulkCommunication && recipient.isBulkEmailAllowed)
+            || (!props.isForBulkCommunication && recipient.isEmailAllowed)) {
+            return recipient?.email || "No Email";
+        }
+
+        if (!recipient.email) {
+            return "No Email";
+        }
+        else if (!recipient.isEmailActive) {
+            return "Inactive Email";
+        }
+        else {
+            return "Email Not Allowed";
+        }
+    }
+
+    function getSmsNumber(recipient: RecipientListItem): string {
+        if (!recipient || recipient.isSmsAllowed) {
+            return recipient?.smsNumber ? formatPhoneNumber(recipient.smsNumber) : "No SMS Number";
+        }
+
+        if (!recipient.smsNumber) {
+            return "No SMS Number";
+        }
+        else {
+            return "SMS Not Allowed";
+        }
+    }
+
+    function getPushStatus(recipient: RecipientListItem): string {
+        if (!recipient || recipient.isPushAllowed) {
+            return "";
+        }
+
+        return "No Push Device";
+    }
+
+    function clear(): void {
+        personPickerSelection.value = emptyListItemBag;
+    }
+
+    // #endregion Functions
+
+    // #region Event Handlers
+
+    function onRemoveRecipientClicked(key: string): void {
+        if (!key) {
+            return;
+        }
+
+        const updatedPendingItems = [...pendingItems.value];
+        const index = updatedPendingItems.findIndex(i => i.key === key);
+        if (index !== -1) {
+            updatedPendingItems.splice(index, 1);
+            pendingItems.value = updatedPendingItems;
+        }
+    }
+
+    async function onPersonPicked(value: ListItemBag | undefined): Promise<void> {
+        if (!value?.value) {
+            return;
+        }
+
+        const resolved = await props.resolveRecipient(value.value);
+        if (!resolved) {
+            return;
+        }
+
+        const recipient = { ...resolved, key: props.getKey(resolved) };
+
+        const updatedPendingItems = [...pendingItems.value];
+        const index = updatedPendingItems.findIndex(i => i.key === recipient.key);
+        if (index === -1) {
+            updatedPendingItems.push(recipient);
+            pendingItems.value = updatedPendingItems;
+        }
+
+        personPickerSelection.value = emptyListItemBag;
+    }
+
+    function onSaveClicked(): void {
+        emit("update:recipients", pendingItems.value);
+        internalIsOpen.value = false;
+        clear();
+    }
+
+    function onCloseModal(): void {
+        clear();
+    }
+
+    function onRemoveAllClicked(): void {
+        pendingItems.value = [];
+    }
+
+    // #endregion Event Handlers
+
+    // #region Watchers
+
+    watch(internalIsOpen, (newValue: boolean, oldValue: boolean) => {
+        // Reset the pending items to the current recipients each time the modal opens.
+        if (newValue && !oldValue) {
+            pendingItems.value = keyed(props.recipients);
+        }
+    });
+
+    // #endregion Watchers
+</script>

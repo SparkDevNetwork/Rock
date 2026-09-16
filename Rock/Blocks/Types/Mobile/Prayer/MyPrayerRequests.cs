@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -22,6 +22,7 @@ using System.Linq;
 
 using Rock.Attribute;
 using Rock.Common.Mobile.Blocks.Content;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 
@@ -64,7 +65,7 @@ namespace Rock.Blocks.Types.Mobile.Prayer
         Description = "Include expired prayer requests in the list.",
         IsRequired = false,
         DefaultBooleanValue = true,
-        ControlType = Field.Types.BooleanFieldType.BooleanControlType.Checkbox,
+        BooleanControlType = Rock.Enums.Controls.BooleanControlType.Checkbox,
         Key = AttributeKeys.ShowExpired,
         Order = 3 )]
 
@@ -84,7 +85,7 @@ namespace Rock.Blocks.Types.Mobile.Prayer
         Description = "Includes prayer requests that are attached to a group.",
         IsRequired = false,
         DefaultBooleanValue = false,
-        ControlType = Field.Types.BooleanFieldType.BooleanControlType.Checkbox,
+        BooleanControlType = Rock.Enums.Controls.BooleanControlType.Checkbox,
         Key = AttributeKeys.IncludeGroupRequests,
         Order = 6 )]
 
@@ -159,7 +160,7 @@ namespace Rock.Blocks.Types.Mobile.Prayer
         /// <value>
         /// The template.
         /// </value>
-        protected string Template => Rock.Field.Types.BlockTemplateFieldType.GetTemplateContent( GetAttributeValue( AttributeKeys.Template ) );
+        protected string Template => Field.Helper.GetBlockTemplateContent( GetAttributeValue( AttributeKeys.Template ) );
 
         /// <summary>
         /// Gets a value indicating whether to show expired prayer requests.
@@ -252,7 +253,7 @@ namespace Rock.Blocks.Types.Mobile.Prayer
         /// <returns>A string containing the XAML content to be displayed.</returns>
         private string BuildContent()
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 List<PrayerRequest> prayerRequests = new List<PrayerRequest>();
 
@@ -329,7 +330,7 @@ namespace Rock.Blocks.Types.Mobile.Prayer
         /// </returns>
         private CallbackResponse DeleteRequest( Guid requestGuid )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var prayerRequestService = new PrayerRequestService( rockContext );
                 var prayerRequest = prayerRequestService.Get( requestGuid );

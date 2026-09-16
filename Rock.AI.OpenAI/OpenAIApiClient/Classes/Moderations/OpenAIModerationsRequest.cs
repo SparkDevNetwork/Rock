@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -17,7 +17,9 @@
 
 using System;
 using System.Collections.Generic;
+
 using Newtonsoft.Json;
+
 using Rock.AI.Classes.Moderations;
 
 namespace Rock.AI.OpenAI.OpenAIApiClient.Classes.Moderations
@@ -25,6 +27,8 @@ namespace Rock.AI.OpenAI.OpenAIApiClient.Classes.Moderations
     /// <summary>
     /// The Request object for a moderation.
     /// </summary>
+    [Obsolete( "This feature has been deprecated and is no longer used by Rock. AI configuration happens automatically." )]
+    [RockObsolete( "21.0" )]
     internal class OpenAIModerationsRequest
     {
         #region Properties

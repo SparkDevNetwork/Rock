@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -16,19 +16,21 @@
 //
 
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
-using System.Web.UI;
-using System.Web.UI.WebControls;
-using Rock.Data;
-using Rock.Model;
-using Rock.Web.UI.Controls;
 using System.Linq;
 using System.Linq.Expressions;
-using System.Collections.Generic;
+using System.Web.UI;
+using System.Web.UI.WebControls;
+
+using Rock.Configuration;
+using Rock.Data;
+using Rock.Model;
 using Rock.Net;
-using Rock.Web.Cache;
 using Rock.ViewModels.Controls;
+using Rock.Web.Cache;
+using Rock.Web.UI.Controls;
 
 namespace Rock.Reporting.DataFilter.ConnectionRequest
 {
@@ -162,7 +164,7 @@ function() {
             var selectionConfig = SelectionConfig.Parse( selection );
             if ( selectionConfig != null && selectionConfig.ConnectionTypeGuid.HasValue )
             {
-                var connectionType = new ConnectionTypeService( new RockContext() ).Get( selectionConfig.ConnectionTypeGuid.Value );
+                var connectionType = new ConnectionTypeService( RockApp.Current.CreateRockContext() ).Get( selectionConfig.ConnectionTypeGuid.Value );
 
                 if ( connectionType != null )
                 {
@@ -188,7 +190,7 @@ function() {
 
             connectionTypePicker.Items.Clear();
             connectionTypePicker.Items.Insert( 0, new ListItem() );
-            var connectionTypeList = new ConnectionTypeService( new RockContext() ).Queryable()
+            var connectionTypeList = new ConnectionTypeService( RockApp.Current.CreateRockContext() ).Queryable()
                 .OrderBy( a => a.Order )
                 .ThenBy( a => a.Name )
                 .ToList();
@@ -224,7 +226,7 @@ function() {
         {
             var selectionConfig = new SelectionConfig();
             var connectionTypeId = ( controls[0] as RockDropDownList ).SelectedValueAsId();
-            var connectionType = new ConnectionTypeService( new RockContext() ).Get( connectionTypeId ?? 0 );
+            var connectionType = new ConnectionTypeService( RockApp.Current.CreateRockContext() ).Get( connectionTypeId ?? 0 );
             if ( connectionType != null )
             {
                 selectionConfig.ConnectionTypeGuid = connectionType.Guid;
@@ -246,7 +248,7 @@ function() {
                 SelectionConfig selectionConfig = SelectionConfig.Parse( selection );
                 if ( controls.Length > 0 && selectionConfig.ConnectionTypeGuid.HasValue )
                 {
-                    var connectionType = new ConnectionTypeService( new RockContext() ).Get( selectionConfig.ConnectionTypeGuid.Value );
+                    var connectionType = new ConnectionTypeService( RockApp.Current.CreateRockContext() ).Get( selectionConfig.ConnectionTypeGuid.Value );
                     if ( connectionType != null )
                     {
                         ( controls[0] as RockDropDownList ).SetValue( connectionType.Id );
@@ -273,7 +275,7 @@ function() {
                 return null;
             }
 
-            var connectionType = new ConnectionTypeService( new RockContext() ).Get( selectionConfig.ConnectionTypeGuid.Value );
+            var connectionType = new ConnectionTypeService( RockApp.Current.CreateRockContext() ).Get( selectionConfig.ConnectionTypeGuid.Value );
             int? connectionTypeId = null;
             if ( connectionType != null )
             {

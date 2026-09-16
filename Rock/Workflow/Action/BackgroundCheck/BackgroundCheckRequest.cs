@@ -35,13 +35,30 @@ namespace Rock.Workflow.Action
     [Export( typeof( ActionComponent ) )]
     [ExportMetadata( "ComponentName", "Background Check Send Request" )]
 
-    [ComponentField( "Rock.Security.BackgroundCheckContainer, Rock", "Background Check Provider", "The Background Check provider to use", false, "", "", 0, "Provider" )]
-    [WorkflowAttribute("Person Attribute", "The Person attribute that contains the person who the background check should be submitted for.", true, "", "", 1, null,
-        new string[] { "Rock.Field.Types.PersonFieldType" } )]
-    [WorkflowAttribute( "SSN Attribute", "The attribute that contains the Social Security Number of the person who the background check should be submitted for ( Must be an 'Encrypted Text' attribute )", false, "", "", 2, null,
-        new string[] { "Rock.Field.Types.SSNFieldType" } )]
-    [WorkflowAttribute( "Request Type Attribute", "The attribute that contains the type of background check to submit (Specific to provider).", false, "", "", 3, null)]
-    [WorkflowAttribute( "Billing Code Attribute", "The attribute that contains the billing code to use when submitting background check.", false, "", "", 4 )]
+    [ComponentField( "Rock.Security.BackgroundCheckContainer, Rock",
+        "Background Check Provider",
+        Description = "The Background Check provider to use",
+        IsRequired = false,
+        Order = 0,
+        Key = "Provider" )]
+    [WorkflowAttribute("Person Attribute",
+        Description = "The Person attribute that contains the person who the background check should be submitted for.",
+        IsRequired = true,
+        Order = 1,
+        FieldTypeClassNames = new string[] { "Rock.Field.Types.PersonFieldType" } )]
+    [WorkflowAttribute( "SSN Attribute",
+        Description = "The attribute that contains the Social Security Number of the person who the background check should be submitted for ( Must be an 'Encrypted Text' attribute )",
+        IsRequired = false,
+        Order = 2,
+        FieldTypeClassNames = new string[] { "Rock.Field.Types.SSNFieldType" } )]
+    [WorkflowAttribute( "Request Type Attribute",
+        Description = "The attribute that contains the type of background check to submit (Specific to provider).",
+        IsRequired = false,
+        Order = 3 )]
+    [WorkflowAttribute( "Billing Code Attribute",
+        Description = "The attribute that contains the billing code to use when submitting background check.",
+        IsRequired = false,
+        Order = 4 )]
     [Rock.SystemGuid.EntityTypeGuid( "C4DAE3D6-931F-497F-AC00-60BAFA87B758")]
     public class BackgroundCheckRequest : ActionComponent
     {

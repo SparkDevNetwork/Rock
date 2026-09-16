@@ -1,5 +1,5 @@
 <template>
-    <GalleryAndResult :importCode="importCode" :exampleCode="exampleCode" :value="value" :displayAsRaw="true">
+    <GalleryAndResult :importCode="importCode" :exampleCode="exampleCode" :displayAsRaw="true">
 
         <EmailEditor class="gallery-email-editor" :html="value"
                      :getHtmlRequest="getHtmlRequest"
@@ -11,6 +11,10 @@
                 <div class="well well-conditional">{{ bodySettingsPrependSlotText }}</div>
             </template>
         </EmailEditor>
+
+        <Modal v-model="isModalVisible" title="Email Editor HTML">
+            <code><pre>{{ value }}</pre></code>
+        </Modal>
 
         <template #settings>
             <div class="settings">
@@ -78,6 +82,7 @@
     import ContentSection from "@Obsidian/Controls/contentSection.obs";
     import ContentStack from "@Obsidian/Controls/contentStack.obs";
     import EmailEditor, { GetHtmlRequest } from "@Obsidian/Controls/emailEditor";
+    import Modal from "@Obsidian/Controls/modal.obs";
     import RockButton from "@Obsidian/Controls/rockButton.obs";
     import Switch from "@Obsidian/Controls/switch.obs";
     import ValueList from "@Obsidian/Controls/valueList.obs";
@@ -99,9 +104,6 @@
     <meta charset="utf-8" />
 </head>
 <body>
-    <div class="structure-dropzone">
-        <div class="dropzone"></div>
-    </div>
 </body>
 </html>`);
     const disabled = ref(false);
@@ -115,6 +117,7 @@
     ]);
     const getHtmlRequest = ref<GetHtmlRequest | null | undefined>();
     const simulateValues = ref<string[]>([]);
+    const isModalVisible = ref(false);
 
     const importCode = getSfcControlImportPath("htmlEditor");
     const exampleCode = computed(() => {
@@ -134,8 +137,10 @@
         getHtmlRequest.value = {
             onSuccess({ html }): void {
                 value.value = html;
+                isModalVisible.value = true;
             },
             onError(error: string): void {
+                isModalVisible.value = false;
                 alert(error);
             }
         };

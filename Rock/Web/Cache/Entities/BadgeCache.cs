@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.Serialization;
+
 using Rock.Badge;
 using Rock.Data;
 using Rock.Model;
@@ -194,27 +195,7 @@ namespace Rock.Web.Cache
 
                 component.Render( this, entity, textWriter );
 
-#if REVIEW_WEBFORMS
-                using ( var htmlTextWriter = new System.Web.UI.HtmlTextWriter( textWriter ) )
-                {
-#pragma warning disable CS0618 // Type or member is obsolete
-                    component.ParentContextEntityBlock = null;
-                    component.Entity = entity;
-                    component.Render( this, htmlTextWriter );
-#pragma warning restore CS0618 // Type or member is obsolete
-                }
-#endif
-
                 var script = component.GetWrappedJavaScript( this, entity );
-
-#if REVIEW_WEBFORMS
-                if ( script.IsNullOrWhiteSpace() )
-                {
-#pragma warning disable CS0618 // Type or member is obsolete
-                    script = component.GetWrappedJavaScript( this );
-#pragma warning restore CS0618 // Type or member is obsolete
-                }
-#endif
 
                 return new RenderedBadgeBag
                 {

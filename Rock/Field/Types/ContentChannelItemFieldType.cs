@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -16,7 +16,6 @@
 //
 using System;
 using System.Collections.Generic;
-using System.Data.Entity;
 using System.Linq;
 #if WEBFORMS
 using System.Web.UI;
@@ -24,6 +23,7 @@ using System.Web.UI.WebControls;
 #endif
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.ViewModels.Utility;
@@ -76,14 +76,7 @@ namespace Rock.Field.Types
             var guid = privateValue.AsGuidOrNull();
             if ( guid.HasValue )
             {
-                using ( var rockContext = new RockContext() )
-                {
-                    var contentChannelItem = new ContentChannelItemService( rockContext ).GetNoTracking( guid.Value );
-                    if ( contentChannelItem != null )
-                    {
-                        return contentChannelItem.Title;
-                    }
-                }
+                return ContentChannelItemCache.Get( guid.Value )?.Title ?? string.Empty;
             }
 
             return string.Empty;
@@ -105,22 +98,14 @@ namespace Rock.Field.Types
             var guid = privateValue.AsGuidOrNull();
             if ( guid.HasValue )
             {
-                using ( var rockContext = new RockContext() )
+                var contentChannelItem = ContentChannelItemCache.Get( guid.Value );
+                if ( contentChannelItem != null )
                 {
-                    var contentChannelItem = new ContentChannelItemService( rockContext ).Queryable()
-                        .AsNoTracking()
-                        .Where( c => c.Guid == guid.Value )
-                        .Select( c => new ListItemBag
-                        {
-                            Value = c.Guid.ToString(),
-                            Text = c.Title
-                        } )
-                        .FirstOrDefault();
-
-                    if ( contentChannelItem != null )
+                    return new ListItemBag
                     {
-                        return contentChannelItem.ToCamelCaseJson( false, true );
-                    }
+                        Value = contentChannelItem.Guid.ToString(),
+                        Text = contentChannelItem.Title
+                    }.ToCamelCaseJson( false, true );
                 }
             }
 
@@ -203,7 +188,7 @@ namespace Rock.Field.Types
             var guid = value.AsGuidOrNull();
             if ( guid.HasValue )
             {
-                rockContext = rockContext ?? new RockContext();
+                rockContext = rockContext ?? RockApp.Current.CreateRockContext();
                 return new ContentChannelItemService( rockContext ).Get( guid.Value );
             }
 
@@ -223,9 +208,9 @@ namespace Rock.Field.Types
                 return null;
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
-                var contentChannelItemId = new ContentChannelItemService( rockContext ).GetId( guid.Value );
+                var contentChannelItemId = ContentChannelItemCache.GetId( guid.Value );
 
                 if ( !contentChannelItemId.HasValue )
                 {
@@ -245,6 +230,21 @@ namespace Rock.Field.Types
             return new List<ReferencedProperty>
             {
                 new ReferencedProperty( EntityTypeCache.GetId<ContentChannelItem>().Value, nameof( ContentChannelItem.Title ) ),
+            };
+        }
+
+        #endregion
+
+        #region Value Hinting
+
+        /// <inheritdoc/>
+        internal override FieldTypeHints GetFieldHints( Dictionary<string, string> privateConfigurationValues )
+        {
+            return new FieldTypeHints
+            {
+                IsCompleteList = false,
+                ValueFormat = "The guid of a single row in the ContentChannelItem table, not its id or idKey and not its name. Only one value is stored, so a comma separated list is not valid here. This is a single item, not the channel it belongs to and not the channel's type.",
+                Instructions = "To find the correct value, read the content channel items and take the guid of the one you want."
             };
         }
 
@@ -378,27 +378,10 @@ namespace Rock.Field.Types
             if ( picker != null )
             {
                 int? itemId = picker.ContentChannelItemId;
-                int? configurationChannelId = configurationValues.ContainsKey( CONTENT_CHANNEL_KEY ) ? configurationValues[CONTENT_CHANNEL_KEY].Value.AsIntegerOrNull() : null;
                 Guid? itemGuid = null;
                 if ( itemId.HasValue )
                 {
-                    using ( var rockContext = new RockContext() )
-                    {
-                        // If the configuration Content Channel has a selected value, include that value in the clause.
-                        if ( configurationChannelId.HasValue )
-                        {
-                            itemGuid = new ContentChannelItemService( rockContext ).Queryable().AsNoTracking()
-                                .Where( a => a.Id == itemId.Value
-                                && a.ContentChannelId == configurationChannelId.Value )
-                                .Select( a => ( Guid? ) a.Guid ).FirstOrDefault();
-                        }
-                        else
-                        {
-                            itemGuid = new ContentChannelItemService( rockContext ).Queryable().AsNoTracking()
-                                .Where( a => a.Id == itemId.Value )
-                                .Select( a => ( Guid? ) a.Guid ).FirstOrDefault();
-                        }
-                    }
+                    itemGuid = ContentChannelItemCache.GetGuid( itemId.Value );
                 }
 
                 return itemGuid?.ToString() ?? string.Empty;
@@ -422,10 +405,7 @@ namespace Rock.Field.Types
                 Guid? itemGuid = value.AsGuidOrNull();
                 if ( itemGuid.HasValue )
                 {
-                    using ( var rockContext = new RockContext() )
-                    {
-                        itemId = new ContentChannelItemService( rockContext ).Queryable().Where( a => a.Guid == itemGuid.Value ).Select( a => ( int? ) a.Id ).FirstOrDefault();
-                    }
+                    itemId = ContentChannelItemCache.GetId( itemGuid.Value );
                 }
 
                 picker.ContentChannelItemId = itemId;
@@ -440,9 +420,8 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public int? GetEditValueAsEntityId( Control control, Dictionary<string, ConfigurationValue> configurationValues )
         {
-            var guid = GetEditValue( control, configurationValues ).AsGuid();
-            var item = new ContentChannelItemService( new RockContext() ).Get( guid );
-            return item != null ? item.Id : ( int? ) null;
+            var guid = GetEditValue( control, configurationValues ).AsGuidOrNull();
+            return guid.HasValue ? ContentChannelItemCache.GetId( guid.Value ) : null;
         }
 
         /// <summary>
@@ -453,8 +432,10 @@ namespace Rock.Field.Types
         /// <param name="id">The identifier.</param>
         public void SetEditValueFromEntityId( Control control, Dictionary<string, ConfigurationValue> configurationValues, int? id )
         {
-            var item = new ContentChannelItemService( new RockContext() ).Get( id ?? 0 );
-            var guidValue = item != null ? item.Guid.ToString() : string.Empty;
+            var guidValue = id.HasValue
+                ? ContentChannelItemCache.Get( id.Value )?.Guid.ToString() ?? string.Empty
+                : string.Empty;
+
             SetEditValue( control, configurationValues, guidValue );
         }
 

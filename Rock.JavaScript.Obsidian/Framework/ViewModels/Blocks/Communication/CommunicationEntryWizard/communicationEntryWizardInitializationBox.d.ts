@@ -25,6 +25,7 @@ import { Guid } from "@Obsidian/Types";
 import { CommunicationEntryWizardCommunicationBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntryWizard/communicationEntryWizardCommunicationBag";
 import { CommunicationEntryWizardCommunicationTemplateDetailBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntryWizard/communicationEntryWizardCommunicationTemplateDetailBag";
 import { CommunicationEntryWizardCommunicationTemplateListItemBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntryWizard/communicationEntryWizardCommunicationTemplateListItemBag";
+import { CommunicationEntryWizardCustomTextBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntryWizard/communicationEntryWizardCustomTextBag";
 import { CommunicationEntryWizardRecipientBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntryWizard/communicationEntryWizardRecipientBag";
 import { SmsFromNumberListItemBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntryWizard/smsFromNumberListItemBag";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
@@ -51,6 +52,17 @@ export type CommunicationEntryWizardInitializationBox = {
 
     /** Gets or sets the communication topic values. */
     communicationTopicValues?: ListItemBag[] | null;
+
+    /**
+     * Gets or sets the URL the client should navigate to when the admin clicks
+     * "Create New Communication" after queueing a send. The URL targets the
+     * current page with no communication identifier so the wizard renders a
+     * fresh state on load.
+     */
+    createNewCommunicationUrl?: string | null;
+
+    /** Gets or sets the custom text content used by the communication entry wizard. */
+    customText?: CommunicationEntryWizardCustomTextBag | null;
 
     /**
      * Gets or sets the error message. A non-empty value indicates that
@@ -123,6 +135,9 @@ export type CommunicationEntryWizardInitializationBox = {
 
     /** Gets or sets the SMS supported MIME types. */
     smsSupportedMimeTypes?: string[] | null;
+
+    /** Gets or sets the standalone medium options the sender may directly choose in the picker. */
+    standaloneMediums?: ListItemBag[] | null;
 
     /** Gets or sets the communication templates. */
     templates?: CommunicationEntryWizardCommunicationTemplateListItemBag[] | null;

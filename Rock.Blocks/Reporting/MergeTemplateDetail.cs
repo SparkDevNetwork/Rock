@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -22,6 +22,7 @@ using System.IO;
 using System.Linq;
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Constants;
 using Rock.Data;
 using Rock.MergeTemplates;
@@ -87,7 +88,7 @@ namespace Rock.Blocks.Reporting
         /// <inheritdoc/>
         public override object GetObsidianBlockInitialization()
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var box = new DetailBlockBox<MergeTemplateBag, MergeTemplateDetailOptionsBag>();
 
@@ -225,7 +226,10 @@ namespace Rock.Blocks.Reporting
 
             if ( entity.Id == 0 )
             {
-                var categoryId = PageParameter( PageParameterKey.ParentCategoryId ).AsIntegerOrNull() ?? entity.CategoryId;
+                var parentCategoryKey = PageParameter( PageParameterKey.ParentCategoryId );
+                var categoryId = Rock.Utility.IdHasher.Instance.GetId( parentCategoryKey )
+                    ?? ( !PageCache.Layout.Site.DisablePredictableIds ? parentCategoryKey.AsIntegerOrNull() : null )
+                    ?? entity.CategoryId;
                 var category = CategoryCache.Get( categoryId );
                 bag.Category = category.ToListItemBag();
             }
@@ -371,7 +375,9 @@ namespace Rock.Blocks.Reporting
         private Dictionary<string, string> GetBoxNavigationUrls()
         {
             string url;
-            var categoryId = PageParameter( PageParameterKey.ParentCategoryId ).AsIntegerOrNull();
+            var parentCategoryKey = PageParameter( PageParameterKey.ParentCategoryId );
+            var categoryId = Rock.Utility.IdHasher.Instance.GetId( parentCategoryKey )
+                ?? ( !PageCache.Layout.Site.DisablePredictableIds ? parentCategoryKey.AsIntegerOrNull() : null );
 
             if ( categoryId.HasValue )
             {
@@ -379,7 +385,7 @@ namespace Rock.Blocks.Reporting
                 var qryParams = new Dictionary<string, string>();
                 if ( categoryId != 0 )
                 {
-                    qryParams[PageParameterKey.CategoryId] = categoryId.ToString();
+                    qryParams[PageParameterKey.CategoryId] = CategoryCache.Get( categoryId.Value )?.IdKey;
                 }
 
                 qryParams[PageParameterKey.ExpandedIds] = PageParameter( PageParameterKey.ExpandedIds );
@@ -402,7 +408,7 @@ namespace Rock.Blocks.Reporting
         /// <inheritdoc/>
         protected override string RenewSecurityGrantToken()
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var entity = GetInitialEntity( rockContext );
 
@@ -550,7 +556,7 @@ namespace Rock.Blocks.Reporting
         [BlockAction]
         public BlockActionResult Edit( string key )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 if ( !TryGetEntityForEditAction( key, rockContext, out var entity, out var actionError ) )
                 {
@@ -576,7 +582,7 @@ namespace Rock.Blocks.Reporting
         [BlockAction]
         public BlockActionResult Save( DetailBlockBox<MergeTemplateBag, MergeTemplateDetailOptionsBag> box )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var entityService = new MergeTemplateService( rockContext );
 
@@ -629,7 +635,7 @@ namespace Rock.Blocks.Reporting
         [BlockAction]
         public BlockActionResult Delete( string key )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var entityService = new MergeTemplateService( rockContext );
 
@@ -651,7 +657,7 @@ namespace Rock.Blocks.Reporting
                 var queryParams = new Dictionary<string, string>();
                 if ( categoryId != 0 )
                 {
-                    queryParams[PageParameterKey.CategoryId] = categoryId.ToString();
+                    queryParams[PageParameterKey.CategoryId] = CategoryCache.Get( categoryId )?.IdKey;
                 }
 
                 queryParams[PageParameterKey.ExpandedIds] = PageParameter( PageParameterKey.ExpandedIds );
@@ -670,7 +676,7 @@ namespace Rock.Blocks.Reporting
         [BlockAction]
         public BlockActionResult RefreshAttributes( DetailBlockBox<MergeTemplateBag, MergeTemplateDetailOptionsBag> box )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 if ( !TryGetEntityForEditAction( box.Entity.IdKey, rockContext, out var entity, out var actionError ) )
                 {
@@ -718,7 +724,7 @@ namespace Rock.Blocks.Reporting
         [BlockAction]
         public BlockActionResult ValidateFile( ListItemBag binaryFile, Guid? mergeTemplateTypeGuid )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var binaryFileId = binaryFile.GetEntityId<BinaryFile>( rockContext ) ?? 0;
                 var bag = GetMergeTemplateValidationBag( binaryFileId, mergeTemplateTypeGuid, rockContext );

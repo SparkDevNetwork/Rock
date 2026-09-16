@@ -1,5 +1,14 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
+    <div class="d-flex mb-spacing-sm">
+        <Toggle v-model="filterExpressionType"
+                trueText="All"
+                falseText="Any"
+                :btnSize="BtnSize.ExtraSmall"
+                onButtonActiveCssClass="btn-info"
+                offButtonActiveCssClass="btn-info" />
+    </div>
+
     <Grid :data="gridData"
           light
           keyField="guid"
@@ -12,58 +21,42 @@
         <DeleteColumn @click="onDelete" />
     </Grid>
 
-    <div class="d-flex justify-content-end">
-        <Toggle v-model="filterExpressionType"
-                trueText="All"
-                falseText="Any"
-                btnSize="sm"
-                onButtonActiveCssClass="btn-info"
-                offButtonActiveCssClass="btn-info" />
-    </div>
-
     <Modal v-model="isModalVisible"
            :title="`${isEditing ? 'Edit' : 'Add'} Cookie Filter`"
            saveText="Save"
            cancelText="Cancel"
            :onSave="onSave">
-        <div class="row form-row d-flex flex-wrap align-items-center">
-            <div class="col flex-grow-0">
-                <div class="form-group">
-                    <span class="text-nowrap">Where the key</span>
-                </div>
-            </div>
-            <div class="col">
-                <div class="form-group">
-                    <TextBox :modelValue="theFilter.key ?? ''"
-                             @update:modelValue="val => theFilter.key = val"
-                             rules="required"
-                             validationTitle="Key" />
-                </div>
-            </div>
-            <div class="col flex-grow-0">
-                <div class="form-group">
-                    <DropDownList
-                                  :modelValue="theFilter.comparisonType?.toString() ?? ''"
-                                  @update:modelValue="val => theFilter.comparisonType = Number(val)"
-                                  :items="comparisonTypes"
-                                  class="input-width-lg"
-                                  :showBlankItem="false" />
-                </div>
+        <div class="row">
+            <div class="col-sm-6">
+                <TextBox :modelValue="theFilter.key ?? ''"
+                         @update:modelValue="val => theFilter.key = val"
+                         label="Key"
+                         help="The cookie name to evaluate."
+                         rules="required"
+                         validationTitle="Key" />
             </div>
         </div>
-        <div class="row form-row d-flex flex-wrap align-items-center">
-            <div class="col flex-grow-0">
-                <div class="form-group">
-                    <span class="text-nowrap">the value</span>
-                </div>
+
+        <div class="row">
+            <div class="col-sm-3">
+                <DropDownList
+                              :modelValue="theFilter.comparisonType?.toString() ?? ''"
+                              @update:modelValue="val => theFilter.comparisonType = Number(val)"
+                              :items="comparisonTypes"
+                              label="Match Type"
+                              help="How the cookie value is compared."
+                              :showBlankItem="false" />
             </div>
-            <div class="col">
-                <div class="form-group">
-                    <TextBox :modelValue="theFilter.comparisonValue ?? ''"
-                             @update:modelValue="val => theFilter.comparisonValue = val"
-                             rules="required"
-                             validationTitle="Value" />
-                </div>
+        </div>
+
+        <div class="row">
+            <div class="col-sm-6">
+                <TextBox :modelValue="theFilter.comparisonValue ?? ''"
+                         @update:modelValue="val => theFilter.comparisonValue = val"
+                         label="Value"
+                         help="The value used to match the cookie."
+                         rules="required"
+                         validationTitle="Value" />
             </div>
         </div>
     </Modal>
@@ -83,6 +76,7 @@
     import { FilterExpressionType } from "@Obsidian/Enums/Reporting/filterExpressionType";
     import { CookieRequestFilterBag } from "@Obsidian/ViewModels/Blocks/Cms/RequestFilterDetail/cookieRequestFilterBag";
     import { ComparisonType } from "@Obsidian/Enums/Reporting/comparisonType";
+    import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
 
     const props = defineProps({
         modelValue: {
@@ -178,7 +172,5 @@
 
         isModalVisible.value = false;
     }
-
-    // #endregion Functions
 
 </script>

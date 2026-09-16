@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -29,14 +29,6 @@ namespace Rock.Attribute
         /// </summary>
         /// <returns>A list of all inherited AttributeCache objects.</returns>
         List<Rock.Web.Cache.AttributeCache> GetInheritedAttributes( Data.RockContext rockContext );
-
-        /// <summary>
-        /// Get any alternate Ids that should be used when loading attribute value for this entity.
-        /// </summary>
-        /// <returns>A list of any alternate entity Ids that should be used when loading attribute values.</returns>
-        [Obsolete( "Use GetAlternateEntityIdsByType instead." )]
-        [RockObsolete("1.13")]
-        List<int> GetAlternateEntityIds( Data.RockContext rockContext );
 
         /// <summary>
         /// Get any alternate Ids that should be used when loading attribute value for this entity.

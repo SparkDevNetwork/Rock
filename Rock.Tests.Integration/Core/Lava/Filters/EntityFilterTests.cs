@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -20,13 +20,14 @@ using System.Linq;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Lava;
 using Rock.Lava.Fluid;
 using Rock.Model;
 using Rock.Tests.Integration.TestData;
-using Rock.Tests.Shared;
-using Rock.Tests.Shared.Lava;
+using Rock.Tests.Integration.TestFramework.Lava;
+using Rock.Tests.Shared.Constants;
 using Rock.Web.Cache;
 
 namespace Rock.Tests.Integration.Core.Lava.Filters
@@ -134,7 +135,7 @@ namespace Rock.Tests.Integration.Core.Lava.Filters
 
         private DataView IsInDataView_GetTestDataView()
         {
-            var dataView = new DataViewService( new RockContext() ).Queryable()
+            var dataView = new DataViewService( RockApp.Current.CreateRockContext() ).Queryable()
                 .Where( dv => dv.Name == DataViewNameAdultMembersAndAttendees )
                 .FirstOrDefault();
 
@@ -295,7 +296,7 @@ Ted Decker's record can be identified by Guid '$tedDeckerGuid' or Id '$tedDecker
 
         private LavaDataDictionary AddTestPersonToMergeDictionary( Guid personGuid, LavaDataDictionary dictionary = null, string mergeKey = "CurrentPerson" )
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var tedDeckerPerson = new PersonService( rockContext ).Queryable()
                 .First( x => x.Guid == personGuid );
 

@@ -20,7 +20,7 @@ import CheckBox from "@Obsidian/Controls/checkBox.obs";
 import TextBox from "@Obsidian/Controls/textBox.obs";
 import EntityTypePicker from "@Obsidian/Controls/entityTypePicker.obs";
 import DropDownList from "@Obsidian/Controls/dropDownList.obs";
-import { ConfigurationValueKey } from "./attributeField.partial";
+import { ConfigurationKey } from "./attributeField.partial";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { asBoolean, asTrueOrFalseString } from "@Obsidian/Utility/booleanUtils";
 import { updateRefValue } from "@Obsidian/Utility/component";
@@ -41,19 +41,19 @@ export const EditComponent = defineComponent({
 
         // The selected Entity Type.
         const entityTypeGuid = computed((): string | null | undefined => {
-            const entityType = JSON.parse(props.configurationValues[ConfigurationValueKey.Entitytype] || "{}") as ListItemBag;
+            const entityType = JSON.parse(props.configurationValues[ConfigurationKey.Entitytype] || "{}") as ListItemBag;
             return entityType?.value;
         });
 
         // The options to choose from.
         const options = computed((): ListItemBag[] => {
-            const attributes = JSON.parse(props.configurationValues[ConfigurationValueKey.ClientValues] || "[]") as ListItemBag[];
+            const attributes = JSON.parse(props.configurationValues[ConfigurationKey.ClientValues] || "[]") as ListItemBag[];
             return attributes;
         });
 
         // Allow Multiple configuration value, sets control to a multi select check box list when true.
         const allowMultiple = computed((): boolean => {
-            const allowMultiple = asBoolean(props.configurationValues[ConfigurationValueKey.AllowMultiple]);
+            const allowMultiple = asBoolean(props.configurationValues[ConfigurationKey.AllowMultiple]);
             return allowMultiple;
         });
 
@@ -148,7 +148,7 @@ export const ConfigurationComponent = defineComponent({
 
         // Compute a consistent entity type string value to compare against.
         const entityTypeStringFromProps = computed((): string => {
-            const propsString = props.modelValue[ConfigurationValueKey.Entitytype];
+            const propsString = props.modelValue[ConfigurationKey.Entitytype];
             if (!propsString) {
                 return "{}";
             }
@@ -183,17 +183,17 @@ export const ConfigurationComponent = defineComponent({
 
             // Construct the new value that will be emitted if it is different
             // than the current value.
-            newValue[ConfigurationValueKey.AllowMultiple] = asTrueOrFalseString(allowMultiple.value);
-            newValue[ConfigurationValueKey.QualifierColumn] = qualifierColumn.value ?? "";
-            newValue[ConfigurationValueKey.QualifierValue] = qualifierValue.value ?? "";
-            newValue[ConfigurationValueKey.Entitytype] = JSON.stringify(entityType.value ?? {});
-            newValue[ConfigurationValueKey.ClientValues] = props.modelValue[ConfigurationValueKey.ClientValues];
+            newValue[ConfigurationKey.AllowMultiple] = asTrueOrFalseString(allowMultiple.value);
+            newValue[ConfigurationKey.QualifierColumn] = qualifierColumn.value ?? "";
+            newValue[ConfigurationKey.QualifierValue] = qualifierValue.value ?? "";
+            newValue[ConfigurationKey.Entitytype] = JSON.stringify(entityType.value ?? {});
+            newValue[ConfigurationKey.ClientValues] = props.modelValue[ConfigurationKey.ClientValues];
 
             // Compare the new value and the old value.
-            const anyValueChanged = newValue[ConfigurationValueKey.AllowMultiple] !== (props.modelValue[ConfigurationValueKey.AllowMultiple])
-                || newValue[ConfigurationValueKey.QualifierColumn] !== (props.modelValue[ConfigurationValueKey.QualifierColumn])
-                || newValue[ConfigurationValueKey.QualifierValue] !== (props.modelValue[ConfigurationValueKey.QualifierValue])
-                || newValue[ConfigurationValueKey.Entitytype] !== entityTypeStringFromProps.value;
+            const anyValueChanged = newValue[ConfigurationKey.AllowMultiple] !== (props.modelValue[ConfigurationKey.AllowMultiple])
+                || newValue[ConfigurationKey.QualifierColumn] !== (props.modelValue[ConfigurationKey.QualifierColumn])
+                || newValue[ConfigurationKey.QualifierValue] !== (props.modelValue[ConfigurationKey.QualifierValue])
+                || newValue[ConfigurationKey.Entitytype] !== entityTypeStringFromProps.value;
 
             // If any value changed then emit the new model value.
             if (anyValueChanged) {
@@ -220,9 +220,9 @@ export const ConfigurationComponent = defineComponent({
         // Watch for changes coming in from the parent component and update our
         // data to match the new information.
         watch(() => [props.modelValue, props.configurationProperties], () => {
-            allowMultiple.value = asBoolean(props.modelValue[ConfigurationValueKey.AllowMultiple]);
-            qualifierColumn.value = props.modelValue[ConfigurationValueKey.QualifierColumn];
-            qualifierValue.value = props.modelValue[ConfigurationValueKey.QualifierValue];
+            allowMultiple.value = asBoolean(props.modelValue[ConfigurationKey.AllowMultiple]);
+            qualifierColumn.value = props.modelValue[ConfigurationKey.QualifierColumn];
+            qualifierValue.value = props.modelValue[ConfigurationKey.QualifierValue];
             entityType.value = entityTypeFromProps.value;
         }, {
             immediate: true
@@ -237,10 +237,10 @@ export const ConfigurationComponent = defineComponent({
         });
 
         // Watch for changes in properties that only require a local UI update.
-        watch(allowMultiple, () => maybeUpdateConfiguration(ConfigurationValueKey.AllowMultiple, asTrueOrFalseString(allowMultiple.value)));
-        watch(qualifierColumn, () => maybeUpdateConfiguration(ConfigurationValueKey.QualifierColumn, qualifierColumn.value ?? ""));
-        watch(qualifierValue, () => maybeUpdateConfiguration(ConfigurationValueKey.QualifierValue, qualifierValue.value ?? ""));
-        watch(entityType, () => maybeUpdateConfiguration(ConfigurationValueKey.Entitytype, JSON.stringify(entityType.value ?? {})));
+        watch(allowMultiple, () => maybeUpdateConfiguration(ConfigurationKey.AllowMultiple, asTrueOrFalseString(allowMultiple.value)));
+        watch(qualifierColumn, () => maybeUpdateConfiguration(ConfigurationKey.QualifierColumn, qualifierColumn.value ?? ""));
+        watch(qualifierValue, () => maybeUpdateConfiguration(ConfigurationKey.QualifierValue, qualifierValue.value ?? ""));
+        watch(entityType, () => maybeUpdateConfiguration(ConfigurationKey.Entitytype, JSON.stringify(entityType.value ?? {})));
 
         return {
             allowMultiple,

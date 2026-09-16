@@ -1,0 +1,376 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <NotificationBox v-if="!isEditable" alertType="info">
+        You are not authorized to edit the styling for this application.
+    </NotificationBox>
+
+    <ContentSectionContainer :sidebar="false">
+        <ContentSection v-if="showMaui"
+                        title="Color Palette"
+                        icon="ti ti-palette"
+                        :order="1">
+            <ContentStack title="Interface Colors"
+                          description="Design your main interface with these colors. The values you provide will be available as custom CSS variables and utility classes.">
+                <div class="d-flex flex-wrap gap-2">
+                    <ColorPicker v-model="styles.interfaceStrongest" label="Interface-Strongest" :disabled="!isEditable" />
+                    <ColorPicker v-model="styles.interfaceStronger" label="Interface-Stronger" :disabled="!isEditable" />
+                    <ColorPicker v-model="styles.interfaceStrong" label="Interface-Strong" :disabled="!isEditable" />
+                    <ColorPicker v-model="styles.interfaceMedium" label="Interface-Medium" :disabled="!isEditable" />
+                    <ColorPicker v-model="styles.interfaceSoft" label="Interface-Soft" :disabled="!isEditable" />
+                    <ColorPicker v-model="styles.interfaceSofter" label="Interface-Softer" :disabled="!isEditable" />
+                    <ColorPicker v-model="styles.interfaceSoftest" label="Interface-Softest" :disabled="!isEditable" />
+                </div>
+            </ContentStack>
+
+            <ContentStack title="Accent Colors"
+                          description="Choose accent colors for enhancing your interface's look.">
+                <div class="d-flex flex-wrap gap-2">
+                    <ColorPicker v-model="styles.primaryStrong" label="Primary-Strong" :disabled="!isEditable" />
+                    <ColorPicker v-model="styles.primarySoft" label="Primary-Soft" :disabled="!isEditable" />
+                    <ColorPicker v-model="styles.secondaryStrong" label="Secondary-Strong" :disabled="!isEditable" />
+                    <ColorPicker v-model="styles.secondarySoft" label="Secondary-Soft" :disabled="!isEditable" />
+                    <ColorPicker v-model="styles.brandStrong" label="Brand-Strong" :disabled="!isEditable" />
+                    <ColorPicker v-model="styles.brandSoft" label="Brand-Soft" :disabled="!isEditable" />
+                </div>
+            </ContentStack>
+
+            <ContentStack title="Functional Colors"
+                          description="Customize status colors used throughout the application for success, info, danger, and warning states.">
+                <div class="d-flex flex-wrap gap-2">
+                    <ColorPicker v-model="styles.successStrong" label="Success-Strong" :disabled="!isEditable" />
+                    <ColorPicker v-model="styles.successSoft" label="Success-Soft" :disabled="!isEditable" />
+                    <ColorPicker v-model="styles.infoStrong" label="Info-Strong" :disabled="!isEditable" />
+                    <ColorPicker v-model="styles.infoSoft" label="Info-Soft" :disabled="!isEditable" />
+                    <ColorPicker v-model="styles.dangerStrong" label="Danger-Strong" :disabled="!isEditable" />
+                    <ColorPicker v-model="styles.dangerSoft" label="Danger-Soft" :disabled="!isEditable" />
+                    <ColorPicker v-model="styles.warningStrong" label="Warning-Strong" :disabled="!isEditable" />
+                    <ColorPicker v-model="styles.warningSoft" label="Warning-Soft" :disabled="!isEditable" />
+                </div>
+            </ContentStack>
+        </ContentSection>
+
+        <ContentSection title="Navigation Bar"
+                        icon="ti ti-layout-navbar"
+                        :order="2">
+            <ContentStack title="Header Appearance"
+                          description="Customize the look of the navigation bar at the top of the application.">
+                <div class="row">
+                    <div class="col-md-6">
+                        <ColorPicker v-model="styles.barBackgroundColor"
+                                     label="Background Color"
+                                     help="The background color of the navigation bar."
+                                     :disabled="!isEditable" />
+                    </div>
+                    <div class="col-md-6">
+                        <CheckBox v-model="styles.isNavBarTransparent"
+                                  label="Enable Transparency"
+                                  help="The bar background color must have an opacity less than 100% for this to work. (iOS Only)"
+                                  :disabled="!isEditable" />
+
+                        <DropDownList v-if="styles.isNavBarTransparent"
+                                      v-model="navBarBlurStyleValue"
+                                      label="Blur Style"
+                                      help="Select between the different blur styles of the navigation bar. (iOS Only)"
+                                      :items="navBarBlurStyleItems"
+                                      :disabled="!isEditable" />
+                    </div>
+                </div>
+            </ContentStack>
+
+            <ContentStack title="Header Images"
+                          description="Recommended height of 120px and minimum width of 560px.">
+                <div class="row">
+                    <div class="col-md-6">
+                        <ImageUploader v-model="styles.lightHeaderImage"
+                                       label="Light Navigation Bar Image"
+                                       help="Shown over a light navigation bar background."
+                                       :disabled="!isEditable" />
+                    </div>
+                    <div class="col-md-6">
+                        <ImageUploader v-model="styles.darkHeaderImage"
+                                       label="Dark Navigation Bar Image"
+                                       help="Shown over a dark navigation bar background."
+                                       :disabled="!isEditable" />
+                    </div>
+                </div>
+            </ContentStack>
+        </ContentSection>
+
+        <ContentSection v-if="showLegacy"
+                        title="Legacy Styles"
+                        icon="ti ti-history"
+                        isCollapsed
+                        :order="3">
+            <NotificationBox alertType="info">
+                These settings maintain backward compatibility with Xamarin Forms shells (V5 and earlier). See <a href="https://mobiledocs.rockrms.com/essentials/tips-and-tricks-1/migrating-to-.net-maui-v6" target="_blank" rel="noopener">Migrating to .NET MAUI</a> for more information.
+            </NotificationBox>
+
+            <ContentStack title="Interface Colors"
+                          description="Default colors for chrome, text, and backgrounds in the legacy shell.">
+                <div class="row">
+                    <div class="col-md-4">
+                        <ColorPicker v-model="styles.menuButtonColor"
+                                     label="Menu Button Color"
+                                     help="The color of the menu button in the title bar."
+                                     :disabled="!isEditable" />
+                    </div>
+                    <div class="col-md-4">
+                        <ColorPicker v-model="styles.activityIndicatorColor"
+                                     label="Activity Indicator Color"
+                                     help="The color used for activity indicators."
+                                     :disabled="!isEditable" />
+                    </div>
+                    <div class="col-md-4">
+                        <ColorPicker v-model="styles.textColor"
+                                     label="Text Color"
+                                     help="The default color to use for text in the application."
+                                     :disabled="!isEditable" />
+                    </div>
+                    <div class="col-md-4">
+                        <ColorPicker v-model="styles.headingColor"
+                                     label="Heading Color"
+                                     help="The default color to use for headings."
+                                     :disabled="!isEditable" />
+                    </div>
+                    <div class="col-md-4">
+                        <ColorPicker v-model="styles.backgroundColor"
+                                     label="Background Color"
+                                     help="The application background color."
+                                     :disabled="!isEditable" />
+                    </div>
+                </div>
+            </ContentStack>
+
+            <ContentStack title="Application Colors"
+                          description="Named colors used throughout buttons and controls in the legacy shell.">
+                <div class="row">
+                    <div class="col-md-4 col-sm-6">
+                        <ColorPicker v-model="styles.primary" label="Primary" help="The primary color for buttons and other controls." :disabled="!isEditable" />
+                    </div>
+                    <div class="col-md-4 col-sm-6">
+                        <ColorPicker v-model="styles.secondary" label="Secondary" help="Secondary color for various controls." :disabled="!isEditable" />
+                    </div>
+                    <div class="col-md-4 col-sm-6">
+                        <ColorPicker v-model="styles.success" label="Success" help="Color for success state controls." :disabled="!isEditable" />
+                    </div>
+                    <div class="col-md-4 col-sm-6">
+                        <ColorPicker v-model="styles.info" label="Info" help="Color for informational controls." :disabled="!isEditable" />
+                    </div>
+                    <div class="col-md-4 col-sm-6">
+                        <ColorPicker v-model="styles.danger" label="Danger" help="Color for dangerous actions." :disabled="!isEditable" />
+                    </div>
+                    <div class="col-md-4 col-sm-6">
+                        <ColorPicker v-model="styles.warning" label="Warning" help="Color for cautionary controls." :disabled="!isEditable" />
+                    </div>
+                    <div class="col-md-4 col-sm-6">
+                        <ColorPicker v-model="styles.light" label="Light" help="Color for light controls." :disabled="!isEditable" />
+                    </div>
+                    <div class="col-md-4 col-sm-6">
+                        <ColorPicker v-model="styles.dark" label="Dark" help="Color for dark controls." :disabled="!isEditable" />
+                    </div>
+                    <div class="col-md-4 col-sm-6">
+                        <ColorPicker v-model="styles.brand" label="Brand" help="Color for branding controls like the navigation header." :disabled="!isEditable" />
+                    </div>
+                </div>
+            </ContentStack>
+        </ContentSection>
+
+        <ContentSection title="Advanced"
+                        icon="ti ti-adjustments-cog"
+                        isCollapsed
+                        :order="4">
+            <ContentStack title="Style Framework"
+                          description="Controls which styling configuration is exposed for this application.">
+                <div class="row">
+                    <div class="col-md-6">
+                        <DropDownList v-model="mobileStyleFrameworkValue"
+                                      label="Style Framework"
+                                      help="Used to maintain backward compatibility with Xamarin Forms (Shell V5 and under) applications. New applications should use 'Default' for this value.<br /><br />Legacy (XF): Provides the legacy 'Styles' configuration.<br />Blended: Provides both the legacy (XF) and the new (MAUI) 'Styles' Configuration. Useful for migration.<br />Default: Provides the latest 'Styles' configuration."
+                                      :items="mobileStyleFrameworkItems"
+                                      :showBlankItem="false"
+                                      :disabled="!isEditable" />
+                    </div>
+                </div>
+            </ContentStack>
+
+            <ContentStack title="Custom CSS"
+                          description="Apply custom CSS to UI elements throughout the application.">
+                <div class="row">
+                    <div class="col-md-6">
+                        <NumberBox v-model="styles.fontSizeDefault"
+                                   label="Font Size Default"
+                                   help="The default font size."
+                                   :disabled="!isEditable" />
+                    </div>
+                </div>
+
+                <CodeEditor v-model="styles.cssStyles"
+                            label="CSS Styles"
+                            help="CSS Styles to apply to UI elements."
+                            mode="css"
+                            :editorHeight="600"
+                            :disabled="!isEditable" />
+            </ContentStack>
+        </ContentSection>
+    </ContentSectionContainer>
+
+    <NotificationBox v-if="successMessage" alertType="success" class="margin-t-md" v-text="successMessage" />
+    <NotificationBox v-if="errorMessage" alertType="danger" class="margin-t-md" v-text="errorMessage" />
+</template>
+
+<script setup lang="ts">
+    import { computed, onBeforeUnmount, PropType, ref, watch } from "vue";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import CodeEditor from "@Obsidian/Controls/codeEditor.obs";
+    import ColorPicker from "@Obsidian/Controls/colorPicker.obs";
+    import ContentSection from "@Obsidian/Controls/contentSection.obs";
+    import ContentSectionContainer from "@Obsidian/Controls/contentSectionContainer.obs";
+    import ContentStack from "@Obsidian/Controls/contentStack.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import ImageUploader from "@Obsidian/Controls/imageUploader.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import NumberBox from "@Obsidian/Controls/numberBox.obs";
+    import { useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { MobileApplicationDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Mobile/MobileApplicationDetail/mobileApplicationDetailOptionsBag";
+    import { MobileApplicationStylesBag } from "@Obsidian/ViewModels/Blocks/Mobile/MobileApplicationDetail/mobileApplicationStylesBag";
+    import { MobileStyleFrameworkValue } from "./types.partial";
+    import { normalizeStyles } from "./utils.partial";
+
+    const invokeBlockAction = useInvokeBlockAction();
+
+    const props = defineProps({
+        options: {
+            type: Object as PropType<MobileApplicationDetailOptionsBag>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "stylesSaved", value: MobileApplicationStylesBag): void;
+    }>();
+
+    // #region Values
+
+    const errorMessage = ref("");
+    const successMessage = ref("");
+
+    /**
+     * The styles tab edits a snapshot of the styles bag in place. There is
+     * no DetailBlock ValidPropertiesBox flow here — all fields ship
+     * together when Save is clicked — so a single ref is enough.
+     */
+    const styles = ref(normalizeStyles(props.options?.styles));
+
+    let successMessageTimerId: number | undefined;
+
+    // #endregion
+
+    // #region Computed Values
+
+    /** Whether the current user may edit the styles. */
+    const isEditable = computed((): boolean => props.options?.isEditable === true);
+
+    /** Picker / dropdown items sourced from the options bag. */
+    const mobileStyleFrameworkItems = computed((): ListItemBag[] => props.options?.mobileStyleFrameworks ?? []);
+    const navBarBlurStyleItems = computed((): ListItemBag[] => props.options?.iosBlurStyles ?? []);
+
+    /**
+     * The two dropdown controls bind to string values; the persisted bag
+     * uses ints. These writable computeds wrap the int / string boundary
+     * so the rest of the form can keep talking to `styles` directly.
+     */
+    const mobileStyleFrameworkValue = computed<string>({
+        get: () => String(styles.value.mobileStyleFramework ?? MobileStyleFrameworkValue.Standard),
+        set: (v) => {
+            styles.value.mobileStyleFramework = parseInt(v, 10);
+        }
+    });
+
+    const navBarBlurStyleValue = computed<string>({
+        get: () => String(styles.value.navBarBlurStyle ?? 0),
+        set: (v) => {
+            styles.value.navBarBlurStyle = parseInt(v, 10);
+        }
+    });
+
+    /** Whether the MAUI color palette section is visible. */
+    const showMaui = computed((): boolean => {
+        const framework = styles.value.mobileStyleFramework ?? MobileStyleFrameworkValue.Standard;
+        return framework === MobileStyleFrameworkValue.Standard || framework === MobileStyleFrameworkValue.Blended;
+    });
+
+    /** Whether the legacy Xamarin Forms color section is visible. */
+    const showLegacy = computed((): boolean => {
+        const framework = styles.value.mobileStyleFramework ?? MobileStyleFrameworkValue.Standard;
+        return framework === MobileStyleFrameworkValue.Legacy || framework === MobileStyleFrameworkValue.Blended;
+    });
+
+    // #endregion
+
+    // #region Functions
+
+    /** Builds a fresh styles bag snapshot to send to the server. */
+    function buildBag(): MobileApplicationStylesBag {
+        return { ...styles.value };
+    }
+
+    /**
+     * Persists the current styles snapshot via the `SaveStyles` block
+     * action. On success, bubbles the refreshed bag up to the parent so
+     * the option-bag's `styles` snapshot stays current, then surfaces a
+     * five-second success banner.
+     */
+    async function save(): Promise<boolean> {
+        errorMessage.value = "";
+        successMessage.value = "";
+
+        const bag = buildBag();
+        const result = await invokeBlockAction<MobileApplicationStylesBag>("SaveStyles", { bag });
+
+        if (result.isSuccess && result.data) {
+            emit("stylesSaved", result.data);
+            successMessage.value = "Changes have been saved.";
+
+            if (successMessageTimerId !== undefined) {
+                window.clearTimeout(successMessageTimerId);
+            }
+            successMessageTimerId = window.setTimeout(() => {
+                successMessage.value = "";
+                successMessageTimerId = undefined;
+            }, 5000);
+
+            return true;
+        }
+        else {
+            errorMessage.value = result.errorMessage ?? "Unable to save styles.";
+            return false;
+        }
+    }
+
+    defineExpose({ save });
+
+    // #endregion
+
+    // #region Watchers
+
+    /**
+     * Re-hydrates the editor whenever the parent supplies a new options
+     * bag (typically after a Save round-trip).
+     */
+    watch(() => props.options?.styles, (newStyles) => {
+        if (!newStyles) {
+            return;
+        }
+        styles.value = normalizeStyles(newStyles);
+    });
+
+    /** Clears the pending success-message timer when the panel unmounts. */
+    onBeforeUnmount(() => {
+        if (successMessageTimerId !== undefined) {
+            window.clearTimeout(successMessageTimerId);
+        }
+    });
+
+    // #endregion
+</script>

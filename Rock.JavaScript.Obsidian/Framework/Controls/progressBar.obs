@@ -22,7 +22,7 @@
         },
 
         progressBarType: {
-            type: String as PropType<"default" | "success" | "info" | "warning" | "danger">,
+            type: String as PropType<"default" | "success" | "info" | "warning" | "danger" | "chart">,
             default: "default"
         }
     });

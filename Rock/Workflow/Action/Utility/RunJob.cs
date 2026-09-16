@@ -36,7 +36,11 @@ namespace Rock.Workflow.Action
     [Export( typeof( ActionComponent ) )]
     [ExportMetadata( "ComponentName", "Job Run" )]
 
-    [CustomDropdownListField( "Job", "The job to run.", "SELECT j.[Guid] AS [Value], j.[Name] AS [Text] From [ServiceJob] j ORDER BY j.[Name]", true, "", "", 0)]
+    [CustomDropdownListField( "Job",
+        Description = "The job to run.",
+        ListSource = "SELECT j.[Guid] AS [Value], j.[Name] AS [Text] From [ServiceJob] j ORDER BY j.[Name]", 
+        IsRequired = true,
+        Order = 0 )]
     [Rock.SystemGuid.EntityTypeGuid( "9269DD7C-027B-4032-9F4C-9A3CAB6FF841")]
     public class RunJob : ActionComponent
     {

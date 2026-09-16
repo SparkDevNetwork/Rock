@@ -21,6 +21,7 @@
 // </copyright>
 //
 
+using Rock.Configuration;
 using Rock.Model;
 using Rock.SystemGuid;
 
@@ -35,6 +36,6 @@ namespace Rock.Rest.Controllers
         /// <summary>
         /// Initializes a new instance of the <see cref="LearningGradingSystemScalesController"/> class.
         /// </summary>
-        public LearningGradingSystemScalesController() : base( new Rock.Model.LearningGradingSystemScaleService( new Rock.Data.RockContext() ) ) { } 
+        public LearningGradingSystemScalesController() : base( new Rock.Model.LearningGradingSystemScaleService( RockApp.Current.CreateRockContext() ) ) { } 
     }
 }

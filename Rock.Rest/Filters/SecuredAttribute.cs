@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -29,6 +29,7 @@ using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.Filters;
 #endif
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
@@ -123,7 +124,7 @@ namespace Rock.Rest.Filters
             if ( principal != null && principal.Identity != null )
 #endif
             {
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     string userName = principal.Identity.Name;
                     UserLogin userLogin = null;
@@ -278,7 +279,7 @@ namespace Rock.Rest.Filters
 
                 if ( appId.HasValue )
                 {
-                    using ( var rockContext = new RockContext() )
+                    using ( var rockContext = RockApp.Current.CreateRockContext() )
                     {
                         var appUser = Mobile.MobileHelper.GetMobileApplicationUser( appId.Value, mobileApiKey, rockContext );
 

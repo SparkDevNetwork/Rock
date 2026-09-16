@@ -5,7 +5,7 @@
             <Kpi :value="`${kpis.openRate}%`"
                  label="Open Rate"
                  iconCssClass="ti ti-mail-opened"
-                 color="blue"
+                 color="indigo"
                  :colorShade="700"
                  :isCard="true">
                 <template #secondaryLabel>

@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -20,11 +20,13 @@ using System.Linq;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Tests.Integration.TestData;
+using Rock.Tests.Integration.TestFramework.Database;
 using Rock.Tests.Shared;
-using Rock.Tests.Shared.TestFramework;
+using Rock.Tests.Shared.Constants;
 using Rock.Web.Cache;
 
 namespace Rock.Tests.Integration.Issues
@@ -47,7 +49,7 @@ namespace Rock.Tests.Integration.Issues
 
             WithAttributeValueRestorer( tedDeckerPersonId, baptismDateAttributeGuid, () =>
             {
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     DeleteAttributeValue( rockContext, baptismDateAttributeGuid, tedDeckerPersonId );
 
@@ -66,7 +68,7 @@ namespace Rock.Tests.Integration.Issues
 
             WithAttributeValueRestorer( tedDeckerPersonId, baptismDateAttributeGuid, () =>
             {
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     UpdateAttributeValue( rockContext, baptismDateAttributeGuid, tedDeckerPersonId, null );
 
@@ -85,7 +87,7 @@ namespace Rock.Tests.Integration.Issues
 
             WithAttributeValueRestorer( tedDeckerPersonId, baptismDateAttributeGuid, () =>
             {
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     UpdateAttributeValue( rockContext, baptismDateAttributeGuid, tedDeckerPersonId, string.Empty );
 
@@ -104,7 +106,7 @@ namespace Rock.Tests.Integration.Issues
 
             WithAttributeValueRestorer( tedDeckerPersonId, baptismDateAttributeGuid, () =>
             {
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     UpdateAttributeValue( rockContext, baptismDateAttributeGuid, tedDeckerPersonId, "2030-12-31" );
 
@@ -123,7 +125,7 @@ namespace Rock.Tests.Integration.Issues
 
             WithAttributeValueRestorer( tedDeckerPersonId, baptismDateAttributeGuid, () =>
             {
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     UpdateAttributeValue( rockContext, baptismDateAttributeGuid, tedDeckerPersonId, "2001-09-13" );
 
@@ -146,7 +148,7 @@ namespace Rock.Tests.Integration.Issues
 
             WithAttributeValueRestorer( tedDeckerPersonId, baptismDateAttributeGuid, () =>
             {
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     DeleteAttributeValue( rockContext, baptismDateAttributeGuid, tedDeckerPersonId );
 
@@ -165,7 +167,7 @@ namespace Rock.Tests.Integration.Issues
 
             WithAttributeValueRestorer( tedDeckerPersonId, baptismDateAttributeGuid, () =>
             {
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     UpdateAttributeValue( rockContext, baptismDateAttributeGuid, tedDeckerPersonId, null );
 
@@ -184,7 +186,7 @@ namespace Rock.Tests.Integration.Issues
 
             WithAttributeValueRestorer( tedDeckerPersonId, baptismDateAttributeGuid, () =>
             {
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     UpdateAttributeValue( rockContext, baptismDateAttributeGuid, tedDeckerPersonId, string.Empty );
 
@@ -203,7 +205,7 @@ namespace Rock.Tests.Integration.Issues
 
             WithAttributeValueRestorer( tedDeckerPersonId, baptismDateAttributeGuid, () =>
             {
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     UpdateAttributeValue( rockContext, baptismDateAttributeGuid, tedDeckerPersonId, "2030-12-31" );
 
@@ -222,7 +224,7 @@ namespace Rock.Tests.Integration.Issues
 
             WithAttributeValueRestorer( tedDeckerPersonId, baptismDateAttributeGuid, () =>
             {
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     UpdateAttributeValue( rockContext, baptismDateAttributeGuid, tedDeckerPersonId, "2001-09-13" );
 
@@ -333,7 +335,7 @@ namespace Rock.Tests.Integration.Issues
         {
             AttributeValue originalAttributeValue = null;
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var attributeValueService = new AttributeValueService( rockContext );
 
@@ -349,7 +351,7 @@ namespace Rock.Tests.Integration.Issues
             }
             finally
             {
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     var attributeValueService = new AttributeValueService( rockContext );
                     var currentAttributeValue = attributeValueService

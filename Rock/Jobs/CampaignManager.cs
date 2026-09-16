@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -16,7 +16,10 @@
 //
 using System;
 using System.Collections.Generic;
-using System.Linq;using Rock;
+using System.Linq;
+
+using Rock;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Utility;
@@ -140,7 +143,7 @@ namespace Rock.Jobs
 
             int recordsProcessed = 0;
 
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var connectionOpportunityService = new ConnectionOpportunityService( rockContext );
             var personAliasService = new PersonAliasService( rockContext );
             var entitySetItemService = new EntitySetItemService( rockContext );
@@ -236,7 +239,7 @@ namespace Rock.Jobs
         {
             var defaultCampus = entityItemPersonAlias.Person.GetCampus();
 
-            using ( var insertRockContext = new RockContext() )
+            using ( var insertRockContext = RockApp.Current.CreateRockContext() )
             {
                 try
                 {

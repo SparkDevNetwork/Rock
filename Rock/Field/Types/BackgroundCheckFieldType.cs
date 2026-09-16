@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -21,6 +21,8 @@ using System.Linq;
 #if WEBFORMS
 using System.Web.UI;
 #endif
+
+using Rock.Configuration;
 using Rock.Web.Cache;
 using Rock.Data;
 using Rock.Model;
@@ -91,7 +93,7 @@ namespace Rock.Field.Types
 
             if ( privateConfigurationValues.ContainsKey( BINARY_FILE_TYPE ) )
             {
-                var binaryFileTypeValue = publicConfigurationValues[BINARY_FILE_TYPE].FromJsonOrNull<ListItemBag>();
+                var binaryFileTypeValue = privateConfigurationValues[BINARY_FILE_TYPE].FromJsonOrNull<ListItemBag>();
 
                 if ( binaryFileTypeValue != null )
                 {
@@ -188,8 +190,8 @@ namespace Rock.Field.Types
                 return publicValue;
             }
 
-            // All providers except PMM must include EntityTypeId
-            return entityType.Guid == SystemGuid.EntityType.PROTECT_MY_MINISTRY_PROVIDER.AsGuid()
+            // All providers except the legacy PMM v1 (removed in Rock v20) must include EntityTypeId.
+            return entityType.Guid == SystemGuid.EntityType.PROTECT_MY_MINISTRY_PROVIDER_LEGACY.AsGuid()
                 ? valueSplit[2]
                 : $"{entityType.Id},{valueSplit[2]}";
         }
@@ -240,7 +242,7 @@ namespace Rock.Field.Types
         {
             if ( binaryFileGuid.HasValue && !binaryFileGuid.Value.IsEmpty() )
             {
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     var fileName = new BinaryFileService( rockContext )
                     .Queryable()
@@ -271,7 +273,7 @@ namespace Rock.Field.Types
 
             if ( guid.HasValue && !guid.Value.IsEmpty() )
             {
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     var fileName = new BinaryFileService( rockContext )
                     .Queryable()
@@ -306,15 +308,43 @@ namespace Rock.Field.Types
             var internalValue = new PublicValueItem();
 
             // If the value is a single guid, the privateValue is just the BinaryFileGuid and
-            // the provider is the PMM legacy provider.
+            // the provider is the legacy PMM v1 provider.
             if ( Guid.TryParse( privateValue, out Guid binaryFileGuid ) )
             {
-                var entityType = EntityTypeCache.Get( Rock.SystemGuid.EntityType.PROTECT_MY_MINISTRY_PROVIDER.AsGuid() );
+                internalValue.IsLegacyProtectMyMinistry = true;
                 internalValue.BinaryFileGuid = binaryFileGuid;
-                internalValue.ProviderEntityTypeGuid = entityType.Guid;
-                internalValue.ProviderEntityTypeId = entityType.Id;
-                internalValue.ProviderName = entityType.FriendlyName;
                 internalValue.FileName = GetFileName( binaryFileGuid );
+
+                /*
+                    7/13/26 - NA
+
+                    PMM (v1) was removed in Rock v20 and its EntityType row is deleted
+                    by the sunset migration. Populate ProviderEntityTypeGuid from the
+                    hard-coded legacy Guid constant so the resulting URL still carries a
+                    non-empty EntityTypeGuid parameter to GetBackgroundCheck.ashx (which
+                    recognizes the legacy PMM Guid and streams the BinaryFile directly).
+
+                    The Id and FriendlyName are only available while the EntityType row
+                    still exists; when it is gone we substitute a friendly literal so the
+                    UI has something to render.
+
+                    Reason: Historical AttributeValue rows written before the v20
+                    removal store just the BinaryFileGuid and no comma-delimited
+                    provider prefix, so we still need to parse them without crashing
+                    AND still round-trip enough provider info to view the file.
+                */
+                internalValue.ProviderEntityTypeGuid = Rock.SystemGuid.EntityType.PROTECT_MY_MINISTRY_PROVIDER_LEGACY.AsGuid();
+
+                var entityType = EntityTypeCache.Get( Rock.SystemGuid.EntityType.PROTECT_MY_MINISTRY_PROVIDER_LEGACY.AsGuid() );
+                if ( entityType != null )
+                {
+                    internalValue.ProviderEntityTypeId = entityType.Id;
+                    internalValue.ProviderName = entityType.FriendlyName;
+                }
+                else
+                {
+                    internalValue.ProviderName = "Protect My Ministry (Legacy)";
+                }
 
                 return internalValue;
             }
@@ -358,6 +388,33 @@ namespace Rock.Field.Types
 
         #endregion
 
+        #region Persistence
+
+        /// <inheritdoc/>
+        public override PersistedValues GetPersistedValues( string privateValue, Dictionary<string, string> privateConfigurationValues, IDictionary<string, object> cache )
+        {
+            if ( privateValue.IsNullOrWhiteSpace() )
+            {
+                return PersistedValues.Empty();
+            }
+
+            // This is not perfect, as it is still 2 queries. However, it is
+            // better than the original 4. Deeper work would be required to
+            // fully bring this down to 1 query.
+            var textValue = GetTextValue( privateValue, privateConfigurationValues );
+            var htmlValue = GetHtmlValue( privateValue, privateConfigurationValues );
+
+            return new PersistedValues
+            {
+                TextValue = textValue,
+                HtmlValue = htmlValue,
+                CondensedTextValue = textValue.Truncate( CondensedTruncateLength ),
+                CondensedHtmlValue = htmlValue,
+            };
+        }
+
+        #endregion
+
         #region IEntityReferenceFieldType
 
         /// <inheritdoc/>
@@ -370,7 +427,7 @@ namespace Rock.Field.Types
                 return null;
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var fileId = new BinaryFileService( rockContext ).GetId( guid.Value );
 
@@ -393,6 +450,28 @@ namespace Rock.Field.Types
             {
                 new ReferencedProperty( EntityTypeCache.GetId<BinaryFile>().Value, nameof( BinaryFile.FileName ) ),
             };
+        }
+
+        #endregion
+
+        #region Value Hinting
+
+        /// <inheritdoc/>
+        /// <remarks>
+        /// Adds what this field type expects to the shared description of a
+        /// binary file reference. The guid alone does not say which files make sense
+        /// here, and the wrong kind of file saves without complaint.
+        /// </remarks>
+        internal override FieldTypeHints GetFieldHints( Dictionary<string, string> privateConfigurationValues )
+        {
+            var hints = base.GetFieldHints( privateConfigurationValues );
+
+            if ( hints != null )
+            {
+                hints.ValueFormat += " The file is a background check document, which is normally written by the background check provider rather than chosen by hand.";
+            }
+
+            return hints;
         }
 
         #endregion
@@ -450,7 +529,7 @@ namespace Rock.Field.Types
                 if ( binaryFileId.HasValue )
                 {
                     string binaryFileGuidString = string.Empty;
-                    using ( var rockContext = new RockContext() )
+                    using ( var rockContext = RockApp.Current.CreateRockContext() )
                     {
                         Guid? binaryFileGuid = new BinaryFileService( rockContext ).Queryable().AsNoTracking().Where( a => a.Id == binaryFileId.Value ).Select( a => ( Guid? ) a.Guid ).FirstOrDefault();
                         if ( binaryFileGuid.HasValue )
@@ -459,10 +538,10 @@ namespace Rock.Field.Types
                         }
                     }
 
-                    // Only the legacy PMM provider can store only the Guid,
-                    // everything else must store the <provider EntityTypeId>,<Binary File Guid|RecordKey>
+                    // Only the legacy PMM v1 provider (removed in Rock v20) stored just the Guid;
+                    // everything else must store the <provider EntityTypeId>,<Binary File Guid|RecordKey>.
                     Guid? entityTypeGuid = backgroundCheckDocument.ProviderEntityTypeGuid;
-                    if ( entityTypeGuid.HasValue && entityTypeGuid.Value == Rock.SystemGuid.EntityType.PROTECT_MY_MINISTRY_PROVIDER.AsGuid() )
+                    if ( entityTypeGuid.HasValue && entityTypeGuid.Value == Rock.SystemGuid.EntityType.PROTECT_MY_MINISTRY_PROVIDER_LEGACY.AsGuid() )
                     {
                         return binaryFileGuidString;
                     }
@@ -502,12 +581,12 @@ namespace Rock.Field.Types
                 return;
             }
 
-            // Legacy PMM Background Check Documents are stored with only the Guid.
+            // Legacy PMM v1 Background Check Documents (pre-Rock v20) are stored with only the Guid.
             Guid? binaryFileGuid = value.AsGuidOrNull();
             if ( binaryFileGuid.HasValue )
             {
                 int? binaryFileId = null;
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     binaryFileId = new BinaryFileService( rockContext )
                         .Queryable()
@@ -517,7 +596,7 @@ namespace Rock.Field.Types
                 }
 
                 backgroundCheckDocument.BinaryFileId = binaryFileId;
-                backgroundCheckDocument.ProviderEntityTypeGuid = Rock.SystemGuid.EntityType.PROTECT_MY_MINISTRY_PROVIDER.AsGuid();
+                backgroundCheckDocument.ProviderEntityTypeGuid = Rock.SystemGuid.EntityType.PROTECT_MY_MINISTRY_PROVIDER_LEGACY.AsGuid();
                 return;
             }
 
@@ -548,7 +627,7 @@ namespace Rock.Field.Types
             if ( binaryFileGuidFromValue.HasValue )
             {
                 int? binaryFileId = null;
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     binaryFileId = new BinaryFileService( rockContext )
                         .Queryable()

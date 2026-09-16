@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -15,6 +15,8 @@
 // </copyright>
 //
 
+using System;
+
 using Newtonsoft.Json;
 
 namespace Rock.AI.OpenAI.OpenAIApiClient.Classes.Moderations
@@ -22,6 +24,8 @@ namespace Rock.AI.OpenAI.OpenAIApiClient.Classes.Moderations
     /// <summary>
     /// The Response object for a moderation result.
     /// </summary>
+    [Obsolete( "This feature has been deprecated and is no longer used by Rock. AI configuration happens automatically." )]
+    [RockObsolete( "21.0" )]
     internal class OpenAIModerationsResponseResults
     {
         #region Properties

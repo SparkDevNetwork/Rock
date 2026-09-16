@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -80,15 +80,9 @@ namespace Rock.Lava.Blocks
                 return;
             }
 
-            ContentChannelItem contentChannelItem = null;
-            var rockContext = LavaHelper.GetRockContextFromLavaContext( context );
-            contentChannelItem = new ContentChannelItemService( rockContext )
-                .Queryable( "ContentChannel" )
-                .AsNoTracking()
-                .FirstOrDefault( c => c.Id == contentChannelItemId.Value );
+            var contentChannelItem = ContentChannelItemCache.Get( contentChannelItemId.Value );
+            var contentChannel = contentChannelItem?.ContentChannel;
 
-
-            ContentChannel contentChannel = contentChannelItem.ContentChannel;
             if ( contentChannelItem == null || contentChannel == null )
             {
                 // The caller supplied an invalid ContentChannelItem ID; nothing to do.

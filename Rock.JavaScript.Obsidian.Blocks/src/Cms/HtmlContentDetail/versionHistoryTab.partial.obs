@@ -1,0 +1,114 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Grid :data="gridData"
+          keyField="idKey"
+          itemTerm="Version"
+          liveUpdates>
+        <TextColumn name="version"
+                    title="Version"
+                    field="versionText"
+                    sortField="version" />
+
+        <Column name="lastModified"
+                title="Last Modified"
+                field="modifiedDateTime"
+                width="30%">
+            <template #format="{ row }">
+                {{ row.modifiedByName }}
+                <span class="text-muted ml-1">({{ getElapsedText(row.modifiedDateTime as string) }})</span>
+            </template>
+        </Column>
+
+        <TextColumn name="approvedBy"
+                    title="Approved By"
+                    field="approvedByName" />
+
+        <DateColumn name="start"
+                    title="Start"
+                    field="startDateTime" />
+
+        <DateColumn name="end"
+                    title="End"
+                    field="expireDateTime" />
+
+        <Column name="select"
+                width="120px"
+                itemClass="text-right">
+            <template #format="{ row }">
+                <HighlightLabel v-if="row.isCurrent" labelType="info">Current</HighlightLabel>
+
+                <RockButton v-else
+                            :btnType="BtnType.Default"
+                            :btnSize="BtnSize.Small"
+                            @click="onSelectClick(row.idKey as string)">
+                    Select
+                </RockButton>
+            </template>
+        </Column>
+    </Grid>
+</template>
+
+<script setup lang="ts">
+    import { computed, PropType } from "vue";
+    import Grid, { Column, DateColumn, TextColumn } from "@Obsidian/Controls/grid";
+    import HighlightLabel from "@Obsidian/Controls/highlightLabel.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
+    import { BtnType } from "@Obsidian/Enums/Controls/btnType";
+    import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
+    import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
+    import { HtmlContentVersionBag } from "@Obsidian/ViewModels/Blocks/Cms/HtmlContentDetail/htmlContentVersionBag";
+
+    const props = defineProps({
+        /** The version history rows, newest first. */
+        versions: {
+            type: Array as PropType<HtmlContentVersionBag[]>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "selectVersion", idKey: string): void;
+    }>();
+
+    // #region Computed Values
+
+    /** The versions shaped as in-memory grid rows. */
+    const gridData = computed((): GridDataBag => {
+        return {
+            rows: props.versions.map(version => ({ ...version }))
+        };
+    });
+
+    // #endregion Computed Values
+
+    // #region Event Handlers
+
+    /**
+     * Asks the parent to load the chosen version into the editor.
+     *
+     * @param idKey The identifier key of the version.
+     */
+    function onSelectClick(idKey: string): void {
+        emit("selectVersion", idKey);
+    }
+
+    // #endregion Event Handlers
+
+    // #region Functions
+
+    /**
+     * Formats a modified date as elapsed time, such as "3 Days Ago".
+     *
+     * @param dateTime The ISO 8601 date.
+     */
+    function getElapsedText(dateTime: string | null | undefined): string {
+        if (!dateTime) {
+            return "";
+        }
+
+        return RockDateTime.parseISO(dateTime)?.toElapsedString() ?? "";
+    }
+
+    // #endregion Functions
+</script>

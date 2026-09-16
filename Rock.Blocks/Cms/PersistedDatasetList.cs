@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -22,6 +22,7 @@ using System.Data.Entity;
 using System.Linq;
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Obsidian.UI;
@@ -145,7 +146,8 @@ namespace Rock.Blocks.Cms
                 AllowManualRefresh = p.AllowManualRefresh,
                 ResultSize = p.ResultData != null ? p.ResultData.Length / 1024 : 0,
                 IsSystem = p.IsSystem,
-                IsActive = p.IsActive
+                IsActive = p.IsActive,
+                Status = p.Status
             } );
         }
 
@@ -193,7 +195,8 @@ namespace Rock.Blocks.Cms
                 */
                 .AddField( "resultSize", a => a.ResultSize )
                 .AddField( "isSystem", a => a.IsSystem )
-                .AddField( "isActive", a => a.IsActive );
+                .AddField( "isActive", a => a.IsActive )
+                .AddField( "status", a => a.Status);
         }
 
         #endregion
@@ -203,7 +206,7 @@ namespace Rock.Blocks.Cms
         [BlockAction]
         public BlockActionResult RefreshDataset( string datasetId )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var persistedDatasetService = new PersistedDatasetService( rockContext );
                 var persistedDataset = persistedDatasetService.Get( datasetId );
@@ -260,7 +263,7 @@ namespace Rock.Blocks.Cms
         [BlockAction]
         public BlockActionResult PreviewDataset( string datasetId )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var persistedDatasetService = new PersistedDatasetService( rockContext );
                 var persistedDataset = persistedDatasetService.GetNoTracking( datasetId );
@@ -326,7 +329,7 @@ namespace Rock.Blocks.Cms
         [BlockAction]
         public BlockActionResult Delete( string key )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var entityService = new PersistedDatasetService( rockContext );
                 var entity = entityService.Get( key, !PageCache.Layout.Site.DisablePredictableIds );

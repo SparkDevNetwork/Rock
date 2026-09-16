@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
@@ -451,7 +451,7 @@ namespace Rock.CodeGeneration.Pages
         /// Reports the rock code warnings
         /// and returns true if there are warnings.
         /// </summary>
-        public bool ReportRockCodeWarnings()
+        public bool ReportRockCodeWarnings()    
         {
             bool hasWarnings = false;
             StringBuilder rockObsoleteWarnings = new StringBuilder();
@@ -599,7 +599,6 @@ namespace Rock.CodeGeneration.Pages
                             "Rock.Field.Types.EnumFieldType`1._EnumValues",
                             "Rock.Financial.TestGateway.MostRecentException",
                             "Rock.Financial.TestRedirectionGateway.MostRecentException",
-                            "Rock.Security.BackgroundCheck.ProtectMyMinistry._httpStatusCode",
                             "Rock.Security.ExternalAuthentication.Twitter._oauthToken",
                             "Rock.Security.ExternalAuthentication.Twitter._oauthTokenSecret",
                             "Rock.Security.ExternalAuthentication.Twitter._returnUrl",
@@ -942,6 +941,9 @@ GO
                 && type != typeof( Rock.Model.Attribute )
                 && type != typeof( Rock.Model.AttributeValue );
 
+            var obsolete = type.GetCustomAttribute<ObsoleteAttribute>();
+            var rockObsolete = type.GetCustomAttribute<RockObsolete>();
+
             var properties = GetEntityProperties( type, true, true );
 
             var sb = new StringBuilder();
@@ -992,6 +994,8 @@ GO
             sb.AppendFormat( "        /// Initializes a new instance of the <see cref=\"{0}Service\"/> class" + Environment.NewLine, type.Name );
             sb.AppendLine( "        /// </summary>" );
             sb.AppendLine( "        /// <param name=\"context\">The context.</param>" );
+            sb.AppendLine( "        [System.CodeDom.Compiler.GeneratedCode( \"Rock.CodeGeneration\", \"\" )]" );
+            sb.AppendLine( "        [System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]" );
 
             sb.AppendFormat( "        public {0}Service({1} context) : base(context)" + Environment.NewLine, type.Name, dbContextFullName );
             sb.AppendLine( "        {" );
@@ -1015,9 +1019,13 @@ GO
                 sb.AppendLine( "        /// or selecting values. Do <b>not</b> use it for accessing the" );
                 sb.AppendLine( "        /// attributes after the entity has been loaded." );
                 sb.AppendLine( "        /// </summary>" );
+                sb.AppendLine( "        [System.CodeDom.Compiler.GeneratedCode( \"Rock.CodeGeneration\", \"\" )]" );
+                sb.AppendLine( "        [System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]" );
                 sb.AppendLine( $"        public virtual ICollection<{type.Name}QueryableAttributeValue> {type.Name}AttributeValues {{ get; set; }} " );
                 sb.AppendLine();
                 sb.AppendLine( "        /// <inheritdoc/>" );
+                sb.AppendLine( "        [System.CodeDom.Compiler.GeneratedCode( \"Rock.CodeGeneration\", \"\" )]" );
+                sb.AppendLine( "        [System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]" );
                 sb.AppendLine( $"        public class {type.Name}QueryableAttributeValue : QueryableAttributeValue" );
                 sb.AppendLine( "        {" );
                 sb.AppendLine( "        }" );
@@ -1028,7 +1036,20 @@ GO
     /// <summary>
     /// Generated Extension Methods
     /// </summary>
-    public static partial class {0}ExtensionMethods
+" );
+
+            if ( obsolete != null && obsolete.IsError == false )
+            {
+                if ( rockObsolete != null )
+                {
+                    sb.AppendLine( $"    [RockObsolete( \"{rockObsolete.Version}\" )]" );
+                }
+
+                sb.AppendLine( $"    [System.Obsolete( \"{obsolete.Message}\" )]" );
+            }
+
+
+            sb.AppendFormat( @"    public static partial class {0}ExtensionMethods
     {{
         /// <summary>
         /// Clones this {0} object to a new {0} object
@@ -1036,6 +1057,8 @@ GO
         /// <param name=""source"">The source.</param>
         /// <param name=""deepCopy"">if set to <c>true</c> a deep copy is made. If false, only the basic entity properties are copied.</param>
         /// <returns></returns>
+        [System.CodeDom.Compiler.GeneratedCode( ""Rock.CodeGeneration"", """" )]
+        [System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
         public static {0} Clone( this {0} source, bool deepCopy )
         {{
             if (deepCopy)
@@ -1055,6 +1078,8 @@ GO
         /// </summary>
         /// <param name=""source"">The source.</param>
         /// <returns></returns>
+        [System.CodeDom.Compiler.GeneratedCode( ""Rock.CodeGeneration"", """" )]
+        [System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
         public static {0} CloneWithoutIdentity( this {0} source )
         {{
             var target = new {0}();
@@ -1087,6 +1112,8 @@ GO
         /// </summary>
         /// <param name=""target"">The target.</param>
         /// <param name=""source"">The source.</param>
+        [System.CodeDom.Compiler.GeneratedCode( ""Rock.CodeGeneration"", """" )]
+        [System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
         public static void CopyPropertiesFrom( this {0} target, {0} source )
         {{
 ", type.Name );
@@ -1094,12 +1121,12 @@ GO
             foreach ( var property in properties )
             {
                 PropertyInfo propertyInfo = property.Value;
-                var obsolete = propertyInfo.GetCustomAttribute<ObsoleteAttribute>();
+                var obsoleteProperty = propertyInfo.GetCustomAttribute<ObsoleteAttribute>();
 
                 // wrap with a pragma to disable the obsolete warning (since we do want to copy obsolete values when cloning, unless this is obsolete.IsError )
-                if ( obsolete != null )
+                if ( obsoleteProperty != null )
                 {
-                    if ( obsolete.IsError == false )
+                    if ( obsoleteProperty.IsError == false )
                     {
                         sb.AppendLine( $"            #pragma warning disable 612, 618" );
                         sb.AppendLine( $"            target.{property.Key} = source.{property.Key};" );
@@ -1322,6 +1349,8 @@ GO
         /// <returns>
         ///   <c>true</c> if this instance can delete the specified item; otherwise, <c>false</c>.
         /// </returns>
+        [System.CodeDom.Compiler.GeneratedCode( ""Rock.CodeGeneration"", """" )]
+        [System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
         public bool CanDelete( {0} item, out string errorMessage )
         {{
             errorMessage = string.Empty;
@@ -1498,6 +1527,7 @@ GO
             sb.AppendLine( "//" );
             sb.AppendLine( "" );
 
+            sb.AppendLine( $"using Rock.Configuration;" );
             sb.AppendLine( $"using {type.Namespace};" );
             sb.AppendLine( $"using Rock.SystemGuid;" );
             sb.AppendLine( "" );
@@ -1524,7 +1554,7 @@ GO
             sb.AppendLine( "        /// <summary>" );
             sb.AppendLine( $"        /// Initializes a new instance of the <see cref=\"{ pluralizedName}Controller\"/> class." );
             sb.AppendLine( "        /// </summary>" );
-            sb.AppendLine( $"        public {pluralizedName}Controller() : base( new {type.Namespace}.{type.Name}Service( new {dbContextFullName}() ) ) {{ }} " );
+            sb.AppendLine( $"        public {pluralizedName}Controller() : base( new {type.Namespace}.{type.Name}Service( RockApp.Current.CreateRockContext() ) ) {{ }} " );
             sb.AppendLine( "    }" );
             sb.AppendLine( "}" );
 
@@ -1554,6 +1584,8 @@ GO
             foreach ( var modelType in modelTypes )
             {
                 var codeGenerateRestAttribute = modelType.GetCustomAttribute<CodeGenerateRestAttribute>();
+                var obsolete = modelType.GetCustomAttribute<ObsoleteAttribute>();
+                var rockObsolete = modelType.GetCustomAttribute<RockObsolete>();
 
                 if ( codeGenerateRestAttribute == null || codeGenerateRestAttribute.Endpoints == CodeGenerateRestEndpoint.None )
                 {
@@ -1564,7 +1596,7 @@ GO
                 var exists = File.Exists( filename );
                 var originalContent = exists ? File.ReadAllText( filename ) : null;
 
-                var content = generator.GenerateStandardFileContent( modelType.Name, modelType.FullName, codeGenerateRestAttribute.Endpoints, codeGenerateRestAttribute.DisableEntitySecurity );
+                var content = generator.GenerateStandardFileContent( modelType.Name, modelType.FullName, codeGenerateRestAttribute.Endpoints, codeGenerateRestAttribute.DisableEntitySecurity, obsolete?.Message, rockObsolete?.Version );
 
                 WriteFile( new FileInfo( filename ), new StringBuilder( content ) );
                 filesWritten.Add( filename );
@@ -1981,13 +2013,21 @@ GO
                     Console.WriteLine( "Updating header in {0}", fileName );
                     result++;
 
-                    System.Text.Encoding encoding;
-                    using ( var r = new StreamReader( fileName, detectEncodingFromByteOrderMarks: true ) )
-                    {
-                        encoding = r.CurrentEncoding;
-                    }
+                    /*
+                        9/13/26 - CLAUDE
 
-                    File.WriteAllText( fileName, newFileContents, encoding );
+                        Write the file as UTF-8 without a byte order mark. The previous code read
+                        StreamReader.CurrentEncoding before any Read call, so BOM auto-detection never
+                        ran and CurrentEncoding was always the default UTF-8 encoding, whose GetPreamble()
+                        emits a BOM. That reintroduced a BOM into regenerated files, conflicting with the
+                        repository .editorconfig (charset = utf-8, no BOM) and the other generator write
+                        paths, which use the no-encoding File.WriteAllText overload (UTF-8, no BOM).
+
+                        Reason: Keep generated .cs files BOM-free to match .editorconfig.
+                    */
+                    var utf8NoBomEncoding = new System.Text.UTF8Encoding( false );
+
+                    File.WriteAllText( fileName, newFileContents, utf8NoBomEncoding );
                 }
             }
             return result;

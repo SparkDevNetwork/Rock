@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -28,11 +28,11 @@ using EF6.TagWith;
 
 using Microsoft.Extensions.Logging;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Logging;
 using Rock.Reporting.DataFilter;
 using Rock.SystemKey;
-using Rock.Configuration;
 using Rock.Web.Cache;
 
 namespace Rock.Model

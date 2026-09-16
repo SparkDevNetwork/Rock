@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -22,6 +22,7 @@ using System.Linq;
 
 using Rock.Attribute;
 using Rock.Common.Mobile.Blocks.Content;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Mobile;
 using Rock.Model;
@@ -94,7 +95,7 @@ namespace Rock.Blocks.Types.Mobile.Events
         /// <value>
         /// The template.
         /// </value>
-        protected string Template => Rock.Field.Types.BlockTemplateFieldType.GetTemplateContent( GetAttributeValue( AttributeKeys.Template ) );
+        protected string Template => Field.Helper.GetBlockTemplateContent( GetAttributeValue( AttributeKeys.Template ) );
 
         #endregion
 
@@ -130,7 +131,7 @@ namespace Rock.Blocks.Types.Mobile.Events
         private string GetContent()
         {
             Guid eventItemOccurrenceGuid = Guid.Empty;
-            RockContext rockContext = new RockContext();
+            RockContext rockContext = RockApp.Current.CreateRockContext();
 
             // get the calendarItem id
             if ( !string.IsNullOrWhiteSpace( RequestContext.GetPageParameter( "EventOccurrenceGuid" ) ) )

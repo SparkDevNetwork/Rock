@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -18,6 +18,7 @@ using Fluid.Parser;
 using Newtonsoft.Json;
 using Rock;
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
@@ -42,16 +43,49 @@ namespace RockWeb.Blocks.Groups
     [Category( "Groups" )]
     [Description( "Lists all the members of the given group." )]
 
-    [TextField( "Block Title", "The text used in the title/header bar for this block.", true, "Group Members", "", 0 )]
-    [LinkedPage( "Detail Page", order: 1 )]
-    [GroupField( "Group", "Either pick a specific group or choose &lt;none&gt; to have group be determined by the groupId page parameter", false, order: 2 )]
-    [LinkedPage( "Person Profile Page", "Page used for viewing a person's profile. If set a view profile button will show for each group member.", false, "", "", 3, "PersonProfilePage" )]
-    [LinkedPage( "Registration Page", "Page used for viewing the registration(s) associated with a particular group member", false, "", "", 4 )]
-    [LinkedPage( "Data View Detail Page", "Page used to view data views that are used with the group member sync.", false, order: 5 )]
-    [BooleanField( "Show Campus Filter", "Setting to show/hide campus filter.", true, order: 6 )]
-    [BooleanField( "Show First/Last Attendance", "If the group allows attendance, should the first and last attendance date be displayed for each group member?", false, "", 7, SHOW_FIRST_LAST_ATTENDANCE_KEY )]
-    [BooleanField( "Show Date Added", "Should the date that person was added to the group be displayed for each group member?", false, "", 8, SHOW_DATE_ADDED_KEY )]
-    [BooleanField( "Show Note Column", "Should the note be displayed as a separate grid column (instead of displaying a note icon under person's name)?", false, "", 9 )]
+    [TextField( "Block Title",
+        Description = "The text used in the title/header bar for this block.",
+        IsRequired = true,
+        DefaultValue = "Group Members",
+        Order = 0 )]
+    [LinkedPage( "Detail Page",
+        IsRequired = true,
+        Order = 1 )]
+    [GroupField( "Group",
+        Description = "Either pick a specific group or choose &lt;none&gt; to have group be determined by the groupId page parameter",
+        IsRequired = false,
+        Order = 2 )]
+    [LinkedPage( "Person Profile Page",
+        Description = "Page used for viewing a person's profile. If set a view profile button will show for each group member.",
+        IsRequired = false,
+        Order = 3,
+        Key = "PersonProfilePage" )]
+    [LinkedPage( "Registration Page",
+        Description = "Page used for viewing the registration(s) associated with a particular group member",
+        IsRequired = false,
+        Order = 4 )]
+    [LinkedPage( "Data View Detail Page",
+        Description = "Page used to view data views that are used with the group member sync.",
+        IsRequired = false,
+        Order = 5 )]
+    [BooleanField( "Show Campus Filter",
+        Description = "Setting to show/hide campus filter.",
+        DefaultBooleanValue = true,
+        Order = 6 )]
+    [BooleanField( "Show First/Last Attendance",
+        Description = "If the group allows attendance, should the first and last attendance date be displayed for each group member?",
+        DefaultBooleanValue = false,
+        Order = 7,
+        Key = SHOW_FIRST_LAST_ATTENDANCE_KEY )]
+    [BooleanField( "Show Date Added",
+        Description = "Should the date that person was added to the group be displayed for each group member?",
+        DefaultBooleanValue = false,
+        Order = 8,
+        Key = SHOW_DATE_ADDED_KEY )]
+    [BooleanField( "Show Note Column",
+        Description = "Should the note be displayed as a separate grid column (instead of displaying a note icon under person's name)?",
+        DefaultBooleanValue = false,
+        Order = 9 )]
 
     [Rock.Cms.DefaultBlockRole( Rock.Enums.Cms.BlockRole.Secondary )]
     [Rock.SystemGuid.BlockTypeGuid( Rock.SystemGuid.BlockType.GROUPS_GROUP_MEMBER_LIST )]
@@ -170,7 +204,8 @@ namespace RockWeb.Blocks.Groups
 
             if ( groupGuid == Guid.Empty )
             {
-                groupId = PageParameter( "GroupId" ).AsInteger();
+                groupId = new GroupService( RockApp.Current.CreateRockContext() )
+                    .GetSelect( PageParameter( "GroupId" ), g => ( int? ) g.Id, !PageCache.Layout.Site.DisablePredictableIds ) ?? 0;
 
                 /*
                  * 1/15/2020 - JPH
@@ -197,7 +232,7 @@ namespace RockWeb.Blocks.Groups
                 // if we don't yet have a groupId, and a CampusId PageParameter is defined, attempt to determine the groupId from the Campus.TeamGroupId property
                 if ( groupId == 0 && campusId.HasValue )
                 {
-                    int? campusTeamGroupId = new CampusService( new RockContext() )
+                    int? campusTeamGroupId = new CampusService( RockApp.Current.CreateRockContext() )
                         .Queryable()
                         .AsNoTracking()
                         .Where( c => c.Id == campusId.Value )
@@ -214,7 +249,7 @@ namespace RockWeb.Blocks.Groups
                 _group = RockPage.GetSharedItem( key ) as Group;
                 if ( _group == null )
                 {
-                    _group = new GroupService( new RockContext() ).Queryable( "GroupType.Roles" )
+                    _group = new GroupService( RockApp.Current.CreateRockContext() ).Queryable( "GroupType.Roles" )
                         .Where( g => g.Id == groupId || g.Guid == groupGuid )
                         .FirstOrDefault();
                     RockPage.SaveSharedItem( key, _group );
@@ -792,7 +827,7 @@ namespace RockWeb.Blocks.Groups
                 var instanceId = e.Value.AsIntegerOrNull();
                 if ( instanceId.HasValue )
                 {
-                    using ( var rockContext = new RockContext() )
+                    using ( var rockContext = RockApp.Current.CreateRockContext() )
                     {
                         var instance = new RegistrationInstanceService( rockContext ).Get( instanceId.Value );
                         if ( instance != null )
@@ -1115,7 +1150,7 @@ namespace RockWeb.Blocks.Groups
         /// <param name="e">The <see cref="Rock.Web.UI.Controls.RowEventArgs" /> instance containing the event data.</param>
         protected void DeleteOrArchiveGroupMember_Click( object sender, Rock.Web.UI.Controls.RowEventArgs e )
         {
-            RockContext rockContext = new RockContext();
+            RockContext rockContext = RockApp.Current.CreateRockContext();
             GroupMemberService groupMemberService = new GroupMemberService( rockContext );
 
             GroupMemberHistoricalService groupMemberHistoricalService = new GroupMemberHistoricalService( rockContext );
@@ -1273,7 +1308,7 @@ namespace RockWeb.Blocks.Groups
 
         protected void lbGroupSync_Click( object sender, EventArgs e )
         {
-            var groupSyncService = new GroupSyncService( new RockContext() );
+            var groupSyncService = new GroupSyncService( RockApp.Current.CreateRockContext() );
             var task = Task.Run( () =>
             {
                 var result = groupSyncService.SyncGroup( _group.Id );
@@ -1300,7 +1335,7 @@ namespace RockWeb.Blocks.Groups
                 cblRole.DataSource = _group.GroupType.Roles.OrderBy( a => a.Order ).ToList();
                 cblRole.DataBind();
 
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     ddlRegistration.DataSource = new RegistrationInstanceService( rockContext )
                         .Queryable().AsNoTracking()
@@ -1365,7 +1400,7 @@ namespace RockWeb.Blocks.Groups
                 cblRequirementsRole.DataSource = _group.GroupType.Roles.OrderBy( a => a.Order ).ToList();
                 cblRequirementsRole.DataBind();
 
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     // We need to get group requirements as well as group type requirements into one datasource here.
                     var groupMemberService = new GroupMemberService( rockContext ).Queryable().AsNoTracking();
@@ -1420,7 +1455,7 @@ namespace RockWeb.Blocks.Groups
             AvailableAttributes = new List<AttributeCache>();
             if ( _group != null )
             {
-                var rockContext = new RockContext();
+                var rockContext = RockApp.Current.CreateRockContext();
                 int entityTypeId = new GroupMember().TypeId;
                 string groupQualifier = _group.Id.ToString();
                 string groupTypeQualifier = _group.GroupTypeId.ToString();
@@ -1586,7 +1621,7 @@ namespace RockWeb.Blocks.Groups
         /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
         protected void btnPlaceElsewhere_Click( object sender, RowEventArgs e )
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
 
             var groupMemberPerson = new GroupMemberService( rockContext ).GetPerson( e.RowKeyId );
             if ( groupMemberPerson != null )
@@ -1684,7 +1719,7 @@ namespace RockWeb.Blocks.Groups
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void mdPlaceElsewhere_SaveClick( object sender, EventArgs e )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var groupService = new GroupService( rockContext );
                 var groupMemberService = new GroupMemberService( rockContext );
@@ -1777,7 +1812,7 @@ namespace RockWeb.Blocks.Groups
 
             _groupTypeRoleIdsWithGroupSync = new HashSet<int>( _group.GroupSyncs.Select( a => a.GroupTypeRoleId ).ToList() );
 
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
 
             if ( _group != null &&
                 _group.RequiredSignatureDocumentTemplateId.HasValue )
@@ -2160,7 +2195,7 @@ namespace RockWeb.Blocks.Groups
 
             int groupId = _group.Id;
 
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             _hasGroupRequirements = new GroupRequirementService( rockContext ).Queryable()
                 .Where( a => ( a.GroupId.HasValue && a.GroupId == _group.Id ) || ( a.GroupTypeId.HasValue && a.GroupTypeId == _group.GroupTypeId ) ).Any();
 

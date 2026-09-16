@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -22,6 +22,7 @@ using System.Linq;
 
 using Rock.Attribute;
 using Rock.Common.Mobile.Enums;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -147,7 +148,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
         "Prevent Overcapacity Registrations",
         Description = "When set to true, user cannot register for groups that are at capacity or whose default GroupTypeRole are at capacity. If only one spot is available, no family members can be registered.",
         IsRequired = false,
-        ControlType = Field.Types.BooleanFieldType.BooleanControlType.Toggle,
+        BooleanControlType = Rock.Enums.Controls.BooleanControlType.Toggle,
         DefaultBooleanValue = false,
         Key = AttributeKey.PreventOvercapacityRegistrations,
         Order = 12 )]
@@ -156,7 +157,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
         "Autofill Form",
         Description = "If set to false then the form will not load the context of the logged in user.",
         IsRequired = false,
-        ControlType = Field.Types.BooleanFieldType.BooleanControlType.Toggle,
+        BooleanControlType = Rock.Enums.Controls.BooleanControlType.Toggle,
         DefaultBooleanValue = true,
         Key = AttributeKey.AutofillForm,
         Order = 13 )]
@@ -869,7 +870,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
         [BlockAction]
         public BlockActionResult GetRegistrationOptions( Guid? groupGuid )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var group = new GroupService( rockContext ).Get( GroupGuid ?? groupGuid ?? Guid.Empty );
 
@@ -938,7 +939,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
         [BlockAction]
         public BlockActionResult Register( Guid? groupGuid, PersonDetail person, PersonDetail spouse, List<Guid> familyMembers )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 // Really? More than 25 people in your family? Go away.
                 if ( familyMembers != null && familyMembers.Count > 25 )

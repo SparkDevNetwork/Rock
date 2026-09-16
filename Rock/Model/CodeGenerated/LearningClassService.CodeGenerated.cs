@@ -37,6 +37,8 @@ namespace Rock.Model
         /// Initializes a new instance of the <see cref="LearningClassService"/> class
         /// </summary>
         /// <param name="context">The context.</param>
+        [System.CodeDom.Compiler.GeneratedCode( "Rock.CodeGeneration", "" )]
+        [System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
         public LearningClassService(RockContext context) : base(context)
         {
         }
@@ -49,6 +51,8 @@ namespace Rock.Model
         /// <returns>
         ///   <c>true</c> if this instance can delete the specified item; otherwise, <c>false</c>.
         /// </returns>
+        [System.CodeDom.Compiler.GeneratedCode( "Rock.CodeGeneration", "" )]
+        [System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
         public bool CanDelete( LearningClass item, out string errorMessage )
         {
             errorMessage = string.Empty;
@@ -90,9 +94,13 @@ namespace Rock.Model
         /// or selecting values. Do <b>not</b> use it for accessing the
         /// attributes after the entity has been loaded.
         /// </summary>
+        [System.CodeDom.Compiler.GeneratedCode( "Rock.CodeGeneration", "" )]
+        [System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
         public virtual ICollection<LearningClassQueryableAttributeValue> LearningClassAttributeValues { get; set; } 
 
         /// <inheritdoc/>
+        [System.CodeDom.Compiler.GeneratedCode( "Rock.CodeGeneration", "" )]
+        [System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
         public class LearningClassQueryableAttributeValue : QueryableAttributeValue
         {
         }
@@ -109,6 +117,8 @@ namespace Rock.Model
         /// <param name="source">The source.</param>
         /// <param name="deepCopy">if set to <c>true</c> a deep copy is made. If false, only the basic entity properties are copied.</param>
         /// <returns></returns>
+        [System.CodeDom.Compiler.GeneratedCode( "Rock.CodeGeneration", "" )]
+        [System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
         public static LearningClass Clone( this LearningClass source, bool deepCopy )
         {
             if (deepCopy)
@@ -128,6 +138,8 @@ namespace Rock.Model
         /// </summary>
         /// <param name="source">The source.</param>
         /// <returns></returns>
+        [System.CodeDom.Compiler.GeneratedCode( "Rock.CodeGeneration", "" )]
+        [System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
         public static LearningClass CloneWithoutIdentity( this LearningClass source )
         {
             var target = new LearningClass();
@@ -147,6 +159,8 @@ namespace Rock.Model
         /// </summary>
         /// <param name="target">The target.</param>
         /// <param name="source">The source.</param>
+        [System.CodeDom.Compiler.GeneratedCode( "Rock.CodeGeneration", "" )]
+        [System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
         public static void CopyPropertiesFrom( this LearningClass target, LearningClass source )
         {
             target.Id = source.Id;
@@ -188,11 +202,13 @@ namespace Rock.Model
             target.LearningCourseId = source.LearningCourseId;
             target.LearningGradingSystemId = source.LearningGradingSystemId;
             target.LearningSemesterId = source.LearningSemesterId;
+            target.MeetingStyle = source.MeetingStyle;
             target.Name = source.Name;
             target.NonLeaderToLeaderRelationshipMultiplierOverride = source.NonLeaderToLeaderRelationshipMultiplierOverride;
             target.NonLeaderToNonLeaderRelationshipMultiplierOverride = source.NonLeaderToNonLeaderRelationshipMultiplierOverride;
             target.Order = source.Order;
             target.ParentGroupId = source.ParentGroupId;
+            target.PhotoId = source.PhotoId;
             target.RelationshipGrowthEnabledOverride = source.RelationshipGrowthEnabledOverride;
             target.RelationshipStrengthOverride = source.RelationshipStrengthOverride;
             target.ReminderAdditionalDetails = source.ReminderAdditionalDetails;

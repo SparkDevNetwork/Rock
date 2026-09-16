@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -25,6 +25,7 @@ using System.Web.UI.WebControls;
 using Newtonsoft.Json;
 using Rock;
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
@@ -83,7 +84,7 @@ namespace RockWeb.Blocks.WorkFlow
             }
 
             // Wire up type objects since they are not serialized
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var workflowTypeService = new WorkflowTypeService( rockContext );
             var activityTypeService = new WorkflowActivityTypeService( rockContext );
             var actionTypeService = new WorkflowActionTypeService( rockContext );
@@ -112,7 +113,7 @@ namespace RockWeb.Blocks.WorkFlow
             }
 
             _canEdit = UserCanEdit || Workflow.IsAuthorized( Rock.Security.Authorization.EDIT, CurrentPerson );
-            _canView = _canEdit || ( Workflow.IsAuthorized( Authorization.VIEW, CurrentPerson ) && Workflow.IsAuthorized( "ViewList", CurrentPerson ) );
+            _canView = _canEdit || ( Workflow.IsAuthorized( Authorization.VIEW, CurrentPerson ) && Workflow.IsAuthorized( Authorization.VIEW_LIST, CurrentPerson ) );
         }
 
         /// <summary>
@@ -141,7 +142,9 @@ namespace RockWeb.Blocks.WorkFlow
 
             if ( !Page.IsPostBack )
             {
-                ShowDetail( PageParameter( "WorkflowId" ).AsInteger() );
+                var workflowId = new WorkflowService( RockApp.Current.CreateRockContext() )
+                    .GetSelect( PageParameter( "WorkflowId" ), w => ( int? ) w.Id, !PageCache.Layout.Site.DisablePredictableIds ) ?? 0;
+                ShowDetail( workflowId );
             }
             else
             {
@@ -242,7 +245,7 @@ namespace RockWeb.Blocks.WorkFlow
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void btnSave_Click( object sender, EventArgs e )
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var service = new WorkflowService( rockContext );
 
             ParseControls( rockContext, true );
@@ -661,29 +664,13 @@ namespace RockWeb.Blocks.WorkFlow
         /// </summary>
         private void ShowDetail( int workflowId )
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var workflowService = new WorkflowService( rockContext );
 
             Workflow = workflowService
-                    .Queryable( "WorkflowType, Activities")
+                    .Queryable( "WorkflowType, Activities" )
                     .Where( w => w.Id == workflowId )
                     .FirstOrDefault();
-
-            if ( Workflow == null )
-            {
-                var workflowIdKey = PageParameter( "WorkflowId" );
-                if ( workflowIdKey.IsNotNullOrWhiteSpace() )
-                {
-                    var workflow = workflowService.Get( workflowIdKey );
-                    if ( workflow != null )
-                    {
-                        Workflow = workflowService
-                            .Queryable( "WorkflowType, Activities" )
-                            .Where( w => w.Id == workflow.Id )
-                            .FirstOrDefault();
-                    }
-                }
-            }
 
             if ( Workflow == null )
             {
@@ -696,7 +683,7 @@ namespace RockWeb.Blocks.WorkFlow
             pdAuditDetails.SetEntity( Workflow, ResolveRockUrl( "~" ) );
 
             _canEdit = UserCanEdit || Workflow.IsAuthorized( Rock.Security.Authorization.EDIT, CurrentPerson );
-            _canView = _canEdit || ( Workflow.IsAuthorized( Authorization.VIEW, CurrentPerson ) && Workflow.IsAuthorized( "ViewList", CurrentPerson ) );
+            _canView = _canEdit || ( Workflow.IsAuthorized( Authorization.VIEW, CurrentPerson ) && Workflow.IsAuthorized( Authorization.VIEW_LIST, CurrentPerson ) );
 
             Workflow.LoadAttributes( rockContext );
             foreach ( var activity in Workflow.Activities )
@@ -790,7 +777,7 @@ namespace RockWeb.Blocks.WorkFlow
 
                     ShowAttributeValues();
 
-                    var rockContext = new RockContext();
+                    var rockContext = RockApp.Current.CreateRockContext();
                     _personAliasService = new PersonAliasService( rockContext );
                     _groupService = new GroupService( rockContext );
                     rptrActivities.DataSource = Workflow.Activities.OrderBy( a => a.ActivatedDateTime ).ToList();
@@ -889,7 +876,7 @@ namespace RockWeb.Blocks.WorkFlow
 
         private void BindLog()
         {
-            var logEntries = new RockContext().Set<WorkflowLog>()
+            var logEntries = RockApp.Current.CreateRockContext().Set<WorkflowLog>()
                 .Where( l => l.WorkflowId == Workflow.Id )
                 .OrderBy( l => l.Id ) // Do not sort by DateTime as many actions can occur in the same millisecond.
                 .ToList();
@@ -931,7 +918,7 @@ namespace RockWeb.Blocks.WorkFlow
                 Helper.AddDisplayControls( Workflow, phAttributes );
             }
 
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
 
             phActivities.Controls.Clear();
             foreach ( var activity in Workflow.Activities.OrderBy( a => a.ActivatedDateTime ) )
@@ -980,7 +967,7 @@ namespace RockWeb.Blocks.WorkFlow
         {
             if (rockContext == null)
             {
-                rockContext = new RockContext();
+                rockContext = RockApp.Current.CreateRockContext();
             }
 
             if ( Workflow.CompletedDateTime.HasValue && !cbIsCompleted.Checked )

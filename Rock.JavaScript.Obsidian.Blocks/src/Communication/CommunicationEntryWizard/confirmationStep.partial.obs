@@ -81,8 +81,8 @@
                                     </dd>
                                 </template>
 
-                                <dt>Bulk Communication</dt>
-                                <dd>{{ isBulkCommunication ? 'Yes' : 'No' }}</dd>
+                                <dt>Message Classification</dt>
+                                <dd>{{ isBulkCommunication ? customText.isBulkOptionTitle : customText.isNotBulkOptionTitle }}</dd>
                             </dl>
                         </div>
 
@@ -213,7 +213,7 @@ dl:not(.dl-horizontal) dt:first-child {
     import { computed, onMounted, PropType, ref, watch } from "vue";
     import EmailPreview from "./emailPreview.partial.obs";
     import LoadingOverlay from "./loadingOverlay.partial.obs";
-    import { BinaryFileAttachment, BlockActionCallbacks, PreviewAsType } from "./types.partial";
+    import { BinaryFileAttachment, BlockActionCallbacks, CustomText, PreviewAsType } from "./types.partial";
     import { useBreakpointHelper } from "./utils.partial";
     import ButtonGroup from "@Obsidian/Controls/buttonGroup.obs";
     import HighlightLabel from "@Obsidian/Controls/highlightLabel.obs";
@@ -274,6 +274,11 @@ dl:not(.dl-horizontal) dt:first-child {
 
         communicationType: {
             type: Number as PropType<CommunicationType>,
+            required: true
+        },
+
+        customText: {
+            type: Object as PropType<CustomText>,
             required: true
         },
 

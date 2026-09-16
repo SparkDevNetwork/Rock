@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -16,6 +16,7 @@
 //
 using System;
 using System.ComponentModel;
+
 using Rock.Attribute;
 
 namespace Rock.Jobs
@@ -26,7 +27,11 @@ namespace Rock.Jobs
     [DisplayName( "PBX CDR Download" )]
     [Description( "This job downloads CBR information for the specified PBX component." )]
 
-    [ComponentField( "Rock.Pbx.PbxContainer, Rock", "PBX Component", "The PBX type to process.", true, key:"PbxComponent" )]
+    [ComponentField( "Rock.Pbx.PbxContainer, Rock",
+        "PBX Component",
+        Description = "The PBX type to process.",
+        IsRequired = true,
+        Key = "PbxComponent" )]
     public class PbxCdrDownload : RockJob
     {
         /// <summary> 

@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -20,7 +20,9 @@ using System.Linq;
 #if WEBFORMS
 using System.Web.UI;
 #endif
+
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security.SecurityGrantRules;
@@ -57,7 +59,7 @@ namespace Rock.Field.Types
             var guidValue = privateValue.AsGuidOrNull();
             if ( guidValue.HasValue )
             {
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     var binaryFileInfo = new BinaryFileService( rockContext ).GetSelect( guidValue.Value, f => new ListItemBag()
                     {
@@ -85,7 +87,7 @@ namespace Rock.Field.Types
             var binaryFileGuid = value.AsGuidOrNull();
             if ( binaryFileGuid.HasValue )
             {
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     var binaryFileService = new BinaryFileService( rockContext );
                     var fileName = binaryFileService.GetSelect( binaryFileGuid.Value, s => s.FileName );
@@ -125,6 +127,28 @@ namespace Rock.Field.Types
             {
                 grant.AddRule( new EntitySecurityGrantRule( binaryFileType.TypeId, binaryFileType.Id, Authorization.VIEW ) );
             }
+        }
+
+        #endregion
+
+        #region Value Hinting
+
+        /// <inheritdoc/>
+        /// <remarks>
+        /// Adds what this field type expects to the shared description of a
+        /// binary file reference. The guid alone does not say which files make sense
+        /// here, and the wrong kind of file saves without complaint.
+        /// </remarks>
+        internal override FieldTypeHints GetFieldHints( Dictionary<string, string> privateConfigurationValues )
+        {
+            var hints = base.GetFieldHints( privateConfigurationValues );
+
+            if ( hints != null )
+            {
+                hints.ValueFormat += " This field type pins the binary file type to Check-in Label rather than taking it from configuration, so only a check-in label belongs here. The picker enforces that, but a value written directly is not checked.";
+            }
+
+            return hints;
         }
 
         #endregion

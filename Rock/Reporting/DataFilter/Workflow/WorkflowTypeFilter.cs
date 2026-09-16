@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -22,6 +22,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Web.UI;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Net;
@@ -148,7 +149,7 @@ function() {
             string[] selectionValues = selection.Split( '|' );
             if ( selectionValues.Length >= 1 )
             {
-                var workflowType = new WorkflowTypeService( new RockContext() ).Get( selectionValues[0].AsGuid() );
+                var workflowType = new WorkflowTypeService( RockApp.Current.CreateRockContext() ).Get( selectionValues[0].AsGuid() );
 
                 if ( workflowType != null )
                 {
@@ -197,7 +198,7 @@ function() {
         {
             int? workflowTypeId = ( controls[0] as WorkflowTypePicker ).SelectedValueAsId();
             Guid? workflowTypeGuid = null;
-            var workflowType = new WorkflowTypeService( new RockContext() ).Get( workflowTypeId ?? 0 );
+            var workflowType = new WorkflowTypeService( RockApp.Current.CreateRockContext() ).Get( workflowTypeId ?? 0 );
             if ( workflowType != null )
             {
                 workflowTypeGuid = workflowType.Guid;
@@ -217,7 +218,7 @@ function() {
             string[] selectionValues = selection.Split( '|' );
             if ( selectionValues.Length >= 1 )
             {
-                var workflowType = new WorkflowTypeService( new RockContext() ).Get( selectionValues[0].AsGuid() );
+                var workflowType = new WorkflowTypeService( RockApp.Current.CreateRockContext() ).Get( selectionValues[0].AsGuid() );
                 if ( workflowType != null )
                 {
                     ( controls[0] as WorkflowTypePicker ).SetValue( workflowType.Id );
@@ -239,7 +240,7 @@ function() {
             string[] selectionValues = selection.Split( '|' );
             if ( selectionValues.Length >= 1 )
             {
-                var workflowType = new WorkflowTypeService( new RockContext() ).Get( selectionValues[0].AsGuid() );
+                var workflowType = new WorkflowTypeService( RockApp.Current.CreateRockContext() ).Get( selectionValues[0].AsGuid() );
                 int? workflowTypeId = null;
                 if ( workflowType != null )
                 {

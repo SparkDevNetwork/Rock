@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -24,9 +24,11 @@ using System.Linq.Expressions;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Net;
+using Rock.Obsidian.UI.GridField;
 using Rock.Utility;
 using Rock.ViewModels.Controls;
 using Rock.ViewModels.Utility;
@@ -155,7 +157,7 @@ namespace Rock.Reporting.DataSelect.GroupMember
 
             var rockBlock = parentControl.RockBlock();
 
-            foreach ( var entityField in GetGroupMemberAttributeEntityFields( new RockContext() ) )
+            foreach ( var entityField in GetGroupMemberAttributeEntityFields( RockApp.Current.CreateRockContext() ) )
             {
                 bool includeField = true;
                 bool isAuthorized = true;
@@ -248,7 +250,7 @@ namespace Rock.Reporting.DataSelect.GroupMember
         {
             var settings = new SelectSettings( selection );
 
-            var entityFields = GetGroupMemberAttributeEntityFields( new RockContext() );
+            var entityFields = GetGroupMemberAttributeEntityFields( RockApp.Current.CreateRockContext() );
 
             var entityField = entityFields.FirstOrDefault( f => f.UniqueName == settings.AttributeKey );
 
@@ -294,7 +296,7 @@ namespace Rock.Reporting.DataSelect.GroupMember
 
             var settings = new SelectSettings( selection );
 
-            var entityFields = GetGroupMemberAttributeEntityFields( new RockContext() );
+            var entityFields = GetGroupMemberAttributeEntityFields( RockApp.Current.CreateRockContext() );
 
             var entityField = entityFields.FirstOrDefault( f => f.UniqueName == settings.AttributeKey );
 
@@ -344,6 +346,18 @@ namespace Rock.Reporting.DataSelect.GroupMember
             return boundField;
         }
 #endif
+
+        /// <inheritdoc/>
+        public override ObsidianGridField GetObsidianGridField( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
+        {
+            var settings = new SelectSettings( selection );
+            var entityFields = GetGroupMemberAttributeEntityFields( rockContext );
+
+            var entityField = entityFields.FirstOrDefault( f => f.UniqueName == settings.AttributeKey )
+                ?? entityFields.FirstOrDefault( f => f.Name == settings.AttributeKey );
+
+            return GroupAttributeSelect.AttributeFieldTypeToObsidianGridField( entityField?.FieldType?.Guid );
+        }
 
         #endregion
 

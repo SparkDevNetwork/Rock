@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -17,10 +17,12 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Web;
 
 using Rock.Blocks;
 using Rock.Web.Cache;
+using Rock.Web.UI;
 
 namespace Rock
 {
@@ -163,7 +165,12 @@ namespace Rock
                 }
             }
 
-            var pageReference = new Rock.Web.PageReference( block.PageCache.Guid.ToString(), parameters );
+            // Preserve the page's friendly named route when a block rebuilds
+            // the current page URL. See https://github.com/SparkDevNetwork/Rock/issues/6988
+            var currentRouteId = block.RequestContext?.PageReference?.RouteId ?? 0;
+            var pageReference = currentRouteId > 0
+                ? new Rock.Web.PageReference( block.PageCache.Id, currentRouteId, parameters )
+                : new Rock.Web.PageReference( block.PageCache.Guid.ToString(), parameters );
 
             if ( pageReference.PageId > 0 )
             {
@@ -184,6 +191,24 @@ namespace Rock
         /// <returns>A string representing the URL to the login <see cref="Rock.Model.Page"/>.</returns>
         public static string GetLoginPageUrl( this RockBlockType block, string returnUrl )
         {
+            // If any block on the current page implements IDisallowReturnUrlBlock,
+            // clear the return URL so users are not redirected back to this
+            // page after authenticating.
+            if ( returnUrl.IsNotNullOrWhiteSpace() )
+            {
+                var isReturnUrlDisallowed = block.PageCache.Blocks
+                    .Any( pageBlock =>
+                    {
+                        var blockType = pageBlock.BlockType?.GetCompiledType();
+                        return blockType != null && typeof( IDisallowReturnUrlBlock ).IsAssignableFrom( blockType );
+                    } );
+
+                if ( isReturnUrlDisallowed )
+                {
+                    returnUrl = null;
+                }
+            }
+
             var site = SiteCache.Get( block.PageCache.SiteId );
             var pageReference = new Rock.Web.PageReference( site.LoginPageReference );
 

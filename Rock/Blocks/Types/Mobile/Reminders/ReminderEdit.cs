@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -14,17 +14,18 @@
 // limitations under the License.
 // </copyright>
 //
-using Rock.Attribute;
-using Rock.Data;
-using Rock.Model;
-
 using System;
-using System.Linq;
 using System.ComponentModel;
+using System.Linq;
+
+using Rock.Attribute;
 using Rock.Common.Mobile.Blocks.Reminders;
 using Rock.Common.Mobile.Blocks.Reminders.ReminderEdit;
-using Rock.Web.Cache;
 using Rock.Common.Mobile.ViewModel;
+using Rock.Configuration;
+using Rock.Data;
+using Rock.Model;
+using Rock.Web.Cache;
 
 namespace Rock.Blocks.Types.Mobile.Reminders
 {
@@ -369,7 +370,7 @@ namespace Rock.Blocks.Types.Mobile.Reminders
             }
             else if ( entityType != null && entityType.Guid == Rock.SystemGuid.EntityType.CONNECTION_REQUEST.AsGuid() )
             {
-                var connectionRequest = new ConnectionRequestService( new RockContext() ).Get( bag.EntityGuid );
+                var connectionRequest = new ConnectionRequestService( RockApp.Current.CreateRockContext() ).Get( bag.EntityGuid );
 
                 var connectionRequestText = connectionRequest.ConnectionOpportunity?.Name ?? string.Empty;
 
@@ -403,7 +404,7 @@ namespace Rock.Blocks.Types.Mobile.Reminders
         /// <returns></returns>
         private ResponseBag GetReminderEditBag( Guid? reminderGuid, Guid? entityTypeGuid, Guid? entityGuid = null )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var personAliasService = new PersonAliasService( rockContext );
                 var reminderTypeService = new ReminderTypeService( rockContext );
@@ -514,7 +515,7 @@ namespace Rock.Blocks.Types.Mobile.Reminders
                 return ActionForbidden();
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var linkedNoteGuid = RequestContext.GetPageParameter( PageParameterKey.LinkedNoteGuid ).AsGuidOrNull();
                 var linkedNoteTypeGuid = RequestContext.GetPageParameter( PageParameterKey.LinkedNoteTypeGuid ).AsGuidOrNull();

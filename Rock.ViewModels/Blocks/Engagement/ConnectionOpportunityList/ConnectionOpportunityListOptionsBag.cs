@@ -22,5 +22,12 @@ namespace Rock.ViewModels.Blocks.Engagement.ConnectionOpportunityList
     /// </summary>
     public class ConnectionOpportunityListOptionsBag
     {
+        /// <summary>
+        /// Gets or sets a value indicating whether the reorder column should be visible.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if the column is visible; otherwise, <c>false</c>.
+        /// </value>
+        public bool IsReOrderColumnVisible { get; set; }
     }
 }

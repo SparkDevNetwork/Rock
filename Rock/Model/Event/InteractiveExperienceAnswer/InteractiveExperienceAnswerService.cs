@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Enums.Event;
 using Rock.Event.InteractiveExperiences;
@@ -45,7 +46,7 @@ namespace Rock.Model
         /// <returns><c>true</c> if the answer was recorded, <c>false</c> otherwise.</returns>
         internal static async Task<RecordActionResponseStatus> RecordActionResponse( int occurrenceId, int actionId, int? interactionSessionId, int? personAliasId, int? campusId, string response )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var occurrenceService = new InteractiveExperienceOccurrenceService( rockContext );
                 var actionService = new InteractiveExperienceActionService( rockContext );
@@ -130,7 +131,7 @@ namespace Rock.Model
         /// <returns><c>true</c> if the answer was deleted, <c>false</c> otherwise.</returns>
         internal static async Task<bool> DeleteAnswer( int answerId )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var answerService = new InteractiveExperienceAnswerService( rockContext );
                 var answer = answerService.Get( answerId );
@@ -167,7 +168,7 @@ namespace Rock.Model
         /// <returns><c>true</c> if the answer was updated, <c>false</c> otherwise.</returns>
         internal static async Task<bool> UpdateAnswerStatus( int answerId, InteractiveExperienceApprovalStatus status )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var answerService = new InteractiveExperienceAnswerService( rockContext );
                 var answer = answerService.Get( answerId );

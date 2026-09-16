@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -21,6 +21,7 @@ using System.Linq;
 
 using Rock.Attribute;
 using Rock.Common.Mobile.Blocks.Content;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
@@ -95,7 +96,7 @@ namespace Rock.Blocks.Types.Mobile.Events
         Description = "Includes prayer requests that are attached to a group.",
         IsRequired = false,
         DefaultBooleanValue = false,
-        ControlType = Field.Types.BooleanFieldType.BooleanControlType.Checkbox,
+        BooleanControlType = Rock.Enums.Controls.BooleanControlType.Checkbox,
         Key = AttributeKeys.IncludeGroupRequests,
         Order = 7 )]
 
@@ -226,7 +227,7 @@ namespace Rock.Blocks.Types.Mobile.Events
         /// <value>
         /// The template.
         /// </value>
-        protected string Template => Rock.Field.Types.BlockTemplateFieldType.GetTemplateContent( GetAttributeValue( AttributeKeys.Template ) );
+        protected string Template => Field.Helper.GetBlockTemplateContent( GetAttributeValue( AttributeKeys.Template ) );
 
         /// <summary>
         /// Gets a value indicating whether interactions are created for prayers.
@@ -343,7 +344,7 @@ namespace Rock.Blocks.Types.Mobile.Events
             var mergeFields = RequestContext.GetCommonMergeFields();
             SessionContext sessionContext;
             PrayerRequest request;
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
 
             if ( context.IsNotNullOrWhiteSpace() )
             {
@@ -360,7 +361,7 @@ namespace Rock.Blocks.Types.Mobile.Events
 
                 if ( CreateInteractionsForPrayers )
                 {
-                    PrayerRequestService.EnqueuePrayerInteraction( lastRequest, RequestContext.CurrentPerson, PageCache.Layout.Site.Name, RequestContext.ClientInformation?.Browser?.String, RequestContext.ClientInformation.IpAddress, null );
+                    PrayerRequestService.EnqueuePrayerInteraction( lastRequest, RequestContext.CurrentPerson, PageCache.Layout.Site.Name, RequestContext.ClientInformation?.UserAgent, RequestContext.ClientInformation.IpAddress, null );
                 }
 
                 //
@@ -502,7 +503,7 @@ namespace Rock.Blocks.Types.Mobile.Events
         [BlockAction]
         public object FlagRequest( string sessionContext )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var context = Encryption.DecryptString( sessionContext ).FromJsonOrNull<SessionContext>() ?? new SessionContext();
                 var request = new PrayerRequestService( rockContext ).Get( context.RequestIds[context.Index] );

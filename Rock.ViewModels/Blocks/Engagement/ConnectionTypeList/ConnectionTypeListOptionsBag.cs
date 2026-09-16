@@ -22,5 +22,10 @@ namespace Rock.ViewModels.Blocks.Engagement.ConnectionTypeList
     /// </summary>
     public class ConnectionTypeListOptionsBag
     {
+        /// <summary>
+        /// Gets or sets a value indicating whether the reorder column should be shown.
+        /// Reordering requires block-level Administrate rights.
+        /// </summary>
+        public bool IsReOrderColumnVisible { get; set; }
     }
 }

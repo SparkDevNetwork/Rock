@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -21,6 +21,7 @@ using System.Data.Entity;
 using System.Linq;
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
@@ -75,7 +76,7 @@ namespace Rock.Blocks.Core
             {
                 return new DetailBlockBox<ScheduleBag, ScheduleDetailOptionsBag>();
             }
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var box = new DetailBlockBox<ScheduleBag, ScheduleDetailOptionsBag>();
                 var entity = GetInitialEntity( rockContext );
@@ -91,11 +92,10 @@ namespace Rock.Blocks.Core
                     return box;
                 }
 
-                var categoryId = PageParameter( PageParameterKey.ParentCategoryId ).AsIntegerOrNull();
-                if ( categoryId.HasValue )
+                var parentCategory = CategoryCache.Get( PageParameter( PageParameterKey.ParentCategoryId ), !PageCache.Layout.Site.DisablePredictableIds );
+                if ( parentCategory != null )
                 {
-                    box.Entity.Category = CategoryCache.Get( categoryId.Value )
-                        .ToListItemBag();
+                    box.Entity.Category = parentCategory.ToListItemBag();
                 }
                 box.NavigationUrls = GetBoxNavigationUrls();
                 box.Options = GetBoxOptions( box.IsEditable, rockContext, entity );
@@ -382,12 +382,12 @@ namespace Rock.Blocks.Core
 
         private string GetCancelLink()
         {
-            var parentCategoryId = PageParameter( PageParameterKey.ParentCategoryId ).AsIntegerOrNull();
-            if ( parentCategoryId.HasValue )
+            var category = CategoryCache.Get( PageParameter( PageParameterKey.ParentCategoryId ), !PageCache.Layout.Site.DisablePredictableIds );
+            if ( category != null )
             {
                 // Cancelling on Add, and we know the parentCategoryId, so we are probably in treeview mode, so navigate to the current page
                 var qryParams = new Dictionary<string, string>();
-                qryParams["CategoryId"] = parentCategoryId.ToString();
+                qryParams["CategoryId"] = category.IdKey;
                 qryParams["ScheduleId"] = null;
                 return this.GetCurrentPageUrl( qryParams );
             }
@@ -400,7 +400,7 @@ namespace Rock.Blocks.Core
         /// <inheritdoc/>
         protected override string RenewSecurityGrantToken()
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var entity = GetInitialEntity( rockContext );
 
@@ -495,7 +495,7 @@ namespace Rock.Blocks.Core
                 return ActionNotFound();
             }
 
-            var copiedEntity = new ScheduleService( new RockContext() ).Copy( key );
+            var copiedEntity = new ScheduleService( RockApp.Current.CreateRockContext() ).Copy( key );
 
             return ActionContent( System.Net.HttpStatusCode.Created, this.GetCurrentPageUrl( new Dictionary<string, string>
             {
@@ -512,7 +512,7 @@ namespace Rock.Blocks.Core
         [BlockAction]
         public BlockActionResult Edit( string key )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 if ( !TryGetEntityForEditAction( key, rockContext, out var entity, out var actionError ) )
                 {
@@ -523,7 +523,8 @@ namespace Rock.Blocks.Core
 
                 var box = new DetailBlockBox<ScheduleBag, ScheduleDetailOptionsBag>
                 {
-                    Entity = GetEntityBagForEdit( entity )
+                    Entity = GetEntityBagForEdit( entity ),
+                    Options = GetBoxOptions( true, rockContext, entity )
                 };
 
                 return ActionOk( box );
@@ -538,7 +539,7 @@ namespace Rock.Blocks.Core
         [BlockAction]
         public BlockActionResult Save( DetailBlockBox<ScheduleBag, ScheduleDetailOptionsBag> box )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var entityService = new ScheduleService( rockContext );
 
@@ -595,7 +596,7 @@ namespace Rock.Blocks.Core
         [BlockAction]
         public BlockActionResult Delete( string key )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var entityService = new ScheduleService( rockContext );
 
@@ -611,9 +612,9 @@ namespace Rock.Blocks.Core
 
                 // reload page, selecting the deleted data view's parent
                 var qryParams = new Dictionary<string, string>();
-                if ( entity.CategoryId != null )
+                if ( entity.CategoryId.HasValue )
                 {
-                    qryParams["CategoryId"] = entity.CategoryId.ToString();
+                    qryParams["CategoryId"] = CategoryCache.Get( entity.CategoryId.Value )?.IdKey;
                 }
                 qryParams["ExpandedIds"] = PageParameter( "ExpandedIds" );
 
@@ -633,7 +634,7 @@ namespace Rock.Blocks.Core
         [BlockAction]
         public BlockActionResult RefreshAttributes( DetailBlockBox<ScheduleBag, ScheduleDetailOptionsBag> box )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 if ( !TryGetEntityForEditAction( box.Entity.IdKey, rockContext, out var entity, out var actionError ) )
                 {
@@ -678,6 +679,21 @@ namespace Rock.Blocks.Core
             }
         }
 
+        /// <summary>
+        /// Generates an HTML preview of a schedule based on the provided iCalendar content.
+        /// </summary>
+        /// <param name="iCalendarContent">The iCalendar-formatted string representing the schedule to preview. Cannot be null.</param>
+        /// <returns>A <see cref="BlockActionResult"/> containing the generated HTML preview of the schedule.</returns>
+        [BlockAction]
+        public BlockActionResult GetPreviewHtml( string iCalendarContent )
+        {
+            Schedule schedule = new Schedule();
+            schedule.iCalendarContent = iCalendarContent;
+
+            var previewHtml = ScheduleService.CreatePreviewHTML( schedule );
+
+            return ActionOk( previewHtml );
+        }
         #endregion
     }
 }

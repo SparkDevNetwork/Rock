@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -314,6 +314,24 @@ namespace Rock.Web.Cache
         public string Slug { get; private set; }
 
         #endregion
+
+        #region ISecured
+
+        /*
+             8/7/2026 - NA
+
+             ⚠ SECURITY NOTICE ⚠
+
+             If the model implements custom ISecured behavior, the corresponding
+             {Entity}Cache class MUST implement the same security logic.
+
+             Reason: Prevent security mismatches between model entities and cache objects.
+        */
+
+        /// <inheritdoc cref="Rock.Model.WorkflowType.ParentAuthority"/>
+        public override Security.ISecured ParentAuthority => Category ?? base.ParentAuthority;
+
+        #endregion ISecured
 
         #region Public Methods
 

@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -58,6 +58,22 @@ namespace Rock.Field.Types
         protected override bool GetFolderSelectionDisabled( Dictionary<string, string> privateConfigurationValues )
         {
             return true;
+        }
+
+        /// <inheritdoc/>
+        /// <remarks>
+        /// The picker shows a tree of categories with messages beneath them, but a
+        /// category is never a valid value here because folder selection is disabled.
+        /// Only the message guids are stored.
+        /// </remarks>
+        internal override FieldTypeHints GetFieldHints( Dictionary<string, string> privateConfigurationValues )
+        {
+            return new FieldTypeHints
+            {
+                IsCompleteList = false,
+                ValueFormat = "One or more guids identifying rows in the AdaptiveMessage table, separated by commas. Not their ids or idKeys, and never the guid of a category the messages are filed under.",
+                Instructions = "To find the correct values, read the adaptive messages and take the guid of each one you want."
+            };
         }
     }
 }

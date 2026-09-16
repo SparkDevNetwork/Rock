@@ -19,7 +19,7 @@ import { defineAsyncComponent } from "@Obsidian/Utility/component";
 import { FieldTypeBase } from "./fieldType";
 import { escapeHtml } from "@Obsidian/Utility/stringUtils";
 
-export const enum ConfigurationValueKey {
+export const enum ConfigurationKey {
     Toolbar = "toolbar",
     DocumentFolderRoot = "documentfolderroot",
     ImageFolderRoot = "imagefolderroot",
@@ -53,7 +53,7 @@ export class HtmlFieldType extends FieldTypeBase {
     }
 
     public override getCondensedHtmlValue(value: string, configurationValues: Record<string, string>, isEscaped?: boolean): string {
-        const html = configurationValues?.[ConfigurationValueKey.CondensedHtml] ?? value ?? "";
+        const html = configurationValues?.[ConfigurationKey.CondensedHtml] ?? value ?? "";
         return isEscaped ? escapeHtml(html) : html;
     }
 

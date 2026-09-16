@@ -20,6 +20,7 @@ using System.ComponentModel;
 using System.ComponentModel.Composition;
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -34,9 +35,20 @@ namespace Rock.Workflow.Action
     [Export( typeof( Rock.Workflow.ActionComponent ) )]
     [ExportMetadata( "ComponentName", "Delay" )]
 
-    [IntegerField( "Minutes To Delay", "The number of minutes to delay successful execution of action", false, order: 0 )]
-    [WorkflowAttribute( "Date In Attribute", "The date or date/time attribute value to use for the delay.", false, "", "", 1, null, new string[] { "Rock.Field.Types.DateFieldType", "Rock.Field.Types.DateTimeFieldType" } )]
-    [CustomDropdownListField("Next Weekday", "The next day of the week to wait till.", "0^Sunday,1^Monday,2^Tuesday,3^Wednesday,4^Thursday,5^Friday,6^Saturday,7^Sunday", false, order: 2)]
+    [IntegerField( "Minutes To Delay",
+        Description = "The number of minutes to delay successful execution of action",
+        IsRequired = false,
+        Order = 0 )]
+    [WorkflowAttribute( "Date In Attribute",
+        Description = "The date or date/time attribute value to use for the delay.",
+        IsRequired = false,
+        Order = 1,
+        FieldTypeClassNames = new string[] { "Rock.Field.Types.DateFieldType", "Rock.Field.Types.DateTimeFieldType" } )]
+    [CustomDropdownListField( "Next Weekday",
+        Description = "The next day of the week to wait till.",
+        ListSource = "0^Sunday,1^Monday,2^Tuesday,3^Wednesday,4^Thursday,5^Friday,6^Saturday,7^Sunday", 
+        IsRequired = false,
+        Order = 2 )]
     [Rock.SystemGuid.EntityTypeGuid( "D22E73F7-86E2-46CA-AD5B-7770A866726B")]
     public class Delay : Rock.Workflow.ActionComponent
     {
@@ -135,7 +147,7 @@ namespace Rock.Workflow.Action
                 attribute.FieldTypeId = FieldTypeCache.Get( Rock.SystemGuid.FieldType.TEXT.AsGuid() ).Id;
 
                 // Need to save the attribute now (using different context) so that an attribute id is returned.
-                using ( var newRockContext = new RockContext() )
+                using ( var newRockContext = RockApp.Current.CreateRockContext() )
                 {
                     new AttributeService( newRockContext ).Add( attribute );
                     newRockContext.SaveChanges();

@@ -21,7 +21,7 @@ import UrlLinkBox from "@Obsidian/Controls/urlLinkBox.obs";
 import TextBox from "@Obsidian/Controls/textBox.obs";
 import CodeEditor from "@Obsidian/Controls/codeEditor.obs";
 import ColorPicker from "@Obsidian/Controls/colorPicker.obs";
-import { ConfigurationValueKey } from "./socialMediaAccountField.partial";
+import { ConfigurationKey } from "./socialMediaAccountField.partial";
 
 export const EditComponent = defineComponent({
     name: "SocialMediaAccountField.Edit",
@@ -92,19 +92,19 @@ export const ConfigurationComponent = defineComponent({
 
             // Construct the new value that will be emitted if it is different
             // than the current value.
-            newValue[ConfigurationValueKey.Name] = name.value ?? "";
-            newValue[ConfigurationValueKey.IconCssClass] = iconCssClass.value ?? "";
-            newValue[ConfigurationValueKey.Color] = color.value ?? "";
-            newValue[ConfigurationValueKey.TextTemplate] = textTemplate.value ?? "";
-            newValue[ConfigurationValueKey.BaseUrl] = baseUrl.value ?? "";
-            newValue[ConfigurationValueKey.BaseUrlAliases] = baseUrlAliases.value ?? "";
+            newValue[ConfigurationKey.Name] = name.value ?? "";
+            newValue[ConfigurationKey.IconCssClass] = iconCssClass.value ?? "";
+            newValue[ConfigurationKey.Color] = color.value ?? "";
+            newValue[ConfigurationKey.TextTemplate] = textTemplate.value ?? "";
+            newValue[ConfigurationKey.BaseUrl] = baseUrl.value ?? "";
+            newValue[ConfigurationKey.BaseUrlAliases] = baseUrlAliases.value ?? "";
 
-            const anyValueChanged = newValue[ConfigurationValueKey.Name] !== props.modelValue[ConfigurationValueKey.Name]
-                || newValue[ConfigurationValueKey.IconCssClass] !== props.modelValue[ConfigurationValueKey.IconCssClass]
-                || newValue[ConfigurationValueKey.Color] !== props.modelValue[ConfigurationValueKey.Color]
-                || newValue[ConfigurationValueKey.TextTemplate] !== props.modelValue[ConfigurationValueKey.TextTemplate]
-                || newValue[ConfigurationValueKey.BaseUrl] !== props.modelValue[ConfigurationValueKey.BaseUrl]
-                || newValue[ConfigurationValueKey.BaseUrlAliases] !== props.modelValue[ConfigurationValueKey.BaseUrlAliases];
+            const anyValueChanged = newValue[ConfigurationKey.Name] !== props.modelValue[ConfigurationKey.Name]
+                || newValue[ConfigurationKey.IconCssClass] !== props.modelValue[ConfigurationKey.IconCssClass]
+                || newValue[ConfigurationKey.Color] !== props.modelValue[ConfigurationKey.Color]
+                || newValue[ConfigurationKey.TextTemplate] !== props.modelValue[ConfigurationKey.TextTemplate]
+                || newValue[ConfigurationKey.BaseUrl] !== props.modelValue[ConfigurationKey.BaseUrl]
+                || newValue[ConfigurationKey.BaseUrlAliases] !== props.modelValue[ConfigurationKey.BaseUrlAliases];
 
             // If any value changed then emit the new model value.
             if (anyValueChanged) {
@@ -132,22 +132,22 @@ export const ConfigurationComponent = defineComponent({
         // Watch for changes coming in from the parent component and update our
         // data to match the new information.
         watch(() => [props.modelValue, props.configurationProperties], () => {
-            name.value = props.modelValue[ConfigurationValueKey.Name] ?? "";
-            iconCssClass.value = props.modelValue[ConfigurationValueKey.IconCssClass] ?? "";
-            color.value = props.modelValue[ConfigurationValueKey.Color] ?? "";
-            textTemplate.value = props.modelValue[ConfigurationValueKey.TextTemplate] ?? "";
-            baseUrl.value = props.modelValue[ConfigurationValueKey.BaseUrl] ?? "";
-            baseUrlAliases.value = props.modelValue[ConfigurationValueKey.BaseUrlAliases] ?? "";
+            name.value = props.modelValue[ConfigurationKey.Name] ?? "";
+            iconCssClass.value = props.modelValue[ConfigurationKey.IconCssClass] ?? "";
+            color.value = props.modelValue[ConfigurationKey.Color] ?? "";
+            textTemplate.value = props.modelValue[ConfigurationKey.TextTemplate] ?? "";
+            baseUrl.value = props.modelValue[ConfigurationKey.BaseUrl] ?? "";
+            baseUrlAliases.value = props.modelValue[ConfigurationKey.BaseUrlAliases] ?? "";
         }, {
             immediate: true
         });
 
-        watch(name, val => maybeUpdateConfiguration(ConfigurationValueKey.Name, val ?? ""));
-        watch(iconCssClass, val => maybeUpdateConfiguration(ConfigurationValueKey.IconCssClass, val ?? ""));
-        watch(color, val => maybeUpdateConfiguration(ConfigurationValueKey.Color, val ?? ""));
-        watch(textTemplate, val => maybeUpdateConfiguration(ConfigurationValueKey.TextTemplate, val ?? ""));
-        watch(baseUrl, val => maybeUpdateConfiguration(ConfigurationValueKey.BaseUrl, val ?? ""));
-        watch(baseUrlAliases, val => maybeUpdateConfiguration(ConfigurationValueKey.BaseUrlAliases, val ?? ""));
+        watch(name, val => maybeUpdateConfiguration(ConfigurationKey.Name, val ?? ""));
+        watch(iconCssClass, val => maybeUpdateConfiguration(ConfigurationKey.IconCssClass, val ?? ""));
+        watch(color, val => maybeUpdateConfiguration(ConfigurationKey.Color, val ?? ""));
+        watch(textTemplate, val => maybeUpdateConfiguration(ConfigurationKey.TextTemplate, val ?? ""));
+        watch(baseUrl, val => maybeUpdateConfiguration(ConfigurationKey.BaseUrl, val ?? ""));
+        watch(baseUrlAliases, val => maybeUpdateConfiguration(ConfigurationKey.BaseUrlAliases, val ?? ""));
 
         return {
             name,

@@ -18,7 +18,7 @@ import { computed, defineComponent, ref, watch } from "vue";
 import { getFieldConfigurationProps, getFieldEditorProps } from "./utils";
 import ContentChannelItemPicker from "@Obsidian/Controls/contentChannelItemPicker.obs";
 import DropDownList from "@Obsidian/Controls/dropDownList.obs";
-import { ConfigurationPropertyKey, ConfigurationValueKey } from "./contentChannelItemField.partial";
+import { ConfigurationPropertyKey, ConfigurationKey } from "./contentChannelItemField.partial";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { updateRefValue } from "@Obsidian/Utility/component";
 
@@ -35,11 +35,30 @@ export const EditComponent = defineComponent({
         // The internal value used by the text editor.
         const internalValue = ref<ListItemBag | null>();
         // The selected content channel configuration value.
-        const contentChannelGuid = computed(() => props.configurationValues[ConfigurationValueKey.ContentChannel]);
+        const contentChannelGuid = computed(() => props.configurationValues[ConfigurationKey.ContentChannel]);
+
+        /**
+         * Safely parses the model value into a ListItemBag. The value is normally
+         * a serialized ListItemBag, but it can be a plain string (e.g. a legacy
+         * value or a view-formatted title that isn't valid JSON), in which case
+         * it is treated as no selection rather than throwing.
+         */
+        function parseModelValue(): ListItemBag | null {
+            if (!props.modelValue) {
+                return null;
+            }
+
+            try {
+                return JSON.parse(props.modelValue) as ListItemBag;
+            }
+            catch {
+                return null;
+            }
+        }
 
         // Watch for changes from the parent component and update the text editor.
         watch(() => props.modelValue, () => {
-            updateRefValue(internalValue, props.modelValue ? JSON.parse(props.modelValue) : null);
+            updateRefValue(internalValue, parseModelValue());
         }, {
             immediate: true
         });
@@ -94,10 +113,10 @@ export const ConfigurationComponent = defineComponent({
 
             // Construct the new value that will be emitted if it is different
             // than the current value.
-            newValue[ConfigurationValueKey.ContentChannel] = contentChannelGuid.value;
+            newValue[ConfigurationKey.ContentChannel] = contentChannelGuid.value;
 
             // Compare the new value and the old value.
-            const anyValueChanged = newValue[ConfigurationValueKey.ContentChannel] !== (props.modelValue[ConfigurationValueKey.ContentChannel]);
+            const anyValueChanged = newValue[ConfigurationKey.ContentChannel] !== (props.modelValue[ConfigurationKey.ContentChannel]);
 
             // If any value changed then emit the new model value.
             if (anyValueChanged) {
@@ -124,7 +143,7 @@ export const ConfigurationComponent = defineComponent({
         // Watch for changes coming in from the parent component and update our
         // data to match the new information.
         watch(() => [props.modelValue, props.configurationProperties], () => {
-            contentChannelGuid.value = props.modelValue[ConfigurationValueKey.ContentChannel];
+            contentChannelGuid.value = props.modelValue[ConfigurationKey.ContentChannel];
         }, {
             immediate: true
         });
@@ -140,7 +159,7 @@ export const ConfigurationComponent = defineComponent({
         });
 
         // Watch for changes in properties that only require a local UI update.
-        watch(contentChannelGuid, () => maybeUpdateConfiguration(ConfigurationValueKey.ContentChannel, contentChannelGuid.value));
+        watch(contentChannelGuid, () => maybeUpdateConfiguration(ConfigurationKey.ContentChannel, contentChannelGuid.value));
 
         return {
             contentChannelGuid,

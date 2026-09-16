@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.Web.Http;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Rest.Filters;
@@ -48,7 +49,7 @@ namespace Rock.Rest.Controllers
             string groupTypeIds = ""
             )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var groupMemberHistoricalService = new GroupMemberHistoricalService( rockContext );
                 List<int> groupTypeIdList = groupTypeIds?.SplitDelimitedValues().AsIntegerList();

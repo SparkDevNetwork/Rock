@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -25,8 +25,10 @@ using Newtonsoft.Json;
 
 using Rock.Attribute;
 using Rock.Data;
-using Rock.Web.Cache;
 using Rock.Enums.Cms;
+using Rock.Enums.Security;
+using Rock.Security;
+using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -76,6 +78,7 @@ namespace Rock.Model
         /// ~/Blocks/Security/Login.ascx
         /// </example>
         [MaxLength( 260 )]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string Path { get; set; }
 
         /// <summary>
@@ -98,6 +101,7 @@ namespace Rock.Model
         [Required]
         [MaxLength( 100 )]
         [DataMember( IsRequired = true )]
+        [StringValidation( StringValidationProfile.Name )]
         public string Name { get; set; }
 
         /// <summary>
@@ -111,6 +115,7 @@ namespace Rock.Model
         /// </example>
         [MaxLength( 100 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string Category { get; set; }
 
         /// <summary>
@@ -123,6 +128,7 @@ namespace Rock.Model
         /// Provides ability to log into the site.
         /// </example>
         [DataMember]
+        [StringValidation( StringValidationProfile.LavaAndBasicHtml )]
         public string Description { get; set; }
 
         /// <summary>

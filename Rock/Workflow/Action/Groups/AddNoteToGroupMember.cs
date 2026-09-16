@@ -36,22 +36,48 @@ namespace Rock.Workflow.Action
     [Export( typeof( ActionComponent ) )]
     [ExportMetadata( "ComponentName", "Group Member Note Add" )]
 
-    [WorkflowAttribute( "Person", "Workflow attribute that contains the person to update in the group.", true, "", "", 0, null,
-        new string[] { "Rock.Field.Types.PersonFieldType" } )]
+    [WorkflowAttribute( "Person",
+        Description = "Workflow attribute that contains the person to update in the group.",
+        IsRequired = true,
+        Order = 0,
+        FieldTypeClassNames = new string[] { "Rock.Field.Types.PersonFieldType" } )]
 
-    [WorkflowAttribute( "Group", "Workflow Attribute that contains the group the person is in.", true, "", "", 1, null,
-        new string[] { "Rock.Field.Types.GroupFieldType" } )]
+    [WorkflowAttribute( "Group",
+        Description = "Workflow Attribute that contains the group the person is in.",
+        IsRequired = true,
+        Order = 1,
+        FieldTypeClassNames = new string[] { "Rock.Field.Types.GroupFieldType" } )]
 
-    [NoteTypeField( "Note Type", "The type of note to add to the group member.", false, "Rock.Model.GroupMember", order: 2 )]
+    [NoteTypeField( "Note Type",
+        Description = "The type of note to add to the group member.",
+        IsRequired = true,
+        EntityTypeName = "Rock.Model.GroupMember",
+        Order = 2 )]
 
-    [WorkflowTextOrAttribute( "Caption", "Attribute Value", "Text or workflow attribute that contains the caption to set the group member note to. <span class='tip tip-lava'></span>", true, "", "", 3, "Caption",
-        new string[] { "Rock.Field.Types.TextFieldType" } )]
+    [WorkflowTextOrAttribute( "Caption",
+        "Attribute Value",
+        Description = "Text or workflow attribute that contains the caption to set the group member note to. <span class='tip tip-lava'></span>",
+        IsRequired = true,
+        Order = 3,
+        Key = "Caption",
+        FieldTypeClassNames = new string[] { "Rock.Field.Types.TextFieldType" } )]
 
-    [WorkflowTextOrAttribute( "Note", "Attribute Value", "Text or workflow attribute that contains the text to set the group member note to. <span class='tip tip-lava'></span>", true, "", "", 4, "Note",
-        new string[] { "Rock.Field.Types.MemoFieldType", "Rock.Field.Types.TextFieldType" } )]
+    [WorkflowTextOrAttribute( "Note",
+        "Attribute Value",
+        Description = "Text or workflow attribute that contains the text to set the group member note to. <span class='tip tip-lava'></span>",
+        IsRequired = true,
+        Order = 4,
+        Key = "Note",
+        FieldTypeClassNames = new string[] { "Rock.Field.Types.MemoFieldType", "Rock.Field.Types.TextFieldType" } )]
 
-    [WorkflowTextOrAttribute( "Is Alert", "Attribute Value", "Boolean (must enter True/False) or workflow attribute that contains whether the note should be an alert.", false, "False", "", 5, "IsAlert",
-        new string[] { "Rock.Field.Types.BooleanFieldType" } )]
+    [WorkflowTextOrAttribute( "Is Alert",
+        "Attribute Value",
+        Description = "Boolean (must enter True/False) or workflow attribute that contains whether the note should be an alert.",
+        IsRequired = false,
+        DefaultValue = "False",
+        Order = 5,
+        Key = "IsAlert",
+        FieldTypeClassNames = new string[] { "Rock.Field.Types.BooleanFieldType" } )]
 
     
     [Rock.SystemGuid.EntityTypeGuid( "019645AD-3BBF-47A0-AEA5-4F0636BDA715")]

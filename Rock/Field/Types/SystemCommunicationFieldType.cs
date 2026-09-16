@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -22,7 +22,9 @@ using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 #endif
+
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.ViewModels.Utility;
@@ -56,7 +58,7 @@ namespace Rock.Field.Types
             Guid guid = Guid.Empty;
             if ( Guid.TryParse( privateValue, out guid ) )
             {
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     var SystemCommunication = new SystemCommunicationService( rockContext ).GetNoTracking( guid );
                     if ( SystemCommunication != null )
@@ -93,7 +95,7 @@ namespace Rock.Field.Types
         {
             var configurationValues = base.GetPublicConfigurationValues( privateConfigurationValues, usage, value );
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 bool includeInactive = configurationValues.ContainsKey( INCLUDE_INACTIVE_KEY ) && configurationValues[INCLUDE_INACTIVE_KEY].AsBoolean();
 
@@ -148,7 +150,7 @@ namespace Rock.Field.Types
             var guid = value.AsGuidOrNull();
             if ( guid.HasValue )
             {
-                rockContext = rockContext ?? new RockContext();
+                rockContext = rockContext ?? RockApp.Current.CreateRockContext();
                 return new SystemCommunicationService( rockContext ).Get( guid.Value );
             }
 
@@ -168,7 +170,7 @@ namespace Rock.Field.Types
                 return null;
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var systemCommunicationId = new SystemCommunicationService( rockContext ).GetId( guid.Value );
 
@@ -197,6 +199,22 @@ namespace Rock.Field.Types
 
         #endregion
 
+        #region Field Type Hints
+
+        /// <inheritdoc/>
+        internal override FieldTypeHints GetFieldHints( Dictionary<string, string> privateConfigurationValues )
+        {
+            // No Values. The set is unbounded or depends on other configuration, so
+            // the shape of the value and where to get one is what can be described.
+            return new FieldTypeHints
+            {
+                IsCompleteList = false,
+                ValueFormat = "The guid of a row in the SystemCommunication table. Not its id or idKey.",
+                Instructions = "To find the correct value, look up the system communications and take the guid of the one you want."
+            };
+        }
+
+        #endregion
         #region WebForms
 #if WEBFORMS
 
@@ -299,7 +317,7 @@ namespace Rock.Field.Types
 
             var editControl = new RockDropDownList { ID = id, EnhanceForLongLists = true };
 
-            var systemCommunications = new SystemCommunicationService( new RockContext() ).Queryable().Where( v => ( !v.IsActive.HasValue || v.IsActive.Value || includeInactive ) ).OrderBy( e => e.Title );
+            var systemCommunications = new SystemCommunicationService( RockApp.Current.CreateRockContext() ).Queryable().Where( v => ( !v.IsActive.HasValue || v.IsActive.Value || includeInactive ) ).OrderBy( e => e.Title );
 
             // add a blank for the first option
             editControl.Items.Add( new ListItem() );
@@ -355,7 +373,7 @@ namespace Rock.Field.Types
                         if ( listItem == null )
                         {
                             var valueGuid = value.AsGuid();
-                            var systemCommunication = new SystemCommunicationService( new RockContext() )
+                            var systemCommunication = new SystemCommunicationService( RockApp.Current.CreateRockContext() )
                                .Queryable().AsNoTracking()
                                .Where( o => o.Guid == valueGuid )
                                .FirstOrDefault();
@@ -379,7 +397,7 @@ namespace Rock.Field.Types
         public int? GetEditValueAsEntityId( Control control, Dictionary<string, ConfigurationValue> configurationValues )
         {
             var guid = GetEditValue( control, configurationValues ).AsGuid();
-            var item = new SystemCommunicationService( new RockContext() ).Get( guid );
+            var item = new SystemCommunicationService( RockApp.Current.CreateRockContext() ).Get( guid );
             return item != null ? item.Id : ( int? ) null;
         }
 
@@ -391,7 +409,7 @@ namespace Rock.Field.Types
         /// <param name="id">The identifier.</param>
         public void SetEditValueFromEntityId( Control control, Dictionary<string, ConfigurationValue> configurationValues, int? id )
         {
-            var item = new SystemCommunicationService( new RockContext() ).Get( id ?? 0 );
+            var item = new SystemCommunicationService( RockApp.Current.CreateRockContext() ).Get( id ?? 0 );
             var guidValue = item != null ? item.Guid.ToString() : string.Empty;
             SetEditValue( control, configurationValues, guidValue );
         }

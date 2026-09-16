@@ -16,7 +16,7 @@
 //
 import { Component, nextTick } from "vue";
 import { FieldTypeBase } from "./fieldType";
-import { ConfigurationValueKey } from "./colorSelectorField.types.partial";
+import { ConfigurationKey } from "./colorSelectorField.types.partial";
 import { deserializeColors, deserializeValue, getSelectedColors, setCamouflagedClass } from "./colorSelectorField.utils.partial";
 import { defineAsyncComponent } from "@Obsidian/Utility/component";
 import guid from "@Obsidian/Utility/guid";
@@ -41,7 +41,7 @@ export class ColorSelectorFieldType extends FieldTypeBase {
         // configurationValues["Colors"] is an array of Key-Value pairs, where the key is a guid/key and the value is the hex color.
         try {
             const values = deserializeValue(value).map(clientKey => clientKey?.toLowerCase());
-            const colors: string[] = deserializeColors(configurationValues[ConfigurationValueKey.Colors]);
+            const colors: string[] = deserializeColors(configurationValues[ConfigurationKey.Colors]);
 
             return getSelectedColors(colors, values).join(",");
         }
@@ -53,7 +53,7 @@ export class ColorSelectorFieldType extends FieldTypeBase {
     public override getHtmlValue(value: string, configurationValues: Record<string, string>, isEscaped: boolean = false): string {
         const htmlStringBuilder: string[] = [];
         const selectorsToProcess: string[] = [];
-        const colors = deserializeColors(configurationValues[ConfigurationValueKey.Colors]);
+        const colors = deserializeColors(configurationValues[ConfigurationKey.Colors]);
         const values = deserializeValue(value);
 
         htmlStringBuilder.push("<div class='color-selector-items'>");

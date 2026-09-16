@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -23,6 +23,7 @@ using System.Web.UI.WebControls;
 
 using Rock;
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Reporting;
@@ -36,30 +37,69 @@ namespace RockWeb.Blocks.Reporting
     [DisplayName( "Dynamic Report" )]
     [Category( "Reporting" )]
     [Description( "Block to display a report with options to edit the filter" )]
-    [BooleanField( "Show 'Merge Template' action on grid", "", defaultValue: true, key: "ShowGridMergeTemplateAction" )]
-    [BooleanField( "Show 'Communications' action on grid", "", defaultValue: true, key: "ShowGridCommunicationsAction" )]
+    [BooleanField( "Show 'Merge Template' action on grid",
+        DefaultBooleanValue = true,
+        Key = "ShowGridMergeTemplateAction" )]
+    [BooleanField( "Show 'Communications' action on grid",
+        DefaultBooleanValue = true,
+        Key = "ShowGridCommunicationsAction" )]
 
     // CustomSetting Dialog
-    [TextField( "ResultsIconCssClass", "Title for the results list.", false, "ti ti-list", "CustomSetting" )]
-    [TextField( "ResultsTitle", "Title for the results list.", false, "Results", "CustomSetting" )]
-    [TextField( "FilterTitle", "Title for the results list.", false, "Filters", "CustomSetting" )]
-    [TextField( "FilterIconCssClass", "Title for the results list.", false, "ti ti-filter", "CustomSetting" )]
-    [TextField( "Report", "The report to use for this block", false, "", "CustomSetting" )]
+    [TextField( "ResultsIconCssClass",
+        Description = "Title for the results list.",
+        IsRequired = false,
+        DefaultValue = "ti ti-list",
+        Category = "CustomSetting" )]
+    [TextField( "ResultsTitle",
+        Description = "Title for the results list.",
+        IsRequired = false,
+        DefaultValue = "Results",
+        Category = "CustomSetting" )]
+    [TextField( "FilterTitle",
+        Description = "Title for the results list.",
+        IsRequired = false,
+        DefaultValue = "Filters",
+        Category = "CustomSetting" )]
+    [TextField( "FilterIconCssClass",
+        Description = "Title for the results list.",
+        IsRequired = false,
+        DefaultValue = "ti ti-filter",
+        Category = "CustomSetting" )]
+    [TextField( "Report",
+        Description = "The report to use for this block",
+        IsRequired = false,
+        DefaultValue = "",
+        Category = "CustomSetting" )]
 
     // NOTE: attribute names should have been called *DataFilter* not *DataField*, but probably can't change to keep backward compat :(
-    [TextField( "SelectedDataFieldGuids", "The DataFilters to present to the user", false, "", "CustomSetting" )]
-    [TextField( "ConfigurableDataFieldGuids", "Of the DataFilters that are presented to the user, which are configurable vs just a checkbox", false, "", "CustomSetting" )]
-    [TextField( "TogglableDataFieldGuids", "The configurable DataFilters that include a checkbox that can disable/enable the filter", false, "", "CustomSetting" )]
+    [TextField( "SelectedDataFieldGuids",
+        Description = "The DataFilters to present to the user",
+        IsRequired = false,
+        Category = "CustomSetting" )]
+    [TextField( "ConfigurableDataFieldGuids",
+        Description = "Of the DataFilters that are presented to the user, which are configurable vs just a checkbox",
+        IsRequired = false,
+        Category = "CustomSetting" )]
+    [TextField( "TogglableDataFieldGuids",
+        Description = "The configurable DataFilters that include a checkbox that can disable/enable the filter",
+        IsRequired = false,
+        Category = "CustomSetting" )]
 
-    [TextField( "PersonIdField", "If this isn't a Person report, but there is a person id field, specify the name of the field", false, "", "CustomSetting" )]
+    [TextField( "PersonIdField",
+        Description = "If this isn't a Person report, but there is a person id field, specify the name of the field",
+        IsRequired = false,
+        Category = "CustomSetting" )]
 
-    [TextField( "DataFiltersPrePostHtmlConfig", "JSON for the Dictionary<Guid,DataFilterPrePostHtmlConfig>", false, "", "CustomSetting" )]
+    [TextField( "DataFiltersPrePostHtmlConfig",
+        Description = "JSON for the Dictionary<Guid,DataFilterPrePostHtmlConfig>",
+        IsRequired = false,
+        Category = "CustomSetting" )]
 
     [BooleanField(
         "Use Obsidian Components",
         Key = AttributeKey.UseObsidianComponents,
         Description = "Switches the filter components to use Obsidian if supported.",
-        DefaultBooleanValue = false,
+        DefaultBooleanValue = true,
         Category = "Advanced" )]
 
     [Rock.SystemGuid.BlockTypeGuid( "C7C069DB-9EEE-4245-9DF2-34E3A1FF4CCB" )]
@@ -181,7 +221,7 @@ namespace RockWeb.Blocks.Reporting
         protected void ShowFilters( bool setSelection )
         {
             nbFiltersError.Visible = false;
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var reportService = new ReportService( rockContext );
 
             var reportGuid = this.GetAttributeValue( "Report" ).AsGuidOrNull();
@@ -360,7 +400,7 @@ namespace RockWeb.Blocks.Reporting
                                     {
                                         // if the format of the filter.Selection has changed, update the dataViewFilter's Selection to match the current format
                                         filter.Selection = normalizedSelection;
-                                        using ( var updateSelectionContext = new RockContext() )
+                                        using ( var updateSelectionContext = RockApp.Current.CreateRockContext() )
                                         {
                                             var dataViewFilter = new DataViewFilterService( updateSelectionContext ).Get( filter.Id );
                                             dataViewFilter.Selection = normalizedSelection;
@@ -464,7 +504,7 @@ namespace RockWeb.Blocks.Reporting
             // when saving.
             var preferences = GetBlockPersonPreferences();
 
-            var dataViewFilterService = new DataViewFilterService( new RockContext() );
+            var dataViewFilterService = new DataViewFilterService( RockApp.Current.CreateRockContext() );
             foreach ( var filterControl in phFilters.ControlsOfTypeRecursive<FilterField>() )
             {
                 string selectionKey = $"{filterControl.DataViewFilterGuid:N}_Selection";
@@ -529,7 +569,7 @@ namespace RockWeb.Blocks.Reporting
         /// </summary>
         private void BindReportGrid( bool isCommunication = false )
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var reportService = new ReportService( rockContext );
             var reportGuid = this.GetAttributeValue( "Report" ).AsGuidOrNull();
             var personIdField = this.GetAttributeValue( "PersonIdField" );
@@ -607,7 +647,7 @@ namespace RockWeb.Blocks.Reporting
             pnlConfigure.Visible = true;
 
             Guid? reportGuid = this.GetAttributeValue( "Report" ).AsGuidOrNull();
-            int? reportId = reportGuid != null ? new ReportService( new RockContext() ).GetId( reportGuid.Value ) : null;
+            int? reportId = reportGuid != null ? new ReportService( RockApp.Current.CreateRockContext() ).GetId( reportGuid.Value ) : null;
 
             rpReport.SetValue( reportId );
             txtResultsTitle.Text = this.GetAttributeValue( "ResultsTitle" );
@@ -682,7 +722,7 @@ namespace RockWeb.Blocks.Reporting
             this.SetAttributeValue( "FilterTitle", txtFilterTitle.Text );
             this.SetAttributeValue( "FilterIconCssClass", txtFilterIconCssClass.Text );
 
-            Guid? reportGuid = rpReport.SelectedValueAsId().HasValue ? new ReportService( new RockContext() ).GetGuid( rpReport.SelectedValueAsId().Value ) : null;
+            Guid? reportGuid = rpReport.SelectedValueAsId().HasValue ? new ReportService( RockApp.Current.CreateRockContext() ).GetGuid( rpReport.SelectedValueAsId().Value ) : null;
             this.SetAttributeValue( "Report", reportGuid.ToString() );
             this.SetAttributeValue( "PersonIdField", ddlPersonIdField.SelectedValue );
             SaveAttributeValues();
@@ -711,7 +751,7 @@ namespace RockWeb.Blocks.Reporting
         /// </summary>
         protected void BindDataFiltersGrid()
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var reportService = new ReportService( rockContext );
 
             var reportId = rpReport.SelectedValueAsId();

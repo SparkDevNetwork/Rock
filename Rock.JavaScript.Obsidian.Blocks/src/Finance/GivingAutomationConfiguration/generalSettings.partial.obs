@@ -1,0 +1,113 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="panel panel-section">
+        <div class="panel-heading">
+            <div>
+                <h4 class="panel-title">General Settings</h4>
+                <span class="description">The settings below help to configure the giving automation features within Rock.</span>
+            </div>
+        </div>
+
+        <div class="panel-body">
+            <div class="row">
+                <div class="col-md-12">
+                    <CheckBox v-model="settings.isGivingAutomationEnabled"
+                              label="Enable Giving Automation" />
+                </div>
+                <div class="col-md-12">
+                    <DayOfWeekPicker v-model="settings.daysToUpdateClassifications"
+                                     label="Days to Update Giving Group Classifications"
+                                     multiple />
+                </div>
+                <div class="col-md-12">
+                    <CheckBoxList v-model="transactionTypeGuids"
+                                  label="Transaction Types"
+                                  :items="options.transactionTypes ?? []"
+                                  horizontal />
+                </div>
+                <div class="col-md-6">
+                    <RadioButtonList v-model="accountType"
+                                     label="Accounts"
+                                     :items="options.accountTypeOptions ?? []"
+                                     horizontal />
+                </div>
+                <div v-if="isCustomAccounts" class="col-md-6">
+                    <AccountPicker v-model="selectedAccounts"
+                                   label="Selected Accounts"
+                                   multiple />
+                    <CheckBox v-model="settings.isIncludeChildAccounts"
+                              label="Include children of selected accounts" />
+                </div>
+            </div>
+        </div>
+    </div>
+</template>
+
+<script setup lang="ts">
+    import { PropType, computed } from "vue";
+    import AccountPicker from "@Obsidian/Controls/accountPicker.obs";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import CheckBoxList from "@Obsidian/Controls/checkBoxList.obs";
+    import DayOfWeekPicker from "@Obsidian/Controls/dayOfWeekPicker.obs";
+    import RadioButtonList from "@Obsidian/Controls/radioButtonList.obs";
+    import { useVModelPassthrough } from "@Obsidian/Utility/component";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { GivingAutomationConfigurationBag } from "@Obsidian/ViewModels/Blocks/Finance/GivingAutomationConfiguration/givingAutomationConfigurationBag";
+    import { GivingAutomationConfigurationOptionsBag } from "@Obsidian/ViewModels/Blocks/Finance/GivingAutomationConfiguration/givingAutomationConfigurationOptionsBag";
+    import { AccountType } from "./types.partial";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<GivingAutomationConfigurationBag>,
+            required: true
+        },
+
+        options: {
+            type: Object as PropType<GivingAutomationConfigurationOptionsBag>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: GivingAutomationConfigurationBag): void
+    }>();
+
+    // #region Values
+
+    const settings = useVModelPassthrough(props, "modelValue", emit);
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    const transactionTypeGuids = computed<string[]>({
+        get(): string[] {
+            return settings.value.selectedTransactionTypeGuids ?? [];
+        },
+        set(value: string[]): void {
+            settings.value.selectedTransactionTypeGuids = value;
+        }
+    });
+
+    const accountType = computed<string>({
+        get(): string {
+            return settings.value.accountType ?? AccountType.AllTaxDeductible;
+        },
+        set(value: string): void {
+            settings.value.accountType = value;
+        }
+    });
+
+    const selectedAccounts = computed<ListItemBag[]>({
+        get(): ListItemBag[] {
+            return settings.value.selectedAccounts ?? [];
+        },
+        set(value: ListItemBag[]): void {
+            settings.value.selectedAccounts = value;
+        }
+    });
+
+    const isCustomAccounts = computed((): boolean => accountType.value === AccountType.Custom);
+
+    // #endregion Computed Values
+</script>

@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -25,7 +25,9 @@ using Microsoft.EntityFrameworkCore;
 
 using Rock.Attribute;
 using Rock.Communication;
+using Rock.Configuration;
 using Rock.Data;
+using Rock.SystemGuid;
 using Rock.Web.Cache;
 
 namespace Rock.Model
@@ -67,6 +69,7 @@ namespace Rock.Model
             int groupId = default;
             var groupName = string.Empty;
             var dataViewName = string.Empty;
+            var modifiedSecurityGroupIds = new HashSet<int>();
 
             foreach ( var syncInfo in activeSyncList )
             {
@@ -75,9 +78,9 @@ namespace Rock.Model
                 updateStatusAction?.Invoke( $"Syncing group '{syncInfo.GroupName}'" );
 
                 // Use a fresh rockContext per sync so that ChangeTracker doesn't get bogged down
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
 #if REVIEW_NET5_0_OR_GREATER
-                using ( var rockContextReadOnly = new RockContext() )
+                using ( var rockContextReadOnly = RockApp.Current.CreateRockContext() )
 #else
                 using ( var rockContextReadOnly = new RockContextReadOnly() )
 #endif
@@ -128,6 +131,7 @@ namespace Rock.Model
                         DatabaseTimeoutSeconds = commandTimeout
                     };
 
+                    var wasGroupUpdated = false;
                     List<int> sourcePersonIds;
 
                     try
@@ -175,8 +179,13 @@ namespace Rock.Model
                         try
                         {
                             // Use a new context to limit the amount of change-tracking required
-                            using ( var groupMemberContext = new RockContext() )
+                            using ( var groupMemberContext = RockApp.Current.CreateRockContext() )
                             {
+                                // Disable cache update, we will handle it at the end
+                                // of the sync process to reduce load on the server due
+                                // to multiple cache updates for the same group.
+                                groupMemberContext.GetOrCreateOptions<UpdateCacheSaveOptions>().IsUpdateCacheDisabled = true;
+
                                 // Delete the records for that person's group and role.
                                 // NOTE: just in case there are duplicate records, delete all group member records for that person and role
                                 var groupMemberService = new GroupMemberService( groupMemberContext );
@@ -192,6 +201,7 @@ namespace Rock.Model
                                 }
 
                                 groupMemberContext.SaveChanges();
+                                wasGroupUpdated = true;
 
                                 result.DeletedMemberCount++;
                                 hasSyncChanged = true;
@@ -253,8 +263,13 @@ namespace Rock.Model
                         try
                         {
                             // Use a new context to limit the amount of change-tracking required
-                            using ( var groupMemberContext = new RockContext() )
+                            using ( var groupMemberContext = RockApp.Current.CreateRockContext() )
                             {
+                                // Disable cache update, we will handle it at the end
+                                // of the sync process to reduce load on the server due
+                                // to multiple cache updates for the same group.
+                                groupMemberContext.GetOrCreateOptions<UpdateCacheSaveOptions>().IsUpdateCacheDisabled = true;
+
                                 var groupMemberService = new GroupMemberService( groupMemberContext );
                                 var groupService = new GroupService( groupMemberContext );
 
@@ -279,6 +294,7 @@ namespace Rock.Model
                                         result.AddedMemberCount++;
                                         groupMemberService.Restore( archivedGroupMember );
                                         groupMemberContext.SaveChanges();
+                                        wasGroupUpdated = true;
                                     }
                                     else
                                     {
@@ -309,6 +325,7 @@ namespace Rock.Model
                                         // duplicate db queries. If this group member fails the validation check, we'll catch the exception below
                                         // and add the validation results to the overall results object.
                                         groupMemberContext.SaveChanges();
+                                        wasGroupUpdated = true;
                                         result.AddedMemberCount++;
                                     }
                                     catch ( GroupMemberValidationException )
@@ -395,10 +412,32 @@ namespace Rock.Model
                     {
                         result.GroupIdsSynced.Add( groupId );
                     }
+
+                    if ( wasGroupUpdated )
+                    {
+                        // If the group is a security role then we need to flush
+                        // the cache at the end of the operation.
+                        if ( sync.Group.IsSecurityRole || sync.Group.GroupType?.Guid == Rock.SystemGuid.GroupType.GROUPTYPE_SECURITY_ROLE.AsGuid() )
+                        {
+                            modifiedSecurityGroupIds.Add( sync.Group.Id );
+                        }
+                    }
+                }
+
+                // Flush all the cache related to the security groups that
+                // were modified.
+                if ( modifiedSecurityGroupIds.Any() )
+                {
+                    foreach ( var modifiedSecurityGroupId in modifiedSecurityGroupIds )
+                    {
+                        RoleCache.FlushItem( modifiedSecurityGroupId );
+                    }
+
+                    Security.Authorization.Clear();
                 }
 
                 // Update last refresh datetime in different context to avoid side-effects.
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     var sync = new GroupSyncService( rockContext )
                         .Queryable()

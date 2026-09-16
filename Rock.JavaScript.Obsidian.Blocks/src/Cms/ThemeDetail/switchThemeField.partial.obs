@@ -8,7 +8,7 @@
         <div class="d-flex" style="gap: 8px;">
             <Switch v-model="booleanValue" />
 
-            <button v-if="internalValue !== null"
+            <button v-if="internalValue !== null && !field.hideReset"
                     type="button"
                     class="btn btn-default btn-sm align-self-end"
                     title="Reset to default"

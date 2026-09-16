@@ -102,13 +102,13 @@
     const invokeBlockAction = useInvokeBlockAction();
     const browserBus = useBlockBrowserBus();
 
-    let fetchStepTYpeDetailsCts: CancellationTokenSource | null = null;
+    let fetchStepTypeDetailsCts: CancellationTokenSource | null = null;
 
     browserBus.subscribe(PageMessages.ContextEntityChanged, async (message: Message<ContextEntityChangedData>) => {
         if (areEqual(message.data.entityTypeGuid, EntityType.Campus)) {
-            fetchStepTYpeDetailsCts?.cancel();
-            fetchStepTYpeDetailsCts = new CancellationTokenSource();
-            fetchStepTypeDetails(fetchStepTYpeDetailsCts.token);
+            fetchStepTypeDetailsCts?.cancel();
+            fetchStepTypeDetailsCts = new CancellationTokenSource();
+            fetchStepTypeDetails(fetchStepTypeDetailsCts.token);
         }
     });
 
@@ -184,8 +184,8 @@
     // #endregion
 
     watch(filterDate, () => {
-        fetchStepTYpeDetailsCts?.cancel();
-        fetchStepTYpeDetailsCts = new CancellationTokenSource();
-        fetchStepTypeDetails(fetchStepTYpeDetailsCts.token);
+        fetchStepTypeDetailsCts?.cancel();
+        fetchStepTypeDetailsCts = new CancellationTokenSource();
+        fetchStepTypeDetails(fetchStepTypeDetailsCts.token);
     });
 </script>

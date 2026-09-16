@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -20,6 +20,7 @@ using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.Data.Entity;
 using System.Linq;
+
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
@@ -200,7 +201,7 @@ namespace Rock.Workflow.Action
                     string attributePersonValue = action.GetWorkflowAttributeValue( guidPersonAttribute.Value );
                     if ( !string.IsNullOrWhiteSpace( attributePersonValue ) )
                     {
-                        if ( attributePerson.FieldType.Class == typeof( Rock.Field.Types.PersonFieldType ).FullName )
+                        if ( attributePerson.FieldType.Guid == SystemGuid.FieldType.PERSON.AsGuid() )
                         {
                             Guid personAliasGuid = attributePersonValue.AsGuid();
                             if ( !personAliasGuid.IsEmpty() )

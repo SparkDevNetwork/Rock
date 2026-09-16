@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -25,6 +25,7 @@ using System.Web.Http.Controllers;
 
 using Microsoft.Extensions.Logging;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Logging;
 using Rock.SystemGuid;
@@ -145,7 +146,7 @@ namespace Rock.Model
             // Controller Class Name => New Format Id => Old Format Id
             var controllerApiIdMap = new Dictionary<string, Dictionary<string, string>>();
 
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var restControllerService = new RestControllerService( rockContext );
             var discoveredControllers = new List<DiscoveredControllerFromReflection>();
             logger.LogDebug( $"\t{sw.ElapsedMilliseconds} ms Getting GetApiExplorer..." );
@@ -422,7 +423,9 @@ namespace Rock.Model
                     var action = allDatabaseActions.Where( a =>
                         a.ApiId == newFormatId
                         || a.ApiId == oldFormatId
-                        || ( discoveredAction.ReflectedGuid.HasValue && a.Guid == discoveredAction.ReflectedGuid.Value ) ).FirstOrDefault();
+                        || ( discoveredAction.ReflectedGuid.HasValue && a.Guid == discoveredAction.ReflectedGuid.Value ) )
+                        .OrderByDescending( a => a.Guid == discoveredAction.ReflectedGuid )
+                        .FirstOrDefault();
 
                     if ( action == null )
                     {

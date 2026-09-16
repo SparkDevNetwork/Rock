@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -22,7 +22,7 @@ namespace Rock.AI.Agent.Classes.Entity
     /// <summary>
     /// POCO result for attribute values.
     /// </summary>
-    internal class AttributeValueResult
+    public class AttributeValueResult
     {
         /// <summary>
         /// The identifier of the attribute. This is not sent to the agent but

@@ -1,0 +1,179 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <NotificationBox v-if="deepLinkDomainsText"
+                     alertType="info"
+                     class="mb-3"
+                     style="width: 40%;">
+        <strong>Enabled domains:</strong> {{ deepLinkDomainsText }}
+    </NotificationBox>
+
+    <Grid :data="gridDataSource"
+          keyField="guid"
+          itemTerm="Deep Link"
+          light
+          liveUpdates
+          :onAddItem="onAddClicked"
+          @selectItem="onRowClicked">
+        <ReorderColumn @orderChanged="onOrderChanged" />
+
+        <TextColumn name="route"
+                    title="Route"
+                    field="route"
+                    :format="formatRoute"
+                    visiblePriority="xs" />
+
+        <TextColumn name="page"
+                    title="Mobile Page"
+                    field="page"
+                    visiblePriority="md" />
+
+        <Column name="fallback"
+                title="Fallback"
+                field="fallback"
+                visiblePriority="lg">
+            <template #format="{ row }">
+                <span v-if="row.isUrl" class="badge badge-info mr-1">URL</span>
+                {{ row.fallback }}
+            </template>
+        </Column>
+
+        <DeleteColumn @click="onDeleteClick" />
+    </Grid>
+</template>
+
+<script setup lang="ts">
+    import { computed, PropType, reactive, ref } from "vue";
+    import Grid, { Column, TextColumn, DeleteColumn, ReorderColumn } from "@Obsidian/Controls/grid";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import { alert } from "@Obsidian/Utility/dialogs";
+    import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
+    import { DetailBlockBox } from "@Obsidian/ViewModels/Blocks/detailBlockBox";
+    import { MobileApplicationBag } from "@Obsidian/ViewModels/Blocks/Mobile/MobileApplicationDetail/mobileApplicationBag";
+    import { MobileApplicationDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Mobile/MobileApplicationDetail/mobileApplicationDetailOptionsBag";
+    import { NavigationUrlKey } from "./types.partial";
+
+    const config = useConfigurationValues<DetailBlockBox<MobileApplicationBag, MobileApplicationDetailOptionsBag>>();
+    const invokeBlockAction = useInvokeBlockAction();
+
+    const props = defineProps({
+        options: {
+            type: Object as PropType<MobileApplicationDetailOptionsBag>,
+            required: true
+        }
+    });
+
+    // #region Values
+
+    const gridDataSource = ref<Promise<GridDataBag>>();
+    let gridData: GridDataBag | undefined;
+
+    // #endregion
+
+    // #region Computed Values
+
+    /** The comma-separated enabled domains shown above the grid. */
+    const deepLinkDomainsText = computed((): string => props.options?.deepLinkDomainsText ?? "");
+
+    // #endregion
+
+    // #region Functions
+
+    /** Loads the deep-links grid via the `GetDeepLinksGridData` block action. */
+    async function loadGridData(): Promise<GridDataBag> {
+        const result = await invokeBlockAction<GridDataBag>("GetDeepLinksGridData");
+
+        if (result.isSuccess && result.data) {
+            gridData = reactive(result.data);
+            return gridData;
+        }
+        else {
+            throw new Error(result.errorMessage ?? "Unable to load deep links.");
+        }
+    }
+
+    /**
+     * Navigates to a deep-link-detail URL with the row key (route Guid)
+     * substituted in.
+     */
+    function navigateToUrl(urlKey: NavigationUrlKey, key: string): void {
+        const template = config.navigationUrls?.[urlKey];
+        if (template) {
+            window.location.href = template.replace("((Key))", key);
+        }
+    }
+
+    /** Prefixes the route value with a slash for display in the grid. */
+    function formatRoute(value: unknown): string {
+        const route = value as string | null | undefined;
+        if (!route) {
+            return "";
+        }
+        return `/${route}`;
+    }
+
+    // #endregion
+
+    // #region Event Handlers
+
+    /** Navigates to the new-route URL when the grid's Add button is clicked. */
+    function onAddClicked(): void {
+        navigateToUrl(NavigationUrlKey.DeepLinkDetailPage, "");
+    }
+
+    /**
+     * Routes the user to the deep-link detail page on row click. Editable
+     * users land directly in edit mode; read-only users are sent to the
+     * view URL since adding AutoEdit for them would just bounce them off
+     * the deep-link block's auth check.
+     */
+    function onRowClicked(key: string): void {
+        const urlKey = props.options?.isEditable === true
+            ? NavigationUrlKey.DeepLinkDetailEditPage
+            : NavigationUrlKey.DeepLinkDetailPage;
+        navigateToUrl(urlKey, key);
+    }
+
+    /**
+     * Deletes the deep link via the `DeleteDeepLink` block action and
+     * removes the row from the grid in place.
+     */
+    async function onDeleteClick(key: string): Promise<void> {
+        const result = await invokeBlockAction<string>("DeleteDeepLink", { key });
+
+        if (result.isSuccess) {
+            if (gridData?.rows) {
+                const index = gridData.rows.findIndex(r => r["guid"] === key);
+                if (index !== -1) {
+                    gridData.rows.splice(index, 1);
+                }
+            }
+        }
+        else {
+            await alert(result.errorMessage ?? "Unable to delete the deep link.");
+        }
+    }
+
+    /**
+     * Persists a drag-and-drop deep-link reorder via the `ReorderDeepLink`
+     * block action. Reverts the visual reorder by returning false when
+     * the server rejects the request.
+     */
+    async function onOrderChanged(item: Record<string, unknown>, beforeItem: Record<string, unknown> | null): Promise<boolean> {
+        const result = await invokeBlockAction<string>("ReorderDeepLink", {
+            key: item.guid,
+            beforeKey: beforeItem?.guid ?? null
+        });
+
+        if (!result.isSuccess) {
+            await alert(result.errorMessage ?? "Unable to reorder deep links.");
+            return false;
+        }
+
+        return true;
+    }
+
+    // #endregion
+
+    gridDataSource.value = loadGridData();
+</script>

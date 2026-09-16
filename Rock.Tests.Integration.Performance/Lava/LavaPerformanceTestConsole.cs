@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -21,11 +21,12 @@ using System.Diagnostics;
 using System.Linq;
 
 using Rock;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Lava;
 using Rock.Lava.Fluid;
 using Rock.Model;
-using Rock.Tests.Shared.Lava;
+using Rock.Tests.Integration.TestFramework.Lava;
 using Rock.Web.Cache;
 
 namespace Rock.Tests.Integration.Performance.Lava
@@ -114,7 +115,7 @@ namespace Rock.Tests.Integration.Performance.Lava
         {
             // Execute some Entity Framework queries so the framework is primed.
             // This ensures that the startup overhead won't affect the test results.
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
 
             var person = new PersonService( rockContext ).Get( 1 );
             var groups = new GroupService( rockContext ).Queryable()

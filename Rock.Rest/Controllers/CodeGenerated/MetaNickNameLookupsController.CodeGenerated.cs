@@ -21,6 +21,7 @@
 // </copyright>
 //
 
+using Rock.Configuration;
 using Rock.Model;
 using Rock.SystemGuid;
 
@@ -35,6 +36,6 @@ namespace Rock.Rest.Controllers
         /// <summary>
         /// Initializes a new instance of the <see cref="MetaNickNameLookupsController"/> class.
         /// </summary>
-        public MetaNickNameLookupsController() : base( new Rock.Model.MetaNickNameLookupService( new Rock.Data.RockContext() ) ) { } 
+        public MetaNickNameLookupsController() : base( new Rock.Model.MetaNickNameLookupService( RockApp.Current.CreateRockContext() ) ) { } 
     }
 }

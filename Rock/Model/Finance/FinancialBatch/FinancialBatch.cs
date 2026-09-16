@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -23,6 +23,8 @@ using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 
 using Rock.Data;
+using Rock.Enums.Security;
+using Rock.Security;
 
 namespace Rock.Model
 {
@@ -48,6 +50,7 @@ namespace Rock.Model
         [Required]
         [MaxLength( 50 )]
         [DataMember( IsRequired = true )]
+        [StringValidation( StringValidationProfile.Name )]
         public string Name { get; set; }
 
         /// <summary>
@@ -113,6 +116,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 100 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string AccountingSystemCode { get; set; }
 
         /// <summary>
@@ -146,6 +150,7 @@ namespace Rock.Model
         /// The note.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string Note { get; set; }
 
         /// <summary>
@@ -158,6 +163,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 300 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string RemoteSettlementBatchUrl { get; set; }
 
         /// <summary>
@@ -166,6 +172,7 @@ namespace Rock.Model
         /// <value>
         /// The Batch Key
         /// </value>
+        [StringValidation( StringValidationProfile.PlainText )]
         public string RemoteSettlementBatchKey { get; set; }
 
         /// <summary>

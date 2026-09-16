@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -66,6 +66,15 @@ namespace Rock.ViewModels.Blocks.Communication.CommunicationEntryWizard
         /// It is further limited by the "Communication Types" block setting.
         /// </value>
         public List<ListItemBag> Mediums { get; set; }
+
+        /// <summary>
+        /// Gets or sets the standalone medium options the sender may directly choose in the picker.
+        /// </summary>
+        /// <value>
+        /// Unlike <see cref="Mediums"/>, this honors exactly the communication types enabled in the
+        /// "Communication Types" block setting and does not expand Recipient Preference into Email and SMS.
+        /// </value>
+        public List<ListItemBag> StandaloneMediums { get; set; }
 
         /// <summary>
         /// Gets or sets whether the duplicate prevention option should be shown.
@@ -183,5 +192,18 @@ namespace Rock.ViewModels.Blocks.Communication.CommunicationEntryWizard
         /// Gets or sets a value indicating whether the template should be applied to the communication on load.
         /// </summary>
         public bool ShouldApplyTemplateToCommunication { get; set; }
+
+        /// <summary>
+        /// Gets or sets the custom text content used by the communication entry wizard.
+        /// </summary>
+        public CommunicationEntryWizardCustomTextBag CustomText { get; set; }
+
+        /// <summary>
+        /// Gets or sets the URL the client should navigate to when the admin clicks
+        /// "Create New Communication" after queueing a send. The URL targets the
+        /// current page with no communication identifier so the wizard renders a
+        /// fresh state on load.
+        /// </summary>
+        public string CreateNewCommunicationUrl { get; set; }
     }
 }

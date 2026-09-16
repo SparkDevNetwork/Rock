@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -154,7 +154,7 @@ namespace Rock.Lava
         /// <remarks>This method overload exists to disambiguate calls using the LavaDataDictionary parameter.</remarks>
         public void SetMergeFields( LavaDataDictionary fieldValues )
         {
-            SetMergeFields( (ILavaDataDictionary)fieldValues );
+            SetMergeFields( (IDictionary<string, object>)fieldValues );
         }
 
         /// <summary>

@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -17,7 +17,9 @@
 using System;
 using System.Linq;
 using System.Web;
+
 using Rock.Model;
+using Rock.Net;
 using Rock.Transactions;
 using Rock.Utility;
 using Rock.Web.Cache;
@@ -50,6 +52,18 @@ namespace Rock.Cms.Utm
             }
 
             return utmInfo;
+        }
+
+        /// <summary>
+        /// Retrieve UTM data for the current request from the associated cookie.
+        /// </summary>
+        /// <param name="requestContext">The request context whose cookies are inspected for UTM data.</param>
+        /// <returns>The UTM data stored in the request's cookie, or <c>null</c> if none is present.</returns>
+        internal static UtmCookieData GetUtmCookieDataFromRequest( RockRequestContext requestContext )
+        {
+            var utmCookieValue = requestContext?.GetCookieValue( UtmCookieData.UTM_COOKIE_NAME );
+
+            return utmCookieValue.FromJsonOrNull<UtmCookieData>();
         }
 
         /// <summary>

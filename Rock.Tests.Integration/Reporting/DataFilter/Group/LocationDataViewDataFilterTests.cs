@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -18,10 +18,11 @@ using System.Linq;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Tests.Integration.TestData;
-using Rock.Tests.Shared;
+using Rock.Tests.Shared.Constants;
 
 namespace Rock.Tests.Integration.Reporting.DataFilter.Group
 {
@@ -46,7 +47,7 @@ namespace Rock.Tests.Integration.Reporting.DataFilter.Group
                 return;
             }
 
-            TestDataHelper.Reporting.DeleteDataViewsByRecordTag( new RockContext(), "TestData" );
+            TestDataHelper.Reporting.DeleteDataViewsByRecordTag( RockApp.Current.CreateRockContext(), "TestData" );
         }
 
         /// <summary>
@@ -118,7 +119,7 @@ namespace Rock.Tests.Integration.Reporting.DataFilter.Group
         {
             var settingsFilter = new Rock.Reporting.DataFilter.Group.LocationDataViewFilter();
 
-            var dataContext = new RockContext();
+            var dataContext = RockApp.Current.CreateRockContext();
 
             var groupService = new GroupService( dataContext );
 

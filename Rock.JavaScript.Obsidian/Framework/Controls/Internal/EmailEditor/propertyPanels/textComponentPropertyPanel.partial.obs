@@ -100,7 +100,7 @@
     import TextAlignmentPicker from "../textAlignmentPicker.partial.obs";
     import TextFormatPicker from "../textFormatPicker2.partial.obs";
     import { BorderModel, LetterCase, ShorthandModel, TextAlignment, UsageType } from "../types.partial";
-    import { addRockContentEditableEventListener, textComponentAdapter, removeRockContentEditableEventListener } from "../utils.partial";
+    import { addRockContentEditableEventListener, decodeLavaEncodedEntities, textComponentAdapter, removeRockContentEditableEventListener } from "../utils.partial";
     import ColorPicker from "@Obsidian/Controls/colorPicker.obs";
     import HtmlEditor from "@Obsidian/Controls/htmlEditor.obs";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
@@ -185,7 +185,11 @@
 
     function readProps(): void {
         const localProps = textComponentAdapter.readLocalProps(props.componentElement);
-        html.value = localProps.html;
+        // readLocalProps returns the element's serialized innerHTML, which
+        // re-encodes characters like ">" inside Lava tags (e.g. "&gt;"). Decode
+        // them so the editor (especially the forced Lava code view) shows the
+        // Lava exactly as it will be sent.
+        html.value = decodeLavaEncodedEntities(localProps.html);
         fontFamily.value = localProps.fontFamily;
         fontSizePx.value = localProps.fontSizePx;
         isBold.value = localProps.isBold;
@@ -228,7 +232,7 @@
 
     function onInput(): void {
         const { html: newHtml } = textComponentAdapter.readLocalProps(props.componentElement);
-        html.value = newHtml;
+        html.value = decodeLavaEncodedEntities(newHtml);
     }
 
     // #endregion Event Handlers
@@ -240,7 +244,9 @@
     watch(html, (value: string) => {
         const { html: currentHtml } = textComponentAdapter.readLocalProps(props.componentElement);
 
-        if (value !== currentHtml) {
+        // Compare against the decoded current markup so simply selecting a Lava
+        // component (which decodes for display) does not trigger a spurious write.
+        if (value !== decodeLavaEncodedEntities(currentHtml)) {
             writeProps();
         }
     });

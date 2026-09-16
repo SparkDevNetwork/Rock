@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -16,6 +16,8 @@
 //
 using System;
 using System.Collections.Generic;
+
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
@@ -121,7 +123,7 @@ namespace Rock.UniversalSearch.IndexModels
             bool isSecurityDisabled = displayOptions != null && displayOptions.ContainsKey( "Document-IsSecurityDisabled" ) && displayOptions["Document-IsSecurityDisabled"].ToString().AsBoolean();
 
             // Check security on the document if security is enabled
-            var document = new DocumentService( new RockContext() ).Get( ( int ) this.Id );
+            var document = new DocumentService( RockApp.Current.CreateRockContext() ).Get( ( int ) this.Id );
             if ( document != null )
             {
                 result.IsViewAllowed = document.IsAuthorized( Authorization.VIEW, person ) || isSecurityDisabled;

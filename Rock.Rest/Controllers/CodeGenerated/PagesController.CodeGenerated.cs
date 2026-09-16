@@ -21,6 +21,7 @@
 // </copyright>
 //
 
+using Rock.Configuration;
 using Rock.Model;
 using Rock.SystemGuid;
 
@@ -35,6 +36,6 @@ namespace Rock.Rest.Controllers
         /// <summary>
         /// Initializes a new instance of the <see cref="PagesController"/> class.
         /// </summary>
-        public PagesController() : base( new Rock.Model.PageService( new Rock.Data.RockContext() ) ) { } 
+        public PagesController() : base( new Rock.Model.PageService( RockApp.Current.CreateRockContext() ) ) { } 
     }
 }

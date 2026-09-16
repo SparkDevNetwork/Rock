@@ -21,6 +21,7 @@
 // </copyright>
 //
 
+using Rock.Configuration;
 using Rock.Model;
 using Rock.SystemGuid;
 
@@ -35,6 +36,6 @@ namespace Rock.Rest.Controllers
         /// <summary>
         /// Initializes a new instance of the <see cref="RequestFiltersController"/> class.
         /// </summary>
-        public RequestFiltersController() : base( new Rock.Model.RequestFilterService( new Rock.Data.RockContext() ) ) { } 
+        public RequestFiltersController() : base( new Rock.Model.RequestFilterService( RockApp.Current.CreateRockContext() ) ) { } 
     }
 }

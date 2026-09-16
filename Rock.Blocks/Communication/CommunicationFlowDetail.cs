@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -165,6 +165,9 @@ namespace Rock.Blocks.Communication
                 return actionError;
             }
 
+            // Set this aside for comparison below, so we'll know when the schedule has been updated.
+            var originalScheduleICalendarContent = entity.Schedule?.iCalendarContent;
+
             // Update the entity instance from the information in the bag.
             if ( !UpdateEntityFromBag( this.RockContext, entity, bag ) )
             {
@@ -183,6 +186,19 @@ namespace Rock.Blocks.Communication
             {
                 RockContext.SaveChanges();
                 entity.SaveAttributeValues( this.RockContext );
+
+                var isOneTimeScheduleChanged = !isNew
+                    && entity.TriggerType == CommunicationFlowTriggerType.OneTime
+                    && entity.Schedule != null
+                    && originalScheduleICalendarContent != entity.Schedule.iCalendarContent;
+
+                // Saving refreshed the schedule's EffectiveStartDate, so FirstStartDateTime now reflects the edit.
+                var scheduleStartDate = isOneTimeScheduleChanged ? entity.Schedule.FirstStartDateTime?.Date : null;
+
+                if ( scheduleStartDate.HasValue && entityService.UpdateOneTimeFlowInstanceStartDate( entity, scheduleStartDate.Value ) )
+                {
+                    RockContext.SaveChanges();
+                }
             } );
 
             return ActionContent( System.Net.HttpStatusCode.Created, this.GetCurrentPageUrl( new Dictionary<string, string>
@@ -1404,11 +1420,18 @@ namespace Rock.Blocks.Communication
                 return null;
             }
 
+            // Determine which messages already have performance data (have been sent) so the editor
+            // can warn before a delete would discard that data, even when the flow is inactive.
+            var flowCommunicationIds = entity.CommunicationFlowCommunications?.Select( cfc => cfc.Id ).ToList() ?? new List<int>();
+            var communicationIdsWithPerformanceData = flowCommunicationIds.Any()
+                ? new CommunicationFlowInstanceCommunicationService( RockContext ).GetIdsWithSentCommunications( flowCommunicationIds ).ToHashSet()
+                : new HashSet<int>();
+
             var bag = new CommunicationFlowBag
             {
                 IdKey = entity.IdKey,
                 Category = entity.Category.ToListItemBag(),
-                Communications = entity.CommunicationFlowCommunications?.Select( c => GetEntityBag( c ) )?.ToList(),
+                Communications = entity.CommunicationFlowCommunications?.Select( cfc => GetEntityBag( cfc, communicationIdsWithPerformanceData ) )?.ToList(),
                 ConversionGoalSettings = GetConversionGoalSettingsBag( entity ),
                 ConversionGoalTargetPercent = entity.ConversionGoalTargetPercent,
                 ConversionGoalTimeframeInDays = entity.ConversionGoalTimeframeInDays,
@@ -1433,7 +1456,7 @@ namespace Rock.Blocks.Communication
             return bag;
         }
 
-        private CommunicationFlowCommunicationBag GetEntityBag( CommunicationFlowCommunication entity )
+        private CommunicationFlowCommunicationBag GetEntityBag( CommunicationFlowCommunication entity, HashSet<int> communicationIdsWithPerformanceData )
         {
             if ( entity == null )
             {
@@ -1448,7 +1471,8 @@ namespace Rock.Blocks.Communication
                 CommunicationType = ( Enums.Communication.CommunicationType ) ( int ) entity.CommunicationType,
                 Name = entity.Name,
                 Order = entity.Order,
-                TimeToSend = entity.TimeToSend
+                TimeToSend = entity.TimeToSend,
+                HasPerformanceData = communicationIdsWithPerformanceData?.Contains( entity.Id ) == true
             };
 
             return bag;
@@ -1675,7 +1699,13 @@ namespace Rock.Blocks.Communication
             }
         }
 
-        /// <inheritdoc/>
+        /// <summary>
+        /// Updates the entity from the information in the bag.
+        /// </summary>
+        /// <param name="rockContext">The Rock context.</param>
+        /// <param name="entity">The entity to update.</param>
+        /// <param name="bag">The bag containing the values to apply to the entity.</param>
+        /// <returns><c>true</c> if the entity was updated; otherwise <c>false</c>.</returns>
         private bool UpdateEntityFromBag( RockContext rockContext, CommunicationFlow entity, CommunicationFlowBag bag )
         {
             var reprocessConversionsSnapshot = new ReprocessCommunicationFlowConversionsSnapshot( entity );
@@ -1683,6 +1713,7 @@ namespace Rock.Blocks.Communication
 
             var communicationTemplateService = new CommunicationTemplateService( rockContext );
             var communicationFlowCommunicationService = new CommunicationFlowCommunicationService( rockContext );
+            var communicationFlowInstanceCommunicationService = new CommunicationFlowInstanceCommunicationService( rockContext );
 
             entity.SetConversionGoalSettings( GetConversionGoalSettings( bag.ConversionGoalSettings ) );
             entity.CategoryId = bag.Category.GetEntityId<Category>( RockContext );
@@ -1728,6 +1759,37 @@ namespace Rock.Blocks.Communication
 
             // Communications
             var updatedEntityToBagMappings = new Dictionary<CommunicationFlowCommunication, CommunicationFlowCommunicationBag>();
+
+            var communicationsBeingRemoved = entity.CommunicationFlowCommunications
+                .Where( cfc => !bag.Communications.Any( cfcb => cfcb.Guid == cfc.Guid ) )
+                .ToList();
+
+            /*
+                07/01/26 - JMH
+
+                A flow message that has already been sent or scheduled has
+                CommunicationFlowInstanceCommunication rows referencing it through a non-cascading
+                foreign key, so deleting the message directly throws an FK constraint error. Deleting
+                the whole flow avoids this because those rows are removed first via the flow instance
+                cascade; a single message delete has no such path. The delete confirmation already
+                warns the user that any performance data will be lost, so remove those instance
+                communication rows first (their conversion rows cascade at the database level) before
+                deleting the message itself. The underlying Communication records are intentionally
+                left intact, matching how a full flow delete behaves.
+
+                Reason: Deleting an already-sent flow message failed with an FK constraint error (#6890).
+            */
+            if ( communicationsBeingRemoved.Any() )
+            {
+                var idsOfCommunicationsBeingRemoved = communicationsBeingRemoved.Select( cfc => cfc.Id ).ToList();
+
+                var instanceCommunicationsToDelete = communicationFlowInstanceCommunicationService
+                    .Queryable()
+                    .Where( cfic => idsOfCommunicationsBeingRemoved.Contains( cfic.CommunicationFlowCommunicationId ) )
+                    .ToList();
+
+                communicationFlowInstanceCommunicationService.DeleteRange( instanceCommunicationsToDelete );
+            }
 
             // Remove old.
             foreach ( var communicationFlowCommunication in entity.CommunicationFlowCommunications.ToList())

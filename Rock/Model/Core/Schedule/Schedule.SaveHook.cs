@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -46,6 +46,11 @@ namespace Rock.Model
                     {
                         CheckInDirector.SendRefreshKioskConfiguration();
                     }
+                }
+
+                if ( PreSaveState == EntityContextState.Added || PreSaveState == EntityContextState.Modified )
+                {
+                    ScheduleService.UpdateScheduleDates( Entity.Id );
                 }
 
                 base.PostSave();

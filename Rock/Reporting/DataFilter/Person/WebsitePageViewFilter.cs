@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -14,15 +14,6 @@
 // limitations under the License.
 // </copyright>
 //
-using Rock.Data;
-using Rock.Model;
-using Rock.Net;
-using Rock.ViewModels.Controls;
-using Rock.ViewModels.Utility;
-using Rock.Web.Cache;
-using Rock.Web.UI.Controls;
-using Rock.Web.Utilities;
-
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -31,6 +22,16 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+
+using Rock.Configuration;
+using Rock.Data;
+using Rock.Model;
+using Rock.Net;
+using Rock.ViewModels.Controls;
+using Rock.ViewModels.Utility;
+using Rock.Web.Cache;
+using Rock.Web.UI.Controls;
+using Rock.Web.Utilities;
 
 namespace Rock.Reporting.DataFilter.Interaction
 {
@@ -208,7 +209,7 @@ function() {
                 var comparisonType = selectionConfig.ComparisonValue.ConvertToEnumOrNull<ComparisonType>();
                 result = comparisonType == null ? "Interactions" : $"{comparisonType.ConvertToString()} {selectionConfig.ViewsCount} Interactions";
 
-                if ( selectionConfig.WebsiteIds.Count > 0 )
+                if ( selectionConfig.WebsiteIds != null && selectionConfig.WebsiteIds.Count > 0 )
                 {
                     var websiteNames = new List<string>();
                     foreach ( var websiteId in selectionConfig.WebsiteIds )
@@ -414,7 +415,7 @@ function() {
             var websiteGuid = SystemGuid.DefinedValue.INTERACTIONCHANNELTYPE_WEBSITE.AsGuid();
             var activeSiteIds = SiteCache.All().Where( s => s.IsActive ).Select( s => s.Id );
 
-            var channels = new InteractionChannelService( new RockContext() )
+            var channels = new InteractionChannelService( RockApp.Current.CreateRockContext() )
                 .Queryable()
                 .Where( ic => ic.ChannelTypeMediumValue.Guid == websiteGuid && ic.IsActive && activeSiteIds.Contains( ic.ChannelEntityId.Value ) )
                 .Select( x => new ListItem() { Text = x.Name, Value = x.Id.ToString() } )

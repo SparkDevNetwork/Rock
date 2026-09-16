@@ -21,7 +21,7 @@ import { getFieldConfigurationProps, getFieldEditorProps } from "./utils";
 import CheckBox from "@Obsidian/Controls/checkBox.obs";
 import CheckBoxList from "@Obsidian/Controls/checkBoxList.obs";
 import DropDownList from "@Obsidian/Controls/dropDownList.obs";
-import { ConfigurationPropertyKey, ConfigurationValueKey } from "./campusField.partial";
+import { ConfigurationPropertyKey, ConfigurationKey } from "./campusField.partial";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { asBoolean, asTrueFalseOrNull } from "@Obsidian/Utility/booleanUtils";
 import { areEqual } from "@Obsidian/Utility/guid";
@@ -49,11 +49,11 @@ export const EditComponent = defineComponent({
         /** The options to choose from in the drop down list */
         const options = computed((): ListItemBag[] => {
             try {
-                const optionsListItems = JSON.parse(props.configurationValues[ConfigurationValueKey.Values] ?? "[]") as ListItemBag[];
-                const isIncludeInactive = asBoolean(!props.configurationValues[ConfigurationValueKey.IncludeInactive]);
+                const optionsListItems = JSON.parse(props.configurationValues[ConfigurationKey.Values] ?? "[]") as ListItemBag[];
+                const isIncludeInactive = asBoolean(!props.configurationValues[ConfigurationKey.IncludeInactive]);
                 const isValueFoundOnActiveItems = optionsListItems.find(x => x.value === internalValue.value);
                 if (!isIncludeInactive && !isValueFoundOnActiveItems) {
-                    const inactiveListItem = JSON.parse(props.configurationValues[ConfigurationValueKey.ValuesInactive] ?? "[]") as ListItemBag[];
+                    const inactiveListItem = JSON.parse(props.configurationValues[ConfigurationKey.ValuesInactive] ?? "[]") as ListItemBag[];
                     const selectedValue = inactiveListItem.find(x => x.value === internalValue.value);
                     if (selectedValue) {
                         optionsListItems.push(selectedValue);
@@ -71,10 +71,10 @@ export const EditComponent = defineComponent({
         watch(internalValue, () => emit("update:modelValue", internalValue.value));
 
         const shouldHidePicker = computed((): boolean => {
-            return asBoolean(!props.configurationValues[ConfigurationValueKey.ForceVisible])
+            return asBoolean(!props.configurationValues[ConfigurationKey.ForceVisible])
                 && options.value.length <= 1
-                && props.configurationValues[ConfigurationValueKey.FilterCampusTypes] === ""
-                && props.configurationValues[ConfigurationValueKey.FilterCampusStatus] === "";
+                && props.configurationValues[ConfigurationKey.FilterCampusTypes] === ""
+                && props.configurationValues[ConfigurationKey.FilterCampusStatus] === "";
         });
 
         return {
@@ -104,7 +104,7 @@ export const FilterComponent = defineComponent({
         /** The options to choose from in the drop down list */
         const options = computed((): ListItemBag[] => {
             try {
-                return JSON.parse(props.configurationValues[ConfigurationValueKey.Values] ?? "[]") as ListItemBag[];
+                return JSON.parse(props.configurationValues[ConfigurationKey.Values] ?? "[]") as ListItemBag[];
             }
             catch {
                 return [];
@@ -213,18 +213,18 @@ export const ConfigurationComponent = defineComponent({
 
             // Construct the new value that will be emitted if it is different
             // than the current value.
-            newValue[ConfigurationValueKey.IncludeInactive] = asTrueFalseOrNull(includeInactive.value) ?? "False";
-            newValue[ConfigurationValueKey.FilterCampusTypes] = filterCampusTypes.value.join(",");
-            newValue[ConfigurationValueKey.FilterCampusStatus] = filterCampusStatus.value.join(",");
-            newValue[ConfigurationValueKey.SelectableCampuses] = selectableCampuses.value.join(",");
-            newValue[ConfigurationValueKey.Values] = JSON.stringify(campusOptions.value);
+            newValue[ConfigurationKey.IncludeInactive] = asTrueFalseOrNull(includeInactive.value) ?? "False";
+            newValue[ConfigurationKey.FilterCampusTypes] = filterCampusTypes.value.join(",");
+            newValue[ConfigurationKey.FilterCampusStatus] = filterCampusStatus.value.join(",");
+            newValue[ConfigurationKey.SelectableCampuses] = selectableCampuses.value.join(",");
+            newValue[ConfigurationKey.Values] = JSON.stringify(campusOptions.value);
 
             // Compare the new value and the old value.
-            const anyValueChanged = newValue[ConfigurationValueKey.IncludeInactive] !== (props.modelValue[ConfigurationValueKey.IncludeInactive] ?? "False")
-                || newValue[ConfigurationValueKey.FilterCampusTypes] !== (props.modelValue[ConfigurationValueKey.FilterCampusTypes] ?? "")
-                || newValue[ConfigurationValueKey.FilterCampusStatus] !== (props.modelValue[ConfigurationValueKey.FilterCampusStatus] ?? "")
-                || newValue[ConfigurationValueKey.SelectableCampuses] !== (props.modelValue[ConfigurationValueKey.SelectableCampuses] ?? "")
-                || newValue[ConfigurationValueKey.Values] !== (props.modelValue[ConfigurationValueKey.Values] ?? "[]");
+            const anyValueChanged = newValue[ConfigurationKey.IncludeInactive] !== (props.modelValue[ConfigurationKey.IncludeInactive] ?? "False")
+                || newValue[ConfigurationKey.FilterCampusTypes] !== (props.modelValue[ConfigurationKey.FilterCampusTypes] ?? "")
+                || newValue[ConfigurationKey.FilterCampusStatus] !== (props.modelValue[ConfigurationKey.FilterCampusStatus] ?? "")
+                || newValue[ConfigurationKey.SelectableCampuses] !== (props.modelValue[ConfigurationKey.SelectableCampuses] ?? "")
+                || newValue[ConfigurationKey.Values] !== (props.modelValue[ConfigurationKey.Values] ?? "[]");
 
             // If any value changed then emit the new model value.
             if (anyValueChanged) {
@@ -259,10 +259,10 @@ export const ConfigurationComponent = defineComponent({
             campusTypeOptions.value = campusTypes ? JSON.parse(campusTypes) as ListItemBag[] : [];
             campusStatusOptions.value = campusStatuses ? JSON.parse(campusStatuses) as ListItemBag[] : [];
 
-            includeInactive.value = asBoolean(props.modelValue[ConfigurationValueKey.IncludeInactive]);
-            filterCampusTypes.value = (props.modelValue[ConfigurationValueKey.FilterCampusTypes]?.split(",") ?? []).filter(s => s !== "");
-            filterCampusStatus.value = (props.modelValue[ConfigurationValueKey.FilterCampusStatus]?.split(",") ?? []).filter(s => s !== "");
-            selectableCampuses.value = (props.modelValue[ConfigurationValueKey.SelectableCampuses]?.split(",") ?? []).filter(s => s !== "");
+            includeInactive.value = asBoolean(props.modelValue[ConfigurationKey.IncludeInactive]);
+            filterCampusTypes.value = (props.modelValue[ConfigurationKey.FilterCampusTypes]?.split(",") ?? []).filter(s => s !== "");
+            filterCampusStatus.value = (props.modelValue[ConfigurationKey.FilterCampusStatus]?.split(",") ?? []).filter(s => s !== "");
+            selectableCampuses.value = (props.modelValue[ConfigurationKey.SelectableCampuses]?.split(",") ?? []).filter(s => s !== "");
         }, {
             immediate: true
         });
@@ -276,11 +276,11 @@ export const ConfigurationComponent = defineComponent({
         });
 
         // Watch for changes in properties that only require a local UI update.
-        watch(includeInactive, () => maybeUpdateConfiguration(ConfigurationValueKey.IncludeInactive, asTrueFalseOrNull(includeInactive.value) ?? "False"));
-        watch(filterCampusTypes, () => maybeUpdateConfiguration(ConfigurationValueKey.FilterCampusTypes, filterCampusTypes.value.join(",")));
-        watch(filterCampusStatus, () => maybeUpdateConfiguration(ConfigurationValueKey.FilterCampusStatus, filterCampusStatus.value.join(",")));
-        watch(selectableCampuses, () => maybeUpdateConfiguration(ConfigurationValueKey.SelectableCampuses, selectableCampuses.value.join(",")));
-        watch(campusOptions, () => emit("updateConfigurationValue", ConfigurationValueKey.Values, JSON.stringify(campusOptions.value)));
+        watch(includeInactive, () => maybeUpdateConfiguration(ConfigurationKey.IncludeInactive, asTrueFalseOrNull(includeInactive.value) ?? "False"));
+        watch(filterCampusTypes, () => maybeUpdateConfiguration(ConfigurationKey.FilterCampusTypes, filterCampusTypes.value.join(",")));
+        watch(filterCampusStatus, () => maybeUpdateConfiguration(ConfigurationKey.FilterCampusStatus, filterCampusStatus.value.join(",")));
+        watch(selectableCampuses, () => maybeUpdateConfiguration(ConfigurationKey.SelectableCampuses, selectableCampuses.value.join(",")));
+        watch(campusOptions, () => emit("updateConfigurationValue", ConfigurationKey.Values, JSON.stringify(campusOptions.value)));
 
         return {
             allCampusOptions,

@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -27,11 +27,6 @@ namespace Rock.ViewModels.Blocks.Engagement.ConnectionTypeDetail
     public class ConnectionTypeDetailOptionsBag
     {
         /// <summary>
-        /// Gets or sets the communication template options.
-        /// </summary>
-        public List<ListItemBag> CommunicationTemplateOptions { get; set; }
-
-        /// <summary>
         /// Gets or sets the connection type options.
         /// </summary>
         public List<ListItemBag> ConnectionTypeOptions { get; set; }
@@ -40,5 +35,17 @@ namespace Rock.ViewModels.Blocks.Engagement.ConnectionTypeDetail
         /// Gets or sets a value indicating whether active AI providers exist.
         /// </summary>
         public bool HasActiveAIProvider { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Person Note Type Items to be used when creating Connection Activity Types
+        /// </summary>
+        public List<ListItemBag> PersonNoteTypeItems { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Connection Request attribute keys that are already defined
+        /// on any Connection Opportunity under this Connection Type. Type-level request
+        /// attributes must not reuse these keys.
+        /// </summary>
+        public List<string> OpportunityConnectionRequestAttributeKeys { get; set; }
     }
 }

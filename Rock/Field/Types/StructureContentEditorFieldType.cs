@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -19,10 +19,13 @@ using System.Collections.Generic;
 using System.Linq;
 #if WEBFORMS
 using System.Web.UI;
+
 #endif
 using Rock.Attribute;
 using Rock.Cms.StructuredContent;
+using Rock.Enums.Security;
 using Rock.Reporting;
+using Rock.Security;
 using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
@@ -63,6 +66,12 @@ namespace Rock.Field.Types
             return privateValue;
         }
 
+        /// <inheritdoc/>
+        public override StringValidationRule GetValidationRules( Dictionary<string, string> privateConfigurationValues )
+        {
+            return StringValueValidator.GetEffectiveRules( StringValidationProfile.Unrestricted );
+        }
+
         #endregion
 
         #region Formatting
@@ -81,6 +90,20 @@ namespace Rock.Field.Types
             var helper = new StructuredContentHelper( value );
 
             return helper.Render();
+        }
+
+        #endregion
+
+        #region Value Hinting
+
+        /// <inheritdoc/>
+        internal override FieldTypeHints GetFieldHints( Dictionary<string, string> privateConfigurationValues )
+        {
+            return new FieldTypeHints
+            {
+                IsCompleteList = false,
+                ValueFormat = "A JSON document of structured content, of the shape the structured content editor produces. An empty value is stored as {}. Plain text or HTML is not valid here, so content written as HTML must be converted before it is stored."
+            };
         }
 
         #endregion

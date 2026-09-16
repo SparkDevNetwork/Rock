@@ -1,0 +1,148 @@
+<template>
+    <PillList v-model="attachmentsWithUploadingPill"
+              :addDisabled="isUploadingAttachment"
+              :disabled="disabled"
+              canAdd
+              canExpand
+              label="Attachments"
+              @add="onOpenPopup">
+        <template #item="{ item }">
+            <Pill :disabled="disabled"
+                  :canRemove="!item.isNotRemovable"
+                  @remove="onRemove(item)">{{ item.text || '(file name unknown)' }}</Pill>
+        </template>
+    </PillList>
+
+    <NotificationBox v-if="attachmentErrorMessage" alertType="warning">
+        <strong><i class="ti ti-alert-triangle"></i> Warning </strong>
+        <span>{{ attachmentErrorMessage }}</span>
+    </NotificationBox>
+
+    <div ref="fileInputWrapper" class="d-none">
+        <FileUploader :disabled="disabled"
+                      :binaryFileTypeGuid="BinaryFiletype.CommunicationAttachment"
+                      @error="onAttachmentError"
+                      @isUploading="onIsUploading"
+                      @update:modelValue="onAttachmentAdded" />
+    </div>
+</template>
+
+<script setup lang="ts">
+    import { computed, PropType, ref } from "vue";
+    import FileUploader from "@Obsidian/Controls/fileUploader.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import Pill from "@Obsidian/Controls/pill.obs";
+    import PillList from "@Obsidian/Controls/pillList.obs";
+    import { BinaryFiletype } from "@Obsidian/SystemGuids/binaryFiletype";
+    import { useVModelPassthrough } from "@Obsidian/Utility/component";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { debounce } from "@Obsidian/Utility/util";
+
+    type AttachmentListItemBag = ListItemBag & {
+        isNotRemovable?: boolean;
+    };
+
+    const showUploadingPillAfterWait = debounce(() => {
+        isUploadingPillShown.value = isUploadingAttachment.value;
+    }, 250);
+
+    const props = defineProps({
+        modelValue: {
+            type: Array as PropType<ListItemBag[]>,
+            required: true
+        },
+
+        disabled: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "isUploading", value: boolean): void;
+        (e: "update:modelValue", value: ListItemBag[]): void;
+    }>();
+
+    //#region Values
+
+    const internalAttachmentListItemBags = useVModelPassthrough(props, "modelValue", emit);
+    const attachmentErrorMessage = ref<string | null | undefined>();
+    const fileInputWrapper = ref<HTMLInputElement | undefined>();
+    const isUploadingAttachment = ref<boolean>(false);
+    const isUploadingPillShown = ref<boolean>(false);
+
+    //#endregion
+
+    // #region Computed Values
+
+    const attachmentsWithUploadingPill = computed<AttachmentListItemBag[]>(() => {
+        if (isUploadingPillShown.value) {
+            return [
+                ...internalAttachmentListItemBags.value,
+                // Show the uploading pill at the end of the list.
+                {
+                    text: "Uploading...",
+                    isNotRemovable: true
+                }
+            ];
+        }
+
+        return internalAttachmentListItemBags.value;
+    });
+
+    // #endregion Computed Values
+
+    // #region Functions
+
+    function hideUploadingPill(): void {
+        isUploadingPillShown.value = false;
+    }
+
+    // #endregion Functions
+
+    //#region Event Handlers
+
+    function onAttachmentAdded(file: ListItemBag | undefined): void {
+        if (file) {
+            const allAttachments = [...internalAttachmentListItemBags.value];
+
+            allAttachments.push(file);
+
+            internalAttachmentListItemBags.value = allAttachments;
+        }
+    }
+
+    function onAttachmentError(error: string): void {
+        attachmentErrorMessage.value = error;
+    }
+
+    function onOpenPopup(): void {
+        attachmentErrorMessage.value = null;
+        if (fileInputWrapper.value) {
+            const group = fileInputWrapper.value.querySelector(".fileupload-group") as HTMLElement;
+            if (group) {
+                group.click();
+            }
+        }
+    }
+
+    function onRemove(item: ListItemBag): void {
+        const updatedAttachments = internalAttachmentListItemBags.value.filter(a => a.value !== item.value);
+        internalAttachmentListItemBags.value = updatedAttachments;
+    }
+
+    function onIsUploading(uploading: boolean): void {
+        isUploadingAttachment.value = uploading;
+
+        if (isUploadingAttachment.value) {
+            showUploadingPillAfterWait();
+        }
+        else {
+            hideUploadingPill();
+        }
+
+        emit("isUploading", uploading);
+    }
+
+    //#endregion
+</script>

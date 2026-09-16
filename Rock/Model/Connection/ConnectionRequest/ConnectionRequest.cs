@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -23,7 +23,9 @@ using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 
 using Rock.Data;
+using Rock.Enums.Security;
 using Rock.Lava;
+using Rock.Security;
 using Rock.Utility;
 
 namespace Rock.Model
@@ -68,6 +70,7 @@ namespace Rock.Model
         /// The comments.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string Comments { get; set; }
 
         /// <summary>
@@ -154,6 +157,7 @@ namespace Rock.Model
         /// in the AttributeValue table. But in this case we must also consider that the AttributeMatrix
         /// could be referenced in this string. This is slow and makes it difficult 'know all the places'. 
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string AssignedGroupMemberAttributeValues { get; set; }
 
         /// <summary>
@@ -220,12 +224,6 @@ namespace Rock.Model
         [DataMember]
         [Column( TypeName = "Date" )]
         public DateTime? DueSoonDate { get; set; }
-
-        /// <summary>
-        /// Text entered when a celebration action occurs on this request.
-        /// </summary>
-        [DataMember]
-        public string CelebrationText { get; set; }
 
         /// <summary>
         /// The date and time when this request was marked as connected.
@@ -359,6 +357,21 @@ namespace Rock.Model
         /// </value>
         [LavaVisible]
         public virtual ConnectionTypeSource ConnectionTypeSource { get; set; }
+
+
+        /// <summary>
+        /// Gets or sets a transient note used when recording a <see cref="ConnectionRequestStatusHistory"/> entry during a <see cref="ConnectionRequest"/> status change.
+        /// </summary>
+        /// <remarks>
+        /// This property is not persisted to the database and exists solely to pass client-provided context into the ConnectionRequest save hook.
+        /// When a ConnectionRequest status is changed, the save hook will read this value and use it to populate the Note field on the corresponding
+        /// ConnectionRequestStatusHistory record.
+        ///
+        /// This property must be populated before the entity is saved for the save hook to have access to the value. Because this is a transient,
+        /// write-through value, it will not be available on subsequent loads of the entity.
+        /// </remarks>
+        [NotMapped]
+        public string ConnectionStatusHistoryNote { get; set; }
 
         #endregion
 

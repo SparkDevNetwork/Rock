@@ -45,12 +45,15 @@
                                  v-model="defaultListView"
                                  rules="required"
                                  label="Default List View"
-                                 :items="viewModes" />
+                                 help="Choose the default view used when showing this program's steps on a person's profile page."
+                                 :items="viewModes"
+                                 trailblazerField />
             </ContentStack>
         </ContentSection>
 
         <ContentSection title="Statuses"
-                        icon="ti ti-flag">
+                        icon="ti ti-flag"
+                        :order="1">
             <ContentStack>
                 <Grid :data="statusesGridData"
                       keyField="key"
@@ -111,12 +114,13 @@
             </Modal>
         </ContentSection>
 
-        <ContentSection title="Step Type Attributes"
-                        icon="ti ti-binary-tree-2">
+        <ContentSection title="Type Attributes"
+                        icon="ti ti-binary-tree-2"
+                        :order="2">
             <ContentStack>
                 <Grid :data="attributesGridData"
                       keyField="key"
-                      itemTerm="Step Type Attribute"
+                      itemTerm="Type Attribute"
                       liveUpdates
                       light
                       @addItem="onAddAttribute">
@@ -139,12 +143,13 @@
             </ContentStack>
 
             <Modal v-model="isAttributeModalOpen"
-                   title="Step Type Attributes">
+                   title="Type Attributes">
 
                 <RockForm v-model:submit="saveAttribute"
                           @submit="onSaveAttribute">
                     <AttributeEditor v-model="stepAttribute"
-                                     :reservedKeyNames="reservedKeyNames" />
+                                     :reservedKeyNames="reservedKeyNames"
+                                     :attributeEntityTypeGuid="EntityType.StepType" />
                 </RockForm>
 
                 <template #customButtons>
@@ -158,7 +163,8 @@
 
         <ContentSection v-if="areEntityAttributesDisplayed"
                         title="Step Program Entity Attributes"
-                        icon="ti ti-database">
+                        icon="ti ti-database"
+                        :order="3">
             <ContentStack>
                 <AttributeValuesContainer v-model="attributeValues"
                                           :attributes="attributes"
@@ -167,8 +173,10 @@
             </ContentStack>
         </ContentSection>
 
-        <ContentSection title="Workflows"
-                        icon="ti ti-settings-cog">
+        <ContentSection v-if="store.state.trailblazerMode"
+                        title="Workflows"
+                        icon="ti ti-settings-cog"
+                        :order="4">
             <ContentStack>
                 <Grid :data="workflowGridData"
                       keyField="key"
@@ -275,6 +283,7 @@
     import { enumToListItemBag } from "@Obsidian/Utility/enumUtils";
     import { CompletionFlow, CompletionFlowDescription } from "@Obsidian/Enums/Engagement/completionFlow";
     import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
+    import { useStore } from "@Obsidian/PageState";
 
     const props = defineProps({
         modelValue: {
@@ -313,6 +322,7 @@
     const defaultListView = propertyRef(props.modelValue?.bag?.defaultListView?.toString() ?? "", "DefaultListView");
     const viewModes = ref(props.options.viewModes ?? []);
     const areViewModesDisplayed = ref(props.options.areViewDisplayOptionsVisible ?? false);
+    const store = useStore();
 
     const stepStatuses = ref(props.modelValue?.bag?.statuses ?? []);
     const isStatusModalOpen = ref(false);
@@ -605,9 +615,10 @@
             reservedKeyNames.value = reservedKeyNames.value.filter(k => k !== stepAttribute.value?.key);
         }
         else {
-            if (stepAttribute.value?.key && !reservedKeyNames.value.some(k => k === stepAttribute.value?.key)) {
-                reservedKeyNames.value.push(stepAttribute.value.key);
-            }
+            // Rebuild from the authoritative attribute list so a cancelled key
+            // change cannot leave a phantom key reserved or drop the real key.
+            reservedKeyNames.value = stepProgramAttributes.value.map(k => k.key!);
+            stepAttribute.value = null;
         }
     });
     // #endregion
@@ -791,20 +802,6 @@
     // #endregion
 
     // #endregion
-
-    // On close of the Attribute Modal add the step attribute key to our reserved key name list
-    watch(() => isAttributeModalOpen.value, () => {
-        if (!isAttributeModalOpen.value && stepAttribute.value?.key) {
-
-            const key = stepAttribute.value?.key ?? "";
-
-            if (!reservedKeyNames.value.includes(key) && stepProgramAttributes.value.find(x => x.key === key)) {
-                reservedKeyNames.value.push(key);
-            }
-
-            stepAttribute.value = null;
-        }
-    });
 
     // Watch for parental changes in our model value and update all our values.
     watch(() => props.modelValue, () => {

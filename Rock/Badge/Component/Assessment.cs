@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -24,9 +24,7 @@ using System.Linq;
 using System.Text;
 
 using Rock.Attribute;
-#if REVIEW_NET5_0_OR_GREATER
 using Rock.Configuration;
-#endif
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -124,7 +122,7 @@ namespace Rock.Badge.Component
             // Need a list of primitive types for assessmentTestsTaken linq
             var availableTypes = assessmentTypes.Select( t => t.Id ).ToList();
 
-            var assessmentTestsTaken = new AssessmentService( new RockContext() )
+            var assessmentTestsTaken = new AssessmentService( RockApp.Current.CreateRockContext() )
                 .Queryable()
                 .AsNoTracking()
                 .Where( a => a.PersonAlias != null

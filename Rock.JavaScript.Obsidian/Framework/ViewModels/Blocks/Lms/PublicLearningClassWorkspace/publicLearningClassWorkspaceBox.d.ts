@@ -74,6 +74,9 @@ export type PublicLearningClassWorkspaceBox = {
     /** Whether announcements are enabled. */
     enableAnnouncements: boolean;
 
+    /** Gets or sets whether to enable smart scroll. */
+    enableSmartScroll: boolean;
+
     /**
      * Gets or sets the error message. A non-empty value indicates that
      * an error is preventing the block from being displayed.

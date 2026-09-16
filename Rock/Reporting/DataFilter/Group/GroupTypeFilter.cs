@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -22,6 +22,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Web.UI;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Net;
@@ -171,7 +172,7 @@ function() {
             GroupTypePicker groupTypePicker = new GroupTypePicker();
             groupTypePicker.ID = filterControl.ID + "_groupTypePicker";
             groupTypePicker.Label = "Group Type";
-            groupTypePicker.GroupTypes = new GroupTypeService( new RockContext() ).Queryable().ToList();
+            groupTypePicker.GroupTypes = new GroupTypeService( RockApp.Current.CreateRockContext() ).Queryable().ToList();
             filterControl.Controls.Add( groupTypePicker );
 
             return new Control[] { groupTypePicker };
@@ -199,7 +200,7 @@ function() {
         {
             int? groupTypeId = ( controls[0] as GroupTypePicker ).SelectedValueAsId();
             Guid? groupTypeGuid = null;
-            var groupType = new GroupTypeService( new RockContext() ).Get( groupTypeId ?? 0 );
+            var groupType = new GroupTypeService( RockApp.Current.CreateRockContext() ).Get( groupTypeId ?? 0 );
             if ( groupType != null )
             {
                 groupTypeGuid = groupType.Guid;
@@ -219,7 +220,7 @@ function() {
             string[] selectionValues = selection.Split( '|' );
             if ( selectionValues.Length >= 1 )
             {
-                var groupType = new GroupTypeService( new RockContext() ).Get( selectionValues[0].AsGuid() );
+                var groupType = new GroupTypeService( RockApp.Current.CreateRockContext() ).Get( selectionValues[0].AsGuid() );
                 if ( groupType != null )
                 {
                     ( controls[0] as GroupTypePicker ).SetValue( groupType.Id );
@@ -241,7 +242,7 @@ function() {
             string[] selectionValues = selection.Split( '|' );
             if ( selectionValues.Length >= 1 )
             {
-                var groupType = new GroupTypeService( new RockContext() ).Get( selectionValues[0].AsGuid() );
+                var groupType = new GroupTypeService( RockApp.Current.CreateRockContext() ).Get( selectionValues[0].AsGuid() );
                 int? groupTypeId = null;
                 if ( groupType != null )
                 {

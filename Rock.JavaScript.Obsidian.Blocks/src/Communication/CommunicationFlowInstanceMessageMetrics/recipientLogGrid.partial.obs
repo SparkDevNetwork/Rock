@@ -6,10 +6,8 @@
           :showExport="false"
           title="Recipient Log">
         <PersonColumn :field="getField('person')"
-                      :filterValue="getPersonNameFilterValue"
                       :filter="textValueFilter"
                       :name="getField('person')"
-                      :quickFilterValue="getPersonNameFilterValue"
                       title="Name" />
 
         <DateTimeColumn :field="getField('sentDate')"
@@ -49,7 +47,6 @@
     import { useGetTypeMemberName } from "@Obsidian/Utility/objectUtils";
     import { RecipientMetricsBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationFlowInstanceMessageMetrics/recipientMetricsBag";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
-    import { PersonFieldBag } from "@Obsidian/ViewModels/Core/Grid/personFieldBag";
 
     const getField = useGetTypeMemberName<RecipientMetricsBag>();
 
@@ -88,16 +85,5 @@
 
     // #region Functions
 
-    /**
-    * Gets the filter value text to use for the name column.
-    *
-    * @param row The row to be filtered.
-    */
-    function getPersonNameFilterValue(row: Record<string, unknown>): string {
-        const person = row["person"] as PersonFieldBag;
-        return !person ? "" : `${person.nickName} ${person.lastName}`;
-    }
-
     // #endregion Functions
-
 </script>

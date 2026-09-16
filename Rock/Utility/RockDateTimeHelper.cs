@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -18,6 +18,7 @@ using System;
 
 using Microsoft.EntityFrameworkCore;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Lava;
 using Rock.Web;
@@ -116,7 +117,7 @@ END";
             // set timeout to 2 hours, just in case it takes a long time
             int commandTimeoutSeconds = ( int ) new TimeSpan( 2, 0, 0 ).TotalSeconds;
 
-            using ( var rockContext = new Rock.Data.RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 rockContext.Database.SetCommandTimeout( commandTimeoutSeconds );
 #if REVIEW_NET5_0_OR_GREATER

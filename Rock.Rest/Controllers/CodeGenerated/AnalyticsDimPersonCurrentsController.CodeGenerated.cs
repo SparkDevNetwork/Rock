@@ -21,6 +21,7 @@
 // </copyright>
 //
 
+using Rock.Configuration;
 using Rock.Model;
 using Rock.SystemGuid;
 
@@ -35,6 +36,6 @@ namespace Rock.Rest.Controllers
         /// <summary>
         /// Initializes a new instance of the <see cref="AnalyticsDimPersonCurrentsController"/> class.
         /// </summary>
-        public AnalyticsDimPersonCurrentsController() : base( new Rock.Model.AnalyticsDimPersonCurrentService( new Rock.Data.RockContext() ) ) { } 
+        public AnalyticsDimPersonCurrentsController() : base( new Rock.Model.AnalyticsDimPersonCurrentService( RockApp.Current.CreateRockContext() ) ) { } 
     }
 }

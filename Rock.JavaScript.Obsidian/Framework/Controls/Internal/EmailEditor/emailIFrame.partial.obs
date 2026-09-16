@@ -31,14 +31,17 @@ iframe {
         bodyGlobalAdapter,
         createComponentElement,
         createComponentElementPlaceholder,
+        decodeLavaEncodedEntities,
         EmptyDropzoneSvgPixelWidth,
         ensureBodyWrapsEmailWrapper,
+        findNestedSectionElements,
         FontFamilies,
         getComponentHelper,
         getComponentHostSelector,
         getComponentTypeName,
         GlobalCssClasses,
         LineHeights,
+        NestedSectionCssClass,
         removeTemporaryAttributes,
         removeTemporaryClasses,
         removeTemporaryElements,
@@ -148,6 +151,11 @@ iframe {
         getHtmlRequest: {
             type: Object as PropType<GetHtmlRequest | null | undefined>,
             required: true
+        },
+
+        isNestedSectionHighlightEnabled: {
+            type: Boolean as PropType<boolean>,
+            required: true
         }
     });
 
@@ -155,6 +163,7 @@ iframe {
         (e: "update:selectedComponentElement", value: HTMLElement | null | undefined): void;
         (e: "componentAdded", value: { componentTypeName: ComponentTypeName; componentElement: HTMLElement; }): void;
         (e: "emailDocumentUpdated", value: { emailDocument: Document, areGlobalDefaultsRequired: boolean; }): void;
+        (e: "nestedSectionsChanged", value: { nestedSectionCount: number; }): void;
     }>();
 
     const draggingCssClass = `${RockRuntimeClassCssClassPrefix}-is-dragging` as const;
@@ -178,6 +187,8 @@ iframe {
     const emptySectionElementToBeAddedTo = ref<HTMLElement | null | undefined>();
     const wrapperAutoRemovalObserver = ref<MutationObserver | null | undefined>();
     const sectionComponentMutationObserver = ref<MutationObserver | null | undefined>();
+    const nestedSectionObserver = ref<MutationObserver | null | undefined>();
+    const isNestedSectionRefreshPending = ref<boolean>(false);
     const dropzoneEmptyResizeObserver = ref<ResizeObserver | null | undefined>();
 
     // Global default providers and effects.
@@ -515,6 +526,34 @@ iframe {
     }
 
     /**
+     * Recomputes which sections are nested deeply enough to warn about, refreshes their highlighting, and notifies the parent.
+     */
+    function refreshNestedSections(): void {
+        isNestedSectionRefreshPending.value = false;
+
+        const iFrameDocument = iFrameElement.value?.contentDocument;
+
+        if (!iFrameDocument) {
+            return;
+        }
+
+        const nestedSectionElements = findNestedSectionElements(iFrameDocument);
+
+        // Clear stale highlights first so sections that are no longer nested lose the outline.
+        iFrameDocument.querySelectorAll(`.${NestedSectionCssClass}`).forEach(el => el.classList.remove(NestedSectionCssClass));
+
+        if (props.isNestedSectionHighlightEnabled) {
+            // Highlight the runtime wrapper when one exists so the overlay is painted above the section's content.
+            nestedSectionElements.forEach(el => {
+                const wrapper = el.parentElement?.classList.contains(RockRuntimeWrapperElementCssClass) ? el.parentElement : el;
+                wrapper.classList.add(NestedSectionCssClass);
+            });
+        }
+
+        emit("nestedSectionsChanged", { nestedSectionCount: nestedSectionElements.length });
+    }
+
+    /**
      * Gets the processed HTML for this email iframe.
      */
     function getHtml(options: GetHtmlRequest): void {
@@ -541,7 +580,7 @@ iframe {
             removeTemporaryClasses(clonedDoc);
 
             const sanitizedHtml = clonedDoc.documentElement.outerHTML ?? "";
-            const finalHtml = decodeLavaEntityWhereFilters(sanitizedHtml);
+            const finalHtml = decodeLavaEncodedEntities(sanitizedHtml);
 
             const html = `${doctypeText}\n${finalHtml}`;
 
@@ -564,64 +603,6 @@ iframe {
                 throw e;
             }
         }
-    }
-
-    /**
-     * Decodes browser-encoded Lava `where:'...'` filters inside `{% %}` blocks.
-     *
-     * Browsers automatically encode `&` as `&amp;` in the HTML editor.
-     * This turns logical operators like `&&` into `&amp;&amp;`, which breaks
-     * Rock Entity `where:` filters during server-side Lava parsing.
-     *
-     * Example: `where:'IsActive == true && CampusId == 1'`
-     *
-     * Becomes: `where:'IsActive == true &amp;&amp; CampusId == 1'`
-     *
-     * We decode HTML entities inside the quoted `where:'...'` value.
-     * Although the original issue was `&amp;&amp;`, this intentionally
-     * decodes all entities (e.g. `&gt;`, `&lt;`, `&quot;`) to restore
-     * the filter logic exactly as authored.
-     *
-     * This runs on the final HTML string, not DOM nodes, because modifying
-     * the DOM would cause the browser to re-encode `&` back to `&amp;`.
-     *
-     * Scope is intentionally narrow:
-     * - Only processes `{% %}` blocks
-     * - Only decodes the quoted `where:'...'` value
-     * - Leaves all other HTML and Lava content untouched
-     */
-    function decodeLavaEntityWhereFilters(html: string): string {
-        const lavaTagRegex = /{%[\s\S]*?%}/g;
-
-        // Used only for fast detection, avoids allocating lowercase strings.
-        const whereTestRegex = /\bwhere:\s*'/i;
-
-        // Case-insensitive replacement of where clause values.
-        const whereReplaceRegex = /\bwhere:\s*'([^']*)'/gi;
-
-        // Use the browser's HTML parser to safely decode entities
-        // instead of hand-rolled replacements.
-        const template = document.createElement("template");
-
-        return html.replace(lavaTagRegex, (tag) => {
-            // Skip tags that clearly don't need processing.
-            if (!tag.includes("&") || !whereTestRegex.test(tag)) {
-                return tag;
-            }
-
-            return tag.replace(whereReplaceRegex, (_, whereValue) => {
-                // Only decode if the where value actually contains entities.
-                if (!whereValue.includes("&")) {
-                    return `where:'${whereValue}'`;
-                }
-
-                template.innerHTML = whereValue;
-                const decoded = template.content.textContent ?? "";
-                template.innerHTML = ""; // Reset to avoid retaining references.
-
-                return `where:'${decoded}'`;
-            });
-        });
     }
 
     function isComponentElement(element: HTMLElement): element is HTMLElement {
@@ -880,6 +861,28 @@ body.${draggingCssClass}, body.${draggingCssClass} * {
     cursor: grabbing;
 }
 
+/*
+    09/10/26 - JMH
+
+    The highlight is an absolutely positioned overlay on the runtime wrapper rather than an
+    outline on the section table. An inset outline is painted beneath the section's own
+    content (nested wrappers are positioned and paint later), so it was invisible in practice.
+    The wrapper's ::after is taken by the hover labels, hence ::before. The color is fixed
+    because the email canvas is always light no matter which Rock theme is active, and the
+    dark theme's warning token is a pale tint that disappears on white.
+
+    Reason: Make the nested-section highlight reliably visible above section content.
+*/
+.rock-runtime-wrapper-element.${NestedSectionCssClass}::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    pointer-events: none;
+    border: 2px solid #c4631c;
+    background-color: rgba(196, 99, 28, 0.12);
+}
+
 html ::-webkit-scrollbar {
     width: 8px;
     height: 8px;
@@ -1086,6 +1089,7 @@ body:not(.${draggingCssClass}) .rock-runtime-wrapper-element.for-component-secti
     color: #ffffff;
     padding: 4px 18px;
     font-size: 10px;
+    font-family: var(--font-family-sans);
     border-radius: 9999px;
     pointer-events: none;
     line-height: 1;
@@ -1093,10 +1097,12 @@ body:not(.${draggingCssClass}) .rock-runtime-wrapper-element.for-component-secti
 `;
         iFrameDocument.head.appendChild(style);
 
-        // If the body does not contain a structure-dropzone, then add one automatically.
+        // If the body does not contain a structure-dropzone, then add one automatically inside a row component.
         if (!iFrameDocument.querySelector(".structure-dropzone")) {
             const dropzone = iFrameDocument.createElement("div");
             dropzone.classList.add("structure-dropzone");
+            const baseRow = createComponentElement(iFrameDocument, "row");
+            dropzone.appendChild(baseRow);
             iFrameDocument.body.append(dropzone);
         }
 
@@ -1214,8 +1220,34 @@ body:not(.${draggingCssClass}) .rock-runtime-wrapper-element.for-component-secti
             });
         });
 
+        nestedSectionObserver.value?.disconnect();
+        nestedSectionObserver.value = new MutationObserver((mutations) => {
+            if (isNestedSectionRefreshPending.value) {
+                return;
+            }
+
+            // Only structural changes involving sections can alter nesting; ignore text edits and the like.
+            const isSectionStructureChanged = mutations.some(mutation =>
+                Enumerable.from(mutation.addedNodes)
+                    .concat(Enumerable.from(mutation.removedNodes))
+                    .ofType(isElement)
+                    .any(e => e.classList.contains("component-section") || !!e.querySelector(".component-section")));
+
+            if (!isSectionStructureChanged) {
+                return;
+            }
+
+            // Batch processing with requestAnimationFrame.
+            isNestedSectionRefreshPending.value = true;
+            requestAnimationFrame(() => refreshNestedSections());
+        });
+        nestedSectionObserver.value.observe(iFrameDocument.body, { childList: true, subtree: true });
+
         // Wrap component elements to give them runtime styling.
         wrapComponentElements(iFrameDocument);
+
+        // Runs after wrapping so the highlight lands on the wrappers.
+        refreshNestedSections();
 
         // Finally, let other components know the document was updated.
         emit("emailDocumentUpdated", { emailDocument: iFrameDocument, areGlobalDefaultsRequired });
@@ -1287,16 +1319,18 @@ body:not(.${draggingCssClass}) .rock-runtime-wrapper-element.for-component-secti
             globalStyles.addStyle(`.${GlobalCssClasses.marginParagraph}`, `margin: 0;`);
 
             // Add non-editable global styles.
+            // Do not set `height: 100%` on the root elements or the wrapper here.
+            // Clients that honor these styles (e.g. iOS Mail) stretch the wrapper
+            // past its content and expose the gray body background as a scrollable
+            // blank area below short emails.
             globalStyles.addStyle(`html, body`,
                 `/* Remove client-specific spacing around root elements. */
                 margin: 0;
-                padding: 0;
-                height: 100%;`
+                padding: 0;`
             );
 
             globalStyles.addStyle(`.email-wrapper`,
-                `width: 100%;
-                height: 100%;`
+                `width: 100%;`
             );
 
             styleElement.textContent = generateCssRulesets(globalStyles.styles);
@@ -2099,6 +2133,10 @@ body:not(.${draggingCssClass}) .rock-runtime-wrapper-element.for-component-secti
         }
     });
 
+    watch(() => props.isNestedSectionHighlightEnabled, () => {
+        refreshNestedSections();
+    });
+
     watch([draggingElement, draggingPlaceholderElement], ([draggingEl, draggingPlaceholderEl], [oldDraggingEl]) => {
         if (draggingEl || draggingPlaceholderEl) {
             iFrameElement.value?.contentDocument?.body.classList.add(draggingCssClass);
@@ -2125,6 +2163,7 @@ body:not(.${draggingCssClass}) .rock-runtime-wrapper-element.for-component-secti
         wrapperAutoRemovalObserver.value?.disconnect();
         dropzoneEmptyResizeObserver.value?.disconnect();
         sectionComponentMutationObserver.value?.disconnect();
+        nestedSectionObserver.value?.disconnect();
 
         globalBackgroundColorProvider.value?.dispose();
     });

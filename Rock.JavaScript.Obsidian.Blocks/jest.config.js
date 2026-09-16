@@ -18,6 +18,9 @@ module.exports = {
     testEnvironmentOptions: {
         customExportConditions: ["node", "node-addons"]
     },
+    setupFilesAfterEnv: [
+        "<rootDir>/tests/setup.ts"
+    ],
     testMatch: [
         "./**/?(*.)+(spec|test).ts"
     ],
@@ -25,8 +28,7 @@ module.exports = {
         "^.+\\.ts$": [
             "ts-jest",
             {
-                tsconfig: "./Tests/tsconfig.json",
-                isolatedModules: true,
+                tsconfig: "./Tests/tsconfig.json"
             }
         ],
         "^.+\\.obs$": [

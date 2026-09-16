@@ -80,6 +80,7 @@
     import RockForm from "@Obsidian/Controls/rockForm.obs";
     import Captcha from "@Obsidian/Controls/captcha.obs";
     import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { makeUrlRedirectSafe } from "@Obsidian/Utility/url";
     import { ConnectionOpportunitySignupInitializationBox } from "@Obsidian/ViewModels/Blocks/Connection/ConnectionOpportunitySignup/connectionOpportunitySignupInitializationBox";
     import { ConnectionOpportunitySignupRequestBag } from "@Obsidian/ViewModels/Blocks/Connection/ConnectionOpportunitySignup/connectionOpportunitySignupRequestBag";
     import { ConnectionOpportunitySignupResultBag } from "@Obsidian/ViewModels/Blocks/Connection/ConnectionOpportunitySignup/connectionOpportunitySignupResultBag";
@@ -162,6 +163,13 @@
             switch (result.data?.resultType) {
                 // Successful signup
                 case ConnectionOpportunitySignupResultType.Success:
+                    // If the response Lava template performed a PageRedirect,
+                    // navigate instead of showing the response message.
+                    if (result.data.redirectUrl) {
+                        window.location.href = makeUrlRedirectSafe(result.data.redirectUrl);
+                        return;
+                    }
+
                     responseMessage.value = result.data.responseMessage || "";
                     isSuccess.value = true;
                     break;

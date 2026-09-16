@@ -17,7 +17,7 @@
 import { defineComponent, ref, watch } from "vue";
 import { getFieldEditorProps } from "./utils";
 import DropDownList from "@Obsidian/Controls/dropDownList.obs";
-import { ConfigurationValueKey } from "./comparisonField.partial";
+import { ConfigurationKey } from "./comparisonField.partial";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
 export const EditComponent = defineComponent({
@@ -33,7 +33,7 @@ export const EditComponent = defineComponent({
         // The internal value used by the text editor.
         const internalValue = ref<string>("");
         // The Comparison options.
-        const options = JSON.parse(props.configurationValues[ConfigurationValueKey.ClientValues] || "[]") as ListItemBag[];
+        const options = JSON.parse(props.configurationValues[ConfigurationKey.ClientValues] || "[]") as ListItemBag[];
 
         // Watch for changes from the parent component and update the text editor.
         watch(() => props.modelValue, () => {

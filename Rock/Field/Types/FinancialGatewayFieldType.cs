@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -21,6 +21,8 @@ using System.Linq;
 #if WEBFORMS
 using System.Web.UI;
 #endif
+
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.UI.Controls;
@@ -50,7 +52,7 @@ namespace Rock.Field.Types
             Guid? financialGatewayGuid = privateValue.AsGuidOrNull();
             if ( financialGatewayGuid.HasValue )
             {
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     var financialGatewayName = new FinancialGatewayService( rockContext ).GetSelect( financialGatewayGuid.Value, s => s.Name );
                     formattedValue = financialGatewayName;
@@ -88,7 +90,7 @@ namespace Rock.Field.Types
         {
             if ( Guid.TryParse( privateValue, out Guid guid ) )
             {
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     var financialGateway = new FinancialGatewayService( rockContext ).Queryable()
                         .AsNoTracking()
@@ -135,7 +137,7 @@ namespace Rock.Field.Types
             var guid = value.AsGuidOrNull();
             if ( guid.HasValue )
             {
-                rockContext = rockContext ?? new RockContext();
+                rockContext = rockContext ?? RockApp.Current.CreateRockContext();
                 return new FinancialGatewayService( rockContext ).Get( guid.Value );
             }
 
@@ -152,7 +154,7 @@ namespace Rock.Field.Types
                 return null;
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var financialGatewayId = new FinancialGatewayService( rockContext ).GetId( guid.Value );
 
@@ -180,6 +182,22 @@ namespace Rock.Field.Types
         }
         #endregion
 
+        #region Field Type Hints
+
+        /// <inheritdoc/>
+        internal override FieldTypeHints GetFieldHints( Dictionary<string, string> privateConfigurationValues )
+        {
+            // No Values. The set is unbounded or depends on other configuration, so
+            // the shape of the value and where to get one is what can be described.
+            return new FieldTypeHints
+            {
+                IsCompleteList = false,
+                ValueFormat = "The guid of a row in the FinancialGateway table. Not its id or idKey.",
+                Instructions = "To find the correct value, look up the financial gateways and take the guid of the one you want."
+            };
+        }
+
+        #endregion
         #region WebForms
 #if WEBFORMS
 
@@ -226,7 +244,7 @@ namespace Rock.Field.Types
                 Guid? itemGuid = null;
                 if ( itemId.HasValue )
                 {
-                    using ( var rockContext = new RockContext() )
+                    using ( var rockContext = RockApp.Current.CreateRockContext() )
                     {
                         itemGuid = new FinancialGatewayService( rockContext ).Queryable().AsNoTracking().Where( a => a.Id == itemId.Value ).Select( a => ( Guid? ) a.Guid ).FirstOrDefault();
                     }
@@ -253,7 +271,7 @@ namespace Rock.Field.Types
                 Guid? itemGuid = value.AsGuidOrNull();
                 if ( itemGuid.HasValue )
                 {
-                    using ( var rockContext = new RockContext() )
+                    using ( var rockContext = RockApp.Current.CreateRockContext() )
                     {
                         itemId = new FinancialGatewayService( rockContext ).Queryable().Where( a => a.Guid == itemGuid.Value ).Select( a => ( int? ) a.Id ).FirstOrDefault();
                     }
@@ -272,7 +290,7 @@ namespace Rock.Field.Types
         public int? GetEditValueAsEntityId( Control control, Dictionary<string, ConfigurationValue> configurationValues )
         {
             var guid = GetEditValue( control, configurationValues ).AsGuid();
-            var item = new FinancialGatewayService( new RockContext() ).Get( guid );
+            var item = new FinancialGatewayService( RockApp.Current.CreateRockContext() ).Get( guid );
             return item != null ? item.Id : ( int? ) null;
         }
 
@@ -284,7 +302,7 @@ namespace Rock.Field.Types
         /// <param name="id">The identifier.</param>
         public void SetEditValueFromEntityId( Control control, Dictionary<string, ConfigurationValue> configurationValues, int? id )
         {
-            var item = new FinancialGatewayService( new RockContext() ).Get( id ?? 0 );
+            var item = new FinancialGatewayService( RockApp.Current.CreateRockContext() ).Get( id ?? 0 );
             var guidValue = item != null ? item.Guid.ToString() : string.Empty;
             SetEditValue( control, configurationValues, guidValue );
         }

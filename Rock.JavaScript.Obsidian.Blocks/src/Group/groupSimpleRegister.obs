@@ -1,0 +1,141 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <RockForm @submit="onRegister">
+        <NotificationBox v-if="blockError" alertType="warning" v-html="blockError" />
+
+        <NotificationBox v-else-if="isRegistered" alertType="success" title="Thank You" v-html="successMessage" />
+
+        <template v-else>
+            <fieldset>
+                <FirstNameTextBox v-model="firstName" placeholder="First Name" validationTitle="First Name" disableLabel :rules="nameRules" />
+                <TextBox v-model="lastName" placeholder="Last Name" validationTitle="Last Name" disableLabel :rules="nameRules" />
+                <div class="form-group">
+                    <EmailBox v-model="email" placeholder="Email" validationTitle="Email" disableLabel :rules="['required']" />
+                </div>
+            </fieldset>
+
+            <NotificationBox v-if="errorMessage" alertType="danger" v-html="errorMessage" />
+
+            <div v-if="!config.disableCaptchaSupport" v-show="!isCaptchaComplete" class="form-group">
+                <Captcha ref="captchaElement" validationTitle="Captcha" />
+            </div>
+
+            <div v-if="isCaptchaComplete || config.disableCaptchaSupport" class="actions">
+                <RockButton :btnType="BtnType.Primary"
+                            :disabled="isRegistering"
+                            shortcutKey="s"
+                            type="submit">
+                    {{ saveButtonText }}
+                </RockButton>
+            </div>
+        </template>
+    </RockForm>
+</template>
+
+<script setup lang="ts">
+    import { onMounted, ref } from "vue";
+    import Captcha from "@Obsidian/Controls/captcha.obs";
+    import EmailBox from "@Obsidian/Controls/emailBox.obs";
+    import FirstNameTextBox from "@Obsidian/Controls/firstNameTextBox.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import RockForm from "@Obsidian/Controls/rockForm.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import { BtnType } from "@Obsidian/Enums/Controls/btnType";
+    import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
+    import { makeUrlRedirectSafe } from "@Obsidian/Utility/url";
+    import { BlockActionContextBag } from "@Obsidian/ViewModels/Blocks/blockActionContextBag";
+    import { GroupSimpleRegisterBag } from "@Obsidian/ViewModels/Blocks/Group/GroupSimpleRegister/groupSimpleRegisterBag";
+    import { GroupSimpleRegisterOptionsBag } from "@Obsidian/ViewModels/Blocks/Group/GroupSimpleRegister/groupSimpleRegisterOptionsBag";
+
+    const config = useConfigurationValues<GroupSimpleRegisterOptionsBag>();
+    const invokeBlockAction = useInvokeBlockAction();
+
+    // #region Values
+
+    const nameRules = ["required", "nospecialcharacters", "noemojisorspecialfonts"];
+
+    const firstName = ref(config.registrant?.firstName ?? "");
+    const lastName = ref(config.registrant?.lastName ?? "");
+    const email = ref(config.registrant?.email ?? "");
+
+    const saveButtonText = ref(config.saveButtonText || "Save");
+    const blockError = ref(config.errorMessage ?? "");
+    const errorMessage = ref("");
+    const successMessage = ref("");
+    const isRegistered = ref(false);
+    const isRegistering = ref(false);
+
+    const captchaElement = ref<InstanceType<typeof Captcha> | undefined>();
+    const isCaptchaComplete = ref(false);
+
+    // #endregion Values
+
+    // #region Functions
+
+    /**
+     * Fetches the CAPTCHA token so the submit button can be revealed once the challenge resolves.
+     */
+    async function waitForCaptcha(): Promise<void> {
+        if (config.disableCaptchaSupport || !captchaElement.value) {
+            isCaptchaComplete.value = true;
+            return;
+        }
+
+        const token = await captchaElement.value.getToken();
+        isCaptchaComplete.value = !!token;
+    }
+
+    // #endregion Functions
+
+    // #region Event Handlers
+
+    /**
+     * Submits the registration. On success either shows the confirmation message or, when the
+     * person is already an active member, redirects to the confirmation page.
+     */
+    async function onRegister(): Promise<void> {
+        errorMessage.value = "";
+        isRegistering.value = true;
+
+        const actionContext: BlockActionContextBag = {};
+        if (!config.disableCaptchaSupport && captchaElement.value) {
+            actionContext.captcha = await captchaElement.value.getToken();
+        }
+
+        const bag: GroupSimpleRegisterBag = {
+            firstName: firstName.value,
+            lastName: lastName.value,
+            email: email.value
+        };
+
+        const result = await invokeBlockAction<string>("Register", { bag }, actionContext);
+
+        isRegistering.value = false;
+
+        if (result.isSuccess) {
+            if (result.statusCode === 201 && typeof result.data === "string") {
+                window.location.href = makeUrlRedirectSafe(result.data);
+            }
+            else {
+                successMessage.value = typeof result.data === "string" ? result.data : "";
+                isRegistered.value = true;
+            }
+        }
+        else {
+            errorMessage.value = result.errorMessage ?? "Unknown error while trying to register.";
+        }
+    }
+
+    // #endregion Event Handlers
+
+    // #region Lifecycle Hooks
+
+    onConfigurationValuesChanged(useReloadBlock());
+
+    onMounted(() => {
+        waitForCaptcha();
+    });
+
+    // #endregion Lifecycle Hooks
+</script>

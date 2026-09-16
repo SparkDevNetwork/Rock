@@ -1,0 +1,42 @@
+// <copyright>
+// Copyright by the Spark Development Network
+//
+// Licensed under the Rock Community License (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.rockrms.com/license
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// </copyright>
+//
+
+namespace Rock.ViewModels.Blocks.Group.GroupFinder
+{
+    /// <summary>
+    /// A driving distance and time from the origin to a group, cached per session and exchanged between the block and the client.
+    /// </summary>
+    public class GroupFinderDistanceBag
+    {
+        /// <summary>
+        /// Gets or sets the driving distance in miles.
+        /// </summary>
+        public double Miles { get; set; }
+
+        /// <summary>
+        /// Gets or sets the static (non-traffic) driving time in minutes.
+        /// </summary>
+        public double Minutes { get; set; }
+
+        /// <summary>
+        /// Gets or sets a signature of the group's location this distance was computed for. A cached
+        /// entry is reused only while this still matches the group's current location, so a group whose
+        /// location changed between searches is re-routed rather than showing a stale distance and time.
+        /// </summary>
+        public string LocationKey { get; set; }
+    }
+}

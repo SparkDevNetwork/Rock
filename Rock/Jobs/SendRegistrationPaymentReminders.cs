@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -25,6 +25,7 @@ using Humanizer;
 
 using Rock.Attribute;
 using Rock.Communication;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -37,7 +38,11 @@ namespace Rock.Jobs
     [DisplayName( "Event Payment Reminders" )]
     [Description( "This job sends payment reminders to registration contacts with an active balance. For the reminder to be sent the registration template must have a 'Payment Reminder Time Span' configured. Also emails will not be sent to registrations where the instance close date is past the job's 'Cut-off Date' setting." )]
 
-    [IntegerField("Cut-off Date", "The number of days past the registration close to send reminders. After this cut-off, reminders will need to be sent manually to prevent eternal reminders.", true, 30, key:"CutoffDate")]
+    [IntegerField("Cut-off Date",
+        Description = "The number of days past the registration close to send reminders. After this cut-off, reminders will need to be sent manually to prevent eternal reminders.",
+        IsRequired = true,
+        DefaultIntegerValue = 30,
+        Key = "CutoffDate")]
     public class SendRegistrationPaymentReminders : RockJob
     {
         /// <summary> 
@@ -63,7 +68,7 @@ namespace Rock.Jobs
             //    + the registration has a cost
             //    + the registration has been closed within the last xx days (to prevent eternal nagging)
 
-            using ( RockContext rockContext = new RockContext())
+            using ( RockContext rockContext = RockApp.Current.CreateRockContext())
             {
                 int sendCount = 0;
                 int registrationInstanceCount = 0;

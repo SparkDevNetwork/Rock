@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -24,7 +24,6 @@ using Rock.Data;
 using Rock.Enums.AI.Agent;
 using Rock.Extension;
 using Rock.Field;
-using Rock.Field.Types;
 using Rock.Net;
 using Rock.Security;
 using Rock.ViewModels.Controls;
@@ -43,7 +42,7 @@ namespace Rock.AI.Agent
     /// Each individual tool must be decorated with <see cref="SystemGuid.AgentToolGuidAttribute"/>.
     /// </para>
     /// </summary>
-    internal abstract class AgentSkillComponent : LightComponent
+    public abstract class AgentSkillComponent : LightComponent
     {
         #region Constants
 
@@ -61,7 +60,7 @@ namespace Rock.AI.Agent
         /// when the skill is being executed as part of a chat. Meaning any
         /// method that is not a tool will not have a context.
         /// </summary>
-        protected IAgentRequestContext AgentRequestContext { get; private set; }
+        protected AgentRequestContext AgentRequestContext { get; private set; }
 
         /// <summary>
         /// The configuration values that were configured for this skill when it
@@ -75,13 +74,35 @@ namespace Rock.AI.Agent
         #region Methods
 
         /// <summary>
-        /// Initializes the component for use with a chat agent.
+        /// Initializes the component for use with a chat agent. Unit tests reach
+        /// this through the <c>InitializeForTesting</c> helper in
+        /// <c>Rock.Tests.Shared.TestAccess.AI.Agent</c>, which has access to this
+        /// internal method; keep that helper in sync with this signature.
         /// </summary>
         /// <param name="configurationValues">The configuration values.</param>
         /// <param name="agentRequestContext">The context for this chat agent request.</param>
-        internal void Initialize( IReadOnlyDictionary<string, string> configurationValues, IAgentRequestContext agentRequestContext )
+        internal void Initialize( IReadOnlyDictionary<string, string> configurationValues, AgentRequestContext agentRequestContext )
         {
-            ConfigurationValues = configurationValues;
+            var writableConfigurationValues = configurationValues.ToDictionary( kvp => kvp.Key, kvp => kvp.Value );
+            var fieldTypeAttributes = GetConfigurationAttributes();
+
+            // Update any missing configuration values with defaults from the
+            // attributes.
+            foreach ( var fieldTypeAttribute in fieldTypeAttributes )
+            {
+                var fieldTypeCache = FieldTypeCache.Get( fieldTypeAttribute.FieldTypeGuid );
+                if ( fieldTypeCache == null || fieldTypeCache.Field == null )
+                {
+                    continue;
+                }
+
+                if ( !writableConfigurationValues.TryGetValue( fieldTypeAttribute.Key, out _ ) )
+                {
+                    writableConfigurationValues[fieldTypeAttribute.Key] = fieldTypeAttribute.DefaultValue ?? string.Empty;
+                }
+            }
+
+            ConfigurationValues = writableConfigurationValues;
             AgentRequestContext = agentRequestContext;
         }
 
@@ -91,13 +112,13 @@ namespace Rock.AI.Agent
         /// supported.
         /// </summary>
         /// <returns>A collection of <see cref="AgentTool"/> objects that represent the dynamic tools.</returns>
-        public virtual IReadOnlyCollection<AgentTool> GetDymanicTools() => Array.Empty<AgentTool>();
+        internal virtual IReadOnlyCollection<AgentTool> GetDymanicTools() => Array.Empty<AgentTool>();
 
         /// <summary>
         /// Creates a <see cref="ToolStatus.Success"/> result with no content.
         /// </summary>
-        /// <returns>A new instance of <see cref="IAgentToolResult"/>.</returns>
-        protected IAgentToolResult Success()
+        /// <returns>A new instance of <see cref="AgentToolResult"/>.</returns>
+        protected AgentToolResult Success()
         {
             return AgentToolResult.Success();
         }
@@ -108,8 +129,8 @@ namespace Rock.AI.Agent
         /// object or an enumeration of objects that make up the payload.
         /// </summary>
         /// <param name="payload">The payload to return with the result.</param>
-        /// <returns>A new instance of <see cref="IAgentToolResult"/>.</returns>
-        protected IAgentToolResult Success( object payload )
+        /// <returns>A new instance of <see cref="AgentToolResult"/>.</returns>
+        protected AgentToolResult Success( object payload )
         {
             return AgentToolResult.Success( payload );
         }
@@ -118,8 +139,8 @@ namespace Rock.AI.Agent
         /// Creates a <see cref="ToolStatus.NoData"/> result. This should be
         /// used for lookup type operations that 
         /// </summary>
-        /// <returns>A new instance of <see cref="IAgentToolResult"/>.</returns>
-        protected IAgentToolResult NoData()
+        /// <returns>A new instance of <see cref="AgentToolResult"/>.</returns>
+        protected AgentToolResult NoData()
         {
             return AgentToolResult.NoData();
         }
@@ -129,8 +150,8 @@ namespace Rock.AI.Agent
         /// message.
         /// </summary>
         /// <param name="message">The error message to return.</param>
-        /// <returns>A new instance of <see cref="IAgentToolResult"/>.</returns>
-        protected IAgentToolResult Error( string message )
+        /// <returns>A new instance of <see cref="AgentToolResult"/>.</returns>
+        protected AgentToolResult Error( string message )
         {
             return AgentToolResult.Error( message );
         }
@@ -140,8 +161,8 @@ namespace Rock.AI.Agent
         /// messages.
         /// </summary>
         /// <param name="messages">The error messages to return.</param>
-        /// <returns>A new instance of <see cref="IAgentToolResult"/>.</returns>
-        protected IAgentToolResult Error( IEnumerable<string> messages )
+        /// <returns>A new instance of <see cref="AgentToolResult"/>.</returns>
+        protected AgentToolResult Error( IEnumerable<string> messages )
         {
             return AgentToolResult.Error( messages );
         }
@@ -169,7 +190,7 @@ namespace Rock.AI.Agent
             // the client can present them with standard logic.
             foreach ( var fieldTypeAttribute in fieldTypeAttributes )
             {
-                var fieldTypeCache = FieldTypeCache.All().FirstOrDefault( c => c.Class == fieldTypeAttribute.FieldTypeClass );
+                var fieldTypeCache = FieldTypeCache.Get( fieldTypeAttribute.FieldTypeGuid );
                 if ( fieldTypeCache == null || fieldTypeCache.Field == null )
                 {
                     continue;
@@ -236,7 +257,7 @@ namespace Rock.AI.Agent
             // each of the field type attributes defined on this instance.
             foreach ( var fieldTypeAttribute in fieldTypeAttributes )
             {
-                var fieldTypeCache = FieldTypeCache.All().FirstOrDefault( c => c.Class == fieldTypeAttribute.FieldTypeClass );
+                var fieldTypeCache = FieldTypeCache.Get( fieldTypeAttribute.FieldTypeGuid );
                 if ( fieldTypeCache == null || fieldTypeCache.Field == null )
                 {
                     continue;
@@ -244,7 +265,11 @@ namespace Rock.AI.Agent
 
                 if ( !privateConfiguration.TryGetValue( fieldTypeAttribute.Key, out var privateValue ) )
                 {
-                    privateValue = string.Empty;
+                    privateValue = fieldTypeAttribute.DefaultValue ?? string.Empty;
+                }
+                else if ( privateValue.IsNullOrWhiteSpace() )
+                {
+                    privateValue = fieldTypeAttribute.DefaultValue ?? string.Empty;
                 }
 
                 var configurationValues = fieldTypeAttribute.FieldConfigurationValues
@@ -274,7 +299,7 @@ namespace Rock.AI.Agent
             // each of the field type attributes defined on this instance.
             foreach ( var fieldTypeAttribute in fieldTypeAttributes )
             {
-                var fieldTypeCache = FieldTypeCache.All().FirstOrDefault( c => c.Class == fieldTypeAttribute.FieldTypeClass );
+                var fieldTypeCache = FieldTypeCache.Get( fieldTypeAttribute.FieldTypeGuid );
                 if ( fieldTypeCache == null || fieldTypeCache.Field == null )
                 {
                     continue;
@@ -305,10 +330,10 @@ namespace Rock.AI.Agent
                 .GetCustomAttributes( true )
                 .Where( a => typeof( FieldAttribute ).IsAssignableFrom( a.GetType() ) )
                 .Cast<FieldAttribute>()
-                .Where( fa => fa.FieldTypeClass != typeof( FileFieldType ).FullName
-                    && fa.FieldTypeClass != typeof( ImageFieldType ).FullName
-                    && fa.FieldTypeClass != typeof( BackgroundCheckFieldType ).FullName
-                    && fa.FieldTypeClass != typeof( StructureContentEditorFieldType ).FullName )
+                .Where( fa => fa.FieldTypeGuid != SystemGuid.FieldType.FILE.AsGuid()
+                    && fa.FieldTypeGuid != SystemGuid.FieldType.IMAGE.AsGuid()
+                    && fa.FieldTypeGuid != SystemGuid.FieldType.BACKGROUNDCHECK.AsGuid()
+                    && fa.FieldTypeGuid != SystemGuid.FieldType.STRUCTURE_CONTENT_EDITOR.AsGuid() )
                 .OrderBy( a => a.Order )
                 .ToList();
         }

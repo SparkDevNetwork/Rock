@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -21,7 +21,10 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+
 using Quartz;
+
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 
@@ -41,7 +44,7 @@ namespace Rock.Jobs
         public override void Execute()
         {
             var stopWatch = System.Diagnostics.Stopwatch.StartNew();
-            var metricService = new MetricService( new RockContext() );
+            var metricService = new MetricService( RockApp.Current.CreateRockContext() );
             metricService.EnsureMetricAnalyticsViews();
             // Log how long it took us to run.
             var logMessage = $"{RockDateTime.Now:MM/dd/yyyy HH:mm:ss.fff},[{stopWatch.Elapsed.TotalMilliseconds,5:#} ms],{this.GetType().FullName}";

@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -22,6 +22,8 @@ using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 
 using Rock.Data;
+using Rock.Enums.Security;
+using Rock.Security;
 
 namespace Rock.Model
 {
@@ -106,6 +108,7 @@ namespace Rock.Model
         /// </summary>
         /// <value>The state json.</value>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string StateJson { get; set; }
 
         #endregion

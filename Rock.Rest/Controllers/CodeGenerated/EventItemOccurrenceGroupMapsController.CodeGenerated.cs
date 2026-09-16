@@ -21,6 +21,7 @@
 // </copyright>
 //
 
+using Rock.Configuration;
 using Rock.Model;
 using Rock.SystemGuid;
 
@@ -35,6 +36,6 @@ namespace Rock.Rest.Controllers
         /// <summary>
         /// Initializes a new instance of the <see cref="EventItemOccurrenceGroupMapsController"/> class.
         /// </summary>
-        public EventItemOccurrenceGroupMapsController() : base( new Rock.Model.EventItemOccurrenceGroupMapService( new Rock.Data.RockContext() ) ) { } 
+        public EventItemOccurrenceGroupMapsController() : base( new Rock.Model.EventItemOccurrenceGroupMapService( RockApp.Current.CreateRockContext() ) ) { } 
     }
 }

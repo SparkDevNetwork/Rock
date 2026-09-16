@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -19,6 +19,7 @@ using System.Data.Entity;
 using System.Linq;
 using System.Web.UI.WebControls;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Financial;
 using Rock.Model;
@@ -31,28 +32,6 @@ namespace Rock.Web.UI.Controls
     /// </summary>
     public class FinancialGatewayPicker : RockDropDownList
     {
-        /// <summary>
-        /// Gets or sets a value indicating whether all gateways should be included. If set to false, only gateways
-        /// that are active and support rock initiated transactions will be included.
-        /// </summary>
-        /// <value>
-        ///   <c>true</c> if [show all]; otherwise, <c>false</c>.
-        /// </value>
-        [RockObsolete( "1.14" )]
-        [Obsolete( "Use IncludeInactive instead" )]
-        public bool ShowAll
-        {
-            get
-            {
-                return IncludeInactive;
-            }
-
-            set
-            {
-                IncludeInactive = value;
-            }
-        }
-
         /// <summary>
         /// Gets or sets a value indicating whether inactive gateways should be included.
         /// This checks both the FinancialGateway model and the GatewayComponent.
@@ -120,7 +99,7 @@ namespace Rock.Web.UI.Controls
             this.Items.Clear();
             this.Items.Add( new ListItem() );
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var gateways = new FinancialGatewayService( rockContext )
                     .Queryable()

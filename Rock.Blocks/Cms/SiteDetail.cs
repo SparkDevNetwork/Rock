@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -18,7 +18,6 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.IO;
 using System.Linq;
 
 using Rock.Attribute;
@@ -30,6 +29,7 @@ using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Cms.SiteDetail;
 using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
+using Rock.Web.UI;
 
 namespace Rock.Blocks.Cms
 {
@@ -42,7 +42,7 @@ namespace Rock.Blocks.Cms
     [Category( "CMS" )]
     [Description( "Displays the details of a particular site." )]
     [IconCssClass( "ti ti-question-mark" )]
-    // [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( Model.SiteType.Web )]
 
     #region Block Attributes
 
@@ -57,7 +57,8 @@ namespace Rock.Blocks.Cms
     #endregion
 
     [Rock.SystemGuid.EntityTypeGuid( "88ce8a0b-35b6-4427-817f-2fdf485d0241" )]
-    [Rock.SystemGuid.BlockTypeGuid( "3e935e45-4796-4389-ab1c-98d2403faedf" )]
+    [Rock.SystemGuid.BlockTypeGuid( "2AC06C36-869F-45F7-8C14-802781C5F70E" )]
+    // was [Rock.SystemGuid.BlockTypeGuid( "3e935e45-4796-4389-ab1c-98d2403faedf" )]
     public class SiteDetail : RockEntityDetailBlockType<Site, SiteBag>
     {
         #region Keys
@@ -103,22 +104,21 @@ namespace Rock.Blocks.Cms
         {
             var options = new SiteDetailOptionsBag();
 
-            options.Themes = new List<ListItemBag>();
-
-            var physicalRootFolder = AppDomain.CurrentDomain.BaseDirectory;
-            string physicalFolder = Path.Combine( physicalRootFolder, RequestContext.ResolveRockUrl( "~~/" ).RemoveLeadingForwardslash() );
-
-            var sites = SiteCache.All()
-                .Where( s => !string.IsNullOrWhiteSpace( s.Theme ) )
-                .DistinctBy( s => s.Theme )
-                .OrderBy( s => s.Theme )
-                .Select( s => new ListItemBag
+            // Enumerate the theme folders directly so that every installed theme
+            // is selectable, including ones that have just been added and are not
+            // yet assigned to any site. Deriving the list from existing sites
+            // hid any theme that was not already in use.
+            options.Themes = RockTheme.GetThemes()
+                .OrderBy( t => t.Name )
+                .Select( t => new ListItemBag
                 {
-                    Text = s.Theme,
-                    Value = s.Theme
-                } );
+                    Text = t.Name,
+                    Value = t.Name
+                } )
+                .ToList();
 
-            options.Themes.AddRange( sites );
+            var siteEntityType = EntityTypeCache.Get( "Rock.Model.Site" );
+            options.IsIndexingEnabled = siteEntityType != null && siteEntityType.IsIndexingEnabled;
 
             return options;
         }
@@ -788,6 +788,8 @@ namespace Rock.Blocks.Cms
                 interactionChannelForSite = new InteractionChannel();
                 interactionChannelForSite.ChannelTypeMediumValueId = channelMediumWebsiteValueId;
                 interactionChannelForSite.ChannelEntityId = entity.Id;
+                // Website page views are tied to browser sessions; enable session listing in Interactions.
+                interactionChannelForSite.UsesSession = true;
                 interactionChannelService.Add( interactionChannelForSite );
             }
 
@@ -961,18 +963,16 @@ namespace Rock.Blocks.Cms
         [BlockAction]
         public BlockActionResult CompileTheme( string idKey )
         {
-            var rockContext = new RockContext();
-            SiteService siteService = new SiteService( rockContext );
-            Site site = siteService.Get( idKey );
+            var siteService = new SiteService( RockContext );
+            var site = siteService.Get( idKey );
 
             if ( site == null )
             {
                 return ActionBadRequest( "Unable to find the requested site." );
             }
 
-            string messages;
             var theme = new Rock.Web.UI.RockTheme( site.Theme );
-            bool success = theme.Compile( out messages );
+            bool success = theme.Compile( out var messages );
 
             if ( success )
             {
@@ -980,7 +980,7 @@ namespace Rock.Blocks.Cms
             }
             else
             {
-                return ActionBadRequest( string.Format( "An error occurred compiling the theme {0}. Message: {1}.", site.Theme, messages ) );
+                return ActionBadRequest( $"An error occurred compiling the theme {site.Theme}. Message: {messages}." );
             }
         }
 

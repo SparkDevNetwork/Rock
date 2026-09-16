@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -23,6 +23,7 @@ using System.Linq.Expressions;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Net;
@@ -211,7 +212,7 @@ namespace Rock.Reporting.DataFilter.Person
             {
                 result = $"Created {selectionConfig.MinimumCount} or more Person {"Note".PluralizeIf( selectionConfig.MinimumCount > 1 )}";
 
-                if ( selectionConfig.NoteTypeIds.Any() )
+                if ( selectionConfig.NoteTypeIds != null && selectionConfig.NoteTypeIds.Any() )
                 {
                     var noteTypeNames = new List<string>();
                     foreach ( var noteTypeId in selectionConfig.NoteTypeIds )
@@ -254,7 +255,7 @@ namespace Rock.Reporting.DataFilter.Person
             cblNoteTypes.Help = "The type of note to filter by. Leave blank to include all note types.";
             filterControl.Controls.Add( cblNoteTypes );
 
-            var noteTypeService = new NoteTypeService( new RockContext() );
+            var noteTypeService = new NoteTypeService( RockApp.Current.CreateRockContext() );
             var entityTypeIdPerson = EntityTypeCache.GetId<Rock.Model.Person>();
             var noteTypes = noteTypeService.Queryable().Where( a => a.EntityTypeId == entityTypeIdPerson )
                 .OrderBy( a => a.Order )

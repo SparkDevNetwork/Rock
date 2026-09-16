@@ -21,7 +21,7 @@ import GroupPicker from "@Obsidian/Controls/groupPicker.obs";
 import GroupMemberPicker from "@Obsidian/Controls/groupMemberPicker.obs";
 import CheckBox from "@Obsidian/Controls/checkBox.obs";
 import { asBoolean, asTrueFalseOrNull } from "@Obsidian/Utility/booleanUtils";
-import { ConfigurationValueKey } from "./groupMemberField.partial";
+import { ConfigurationKey } from "./groupMemberField.partial";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { toGuidOrNull } from "@Obsidian/Utility/guid";
 import { Guid } from "@Obsidian/Types";
@@ -43,16 +43,16 @@ export const EditComponent = defineComponent({
         }, { immediate: true });
 
         const groupGuid = computed<Guid | null>(() => {
-            const groupListItemBag: ListItemBag | null = JSON.parse(props.configurationValues[ConfigurationValueKey.Group] || "{}") as ListItemBag;
+            const groupListItemBag: ListItemBag | null = JSON.parse(props.configurationValues[ConfigurationKey.Group] || "{}") as ListItemBag;
             return toGuidOrNull(groupListItemBag?.value);
         });
 
         const allowMultipleValues = computed((): boolean => {
-            return asBoolean(props.configurationValues[ConfigurationValueKey.AllowMultipleValues]);
+            return asBoolean(props.configurationValues[ConfigurationKey.AllowMultipleValues]);
         });
 
         const enhanceForLongLists = computed((): boolean => {
-            return  asBoolean(props.configurationValues[ConfigurationValueKey.EnhanceForLongLists]);
+            return asBoolean(props.configurationValues[ConfigurationKey.EnhanceForLongLists]);
         });
 
         watch(() => internalValue.value, () => {
@@ -110,14 +110,14 @@ export const ConfigurationComponent = defineComponent({
 
             // Construct the new value that will be emitted if it is different
             // than the current value.
-            newValue[ConfigurationValueKey.AllowMultipleValues] = asTrueFalseOrNull(allowMultipleValues.value) ?? "False";
-            newValue[ConfigurationValueKey.EnhanceForLongLists] = asTrueFalseOrNull(enhanceForLongLists.value) ?? "False";
-            newValue[ConfigurationValueKey.Group] = JSON.stringify(group.value ?? "");
+            newValue[ConfigurationKey.AllowMultipleValues] = asTrueFalseOrNull(allowMultipleValues.value) ?? "False";
+            newValue[ConfigurationKey.EnhanceForLongLists] = asTrueFalseOrNull(enhanceForLongLists.value) ?? "False";
+            newValue[ConfigurationKey.Group] = JSON.stringify(group.value ?? "");
 
             // Compare the new value and the old value.
-            const anyValueChanged = newValue[ConfigurationValueKey.AllowMultipleValues] !== (props.modelValue[ConfigurationValueKey.AllowMultipleValues] ?? "False")
-                || newValue[ConfigurationValueKey.EnhanceForLongLists] !== (props.modelValue[ConfigurationValueKey.EnhanceForLongLists] ?? "False")
-                || newValue[ConfigurationValueKey.Group] !== (props.modelValue[ConfigurationValueKey.Group] ?? "");
+            const anyValueChanged = newValue[ConfigurationKey.AllowMultipleValues] !== (props.modelValue[ConfigurationKey.AllowMultipleValues] ?? "False")
+                || newValue[ConfigurationKey.EnhanceForLongLists] !== (props.modelValue[ConfigurationKey.EnhanceForLongLists] ?? "False")
+                || newValue[ConfigurationKey.Group] !== (props.modelValue[ConfigurationKey.Group] ?? "");
 
             // If any value changed then emit the new model value.
             if (anyValueChanged) {
@@ -145,16 +145,16 @@ export const ConfigurationComponent = defineComponent({
         // Watch for changes coming in from the parent component and update our
         // data to match the new information.
         watch(() => [props.modelValue, props.configurationProperties], () => {
-            allowMultipleValues.value = asBoolean(props.modelValue[ConfigurationValueKey.AllowMultipleValues]);
-            enhanceForLongLists.value = asBoolean(props.modelValue[ConfigurationValueKey.EnhanceForLongLists]);
-            group.value = JSON.parse(props.modelValue[ConfigurationValueKey.Group] || "{}");
+            allowMultipleValues.value = asBoolean(props.modelValue[ConfigurationKey.AllowMultipleValues]);
+            enhanceForLongLists.value = asBoolean(props.modelValue[ConfigurationKey.EnhanceForLongLists]);
+            group.value = JSON.parse(props.modelValue[ConfigurationKey.Group] || "{}");
         }, {
             immediate: true
         });
 
-        watch(allowMultipleValues, val => maybeUpdateConfiguration(ConfigurationValueKey.AllowMultipleValues, asTrueFalseOrNull(val) ?? "False"));
-        watch(enhanceForLongLists, val => maybeUpdateConfiguration(ConfigurationValueKey.EnhanceForLongLists, asTrueFalseOrNull(val) ?? "False"));
-        watch(group, val => maybeUpdateConfiguration(ConfigurationValueKey.Group, JSON.stringify(val ?? "")));
+        watch(allowMultipleValues, val => maybeUpdateConfiguration(ConfigurationKey.AllowMultipleValues, asTrueFalseOrNull(val) ?? "False"));
+        watch(enhanceForLongLists, val => maybeUpdateConfiguration(ConfigurationKey.EnhanceForLongLists, asTrueFalseOrNull(val) ?? "False"));
+        watch(group, val => maybeUpdateConfiguration(ConfigurationKey.Group, JSON.stringify(val ?? "")));
 
         return {
             allowMultipleValues,

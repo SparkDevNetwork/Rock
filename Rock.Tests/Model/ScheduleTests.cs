@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -27,6 +27,8 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using Rock.Model;
 using Rock.Tests.Shared;
+using Rock.Tests.Shared.Core.Schedules;
+using Rock.Tests.Shared.Utility;
 
 namespace Rock.Tests.Model
 {
@@ -104,7 +106,7 @@ namespace Rock.Tests.Model
                 var endDateReturned = scheduleDates.LastOrDefault();
 
                 Assert.IsNotNull( endDateReturned );
-                Assert.That.AreEqualDate( endDateSpecified, endDateReturned.Period.StartTime.Date, "Unexpected value for Last Occurrence Date." );
+                Assert.AreEqual( endDateSpecified.Date, endDateReturned.Period.StartTime.Date.Date, "Unexpected value for Last Occurrence Date." );
                 Assert.HasCount( _specificDates.Count, scheduleDates, "Incorrect number of Occurrences returned from Schedule." );
             } );
         }
@@ -126,7 +128,7 @@ namespace Rock.Tests.Model
                 var endDateReturned = schedule.EffectiveEndDate;
 
                 Assert.IsNotNull( endDateReturned );
-                Assert.That.AreEqualDate( endDateSpecified, endDateReturned.Value.Date, "Unexpected value for Last Occurrence Date." );
+                Assert.AreEqual( endDateSpecified.Date, endDateReturned.Value.Date, "Unexpected value for Last Occurrence Date." );
             } );
         }
 
@@ -154,7 +156,7 @@ namespace Rock.Tests.Model
                 var endDateReturned = schedule.EffectiveEndDate;
 
                 Assert.IsNotNull( endDateReturned );
-                Assert.That.AreEqualDate( endDateExpected, endDateReturned.Value.Date, "Unexpected value for EffectiveEndDate." );
+                Assert.AreEqual( endDateExpected.Date, endDateReturned.Value.Date, "Unexpected value for EffectiveEndDate." );
             } );
         }
 
@@ -176,7 +178,7 @@ namespace Rock.Tests.Model
                 var endDateReturned = schedule.EffectiveEndDate;
 
                 Assert.IsNotNull( endDateReturned );
-                Assert.That.AreEqualDate( endDateExpected, endDateReturned.Value.Date, "Unexpected value for EffectiveEndDate." );
+                Assert.AreEqual( endDateExpected.Date, endDateReturned.Value.Date, "Unexpected value for EffectiveEndDate." );
             } );
         }
 
@@ -202,7 +204,7 @@ namespace Rock.Tests.Model
                 Assert.IsNotNull( scheduleDates.LastOrDefault() );
 
                 // End date is at 12am, so the last occurrence of the event will land on the preceding day.
-                Assert.That.AreEqualDate( endDate, scheduleDates.LastOrDefault().Period.StartTime.Date.AddDays( 1 ) );
+                Assert.AreEqual( endDate.Date, scheduleDates.LastOrDefault().Period.StartTime.Date.AddDays( 1 ).Date, "Unexpected value for Last Occurrence Date." );
             } );
         }
 
@@ -234,7 +236,7 @@ namespace Rock.Tests.Model
                 // Verify that the result does not include the event that started yesterday and is in progress today.
                 var firstEvent = scheduleDates.FirstOrDefault();
 
-                Assert.That.AreEqualDate( inProgressEventStartDate, firstEvent.Period.StartTime.Date );
+                Assert.AreEqual( inProgressEventStartDate.Date, firstEvent.Period.StartTime.Date, "Unexpected value for First Occurrence Date." );
             } );
         }
 
@@ -265,7 +267,7 @@ namespace Rock.Tests.Model
                 var lastEvent = scheduleDates.LastOrDefault();
 
                 // Verify that the result includes the event that starts on the last day of the request period but ends on the following day.
-                Assert.That.AreEqualDate( lastRequestDate, lastEvent.Period.StartTime.Date );
+                Assert.AreEqual( lastRequestDate.Date, lastEvent.Period.StartTime.Date, "Unexpected value for Last Occurrence Date." );
             } );
         }
 
@@ -284,7 +286,7 @@ namespace Rock.Tests.Model
 
                 var schedule = ScheduleTestHelper.GetScheduleWithDailyRecurrence( startDate, endDateTime: endDate );
 
-                Assert.That.AreEqualDate( schedule.EffectiveEndDate, endDate.Date );
+                Assert.AreEqual( endDate.Date, schedule.EffectiveEndDate.Value.Date, "Unexpected value for EffectiveEndDate." );
             } );
         }
 
@@ -303,7 +305,7 @@ namespace Rock.Tests.Model
 
                 var schedule = ScheduleTestHelper.GetScheduleWithDailyRecurrence( startDateTime: null, occurrenceCount: occurrences );
 
-                Assert.That.AreEqualDate( schedule.EffectiveEndDate, endDate.Date );
+                Assert.AreEqual( endDate.Date, schedule.EffectiveEndDate.Value.Date, "Unexpected value for EffectiveEndDate." );
             } );
         }
 
@@ -320,7 +322,7 @@ namespace Rock.Tests.Model
                 // Create a daily recurring calendar that has X occurrences, including today.
                 var schedule = ScheduleTestHelper.GetScheduleWithDailyRecurrence( startDateTime: null, occurrenceCount: occurrences );
 
-                Assert.That.AreEqualDate( null, schedule.EffectiveEndDate );
+                Assert.IsNull( schedule.EffectiveEndDate, "Unexpected value for EffectiveEndDate." );
             } );
         }
 
@@ -337,7 +339,7 @@ namespace Rock.Tests.Model
 
                 schedule.EnsureEffectiveStartEndDates();
 
-                Assert.That.AreEqualDate( null, schedule.EffectiveEndDate );
+                Assert.IsNull( schedule.EffectiveEndDate, "Unexpected value for EffectiveEndDate." );
             } );
         }
 
@@ -359,7 +361,7 @@ namespace Rock.Tests.Model
 
                 var endDate = _specificDates.Last();
 
-                Assert.That.AreEqualDate( endDate, schedule.EffectiveEndDate );
+                Assert.AreEqual( endDate.Date, schedule.EffectiveEndDate.Value.Date, "Unexpected value for EffectiveEndDate." );
             } );
         }
 
@@ -377,7 +379,7 @@ namespace Rock.Tests.Model
                 var schedule = ScheduleTestHelper.GetScheduleWithDailyRecurrence( GetRockNowDateTimeAsUnspecifiedKind(),
                     endDateTime: scheduleEndDate );
 
-                Assert.That.AreEqualDate( scheduleEndDate, schedule.EffectiveEndDate );
+                Assert.AreEqual( scheduleEndDate.Date, schedule.EffectiveEndDate.Value.Date, "Unexpected value for EffectiveEndDate." );
 
                 // Modify the Schedule to use a set of discrete dates and verify that the EffectiveEndDate is adjusted correctly.
                 var serializer = new CalendarSerializer( _calendarSpecificDates );
@@ -388,7 +390,7 @@ namespace Rock.Tests.Model
 
                 var specificEndDate = _specificDates.Last();
 
-                Assert.That.AreEqualDate( specificEndDate, schedule.EffectiveEndDate );
+                Assert.AreEqual( specificEndDate.Date, schedule.EffectiveEndDate.Value.Date, "Unexpected value for EffectiveEndDate." );
             } );
         }
 
@@ -445,6 +447,78 @@ namespace Rock.Tests.Model
         }
 
         /// <summary>
+        /// Requesting occurrences up to DateTime.MaxValue for an infinite weekly recurrence
+        /// should not throw. This mirrors the Sign-Up blocks' fallback for schedules with no
+        /// next start date. See issue #6999.
+        /// </summary>
+        [TestMethod]
+        public void Schedule_GetScheduledStartTimes_WithInfiniteWeeklyRecurrenceAndMaxEndDate_DoesNotThrow()
+        {
+            DateTimeTestHelper.ExecuteForTimeZones( ( tz ) =>
+            {
+                var schedule = GetInfiniteRecurrenceSchedule( "WEEKLY" );
+
+                var startDateTimes = schedule.GetScheduledStartTimes( RockDateTime.Now, DateTime.MaxValue );
+
+                Assert.IsNotNull( startDateTimes );
+            } );
+        }
+
+        /// <summary>
+        /// Requesting occurrences up to DateTime.MaxValue for an infinite monthly recurrence
+        /// should not throw. This mirrors the Sign-Up blocks' fallback for schedules with no
+        /// next start date. See issue #6999.
+        /// </summary>
+        [TestMethod]
+        public void Schedule_GetScheduledStartTimes_WithInfiniteMonthlyRecurrenceAndMaxEndDate_DoesNotThrow()
+        {
+            DateTimeTestHelper.ExecuteForTimeZones( ( tz ) =>
+            {
+                var schedule = GetInfiniteRecurrenceSchedule( "MONTHLY" );
+
+                var startDateTimes = schedule.GetScheduledStartTimes( RockDateTime.Now, DateTime.MaxValue );
+
+                Assert.IsNotNull( startDateTimes );
+            } );
+        }
+
+        /// <summary>
+        /// Getting iCal occurrences up to DateTime.MaxValue for an infinite recurrence should
+        /// not throw. This is the shared method underneath GetScheduledStartTimes and is where
+        /// the overflow originates. See issue #6999.
+        /// </summary>
+        [TestMethod]
+        public void Schedule_GetICalOccurrences_WithInfiniteRecurrenceAndMaxEndDate_DoesNotThrow()
+        {
+            DateTimeTestHelper.ExecuteForTimeZones( ( tz ) =>
+            {
+                var schedule = GetInfiniteRecurrenceSchedule( "WEEKLY" );
+
+                var occurrences = schedule.GetICalOccurrences( RockDateTime.Now, DateTime.MaxValue );
+
+                Assert.IsNotNull( occurrences );
+            } );
+        }
+
+        /// <summary>
+        /// Getting occurrences (excluding the start date) up to DateTime.MaxValue for an infinite
+        /// recurrence should not throw. This method is used by group scheduling and event calendar
+        /// logic and has the same unbounded-recurrence overflow risk. See issue #6999.
+        /// </summary>
+        [TestMethod]
+        public void InetCalendarHelper_GetOccurrencesExcludingStartDate_WithInfiniteRecurrenceAndMaxEndDate_DoesNotThrow()
+        {
+            DateTimeTestHelper.ExecuteForTimeZones( ( tz ) =>
+            {
+                var schedule = GetInfiniteRecurrenceSchedule( "WEEKLY" );
+
+                var occurrences = InetCalendarHelper.GetOccurrencesExcludingStartDate( schedule.iCalendarContent, RockDateTime.Now, DateTime.MaxValue );
+
+                Assert.IsNotNull( occurrences );
+            } );
+        }
+
+        /// <summary>
         /// Get the current Rock date and time as an Unspecified DateTime type.
         /// </summary>
         /// <returns></returns>
@@ -492,6 +566,34 @@ END:VCALENDAR
             schedule.iCalendarContent = iCalendarContent;
             schedule.CheckInStartOffsetMinutes = 30;
             schedule.CheckInEndOffsetMinutes = 30;
+            return schedule;
+        }
+
+        /// <summary>
+        /// Builds a schedule whose recurrence has no end condition (no UNTIL and no COUNT),
+        /// mirroring the "Continue Until: No end" default in the Schedule Builder.
+        /// </summary>
+        /// <param name="frequency">The RRULE frequency (e.g. "DAILY", "WEEKLY", "MONTHLY").</param>
+        /// <returns>A schedule with an unbounded recurrence pattern.</returns>
+        private static Schedule GetInfiniteRecurrenceSchedule( string frequency )
+        {
+            var iCalendarContent = $@"
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//github.com/SparkDevNetwork/Rock//NONSGML Rock//EN
+BEGIN:VEVENT
+DTEND:20200101T090000
+DTSTAMP:20200101T080000
+DTSTART:20200101T080000
+RRULE:FREQ={frequency}
+SEQUENCE:0
+UID:f30b6d53-7166-4d25-a5b3-5e28461bbb7f
+END:VEVENT
+END:VCALENDAR
+";
+            var schedule = new Schedule();
+            schedule.iCalendarContent = iCalendarContent;
+            schedule.EnsureEffectiveStartEndDates();
             return schedule;
         }
     }

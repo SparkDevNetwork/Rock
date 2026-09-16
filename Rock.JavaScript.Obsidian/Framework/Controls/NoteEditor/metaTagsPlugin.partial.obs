@@ -29,10 +29,10 @@
      *   });
      * (/script)
      */
-    import { usePluginHelper } from "./utils.partial";
+    import { usePluginHelper } from "../Internal/NoteEditor/utils";
     import { RawEditorOptions } from "@Obsidian/Libs/tinymce";
     import { newGuid } from "@Obsidian/Utility/guid";
-    import { ConfigureEditorUtilities } from "./types.partial";
+    import { ConfigureEditorUtilities } from "../Internal/NoteEditor/types";
 
     const id = `meta-tags-${newGuid()}` as const;
 

@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -17,6 +17,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -130,7 +132,7 @@ namespace Rock.Achievement
         /// <returns></returns>
         public virtual Dictionary<string, object> GetBadgeMergeFields( AchievementTypeCache achievementTypeCache, int achieverEntityId )
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var mergeFields = new Dictionary<string, object>
             {
                 {  "AchievementType", achievementTypeCache }
@@ -172,7 +174,7 @@ namespace Rock.Achievement
                 return achievementTypeCache.BadgeLavaTemplate.ResolveMergeFields( mergeFields );
             }
 
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var achievementTypeService = new AchievementTypeService( rockContext );
             var progressStatement = achievementTypeService.GetProgressStatement( achievementTypeCache, achieverEntityId );
 

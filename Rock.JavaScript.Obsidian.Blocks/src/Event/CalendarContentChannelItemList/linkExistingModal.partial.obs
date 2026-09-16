@@ -1,0 +1,137 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Modal v-model="isVisible"
+           title="Link Existing Content Channel Item"
+           saveText="Link"
+           :isSaveButtonDisabled="isLoading || !selectedItemKey"
+           @save="onSave"
+           @update:modelValue="onVisibilityChange">
+        <div v-if="isLoading" class="text-center">
+            <LoadingIndicator />
+        </div>
+        <DropDownList v-else
+                      v-model="selectedItemKey"
+                      label="Item"
+                      :items="items"
+                      :enhanceForLongLists="true"
+                      rules="required" />
+    </Modal>
+</template>
+
+<script setup lang="ts">
+    import { ref, watch, PropType } from "vue";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import LoadingIndicator from "@Obsidian/Controls/loadingIndicator.obs";
+    import Modal from "@Obsidian/Controls/modal.obs";
+    import { useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { alert } from "@Obsidian/Utility/dialogs";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+
+    const props = defineProps({
+        modelValue: {
+            type: Boolean as PropType<boolean>,
+            required: true
+        },
+
+        contentChannelKey: {
+            type: String as PropType<string | null | undefined>,
+            default: null
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: boolean): void;
+        (e: "linked"): void;
+    }>();
+
+    // #region Values
+
+    const invokeBlockAction = useInvokeBlockAction();
+    const isVisible = ref(props.modelValue);
+    const selectedItemKey = ref("");
+    const items = ref<ListItemBag[]>([]);
+    const isLoading = ref(false);
+
+    // #endregion Values
+
+    // #region Functions
+
+    /**
+     * Loads items that can be linked to the current occurrence for this channel.
+     */
+    async function loadItems(): Promise<void> {
+        if (!props.contentChannelKey) {
+            items.value = [];
+            return;
+        }
+
+        isLoading.value = true;
+
+        try {
+            const result = await invokeBlockAction<ListItemBag[]>("GetLinkableItems", {
+                contentChannelKey: props.contentChannelKey
+            });
+
+            if (result.isSuccess && result.data) {
+                items.value = result.data;
+            }
+            else {
+                items.value = [];
+                await alert(result.errorMessage ?? "Unable to load linkable content channel items.");
+            }
+        }
+        finally {
+            isLoading.value = false;
+        }
+    }
+
+    // #endregion Functions
+
+    // #region Event Handlers
+
+    /**
+     * Called when the modal save button is clicked.
+     */
+    async function onSave(): Promise<void> {
+        if (!props.contentChannelKey || !selectedItemKey.value || isLoading.value) {
+            return;
+        }
+
+        const result = await invokeBlockAction("LinkExistingItem", {
+            contentChannelKey: props.contentChannelKey,
+            contentItemKey: selectedItemKey.value
+        });
+
+        if (result.isSuccess) {
+            isVisible.value = false;
+            emit("update:modelValue", false);
+            emit("linked");
+        }
+        else {
+            await alert(result.errorMessage ?? "Unable to link the content channel item.");
+        }
+    }
+
+    /**
+     * Called when the modal visibility changes from the Modal control.
+     */
+    function onVisibilityChange(value: boolean): void {
+        isVisible.value = value;
+        emit("update:modelValue", value);
+    }
+
+    // #endregion Event Handlers
+
+    // #region Watchers
+
+    watch(() => props.modelValue, async (value) => {
+        isVisible.value = value;
+
+        if (value) {
+            selectedItemKey.value = "";
+            await loadItems();
+        }
+    });
+
+    // #endregion Watchers
+</script>

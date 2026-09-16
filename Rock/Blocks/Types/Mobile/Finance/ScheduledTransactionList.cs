@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -14,17 +14,18 @@
 // limitations under the License.
 // </copyright>
 //
-using Rock.Attribute;
-using Rock.Model;
-using Rock.ViewModels.Blocks.Crm.PersonDetail.GivingConfiguration;
-using System.ComponentModel;
-using System.Linq;
-using System.Data.Entity;
-using Rock;
-using Rock.Common.Mobile.Blocks.Finance.ScheduledTransactionList;
-using Rock.Common.Mobile.ViewModel;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data.Entity;
+using System.Linq;
+
+using Rock;
+using Rock.Attribute;
+using Rock.Common.Mobile.Blocks.Finance.ScheduledTransactionList;
+using Rock.Common.Mobile.ViewModel;
+using Rock.Model;
+using Rock.ViewModels.Blocks.Crm.PersonDetail.GivingConfiguration;
 
 namespace Rock.Blocks.Types.Mobile.Finance
 {
@@ -82,7 +83,7 @@ namespace Rock.Blocks.Types.Mobile.Finance
         /// <summary>
         /// Gets the Scheduled Transaction Template.
         /// </summary>
-        private string ScheduledTransactionItemTemplate => Rock.Field.Types.BlockTemplateFieldType.GetTemplateContent( GetAttributeValue( AttributeKey.ResultItemTemplate ) );
+        private string ScheduledTransactionItemTemplate => Field.Helper.GetBlockTemplateContent( GetAttributeValue( AttributeKey.ResultItemTemplate ) );
 
         /// <summary>
         /// Gets the Detail Page Guid.

@@ -21,7 +21,7 @@ import { numericComparisonTypes } from "@Obsidian/Core/Reporting/comparisonType"
 import { toNumberOrNull } from "@Obsidian/Utility/numberUtils";
 import { FieldTypeBase } from "./fieldType";
 
-export const enum ConfigurationValueKey {
+export const enum ConfigurationKey {
     MinValue = "min",
     MaxValue = "max"
 }

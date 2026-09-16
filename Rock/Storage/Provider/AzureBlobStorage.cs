@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -14,13 +14,16 @@
 // limitations under the License.
 // </copyright>
 //
+using System.ComponentModel;
+using System.ComponentModel.Composition;
+
 using Azure.Storage.Blobs;
+
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Storage.Common;
-using System.ComponentModel;
-using System.ComponentModel.Composition;
 
 namespace Rock.Storage.Provider
 {
@@ -225,7 +228,7 @@ namespace Rock.Storage.Provider
             var binaryFileType = binaryFile.BinaryFileType;
             if ( binaryFileType == null && binaryFile.BinaryFileTypeId.HasValue )
             {
-                binaryFileType = new BinaryFileTypeService( new RockContext() ).Get( binaryFile.BinaryFileTypeId.Value );
+                binaryFileType = new BinaryFileTypeService( RockApp.Current.CreateRockContext() ).Get( binaryFile.BinaryFileTypeId.Value );
             }
             if ( binaryFileType == null )
             {

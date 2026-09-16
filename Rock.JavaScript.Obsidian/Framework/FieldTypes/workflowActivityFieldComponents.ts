@@ -17,7 +17,7 @@
 import { computed, defineComponent, ref, watch } from "vue";
 import { getFieldConfigurationProps, getFieldEditorProps } from "./utils";
 import DropDownList from "@Obsidian/Controls/dropDownList.obs";
-import { ConfigurationValueKey, ConfigurationPropertyKey } from "./workflowActivityField.partial";
+import { ConfigurationKey, ConfigurationPropertyKey } from "./workflowActivityField.partial";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { updateRefValue } from "@Obsidian/Utility/component";
 
@@ -36,7 +36,7 @@ export const EditComponent = defineComponent({
 
         // The options to choose from.
         const activityTypes = computed((): ListItemBag[] => {
-            const options = JSON.parse(props.configurationValues[ConfigurationValueKey.Values] || "[]") as ListItemBag[];
+            const options = JSON.parse(props.configurationValues[ConfigurationKey.Values] || "[]") as ListItemBag[];
             return options;
         });
 
@@ -97,10 +97,10 @@ export const ConfigurationComponent = defineComponent({
 
             // Construct the new value that will be emitted if it is different
             // than the current value.
-            newValue[ConfigurationValueKey.WorkflowType] = workflowType.value ?? "";
+            newValue[ConfigurationKey.WorkflowType] = workflowType.value ?? "";
 
             // Compare the new value and the old value.
-            const anyValueChanged = newValue[ConfigurationValueKey.WorkflowType] !== (props.modelValue[ConfigurationValueKey.WorkflowType]);
+            const anyValueChanged = newValue[ConfigurationKey.WorkflowType] !== (props.modelValue[ConfigurationKey.WorkflowType]);
 
             // If any value changed then emit the new model value.
             if (anyValueChanged) {
@@ -127,7 +127,7 @@ export const ConfigurationComponent = defineComponent({
         // Watch for changes coming in from the parent component and update our
         // data to match the new information.
         watch(() => [props.modelValue, props.configurationProperties], () => {
-            workflowType.value = props.modelValue[ConfigurationValueKey.WorkflowType];
+            workflowType.value = props.modelValue[ConfigurationKey.WorkflowType];
         }, {
             immediate: true
         });
@@ -141,7 +141,7 @@ export const ConfigurationComponent = defineComponent({
         });
 
         // Watch for changes in properties that only require a local UI update.
-        watch(workflowType, () => maybeUpdateConfiguration(ConfigurationValueKey.WorkflowType, workflowType.value ?? ""));
+        watch(workflowType, () => maybeUpdateConfiguration(ConfigurationKey.WorkflowType, workflowType.value ?? ""));
 
         return {
             workflowType,

@@ -21,6 +21,7 @@
 // </copyright>
 //
 
+using Rock.Configuration;
 using Rock.Model;
 using Rock.SystemGuid;
 
@@ -29,12 +30,14 @@ namespace Rock.Rest.Controllers
     /// <summary>
     /// AIProviders REST API
     /// </summary>
+    [RockObsolete( "21.0" )]
+    [System.Obsolete( "This feature has been deprecated and is no longer used by Rock. AI configuration happens automatically." )]
     [RestControllerGuid( "5408FC80-9356-4E35-AC9A-2A6F99800B65" )]
     public partial class AIProvidersController : Rock.Rest.ApiController<Rock.Model.AIProvider>
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="AIProvidersController"/> class.
         /// </summary>
-        public AIProvidersController() : base( new Rock.Model.AIProviderService( new Rock.Data.RockContext() ) ) { } 
+        public AIProvidersController() : base( new Rock.Model.AIProviderService( RockApp.Current.CreateRockContext() ) ) { } 
     }
 }

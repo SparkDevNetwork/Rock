@@ -1,0 +1,322 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <NotificationBox v-if="blockError" :alertType="blockErrorAlertType" v-html="blockError"></NotificationBox>
+
+    <NotificationBox v-if="errorMessage" alertType="danger">{{ errorMessage }}</NotificationBox>
+
+    <NotificationBox v-if="deleteError" alertType="danger">{{ deleteError }}</NotificationBox>
+
+    <DetailBlock v-if="!blockError"
+                 v-model:mode="panelMode"
+                 :name="panelName"
+                 :labels="blockLabels"
+                 :alwaysShowLabels="true"
+                 :showLabelsInHeader="true"
+                 :entityKey="entityKey"
+                 :isAuditHidden="false"
+                 :isEditVisible="isEditable"
+                 :isDeleteVisible="false"
+                 :editFooterActions="editFooterActions"
+                 :isSecurityHidden="true"
+                 @cancelEdit="onCancelEdit"
+                 @edit="onEdit"
+                 @save="onSave">
+        <template #view>
+            <ViewPanel :modelValue="contentChannelItemViewBag" :options="options" />
+        </template>
+
+        <template #edit>
+            <EditPanel ref="editPanelRef" v-model="contentChannelItemEditBag" :options="options" @propertyChanged="baseBlock.onPropertyChanged" @redownload="onRedownloadSwap" />
+        </template>
+    </DetailBlock>
+
+    <Modal v-model="isDeleteModalShown"
+           title="Delete Content Channel Item"
+           saveText="Delete"
+           @save="onDeleteConfirm">
+        <NotificationBox alertType="warning">
+            This action will permanently delete this content item. This cannot be undone.
+        </NotificationBox>
+    </Modal>
+</template>
+
+<script setup lang="ts">
+    import { computed, nextTick, ref } from "vue";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import Modal from "@Obsidian/Controls/modal.obs";
+    import DetailBlock from "@Obsidian/Templates/detailBlock";
+    import { DetailPanelMode } from "@Obsidian/Enums/Controls/detailPanelMode";
+    import { PanelAction } from "@Obsidian/Types/Controls/panelAction";
+    import EditPanel from "./ContentChannelItemDetail/editPanel.partial.obs";
+    import ViewPanel from "./ContentChannelItemDetail/viewPanel.partial.obs";
+    import { onConfigurationValuesChanged, useConfigurationValues, useEntityDetailBlock, useReloadBlock } from "@Obsidian/Utility/block";
+    import { makeUrlRedirectSafe } from "@Obsidian/Utility/url";
+    import { NavigationUrlKey } from "./ContentChannelItemDetail/types.partial";
+    import { useInvokeContentChannelItemDetailBlockAction } from "./ContentChannelItemDetail/utils.partial";
+    import { DetailBlockBox } from "@Obsidian/ViewModels/Blocks/detailBlockBox";
+    import { ContentChannelItemBag } from "@Obsidian/ViewModels/Blocks/Cms/ContentChannelItemDetail/contentChannelItemBag";
+    import { ContentChannelItemDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Cms/ContentChannelItemDetail/contentChannelItemDetailOptionsBag";
+    import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
+
+    const config = useConfigurationValues<DetailBlockBox<ContentChannelItemBag, ContentChannelItemDetailOptionsBag>>();
+    const invoker = useInvokeContentChannelItemDetailBlockAction();
+
+    onConfigurationValuesChanged(useReloadBlock());
+
+    // #region Values
+
+    const blockError = ref("");
+    const errorMessage = ref("");
+    const deleteError = ref("");
+
+    const contentChannelItemViewBag = ref(config.entity);
+    const contentChannelItemEditBag = ref<ValidPropertiesBox<ContentChannelItemBag>>({
+        bag: {} as ContentChannelItemBag
+    });
+
+    const panelMode = ref<DetailPanelMode>(DetailPanelMode.View);
+
+    const baseBlock = useEntityDetailBlock({
+        blockConfig: config,
+        entity: contentChannelItemEditBag
+    });
+
+    // Exposes the edit panel's saveTagValues passthrough for the post-Save tag
+    // commit.
+    const editPanelRef = ref<InstanceType<typeof EditPanel> | null>(null);
+
+    const isDeleteModalShown = ref(false);
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    /**
+     * The entity name to display in the block panel.
+     */
+    const panelName = computed((): string => {
+        return contentChannelItemViewBag.value?.title ?? "";
+    });
+
+    /**
+     * The identifier key value for this entity.
+     */
+    const entityKey = computed((): string => {
+        return contentChannelItemViewBag.value?.idKey ?? "";
+    });
+
+    /**
+     * Additional labels to display in the block panel. The content channel
+     * name is shown in every mode (alwaysShowLabels) so the channel the item
+     * belongs to is always identified.
+     */
+    const blockLabels = computed((): PanelAction[] | undefined => {
+        const labels: PanelAction[] = [];
+
+        if (config.options?.channelName) {
+            labels.push({ title: config.options.channelName, type: "default" });
+        }
+
+        for (const occurrence of config.options?.occurrenceLabels ?? []) {
+            const url = occurrence.url;
+
+            labels.push({
+                title: occurrence.text ?? undefined,
+                type: "info",
+                iconCssClass: occurrence.iconCssClass ?? undefined,
+                handler: url
+                    ? () => {
+                        window.location.href = url;
+                    }
+                    : undefined
+            });
+        }
+
+        return labels.length > 0 ? labels : undefined;
+    });
+
+    /**
+     * Whether the current user can edit this item.
+     */
+    const isEditable = computed((): boolean => {
+        return config.isEditable === true;
+    });
+
+    /**
+     * The resolved options bag passed to both view and edit panels.
+     */
+    const options = computed((): ContentChannelItemDetailOptionsBag => {
+        return config.options ?? {} as ContentChannelItemDetailOptionsBag;
+    });
+
+    /**
+     * Alert type for the top-level block error notification.
+     */
+    const blockErrorAlertType = computed((): string => {
+        return config.options?.isUnauthorizedErrorShown ? "danger" : "warning";
+    });
+
+    /**
+     * The footer Delete affordance, rendered as a link button between Save and
+     * Cancel in edit mode. Shown only when the ShowDeleteButton block setting is
+     * on and the item already exists, so a new unsaved item never offers Delete.
+     */
+    const editFooterActions = computed((): PanelAction[] => {
+        if (!config.options?.isDeleteButtonShown || !entityKey.value) {
+            return [];
+        }
+
+        return [{ title: "Delete", type: "link", handler: onDeleteClick }];
+    });
+
+    // #endregion Computed Values
+
+    // #region Event Handlers
+
+    /**
+     * Handles Cancel in edit mode. Redirects to the parent page when one is configured.
+     */
+    async function onCancelEdit(): Promise<boolean | string> {
+        if (config.navigationUrls?.[NavigationUrlKey.ParentPage]) {
+            return config.navigationUrls[NavigationUrlKey.ParentPage];
+        }
+
+        return false;
+    }
+
+    /**
+     * Handles the Edit button click. Fetches edit details from the server and enters edit mode.
+     */
+    async function onEdit(): Promise<boolean> {
+        const result = await invoker.edit(contentChannelItemViewBag.value?.idKey);
+
+        if (result.isSuccess && result.data && result.data.bag) {
+            contentChannelItemEditBag.value = {
+                bag: result.data.bag,
+                validProperties: result.data.validProperties ?? Object.keys(result.data.bag)
+            };
+
+            return true;
+        }
+        else {
+            return false;
+        }
+    }
+
+    /**
+     * Handles the Save button click. Persists the edit bag, commits tags, then
+     * redirects or returns to view mode.
+     */
+    async function onSave(): Promise<boolean | string> {
+        errorMessage.value = "";
+
+        const result = await invoker.save(contentChannelItemEditBag.value);
+
+        if (!result.isSuccess || !result.data) {
+            errorMessage.value = result.errorMessage ?? "Unknown error while trying to save content channel item.";
+
+            return false;
+        }
+
+        let savedIdKey: string;
+
+        if (typeof result.data === "string") {
+            // A new item returns a 201 with the new IdKey so tags can be committed
+            // against the saved record before navigating to the parent page.
+            savedIdKey = result.data;
+        }
+        else {
+            savedIdKey = result.data.bag?.idKey ?? contentChannelItemEditBag.value.bag?.idKey ?? "";
+
+            if (result.data.bag) {
+                contentChannelItemViewBag.value = result.data.bag;
+            }
+        }
+
+        if (contentChannelItemEditBag.value.bag) {
+            contentChannelItemEditBag.value.bag.idKey = savedIdKey;
+        }
+
+        await nextTick();
+
+        try {
+            // Never post tags against an empty key: the 400 it earns would
+            // strand the user with the item already saved.
+            if (savedIdKey) {
+                await editPanelRef.value?.saveTagValues();
+            }
+        }
+        catch {
+            // The entity saved; only the tag write failed. Surface the error and keep the
+            // user on the saved item (its IdKey is set above, so re-saving updates rather
+            // than duplicates) instead of routing to a view panel.
+            errorMessage.value = "The content channel item was saved, but its tags could not be saved.";
+
+            return false;
+        }
+
+        // Always return to the parent page after a successful save, matching WebForms
+        // (lbSave_Click -> ReturnToParentPage). This block never lands on a view panel on save.
+        if (config.navigationUrls?.[NavigationUrlKey.ParentPage]) {
+            return config.navigationUrls[NavigationUrlKey.ParentPage];
+        }
+
+        return false;
+    }
+
+    /**
+     * Handles the footer Delete link click. Opens the confirmation modal.
+     */
+    function onDeleteClick(): void {
+        deleteError.value = "";
+        isDeleteModalShown.value = true;
+    }
+
+    /**
+     * Handles the confirmation modal's Delete button. Executes the delete action
+     * and redirects on success, or surfaces the error inline.
+     */
+    async function onDeleteConfirm(): Promise<void> {
+        isDeleteModalShown.value = false;
+        deleteError.value = "";
+
+        const result = await invoker.delete(entityKey.value);
+
+        if (result.isSuccess) {
+            if (result.data) {
+                window.location.href = makeUrlRedirectSafe(result.data);
+            }
+            else {
+                // No return URL means the hosting page has no parent; reload
+                // rather than report a failure since the delete succeeded.
+                window.location.reload();
+            }
+
+            return;
+        }
+
+        deleteError.value = result.errorMessage ?? "Unable to delete the content channel item.";
+    }
+
+    /**
+     * Replaces the edit bag with a refreshed copy returned by the Redownload action.
+     */
+    function onRedownloadSwap(refreshedBox: ValidPropertiesBox<ContentChannelItemBag>): void {
+        contentChannelItemEditBag.value = refreshedBox;
+    }
+
+    // #endregion Event Handlers
+
+    // Enter Add mode for new items; set a block error for missing or misconfigured entities.
+    // Existing items use the autoEdit page parameter to enter edit mode through the framework.
+    if (config.errorMessage) {
+        blockError.value = config.errorMessage;
+    }
+    else if (!config.entity) {
+        blockError.value = "The specified content channel item could not be viewed.";
+    }
+    else if (!config.entity.idKey) {
+        contentChannelItemEditBag.value = { bag: config.entity };
+        panelMode.value = DetailPanelMode.Add;
+    }
+</script>

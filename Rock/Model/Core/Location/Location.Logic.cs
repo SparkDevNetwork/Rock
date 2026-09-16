@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -30,6 +30,7 @@ using System.Text;
 using Microsoft.SqlServer.Types;
 #endif
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Web.Cache;
 
@@ -241,7 +242,7 @@ namespace Rock.Model
                     // make sure it isn't getting saved with a recursive parent hierarchy
                     var parentIds = new List<int>();
                     parentIds.Add( this.Id );
-                    var parent = this.ParentLocationId.HasValue ? ( this.ParentLocation ?? new LocationService( new RockContext() ).Get( this.ParentLocationId.Value ) ) : null;
+                    var parent = this.ParentLocationId.HasValue ? ( this.ParentLocation ?? new LocationService( RockApp.Current.CreateRockContext() ).Get( this.ParentLocationId.Value ) ) : null;
                     while ( parent != null )
                     {
                         if ( parentIds.Contains( parent.Id ) )

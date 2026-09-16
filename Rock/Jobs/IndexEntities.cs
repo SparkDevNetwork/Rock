@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -20,6 +20,7 @@ using System.Linq;
 using System.Reflection;
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.UniversalSearch;
@@ -33,8 +34,15 @@ namespace Rock.Jobs
     [DisplayName( "Universal Search Re-Index" )]
     [Description( "Re-indexes the selected entity types in Universal Search." )]
 
-    [BooleanField("Index All Entities", "Indexes all entities, the entity filter will be ignored.", true, order: 0)]
-    [CustomCheckboxListField("Entity Filter", "Entities to re-index. Not selecting a value will re-index all index enabled entities.", "SELECT CAST([Id] AS VARCHAR) [Value], [FriendlyName] [Text] FROM [EntityType] WHERE [IsIndexingEnabled] = 1 AND [FriendlyName] != 'Site'", false, order: 1 )]
+    [BooleanField( "Index All Entities",
+        Description = "Indexes all entities, the entity filter will be ignored.",
+        DefaultBooleanValue = true,
+        Order = 0)]
+    [CustomCheckboxListField( "Entity Filter",
+        Description = "Entities to re-index. Not selecting a value will re-index all index enabled entities.",
+        ListSource = "SELECT CAST([Id] AS VARCHAR) [Value], [FriendlyName] [Text] FROM [EntityType] WHERE [IsIndexingEnabled] = 1 AND [FriendlyName] != 'Site'",
+        IsRequired = false,
+        Order = 1 )]
     public class IndexEntities : RockJob
     {
         /// <summary> 
@@ -54,7 +62,7 @@ namespace Rock.Jobs
             string selectedEntitiesSetting = GetAttributeValue( "EntityFilter" );
             bool allEntities = GetAttributeValue( "IndexAllEntities" ).AsBoolean();
 
-            RockContext rockContext = new RockContext();
+            RockContext rockContext = RockApp.Current.CreateRockContext();
 
             var selectedEntityTypes = EntityTypeCache.All().Where( e => e.IsIndexingSupported && e.IsIndexingEnabled && e.FriendlyName != "Site" );
 

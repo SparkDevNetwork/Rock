@@ -25,7 +25,7 @@
 </script>
 
 <script setup lang="ts">
-    import { computed, nextTick, onMounted, PropType, ref, watch } from "vue";
+    import { computed, nextTick, onBeforeUnmount, onMounted, PropType, ref, watch } from "vue";
     import RockFormField from "@Obsidian/Controls/rockFormField.obs";
     import { loadJavaScriptAsync } from "@Obsidian/Utility/page";
     import { newGuid } from "@Obsidian/Utility/guid";
@@ -109,6 +109,17 @@
 
         /** If set then the the editor will be disabled and read-only. */
         disabled: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        /**
+         * If set then the editor's background syntax validation worker is disabled.
+         * Useful when the content is not exactly the selected language (for example a
+         * Vue single-file component edited in HTML mode), where the validator would
+         * otherwise report false errors. Syntax highlighting is unaffected.
+         */
+        disableValidation: {
             type: Boolean as PropType<boolean>,
             default: false
         }
@@ -208,6 +219,10 @@
             editor.getSession().setMode(`ace/mode/${modeName.value}`);
             editor.getSession().setUseWrapMode(!props.noLineWrap);
             editor.setReadOnly(props.disabled);
+
+            if (props.disableValidation) {
+                editor.getSession().setUseWorker(false);
+            }
         }
         else if (editor && props.editor === "monaco" && typeof editor.updateOptions === "function") {
             editor.updateOptions({
@@ -280,6 +295,14 @@
 
         if (props.editor === "ace") {
             await loadAce();
+
+            // The element can be removed (component unmounted or re-rendered)
+            // while the editor library loads; bail so ace.edit doesn't throw on
+            // a missing element.
+            if (!document.getElementById(codeEditorId.value)) {
+                return;
+            }
+
             editor = window.ace.edit(codeEditorId.value);
             editor.setTheme(`ace/theme/${themeName.value}`);
             editor.getSession().setMode(`ace/mode/${modeName.value}`);
@@ -287,6 +310,10 @@
             editor.getSession().setValue(internalValue.value);
             editor.setShowPrintMargin(false);
             editor.setReadOnly(props.disabled);
+
+            if (props.disableValidation) {
+                editor.getSession().setUseWorker(false);
+            }
 
             // Disable warning about block scrolling.
             editor.$blockScrolling = Infinity;
@@ -319,6 +346,14 @@
         }
         else if (props.editor === "monaco") {
             await loadMonaco();
+
+            // The element can be removed (component unmounted or re-rendered)
+            // while the editor library loads; bail so monaco.editor.create
+            // doesn't throw on a missing element.
+            if (!editorWrapper.value) {
+                return;
+            }
+
             // eslint-disable-next-line @typescript-eslint/ban-ts-comment
             // @ts-ignore
             editor = window.monaco.editor.create(editorWrapper.value, {
@@ -345,5 +380,18 @@
     }
 
     onMounted(initialize);
+
+    onBeforeUnmount(() => {
+        if (editor) {
+            if ("dispose" in editor && typeof editor.dispose === "function") {
+                editor.dispose();
+            }
+            else if ("destroy" in editor && typeof editor.destroy === "function") {
+                editor.destroy();
+            }
+        }
+
+        observer?.disconnect();
+    });
 
 </script>

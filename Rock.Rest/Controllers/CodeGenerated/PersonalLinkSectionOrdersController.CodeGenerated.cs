@@ -21,6 +21,7 @@
 // </copyright>
 //
 
+using Rock.Configuration;
 using Rock.Model;
 using Rock.SystemGuid;
 
@@ -35,6 +36,6 @@ namespace Rock.Rest.Controllers
         /// <summary>
         /// Initializes a new instance of the <see cref="PersonalLinkSectionOrdersController"/> class.
         /// </summary>
-        public PersonalLinkSectionOrdersController() : base( new Rock.Model.PersonalLinkSectionOrderService( new Rock.Data.RockContext() ) ) { } 
+        public PersonalLinkSectionOrdersController() : base( new Rock.Model.PersonalLinkSectionOrderService( RockApp.Current.CreateRockContext() ) ) { } 
     }
 }

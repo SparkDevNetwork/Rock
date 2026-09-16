@@ -1,0 +1,142 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Modal v-model="isVisible"
+           title="Label Reprints"
+           saveText="Print"
+           saveAutoDisable
+           saveAutoLoading
+           saveLoadingText="Printing..."
+           :onSave="onSave"
+           @closeModal="resetForm">
+        <NotificationBox v-if="errorMessage"
+                         alertType="validation"
+                         :dismissible="true"
+                         @dismiss="errorMessage = ''">{{ errorMessage }}</NotificationBox>
+
+        <CheckBoxList v-model="selectedLabelValues"
+                      label="Labels"
+                      :items="labels" />
+
+        <DropDownList v-model="selectedPrinterValue"
+                      label="Printer"
+                      :items="printers" />
+    </Modal>
+</template>
+
+<script setup lang="ts">
+    import { PropType, ref, watch } from "vue";
+    import CheckBoxList from "@Obsidian/Controls/checkBoxList.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import Modal from "@Obsidian/Controls/modal.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import { useVModelPassthrough } from "@Obsidian/Utility/component";
+    import { toGuidOrNull } from "@Obsidian/Utility/guid";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { PersonRightPrintLegacyLabelsRequestBag } from "@Obsidian/ViewModels/Blocks/CheckIn/Manager/PersonRight/personRightPrintLegacyLabelsRequestBag";
+
+    const props = defineProps({
+        modelValue: {
+            type: Boolean as PropType<boolean>,
+            required: true
+        },
+
+        labels: {
+            type: Array as PropType<ListItemBag[]>,
+            default: () => []
+        },
+
+        printers: {
+            type: Array as PropType<ListItemBag[]>,
+            default: () => []
+        },
+
+        /**
+         * Printer Guid (as a string) to pre-select when the modal opens.
+         * Sourced from the check-in manager cookie by the server so the
+         * user's last-used printer is remembered across sessions.
+         */
+        initialPrinterGuid: {
+            type: String as PropType<string | null>,
+            default: null
+        },
+
+        /**
+         * Async callback invoked with the print request bag when the user
+         * clicks Print. Returning a Promise lets the Modal control's built-in
+         * saveAutoLoading spinner run until the print completes.
+         */
+        onPrint: {
+            type: Function as PropType<(bag: PersonRightPrintLegacyLabelsRequestBag) => Promise<void>>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: boolean): void;
+    }>();
+
+    const isVisible = useVModelPassthrough(props, "modelValue", emit);
+
+    // #region Values
+
+    const selectedLabelValues = ref<string[]>([]);
+    const selectedPrinterValue = ref<string>("");
+    const errorMessage = ref<string>("");
+
+    // #endregion Values
+
+    // #region Event Handlers
+
+    async function onSave(): Promise<void> {
+        errorMessage.value = "";
+
+        if (selectedLabelValues.value.length === 0) {
+            errorMessage.value = "Please select at least one label.";
+            return;
+        }
+
+        if (!selectedPrinterValue.value) {
+            errorMessage.value = "Please select a printer.";
+            return;
+        }
+
+        const fileGuids = selectedLabelValues.value
+            .map(v => toGuidOrNull(v))
+            .filter((g): g is string => !!g);
+
+        const printerGuid = toGuidOrNull(selectedPrinterValue.value);
+        if (!printerGuid) {
+            errorMessage.value = "Please select a printer.";
+            return;
+        }
+
+        await props.onPrint({
+            fileGuids,
+            printerGuid
+        });
+    }
+
+    // #endregion Event Handlers
+
+    // #region Functions
+
+    function resetForm(): void {
+        selectedLabelValues.value = [];
+        selectedPrinterValue.value = props.initialPrinterGuid ?? "";
+        errorMessage.value = "";
+    }
+
+    // #endregion Functions
+
+    // #region Watchers
+
+    // Reset the form each time the modal opens so an earlier selection does
+    // not leak into a new reprint operation.
+    watch(isVisible, (open) => {
+        if (open) {
+            resetForm();
+        }
+    });
+
+    // #endregion Watchers
+</script>

@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -24,6 +24,7 @@ using System.Threading.Tasks;
 using Rock.Attribute;
 using Rock.Cms.ContentCollection.IndexDocuments;
 using Rock.Cms.ContentCollection.Search;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -91,7 +92,7 @@ namespace Rock.Cms.ContentCollection.Indexers
                 return 0;
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 // Get all the content channel items for this source.
                 items = new ContentChannelItemService( rockContext ).Queryable()
@@ -130,15 +131,7 @@ namespace Rock.Cms.ContentCollection.Indexers
                             document.TrendingRank = document.IsTrending ? trending[document.EntityId] : 0;
                         }
 
-                        // If the content channel item is not approved, set "IsApproved" to false.
-                        if ( item.ContentChannel != null )
-                        {
-                            // If the content channel item is not approved, set "IsApproved" to false.
-                            if ( item.ContentChannel.RequiresApproval && item.ApprovedDateTime == null && !item.ContentChannelType.DisableStatus )
-                            {
-                                document.IsApproved = false;
-                            }
-                        }
+                        document.IsApproved = GetIsApproved( item );
 
                         await ContentIndexContainer.IndexDocumentAsync( document );
                     }
@@ -156,13 +149,9 @@ namespace Rock.Cms.ContentCollection.Indexers
         /// <inheritdoc/>
         public async Task<int> IndexContentCollectionDocumentAsync( int id, IndexDocumentOptions options )
         {
-            ContentChannelItem itemEntity;
-
-            var isApproved = true;
-
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
-                itemEntity = new ContentChannelItemService( rockContext ).GetInclude( id, ci => ci.ContentChannelItemSlugs );
+                var itemEntity = new ContentChannelItemService( rockContext ).GetInclude( id, ci => ci.ContentChannelItemSlugs );
                 var now = RockDateTime.Now;
 
                 // If entity wasn't found or isn't visible yet then don't index.
@@ -177,15 +166,7 @@ namespace Rock.Cms.ContentCollection.Indexers
                     return 0;
                 }
 
-                // If the content channel item is not approved, set "IsApproved" to false.
-                if ( itemEntity.ContentChannel != null )
-                {
-                    // If the content channel item is not approved, set "IsApproved" to false.
-                    if ( itemEntity.ContentChannel.RequiresApproval && itemEntity.ApprovedDateTime == null && !itemEntity.ContentChannelType.DisableStatus )
-                    {
-                        isApproved = false;
-                    }
-                }
+                var isApproved = GetIsApproved( itemEntity );
 
                 itemEntity.LoadAttributes( rockContext );
 
@@ -215,6 +196,43 @@ namespace Rock.Cms.ContentCollection.Indexers
 
                 return sources.Count;
             }
+        }
+
+        /// <summary>
+        /// Determines the approved state of the item. This requires a bit more
+        /// complex logic than normal in order to account for the various ways
+        /// that an item can be considered approved.
+        /// </summary>
+        /// <param name="item">The content channel item to check.</param>
+        /// <returns><c>true</c> if it is considered approved; otherwise <c>false</c>.</returns>
+        private static bool GetIsApproved( ContentChannelItem item )
+        {
+            // If the item is explicitly approved, then it is approved.
+            if ( item.Status == ContentChannelItemStatus.Approved )
+            {
+                return true;
+            }
+
+            // If there is no content channel, assume it is approved.
+            if ( item.ContentChannel == null )
+            {
+                return true;
+            }
+
+            // If the channel doesn't require approval, then the item is approved.
+            if ( !item.ContentChannel.RequiresApproval )
+            {
+                return true;
+            }
+
+            // If the channel type is configured to disable status, then consider
+            // the item to be approved.
+            if ( item.ContentChannelType != null && item.ContentChannelType.DisableStatus )
+            {
+                return true;
+            }
+
+            return false;
         }
 
         /// <summary>

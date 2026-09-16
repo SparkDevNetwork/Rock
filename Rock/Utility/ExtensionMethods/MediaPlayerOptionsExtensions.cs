@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -17,6 +17,7 @@
 using System;
 using System.Linq;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Media;
 using Rock.Model;
@@ -53,7 +54,7 @@ namespace Rock
                 return;
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var mediaElementService = new MediaElementService( rockContext );
                 var interactionService = new InteractionService( rockContext );
@@ -154,6 +155,15 @@ namespace Rock
 
                         var data = interaction.InteractionData.FromJsonOrNull<MediaWatchedInteractionData>();
                         options.Map = data?.WatchMap;
+
+                        // Surface the previously watched percentage so consumers
+                        // can reflect prior progress on load. The stored value is
+                        // a 0 to 100 percentage, so convert it to the 0 to 1 scale
+                        // used by the player.
+                        if ( data != null )
+                        {
+                            options.WatchedPercentage = data.WatchedPercentage / 100.0;
+                        }
                     }
                 }
 

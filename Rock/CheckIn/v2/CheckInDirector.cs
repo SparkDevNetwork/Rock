@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -110,9 +110,43 @@ namespace Rock.CheckIn.v2
         /// <returns>A collection of <see cref="ConfigurationAreaBag"/> objects.</returns>
         public virtual List<ConfigurationAreaBag> GetCheckInAreaSummaries( DeviceCache kiosk, GroupTypeCache checkinTemplate )
         {
+            return GetCheckInAreaSummaries( kiosk, checkinTemplate, null );
+        }
+
+        /// <summary>
+        /// Gets the check in area summary bags for all valid check-in areas. If
+        /// a <paramref name="kiosk"/> or <paramref name="checkinTemplate"/> are
+        /// provided then they will be used to filter the results to only areas
+        /// valid for those items. Any areas identified by
+        /// <paramref name="additionalAreaIdKeys"/> that would otherwise be
+        /// filtered out are still included in the result, so that callers
+        /// editing a saved configuration can display selections that live
+        /// outside the current kiosk's scope (for example areas that belong to
+        /// a different campus on a shared saved kiosk template).
+        /// </summary>
+        /// <param name="kiosk">The optional kiosk to filter the results for.</param>
+        /// <param name="checkinTemplate">The optional check-in template to filter all areas to.</param>
+        /// <param name="additionalAreaIdKeys">
+        /// Additional area IdKeys that must always be present in the result,
+        /// even if the kiosk or template filter would exclude them. When
+        /// <c>null</c> or empty, no extra areas are forced in and this behaves
+        /// exactly like the two-parameter overload.
+        /// </param>
+        /// <returns>A collection of <see cref="ConfigurationAreaBag"/> objects.</returns>
+        public virtual List<ConfigurationAreaBag> GetCheckInAreaSummaries( DeviceCache kiosk, GroupTypeCache checkinTemplate, IEnumerable<string> additionalAreaIdKeys )
+        {
             var areas = new Dictionary<string, ConfigurationAreaBag>();
             List<GroupTypeCache> templates;
             HashSet<int> kioskGroupTypeIds = null;
+
+            // Normalize the additional area IdKeys once so we can do fast
+            // lookups while walking the template descendants below. Areas whose
+            // IdKey is in this set are always kept, even when the kiosk filter
+            // would otherwise exclude them. This is what preserves selections
+            // for other-campus areas on a shared saved kiosk template.
+            var additionalAreaIdKeySet = additionalAreaIdKeys != null
+                ? new HashSet<string>( additionalAreaIdKeys.Where( k => k.IsNotNullOrWhiteSpace() ) )
+                : new HashSet<string>();
 
             // If the caller specified a template, then we return areas for
             // only that primary template. Otherwise we include areas from
@@ -145,8 +179,16 @@ namespace Rock.CheckIn.v2
                     }
 
                     // If a kiosk was specified, limit the results to areas
-                    // that are valid for the kiosk.
-                    if ( kioskGroupTypeIds != null && !kioskGroupTypeIds.Contains( areaGroupType.Id ) )
+                    // that are valid for the kiosk. Areas explicitly requested
+                    // by the caller via additionalAreaIdKeys bypass this
+                    // filter so their existing selection state remains visible
+                    // to the admin. We track whether the area survived only
+                    // because of that bypass so the UI can flag it as being
+                    // outside the current kiosk's scope.
+                    var isOutOfScope = kioskGroupTypeIds != null
+                        && !kioskGroupTypeIds.Contains( areaGroupType.Id );
+
+                    if ( isOutOfScope && !additionalAreaIdKeySet.Contains( areaGroupType.IdKey ) )
                     {
                         continue;
                     }
@@ -161,7 +203,8 @@ namespace Rock.CheckIn.v2
                         {
                             Id = areaGroupType.IdKey,
                             Name = areaGroupType.Name,
-                            PrimaryTemplateIds = new List<string> { cfg.IdKey }
+                            PrimaryTemplateIds = new List<string> { cfg.IdKey },
+                            IsOutOfScope = isOutOfScope
                         } );
                     }
                 }
@@ -387,13 +430,14 @@ namespace Rock.CheckIn.v2
         }
 
         /// <summary>
-        /// Gets the current attendance query for the date specified. This
-        /// includes pending attendance records.
+        /// Gets the attendance query for the date specified. This includes
+        /// all attendance records related to check-in, including pending and
+        /// previous service records.
         /// </summary>
         /// <param name="startDateTime">Attendance records must start on this date.</param>
         /// <param name="rockContext">The database context to execute the query on.</param>
         /// <returns>A queryable of <see cref="Attendance"/> records.</returns>
-        public static IQueryable<Attendance> GetCurrentAttendanceQuery( DateTime startDateTime, RockContext rockContext )
+        public static IQueryable<Attendance> GetDailyAttendanceQuery( DateTime startDateTime, RockContext rockContext )
         {
             var attendanceService = new AttendanceService( rockContext );
 
@@ -405,8 +449,7 @@ namespace Rock.CheckIn.v2
                     && a.Occurrence.ScheduleId.HasValue
                     && a.PersonAliasId.HasValue
                     && a.DidAttend.HasValue
-                    && a.DidAttend.Value == true
-                    && !a.EndDateTime.HasValue );
+                    && a.DidAttend.Value == true );
         }
 
         /// <summary>
@@ -419,11 +462,39 @@ namespace Rock.CheckIn.v2
         /// <returns>A collection of <see cref="RecentAttendance"/> records.</returns>
         public static List<RecentAttendance> GetCurrentAttendance( DateTime startDateTime, IReadOnlyList<int> locationIds, RockContext rockContext )
         {
-            var personAttendanceQuery = GetCurrentAttendanceQuery( startDateTime, rockContext );
+            var personAttendanceQuery = GetDailyAttendanceQuery( startDateTime, rockContext );
 
             personAttendanceQuery = WhereContains( personAttendanceQuery, locationIds, a => a.Occurrence.Location.Id );
 
-            return GetRecentAttendanceFromQuery( personAttendanceQuery );
+            var attendance = GetRecentAttendanceFromQuery( personAttendanceQuery );
+
+            return FilterToCurrentlyCheckedIn( attendance, rockContext ).ToList();
+        }
+
+        /// <summary>
+        /// Filters a set of recent attendance records to return only those which
+        /// are currently checked in based on the schedule and the attendance
+        /// status. Specifically, this will filter out records if they have been
+        /// marked as checked out or if their schedule has already ended.
+        /// </summary>
+        /// <param name="attendances">The records to filter.</param>
+        /// <param name="rockContext">The context to use when reading information from the database.</param>
+        /// <returns>A set of recent attendance records that have been filtered to just those that are currently checked in.</returns>
+        public static IEnumerable<RecentAttendance> FilterToCurrentlyCheckedIn( IEnumerable<RecentAttendance> attendances, RockContext rockContext )
+        {
+            return attendances
+                .Where( a => a.Status != Enums.Event.CheckInStatus.CheckedOut
+                    && !a.EndDateTime.HasValue )
+                .GroupBy( a => new { a.ScheduleId, a.CampusId } )
+                .SelectMany( grp =>
+                {
+                    // The vast majority of attendance records for a single
+                    // location should have the same schedule and campus.
+                    var scheduleCache = NamedScheduleCache.GetByIdKey( grp.Key.ScheduleId, rockContext );
+                    var campusCache = CampusCache.GetByIdKey( grp.Key.CampusId, rockContext );
+
+                    return grp.Where( a => Attendance.CalculateIsCurrentlyCheckedIn( a.StartDateTime, a.EndDateTime, campusCache, scheduleCache ) );
+                } );
         }
 
         /// <summary>

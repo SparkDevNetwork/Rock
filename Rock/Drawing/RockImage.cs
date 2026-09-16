@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -14,21 +14,23 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
+using System.Data.Entity;
+using System.IO;
+using System.Threading;
+using System.Web;
+
+using Microsoft.Ajax.Utilities;
+
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
+using Rock.Security;
+using Rock.Web.Cache;
+
+using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing.Processors.Drawing;
-using SixLabors.ImageSharp;
-using System.Threading;
-using System;
-using System.Web;
-using System.IO;
-using Rock.Web.Cache;
-using System.Data.Entity;
-#if REVIEW_WEBFORMS
-using Microsoft.Ajax.Utilities;
-#endif
-using Rock.Security;
 
 namespace Rock.Drawing
 {
@@ -76,13 +78,27 @@ namespace Rock.Drawing
         /// </summary>
         /// <param name="photoId"></param>
         /// <returns>null if the image could not be retrieved for any reason.</returns>
+        /// <remarks>This is only intended for use with BinaryFiletype.PERSON_IMAGE.</remarks>
+        /// <exception cref="Exception">
+        /// Thrown when the current person is not authorized to view the image or
+        /// when the binary file is not of type <c>BinaryFiletype.PERSON_IMAGE</c>.
+        /// </exception>
         public static Image GetPersonImageFromBinaryFileService( int photoId )
         {
-            var binaryFile = new BinaryFileService( new RockContext() ).Get( photoId );
+            var binaryFile = new BinaryFileService( RockApp.Current.CreateRockContext() ).Get( photoId );
 
             if ( binaryFile == null )
             {
                 return null;
+            }
+
+            // Constrain to the well-known Person Image BinaryFileType. This endpoint is only
+            // intended to serve person photos; any other file type must be ignored so that
+            // the avatar handler cannot be used to read arbitrary image/BinaryFiles.
+            var personImageTypeId = BinaryFileTypeCache.GetId( Rock.SystemGuid.BinaryFiletype.PERSON_IMAGE.AsGuid() );
+            if ( personImageTypeId == null || binaryFile.BinaryFileTypeId != personImageTypeId.Value )
+            {
+                throw new Exception( "Not Allowed" );
             }
 
             if ( !IsAuthorized( binaryFile ) )
@@ -109,7 +125,6 @@ namespace Rock.Drawing
         /// <summary>
         /// Determines whether the current user is authorized to view the Person Image.
         /// Returns true without security check if the Person Image BinaryFileType has RequiresViewSecurity set to false.
-        /// The file type will need to be checked before fetching the file (see RockImage.GetPersonImageFromBinaryFileService())
         /// Validates security and the BinaryFileType if RequiresViewSecurity is true.
         /// </summary>
         /// <param name="binaryFile"></param>
@@ -122,7 +137,7 @@ namespace Rock.Drawing
                 return true;
             }
 
-            var currentUser = new UserLoginService( new RockContext() ).GetByUserName( UserLogin.GetCurrentUserName() );
+            var currentUser = new UserLoginService( RockApp.Current.CreateRockContext() ).GetByUserName( UserLogin.GetCurrentUserName() );
             Person currentPerson = currentUser?.Person;
             var parentEntityAllowsView = binaryFile.ParentEntityAllowsView( currentPerson );
 

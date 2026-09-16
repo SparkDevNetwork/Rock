@@ -20,7 +20,7 @@ import { defineAsyncComponent } from "@Obsidian/Utility/component";
 import { FieldTypeBase } from "./fieldType";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
-export const enum ConfigurationValueKey {
+export const enum ConfigurationKey {
     ClientValues = "values",
     RepeatColumns = "repeatColumns",
     EnhancedSelection = "enhancedselection"
@@ -43,7 +43,7 @@ export class ContentChannelTypesFieldType extends FieldTypeBase {
         }
 
         try {
-            const values = JSON.parse(configurationValues[ConfigurationValueKey.ClientValues] ?? "[]") as ListItemBag[];
+            const values = JSON.parse(configurationValues[ConfigurationKey.ClientValues] ?? "[]") as ListItemBag[];
             const userValues = value.split(",");
             const selectedValues = values.filter(o => userValues.includes(o.value ?? ""));
 

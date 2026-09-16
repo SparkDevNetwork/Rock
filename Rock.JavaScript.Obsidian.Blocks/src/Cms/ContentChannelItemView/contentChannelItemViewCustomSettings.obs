@@ -1,0 +1,451 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Modal v-model="isModalOpen" title="Channel Item Configuration" :saveText="saveButtonText" @save="onSave" saveAutoDisable>
+
+        <NotificationBox v-if="errorMessage" :alertType="AlertType.Warning">
+            {{ errorMessage }}
+        </NotificationBox>
+
+        <LoadingIndicator v-else-if="isLoading" :delay="500" />
+
+        <ContentSectionContainer v-else :sidebar="false">
+            <ContentSection light>
+                <ContentStack>
+                    <div class="row">
+                        <div class="col-md-12">
+                            <DropDownList v-model="contentChannelGuidOrEmptyString"
+                                          :items="options?.contentChannels ?? []"
+                                          label="Content Channel"
+                                          help="Limits content channel items to a specific channel. In most cases you'll want to provide a Content Channel to limit which channel is shown — especially if you're using non-globally unique slugs." />
+                        </div>
+                    </div>
+
+                    <CheckBoxList v-if="options?.contentChannelItemStatuses?.length"
+                                  v-model="contentChannelItemStatusesAsStrings"
+                                  :items="options?.contentChannelItemStatuses ?? []"
+                                  label="Status"
+                                  help="Include items with the following status."
+                                  horizontal />
+
+                    <CodeEditor v-model="lavaTemplate"
+                                label="Lava Template"
+                                help="The template to use when formatting the content channel item."
+                                mode="lava"
+                                :editorHeight="200" />
+                </ContentStack>
+            </ContentSection>
+
+            <ContentSection title="Visitor Settings" icon="ti ti-eye" isCollapsed>
+                <ContentStack title="Interactions"
+                              description="Controls whether a visit to a content channel item generates an interaction record."
+                              headerLocation="top">
+                    <InlineCheckBox v-model="isLogInteractionsEnabled"
+                                    label="Log Item Interaction"
+                                    help="Create an interaction for the current content channel item." />
+
+                    <InlineCheckBox v-if="isLogInteractionsEnabled"
+                                    v-model="isWriteInteractionOnlyIfIndividualLoggedInEnabled"
+                                    label="Write Interaction Only If Individual Logged In"
+                                    help="When enabled, only logged-in individuals will generate an interaction. Anonymous visitors will not." />
+                </ContentStack>
+
+                <ContentStack title="Workflows"
+                              description="Optionally launch a workflow when the content channel item is viewed."
+                              headerLocation="top">
+                    <WorkflowTypePicker v-model="workflowType"
+                                        label="Workflow Type"
+                                        help="The workflow type to launch when the content is viewed." />
+
+                    <template v-if="hasWorkflowType">
+                        <InlineCheckBox v-model="isLaunchWorkflowOnlyIfIndividualLoggedInEnabled"
+                                        label="Launch Workflow Only If Individual Logged In"
+                                        help="When enabled, the workflow will only launch for logged-in individuals." />
+
+                        <DropDownList v-model="launchWorkflowCondition"
+                                      :items="options?.launchWorkflowConditions ?? []"
+                                      :showBlankItem="false"
+                                      label="Launch Workflow"
+                                      help="Determines how often the workflow should launch." />
+                    </template>
+                </ContentStack>
+            </ContentSection>
+
+            <ContentSection title="Social Media" icon="ti ti-social" isCollapsed>
+                <ContentStack title="Sharing Metadata"
+                              description="Sets the meta tags used when sharing this content on social platforms."
+                              headerLocation="top">
+                    <DropDownList v-model="metaDescriptionAttributeValueKey"
+                                  :items="options?.metaDescriptionAttributes ?? []"
+                                  label="Meta Description Attribute"
+                                  help="Attribute to use for the page's meta description." />
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <DropDownList v-model="openGraphTitleAttributeValueKey"
+                                          :items="options?.titleAttributes ?? []"
+                                          label="Facebook Title Attribute"
+                                          help="If you don't want to use the post title for sharing the post on Facebook but instead want another title. [og:title]" />
+
+                            <DropDownList v-model="openGraphDescriptionAttributeValueKey"
+                                          :items="options?.descriptionAttributes ?? []"
+                                          label="Facebook Description Attribute"
+                                          help="If you don't want to use the meta description for sharing the post on Facebook but instead want another description. [og:description]" />
+
+                            <DropDownList v-model="openGraphImageAttributeValueKey"
+                                          :items="options?.imageAttributes ?? []"
+                                          label="Facebook Image Attribute"
+                                          help="If you want to override the image used on Facebook for this post. [og:image]" />
+
+                            <DropDownList v-model="openGraphType"
+                                          :items="options?.openGraphTypes ?? []"
+                                          label="Open Graph Object Type" />
+                        </div>
+
+                        <div class="col-md-6">
+                            <DropDownList v-model="twitterTitleAttributeValueKey"
+                                          :items="options?.titleAttributes ?? []"
+                                          label="Twitter Title Attribute"
+                                          help="If you don't want to use the post title for sharing the post on Twitter but instead want another title." />
+
+                            <DropDownList v-model="twitterDescriptionAttributeValueKey"
+                                          :items="options?.descriptionAttributes ?? []"
+                                          label="Twitter Description Attribute"
+                                          help="If you don't want to use the meta description for sharing the post on Twitter but instead want another description." />
+
+                            <DropDownList v-model="twitterImageAttributeValueKey"
+                                          :items="options?.imageAttributes ?? []"
+                                          label="Twitter Image Attribute"
+                                          help="If you want to override the image used on Twitter for this post." />
+
+                            <DropDownList v-model="twitterCard"
+                                          :items="options?.twitterCards ?? []"
+                                          :showBlankItem="false"
+                                          label="Twitter Card Type" />
+                        </div>
+                    </div>
+                </ContentStack>
+            </ContentSection>
+
+            <ContentSection title="Advanced" icon="ti ti-adjustments" isCollapsed>
+                <ContentStack title="Lookup &amp; Display"
+                              description="Controls how the block determines which content channel item to show and how the page is presented."
+                              headerLocation="top">
+                    <TextBox v-model="contentChannelQueryParameter"
+                             label="Custom Query Parameter"
+                             help="Specify the URL parameter to use to determine which Content Channel Item to show, or leave blank to use whatever the first parameter is. Integer values are treated as a ContentChannelItem Id, strings as a Slug, and Guids as a ContentChannelItem Guid." />
+
+                    <PagePicker v-model="detailPage"
+                                label="Detail Page"
+                                help="Page used to view a content item."
+                                promptForPageRoute
+                                showSelectCurrentPage />
+
+                    <InlineCheckBox v-model="isDisplayMostRecentEnabled"
+                                    label="Display Most Recent"
+                                    help="When no item is specified by the URL, display the most recent item from the configured channel." />
+
+                    <InlineCheckBox v-model="isPageTitleUpdateEnabled"
+                                    label="Set Page Title"
+                                    help="Updates the page title to the content channel item's title and adds a matching breadcrumb." />
+
+                    <InlineCheckBox v-model="isItemMergeFieldEnabled"
+                                    label="Merge Content"
+                                    help="Merges the content data and attribute values using the Lava template engine before rendering." />
+                </ContentStack>
+
+                <ContentStack title="Caching"
+                              description="Controls how content and rendered output are cached."
+                              headerLocation="top">
+                    <div class="row">
+                        <div class="col-md-3">
+                            <NumberBox v-model="outputCacheDuration"
+                                       label="Output Cache Duration"
+                                       help="Number of seconds to cache the resolved output. Only cache the output if you are not personalizing the output based on current user, current page, or any other merge field value. Use 0 to disable caching.">
+                                <template #inputGroupAppend>
+                                    <span class="input-group-addon">seconds</span>
+                                </template>
+                            </NumberBox>
+                        </div>
+
+                        <div class="col-md-3">
+                            <NumberBox v-model="itemCacheDuration"
+                                       label="Item Cache Duration"
+                                       help="Number of seconds to cache the content item specified by the parameter. Use 0 to disable caching.">
+                                <template #inputGroupAppend>
+                                    <span class="input-group-addon">seconds</span>
+                                </template>
+                            </NumberBox>
+                        </div>
+                    </div>
+
+                    <CheckBoxList v-model="cacheTags"
+                                  :items="options?.cacheTags ?? []"
+                                  emptyListMessage="<div class='text-muted small'>No cache tags defined.</div>"
+                                  label="Cache Tags"
+                                  help="Tags used to group cached content so it can be expired together."
+                                  horizontal />
+                </ContentStack>
+            </ContentSection>
+        </ContentSectionContainer>
+    </Modal>
+</template>
+
+<script setup lang="ts">
+    import { computed, ref, watch } from "vue";
+    import CheckBoxList from "@Obsidian/Controls/checkBoxList.obs";
+    import CodeEditor from "@Obsidian/Controls/codeEditor.obs";
+    import ContentSection from "@Obsidian/Controls/contentSection.obs";
+    import ContentSectionContainer from "@Obsidian/Controls/contentSectionContainer.obs";
+    import ContentStack from "@Obsidian/Controls/contentStack.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import InlineCheckBox from "@Obsidian/Controls/inlineCheckBox.obs";
+    import LoadingIndicator from "@Obsidian/Controls/loadingIndicator.obs";
+    import Modal from "@Obsidian/Controls/modal.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import NumberBox from "@Obsidian/Controls/numberBox.obs";
+    import PagePicker from "@Obsidian/Controls/pagePicker.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import WorkflowTypePicker from "@Obsidian/Controls/workflowTypePicker.obs";
+    import { AlertType } from "@Obsidian/Enums/Controls/alertType";
+    import { ContentChannelItemStatus } from "@Obsidian/Enums/Cms/contentChannelItemStatus";
+    import { Guid } from "@Obsidian/Types";
+    import { setCustomSettingsBoxValue, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
+    import { toGuidOrNull } from "@Obsidian/Utility/guid";
+    import { Enumerable } from "@Obsidian/Utility/linq";
+    import { toNumberOrNull } from "@Obsidian/Utility/numberUtils";
+    import { isNullish } from "@Obsidian/Utility/util";
+    import { CustomSettingsBox } from "@Obsidian/ViewModels/Blocks/customSettingsBox";
+    import { ContentChannelItemViewCustomSettingsBag } from "@Obsidian/ViewModels/Blocks/Cms/ContentChannelItemView/contentChannelItemViewCustomSettingsBag";
+    import { ContentChannelItemViewCustomSettingsOptionsBag } from "@Obsidian/ViewModels/Blocks/Cms/ContentChannelItemView/contentChannelItemViewCustomSettingsOptionsBag";
+    import { PageRouteValueBag } from "@Obsidian/ViewModels/Rest/Controls/pageRouteValueBag";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+
+    const invokeBlockAction = useInvokeBlockAction();
+    const reloadBlock = useReloadBlock();
+
+    const emit = defineEmits<{
+        (e: "close"): void
+    }>();
+
+    // #region Values
+
+    // Lets the channel watcher skip re-fetching options while startLoading() is still
+    // populating reactive state for the first time.
+    let isInitialized = false;
+
+    const errorMessage = ref<string>("");
+    const isLoading = ref<boolean>(true);
+    const isModalOpen = ref<boolean>(true);
+    const options = ref<ContentChannelItemViewCustomSettingsOptionsBag | null>(null);
+
+    const contentChannelGuidOrEmptyString = ref<string>("");
+    const contentChannelItemStatusesAsStrings = ref<string[]>([]);
+    const lavaTemplate = ref<string>("");
+    const contentChannelQueryParameter = ref<string>("");
+    const isDisplayMostRecentEnabled = ref<boolean>(false);
+    const isPageTitleUpdateEnabled = ref<boolean>(false);
+    const isItemMergeFieldEnabled = ref<boolean>(false);
+    const detailPage = ref<PageRouteValueBag | null>(null);
+    const itemCacheDuration = ref<number | null>(3600);
+    const outputCacheDuration = ref<number | null>(0);
+    const cacheTags = ref<string[]>([]);
+    const isLogInteractionsEnabled = ref<boolean>(false);
+    const isWriteInteractionOnlyIfIndividualLoggedInEnabled = ref<boolean>(false);
+    const workflowType = ref<ListItemBag | null>(null);
+    const isLaunchWorkflowOnlyIfIndividualLoggedInEnabled = ref<boolean>(false);
+    const launchWorkflowCondition = ref<string>("1");
+    const metaDescriptionAttributeValueKey = ref<string>("");
+    const openGraphType = ref<string>("");
+    const openGraphTitleAttributeValueKey = ref<string>("");
+    const openGraphDescriptionAttributeValueKey = ref<string>("");
+    const openGraphImageAttributeValueKey = ref<string>("");
+    const twitterTitleAttributeValueKey = ref<string>("");
+    const twitterDescriptionAttributeValueKey = ref<string>("");
+    const twitterImageAttributeValueKey = ref<string>("");
+    const twitterCard = ref<string>("none");
+
+    // #endregion
+
+    // #region Computed Values
+
+    const saveButtonText = computed((): string => {
+        return errorMessage.value || !isLoading.value ? "Save" : "";
+    });
+
+    const hasWorkflowType = computed((): boolean => {
+        return !!workflowType.value?.value;
+    });
+
+    const contentChannelItemStatuses = computed<ContentChannelItemStatus[]>(() => {
+        function isContentChannelItemStatus(value: number | null): value is ContentChannelItemStatus {
+            return !isNullish(value) && Object.values(ContentChannelItemStatus).includes(value as ContentChannelItemStatus);
+        }
+
+        return Enumerable
+            .from(contentChannelItemStatusesAsStrings.value)
+            .select(s => toNumberOrNull(s))
+            .ofType<ContentChannelItemStatus>(isContentChannelItemStatus)
+            .toArray();
+    });
+
+    // #endregion
+
+    // #region Functions
+
+    /**
+     * Loads the current settings and options into the modal.
+     */
+    async function startLoading(): Promise<void> {
+        isLoading.value = true;
+
+        try {
+            const result = await invokeBlockAction<CustomSettingsBox<ContentChannelItemViewCustomSettingsBag, ContentChannelItemViewCustomSettingsOptionsBag>>("GetCustomSettings");
+
+            if (result.isSuccess && result.data && result.data.settings && result.data.options) {
+                options.value = result.data.options;
+                applySettings(result.data.settings);
+            }
+            else {
+                options.value = null;
+                errorMessage.value = result.errorMessage || "Unknown error while loading custom settings.";
+            }
+        }
+        finally {
+            isLoading.value = false;
+            isInitialized = true;
+        }
+    }
+
+    /**
+     * Reloads option lists when the selected content channel changes.
+     */
+    async function loadCustomSettingsForContentChannel(contentChannelGuid: Guid): Promise<void> {
+        try {
+            const result = await invokeBlockAction<CustomSettingsBox<ContentChannelItemViewCustomSettingsBag, ContentChannelItemViewCustomSettingsOptionsBag>>(
+                "GetCustomSettingsForContentChannel",
+                { contentChannelGuid });
+
+            if (result.isSuccess && result.data && result.data.options) {
+                options.value = result.data.options;
+
+                // Drop any previously selected statuses that are no longer offered for the new channel.
+                if (contentChannelItemStatusesAsStrings.value.length) {
+                    contentChannelItemStatusesAsStrings.value = contentChannelItemStatusesAsStrings.value.filter(s =>
+                        options.value?.contentChannelItemStatuses?.some(o => o.value === s));
+                }
+            }
+            else {
+                options.value = null;
+                errorMessage.value = result.errorMessage || "Unknown error while loading custom settings options.";
+            }
+        }
+        catch {
+            options.value = null;
+            errorMessage.value = "Unknown error while loading custom settings options.";
+        }
+    }
+
+    /**
+     * Applies the supplied settings to the reactive state.
+     */
+    function applySettings(settings: ContentChannelItemViewCustomSettingsBag): void {
+        contentChannelGuidOrEmptyString.value = settings.contentChannelGuid ?? "";
+        contentChannelItemStatusesAsStrings.value = settings.contentChannelItemStatuses?.map(s => `${s}`) ?? [];
+        lavaTemplate.value = settings.lavaTemplate ?? "";
+        contentChannelQueryParameter.value = settings.contentChannelQueryParameter ?? "";
+        isDisplayMostRecentEnabled.value = settings.isDisplayMostRecentEnabled;
+        isPageTitleUpdateEnabled.value = settings.isPageTitleUpdateEnabled;
+        isItemMergeFieldEnabled.value = settings.isItemMergeFieldEnabled;
+        detailPage.value = settings.detailPage ?? null;
+        itemCacheDuration.value = settings.itemCacheDuration;
+        outputCacheDuration.value = settings.outputCacheDuration;
+        cacheTags.value = settings.cacheTags ?? [];
+        isLogInteractionsEnabled.value = settings.isLogInteractionsEnabled;
+        isWriteInteractionOnlyIfIndividualLoggedInEnabled.value = settings.isWriteInteractionOnlyIfIndividualLoggedInEnabled;
+        workflowType.value = settings.workflowType ?? null;
+        isLaunchWorkflowOnlyIfIndividualLoggedInEnabled.value = settings.isLaunchWorkflowOnlyIfIndividualLoggedInEnabled;
+        launchWorkflowCondition.value = settings.launchWorkflowCondition ?? "1";
+        metaDescriptionAttributeValueKey.value = settings.metaDescriptionAttributeValueKey ?? "";
+        openGraphType.value = settings.openGraphType ?? "";
+        openGraphTitleAttributeValueKey.value = settings.openGraphTitleAttributeValueKey ?? "";
+        openGraphDescriptionAttributeValueKey.value = settings.openGraphDescriptionAttributeValueKey ?? "";
+        openGraphImageAttributeValueKey.value = settings.openGraphImageAttributeValueKey ?? "";
+        twitterTitleAttributeValueKey.value = settings.twitterTitleAttributeValueKey ?? "";
+        twitterDescriptionAttributeValueKey.value = settings.twitterDescriptionAttributeValueKey ?? "";
+        twitterImageAttributeValueKey.value = settings.twitterImageAttributeValueKey ?? "";
+        twitterCard.value = settings.twitterCard ?? "none";
+    }
+
+    // #endregion
+
+    // #region Event Handlers
+
+    async function onSave(): Promise<void> {
+        const box: CustomSettingsBox<ContentChannelItemViewCustomSettingsBag, ContentChannelItemViewCustomSettingsOptionsBag> = {};
+
+        setCustomSettingsBoxValue(box, "contentChannelGuid", toGuidOrNull(contentChannelGuidOrEmptyString.value));
+        setCustomSettingsBoxValue(box, "contentChannelItemStatuses", contentChannelItemStatuses.value);
+        setCustomSettingsBoxValue(box, "lavaTemplate", lavaTemplate.value);
+        setCustomSettingsBoxValue(box, "contentChannelQueryParameter", contentChannelQueryParameter.value);
+        setCustomSettingsBoxValue(box, "isDisplayMostRecentEnabled", isDisplayMostRecentEnabled.value);
+        setCustomSettingsBoxValue(box, "isPageTitleUpdateEnabled", isPageTitleUpdateEnabled.value);
+        setCustomSettingsBoxValue(box, "isItemMergeFieldEnabled", isItemMergeFieldEnabled.value);
+        setCustomSettingsBoxValue(box, "detailPage", detailPage.value);
+        setCustomSettingsBoxValue(box, "itemCacheDuration", itemCacheDuration.value ?? 0);
+        setCustomSettingsBoxValue(box, "outputCacheDuration", outputCacheDuration.value ?? 0);
+        setCustomSettingsBoxValue(box, "cacheTags", cacheTags.value);
+        setCustomSettingsBoxValue(box, "isLogInteractionsEnabled", isLogInteractionsEnabled.value);
+        setCustomSettingsBoxValue(box, "isWriteInteractionOnlyIfIndividualLoggedInEnabled", isWriteInteractionOnlyIfIndividualLoggedInEnabled.value);
+        setCustomSettingsBoxValue(box, "workflowType", workflowType.value);
+        setCustomSettingsBoxValue(box, "isLaunchWorkflowOnlyIfIndividualLoggedInEnabled", isLaunchWorkflowOnlyIfIndividualLoggedInEnabled.value);
+        setCustomSettingsBoxValue(box, "launchWorkflowCondition", launchWorkflowCondition.value);
+        setCustomSettingsBoxValue(box, "metaDescriptionAttributeValueKey", metaDescriptionAttributeValueKey.value);
+        setCustomSettingsBoxValue(box, "openGraphType", openGraphType.value);
+        setCustomSettingsBoxValue(box, "openGraphTitleAttributeValueKey", openGraphTitleAttributeValueKey.value);
+        setCustomSettingsBoxValue(box, "openGraphDescriptionAttributeValueKey", openGraphDescriptionAttributeValueKey.value);
+        setCustomSettingsBoxValue(box, "openGraphImageAttributeValueKey", openGraphImageAttributeValueKey.value);
+        setCustomSettingsBoxValue(box, "twitterTitleAttributeValueKey", twitterTitleAttributeValueKey.value);
+        setCustomSettingsBoxValue(box, "twitterDescriptionAttributeValueKey", twitterDescriptionAttributeValueKey.value);
+        setCustomSettingsBoxValue(box, "twitterImageAttributeValueKey", twitterImageAttributeValueKey.value);
+        setCustomSettingsBoxValue(box, "twitterCard", twitterCard.value);
+
+        const result = await invokeBlockAction("SaveCustomSettings", { box });
+
+        if (result.isSuccess) {
+            isModalOpen.value = false;
+            reloadBlock();
+        }
+        else {
+            alert(result.errorMessage || "Unable to save block settings.");
+        }
+    }
+
+    // #endregion
+
+    // #region Watchers
+
+    watch(isModalOpen, () => {
+        if (!isModalOpen.value) {
+            emit("close");
+        }
+    });
+
+    watch(contentChannelGuidOrEmptyString, async (newValue) => {
+        if (!isInitialized) {
+            return;
+        }
+
+        const contentChannelGuid = toGuidOrNull(newValue);
+        if (contentChannelGuid) {
+            await loadCustomSettingsForContentChannel(contentChannelGuid);
+        }
+        else {
+            options.value = options.value ? { ...options.value, contentChannelItemStatuses: null } : options.value;
+            contentChannelItemStatusesAsStrings.value = [];
+        }
+    });
+
+    // #endregion
+
+    startLoading();
+</script>

@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -259,6 +259,17 @@ namespace Rock.Communication.Chat
         /// vs. new instances for specific changes and decide the best way to apply the changes.
         /// </remarks>
         Task<ChatSyncCrudResult> UpdateChatChannelMembersAsync( string chatChannelTypeKey, string chatChannelKey, Dictionary<ChatChannelMember, ChatChannelMember> chatChannelMembers );
+
+        /// <summary>
+        /// Updates the push notification preferences for existing <see cref="ChatChannelMember"/>s in the external
+        /// chat system.
+        /// </summary>
+        /// <param name="chatChannelMembers">The list of <see cref="ChatChannelMember"/>s whose push notification
+        /// preferences should be updated.</param>
+        /// <returns>
+        /// A task representing the asynchronous operation, containing a <see cref="ChatSyncCrudResult"/>.
+        /// </returns>
+        Task<ChatSyncCrudResult> UpdateChatChannelMemberPushPreferencesAsync( List<ChatChannelMember> chatChannelMembers );
 
         /// <summary>
         /// Deletes <see cref="ChatChannelMember"/>s from the external chat system that match the provided

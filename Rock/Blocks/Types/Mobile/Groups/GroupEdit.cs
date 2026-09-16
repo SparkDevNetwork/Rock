@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -22,6 +22,7 @@ using System.Text;
 
 using Rock.Attribute;
 using Rock.Common.Mobile.Blocks.Content;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Mobile;
 using Rock.Model;
@@ -47,7 +48,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
         Description = "If enabled, a 'Group Details' header will be displayed.",
         IsRequired = true,
         DefaultBooleanValue = true,
-        ControlType = Field.Types.BooleanFieldType.BooleanControlType.Checkbox,
+        BooleanControlType = Rock.Enums.Controls.BooleanControlType.Checkbox,
         Key = AttributeKeys.ShowHeader,
         Order = 0 )]
 
@@ -55,7 +56,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
         Description = "",
         IsRequired = true,
         DefaultBooleanValue = true,
-        ControlType = Field.Types.BooleanFieldType.BooleanControlType.Checkbox,
+        BooleanControlType = Rock.Enums.Controls.BooleanControlType.Checkbox,
         Key = AttributeKeys.ShowGroupName,
         Order = 1 )]
 
@@ -63,7 +64,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
         Description = "",
         IsRequired = true,
         DefaultBooleanValue = true,
-        ControlType = Field.Types.BooleanFieldType.BooleanControlType.Checkbox,
+        BooleanControlType = Rock.Enums.Controls.BooleanControlType.Checkbox,
         Key = AttributeKeys.EnableGroupNameEdit,
         Order = 2 )]
 
@@ -71,7 +72,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
         Description = "",
         IsRequired = true,
         DefaultBooleanValue = true,
-        ControlType = Field.Types.BooleanFieldType.BooleanControlType.Checkbox,
+        BooleanControlType = Rock.Enums.Controls.BooleanControlType.Checkbox,
         Key = AttributeKeys.ShowDescription,
         Order = 3 )]
 
@@ -79,7 +80,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
         Description = "",
         IsRequired = true,
         DefaultBooleanValue = true,
-        ControlType = Field.Types.BooleanFieldType.BooleanControlType.Checkbox,
+        BooleanControlType = Rock.Enums.Controls.BooleanControlType.Checkbox,
         Key = AttributeKeys.EnableDescriptionEdit,
         Order = 4 )]
 
@@ -87,7 +88,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
         Description = "",
         IsRequired = true,
         DefaultBooleanValue = true,
-        ControlType = Field.Types.BooleanFieldType.BooleanControlType.Checkbox,
+        BooleanControlType = Rock.Enums.Controls.BooleanControlType.Checkbox,
         Key = AttributeKeys.ShowCampus,
         Order = 5 )]
 
@@ -95,7 +96,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
         Description = "",
         IsRequired = true,
         DefaultBooleanValue = true,
-        ControlType = Field.Types.BooleanFieldType.BooleanControlType.Checkbox,
+        BooleanControlType = Rock.Enums.Controls.BooleanControlType.Checkbox,
         Key = AttributeKeys.EnableCampusEdit,
         Order = 6 )]
 
@@ -103,7 +104,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
         Description = "",
         IsRequired = true,
         DefaultBooleanValue = true,
-        ControlType = Field.Types.BooleanFieldType.BooleanControlType.Checkbox,
+        BooleanControlType = Rock.Enums.Controls.BooleanControlType.Checkbox,
         Key = AttributeKeys.ShowGroupCapacity,
         Order = 7 )]
 
@@ -111,7 +112,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
         Description = "",
         IsRequired = true,
         DefaultBooleanValue = true,
-        ControlType = Field.Types.BooleanFieldType.BooleanControlType.Checkbox,
+        BooleanControlType = Rock.Enums.Controls.BooleanControlType.Checkbox,
         Key = AttributeKeys.EnableGroupCapacityEdit,
         Order = 8 )]
 
@@ -119,7 +120,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
         Description = "",
         IsRequired = true,
         DefaultBooleanValue = true,
-        ControlType = Field.Types.BooleanFieldType.BooleanControlType.Checkbox,
+        BooleanControlType = Rock.Enums.Controls.BooleanControlType.Checkbox,
         Key = AttributeKeys.ShowActiveStatus,
         Order = 9 )]
 
@@ -127,7 +128,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
         Description = "",
         IsRequired = true,
         DefaultBooleanValue = true,
-        ControlType = Field.Types.BooleanFieldType.BooleanControlType.Checkbox,
+        BooleanControlType = Rock.Enums.Controls.BooleanControlType.Checkbox,
         Key = AttributeKeys.EnableActiveStatusEdit,
         Order = 10 )]
 
@@ -135,7 +136,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
         Description = "",
         IsRequired = true,
         DefaultBooleanValue = true,
-        ControlType = Field.Types.BooleanFieldType.BooleanControlType.Checkbox,
+        BooleanControlType = Rock.Enums.Controls.BooleanControlType.Checkbox,
         Key = AttributeKeys.ShowPublicStatus,
         Order = 11 )]
 
@@ -143,7 +144,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
         Description = "",
         IsRequired = true,
         DefaultBooleanValue = true,
-        ControlType = Field.Types.BooleanFieldType.BooleanControlType.Checkbox,
+        BooleanControlType = Rock.Enums.Controls.BooleanControlType.Checkbox,
         Key = AttributeKeys.EnablePublicStatusEdit,
         Order = 12 )]
 
@@ -443,7 +444,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
             var parameters = new Dictionary<string, string>();
             string fieldsContent;
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var group = new GroupService( rockContext ).Get( groupGuid );
 
@@ -589,7 +590,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
         {
             var groupGuid = RequestContext.GetPageParameter( PageParameterKeys.GroupGuid ).AsGuid();
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var group = new GroupService( rockContext ).Get( groupGuid );
 

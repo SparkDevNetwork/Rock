@@ -1,0 +1,134 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Grid :data="gridDataSource"
+          keyField="idKey"
+          itemTerm="Layout"
+          light
+          liveUpdates
+          :onAddItem="onAddClicked"
+          @selectItem="onRowClicked">
+        <TextColumn name="name"
+                    title="Name"
+                    field="name"
+                    visiblePriority="xs" />
+
+        <TextColumn name="description"
+                    title="Description"
+                    field="description"
+                    visiblePriority="md" />
+
+        <DeleteColumn @click="onDeleteClick" />
+    </Grid>
+</template>
+
+<script setup lang="ts">
+    import { PropType, reactive, ref } from "vue";
+    import Grid, { TextColumn, DeleteColumn } from "@Obsidian/Controls/grid";
+    import { alert } from "@Obsidian/Utility/dialogs";
+    import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
+    import { DetailBlockBox } from "@Obsidian/ViewModels/Blocks/detailBlockBox";
+    import { MobileApplicationBag } from "@Obsidian/ViewModels/Blocks/Mobile/MobileApplicationDetail/mobileApplicationBag";
+    import { MobileApplicationDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Mobile/MobileApplicationDetail/mobileApplicationDetailOptionsBag";
+    import { NavigationUrlKey } from "./types.partial";
+
+    const config = useConfigurationValues<DetailBlockBox<MobileApplicationBag, MobileApplicationDetailOptionsBag>>();
+    const invokeBlockAction = useInvokeBlockAction();
+
+    const props = defineProps({
+        options: {
+            type: Object as PropType<MobileApplicationDetailOptionsBag>,
+            required: true
+        }
+    });
+
+    // #region Values
+
+    const gridDataSource = ref<Promise<GridDataBag>>();
+    let gridData: GridDataBag | undefined;
+
+    // #endregion
+
+    // #region Functions
+
+    /** Loads the layouts grid via the `GetLayoutsGridData` block action. */
+    async function loadGridData(): Promise<GridDataBag> {
+        const result = await invokeBlockAction<GridDataBag>("GetLayoutsGridData");
+
+        if (result.isSuccess && result.data) {
+            gridData = reactive(result.data);
+            return gridData;
+        }
+        else {
+            throw new Error(result.errorMessage ?? "Unable to load layouts.");
+        }
+    }
+
+    /**
+     * Navigates to a layout-detail URL with the row key substituted in,
+     * optionally appending a `returnUrl` so the detail page can come back
+     * to this tab.
+     */
+    function navigateToDetail(urlKey: NavigationUrlKey, key: string, includeReturnUrl: boolean): void {
+        const template = config.navigationUrls?.[urlKey];
+        if (!template) {
+            return;
+        }
+
+        let url = template.replace("((Key))", key);
+
+        if (includeReturnUrl) {
+            const separator = url.includes("?") ? "&" : "?";
+            url += `${separator}returnUrl=${encodeURIComponent(window.location.href)}`;
+        }
+
+        window.location.href = url;
+    }
+
+    // #endregion
+
+    // #region Event Handlers
+
+    /** Navigates to the new-layout URL when the grid's Add button is clicked. */
+    function onAddClicked(): void {
+        navigateToDetail(NavigationUrlKey.LayoutDetailPage, "0", false);
+    }
+
+    /**
+     * Routes the user to the layout detail page on row click. Editable
+     * users land directly in edit mode; read-only users are sent to the
+     * view URL. The `returnUrl` is passed in both cases so cancelling the
+     * layout detail returns to this page on the originating tab.
+     */
+    function onRowClicked(key: string): void {
+        const urlKey = props.options?.isEditable === true
+            ? NavigationUrlKey.LayoutDetailEditPage
+            : NavigationUrlKey.LayoutDetailPage;
+        navigateToDetail(urlKey, key, true);
+    }
+
+    /**
+     * Deletes the layout via the `DeleteLayout` block action and removes
+     * the row from the grid in place. Surfaces the server's error message
+     * (typically a `CanDelete` rejection) when the delete is refused.
+     */
+    async function onDeleteClick(key: string): Promise<void> {
+        const result = await invokeBlockAction<string>("DeleteLayout", { key });
+
+        if (result.isSuccess) {
+            if (gridData?.rows) {
+                const index = gridData.rows.findIndex(r => r["idKey"] === key);
+                if (index !== -1) {
+                    gridData.rows.splice(index, 1);
+                }
+            }
+        }
+        else {
+            await alert(result.errorMessage ?? "Unable to delete the layout.");
+        }
+    }
+
+    // #endregion
+
+    gridDataSource.value = loadGridData();
+</script>

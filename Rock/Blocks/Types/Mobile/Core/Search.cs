@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -20,6 +20,7 @@ using System.ComponentModel;
 using System.Linq;
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Mobile;
 using Rock.Model;
@@ -42,7 +43,7 @@ namespace Rock.Blocks.Types.Mobile.Core
     #region Block Attributes
 
     [ComponentField( "Rock.Search.SearchContainer, Rock",
-        Name = "Search Component",
+        "Search Component",
         Description = "The search component to use when performing searches.",
         IsRequired = true,
         Key = AttributeKey.SearchComponent,
@@ -52,7 +53,7 @@ namespace Rock.Blocks.Types.Mobile.Core
         Description = "Determines if the input label for the search box should be displayed.",
         IsRequired = false,
         DefaultBooleanValue = true,
-        ControlType = Field.Types.BooleanFieldType.BooleanControlType.Toggle,
+        BooleanControlType = Rock.Enums.Controls.BooleanControlType.Toggle,
         Key = AttributeKey.ShowSearchLabel,
         Order = 1 )]
 
@@ -109,7 +110,7 @@ namespace Rock.Blocks.Types.Mobile.Core
         Description = "Determines if the keyboard should auto-focus into the search field when the page is attached.",
         IsRequired = false,
         DefaultBooleanValue = true,
-        ControlType = Field.Types.BooleanFieldType.BooleanControlType.Toggle,
+        BooleanControlType = Rock.Enums.Controls.BooleanControlType.Toggle,
         Key = AttributeKey.AutoFocusKeyboard,
         Order = 9 )]
 
@@ -276,7 +277,7 @@ namespace Rock.Blocks.Types.Mobile.Core
         /// Gets the result item template.
         /// </summary>
         /// <value>The result item template.</value>
-        protected string ResultItemTemplate => Rock.Field.Types.BlockTemplateFieldType.GetTemplateContent( GetAttributeValue( AttributeKey.ResultItemTemplate ) );
+        protected string ResultItemTemplate => Field.Helper.GetBlockTemplateContent( GetAttributeValue( AttributeKey.ResultItemTemplate ) );
 
         /// <summary>
         /// Gets the detail navigation action.
@@ -370,7 +371,7 @@ namespace Rock.Blocks.Types.Mobile.Core
                 var personEntityTypeId = EntityTypeCache.Get( Rock.SystemGuid.EntityType.PERSON ).Id;
                 if ( entity.TypeId == personEntityTypeId )
                 {
-                    viewModel.ViewedCount = new PersonService( new RockContext() ).Get( entity.Id )?.ViewedCount;
+                    viewModel.ViewedCount = new PersonService( RockApp.Current.CreateRockContext() ).Get( entity.Id )?.ViewedCount;
                 }
             }
 

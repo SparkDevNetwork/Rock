@@ -1,0 +1,537 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div ref="blockElement">
+        <NotificationBox v-if="blockError" alertType="warning" v-html="blockError"></NotificationBox>
+
+        <NotificationBox v-if="errorMessage" alertType="danger" v-html="errorMessage"></NotificationBox>
+        <DetailBlock v-if="!blockError"
+                     v-model:mode="panelMode"
+                     :name="panelName"
+                     :entityKey="entityKey"
+                     :isAuditHidden="true"
+                     :isDeleteVisible="false"
+                     :isEditVisible="isEditable && options.canEdit"
+                     :isSecurityHidden="true"
+                     :editFooterActions="editFooterActions"
+                     @cancelEdit="onCancelEdit"
+                     @edit="onEdit"
+                     @save="onSave">
+            <template v-if="!isNewTransaction" #headerActions>
+                <span class="label label-info">
+                    Batch: #{{ headerBag?.batchId }}
+                </span>
+                <span class="label label-success">
+                    {{ toCurrencyOrNull(headerTotalAmount, options.currencyInfo) }}
+                </span>
+                <span class="label label-default">
+                    <i class="ti ti-gift"></i>
+                    {{ headerBag?.transactionType?.text }}
+                </span>
+            </template>
+            <template #view>
+                <NotificationBox v-if="options.canEdit == false" alertType="info" heading="Note">
+                    Because this Financial Transaction belongs to a batch that is either automated or is closed, so editing is not enabled
+                </NotificationBox>
+                <ViewPanel :modelValue="transactionViewBag" :options="options" />
+            </template>
+
+            <template #edit>
+                <RockForm ref="editForm" :formResetKey="formResetKey" @submit="onFormValid">
+                    <EditPanel :key="editPanelKey" v-model="transactionEditBag" :options="options" @propertyChanged="baseBlock.onPropertyChanged" />
+                </RockForm>
+            </template>
+
+            <template #footerSecondaryActions v-if="transactionViewBag?.canRefund && panelMode === DetailPanelMode.View">
+                <div class="d-flex gap-2">
+                    <RockButton
+                                btnType="default"
+                                @click="onRefundOpen">Refund</RockButton>
+
+                    <div v-if="transactionViewBag.batchId" class="d-flex gap-2">
+                        <a v-if="previousTransactionUrl"
+                           :href="previousTransactionUrl"
+                           class="btn btn-default btn-sm">
+                            <i class="fa fa-chevron-left"></i> Back
+                        </a>
+
+                        <a v-if="nextTransactionUrl"
+                           :href="nextTransactionUrl"
+                           class="btn btn-default btn-sm">
+                            Next <i class="fa fa-chevron-right"></i>
+                        </a>
+                    </div>
+                </div>
+            </template>
+        </DetailBlock>
+    </div>
+    <Modal
+           v-model="isRefundOpen"
+           title="Refund"
+           saveText="Save"
+           @save="onRefundSave"
+           @closeModal="onRefundClose">
+
+        <div class="row">
+            <div class="col-md-6">
+                <CurrencyBox v-model="refundAmount"
+                             label="Amount"
+                             :maximumValue="maximumRefundAmount"
+                             rules="required" />
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6">
+                <DefinedValuePicker v-model="refundReason"
+                                    label="Refund Reason"
+                                    :definedTypeGuid="options.refundReasonTypesGuid ?? ''"
+                                    :showBlankItem="false"
+                                    help="Choose why this transaction was refunded."
+                                    rules="required" />
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-12">
+                <TextBox v-model="refundReasonSummary"
+                         label="Refund Details"
+                         textMode="multiline"
+                         help="Add any details that explain the refund." />
+            </div>
+        </div>
+
+        <div class="row" v-if="canProcess">
+            <div class="col-md-6">
+                <CheckBox v-model="processThroughGateway"
+                          label="Process Refund Through Financial Gateway." />
+            </div>
+        </div>
+    </Modal>
+
+</template>
+
+<script setup lang="ts">
+    import { computed, nextTick, onMounted, ref } from "vue";
+    import { newGuid } from "@Obsidian/Utility/guid";
+    import { scrollElementStartToTop } from "@Obsidian/Utility/dom";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import DetailBlock from "@Obsidian/Templates/detailBlock";
+    import { DetailPanelMode } from "@Obsidian/Enums/Controls/detailPanelMode";
+    import EditPanel from "./TransactionDetail/editPanel.partial.obs";
+    import ViewPanel from "./TransactionDetail/viewPanel.partial.obs";
+    import { onConfigurationValuesChanged, useConfigurationValues, useEntityDetailBlock, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
+    import { NavigationUrlKey } from "./TransactionDetail/types.partial";
+    import { DetailBlockBox } from "@Obsidian/ViewModels/Blocks/detailBlockBox";
+    import { TransactionBag } from "@Obsidian/ViewModels/Blocks/Finance/TransactionDetail/transactionBag";
+    import { BatchNavigationBag } from "@Obsidian/ViewModels/Blocks/Finance/TransactionDetail/batchNavigationBag";
+    import { TransactionDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Finance/TransactionDetail/transactionDetailOptionsBag";
+    import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import RockForm from "@Obsidian/Controls/rockForm.obs";
+    import Modal from "@Obsidian/Controls/modal.obs";
+    import CurrencyBox from "@Obsidian/Controls/currencyBox.obs";
+    import { isNullOrWhiteSpace } from "@Obsidian/Utility/stringUtils";
+    import { toCurrencyOrNull } from "@Obsidian/Utility/numberUtils";
+    import DefinedValuePicker from "@Obsidian/Controls/definedValuePicker.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import { PanelAction } from "@Obsidian/Types/Controls/panelAction";
+    import { BtnType } from "@Obsidian/Enums/Controls/btnType";
+    const config = useConfigurationValues<DetailBlockBox<TransactionBag, TransactionDetailOptionsBag>>();
+    const invokeBlockAction = useInvokeBlockAction();
+
+    const editForm = ref<InstanceType<typeof RockForm> | null>(null);
+    let isFormValid = false;
+
+    const previousTransactionUrl = ref<string | null>(null);
+    const nextTransactionUrl = ref<string | null>(null);
+
+
+    // All blocks auto reload when changing block settings unless there is an
+    // explicit reason not to (like using a custom reload function instead),
+    // in which case you can remove this code.
+    onConfigurationValuesChanged(useReloadBlock());
+
+    // #region Values
+
+    const blockError = ref("");
+    const errorMessage = ref("");
+
+    const isRefundOpen = ref(false);
+    const canProcess = ref(false);
+
+    const maximumRefundAmount = ref(0);
+
+    const refundAmount = ref(0);
+    const refundReason = ref<ListItemBag | null>(null);
+    const refundReasonSummary = ref("");
+    const processThroughGateway = ref(false);
+
+    const blockElement = ref<HTMLElement | undefined>();
+
+    const transactionViewBag = ref(config.entity);
+
+    const transactionEditBag = ref<ValidPropertiesBox<TransactionBag>>({
+        bag: {} as TransactionBag
+    });
+
+    const panelMode = ref<DetailPanelMode>(DetailPanelMode.View);
+
+    // Bumped after "Save Then Add" to remount the edit panel so child controls (e.g. the person picker's search text) reset for the next entry.
+    const editPanelKey = ref(0);
+
+    // Bumped after "Save Then Add" to clear the form's submit count so the next entry's required fields don't show errors before the user interacts.
+    const formResetKey = ref("");
+
+    const baseBlock = useEntityDetailBlock({
+        blockConfig: config,
+        entity: transactionEditBag
+    });
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    const isNewTransaction = computed((): boolean => {
+        return panelMode.value === DetailPanelMode.Add;
+    });
+
+    /** The bag used to populate header labels. Edit mode uses the edit bag so labels stay accurate during editing. */
+    const headerBag = computed(() => {
+        return panelMode.value === DetailPanelMode.Edit
+            ? transactionEditBag.value.bag
+            : transactionViewBag.value;
+    });
+
+    /** Live total computed from the current allocation rows so the header amount updates as the user edits. */
+    const headerTotalAmount = computed((): number => {
+        if (panelMode.value !== DetailPanelMode.Edit) {
+            return transactionViewBag.value?.totalAmount ?? 0;
+        }
+
+        const rows = transactionEditBag.value.bag?.transactionDetails?.rows ?? [];
+        return rows.reduce((sum, row) => sum + (row.amount ?? 0), 0);
+    });
+
+    /** Footer actions shown in the panel. "Save & Add Another" is only available when adding a new step with a selectable person. */
+    const editFooterActions = computed((): PanelAction[] => {
+        if (panelMode.value !== DetailPanelMode.Add || !transactionViewBag.value?.batchId) {
+            return [];
+        }
+
+        return [
+            {
+                title: "Save Then Add",
+                type: BtnType.Default,
+                handler: () => onSpecificAdd("add")
+            },
+            {
+                title: "Save Then View Batch",
+                type: BtnType.Default,
+                handler: () => onSpecificAdd("batch")
+            }
+        ];
+    });
+
+    /**
+     * The entity name to display in the block panel.
+     */
+    const panelName = computed((): string => {
+        return "Financial Transaction";
+    });
+
+    /**
+     * The identifier key value for this entity.
+     */
+    const entityKey = computed((): string => {
+        return transactionViewBag.value?.idKey ?? "";
+    });
+
+    /** Whether the current user has block-level edit permission. */
+    const isEditable = computed((): boolean => {
+        return config.isEditable === true;
+    });
+
+    /** Resolved options bag; falls back to safe defaults when config.options is absent. */
+    const options = computed((): TransactionDetailOptionsBag => {
+        return config.options ?? {} as TransactionDetailOptionsBag;
+    });
+
+    // #endregion Computed Values
+
+    // #region Functions
+
+    // #endregion Functions
+
+    // #region Event Handlers
+
+    onMounted(async () => {
+        const result = await invokeBlockAction<BatchNavigationBag>("GetBatchNavigation", {
+            key: transactionViewBag.value?.idKey
+        });
+
+        if (result.isSuccess && result.data) {
+            const base = window.location.pathname.replace(/\/[^/]+$/, "");
+
+            if (result.data.previousTransactionIdKey) {
+                previousTransactionUrl.value =
+                    `${base}/${result.data.previousTransactionIdKey}`;
+            }
+
+            if (result.data.nextTransactionIdKey) {
+                nextTransactionUrl.value =
+                    `${base}/${result.data.nextTransactionIdKey}`;
+            }
+        }
+    });
+
+    /**
+     * Event handler for the Cancel button being clicked while in Edit mode.
+     * Handles redirect to parent page if creating a new entity.
+     *
+     * @returns true if the panel should leave edit mode; false if it should stay in edit mode; or a string containing a redirect URL.
+     */
+    async function onCancelEdit(): Promise<boolean | string> {
+        if (!transactionEditBag.value.bag?.idKey) {
+            if (config.navigationUrls?.[NavigationUrlKey.ParentPage]) {
+                return config.navigationUrls[NavigationUrlKey.ParentPage];
+            }
+
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * Event handler for the Edit button being clicked. Request the edit
+     * details from the server and then enter edit mode.
+     *
+     * @returns true if the panel should enter edit mode; otherwise false.
+     */
+    async function onEdit(): Promise<boolean> {
+        const result = await invokeBlockAction<ValidPropertiesBox<TransactionBag>>("Edit", {
+            key: transactionViewBag.value?.idKey
+        });
+
+        if (result.isSuccess && result.data && result.data.bag) {
+            transactionEditBag.value = {
+                bag: result.data.bag,
+                validProperties: result.data.validProperties ?? Object.keys(result.data.bag)
+            };
+
+            return true;
+        }
+        else {
+            return false;
+        }
+    }
+
+    /** Sets the isFormValid flag when RockForm validation passes. Used by onSave and onSpecificAdd to gate the server call. */
+    function onFormValid(): void {
+        isFormValid = true;
+    }
+
+    /**
+     * Runs form validation and waits for it to complete.
+     * Returns true if all fields passed, false if any failed.
+     */
+    async function validateForm(): Promise<boolean> {
+        isFormValid = false;
+        await new Promise<void>(resolve => {
+            editForm.value?.submitForm().then(() => resolve());
+        });
+        return isFormValid;
+    }
+
+    /**
+     * Event handler for the panel's Save event. Validates the form then sends data to the server.
+     *
+     * @returns true if the panel should leave edit mode; false if it should stay in edit mode; or a string containing a redirect URL.
+     */
+    async function onSave(): Promise<boolean | string> {
+        if (!await validateForm()) {
+            return false;
+        }
+
+        errorMessage.value = "";
+
+        const result = await invokeBlockAction<ValidPropertiesBox<TransactionBag> | string>("Save", {
+            box: transactionEditBag.value
+        });
+
+        if (result.isSuccess && result.data) {
+            if (result.statusCode === 200 && typeof result.data === "object") {
+                transactionViewBag.value = result.data.bag;
+                return true;
+            }
+            else if (result.statusCode === 201 && typeof result.data === "string") {
+                return result.data;
+            }
+        }
+
+        errorMessage.value = result.errorMessage ?? "Unknown error while trying to save transaction.";
+        return false;
+    }
+
+    /**
+     * Submits the refund form to the server and refreshes the view bag on success.
+     */
+    async function onRefundSave(): Promise<void> {
+        errorMessage.value = "";
+
+        const result = await invokeBlockAction<TransactionBag>("Refund", {
+            key: transactionViewBag.value?.idKey,
+            bag: {
+                amount: refundAmount.value,
+                process: processThroughGateway.value,
+                refundReason: refundReason.value,
+                refundReasonSummary: refundReasonSummary.value
+            }
+        });
+
+        if (result.isSuccess) {
+            isRefundOpen.value = false;
+
+            // Refresh the block to show the new transaction line item.
+            transactionViewBag.value = result.data;
+        }
+        else {
+            errorMessage.value = result.errorMessage ?? "Unknown error while trying to refund.";
+        }
+    }
+
+    /**
+     * Opens the refund modal, fetching the maximum refundable amount from the server
+     * and pre-populating the amount field.
+     */
+    async function onRefundOpen(): Promise<void> {
+        canProcess.value = !isNullOrWhiteSpace(transactionViewBag.value?.transactionCode) && transactionViewBag.value?.financialGateway != null;
+        processThroughGateway.value = canProcess.value;
+        const result = await invokeBlockAction<number>("GetMaxRefundAmount", {
+            key: transactionViewBag.value?.idKey
+        });
+        maximumRefundAmount.value = result.data ?? 0;
+
+        refundAmount.value = maximumRefundAmount.value;
+
+        isRefundOpen.value = true;
+    }
+
+    /** Closes the refund modal without submitting. */
+    async function onRefundClose(): Promise<void> {
+        isRefundOpen.value = false;
+    }
+
+    /**
+     * Saves the current transaction and then either resets the form for a new entry
+     * or redirects to the batch detail page, based on the caller's choice.
+     *
+     * @param reloadAction "add" to stay and add another transaction; "batch" to navigate to the batch.
+     */
+    async function onSpecificAdd(reloadAction: "add" | "batch"): Promise<void> {
+        if (transactionEditBag.value.bag == null) {
+            return;
+        }
+
+        if (!await validateForm()) {
+            return;
+        }
+
+        const result = await invokeBlockAction<ValidPropertiesBox<TransactionBag>>("Save", {
+            box: transactionEditBag.value
+        });
+
+        if (!result.isSuccess || !result.data) {
+            errorMessage.value = result.errorMessage ?? "Unknown error while trying to save transaction.";
+            return;
+        }
+
+        if (result.statusCode === 201) {
+            if (reloadAction === "batch") {
+                const batchUrl = options.value.batchDetailPageUrl;
+                // Prefer the hashed IdKey so the URL works regardless of the
+                // site's DisablePredictableIds setting; fall back to integer Id.
+                const batchKey = transactionEditBag.value?.bag.batchIdKey
+                    ?? transactionEditBag.value?.bag.batchId?.toString();
+                if (batchUrl && batchKey) {
+                    window.location.href = `${batchUrl}?BatchId=${batchKey}`;
+                }
+                return;
+            }
+
+            const savedRows = transactionEditBag.value?.bag.transactionDetails?.rows ?? [];
+            const carryOverRow = options.value.carryOverAccount && savedRows.length === 1
+                ? {
+                    ...savedRows[0],
+                    id: 0,
+                    idKey: "",
+                    guid: newGuid(),
+                    amount: 0,
+                    feeAmount: undefined,
+                    feeCoverageAmount: undefined,
+                    foreignCurrencyAmount: undefined,
+                    summary: "",
+                    transactionId: 0
+                }
+                : undefined;
+
+            const persistedDefaults: TransactionBag = {
+                batchId: transactionEditBag.value?.bag.batchId,
+                transactionDateTime: transactionEditBag.value?.bag.transactionDateTime,
+                transactionType: transactionEditBag.value?.bag.transactionType,
+                sourceType: transactionEditBag.value?.bag.sourceType,
+                paymentDetail: transactionEditBag.value?.bag.paymentDetail
+                    ? {
+                        currencyType: transactionEditBag.value.bag.paymentDetail.currencyType,
+                        creditCardType: transactionEditBag.value.bag.paymentDetail.creditCardType,
+                        isCreditCard: transactionEditBag.value.bag.paymentDetail.isCreditCard
+                    }
+                    : undefined,
+                nonCashAssetType: transactionEditBag.value?.bag.nonCashAssetType,
+                transactionDetails: carryOverRow
+                    ? { rows: [carryOverRow], rowsToDelete: [] }
+                    : undefined,
+                canRefund: false,
+                id: 0,
+                idKey: "",
+                isRefund: false,
+                showAsAnonymous: false,
+                totalAmount: 0
+            };
+
+            // Wipe the view bag clean, then apply persisted defaults for next add
+            transactionEditBag.value.bag = {} as TransactionBag;
+            transactionEditBag.value = {
+                ...transactionEditBag.value,
+                bag: { ...persistedDefaults }
+            };
+
+            // Remount the edit panel so child controls reset (clears the lingering person-search text).
+            editPanelKey.value++;
+
+            // Clear the form's submit count so the fresh entry's required fields don't render as errored.
+            formResetKey.value = newGuid();
+
+            await nextTick();
+            if (blockElement.value) {
+                scrollElementStartToTop(blockElement.value);
+            }
+        }
+    }
+
+    // #endregion Event Handlers
+
+    // Handle any initial error conditions or the need to go into edit mode.
+    if (config.errorMessage) {
+        blockError.value = config.errorMessage;
+    }
+    else if (!config.entity) {
+        blockError.value = "The specified transaction could not be viewed.";
+    }
+    else if (!config.entity.idKey) {
+        transactionEditBag.value = { bag: config.entity };
+        panelMode.value = DetailPanelMode.Add;
+    }
+</script>

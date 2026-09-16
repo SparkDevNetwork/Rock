@@ -20,8 +20,11 @@ using System.ComponentModel.Composition;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Web.UI.WebControls;
+
 using Rock.Data;
 using Rock.Model;
+using Rock.Net;
+using Rock.Obsidian.UI.GridField;
 
 namespace Rock.Reporting.DataSelect.Group
 {
@@ -151,6 +154,12 @@ namespace Rock.Reporting.DataSelect.Group
             return result;
         }
 #endif
+
+        /// <inheritdoc/>
+        public override ObsidianGridField GetObsidianGridField( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
+        {
+            return new HtmlObsidianGridField();
+        }
 
         #endregion
     }

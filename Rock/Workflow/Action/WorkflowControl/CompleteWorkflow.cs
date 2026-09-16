@@ -33,7 +33,13 @@ namespace Rock.Workflow.Action
     [Export(typeof(ActionComponent))]
     [ExportMetadata( "ComponentName", "Workflow Complete" )]
 
-    [WorkflowTextOrAttribute( "Status", "Status Attribute", "The status to set the workflow to when marking the workflow complete. <span class='tip tip-lava'></span>", false, "Completed", "", 0, "Status")]   
+    [WorkflowTextOrAttribute( "Status",
+        "Status Attribute",
+        Description = "The status to set the workflow to when marking the workflow complete. <span class='tip tip-lava'></span>",
+        IsRequired = false,
+        DefaultValue = "Completed",
+        Order = 0,
+        Key = "Status" )]   
     [Rock.SystemGuid.EntityTypeGuid( "EEDA4318-F014-4A46-9C76-4C052EF81AA1")]
     public class CompleteWorkflow : ActionComponent
     {

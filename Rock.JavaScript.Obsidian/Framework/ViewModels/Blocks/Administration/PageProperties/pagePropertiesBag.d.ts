@@ -120,9 +120,6 @@ export type PagePropertiesBag = {
      */
     order: number;
 
-    /** Gets or sets a value indicating the length of time (in seconds) in that rendered output is cached. This property is required. */
-    outputCacheDuration: number;
-
     /** Gets or sets a flag indicating whether breadcrumbs are displayed on Page */
     pageDisplayBreadCrumb: boolean;
 

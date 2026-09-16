@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -24,6 +24,7 @@ using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Enums.Event;
 using Rock.Event.InteractiveExperiences;
@@ -51,7 +52,7 @@ namespace Rock.Blocks.Event.InteractiveExperiences
     #region Block Attributes
 
     [LinkedPage( "Live Experience Page",
-        "The page that will provide the live experience preview.",
+        Description = "The page that will provide the live experience preview.",
         IsRequired = false,
         Key = AttributeKey.LiveExperiencePage,
         Order = 0 )]
@@ -105,7 +106,7 @@ namespace Rock.Blocks.Event.InteractiveExperiences
         /// <inheritdoc/>
         public override object GetObsidianBlockInitialization()
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var occurrenceService = new InteractiveExperienceOccurrenceService( rockContext );
                 var box = new ExperienceManagerInitializationBox();
@@ -243,7 +244,7 @@ namespace Rock.Blocks.Event.InteractiveExperiences
         [BlockAction]
         public BlockActionResult GetExperienceAnswers( string occurrenceKey )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var occurrenceIntegerId = IdHasher.Instance.GetId( occurrenceKey );
 

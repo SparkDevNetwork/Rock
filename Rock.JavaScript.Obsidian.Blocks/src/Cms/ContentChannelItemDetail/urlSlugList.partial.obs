@@ -1,0 +1,407 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="url-slug-list form-group">
+        <RockLabel :help="slugHelpText">URL Slug</RockLabel>
+
+        <div v-for="(slugRow, index) in modelValue"
+             :key="slugRow.id + '_' + slugRow.slug"
+             class="js-slug-row d-flex align-items-center mb-1">
+            <template v-if="editIndex === index">
+                <div class="slug-row-field">
+                    <span v-if="urlPrefix" class="text-muted">{{ urlPrefix }}</span>
+                    <div class="slug-row-input">
+                        <TextBox v-model="slugInput" class="mb-0" :maxLength="200" />
+                    </div>
+                </div>
+
+                <div class="slug-row-actions">
+                    <RockButton :btnType="BtnType.Link" :btnSize="BtnSize.ExtraSmall" class="text-info-strong" aria-label="Save" :disabled="isProcessing" @click="onSaveRow">
+                        <i class="ti ti-check"></i>
+                    </RockButton>
+
+                    <RockButton :btnType="BtnType.Link" :btnSize="BtnSize.ExtraSmall" class="text-info-strong" aria-label="Cancel" :disabled="isProcessing" @click="onCancelRow">
+                        <i class="ti ti-x"></i>
+                    </RockButton>
+                </div>
+            </template>
+            <template v-else>
+                <div class="slug-row-field">
+                    <span class="slug-row-text"><span v-if="urlPrefix" class="text-muted">{{ urlPrefix }}</span>{{ slugRow.slug }}</span>
+                </div>
+
+                <div class="slug-row-actions">
+                    <RockButton :btnType="BtnType.Link" :btnSize="BtnSize.ExtraSmall" class="text-info-strong" aria-label="Edit" :disabled="isProcessing || editIndex !== null" @click="onEditRow(index)">
+                        <i class="ti ti-pencil"></i>
+                    </RockButton>
+
+                    <RockButton :btnType="BtnType.Link"
+                                :btnSize="BtnSize.ExtraSmall"
+                                class="text-info-strong"
+                                aria-label="Remove"
+                                :disabled="isProcessing"
+                                @click="onRemoveRow(index)">
+                        <i class="ti ti-x"></i>
+                    </RockButton>
+                </div>
+            </template>
+        </div>
+
+        <div v-if="isAddRowShown" class="js-slug-row d-flex align-items-center mb-1">
+            <div class="slug-row-field">
+                <span v-if="urlPrefix" class="text-muted">{{ urlPrefix }}</span>
+                <div class="slug-row-input">
+                    <TextBox v-model="slugInput" class="mb-0" :maxLength="200" />
+                </div>
+            </div>
+
+            <div class="slug-row-actions">
+                <RockButton :btnType="BtnType.Link" :btnSize="BtnSize.ExtraSmall" class="text-info-strong" aria-label="Save" :disabled="isProcessing" @click="onSaveRow">
+                    <i class="ti ti-check"></i>
+                </RockButton>
+
+                <RockButton :btnType="BtnType.Link" :btnSize="BtnSize.ExtraSmall" class="text-info-strong" aria-label="Cancel" :disabled="isProcessing" @click="onCancelRow">
+                    <i class="ti ti-x"></i>
+                </RockButton>
+            </div>
+        </div>
+
+        <div v-if="isAddButtonShown">
+            <a class="btn btn-add btn-lg" href="#" title="Add" @click.prevent="onAddRow">
+                <i class="ti ti-square-plus"></i>
+            </a>
+        </div>
+
+        <NotificationBox v-if="errorMessage" alertType="warning" class="mt-2">
+            {{ errorMessage }}
+        </NotificationBox>
+    </div>
+</template>
+
+<style scoped>
+/* Fixed-width field column so the row actions land in the same place whether the
+   row is being viewed or edited, instead of the slug text flex-growing and pushing
+   the icons to the far edge of the panel. */
+.slug-row-field {
+    display: flex;
+    align-items: center;
+    flex: 0 1 34rem;
+    min-width: 0;
+}
+
+.slug-row-input {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+.slug-row-text {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* Breathing room between the field and the edit/save/cancel/remove icons. */
+.slug-row-actions {
+    display: flex;
+    align-items: center;
+    margin-left: var(--spacing-medium, 1rem);
+    white-space: nowrap;
+}
+</style>
+
+<script setup lang="ts">
+    import { computed, PropType, ref } from "vue";
+    import RockLabel from "@Obsidian/Controls/rockLabel.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import { useInvokeContentChannelItemDetailBlockAction } from "./utils.partial";
+    import { BtnType } from "@Obsidian/Enums/Controls/btnType";
+    import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
+    import { UrlSlugBag } from "@Obsidian/ViewModels/Blocks/Cms/ContentChannelItemDetail/urlSlugBag";
+
+    const props = defineProps({
+        /**
+         * The slug rows (v-model). Staged (Id 0) for new items; database-backed for
+         * existing items (immediate-commit semantics).
+         */
+        modelValue: {
+            type: Array as PropType<UrlSlugBag[]>,
+            required: true
+        },
+
+        /**
+         * The parent item IdKey (empty for a new item). Drives the existing-vs-new
+         * persistence branch and is sent to the slug block actions.
+         */
+        itemIdKey: {
+            type: String as PropType<string>,
+            default: ""
+        },
+
+        /**
+         * The channel-URL prefix shown before each slug.
+         */
+        urlPrefix: {
+            type: String as PropType<string>,
+            default: ""
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", _value: UrlSlugBag[]): void;
+    }>();
+
+    // #region Values
+
+    const invoker = useInvokeContentChannelItemDetailBlockAction();
+
+    const addRowIndex = -1;
+
+    const slugHelpText = "Rock automatically generates URLs for content channel items, but you can optionally define a custom URL for this item. Use lowercase letters, numbers, and dashes only.";
+
+    const defaultSaveError = "The URL slug could not be saved.";
+
+    const editIndex = ref<number | null>(null);
+    const slugInputRaw = ref("");
+    const errorMessage = ref("");
+    const isProcessing = ref(false);
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    /**
+     * Lowercases input as a UX nicety. The server MakeSlugValid is authoritative.
+     */
+    const slugInput = computed<string>({
+        get(): string {
+            return slugInputRaw.value;
+        },
+        set(value: string) {
+            slugInputRaw.value = value.toLowerCase();
+        }
+    });
+
+    /**
+     * True when the inline add row should be visible.
+     */
+    const isAddRowShown = computed((): boolean => editIndex.value === addRowIndex);
+
+    /**
+     * True when the add button should be visible (no row is currently being edited or added).
+     */
+    const isAddButtonShown = computed((): boolean => editIndex.value === null);
+
+    // #endregion Computed Values
+
+    // #region Event Handlers
+
+    /**
+     * Opens a new blank row for adding a slug.
+     */
+    function onAddRow(): void {
+        errorMessage.value = "";
+        slugInputRaw.value = "";
+        editIndex.value = addRowIndex;
+    }
+
+    /**
+     * Opens the specified row for editing.
+     */
+    function onEditRow(index: number): void {
+        errorMessage.value = "";
+        slugInputRaw.value = props.modelValue[index].slug ?? "";
+        editIndex.value = index;
+    }
+
+    /**
+     * Cancels the active add or edit without saving.
+     */
+    function onCancelRow(): void {
+        resetEdit();
+    }
+
+    /**
+     * Validates and saves the current add or edit row.
+     */
+    async function onSaveRow(): Promise<void> {
+        if (isProcessing.value) {
+            return;
+        }
+
+        const slugText = slugInputRaw.value.trim();
+
+        if (slugText === "") {
+            errorMessage.value = "Enter a URL slug.";
+            return;
+        }
+
+        // Capture edit target before the await so a later state change cannot
+        // redirect the result to the wrong row.
+        const targetIndex = editIndex.value;
+
+        if (targetIndex === null) {
+            return;
+        }
+
+        const isAdding = targetIndex === addRowIndex;
+        const existingRow = isAdding ? null : props.modelValue[targetIndex];
+
+        isProcessing.value = true;
+        errorMessage.value = "";
+
+        try {
+            if (props.itemIdKey === "") {
+                await stageSlug(slugText, isAdding, targetIndex);
+            }
+            else {
+                await commitSlug(slugText, isAdding, targetIndex, existingRow);
+            }
+        }
+        finally {
+            isProcessing.value = false;
+        }
+    }
+
+    /**
+     * Removes the specified slug row, committing immediately for existing items.
+     */
+    async function onRemoveRow(index: number): Promise<void> {
+        if (isProcessing.value) {
+            return;
+        }
+
+        errorMessage.value = "";
+
+        if (props.itemIdKey === "") {
+            // New item: drop the staged row client-side, no server call.
+            removeRow(index);
+            return;
+        }
+
+        // Existing item: delete immediately so the change survives a later Cancel.
+        const slugId = props.modelValue[index].id;
+
+        isProcessing.value = true;
+
+        try {
+            const result = await invoker.deleteSlug({
+                idKey: props.itemIdKey,
+                contentChannelItemSlugId: slugId
+            });
+
+            if (result.isSuccess) {
+                removeRow(index);
+            }
+            else {
+                errorMessage.value = result.errorMessage ?? "The URL slug could not be removed.";
+            }
+        }
+        finally {
+            isProcessing.value = false;
+        }
+    }
+
+    // #endregion Event Handlers
+
+    // #region Functions
+
+    /**
+     * Clears all edit state.
+     */
+    function resetEdit(): void {
+        editIndex.value = null;
+        slugInputRaw.value = "";
+        errorMessage.value = "";
+    }
+
+    /**
+     * Applies a row to the slug list (append when adding, replace otherwise) and
+     * emits the updated list to the parent.
+     */
+    function applyRow(row: UrlSlugBag, isAdding: boolean, targetIndex: number): void {
+        const newSlugs = [...props.modelValue];
+
+        if (isAdding) {
+            newSlugs.push(row);
+        }
+        else {
+            newSlugs.splice(targetIndex, 1, row);
+        }
+
+        emit("update:modelValue", newSlugs);
+    }
+
+    /**
+     * Removes a row by index and adjusts editIndex if a row above the active edit
+     * was removed, to prevent the edit from retargeting the wrong row.
+     */
+    function removeRow(index: number): void {
+        const newSlugs = [...props.modelValue];
+        newSlugs.splice(index, 1);
+
+        // Removing a row above the edited row shifts it down by one. The edited
+        // row never shows a remove button, and the add sentinel (-1) never satisfies
+        // this comparison.
+        if (editIndex.value !== null && editIndex.value > index) {
+            editIndex.value = editIndex.value - 1;
+        }
+
+        emit("update:modelValue", newSlugs);
+    }
+
+    /**
+     * For new items: fetches a channel-unique slug candidate and stages it (Id 0).
+     * Nothing is persisted until the parent Save transaction.
+     */
+    async function stageSlug(slugText: string, isAdding: boolean, targetIndex: number): Promise<void> {
+        const result = await invoker.getUniqueSlug({
+            idKey: "",
+            slug: slugText,
+            contentChannelItemSlugId: null
+        });
+
+        if (result.isSuccess && result.data?.slug) {
+            const candidate = result.data.slug;
+
+            // GetUniqueSlug only checks the database (empty for a new item), so guard
+            // against a duplicate among the already-staged rows here; otherwise the
+            // second row would be silently renamed (e.g. "my-slug-1") on save.
+            const isDuplicate = props.modelValue.some((row, rowIndex) =>
+                rowIndex !== targetIndex && (row.slug ?? "").toLowerCase() === candidate.toLowerCase());
+
+            if (isDuplicate) {
+                errorMessage.value = "That URL slug is already in the list.";
+                return;
+            }
+
+            applyRow({ id: 0, slug: candidate }, isAdding, targetIndex);
+            resetEdit();
+        }
+        else {
+            errorMessage.value = result.errorMessage ?? defaultSaveError;
+        }
+    }
+
+    /**
+     * For existing items: persists the slug immediately via block action and renders
+     * the server-normalized slug and Id.
+     */
+    async function commitSlug(slugText: string, isAdding: boolean, targetIndex: number, existingRow: UrlSlugBag | null): Promise<void> {
+        const result = await invoker.saveSlug({
+            idKey: props.itemIdKey,
+            slug: slugText,
+            contentChannelItemSlugId: existingRow ? existingRow.id : null
+        });
+
+        if (result.isSuccess && result.data) {
+            applyRow({ id: result.data.id, slug: result.data.slug }, isAdding, targetIndex);
+            resetEdit();
+        }
+        else {
+            errorMessage.value = result.errorMessage ?? defaultSaveError;
+        }
+    }
+
+    // #endregion Functions
+</script>

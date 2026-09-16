@@ -2,7 +2,7 @@ import { computed, defineComponent, ref, watch } from "vue";
 import { getFieldConfigurationProps, getFieldEditorProps } from "./utils";
 import DataViewPicker from "@Obsidian/Controls/dataViewPicker.obs";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
-import { ConfigurationValueKey } from "./dataViewField.partial";
+import { ConfigurationKey } from "./dataViewField.partial";
 import EntityTypePicker from "@Obsidian/Controls/entityTypePicker.obs";
 import { Guid } from "@Obsidian/Types";
 import { toGuidOrNull } from "@Obsidian/Utility/guid";
@@ -20,7 +20,7 @@ export const EditComponent = defineComponent({
         const internalValue = ref({} as ListItemBag | null);
 
         const entityTypeGuid = computed<Guid | null>(() => {
-            const entityType = JSON.parse(props.configurationValues[ConfigurationValueKey.EntityTypeName] ?? "{}") as ListItemBag;
+            const entityType = JSON.parse(props.configurationValues[ConfigurationKey.EntityTypeName] ?? "{}") as ListItemBag;
             return toGuidOrNull(entityType?.value);
         });
 
@@ -74,10 +74,10 @@ export const ConfigurationComponent = defineComponent({
 
             // Construct the new value that will be emitted if it is different
             // than the current value.
-            newValue[ConfigurationValueKey.EntityTypeName] = JSON.stringify(entityType.value ?? "");
+            newValue[ConfigurationKey.EntityTypeName] = JSON.stringify(entityType.value ?? "");
 
             // Compare the new value and the old value.
-            const anyValueChanged = newValue[ConfigurationValueKey.EntityTypeName] !== (props.modelValue[ConfigurationValueKey.EntityTypeName] ?? "");
+            const anyValueChanged = newValue[ConfigurationKey.EntityTypeName] !== (props.modelValue[ConfigurationKey.EntityTypeName] ?? "");
 
             // If any value changed then emit the new model value.
             if (anyValueChanged) {
@@ -105,12 +105,12 @@ export const ConfigurationComponent = defineComponent({
         // Watch for changes coming in from the parent component and update our
         // data to match the new information.
         watch(() => [props.modelValue, props.configurationProperties], () => {
-            entityType.value = JSON.parse(props.modelValue[ConfigurationValueKey.EntityTypeName] || "{}");
+            entityType.value = JSON.parse(props.modelValue[ConfigurationKey.EntityTypeName] || "{}");
         }, {
             immediate: true
         });
 
-        watch(entityType, val => maybeUpdateConfiguration(ConfigurationValueKey.EntityTypeName, JSON.stringify(val ?? "")));
+        watch(entityType, val => maybeUpdateConfiguration(ConfigurationKey.EntityTypeName, JSON.stringify(val ?? "")));
 
         return {
             entityType

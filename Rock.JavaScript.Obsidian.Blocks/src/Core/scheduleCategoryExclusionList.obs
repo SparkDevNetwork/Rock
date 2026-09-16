@@ -1,8 +1,8 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <NotificationBox v-if="!config.options?.canAdministrate" alertType="danger"><strong>Error</strong> You are not authorized to configure this page</NotificationBox>
+    <NotificationBox v-if="!config.options?.canAdministrate" alertType="info"><strong>Note</strong> Administrate access is required to edit the Schedule Category Exclusion List.</NotificationBox>
 
-    <Grid v-if="config.options?.canAdministrate && config.options?.isBlockVisible"
+    <Grid v-if="config.options?.isBlockVisible"
           :definition="config.gridDefinition ?? undefined"
           :data="gridDataSource"
           keyField="idKey"
@@ -12,8 +12,8 @@
           stickyHeader
           liveUpdates
           :showLaunchWorkflow="false"
-          :onAddItem="config.isAddEnabled ? onAddItem : undefined"
-          @selectItem="onSelectItem">
+          :onAddItem="config.isAddEnabled && config.options?.canAdministrate ? onAddItem : undefined"
+          :onSelectItem="config.options?.canAdministrate ? onSelectItem : undefined">
 
         <TextColumn name="title"
                     title="Title"

@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -20,7 +20,9 @@ using System.Linq;
 #if WEBFORMS
 using System.Web.UI;
 #endif
+
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.ViewModels.Utility;
@@ -47,7 +49,7 @@ namespace Rock.Field.Types
 
             if ( guid.HasValue )
             {
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     var groupName = new GroupService( rockContext ).GetSelect( guid.Value, a => a.Name );
 
@@ -89,7 +91,7 @@ namespace Rock.Field.Types
         {
             if ( Guid.TryParse( privateValue, out Guid guid ) )
             {
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     var group = new GroupService( rockContext ).GetNoTracking( guid );
                     if ( group != null )
@@ -131,7 +133,7 @@ namespace Rock.Field.Types
             Guid? guid = value.AsGuidOrNull();
             if ( guid.HasValue )
             {
-                rockContext = rockContext ?? new RockContext();
+                rockContext = rockContext ?? RockApp.Current.CreateRockContext();
                 return new GroupService( rockContext ).Get( guid.Value );
             }
 
@@ -145,27 +147,7 @@ namespace Rock.Field.Types
         /// <inheritdoc/>
         public override PersistedValues GetPersistedValues( string privateValue, Dictionary<string, string> privateConfigurationValues, IDictionary<string, object> cache )
         {
-            if ( string.IsNullOrWhiteSpace( privateValue ) )
-            {
-                return new PersistedValues
-                {
-                    TextValue = string.Empty,
-                    CondensedTextValue = string.Empty,
-                    HtmlValue = string.Empty,
-                    CondensedHtmlValue = string.Empty
-                };
-            }
-
-            var textValue = GetTextValue( privateValue, privateConfigurationValues );
-            var condensedTextValue = textValue.Truncate( CondensedTruncateLength );
-
-            return new PersistedValues
-            {
-                TextValue = textValue,
-                CondensedTextValue = condensedTextValue,
-                HtmlValue = textValue,
-                CondensedHtmlValue = condensedTextValue
-            };
+            return GetSimpleTextPersistedValues( privateValue, privateConfigurationValues );
         }
 
         #endregion
@@ -182,7 +164,7 @@ namespace Rock.Field.Types
                 return null;
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var groupId = new GroupService( rockContext ).GetId( guid.Value );
 
@@ -219,6 +201,11 @@ namespace Rock.Field.Types
             return new FieldTypeHints
             {
                 ValueFormat = $"A guid that represents a single entity from the Group table.",
+
+                // No Values, because every group in the database is far too many to
+                // enumerate. The format says what the value is, so this says where to
+                // go and find one.
+                Instructions = "To find the correct value, search the groups by name and use the guid of the one you want.",
             };
         }
 
@@ -271,7 +258,7 @@ namespace Rock.Field.Types
                 Guid? itemGuid = null;
                 if ( itemId.HasValue && itemId > 0 )
                 {
-                    using ( var rockContext = new RockContext() )
+                    using ( var rockContext = RockApp.Current.CreateRockContext() )
                     {
                         itemGuid = new GroupService( rockContext ).GetNoTracking( itemId.Value ).Guid;
                         return itemGuid?.ToString() ?? string.Empty;
@@ -298,7 +285,7 @@ namespace Rock.Field.Types
                 Guid? itemGuid = value.AsGuidOrNull();
                 if ( itemGuid.HasValue )
                 {
-                    using ( var rockContext = new RockContext() )
+                    using ( var rockContext = RockApp.Current.CreateRockContext() )
                     {
                         var group = new GroupService( rockContext ).Get( itemGuid.Value );
                         picker.SetValue( group );
@@ -320,7 +307,7 @@ namespace Rock.Field.Types
         public int? GetEditValueAsEntityId( System.Web.UI.Control control, Dictionary<string, ConfigurationValue> configurationValues )
         {
             Guid guid = GetEditValue( control, configurationValues ).AsGuid();
-            var item = new GroupService( new RockContext() ).Get( guid );
+            var item = new GroupService( RockApp.Current.CreateRockContext() ).Get( guid );
             return item != null ? item.Id : ( int? ) null;
         }
 
@@ -332,7 +319,7 @@ namespace Rock.Field.Types
         /// <param name="id">The identifier.</param>
         public void SetEditValueFromEntityId( System.Web.UI.Control control, Dictionary<string, ConfigurationValue> configurationValues, int? id )
         {
-            var item = new GroupService( new RockContext() ).Get( id ?? 0 );
+            var item = new GroupService( RockApp.Current.CreateRockContext() ).Get( id ?? 0 );
             string guidValue = item != null ? item.Guid.ToString() : string.Empty;
             SetEditValue( control, configurationValues, guidValue );
         }

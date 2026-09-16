@@ -31,11 +31,24 @@ export type ContentChannelDetailOptionsBag = {
     /** Gets or sets the content channel list. */
     contentChannelList?: ListItemBag[] | null;
 
+    /**
+     * Gets or sets the Content Channel Item attribute keys defined on the
+     * selected Content Channel Type. Channel-level item attributes must not reuse these keys.
+     */
+    contentChannelTypeItemAttributeKeys?: string[] | null;
+
     /** Gets or sets the content channel types. */
     contentChannelTypes?: ListItemBag[] | null;
 
     /** Gets or sets the content control types. */
     contentControlTypes?: ListItemBag[] | null;
+
+    /**
+     * Gets or sets the content library inherited item attributes
+     * from the Content Channel Type. These are provided on initial
+     * load so dropdown selections persist before the async fetch completes.
+     */
+    contentLibraryInheritedItemAttributes?: ListItemBag[] | null;
 
     /** Gets or sets the current page URL. */
     currentPageUrl?: string | null;

@@ -18,7 +18,7 @@ import { computed, defineComponent, ref, watch } from "vue";
 import { getFieldConfigurationProps, getFieldEditorProps } from "./utils";
 import RegistrationInstancePicker from "@Obsidian/Controls/registrationInstancePicker.obs";
 import RegistrationTemplatePicker from "@Obsidian/Controls/registrationTemplatePicker.obs";
-import { ConfigurationValueKey } from "./registrationInstanceField.partial";
+import { ConfigurationKey } from "./registrationInstanceField.partial";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
 export const EditComponent = defineComponent({
@@ -36,7 +36,7 @@ export const EditComponent = defineComponent({
 
         // Get the selected registration template guid.
         const registrationTemplateGuid = computed((): string | null | undefined => {
-            const registrationTemplate = JSON.parse(props.configurationValues[ConfigurationValueKey.RegistrationTemplate] || "{}") as ListItemBag;
+            const registrationTemplate = JSON.parse(props.configurationValues[ConfigurationKey.RegistrationTemplate] || "{}") as ListItemBag;
             return registrationTemplate?.value;
         });
 
@@ -91,10 +91,10 @@ export const ConfigurationComponent = defineComponent({
 
             // Construct the new value that will be emitted if it is different
             // than the current value.
-            newValue[ConfigurationValueKey.RegistrationTemplate] = JSON.stringify(registrationTemplate.value) ?? "";
+            newValue[ConfigurationKey.RegistrationTemplate] = JSON.stringify(registrationTemplate.value) ?? "";
 
             // Compare the new value and the old value.
-            const anyValueChanged = newValue[ConfigurationValueKey.RegistrationTemplate] !== props.modelValue[ConfigurationValueKey.RegistrationTemplate];
+            const anyValueChanged = newValue[ConfigurationKey.RegistrationTemplate] !== props.modelValue[ConfigurationKey.RegistrationTemplate];
 
             // If any value changed then emit the new model value.
             if (anyValueChanged) {
@@ -121,13 +121,13 @@ export const ConfigurationComponent = defineComponent({
         // Watch for changes coming in from the parent component and update our
         // data to match the new information.
         watch(() => [props.modelValue, props.configurationProperties], () => {
-            registrationTemplate.value  = JSON.parse(props.modelValue[ConfigurationValueKey.RegistrationTemplate] || "{}") as ListItemBag;
+            registrationTemplate.value = JSON.parse(props.modelValue[ConfigurationKey.RegistrationTemplate] || "{}") as ListItemBag;
         }, {
             immediate: true
         });
 
         // Watch for changes in properties that only require a local UI update.
-        watch(registrationTemplate, () => maybeUpdateConfiguration(ConfigurationValueKey.RegistrationTemplate, JSON.stringify(registrationTemplate.value)));
+        watch(registrationTemplate, () => maybeUpdateConfiguration(ConfigurationKey.RegistrationTemplate, JSON.stringify(registrationTemplate.value)));
 
         return {
             registrationTemplate,

@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -25,6 +25,7 @@ using System.Web.UI.WebControls;
 #endif
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.ViewModels.Blocks.Reporting.ServiceMetricsEntry;
@@ -93,7 +94,7 @@ namespace Rock.Field.Types
                     return globalAttributesCache.OrganizationLocationFormatted;
                 }
 
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     var service = new LocationService( rockContext );
                     var location = service.GetNoTracking( locGuid.Value );
@@ -140,7 +141,7 @@ namespace Rock.Field.Types
 
                 var globalAttributesCache = GlobalAttributesCache.Get();
 
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     try
                     {
@@ -171,12 +172,13 @@ namespace Rock.Field.Types
                 if ( publicValue.Contains( "POINT" ) || publicValue.Contains( "POLYGON" ) )
                 {
                     DbGeography geoPoint = DbGeography.FromText( publicValue.FromJsonOrNull<string>() );
+                    var location = new LocationService( RockApp.Current.CreateRockContext() ).GetByGeoPoint( geoPoint );
 #else
                 if ( publicValue.Contains( "POINT" ) )
                 {
                     var geoPoint = new NetTopologySuite.IO.WKTReader().Read( publicValue.FromJsonOrNull<string>() ) as NetTopologySuite.Geometries.Point;
 #endif
-                    var location = new LocationService( new RockContext() ).GetByGeoPoint( geoPoint );
+                    var location = new LocationService( RockApp.Current.CreateRockContext() ).GetByGeoPoint( geoPoint );
                     return location.Guid.ToString();
                 }
             }
@@ -189,7 +191,7 @@ namespace Rock.Field.Types
         {
             if ( Guid.TryParse( privateValue, out Guid guid ) )
             {
-                var location = new LocationService( new RockContext() ).Get( guid );
+                var location = new LocationService( RockApp.Current.CreateRockContext() ).Get( guid );
                 if ( location != null )
                 {
                     if ( location.IsNamedLocation )
@@ -310,7 +312,7 @@ namespace Rock.Field.Types
             Guid? guid = value.AsGuidOrNull();
             if ( guid.HasValue )
             {
-                rockContext = rockContext ?? new RockContext();
+                rockContext = rockContext ?? RockApp.Current.CreateRockContext();
                 return new LocationService( rockContext ).Get( guid.Value );
             }
 
@@ -344,7 +346,7 @@ namespace Rock.Field.Types
                 var locGuid = privateValue.AsGuidOrNull();
                 if ( locGuid.HasValue )
                 {
-                    using ( var rockContext = new RockContext() )
+                    using ( var rockContext = RockApp.Current.CreateRockContext() )
                     {
                         var service = new LocationService( rockContext );
                         var location = service.GetNoTracking( new Guid( privateValue ) );
@@ -379,7 +381,7 @@ namespace Rock.Field.Types
                 return null;
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var locationId = new LocationService( rockContext ).GetId( guid.Value );
 
@@ -416,6 +418,22 @@ namespace Rock.Field.Types
 
         #endregion
 
+        #region Field Type Hints
+
+        /// <inheritdoc/>
+        internal override FieldTypeHints GetFieldHints( Dictionary<string, string> privateConfigurationValues )
+        {
+            // No Values. The set is unbounded or depends on other configuration, so
+            // the shape of the value and where to get one is what can be described.
+            return new FieldTypeHints
+            {
+                IsCompleteList = false,
+                ValueFormat = "The guid of a row in the Location table. Not its id or idKey.",
+                Instructions = "To find the correct value, look up the location and take its guid."
+            };
+        }
+
+        #endregion
         #region WebForms
 #if WEBFORMS
 
@@ -631,7 +649,7 @@ namespace Rock.Field.Types
                 Guid? locationGuid = value.AsGuidOrNull();
                 if ( locationGuid.HasValue )
                 {
-                    using ( var rockContext = new RockContext() )
+                    using ( var rockContext = RockApp.Current.CreateRockContext() )
                     {
                         var location = new LocationService( rockContext ).Get( locationGuid.Value );
                         picker.SetBestPickerModeForLocation( location );
@@ -655,7 +673,7 @@ namespace Rock.Field.Types
         public int? GetEditValueAsEntityId( Control control, Dictionary<string, ConfigurationValue> configurationValues )
         {
             Guid guid = GetEditValue( control, configurationValues ).AsGuid();
-            var itemId = new LocationService( new RockContext() ).GetId( guid );
+            var itemId = new LocationService( RockApp.Current.CreateRockContext() ).GetId( guid );
             return itemId;
         }
 
@@ -667,7 +685,7 @@ namespace Rock.Field.Types
         /// <param name="id">The identifier.</param>
         public void SetEditValueFromEntityId( Control control, Dictionary<string, ConfigurationValue> configurationValues, int? id )
         {
-            var itemGuid = new LocationService( new RockContext() ).GetGuid( id ?? 0 );
+            var itemGuid = new LocationService( RockApp.Current.CreateRockContext() ).GetGuid( id ?? 0 );
             SetEditValue( control, configurationValues, itemGuid?.ToString() );
         }
 

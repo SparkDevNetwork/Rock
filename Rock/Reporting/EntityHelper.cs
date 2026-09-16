@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -21,7 +21,9 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Reflection;
 using System.Web;
+
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Field;
 using Rock.Model;
@@ -525,7 +527,7 @@ namespace Rock.Reporting
                 // Special processing for Entity Type "ConnectionRequest" to handle sub-types that are distinguished by ConnectionOpportunityId.
                 if ( attribute.EntityTypeId == EntityTypeCache.GetId( typeof( ConnectionRequest ) ) && attribute.EntityTypeQualifierColumn == "ConnectionOpportunityId" )
                 {
-                    using ( var rockContext = new RockContext() )
+                    using ( var rockContext = RockApp.Current.CreateRockContext() )
                     {
                         var connectionOpportunityName = new ConnectionOpportunityService( rockContext ).GetSelect( attribute.EntityTypeQualifierValue.AsInteger(), s => s.Name );
                         if ( connectionOpportunityName != null )
@@ -540,7 +542,7 @@ namespace Rock.Reporting
                 // Special processing for Entity Type "ContentChannelItem" to handle sub-types that are distinguished by ContentChannelTypeId.
                 if ( attribute.EntityTypeId == EntityTypeCache.GetId( typeof( ContentChannelItem ) ) && attribute.EntityTypeQualifierColumn == "ContentChannelTypeId" )
                 {
-                    using ( var rockContext = new RockContext() )
+                    using ( var rockContext = RockApp.Current.CreateRockContext() )
                     {
                         var contentChannelTypeName = new ContentChannelTypeService( rockContext ).GetSelect( attribute.EntityTypeQualifierValue.AsInteger(), s => s.Name );
                         if ( contentChannelTypeName != null )
@@ -555,7 +557,7 @@ namespace Rock.Reporting
                 // Special processing for Entity Type "Registration" to handle sub-types that are distinguished by RegistrationTemplateId.
                 if ( attribute.EntityTypeId == EntityTypeCache.GetId( typeof( Registration ) ) && attribute.EntityTypeQualifierColumn == "RegistrationTemplateId" )
                 {
-                    using ( var rockContext = new RockContext() )
+                    using ( var rockContext = RockApp.Current.CreateRockContext() )
                     {
                         var RegistrationTemplateName = new RegistrationTemplateService( rockContext ).GetSelect( attribute.EntityTypeQualifierValue.AsInteger(), s => s.Name );
                         if ( RegistrationTemplateName != null )
@@ -597,7 +599,7 @@ namespace Rock.Reporting
                     int workflowTypeId = attribute.EntityTypeQualifierValue.AsInteger();
                     if ( _workflowTypeNameLookup == null )
                     {
-                        using ( var rockContext = new RockContext() )
+                        using ( var rockContext = RockApp.Current.CreateRockContext() )
                         {
                             _workflowTypeNameLookup = new WorkflowTypeService( rockContext ).Queryable().ToDictionary( k => k.Id, v => v.Name );
                         }

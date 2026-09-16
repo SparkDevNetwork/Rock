@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -65,13 +65,6 @@ namespace Rock.SystemGuid
         /// The Finance Users Group guid
         /// </summary>
         public const string GROUP_FINANCE_USERS = "2539CF5D-E2CE-4706-8BBF-4A9DF8E763E9";
-
-        /// <summary>
-        /// The security group used by mobile app
-        /// </summary>
-        /// <remarks>Use <see cref="GROUP_MOBILE_APPLICATION_USERS"/></remarks>
-        [RockObsolete( "1.15" )]
-        public const string GROUP_MOBILE_APP = "EDD336D5-1429-41D9-8D41-2581A05F0E16";
 
         /// <summary>
         /// Get the photo request application group

@@ -1,0 +1,333 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Modal v-model="isVisible"
+           title="Move Person"
+           saveText="Move"
+           saveAutoDisable
+           saveAutoLoading
+           :onSave="onSave"
+           @closeModal="onClose">
+        <NotificationBox v-if="errorMessage"
+                         alertType="danger"
+                         :dismissible="true"
+                         @dismiss="errorMessage = ''">{{ errorMessage }}</NotificationBox>
+
+        <div v-if="showAttendanceSelector">
+            <NotificationBox alertType="info">{{ instructionText }}</NotificationBox>
+
+            <DropDownList v-model="selectedAttendanceValue"
+                          label="Attendance"
+                          :items="attendanceItems" />
+        </div>
+
+        <div class="row">
+            <div class="col-md-4">
+                <DropDownList v-model="selectedScheduleValue"
+                              label="Schedule"
+                              :items="scheduleItems"
+                              :showBlankItem="!hasSingleSchedule"
+                              rules="required" />
+            </div>
+            <div class="col-md-4">
+                <DropDownList v-model="selectedLocationValue"
+                              label="Location"
+                              :items="locationItems"
+                              :showBlankItem="!hasSingleLocation"
+                              rules="required" />
+            </div>
+            <div class="col-md-4">
+                <DropDownList v-model="selectedGroupValue"
+                              label="Group"
+                              :items="groupItems"
+                              :showBlankItem="!hasSingleGroup"
+                              rules="required" />
+            </div>
+        </div>
+
+        <NotificationBox v-if="warningMessage"
+                         alertType="warning"
+                         class="mt-spacing-md mb-spacing-none">{{ warningMessage }}</NotificationBox>
+    </Modal>
+</template>
+
+<script setup lang="ts">
+    import { computed, PropType, ref, watch } from "vue";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import Modal from "@Obsidian/Controls/modal.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import { useVModelPassthrough } from "@Obsidian/Utility/component";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { EnRouteMovePersonOptionsBag } from "@Obsidian/ViewModels/Blocks/CheckIn/Manager/EnRoute/enRouteMovePersonOptionsBag";
+    import { EnRouteMovePersonRequestBag } from "@Obsidian/ViewModels/Blocks/CheckIn/Manager/EnRoute/enRouteMovePersonRequestBag";
+    import { EnRouteMovePersonResponseBag } from "@Obsidian/ViewModels/Blocks/CheckIn/Manager/EnRoute/enRouteMovePersonResponseBag";
+
+    const props = defineProps({
+        modelValue: {
+            type: Boolean as PropType<boolean>,
+            required: true
+        },
+
+        options: {
+            type: Object as PropType<EnRouteMovePersonOptionsBag | null>,
+            default: null
+        },
+
+        onSave: {
+            type: Function as PropType<(request: EnRouteMovePersonRequestBag) => Promise<EnRouteMovePersonResponseBag | null>>,
+            required: true
+        },
+
+        onAttendanceChanged: {
+            type: Function as PropType<(attendanceId: number) => Promise<EnRouteMovePersonOptionsBag | null>>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: boolean): void;
+    }>();
+
+    const isVisible = useVModelPassthrough(props, "modelValue", emit);
+
+    // #region Values
+
+    const attendanceItems = ref<ListItemBag[]>([]);
+    const scheduleItems = ref<ListItemBag[]>([]);
+    const locationItems = ref<ListItemBag[]>([]);
+    const groupItems = ref<ListItemBag[]>([]);
+
+    const selectedAttendanceValue = ref<string>("");
+    const selectedScheduleValue = ref<string>("");
+    const selectedLocationValue = ref<string>("");
+    const selectedGroupValue = ref<string>("");
+
+    const showAttendanceSelector = ref(false);
+    const instructionText = ref<string>("");
+
+    const errorMessage = ref<string>("");
+    const warningMessage = ref<string>("");
+
+    // Tracks whether we are in the middle of a programmatic reset
+    // to avoid triggering attendance-change callbacks.
+    let isResetting = false;
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    const hasSingleSchedule = computed((): boolean => scheduleItems.value.length === 1);
+    const hasSingleLocation = computed((): boolean => locationItems.value.length === 1);
+    const hasSingleGroup = computed((): boolean => groupItems.value.length === 1);
+
+    // #endregion Computed Values
+
+    // #region Functions
+
+    /**
+     * Populates the Schedule dropdown from the server-provided options and
+     * pre-selects the currently-occupied schedule when it still appears in
+     * the list.
+     */
+    function loadSchedule(opts: EnRouteMovePersonOptionsBag | null): void {
+        scheduleItems.value = opts?.schedules ?? [];
+
+        const currentValue = opts?.currentScheduleId != null ? String(opts.currentScheduleId) : "";
+        if (currentValue && scheduleItems.value.some(i => i.value === currentValue)) {
+            selectedScheduleValue.value = currentValue;
+        }
+        else if (scheduleItems.value.length === 1) {
+            selectedScheduleValue.value = scheduleItems.value[0].value ?? "";
+        }
+        else {
+            selectedScheduleValue.value = "";
+        }
+    }
+
+    /**
+     * Filters the Location dropdown by the selected Schedule.
+     */
+    function loadLocation(opts: EnRouteMovePersonOptionsBag | null, currentLocationId?: number | null): void {
+        const scheduleKey = selectedScheduleValue.value;
+        locationItems.value = (opts?.locationsBySchedule?.[scheduleKey]) ?? [];
+
+        const currentValue = currentLocationId != null ? String(currentLocationId) : "";
+        if (currentValue && locationItems.value.some(i => i.value === currentValue)) {
+            selectedLocationValue.value = currentValue;
+        }
+        else if (locationItems.value.length === 1) {
+            selectedLocationValue.value = locationItems.value[0].value ?? "";
+        }
+        else {
+            selectedLocationValue.value = "";
+        }
+    }
+
+    /**
+     * Filters the Group dropdown by the selected Schedule + Location.
+     */
+    function loadGroup(opts: EnRouteMovePersonOptionsBag | null, currentGroupId?: number | null): void {
+        const delimiter = opts?.groupListItemKeyDelimiter ?? "|";
+        const key = `${selectedScheduleValue.value}${delimiter}${selectedLocationValue.value}`;
+        groupItems.value = (opts?.groupsByScheduleAndLocation?.[key]) ?? [];
+
+        const currentValue = currentGroupId != null ? String(currentGroupId) : "";
+        if (currentValue && groupItems.value.some(i => i.value === currentValue)) {
+            selectedGroupValue.value = currentValue;
+        }
+        else if (groupItems.value.length === 1) {
+            selectedGroupValue.value = groupItems.value[0].value ?? "";
+        }
+        else {
+            selectedGroupValue.value = "";
+        }
+    }
+
+    /**
+     * Applies the server payload to the local form state each time the
+     * modal opens or the options change.
+     */
+    function resetFromOptions(opts: EnRouteMovePersonOptionsBag | null): void {
+        isResetting = true;
+        errorMessage.value = "";
+        warningMessage.value = "";
+
+        showAttendanceSelector.value = opts?.hasMultipleAttendances ?? false;
+        instructionText.value = opts?.instructionText ?? "";
+        attendanceItems.value = opts?.attendances ?? [];
+
+        if (attendanceItems.value.length > 0) {
+            selectedAttendanceValue.value = attendanceItems.value[0].value ?? "";
+        }
+
+        loadSchedule(opts);
+        loadLocation(opts, opts?.currentLocationId);
+        loadGroup(opts, opts?.currentGroupId);
+        isResetting = false;
+    }
+
+    function onClose(): void {
+        warningMessage.value = "";
+        errorMessage.value = "";
+    }
+
+    // #endregion Functions
+
+    // #region Event Handlers
+
+    async function onSave(): Promise<void> {
+        errorMessage.value = "";
+        warningMessage.value = "";
+
+        const attendanceId = parseInt(selectedAttendanceValue.value, 10);
+        const scheduleId = parseInt(selectedScheduleValue.value, 10);
+        const locationId = parseInt(selectedLocationValue.value, 10);
+        const groupId = parseInt(selectedGroupValue.value, 10);
+
+        if (!attendanceId) {
+            errorMessage.value = "Please select an attendance record.";
+            return;
+        }
+        if (!scheduleId) {
+            errorMessage.value = "Please select a schedule.";
+            return;
+        }
+        if (!locationId) {
+            errorMessage.value = "Please select a location.";
+            return;
+        }
+        if (!groupId) {
+            errorMessage.value = "Please select a group.";
+            return;
+        }
+
+        const request: EnRouteMovePersonRequestBag = {
+            attendanceId,
+            scheduleId,
+            locationId,
+            groupId
+        };
+
+        const response = await props.onSave(request);
+
+        if (!response) {
+            return;
+        }
+
+        if (response.warningMessage) {
+            warningMessage.value = response.warningMessage;
+            return;
+        }
+
+        if (response.errorMessage) {
+            errorMessage.value = response.errorMessage;
+            return;
+        }
+
+        // Success: parent closes the modal and rebinds the grid.
+    }
+
+    // #endregion Event Handlers
+
+    // #region Watchers
+
+    watch(isVisible, (open) => {
+        if (open) {
+            resetFromOptions(props.options);
+        }
+    });
+
+    watch(() => props.options, (opts) => {
+        if (isVisible.value) {
+            resetFromOptions(opts);
+        }
+    });
+
+    watch(selectedAttendanceValue, async (newVal) => {
+        if (isResetting) {
+            return;
+        }
+
+        warningMessage.value = "";
+        errorMessage.value = "";
+
+        const attendanceId = parseInt(newVal, 10);
+        if (!attendanceId || !props.onAttendanceChanged) {
+            return;
+        }
+
+        const refreshedOptions = await props.onAttendanceChanged(attendanceId);
+        if (refreshedOptions) {
+            isResetting = true;
+            loadSchedule(refreshedOptions);
+            loadLocation(refreshedOptions, refreshedOptions.currentLocationId);
+            loadGroup(refreshedOptions, refreshedOptions.currentGroupId);
+            isResetting = false;
+        }
+    });
+
+    watch(selectedScheduleValue, () => {
+        if (isResetting) {
+            return;
+        }
+        warningMessage.value = "";
+        loadLocation(props.options, props.options?.currentLocationId);
+        loadGroup(props.options, props.options?.currentGroupId);
+    });
+
+    watch(selectedLocationValue, () => {
+        if (isResetting) {
+            return;
+        }
+        warningMessage.value = "";
+        loadGroup(props.options, props.options?.currentGroupId);
+    });
+
+    watch(selectedGroupValue, () => {
+        if (isResetting) {
+            return;
+        }
+        warningMessage.value = "";
+    });
+
+    // #endregion Watchers
+</script>

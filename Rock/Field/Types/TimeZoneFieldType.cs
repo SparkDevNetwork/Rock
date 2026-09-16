@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -21,6 +21,7 @@ using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 #endif
+
 using Rock.Attribute;
 using Rock.ViewModels.Utility;
 using Rock.Web.UI.Controls;
@@ -59,6 +60,20 @@ namespace Rock.Field.Types
             publicConfigurationValues["timezones"] = timeZones.ToCamelCaseJson( false, true );
 
             return publicConfigurationValues;
+        }
+
+        #endregion
+
+        #region Value Hinting
+
+        /// <inheritdoc/>
+        internal override FieldTypeHints GetFieldHints( Dictionary<string, string> privateConfigurationValues )
+        {
+            return new FieldTypeHints
+            {
+                IsCompleteList = false,
+                ValueFormat = "The identifier of a Windows time zone, as in 'Eastern Standard Time', not the display name shown in a picker and not an IANA identifier such as 'America/New_York'."
+            };
         }
 
         #endregion

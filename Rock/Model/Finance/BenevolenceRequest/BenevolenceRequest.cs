@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -21,7 +21,10 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
+
 using Rock.Data;
+using Rock.Enums.Security;
+using Rock.Security;
 
 namespace Rock.Model
 {
@@ -47,6 +50,7 @@ namespace Rock.Model
         [MaxLength( 50 )]
         [DataMember( IsRequired = true )]
         [Previewable]
+        [StringValidation( StringValidationProfile.Name )]
         public string FirstName { get; set; }
 
         /// <summary>
@@ -59,6 +63,7 @@ namespace Rock.Model
         [MaxLength( 50 )]
         [DataMember( IsRequired = true )]
         [Previewable]
+        [StringValidation( StringValidationProfile.Name )]
         public string LastName { get; set; }
 
         /// <summary>
@@ -71,6 +76,7 @@ namespace Rock.Model
         [MaxLength( 254 )]
         [Previewable]
         [EmailAddressValidation]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string Email { get; set; }
 
         /// <summary>
@@ -90,6 +96,7 @@ namespace Rock.Model
         /// </value>
         [Required]
         [DataMember( IsRequired = true )]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string RequestText { get; set; }
 
         /// <summary>
@@ -110,6 +117,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 50 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string HomePhoneNumber { get; set; }
 
         /// <summary>
@@ -120,6 +128,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 50 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string CellPhoneNumber { get; set; }
 
         /// <summary>
@@ -130,6 +139,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 50 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string WorkPhoneNumber { get; set; }
 
         /// <summary>
@@ -149,6 +159,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 100 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string GovernmentId { get; set; }
 
         /// <summary>
@@ -169,6 +180,7 @@ namespace Rock.Model
         /// A <see cref="System.String"/> representing the summary of the request result.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string ResultSummary { get; set; }
 
         /// <summary>
@@ -198,6 +210,7 @@ namespace Rock.Model
         /// The provided next steps.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string ProvidedNextSteps { get; set; }
 
         /// <summary>

@@ -236,6 +236,9 @@ export type GroupTypeBag = {
      */
     isLeavingChatChannelAllowed: boolean;
 
+    /** Gets or sets a flag indicating if the Meeting Style field is available on Groups of this type. */
+    isMeetingStyleEnabled: boolean;
+
     /** Gets or sets a value indicating whether the Group Type has Peer Network enabled. */
     isPeerNetworkEnabled: boolean;
 

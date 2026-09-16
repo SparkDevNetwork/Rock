@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -23,6 +23,7 @@ using System.Linq.Expressions;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Net;
@@ -152,7 +153,7 @@ function() {
             string[] selectionValues = selection.Split( '|' );
             if ( selectionValues.Length >= 1 )
             {
-                var contentChannelType = new ContentChannelTypeService( new RockContext() ).Get( selectionValues[0].AsGuid() );
+                var contentChannelType = new ContentChannelTypeService( RockApp.Current.CreateRockContext() ).Get( selectionValues[0].AsGuid() );
 
                 if ( contentChannelType != null )
                 {
@@ -176,7 +177,7 @@ function() {
             contentChannelTypePicker.Label = "Content Channel Type";
 
             contentChannelTypePicker.Items.Clear();
-            var contentChannelTypeList = new ContentChannelTypeService( new RockContext() ).Queryable().OrderBy( a => a.Name ).ToList();
+            var contentChannelTypeList = new ContentChannelTypeService( RockApp.Current.CreateRockContext() ).Queryable().OrderBy( a => a.Name ).ToList();
             foreach ( var contentChannelType in contentChannelTypeList )
             {
                 contentChannelTypePicker.Items.Add( new ListItem( contentChannelType.Name, contentChannelType.Id.ToString() ) );
@@ -209,7 +210,7 @@ function() {
         {
             int? contentChannelTypeId = ( controls[0] as RockDropDownList ).SelectedValueAsId();
             Guid? contentChannelTypeGuid = null;
-            var contentChannelType = new ContentChannelTypeService( new RockContext() ).Get( contentChannelTypeId ?? 0 );
+            var contentChannelType = new ContentChannelTypeService( RockApp.Current.CreateRockContext() ).Get( contentChannelTypeId ?? 0 );
             if ( contentChannelType != null )
             {
                 contentChannelTypeGuid = contentChannelType.Guid;
@@ -229,7 +230,7 @@ function() {
             string[] selectionValues = selection.Split( '|' );
             if ( selectionValues.Length >= 1 )
             {
-                var contentChannelType = new ContentChannelTypeService( new RockContext() ).Get( selectionValues[0].AsGuid() );
+                var contentChannelType = new ContentChannelTypeService( RockApp.Current.CreateRockContext() ).Get( selectionValues[0].AsGuid() );
                 if ( contentChannelType != null )
                 {
                     ( controls[0] as RockDropDownList ).SetValue( contentChannelType.Id );
@@ -251,7 +252,7 @@ function() {
             string[] selectionValues = selection.Split( '|' );
             if ( selectionValues.Length >= 1 )
             {
-                var contentChannelType = new ContentChannelTypeService( new RockContext() ).Get( selectionValues[0].AsGuid() );
+                var contentChannelType = new ContentChannelTypeService( RockApp.Current.CreateRockContext() ).Get( selectionValues[0].AsGuid() );
                 int? contentChannelTypeId = null;
                 if ( contentChannelType != null )
                 {

@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -19,7 +19,10 @@ using System.Collections.Generic;
 using System.Configuration;
 using System.Text;
 using System.Web;
+
 using RestSharp;
+
+using Rock.Configuration;
 
 namespace Rock.Store
 {
@@ -98,6 +101,11 @@ namespace Rock.Store
         /// <returns></returns>
         public static string GetOrganizationKey()
         {
+            if ( RockApp.Current.InitializationSettings.DeploymentEnvironment == Enums.Configuration.DeploymentEnvironment.Demo )
+            {
+                return string.Empty;
+            }
+
             string encryptedStoreKey = Rock.Web.SystemSettings.GetValue( "StoreOrganizationKey" );
 
             string decryptedStoreKey = Rock.Security.Encryption.DecryptString( encryptedStoreKey );
@@ -124,6 +132,11 @@ namespace Rock.Store
         /// <returns></returns>
         public static string GetEncodedOrganizationKey()
         {
+            if ( RockApp.Current.InitializationSettings.DeploymentEnvironment == Enums.Configuration.DeploymentEnvironment.Demo )
+            {
+                return string.Empty;
+            }
+
             var organizationKey = StoreService.GetOrganizationKey();
             return HttpUtility.UrlEncode( Convert.ToBase64String( Encoding.UTF8.GetBytes( organizationKey ) ) );
         }
@@ -134,6 +147,11 @@ namespace Rock.Store
         /// <param name="storeKey">The store key.</param>
         public static void SetOrganizationKey( string storeKey )
         {
+            if ( RockApp.Current.InitializationSettings.DeploymentEnvironment == Enums.Configuration.DeploymentEnvironment.Demo )
+            {
+                return;
+            }
+
             Rock.Web.SystemSettings.SetValue( "StoreOrganizationKey", Rock.Security.Encryption.EncryptString( storeKey ) );
         }
 
@@ -142,6 +160,11 @@ namespace Rock.Store
         /// </summary>
         public static void RevokeOrganizationKey()
         {
+            if ( RockApp.Current.InitializationSettings.DeploymentEnvironment == Enums.Configuration.DeploymentEnvironment.Demo )
+            {
+                return;
+            }
+
             Rock.Web.SystemSettings.SetValue( "StoreOrganizationKey", null );
         }
     }

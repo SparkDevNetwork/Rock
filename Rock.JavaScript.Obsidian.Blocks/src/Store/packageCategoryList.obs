@@ -1,0 +1,55 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div v-if="storeErrorMessage" class="alert alert-warning">
+        <h4>Store Currently Not Available</h4>
+        <p>We're sorry, the Rock Store is currently not available. Check back soon!</p>
+        <small><em>{{ storeErrorMessage }}</em></small>
+    </div>
+
+    <div v-else-if="isHeaderStyle" class="panel panel-block store-categories">
+        <div class="panel-body" style="margin-bottom: -6px;">
+            <ul class="nav nav-pills store-category-list">
+                <li v-for="category in categories" :key="category.id" class="active">
+                    <a :href="getCategoryUrl(category)">{{ category.name }}</a>
+                </li>
+            </ul>
+        </div>
+    </div>
+
+    <div v-else class="panel panel-block">
+        <div class="panel-heading">
+            <h1 class="panel-title"><i class="ti ti-list"></i> View By Category</h1>
+        </div>
+
+        <ul class="list-group">
+            <li v-for="category in categories" :key="category.id" class="list-group-item">
+                <a :href="getCategoryUrl(category)">{{ category.name }}</a>
+            </li>
+        </ul>
+    </div>
+</template>
+
+<script setup lang="ts">
+    import { computed } from "vue";
+    import { onConfigurationValuesChanged, useConfigurationValues, useReloadBlock } from "@Obsidian/Utility/block";
+    import { PackageCategoryListBox } from "@Obsidian/ViewModels/Blocks/Store/packageCategoryListBox";
+    import { PackageCategoryListItemBag } from "@Obsidian/ViewModels/Blocks/Store/packageCategoryListItemBag";
+
+    const config = useConfigurationValues<PackageCategoryListBox>();
+
+    const categories = computed((): PackageCategoryListItemBag[] => config.categories ?? []);
+    const storeErrorMessage = computed((): string => config.storeErrorMessage ?? "");
+    const detailPageUrl = computed((): string => config.detailPageUrl ?? "");
+    const isHeaderStyle = computed((): boolean => config.displayStyle === "Header");
+
+    /**
+     * Builds the detail page URL for a category, appending the CategoryId and
+     * CategoryName query string parameters the detail page expects.
+     */
+    function getCategoryUrl(category: PackageCategoryListItemBag): string {
+        const categoryName = encodeURIComponent(category.name ?? "");
+        return `${detailPageUrl.value}?CategoryId=${category.id}&CategoryName=${categoryName}`;
+    }
+
+    onConfigurationValuesChanged(useReloadBlock());
+</script>

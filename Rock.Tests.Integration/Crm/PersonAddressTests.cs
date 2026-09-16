@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -16,9 +16,10 @@
 //
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
-using Rock.Tests.Shared.TestFramework;
+using Rock.Tests.Integration.TestFramework.Database;
 using Rock.Web.Cache;
 
 namespace Rock.Tests.Integration.Crm
@@ -38,7 +39,7 @@ namespace Rock.Tests.Integration.Crm
         [TestMethod]
         public void GetHomeLocation_WhereNoMappedLocationsExist_ReturnsMostRecentLocation()
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var person = new Person()
             {
                 Guid = _PersonGuidTestPerson1.AsGuid(),
@@ -93,7 +94,7 @@ namespace Rock.Tests.Integration.Crm
         [TestMethod]
         public void GetHomeLocation_WhereMostRecentIsNotMapped_ReturnsEarlierMappedLocation()
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var person = new Person()
             {
                 Guid = _PersonGuidTestPerson1.AsGuid(),

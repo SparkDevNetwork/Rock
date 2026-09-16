@@ -1,0 +1,106 @@
+
+// PHOTO LIGHTBOX (ROCK COMPONENT)
+
+
+// =============================================================
+// Table of Content
+//  + Backdrop
+//  + Transform Wrapper
+//  + Frame
+//  + Enter/Leave Transition
+// =============================================================
+
+
+// ======================== BACKDROP ========================
+
+// From Rock.JavaScript.Obsidian.Blocks/src/CheckIn/Manager/personLeft.obs.
+// Backs the click-to-enlarge profile photo overlay. A simpler duplicate of
+// this backdrop shell (same properties, different class name) exists in
+// Rock.JavaScript.Obsidian.Blocks/src/Crm/PersonDetail/Bio/photoLightbox.partial.obs
+// as .bio-photo-lightbox. That block should be migrated onto a shared
+// Framework/Controls/photoLightbox.obs component consuming these classes
+// once one is built, rather than keeping its own separate, simpler copy —
+// personLeft.obs's version (frame/transform split, grow-from-thumbnail
+// animation) is the more capable implementation and should be the one that
+// survives the merge.
+.person-photo-lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: 1060;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(0, 0, 0, 0.7);
+  cursor: zoom-out;
+}
+
+// ====================== END BACKDROP ======================
+
+
+// ======================== TRANSFORM WRAPPER ========================
+
+// Width, height, and the enlarging transform are all set as inline styles at
+// runtime by the Vue component (personLeft.obs's onLightboxBeforeEnter/
+// onLightboxEnter/onLightboxLeave/onWindowResize) — this class is a pure
+// styling anchor with no properties of its own.
+//
+// It deliberately carries no border-radius/overflow. An element with its own
+// transform (especially a scale) gets promoted to a composited layer, and
+// browsers can fail to clip that layer's contents to a border-radius set on
+// the SAME element. Splitting the radius/clip out to the untransformed
+// .person-photo-lightbox-frame child below avoids that failure mode.
+.person-photo-lightbox-transform {
+}
+
+// ====================== END TRANSFORM WRAPPER ======================
+
+
+// ======================== FRAME ========================
+
+// Owns the rounded-corner clip. Kept separate from .person-photo-lightbox-transform
+// (see above) so the transform's composited layer never has to clip its own
+// border-radius.
+.person-photo-lightbox-frame {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  border-radius: var(--rounded-medium);
+
+  img {
+    // object-fit: cover (not contain) so the image always fills the frame's
+    // box on every side — there's always real photo content at the corners
+    // for border-radius to clip. contain can letterbox when the frame's
+    // aspect ratio (the source thumbnail's) doesn't match the photo's own,
+    // leaving a transparent corner gap with nothing visible for the radius
+    // to cut into.
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+}
+
+// ====================== END FRAME ======================
+
+
+// ======================== ENTER/LEAVE TRANSITION ========================
+
+// Vue's v-if unmounts the overlay immediately on close, so a plain CSS
+// transition never gets a chance to play on exit — the <Transition>
+// component holds the element in the DOM for the leave phase instead, which
+// is what lets these classes drive a real close animation.
+//
+// This only fades the backdrop. The image's grow-from-the-thumbnail motion
+// is computed from the live thumbnail position in personLeft.obs's JS hooks,
+// since that motion depends on a DOM rect that CSS alone cannot know.
+.lightbox-enter-active,
+.lightbox-leave-active {
+  transition: opacity 0.2s ease;
+}
+
+.lightbox-enter-from,
+.lightbox-leave-to {
+  opacity: 0;
+}
+
+// ====================== END ENTER/LEAVE TRANSITION ======================

@@ -1,0 +1,105 @@
+<template>
+    <GalleryAndResult :value="{ variant, isBorderless }"
+                      :importCode="importCode"
+                      :exampleCode="exampleCode"
+                      enableReflection>
+
+        <div class="row">
+            <div class="col-md-4">
+                <KpiTile :variant="variant"
+                         :isBorderless="isBorderless"
+                         :isValueAnimated="isValueAnimated"
+                         :label="label"
+                         :value="value"
+                         :help="help || undefined"
+                         :valueColor="valueColor || undefined">
+                    <template v-if="footerText" #footer>
+                        {{ footerText }}
+                    </template>
+                </KpiTile>
+            </div>
+        </div>
+
+        <template #settings>
+            <div class="row">
+                <div class="col-md-3">
+                    <DropDownList label="Variant" v-model="variant" :items="variantItems" :showBlankItem="false" />
+                </div>
+                <div class="col-md-3">
+                    <TextBox label="Label" v-model="label" />
+                </div>
+                <div class="col-md-3">
+                    <NumberBox label="Value" v-model="value" />
+                </div>
+                <div class="col-md-3">
+                    <CheckBox label="Is Borderless" v-model="isBorderless" />
+                </div>
+                <div class="col-md-3">
+                    <CheckBox label="Is Value Animated" v-model="isValueAnimated" help="Counts a numeric value up on mount and on change." />
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-3">
+                    <TextBox label="Help" v-model="help" />
+                </div>
+                <div class="col-md-3">
+                    <TextBox label="Footer" v-model="footerText" help="Rendered via the #footer slot." />
+                </div>
+                <div class="col-md-3">
+                    <TextBox label="Value Color" v-model="valueColor" help="Any CSS color, e.g. var(--color-success-strong)." />
+                </div>
+            </div>
+        </template>
+    </GalleryAndResult>
+</template>
+
+<script setup lang="ts">
+    import { computed, ref } from "vue";
+    import GalleryAndResult from "./common/galleryAndResult.partial.obs";
+    import KpiTile from "@Obsidian/Controls/kpiTile.obs";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import NumberBox from "@Obsidian/Controls/numberBox.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { getSfcControlImportPath } from "./common/utils.partial";
+
+    const variant = ref<"default" | "light">("default");
+    const isBorderless = ref(false);
+    const isValueAnimated = ref(true);
+    const label = ref("Total Views");
+    const value = ref<number>(1234);
+    const help = ref("The total number of views over the selected period.");
+    const footerText = ref("+12% vs. Previous Period");
+    const valueColor = ref("");
+
+    const variantItems: ListItemBag[] = [
+        { value: "default", text: "Default" },
+        { value: "light", text: "Light" }
+    ];
+
+    const importCode = getSfcControlImportPath("kpiTile");
+    const exampleCode = computed((): string => {
+        const attributes = [
+            `variant="${variant.value}"`,
+            isBorderless.value ? "isBorderless" : "",
+            isValueAnimated.value ? "isValueAnimated" : "",
+            `label="${label.value}"`,
+            `:value="${value.value}"`,
+            help.value ? `help="${help.value}"` : "",
+            valueColor.value ? `valueColor="${valueColor.value}"` : ""
+        ].filter(attribute => attribute !== "");
+
+        // Align each attribute on its own line under the opening tag, matching the Kpi gallery.
+        const openingTag = `<KpiTile ${attributes.join("\n         ")}`;
+
+        if (!footerText.value) {
+            return `${openingTag} />`;
+        }
+
+        return `${openingTag}>
+    <template #footer>${footerText.value}</template>
+</KpiTile>`;
+    });
+</script>

@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -19,7 +19,10 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
+
 using Rock.Data;
+using Rock.Enums.Security;
+using Rock.Security;
 using Rock.Web.Cache;
 
 namespace Rock.Model
@@ -45,6 +48,7 @@ namespace Rock.Model
         [Required]
         [MaxLength( 100 )]
         [DataMember( IsRequired = true )]
+        [StringValidation( StringValidationProfile.Name )]
         public string Name { get; set; }
 
         /// <summary>
@@ -54,6 +58,7 @@ namespace Rock.Model
         /// A <see cref="System.String"/> containing a description or summary about this WorkflowFormBuilderTemplate.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.LavaAndBasicHtml )]
         public string Description { get; set; }
 
         /// <summary>
@@ -72,6 +77,7 @@ namespace Rock.Model
         /// The form header.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string FormHeader { get; set; }
 
         /// <summary>
@@ -81,6 +87,7 @@ namespace Rock.Model
         /// The footer.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string FormFooter { get; set; }
 
         /// <summary>
@@ -99,6 +106,7 @@ namespace Rock.Model
         /// The person entry settings json.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string PersonEntrySettingsJson { get; set; }
 
         /// <summary>
@@ -108,6 +116,7 @@ namespace Rock.Model
         /// The confirmation email settings json.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string ConfirmationEmailSettingsJson { get; set; }
 
         /// <summary>
@@ -117,6 +126,7 @@ namespace Rock.Model
         /// The completion settings json.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string CompletionSettingsJson { get; set; }
 
         /// <summary>

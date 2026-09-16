@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -22,6 +22,7 @@ using System.Data.Entity;
 using System.Linq;
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Obsidian.UI;
@@ -249,15 +250,16 @@ namespace Rock.Blocks.Cms
         {
             if ( _categoryGuid == null )
             {
-                var categoryId = this.PageParameter( PageParameterKey.CategoryId ).AsIntegerOrNull();
+                var categoryParam = this.PageParameter( PageParameterKey.CategoryId );
+                var category = categoryParam.IsNotNullOrWhiteSpace() ? CategoryCache.Get( categoryParam, !PageCache.Layout.Site.DisablePredictableIds ) : null;
 
-                if ( !categoryId.HasValue )
+                if ( category == null )
                 {
                     _categoryGuid = this.PageParameter( PageParameterKey.CategoryGuid ).AsGuidOrNull();
                 }
                 else
                 {
-                    _categoryGuid = CategoryCache.Get( categoryId.Value )?.Guid;
+                    _categoryGuid = category.Guid;
                 }
             }
 
@@ -276,7 +278,7 @@ namespace Rock.Blocks.Cms
         [BlockAction]
         public BlockActionResult Delete( string key )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var entityService = new AdaptiveMessageService( rockContext );
                 var entity = entityService.Get( key, !PageCache.Layout.Site.DisablePredictableIds );
@@ -312,7 +314,7 @@ namespace Rock.Blocks.Cms
         [BlockAction]
         public BlockActionResult ReorderItem( string idKey, string beforeIdKey )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var adaptiveMessageCategoryService = new AdaptiveMessageCategoryService( rockContext );
                 var categoryGuid = GetCategoryGuid();

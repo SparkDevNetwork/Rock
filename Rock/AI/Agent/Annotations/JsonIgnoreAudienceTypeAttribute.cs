@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -21,7 +21,7 @@ namespace Rock.AI.Agent.Annotations
     /// Marks a property as ignored when being serialized for the specified
     /// type of audience.
     /// </summary>
-    internal class JsonIgnoreAudienceTypeAttribute : System.Attribute
+    public class JsonIgnoreAudienceTypeAttribute : System.Attribute
     {
         /// <summary>
         /// The type of audience that will cause the property to be ignored.

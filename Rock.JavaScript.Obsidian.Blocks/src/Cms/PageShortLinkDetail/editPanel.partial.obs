@@ -81,7 +81,7 @@
 
         <ContentSection v-if="isScheduled"
                         icon="ti ti-route-alt-left"
-                        :isCollapsed="!isScheduledRedirectsExpandedByDefault"
+                        :isCollapsed="isScheduledRedirectsCollapsed"
                         title="Scheduled Redirects">
             <ContentStack description="Below, you can provide alternate URLs that will be activated according to the schedule you set. The configuration above will serve as the default when no scheduled links are active."
                           headerLocation="top"
@@ -255,7 +255,7 @@
     const isEditScheduledRedirectVisible = ref(false);
     const editScheduledRedirect = ref<ScheduledRedirect>({ id: "" });
 
-    const isScheduledRedirectsExpandedByDefault = isScheduled.value;
+    const isScheduledRedirectsCollapsed = ref(!isScheduled.value);
 
     // The properties that are being edited. This should only contain
     // objects returned by propertyRef().
@@ -456,6 +456,12 @@
     // array) and then emit a new object defined as newValue.
     watch([attributeValues, utmSource, utmMedium, utmCampaign, utmTerm, utmContent, ...propRefs], () => {
         updateModelValue();
+    });
+
+    watch(isScheduled, (newValue) => {
+        if (newValue) {
+            isScheduledRedirectsCollapsed.value = false;
+        }
     });
 
     watch(scheduledRedirects, () => {

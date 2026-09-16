@@ -27,21 +27,36 @@ import { CommunicationFlowDetailCommunicationTemplateBag } from "@Obsidian/ViewM
 
 /** The communication flow communication details for the Communication Flow Detail block. */
 export type CommunicationFlowCommunicationBag = {
+    /** Gets or sets the communication template that provides this message's content. */
     communicationTemplate?: CommunicationFlowDetailCommunicationTemplateBag | null;
 
+    /** Gets or sets the medium (such as Email or SMS) used to send this message. */
     communicationType: CommunicationType;
 
+    /** Gets or sets the number of days to wait, after the previous message in the flow, before this message is sent. */
     daysToWait: number;
 
+    /** Gets or sets the unique identifier of this message within the flow. */
     guid: Guid;
 
+    /**
+     * Gets or sets a value indicating whether this message has associated performance data,
+     * meaning it has already been sent to recipients as part of at least one flow instance.
+     */
+    hasPerformanceData: boolean;
+
+    /** Gets or sets the name of this message. */
     name?: string | null;
 
+    /** Gets or sets the position of this message within the flow's sequence of messages. */
     order: number;
 
+    /** Gets or sets the email address a test of this message is sent to. */
     testEmailAddress?: string | null;
 
+    /** Gets or sets the phone number a test of this message is sent to. */
     testSmsPhoneNumber?: string | null;
 
+    /** Gets or sets the time of day at which this message is sent. */
     timeToSend?: string | null;
 };

@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -14,14 +14,16 @@
 // limitations under the License.
 // </copyright>
 //
-using Rock.Model;
-using Rock.Rest.Filters;
-using Rock.Web.UI.Controls;
-using System.Collections.Generic;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Web;
 using System.Web.Http;
+
+using Rock.Configuration;
+using Rock.Model;
+using Rock.Rest.Filters;
+using Rock.Web.UI.Controls;
 
 namespace Rock.Rest.Controllers
 {
@@ -30,23 +32,6 @@ namespace Rock.Rest.Controllers
     /// </summary>
     public partial class FinancialAccountsController
     {
-        /// <summary>
-        /// Gets the children. Please consider this endpoint obsolete as of v 1.14.1, use ~api/FinancialAccounts/GetChildrenBySearchTerm instead
-        /// </summary>
-        /// <param name="activeOnly">if set to <c>true</c> [active only].</param>
-        /// <param name="displayPublicName">if set to <c>true</c> [display public name].</param>
-        /// <param name="searchTerm">The searchTerm.</param>
-        /// <returns>IQueryable&lt;AccountTreeViewItem&gt;.</returns>
-        [Authenticate, Secured]
-        [System.Web.Http.Route( "api/FinancialAccounts/GetChildrenBySearchTerm/{activeOnly}/{displayPublicName}/{searchTerm}" )]
-        [Rock.SystemGuid.RestActionGuid( "C8715F2B-BAE6-4F92-A651-AD8CC7B104F1" )]
-        [RockObsolete( "1.14.1" )]
-        [Obsolete( "Use api/FinancialAccounts/GetChildrenBySearchTerm instead" )]
-        public IQueryable<AccountTreeViewItem> GetChildrenBySearchTermObsolete( bool activeOnly, bool displayPublicName, string searchTerm )
-        {
-            return GetSearchTermData( activeOnly, displayPublicName, searchTerm );
-        }
-
         /// <summary>
         /// Gets the children.
         /// </summary>
@@ -72,7 +57,7 @@ namespace Rock.Rest.Controllers
         [Rock.SystemGuid.RestActionGuid( "1E007DCA-3785-4EFF-A09D-8F9A034450AA" )]
         public IEnumerable<int> GetParentIds( int id )
         {
-            var accountService = new FinancialAccountService( new Data.RockContext() );
+            var accountService = new FinancialAccountService( RockApp.Current.CreateRockContext() );
             return accountService.GetAllAncestorIds( id )?.Reverse();
         }
 
@@ -86,7 +71,7 @@ namespace Rock.Rest.Controllers
         [Rock.SystemGuid.RestActionGuid( "1858BC66-D4BA-48CE-9866-154B902AE7A4" )]
         public Dictionary<string, List<string>> GetParentIds( [FromUri] IEnumerable<string> ids )
         {
-            var accountService = new FinancialAccountService( new Data.RockContext() );
+            var accountService = new FinancialAccountService( RockApp.Current.CreateRockContext() );
             var retVal = new Dictionary<string, List<string>>();
 
             foreach ( var id in ids )
@@ -106,22 +91,6 @@ namespace Rock.Rest.Controllers
         }
 
         /// <summary>
-        /// Gets the children. Please consider this endpoint obsolete as of v 1.14.1, use ~api/FinancialAccounts/GetChildren/{id} instead.
-        /// </summary>
-        /// <param name="id">The identifier.</param>
-        /// <param name="activeOnly">if set to <c>true</c> [active only].</param>
-        /// <returns></returns>
-        [Authenticate, Secured]
-        [System.Web.Http.Route( "api/FinancialAccounts/GetChildren/{id}/{activeOnly}" )]
-        [Rock.SystemGuid.RestActionGuid( "B1C3FF53-CE30-4006-8ABC-5A513933CAF0" )]
-        [RockObsolete( "1.14.1" )]
-        [Obsolete( "Use api/FinancialAccounts/GetChildren/{id} instead" )]
-        public IQueryable<AccountTreeViewItem> GetChildrenObsolete( int id, bool activeOnly )
-        {
-            return GetChildrenData( id, activeOnly, true );
-        }
-
-        /// <summary>
         /// Gets the children.
         /// </summary>
         /// <param name="id">The identifier.</param>
@@ -136,21 +105,6 @@ namespace Rock.Rest.Controllers
         }
 
         /// <summary>
-        /// Gets the inactive. Please consider this endpoint obsolete as of v 1.14.1, use ~api/FinancialAccounts/GetInactive instead.
-        /// </summary>
-        /// <param name="displayPublicName">if set to <c>true</c> [display public name].</param>
-        /// <returns>IQueryable&lt;TreeViewItem&gt;.</returns>
-        [Authenticate, Secured]
-        [System.Web.Http.Route( "api/FinancialAccounts/GetInactive/{displayPublicName}" )]
-        [Rock.SystemGuid.RestActionGuid( "06082C90-48C4-4D29-9E31-1A9BED21859E" )]
-        [RockObsolete( "1.14.1" )]
-        [Obsolete( "Use api/FinancialAccounts/GetInactive instead" )]
-        public IQueryable<AccountTreeViewItem> GetInactiveObsolete( bool displayPublicName )
-        {
-            return GetInactiveData( displayPublicName );
-        }
-
-        /// <summary>
         /// Gets the inactive.
         /// </summary>
         /// <param name="displayPublicName">if set to <c>true</c> [display public name].</param>
@@ -161,24 +115,6 @@ namespace Rock.Rest.Controllers
         public IQueryable<AccountTreeViewItem> GetInactive( bool displayPublicName )
         {
             return GetInactiveData( displayPublicName );
-        }
-
-        /// <summary>
-        /// Gets the children.  Please consider this endpoint obsolete as of v 1.14.1, use ~api/FinancialAccounts/GetChildren/{id} instead.
-        /// </summary>
-        /// <param name="id">The identifier.</param>
-        /// <param name="activeOnly">if set to <c>true</c> [active only].</param>
-        /// <param name="displayPublicName">if set to <c>true</c> [public name].</param>
-        /// <param name="countsType"></param>
-        /// <returns></returns>
-        [Authenticate, Secured]
-        [System.Web.Http.Route( "api/FinancialAccounts/GetChildren/{id}/{activeOnly}/{displayPublicName}" )]
-        [Rock.SystemGuid.RestActionGuid( "5289EB7D-5A89-4E99-BEF6-44C81EBB2BCB" )]
-        [RockObsolete( "1.14.1" )]
-        [Obsolete( "Use api/FinancialAccounts/GetChildren/{id} instead" )]
-        public IQueryable<AccountTreeViewItem> GetChildrenObsolete( int id, bool activeOnly, bool displayPublicName, AccountTreeViewItem.GetCountsType countsType = AccountTreeViewItem.GetCountsType.None )
-        {
-            return GetChildrenData( id, activeOnly, displayPublicName, countsType );
         }
 
         /// <summary>
@@ -203,7 +139,7 @@ namespace Rock.Rest.Controllers
         #region Methods
         private IQueryable<AccountTreeViewItem> GetChildrenData( int id, bool activeOnly, bool displayPublicName, AccountTreeViewItem.GetCountsType countsType = AccountTreeViewItem.GetCountsType.None, bool loadChildren = false )
         {
-            var financialAccountService = new FinancialAccountService( new Data.RockContext() );
+            var financialAccountService = new FinancialAccountService( RockApp.Current.CreateRockContext() );
 
             IQueryable<FinancialAccount> qry;
 
@@ -304,7 +240,7 @@ namespace Rock.Rest.Controllers
                 return null;
             }
 
-            var financialAccountService = new FinancialAccountService( new Data.RockContext() );
+            var financialAccountService = new FinancialAccountService( RockApp.Current.CreateRockContext() );
             qry = financialAccountService.GetAccountsBySearchTerm( searchTerm );
 
             if ( activeOnly )
@@ -360,7 +296,7 @@ namespace Rock.Rest.Controllers
 
         private IQueryable<AccountTreeViewItem> GetInactiveData( bool displayPublicName )
         {
-            var financialAccountService = new FinancialAccountService( new Data.RockContext() );
+            var financialAccountService = new FinancialAccountService( RockApp.Current.CreateRockContext() );
 
             IQueryable<FinancialAccount> qry;
 

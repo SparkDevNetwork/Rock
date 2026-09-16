@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -23,13 +23,15 @@ using System.Linq;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Lava;
 using Rock.Lava.Fluid;
 using Rock.Model;
 using Rock.Tests.Integration.TestData;
+using Rock.Tests.Integration.TestFramework.Lava;
 using Rock.Tests.Shared;
-using Rock.Tests.Shared.Lava;
+using Rock.Tests.Shared.Constants;
 using Rock.Web.Cache;
 
 namespace Rock.Tests.Integration.Core.Lava.Commands
@@ -478,7 +480,7 @@ An Entity Set (Id=*) was created and 4 people have been added.
 
         private List<Person> GetTestPersonEntityList()
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var personService = new PersonService( rockContext );
 
             var personTedDecker = personService.GetByIdentifierOrThrow( TestGuids.TestPeople.TedDecker );
@@ -536,7 +538,7 @@ An Entity Set (Id=*) was created and 4 people have been added.
             var entitySetId = output.ConvertToIntegerOrThrow();
 
             // Get the entity set, including the items. 
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var entitySetService = new EntitySetService( rockContext );
 
             var entitySet = entitySetService.Queryable()

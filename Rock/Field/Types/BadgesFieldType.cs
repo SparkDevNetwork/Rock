@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+
 using Rock.Attribute;
 using Rock.Web.Cache;
 
@@ -31,6 +32,23 @@ namespace Rock.Field.Types
     public class BadgesFieldType : SelectFromListFieldType, IEntityReferenceFieldType
     {
         #region Methods
+
+        #region Value Hinting
+
+        /// <inheritdoc/>
+        internal override FieldTypeHints GetFieldHints( Dictionary<string, string> privateConfigurationValues )
+        {
+            // No Values. These are rows in a table that a caller can look up, and
+            // reading them here would cost a query for every attribute described.
+            return new FieldTypeHints
+            {
+                IsCompleteList = false,
+                ValueFormat = "One or more guids identifying rows in the Badge table, separated by commas. Not their ids or idKeys and not their names.",
+                Instructions = "To find the correct values, read the badges and take the guid of each one you want."
+            };
+        }
+
+        #endregion
 
         /// <summary>
         /// Gets the list source.

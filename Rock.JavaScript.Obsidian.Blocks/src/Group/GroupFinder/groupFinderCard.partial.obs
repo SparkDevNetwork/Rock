@@ -1,0 +1,63 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="groupfinder-card"
+         role="button"
+         tabindex="0"
+         v-html="card.contentHtml"
+         @click="onCardClick"
+         @keydown.enter="onCardActivate"
+         @keydown.space.prevent="onCardActivate"></div>
+</template>
+
+<script setup lang="ts">
+    import { PropType } from "vue";
+    import { GroupFinderCardBag } from "@Obsidian/ViewModels/Blocks/Group/GroupFinder/groupFinderCardBag";
+
+    // #region Values
+
+    defineProps({
+        card: {
+            type: Object as PropType<GroupFinderCardBag>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "select"): void;
+    }>();
+
+    // The interactive elements a click can land on without selecting the card, so in-card controls
+    // (register link, carousel arrows, toggles) act on their own.
+    const interactiveSelector = "a[href], button, input, select, textarea, label, [role='button']";
+
+    // #endregion Values
+
+    // #region Event Handlers
+
+    // The whole card selects the group and syncs the map, except when the click lands on an interactive
+    // element within the content. A template can opt an element back into selection by marking it, or an
+    // ancestor, with data-groupfinder-select.
+    function onCardClick(event: MouseEvent): void {
+        const target = event.target as HTMLElement | null;
+        const control = target?.closest(interactiveSelector);
+
+        // The card itself carries role="button" (matched by interactiveSelector), so exclude it: only an
+        // interactive element nested inside the card suppresses selection.
+        if (control && control !== event.currentTarget && !control.closest("[data-groupfinder-select]")) {
+            return;
+        }
+
+        emit("select");
+    }
+
+    // Keyboard activation (Enter/Space) of the card as a role="button", mirroring a mouse click. Only when
+    // the card itself is focused - a key press on an inner control (e.g. the register link) acts on that
+    // control rather than selecting the card.
+    function onCardActivate(event: KeyboardEvent): void {
+        if (event.target === event.currentTarget) {
+            emit("select");
+        }
+    }
+
+    // #endregion Event Handlers
+</script>

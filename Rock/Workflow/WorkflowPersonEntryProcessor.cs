@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -152,7 +152,14 @@ namespace Rock.Workflow
         /// <param name="personBag">The bag that describes the changes to make to <paramref name="person"/>.</param>
         private void UpdatePersonFromEntryValues( WorkflowActionFormCache form, Person person, PersonBasicEditorBag personBag )
         {
-            person.FirstName = personBag.FirstName;
+            // If the entered first name matches the existing nick name (case-insensitive),
+            // the submitter is referring to the matched person by their nickname. Preserve
+            // the existing first name rather than overwriting it with the nickname.
+            if ( person.NickName.IsNullOrWhiteSpace() || !personBag.FirstName.Equals( person.NickName, StringComparison.OrdinalIgnoreCase ) )
+            {
+                person.FirstName = personBag.FirstName;
+            }
+
             person.LastName = personBag.LastName;
 
             if ( personBag.NickName.IsNotNullOrWhiteSpace() )
@@ -176,7 +183,18 @@ namespace Rock.Workflow
                 var existingMobilePhone = person.GetPhoneNumber( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE.AsGuid(), _rockContext );
 
                 var numberTypeMobile = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE.AsGuid(), _rockContext );
+
+                // Match the WebForms Person Entry behavior for the IsMessagingEnabled (SMS
+                // opt-in) flag: default a new mobile number to messaging-enabled, and only
+                // apply the submitted value when the SMS opt-in checkbox was actually shown.
+                // When it is hidden the individual never saw the checkbox, so its unshown
+                // (unchecked) client value must not leave the number as not messaging-enabled.
                 var messagingEnabled = existingMobilePhone?.IsMessagingEnabled ?? true;
+                if ( form.PersonEntrySmsOptInEntryOption == WorkflowActionFormShowHideOption.Show )
+                {
+                    messagingEnabled = personBag.IsMessagingEnabled ?? messagingEnabled;
+                }
+
                 var isUnlisted = existingMobilePhone?.IsUnlisted ?? false;
 
                 person.UpdatePhoneNumber( numberTypeMobile.Id, personBag.MobilePhoneCountryCode, personBag.MobilePhoneNumber, messagingEnabled, isUnlisted, _rockContext );

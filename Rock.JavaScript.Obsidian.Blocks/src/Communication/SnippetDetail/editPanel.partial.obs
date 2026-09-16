@@ -20,7 +20,7 @@
 
         <div class="row">
             <div class="col-md-6" v-if="isPersonalAllowed">
-                <div class="col-md-6 mt-4" v-if="isAuthorizedToEdit">
+                <div class="col-md-6 mt-4" v-if="canEditSnippetType">
                     <Toggle v-model="isShared"
                             trueText="On"
                             falseText="Off">
@@ -127,7 +127,7 @@
     const name = propertyRef(props.modelValue.bag?.name ?? "", "Name");
     const isShared = ref(props.modelValue.bag?.ownerPersonAlias == null);
     const isLava = ref(props.modelValue.bag?.content?.includes("{") ?? false);
-    const isAuthorizedToEdit = ref(props.options.isAuthorizedToEdit);
+    const canEditSnippetType = ref(props.options.canEditSnippetType);
     const isPersonalAllowed = ref(props.options.isPersonalAllowed);
     const ownerPersonAlias = propertyRef(props.modelValue.bag?.ownerPersonAlias ?? undefined, "OwnerPersonAlias");
     const category = propertyRef(props.modelValue.bag?.category ?? null, "Category");
@@ -142,7 +142,7 @@
     // #region Computed Values
     const ownerHelpText = computed((): string => {
         const helpText = "When an owner is provided only this person will be able to see the snippet.";
-        return isAuthorizedToEdit ? helpText : helpText + "To make the snippet public you will need edit access to the SMS snippet type.";
+        return canEditSnippetType ? helpText : helpText + "To make the snippet public you will need edit access to the SMS snippet type.";
     });
     // #endregion
 

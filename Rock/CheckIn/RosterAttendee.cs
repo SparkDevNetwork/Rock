@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -20,6 +20,7 @@ using System.ComponentModel;
 using System.Linq;
 using System.Text;
 
+using Rock.Configuration;
 using Rock.Model;
 using Rock.Web.Cache;
 
@@ -190,26 +191,6 @@ namespace Rock.CheckIn
                 return _person.DaysToBirthdayOrNull < 7;
             }
         }
-
-        /// <summary>
-        /// Gets a value indicating whether this instance has health note.
-        /// </summary>
-        /// <value>
-        ///   <c>true</c> if this instance has health note; otherwise, <c>false</c>.
-        /// </value>
-        [Obsolete( "No longer used. This will always return false." )]
-        [RockObsolete( "1.13" )]
-        public bool HasHealthNote { get; private set; }
-
-        /// <summary>
-        /// Gets a value indicating whether this instance has legal note.
-        /// </summary>
-        /// <value>
-        ///   <c>true</c> if this instance has legal note; otherwise, <c>false</c>.
-        /// </value>
-        [Obsolete( "No longer used. This will always return false." )]
-        [RockObsolete( "1.13" )]
-        public bool HasLegalNote { get; private set; }
 
         /// <inheritdoc cref="Attendance.IsFirstTime"/>
         public bool IsFirstTime { get; private set; }
@@ -457,7 +438,7 @@ namespace Rock.CheckIn
                     mobileIcon = "<i class='ti ti-check'></i>";
                     break;
                 case RosterAttendeeStatus.CheckedOut:
-                    statusClass = "danger";
+                    statusClass = "checked-out";
                     mobileIcon = "<i class='ti ti-minus'></i>";
                     break;
             }
@@ -526,21 +507,6 @@ namespace Rock.CheckIn
         public string GetMobileTagAndSchedulesHtml()
         {
             return $"<div class='person-tag'>{this.Tag}</div><div class='small text-muted text-wrap'>{this.ServiceTimes}</div>";
-        }
-
-        /// <summary>
-        /// Gets the badges HTML.
-        /// </summary>
-        /// <param name="isMobile">if set to <c>true</c> [is mobile].</param>
-        /// <returns>System.String.</returns>
-        [Obsolete( "Use other GetBadgesHtml " )]
-        [RockObsolete( "1.13" )]
-        public string GetBadgesHtml( bool isMobile )
-        {
-            List<AttributeCache> attributesForAlertIcons = new List<AttributeCache>();
-            attributesForAlertIcons.Add( AttributeCache.Get( Rock.SystemGuid.Attribute.PERSON_ALLERGY.AsGuid() ) );
-            attributesForAlertIcons.Add( AttributeCache.Get( Rock.SystemGuid.Attribute.PERSON_LEGAL_NOTE.AsGuid() ) );
-            return GetBadgesHtml( attributesForAlertIcons );
         }
 
         /// <summary>
@@ -832,12 +798,12 @@ namespace Rock.CheckIn
             {
                 // If there is a checkin area filter, limit to group types within the selected check-in area.
                 // this will help get the best path if a checkin area belongs to more than one checkin type
-                checkinAreaPathsLookup = new GroupTypeService( new Rock.Data.RockContext() ).GetCheckinAreaDescendantsPath( selectedCheckinArea.Id )
+                checkinAreaPathsLookup = new GroupTypeService( RockApp.Current.CreateRockContext() ).GetCheckinAreaDescendantsPath( selectedCheckinArea.Id )
                     .ToDictionary( k => k.GroupTypeId, v => v );
             }
             else
             {
-                checkinAreaPathsLookup = new GroupTypeService( new Rock.Data.RockContext() ).GetAllCheckinAreaPaths()
+                checkinAreaPathsLookup = new GroupTypeService( RockApp.Current.CreateRockContext() ).GetAllCheckinAreaPaths()
                     .ToDictionary( k => k.GroupTypeId, v => v );
             }
 

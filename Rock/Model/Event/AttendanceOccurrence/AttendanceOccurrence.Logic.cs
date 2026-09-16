@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -18,6 +18,7 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Lava;
 
@@ -94,7 +95,7 @@ namespace Rock.Model
                 if ( !result )
                     return result;
 
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     // validate cases where the group type requires that a location/schedule is required
                     if ( GroupId == null )

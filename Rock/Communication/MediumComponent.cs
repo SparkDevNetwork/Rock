@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Web;
+
 using Rock.Attribute;
 using Rock.Extension;
 using Rock.Model;
@@ -32,7 +33,10 @@ namespace Rock.Communication
     /// <summary>
     /// Base class for components communication mediums (i.e. email, sms, twitter, etc) 
     /// </summary>
-    [ComponentField( "Rock.Communication.TransportContainer, Rock", "Transport Container", "", false, "", "", 1 )]
+    [ComponentField( "Rock.Communication.TransportContainer, Rock",
+        "Transport Container",
+        IsRequired = false,
+        Order = 1 )]
     public abstract class MediumComponent : Component, IAsyncMediumComponent
     {
         /// <summary>

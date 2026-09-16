@@ -224,7 +224,7 @@
     );
 
     const attributeList = computed(
-        () => Object.values(props.attributes).sort((a, b) => {
+        () => Object.values(props.attributes ?? {}).sort((a, b) => {
             return (a.order ?? 0) - (b.order ?? 0);
         }).map(attr => ({
             fieldTypeGuid: attr.fieldTypeGuid,

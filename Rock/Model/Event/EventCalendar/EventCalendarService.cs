@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -24,6 +24,7 @@ using Ical.Net.DataTypes;
 using Ical.Net.Serialization;
 
 using Rock;
+using Rock.Configuration;
 using Rock.Data;
 
 using TimeZoneConverter;
@@ -288,7 +289,7 @@ namespace Rock.Model
         /// <returns>The matching event items.</returns>
         private List<EventItem> GetEventItems( GetCalendarEventFeedArgs calendarProps )
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
 
             var eventCalendar = new EventCalendarService( rockContext ).Get( calendarProps.CalendarId );
             if ( eventCalendar == null )

@@ -1,0 +1,453 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <fieldset>
+        <ContentSection
+                        icon="ti ti-user-check"
+                        title="Authorized By:"
+                        :disableCollapse="true"
+                        class="mb-4">
+            <DisplayCard>
+                <template #prepend>
+                    <div class="d-flex align-items-center">
+                        <PersonAvatar v-if="props.modelValue?.authorizedPerson?.photoUrl"
+                                      :photoUrl="props.modelValue.authorizedPerson.photoUrl"
+                                      :personName="props.modelValue.authorizedPerson.name"
+                                      :alwaysShowAvatar="true"
+                                      size="md" />
+                        <div>
+                            <h4 class="m-0"><a :href="`/Person/${props.modelValue?.authorizedPerson?.idKey}`">{{ props.modelValue?.authorizedPerson?.name }}</a></h4>
+                            <p class="m-0 text-muted">{{ props.modelValue?.authorizedPerson?.email }}</p>
+                        </div>
+                    </div>
+                </template>
+                <template #middleSection>
+                    <div class="d-flex gap-3 address-container">
+                        <div v-for="(address, index) in modelValue?.authorizedPerson?.addresses" :key="index" class="d-flex address-block gap-2">
+                            <i class="ti ti-map-pin"></i>
+                            <div>
+                                <p class="m-0 text-semibold">{{ address.type }} Address</p>
+                                <p>{{ address.formattedAddress }}</p>
+                            </div>
+                        </div>
+                    </div>
+                </template>
+                <template #actions>
+                    <div class="label label-campus">{{ modelValue?.authorizedPerson?.campus }}</div>
+                </template>
+            </DisplayCard>
+            <div>
+                <label>Date/Time</label>
+                <p>{{ formattedDate }}</p>
+            </div>
+            <div>
+                <label>Comments</label>
+                <p>{{ modelValue?.summary }}</p>
+            </div>
+            <div class="row">
+                <div class="col-md-4" v-for="(image, index) in modelValue?.images" :key="index">
+                    <img :src="image.imageUrl || ''" :alt="`Transaction Image ${index + 1}`" @click.prevent="openImage(image.imageUrl || '')" class="cursor-pointer txn-image" />
+                </div>
+            </div>
+        </ContentSection>
+
+        <ContentSection
+                        icon="ti ti-report-money"
+                        title="Transaction Details"
+                        :disableCollapse="true">
+
+            <div class="row">
+                <div class="col-md-4">
+
+                    <div v-if="modelValue?.sourceType?.text">
+                        <label>Transaction Source</label>
+                        <p>{{ modelValue?.sourceType.text }}</p>
+                    </div>
+
+                    <label>Payment Method</label>
+                    <div v-if="modelValue?.paymentDetail?.isCreditCard">
+                        <div class="multi-line">
+                            <p>Credit Card - {{ modelValue?.paymentDetail?.creditCardType?.text }}</p>
+                            <p v-if="modelValue?.paymentDetail?.nameOnCard">Name on Card: {{ modelValue?.paymentDetail?.nameOnCard }}</p>
+                            <p v-if="modelValue?.paymentDetail?.accountNumberMasked">Account Number: {{ modelValue?.paymentDetail?.accountNumberMasked }}</p>
+                            <p v-if="modelValue?.paymentDetail?.expirationDate">Expires: {{ modelValue?.paymentDetail?.expirationDate }}</p>
+                        </div>
+                    </div>
+
+                    <div v-else-if="modelValue?.paymentDetail">
+                        <div class="multi-line">
+                            <p>{{ modelValue?.paymentDetail?.currencyType?.text }}</p>
+                            <p v-if="modelValue?.paymentDetail?.accountNumberMasked">Account Number: {{ modelValue?.paymentDetail?.accountNumberMasked }}</p>
+                        </div>
+                    </div>
+
+                    <div v-else>
+                        <NotificationBox alertType="warning">
+                            No Payment Information found. This could be due to a transaction that was imported from an external system.
+                        </NotificationBox>
+                    </div>
+
+                    <div v-if="modelValue?.financialGateway">
+                        <label>Payment Gateway</label>
+                        <p>{{ modelValue?.financialGateway?.text }}</p>
+                    </div>
+
+                    <div v-if="options.showForeignCurrencyFields && modelValue?.foreignCurrencyDisplay">
+                        <label>Foreign Currency</label>
+                        <p>{{ modelValue?.foreignCurrencyDisplay }}</p>
+                    </div>
+
+                    <div v-if="modelValue?.transactionCode">
+                        <label>Transaction Reference</label>
+                        <p>{{ modelValue?.transactionCode }}</p>
+                    </div>
+
+                    <div v-if="modelValue?.foreignKey">
+                        <label>Foreign Key</label>
+                        <p>{{ modelValue?.foreignKey }}</p>
+                    </div>
+
+                    <div v-if="modelValue?.scheduledTransaction">
+                        <label>Scheduled Transaction Id</label>
+                        <p>
+                            <a v-if="modelValue.scheduledTransaction.url"
+                               :href="modelValue.scheduledTransaction.url">
+                                {{ modelValue.scheduledTransaction.displayText }}
+                            </a>
+                            <span v-else>{{ modelValue.scheduledTransaction.displayText }}</span>
+                        </p>
+                    </div>
+
+                    <div v-if="modelValue?.refundDetails">
+                        <label>Refund Details</label>
+
+                        <p v-if="modelValue.refundDetails.originalTransactionIdKey">
+                            Yes (<a :href="getTransactionLink(modelValue.refundDetails.originalTransactionIdKey)">Original Transaction</a>)
+                        </p>
+                        <p v-else>Yes</p>
+
+                        <label>Refund Reason</label>
+                        <p>{{ modelValue?.refundDetails.refundReason?.text }}</p>
+
+                        <label>Refund Summary</label>
+                        <p>{{ modelValue?.refundDetails.refundReasonSummary }}</p>
+
+                    </div>
+                    <div class="multi-line" v-if="modelValue?.status">
+                        <label>Status</label>
+                        <p>{{ modelValue?.status }}</p>
+                        <p><small>{{ modelValue?.statusMessage }}</small></p>
+                    </div>
+
+                    <div class="multi-line" v-if="(modelValue?.registrations && modelValue.registrations.length > 0)">
+                        <label>Registrations</label>
+                        <div v-for="(registration, index) in modelValue.registrations" :key="index"><a :href="registration.url ?? ''" target="_blank">{{ registration.text }}</a></div>
+                    </div>
+
+                    <div class="multi-line" v-if="(modelValue?.updates && modelValue.updates.length > 0)">
+                        <label>Updates</label>
+                        <ul>
+                            <li v-for="(update, index) in modelValue.updates" :key="index" v-html="update"></li>
+                        </ul>
+                    </div>
+                    <div class="row">
+                        <AttributeValuesContainer :modelValue="attributeValues" :attributes="attributes" :numberOfColumns="1" :showCategoryLabel="false" />
+                    </div>
+                    <div class="row" v-if="hasPaymentDetailAttributes">
+                        <AttributeValuesContainer :modelValue="paymentDetailAttributeValues" :attributes="paymentDetailAttributes" :numberOfColumns="1" :showCategoryLabel="false" />
+                    </div>
+                </div>
+                <div class="col-md-8">
+                    <ContentStack v-if="allocationsGridData">
+                        <div class="mb-4">
+                            <h6>Transaction Allocations</h6>
+                            <Grid :data="allocationsGridData"
+                                  keyField="idKey"
+                                  liveUpdates
+                                  light
+                                  :isFooterHidden="true"
+                                  class="mb-0">
+                                <TextColumn name="Name"
+                                            field="accountName"
+                                            title="Account" />
+                                <TextColumn name="details"
+                                            field="details"
+                                            title="Details" />
+                                <Column name="processingFees"
+                                        title="Processing Fees">
+                                    <template #format="{ row }">
+                                        <strong v-if="row.isTotalRow">{{ toCurrencyOrNull(row.processingFees, options.currencyInfo) }}</strong>
+                                        <template v-else>{{ toCurrencyOrNull(row.processingFees, options.currencyInfo) }}</template>
+                                    </template>
+                                </Column>
+                                <Column name="amount"
+                                        title="Amount">
+                                    <template #format="{ row }">
+                                        <strong v-if="row.isTotalRow">{{ toCurrencyOrNull(row.amount, options.currencyInfo) }}</strong>
+                                        <template v-else>{{ toCurrencyOrNull(row.amount, options.currencyInfo) }}</template>
+                                    </template>
+                                </Column>
+                                <AttributeColumns :attributes="allocationAttributeFields" :filter="undefined" />
+                            </Grid>
+                        </div>
+                        <div v-if="modelValue?.refunds?.length && modelValue.refunds.length > 0" class="mb-4">
+                            <h6>Refunds</h6>
+                            <Grid :data="refundsGridData"
+                                  keyField="idKey"
+                                  liveUpdates
+                                  light
+                                  :isFooterHidden="true"
+                                  class="mb-0">
+
+                                <Column name="dateTime"
+                                        title="Date/Time">
+                                    <template #format="{ row }">
+                                        <div>
+                                            <a :href='getTransactionLink(row.idKey)'>{{ row.dateTime }}</a>
+                                        </div>
+                                    </template>
+                                </Column>
+                                <TextColumn name="transactionReference"
+                                            field="transactionReference"
+                                            title="Transaction Reference" />
+                                <TextColumn name="reason"
+                                            field="reason"
+                                            title="Reason" />
+                                <TextColumn name="amount"
+                                            field="amount"
+                                            title="Amount" />
+                            </Grid>
+                        </div>
+                        <div v-if="modelValue?.relatedTransactions?.length && modelValue.relatedTransactions.length > 0" class="mb-4">
+                            <h6>Related Transactions</h6>
+                            <Grid :data="relatedTransactionsGridData"
+                                  keyField="idKey"
+                                  liveUpdates
+                                  light
+                                  :isFooterHidden="true"
+                                  class="mb-0">
+
+                                <Column name="dateTime"
+                                        title="Date/Time">
+                                    <template #format="{ row }">
+                                        <div>
+                                            <a :href='getTransactionLink(row.idKey)'>{{ row.dateTime }}</a>
+                                        </div>
+                                    </template>
+                                </Column>
+                                <TextColumn name="transactionReference"
+                                            field="transactionReference"
+                                            title="Transaction Reference" />
+                                <TextColumn name="amount"
+                                            field="amount"
+                                            title="Amount" />
+                            </Grid>
+                        </div>
+                    </ContentStack>
+                </div>
+            </div>
+        </ContentSection>
+    </fieldset>
+    <transition name="img-zoom">
+        <div
+             v-if="zoomedImage"
+             class="image-zoom-overlay"
+             @click="closeImage">
+            <img :src="zoomedImage" />
+        </div>
+    </transition>
+</template>
+
+<style scoped>
+:deep(.displaycard-heading) {
+    display: none;
+}
+
+:deep(.displaycard-content) {
+    gap: var(--spacing-large);
+    justify-content: flex-end;
+}
+
+:deep(.form-group) {
+    margin-bottom: 0;
+}
+
+
+.ti-map-pin {
+    padding-top: 5px;
+    font-size: 1.25rem;
+}
+
+.address-container {
+    max-width: 1200px;
+    width: 100%;
+}
+
+label {
+    font-weight: var(--font-weight-regular);
+    color: var(--color-interface-medium);
+}
+
+.multi-line {
+    margin: 0 0 calc(var(--font-size-regular) * var(--line-height-normal) / 2);
+}
+
+.multi-line p {
+    margin-bottom: 0;
+}
+
+.image-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.txn-image {
+    width: 100%;
+}
+
+strong {
+    font-weight: var(--font-weight-semibold);
+}
+</style>
+
+<script setup lang="ts">
+    import { computed, PropType, ref } from "vue";
+    import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import { TransactionBag } from "@Obsidian/ViewModels/Blocks/Finance/TransactionDetail/transactionBag";
+    import { TransactionDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Finance/TransactionDetail/transactionDetailOptionsBag";
+    import ContentSection from "@Obsidian/Controls/contentSection.obs";
+    import ContentStack from "@Obsidian/Controls/contentStack.obs";
+    import DisplayCard from "@Obsidian/Controls/displayCard.obs";
+    import PersonAvatar from "@Obsidian/Controls/personAvatar.obs";
+    import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
+    import Grid, { AttributeColumns, Column } from "@Obsidian/Controls/grid";
+    import { toCurrencyOrNull } from "@Obsidian/Utility/numberUtils";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<TransactionBag | null>,
+            required: false
+        },
+
+        options: {
+            type: Object as PropType<TransactionDetailOptionsBag>,
+            required: true
+        }
+    });
+
+    /** Attribute column definitions for the allocations grid, sourced from the server response. */
+    const allocationAttributeFields = computed(() => props.modelValue?.transactionDetails?.attributeFields ?? []);
+
+    /** Transforms transaction detail line items into the grid row format for the allocations table, with a totals row appended. */
+    const allocationsGridData = computed(() => {
+        const detailRows = props.modelValue?.transactionDetails?.rows ?? [];
+
+        const feeTotal = detailRows.reduce((sum, d) => sum + (d.feeAmount ?? 0), 0);
+        const amountTotal = detailRows.reduce((sum, d) => sum + (d.amount ?? 0), 0);
+
+        const rows = detailRows.map(detail => ({
+            idKey: detail.idKey,
+            accountName: detail.account?.text ?? "",
+            details: detail.summary ?? "",
+            processingFees: detail.feeAmount ?? 0,
+            amount: detail.amount ?? 0,
+            ...detail.attributeDisplayValues
+        }));
+
+        return {
+            rows: [
+                ...rows,
+                {
+                    idKey: "__totals__",
+                    isTotalRow: true,
+                    accountName: "",
+                    details: "",
+                    processingFees: feeTotal,
+                    amount: amountTotal
+                }
+            ]
+        };
+    });
+
+    /** Transforms the transaction's refund list into grid rows for the refunds table. */
+    const refundsGridData = computed(() => {
+        const rows = (props.modelValue?.refunds ?? []).map(refund => ({
+            idKey: refund.idKey,
+            dateTime: RockDateTime.parseISO(refund.date ?? "")?.toASPString("g") ?? "",
+            transactionReference: refund.transactionCode,
+            reason: refund.reason,
+            amount: `${toCurrencyOrNull(refund.amount, props.options.currencyInfo)}`
+        }));
+
+        return { rows };
+    });
+
+    /** Transforms the transaction's related-transaction list into grid rows for the related transactions table. */
+    const relatedTransactionsGridData = computed(() => {
+        const rows = (props.modelValue?.relatedTransactions ?? []).map(transaction => ({
+            idKey: transaction.idKey,
+            dateTime: RockDateTime.parseISO(transaction.transactionDateTime ?? "")?.toASPString("G") ?? "",
+            transactionReference: transaction.transactionReference,
+            amount: toCurrencyOrNull(transaction.amount, props.options.currencyInfo)
+        }));
+
+        return { rows };
+    });
+
+    // #region Computed Values
+
+    /** Formats the transaction date/time using Rock's standard short date/time format. Reacts to modelValue changes. */
+    const formattedDate = computed((): string => {
+        if (!props.modelValue?.transactionDateTime) {
+            return "";
+        }
+        return RockDateTime.parseISO(props.modelValue.transactionDateTime)?.toASPString("g") ?? "";
+    });
+
+    const attributes = computed(() => props.modelValue?.attributes ?? {});
+    const attributeValues = computed(() => props.modelValue?.attributeValues ?? {});
+
+    const paymentDetailAttributes = computed(() => props.modelValue?.paymentDetail?.attributes ?? {});
+    const paymentDetailAttributeValues = computed(() => props.modelValue?.paymentDetail?.attributeValues ?? {});
+
+    /** True when the payment detail entity has at least one public attribute defined. */
+    const hasPaymentDetailAttributes = computed(() => Object.keys(paymentDetailAttributes.value).length > 0);
+
+    // #endregion Computed Values
+
+    // #region Functions
+
+    /**
+     * Builds a URL to another transaction detail page by replacing the last path segment
+     * of the current URL with the given IdKey.
+     *
+     * @param idKey The IdKey of the target transaction.
+     * @returns The absolute path to that transaction's detail page.
+     */
+    function getTransactionLink(idKey: string): string {
+        const basePath = window.location.pathname.replace(/\/[^/]+$/, "");
+        return `${basePath}/${idKey}`;
+    }
+
+    // #endregion Functions
+
+    // #region Event Handlers
+
+    const zoomedImage = ref<string | null>(null);
+
+    /**
+     * Opens the full-screen image zoom overlay for the given image URL.
+     * @param image The URL of the image to zoom into.
+     */
+    function openImage(image: string): void {
+        zoomedImage.value = image;
+    }
+
+    /** Closes the full-screen image zoom overlay. */
+    function closeImage(): void {
+        zoomedImage.value = null;
+    }
+
+    // #endregion Event Handlers
+</script>

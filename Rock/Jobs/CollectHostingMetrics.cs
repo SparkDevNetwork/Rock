@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -26,6 +26,7 @@ using System.Runtime.InteropServices;
 using Microsoft.EntityFrameworkCore;
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.SystemKey;
@@ -42,7 +43,7 @@ namespace Rock.Jobs
 
     [IntegerField(
         "Command Timeout",
-        AttributeKey.CommandTimeout,
+        Key = AttributeKey.CommandTimeout,
         Description = "Maximum amount of time (in seconds) to wait for each SQL command to complete. On a large database with lots of transactions, this could take several minutes or more.",
         IsRequired = false,
         DefaultIntegerValue = 60 * 60 )]
@@ -278,7 +279,7 @@ namespace Rock.Jobs
         /// </summary>
         private void SaveMetricValues()
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             rockContext.Database.SetCommandTimeout( _commandTimeout );
 
             var hostingMetricsCategoryId = CategoryCache.GetId( SystemGuid.Category.METRIC_HOSTING_METRICS.AsGuid() );

@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -28,6 +28,11 @@ namespace Rock.ViewModels.Blocks.WorkFlow.FormBuilder.FormList
 		/// Gets or sets the workflow type identifier.
 		/// </summary>
 		public int Id { get; set; }
+
+        /// <summary>
+        /// Gets or sets the workflow type IdKey.
+        /// </summary>
+        public string IdKey { get; set; }
 
         /// <summary>
         /// Gets or sets the form name.

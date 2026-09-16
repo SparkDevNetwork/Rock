@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -20,7 +20,9 @@ using System.Linq;
 #if WEBFORMS
 using System.Web.UI;
 #endif
+
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Media;
 using Rock.Model;
@@ -79,7 +81,7 @@ namespace Rock.Field.Types
         {
             var publicConfigurationValues = base.GetPublicConfigurationValues( privateConfigurationValues, usage, value );
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 if ( usage == ConfigurationValueUsage.View )
                 {
@@ -139,7 +141,7 @@ namespace Rock.Field.Types
         {
             var privateConfigurationValues = base.GetPrivateConfigurationValues( publicConfigurationValues );
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 if ( publicConfigurationValues.TryGetValue( CONFIG_LIMIT_TO_ACCOUNT, out string accountBag ) )
                 {
@@ -179,7 +181,7 @@ namespace Rock.Field.Types
                 return string.Empty;
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var mediaElementName = new MediaElementService( rockContext ).GetSelect( mediaElementGuid.Value, me => me.Name );
 
@@ -241,7 +243,7 @@ namespace Rock.Field.Types
                 return (string.Empty, string.Empty);
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var mediaInfo = new MediaElementService( rockContext ).Queryable()
                     .Where( a => a.Guid == mediaElementGuid.Value )
@@ -305,7 +307,7 @@ namespace Rock.Field.Types
 
             if ( mediaElementGuid.HasValue )
             {
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     var mediaElementInfo = new MediaElementService( rockContext ).Queryable()
                         .Where( a => a.Guid == mediaElementGuid.Value )
@@ -361,7 +363,7 @@ namespace Rock.Field.Types
 
             if ( mediaElementGuid.HasValue )
             {
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     publicValue = new MediaElementService( rockContext ).GetSelect( mediaElementGuid.Value, m => m.Name );
                 }
@@ -472,7 +474,7 @@ namespace Rock.Field.Types
                 return null;
             }
 
-            return new MediaElementService( rockContext ?? new RockContext() ).Get( mediaGuid.Value );
+            return new MediaElementService( rockContext ?? RockApp.Current.CreateRockContext() ).Get( mediaGuid.Value );
         }
 
         #endregion
@@ -489,7 +491,7 @@ namespace Rock.Field.Types
                 return null;
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var mediaElementId = new MediaElementService( rockContext ).GetId( guid.Value );
 
@@ -515,6 +517,21 @@ namespace Rock.Field.Types
             {
                 new ReferencedProperty( EntityTypeCache.GetId<MediaElement>().Value, nameof( MediaElement.Name ) ),
                 new ReferencedProperty( EntityTypeCache.GetId<MediaElement>().Value, nameof( MediaElement.ThumbnailDataJson ) )
+            };
+        }
+
+        #endregion
+
+        #region Value Hinting
+
+        /// <inheritdoc/>
+        internal override FieldTypeHints GetFieldHints( Dictionary<string, string> privateConfigurationValues )
+        {
+            return new FieldTypeHints
+            {
+                IsCompleteList = false,
+                ValueFormat = "The guid of a single row in the MediaElement table, not its id or idKey and not its name. Only one value is stored, so a comma separated list is not valid here. This is the media element, not the folder or account above it.",
+                Instructions = "To find the correct value, read the media elements and take the guid of the one you want."
             };
         }
 
@@ -751,7 +768,7 @@ namespace Rock.Field.Types
         {
             if ( control is MediaElementPicker mediaElementPicker )
             {
-                var rockContext = new RockContext();
+                var rockContext = RockApp.Current.CreateRockContext();
 
                 if ( mediaElementPicker.MediaElementId.IsNotNullOrZero() )
                 {
@@ -787,7 +804,7 @@ namespace Rock.Field.Types
 
             if ( mediaElementGuid.HasValue )
             {
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     var mediaElementInfo = new MediaElementService( rockContext ).Queryable()
                         .Where( a => a.Guid == mediaElementGuid.Value )
@@ -848,7 +865,7 @@ namespace Rock.Field.Types
                 return null;
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 return new MediaElementService( rockContext ).GetId( mediaGuid.Value );
             }
@@ -864,7 +881,7 @@ namespace Rock.Field.Types
         {
             if ( id.HasValue )
             {
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     var mediaGuid = new MediaElementService( rockContext ).GetGuid( id.Value );
 

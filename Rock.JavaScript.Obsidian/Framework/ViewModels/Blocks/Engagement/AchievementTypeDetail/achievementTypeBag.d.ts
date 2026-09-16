@@ -58,9 +58,6 @@ export type AchievementTypeBag = {
     /** Gets or sets the alternate image binary file. */
     alternateImageBinaryFile?: ListItemBag | null;
 
-    /** Gets or sets the attempts. */
-    attempts?: ListItemBag[] | null;
-
     /** Gets or sets the attributes. */
     attributes?: Record<string, PublicAttributeBag> | null;
 

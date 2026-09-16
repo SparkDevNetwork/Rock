@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -22,6 +22,8 @@ using Rock.Enums.AI;
 
 namespace Rock.AI.OpenAI.Utilities
 {
+    [Obsolete( "This feature has been deprecated and is no longer used by Rock. AI configuration happens automatically." )]
+    [RockObsolete( "21.0" )]
     internal static class OpenAIUtilities
     {
         /// <summary>

@@ -163,7 +163,8 @@
 
         labels.push({
             title: `${prayerRequestViewBag.value?.isApproved ? "Approved" : "Pending"}`,
-            type: `${prayerRequestViewBag.value?.isApproved ? "success" : "warning"}`
+            type: `${prayerRequestViewBag.value?.isApproved ? "success" : "warning"}`,
+            iconCssClass: prayerRequestViewBag.value?.isApproved ? "ti ti-check" : "ti ti-clock"
         });
 
         if (prayerRequestViewBag.value?.moderationFlags) {

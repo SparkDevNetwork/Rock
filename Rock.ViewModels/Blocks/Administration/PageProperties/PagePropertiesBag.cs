@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -15,13 +15,13 @@
 // </copyright>
 //
 
+using System;
 using System.Collections.Generic;
 
-using Rock.ViewModels.Utility;
 using Rock.Enums.Cms;
 using Rock.Model;
 using Rock.ViewModels.Controls;
-using System;
+using Rock.ViewModels.Utility;
 
 namespace Rock.ViewModels.Blocks.Administration.PageProperties
 {
@@ -142,11 +142,6 @@ namespace Rock.ViewModels.Blocks.Administration.PageProperties
         /// This will also affect the page order in the menu. This property is required.
         /// </summary>
         public int Order { get; set; }
-
-        /// <summary>
-        /// Gets or sets a value indicating the length of time (in seconds) in that rendered output is cached. This property is required.
-        /// </summary>
-        public int OutputCacheDuration { get; set; }
 
         /// <summary>
         /// Gets or sets a flag indicating whether breadcrumbs are displayed on Page

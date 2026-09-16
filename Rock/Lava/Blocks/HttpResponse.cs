@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -50,7 +50,10 @@ namespace Rock.Lava.Blocks
             _blockPropertiesMarkup = markup;
 
             // Get the internal Lava for the block. The last token will be the block's end tag.
-            _blockContent = string.Join( " ", tokens.Take( tokens.Count - 1 ) );
+            // Join with string.Empty so that no extra spaces are introduced between tokens
+            // at Lava boundaries (e.g. {{ }} / {% %}), which would otherwise show up inside
+            // header values such as "...?campus= abc12345".  (See Issue #6869)
+            _blockContent = string.Join( string.Empty, tokens.Take( tokens.Count - 1 ) );
 
             base.OnInitialize( tagName, markup, tokens );
         }

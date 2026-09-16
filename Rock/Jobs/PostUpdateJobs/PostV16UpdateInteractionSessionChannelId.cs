@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -14,12 +14,14 @@
 // limitations under the License.
 // </copyright>
 //
-using Rock.Attribute;
-using Rock.Data;
-using Rock.Model;
 using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
+
+using Rock.Attribute;
+using Rock.Configuration;
+using Rock.Data;
+using Rock.Model;
 
 namespace Rock.Jobs
 {
@@ -56,7 +58,7 @@ namespace Rock.Jobs
             // get the configured timeout, or default to 240 minutes if it is blank
             var commandTimeout = GetAttributeValue( AttributeKey.CommandTimeout ).AsIntegerOrNull() ?? 14400;
             var jobMigration = new JobMigration( commandTimeout );
-            var lastId = new InteractionSessionService( new RockContext() )
+            var lastId = new InteractionSessionService( RockApp.Current.CreateRockContext() )
                 .Queryable()
                 .AsNoTracking()
                 .Select( i => i.Id )
@@ -81,7 +83,7 @@ namespace Rock.Jobs
         /// </summary>
         private void DeleteJob()
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var jobService = new ServiceJobService( rockContext );
                 var job = jobService.Get( GetJobId() );

@@ -48,6 +48,20 @@ export type AttendeeBag = {
     /** Gets all possible schedules that are available to this attendee. */
     possibleSchedules?: ScheduleOpportunityBag[] | null;
 
+    /**
+     * All potential schedules that are valid for this attendee. A
+     * schedule is considered a potential if at least one group was valid
+     * for the attendee. The group may no longer exist in the
+     * opportunities if no locations were available, but the schedule was
+     * still considered a potential match.
+     * 
+     * The primary use of potential schedules is to determine if the skip
+     * screen should be shown during family check-in when multiple schedules
+     * are selected and one or more attendees have no way they could have
+     * checked into one of the schedules.
+     */
+    potentialScheduleIds?: string[] | null;
+
     /** Gets or sets the selected opportunities for this attendee. */
     selectedOpportunities?: OpportunitySelectionBag[] | null;
 

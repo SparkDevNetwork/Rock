@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -16,6 +16,7 @@
 //
 using System;
 using System.Collections.Generic;
+
 using Rock.Utility;
 
 namespace Rock.Communication
@@ -104,16 +105,6 @@ namespace Rock.Communication
         #endregion
 
         #region SMS Properties
-
-        /// <summary>
-        /// Gets or sets from number.
-        /// </summary>
-        /// <value>
-        /// From number.
-        /// </value>
-        [Obsolete( "Use SmsFromSystemPhoneNumberId instead." )]
-        [RockObsolete( "1.15" )]
-        public int? SMSFromDefinedValueId { get; set; }
 
         /// <inheritdoc/>
         public int? SmsFromSystemPhoneNumberId { get; set; }
@@ -228,9 +219,6 @@ namespace Rock.Communication
             target.PushOpenMessage = source.PushOpenMessage;
             target.PushOpenMessageJson = source.PushOpenMessageJson;
 
-#pragma warning disable CS0618 // Type or member is obsolete
-            target.SMSFromDefinedValueId = source.SMSFromDefinedValueId;
-#pragma warning restore CS0618 // Type or member is obsolete
             target.SmsFromSystemPhoneNumberId = source.SmsFromSystemPhoneNumberId;
             target.SMSMessage = source.SMSMessage;
         }

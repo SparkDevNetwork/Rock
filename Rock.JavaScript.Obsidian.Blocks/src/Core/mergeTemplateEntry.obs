@@ -1,0 +1,282 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <NotificationBox v-if="warningMessage" :alertType="AlertType.Warning">
+        {{ warningMessage }}
+    </NotificationBox>
+
+    <Panel v-else-if="isEntryPanelVisible" title="Create Merge Document" titleIconCssClass="ti ti-files">
+        <RockForm @submit="onMerge">
+            <div class="row">
+                <div class="col-md-6">
+                    <NotificationBox :alertType="AlertType.Info">
+                        {{ recordCountText }}
+                    </NotificationBox>
+
+                    <div class="form-group">
+                        <InlineCheckBox v-if="isCombineFamilyMembersVisible"
+                                        v-model="isCombineFamilyMembers"
+                                        label="Combine Family Members"
+                                        :help="combineFamilyMembersHelp" />
+                    </div>
+
+                    <MergeTemplatePicker v-model="mergeTemplate"
+                                         label="Merge Template"
+                                         rules="required"
+                                         :mergeTemplateOwnership="mergeTemplateOwnership" />
+                </div>
+
+                <div class="col-md-6">
+                    <RockButton :btnType="BtnType.Action"
+                                :btnSize="BtnSize.ExtraSmall"
+                                class="margin-r-sm"
+                                @click="onToggleDataPreview">
+                        Show Data Rows
+                    </RockButton>
+
+                    <div v-if="isDataPreviewVisible" class="margin-t-md">
+                        <h4>Preview (top {{ previewRowCount }} rows)</h4>
+
+                        <Grid v-if="dataPreview"
+                              light
+                              :definition="dataPreview.gridDefinition ?? undefined"
+                              :data="dataPreview.gridData ?? undefined"
+                              emptyDataText="No Results">
+                            <DynamicColumns :dynamicFields="dynamicFields"
+                                            :columnComponents="columnComponents"
+                                            :defaultColumnComponent="TextColumn" />
+                        </Grid>
+
+                        <NotificationBox v-else :alertType="AlertType.Info">
+                            No Results
+                        </NotificationBox>
+                    </div>
+
+                    <RockButton :btnType="BtnType.Default"
+                                :btnSize="BtnSize.ExtraSmall"
+                                @click="onToggleMergeFieldsHelp">
+                        Show Merge Fields <i class="ti ti-chevron-down"></i>
+                    </RockButton>
+
+                    <div v-show="isMergeFieldsHelpVisible" ref="mergeFieldsHelpElement"></div>
+                </div>
+            </div>
+
+            <NotificationBox v-if="mergeErrorMessage" :alertType="mergeErrorAlertType" class="js-merge-error">
+                {{ mergeErrorMessage }}
+                <template v-if="mergeErrorDetails">
+                    <hr>
+                    <small>{{ mergeErrorDetails }}</small>
+                </template>
+            </NotificationBox>
+
+            <div class="actions">
+                <RockButton :btnType="BtnType.Primary"
+                            type="submit"
+                            :isLoading="isMerging"
+                            loadingText="Merging...">
+                    Merge
+                </RockButton>
+            </div>
+        </RockForm>
+    </Panel>
+</template>
+
+<script setup lang="ts">
+    import { computed, nextTick, ref, watch } from "vue";
+    import InlineCheckBox from "@Obsidian/Controls/inlineCheckBox.obs";
+    import Grid, { BooleanColumn, CurrencyColumn, DateColumn, DynamicColumns, TextColumn } from "@Obsidian/Controls/grid";
+    import NumberTextColumn from "./MergeTemplateEntry/numberTextColumn.partial";
+    import MergeTemplatePicker from "@Obsidian/Controls/mergeTemplatePicker.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import Panel from "@Obsidian/Controls/panel.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import RockForm from "@Obsidian/Controls/rockForm.obs";
+    import { setInnerHTML } from "@Obsidian/Core/Utilities/domUtils";
+    import { AlertType } from "@Obsidian/Enums/Controls/alertType";
+    import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
+    import { BtnType } from "@Obsidian/Enums/Controls/btnType";
+    import { MergeTemplateOwnership } from "@Obsidian/Enums/Controls/mergeTemplateOwnership";
+    import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
+    import { CustomBlockBox } from "@Obsidian/ViewModels/Blocks/customBlockBox";
+    import { MergeTemplateEntryBag } from "@Obsidian/ViewModels/Blocks/Core/MergeTemplateEntry/mergeTemplateEntryBag";
+    import { MergeTemplateEntryDataPreviewBag } from "@Obsidian/ViewModels/Blocks/Core/MergeTemplateEntry/mergeTemplateEntryDataPreviewBag";
+    import { MergeTemplateEntryMergeFieldsHelpBag } from "@Obsidian/ViewModels/Blocks/Core/MergeTemplateEntry/mergeTemplateEntryMergeFieldsHelpBag";
+    import { MergeTemplateEntryMergeResponseBag } from "@Obsidian/ViewModels/Blocks/Core/MergeTemplateEntry/mergeTemplateEntryMergeResponseBag";
+    import { MergeTemplateEntryOptionsBag } from "@Obsidian/ViewModels/Blocks/Core/MergeTemplateEntry/mergeTemplateEntryOptionsBag";
+    import { DynamicFieldDefinitionBag } from "@Obsidian/ViewModels/Core/Grid/dynamicFieldDefinitionBag";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+
+    const config = useConfigurationValues<CustomBlockBox<MergeTemplateEntryBag, MergeTemplateEntryOptionsBag>>();
+    const invokeBlockAction = useInvokeBlockAction();
+
+    // #region Values
+
+    const previewRowCount = 15;
+
+    // Maps each preview column's server-provided columnType to the grid column component that
+    // renders it (formatting dates, the boolean glyph, currency); unknown types fall back to the
+    // TextColumn. Plain numbers use NumberTextColumn (a text cell) so the grid sorts them
+    // numerically while still displaying them without thousands separators, matching the legacy grid.
+    const columnComponents = {
+        "boolean": BooleanColumn,
+        "currency": CurrencyColumn,
+        "date": DateColumn,
+        "number": NumberTextColumn,
+        "text": TextColumn
+    };
+
+    const combineFamilyMembersHelp = "Set this to combine family members into a single row. For example, Ted Decker and Cindy Decker would be combined into 'Ted & Cindy Decker'. NOTE: Design your template to use {{ Row.FullName }} instead of {{ Row.NickName }} {{ Row.LastName }} to help in situations where family members might have different last names.";
+
+    const isEntryPanelVisible = ref(config.bag?.isEntryPanelVisible ?? false);
+    const warningMessage = ref(config.bag?.warningMessage ?? "");
+    const recordCount = ref(config.bag?.recordCount ?? 0);
+    const isCombineFamilyMembersVisible = ref(config.bag?.isCombineFamilyMembersVisible ?? false);
+    const mergeTemplateOwnership = config.options?.mergeTemplateOwnership ?? MergeTemplateOwnership.PersonalAndGlobal;
+
+    const mergeTemplate = ref<ListItemBag | null>(null);
+    const isCombineFamilyMembers = ref(false);
+
+    const isDataPreviewVisible = ref(false);
+    const dataPreview = ref<MergeTemplateEntryDataPreviewBag | null>(null);
+
+    const isMergeFieldsHelpVisible = ref(false);
+    const mergeFieldsHelpElement = ref<HTMLElement | null>(null);
+
+    const isMerging = ref(false);
+    const mergeErrorMessage = ref("");
+    const mergeErrorDetails = ref("");
+    const isMergeErrorDanger = ref(false);
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    const recordCountText = computed((): string => {
+        const noun = recordCount.value !== 1 ? "rows" : "row";
+        return `There are ${recordCount.value} ${noun} to merge`;
+    });
+
+    const dynamicFields = computed((): DynamicFieldDefinitionBag[] => {
+        return dataPreview.value?.gridDefinition?.dynamicFields ?? [];
+    });
+
+    // Template configuration failures show as danger; runtime merge errors stay warning, matching the legacy block.
+    const mergeErrorAlertType = computed((): AlertType => {
+        return isMergeErrorDanger.value ? AlertType.Danger : AlertType.Warning;
+    });
+
+    // #endregion Computed Values
+
+    // #region Event Handlers
+
+    /**
+     * Toggles the data preview, lazily loading the rows the first time it is shown.
+     */
+    async function onToggleDataPreview(): Promise<void> {
+        if (isDataPreviewVisible.value) {
+            isDataPreviewVisible.value = false;
+            return;
+        }
+
+        if (!dataPreview.value) {
+            const result = await invokeBlockAction<MergeTemplateEntryDataPreviewBag>("GetDataPreview");
+
+            if (result.isSuccess && result.data) {
+                dataPreview.value = result.data;
+            }
+        }
+
+        isDataPreviewVisible.value = true;
+    }
+
+    /**
+     * Toggles the Lava merge fields help, loading it whenever it is shown.
+     */
+    async function onToggleMergeFieldsHelp(): Promise<void> {
+        isMergeFieldsHelpVisible.value = !isMergeFieldsHelpVisible.value;
+
+        if (isMergeFieldsHelpVisible.value) {
+            await loadMergeFieldsHelp();
+        }
+    }
+
+    /**
+     * Generates the merge document and navigates to the download URL it returns.
+     */
+    async function onMerge(): Promise<void> {
+        mergeErrorMessage.value = "";
+        mergeErrorDetails.value = "";
+        isMergeErrorDanger.value = false;
+        isMerging.value = true;
+
+        try {
+            const result = await invokeBlockAction<MergeTemplateEntryMergeResponseBag>("Merge", {
+                bag: {
+                    mergeTemplateGuid: mergeTemplate.value?.value,
+                    isCombineFamilyMembers: isCombineFamilyMembers.value
+                }
+            });
+
+            if (!result.isSuccess || !result.data) {
+                mergeErrorMessage.value = result.errorMessage || "An error occurred while merging";
+                return;
+            }
+
+            if (result.data.downloadUrl) {
+                window.location.href = result.data.downloadUrl;
+                return;
+            }
+
+            mergeErrorMessage.value = result.data.errorMessage || "An error occurred while merging";
+            mergeErrorDetails.value = result.data.errorDetails || "";
+            isMergeErrorDanger.value = result.data.isErrorDanger ?? false;
+        }
+        finally {
+            isMerging.value = false;
+        }
+    }
+
+    // #endregion Event Handlers
+
+    // #region Functions
+
+    /**
+     * Loads the Lava merge fields help for the selected template and injects the
+     * server-rendered HTML (which may contain scripts) into the help container.
+     */
+    async function loadMergeFieldsHelp(): Promise<void> {
+        const result = await invokeBlockAction<MergeTemplateEntryMergeFieldsHelpBag>("GetMergeFieldsHelp", {
+            bag: {
+                mergeTemplateGuid: mergeTemplate.value?.value,
+                isCombineFamilyMembers: isCombineFamilyMembers.value
+            }
+        });
+
+        if (result.isSuccess && result.data) {
+            await nextTick();
+
+            if (mergeFieldsHelpElement.value) {
+                setInnerHTML(mergeFieldsHelpElement.value, result.data.lavaDebugHtml ?? "");
+            }
+        }
+    }
+
+    // #endregion Functions
+
+    // #region Watchers
+
+    watch(mergeTemplate, () => {
+        // Clear any prior merge error and refresh the help for the newly selected template.
+        mergeErrorMessage.value = "";
+        mergeErrorDetails.value = "";
+        isMergeErrorDanger.value = false;
+
+        if (isMergeFieldsHelpVisible.value) {
+            loadMergeFieldsHelp();
+        }
+    });
+
+    // #endregion Watchers
+
+    onConfigurationValuesChanged(useReloadBlock());
+</script>

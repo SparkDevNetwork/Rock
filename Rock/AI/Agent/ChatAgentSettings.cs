@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -31,7 +31,7 @@ namespace Rock.AI.Agent
         /// when a new user message is added. This only applies to persisted
         /// sessions.
         /// </summary>
-        public int AutoSummarizeThreshold { get; set; } = 2_000;
+        public int? AutoSummarizeThreshold { get; set; }
 
         /// <summary>
         /// Determines if system skills are excluded from this agent. These are

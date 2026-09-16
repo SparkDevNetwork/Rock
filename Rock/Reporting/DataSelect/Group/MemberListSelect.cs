@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -23,9 +23,11 @@ using System.Linq.Expressions;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Net;
+using Rock.Obsidian.UI.GridField;
 using Rock.Security;
 using Rock.ViewModels.Controls;
 using Rock.ViewModels.Rest.Controls;
@@ -188,6 +190,67 @@ namespace Rock.Reporting.DataSelect.Group
             return callbackField;
         }
 #endif
+
+        /// <inheritdoc/>
+        public override ObsidianGridField GetObsidianGridField( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
+        {
+            var selectionParts = selection.Split( '|' );
+            var showAsLinkType = selectionParts.Length > 0
+                ? selectionParts[0].ConvertToEnum<ShowAsLinkType>( ShowAsLinkType.NameOnly )
+                : ShowAsLinkType.NameOnly;
+
+            return new MemberListField
+            {
+                ShowAs = showAsLinkType,
+                BasePersonUrl = "/Person/",
+                BaseGroupMemberUrl = "/GroupMember/"
+            };
+        }
+
+        /// <summary>
+        /// Value-shaping subclass that renders a list of
+        /// <see cref="MemberInfo"/> items as a comma-delimited HTML string of
+        /// names, optionally wrapped in anchors. Mirrors the WebForms
+        /// <see cref="CallbackField"/> behavior.
+        /// </summary>
+        private class MemberListField : HtmlObsidianGridField
+        {
+            public ShowAsLinkType ShowAs { get; set; }
+
+            public string BasePersonUrl { get; set; }
+
+            public string BaseGroupMemberUrl { get; set; }
+
+            public override object TransformValue( object rawValue, ObsidianGridFieldContext context )
+            {
+                if ( !( rawValue is IEnumerable<MemberInfo> members ) )
+                {
+                    return string.Empty;
+                }
+
+                var formattedList = new List<string>();
+                foreach ( var m in members )
+                {
+                    var name = Rock.Model.Person.FormatFullName( m.NickName, m.LastName, m.SuffixValueId );
+                    string html;
+                    if ( ShowAs == ShowAsLinkType.PersonLink )
+                    {
+                        html = $"<a href='{BasePersonUrl}{m.PersonId}'>{name}</a>";
+                    }
+                    else if ( ShowAs == ShowAsLinkType.GroupMemberLink )
+                    {
+                        html = $"<a href='{BaseGroupMemberUrl}{m.GroupMemberId}'>{name}</a>";
+                    }
+                    else
+                    {
+                        html = name;
+                    }
+                    formattedList.Add( html );
+                }
+
+                return formattedList.AsDelimited( ", " );
+            }
+        }
 
         /// <summary>
         /// Gets the default column header text.
@@ -432,7 +495,7 @@ namespace Rock.Reporting.DataSelect.Group
             groupTypePicker.ID = parentControl.ID + "_groupTypePicker";
             groupTypePicker.Label = "Group Type";
             groupTypePicker.CssClass = "js-grouptype-picker";
-            groupTypePicker.GroupTypes = new GroupTypeService( new RockContext() ).Queryable().ToList();
+            groupTypePicker.GroupTypes = new GroupTypeService( RockApp.Current.CreateRockContext() ).Queryable().ToList();
             groupTypePicker.SelectedIndexChanged += groupTypePicker_SelectedIndexChanged;
             groupTypePicker.AutoPostBack = true;
             parentControl.Controls.Add( groupTypePicker );
@@ -481,7 +544,7 @@ namespace Rock.Reporting.DataSelect.Group
             if ( groupTypeId.HasValue )
             {
                 //                cblRole.Items.Clear();
-                foreach ( var item in new GroupTypeRoleService( new RockContext() ).GetByGroupTypeId( groupTypeId.Value ) )
+                foreach ( var item in new GroupTypeRoleService( RockApp.Current.CreateRockContext() ).GetByGroupTypeId( groupTypeId.Value ) )
                 {
                     cblRole.Items.Add( new ListItem( item.Name, item.Guid.ToString() ) );
                 }
@@ -553,7 +616,7 @@ namespace Rock.Reporting.DataSelect.Group
                 if ( selectionValues.Length >= 3 )
                 {
                     Guid groupTypeGuid = selectionValues[1].AsGuid();
-                    var groupTypeId = new GroupTypeService( new RockContext() ).GetId( groupTypeGuid );
+                    var groupTypeId = new GroupTypeService( RockApp.Current.CreateRockContext() ).GetId( groupTypeGuid );
                     if ( groupTypeId.HasValue )
                     {
                         groupTypePicker.SetValue( groupTypeId.Value );

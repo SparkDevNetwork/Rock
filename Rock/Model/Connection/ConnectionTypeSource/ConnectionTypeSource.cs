@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -21,7 +21,9 @@ using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 
 using Rock.Data;
+using Rock.Enums.Security;
 using Rock.Lava;
+using Rock.Security;
 
 namespace Rock.Model
 {
@@ -41,6 +43,7 @@ namespace Rock.Model
         /// The display name of this connection type source.
         /// </summary>
         [DataMember]
+        [StringValidation( StringValidationProfile.Name )]
         public string Name { get; set; }
 
         /// <summary>
@@ -63,6 +66,21 @@ namespace Rock.Model
         public virtual ConnectionType ConnectionType { get; set; }
 
         #endregion
+
+        #region Public Methods
+
+        /// <summary>
+        /// Returns a <see cref="System.String" /> that represents this instance.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="System.String" /> that represents this instance.
+        /// </returns>
+        public override string ToString()
+        {
+            return this.Name;
+        }
+
+        #endregion
     }
 
     #region Entity Configuration
@@ -77,7 +95,7 @@ namespace Rock.Model
         /// </summary>
         public ConnectionTypeSourceConfiguration()
         {
-            this.HasRequired( p => p.ConnectionType ).WithMany().HasForeignKey( p => p.ConnectionTypeId ).WillCascadeOnDelete( true );
+            this.HasRequired( p => p.ConnectionType ).WithMany( ct => ct.ConnectionTypeSources ).HasForeignKey( p => p.ConnectionTypeId ).WillCascadeOnDelete( true );
         }
     }
 

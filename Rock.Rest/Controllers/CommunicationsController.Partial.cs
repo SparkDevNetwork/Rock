@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -19,6 +19,8 @@ using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
 using System.Web.Http;
+
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Rest.Filters;
 using Rock.Rest.Utility;
@@ -67,7 +69,7 @@ namespace Rock.Rest.Controllers
 
             var addedInfo = new List<ImportSentCommunicationResultApiModel>();
 
-            using ( var rockContext = new Rock.Data.RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var committed = false;
                 rockContext.WrapTransaction( () =>

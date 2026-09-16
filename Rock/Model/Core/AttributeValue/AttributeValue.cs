@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -22,10 +22,14 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
+
 using Newtonsoft.Json;
+
 using Rock.Data;
-using Rock.Web.Cache;
+using Rock.Enums.Security;
 using Rock.Lava;
+using Rock.Security;
+using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -117,6 +121,7 @@ namespace Rock.Model
         /// A <see cref="string"/> representing the raw value.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string Value
         {
             get => _value ?? string.Empty;
@@ -128,6 +133,7 @@ namespace Rock.Model
         /// </summary>
         /// <value>The persisted text value.</value>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string PersistedTextValue
         {
             get => _persistedTextValue ?? string.Empty;
@@ -139,6 +145,7 @@ namespace Rock.Model
         /// </summary>
         /// <value>The persisted HTML value.</value>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string PersistedHtmlValue
         {
             get => _persistedHtmlValue ?? string.Empty;
@@ -150,6 +157,7 @@ namespace Rock.Model
         /// </summary>
         /// <value>The persisted condensed text value.</value>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string PersistedCondensedTextValue
         {
             get => _persistedCondensedTextValue ?? string.Empty;
@@ -161,6 +169,7 @@ namespace Rock.Model
         /// </summary>
         /// <value>The persisted condensed HTML value.</value>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string PersistedCondensedHtmlValue
         {
             get => _persistedCondensedHtmlValue ?? string.Empty;

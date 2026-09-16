@@ -21,6 +21,7 @@
 // </copyright>
 //
 
+using Rock.Configuration;
 using Rock.Model;
 using Rock.SystemGuid;
 
@@ -35,6 +36,6 @@ namespace Rock.Rest.Controllers
         /// <summary>
         /// Initializes a new instance of the <see cref="CommunicationTemplatesController"/> class.
         /// </summary>
-        public CommunicationTemplatesController() : base( new Rock.Model.CommunicationTemplateService( new Rock.Data.RockContext() ) ) { } 
+        public CommunicationTemplatesController() : base( new Rock.Model.CommunicationTemplateService( RockApp.Current.CreateRockContext() ) ) { } 
     }
 }

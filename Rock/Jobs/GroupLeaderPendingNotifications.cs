@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -24,6 +24,7 @@ using System.Web;
 using Rock;
 using Rock.Attribute;
 using Rock.Communication;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 
@@ -35,11 +36,27 @@ namespace Rock.Jobs
     [DisplayName( "Group Leader Pending Notifications" )]
     [Description( "This job sends a list of new, pending group members to the group's leaders." )]
 
-    [GroupTypeField( "Group Type", "The group type to look for new pending registrations", true, "", "", 0 )]
-    [BooleanField( "Include Previously Notified", "Includes pending group members that have already been notified.", false, "", 1 )]
-    [SystemCommunicationField( "Notification Email", "", true, "", "", 2 )]
-    [GroupRoleField( null, "Group Role Filter", "Optional group role to filter the pending members by. To select the role you'll need to select a group type.", false, null, null, 3 )]
-    [IntegerField( "Pending Age", "The number of days since the record was last updated. This keeps the job from notifying all the pending registrations on first run.", false, 1, order: 4 )]
+    [GroupTypeField( "Group Type",
+        Description = "The group type to look for new pending registrations",
+        IsRequired = true,
+        Order = 0 )]
+    [BooleanField( "Include Previously Notified",
+        Description = "Includes pending group members that have already been notified.",
+        IsRequired = false,
+        DefaultBooleanValue = false,
+        Order = 1 )]
+    [SystemCommunicationField( "Notification Email",
+        IsRequired = true,
+        Order = 2 )]
+    [GroupRoleField( null, "Group Role Filter",
+        Description = "Optional group role to filter the pending members by. To select the role you'll need to select a group type.",
+        IsRequired = false,
+        Order = 3 )]
+    [IntegerField( "Pending Age",
+        Description = "The number of days since the record was last updated. This keeps the job from notifying all the pending registrations on first run.",
+        IsRequired = false,
+        DefaultIntegerValue = 1,
+        Order = 4 )]
     public class GroupLeaderPendingNotifications : RockJob
     {
         /// <summary> 
@@ -63,7 +80,7 @@ namespace Rock.Jobs
                 int pendingMembersCount = 0;
 
                 // get groups set to sync
-                RockContext rockContext = new RockContext();
+                RockContext rockContext = RockApp.Current.CreateRockContext();
 
                 Guid? groupTypeGuid = GetAttributeValue( "GroupType" ).AsGuidOrNull();
                 Guid? systemEmailGuid = GetAttributeValue( "NotificationEmail" ).AsGuidOrNull();

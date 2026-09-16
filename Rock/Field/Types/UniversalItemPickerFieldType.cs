@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -107,6 +107,43 @@ namespace Rock.Field.Types
         protected virtual List<ListItemBag> GetListItems( Dictionary<string, string> privateConfigurationValues )
         {
             return new List<ListItemBag>();
+        }
+
+        /// <inheritdoc/>
+        internal sealed override FieldTypeHints GetFieldHints( Dictionary<string, string> privateConfigurationValues )
+        {
+            /*
+                8/19/26 - CLAUDE
+
+                Implemented once here rather than on each picker, because every
+                subclass already answers this question through GetListItems to render
+                its own control. Whatever it offers a person is exactly the set a
+                caller may write, so the two cannot drift.
+
+                Reported as complete because these lists are what the picker itself
+                shows, and a caller choosing anything outside them would be choosing
+                something the picker could not have produced.
+
+                Sealed, matching how UniversalItemFieldType seals the rest of this
+                contract. A subclass that needs to describe itself differently should do
+                it by overriding GetListItems, which is the one place this reads from,
+                rather than by answering this question a second way.
+
+                Reason: The picker already knows its own values; nothing else needed to
+                be taught them.
+            */
+            var listItems = GetListItems( privateConfigurationValues );
+
+            if ( listItems == null || !listItems.Any() )
+            {
+                return null;
+            }
+
+            return new FieldTypeHints
+            {
+                Values = listItems,
+                IsCompleteList = true
+            };
         }
 
         #endregion

@@ -2,9 +2,7 @@
 <template>
     <div v-if="!config.isHidden" class="communication-detail">
 
-        <NotificationBox v-if="errorMessage" :alertType="AlertType.Warning">
-            {{ errorMessage }}
-        </NotificationBox>
+        <NotificationBox v-if="errorMessage" :alertType="AlertType.Warning" v-html="errorMessage"></NotificationBox>
 
         <Panel v-else
                type="block"
@@ -178,6 +176,13 @@
     import { CreatePersonalTemplateRequestBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationDetail/createPersonalTemplateRequestBag";
 
     const config = useConfigurationValues<CommunicationDetailInitializationBox>();
+
+    // The block is hidden for a communication this page cannot edit;
+    // redirect to the page that can (the legacy wizard page or the simple communication page).
+    if (config.redirectUrl) {
+        window.location.href = makeUrlRedirectSafe(config.redirectUrl);
+    }
+
     const securityGrant = getSecurityGrant(config.securityGrantToken);
     const invokeBlockAction = useInvokeBlockAction();
 

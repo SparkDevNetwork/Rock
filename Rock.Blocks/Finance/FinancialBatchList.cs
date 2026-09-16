@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -21,6 +21,7 @@ using System.ComponentModel;
 using System.Linq;
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Obsidian.UI;
@@ -67,7 +68,9 @@ namespace Rock.Blocks.Finance
         Order = 3 )]
 
     [Rock.SystemGuid.EntityTypeGuid( "a68dd358-1392-475f-92b4-dea544ff219e" )]
-    [Rock.SystemGuid.BlockTypeGuid( "f1950524-e959-440f-9cf6-1a8b9b7527d8" )]
+    // Original obsidian was [Rock.SystemGuid.BlockTypeGuid( "f1950524-e959-440f-9cf6-1a8b9b7527d8" )]
+    [Rock.SystemGuid.BlockTypeGuid( "AB345CE7-5DC6-41AF-BBDC-8D23D52AFE25" )]
+
     [CustomizedGrid]
     public class FinancialBatchList : RockListBlockType<FinancialBatchList.BatchData>
     {
@@ -420,6 +423,7 @@ namespace Rock.Blocks.Finance
                 .AddField( "controlItemCount", a => a.Batch.ControlItemCount )
                 .AddTextField( "campus", a => a.Batch.CampusId.HasValue ? CampusCache.Get( a.Batch.CampusId.Value )?.Name : null )
                 .AddField( "status", a => a.Batch.Status )
+                .AddField( "isAutomated", a => a.Batch.IsAutomated )
                 .AddDateTimeField( "startDateTime", a => a.Batch.BatchStartDateTime )
                 .AddField( "remoteSettlementAmount", a => a.Batch.RemoteSettlementAmount )
                 .AddField( "remoteSettlementKey", a => a.Batch.RemoteSettlementBatchKey )
@@ -440,7 +444,7 @@ namespace Rock.Blocks.Finance
         [BlockAction]
         public BlockActionResult Delete( string key )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var entityService = new FinancialBatchService( rockContext );
                 var transactionService = new FinancialTransactionService( rockContext );
@@ -454,6 +458,12 @@ namespace Rock.Blocks.Finance
                 if ( !entity.IsAuthorized( Authorization.DELETE, RequestContext.CurrentPerson ) )
                 {
                     return ActionBadRequest( $"Not authorized to delete {FinancialBatch.FriendlyTypeName}." );
+                }
+
+                // Automated batches are system-owned (gateway/automated-giving downloads); deleting one wipes real gifts and breaks the automation.
+                if ( entity.IsAutomated )
+                {
+                    return ActionBadRequest( "Automated batches cannot be deleted." );
                 }
 
                 if ( !entityService.CanDelete( entity, out var errorMessage ) )
@@ -501,7 +511,7 @@ namespace Rock.Blocks.Finance
 
             var newStatus = request.Open ? BatchStatus.Open : BatchStatus.Closed;
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 string message = null;
                 List<string> errors = null;

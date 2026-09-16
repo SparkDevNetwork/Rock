@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -23,6 +23,7 @@ using System.Web.UI;
 using System.Web.UI.WebControls;
 using Rock;
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -317,7 +318,8 @@ $(document).ready(function () {
                 return;
             }
 
-            ShowSingleOccurrence_Decline( attendanceOccurrenceId.Value, person );
+            // Pass the attribute placeholder so any values the person entered on the choice form are saved (for existing group members).
+            ShowSingleOccurrence_Decline( attendanceOccurrenceId.Value, person, phAttributes );
         }
 
         protected void lbAccept_Multiple_Click( object sender, EventArgs e )
@@ -345,7 +347,7 @@ $(document).ready(function () {
             if ( declineReason.HasValue )
             {
                 int occurrenceId = hfDeclineReason_OccurrenceId.Value.AsInteger();
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     var person = GetPerson();
                     var attendanceOccurrenceService = new AttendanceOccurrenceService( rockContext );
@@ -368,7 +370,7 @@ $(document).ready(function () {
         /// <param name="person"></param>
         private void WriteEmailAcceptResponse( int occurrenceId, Person person )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var occurrence = new AttendanceOccurrenceService( rockContext ).Get( occurrenceId );
                 person = new PersonService( rockContext ).Get( person.Guid );
@@ -407,7 +409,7 @@ $(document).ready(function () {
             if ( !string.IsNullOrWhiteSpace( personActionIdentifier ) )
             {
                 // Get Person record from PersonActionIdentifier.
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     var personService = new PersonService( rockContext );
                     return personService.GetByPersonActionIdentifier( personActionIdentifier, "RSVP" );
@@ -505,7 +507,7 @@ $(document).ready(function () {
         /// <param name="person">The Person record of the respondent.</param>
         private void ShowSingleOccurrence_Choice( int occurrenceId, Person person )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var attendanceOccurrenceService = new AttendanceOccurrenceService( rockContext );
                 var occurrence = attendanceOccurrenceService.Get( occurrenceId );
@@ -564,7 +566,7 @@ $(document).ready(function () {
         /// </summary>
         private void BuildAttributeControls()
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var person = GetPerson();
                 var occurrenceId = PageParameter( PageParameterKey.AttendanceOccurrenceId ).AsInteger();
@@ -591,7 +593,7 @@ $(document).ready(function () {
         /// <returns></returns>
         private bool GroupHasAttributes()
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var person = GetPerson();
                 var occurrenceId = PageParameter( PageParameterKey.AttendanceOccurrenceId ).AsInteger();
@@ -612,13 +614,34 @@ $(document).ready(function () {
         }
 
         /// <summary>
+        /// Gets the friendly names of the public GroupMember attributes defined on the occurrence's group. Used to tell a non-member which fields aren't saved on Decline.
+        /// </summary>
+        /// <param name="occurrence">The AttendanceOccurrence whose group defines the attributes.</param>
+        /// <param name="person">The responding person.</param>
+        private List<string> GetPublicAttributeNames( AttendanceOccurrence occurrence, Person person )
+        {
+            var transientMember = new GroupMember
+            {
+                PersonId = person.Id,
+                GroupId = occurrence.Group.Id,
+                GroupRoleId = occurrence.Group.GroupType.DefaultGroupRoleId ?? 0
+            };
+            var publicAttributes = new GroupMemberPublicAttributeCollection( transientMember );
+
+            return publicAttributes.Attributes.Values
+                .OrderBy( a => a.Order )
+                .Select( a => a.Name )
+                .ToList();
+        }
+
+        /// <summary>
         /// Shows the RSVP Accept message for a single occurrence.
         /// </summary>
         /// <param name="occurrenceId">The ID of the AttendanceOccurrence.</param>
         /// <param name="person">The Person record of the respondent.</param>
         private void ShowSingleOccurrence_Accept( int occurrenceId, Person person )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var attendanceOccurrenceService = new AttendanceOccurrenceService( rockContext );
                 var occurrence = attendanceOccurrenceService.Get( occurrenceId );
@@ -634,6 +657,9 @@ $(document).ready(function () {
                     Show404( true, GetOccurrenceTitle( occurrence ) );
                     return;
                 }
+
+                // Override the markup default ("RSVP for Event") with the actual occurrence name.
+                lHeading.Text = GetOccurrenceTitle( occurrence );
 
                 person = new PersonService( rockContext ).Get( person.Guid );
                 UpdateOrCreateAttendanceRecord( occurrence, person, rockContext, Rock.Model.RSVP.Yes, phAttributes );
@@ -696,10 +722,12 @@ $(document).ready(function () {
 
             // Note that GroupMember attributes are being set, here.  If this control saves multiple attendance records for a same group (e.g., the same group meets on multiple dates and the user RSVPs to
             // more than one) it will overwrite values.
-            if ( ( attributePlaceHolder != null ) && ( rsvpStatus == Rock.Model.RSVP.Yes ) )
+            if ( attributePlaceHolder != null )
             {
                 var groupMember = occurrence.Group.Members.Where( gm => gm.PersonId == person.Id ).FirstOrDefault();
-                if ( groupMember == null )
+
+                // Only auto-enroll a new GroupMember when the RSVP is accepted, so declining doesn't silently add the person to the group.
+                if ( groupMember == null && rsvpStatus == Rock.Model.RSVP.Yes )
                 {
                     groupMember = new GroupMember();
                     groupMember.PersonId = person.Id;
@@ -710,11 +738,15 @@ $(document).ready(function () {
                     rockContext.SaveChanges();
                 }
 
-                groupMember.LoadAttributes();
+                // Save attribute values for existing group members regardless of accept/decline, so values typed into the form aren't discarded.
+                if ( groupMember != null )
+                {
+                    groupMember.LoadAttributes();
 
-                Helper.GetEditValues( attributePlaceHolder, groupMember );
+                    Helper.GetEditValues( attributePlaceHolder, groupMember );
 
-                groupMember.SaveAttributeValues();
+                    groupMember.SaveAttributeValues();
+                }
             }
 
             rockContext.SaveChanges();
@@ -725,9 +757,10 @@ $(document).ready(function () {
         /// </summary>
         /// <param name="occurrenceId">The ID of the AttendanceOccurrence.</param>
         /// <param name="person">The Person record of the respondent.</param>
-        private void ShowSingleOccurrence_Decline( int occurrenceId, Person person )
+        /// <param name="attributePlaceHolder">(Optional) PlaceHolder containing the GroupMember attribute editor. Passed when the user clicked Decline from the choice form so any values they entered are saved.</param>
+        private void ShowSingleOccurrence_Decline( int occurrenceId, Person person, PlaceHolder attributePlaceHolder = null )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var attendanceOccurrenceService = new AttendanceOccurrenceService( rockContext );
                 var occurrence = attendanceOccurrenceService.Get( occurrenceId );
@@ -744,15 +777,37 @@ $(document).ready(function () {
                     return;
                 }
 
+                // Override the markup default ("RSVP for Event") with the actual occurrence name.
+                lHeading.Text = GetOccurrenceTitle( occurrence );
+
                 pnlForm.Visible = false;
                 pnlSingle_Choice.Visible = false;
 
                 person = new PersonService( rockContext ).Get( person.Guid );
-                UpdateOrCreateAttendanceRecord( occurrence, person, rockContext, Rock.Model.RSVP.No );
+
+                // Capture group-member status before the save so we can tell if the responder is being treated as a non-member.
+                var isExistingGroupMember = occurrence.Group.Members.Any( gm => gm.PersonId == person.Id );
+
+                UpdateOrCreateAttendanceRecord( occurrence, person, rockContext, Rock.Model.RSVP.No, attributePlaceHolder );
                 hfDeclineReason_OccurrenceId.Value = occurrenceId.ToString();
 
                 // Show Single Occurrence Decline form.
                 pnlSingle_Decline.Visible = true;
+
+                // If the responder isn't a member of the group, GroupMember attribute values entered on the form weren't persisted (declining shouldn't silently enroll the person).
+                // Let them know which fields aren't saved so they aren't surprised later.
+                if ( attributePlaceHolder != null && !isExistingGroupMember )
+                {
+                    var publicAttributeNames = GetPublicAttributeNames( occurrence, person );
+                    if ( publicAttributeNames.Any() )
+                    {
+                        nbDeclineAttributesNotSaved.Text = string.Format(
+                            "Note: No values were saved for the {0} {1} because you aren't a member of this group.",
+                            publicAttributeNames.AsDelimited( ", ", " and " ),
+                            publicAttributeNames.Count == 1 ? "field" : "fields" );
+                        nbDeclineAttributesNotSaved.Visible = true;
+                    }
+                }
 
                 var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( RockPage, CurrentPerson );
                 if ( !string.IsNullOrEmpty( occurrence.DeclineConfirmationMessage ) )
@@ -822,7 +877,7 @@ $(document).ready(function () {
             bool hasValidOccurrences = false;
             bool isExpired = false;
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 List<OccurrenceDataItem> repeaterItems = new List<OccurrenceDataItem>();
                 var attendanceOccurrenceService = new AttendanceOccurrenceService( rockContext );
@@ -880,7 +935,7 @@ $(document).ready(function () {
 
         private void RebuildMultipleOccurrenceDataItems( List<int> occurrenceIds, Person person )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 List<OccurrenceDataItem> repeaterItems = new List<OccurrenceDataItem>();
                 var attendanceOccurrenceService = new AttendanceOccurrenceService( rockContext );
@@ -938,7 +993,7 @@ $(document).ready(function () {
         /// <param name="person">The Person record of the respondent.</param>
         private void ShowMultipleOccurrence_Accept( List<int> occurrenceIds, Person person )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 _processedOccurrences = new List<string>();
                 bool occurrenceProcessed = false;
@@ -1008,7 +1063,7 @@ $(document).ready(function () {
         /// </summary>
         private void UpdatePersonRecord()
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 CurrentPerson.FirstName = rtbFirstName.Text;
                 CurrentPerson.LastName = rtbLastName.Text;
@@ -1037,7 +1092,7 @@ $(document).ready(function () {
                 return values;
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var def = new DefinedValueService( rockContext );
                 values = def.Queryable()

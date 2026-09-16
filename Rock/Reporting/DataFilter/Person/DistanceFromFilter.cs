@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -24,6 +24,7 @@ using System.Linq.Expressions;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Net;
@@ -254,7 +255,7 @@ function() {
             if ( selectionValues.Length >= 2 )
             {
                 Guid locationGuid = selectionValues[0].AsGuid();
-                var location = new LocationService( new RockContext() ).Get( locationGuid );
+                var location = new LocationService( RockApp.Current.CreateRockContext() ).Get( locationGuid );
                 double miles = selectionValues[1].AsDoubleOrNull() ?? 0;
 
                 result = string.Format( "Within {0} miles from location: {1}", miles, location != null ? location.ToString() : string.Empty );
@@ -329,7 +330,7 @@ function() {
             if ( selectionValues.Length >= 2 )
             {
                 var locationPicker = controls[0] as LocationPicker;
-                var selectedLocation = new LocationService( new RockContext() ).Get( selectionValues[0].AsGuid() );
+                var selectedLocation = new LocationService( RockApp.Current.CreateRockContext() ).Get( selectionValues[0].AsGuid() );
                 locationPicker.SetBestPickerModeForLocation( selectedLocation );
                 locationPicker.Location = selectedLocation;
                 var numberBox = controls[1] as NumberBox;

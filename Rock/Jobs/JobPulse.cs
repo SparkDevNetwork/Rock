@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -18,10 +18,12 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
-using Quartz.Impl.Matchers;
+
 using Quartz;
+using Quartz.Impl.Matchers;
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Model;
 using Rock.Web.Cache;
 
@@ -89,7 +91,7 @@ namespace Rock.Jobs
             int jobsDeleted = 0;
             int jobsScheduleUpdated = 0;
 
-            var rockContext = new Rock.Data.RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             ServiceJobService jobService = new ServiceJobService( rockContext );
             List<ServiceJob> activeJobList = jobService.GetActiveJobs().ToList();
 #if REVIEW_WEBFORMS

@@ -1,0 +1,342 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <template v-if="isBlockVisible">
+        <a ref="bookmarkEl" class="rock-bookmark js-rock-bookmark" href="#" @click.prevent="onBookmarkClick">
+            <i class="ti ti-bookmark"></i>
+        </a>
+
+        <div v-if="isPopoverOpen"
+             ref="popoverEl"
+             class="popover rock-popover styled-scroll js-bookmark-panel js-personal-link-popover position-fixed"
+             role="tooltip"
+             :style="popoverStyle">
+            <ViewPanel v-if="panelState === PanelState.View"
+                       :personalLinksSections="sections"
+                       :quickReturnGroups="quickReturnGroups"
+                       @addLink="onAddLinkClick"
+                       @addSection="onAddSectionClick"
+                       @manageLinks="onManageLinksClick" />
+
+            <AddSectionPanel v-else-if="panelState === PanelState.AddSection"
+                             @save="onSaveSection"
+                             @cancel="onCancelConfiguration" />
+
+            <AddLinkPanel v-else-if="panelState === PanelState.AddLink"
+                          @save="onSaveLink"
+                          @cancel="onCancelConfiguration" />
+        </div>
+    </template>
+</template>
+
+<script setup lang="ts">
+    import { computed, nextTick, onBeforeUnmount, onMounted, ref } from "vue";
+    import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
+    import { alert } from "@Obsidian/Utility/dialogs";
+    import { PersonalLinksInitializationBox } from "@Obsidian/ViewModels/Blocks/Cms/PersonalLinks/personalLinksInitializationBox";
+    import { PersonalLinksDataBag } from "@Obsidian/ViewModels/Blocks/Cms/PersonalLinks/personalLinksDataBag";
+    import { PersonalLinksSectionBag } from "@Obsidian/ViewModels/Blocks/Cms/PersonalLinks/personalLinksSectionBag";
+    import { SaveLinkRequestBag } from "@Obsidian/ViewModels/Blocks/Cms/PersonalLinks/saveLinkRequestBag";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import ViewPanel from "./PersonalLinks/viewPanel.partial.obs";
+    import AddSectionPanel from "./PersonalLinks/addSectionPanel.partial.obs";
+    import AddLinkPanel from "./PersonalLinks/addLinkPanel.partial.obs";
+    import { NavigationUrlKey, PanelState, QuickReturnGroup } from "./PersonalLinks/types.partial";
+    import { calculatePopoverPosition, getPersonalLinksData, getQuickReturns, savePersonalLinksData } from "./PersonalLinks/utils.partial";
+
+    interface IPersonalLinksRock {
+        personalLinks?: {
+            onQuickReturnUpdated?: () => void;
+        };
+    }
+
+    const config = useConfigurationValues<PersonalLinksInitializationBox>();
+    const invokeBlockAction = useInvokeBlockAction();
+
+    onConfigurationValuesChanged(useReloadBlock());
+
+    const isBlockVisible = config.isBlockVisible;
+    const storageKey = config.quickLinksLocalStorageKey ?? "";
+
+    const bookmarkEl = ref<HTMLAnchorElement | null>(null);
+    const popoverEl = ref<HTMLDivElement | null>(null);
+    const isPopoverOpen = ref(false);
+    const panelState = ref<PanelState>(PanelState.View);
+    const popoverTop = ref(0);
+    const popoverLeft = ref(0);
+
+    const sections = ref<PersonalLinksSectionBag[]>([]);
+    const quickReturnGroups = ref<QuickReturnGroup[]>([]);
+
+    const popoverStyle = computed((): Record<string, string> => {
+        return {
+            top: `${popoverTop.value}px`,
+            left: `${popoverLeft.value}px`
+        };
+    });
+
+    // #region Data Loading
+
+    /**
+     * Hydrates the popover from the cached copy in localStorage so it renders
+     * immediately on open, before the fresh server fetch returns.
+     */
+    function loadFromLocalStorage(): void {
+        const cached = getPersonalLinksData();
+        sections.value = cached?.sections ?? [];
+        refreshQuickReturns();
+    }
+
+    /**
+     * Re-reads the person's quick-return items from localStorage and regroups them.
+     */
+    function refreshQuickReturns(): void {
+        quickReturnGroups.value = getQuickReturns(storageKey);
+    }
+
+    /**
+     * Fetches fresh personal-links data from the server and updates both the
+     * reactive state and the localStorage cache.
+     */
+    async function fetchAndCachePersonalLinks(): Promise<void> {
+        const result = await invokeBlockAction<PersonalLinksDataBag>("GetPersonalLinksData");
+        if (!result.isSuccess || !result.data) {
+            return;
+        }
+
+        sections.value = result.data.sections ?? [];
+
+        try {
+            savePersonalLinksData(result.data);
+        }
+        catch {
+            // localStorage.setItem can throw in Safari private mode or when the
+            // browser's storage quota is exceeded. We swallow it because the UI
+            // above already shows the fresh data — skipping the cache only
+            // means the next page load will refetch instead of rendering from
+            // cache first. Not worth interrupting the user over.
+        }
+    }
+
+    // #endregion
+
+    // #region Popover Positioning and Open/Close
+
+    /**
+     * Measures the bookmark and popover and updates the reactive top/left so
+     * the popover sits under the button, clamped within the viewport.
+     */
+    async function positionPopover(): Promise<void> {
+        if (!bookmarkEl.value) {
+            return;
+        }
+        await nextTick();
+        const popoverWidth = popoverEl.value?.offsetWidth ?? 320;
+        const { top, left } = calculatePopoverPosition(bookmarkEl.value, popoverWidth);
+        popoverTop.value = top;
+        popoverLeft.value = left;
+    }
+
+    /**
+     * Opens the popover and positions it. Runs positioning twice so the
+     * second pass can measure the real rendered width.
+     */
+    async function openPopover(): Promise<void> {
+        isPopoverOpen.value = true;
+        await positionPopover();
+        await positionPopover();
+    }
+
+    /**
+     * Closes the popover and returns the panel to the View state.
+     */
+    function closePopover(): void {
+        isPopoverOpen.value = false;
+        panelState.value = PanelState.View;
+    }
+
+    /**
+     * Returns true while the Add Link or Add Section form is open, used to
+     * suppress popover-dismissing behaviors that would discard the form.
+     */
+    function isInConfigurationMode(): boolean {
+        return panelState.value === PanelState.AddLink || panelState.value === PanelState.AddSection;
+    }
+
+    // #endregion
+
+    // #region Event Handlers
+
+    /**
+     * Toggles the popover on bookmark click; suppressed while a configuration
+     * form is open so the user doesn't lose in-progress input.
+     */
+    function onBookmarkClick(): void {
+        if (isInConfigurationMode()) {
+            return;
+        }
+        if (isPopoverOpen.value) {
+            closePopover();
+        }
+        else {
+            openPopover();
+        }
+    }
+
+    /**
+     * Closes the popover when a mouseup occurs outside it (and outside any
+     * open configuration form).
+     */
+    function onDocumentMouseUp(e: MouseEvent): void {
+        if (!isPopoverOpen.value) {
+            return;
+        }
+        const target = e.target as Node;
+        if (bookmarkEl.value?.contains(target) || popoverEl.value?.contains(target)) {
+            return;
+        }
+        if (isInConfigurationMode()) {
+            return;
+        }
+        closePopover();
+    }
+
+    /**
+     * Repositions the popover when the viewport resizes.
+     */
+    function onWindowResize(): void {
+        if (isPopoverOpen.value) {
+            positionPopover();
+        }
+    }
+
+    /**
+     * Closes the popover on Escape — but not while a configuration form is
+     * open, so an accidental press doesn't discard in-progress input.
+     */
+    function onDocumentKeydown(e: KeyboardEvent): void {
+        if (e.key !== "Escape") {
+            return;
+        }
+        if (!isPopoverOpen.value) {
+            return;
+        }
+
+        // Let the user abandon the popover with Escape only while viewing links;
+        // swallow it during Add Link / Add Section so an accidental press doesn't
+        // discard the in-progress form.
+        if (isInConfigurationMode()) {
+            return;
+        }
+        closePopover();
+    }
+
+    /**
+     * Swaps the popover to the Add Link form.
+     */
+    function onAddLinkClick(): void {
+        panelState.value = PanelState.AddLink;
+    }
+
+    /**
+     * Swaps the popover to the Add Section form.
+     */
+    function onAddSectionClick(): void {
+        panelState.value = PanelState.AddSection;
+    }
+
+    /**
+     * Navigates to the configured Manage Links page.
+     */
+    function onManageLinksClick(): void {
+        const url = config.navigationUrls?.[NavigationUrlKey.ManageLinksPage];
+        if (url) {
+            window.location.href = url;
+        }
+    }
+
+    /**
+     * Returns the popover to the View state when the user cancels an Add form.
+     */
+    function onCancelConfiguration(): void {
+        panelState.value = PanelState.View;
+    }
+
+    /**
+     * Saves a new personal link section and refreshes the popover with the
+     * updated data.
+     */
+    async function onSaveSection(name: string): Promise<void> {
+        const result = await invokeBlockAction<ListItemBag>("SaveSection", { name });
+        if (!result.isSuccess) {
+            await alert(result.errorMessage ?? "Unable to save section.");
+            return;
+        }
+        panelState.value = PanelState.View;
+        await fetchAndCachePersonalLinks();
+    }
+
+    /**
+     * Saves a new personal link and refreshes the popover with the updated data.
+     */
+    async function onSaveLink(bag: SaveLinkRequestBag): Promise<void> {
+        const result = await invokeBlockAction("SaveLink", { bag });
+        if (!result.isSuccess) {
+            await alert(result.errorMessage ?? "Unable to save link.");
+            return;
+        }
+        panelState.value = PanelState.View;
+        await fetchAndCachePersonalLinks();
+    }
+
+    // #endregion
+
+    // #region Lifecycle
+
+    onMounted(async () => {
+        if (!isBlockVisible) {
+            return;
+        }
+
+        // Register the callback the server-emitted addQuickReturn script invokes
+        // when a quick return is added. The core addQuickReturn function was
+        // defined synchronously during HTML parse via GetInitialHtmlContent and is
+        // already available before we reach this point.
+        const rock = window["Rock"] as IPersonalLinksRock;
+        if (rock?.personalLinks) {
+            rock.personalLinks.onQuickReturnUpdated = refreshQuickReturns;
+        }
+
+        document.addEventListener("mouseup", onDocumentMouseUp);
+        document.addEventListener("keydown", onDocumentKeydown);
+        window.addEventListener("resize", onWindowResize);
+
+        // Render whatever we have cached immediately so the popover isn't blank
+        // while the fresh data fetches.
+        loadFromLocalStorage();
+
+        // Then check staleness against the server-provided modification hash.
+        const cached = getPersonalLinksData();
+        const isStale = !cached || cached.modificationHash !== config.personalLinksModificationHash;
+        if (isStale) {
+            await fetchAndCachePersonalLinks();
+        }
+    });
+
+    onBeforeUnmount(() => {
+        document.removeEventListener("mouseup", onDocumentMouseUp);
+        document.removeEventListener("keydown", onDocumentKeydown);
+        window.removeEventListener("resize", onWindowResize);
+
+        // Leave window.Rock.personalLinks.addQuickReturn in place so any
+        // AddQuickReturn Lava-filter callbacks that fire after the component
+        // unmounts still persist the quick return to localStorage. Only clear
+        // the UI-refresh callback — without Vue mounted, there is nothing to
+        // refresh anyway.
+        const rock = window["Rock"] as IPersonalLinksRock;
+        if (rock?.personalLinks) {
+            delete rock.personalLinks.onQuickReturnUpdated;
+        }
+    });
+
+    // #endregion
+</script>

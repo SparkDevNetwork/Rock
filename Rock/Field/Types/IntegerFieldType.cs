@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -18,15 +18,15 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
+#if WEBFORMS
+using System.Web.UI;
+using System.Web.UI.WebControls;
+#endif
 
 using Rock.Attribute;
 using Rock.Model;
 using Rock.Reporting;
 using Rock.Web.UI.Controls;
-#if WEBFORMS
-using System.Web.UI;
-using System.Web.UI.WebControls;
-#endif
 
 namespace Rock.Field.Types
 {
@@ -195,6 +195,20 @@ namespace Rock.Field.Types
             {
                 return typeof( decimal? );
             }
+        }
+
+        #endregion
+
+        #region Value Hinting
+
+        /// <inheritdoc/>
+        internal override FieldTypeHints GetFieldHints( Dictionary<string, string> privateConfigurationValues )
+        {
+            return new FieldTypeHints
+            {
+                IsCompleteList = false,
+                ValueFormat = "A whole number. Rock parses this with Int32, so it must fit a 32 bit signed integer and must not carry a decimal point, thousands separators or a currency symbol."
+            };
         }
 
         #endregion

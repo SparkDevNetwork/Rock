@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -25,6 +25,7 @@ using System.Web;
 
 using Rock.Attribute;
 using Rock.Communication;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Utility;
@@ -55,8 +56,8 @@ namespace Rock.Jobs
 
     [CustomDropdownListField(
         "Date Range",
-        "The Monday-Sunday date range that should be used when reporting attendance status.",
-        "1^Current Week,2^Previous Week",
+        Description = "The Monday-Sunday date range that should be used when reporting attendance status.",
+        ListSource = "1^Current Week,2^Previous Week",
         Key = AttributeKey.DateRange,
         IsRequired = true,
         DefaultValue = "1",
@@ -188,7 +189,7 @@ namespace Rock.Jobs
             SystemCommunication systemCommunication;
 
             // Retrieve all of the needed data from the database.
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 InitializeServices( rockContext );
 

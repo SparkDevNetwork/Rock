@@ -16,6 +16,7 @@
         <TextColumn name="title"
                     title="Title"
                     field="title"
+                    width="20%"
                     :filter="textValueFilter"
                     visiblePriority="xs" />
 
@@ -41,28 +42,30 @@
         <Column name="mediums"
                 title="Mediums"
                 field="mediums"
+                width="150px"
                 :sortValue="getMediumsRowSortValue"
                 :filter="pickExistingValueFilter"
-                :filterValue="getMediumRowFilterValue">
+                :filterValue="getMediumRowFilterValue"
+                :exportValue="getMediumRowFilterValue">
             <template #format="{ row }">
                 <span v-if="row.smsMessage" class='label label-info mr-1'>SMS</span>
                 <span v-if="row.pushMessage" class='label label-info'>Push</span>
             </template>
         </Column>
 
-        <ButtonColumn name="preview"
-                      iconClass="ti ti-search"
-                      visiblePriority="xs"
-                      @click="onPreviewClick"
-                      width="57" />
-
         <BooleanColumn name="isActive"
                        title="Active"
                        field="isActive"
                        :filter="booleanValueFilter"
                        itemClass="justify-content-center text-center"
-                       width="57"
+                       width="100px"
                        visiblePriority="xs" />
+
+        <ButtonColumn name="preview"
+                      iconClass="ti ti-search"
+                      visiblePriority="xs"
+                      :excludeFromExport="true"
+                      @click="onPreviewClick" />
 
         <SecurityColumn :itemTitle="'title'" />
 
@@ -116,15 +119,17 @@
     }
 
     function getMediumRowFilterValue(row: Record<string, unknown>): string {
+        const mediums: string[] = [];
+
         if (row.smsMessage) {
-            return "SMS";
+            mediums.push("SMS");
         }
-        else if (row.pushMessage) {
-            return "Push";
+
+        if (row.pushMessage) {
+            mediums.push("Push");
         }
-        else {
-            return "";
-        }
+
+        return mediums.join(", ");
     }
 
     /**

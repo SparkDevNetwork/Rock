@@ -1,0 +1,148 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <p>
+        <strong>Rock Version: </strong>
+        {{ rockVersion }} <small v-if="rockVersionNumber">({{ rockVersionNumber }})</small>
+    </p>
+
+    <p>
+        <strong>Client Culture Setting: </strong>
+        {{ clientCulture }}
+    </p>
+
+    <NotificationBox v-if="clearCacheResult"
+                     :alertType="clearCacheResult.isWarning ? AlertType.Warning : AlertType.Success"
+                     :heading="clearCacheResult.isWarning ? undefined : 'Clear Cache'"
+                     dismissible
+                     @dismiss="onDismissClearCacheResult">
+        <p v-for="(message, index) in (clearCacheResult.messages ?? [])" :key="index">{{ message }}</p>
+    </NotificationBox>
+
+    <div v-if="isAdministrator" class="actions margin-t-xl">
+        <RockButton :btnType="BtnType.Primary"
+                    :onClick="onClearCache"
+                    autoLoading
+                    autoDisable
+                    loadingText="Clearing...">
+            Clear Cache
+        </RockButton>
+        <RockButton :btnType="BtnType.Link"
+                    :onClick="onRestart">
+            Restart Rock
+        </RockButton>
+    </div>
+</template>
+
+<script setup lang="ts">
+    import { PropType, onBeforeUnmount, ref } from "vue";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import { useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { alert, confirm } from "@Obsidian/Utility/dialogs";
+    import { AlertType } from "@Obsidian/Enums/Controls/alertType";
+    import { BtnType } from "@Obsidian/Enums/Controls/btnType";
+    import { ClearCacheResultBag } from "@Obsidian/ViewModels/Blocks/Administration/SystemInformation/clearCacheResultBag";
+
+    defineProps({
+        rockVersion: {
+            type: String as PropType<string>,
+            default: ""
+        },
+        rockVersionNumber: {
+            type: String as PropType<string>,
+            default: ""
+        },
+        clientCulture: {
+            type: String as PropType<string>,
+            default: ""
+        },
+        isAdministrator: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        }
+    });
+
+    // How long a successful clear-cache notification stays visible before auto-dismissing.
+    const successNotificationTimeoutMs = 5000;
+
+    const invokeBlockAction = useInvokeBlockAction();
+
+    const clearCacheResult = ref<ClearCacheResultBag | null>(null);
+    let autoDismissTimer: number | undefined;
+
+    /**
+     * Dismisses the clear-cache notification and cancels any pending
+     * auto-dismiss timer.
+     */
+    function onDismissClearCacheResult(): void {
+        if (autoDismissTimer) {
+            window.clearTimeout(autoDismissTimer);
+            autoDismissTimer = undefined;
+        }
+
+        clearCacheResult.value = null;
+    }
+
+    /**
+     * Clears the Rock cache and shows the resulting messages. Successful results
+     * auto-dismiss after a delay; warnings stay until manually closed.
+     */
+    async function onClearCache(): Promise<void> {
+        onDismissClearCacheResult();
+
+        const result = await invokeBlockAction<ClearCacheResultBag>("ClearCache");
+
+        if (result.isSuccess && result.data) {
+            clearCacheResult.value = result.data;
+        }
+        else {
+            clearCacheResult.value = {
+                messages: [result.errorMessage ?? "Unable to clear the cache."],
+                isWarning: true
+            };
+        }
+
+        // Auto-dismiss only successful results; warnings stay until manually closed.
+        if (!clearCacheResult.value.isWarning) {
+            autoDismissTimer = window.setTimeout(onDismissClearCacheResult, successNotificationTimeoutMs);
+        }
+    }
+
+    /**
+     * Confirms with the user and restarts the Rock application.
+     */
+    async function onRestart(): Promise<void> {
+        const confirmed = await confirm("Are you sure you want to restart Rock?");
+
+        if (!confirmed) {
+            return;
+        }
+
+        /*
+            6/17/26 - MSE
+
+            Notify the user before invoking the restart. RestartRock recycles the
+            application (HttpRuntime.UnloadAppDomain), which tears down the connection,
+            so the action's response cannot be relied upon to display the message. This
+            matches the original WebForms block, which alerted the user first and then
+            triggered the restart.
+
+            Reason: The app-domain recycle can abort the in-flight response.
+        */
+        await alert("The Rock application will be restarted. You will need to reload this page to continue.");
+
+        const result = await invokeBlockAction("RestartRock");
+
+        // A successful restart usually aborts this response; only a pre-restart failure
+        // (e.g. not authorized) returns here, so surface that error if it does.
+        if (!result.isSuccess) {
+            await alert(result.errorMessage ?? "Unable to restart Rock.");
+        }
+    }
+
+    onBeforeUnmount(() => {
+        if (autoDismissTimer) {
+            window.clearTimeout(autoDismissTimer);
+        }
+    });
+</script>

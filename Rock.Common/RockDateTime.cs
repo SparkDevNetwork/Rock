@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -55,6 +55,55 @@ namespace Rock
         private static TimeZoneInfo _defaultTimeZoneInfo = TimeZoneInfo.Local;
 
         /// <summary>
+        /// An optional fixed "current instant" (in UTC) used by unit tests to freeze
+        /// the clock so date/time edge cases (near-midnight boundaries, leap days, and
+        /// so on) can be verified deterministically. It is stored as an AsyncLocal for
+        /// the same reason as <see cref="_orgTimeZoneInfo"/>: a frozen clock confined to
+        /// the test's async flow cannot leak into other tests. This is <c>null</c> in
+        /// production, in which case <see cref="Now"/> and <see cref="SystemDateTime"/>
+        /// fall through to the real system clock.
+        /// </summary>
+        private static readonly AsyncLocal<DateTime?> _testCurrentDateTimeUtc = new AsyncLocal<DateTime?>();
+
+        /*
+            9/2/2026 - CLAUDE
+
+            The two accessors below are the only way to set the date/time overrides.
+            They are intentionally internal (exposed to Rock.Tests.Shared via
+            InternalsVisibleTo) so plugins cannot freeze or shift the clock in a running
+            production system - the sanctioned entry point is the test-only RockAppScope,
+            which snapshots the previous values and restores them when the scope is
+            disposed. The org time zone override reuses the existing _orgTimeZoneInfo
+            AsyncLocal that OrgTimeZoneInfo already reads from.
+
+            Reason: Test-only date/time override seam, kept out of the production API.
+        */
+
+        /// <summary>
+        /// Gets or sets the unit-test override for the current instant, expressed in
+        /// UTC. When set, <see cref="Now"/> and <see cref="SystemDateTime"/> derive from
+        /// this instant instead of the real system clock. A <c>null</c> value (the
+        /// default) restores normal behavior. Intended for use only by test infrastructure.
+        /// </summary>
+        internal static DateTime? TestCurrentDateTimeUtcOverride
+        {
+            get => _testCurrentDateTimeUtc.Value;
+            set => _testCurrentDateTimeUtc.Value = value;
+        }
+
+        /// <summary>
+        /// Gets or sets the unit-test override for the organization time zone. When set,
+        /// <see cref="OrgTimeZoneInfo"/> returns this value instead of the configured
+        /// default. A <c>null</c> value (the default) restores normal behavior. Intended
+        /// for use only by test infrastructure.
+        /// </summary>
+        internal static TimeZoneInfo TestOrgTimeZoneInfoOverride
+        {
+            get => _orgTimeZoneInfo.Value;
+            set => _orgTimeZoneInfo.Value = value;
+        }
+
+        /// <summary>
         /// This is something similar to the GregorianCalendar's TwoDigitYearMax property which we'll use to
         /// fix the two-digit 'year' for credit card checking.
         /// See https://learn.microsoft.com/en-us/dotnet/core/compatibility/globalization/8.0/twodigityearmax-default
@@ -69,29 +118,30 @@ namespace Rock
         {
             // Initialize the default time zone.
             _defaultTimeZoneInfo = organizationTimeZoneInfo ?? TimeZoneInfo.Local;
-
-            // Initialize the default graduation date.
-#pragma warning disable CS0618 // Type or member is obsolete
-            var graduationDateWithCurrentYear = new DateTime( Today.Year, 6, 1 );
-
-            if ( graduationDateWithCurrentYear < Today )
-            {
-                // if the graduation date already occurred this year, return next year' graduation date
-                CurrentGraduationDate = graduationDateWithCurrentYear.AddYears( 1 );
-            }
-            else
-            {
-                CurrentGraduationDate = graduationDateWithCurrentYear;
-            }
-#pragma warning restore CS0618 // Type or member is obsolete
         }
 
         /// <summary>
-        /// Returns the date and time of the application host server. This prperty
+        /// Returns the date and time of the application host server. This property
         /// should be used whenever it is necessary to use the local server clock
         /// instead of <see cref="Now"/>.
         /// </summary>
-        public static DateTime SystemDateTime => DateTime.Now;
+        public static DateTime SystemDateTime
+        {
+            get
+            {
+                // When a unit test has frozen the clock, project that same instant into
+                // the local server time zone so SystemDateTime and Now stay consistent
+                // (they represent one moment viewed in two time zones).
+                var testDateTimeUtc = _testCurrentDateTimeUtc.Value;
+
+                if ( testDateTimeUtc.HasValue )
+                {
+                    return TimeZoneInfo.ConvertTime( testDateTimeUtc.Value, TimeZoneInfo.Local );
+                }
+
+                return DateTime.Now;
+            }
+        }
 
         /// <summary>
         /// Gets current datetime based on the OrgTimeZone setting set in web.config.
@@ -103,7 +153,11 @@ namespace Rock
         {
             get
             {
-                return TimeZoneInfo.ConvertTime( DateTime.UtcNow, OrgTimeZoneInfo );
+                // Fall through to the real UTC clock unless a unit test has frozen the
+                // current instant via TestCurrentDateTimeUtcOverride.
+                var utcNow = _testCurrentDateTimeUtc.Value ?? DateTime.UtcNow;
+
+                return TimeZoneInfo.ConvertTime( utcNow, OrgTimeZoneInfo );
             }
         }
 
@@ -220,28 +274,6 @@ namespace Rock
 
             return ( DateTime? ) null;
         }
-
-        /// <summary>
-        /// Gets the current graduation date base on the GradeTransitionDate GlobalAttribute and current datetime.
-        /// For example, if the Grade Transition Date is June 1st and the current date is June 1st or earlier, it will return June 1st of the current year;
-        /// otherwise, it will return June 1st of next year
-        /// </summary>
-        /// <value>
-        /// The current graduation date.
-        /// </value>
-        [RockObsolete("1.13")]
-        [Obsolete( "Use PersonService.GetCurrentGraduationDate() instead." )]
-        public static DateTime CurrentGraduationDate { get; internal set; }
-
-        /// <summary>
-        /// Gets the current graduation year based on <see cref="CurrentGraduationDate"/>
-        /// </summary>
-        /// <value>
-        /// The current graduation year.
-        /// </value>
-        [RockObsolete( "1.13" )] 
-        [Obsolete( "Use PersonService.GetCurrentGraduationYear() instead." )]
-        public static int CurrentGraduationYear => CurrentGraduationDate.Year;
 
         /// <summary>
         /// Gets the Date of which Sunday is associated with the specified Date/Time, based on <see cref="RockDateTime.FirstDayOfWeek" />

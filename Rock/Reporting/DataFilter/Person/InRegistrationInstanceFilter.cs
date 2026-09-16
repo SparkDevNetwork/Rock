@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -24,6 +24,7 @@ using System.Web.UI;
 using System.Web.UI.WebControls;
 
 using Rock;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Net;
@@ -104,6 +105,11 @@ namespace Rock.Reporting.DataSelect.Person
 
             SelectionConfig selectionConfig = SelectionConfig.Parse( selection );
 
+            if ( selectionConfig == null )
+            {
+                return data;
+            }
+
             var registrationTemplate = new RegistrationTemplateService( rockContext ).Get( selectionConfig.RegistrationTemplateId );
             data.Add( "template", registrationTemplate?.ToListItemBag().ToCamelCaseJson( false, true ) );
 
@@ -126,11 +132,6 @@ namespace Rock.Reporting.DataSelect.Person
             if ( templateGuid.HasValue )
             {
                 var template = new RegistrationTemplateService( rockContext ).Get( templateGuid.Value );
-                selectionConfig.RegistrationTemplateId = template.Id;
-            }
-            else
-            {
-                var template = new RegistrationTemplateService( rockContext ).Queryable().FirstOrDefault();
                 selectionConfig.RegistrationTemplateId = template.Id;
             }
 
@@ -203,19 +204,28 @@ function() {
         {
             SelectionConfig selectionConfig = SelectionConfig.Parse( selection );
 
+            if ( selectionConfig == null )
+            {
+                return string.Empty;
+            }
+
             string filterOptions = selectionConfig.RegistrationType == RegistrationTypeSpecifier.Registrar ? "Registrar" : "Registrant";
 
             var waitlistFilterStatus = selectionConfig.OnWaitList == null ? string.Empty : Convert.ToBoolean( selectionConfig.OnWaitList ) ? ", only wait list" : ", no wait list";
 
-            var registrationInstance = new RegistrationInstanceService( new RockContext() ).Queryable().Where( a => a.Guid == selectionConfig.RegistrationInstanceGuid ).FirstOrDefault();
+            var registrationInstance = new RegistrationInstanceService( RockApp.Current.CreateRockContext() ).Queryable().Where( a => a.Guid == selectionConfig.RegistrationInstanceGuid ).FirstOrDefault();
             if ( registrationInstance != null )
             {
                 return string.Format( "{0} in registration instance '{1}' {2}", filterOptions, registrationInstance.Name, waitlistFilterStatus );
             }
+            else if ( registrationInstance == null && selectionConfig.RegistrationInstanceGuid.HasValue )
+            {
+                return string.Format( "{0} in registration instance '{1}' {2}", filterOptions, "[MISSING]", waitlistFilterStatus );
+            }
             else
             {
-                var registrationTemplate = new RegistrationTemplateService( new RockContext() ).Queryable().Where( t => t.Id == selectionConfig.RegistrationTemplateId ).FirstOrDefault();
-                return string.Format( "{0} in any registration instance of template '{1}' {2}", filterOptions, registrationTemplate.Name, waitlistFilterStatus );
+                var registrationTemplate = new RegistrationTemplateService( RockApp.Current.CreateRockContext() ).Queryable().Where( t => t.Id == selectionConfig.RegistrationTemplateId ).FirstOrDefault();
+                return string.Format( "{0} in any registration instance of template '{1}' {2}", filterOptions, registrationTemplate?.Name ?? selectionConfig.RegistrationTemplateId + " [MISSING]", waitlistFilterStatus );
             }
         }
 
@@ -235,7 +245,7 @@ function() {
             _ddlRegistrationTemplate.Label = "Registration Template";
             _ddlRegistrationTemplate.DataTextField = "Name";
             _ddlRegistrationTemplate.DataValueField = "Id";
-            _ddlRegistrationTemplate.DataSource = new RegistrationTemplateService( new RockContext() ).Queryable()
+            _ddlRegistrationTemplate.DataSource = new RegistrationTemplateService( RockApp.Current.CreateRockContext() ).Queryable()
                 .OrderBy( a => a.Name )
                 .Select( d => new
                 {
@@ -244,6 +254,7 @@ function() {
                 } )
             .ToList();
             _ddlRegistrationTemplate.DataBind();
+            _ddlRegistrationTemplate.Items.Insert( 0, new ListItem( string.Empty, string.Empty ) );
             _ddlRegistrationTemplate.SelectedIndexChanged += ddlRegistrationTemplate_SelectedIndexChanged;
             _ddlRegistrationTemplate.AutoPostBack = true;
             filterControl.Controls.Add( _ddlRegistrationTemplate );
@@ -310,7 +321,7 @@ function() {
             {
                 _ddlRegistrationInstance.Items.Clear();
                 _ddlRegistrationInstance.Items.Add( new ListItem( "- Any -", string.Empty ) );
-                foreach ( var item in new RegistrationInstanceService( new RockContext() ).Queryable().Where( r => r.RegistrationTemplateId == registrationTemplateId ).OrderBy( r => r.Name ) )
+                foreach ( var item in new RegistrationInstanceService( RockApp.Current.CreateRockContext() ).Queryable().Where( r => r.RegistrationTemplateId == registrationTemplateId ).OrderBy( r => r.Name ) )
                 {
                     _ddlRegistrationInstance.Items.Add( new ListItem( item.Name, item.Guid.ToString() ) );
                 }
@@ -367,11 +378,16 @@ function() {
         {
             SelectionConfig selectionConfig = SelectionConfig.Parse( selection );
 
-            var registrationTemplate = new RegistrationTemplateService( new RockContext() ).Get( selectionConfig.RegistrationTemplateId );
+            var registrationTemplate = new RegistrationTemplateService( RockApp.Current.CreateRockContext() ).Get( selectionConfig.RegistrationTemplateId );
             var ddlRegistrationTemplate = controls[0] as RockDropDownList;
             if ( registrationTemplate != null )
             {
                 ddlRegistrationTemplate.SetValue( selectionConfig.RegistrationTemplateId );
+            }
+            else
+            {
+                ddlRegistrationTemplate.ClearSelection();
+                ddlRegistrationTemplate.SelectedIndex = -1;
             }
 
             ddlRegistrationTemplate_SelectedIndexChanged( ddlRegistrationTemplate, new EventArgs() );

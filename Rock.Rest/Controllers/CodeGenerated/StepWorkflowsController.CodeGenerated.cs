@@ -21,6 +21,7 @@
 // </copyright>
 //
 
+using Rock.Configuration;
 using Rock.Model;
 using Rock.SystemGuid;
 
@@ -35,6 +36,6 @@ namespace Rock.Rest.Controllers
         /// <summary>
         /// Initializes a new instance of the <see cref="StepWorkflowsController"/> class.
         /// </summary>
-        public StepWorkflowsController() : base( new Rock.Model.StepWorkflowService( new Rock.Data.RockContext() ) ) { } 
+        public StepWorkflowsController() : base( new Rock.Model.StepWorkflowService( RockApp.Current.CreateRockContext() ) ) { } 
     }
 }

@@ -25,6 +25,7 @@ using System.Net.Http;
 using System.Web.Http;
 using System.Web.Http.OData;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Rest.Filters;
@@ -300,7 +301,7 @@ namespace Rock.Rest.Controllers
         {
             int groupTypeId = GroupTypeCache.Get( groupTypeGuid ).Id;
 
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var groupTypeChildList = new GroupTypeService( rockContext ).GetCheckinAreaDescendants( groupTypeId ).Select( t => t.Id ).ToList();
             groupTypeChildList.Add( groupTypeId );
 
@@ -413,7 +414,7 @@ namespace Rock.Rest.Controllers
         {
             bool reversed;
 
-            RockContext rockContext = new RockContext();
+            RockContext rockContext = RockApp.Current.CreateRockContext();
             PersonService personService = new PersonService( rockContext );
             Guid homeAddressGuid = Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME.AsGuid();
 
@@ -465,7 +466,7 @@ namespace Rock.Rest.Controllers
         [Rock.SystemGuid.RestActionGuid( "16370925-9F92-4894-8994-A03AF978664D" )]
         public FamilySearchResult GetFamily( int familyId )
         {
-            RockContext rockContext = new RockContext();
+            RockContext rockContext = RockApp.Current.CreateRockContext();
             Guid homeAddressGuid = Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME.AsGuid();
 
             return new GroupService( rockContext ).Queryable().AsNoTracking()
@@ -503,7 +504,7 @@ namespace Rock.Rest.Controllers
             Guid knownRelationshipOwner = new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_OWNER );
             Guid knownRelationshipCanCheckin = new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_CAN_CHECK_IN );
 
-            RockContext rockContext = new RockContext();
+            RockContext rockContext = RockApp.Current.CreateRockContext();
             GroupMemberService groupMemberService = new GroupMemberService( rockContext );
             PersonService personService = new PersonService( rockContext );
 
@@ -1094,7 +1095,7 @@ namespace Rock.Rest.Controllers
             SetProxyCreation( true );
 
             // Use new service with new context so properties can be navigated by liquid
-            var group = new GroupService( new RockContext() ).Queryable( "GroupType,GroupLocations.Location,Campus,Members.Person" )
+            var group = new GroupService( RockApp.Current.CreateRockContext() ).Queryable( "GroupType,GroupLocations.Location,Campus,Members.Person" )
                 .Where( g => g.Id == groupId )
                 .FirstOrDefault();
 

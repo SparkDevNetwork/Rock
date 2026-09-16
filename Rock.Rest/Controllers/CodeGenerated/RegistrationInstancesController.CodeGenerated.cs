@@ -21,6 +21,7 @@
 // </copyright>
 //
 
+using Rock.Configuration;
 using Rock.Model;
 using Rock.SystemGuid;
 
@@ -35,6 +36,6 @@ namespace Rock.Rest.Controllers
         /// <summary>
         /// Initializes a new instance of the <see cref="RegistrationInstancesController"/> class.
         /// </summary>
-        public RegistrationInstancesController() : base( new Rock.Model.RegistrationInstanceService( new Rock.Data.RockContext() ) ) { } 
+        public RegistrationInstancesController() : base( new Rock.Model.RegistrationInstanceService( RockApp.Current.CreateRockContext() ) ) { } 
     }
 }

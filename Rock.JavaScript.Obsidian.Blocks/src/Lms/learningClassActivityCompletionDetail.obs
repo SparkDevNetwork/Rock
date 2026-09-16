@@ -104,22 +104,30 @@
             return labels;
         }
 
-        const pointsEarned = learningActivityCompletionEditBag.value?.bag?.pointsEarned ?? 0;
-        const pointsPossible = learningActivityCompletionViewBag.value?.classActivityBag?.points ?? 0;
-        const percentEarned = pointsPossible > 0 ? Math.round(pointsEarned / pointsPossible * 100) : 0;
-        const grade = gradingScales.value?.find(s => percentEarned >= s.thresholdPercentage);
-        const hasGradeScale = grade != null;
+        const completion = learningActivityCompletionEditBag.value?.bag;
+        const showGradeLabel = !!(
+            completion?.isCompleted
+            && !completion.requiresScoring
+        );
 
-        // If there's a grade scale then use the grade otherwise assume it's incomplete.
-        const isGradePassing = hasGradeScale ? grade.isPassing : true;
+        if (showGradeLabel) {
+            const pointsEarned = completion.pointsEarned ?? 0;
+            const pointsPossible = learningActivityCompletionViewBag.value?.classActivityBag?.points ?? 0;
+            const percentEarned = pointsPossible > 0 ? Math.round(pointsEarned / pointsPossible * 100) : 0;
+            const grade = gradingScales.value?.find(s => percentEarned >= s.thresholdPercentage);
+            const hasGradeScale = grade != null;
 
-        const gradeText = hasGradeScale ? (grade.name?.trim() ? `${grade.name} (${percentEarned}%)` : `${percentEarned}%`) : `${percentEarned}%`;
+            // If there's a grade scale then use the grade otherwise assume it's incomplete.
+            const isGradePassing = hasGradeScale ? grade.isPassing : true;
 
-        if (pointsPossible > 0 && gradeText.length > 0) {
-            labels.push({
-                title: gradeText,
-                type: isGradePassing ? "success" : "warning"
-            });
+            const gradeText = hasGradeScale ? (grade.name?.trim() ? `${grade.name} (${percentEarned}%)` : `${percentEarned}%`) : `${percentEarned}%`;
+
+            if (pointsPossible > 0 && gradeText.length > 0) {
+                labels.push({
+                    title: gradeText,
+                    type: isGradePassing ? "success" : "warning"
+                });
+            }
         }
 
         if (isLate.value) {

@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -67,7 +67,13 @@ namespace Rock.Web.UI
         private PageCache _pageCache = null;
 
         private string _clientType = null;
+
+        [Obsolete( "Use RequestContext.BrowserInfo or IUserAgentParser instead." )]
+        [RockObsolete( "20.0" )]
         private BrowserInfo _browserInfo = null;
+
+        [Obsolete( "Use RequestContext.BrowserInfo or IUserAgentParser instead." )]
+        [RockObsolete( "20.0" )]
         private BrowserClient _browserClient = null;
 
         private TimeSpan _tsDuration;
@@ -492,7 +498,7 @@ namespace Rock.Web.UI
             {
                 if ( _clientType == null )
                 {
-                    _clientType = InteractionDeviceType.GetClientType( Request.UserAgent ?? "" );
+                    _clientType = RequestContext?.ClientInformation?.BrowserInfo?.ClientType ?? "None";
                 }
                 return _clientType;
             }
@@ -505,6 +511,8 @@ namespace Rock.Web.UI
         /// <value>
         /// The client information.
         /// </value>
+        [Obsolete( "Use RequestContext.BrowserInfo or IUserAgentParser instead." )]
+        [RockObsolete( "20.0" )]
         public BrowserInfo BrowserInfo
         {
             get
@@ -551,6 +559,8 @@ namespace Rock.Web.UI
         /// <value>
         /// The browser client.
         /// </value>
+        [Obsolete( "Use RequestContext.BrowserInfo or IUserAgentParser instead." )]
+        [RockObsolete( "20.0" )]
         public BrowserClient BrowserClient
         {
             get
@@ -872,7 +882,7 @@ namespace Rock.Web.UI
                 }
             }
 
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
 
             // If the impersonated query key was included or is in session then set the current person
             Page.Trace.Warn( "Checking for person impersonation" );
@@ -1271,7 +1281,7 @@ namespace Rock.Web.UI
                                     nbBlockLoad.Dismissable = true;
                                     control = nbBlockLoad;
 
-                                    if ( this.IsPostBack )
+                                    if ( block.BlockType.Path.IsNotNullOrWhiteSpace() && this.IsPostBack )
                                     {
                                         // throw an error on PostBack so that the ErrorPage gets shown (vs nothing happening)
                                         throw;
@@ -1753,8 +1763,8 @@ namespace Rock.Web.UI
             foreach ( string param in PageParameter( "context", true ).Split( delim, StringSplitOptions.RemoveEmptyEntries ) )
             {
                 string contextItem = Rock.Security.Encryption.DecryptString( param );
-                string[] parts = contextItem.Split( '|' );
-                if ( parts.Length == 2 )
+                string[] parts = contextItem?.Split( '|' );
+                if ( parts != null && parts.Length == 2 )
                 {
                     keyEntityDictionary.AddOrReplace( parts[0], new Data.KeyEntity( parts[1] ) );
                 }
@@ -1780,7 +1790,7 @@ namespace Rock.Web.UI
             var currentPerson = currentPersonAlias?.Person;
             var currentPersonId = currentPersonAlias?.PersonId;
 
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
 
             var visitorKeyCookie = GetCookie( Rock.Personalization.RequestCookieKey.ROCK_VISITOR_KEY );
             PersonAlias currentVisitorCookiePersonAlias = null;
@@ -1965,7 +1975,7 @@ namespace Rock.Web.UI
                 segmentFilterCookieData = new Personalization.SegmentFilterCookieData();
                 segmentFilterCookieData.PersonAliasIdKey = IdHasher.Instance.GetHash( personalizationPersonAliasId.Value );
                 segmentFilterCookieData.LastUpdateDateTime = RockDateTime.Now;
-                var segmentIdKeys = new PersonalizationSegmentService( new RockContext() ).GetPersonalizationSegmentIdKeysForPersonAliasId( personalizationPersonAliasId.Value );
+                var segmentIdKeys = new PersonalizationSegmentService( RockApp.Current.CreateRockContext() ).GetPersonalizationSegmentIdKeysForPersonAliasId( personalizationPersonAliasId.Value );
                 segmentFilterCookieData.SegmentIdKeys = segmentIdKeys;
             }
 
@@ -2025,13 +2035,6 @@ namespace Rock.Web.UI
         {
             base.OnLoadComplete( e );
 
-            // Set the title displayed in the browser on the base page.
-            string pageTitle = BrowserTitle ?? string.Empty;
-            string siteTitle = _pageCache.Layout.Site.Name;
-            string seperator = pageTitle.Trim() != string.Empty && siteTitle.Trim() != string.Empty ? " | " : "";
-
-            base.Title = pageTitle + seperator + siteTitle;
-
             // Make the last breadcrumb on this page the only one active. This
             // takes care of any late additions to the breadcrumbs by Lava or
             // Obsidian blocks.
@@ -2054,6 +2057,22 @@ namespace Rock.Web.UI
                     ClientScript.RegisterStartupScript( this.Page.GetType(), "rock-obsidian-page-timings", script, true );
                 }
             }
+        }
+
+        /// <summary>
+        /// Raises the <see cref="E:System.Web.UI.Page.PreRenderComplete" /> event after
+        /// the page's registered asynchronous tasks have completed.
+        /// </summary>
+        /// <param name="e">An <see cref="T:System.EventArgs" /> that contains the event data.</param>
+        protected override void OnPreRenderComplete( EventArgs e )
+        {
+            base.OnPreRenderComplete( e );
+
+            string pageTitle = BrowserTitle ?? string.Empty;
+            string siteTitle = _pageCache.Layout.Site.Name;
+            string seperator = pageTitle.Trim() != string.Empty && siteTitle.Trim() != string.Empty ? " | " : "";
+
+            base.Title = pageTitle + seperator + siteTitle;
         }
 
         /// <summary>
@@ -2139,6 +2158,24 @@ namespace Rock.Web.UI
                         }
                     */
 
+                    /*
+                        7/6/2026 - MSE
+
+                        The WebForms Person Bio block set this session value in its click
+                        handler, but the Obsidian version starts impersonation from a
+                        block action where session state is unavailable. Setting it here,
+                        while the request is still authenticated as the original user,
+                        keeps the admin bar "Restore" button and elevated page rights
+                        working. If the request is already impersonated, the existing
+                        value is kept so Restore returns to the original user.
+
+                        Reason: Support the impersonation Restore button for the new Obsidian Bio block.
+                    */
+                    if ( string.IsNullOrEmpty( impersonatedPersonKeyIdentity ) && CurrentUser != null )
+                    {
+                        Session["ImpersonatedByUser"] = CurrentUser;
+                    }
+
                     Authorization.SignOut();
 
                     /*
@@ -2204,7 +2241,7 @@ namespace Rock.Web.UI
         {
             var googleAPIKey = GlobalAttributesCache.Get().GetValue( "GoogleAPIKey" );
             string keyParameter = string.IsNullOrWhiteSpace( googleAPIKey ) ? "" : string.Format( "key={0}&", googleAPIKey );
-            string scriptUrl = string.Format( "https://maps.googleapis.com/maps/api/js?{0}libraries=drawing,visualization,geometry,marker", keyParameter );
+            string scriptUrl = string.Format( "https://maps.googleapis.com/maps/api/js?{0}libraries=visualization,geometry,marker", keyParameter );
 
             // first, add it to the page to handle cases where the api is needed on first page load
             if ( this.Page != null && this.Page.Header != null )
@@ -2329,6 +2366,21 @@ Sys.Application.add_load(function () {
                 return;
             }
 
+            /*
+                8/24/2026 - CLAUDE
+
+                Reject speculative navigations before anything is recorded.
+                Chrome Speculation Rules and link prefetchers request pages the
+                visitor never actually opens, and every one of those was being
+                written as a page view.
+
+                Reason: Prefetched pages were inflating page view counts.
+            */
+            if ( WebRequestHelper.IsPrefetchRequest( Request?.Headers ) )
+            {
+                return;
+            }
+
             // Attempt to retrieve geolocation data.
             var geolocation = this.RequestContext?.ClientInformation?.Geolocation;
 
@@ -2377,6 +2429,22 @@ Sys.Application.add_load(function () {
             // database records used to track interactions for visitors until we know that the page has been executed
             // on a valid client with Javascript and cookies enabled.
             if ( ClientScript.IsStartupScriptRegistered( "rock-js-register-interaction" ) )
+            {
+                return;
+            }
+
+            /*
+                8/24/2026 - CLAUDE
+
+                Skip the callback entirely for a user agent we already know is a
+                crawler. The API endpoint rejects these too, but there is no
+                reason to hand a bot the script and pay for the round trip when
+                the user agent is identifiable from this request.
+
+                Reason: Avoids a pointless request and an Anonymous Visitor
+                cookie for traffic that will be rejected anyway.
+            */
+            if ( CrawlerUserAgents.IsCrawler( Request.UserAgent ) )
             {
                 return;
             }
@@ -2433,6 +2501,10 @@ Sys.Application.add_load(function () {
             // that only unique interactions are tracked during the session. This additional change was needed to prevent the
             // scenario where a duplicate interaction would be sent whenever an individual used a browser's back arrow to navigate
             // back to a page that had already sent an interaction. 
+            // The sendInteraction wrapper exists so the callback can be deferred
+            // until a prerendered page is actually activated. Chrome prerenders
+            // pages the visitor may never open; recording those on load counted
+            // page views for pages nobody saw. This mirrors what gtag.js does.
             string script = @"
 Sys.Application.add_load(function () {
     const getCookieValue = (name) => {
@@ -2441,22 +2513,31 @@ Sys.Application.add_load(function () {
         return !match ? '' : match.pop();
     };
 
-    var interactionGuid = '<interactionGuid>';
-    var interactionGuids = JSON.parse(sessionStorage.getItem('interactionGuids')) || [];
+    var sendInteraction = function () {
+        var interactionGuid = '<interactionGuid>';
+        var interactionGuids = JSON.parse(sessionStorage.getItem('interactionGuids')) || [];
 
-    if (!interactionGuids.includes(interactionGuid)) {
-        interactionGuids.push(interactionGuid);
-        sessionStorage.setItem('interactionGuids', JSON.stringify(interactionGuids));
+        if (!interactionGuids.includes(interactionGuid)) {
+            interactionGuids.push(interactionGuid);
+            sessionStorage.setItem('interactionGuids', JSON.stringify(interactionGuids));
 
-        var interactionArgs = <jsonData>;
-        if (!interactionArgs.<userIdProperty>) {
-            interactionArgs.<userIdProperty> = getCookieValue('<rockVisitorCookieName>');
+            var interactionArgs = <jsonData>;
+            if (!interactionArgs.<userIdProperty>) {
+                interactionArgs.<userIdProperty> = getCookieValue('<rockVisitorCookieName>');
+            }
+            $.ajax({
+                url: '/api/Interactions/RegisterPageInteraction',
+                type: 'POST',
+                data: interactionArgs
+                });
         }
-        $.ajax({
-            url: '/api/Interactions/RegisterPageInteraction',
-            type: 'POST',
-            data: interactionArgs
-            });
+    };
+
+    if (document.prerendering) {
+        document.addEventListener('prerenderingchange', sendInteraction, { once: true });
+    }
+    else {
+        sendInteraction();
     }
 });
 ";
@@ -2673,6 +2754,35 @@ Sys.Application.add_load(function () {
                     secondaryBlock.SetVisible( !hidden );
                 }
             }
+
+            /*
+                6/2/26 - MSE
+
+                The loop above only hides WebForms ISecondaryBlock blocks. Obsidian blocks are
+                hosted in a wrapper that does not implement that interface, so we bridge to the
+                framework's hideBlockRole/showBlockRole helpers (BlockRole.Secondary = 4) to
+                hide or show every Obsidian block registered with the Secondary role. Registered
+                against the page (matching the existing partial-postback script convention here)
+                so it runs after the async postback that drives the edit/view toggle.
+
+                Reason: Hide Obsidian Secondary blocks when a legacy block enters edit mode.
+            */
+            var secondaryRoleMethod = hidden ? "hideBlockRole" : "showBlockRole";
+
+            // Use the body class to avoid unbalancing the helpers' reference counts on repeat calls.
+            var secondaryRoleGuard = hidden
+                ? "!document.body.classList.contains( 'hide-block-role-secondary' )"
+                : "document.body.classList.contains( 'hide-block-role-secondary' )";
+
+            var secondaryRoleScript = $@"if ( window.Obsidian && {secondaryRoleGuard} ) {{
+    Obsidian.onReady( function () {{
+        System.import( '@Obsidian/Utility/block.js' ).then( function ( block ) {{
+            block.{secondaryRoleMethod}( 4 );
+        }} );
+    }} );
+}}";
+
+            ScriptManager.RegisterStartupScript( this, typeof( RockPage ), "rock-toggle-secondary-block-role", secondaryRoleScript, true );
         }
 
         /// <summary>
@@ -2950,7 +3060,7 @@ Sys.Application.add_load(function () {
                     {
                         if ( keyModel.Id.HasValue || keyModel.Guid.HasValue )
                         {
-                            var qry = new PersonService( new RockContext() )
+                            var qry = new PersonService( RockApp.Current.CreateRockContext() )
                                 .Queryable( true, true )
                                 .Include( p => p.MaritalStatusValue )
                                 .Include( p => p.ConnectionStatusValue )
@@ -2976,7 +3086,7 @@ Sys.Application.add_load(function () {
                         }
                         else if ( keyModel.Key.IsNotNullOrWhiteSpace() )
                         {
-                            keyModel.Entity = new PersonService( new RockContext() ).GetByPublicKey( keyModel.Key );
+                            keyModel.Entity = new PersonService( RockApp.Current.CreateRockContext() ).GetByPublicKey( keyModel.Key );
                         }
                     }
                     else
@@ -3446,7 +3556,7 @@ Sys.Application.add_load(function () {
         /// <param name="macAddress">The mac address.</param>
         public bool LinkPersonAliasToDevice( int personAliasId, string macAddress )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 PersonalDeviceService personalDeviceService = new PersonalDeviceService( rockContext );
                 PersonalDevice personalDevice = personalDeviceService.GetByMACAddress( macAddress );

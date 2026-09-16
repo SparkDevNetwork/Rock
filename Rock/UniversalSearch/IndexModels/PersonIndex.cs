@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -20,6 +20,7 @@ using System.Data.Entity;
 using System.Linq;
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.UniversalSearch.IndexModels.Attributes;
@@ -256,7 +257,7 @@ namespace Rock.UniversalSearch.IndexModels
 
                 personIndex.CampusId = person.PrimaryCampusId;
 
-                var rockContext = new RockContext();
+                var rockContext = RockApp.Current.CreateRockContext();
 
                 personIndex.ConnectionStatusValueId = person.ConnectionStatusValueId;
                 personIndex.RecordStatusValueId = person.RecordStatusValueId;
@@ -403,21 +404,18 @@ namespace Rock.UniversalSearch.IndexModels
                         personIndex.Spouse = spouses[person.Id];
                     }
 
-                    foreach ( var rawKey in person.Attributes.Keys )
+                    foreach ( var attributeValue in person.AttributeValues )
                     {
-                        // Remove invalid characters from the attribute key, based on AddIndexableAttributes();
-                        var safeKey = rawKey;
-                        safeKey = safeKey.Replace( ".", "_" );
-                        safeKey = safeKey.Replace( ",", "_" );
-                        safeKey = safeKey.Replace( "#", "_" );
-                        safeKey = safeKey.Replace( "*", "_" );
-                        safeKey = safeKey.StartsWith( "_" ) ? safeKey.Substring( 1 ) : safeKey;
+                        var key = attributeValue.Key;
 
-                        // If the keys don't match, substitue the new one.
-                        if ( safeKey != rawKey )
-                        {
-                            personIndex[safeKey] = person.Attributes[rawKey];
-                        }
+                        // Remove invalid characters from the attribute key.
+                        key = key.Replace( ".", "_" );
+                        key = key.Replace( ",", "_" );
+                        key = key.Replace( "#", "_" );
+                        key = key.Replace( "*", "_" );
+                        key = key.StartsWith( "_" ) ? key.Substring( 1 ) : key;
+
+                        personIndex[key] = attributeValue.Value.ValueFormatted;
                     }
 
                     personIndexes.Add( personIndex );

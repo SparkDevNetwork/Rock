@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -20,11 +20,13 @@ using System.Linq;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Lava;
 using Rock.Model;
 using Rock.Tests.Integration.TestData;
-using Rock.Tests.Shared.Lava;
+using Rock.Tests.Integration.TestFramework.Lava;
+using Rock.Tests.Shared.Core.Schedules;
 
 using static Rock.Tests.Integration.TestData.EventsDataManager;
 
@@ -82,7 +84,7 @@ namespace Rock.Tests.Integration.Core.Lava
         public void EventScheduledInstanceCommand_WithEventAsName_RetrievesOccurrencesInCorrectEvent()
         {
             // Get Event "Staff Meeting".
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var eventItemService = new EventItemService( rockContext );
 
             var testEvent = eventItemService.Get( StaffMeetingEventGuidString.AsGuid() );
@@ -98,7 +100,7 @@ namespace Rock.Tests.Integration.Core.Lava
         public void EventScheduledInstanceCommand_WithEventAsId_RetrievesOccurrencesInCorrectEvent()
         {
             // Get Event Item Id for "Staff Meeting".
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var eventItemService = new EventItemService( rockContext );
 
             var eventId = eventItemService.GetId( StaffMeetingEventGuidString.AsGuid() );
@@ -114,7 +116,7 @@ namespace Rock.Tests.Integration.Core.Lava
         public void EventScheduledInstanceCommand_WithEventAsGuid_RetrievesOccurrencesInCorrectEvent()
         {
             // Get Event "Staff Meeting".
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var eventItemService = new EventItemService( rockContext );
 
             var testEvent = eventItemService.Get( StaffMeetingEventGuidString.AsGuid() );
@@ -211,7 +213,7 @@ namespace Rock.Tests.Integration.Core.Lava
             const string NewEventGuid = "F7CE040E-CD1C-41E0-81D7-9F88BCDAF6A7";
             const string testScheduleGuid = "E31C0108-3F3A-4101-B135-A7B8482A226C";
 
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
 
             // Create a new Event that occurs daily.
             var startDateTime = RockDateTime.New( 2020, 1, 1 ).Value.AddHours( 19 ).AddMinutes( 30 );
@@ -453,7 +455,7 @@ namespace Rock.Tests.Integration.Core.Lava
         {
             var effectiveDate = EventsDataManager.Instance.GetDefaultEffectiveDate();
 
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var eventItemService = new EventItemService( rockContext );
 
             var testEvent = eventItemService.GetByIdentifierOrThrow( "Warrior Youth Event" );
@@ -519,7 +521,7 @@ Name={testEvent.Name}<br>Date={expectedDate:yyyy-MM-dd}<br>Time={expectedDate:h:
         [TestMethod]
         public void EventScheduledInstanceCommand_WithCampusAsId_RetrievesEventsWithMatchingCampus()
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
 
             var campusId = new CampusService( rockContext ).Queryable()
                 .FirstOrDefault().Id;

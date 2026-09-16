@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -28,6 +28,7 @@ using Rock;
 using Rock.Attribute;
 using Rock.Bus.Message;
 using Rock.Communication;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Financial;
 using Rock.Lava;
@@ -856,7 +857,7 @@ mission. We are so grateful for your commitment.</p>
             {
                 if ( _financialGateway == null )
                 {
-                    RockContext rockContext = new RockContext();
+                    RockContext rockContext = RockApp.Current.CreateRockContext();
                     var financialGatewayGuid = this.GetAttributeValue( AttributeKey.FinancialGateway ).AsGuid();
                     _financialGateway = new FinancialGatewayService( rockContext ).GetNoTracking( financialGatewayGuid );
                 }
@@ -909,7 +910,16 @@ mission. We are so grateful for your commitment.</p>
                 page.PageNavigate += page_PageNavigate;
             }
 
-            using ( var rockContext = new RockContext() )
+            // Set the CAPTCHA visibility before BindSavedAccounts() runs, because
+            // BindSavedAccounts() calls rblSavedAccount_SelectedIndexChanged which
+            // reads cpCaptcha.Visible to decide whether to apply the
+            // js-hidden-pending-captcha class to the Next button. Without this, the
+            // default WebControl.Visible (true) is read in Disabled mode and the
+            // Next button ends up hidden even when there is no CAPTCHA to solve.
+            var disableCaptchaSupport = Captcha.CaptchaService.ShouldDisableCaptcha( GetAttributeValue( AttributeKey.DisableCaptchaSupport ).AsBoolean() );
+            cpCaptcha.Visible = !( disableCaptchaSupport || !cpCaptcha.IsAvailable );
+
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 SetTargetPerson( rockContext );
                 SetGatewayOptions();
@@ -918,40 +928,17 @@ mission. We are so grateful for your commitment.</p>
 
             RegisterScript();
 
-            var disableCaptchaSupport = Captcha.CaptchaService.ShouldDisableCaptcha( GetAttributeValue( AttributeKey.DisableCaptchaSupport ).AsBoolean() );
-            cpCaptcha.Visible = !( disableCaptchaSupport || !cpCaptcha.IsAvailable );
-            cpCaptcha.TokenReceived += CpCaptcha_TokenReceived;
+            // Intentionally not subscribing to cpCaptcha.TokenReceived. Without a
+            // server-side subscriber, captcha.js does not generate a postBackScript
+            // (see Captcha.OnPreRender), so solving the CAPTCHA never causes an async
+            // postback. The hosted payment iframe therefore is not re-rendered and the
+            // user's typed card data is preserved. The CAPTCHA token still ends up in
+            // the hidden field on every postback and is validated server-side in
+            // HandlePaymentInfoNextButton via cpCaptcha.IsResponseValid(). The UI
+            // change (hide widget, reveal Next button) is handled client-side via the
+            // "rockcaptcha:solved" event - see RegisterScript().
 
             InitializeFinancialGatewayControls();
-        }
-
-        /// <summary>
-        /// Handles the TokenReceived event of the CpCaptcha control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="Captcha.TokenReceivedEventArgs"/> instance containing the event data.</param>
-        private void CpCaptcha_TokenReceived( object sender, Captcha.TokenReceivedEventArgs e )
-        {
-            if ( e.IsValid )
-            {
-                nbPaymentTokenError.Visible = false;
-                nbPaymentTokenError.Text = string.Empty;
-
-                _hostedPaymentInfoControl.Visible = true;
-                hfHostPaymentInfoSubmitScript.Value = this.FinancialGatewayComponent.GetHostPaymentInfoSubmitScript( this.FinancialGateway, _hostedPaymentInfoControl );
-                cpCaptcha.Visible = false;
-
-                var isSavedAccount = rblSavedAccount.SelectedValue.AsInteger() > 0;
-                btnSavedAccountPaymentInfoNext.Visible = isSavedAccount;
-                btnHostedPaymentInfoNext.Visible = !isSavedAccount;
-                return;
-            }
-
-            nbPaymentTokenError.Visible = true;
-            nbPaymentTokenError.Text = "There was an issue processing your request. Please try again. If the issue persists please contact us.";
-            cpCaptcha.Visible = true;
-            btnHostedPaymentInfoNext.Visible = false;
-            btnSavedAccountPaymentInfoNext.Visible = false;
         }
 
         private void InitializeFinancialGatewayControls()
@@ -973,16 +960,23 @@ mission. We are so grateful for your commitment.</p>
 
             hfHostPaymentInfoSubmitScript.Value = this.FinancialGatewayComponent.GetHostPaymentInfoSubmitScript( this.FinancialGateway, _hostedPaymentInfoControl );
 
-            if ( Captcha.CaptchaService.ShouldDisableCaptcha( GetAttributeValue( AttributeKey.DisableCaptchaSupport ).AsBoolean() ) || !cpCaptcha.IsAvailable )
+            // Show the payment fields immediately. The Next button is CSS-hidden
+            // (display: none) when CAPTCHA is required; it must still be rendered
+            // server-side so that the JS handler on "rockcaptcha:solved" can reveal
+            // it without a server postback. See RegisterScript().
+            var isSavedAccount = rblSavedAccount.SelectedValue.AsInteger() > 0;
+            btnSavedAccountPaymentInfoNext.Visible = isSavedAccount;
+            btnHostedPaymentInfoNext.Visible = !isSavedAccount;
+
+            if ( cpCaptcha.Visible )
             {
-                var isSavedAccount = rblSavedAccount.SelectedValue.AsInteger() > 0;
-                btnSavedAccountPaymentInfoNext.Visible = isSavedAccount;
-                btnHostedPaymentInfoNext.Visible = !isSavedAccount;
-            }
-            else
-            {
-                btnHostedPaymentInfoNext.Visible = false;
-                btnSavedAccountPaymentInfoNext.Visible = false;
+                // BootstrapButton overrides AddAttributesToRender and does not emit the
+                // Attributes collection or the inline Style collection, so we have to
+                // hide via a CSS class. The .js-hidden-pending-captcha rule is defined
+                // inline in RegisterScript(). When CAPTCHA is solved, RegisterScript's
+                // JS removes the class as part of revealing the button.
+                var activeNextButton = isSavedAccount ? ( WebControl ) btnSavedAccountPaymentInfoNext : btnHostedPaymentInfoNext;
+                activeNextButton.CssClass += " js-hidden-pending-captcha";
             }
 
             if ( _hostedPaymentInfoControl is IHostedGatewayPaymentControlTokenEvent )
@@ -1166,7 +1160,7 @@ mission. We are so grateful for your commitment.</p>
         {
             var allowAccountsInUrl = this.GetAttributeValue( AttributeKey.AllowAccountOptionsInURL ).AsBoolean();
 
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var accountsQuery = new FinancialAccountService( rockContext )
                 .GetByGuids( this.GetAttributeValues( AttributeKey.AccountsToDisplay ).AsGuidList() );
 
@@ -1257,6 +1251,34 @@ mission. We are so grateful for your commitment.</p>
                     var parameterAccountAmounts = parameterAccountOptions.Select( a => new CampusAccountAmountPicker.AccountIdAmount( a.AccountId, a.Amount ) { ReadOnly = !a.Enabled } );
                     accountAmounts = parameterAccountAmounts.ToArray();
                 }
+            }
+
+            // If this is a transfer (page params carried Transfer=true and
+            // ScheduledTransactionGuid, and InitializeTransfer resolved a
+            // schedule), pre-populate the account amounts from the schedule's
+            // existing details so the transfer form arrives pre-filled. Also
+            // add any of the schedule's accounts that aren't already in the
+            // block's selectable list so they can be rendered (mirrors the
+            // AvailableAccounts.Except / SelectedAccounts.AddRange behavior
+            // that TransactionEntry.ascx.cs used to do). URL-provided amounts
+            // (populated above from ParseAccountUrlOptions) take precedence
+            // over the transfer amounts if both were supplied.
+            if ( accountAmounts == null && _scheduledTransactionToBeTransferred != null )
+            {
+                var transferAccountAmounts = _scheduledTransactionToBeTransferred.ScheduledTransactionDetails
+                    .GroupBy( d => d.AccountId )
+                    .Select( g => new CampusAccountAmountPicker.AccountIdAmount( g.Key, g.Sum( d => d.Amount ) ) )
+                    .ToArray();
+
+                foreach ( var transferAccountId in transferAccountAmounts.Select( a => a.AccountId ) )
+                {
+                    if ( !selectableAccountIds.Contains( transferAccountId ) )
+                    {
+                        selectableAccountIds.Add( transferAccountId );
+                    }
+                }
+
+                accountAmounts = transferAccountAmounts;
             }
 
             caapPromptForAccountAmounts.SelectableAccountIds = selectableAccountIds.ToArray();
@@ -1489,7 +1511,7 @@ mission. We are so grateful for your commitment.</p>
                         var accountGLCode = accountOptionParts[0];
                         if ( accountGLCode.IsNotNullOrWhiteSpace() )
                         {
-                            using ( var rockContext = new RockContext() )
+                            using ( var rockContext = RockApp.Current.CreateRockContext() )
                             {
                                 parameterAccountOption.AccountId = new FinancialAccountService( rockContext )
                                     .Queryable()
@@ -1646,7 +1668,7 @@ mission. We are so grateful for your commitment.</p>
             hostedGatewayComponentList = hostedGatewayComponentList
                 .Where( item =>
                 {
-                    using ( var rockContext = new Rock.Data.RockContext() )
+                    using ( var rockContext = RockApp.Current.CreateRockContext() )
                     {
                         var entityType = Rock.Web.Cache.EntityTypeCache.Get( item.TypeGuid );
                         return new FinancialGatewayService( rockContext )
@@ -1797,6 +1819,28 @@ mission. We are so grateful for your commitment.</p>
         /// </summary>
         private void HandlePaymentInfoNextButton()
         {
+            // CAPTCHA verification was deferred to submission time so that solving
+            // the CAPTCHA does not trigger an async postback (which would re-render
+            // and wipe the hosted gateway iframe). Validate the token now before
+            // proceeding with payment processing.
+            if ( cpCaptcha.Visible && !cpCaptcha.IsResponseValid() )
+            {
+                ShowMessage( NotificationBoxType.Validation, "Before we finish...", "Please complete the verification again to continue." );
+
+                // Reset the client-side CAPTCHA state so the user can re-solve. The
+                // expired or invalid token in the hidden field would otherwise cause
+                // applyCaptchaState() to keep the widget hidden after the partial
+                // postback completes. The cap.js widget itself gets re-initialized
+                // automatically as part of the Captcha control re-rendering.
+                var resetScript = $@"
+$('#{cpCaptcha.ClientID}_hfToken').val('');
+$('#{cpCaptcha.ClientID}').show();
+$('#{btnHostedPaymentInfoNext.ClientID}, #{btnSavedAccountPaymentInfoNext.ClientID}').addClass('js-hidden-pending-captcha').hide();
+";
+                ScriptManager.RegisterStartupScript( upPayment, this.GetType(), "utility-payment-entry-captcha-reset", resetScript, true );
+                return;
+            }
+
             if ( ValidatePaymentInfo( out string errorMessage ) )
             {
                 ReferencePaymentInfo paymentInfo = GetPaymentInfo( out errorMessage );
@@ -1907,7 +1951,7 @@ mission. We are so grateful for your commitment.</p>
                 return;
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 if ( phCreateLogin.Visible )
                 {
@@ -1979,16 +2023,11 @@ mission. We are so grateful for your commitment.</p>
                 var transactionEntityType = EntityTypeCache.Get( transactionEntityTypeGuid.Value );
                 if ( transactionEntityType != null )
                 {
-                    var entityId = this.PageParameter( this.GetAttributeValue( AttributeKey.EntityIdParam ) ).AsIntegerOrNull();
-                    if ( entityId.HasValue )
+                    var entityKey = this.PageParameter( this.GetAttributeValue( AttributeKey.EntityIdParam ) );
+                    if ( entityKey.IsNotNullOrWhiteSpace() )
                     {
-                        var dbContext = Reflection.GetDbContextForEntityType( transactionEntityType.GetEntityType() );
-                        IService serviceInstance = Reflection.GetServiceForEntityType( transactionEntityType.GetEntityType(), dbContext );
-                        if ( serviceInstance != null )
-                        {
-                            System.Reflection.MethodInfo getMethod = serviceInstance.GetType().GetMethod( "Get", new Type[] { typeof( int ) } );
-                            transactionEntity = getMethod.Invoke( serviceInstance, new object[] { entityId.Value } ) as Rock.Data.IEntity;
-                        }
+                        // Resolve as an Id, IdKey, or Guid; integer ids stay accepted so existing links keep working.
+                        transactionEntity = Reflection.GetIEntityForEntityType( transactionEntityType.GetEntityType(), entityKey );
                     }
                 }
             }
@@ -2106,7 +2145,7 @@ mission. We are so grateful for your commitment.</p>
             var currentSavedAccountSelection = rblSavedAccount.SelectedValue;
 
             var targetPersonId = _targetPerson.Id;
-            var personSavedAccountsQuery = new FinancialPersonSavedAccountService( new RockContext() )
+            var personSavedAccountsQuery = new FinancialPersonSavedAccountService( RockApp.Current.CreateRockContext() )
                 .GetByPersonId( targetPersonId )
                 .Where( a => !a.IsSystem )
                 .AsNoTracking();
@@ -2196,9 +2235,18 @@ mission. We are so grateful for your commitment.</p>
         protected void rblSavedAccount_SelectedIndexChanged( object sender, EventArgs e )
         {
             bool isSavedAccount = rblSavedAccount.SelectedValue.AsInteger() > 0;
-            btnSavedAccountPaymentInfoNext.Visible = isSavedAccount && !cpCaptcha.Visible;
-            btnHostedPaymentInfoNext.Visible = !isSavedAccount && !cpCaptcha.Visible;
+            btnSavedAccountPaymentInfoNext.Visible = isSavedAccount;
+            btnHostedPaymentInfoNext.Visible = !isSavedAccount;
             pnlPaymentInfo.Visible = !isSavedAccount;
+
+            // When CAPTCHA is required, CSS-hide the active Next button until the
+            // user solves the CAPTCHA client-side. applyCaptchaState() will reveal it
+            // by removing the class once the token is present.
+            if ( cpCaptcha.Visible )
+            {
+                var activeNextButton = isSavedAccount ? ( WebControl ) btnSavedAccountPaymentInfoNext : btnHostedPaymentInfoNext;
+                activeNextButton.CssClass += " js-hidden-pending-captcha";
+            }
         }
 
         /// <summary>
@@ -2209,7 +2257,7 @@ mission. We are so grateful for your commitment.</p>
             // Resolve the text field merge fields
             var mergeFields = LavaHelper.GetCommonMergeFields( this.RockPage );
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 IEntity transactionEntity = GetTransactionEntity();
                 if ( transactionEntity != null )
@@ -2407,7 +2455,7 @@ mission. We are so grateful for your commitment.</p>
                 if ( hfBusinessesLoaded.Value != contactPersonId.ToString() )
                 {
                     cblBusiness.Items.Clear();
-                    using ( var rockContext = new RockContext() )
+                    using ( var rockContext = RockApp.Current.CreateRockContext() )
                     {
                         var personService = new PersonService( rockContext );
                         var businesses = personService.GetBusinesses( contactPersonId ).ToList();
@@ -2459,7 +2507,7 @@ mission. We are so grateful for your commitment.</p>
                 txtCurrentName.Text = person.FullName;
                 txtEmail.Text = person.Email;
 
-                var rockContext = new RockContext();
+                var rockContext = RockApp.Current.CreateRockContext();
                 var personService = new PersonService( rockContext );
 
                 if ( DisplayPhone )
@@ -2532,7 +2580,7 @@ mission. We are so grateful for your commitment.</p>
             int? businessId = cblBusiness.SelectedValueAsInt();
             if ( businessId.HasValue )
             {
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     var personService = new PersonService( rockContext );
                     var business = personService.Get( businessId.Value );
@@ -2606,7 +2654,7 @@ mission. We are so grateful for your commitment.</p>
         private Person GetPerson( bool create )
         {
             Person person = null;
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var personService = new PersonService( rockContext );
 
             Group familyGroup = null;
@@ -2781,7 +2829,7 @@ mission. We are so grateful for your commitment.</p>
         private Person GetBusinessContact()
         {
             Person person = null;
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var personService = new PersonService( rockContext );
 
             // Check to see if there's only one person with same email, first name, and last name
@@ -2893,7 +2941,7 @@ mission. We are so grateful for your commitment.</p>
             bool givingAsBusiness = !enableTextToGiveSetup && GetAttributeValue( AttributeKey.EnableBusinessGiving ).AsBoolean() && !tglGiveAsOption.Checked;
             if ( person != null && givingAsBusiness )
             {
-                var rockContext = new RockContext();
+                var rockContext = RockApp.Current.CreateRockContext();
                 var personService = new PersonService( rockContext );
                 var groupService = new GroupService( rockContext );
                 var groupMemberService = new GroupMemberService( rockContext );
@@ -3068,7 +3116,7 @@ mission. We are so grateful for your commitment.</p>
                 return;
             }
 
-            RockContext rockContext = new RockContext();
+            RockContext rockContext = RockApp.Current.CreateRockContext();
             var scheduledTransaction = new FinancialScheduledTransactionService( rockContext ).Get( scheduledTransactionGuid.Value );
             var personService = new PersonService( rockContext );
 
@@ -3115,7 +3163,7 @@ mission. We are so grateful for your commitment.</p>
                     .Where( a => a.Amount.HasValue && a.Amount != 0.00M ).Select( a => a.AccountId )
                     .ToList();
 
-                var accounts = new FinancialAccountService( new RockContext() ).GetByIds( amountAccountIds ).ToList();
+                var accounts = new FinancialAccountService( RockApp.Current.CreateRockContext() ).GetByIds( amountAccountIds ).ToList();
                 var amountSummaryMergeFields = LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
                 amountSummaryMergeFields.Add( "Accounts", accounts );
 
@@ -3328,6 +3376,10 @@ mission. We are so grateful for your commitment.</p>
             var paymentInfo = ( isSavedAccount ) ? GetReferenceInfo( rblSavedAccount.SelectedValueAsId().Value ) : new ReferencePaymentInfo();
 
             paymentInfo.Amount = caapPromptForAccountAmounts.AccountAmounts.Where( a => a.Amount.HasValue ).Sum( a => a.Amount.Value );
+            paymentInfo.AccountAllocations = caapPromptForAccountAmounts.AccountAmounts
+                .Where( a => a.Amount.HasValue )
+                .Select( a => new FinancialTransactionService.AccountAllocation( a.AccountId, a.Amount.Value ) )
+                .ToList();
             paymentInfo.Email = txtEmail.Text;
             paymentInfo.Phone = PhoneNumber.FormattedNumber( pnbPhone.CountryCode, pnbPhone.Number, true );
             paymentInfo.Street1 = acAddress.Street1;
@@ -3356,7 +3408,7 @@ mission. We are so grateful for your commitment.</p>
         /// <param name="savedAccountId">The saved account unique identifier.</param>
         private ReferencePaymentInfo GetReferenceInfo( int savedAccountId )
         {
-            var savedAccount = new FinancialPersonSavedAccountService( new RockContext() ).Get( savedAccountId );
+            var savedAccount = new FinancialPersonSavedAccountService( RockApp.Current.CreateRockContext() ).Get( savedAccountId );
             if ( savedAccount != null )
             {
                 return savedAccount.GetReferencePayment();
@@ -3417,7 +3469,7 @@ mission. We are so grateful for your commitment.</p>
         /// <param name="errorMessage">The error message.</param>
         private bool ProcessTransaction( out string errorMessage )
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             if ( string.IsNullOrWhiteSpace( TransactionCode ) )
             {
                 var transactionGuid = hfTransactionGuid.Value.AsGuid();
@@ -3626,7 +3678,7 @@ mission. We are so grateful for your commitment.</p>
 
         private void DeleteOldTransaction( int scheduledTransactionId )
         {
-            using ( var rockContext = new Rock.Data.RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 FinancialScheduledTransactionService fstService = new FinancialScheduledTransactionService( rockContext );
                 var currentTransaction = fstService.Get( scheduledTransactionId );
@@ -3776,7 +3828,7 @@ mission. We are so grateful for your commitment.</p>
 
             var transactionGuid = hfTransactionGuid.Value.AsGuid();
 
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
 
             // the transactionGuid is either for a FinancialTransaction or a FinancialScheduledTransaction
             int? financialPaymentDetailId;
@@ -4096,6 +4148,35 @@ mission. We are so grateful for your commitment.</p>
             var currencyCodeInfo = new RockCurrencyCodeInfo();
 
             string script = $@"
+    // Inject the CSS rule used to hide the Next button until CAPTCHA is solved.
+    // BootstrapButton's render skips the Style and Attributes collections, so a
+    // CSS class is the cleanest way to get a server-applied display:none onto it.
+    if ( !document.getElementById('utilityPaymentEntryCaptchaStyle') ) {{
+        var styleEl = document.createElement('style');
+        styleEl.id = 'utilityPaymentEntryCaptchaStyle';
+        styleEl.textContent = '.js-hidden-pending-captcha {{ display: none !important; }}';
+        document.head.appendChild(styleEl);
+    }}
+
+    function applyCaptchaState() {{
+        var $tokenField = $('#{cpCaptcha.ClientID}_hfToken');
+        var $captcha = $('#{cpCaptcha.ClientID}');
+
+        if ( $tokenField.length === 0 || !$tokenField.val() ) {{
+            return;
+        }}
+
+        // CAPTCHA has been solved (token present in the hidden field). Hide the
+        // widget and reveal the Next button that matches the saved-account selection.
+        $captcha.hide();
+
+        var isSavedAccount = parseInt($('#{rblSavedAccount.ClientID} input:checked').val() || '0') > 0;
+        var $activeNext = $('#' + (isSavedAccount ? '{btnSavedAccountPaymentInfoNext.ClientID}' : '{btnHostedPaymentInfoNext.ClientID}'));
+        var $inactiveNext = $('#' + (isSavedAccount ? '{btnHostedPaymentInfoNext.ClientID}' : '{btnSavedAccountPaymentInfoNext.ClientID}'));
+        $activeNext.removeClass('js-hidden-pending-captcha').show();
+        $inactiveNext.hide();
+    }}
+
     Sys.Application.add_load(function () {{
         // As amounts are entered, validate that they are numeric and recalc total
         $('.account-amount').on('change', function() {{
@@ -4125,6 +4206,18 @@ mission. We are so grateful for your commitment.</p>
         // Hide or show a div based on selection of checkbox (Saved Account)
         $('input:checkbox.toggle-input').unbind('click').on('click', function () {{
             $(this).parents('.checkbox').next('.toggle-content').slideToggle();
+        }});
+
+        // Reflect CAPTCHA state on initial load and after any partial postback that
+        // re-renders the payment panel.
+        applyCaptchaState();
+
+        // Reveal the appropriate Next button as soon as CAPTCHA is solved on the
+        // client - no server postback needed, so the hosted gateway iframe is
+        // preserved. Delegated on document so it survives partial postbacks that
+        // replace the widget DOM.
+        $(document).off('rockcaptcha:solved.utilityPaymentEntry').on('rockcaptcha:solved.utilityPaymentEntry', '#{cpCaptcha.ClientID}', function () {{
+            applyCaptchaState();
         }});
     }});
 ";

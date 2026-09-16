@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -23,6 +23,7 @@ using System.Threading.Tasks;
 
 using Rock.Attribute;
 using Rock.Communication;
+using Rock.Configuration;
 using Rock.Core.NotificationMessageTypes;
 using Rock.Data;
 using Rock.Enums.Core;
@@ -61,13 +62,12 @@ namespace Rock.Blocks.Types.Mobile.Core
         Order = 1,
         Key = AttributeKey.NoteTypes )]
 
-    [FileField( Rock.SystemGuid.BinaryFiletype.DEFAULT,
+    [ImageField( Rock.SystemGuid.BinaryFiletype.DEFAULT,
         "Default Note Image",
         Description = "This image is displayed next to the note if the author has no profile image.",
         IsRequired = false,
         Key = AttributeKey.DefaultNoteImage,
-        Order = 2,
-        FieldTypeClass = "Rock.Field.Types.ImageFieldType" )]
+        Order = 2 )]
 
     [BooleanField( "Use Template",
         Description = "If enabled, notes will be displayed using the 'Notes Template', allowing you full customization of the layout.",
@@ -245,7 +245,7 @@ namespace Rock.Blocks.Types.Mobile.Core
         /// <value>
         /// The XAML template to parse on the shell.
         /// </value>
-        protected string NotesTemplate => Field.Types.BlockTemplateFieldType.GetTemplateContent( GetAttributeValue( AttributeKey.NotesTemplate ) );
+        protected string NotesTemplate => Field.Helper.GetBlockTemplateContent( GetAttributeValue( AttributeKey.NotesTemplate ) );
 
         /// <summary>
         /// When in template mode, this is the amount of notes retrieved, when in List mode, this
@@ -307,7 +307,7 @@ namespace Rock.Blocks.Types.Mobile.Core
                 // Can't use defaultNoteImageFile.Url because it will build the path
                 // relative to the current request, which won't always work with mobile
                 // applications. So force it to use the PublicApplicationRoot.
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     var defaultNoteImageFile = new BinaryFileService( rockContext ).Get( DefaultNoteImage.Value );
 
@@ -508,7 +508,7 @@ namespace Rock.Blocks.Types.Mobile.Core
         /// <param name="noteText">The note text.</param>
         private void SendNoteAddedCommunicationToGroup( Group group, string noteText )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var communicationService = new CommunicationService( rockContext );
                 var groupMemberService = new GroupMemberService( rockContext );
@@ -658,7 +658,7 @@ namespace Rock.Blocks.Types.Mobile.Core
         [BlockAction]
         public BlockActionResult GetNote( Guid noteGuid )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
 
                 if ( noteGuid == null )
@@ -713,7 +713,7 @@ namespace Rock.Blocks.Types.Mobile.Core
                 return ActionBadRequest( "Unknown note type." );
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var noteService = new NoteService( rockContext );
                 Note note;
@@ -834,7 +834,7 @@ namespace Rock.Blocks.Types.Mobile.Core
         [BlockAction]
         public BlockActionResult DeleteNote( Guid noteGuid )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var service = new NoteService( rockContext );
                 var note = service.Get( noteGuid );
@@ -872,7 +872,7 @@ namespace Rock.Blocks.Types.Mobile.Core
         [BlockAction]
         public BlockActionResult GetNotesTemplate( Guid? parentNoteGuid )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var notes = GetEntityNotes( parentNoteGuid, 0, PageLoadSize );
 

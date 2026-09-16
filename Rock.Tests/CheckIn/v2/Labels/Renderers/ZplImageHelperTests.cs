@@ -1,4 +1,4 @@
-﻿using System.IO;
+using System.IO;
 using System.Linq;
 
 using Microsoft.Extensions.DependencyInjection;
@@ -9,7 +9,7 @@ using Moq;
 using Rock.CheckIn.v2.Labels;
 using Rock.CheckIn.v2.Labels.Renderers;
 using Rock.Configuration;
-using Rock.Tests.Shared;
+using Rock.Tests.Shared.TestFramework;
 
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;

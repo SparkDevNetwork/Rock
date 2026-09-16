@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -21,6 +21,7 @@ using System.ComponentModel;
 using System.Linq;
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Obsidian.UI;
@@ -137,7 +138,24 @@ namespace Rock.Blocks.Event
         /// <returns>A boolean value that indicates if the add button should be enabled.</returns>
         private bool GetIsAddDeleteEnabled()
         {
+            // The legacy block hid the entire grid (including add/delete) unless the person could view the calendar.
+            if ( !IsAuthorizedToView() )
+            {
+                return false;
+            }
+
             return BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) || GetEventCalendar()?.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) == true;
+        }
+
+        /// <summary>
+        /// Determines if the current person is authorized to view the items of the event calendar.
+        /// Matches the legacy Web Forms behavior, which hid the entire block unless the person had
+        /// View rights on the event calendar itself.
+        /// </summary>
+        /// <returns>A boolean value that indicates if the calendar's items may be viewed.</returns>
+        private bool IsAuthorizedToView()
+        {
+            return GetEventCalendar()?.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson ) == true;
         }
 
         /// <summary>
@@ -163,6 +181,13 @@ namespace Rock.Blocks.Event
         /// <inheritdoc/>
         protected override IQueryable<EventCalendarItem> GetListQueryable( RockContext rockContext )
         {
+            // Match the legacy Web Forms behavior: do not expose any items unless the person is
+            // authorized to view the event calendar these items belong to.
+            if ( !IsAuthorizedToView() )
+            {
+                return Enumerable.Empty<EventCalendarItem>().AsQueryable();
+            }
+
             var eventCalendarId = GetEventCalendar()?.Id ?? 0;
 
             var qry = new EventCalendarItemService( rockContext )
@@ -239,7 +264,7 @@ namespace Rock.Blocks.Event
             if ( eventCalendar != null )
             {
                 int entityTypeId = new EventCalendarItem().TypeId;
-                foreach ( var attributeModel in new AttributeService( new RockContext() ).Queryable()
+                foreach ( var attributeModel in new AttributeService( RockApp.Current.CreateRockContext() ).Queryable()
                     .Where( a =>
                         a.EntityTypeId == entityTypeId &&
                         a.IsGridColumn &&
@@ -288,7 +313,7 @@ namespace Rock.Blocks.Event
 
             if ( eventCalendarId.HasValue )
             {
-                _eventCalendar = new EventCalendarService( new RockContext() ).Queryable()
+                _eventCalendar = new EventCalendarService( RockApp.Current.CreateRockContext() ).Queryable()
                     .Where( g => g.Id == eventCalendarId )
                     .FirstOrDefault();
             }
@@ -325,7 +350,7 @@ namespace Rock.Blocks.Event
         [BlockAction]
         public BlockActionResult Delete( string key )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var entityService = new EventCalendarItemService( rockContext );
                 var entity = entityService.Get( key, !PageCache.Layout.Site.DisablePredictableIds );
@@ -335,7 +360,9 @@ namespace Rock.Blocks.Event
                     return ActionBadRequest( $"{EventCalendarItem.FriendlyTypeName} not found." );
                 }
 
-                if ( !BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
+                // Match the WebForms behavior: deleting is allowed by block-level Edit rights or
+                // Edit rights on the event calendar the item belongs to.
+                if ( !GetIsAddDeleteEnabled() )
                 {
                     return ActionBadRequest( $"Not authorized to delete {EventCalendarItem.FriendlyTypeName}." );
                 }

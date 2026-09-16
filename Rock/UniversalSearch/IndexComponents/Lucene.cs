@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -39,6 +39,7 @@ using Lucene.Net.Util;
 using Newtonsoft.Json.Linq;
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.UniversalSearch.IndexModels;
@@ -539,7 +540,7 @@ namespace Rock.UniversalSearch.IndexComponents
             List<Type> indexModelTypes = new List<Type>();
             Dictionary<string, Analyzer> combinedFieldAnalyzers = new Dictionary<string, Analyzer>();
 
-            using ( RockContext rockContext = new RockContext() )
+            using ( RockContext rockContext = RockApp.Current.CreateRockContext() )
             {
                 if ( entities == null || entities.Count == 0 )
                 {

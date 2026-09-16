@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -203,21 +203,6 @@ namespace Rock.Web.UI.Controls
         /// The entity type id.
         /// </value>
         public int EntityTypeId { get; set; }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="SecurityFieldTemplate" /> class.
-        /// </summary>
-        /// <param name="page">The page.</param>
-        /// <param name="entityTypeId">The entity type id.</param>
-        /// <param name="titleField">The title field.</param>
-        [Obsolete( "Use the SecurityFieldTemplate constructor with the [string:title] parameter.", false )]
-        [RockObsolete( "1.14" )]
-        public SecurityFieldTemplate( System.Web.UI.Page page, int entityTypeId, string titleField )
-        {
-            this.page = page;
-            this.EntityTypeId = entityTypeId;
-            this.TitleField = titleField;
-        }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SecurityFieldTemplate" /> class.

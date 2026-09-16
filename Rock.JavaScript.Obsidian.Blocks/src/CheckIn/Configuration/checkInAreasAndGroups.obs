@@ -1,0 +1,795 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <NotificationBox v-if="errorMessage" :alertType="AlertType.Warning" v-html="errorMessage" />
+
+    <BreakpointObserver v-else @breakpointHelper="breakpointHelper = $event">
+        <ContextSlicer title="Filters" showCampus>
+            <DropDownList v-model="selectedArea"
+                          :items="config.areaItems ?? []"
+                          :showBlankItem="true"
+                          :blankValue="allAreasValue" />
+        </ContextSlicer>
+
+        <div ref="panelContainerEl"
+             :class="['area-group-panel-container', { 'is-compact-layout': isCompactLayout }]">
+            <Panel :title="config.checkInTypeName ?? ''">
+                <div class="area-group-content">
+                    <ListPane v-model:selectedNodeKey="selectedNodeKey"
+                              :tree="tree"
+                              :isLoading="isLoadingTree"
+                              :autoCollapse="autoCollapse"
+                              :errorMessage="reorderErrorMessage"
+                              @addArea="onAddArea"
+                              @listSettings="onListSettings"
+                              @addAreaUnder="onAddAreaUnder"
+                              @addGroupUnder="onAddGroupUnder"
+                              @reorder="onReorder" />
+
+                    <DetailPane :selectedNode="selectedNode"
+                                :selectedNodeParent="selectedNodeParent"
+                                :inheritedGroupTypeOptions="config.inheritedGroupTypeOptions ?? []"
+                                :inheritedAttributesByGuid="config.inheritedAttributesByGuid ?? {}"
+                                :isClassicCheckInLabelsEnabled="config.isClassicCheckInLabelsEnabled"
+                                @areaCreated="onAreaCreated"
+                                @areaUpdated="onAreaUpdated"
+                                @areaDeleted="onAreaDeleted"
+                                @groupCreated="onGroupCreated"
+                                @groupUpdated="onGroupUpdated"
+                                @groupDeleted="onGroupDeleted" />
+                </div>
+            </Panel>
+        </div>
+
+        <ListSettingsModal v-model="isListSettingsModalVisible"
+                           :showInactive="showInactive"
+                           :disableAutoCollapse="disableAutoCollapse"
+                           @save="onListSettingsSave" />
+    </BreakpointObserver>
+</template>
+
+<script setup lang="ts">
+    import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from "vue";
+    import BreakpointObserver from "./CheckInAreasAndGroups/breakpointObserver.partial.obs";
+    import DetailPane from "./CheckInAreasAndGroups/detailPane.partial.obs";
+    import ListPane from "./CheckInAreasAndGroups/listPane.partial.obs";
+    import ListSettingsModal from "./CheckInAreasAndGroups/listSettingsModal.partial.obs";
+    import { BreakpointHelper, PreferenceKey } from "./CheckInAreasAndGroups/types.partial";
+    import { placeholderNodeKey, provideCampusRootLocationGuid, provideNavigationGuard, provideSelectedCampus, provideUpdateEditorIsDirty } from "./CheckInAreasAndGroups/utils.partial";
+    import ContextSlicer from "@Obsidian/Controls/contextSlicer.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import Panel from "@Obsidian/Controls/panel.obs";
+    import { ISortableTreeReorderEvent } from "@Obsidian/Controls/Internal/SortableTree/types.partial";
+    import { useContextEntities } from "@Obsidian/Core/Utilities/contextEntity";
+    import { AlertType } from "@Obsidian/Enums/Controls/alertType";
+    import { CheckInTreeNodeType } from "@Obsidian/Enums/CheckIn/checkInTreeNodeType";
+    import { EntityType } from "@Obsidian/SystemGuids/entityType";
+    import { Guid } from "@Obsidian/Types";
+    import { ContextEntityChangedData, Message } from "@Obsidian/Types/Utility/browserBus";
+    import { asBoolean, asTrueOrFalseString } from "@Obsidian/Utility/booleanUtils";
+    import { onConfigurationValuesChanged, useBlockBrowserBus, useConfigurationValues, useInvokeBlockAction, usePersonPreferences, useReloadBlock } from "@Obsidian/Utility/block";
+    import { PageMessages } from "@Obsidian/Utility/browserBus";
+    import { confirm } from "@Obsidian/Utility/dialogs";
+    import { areEqual } from "@Obsidian/Utility/guid";
+    import { AreaDetailBag } from "@Obsidian/ViewModels/Blocks/CheckIn/Configuration/CheckInAreasAndGroups/areaDetailBag";
+    import { GroupDetailBag } from "@Obsidian/ViewModels/Blocks/CheckIn/Configuration/CheckInAreasAndGroups/groupDetailBag";
+    import { CheckInAreasAndGroupsInitializationBox } from "@Obsidian/ViewModels/Blocks/CheckIn/Configuration/CheckInAreasAndGroups/checkInAreasAndGroupsInitializationBox";
+    import { CheckInTreeNodeBag } from "@Obsidian/ViewModels/Blocks/CheckIn/Configuration/CheckInAreasAndGroups/checkInTreeNodeBag";
+    import { ReorderAreaRequestBag } from "@Obsidian/ViewModels/Blocks/CheckIn/Configuration/CheckInAreasAndGroups/reorderAreaRequestBag";
+    import { ReorderGroupRequestBag } from "@Obsidian/ViewModels/Blocks/CheckIn/Configuration/CheckInAreasAndGroups/reorderGroupRequestBag";
+
+    const config = useConfigurationValues<CheckInAreasAndGroupsInitializationBox>();
+    const invokeBlockAction = useInvokeBlockAction();
+    const personPreferences = usePersonPreferences();
+    const blockPreferences = personPreferences.blockPreferences;
+    const reloadBlock = useReloadBlock();
+    const browserBus = useBlockBrowserBus();
+    const contextEntities = useContextEntities();
+
+    onConfigurationValuesChanged(reloadBlock);
+
+    browserBus.subscribe(PageMessages.ContextEntityChanged, async (message: Message<ContextEntityChangedData>) => {
+        if (areEqual(message.data.entityTypeGuid, EntityType.Campus)) {
+            await updateCampusContext();
+        }
+    });
+
+    // #region Values
+
+    const breakpointHelper = ref<BreakpointHelper>();
+    const errorMessage = ref<string>(config.errorMessage ?? "");
+
+    // The campus the slicer is set to (null = "All Campuses"), provided to
+    // descendants so they can react accordingly. The block owns the single
+    // browser-bus subscription that keeps this fresh; descendant partials
+    // mount and unmount repeatedly, so they inject this rather than
+    // subscribing themselves.
+    const selectedCampus = ref<Guid | null>(null);
+
+    // The selected campus's root named-location Guid, provided to descendant
+    // location pickers so they only offer locations from that campus. Null =
+    // "All Campuses" (full location tree) or a campus with no root location.
+    const campusRootLocationGuid = ref<Guid | null>(null);
+
+    // Value used when no specific area is selected. It must match the area
+    // DropDownList's blankValue, otherwise the control re-emits on mount and
+    // triggers an extra refetch. The server treats any non-Guid value as "All Areas".
+    const allAreasValue = "All Areas";
+
+    // Seeded from the box (resolved server-side) so the slicer renders correctly
+    // on block initialization without an async preference read. The selection
+    // persists to a configuration-scoped preference shared with other check-in
+    // configuration blocks.
+    const selectedArea = ref<string>(config.selectedAreaGuid ?? allAreasValue);
+
+    const tree = ref<CheckInTreeNodeBag[]>(config.tree ?? []);
+
+    /**
+     * True while a GetTree refetch is in flight (filter / campus / show-inactive
+     * change). Gates the list pane so a partial tree doesn't flash mid-load.
+     * False on initial render since the tree ships on the InitializationBox.
+     */
+    const isLoadingTree = ref<boolean>(false);
+    const selectedNodeKey = ref<string>("");
+    const showInactive = ref<boolean>(asBoolean(blockPreferences.getValue(PreferenceKey.ShowInactive)));
+    const disableAutoCollapse = ref<boolean>(asBoolean(blockPreferences.getValue(PreferenceKey.DisableAutoCollapse)));
+    const isListSettingsModalVisible = ref<boolean>(false);
+    const reorderErrorMessage = ref<string>("");
+
+    /**
+     * Whether the right-pane editor has unsaved changes. Pushed up from the
+     * editor via the provided isDirty updater.
+     */
+    const isEditorDirty = ref<boolean>(false);
+
+    const panelContainerEl = ref<HTMLElement | null>(null);
+
+    let pendingHeightUpdateId: number | null = null;
+    let layoutObserver: ResizeObserver | null = null;
+
+    /**
+     * Set while we're rolling `selectedArea` back to its previous value after
+     * the admin cancelled the navigation guard. The selectedArea watcher
+     * short-circuits on the next firing so the revert doesn't re-prompt.
+     */
+    let isRevertingSelectedArea = false;
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    /**
+     * True at smaller breakpoints where the split-pane layout would be too
+     * cramped. Drops the JS height-bound and stacks the two panes vertically.
+     */
+    const isCompactLayout = computed((): boolean =>
+        breakpointHelper.value?.isSmOrSmaller ?? false
+    );
+
+    /** Inverse of the individual's "Disable Auto-Collapse" preference. */
+    const autoCollapse = computed((): boolean =>
+        !disableAutoCollapse.value
+    );
+
+    /**
+     * Resolves the selected node and its parent from `selectedNodeKey` in a
+     * single tree walk.
+     */
+    const selectedNodeAndParent = computed((): { node: CheckInTreeNodeBag | null; parent: CheckInTreeNodeBag | null } => {
+        if (!selectedNodeKey.value) {
+            return { node: null, parent: null };
+        }
+        return findNodeAndParent(tree.value, selectedNodeKey.value);
+    });
+
+    /** The currently-selected tree node, or null when nothing is selected. */
+    const selectedNode = computed((): CheckInTreeNodeBag | null =>
+        selectedNodeAndParent.value.node
+    );
+
+    /** The parent of the currently-selected node, or null when at the top level. */
+    const selectedNodeParent = computed((): CheckInTreeNodeBag | null =>
+        selectedNodeAndParent.value.parent
+    );
+
+    // #endregion Computed Values
+
+    // #region Functions
+
+    /**
+     * Resizes the panel container to fill the remaining vertical space so the
+     * two panes can manage their own bounded scroll regions. Uses the panel's
+     * document-relative top so the result is scroll-invariant and works on
+     * both document-scroll layouts and worksurface-style layouts (where the
+     * document height is clamped to the viewport). Cleared (panel takes
+     * natural height with page-scroll) in compact layout.
+     */
+    function updatePanelHeight(): void {
+        if (!panelContainerEl.value) {
+            return;
+        }
+
+        if (isCompactLayout.value) {
+            panelContainerEl.value.style.height = "";
+            return;
+        }
+
+        if (pendingHeightUpdateId !== null) {
+            return;
+        }
+
+        pendingHeightUpdateId = requestAnimationFrame(() => {
+            pendingHeightUpdateId = null;
+
+            if (!panelContainerEl.value || isCompactLayout.value) {
+                return;
+            }
+
+            const panel = panelContainerEl.value;
+            const rect = panel.getBoundingClientRect();
+            const naturalTop = rect.top + window.scrollY;
+
+            const target = window.innerHeight - naturalTop;
+
+            panel.style.height = `${Math.max(target, 200)}px`;
+        });
+    }
+
+    /**
+     * Re-fetches the tree from the server (honors the current "Selected Area"
+     * preference and the active campus context). Used in place of a full block
+     * reload on filter-change events so the editor's working state is
+     * preserved.
+     */
+    async function refetchTree(): Promise<void> {
+        isLoadingTree.value = true;
+        try {
+            const result = await invokeBlockAction<CheckInTreeNodeBag[]>("GetTree", {});
+            if (result.isSuccess && result.data) {
+                tree.value = result.data;
+                // Clear selection if the previously-selected node fell out of the
+                // refreshed tree (e.g., the slicer scoped to a different area).
+                if (selectedNodeKey.value && !findNodeAndParent(tree.value, selectedNodeKey.value).node) {
+                    selectedNodeKey.value = "";
+                }
+            }
+        }
+        finally {
+            isLoadingTree.value = false;
+        }
+    }
+
+    /**
+     * Resolves the campus context and updates selectedCampus and
+     * its associated campusRootLocationGuid.
+     */
+    async function updateCampusContext(): Promise<void> {
+        const campusBag = await contextEntities.get(EntityType.Campus);
+        const campusGuid = (campusBag?.value ?? null) as Guid | null;
+        selectedCampus.value = campusGuid;
+        campusRootLocationGuid.value = ((campusGuid && config.campusRootLocations?.[campusGuid]) || null) as Guid | null;
+    }
+
+    /** Builds a fresh placeholder area node. */
+    function createAreaPlaceholder(): CheckInTreeNodeBag {
+        return {
+            idKey: placeholderNodeKey,
+            name: "New Area",
+            nodeType: CheckInTreeNodeType.Area,
+            isActive: true,
+            isSystem: false,
+            order: 0,
+            children: []
+        };
+    }
+
+    /** Builds a fresh placeholder group node. */
+    function createGroupPlaceholder(): CheckInTreeNodeBag {
+        return {
+            idKey: placeholderNodeKey,
+            name: "New Group",
+            nodeType: CheckInTreeNodeType.Group,
+            isActive: true,
+            isSystem: false,
+            order: 0,
+            children: []
+        };
+    }
+
+    /**
+     * Removes the node with the matching `idKey` from the tree, mutating
+     * in place.
+     */
+    function removeNodeByKey(nodes: CheckInTreeNodeBag[], targetKey: string): boolean {
+        for (let i = 0; i < nodes.length; i++) {
+            if (nodes[i].idKey === targetKey) {
+                nodes.splice(i, 1);
+                return true;
+            }
+            if (removeNodeByKey(nodes[i].children ?? [], targetKey)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Finds the node with the matching `idKey` and returns it with its parent
+     * (or null/null).
+     */
+    function findNodeAndParent(nodes: CheckInTreeNodeBag[], targetKey: string, parentNode: CheckInTreeNodeBag | null = null): { node: CheckInTreeNodeBag | null; parent: CheckInTreeNodeBag | null } {
+        for (const node of nodes) {
+            if (node.idKey === targetKey) {
+                return { node, parent: parentNode };
+            }
+            const found = findNodeAndParent(node.children ?? [], targetKey, node);
+            if (found.node) {
+                return found;
+            }
+        }
+        return { node: null, parent: null };
+    }
+
+    /** Gets the sibling array a reordered node lives in. */
+    function getSiblingArray(payload: ISortableTreeReorderEvent): CheckInTreeNodeBag[] | null {
+        if (payload.parent) {
+            return (payload.parent.children ?? null) as CheckInTreeNodeBag[] | null;
+        }
+
+        return tree.value;
+    }
+
+    /**
+     * Resolves the IdKey of the next same-type sibling after the moved node,
+     * or null at end of bucket.
+     */
+    function resolveBeforeIdKey(payload: ISortableTreeReorderEvent): string | null {
+        const siblings = getSiblingArray(payload);
+        if (!siblings) {
+            return null;
+        }
+
+        const movedNode = payload.node as CheckInTreeNodeBag;
+        const movedIndex = siblings.findIndex(n => n === movedNode);
+        if (movedIndex < 0) {
+            return null;
+        }
+
+        for (let i = movedIndex + 1; i < siblings.length; i++) {
+            if (siblings[i].nodeType === movedNode.nodeType) {
+                return siblings[i].idKey ?? null;
+            }
+        }
+
+        return null;
+    }
+
+    /** Puts a moved node back in its original position. */
+    function revertReorder(payload: ISortableTreeReorderEvent): void {
+        const siblings = getSiblingArray(payload);
+        if (!siblings) {
+            return;
+        }
+
+        const movedNode = payload.node as CheckInTreeNodeBag;
+        const currentIndex = siblings.findIndex(n => n === movedNode);
+        if (currentIndex < 0) {
+            return;
+        }
+
+        siblings.splice(currentIndex, 1);
+        siblings.splice(payload.oldIndex, 0, movedNode);
+    }
+
+    /**
+     * Inserts a new area node into a children array at the end of the area
+     * bucket (after sibling areas, before sibling groups). Matches the
+     * server-side sort the tree-builder applies after save, so the
+     * placeholder's pre-save position lines up with where the persisted area
+     * will land on the next page refresh.
+     */
+    function insertAreaNode(children: CheckInTreeNodeBag[], node: CheckInTreeNodeBag): void {
+        const firstGroupIndex = children.findIndex(c => c.nodeType === CheckInTreeNodeType.Group);
+        if (firstGroupIndex === -1) {
+            children.push(node);
+        }
+        else {
+            children.splice(firstGroupIndex, 0, node);
+        }
+    }
+
+    /**
+     * Selects the placeholder, forcing SortableTree's selectedKey watcher to
+     * re-fire even when the value would otherwise stay the same (e.g., the
+     * placeholder just moved from one parent to another but the key itself
+     * is unchanged). The watcher is what runs the ancestor-chain auto-expand,
+     * so without this nudge the new parent wouldn't expand to reveal the
+     * placeholder.
+     */
+    async function selectPlaceholderForceExpand(): Promise<void> {
+        if (selectedNodeKey.value === placeholderNodeKey) {
+            selectedNodeKey.value = "";
+            await nextTick();
+        }
+        selectedNodeKey.value = placeholderNodeKey;
+    }
+
+    /**
+     * Returns true when navigation may proceed: either the right-pane editor
+     * isn't dirty, or the individual confirmed they want to leave without
+     * saving. Provided via `provideNavigationGuard` so descendant partials
+     * can await the same check before initiating a node-selection change.
+     * When the discarded editor is an unsaved placeholder, also drops the
+     * placeholder from the tree so it doesn't linger after the individual
+     * walks away from it.
+     */
+    async function navigationGuard(): Promise<boolean> {
+        if (!isEditorDirty.value) {
+            return true;
+        }
+
+        const confirmed = await confirm("Changes have been made that have not yet been saved. Do you want to leave without saving?");
+        if (confirmed && selectedNodeKey.value === placeholderNodeKey) {
+            removeNodeByKey(tree.value, placeholderNodeKey);
+        }
+        return confirmed;
+    }
+
+    /**
+     * Event handler called before the page unloads. This handler is
+     * added whenever the label is dirty and needs to be saved.
+     *
+     * @param event The event that was raised.
+     */
+    function onBeforeUnload(event: BeforeUnloadEvent): void {
+        event.preventDefault();
+        event.returnValue = "";
+    }
+
+    // #endregion Functions
+
+    // #region Event Handlers
+
+    /**
+     * Adds a top-level placeholder area and selects it; re-selects the
+     * existing placeholder if one is in the tree. Prompts to discard
+     * unsaved edits in the right pane before switching.
+     */
+    async function onAddArea(): Promise<void> {
+        const existingPlaceholder = findNodeAndParent(tree.value, placeholderNodeKey).node;
+        const isOnPlaceholder = !!existingPlaceholder && selectedNodeKey.value === placeholderNodeKey;
+
+        if (!await navigationGuard()) {
+            return;
+        }
+
+        // Placeholder exists elsewhere in the tree: navigate to it (preserves
+        // any in-progress edits on it).
+        if (existingPlaceholder && !isOnPlaceholder) {
+            selectedNodeKey.value = placeholderNodeKey;
+            return;
+        }
+
+        // Individual was on the placeholder and just confirmed discard: drop
+        // the old one before creating a fresh placeholder below.
+        if (isOnPlaceholder) {
+            removeNodeByKey(tree.value, placeholderNodeKey);
+        }
+
+        const placeholder = createAreaPlaceholder();
+        insertAreaNode(tree.value, placeholder);
+        await selectPlaceholderForceExpand();
+    }
+
+    /** Opens the list settings modal. */
+    function onListSettings(): void {
+        isListSettingsModalVisible.value = true;
+    }
+
+    /** Persists the new list-settings values from the modal. */
+    async function onListSettingsSave(values: { showInactive: boolean; disableAutoCollapse: boolean }): Promise<void> {
+        const showInactiveChanged = values.showInactive !== showInactive.value;
+
+        // Only the Show Inactive change triggers a tree refetch, so only that
+        // toggle needs the navigation guard. Disable-Auto-Collapse is purely
+        // client-side and can apply regardless of the admin's choice at the
+        // confirm prompt.
+        if (showInactiveChanged && !await navigationGuard()) {
+            disableAutoCollapse.value = values.disableAutoCollapse;
+            blockPreferences.setValue(PreferenceKey.DisableAutoCollapse, asTrueOrFalseString(values.disableAutoCollapse));
+            await blockPreferences.save();
+            return;
+        }
+
+        showInactive.value = values.showInactive;
+        disableAutoCollapse.value = values.disableAutoCollapse;
+
+        blockPreferences.setValue(PreferenceKey.ShowInactive, asTrueOrFalseString(values.showInactive));
+        blockPreferences.setValue(PreferenceKey.DisableAutoCollapse, asTrueOrFalseString(values.disableAutoCollapse));
+        await blockPreferences.save();
+
+        if (showInactiveChanged) {
+            await refetchTree();
+        }
+    }
+
+    /**
+     * Adds a placeholder area under `parent` and selects it; re-selects the
+     * existing placeholder if one is in the tree. Prompts to discard unsaved
+     * edits in the right pane before switching.
+     */
+    async function onAddAreaUnder(parent: CheckInTreeNodeBag): Promise<void> {
+        const existingPlaceholder = findNodeAndParent(tree.value, placeholderNodeKey).node;
+        const isOnPlaceholder = !!existingPlaceholder && selectedNodeKey.value === placeholderNodeKey;
+
+        if (!await navigationGuard()) {
+            return;
+        }
+
+        // Placeholder exists elsewhere in the tree: navigate to it.
+        if (existingPlaceholder && !isOnPlaceholder) {
+            selectedNodeKey.value = placeholderNodeKey;
+            return;
+        }
+
+        // Individual was on the placeholder and just confirmed discard.
+        if (isOnPlaceholder) {
+            removeNodeByKey(tree.value, placeholderNodeKey);
+        }
+
+        if (!parent.children) {
+            parent.children = [];
+        }
+
+        const placeholder = createAreaPlaceholder();
+        insertAreaNode(parent.children, placeholder);
+        await selectPlaceholderForceExpand();
+    }
+
+    /**
+     * Adds a placeholder group under `parent` and selects it; re-selects the
+     * existing placeholder if one is in the tree. Prompts to discard unsaved
+     * edits in the right pane before switching.
+     */
+    async function onAddGroupUnder(parent: CheckInTreeNodeBag): Promise<void> {
+        const existingPlaceholder = findNodeAndParent(tree.value, placeholderNodeKey).node;
+        const isOnPlaceholder = !!existingPlaceholder && selectedNodeKey.value === placeholderNodeKey;
+
+        if (!await navigationGuard()) {
+            return;
+        }
+
+        if (existingPlaceholder && !isOnPlaceholder) {
+            selectedNodeKey.value = placeholderNodeKey;
+            return;
+        }
+
+        if (isOnPlaceholder) {
+            removeNodeByKey(tree.value, placeholderNodeKey);
+        }
+
+        if (!parent.children) {
+            parent.children = [];
+        }
+
+        // Groups always render after sibling areas, so a plain push lands the
+        // placeholder at the right spot without an insertion helper.
+        parent.children.push(createGroupPlaceholder());
+        await selectPlaceholderForceExpand();
+    }
+
+    /**
+     * Swaps the placeholder's idKey/name for the persisted ones and re-selects
+     * by the real key.
+     */
+    function onAreaCreated(payload: { placeholderIdKey: string; saved: AreaDetailBag }): void {
+        const found = findNodeAndParent(tree.value, payload.placeholderIdKey);
+        if (!found.node) {
+            return;
+        }
+
+        found.node.idKey = payload.saved.idKey;
+        found.node.name = payload.saved.name;
+        selectedNodeKey.value = payload.saved.idKey ?? "";
+    }
+
+    /** Updates the tree node's name from the saved bag. */
+    function onAreaUpdated(saved: AreaDetailBag): void {
+        if (selectedNode.value) {
+            selectedNode.value.name = saved.name ?? selectedNode.value.name;
+        }
+    }
+
+    /** Removes the deleted area from the tree and clears the selection. */
+    function onAreaDeleted(idKey: string): void {
+        removeNodeByKey(tree.value, idKey);
+        selectedNodeKey.value = "";
+    }
+
+    /**
+     * Swaps the placeholder's idKey/name for the persisted ones and re-selects
+     * by the real key.
+     */
+    function onGroupCreated(payload: { placeholderIdKey: string; saved: GroupDetailBag }): void {
+        const found = findNodeAndParent(tree.value, payload.placeholderIdKey);
+        if (!found.node) {
+            return;
+        }
+
+        found.node.idKey = payload.saved.idKey;
+        found.node.name = payload.saved.name;
+        selectedNodeKey.value = payload.saved.idKey ?? "";
+    }
+
+    /** Updates the tree node's name from the saved bag. */
+    function onGroupUpdated(saved: GroupDetailBag): void {
+        if (selectedNode.value) {
+            selectedNode.value.name = saved.name ?? selectedNode.value.name;
+        }
+    }
+
+    /** Removes the deleted group from the tree and clears the selection. */
+    function onGroupDeleted(idKey: string): void {
+        removeNodeByKey(tree.value, idKey);
+        selectedNodeKey.value = "";
+    }
+
+    /**
+     * Persists a tree reorder via `ReorderArea` or `ReorderGroup`, reverting
+     * the splice on failure.
+     */
+    async function onReorder(payload: ISortableTreeReorderEvent): Promise<void> {
+        const movedNode = payload.node as CheckInTreeNodeBag;
+        const parentNode = payload.parent as CheckInTreeNodeBag | null;
+        const beforeIdKey = resolveBeforeIdKey(payload);
+
+        reorderErrorMessage.value = "";
+
+        let isSuccess: boolean;
+        let errorMessageText: string | null;
+
+        if (movedNode.nodeType === CheckInTreeNodeType.Area) {
+            const bag: ReorderAreaRequestBag = {
+                idKey: movedNode.idKey ?? "",
+                beforeIdKey,
+                parentAreaIdKey: parentNode?.idKey ?? null
+            };
+
+            const result = await invokeBlockAction("ReorderArea", { bag });
+            isSuccess = result.isSuccess;
+            errorMessageText = result.errorMessage ?? null;
+        }
+        else {
+            if (!parentNode) {
+                revertReorder(payload);
+                reorderErrorMessage.value = "Unable to reorder: parent node is missing.";
+                return;
+            }
+
+            const bag: ReorderGroupRequestBag = {
+                idKey: movedNode.idKey ?? "",
+                beforeIdKey,
+                parentIdKey: parentNode.idKey ?? "",
+                parentNodeType: parentNode.nodeType
+            };
+
+            const result = await invokeBlockAction("ReorderGroup", { bag });
+            isSuccess = result.isSuccess;
+            errorMessageText = result.errorMessage ?? null;
+        }
+
+        if (!isSuccess) {
+            revertReorder(payload);
+            reorderErrorMessage.value = errorMessageText || "Unable to save the new order. Please try again.";
+        }
+    }
+
+    // #endregion Event Handlers
+
+    // #region Watchers
+
+    watch(selectedArea, async (newValue, oldValue) => {
+        // Re-entry guard: a cancelled navigation-guard prompt rolls this ref
+        // back to its previous value, which re-fires the watcher. Bail out
+        // before re-prompting (and before re-saving the now-stale preference).
+        if (isRevertingSelectedArea) {
+            isRevertingSelectedArea = false;
+            return;
+        }
+
+        if (!config.configurationIdKey) {
+            return;
+        }
+
+        // Prompt before touching anything so an in-progress editor isn't lost
+        // when the refetched tree drops the selected node. Cancel rolls the
+        // slicer dropdown back to its previous value.
+        if (!await navigationGuard()) {
+            isRevertingSelectedArea = true;
+            selectedArea.value = oldValue;
+            return;
+        }
+
+        // Persist to the configuration-scoped preference shared with other
+        // check-in configuration blocks.
+        const configPreferences = await personPreferences
+            .getEntityPreferences(
+                EntityType.GroupType,
+                config.configurationIdKey
+            );
+
+        configPreferences.setValue(PreferenceKey.SelectedArea, newValue);
+
+        await configPreferences.save();
+
+        // Selected-area is the slicer's scope override. Refresh the tree so the
+        // displayed branch matches the new scope.
+        await refetchTree();
+    });
+
+    watch(isCompactLayout, () => {
+        updatePanelHeight();
+    });
+
+    // Clear any stale reorder error when the admin selects another node; the
+    // message stays until the next reorder attempt otherwise.
+    watch(selectedNodeKey, () => {
+        reorderErrorMessage.value = "";
+    });
+
+    // Watch for changes in the dirty state and remove/install our handler
+    // to prevent accidentally navigating away from the page.
+    watch(isEditorDirty, () => {
+        window.removeEventListener("beforeunload", onBeforeUnload);
+
+        if (isEditorDirty.value) {
+            window.addEventListener("beforeunload", onBeforeUnload);
+        }
+    });
+
+    // #endregion Watchers
+
+    // #region Lifecycle Hooks
+
+    onMounted(() => {
+        // Seed the campus context from the initial slicer state.
+        updateCampusContext();
+
+        window.addEventListener("resize", updatePanelHeight, { passive: true });
+
+        // Watch for any document layout changes that could shift the panel's
+        // top position (e.g., the slicer expanding, the page header changing
+        // height). The requestAnimationFrame guard inside updatePanelHeight
+        // keeps this efficient.
+        layoutObserver = new ResizeObserver(updatePanelHeight);
+        layoutObserver.observe(document.documentElement);
+
+        // Defer the first calculation until Vue has flushed the current render
+        // pass, so getBoundingClientRect returns the panel's true position.
+        nextTick(() => updatePanelHeight());
+    });
+
+    onBeforeUnmount(() => {
+        window.removeEventListener("beforeunload", onBeforeUnload);
+        window.removeEventListener("resize", updatePanelHeight);
+        layoutObserver?.disconnect();
+        layoutObserver = null;
+    });
+
+    // #endregion Lifecycle Hooks
+
+    // Provide the navigation guard and the editor-isDirty updater for
+    // descendant partials. The editor pushes its dirty state up via the
+    // updater; anything initiating a node-selection change (e.g., ListPane
+    // row clicks, the add-area handlers below) awaits the guard before
+    // taking action.
+    provideNavigationGuard(() => navigationGuard());
+    provideUpdateEditorIsDirty((value) => {
+        isEditorDirty.value = value;
+    });
+
+    // Provide the selected campus and its root location Guid for descendant
+    // partials to react accordingly (e.g., location pickers and grids).
+    provideSelectedCampus(selectedCampus);
+    provideCampusRootLocationGuid(campusRootLocationGuid);
+</script>

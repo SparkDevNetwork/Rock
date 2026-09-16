@@ -17,7 +17,7 @@
 import { computed, defineComponent, PropType, ref, watch } from "vue";
 import { getFieldEditorProps, getFieldConfigurationProps } from "./utils";
 import { asBoolean, asTrueFalseOrNull } from "@Obsidian/Utility/booleanUtils";
-import { ConfigurationValueKey } from "./dateTimeField.partial";
+import { ConfigurationKey } from "./dateTimeField.partial";
 import SlidingDateRangePicker from "@Obsidian/Controls/slidingDateRangePicker.obs";
 import DateTimePicker from "@Obsidian/Controls/dateTimePicker.obs";
 import TextBox from "@Obsidian/Controls/textBox.obs";
@@ -55,14 +55,14 @@ export const EditComponent = defineComponent({
 
     computed: {
         dateFormatTemplate(): string {
-            const formatConfig = this.configurationValues[ConfigurationValueKey.Format];
+            const formatConfig = this.configurationValues[ConfigurationKey.Format];
             return formatConfig || "MM/dd/yyyy";
         },
 
         configAttributes(): Record<string, number | boolean> {
             const attributes: Record<string, number | boolean> = {};
 
-            const displayCurrentConfig = this.configurationValues[ConfigurationValueKey.DisplayCurrentOption];
+            const displayCurrentConfig = this.configurationValues[ConfigurationKey.DisplayCurrentOption];
             const displayCurrent = asBoolean(displayCurrentConfig);
             attributes.displayCurrentOption = displayCurrent;
             attributes.isCurrentDateOffset = displayCurrent;
@@ -124,7 +124,7 @@ export const FilterComponent = defineComponent({
 
         // Get the configuration values and force the DisplayCurrentOption to True.
         const configurationValues = ref({ ...props.configurationValues });
-        configurationValues.value[ConfigurationValueKey.DisplayCurrentOption] = "True";
+        configurationValues.value[ConfigurationKey.DisplayCurrentOption] = "True";
 
         /** True if the comparison type is of type Between. */
         const isComparisonTypeBetween = computed((): boolean => props.comparisonType === ComparisonType.Between);
@@ -132,7 +132,7 @@ export const FilterComponent = defineComponent({
         // Watch for changes in the configuration values and update our own list.
         watch(() => props.configurationValues, () => {
             configurationValues.value = { ...props.configurationValues };
-            configurationValues.value[ConfigurationValueKey.DisplayCurrentOption] = "True";
+            configurationValues.value[ConfigurationKey.DisplayCurrentOption] = "True";
         });
 
         // Watch for changes from the standard DatePicker.
@@ -177,9 +177,9 @@ export const FilterComponent = defineComponent({
 });
 
 const defaults = {
-    [ConfigurationValueKey.Format]: "",
-    [ConfigurationValueKey.DisplayAsElapsedTime]: "False",
-    [ConfigurationValueKey.DisplayCurrentOption]: "False",
+    [ConfigurationKey.Format]: "",
+    [ConfigurationKey.DisplayAsElapsedTime]: "False",
+    [ConfigurationKey.DisplayCurrentOption]: "False",
 };
 
 export const ConfigurationComponent = defineComponent({
@@ -217,14 +217,14 @@ export const ConfigurationComponent = defineComponent({
 
             // Construct the new value that will be emitted if it is different
             // than the current value.
-            newValue[ConfigurationValueKey.Format] = format.value ?? defaults[ConfigurationValueKey.Format];
-            newValue[ConfigurationValueKey.DisplayAsElapsedTime] = asTrueFalseOrNull(displayAsElapsedTime.value) ?? defaults[ConfigurationValueKey.DisplayAsElapsedTime];
-            newValue[ConfigurationValueKey.DisplayCurrentOption] = asTrueFalseOrNull(displayCurrentOption.value) ?? defaults[ConfigurationValueKey.DisplayCurrentOption];
+            newValue[ConfigurationKey.Format] = format.value ?? defaults[ConfigurationKey.Format];
+            newValue[ConfigurationKey.DisplayAsElapsedTime] = asTrueFalseOrNull(displayAsElapsedTime.value) ?? defaults[ConfigurationKey.DisplayAsElapsedTime];
+            newValue[ConfigurationKey.DisplayCurrentOption] = asTrueFalseOrNull(displayCurrentOption.value) ?? defaults[ConfigurationKey.DisplayCurrentOption];
 
             // Compare the new value and the old value.
-            const anyValueChanged = newValue[ConfigurationValueKey.Format] !== (props.modelValue[ConfigurationValueKey.Format] ?? defaults[ConfigurationValueKey.Format])
-                || newValue[ConfigurationValueKey.DisplayAsElapsedTime] !== (props.modelValue[ConfigurationValueKey.DisplayAsElapsedTime] ?? defaults[ConfigurationValueKey.DisplayAsElapsedTime])
-                || newValue[ConfigurationValueKey.DisplayCurrentOption] !== (props.modelValue[ConfigurationValueKey.DisplayCurrentOption] ?? defaults[ConfigurationValueKey.DisplayCurrentOption]);
+            const anyValueChanged = newValue[ConfigurationKey.Format] !== (props.modelValue[ConfigurationKey.Format] ?? defaults[ConfigurationKey.Format])
+                || newValue[ConfigurationKey.DisplayAsElapsedTime] !== (props.modelValue[ConfigurationKey.DisplayAsElapsedTime] ?? defaults[ConfigurationKey.DisplayAsElapsedTime])
+                || newValue[ConfigurationKey.DisplayCurrentOption] !== (props.modelValue[ConfigurationKey.DisplayCurrentOption] ?? defaults[ConfigurationKey.DisplayCurrentOption]);
 
             // If any value changed then emit the new model value.
             if (anyValueChanged) {
@@ -251,9 +251,9 @@ export const ConfigurationComponent = defineComponent({
         // Watch for changes coming in from the parent component and update our
         // data to match the new information.
         watch(() => [props.modelValue, props.configurationProperties], () => {
-            format.value = props.modelValue[ConfigurationValueKey.Format] ?? "";
-            displayAsElapsedTime.value = asBoolean(props.modelValue[ConfigurationValueKey.DisplayAsElapsedTime]);
-            displayCurrentOption.value = asBoolean(props.modelValue[ConfigurationValueKey.DisplayCurrentOption]);
+            format.value = props.modelValue[ConfigurationKey.Format] ?? "";
+            displayAsElapsedTime.value = asBoolean(props.modelValue[ConfigurationKey.DisplayAsElapsedTime]);
+            displayCurrentOption.value = asBoolean(props.modelValue[ConfigurationKey.DisplayCurrentOption]);
         }, {
             immediate: true
         });
@@ -269,9 +269,9 @@ export const ConfigurationComponent = defineComponent({
         });
 
         // Watch for changes in properties that only require a local UI update.
-        watch(format, (val) => maybeUpdateConfiguration(ConfigurationValueKey.Format, val ?? defaults[ConfigurationValueKey.Format]));
-        watch(displayAsElapsedTime, (val) => maybeUpdateConfiguration(ConfigurationValueKey.DisplayAsElapsedTime, asTrueFalseOrNull(val) ?? defaults[ConfigurationValueKey.DisplayAsElapsedTime]));
-        watch(displayCurrentOption, (val) => maybeUpdateConfiguration(ConfigurationValueKey.DisplayCurrentOption, asTrueFalseOrNull(val) ?? defaults[ConfigurationValueKey.DisplayCurrentOption]));
+        watch(format, (val) => maybeUpdateConfiguration(ConfigurationKey.Format, val ?? defaults[ConfigurationKey.Format]));
+        watch(displayAsElapsedTime, (val) => maybeUpdateConfiguration(ConfigurationKey.DisplayAsElapsedTime, asTrueFalseOrNull(val) ?? defaults[ConfigurationKey.DisplayAsElapsedTime]));
+        watch(displayCurrentOption, (val) => maybeUpdateConfiguration(ConfigurationKey.DisplayCurrentOption, asTrueFalseOrNull(val) ?? defaults[ConfigurationKey.DisplayCurrentOption]));
 
         return {
             format,

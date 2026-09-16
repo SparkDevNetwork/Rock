@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
@@ -6,10 +6,11 @@ using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using Rock.Achievement;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
-using Rock.Tests.Shared;
-using Rock.Tests.Shared.TestFramework;
+using Rock.Tests.Integration.TestFramework.Database;
+using Rock.Tests.Shared.Constants;
 using Rock.Web.Cache;
 
 namespace Rock.Tests.Integration.Engagement.Achievements
@@ -146,7 +147,7 @@ namespace Rock.Tests.Integration.Engagement.Achievements
         [ClassInitialize]
         public static void ClassInitialize( TestContext testContext )
         {
-            _rockContext = new RockContext();
+            _rockContext = RockApp.Current.CreateRockContext();
             _interactionService = new InteractionService( _rockContext );
             _achievementTypeService = new AchievementTypeService( _rockContext );
 

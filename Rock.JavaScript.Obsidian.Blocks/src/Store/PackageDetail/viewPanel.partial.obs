@@ -73,28 +73,30 @@
                     <div class="d-flex flex-column">
                         <h4>Reviews</h4>
                         <span v-if="modelValue?.latestVersionRatings?.length == 0">No Reviews exist.</span>
-                        <div v-for="rating in modelValue?.latestVersionRatings" :key="rating.rating" class="d-inline-flex gap-3 margin-b-lg">
-                            <img class="img-circle" :src="rating.reviewerPhoto ?? ''" alt="Reviewer photo" style="width: 50px; height: 50px;" />
-                            <div>
-                                <div class="d-inline-flex gap-2">
-                                    <div style="color:#ffc870">
-                                        <i
-                                           v-for="n in Math.floor(rating.rating)"
-                                           :key="'filled-' + n"
-                                           class="ti ti-star-filled">
-                                        </i>
+                        <template v-for="rating in modelValue?.latestVersionRatings">
+                            <div v-if="rating.rating" :key="rating.rating" class="d-inline-flex gap-3 margin-b-lg">
+                                <img class="img-circle" :src="rating.reviewerPhoto ?? ''" alt="Reviewer photo" style="width: 50px; height: 50px;" />
+                                <div>
+                                    <div class="d-inline-flex gap-2">
+                                        <div style="color:#ffc870">
+                                            <i
+                                               v-for="n in Math.floor(rating.rating)"
+                                               :key="'filled-' + n"
+                                               class="ti ti-star-filled">
+                                            </i>
 
-                                        <i
-                                           v-for="n in 5 - Math.floor(rating.rating)"
-                                           :key="'empty-' + n"
-                                           class="ti ti-star">
-                                        </i>
+                                            <i
+                                               v-for="n in 5 - Math.floor(rating.rating)"
+                                               :key="'empty-' + n"
+                                               class="ti ti-star">
+                                            </i>
+                                        </div>
+                                        <strong>{{ rating.reviewerName }}</strong>
                                     </div>
-                                    <strong>{{ rating.reviewerName }}</strong>
+                                    <p>{{ rating.comment }}</p>
                                 </div>
-                                <p>{{ rating.comment }}</p>
                             </div>
-                        </div>
+                        </template>
                     </div>
                     <div class="d-flex">
                         <button type="button" class="btn btn-xs btn-default ml-auto" @click="toggleAdditionalVersions">
@@ -107,7 +109,7 @@
                                 <div class="d-flex align-items-center gap-3">
                                     <h4>{{ version.versionLabel }}</h4>
                                     <div class="d-inline-flex gap-2">
-                                        <div>
+                                        <div v-if="version.rating">
                                             <i
                                                v-for="n in Math.floor(version.rating)"
                                                :key="'filled-' + n"

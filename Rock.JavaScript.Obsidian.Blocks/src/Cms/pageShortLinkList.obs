@@ -21,6 +21,12 @@
                     :filter="textValueFilter"
                     visiblePriority="xs" />
 
+        <DateTimeColumn name="createdDateTime"
+                        title="Created On"
+                        field="createdDateTime"
+                        :filter="dateValueFilter"
+                        visiblePriority="xs" />
+
         <TextColumn name="site"
                     title="Site"
                     field="site"
@@ -32,6 +38,12 @@
                     field="token"
                     :filter="textValueFilter"
                     visiblePriority="xs" />
+
+        <TextColumn name="url"
+                    title="Original URL"
+                    field="url"
+                    :filter="textValueFilter"
+                    visiblePriority="md" />
 
         <TextColumn name="category"
                     title="Category"
@@ -52,10 +64,9 @@
                        visiblePriority="xs" />
 
         <ButtonColumn name="copy"
-                      tooltip="Copy to Clipboard"
-                      iconClass="ti ti-clipboard"
-                      visiblePriority="xs"
-                      @click="onCopyClick" />
+                      iconClass=""
+                      visbilePriority="xs"
+                      :formatComponent="CopyUrlCell" />
 
         <AttributeColumns :attributes="config.gridDefinition?.attributeFields ?? []" />
 
@@ -70,17 +81,17 @@
 <script setup lang="ts">
     import { useConfigurationValues, useInvokeBlockAction, usePersonPreferences } from "@Obsidian/Utility/block";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
-    import Grid, { TextColumn, textValueFilter, DeleteColumn, NumberColumn, numberValueFilter, ButtonColumn, pickExistingValueFilter, BooleanColumn, booleanValueFilter, AttributeColumns } from "@Obsidian/Controls/grid";
+    import Grid, { TextColumn, textValueFilter, DeleteColumn, NumberColumn, numberValueFilter, ButtonColumn, pickExistingValueFilter, BooleanColumn, booleanValueFilter, AttributeColumns, DateTimeColumn, dateValueFilter } from "@Obsidian/Controls/grid";
     import { alert } from "@Obsidian/Utility/dialogs";
     import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
     import { PageShortLinkListOptionsBag } from "@Obsidian/ViewModels/Blocks/Cms/PageShortLinkList/pageShortLinkListOptionsBag";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
     import { GridSettingsOptions, NavigationUrlKey, PreferenceKey } from "./PageShortLinkList/types.partial";
     import { reactive, ref, computed, watch } from "vue";
-    import { IGridState } from "@Obsidian/Types/Controls/grid";
     import GridSettingsModal from "./PageShortLinkList/gridSettingsModal.partial.obs";
     import { safeParseJson } from "@Obsidian/Utility/stringUtils";
     import { parseSlidingDateRangeString, slidingDateRangeToString } from "@Obsidian/Utility/slidingDateRange";
+    import CopyUrlCell from "./PageShortLinkList/copyUrlCell.partial.obs";
 
     const config = useConfigurationValues<ListBlockBox<PageShortLinkListOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
@@ -172,21 +183,6 @@
     function onAddItem(): void {
         if (config.navigationUrls?.[NavigationUrlKey.DetailPage]) {
             window.location.href = config.navigationUrls[NavigationUrlKey.DetailPage].replace("((Key))", "0");
-        }
-    }
-
-    /**
-    * The function to copy a specific website link to the clipboard.
-    *
-    * @param key The key of the row whose link is to be copied.
-    * @param grid The grid state.
-    */
-    async function onCopyClick(key: string, grid: IGridState): Promise<void> {
-        const row = grid.rows.find(r => r.idKey === key);
-        if (row) {
-            const shortLink = row.shortLink;
-            await navigator.clipboard.writeText(shortLink as string);
-            alert("Short link copied to clipboard.");
         }
     }
 

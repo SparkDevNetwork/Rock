@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -83,7 +83,10 @@ namespace Rock.Lms
         {
             if ( presentation == PresentedFor.Configuration )
             {
-                return new Dictionary<string, string>();
+                return new Dictionary<string, string>
+                {
+                    [BaseConfigurationKey.SupportsRetake] = "true"
+                };
             }
             else
             {

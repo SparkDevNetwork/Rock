@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -14,10 +14,13 @@
 // limitations under the License.
 // </copyright>
 //
-using Rock.Data;
 using System.ComponentModel.DataAnnotations;
 using System.Data.Entity.Spatial;
 using System.Runtime.Serialization;
+
+using Rock.Data;
+using Rock.Enums.Security;
+using Rock.Security;
 
 #if REVIEW_NET5_0_OR_GREATER
 using DbGeography = NetTopologySuite.Geometries.Geometry;
@@ -45,6 +48,7 @@ namespace Rock.Model
         /// The name of the campus.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string CampusName { get; set; }
 
         /// <summary>
@@ -54,6 +58,7 @@ namespace Rock.Model
         /// The campus short code.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string CampusShortCode { get; set; }
 
         #endregion Denormalized Lookup Values
@@ -69,6 +74,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 100 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string MailingAddressStreet1 { get; set; }
 
         /// <summary>
@@ -80,6 +86,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 100 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string MailingAddressStreet2 { get; set; }
 
         /// <summary>
@@ -91,6 +98,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 50 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string MailingAddressCity { get; set; }
 
         /// <summary>
@@ -101,6 +109,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 50 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string MailingAddressCounty { get; set; }
 
         /// <summary>
@@ -112,6 +121,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 50 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string MailingAddressState { get; set; }
 
         /// <summary>
@@ -123,6 +133,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 50 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string MailingAddressCountry { get; set; }
 
         /// <summary>
@@ -134,6 +145,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 50 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string MailingAddressPostalCode { get; set; }
 
         /// <summary>
@@ -186,6 +198,7 @@ namespace Rock.Model
         /// The mailing address full.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string MailingAddressFull { get; set; }
 
         #endregion Mailing Address
@@ -201,6 +214,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 100 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string MappedAddressStreet1 { get; set; }
 
         /// <summary>
@@ -212,6 +226,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 100 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string MappedAddressStreet2 { get; set; }
 
         /// <summary>
@@ -223,6 +238,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 50 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string MappedAddressCity { get; set; }
 
         /// <summary>
@@ -233,6 +249,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 50 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string MappedAddressCounty { get; set; }
 
         /// <summary>
@@ -244,6 +261,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 50 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string MappedAddressState { get; set; }
 
         /// <summary>
@@ -255,6 +273,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 50 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string MappedAddressCountry { get; set; }
 
         /// <summary>
@@ -266,6 +285,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 50 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string MappedAddressPostalCode { get; set; }
 
         /// <summary>
@@ -318,6 +338,7 @@ namespace Rock.Model
         /// The mapped address full.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string MappedAddressFull { get; set; }
 
         #endregion Mapped Address

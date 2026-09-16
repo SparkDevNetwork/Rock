@@ -21,6 +21,7 @@
 // </copyright>
 //
 
+using Rock.Configuration;
 using Rock.Model;
 using Rock.SystemGuid;
 
@@ -35,6 +36,6 @@ namespace Rock.Rest.Controllers
         /// <summary>
         /// Initializes a new instance of the <see cref="InteractionComponentsController"/> class.
         /// </summary>
-        public InteractionComponentsController() : base( new Rock.Model.InteractionComponentService( new Rock.Data.RockContext() ) ) { } 
+        public InteractionComponentsController() : base( new Rock.Model.InteractionComponentService( RockApp.Current.CreateRockContext() ) ) { } 
     }
 }

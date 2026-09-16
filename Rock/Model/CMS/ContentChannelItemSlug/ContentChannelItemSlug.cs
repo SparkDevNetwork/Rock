@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -20,6 +20,9 @@ using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 
 using Rock.Data;
+using Rock.Enums.Security;
+using Rock.Security;
+using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -30,8 +33,8 @@ namespace Rock.Model
     [Table( "ContentChannelItemSlug" )]
     [DataContract]
     [CodeGenerateRest]
-    [Rock.SystemGuid.EntityTypeGuid( "2FF2F1C3-A440-4D24-8FB8-2B0D9436EA75")]
-    public partial class ContentChannelItemSlug : Model<ContentChannelItemSlug>
+    [Rock.SystemGuid.EntityTypeGuid( "2FF2F1C3-A440-4D24-8FB8-2B0D9436EA75" )]
+    public partial class ContentChannelItemSlug : Model<ContentChannelItemSlug>, ICacheable
     {
         #region Entity Properties
 
@@ -54,6 +57,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 200 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string Slug { get; set; }
 
         /// <summary>

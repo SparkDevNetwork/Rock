@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -22,6 +22,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Web.UI;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Net;
@@ -182,7 +183,7 @@ namespace Rock.Reporting.DataFilter
             int? dataviewId = selectionConfig.DataViewId;
             if ( dataviewId.HasValue && dataviewId > 0 )
             {
-                var dataView = new DataViewService( new RockContext() ).GetNoTracking( dataviewId.Value );
+                var dataView = new DataViewService( RockApp.Current.CreateRockContext() ).GetNoTracking( dataviewId.Value );
                 if ( dataView != null )
                 {
                     return $"Included in '{dataView.Name}' Data View";
@@ -271,7 +272,7 @@ namespace Rock.Reporting.DataFilter
             int? dataViewId = dataViewItemPicker.SelectedValueAsId();
             if ( dataViewId.HasValue )
             {
-                var dataView = new DataViewService( new RockContext() ).GetNoTracking( dataViewId.Value );
+                var dataView = new DataViewService( RockApp.Current.CreateRockContext() ).GetNoTracking( dataViewId.Value );
                 cbUsePersisted.Visible = dataView.IsPersisted();
             }
 
@@ -375,7 +376,7 @@ namespace Rock.Reporting.DataFilter
         {
             if ( selectionConfig.DataViewId.HasValue && selectionConfig.DataViewId > 0 )
             {
-                var dataView = new DataViewService( new RockContext() ).Get( selectionConfig.DataViewId.Value );
+                var dataView = new DataViewService( RockApp.Current.CreateRockContext() ).Get( selectionConfig.DataViewId.Value );
                 return dataView;
             }
             else

@@ -21,6 +21,7 @@
 // </copyright>
 //
 
+using Rock.Configuration;
 using Rock.Model;
 using Rock.SystemGuid;
 
@@ -35,6 +36,6 @@ namespace Rock.Rest.Controllers
         /// <summary>
         /// Initializes a new instance of the <see cref="WorkflowActionFormSectionsController"/> class.
         /// </summary>
-        public WorkflowActionFormSectionsController() : base( new Rock.Model.WorkflowActionFormSectionService( new Rock.Data.RockContext() ) ) { } 
+        public WorkflowActionFormSectionsController() : base( new Rock.Model.WorkflowActionFormSectionService( RockApp.Current.CreateRockContext() ) ) { } 
     }
 }

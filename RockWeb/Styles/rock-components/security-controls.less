@@ -2,34 +2,38 @@
 // Security Controls - login status etc
 // --------------------------------------------------
 
-.rock-top-header {
+.loginstatus {
 
-  .loginstatus {
-    & > li {
-      min-width: 160px;
-      text-align: right;
+  .dropdown-toggle.navbar-link {
+    display: flex;
+    align-items: center;
+    justify-content: end;
+    gap: var(--spacing-xsmall);
+  }
 
-      & li {
-        text-align: left;
-      }
+  & > li {
+    min-width: 160px;
+    text-align: right;
+
+    & li {
+      text-align: left;
     }
+  }
 
-    // Minimal version that only shows the profile photo and hides the name and dropdown caret.
-    &.loginstatus-minimal {
-      margin-left: var(--spacing-small);
-      margin-right: var(--spacing-medium);
+  // Minimal version that only shows the profile photo and hides the name and dropdown caret.
+  &.loginstatus-minimal {
+    margin-left: var(--spacing-small);
+    margin-right: var(--spacing-medium);
 
-      a.dropdown-toggle.navbar-link {
+    a.dropdown-toggle.navbar-link {
+      padding: 0;
+
+      .loginstatus-wrapper {
+        margin-left: 0;
         padding: 0;
 
-        .loginstatus-wrapper {
-          margin-left: 0;
-          padding: 0;
-
-          .profile-photo {
-            margin-right: 0;
-          }
-
+        .profile-photo {
+          margin-right: 0;
         }
 
       }
@@ -41,8 +45,10 @@
 }
 
 
+
 .splash-form-btn {
   display: flex;
   flex-direction: column;
   justify-content: center;
 }
+

@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -15,17 +15,21 @@
 // </copyright>
 //
 
+using System;
+using System.Collections.Generic;
+using System.Data.Entity;
+using System.Linq;
+
+using OfficeOpenXml.FormulaParsing.Excel.Functions.Text;
+
 using Rock.ClientService.Core.Category.Options;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Model.Core.Category.Options;
 using Rock.Security;
 using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
-using System;
-using System.Collections.Generic;
-using System.Data.Entity;
-using System.Linq;
 
 namespace Rock.ClientService.Core.Category
 {
@@ -120,7 +124,7 @@ namespace Rock.ClientService.Core.Category
                         Type genericServiceType = typeof( Rock.Data.Service<> );
                         Type modelServiceType = genericServiceType.MakeGenericType( modelType );
 
-                        serviceInstance = Activator.CreateInstance( modelServiceType, new object[] { new RockContext() } ) as IService;
+                        serviceInstance = Activator.CreateInstance( modelServiceType, new object[] { RockApp.Current.CreateRockContext() } ) as IService;
                     }
                 }
             }

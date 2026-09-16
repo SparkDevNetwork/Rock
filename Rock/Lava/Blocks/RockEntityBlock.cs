@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -149,6 +149,11 @@ namespace Rock.Lava.Blocks
                     dbContext.Configuration.AutoDetectChangesEnabled = false;
 #endif
 
+                    var dynamicLinqConfig = new ParsingConfig
+                    {
+                        AllowEqualsAndToStringMethodsOnObject = true,
+                    };
+
                     // Create an instance of the entity's service
                     IService serviceInstance = Reflection.GetServiceForEntityType( entityType, dbContext );
 
@@ -296,7 +301,7 @@ namespace Rock.Lava.Blocks
                         // if there was a dynamic expression add it now
                         if ( parms.Any( p => p.Key == "expression" ) ) 
                         {
-                            queryResult = queryResult.Where( parms["expression"] );
+                            queryResult = queryResult.Where( dynamicLinqConfig, parms["expression"] );
                             hasFilter = true;
                         }
 
@@ -498,20 +503,20 @@ namespace Rock.Lava.Blocks
                             if ( parms.ContainsKey( "groupby" ) && parms.ContainsKey( "select" ) )
                             {
                                 resultsQry = queryResult.Cast( entityType )
-                                                .GroupBy( parms["groupby"] )
-                                                .Select( parms["select"] );
+                                                .GroupBy( dynamicLinqConfig, parms["groupby"] )
+                                                .Select( dynamicLinqConfig, parms["select"] );
                             }
                             else
                             {
                                 if ( parms.ContainsKey( "select" ) )
                                 {
                                     resultsQry = queryResult.Cast( entityType )
-                                                    .Select( parms["select"] );
+                                                    .Select( dynamicLinqConfig, parms["select"] );
                                 }
                                 else  // selectmany
                                 {
                                     resultsQry = queryResult.Cast( entityType )
-                                                    .SelectMany( parms["selectmany"] );
+                                                    .SelectMany( dynamicLinqConfig, parms["selectmany"] );
                                 }
                             }
 

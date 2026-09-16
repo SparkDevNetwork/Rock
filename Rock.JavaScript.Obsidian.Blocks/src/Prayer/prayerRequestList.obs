@@ -10,14 +10,15 @@
           :entityTypeGuid="EntityType.PrayerRequest"
           stickyHeader
           liveUpdates
-          gridSettings
+          :gridSettings="config.options?.isGridFilterVisible ?? true"
           :gridSettingsActive="hasSettingsFilters"
           @gridSettingsClick="onGridSettingsClick"
           @selectItem="onSelectItem"
           :onAddItem="config.isAddEnabled ? onAddItem : undefined">
         <SelectColumn />
 
-        <TextColumn name="fullName"
+        <TextColumn v-if="config.options?.isNameColumnVisible"
+                    name="fullName"
                     title="Name"
                     field="fullName"
                     :filter="textValueFilter"
@@ -29,7 +30,8 @@
                     :filter="pickExistingValueFilter"
                     visiblePriority="xs" />
 
-        <TextColumn name="campus"
+        <TextColumn v-if="config.options?.isCampusColumnVisible"
+                    name="campus"
                     title="Campus"
                     field="campus"
                     :filter="pickExistingValueFilter"
@@ -39,24 +41,40 @@
                     title="Entered"
                     field="enteredDateTime"
                     :filter="dateValueFilter"
+                    width="115px"
                     visiblePriority="md" />
 
         <TextColumn name="text"
                     title="Request"
                     field="text"
                     :filter="textValueFilter"
+                    width="70%"
                     visiblePriority="xs" />
 
-        <NumberColumn name="prayerCount"
-                      title="Prayer Count"
-                      field="prayerCount"
-                      :filter="numberValueFilter"
-                      visiblePriority="sm" />
+        <NumberColumn v-if="config.options?.isPrayerCountColumnVisible"
+                name="prayerCount"
+                title="Prayer Count"
+                field="prayerCount"
+                :filter="numberValueFilter"
+                width="130px"
+                visiblePriority="sm">
+            <template #format="{ row }">{{ formatCount(row.prayerCount) }}</template>
+        </NumberColumn>
 
         <NumberColumn name="flagCount"
-                      title="Flag Count"
-                      field="flagCount"
+                title="Flag Count"
+                field="flagCount"
+                :filter="numberValueFilter"
+                width="130px"
+                visiblePriority="sm">
+            <template #format="{ row }">{{ formatCount(row.flagCount) }}</template>
+        </NumberColumn>
+
+        <NumberColumn name="commentCount"
+                      title="Comments"
+                      field="commentCount"
                       :filter="numberValueFilter"
+                      width="130px"
                       visiblePriority="sm" />
 
         <AttributeColumns :attributes="config.gridDefinition?.attributeFields ?? []" />
@@ -66,6 +84,7 @@
                 title="Approved?"
                 field="isApproved"
                 :filter="booleanValueFilter"
+                width="130px"
                 :exportValue="getIsApprovedExportValue">
             <template #format="{ row }">
                 <Toggle v-model="row.isApproved"
@@ -90,7 +109,10 @@
         <DeleteColumn v-if="config.isDeleteEnabled" @click="onDeleteClick" />
     </Grid>
 
-    <GridSettingsModal v-model="gridSettings" v-model:visible="isGridSettingsVisible" />
+    <GridSettingsModal v-model="gridSettings"
+                       v-model:visible="isGridSettingsVisible"
+                       :defaultSlidingDateRange="defaultSlidingDateRange"
+                       :isPublicOnly="config.options?.isPublicOnly ?? false" />
 </template>
 
 <script setup lang="ts">
@@ -110,6 +132,7 @@
     import { isNullOrWhiteSpace } from "@Obsidian/Utility/stringUtils";
     import { tooltip } from "@Obsidian/Utility/tooltip";
     import { asBooleanOrNull, asTrueOrFalseString } from "@Obsidian/Utility/booleanUtils";
+    import { parseSlidingDateRangeString, RangeType, SlidingDateRange, slidingDateRangeToString, TimeUnit } from "@Obsidian/Utility/slidingDateRange";
 
     const config = useConfigurationValues<ListBlockBox<PrayerRequestListOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
@@ -126,12 +149,21 @@
     let gridDataCopy: GridDataBag | undefined;
     const isGridSettingsVisible = ref(false);
 
+    // Default the entered date range to the last 3 months so the grid never loads an
+    // unbounded number of rows (especially when expired requests are shown).
+    const defaultSlidingDateRange: SlidingDateRange = {
+        rangeType: RangeType.Last,
+        timeUnit: TimeUnit.Month,
+        timeValue: 3
+    };
+
     const gridSettings = ref<GridSettingsOptions>({
         publicOrPrivate: preferences.getValue(PreferenceKey.FilterPublicOrPrivate),
         active: preferences.getValue(PreferenceKey.FilterActive),
         urgent: preferences.getValue(PreferenceKey.FilterUrgent),
         commenting: preferences.getValue(PreferenceKey.FilterCommenting),
-        showExpiredRequests: asBooleanOrNull(preferences.getValue(PreferenceKey.FilterShowExpiredRequests)) ?? false
+        showExpiredRequests: asBooleanOrNull(preferences.getValue(PreferenceKey.FilterShowExpiredRequests)) ?? false,
+        dateRange: parseSlidingDateRangeString(preferences.getValue(PreferenceKey.FilterDateRange)) ?? defaultSlidingDateRange
     });
 
     // #endregion Values
@@ -146,7 +178,8 @@
             || !!gridSettings.value.active
             || !!gridSettings.value.urgent
             || !!gridSettings.value.commenting
-            || !!gridSettings.value.showExpiredRequests;
+            || !!gridSettings.value.showExpiredRequests
+            || !!gridSettings.value.dateRange;
     });
 
     // #endregion Computed Values
@@ -166,6 +199,21 @@
      */
     function getIsApprovedExportValue(row: Record<string, unknown>): string {
         return row.isApproved ? "True" : "False";
+    }
+
+    /**
+     * Formats a prayer count / flag count for display. The server coalesces null
+     * counts to 0 so that numeric column filters (e.g. "Less Than 2") include
+     * requests that have never been prayed for or flagged. This helper hides
+     * those zero values from the UI so the column still reads as empty for
+     * "no activity yet" rows, matching how the webforms block presented them.
+     */
+    function formatCount(value: unknown): string {
+        if (typeof value !== "number" || value === 0) {
+            return "";
+        }
+
+        return value.toLocaleString();
     }
 
     /**
@@ -315,6 +363,9 @@
         preferences.setValue(PreferenceKey.FilterUrgent, gridSettings.value.urgent ?? "");
         preferences.setValue(PreferenceKey.FilterCommenting, gridSettings.value.commenting ?? "");
         preferences.setValue(PreferenceKey.FilterShowExpiredRequests, asTrueOrFalseString(gridSettings.value.showExpiredRequests));
+        preferences.setValue(PreferenceKey.FilterDateRange, gridSettings.value.dateRange
+            ? slidingDateRangeToString(gridSettings.value.dateRange)
+            : slidingDateRangeToString(defaultSlidingDateRange));
 
         await preferences.save();
 

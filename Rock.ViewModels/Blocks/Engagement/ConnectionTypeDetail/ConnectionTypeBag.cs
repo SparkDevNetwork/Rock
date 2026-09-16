@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -17,9 +17,9 @@
 
 using System.Collections.Generic;
 
+using Rock.Enums.Connection;
 using Rock.ViewModels.Rest.Controls;
 using Rock.ViewModels.Utility;
-using Rock.Enums.Connection;
 
 namespace Rock.ViewModels.Blocks.Engagement.ConnectionTypeDetail
 {
@@ -109,6 +109,11 @@ namespace Rock.ViewModels.Blocks.Engagement.ConnectionTypeDetail
         public bool RequiresPlacementGroupToConnect { get; set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether all Connection Request due dates and due soon dates under this connection type should be recalculated during post save.
+        /// </summary>
+        public bool ShouldRecalculateRequestDueAndDueSoonDates { get; set; }
+
+        /// <summary>
         /// Gets or sets the connection type attributes.
         /// </summary>
         public List<PublicEditableAttributeBag> ConnectionTypeAttributes { get; set; }
@@ -132,6 +137,11 @@ namespace Rock.ViewModels.Blocks.Engagement.ConnectionTypeDetail
         /// Gets or sets the statuses.
         /// </summary>
         public List<ConnectionStatusBag> Statuses { get; set; }
+
+        /// <summary>
+        /// Gets or sets the connection type sources.
+        /// </summary>
+        public List<ConnectionTypeSourceBag> Sources { get; set; }
 
         /// <summary>
         /// Gets or sets the workflows.

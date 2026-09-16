@@ -1,0 +1,304 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Panel type="block" :title="`RSVP Detail ${groupName}`" titleIconCssClass="ti ti-user-check">
+        <NotificationBox v-if="conflictMessage" alertType="danger">{{ conflictMessage }}</NotificationBox>
+
+        <div v-if="!isEditMode">
+            <div class="row">
+                <div class="col-md-8 col-sm-6">
+                    <RockLiteral label="Name">{{ bag.name }}</RockLiteral>
+                    <RockLiteral label="Date">{{ bag.occurrenceDateText }}</RockLiteral>
+                    <RockLiteral v-if="bag.location?.text" label="Location">{{ bag.location.text }}</RockLiteral>
+                    <RockLiteral v-if="bag.scheduleText" label="Check-in Schedule">{{ bag.scheduleText }}</RockLiteral>
+                </div>
+                <div class="col-md-4 col-sm-6">
+                    <div class="rsvp-chart-container">
+                        <Chart v-if="hasChartData"
+                               type="doughnut"
+                               :data="chartData"
+                               :options="chartOptions" />
+                    </div>
+                </div>
+            </div>
+
+            <div class="actions">
+                <RockButton :btnType="BtnType.Primary"
+                            shortcutKey="e"
+                            @click="onEditClick">Edit</RockButton>
+            </div>
+        </div>
+
+        <fieldset v-else>
+            <div class="row">
+                <div class="col-sm-12">
+                    <TextBox v-model="formName" label="Name" />
+                </div>
+                <div class="col-sm-6">
+                    <DatePicker v-model="formOccurrenceDate" label="Date" rules="required" />
+                </div>
+                <div class="col-sm-6">
+                    <SchedulePicker v-model="formSchedule"
+                                    label="Check-in Schedule"
+                                    :multiple="false" />
+                    <small v-if="scheduleHelperText" class="schedule-helper d-block text-muted">{{ scheduleHelperText }}</small>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm-6">
+                    <LocationItemPicker v-model="formLocation" label="Location" />
+                </div>
+            </div>
+
+            <div>
+                <RockButton :btnType="BtnType.Link"
+                            :btnSize="BtnSize.ExtraSmall"
+                            class="p-0 text-decoration-none font-weight-semibold"
+                            @click="isAdvancedVisible = !isAdvancedVisible">
+                    {{ isAdvancedVisible ? "Hide Advanced Settings" : "Show Advanced Settings" }}
+                    <i :class="['ti ti-chevron-up advanced-chevron align-middle', { 'advanced-chevron-collapsed': !isAdvancedVisible }]"></i>
+                </RockButton>
+            </div>
+
+            <TransitionVerticalCollapse>
+                <div v-show="isAdvancedVisible">
+                    <div class="row">
+                        <div class="col-sm-12">
+                            <HtmlEditor v-model="formAcceptMessage"
+                                        label="Custom Accept Message"
+                                        toolbar="light"
+                                        :editorHeight="200" />
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-sm-12">
+                            <HtmlEditor v-model="formDeclineMessage"
+                                        label="Custom Decline Message"
+                                        toolbar="light"
+                                        :editorHeight="200" />
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-sm-6">
+                            <CheckBox v-model="formShowDeclineReasons" label="Show Decline Reasons" />
+                        </div>
+                        <div v-if="formShowDeclineReasons" class="col-sm-6">
+                            <CheckBoxList v-model="formAvailableDeclineReasonGuids"
+                                          label="Available Decline Reasons"
+                                          :items="bag.allDeclineReasons ?? []" />
+                        </div>
+                    </div>
+                </div>
+            </TransitionVerticalCollapse>
+
+            <div class="actions">
+                <RockButton :btnType="BtnType.Primary"
+                            :isLoading="isSaving"
+                            loadingText="Saving..."
+                            shortcutKey="s"
+                            @click="onSaveClick">Save</RockButton>
+                <RockButton :btnType="BtnType.Link"
+                            shortcutKey="c"
+                            @click="onCancelClick">Cancel</RockButton>
+            </div>
+        </fieldset>
+    </Panel>
+</template>
+
+<style scoped>
+.advanced-chevron {
+    transition: transform 0.35s ease-in-out;
+    display: inline-block;
+}
+
+.advanced-chevron-collapsed {
+    transform: rotate(180deg);
+}
+
+.schedule-helper {
+    margin-top: -10px;
+}
+
+.rsvp-chart-container {
+    position: relative;
+    height: 280px;
+}
+</style>
+
+<script setup lang="ts">
+    import { computed, PropType, ref, watch } from "vue";
+    import Panel from "@Obsidian/Controls/panel.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import RockLiteral from "@Obsidian/Controls/rockLiteral.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import DatePicker from "@Obsidian/Controls/datePicker.obs";
+    import SchedulePicker from "@Obsidian/Controls/schedulePicker.obs";
+    import LocationItemPicker from "@Obsidian/Controls/locationItemPicker.obs";
+    import HtmlEditor from "@Obsidian/Controls/htmlEditor.obs";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import CheckBoxList from "@Obsidian/Controls/checkBoxList.obs";
+    import Chart from "@Obsidian/Controls/chart.obs";
+    import TransitionVerticalCollapse from "@Obsidian/Controls/transitionVerticalCollapse.obs";
+    import { BtnType } from "@Obsidian/Enums/Controls/btnType";
+    import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
+    import { useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { RsvpDetailBag } from "@Obsidian/ViewModels/Blocks/Rsvp/RsvpDetail/rsvpDetailBag";
+    import { SaveOccurrenceRequestBag } from "@Obsidian/ViewModels/Blocks/Rsvp/RsvpDetail/saveOccurrenceRequestBag";
+    import { PageParameterKey } from "./types.partial";
+
+    const props = defineProps({
+        bag: {
+            type: Object as PropType<RsvpDetailBag>,
+            required: true
+        },
+
+        groupName: {
+            type: String,
+            default: ""
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "occurrenceSaved", bag: RsvpDetailBag): void;
+        (e: "cancel"): void;
+    }>();
+
+    const invokeBlockAction = useInvokeBlockAction();
+
+    const isEditMode = ref<boolean>(props.bag.isNewOccurrence);
+    const isAdvancedVisible = ref<boolean>(false);
+    const isSaving = ref<boolean>(false);
+    const conflictMessage = ref<string>("");
+
+    const formName = ref<string>("");
+    const formOccurrenceDate = ref<string | null>(null);
+    const formSchedule = ref<ListItemBag | null>(null);
+    const formLocation = ref<ListItemBag | null>(null);
+    const formAcceptMessage = ref<string>("");
+    const formDeclineMessage = ref<string>("");
+    const formShowDeclineReasons = ref<boolean>(false);
+    const formAvailableDeclineReasonGuids = ref<string[]>([]);
+
+    /** Copies the latest bag values into the local edit-form refs. */
+    function syncFormFromBag(): void {
+        formName.value = props.bag.name ?? "";
+        formOccurrenceDate.value = props.bag.occurrenceDate ?? null;
+        formSchedule.value = props.bag.schedule ?? null;
+        formLocation.value = props.bag.location ?? null;
+        formAcceptMessage.value = props.bag.acceptMessage ?? "";
+        formDeclineMessage.value = props.bag.declineMessage ?? "";
+        formShowDeclineReasons.value = props.bag.showDeclineReasons;
+        formAvailableDeclineReasonGuids.value = [...(props.bag.availableDeclineReasonGuids ?? [])];
+    }
+
+    syncFormFromBag();
+
+    watch(() => props.bag, () => {
+        syncFormFromBag();
+        isEditMode.value = props.bag.isNewOccurrence;
+        conflictMessage.value = "";
+    });
+
+    const hasChartData = computed((): boolean => {
+        return (props.bag.acceptCount + props.bag.declineCount + props.bag.noResponseCount) > 0;
+    });
+
+    // The helper text displays the saved schedule's friendly recurrence text under the picker
+    // (matching the legacy lScheduleText literal). It only shows while the picked schedule
+    // still matches the bag's saved schedule because we don't have a friendly description
+    // for an unsaved selection without a server round-trip.
+    const scheduleHelperText = computed((): string => {
+        if (!props.bag.scheduleText) {
+            return "";
+        }
+
+        const savedValue = props.bag.schedule?.value ?? null;
+        const formValue = formSchedule.value?.value ?? null;
+        if (savedValue && savedValue === formValue) {
+            return props.bag.scheduleText;
+        }
+
+        return "";
+    });
+
+    const chartData = computed(() => ({
+        labels: ["Accept", "Decline", "No Response"],
+        datasets: [{
+            data: [props.bag.acceptCount, props.bag.declineCount, props.bag.noResponseCount],
+            backgroundColor: ["#16C98D", "#D4442E", "#F3F3F3"]
+        }]
+    }));
+
+    const chartOptions = {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                position: "right" as const
+            }
+        },
+        cutout: "75%"
+    };
+
+    /** Enters the occurrence edit panel and clears any prior conflict notice. */
+    function onEditClick(): void {
+        isEditMode.value = true;
+        conflictMessage.value = "";
+    }
+
+    /** Exits the edit panel: navigates to the parent for new occurrences, otherwise reverts the form. */
+    function onCancelClick(): void {
+        if (props.bag.isNewOccurrence) {
+            emit("cancel");
+            return;
+        }
+
+        syncFormFromBag();
+        isEditMode.value = false;
+        conflictMessage.value = "";
+    }
+
+    /** Submits the edit-form values to SaveOccurrence and surfaces any conflict error. */
+    async function onSaveClick(): Promise<void> {
+        if (isSaving.value) {
+            return;
+        }
+
+        isSaving.value = true;
+        conflictMessage.value = "";
+
+        const request: SaveOccurrenceRequestBag = {
+            name: formName.value,
+            occurrenceDate: formOccurrenceDate.value,
+            schedule: formSchedule.value,
+            location: formLocation.value,
+            acceptMessage: formAcceptMessage.value,
+            declineMessage: formDeclineMessage.value,
+            showDeclineReasons: formShowDeclineReasons.value,
+            availableDeclineReasonGuids: formAvailableDeclineReasonGuids.value
+        };
+
+        try {
+            const wasNewOccurrence = props.bag.isNewOccurrence;
+            const result = await invokeBlockAction<RsvpDetailBag>("SaveOccurrence", { request });
+            if (!result.isSuccess || !result.data) {
+                conflictMessage.value = result.errorMessage || "Unable to save the occurrence.";
+                return;
+            }
+
+            if (wasNewOccurrence && result.data.occurrenceIdKey) {
+                const url = new URL(window.location.href);
+                url.searchParams.set(PageParameterKey.OccurrenceId, result.data.occurrenceIdKey);
+                window.location.href = url.toString();
+                return;
+            }
+
+            emit("occurrenceSaved", result.data);
+            isEditMode.value = false;
+        }
+        finally {
+            isSaving.value = false;
+        }
+    }
+</script>

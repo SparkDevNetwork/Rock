@@ -22,10 +22,10 @@ import TextSkeletonCell from "../Cells/textSkeletonCell.partial.obs";
 import { ColumnDefinition, ExportValueFunction } from "@Obsidian/Types/Controls/grid";
 
 /**
- * Gets the value to use when quick filtering a cell of this column.
+ * Gets the value to use when exporting a cell of this column.
  *
- * @param row The row that will be filtered.
- * @param column The column that will be filtered.
+ * @param row The row that will be exported.
+ * @param column The column that will be exported.
  *
  * @returns A string value or undefined if the cell has no value.
  */
@@ -36,11 +36,17 @@ function getExportValue(row: Record<string, unknown>, column: ColumnDefinition):
 
     const value = row[column.field];
 
-    if (typeof value !== "string") {
-        return undefined;
+    if (typeof value === "string") {
+        return value;
     }
 
-    return value;
+    // Stringify primitive values so they export as displayed; objects stay
+    // blank to avoid "[object Object]".
+    if (typeof value === "number" || typeof value === "boolean") {
+        return String(value);
+    }
+
+    return undefined;
 }
 
 /**

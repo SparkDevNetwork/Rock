@@ -21,6 +21,7 @@
 // </copyright>
 //
 
+using Rock.Configuration;
 using Rock.Model;
 using Rock.SystemGuid;
 
@@ -35,6 +36,6 @@ namespace Rock.Rest.Controllers
         /// <summary>
         /// Initializes a new instance of the <see cref="NoteWatchesController"/> class.
         /// </summary>
-        public NoteWatchesController() : base( new Rock.Model.NoteWatchService( new Rock.Data.RockContext() ) ) { } 
+        public NoteWatchesController() : base( new Rock.Model.NoteWatchService( RockApp.Current.CreateRockContext() ) ) { } 
     }
 }

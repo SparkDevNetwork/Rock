@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -21,18 +21,20 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
 
+using Microsoft.Extensions.Logging;
+
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Logging;
-using Rock.RealTime.Topics;
 using Rock.RealTime;
+using Rock.RealTime.Topics;
 using Rock.Reporting;
 using Rock.Utility;
+using Rock.ViewModels.Event.RegistrationEntry;
+using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 
-using Microsoft.Extensions.Logging;
-using Rock.ViewModels.Event.RegistrationEntry;
 using Z.EntityFramework.Plus;
-using Rock.ViewModels.Utility;
 
 namespace Rock.Model
 {
@@ -231,6 +233,63 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Gets a query that returns the most recent signature documents for the given person and template
+        /// that are still valid according to the template's validity duration.
+        /// </summary>
+        /// <param name="personId">The person identifier that the signature document must be associated with.</param>
+        /// <param name="documentTemplate">The signature document template that the signature document must match.</param>
+        /// <returns>
+        /// An <see cref="IQueryable{T}"/> of <see cref="SignatureDocument"/> ordered by most recently signed first.
+        /// If the template is not configured for future validity (or has no validity duration), returns an empty query.
+        /// </returns>
+        /// <exception cref="ArgumentNullException">
+        /// Thrown when <paramref name="documentTemplate"/> is <c>null</c>.
+        /// </exception>
+        public IQueryable<SignatureDocument> GetValidSignatureDocument( int personId, SignatureDocumentTemplate documentTemplate )
+        {       
+            if ( documentTemplate == null )
+            {
+                throw new ArgumentNullException( nameof( documentTemplate ) );
+            }
+
+            // try to find a still valid Signature Document for this person
+            // If the person happens to have a valid signature document of the required template, we may skip this step.
+            if ( documentTemplate.IsValidInFuture && documentTemplate.ValidityDurationInDays.HasValue )
+            {
+                // When thinking about date comparisons, think in terms of extremes:
+                //  - If they signed a document today, and it's only valid for 1 day, it's still valid (at any point) today.
+                //  - If they signed a document (at any point) yesterday or before, and it's only valid for 1 day, it's no longer valid today.
+                // With this in mind, add one day to the specified ValidityDurationInDays before comparing.
+                var earliestSignatureDate = RockDateTime.Today.AddDays( -documentTemplate.ValidityDurationInDays.ToIntSafe() + 1 );
+
+                return Queryable()
+                    .Where( r =>
+                        r.PersonAlias.PersonId == personId &&
+                        r.SignatureDocument.SignatureDocumentTemplateId == documentTemplate.Id &&
+                        r.SignatureDocument.SignedDateTime >= earliestSignatureDate )
+                    .OrderByDescending( r => r.SignatureDocument.SignedDateTime )
+                    .Select( r => r.SignatureDocument );
+            }
+            else
+            {
+                return Enumerable.Empty<SignatureDocument>().AsQueryable();
+            }
+        }
+
+        /// <summary>
+        /// Gets a query of registration registrants that are associated with the specified signature document.
+        /// </summary>
+        /// <param name="signatureDocumentId">The signature document identifier.</param>
+        /// <returns>
+        /// An <see cref="IQueryable{T}"/> of <see cref="RegistrationRegistrant"/> records that reference the specified
+        /// signature document.
+        /// </returns>
+        public IQueryable<RegistrationRegistrant> GetRegistrantsUsingSignatureDocument( int signatureDocumentId )
+        {
+            return Queryable().Where( r => r.SignatureDocumentId == signatureDocumentId );
+        }
+
+        /// <summary>
         /// 
         /// </summary>
         private class InstancePlacementGroupPersonId
@@ -331,7 +390,7 @@ namespace Rock.Model
                 return;
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 try
                 {
@@ -401,7 +460,7 @@ namespace Rock.Model
                 return;
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 try
                 {

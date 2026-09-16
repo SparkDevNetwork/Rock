@@ -21,7 +21,7 @@ import { FieldTypeBase } from "./fieldType";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { escapeHtml } from "@Obsidian/Utility/stringUtils";
 
-export const enum ConfigurationValueKey {
+export const enum ConfigurationKey {
     AttributeMatrixTemplate = "attributematrixtemplate"
 }
 
@@ -59,7 +59,7 @@ export class MatrixFieldType extends FieldTypeBase {
         }
     }
 
-    public override getHtmlValue(value: string, _configurationValues: Record<string, string>, isEscaped:boolean = false): string {
+    public override getHtmlValue(value: string, _configurationValues: Record<string, string>, isEscaped: boolean = false): string {
         if (value === undefined || value === null || value === "") {
             return "";
         }
@@ -82,7 +82,7 @@ export class MatrixFieldType extends FieldTypeBase {
         }
     }
 
-    public override getCondensedHtmlValue(value: string, configurationValues: Record<string, string>, isEscaped:boolean = false): string {
+    public override getCondensedHtmlValue(value: string, configurationValues: Record<string, string>, isEscaped: boolean = false): string {
         return this.getHtmlValue(value, configurationValues, isEscaped);
     }
 

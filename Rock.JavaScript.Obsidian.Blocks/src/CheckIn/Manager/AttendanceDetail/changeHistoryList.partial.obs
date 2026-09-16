@@ -1,0 +1,37 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="form-group static-control">
+        <label class="control-label">Change History</label>
+        <div class="control-wrapper">
+            <ul>
+                <li v-for="(row, index) in history" :key="index">
+                    <template v-if="row.createdPersonUrl">
+                        <a :href="row.createdPersonUrl">{{ row.createdPersonName }}</a>
+                    </template>
+                    <template v-else>{{ row.createdPersonName }}</template>
+                    ({{ row.createdDateTimeElapsed }})
+                    <br />
+                    <!--
+                        The description comes from History.ToString(), which
+                        emits its own HTML markup (<span class='field-name'>,
+                        <span class='field-value'>, etc.). Render it as HTML so
+                        the styling matches every other history-consumer in Rock.
+                    -->
+                    <span v-html="row.description ?? ''"></span>
+                </li>
+            </ul>
+        </div>
+    </div>
+</template>
+
+<script setup lang="ts">
+    import { PropType } from "vue";
+    import { AttendanceDetailChangeHistoryBag } from "@Obsidian/ViewModels/Blocks/CheckIn/Manager/AttendanceDetail/attendanceDetailChangeHistoryBag";
+
+    defineProps({
+        history: {
+            type: Array as PropType<AttendanceDetailChangeHistoryBag[]>,
+            default: () => []
+        }
+    });
+</script>

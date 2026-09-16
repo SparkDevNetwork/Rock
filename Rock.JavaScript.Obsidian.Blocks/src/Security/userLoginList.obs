@@ -26,8 +26,6 @@
                       :hideAvatar="true"
                       :showAsLink="true"
                       :filter="pickExistingValueFilter"
-                      :filterValue="getPersonFilterValue"
-                      :quickFilterValue="getPersonFilterValue"
                       visiblePriority="xs" />
 
         <TextColumn name="provider"
@@ -68,14 +66,14 @@
                        field="isLockedOut"
                        visiblePriority="md"
                        :filter="booleanValueFilter"
-                       :width="columnWidth"/>
+                       :width="columnWidth" />
 
         <BooleanColumn name="isPasswordChangeRequired"
                        title="Password Change Required"
                        field="isPasswordChangeRequired"
                        :filter="booleanValueFilter"
                        visiblePriority="md"
-                       width="250"/>
+                       width="250" />
 
         <DeleteColumn v-if="config.isDeleteEnabled" @click="onDeleteClick" />
     </Grid>
@@ -155,7 +153,6 @@
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
     import { reactive, ref, computed, watch } from "vue";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
-    import { PersonFieldBag } from "@Obsidian/ViewModels/Core/Grid/personFieldBag";
 
     const config = useConfigurationValues<ListBlockBox<UserLoginListOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
@@ -338,16 +335,6 @@
         confirmPassword.value = "";
 
         isPersonPickerVisible.value = !hasPersonContextEntity.value && !userLogin?.personAlias?.value;
-    }
-
-    /**
-    * Gets the filter value text to use for the person column.
-    *
-    * @param row The row to be filtered.
-    */
-    function getPersonFilterValue(row: Record<string, unknown>): string {
-        const person = row["person"] as PersonFieldBag;
-        return !person ? "" : `${person.nickName} ${person.lastName}`;
     }
 
     // #endregion

@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -15,9 +15,17 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
 using System.Net;
+using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Threading.Tasks;
+
+using Microsoft.Extensions.Logging;
+
+using Newtonsoft.Json;
 
 using RestSharp;
 
@@ -25,18 +33,13 @@ using Rock.Attribute;
 using Rock.Common.Mobile.Blocks.Login;
 using Rock.Common.Mobile.Enums;
 using Rock.Common.Mobile.Security.Authentication;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Enums.Security;
 using Rock.Mobile;
 using Rock.Model;
 using Rock.Utility;
 using Rock.Web.Cache;
-using Newtonsoft.Json;
-using System.Collections.Generic;
-using System.Net.Http.Headers;
-using System.Net.Http;
-using System.Linq;
-using Microsoft.Extensions.Logging;
 
 namespace Rock.Blocks.Types.Mobile.Cms
 {
@@ -637,7 +640,7 @@ namespace Rock.Blocks.Types.Mobile.Cms
         [RockInternal( "1.15.1" )]
         internal static UserLogin GetOrCreatePersonFromExternalAuthenticationUserInfo( ExternalAuthenticationUserInfoBag personInfo, ExternalAuthUserLoginBag userLoginInfo, RockContext rockContext = null, int? connectionStatusValueId = null, int? recordStatusValueId = null )
         {
-            rockContext = rockContext ?? new RockContext();
+            rockContext = rockContext ?? RockApp.Current.CreateRockContext();
             UserLogin user = null;
             Person person = null;
 
@@ -846,7 +849,7 @@ namespace Rock.Blocks.Types.Mobile.Cms
                 return ActionBadRequest( "Username and password are required." );
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var userLoginService = new UserLoginService( rockContext );
                 var (state, userLogin) = userLoginService.GetAuthenticatedUserLogin( username, password );
@@ -1040,7 +1043,7 @@ namespace Rock.Blocks.Types.Mobile.Cms
                 return ActionBadRequest( "You have enhanced authentication security enabled, but are still utilizing the legacy external authentication endpoint." );
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 // For the authentication providers that are supported,
                 // we need to structure the UserLogin accordingly.

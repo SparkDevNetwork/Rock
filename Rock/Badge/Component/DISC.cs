@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -23,9 +23,7 @@ using System.IO;
 using System.Linq;
 
 using Rock.Attribute;
-#if REVIEW_NET5_0_OR_GREATER
 using Rock.Configuration;
-#endif
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -39,7 +37,9 @@ namespace Rock.Badge.Component
     [Export( typeof( BadgeComponent ) )]
     [ExportMetadata( "ComponentName", "DISC" )]
 
-    [LinkedPage( "DISC Result Detail", "Page to show the details of the DISC assessment results. If blank no link is created.", false )]
+    [LinkedPage( "DISC Result Detail",
+        Description = "Page to show the details of the DISC assessment results. If blank no link is created.",
+        IsRequired = false )]
     [Rock.SystemGuid.EntityTypeGuid( "6D29DB44-EDC5-42AA-B42C-482BC0920AD0")]
     public class DISC : BadgeComponent
     {
@@ -140,7 +140,7 @@ namespace Rock.Badge.Component
             }
             else
             {
-                var rockContext = new RockContext();
+                var rockContext = RockApp.Current.CreateRockContext();
                 var assessmentType = new AssessmentTypeService( rockContext ).Get( Rock.SystemGuid.AssessmentType.DISC.AsGuid() );
                 var lastRequestDate = new AssessmentService( rockContext )
                    .Queryable()

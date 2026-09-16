@@ -1,0 +1,150 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="remote-authentication">
+        <NotificationBox v-if="warningMessage"
+                         alertType="warning">
+            {{ warningMessage }}
+        </NotificationBox>
+
+        <div v-else-if="isSuccess"
+             v-html="successHtml">
+        </div>
+
+        <div v-else class="code-container">
+            <div v-if="headerHtml"
+                 v-html="headerHtml">
+            </div>
+
+            <TextBox v-model="securityCode"
+                     inputClasses="code-entry"
+                     :isReadOnly="isSubmitting"
+                     @update:modelValue="onCodeChanged"
+                     @keydown.enter.prevent="onSubmit" />
+
+            <div class="my-2">
+                <RockButton :btnType="BtnType.Primary"
+                            class="btn-remoteauth"
+                            :disabled="isSubmitting || !hasCode"
+                            :isLoading="isSubmitting"
+                            @click="onSubmit">
+                    Submit
+                </RockButton>
+            </div>
+
+            <NotificationBox v-if="errorMessage"
+                             alertType="warning"
+                             class="my-3">
+                {{ errorMessage }}
+            </NotificationBox>
+
+            <div v-if="footerHtml"
+                 v-html="footerHtml">
+            </div>
+        </div>
+    </div>
+</template>
+
+<style scoped>
+.code-container {
+    text-align: center;
+}
+
+.code-container :deep(.code-entry) {
+    width: 200px;
+    text-align: center;
+    font-size: 24px;
+    font-weight: 700;
+    padding: 24px;
+    letter-spacing: 6px;
+    text-transform: uppercase;
+    margin: auto;
+}
+</style>
+
+<script setup lang="ts">
+    import { computed, ref } from "vue";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import { BtnType } from "@Obsidian/Enums/Controls/btnType";
+    import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
+    import { RemoteAuthenticationAuthenticateResultBag } from "@Obsidian/ViewModels/Blocks/Tv/RemoteAuthentication/remoteAuthenticationAuthenticateResultBag";
+    import { RemoteAuthenticationOptionsBag } from "@Obsidian/ViewModels/Blocks/Tv/RemoteAuthentication/remoteAuthenticationOptionsBag";
+
+    // #region Values
+
+    const config = useConfigurationValues<RemoteAuthenticationOptionsBag>();
+    const invokeBlockAction = useInvokeBlockAction();
+    const reloadBlock = useReloadBlock();
+
+    const warningMessage = ref(config.warningMessage ?? "");
+    const headerHtml = ref(config.headerHtml ?? "");
+    const footerHtml = ref(config.footerHtml ?? "");
+    const isSuccess = ref(config.isSuccess ?? false);
+    const successHtml = ref(config.successHtml ?? "");
+    const errorMessage = ref(config.errorMessage ?? "");
+    const securityCode = ref("");
+    const isSubmitting = ref(false);
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    const hasCode = computed((): boolean => securityCode.value.trim().length > 0);
+
+    // #endregion Computed Values
+
+    // #region Event Handlers
+
+    /**
+     * Clears the previous error when the person edits the security code.
+     */
+    function onCodeChanged(): void {
+        if (errorMessage.value) {
+            errorMessage.value = "";
+        }
+    }
+
+    /**
+     * Submits the security code for remote authentication.
+     */
+    async function onSubmit(): Promise<void> {
+        if (isSubmitting.value || !hasCode.value) {
+            if (!hasCode.value) {
+                errorMessage.value = "Please enter your security code.";
+            }
+
+            return;
+        }
+
+        isSubmitting.value = true;
+        errorMessage.value = "";
+
+        try {
+            const result = await invokeBlockAction<RemoteAuthenticationAuthenticateResultBag>("Authenticate", {
+                authCode: securityCode.value
+            });
+
+            if (!result.isSuccess) {
+                errorMessage.value = result.errorMessage ?? "Unable to authenticate with the provided code.";
+                return;
+            }
+
+            const data = result.data;
+            if (!data?.isSuccess) {
+                errorMessage.value = data?.errorMessage ?? "The code provided is not valid. Please confirm that you have correctly entered the code.";
+                return;
+            }
+
+            isSuccess.value = true;
+            successHtml.value = data.successHtml ?? "";
+        }
+        finally {
+            isSubmitting.value = false;
+        }
+    }
+
+    // #endregion Event Handlers
+
+    onConfigurationValuesChanged(reloadBlock);
+</script>

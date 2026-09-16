@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -27,6 +27,7 @@ using NetTopologySuite.Geometries;
 #endif
 
 using Rock.Communication;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Enums.Event;
 using Rock.Event.InteractiveExperiences;
@@ -51,7 +52,7 @@ namespace Rock.Model
         /// <returns>A <see cref="Task"/> representing when the database has updated and notifications queued.</returns>
         internal static async Task ShowActionAsync( int occurrenceId, int actionId, bool sendNotifications )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var occurrenceService = new InteractiveExperienceOccurrenceService( rockContext );
                 var actionService = new InteractiveExperienceActionService( rockContext );
@@ -138,7 +139,7 @@ namespace Rock.Model
         /// <returns>A <see cref="Task"/> representing when the database has been updated and notifications queued.</returns>
         internal static async Task ClearActionsAsync( int occurrenceId )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 // Load and validate the occurrence.
                 var occurrenceService = new InteractiveExperienceOccurrenceService( rockContext );
@@ -176,7 +177,7 @@ namespace Rock.Model
         /// <returns>A <see cref="Task"/> representing when the database has updated and RealTime messages queued.</returns>
         internal static async Task ShowVisualizerAsync( int occurrenceId, int actionId )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var occurrenceService = new InteractiveExperienceOccurrenceService( rockContext );
                 var actionService = new InteractiveExperienceActionService( rockContext );
@@ -253,7 +254,7 @@ namespace Rock.Model
         /// <returns>A <see cref="Task"/> representing when the database has been updated and notifications queued.</returns>
         internal static async Task ClearVisualizerAsync( int occurrenceId )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 // Load and validate the occurrence.
                 var occurrenceService = new InteractiveExperienceOccurrenceService( rockContext );
@@ -336,7 +337,7 @@ namespace Rock.Model
         /// <param name="interactionSessionId">On exit, contains the interaction session identifier associated with the interaction.</param>
         internal static void CreateOrUpdateInteraction( int occurrenceId, Guid interactionGuid, int? personAliasId, int? personalDeviceId, int? campusId, RockRequestContext requestContext, out int interactionSessionId )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var interactionService = new InteractionService( rockContext );
                 var occurrenceService = new InteractiveExperienceOccurrenceService( rockContext );
@@ -398,7 +399,7 @@ namespace Rock.Model
         /// <param name="interactionGuid">The interaction unique identifier.</param>
         internal static void UpdateInteractionDuration( Guid interactionGuid )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var interactionService = new InteractionService( rockContext );
                 var interaction = interactionService.Get( interactionGuid );
@@ -428,7 +429,7 @@ namespace Rock.Model
         /// <param name="interactionGuid">The interaction unique identifier.</param>
         internal static void FinalizeInteraction( Guid interactionGuid )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var interactionService = new InteractionService( rockContext );
                 var interaction = interactionService.Get( interactionGuid );
@@ -654,7 +655,7 @@ namespace Rock.Model
                 return channelId.Value;
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var systemEventsMediumValueId = DefinedValueCache.GetId( SystemGuid.DefinedValue.INTERACTIONCHANNELTYPE_SYSTEM_EVENTS.AsGuid() );
                 var interactionChannelService = new InteractionChannelService( rockContext );
@@ -723,7 +724,7 @@ namespace Rock.Model
         /// <returns>An integer that represents the matching occurrence identifier.</returns>
         private static int GetOrCreateCurrentOccurrenceId( int interactiveExperienceScheduleId, int? campusId, DateTime occurrenceDateTime )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var occurrenceService = new InteractiveExperienceOccurrenceService( rockContext );
 

@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -22,6 +22,8 @@ using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 
 using Rock.Data;
+using Rock.Enums.Security;
+using Rock.Security;
 
 namespace Rock.Model
 {
@@ -53,6 +55,7 @@ namespace Rock.Model
         [Index( IsUnique = true )]
 #endif
         [MaxLength(200)]
+        [StringValidation( StringValidationProfile.Name )]
         public string Name { get; set; }
 
         /// <summary>
@@ -115,6 +118,7 @@ namespace Rock.Model
         /// <value>The internal message.</value>
         [MaxLength( 250 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string InternalMessage { get; set; }
 
         #endregion

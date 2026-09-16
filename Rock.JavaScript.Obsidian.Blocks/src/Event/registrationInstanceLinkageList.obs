@@ -4,6 +4,7 @@
           :data="gridDataSource"
           keyField="idKey"
           itemTerm="Linkages"
+          title="Linkages"
           :entityTypeGuid="EntityType.EventItemOccurrenceGroupMap"
           stickyHeader
           liveUpdates
@@ -33,12 +34,11 @@
         <TextColumn name="campus"
                     title="Campus"
                     field="campus"
-                    :filter="textValueFilter"
-                    visiblePriority="md" />
+                    :filter="textValueFilter" />
 
         <Column name="group"
                 title="Group"
-                visiblePriority="md">
+                field="group">
 
             <template #format="{ row }">
                 <div class="text-lg">
@@ -53,7 +53,7 @@
 
         <Column name="contentItems"
                 title="Content Item"
-                visiblePriority="md">
+                :sortValue="getContentItemsSortValue">
 
             <template #format="{ row }">
                 <div class="text-lg">
@@ -71,14 +71,12 @@
         <TextColumn name="publicName"
                     title="Public Name"
                     field="publicName"
-                    :filter="textValueFilter"
-                    visiblePriority="xs" />
+                    :filter="textValueFilter" />
 
         <TextColumn name="urlSlug"
                     title="URL Slug"
                     field="urlSlug"
-                    :filter="textValueFilter"
-                    visiblePriority="md" />
+                    :filter="textValueFilter" />
 
         <EditColumn @click="onSelectItem" />
 
@@ -204,14 +202,28 @@
         return "";
     }
 
+    /**
+     * Gets the sort value for the Content Item column. The column data is an
+     * array of anchor HTML strings, so the markup is stripped and the titles
+     * are joined for a stable, alphabetical sort.
+     */
+    function getContentItemsSortValue(row: Record<string, unknown>): string {
+        const contentItems = row.contentItems as string[] | undefined;
+
+        if (!contentItems || contentItems.length === 0) {
+            return "";
+        }
+
+        return contentItems.map(item => item.replace(/<[^>]*>/g, "").trim()).join(" ");
+    }
+
     function makeKeyUniqueToRegistrationTemplate(key: string): string {
+        if (config.options?.registrationTemplateIdKey) {
+            return `${config.options.registrationTemplateIdKey}-${key}`;
+        }
 
-if (config.options?.registrationTemplateIdKey) {
-    return `${config.options?.registrationTemplateIdKey}-${key}`;
-}
-
-return key;
-}
+        return key;
+    }
 
     // #endregion
 

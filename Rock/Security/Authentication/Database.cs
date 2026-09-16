@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -26,6 +26,7 @@ using System.Text;
 using System.Web;
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security.Authentication.CredentialAuthentication;
@@ -38,7 +39,10 @@ namespace Rock.Security.Authentication
     [Description( "Database Authentication Provider" )]
     [Export( typeof( AuthenticationComponent ) )]
     [ExportMetadata( "ComponentName", "Database" )]
-    [IntegerField( "BCrypt Cost Factor", "The higher this number, the more secure BCrypt can be. However it also will be slower.", false, 11 )]
+    [IntegerField( "BCrypt Cost Factor",
+        Description = "The higher this number, the more secure BCrypt can be. However it also will be slower.",
+        IsRequired = false,
+        DefaultIntegerValue = 11 )]
     [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.AUTHENTICATION_DATABASE )]
     public class Database : AuthenticationComponent, ICredentialAuthentication
     {
@@ -253,7 +257,7 @@ namespace Rock.Security.Authentication
             }
 
             // check if username exists
-            UserLoginService userService = new UserLoginService( new RockContext() );
+            UserLoginService userService = new UserLoginService( RockApp.Current.CreateRockContext() );
             var loginExists = userService.Queryable().Where( l => l.UserName == username ).Any();
             if ( !loginExists )
             {
@@ -402,7 +406,7 @@ namespace Rock.Security.Authentication
                 throw new NotImplementedException( "Could not generate hash from password." );
             }
 
-            using ( var context = new RockContext() )
+            using ( var context = RockApp.Current.CreateRockContext() )
             {
                 var userService = new UserLoginService( context );
                 var contextUser = userService.Get( user.Id );

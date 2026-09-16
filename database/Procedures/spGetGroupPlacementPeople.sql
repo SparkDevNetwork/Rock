@@ -334,7 +334,7 @@ BEGIN
 			LEFT JOIN #DestinationGroups g ON gm.GroupId = g.GroupId
 			CROSS APPLY (
 				SELECT CASE
-					WHEN @FilterAppliesTo = 0 AND g.GroupId = @SourceEntityId THEN 1 -- unplaced subset
+					WHEN @FilterAppliesTo = 0 AND gm.GroupId = @SourceEntityId THEN 1 -- unplaced subset
 					WHEN @FilterAppliesTo = 1 AND g.GroupId <> @SourceEntityId AND g.GroupId IS NOT NULL THEN 1 -- placed subset
 					WHEN @FilterAppliesTo = 2 THEN 1 -- all people
 					ELSE 0
@@ -664,7 +664,8 @@ BEGIN
 		INNER JOIN RegistrationInstance ri ON rt.Id = ri.RegistrationTemplateId
 		INNER JOIN Registration r ON ri.Id = r.RegistrationInstanceId
 		INNER JOIN RegistrationRegistrant rr ON r.Id = rr.RegistrationId
-		WHERE rt.Id = @RegistrationTemplateId;
+		WHERE rt.Id = @RegistrationTemplateId
+			AND rr.OnWaitList = 0; -- Exclude wait list registrants; they are not eligible to be placed.
 
 		;WITH IncludedInstanceIds AS (
 			SELECT TRY_CAST(value AS INT) AS Id
@@ -907,7 +908,8 @@ BEGIN
 		FROM RegistrationInstance ri
 		INNER JOIN Registration r ON ri.Id = r.RegistrationInstanceId
 		INNER JOIN RegistrationRegistrant rr ON r.Id = rr.RegistrationId
-		WHERE ri.Id = @RegistrationInstanceId;
+		WHERE ri.Id = @RegistrationInstanceId
+			AND rr.OnWaitList = 0; -- Exclude wait list registrants; they are not eligible to be placed.
 
 		;WITH IncludedFeeItemIds AS (
 			SELECT TRY_CAST(value AS INT) AS Id

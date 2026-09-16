@@ -1,0 +1,498 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="group-tree-view rock-tree-view">
+        <NotificationBox v-if="errorMessage" alertType="danger" class="mb-0">{{ errorMessage }}</NotificationBox>
+        <Panel :title="panelTitle || 'Groups'"
+               :isDrawerOpen="isDrawerOpen"
+               type="block"
+               hasNoBodyPadding
+               :isCollapsible="false"
+               :isInitiallyCollapsed="false">
+            <template #headerActions>
+                <DropDownMenu v-if="isAddGroupVisible"
+                              :items="addGroupActions"
+                              align="right"
+                              anchorButtonCssClass="btn-panel-action btn-add"
+                              :isAnchorButtonOverflow="false">
+                    <i class="ti ti-plus"></i>
+                </DropDownMenu>
+                <button v-if="isSearchVisible"
+                        type="button"
+                        class="btn btn-panel-action"
+                        title="Search"
+                        @click="onToggleSearch">
+                    <i class="ti ti-search"></i>
+                </button>
+                <button v-if="showSettingsPanel"
+                        type="button"
+                        class="btn btn-panel-action"
+                        title="Options"
+                        @click="onToggleConfig">
+                    <i class="ti ti-dots-vertical"></i>
+                </button>
+            </template>
+
+            <template v-if="isSearchVisible || showSettingsPanel" #drawer>
+                <div class="group-tree-view-drawer">
+                    <div v-if="drawerMode === DrawerMode.Search" class="group-tree-view-search input-group input-group-sm">
+                        <input v-model="searchTerm"
+                               type="text"
+                               class="form-control"
+                               placeholder="Quick Find"
+                               @keyup.enter="onSearch" />
+                        <span class="input-group-btn">
+                            <button type="button" class="btn btn-default" title="Search" @click="onSearch">
+                                <i class="ti ti-search"></i>
+                            </button>
+                        </span>
+                    </div>
+                    <div v-if="drawerMode === DrawerMode.Config" class="group-tree-view-config">
+                        <div class="row">
+                            <div class="col-lg-6">
+                                <Toggle v-model="showActiveOnly" label="Show" trueText="Active" falseText="All" btnSize="xs" />
+                            </div>
+                            <div class="col-lg-6">
+                                <Toggle v-model="limitToPublic" label="Public" trueText="Is Public" falseText="All" btnSize="xs" />
+                            </div>
+                        </div>
+                        <DropDownList v-model="countsType"
+                                      label="Show Count For"
+                                      :items="countsTypeItems"
+                                      formControlClasses="input-xs"
+                                      showBlankItem />
+                        <CampusPicker v-model="campusValue"
+                                      label="Filter by Campus"
+                                      :includeInactive="displayInactiveCampuses"
+                                      formControlClasses="input-xs"
+                                      showBlankItem
+                                      forceVisible />
+                        <Toggle v-if="!!campusGuid"
+                                v-model="includeNoCampus"
+                                label="Include groups with no campus"
+                                trueText="Yes"
+                                falseText="No"
+                                btnSize="xs" />
+                    </div>
+                </div>
+            </template>
+
+            <template v-if="isSearchVisible || showSettingsPanel" #drawerToggle>
+                <span class="d-none"></span>
+            </template>
+
+            <div class="rock-tree-view-tree">
+                <TreeList v-model="selectedKeys"
+                          :provider="itemProvider"
+                          :initiallyExpanded="initiallyExpanded"
+                          :selectFirstByDefault="false"
+                          :showChildCount="showChildCount"
+                          :disableInitialScroll="isAutoEditRequested"
+                          autoExpand
+                          @update:modelValue="onSelect"
+                          @treeitem-expanded="onExpand"
+                          @treeitem-collapsed="onCollapse" />
+            </div>
+        </Panel>
+    </div>
+</template>
+
+<style scoped>
+/* Lay out the active drawer content (search or options) in a column. */
+.group-tree-view-drawer {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-small);
+}
+
+.group-tree-view-config {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xsmall);
+}
+</style>
+
+<script setup lang="ts">
+    import { computed, nextTick, onMounted, ref, watch } from "vue";
+    import CampusPicker from "@Obsidian/Controls/campusPicker.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import DropDownMenu from "@Obsidian/Controls/dropDownMenu.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import Panel from "@Obsidian/Controls/panel.obs";
+    import Toggle from "@Obsidian/Controls/toggle.obs";
+    import TreeList from "@Obsidian/Controls/treeList.obs";
+    import { Guid } from "@Obsidian/Types";
+    import { MenuAction } from "@Obsidian/Types/Controls/dropDownMenu";
+    import { useStore } from "@Obsidian/PageState";
+    import { asBooleanOrNull } from "@Obsidian/Utility/booleanUtils";
+    import { emptyGuid } from "@Obsidian/Utility/guid";
+    import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, useReloadBlock, useSecurityGrantToken } from "@Obsidian/Utility/block";
+    import { GroupTreeItemProvider } from "@Obsidian/Utility/treeItemProviders";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { TreeItemBag } from "@Obsidian/ViewModels/Utility/treeItemBag";
+    import { CustomBlockBox } from "@Obsidian/ViewModels/Blocks/customBlockBox";
+    import { GroupTreeViewBag } from "@Obsidian/ViewModels/Blocks/Group/GroupTreeView/groupTreeViewBag";
+    import { GroupTreeViewOptionsBag } from "@Obsidian/ViewModels/Blocks/Group/GroupTreeView/groupTreeViewOptionsBag";
+    import { GroupTreeViewBlockAttributesBag } from "@Obsidian/ViewModels/Blocks/Group/GroupTreeView/groupTreeViewBlockAttributesBag";
+    import { NavigationUrlKey } from "./GroupTreeView/types.partial";
+
+    // #region Types
+
+    enum DrawerMode {
+        Search = "search",
+        Config = "config"
+    }
+
+    // #endregion Types
+
+    // #region Values
+
+    const box = useConfigurationValues<CustomBlockBox<GroupTreeViewBag, GroupTreeViewOptionsBag>>();
+    const invokeBlockAction = useInvokeBlockAction();
+    const securityGrantToken = useSecurityGrantToken();
+    const reloadBlock = useReloadBlock();
+    const { getPageParameter } = useStore();
+
+    const bag: GroupTreeViewBag = box.bag ?? {
+        hideInactiveGroups: true,
+        limitToPublic: false,
+        countsType: 0,
+        hasCountsTypePreference: false,
+        includeNoCampus: false,
+        isAddGroupVisible: false,
+        isAddRootEnabled: false,
+        isAddChildEnabled: false
+    };
+    const blockProperties: GroupTreeViewBlockAttributesBag = box.options?.blockProperties ?? {
+        showSettingsPanel: false,
+        displayInactiveCampuses: true,
+        limitToSecurityRoleGroups: false,
+        disableAutoSelectFirstGroup: false,
+        initialCountSetting: 0
+    };
+
+    // Auto-select the first group by navigating immediately when the server supplied a URL.
+    if (bag.autoSelectUrl) {
+        window.location.href = bag.autoSelectUrl;
+    }
+
+    const searchResultsPageUrl = box.navigationUrls?.[NavigationUrlKey.SearchResultsPage] ?? "";
+    const isSearchVisible = searchResultsPageUrl.length > 0;
+
+    const panelTitle = blockProperties.panelTitle ?? "";
+    // Reactive so navigation failures can surface without replacing the tree.
+    const errorMessage = ref(bag.errorMessage ?? "");
+    const showSettingsPanel = blockProperties.showSettingsPanel === true;
+    const displayInactiveCampuses = blockProperties.displayInactiveCampuses === true;
+
+    const isAddGroupVisible = bag.isAddGroupVisible === true;
+    const isAddRootEnabled = bag.isAddRootEnabled === true;
+
+    // isDrawerOpen drives the Panel's collapse animation; drawerMode selects which content
+    // is shown. drawerMode is intentionally left unchanged when closing so the content stays
+    // mounted while the drawer animates shut, instead of vanishing before the collapse ends.
+    const isDrawerOpen = ref(false);
+    const drawerMode = ref<DrawerMode>(DrawerMode.Search);
+    const searchTerm = ref("");
+
+    // Preference-backed filter state. Changes save to the server then re-fetch the tree in place.
+    const hideInactiveGroups = ref(bag.hideInactiveGroups === true);
+    const limitToPublic = ref(bag.limitToPublic === true);
+    /*
+        Blank Show Count For = no person preference = use Initial Count Setting.
+        Only show a selected value when the person has actually saved a preference.
+    */
+    const countsType = ref(bag.hasCountsTypePreference ? String(bag.countsType ?? 0) : "");
+    const campusGuid = ref(bag.campusGuid ?? "");
+    const includeNoCampus = ref(bag.includeNoCampus === true);
+    const initialCountSetting = blockProperties.initialCountSetting ?? 0;
+
+    // Tracks the last preference we persisted (null = cleared / use Initial Count Setting).
+    let lastSavedCountsPreference: number | null = bag.hasCountsTypePreference
+        ? (bag.countsType ?? 0)
+        : null;
+
+    // Skip the initial watch fires that re-save the values the server just sent.
+    // Must stay true until after mount + nextTick so DropDownList binding cannot
+    // overwrite Initial Count Setting by saving a blank preference too early.
+    let suppressPreferenceWatch = true;
+
+    // On an auto-edit load the tree still expands to the group, but suppressing the
+    // scroll keeps a deep selection from pushing the edit panel off the top of the page.
+    const isAutoEditRequested = asBooleanOrNull(getPageParameter("autoEdit")) ?? false;
+
+    const selectedKeys = ref<string[]>(bag.selectedGroupGuids ?? []);
+    const initiallyExpanded = ref<string[]>(bag.expandedGroupGuids ?? []);
+    const expandedKeys = ref<string[]>([...(bag.expandedGroupGuids ?? [])]);
+
+    /**
+     * The counts mode actually applied to the tree: the dropdown value when set,
+     * otherwise the Initial Count Setting block attribute.
+     */
+    const effectiveCountsType = computed((): number => {
+        if (countsType.value === "" || countsType.value == null) {
+            return initialCountSetting;
+        }
+
+        return Number(countsType.value) || 0;
+    });
+
+    const showChildCount = computed(() => effectiveCountsType.value !== 0);
+    const itemProvider = ref(buildProvider());
+
+    // Blank (showBlankItem) = clear preference / use Initial Count Setting.
+    // Explicit None / Child Groups / Group Members are saved as preferences.
+    const countsTypeItems: ListItemBag[] = [
+        { value: "0", text: "None" },
+        { value: "1", text: "Child Groups" },
+        { value: "2", text: "Group Members" }
+    ];
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    const showActiveOnly = computed<boolean>({
+        get: () => hideInactiveGroups.value,
+        set: (value) => {
+            hideInactiveGroups.value = value;
+        }
+    });
+
+    // Bridges the Guid-based campus preference to the CampusPicker's ListItemBag model.
+    // The picker fills in the display text from its own loaded campus list.
+    const campusValue = computed<ListItemBag | null>({
+        get: () => campusGuid.value ? { value: campusGuid.value } : null,
+        set: (value) => {
+            campusGuid.value = value?.value ?? "";
+        }
+    });
+
+    const addGroupActions = computed<MenuAction[]>(() => [
+        {
+            title: "Add Top-Level",
+            type: "default",
+            handler: onAddRoot,
+            disabled: !isAddRootEnabled
+        },
+        {
+            title: "Add Child To Selected",
+            type: "default",
+            handler: onAddChild,
+            disabled: selectedKeys.value.length !== 1 || bag.isAddChildEnabled !== true
+        }
+    ]);
+
+    // #endregion Computed Values
+
+    // #region Event Handlers
+
+    /** Navigates to the selected group (Detail Page, or current page when none is configured). */
+    function onSelect(values: string[]): void {
+        const selectedGuid = values.length > 0 ? values[0] : null;
+        if (!selectedGuid) {
+            return;
+        }
+
+        // Ignore re-selecting the same group (e.g. deep-link restore on load).
+        const currentSelected = bag.selectedGroupGuids?.[0] ?? null;
+        if (currentSelected && selectedGuid.toLowerCase() === currentSelected.toLowerCase()) {
+            return;
+        }
+
+        navigateToNode(selectedGuid as Guid, emptyGuid);
+    }
+
+    /** Tracks an expanded node so navigate URLs can restore the open state. */
+    function onExpand(item: TreeItemBag): void {
+        if (item.value && !expandedKeys.value.includes(item.value)) {
+            expandedKeys.value = [...expandedKeys.value, item.value];
+        }
+    }
+
+    /** Stops tracking a collapsed node. */
+    function onCollapse(item: TreeItemBag): void {
+        if (item.value) {
+            expandedKeys.value = expandedKeys.value.filter(v => v !== item.value);
+        }
+    }
+
+    /** Adds a top-level group under the configured root (if any). */
+    function onAddRoot(): void {
+        navigateToNode(emptyGuid, emptyGuid);
+    }
+
+    /** Adds a child of the selected group. */
+    function onAddChild(): void {
+        navigateToNode(emptyGuid, (selectedKeys.value[0] as Guid) ?? emptyGuid);
+    }
+
+    /** Opens the search drawer, or closes the drawer when search is already showing. */
+    function onToggleSearch(): void {
+        if (isDrawerOpen.value && drawerMode.value === DrawerMode.Search) {
+            // Leave drawerMode as-is so the search content stays mounted through the collapse.
+            isDrawerOpen.value = false;
+            return;
+        }
+
+        drawerMode.value = DrawerMode.Search;
+        isDrawerOpen.value = true;
+    }
+
+    /** Opens the options drawer, or closes the drawer when options are already showing. */
+    function onToggleConfig(): void {
+        if (isDrawerOpen.value && drawerMode.value === DrawerMode.Config) {
+            isDrawerOpen.value = false;
+            return;
+        }
+
+        drawerMode.value = DrawerMode.Config;
+        isDrawerOpen.value = true;
+    }
+
+    /** Navigates to the Search Results Page with the entered term. */
+    function onSearch(): void {
+        const term = searchTerm.value.trim();
+        if (!searchResultsPageUrl || term.length === 0) {
+            return;
+        }
+
+        const separator = searchResultsPageUrl.includes("?") ? "&" : "?";
+        window.location.href = `${searchResultsPageUrl}${separator}SearchType=name&SearchTerm=${encodeURIComponent(term)}`;
+    }
+
+    // #endregion Event Handlers
+
+    // #region Functions
+
+    /** Configures a group item provider from the block's settings and current filters. */
+    function buildProvider(): GroupTreeItemProvider {
+        const provider = new GroupTreeItemProvider();
+        provider.rootGroupGuid = blockProperties.rootGroupGuid ?? null;
+        provider.includedGroupTypeGuids = blockProperties.includedGroupTypeGuids ?? [];
+        provider.excludedGroupTypeGuids = blockProperties.excludedGroupTypeGuids ?? [];
+        provider.limitToSecurityRoleGroups = blockProperties.limitToSecurityRoleGroups === true;
+        provider.includeInactiveGroups = !hideInactiveGroups.value;
+        provider.limitToPublic = limitToPublic.value;
+        provider.campusGuid = campusGuid.value ? (campusGuid.value as Guid) : null;
+        provider.includeNoCampus = includeNoCampus.value;
+        provider.countsType = effectiveCountsType.value;
+        provider.securityGrantToken = securityGrantToken.value;
+        return provider;
+    }
+
+    /** Asks the server for the node's Detail Page URL (or add-action URL) and navigates there. */
+    async function navigateToNode(nodeGuid: Guid, parentGuid: Guid): Promise<void> {
+        errorMessage.value = "";
+
+        const result = await invokeBlockAction<string>("GetNavigationUrl", {
+            groupGuid: nodeGuid,
+            parentGuid,
+            expandedGuids: expandedKeys.value
+        });
+
+        if (result.isSuccess && result.data) {
+            window.location.href = result.data;
+            return;
+        }
+
+        errorMessage.value = result.errorMessage
+            || "Could not determine the navigation URL for the selected group.";
+    }
+
+    /**
+     * Saves a filter preference then re-fetches the tree in place with the new filter,
+     * without a full page reload (matching CategoryTreeView). The current selection and
+     * page URL are left untouched.
+     */
+    async function savePreferenceAndRebuild(action: string, args: Record<string, unknown>): Promise<void> {
+        const result = await invokeBlockAction(action, args);
+
+        if (!result.isSuccess) {
+            errorMessage.value = result.errorMessage
+                || "Could not save the preference.";
+            return;
+        }
+
+        itemProvider.value = buildProvider();
+    }
+
+    // #endregion Functions
+
+    // #region Watchers
+
+    watch(hideInactiveGroups, (value) => {
+        if (suppressPreferenceWatch) {
+            return;
+        }
+
+        savePreferenceAndRebuild("SetHideInactiveGroups", { hideInactiveGroups: value });
+    });
+
+    watch(limitToPublic, (value) => {
+        if (suppressPreferenceWatch) {
+            return;
+        }
+
+        savePreferenceAndRebuild("SetLimitToPublic", { limitToPublic: value });
+    });
+
+    watch(countsType, (value) => {
+        if (suppressPreferenceWatch) {
+            return;
+        }
+
+        // Blank = clear preference so Initial Count Setting applies again.
+        if (value === "" || value == null) {
+            if (lastSavedCountsPreference === null) {
+                return;
+            }
+
+            lastSavedCountsPreference = null;
+            savePreferenceAndRebuild("SetCountsType", { countsType: null });
+            return;
+        }
+
+        const nextCountsType = Number(value) || 0;
+
+        // Ignore no-ops during bind so we do not rewrite the same preference.
+        if (lastSavedCountsPreference === nextCountsType) {
+            return;
+        }
+
+        lastSavedCountsPreference = nextCountsType;
+        savePreferenceAndRebuild("SetCountsType", { countsType: nextCountsType });
+    });
+
+    watch(campusGuid, (value) => {
+        if (suppressPreferenceWatch) {
+            return;
+        }
+
+        savePreferenceAndRebuild("SetCampusFilter", {
+            campusGuid: value ? value : null
+        });
+    });
+
+    watch(includeNoCampus, (value) => {
+        if (suppressPreferenceWatch) {
+            return;
+        }
+
+        savePreferenceAndRebuild("SetIncludeNoCampus", { includeNoCampus: value });
+    });
+
+    // #endregion Watchers
+
+    // #region Lifecycle Hooks
+
+    onMounted(() => {
+        nextTick(() => {
+            suppressPreferenceWatch = false;
+        });
+    });
+
+    // Reload the block when its settings change so the new configuration takes effect.
+    onConfigurationValuesChanged(reloadBlock);
+
+    // #endregion Lifecycle Hooks
+</script>

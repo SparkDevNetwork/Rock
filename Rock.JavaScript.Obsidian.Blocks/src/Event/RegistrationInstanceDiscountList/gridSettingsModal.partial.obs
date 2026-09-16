@@ -1,0 +1,131 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Modal v-model="isVisible"
+           title="Filter Settings"
+           saveText="Apply"
+           @save="onSave">
+
+        <SectionHeader title="Filters" />
+
+        <SlidingDateRangePicker v-model="dateRange" label="Date Range" />
+
+        <div class="row">
+            <div class="col-md-6">
+                <DropDownList v-model="discountCode"
+                              label="Discount Code"
+                              :items="discountCodeItems"
+                              :showBlankItem="true"
+                              enhanceForLongLists />
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6">
+                <TextBox v-model="codeSearch"
+                         label="Code Search"
+                         help="Enter a search term. Cannot be used with the 'Discount Code' list."
+                         :disabled="discountCode !== ''" />
+            </div>
+        </div>
+
+        <RockButton :btnType="BtnType.Default" :btnSize="BtnSize.ExtraSmall" @click="onClear">
+            <i class="ti ti-filter-x"></i> Clear Filters
+        </RockButton>
+
+    </Modal>
+</template>
+
+<script setup lang="ts">
+    import { PropType, ref, watch } from "vue";
+    import { GridSettingsOptions } from "./types.partial";
+    import SectionHeader from "@Obsidian/Controls/sectionHeader.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import Modal from "@Obsidian/Controls/modal.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import SlidingDateRangePicker from "@Obsidian/Controls/slidingDateRangePicker.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import { BtnType } from "@Obsidian/Enums/Controls/btnType";
+    import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
+    import { useVModelPassthrough } from "@Obsidian/Utility/component";
+    import { deepEqual } from "@Obsidian/Utility/util";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<GridSettingsOptions>,
+            required: true
+        },
+
+        visible: {
+            type: Boolean as PropType<boolean>,
+            required: true
+        },
+
+        discountCodeItems: {
+            type: Array as PropType<ListItemBag[]>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: GridSettingsOptions): void;
+        (e: "update:visible", value: boolean): void;
+        (e: "close"): void;
+    }>();
+
+    // #region Values
+
+    const isVisible = useVModelPassthrough(props, "visible", emit);
+
+    const dateRange = ref(props.modelValue.dateRange);
+    const discountCode = ref(props.modelValue.discountCode);
+    const codeSearch = ref(props.modelValue.codeSearch);
+
+    // #endregion Values
+
+    // #region Event Handlers
+
+    /**
+     * Called when the clear filters button is clicked.
+     */
+    function onClear(): void {
+        dateRange.value = null;
+        discountCode.value = "";
+        codeSearch.value = "";
+    }
+
+    /**
+     * Called when the save button is clicked.
+     */
+    function onSave(): void {
+        const value: GridSettingsOptions = {
+            dateRange: dateRange.value,
+            discountCode: discountCode.value,
+            codeSearch: codeSearch.value
+        };
+
+        if (!deepEqual(value, props.modelValue, true)) {
+            emit("update:modelValue", value);
+        }
+
+        isVisible.value = false;
+    }
+
+    // #endregion Event Handlers
+
+    // #region Watchers
+
+    watch(() => props.modelValue, () => {
+        dateRange.value = props.modelValue.dateRange;
+        discountCode.value = props.modelValue.discountCode;
+        codeSearch.value = props.modelValue.codeSearch;
+    });
+
+    watch(isVisible, () => {
+        if (!isVisible.value) {
+            emit("close");
+        }
+    });
+
+    // #endregion Watchers
+</script>

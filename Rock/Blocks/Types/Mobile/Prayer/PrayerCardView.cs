@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -22,6 +22,7 @@ using System.Linq;
 using Rock.Attribute;
 using Rock.ClientService.Core.Campus;
 using Rock.ClientService.Core.Campus.Options;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Utility;
@@ -61,7 +62,7 @@ namespace Rock.Blocks.Types.Mobile.Prayer
         Description = "Will hide the campus picker when a campus is known from either the Current Person's campus or passed in CampusGuid page parameter.",
         IsRequired = false,
         DefaultBooleanValue = false,
-        ControlType = Field.Types.BooleanFieldType.BooleanControlType.Toggle,
+        BooleanControlType = Rock.Enums.Controls.BooleanControlType.Toggle,
         Key = AttributeKey.HideCampusWhenKnown,
         Order = 2 )]
 
@@ -70,7 +71,7 @@ namespace Rock.Blocks.Types.Mobile.Prayer
         Description = "Hides the campus picker and disables filtering by campus.",
         IsRequired = false,
         DefaultBooleanValue = false,
-        ControlType = Field.Types.BooleanFieldType.BooleanControlType.Toggle,
+        BooleanControlType = Rock.Enums.Controls.BooleanControlType.Toggle,
         Key = AttributeKey.AlwaysHideCampus,
         Order = 3 )]
 
@@ -87,7 +88,7 @@ namespace Rock.Blocks.Types.Mobile.Prayer
         Description = "If selected, all non-public prayer requests will be excluded.",
         IsRequired = false,
         DefaultBooleanValue = true,
-        ControlType = Field.Types.BooleanFieldType.BooleanControlType.Toggle,
+        BooleanControlType = Rock.Enums.Controls.BooleanControlType.Toggle,
         Key = AttributeKey.PublicOnly,
         Order = 5 )]
 
@@ -96,7 +97,7 @@ namespace Rock.Blocks.Types.Mobile.Prayer
         Description = "If selected, all unapproved prayer requests will be included.",
         IsRequired = false,
         DefaultBooleanValue = false,
-        ControlType = Field.Types.BooleanFieldType.BooleanControlType.Toggle,
+        BooleanControlType = Rock.Enums.Controls.BooleanControlType.Toggle,
         Key = AttributeKey.IncludeUnapproved,
         Order = 6 )]
 
@@ -139,7 +140,7 @@ namespace Rock.Blocks.Types.Mobile.Prayer
         Description = "Loads an optional collection of last prayed times for the requests. This is available as a separate merge field in Lava.",
         IsRequired = false,
         DefaultBooleanValue = false,
-        ControlType = Field.Types.BooleanFieldType.BooleanControlType.Toggle,
+        BooleanControlType = Rock.Enums.Controls.BooleanControlType.Toggle,
         Key = AttributeKey.LoadLastPrayedCollection,
         Order = 11 )]
 
@@ -155,7 +156,7 @@ namespace Rock.Blocks.Types.Mobile.Prayer
         Description = "Includes prayer requests that are attached to a group.",
         IsRequired = false,
         DefaultBooleanValue = false,
-        ControlType = Field.Types.BooleanFieldType.BooleanControlType.Toggle,
+        BooleanControlType = Rock.Enums.Controls.BooleanControlType.Toggle,
         Key = AttributeKey.IncludeGroupRequests,
         Order = 13 )]
 
@@ -250,7 +251,7 @@ namespace Rock.Blocks.Types.Mobile.Prayer
         /// <value>
         /// The template.
         /// </value>
-        protected string Template => Rock.Field.Types.BlockTemplateFieldType.GetTemplateContent( GetAttributeValue( AttributeKey.Template ) );
+        protected string Template => Field.Helper.GetBlockTemplateContent( GetAttributeValue( AttributeKey.Template ) );
 
         /// <summary>
         /// Gets the title content to display above the prayer cards.
@@ -371,7 +372,7 @@ namespace Rock.Blocks.Types.Mobile.Prayer
         /// </returns>
         public override object GetMobileConfigurationValues()
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 //
                 // Indicate that we are a dynamic content providing block.
@@ -416,7 +417,7 @@ namespace Rock.Blocks.Types.Mobile.Prayer
         /// <returns>A string containing the XAML content to be displayed.</returns>
         private string BuildContent( Guid? campusGuid )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var validCampuses = GetValidCampuses( rockContext );
 

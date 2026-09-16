@@ -36,10 +36,24 @@ namespace Rock.Workflow.Action
     [Export( typeof( ActionComponent ) )]
     [ExportMetadata( "ComponentName", "Get Saved Account" )]
 
-    [FinancialGatewayField( "Financial Gateway", "Workflow attribute that indicates the financial gateway associated with the saved account.", true, "", "", 0, null )]
-    [WorkflowAttribute( "Person", "Workflow attribute that contains the person who should be the owner of the saved account.", true, "", "", 1, null, new string[] { "Rock.Field.Types.PersonFieldType" } )]
-    [BooleanField( "Continue On Error", "Should processing continue even if processing errors occur?", false, "", 2 )]
-    [WorkflowAttribute( "Result Attribute", "An attribute to set to calculated saved account ID.", false, "", "", 3, null, new string[] { "Rock.Field.Types.IntegerFieldType" } )]
+    [FinancialGatewayField( "Financial Gateway",
+        Description = "Workflow attribute that indicates the financial gateway associated with the saved account.",
+        IsRequired = true,
+        Order = 0 )]
+    [WorkflowAttribute( "Person",
+        Description = "Workflow attribute that contains the person who should be the owner of the saved account.",
+        IsRequired = true,
+        Order = 1,
+        FieldTypeClassNames = new string[] { "Rock.Field.Types.PersonFieldType" } )]
+    [BooleanField( "Continue On Error",
+        Description = "Should processing continue even if processing errors occur?",
+        DefaultBooleanValue = false,
+        Order = 2 )]
+    [WorkflowAttribute( "Result Attribute",
+        Description = "An attribute to set to calculated saved account ID.",
+        IsRequired = false,
+        Order = 3,
+        FieldTypeClassNames = new string[] { "Rock.Field.Types.IntegerFieldType" } )]
 
     [Rock.SystemGuid.EntityTypeGuid( "EAE16533-A33B-40DF-BA7E-1CF5B07FBC5B")]
     public class GetDefaultSavedAccount : ActionComponent

@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -23,6 +23,7 @@ using System.Linq;
 
 using Rock;
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -37,9 +38,20 @@ namespace Rock.Workflow.Action
     [Export( typeof( ActionComponent ) )]
     [ExportMetadata( "ComponentName", "Activate Activity in Other Workflow On Match" )]
 
-    [WorkflowAttribute( "Activity", "The activity that should be activated", true, fieldTypeClassNames: new string[] { "Rock.Field.Types.WorkflowActivityFieldType" } )]
-    [WorkflowTextOrAttribute( "Attribute Key to Match", "Attribute Key to Match", "The workflow attribute key to match against in the target workflow.", true, key: "WorkflowAttributeKey" )]
-    [WorkflowTextOrAttribute( "Attribute Value to Match", "Attribute Value to Match", "The workflow attribute value to match against in the target workflow.", true, key: "WorkflowAttributeValue" )]
+    [WorkflowAttribute( "Activity",
+        Description = "The activity that should be activated",
+        IsRequired = true,
+        FieldTypeClassNames = new string[] { "Rock.Field.Types.WorkflowActivityFieldType" } )]
+    [WorkflowTextOrAttribute( "Attribute Key to Match",
+        "Attribute Key to Match",
+        Description = "The workflow attribute key to match against in the target workflow.",
+        IsRequired = true,
+        Key = "WorkflowAttributeKey" )]
+    [WorkflowTextOrAttribute( "Attribute Value to Match",
+        "Attribute Value to Match",
+        Description = "The workflow attribute value to match against in the target workflow.",
+        IsRequired = true,
+        Key = "WorkflowAttributeValue" )]
     [Rock.SystemGuid.EntityTypeGuid( "2F192ADD-3222-4BD9-8E2F-CEF338B97EBD" )]
     public class ActivateOtherActivityOnMatch : ActionComponent
     {
@@ -80,7 +92,7 @@ namespace Rock.Workflow.Action
             var entityType = EntityTypeCache.Get( typeof( Rock.Model.Workflow ) );
 
             // Use new context so only changes made to the activity by this action are persisted
-            using ( var newRockContext = new RockContext() )
+            using ( var newRockContext = RockApp.Current.CreateRockContext() )
             {
                 var workflowIds = new AttributeValueService( newRockContext )
                 .Queryable()

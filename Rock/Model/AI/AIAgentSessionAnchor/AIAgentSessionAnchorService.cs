@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -75,6 +75,22 @@ namespace Rock.Model
             }
 
             anchor.LastRefreshedDateTime = RockDateTime.Now;
+        }
+
+        internal static string GetEntityContextName( IEntity entity )
+        {
+            if ( entity is Person person )
+            {
+                return person.FullName;
+            }
+            else if ( entity is Group group )
+            {
+                return group.Name;
+            }
+            else
+            {
+                return entity.ToString();
+            }
         }
 
         private class GroupContextAnchor : ContextAnchor

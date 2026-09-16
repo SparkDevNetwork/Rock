@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -20,8 +20,11 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
+
 using Rock.Data;
+using Rock.Enums.Security;
 using Rock.Lava;
+using Rock.Security;
 
 namespace Rock.Model
 {
@@ -56,6 +59,7 @@ namespace Rock.Model
         [Required]
         [MaxLength( 100 )]
         [DataMember( IsRequired = true )]
+        [StringValidation( StringValidationProfile.Name )]
         public string Title { get; set; }
 
         /// <summary>
@@ -66,6 +70,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 100 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string Subtitle { get; set; }
 
         /// <summary>
@@ -75,6 +80,7 @@ namespace Rock.Model
         /// A <see cref="System.String"/> representing the description of the Metric.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.LavaAndBasicHtml )]
         public string Description { get; set; }
 
         /// <summary>
@@ -85,6 +91,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [MaxLength( 100 )]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string IconCssClass { get; set; }
 
         /// <summary>
@@ -112,6 +119,7 @@ namespace Rock.Model
         /// A <see cref="System.String" /> that represents the SQL Query that returns the data for the Metric.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string SourceSql { get; set; }
 
         /// <summary>
@@ -121,6 +129,7 @@ namespace Rock.Model
         /// A <see cref="System.String" /> that represents the Lava code that returns the data for the Metric.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string SourceLava { get; set; }
 
         /// <summary>
@@ -141,6 +150,7 @@ namespace Rock.Model
         /// The x axis label.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string XAxisLabel { get; set; }
 
         /// <summary>
@@ -150,6 +160,7 @@ namespace Rock.Model
         /// The y axis label.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string YAxisLabel { get; set; }
 
         /// <summary>

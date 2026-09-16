@@ -1,0 +1,112 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Modal v-model="isVisible"
+           title="Settings"
+           saveText="Save"
+           @save="onSave">
+        <SectionHeader title="Filters" />
+
+        <SlidingDateRangePicker v-model="dateRange"
+                                label="Registration Date Range" />
+
+        <div class="row">
+            <div class="col-md-6">
+                <DropDownList v-model="inGroup"
+                              label="In Group"
+                              :items="yesNoItems"
+                              showBlankItem />
+            </div>
+            <div v-if="isSignedDocumentFilterVisible" class="col-md-6">
+                <DropDownList v-model="signedDocument"
+                              label="Signed Document"
+                              :items="yesNoItems"
+                              showBlankItem />
+            </div>
+        </div>
+
+        <div class="mt-3">
+            <RockButton btnType="default" btnSize="xs" @click="onClearFilters">Clear Filters</RockButton>
+        </div>
+    </Modal>
+</template>
+
+<style></style>
+
+<script setup lang="ts">
+    import Modal from "@Obsidian/Controls/modal.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import SectionHeader from "@Obsidian/Controls/sectionHeader.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import SlidingDateRangePicker from "@Obsidian/Controls/slidingDateRangePicker.obs";
+    import { ref, PropType, watch } from "vue";
+    import { GridSettingsOptions } from "./types.partial";
+    import { useVModelPassthrough } from "@Obsidian/Utility/component";
+    import { deepEqual } from "@Obsidian/Utility/util";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { SlidingDateRange } from "@Obsidian/Utility/slidingDateRange";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<GridSettingsOptions>,
+            required: true
+        },
+
+        visible: {
+            type: Boolean as PropType<boolean>,
+            required: true
+        },
+
+        isSignedDocumentFilterVisible: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: GridSettingsOptions): void;
+        (e: "update:visible", value: boolean): void;
+        (e: "close"): void;
+    }>();
+
+    const dateRange = ref<SlidingDateRange | null>(props.modelValue.dateRange);
+    const inGroup = ref<string>(props.modelValue.inGroup);
+    const signedDocument = ref<string>(props.modelValue.signedDocument);
+    const isVisible = useVModelPassthrough(props, "visible", emit);
+
+    const yesNoItems: ListItemBag[] = [
+        { value: "Yes", text: "Yes" },
+        { value: "No", text: "No" }
+    ];
+
+    function onSave(): void {
+        const value: GridSettingsOptions = {
+            dateRange: dateRange.value,
+            inGroup: inGroup.value,
+            signedDocument: signedDocument.value
+        };
+
+        if (!deepEqual(value, props.modelValue, true)) {
+            emit("update:modelValue", value);
+        }
+
+        isVisible.value = false;
+    }
+
+    function onClearFilters(): void {
+        dateRange.value = null;
+        inGroup.value = "";
+        signedDocument.value = "";
+    }
+
+    watch(() => props.modelValue, () => {
+        dateRange.value = props.modelValue.dateRange;
+        inGroup.value = props.modelValue.inGroup;
+        signedDocument.value = props.modelValue.signedDocument;
+    });
+
+    watch(isVisible, () => {
+        if (!isVisible.value) {
+            emit("close");
+        }
+    });
+</script>

@@ -339,6 +339,8 @@ export class EmailEditorApi {
         }
 
         const result1 = await this.createEmailSectionAndThumbnail(document, {
+            canDelete: false,
+            canEdit: false,
             guid: EmailSection.StarterHero,
             category: starterSectionsCategory,
             isSystem: true,
@@ -454,6 +456,8 @@ export class EmailEditorApi {
         }
 
         const result2 = await this.createEmailSectionAndThumbnail(document, {
+            canEdit: false,
+            canDelete: false,
             guid: EmailSection.StarterStandardPromo,
             category: starterSectionsCategory,
             isSystem: true,
@@ -618,6 +622,8 @@ export class EmailEditorApi {
         }
 
         const result3 = await this.createEmailSectionAndThumbnail(document, {
+            canEdit: false,
+            canDelete: false,
             guid: EmailSection.Starter3ColumnPromo,
             category: starterSectionsCategory,
             isSystem: true,

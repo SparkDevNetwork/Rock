@@ -37,12 +37,26 @@ namespace Rock.Workflow.Action
     [Export( typeof( ActionComponent ) )]
     [ExportMetadata( "ComponentName", "Group Member Select Random" )]
 
-    [GroupField( "Selection Group", "The group to select the random person from.", true, "", "", 0 )]
-    [TextField( "Group Member Attribute Key", "The key of the group member attribute to filter on (optional). No no key is provided all group members will be considered. Otherwise the list of available group members will be filtered by the value you provide from the attribute below.", false, "", "", 1 )]
-    [WorkflowTextOrAttribute( "Filter Value", "Attribute Value", "The text or attribute to use for the filter value. <span class='tip tip-lava'></span>", false, "", "", 2, "FilterValue" )]
+    [GroupField( "Selection Group",
+        Description = "The group to select the random person from.",
+        IsRequired = true,
+        Order = 0 )]
+    [TextField( "Group Member Attribute Key",
+        Description = "The key of the group member attribute to filter on (optional). No no key is provided all group members will be considered. Otherwise the list of available group members will be filtered by the value you provide from the attribute below.",
+        IsRequired = false,
+        Order = 1 )]
+    [WorkflowTextOrAttribute( "Filter Value",
+        "Attribute Value",
+        Description = "The text or attribute to use for the filter value. <span class='tip tip-lava'></span>",
+        IsRequired = false,
+        Order = 2,
+        Key = "FilterValue" )]
 
-    [WorkflowAttribute( "Selected Person", "The attribute to set with the random person.", true, "", "", 3, null,
-        new string[] { "Rock.Field.Types.PersonFieldType" } )]
+    [WorkflowAttribute( "Selected Person",
+        Description = "The attribute to set with the random person.",
+        IsRequired = true,
+        Order = 3,
+        FieldTypeClassNames = new string[] { "Rock.Field.Types.PersonFieldType" } )]
     
     [Rock.SystemGuid.EntityTypeGuid( "96B57C0E-F84D-4B45-A11F-35F8A7A63689")]
     public class SetAttributeToRandomGroupMember : ActionComponent

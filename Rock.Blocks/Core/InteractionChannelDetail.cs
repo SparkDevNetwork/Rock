@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -15,7 +15,6 @@
 // </copyright>
 //
 
-using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
@@ -28,6 +27,7 @@ using Rock.Security;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Core.InteractionChannelDetail;
 using Rock.ViewModels.Utility;
+using Rock.Web;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
@@ -40,7 +40,7 @@ namespace Rock.Blocks.Core
     [Category( "Reporting" )]
     [Description( "Displays the details of a particular interaction channel." )]
     [IconCssClass( "ti ti-question-mark" )]
-    // [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( Model.SiteType.Web )]
 
     #region Block Attributes
 
@@ -77,6 +77,9 @@ namespace Rock.Blocks.Core
             <dl><dt>Component Cache Duration</dt><dd>{{ InteractionChannel.ComponentCacheDuration }}<dd/></dl>
         </div>
     {% endif %}
+    <div class='col-md-6'>
+        <dl><dt>Enable Component Daily Counts</dt><dd>{% if InteractionChannel.EnableComponentDailyCounts %}Yes{% else %}No{% endif %}<dd/></dl>
+    </div>
 </div>
 ",
        Order = 0 )]
@@ -84,8 +87,9 @@ namespace Rock.Blocks.Core
     #endregion
 
     [Rock.SystemGuid.EntityTypeGuid( "9438e0fe-f7ab-48d5-8ab8-d54336d30fbd" )]
-    [Rock.SystemGuid.BlockTypeGuid( "2efa1f9d-7062-466a-a8f3-9dcdbff054e9" )]
-    public class InteractionChannelDetail : RockEntityDetailBlockType<InteractionChannel, InteractionChannelBag>
+    // was [Rock.SystemGuid.BlockTypeGuid( "2efa1f9d-7062-466a-a8f3-9dcdbff054e9" )]
+    [Rock.SystemGuid.BlockTypeGuid( "F722A03E-C344-40B1-B87D-EB90E2BCBC47" )]
+    public class InteractionChannelDetail : RockEntityDetailBlockType<InteractionChannel, InteractionChannelBag>, IBreadCrumbBlock
     {
         #region Keys
 
@@ -216,6 +220,7 @@ namespace Rock.Blocks.Core
                 ComponentCacheDuration = entity.ComponentCacheDuration,
                 ComponentDetailTemplate = entity.ComponentDetailTemplate,
                 ComponentListTemplate = entity.ComponentListTemplate,
+                EnableComponentDailyCounts = entity.EnableComponentDailyCounts,
                 EngagementStrength = entity.EngagementStrength,
                 InteractionCustom1Label = entity.InteractionCustom1Label,
                 InteractionCustom2Label = entity.InteractionCustom2Label,
@@ -294,6 +299,9 @@ namespace Rock.Blocks.Core
 
             box.IfValidProperty( nameof( box.Bag.ComponentListTemplate ),
                 () => entity.ComponentListTemplate = box.Bag.ComponentListTemplate );
+
+            box.IfValidProperty( nameof( box.Bag.EnableComponentDailyCounts ),
+                () => entity.EnableComponentDailyCounts = box.Bag.EnableComponentDailyCounts );
 
             box.IfValidProperty( nameof( box.Bag.EngagementStrength ),
                 () => entity.EngagementStrength = box.Bag.EngagementStrength );
@@ -389,7 +397,30 @@ namespace Rock.Blocks.Core
             return true;
         }
 
-        #endregion
+        /// <inheritdoc/>
+        public BreadCrumbResult GetBreadCrumbs( PageReference pageReference )
+        {
+            var key = pageReference.GetPageParameter( PageParameterKey.InteractionChannelId );
+            var pageParameters = new Dictionary<string, string>();
+
+            var name = new InteractionChannelService( RockContext )
+                .GetSelect( key, ic => ic.Name );
+
+            if ( name != null )
+            {
+                pageParameters.Add( PageParameterKey.InteractionChannelId, key );
+            }
+
+            var breadCrumbPageRef = new PageReference( pageReference.PageId, 0, pageParameters );
+            var breadCrumb = new BreadCrumbLink( name ?? "Interaction Channel", breadCrumbPageRef );
+
+            return new BreadCrumbResult
+            {
+                BreadCrumbs = new List<IBreadCrumb> { breadCrumb }
+            };
+        }
+
+        #endregion Methods
 
         #region Block Actions
 
@@ -505,6 +536,6 @@ namespace Rock.Blocks.Core
             return ActionOk( this.GetParentPageUrl() );
         }
 
-        #endregion
+        #endregion Block Actions
     }
 }

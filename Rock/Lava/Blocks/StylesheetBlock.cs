@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -24,6 +24,7 @@ using System.Web;
 using dotless.Core;
 using dotless.Core.configuration;
 #endif
+
 using Rock.Web.Cache;
 using Rock.Web.UI;
 
@@ -41,6 +42,13 @@ namespace Rock.Lava.Blocks
         private static readonly Regex Syntax = new Regex( @"(\w+)" );
 
         string _markup = string.Empty;
+
+        /// <inheritdoc />
+        /// <remarks>
+        /// The content of a stylesheet block is CSS, not Lava. It must not be parsed with
+        /// {% liquid %} body semantics when nested inside a {% lava %} tag.
+        /// </remarks>
+        public override bool IsContentLavaCode => false;
 
         /// <summary>
         /// Initializes the specified tag name.

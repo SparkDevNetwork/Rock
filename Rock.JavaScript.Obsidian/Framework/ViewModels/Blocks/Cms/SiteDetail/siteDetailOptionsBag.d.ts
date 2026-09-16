@@ -24,6 +24,13 @@
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
 export type SiteDetailOptionsBag = {
+    /**
+     * Gets or sets a value indicating whether the Site entity type
+     * has indexing enabled. When false, the "Is Indexed" checkbox
+     * should be hidden.
+     */
+    isIndexingEnabled: boolean;
+
     /** Gets or sets the reserved key names. */
     reservedKeyNames?: string[] | null;
 

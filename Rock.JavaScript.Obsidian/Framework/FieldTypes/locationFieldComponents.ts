@@ -20,7 +20,7 @@ import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import LocationPicker from "@Obsidian/Controls/locationPicker.obs";
 import CheckBoxList from "@Obsidian/Controls/checkBoxList.obs";
 import RadioButtonList from "@Obsidian/Controls/radioButtonList.obs";
-import { ConfigurationValueKey } from "./locationField.partial";
+import { ConfigurationKey } from "./locationField.partial";
 import { AddressControlBag } from "@Obsidian/ViewModels/Controls/addressControlBag";
 
 export const EditComponent = defineComponent({
@@ -36,7 +36,7 @@ export const EditComponent = defineComponent({
         const internalValue = ref<AddressControlBag | ListItemBag | string | null>(null);
 
         const selectedAsNumber = computed(() => {
-            const allowedPickerModes = (props.configurationValues[ConfigurationValueKey.AllowedPickerModes]?.split(",") ?? []).filter(s => s !== "");
+            const allowedPickerModes = (props.configurationValues[ConfigurationKey.AllowedPickerModes]?.split(",") ?? []).filter(s => s !== "");
             if (allowedPickerModes.length === 0) {
                 return undefined;
             }
@@ -47,7 +47,7 @@ export const EditComponent = defineComponent({
         });
 
         const currentPickerMode = computed((): string => {
-            const mode = props.configurationValues[ConfigurationValueKey.CurrentPickerMode];
+            const mode = props.configurationValues[ConfigurationKey.CurrentPickerMode];
             return mode === null || mode === undefined || mode === "" ? "1" : mode;
         });
 
@@ -125,12 +125,12 @@ export const ConfigurationComponent = defineComponent({
 
             // Construct the new value that will be emitted if it is different
             // than the current value.
-            newValue[ConfigurationValueKey.AllowedPickerModes] = availableLocationTypes.value.join(",");
-            newValue[ConfigurationValueKey.CurrentPickerMode] = currentPickerMode.value;
+            newValue[ConfigurationKey.AllowedPickerModes] = availableLocationTypes.value.join(",");
+            newValue[ConfigurationKey.CurrentPickerMode] = currentPickerMode.value;
 
             // Compare the new value and the old value.
-            const anyValueChanged = newValue[ConfigurationValueKey.AllowedPickerModes] !== props.modelValue[ConfigurationValueKey.AllowedPickerModes] ||
-                newValue[ConfigurationValueKey.CurrentPickerMode] !== props.modelValue[ConfigurationValueKey.CurrentPickerMode];
+            const anyValueChanged = newValue[ConfigurationKey.AllowedPickerModes] !== props.modelValue[ConfigurationKey.AllowedPickerModes] ||
+                newValue[ConfigurationKey.CurrentPickerMode] !== props.modelValue[ConfigurationKey.CurrentPickerMode];
 
             // If any value changed then emit the new model value.
             if (anyValueChanged) {
@@ -158,8 +158,8 @@ export const ConfigurationComponent = defineComponent({
         // Watch for changes coming in from the parent component and update our
         // data to match the new information.
         watch(() => [props.modelValue, props.configurationProperties], () => {
-            availableLocationTypes.value = (props.modelValue[ConfigurationValueKey.AllowedPickerModes]?.split(",") ?? []).filter(s => s !== "");
-            currentPickerMode.value = (props.modelValue[ConfigurationValueKey.CurrentPickerMode] ?? "");
+            availableLocationTypes.value = (props.modelValue[ConfigurationKey.AllowedPickerModes]?.split(",") ?? []).filter(s => s !== "");
+            currentPickerMode.value = (props.modelValue[ConfigurationKey.CurrentPickerMode] ?? "");
         }, {
             immediate: true
         });
@@ -173,8 +173,8 @@ export const ConfigurationComponent = defineComponent({
         });
 
         // Watch for changes in properties that only require a local UI update.
-        watch(availableLocationTypes, () => maybeUpdateConfiguration(ConfigurationValueKey.AllowedPickerModes, availableLocationTypes.value.join(",")));
-        watch(currentPickerMode, () => maybeUpdateConfiguration(ConfigurationValueKey.CurrentPickerMode, currentPickerMode.value));
+        watch(availableLocationTypes, () => maybeUpdateConfiguration(ConfigurationKey.AllowedPickerModes, availableLocationTypes.value.join(",")));
+        watch(currentPickerMode, () => maybeUpdateConfiguration(ConfigurationKey.CurrentPickerMode, currentPickerMode.value));
 
         return {
             currentPickerMode,

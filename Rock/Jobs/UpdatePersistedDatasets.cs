@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -21,10 +21,12 @@ using System.Data.Entity;
 using System.Linq;
 using System.Text;
 
+using Rock.Configuration;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Logging;
 using Rock.Model;
+using Rock.Web.Cache;
 
 namespace Rock.Jobs
 {
@@ -67,7 +69,7 @@ namespace Rock.Jobs
 
                  Reason: Prevent excessive memory usage by deferring loading of large dataset objects.
             */
-            var persistedDatasetQuery = new PersistedDatasetService( new RockContext() )
+            var persistedDatasetQuery = new PersistedDatasetService( RockApp.Current.CreateRockContext() )
                 .Queryable()
                 .AsNoTracking()
                 .Where(
@@ -104,7 +106,7 @@ namespace Rock.Jobs
                     // Apply schedule-based logic only if the dataset is associated with a schedule
                     if ( dataset.PersistedScheduleId.HasValue )
                     {
-                        var schedule = new ScheduleService( new RockContext() ).Get( dataset.PersistedScheduleId.Value );
+                        var schedule = new ScheduleService( RockApp.Current.CreateRockContext() ).Get( dataset.PersistedScheduleId.Value );
                         var beginDateTime = dataset.LastRefreshDateTime ?? schedule.GetFirstStartDateTime();
                         if ( !beginDateTime.HasValue )
                         {
@@ -122,7 +124,7 @@ namespace Rock.Jobs
 
             foreach ( var untrackedPersistedDataset in datasetsToBeUpdated )
             {
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     // Get the full persisted dataset object to update
                     var persistedDatasetService = new PersistedDatasetService( rockContext );
@@ -143,7 +145,7 @@ namespace Rock.Jobs
                         {
                             this.UpdateLastStatusMessage( FormatStatusMessage( "Update", name, "success" ) );
                             updatedDatasetCount++;
-                            
+
                             /*
                                 2/10/2026 - NA
                                 We are calling the SaveChanges( true ) overload that disables pre/post processing hooks
@@ -152,9 +154,17 @@ namespace Rock.Jobs
                                 run, which is not what we want here.
 
                                 Reason: See Asana task "Persisted Datasets Don't Have CreatedBy/ModifiedBy Values"
-                                https://app.asana.com/1/20866866924293/task/1213202694111290
+                                https://app.asana.com/1/20866866924293/task/1213144793175484
                             */
                             rockContext.SaveChanges( true );
+
+                            // Because the SaveChanges( true ) skipped the UpdateCache hook, the in-memory caches
+                            // still holds the previous ResultData. Invalidate it now.
+#if NET472_OR_GREATER
+                            PersistedDatasetCache.UpdateCachedEntity( persistedDatasetToUpdate.Id, System.Data.Entity.EntityState.Modified );
+#else
+                            PersistedDatasetCache.UpdateCachedEntity( persistedDatasetToUpdate.Id, Microsoft.EntityFrameworkCore.EntityState.Modified );
+#endif
                         }
                         else
                         {

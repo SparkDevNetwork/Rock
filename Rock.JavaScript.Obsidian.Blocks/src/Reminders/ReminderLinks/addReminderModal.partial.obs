@@ -1,0 +1,206 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Modal v-model="isOpen"
+           :title="modalTitle"
+           saveText="Save"
+           cancelText="Cancel"
+           saveAutoDisable
+           saveAutoLoading
+           @save="onSave">
+
+        <ExistingReminders :reminders="contextData?.existingReminders ?? []"
+                           :existingReminderText="contextData?.existingReminderText ?? ''"
+                           @markComplete="onMarkComplete"
+                           @cancelReoccurrence="onCancelReoccurrence"
+                           @edit="onEdit"
+                           @delete="onDelete"
+                           @viewAll="onViewAll" />
+
+        <h4 class="mt-0">Reminder for {{ contextData?.entityDescription ?? "" }}</h4>
+
+        <DatePicker v-model="reminderDate"
+                    label="Reminder Date"
+                    :disallowPastDateSelection="true"
+                    rules="required" />
+
+        <TextBox v-model="note"
+                 label="Note"
+                 textMode="multiline" />
+
+        <DropDownList v-model="reminderTypeId"
+                      label="Reminder Type"
+                      :items="contextData?.reminderTypes ?? []"
+                      rules="required"
+                      :showBlankItem="false" />
+
+        <div v-if="!showAdditionalOptions">
+            <a href="#" @click.prevent="showAdditionalOptions = true">Additional Options</a>
+        </div>
+
+        <div v-else>
+            <PersonPicker v-model="assignee"
+                          label="Assign Reminder To"
+                          rules="required"
+                          :enableSelfSelection="true" />
+
+            <div class="row">
+                <div class="col-md-6">
+                    <NumberBox v-model="repeatDays"
+                               label="Repeat Every"
+                               help="Will repeat the reminder the provided number of days after the completion."
+                               :minimumValue="0">
+                        <template #inputGroupAppend>
+                            <span class="input-group-addon">days</span>
+                        </template>
+                    </NumberBox>
+                </div>
+                <div class="col-md-6">
+                    <NumberBox v-model="repeatTimes"
+                               label="Number of Times to Repeat"
+                               help="The number of times to repeat. Leave blank to repeat indefinitely."
+                               :minimumValue="0">
+                        <template #inputGroupAppend>
+                            <span class="input-group-addon">times</span>
+                        </template>
+                    </NumberBox>
+                </div>
+            </div>
+        </div>
+    </Modal>
+</template>
+
+<script setup lang="ts">
+    import { computed, PropType, ref, watch } from "vue";
+    import Modal from "@Obsidian/Controls/modal.obs";
+    import DatePicker from "@Obsidian/Controls/datePicker.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import PersonPicker from "@Obsidian/Controls/personPicker.obs";
+    import NumberBox from "@Obsidian/Controls/numberBox.obs";
+    import { useVModelPassthrough } from "@Obsidian/Utility/component";
+    import { toGuidOrNull } from "@Obsidian/Utility/guid";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { ReminderLinksContextDataBag } from "@Obsidian/ViewModels/Blocks/Reminders/ReminderLinks/reminderLinksContextDataBag";
+    import { SaveReminderRequestBag } from "@Obsidian/ViewModels/Blocks/Reminders/ReminderLinks/saveReminderRequestBag";
+    import ExistingReminders from "./existingReminders.partial.obs";
+
+    const props = defineProps({
+        modelValue: {
+            type: Boolean,
+            required: true
+        },
+        contextData: {
+            type: Object as PropType<ReminderLinksContextDataBag | null>,
+            default: null
+        },
+        /**
+         * Async callback the parent supplies to persist the submitted bag.
+         * Returning a promise here is what lets the Modal's saveAutoDisable /
+         * saveAutoLoading gate the Save button for the full server round trip —
+         * emitting the save event instead would unblock the button as soon as
+         * Vue flushed the emit and allow double-submits.
+         */
+        saveCallback: {
+            type: Function as PropType<(bag: SaveReminderRequestBag) => Promise<boolean>>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: boolean): void;
+        (e: "markComplete", idKey: string): void;
+        (e: "cancelReoccurrence", idKey: string): void;
+        (e: "edit", idKey: string): void;
+        (e: "delete", idKey: string): void;
+        (e: "viewAll"): void;
+    }>();
+
+    const isOpen = useVModelPassthrough(props, "modelValue", emit);
+
+    const reminderDate = ref<string>("");
+    const note = ref<string>("");
+    const reminderTypeId = ref<string>("");
+    const assignee = ref<ListItemBag | undefined>(undefined);
+    const repeatDays = ref<number | null>(null);
+    const repeatTimes = ref<number | null>(null);
+    const showAdditionalOptions = ref(false);
+
+    /** Modal header text — either "Reminder For {entity}" or a generic fallback. */
+    const modalTitle = computed((): string => {
+        return props.contextData?.entityDescription
+            ? `Reminder For ${props.contextData.entityDescription}`
+            : "Add Reminder";
+    });
+
+    // Seed the default reminder type and assignee whenever the modal opens
+    // with fresh context data — auto-pick the first reminder type and the
+    // current person.
+    watch(
+        () => props.modelValue,
+        (isOpen) => {
+            if (isOpen) {
+                resetForm();
+            }
+        },
+        { immediate: true }
+    );
+
+    /** Resets every form field to its default value for a fresh modal open. */
+    function resetForm(): void {
+        reminderDate.value = "";
+        note.value = "";
+        reminderTypeId.value = props.contextData?.reminderTypes?.[0]?.value ?? "";
+        assignee.value = props.contextData?.currentPerson ?? undefined;
+        repeatDays.value = null;
+        repeatTimes.value = null;
+        showAdditionalOptions.value = false;
+    }
+
+    /**
+     * Packages the form state and awaits the parent's save callback. Returning
+     * a promise here keeps the Modal's internal RockForm submit state active for
+     * the full round trip so the Save button stays disabled and loading — any
+     * extra clicks before the server responds are ignored by RockForm's own
+     * double-submit guard.
+     */
+    async function onSave(): Promise<void> {
+        const bag: SaveReminderRequestBag = {
+            reminderTypeId: Number(reminderTypeId.value) || 0,
+            reminderDate: reminderDate.value,
+            note: note.value,
+            personAliasGuid: toGuidOrNull(assignee.value?.value),
+            repeatDays: repeatDays.value,
+            repeatTimes: repeatTimes.value
+        };
+
+        const success = await props.saveCallback(bag);
+        if (success) {
+            isOpen.value = false;
+        }
+    }
+
+    /** Re-emits the Mark Complete row action up to the parent. */
+    function onMarkComplete(idKey: string): void {
+        emit("markComplete", idKey);
+    }
+
+    /** Re-emits the Cancel Reoccurrence row action up to the parent. */
+    function onCancelReoccurrence(idKey: string): void {
+        emit("cancelReoccurrence", idKey);
+    }
+
+    /** Re-emits the Edit row action up to the parent. */
+    function onEdit(idKey: string): void {
+        emit("edit", idKey);
+    }
+
+    /** Re-emits the Delete row action up to the parent. */
+    function onDelete(idKey: string): void {
+        emit("delete", idKey);
+    }
+
+    /** Re-emits the "see all" link up to the parent. */
+    function onViewAll(): void {
+        emit("viewAll");
+    }
+</script>

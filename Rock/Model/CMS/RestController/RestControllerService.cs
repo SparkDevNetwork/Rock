@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -29,20 +29,6 @@ namespace Rock.Model
     /// </summary>
     public partial class RestControllerService
     {
-        /// <summary>
-        /// Gets the API identifier.
-        /// </summary>
-        /// <param name="methodInfo">The method information.</param>
-        /// <param name="httpMethod">The HTTP method.</param>
-        /// <param name="controllerName">Name of the controller.</param>
-        /// <returns></returns>
-        [RockObsolete( "1.14" )]
-        [Obsolete( "Use the method with the 'rockGuid' property instead." )]
-        public static string GetApiId( MethodInfo methodInfo, string httpMethod, string controllerName )
-        {
-            return GetApiId( methodInfo, httpMethod, controllerName, out _ );
-        }
-
         /// <summary>
         /// Gets the API identifier.
         /// </summary>

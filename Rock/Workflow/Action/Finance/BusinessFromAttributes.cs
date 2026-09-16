@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -20,6 +20,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.Linq;
+
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
@@ -74,7 +75,6 @@ namespace Rock.Workflow.Action
 
     [WorkflowAttribute(
         "Address",
-        "Attribute Value",
         Description = "",
         IsRequired = false,
         Order = 4,
@@ -83,7 +83,6 @@ namespace Rock.Workflow.Action
 
     [WorkflowAttribute(
         "Campus",
-        "Attribute Value",
         Description = "",
         IsRequired = false,
         Order = 5,
@@ -92,7 +91,6 @@ namespace Rock.Workflow.Action
 
     [WorkflowAttribute(
         "Contact",
-        "Attribute Value",
         Description = "A optional person to connect to the business.",
         IsRequired = false,
         Order = 5,
@@ -101,7 +99,6 @@ namespace Rock.Workflow.Action
 
     [WorkflowAttribute(
         "Business",
-        "Attribute Value",
         Description = "The resulting business that was either matched or created. This will return as a person attribute since businesses are people in the database.",
         IsRequired = false,
         Order = 6,
@@ -244,7 +241,11 @@ namespace Rock.Workflow.Action
                 rockContext.SaveChanges();
 
                 // Location
+                // Previous addresses are stored as GroupLocation rows with the Previous location type
+                // (not GroupLocationHistorical) so multiple former addresses can be retained without
+                // colliding on the CurrentRowIndicator unique index. Matches Business Detail (#6929).
                 int workLocationTypeId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_WORK ).Id;
+                int previousLocationTypeId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_PREVIOUS ).Id;
 
                 var groupLocationService = new GroupLocationService( rockContext );
                 var workLocation = groupLocationService.Queryable( "Location" )
@@ -255,24 +256,34 @@ namespace Rock.Workflow.Action
 
                 if ( address != null && address.Street1.IsNotNullOrWhiteSpace() )
                 {
-                    if ( workLocation == null )
+                    GroupLocation currentGroupLocation;
+                    var saveAsPrevious = workLocation != null
+                        && workLocation.Location != null
+                        && address.Id != workLocation.Location.Id;
+
+                    if ( saveAsPrevious )
                     {
-                        workLocation = new GroupLocation();
-                        groupLocationService.Add( workLocation );
-                        workLocation.GroupId = adultFamilyMember.Group.Id;
-                        workLocation.GroupLocationTypeValueId = workLocationTypeId;
+                        // Keep the former work address as a Previous location, then create a new work row.
+                        // Previous locations should not remain mailing/mapped (see GroupService.AddNewGroupAddress).
+                        workLocation.GroupLocationTypeValueId = previousLocationTypeId;
+                        workLocation.IsMailingLocation = false;
+                        workLocation.IsMappedLocation = false;
+                    }
+
+                    if ( workLocation == null || saveAsPrevious )
+                    {
+                        currentGroupLocation = new GroupLocation();
+                        groupLocationService.Add( currentGroupLocation );
+                        currentGroupLocation.GroupId = adultFamilyMember.Group.Id;
+                        currentGroupLocation.GroupLocationTypeValueId = workLocationTypeId;
                     }
                     else
                     {
-                        // Save this to history if the box is checked and the new info is different than the current one.
-                        if ( address.Id != workLocation.Location.Id )
-                        {
-                            new GroupLocationHistoricalService( rockContext ).Add( GroupLocationHistorical.CreateCurrentRowFromGroupLocation( workLocation, RockDateTime.Now ) );
-                        }
+                        currentGroupLocation = workLocation;
                     }
 
-                    workLocation.Location = address;
-                    workLocation.IsMailingLocation = true;
+                    currentGroupLocation.Location = address;
+                    currentGroupLocation.IsMailingLocation = true;
                 }
 
                 var contactPerson = GetPersonFromSelectedAttribute( AttributeKey.Contact, rockContext, action );

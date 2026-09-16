@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -21,6 +21,7 @@ using System.Data.Entity;
 using System.Linq;
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Obsidian.UI;
@@ -54,7 +55,7 @@ namespace Rock.Blocks.Lms
         "Show Location Column",
         Key = AttributeKey.ShowLocationColumn,
         Description = "Determines if the Location column should be visible.",
-        ControlType = Field.Types.BooleanFieldType.BooleanControlType.Toggle,
+        BooleanControlType = Rock.Enums.Controls.BooleanControlType.Toggle,
         IsRequired = true,
         DefaultBooleanValue = false,
         Order = 1 )]
@@ -63,7 +64,7 @@ namespace Rock.Blocks.Lms
         "Show Schedule Column",
         Key = AttributeKey.ShowScheduleColumn,
         Description = "Determines if the Schedule column should be visible.",
-        ControlType = Field.Types.BooleanFieldType.BooleanControlType.Toggle,
+        BooleanControlType = Rock.Enums.Controls.BooleanControlType.Toggle,
         IsRequired = true,
         DefaultBooleanValue = false,
         Order = 2 )]
@@ -72,7 +73,7 @@ namespace Rock.Blocks.Lms
         "Show Semester Column",
         Key = AttributeKey.ShowSemesterColumn,
         Description = "Determines if the Semester column should be visible when the configuration is 'Academic Calendar'.",
-        ControlType = Field.Types.BooleanFieldType.BooleanControlType.Toggle,
+        BooleanControlType = Rock.Enums.Controls.BooleanControlType.Toggle,
         IsRequired = true,
         DefaultBooleanValue = false,
         Order = 3 )]
@@ -352,7 +353,7 @@ namespace Rock.Blocks.Lms
         [BlockAction]
         public BlockActionResult Delete( string key )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var entityService = new LearningClassService( rockContext );
                 var entity = entityService.Get( key, !PageCache.Layout.Site.DisablePredictableIds );

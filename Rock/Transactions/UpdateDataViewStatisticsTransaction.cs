@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -14,19 +14,20 @@
 // limitations under the License.
 // </copyright>
 //
-using Rock.Data;
-using Rock.Model;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 
+using Rock.Configuration;
+using Rock.Data;
+using Rock.Model;
+
 namespace Rock.Transactions
 {
     /// <summary>
     /// Updates the DataView statistics of a DataView that has been run.
-    /// Use this instead of <see cref="Rock.Tasks.UpdateDataViewStatistics"/> since it updates all the DataViews in a batch.
     /// </summary>
     /// <seealso cref="Rock.Transactions.ITransaction" />
     public class UpdateDataViewStatisticsTransaction : ITransaction
@@ -65,7 +66,7 @@ namespace Rock.Transactions
                 return;
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var dataViewService = new DataViewService( rockContext );
                 var ids = dataViewInfos.Select( d => d.DataViewId ).Distinct().ToList();

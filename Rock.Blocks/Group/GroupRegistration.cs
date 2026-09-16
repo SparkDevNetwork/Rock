@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -22,6 +22,7 @@ using System.Data.Entity;
 using System.Linq;
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Crm.RecordSource;
 using Rock.Data;
 using Rock.Model;
@@ -241,7 +242,7 @@ namespace Rock.Blocks.Group
         /// <inheritdoc/>
         public override object GetObsidianBlockInitialization()
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var box = new GroupRegistrationBlockBox();
 
@@ -339,11 +340,7 @@ namespace Rock.Blocks.Group
 
             if ( group == null && GetAttributeValue( AttributeKey.EnablePassingGroupId ).AsBoolean( false ) )
             {
-                int? groupId = PageParameter( PageParameterKey.GroupId ).AsIntegerOrNull();
-                if ( groupId.HasValue )
-                {
-                    group = groupService.Get( groupId.Value );
-                }
+                group = groupService.Get( PageParameter( PageParameterKey.GroupId ), !PageCache.Layout.Site.DisablePredictableIds );
             }
 
             return group;
@@ -351,7 +348,7 @@ namespace Rock.Blocks.Group
 
         private void GetSettings( RockContext rockContext, GroupRegistrationBlockBox box )
         {
-            rockContext = rockContext ?? new RockContext();
+            rockContext = rockContext ?? RockApp.Current.CreateRockContext();
             var group = GetGroup( rockContext );
             var currentPerson = RequestContext.CurrentPerson;
 
@@ -671,7 +668,7 @@ namespace Rock.Blocks.Group
         [BlockAction]
         public BlockActionResult Save( GroupRegistrationBag groupRegistrationBag )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 bool disableCaptcha = Captcha.CaptchaService.ShouldDisableCaptcha( GetAttributeValue( AttributeKey.DisableCaptchaSupport ).AsBoolean() );
                 if ( !disableCaptcha && !RequestContext.IsCaptchaValid )
@@ -761,8 +758,15 @@ namespace Rock.Blocks.Group
                 }
                 else
                 {
-                    // updating current existing person
-                    person.Email = groupRegistrationBag.Email;
+                    // Updating current existing person. Only overwrite the email
+                    // when a value was actually provided. The email field can be
+                    // optional, so a blank submission must not wipe out an email
+                    // address that is already on record for the matched person.
+                    var email = groupRegistrationBag.Email?.Trim();
+                    if ( email.IsNotNullOrWhiteSpace() )
+                    {
+                        person.Email = email;
+                    }
 
                     // Get the current person's families
                     var families = person.GetFamilies( rockContext );
@@ -878,7 +882,14 @@ namespace Rock.Blocks.Group
                             person.MaritalStatusValueId = married.Id;
                         }
 
-                        spouse.Email = groupRegistrationBag.SpouseEmail;
+                        // Only overwrite the spouse email when a value was
+                        // provided so a blank submission does not wipe out the
+                        // email address of an existing matched spouse.
+                        var spouseEmail = groupRegistrationBag.SpouseEmail?.Trim();
+                        if ( spouseEmail.IsNotNullOrWhiteSpace() )
+                        {
+                            spouse.Email = spouseEmail;
+                        }
 
                         if ( !isSpouseMatch || !string.IsNullOrWhiteSpace( groupRegistrationBag.HomePhone ) )
                         {

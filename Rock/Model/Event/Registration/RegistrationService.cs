@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -18,7 +18,9 @@ using System;
 using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
+
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.ViewModels.Blocks;
 using Rock.Web.Cache;
@@ -118,19 +120,6 @@ namespace Rock.Model
         /// Gets the generic context about the registration.
         /// </summary>
         /// <param name="registrationInstanceId">The registration instance identifier.</param>
-        /// <param name="errorMessage">The error result.</param>
-        /// <returns></returns>
-        [RockObsolete("1.14.1")]
-        [Obsolete( "Use GetRegistrationContext( int registrationInstanceId, int? registrationId, out string errorMessage )" )]
-        public RegistrationContext GetRegistrationContext( int registrationInstanceId, out string errorMessage )
-        {
-            return GetRegistrationContext( registrationInstanceId, null, out errorMessage );
-        }
-
-        /// <summary>
-        /// Gets the generic context about the registration.
-        /// </summary>
-        /// <param name="registrationInstanceId">The registration instance identifier.</param>
         /// <param name="registrationId">The registration identifier.</param>
         /// <param name="errorMessage">The error result.</param>
         /// <returns></returns>
@@ -212,7 +201,7 @@ namespace Rock.Model
                 }
                 else
                 {
-                    var registrationDiscount = new RegistrationTemplateDiscountService( new RockContext() ).GetDiscountsForRegistrationInstance( registrationInstanceId ).Where( d => d.Code == discountCode ).FirstOrDefault();
+                    var registrationDiscount = new RegistrationTemplateDiscountService( RockApp.Current.CreateRockContext() ).GetDiscountsForRegistrationInstance( registrationInstanceId ).Where( d => d.Code == discountCode ).FirstOrDefault();
                     if ( registrationDiscount != null )
                     {
                         context.Discount = new RegistrationTemplateDiscountWithUsage
@@ -327,7 +316,7 @@ namespace Rock.Model
                 // if FirstName isn't prompted for in a registration form, and using an existing Person, get the person's FirstName/NickName from the database
                 if ( registrantInfo.PersonGuid.HasValue )
                 {
-                    return new PersonService( new RockContext() ).GetSelect( registrantInfo.PersonGuid.Value, s => s.NickName ) ?? string.Empty;
+                    return new PersonService( RockApp.Current.CreateRockContext() ).GetSelect( registrantInfo.PersonGuid.Value, s => s.NickName ) ?? string.Empty;
                 }
             }
             else
@@ -353,7 +342,7 @@ namespace Rock.Model
                 // if LastName isn't prompted for in a registration form, and using an existing Person, get the person's lastname from the database
                 if ( registrantInfo.PersonGuid.HasValue )
                 {
-                    return new PersonService( new RockContext() ).GetSelect( registrantInfo.PersonGuid.Value, s => s.LastName ) ?? string.Empty;
+                    return new PersonService( RockApp.Current.CreateRockContext() ).GetSelect( registrantInfo.PersonGuid.Value, s => s.LastName ) ?? string.Empty;
                 }
             }
             else
@@ -379,7 +368,7 @@ namespace Rock.Model
                 // if Email isn't prompted for in a registration form, and using an existing Person, get the person's email from the database
                 if ( registrantInfo.PersonGuid.HasValue )
                 {
-                    return new PersonService( new RockContext() ).GetSelect( registrantInfo.PersonGuid.Value, s => s.Email ) ?? string.Empty;
+                    return new PersonService( RockApp.Current.CreateRockContext() ).GetSelect( registrantInfo.PersonGuid.Value, s => s.Email ) ?? string.Empty;
                 }
             }
             else
@@ -565,6 +554,8 @@ namespace Rock.Model
 
             // Payment plan
             IsPaymentPlanAllowed = template.IsPaymentPlanAllowed;
+            IsFullPaymentOrPaymentPlanRequired = template.IsFullPaymentOrPaymentPlanRequired;
+            FullPaymentOrPaymentPlanRequiredMessage = template.FullPaymentOrPaymentPlanRequiredMessage;
             PaymentDeadlineDate = instance.PaymentDeadlineDate;
             PaymentPlanFrequencyValueIds = template.PaymentPlanFrequencyValueIdsCollection.ToList();
             if ( PaymentPlanFrequencyValueIds?.Any() != true )
@@ -595,6 +586,10 @@ namespace Rock.Model
                 SignatureDocumentTerm = template.RequiredSignatureDocumentTemplate?.DocumentTerm;
                 SignatureDocumentTemplateName = template.RequiredSignatureDocumentTemplate?.Name;
             }
+
+            RegistrantEligibilitySettings = template.GetRegistrantEligibilitySettingsOrNull();
+
+            AreDuplicateRegistrantsPrevented = template.AreDuplicateRegistrantsPrevented;
         }
 
         /// <summary>
@@ -869,7 +864,25 @@ namespace Rock.Model
         ///   <c>true</c> if registrants should be able to pay their registration costs in multiple, scheduled installments; otherwise, <c>false</c>.
         /// </value>
         public bool IsPaymentPlanAllowed { get; private set; }
-        
+
+        /// <summary>
+        /// Gets a value indicating whether the registrant must either pay the registration in full or
+        /// establish a valid payment plan that covers the remaining balance before saving the registration.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if full payment or a valid payment plan is required to save the registration; otherwise, <c>false</c>.
+        /// </value>
+        public bool IsFullPaymentOrPaymentPlanRequired { get; private set; }
+
+        /// <summary>
+        /// Gets the Lava-enabled message to display to a registrant when validation fails for the
+        /// <see cref="IsFullPaymentOrPaymentPlanRequired"/> rule on the Registration Entry block.
+        /// </summary>
+        /// <value>
+        /// The message, or <see langword="null"/> if no configured message is set on the template.
+        /// </value>
+        public string FullPaymentOrPaymentPlanRequiredMessage { get; private set; }
+
         /// <summary>
         /// Gets the payment deadline date.
         /// </summary>
@@ -999,5 +1012,17 @@ namespace Rock.Model
         /// The name of the signature document template.
         /// </value>
         public string SignatureDocumentTemplateName { get; private set; }
+
+        /// <summary>
+        /// Gets the eligibility settings that determine which registrants are allowed to register using this template.
+        /// </summary>
+        public RegistrationTemplate.RegistrantEligibilitySettings RegistrantEligibilitySettings { get; private set; }
+        
+        /// <summary>
+        /// Gets or sets a value indicating whether duplicate registrants are prevented.
+        /// When <see langword="true"/>, a Person may only be associated once with a given Registration Instance.
+        /// When <see langword="false"/>, duplicate registrants are allowed.
+        /// </summary>
+        public bool AreDuplicateRegistrantsPrevented { get; private set; }
     }
 }

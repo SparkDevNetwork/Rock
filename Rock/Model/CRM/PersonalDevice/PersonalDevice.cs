@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -19,8 +19,11 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
+
 using Rock.Data;
 using Rock.Enums.Mobile;
+using Rock.Enums.Security;
+using Rock.Security;
 
 namespace Rock.Model
 {
@@ -53,6 +56,7 @@ namespace Rock.Model
         /// The device registration id.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string DeviceRegistrationId { get; set; }
 
         /// <summary>
@@ -83,6 +87,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [MaxLength( 50 )]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string DeviceUniqueIdentifier { get; set; }
 
         /// <summary>
@@ -93,6 +98,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [MaxLength( 100 )]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string DeviceVersion { get; set; }
 
         /// <summary>
@@ -103,6 +109,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [MaxLength( 12 )]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string MACAddress { get; set; }
 
         /// <summary>
@@ -142,6 +149,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [MaxLength( 50 )]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string Manufacturer { get; set; }
 
         /// <summary>
@@ -152,6 +160,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [MaxLength( 50 )]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string Model { get; set; }
 
         /// <summary>
@@ -162,6 +171,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [MaxLength( 50 )]
+        [StringValidation( StringValidationProfile.Name )]
         public string Name { get; set; }
 
         /// <summary>

@@ -10,23 +10,30 @@
           :onAddItem="config.isAddEnabled ? onAddItem : undefined"
           @selectItem="onSelectItem">
 
-        <TextColumn name="name"
-                    title="Name"
-                    field="name"
-                    :filter="textValueFilter"
-                    visiblePriority="xs" />
-
-        <TextColumn name="description"
-                    title="Description"
-                    field="description"
-                    :filter="textValueFilter"
-                    visiblePriority="xs" />
+        <HighlightDetailColumn name="name"
+                               title="Name"
+                               field="name"
+                               detailField="description"
+                               :filter="textValueFilter"
+                               visiblePriority="xs" />
 
         <TextColumn name="platform"
                     title="Platform"
                     field="tvPlatform"
                     :filter="textValueFilter"
                     visiblePriority="xs" />
+
+        <BooleanColumn name="enablePageViews"
+                       title="Enable Page Views"
+                       field="enablePageViews"
+                       :filter="booleanValueFilter"
+                       visiblePriority="sm" />
+
+        <BooleanColumn name="isActive"
+                       title="Active"
+                       field="isActive"
+                       :filter="booleanValueFilter"
+                       visiblePriority="xs" />
 
         <AttributeColumns :attributes="config.gridDefinition?.attributeFields ?? []" />
 
@@ -39,7 +46,7 @@
 <script setup lang="ts">
     import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
-    import Grid, { AttributeColumns, TextColumn, textValueFilter, DeleteColumn, SecurityColumn } from "@Obsidian/Controls/grid";
+    import Grid, { AttributeColumns, BooleanColumn, HighlightDetailColumn, TextColumn, booleanValueFilter, textValueFilter, DeleteColumn, SecurityColumn } from "@Obsidian/Controls/grid";
     import { alert } from "@Obsidian/Utility/dialogs";
     import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
     import { SiteListOptionsBag } from "@Obsidian/ViewModels/Blocks/Cms/SiteList/siteListOptionsBag";

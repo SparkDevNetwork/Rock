@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -20,10 +20,13 @@ using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.Data;
 using System.Linq;
+
 using PayPal.Payments.Common.Utility;
 using PayPal.Payments.DataObjects;
 using PayPal.Payments.Transactions;
+
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Financial;
 using Rock.Model;
@@ -39,11 +42,29 @@ namespace Rock.PayFlowPro
     [Export( typeof( GatewayComponent ) )]
     [ExportMetadata( "ComponentName", "PayFlowPro" )]
 
-    [TextField( "PayPal Partner", "", true, "", "", 0, "Partner" )]
-    [TextField( "PayPal Merchant Login", "", true, "", "", 1, "Vendor" )]
-    [TextField( "PayPal User", "", false, "", "", 2, "User" )]
-    [TextField( "PayPal Password", "", true, "", "", 3, "Password", true )]
-    [CustomRadioListField( "Mode", "Mode to use for transactions", "Live,Test", true, "Live", "", 4 )]
+    [TextField( "PayPal Partner",
+        IsRequired = true,
+        Order = 0,
+        Key = "Partner" )]
+    [TextField( "PayPal Merchant Login",
+        IsRequired = true,
+        Order = 1,
+        Key = "Vendor" )]
+    [TextField( "PayPal User",
+        IsRequired = false,
+        Order = 2,
+        Key = "User" )]
+    [TextField( "PayPal Password",
+        IsRequired = true,
+        Order = 3,
+        Key = "Password",
+        IsPassword = true )]
+    [CustomRadioListField( "Mode",
+        Description = "Mode to use for transactions",
+        ListSource = "Live,Test",
+        IsRequired = true,
+        DefaultValue = "Live",
+        Order = 4 )]
 
     public class Gateway : GatewayComponent
     {
@@ -220,7 +241,7 @@ namespace Rock.PayFlowPro
                         if ( paymentInfo is ReferencePaymentInfo )
                         {
                             var reference = paymentInfo as ReferencePaymentInfo;
-                            var rockContext = new RockContext();
+                            var rockContext = RockApp.Current.CreateRockContext();
                             var savedAccount = new FinancialPersonSavedAccountService( rockContext )
                                 .Queryable()
                                 .Where( s =>
@@ -809,7 +830,7 @@ namespace Rock.PayFlowPro
 
             if ( financialGatewayId.HasValue )
             {
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     var gateway = new FinancialGatewayService( rockContext ).Get( financialGatewayId.Value );
                     gateway.LoadAttributes( rockContext );

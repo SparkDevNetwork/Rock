@@ -30,10 +30,12 @@
 
 <script setup lang="ts">
     import { getFieldType, DataEntryMode, provideFieldTypeAttributeGuid } from "@Obsidian/Utility/fieldTypes";
-    import { computed, PropType, provide } from "vue";
+    import { computed, PropType, provide, ref, watch } from "vue";
     import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
     import { FieldType } from "@Obsidian/SystemGuids/fieldType";
     import { emptyGuid, toGuidOrNull } from "@Obsidian/Utility/guid";
+    import { provideSecurityGrant, useSecurityGrantToken } from "@Obsidian/Utility/block";
+    import { SecurityGrant } from "@Obsidian/Types/Utility/block";
 
     const textField = getFieldType(FieldType.Text);
 
@@ -88,6 +90,17 @@
         (e: "update:modelValue", value: string): void;
         (e: "updateConfigurationValue", key: string, value: string): void;
     }>();
+
+    // The security grant token might come from the attribute itself. But if it
+    // doesn't then we need to get it from the parent context.
+    const parentSecurityGrantToken = useSecurityGrantToken();
+    const currentSecurtityGrantToken = ref(props.attribute.securityGrantToken ?? parentSecurityGrantToken.value);
+    const securityGrant: SecurityGrant = {
+        token: currentSecurtityGrantToken,
+        updateToken(newToken: string | null | undefined) {
+            currentSecurtityGrantToken.value = newToken || null;
+        },
+    };
 
     const field = computed(() => {
         const fieldType = getFieldType(toGuidOrNull(props.attribute.fieldTypeGuid) ?? emptyGuid);
@@ -157,6 +170,14 @@
         emit("updateConfigurationValue", key, value);
     }
 
+    watch([() => props.attribute, parentSecurityGrantToken], () => {
+        // If a change happens to either the attribute or the parent security
+        // grant token then we need to update our current security grant token
+        // to make sure it is correct.
+        securityGrant.updateToken(props.attribute.securityGrantToken ?? parentSecurityGrantToken.value);
+    });
+
     provideFieldTypeAttributeGuid(attributeGuid);
     provide("isRequired", isRequired);
+    provideSecurityGrant(securityGrant);
 </script>

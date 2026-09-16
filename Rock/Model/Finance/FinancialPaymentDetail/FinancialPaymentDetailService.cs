@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -81,27 +81,5 @@ namespace Rock.Model
                 }
             }
         }
-
-#if REVIEW_WEBFORMS
-        /// <summary>
-        /// Deletes the financial payment detail if it was linked to the referencing Entity and is now orphaned.
-        /// </summary>
-        /// <param name="referencingEntry">The referencing entry.</param>
-        [Obsolete( "Use DeleteOrphanedFinancialPaymentDetail( IEntitySaveEntry ) instead." )]
-        [RockObsolete( "1.14" )]
-        public void DeleteOrphanedFinancialPaymentDetail( System.Data.Entity.Infrastructure.DbEntityEntry referencingEntry )
-        {
-            var financialPaymentDetailId = referencingEntry.OriginalValues["FinancialPaymentDetailId"]?.ToString().AsIntegerOrNull();
-            if ( financialPaymentDetailId.HasValue )
-            {
-                var financialPaymentDetail = this.Get( financialPaymentDetailId.Value );
-
-                if ( financialPaymentDetail != null && this.CanDelete( financialPaymentDetail, out _, true ) )
-                {
-                    this.Delete( financialPaymentDetail );
-                }
-            }
-        }
-#endif
     }
 }

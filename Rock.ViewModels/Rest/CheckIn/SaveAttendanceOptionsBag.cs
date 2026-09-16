@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -50,5 +50,12 @@ namespace Rock.ViewModels.Rest.CheckIn
         /// </summary>
         /// <value>The requests.</value>
         public List<AttendanceRequestBag> Requests { get; set; }
+
+        /// <summary>
+        /// When set and valid, this specifies the PIN code to use for authentication
+        /// to enable the override mode in kiosk check-in. Location capacity filtering
+        /// will not be performed when in this mode.
+        /// </summary>
+        public string OverridePinCode { get; set; }
     }
 }

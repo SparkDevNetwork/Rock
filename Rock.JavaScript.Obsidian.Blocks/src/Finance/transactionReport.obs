@@ -1,0 +1,247 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Panel title="Transaction Report" titleIconCssClass="ti ti-credit-card" type="block">
+        <RockForm @submit="applyFilters">
+            <div class="well">
+                <div class="row">
+                    <div class="col-md-6">
+                        <DateRangePicker v-model="dateRange" label="Date Range" />
+                    </div>
+                    <div class="col-md-6">
+                        <CheckBoxList v-if="hasConfiguredAccounts"
+                                      v-model="selectedAccountGuids"
+                                      :label="config.options?.accountLabel ?? 'Accounts'"
+                                      :items="configuredAccounts" />
+                    </div>
+                </div>
+                <RockButton type="submit"
+                            :btnType="BtnType.Primary"
+                            :isLoading="isLoading"
+                            loadingText="Loading..."
+                            autoLoading>Apply</RockButton>
+            </div>
+        </RockForm>
+
+        <div v-if="accountSummaries.length > 0" class="well account-summary">
+            <strong>Summary:</strong>
+            <ul>
+                <li v-for="(account, index) in accountSummaries" :key="account.name ?? index">
+                    {{ account.name }}: {{ toCurrencyOrNull(account.amount, currencyInfo) }}
+                </li>
+            </ul>
+        </div>
+
+        <Grid :definition="config.options?.gridDefinition ?? undefined"
+              :data="gridData"
+              keyField="id"
+              :entityTypeGuid="EntityType.FinancialTransaction"
+              :itemTerm="config.options?.transactionLabel ?? 'Transaction'"
+              :emptyDataText="config.options?.emptyDataText ?? ''"
+              :isTitleHidden="true"
+              :showLaunchWorkflow="true"
+              stickyHeader
+              @filteredRowsChanged="onFilteredRowsChanged">
+            <DateColumn name="transactionDateTime"
+                        title="Date"
+                        field="transactionDateTime"
+                        :filter="dateValueFilter" />
+            <TextColumn name="currencyType"
+                        title="Currency Type"
+                        field="currencyType"
+                        :filter="pickExistingValueFilter" />
+            <TextColumn v-if="config.options?.showTransactionCode"
+                        name="transactionCode"
+                        title="Transaction Code"
+                        field="transactionCode"
+                        :filter="textValueFilter"
+                        width="200px" />
+            <TextColumn v-if="config.options?.showForeignKey"
+                        name="foreignKey"
+                        title="Foreign Key"
+                        field="foreignKey"
+                        :filter="textValueFilter" />
+            <Column name="summary"
+                    title="Summary"
+                    field="summary"
+                    :filter="textValueFilter"
+                    :filterValue="getSummaryFilterValue"
+                    :quickFilterValue="getSummaryFilterValue"
+                    :exportValue="getSummaryExportValue">
+                <template #format="{ row }">
+                    <div class="text-sm">
+                        <div v-for="(account, index) in ((row.summary as TransactionReportAccountSummaryBag[]) ?? [])"
+                             :key="account.name ?? index">
+                            {{ account.name }} ({{ toCurrencyOrNull(account.amount, currencyInfo) }})
+                        </div>
+                    </div>
+                </template>
+            </Column>
+            <CurrencyColumn name="totalAmount"
+                            title="Amount"
+                            field="totalAmount"
+                            :currencyInfo="currencyInfo"
+                            :filter="numberValueFilter" />
+        </Grid>
+
+        <NotificationBox v-if="error" :alertType="AlertType.Danger" heading="Error loading data" @dismiss="dismissError">
+            {{ error }}
+        </NotificationBox>
+    </Panel>
+</template>
+
+<script setup lang="ts">
+    import { computed, ref } from "vue";
+    import Panel from "@Obsidian/Controls/panel.obs";
+    import RockForm from "@Obsidian/Controls/rockForm.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import DateRangePicker from "@Obsidian/Controls/dateRangePicker.obs";
+    import CheckBoxList from "@Obsidian/Controls/checkBoxList.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import Grid, { Column, CurrencyColumn, DateColumn, TextColumn, dateValueFilter, numberValueFilter, pickExistingValueFilter, textValueFilter } from "@Obsidian/Controls/grid";
+    import { toCurrencyOrNull } from "@Obsidian/Utility/numberUtils";
+    import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
+    import { BtnType } from "@Obsidian/Enums/Controls/btnType";
+    import { AlertType } from "@Obsidian/Enums/Controls/alertType";
+    import { EntityType } from "@Obsidian/SystemGuids/entityType";
+    import { DateRangeParts } from "@Obsidian/Types/Controls/dateRangePicker";
+    import { IGridState } from "@Obsidian/Types/Controls/grid";
+    import { CustomBlockBox } from "@Obsidian/ViewModels/Blocks/customBlockBox";
+    import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
+    import { TransactionReportOptionsBag } from "@Obsidian/ViewModels/Blocks/Finance/TransactionReport/transactionReportOptionsBag";
+    import { TransactionReportDataBag } from "@Obsidian/ViewModels/Blocks/Finance/TransactionReport/transactionReportDataBag";
+    import { TransactionReportFilterBag } from "@Obsidian/ViewModels/Blocks/Finance/TransactionReport/transactionReportFilterBag";
+    import { TransactionReportAccountSummaryBag } from "@Obsidian/ViewModels/Blocks/Finance/TransactionReport/transactionReportAccountSummaryBag";
+
+    const config = useConfigurationValues<CustomBlockBox<TransactionReportDataBag, TransactionReportOptionsBag>>();
+    const invokeBlockAction = useInvokeBlockAction();
+
+    // All blocks auto reload when changing block settings unless there is an
+    // explicit reason not to (like using a custom reload function instead).
+    onConfigurationValuesChanged(useReloadBlock());
+
+    // #region Values
+
+    const currencyInfo = config.options?.currencyInfo ?? null;
+    const dateRange = ref<DateRangeParts>({
+        lowerValue: config.options?.defaultLowerDate ?? null,
+        upperValue: config.options?.defaultUpperDate ?? null
+    });
+    const selectedAccountGuids = ref<string[]>(
+        (config.options?.accounts ?? [])
+            .map(account => account.value)
+            .filter((value): value is string => typeof value === "string" && value !== "")
+    );
+    const gridData = ref<GridDataBag | undefined>(config.bag?.gridData ?? undefined);
+    const accountSummaries = ref<TransactionReportAccountSummaryBag[]>([]);
+    const isLoading = ref(false);
+    const error = ref<string | undefined>();
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    const configuredAccounts = computed(() => config.options?.accounts ?? []);
+
+    const hasConfiguredAccounts = computed((): boolean => configuredAccounts.value.length > 0);
+
+    // #endregion Computed Values
+
+    // #region Event Handlers
+
+    /**
+     * Re-queries the transactions from the server for the current filter selections.
+     */
+    async function applyFilters(): Promise<void> {
+        isLoading.value = true;
+        dismissError();
+
+        try {
+            const filterBag: TransactionReportFilterBag = {
+                lowerDate: dateRange.value?.lowerValue ?? null,
+                upperDate: dateRange.value?.upperValue ?? null,
+                accountGuids: selectedAccountGuids.value
+            };
+
+            const result = await invokeBlockAction<TransactionReportDataBag>("GetTransactionData", { filterBag });
+
+            if (!result.isSuccess || !result.data) {
+                throw new Error(result.errorMessage ?? "Unknown error.");
+            }
+
+            gridData.value = result.data.gridData ?? undefined;
+        }
+        catch (e) {
+            error.value = e instanceof Error ? e.message : "Unknown error.";
+        }
+        finally {
+            isLoading.value = false;
+        }
+    }
+
+    /**
+     * Recalculates the per-account totals from the rows currently visible in the grid. The grid raises
+     * this on initial load and whenever its filtered rows change, so it is the single source of truth
+     * for the summary - the totals follow any in-grid filtering or quick search the individual applies.
+     *
+     * @param state The state describing the grid, including the filtered rows.
+     */
+    function onFilteredRowsChanged(state: IGridState): void {
+        computeSummary(state.filteredRows as Record<string, unknown>[]);
+    }
+
+    /**
+     * Clears the current error message.
+     */
+    function dismissError(): void {
+        error.value = undefined;
+    }
+
+    // #endregion Event Handlers
+
+    // #region Functions
+
+    /**
+     * Aggregates the per-account breakdown of each row into per-account totals.
+     *
+     * @param rows The rows to aggregate.
+     */
+    function computeSummary(rows: Record<string, unknown>[]): void {
+        const totals = new Map<string, number>();
+
+        for (const row of rows) {
+            const lines = (row.summary as TransactionReportAccountSummaryBag[] | null) ?? [];
+
+            for (const line of lines) {
+                const name = line.name ?? "";
+                totals.set(name, (totals.get(name) ?? 0) + (line.amount ?? 0));
+            }
+        }
+
+        accountSummaries.value = Array.from(totals, ([name, amount]) => ({ name, amount }));
+    }
+
+    /**
+     * Builds a flat text value for the Summary column so it can be quick-filtered.
+     *
+     * @param row The row to extract the filter value from.
+     */
+    function getSummaryFilterValue(row: Record<string, unknown>): string {
+        const lines = (row.summary as TransactionReportAccountSummaryBag[] | null) ?? [];
+
+        return lines.map(line => `${line.name ?? ""} ${line.amount ?? ""}`).join(" ");
+    }
+
+    /**
+     * Builds a human-readable value for the Summary column when exporting, formatting each
+     * account line as "Name (amount)".
+     *
+     * @param row The row to extract the export value from.
+     */
+    function getSummaryExportValue(row: Record<string, unknown>): string {
+        const lines = (row.summary as TransactionReportAccountSummaryBag[] | null) ?? [];
+
+        return lines.map(line => `${line.name ?? ""} (${toCurrencyOrNull(line.amount, currencyInfo) ?? ""})`).join(", ");
+    }
+
+    // #endregion Functions
+</script>

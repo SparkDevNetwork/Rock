@@ -1,0 +1,74 @@
+<template>
+    <div class="form-group">
+        <div class="button-list"
+             :style="{
+                '--columns': columns,
+                '--gap': 'var(--spacing-small)'
+            }">
+            <RockButton v-for="(item, index) in items"
+                        :key="index"
+                        class="button-list-item"
+                        :disabled="disabled"
+                        type="button"
+                        @click="handleClick(item)">
+                <span class="button-text"
+                      v-tooltip.overflow="item.text">
+                    {{ item.text }}
+                </span>
+            </RockButton>
+        </div>
+    </div>
+</template>
+
+<style scoped>
+/* Leave in scoped styles since columns can be configured. */
+.button-list {
+    display: grid;
+    grid-template-columns: repeat(var(--columns), minmax(0, 1fr));
+    gap: var(--gap);
+}
+
+/* The label clips to a single line; the overflow tooltip reveals the full text. */
+.button-text {
+    display: block;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+</style>
+
+<script setup lang="ts">
+    import { PropType } from "vue";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { vTooltip } from "@Obsidian/Directives/tooltip";
+
+    defineProps({
+        disabled: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        items: {
+            type: Array as PropType<ListItemBag[]>,
+            required: true
+        },
+
+        columns: {
+            type: Number,
+            default: 4
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "click", item: ListItemBag): void;
+    }>();
+
+    // #region Event Handlers
+
+    function handleClick(item: ListItemBag): void {
+        emit("click", item);
+    }
+
+    // #endregion Event Handlers
+</script>

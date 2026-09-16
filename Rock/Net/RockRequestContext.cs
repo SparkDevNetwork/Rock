@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -255,6 +255,21 @@ namespace Rock.Net
         /// request.
         /// </summary>
         internal Guid SessionGuid { get; set; } = Guid.NewGuid();
+
+        /// <summary>
+        /// <para>
+        /// Gets or sets the URL the client should navigate to once the current
+        /// request completes. This is set by the PageRedirect Lava filter when
+        /// it executes during a block action, because a server-side redirect of
+        /// a block action response cannot navigate the browser.
+        /// </para>
+        /// <para>
+        /// Blocks that resolve Lava templates inside a block action should check
+        /// this value after rendering and, when set, return it to the client so
+        /// the client can perform the navigation.
+        /// </para>
+        /// </summary>
+        internal string RedirectUrl { get; set; }
 
         #endregion
 
@@ -635,7 +650,7 @@ namespace Rock.Net
                     // eager-loads a large object graph for person context entities when loading
                     // via Id, Guid or IdKey.
                     // https://github.com/SparkDevNetwork/Rock/blob/59123107b3ce4d38331a22c8d869fc8aeb1611c7/Rock/Web/UI/RockPage.cs#L3054
-                    var personService = new PersonService( new RockContext() );
+                    var personService = new PersonService( RockApp.Current.CreateRockContext() );
                     var eagerQry = personService
                         .GetQueryableByKey( entityKey, allowIntegerIdentifier )
                         .Include( p => p.MaritalStatusValue )
@@ -1014,14 +1029,14 @@ namespace Rock.Net
                 mergeFields.Add( "PageParameter", PageParameters );
             }
 
-            if ( options.GetOSFamily && ClientInformation.Browser != null )
+            if ( options.GetOSFamily && ClientInformation.BrowserInfo != null )
             {
-                mergeFields.Add( "OSFamily", ClientInformation.Browser.OS.Family.ToLower() );
+                mergeFields.Add( "OSFamily", ClientInformation.BrowserInfo.OSFamily.ToLower() );
             }
 
-            if ( options.GetDeviceFamily && ClientInformation.Browser != null )
+            if ( options.GetDeviceFamily && ClientInformation.BrowserInfo != null )
             {
-                mergeFields.Add( "DeviceFamily", ClientInformation.Browser.Device.Family );
+                mergeFields.Add( "DeviceFamily", ClientInformation.BrowserInfo.DeviceFamily );
             }
 
             var person = currentPersonOverride ?? CurrentPerson;
@@ -1141,7 +1156,7 @@ namespace Rock.Net
                 segmentFilterCookieData = new Personalization.SegmentFilterCookieData();
                 segmentFilterCookieData.PersonAliasIdKey = IdHasher.Instance.GetHash( personalizationPersonAliasId.Value );
                 segmentFilterCookieData.LastUpdateDateTime = RockDateTime.Now;
-                var segmentIdKeys = new PersonalizationSegmentService( new RockContext() ).GetPersonalizationSegmentIdKeysForPersonAliasId( personalizationPersonAliasId.Value );
+                var segmentIdKeys = new PersonalizationSegmentService( RockApp.Current.CreateRockContext() ).GetPersonalizationSegmentIdKeysForPersonAliasId( personalizationPersonAliasId.Value );
                 segmentFilterCookieData.SegmentIdKeys = segmentIdKeys;
             }
 

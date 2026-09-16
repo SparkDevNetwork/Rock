@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -24,6 +24,7 @@ using System.Linq;
 using Microsoft.EntityFrameworkCore;
 
 using Rock;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Utility.Settings.Giving;
@@ -44,7 +45,7 @@ namespace Rock.Financial
         /// <returns>The number of journey stages changed.</returns>
         internal static int UpdateJourneyStages( GivingAutomationSettings settings )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 rockContext.Database.SetCommandTimeout( 180 );
 
@@ -100,7 +101,7 @@ namespace Rock.Financial
         /// </summary>
         internal static void UpdateGivingBinsAndPercentiles()
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 rockContext.Database.SetCommandTimeout( 180 );
 

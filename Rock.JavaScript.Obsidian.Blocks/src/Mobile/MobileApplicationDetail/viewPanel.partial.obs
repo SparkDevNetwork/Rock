@@ -1,0 +1,155 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <ul class="nav nav-tabs margin-b-md">
+        <li v-for="tab in visibleTabs"
+            :key="tab"
+            :class="{ active: tab === internalSelectedTab }">
+            <a href="#" @click.prevent="onTabClick(tab)">{{ tab }}</a>
+        </li>
+    </ul>
+
+    <ApplicationPanel v-if="internalSelectedTab === MobileApplicationTab.Application"
+                      :modelValue="modelValue"
+                      :options="options" />
+
+    <StylesPanel v-else-if="internalSelectedTab === MobileApplicationTab.Styles"
+                 ref="stylesPanelRef"
+                 :options="options"
+                 @stylesSaved="onStylesSaved" />
+
+    <LayoutsPanel v-else-if="internalSelectedTab === MobileApplicationTab.Layouts"
+                  :options="options" />
+
+    <PagesPanel v-else-if="internalSelectedTab === MobileApplicationTab.Pages"
+                :options="options" />
+
+    <DeepLinksPanel v-else-if="internalSelectedTab === MobileApplicationTab.DeepLinks"
+                    :options="options" />
+</template>
+
+<script setup lang="ts">
+    import { computed, PropType, ref, watch } from "vue";
+    import { useVModelPassthrough } from "@Obsidian/Utility/component";
+    import { MobileApplicationBag } from "@Obsidian/ViewModels/Blocks/Mobile/MobileApplicationDetail/mobileApplicationBag";
+    import { MobileApplicationDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Mobile/MobileApplicationDetail/mobileApplicationDetailOptionsBag";
+    import { MobileApplicationStylesBag } from "@Obsidian/ViewModels/Blocks/Mobile/MobileApplicationDetail/mobileApplicationStylesBag";
+    import { MobileApplicationTab, PageParameterKey } from "./types.partial";
+    import ApplicationPanel from "./applicationPanel.partial.obs";
+    import StylesPanel from "./stylesPanel.partial.obs";
+    import LayoutsPanel from "./layoutsPanel.partial.obs";
+    import PagesPanel from "./pagesPanel.partial.obs";
+    import DeepLinksPanel from "./deepLinksPanel.partial.obs";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<MobileApplicationBag | null>,
+            required: false
+        },
+
+        options: {
+            type: Object as PropType<MobileApplicationDetailOptionsBag>,
+            required: true
+        },
+
+        selectedTab: {
+            type: String,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:selectedTab", value: string): void;
+        (e: "optionsPatch", value: Partial<MobileApplicationDetailOptionsBag>): void;
+    }>();
+
+    // #region Values
+
+    const internalSelectedTab = useVModelPassthrough(props, "selectedTab", emit);
+
+    const stylesPanelRef = ref<InstanceType<typeof StylesPanel> | null>(null);
+
+    // #endregion
+
+    // #region Computed Values
+
+    /**
+     * The tabs visible to the user. The Deep Links tab is appended only
+     * when deep linking is enabled on the application. Sourced from the
+     * entity bag (not the options bag) so toggling deep linking ON during
+     * Edit and saving makes the tab appear without a page reload.
+     */
+    const visibleTabs = computed((): string[] => {
+        const tabs: string[] = [
+            MobileApplicationTab.Application,
+            MobileApplicationTab.Styles,
+            MobileApplicationTab.Layouts,
+            MobileApplicationTab.Pages
+        ];
+
+        if (props.modelValue?.isDeepLinkingEnabled === true) {
+            tabs.push(MobileApplicationTab.DeepLinks);
+        }
+
+        return tabs;
+    });
+
+    // #endregion
+
+    // #region Functions
+
+    /**
+     * Triggered by the parent block's footer Save button when the Styles
+     * tab is active. Calls the styles panel's exposed save and, on
+     * success, returns to the Application tab so the user lands back on
+     * the main view of the application.
+     */
+    async function saveStyles(): Promise<void> {
+        const ok = await stylesPanelRef.value?.save();
+        if (ok) {
+            internalSelectedTab.value = MobileApplicationTab.Application;
+        }
+    }
+
+    defineExpose({ saveStyles });
+
+    // #endregion
+
+    // #region Event Handlers
+
+    /**
+     * Bubbles a freshly-saved styles bag up to the parent so the option
+     * bag's `styles` snapshot stays current without a full block reload.
+     */
+    function onStylesSaved(updated: MobileApplicationStylesBag): void {
+        emit("optionsPatch", { styles: updated });
+    }
+
+    /**
+     * Updates the selected tab when the user clicks a tab anchor.
+     */
+    function onTabClick(tab: string): void {
+        internalSelectedTab.value = tab;
+    }
+
+    // #endregion
+
+    // #region Watchers
+
+    /**
+     * Reflects the active tab in the "Tab" query string parameter so
+     * child detail pages that navigate back here with `?Tab=Layouts`
+     * (etc.) land on the same tab the user came from. Uses `replaceState`
+     * so flipping between tabs does not grow the browser history.
+     */
+    watch(internalSelectedTab, (current) => {
+        const location = new URL(window.location.href);
+        const existing = location.searchParams.get(PageParameterKey.Tab) ?? "";
+
+        if (existing !== current) {
+            location.searchParams.set(PageParameterKey.Tab, current);
+            history.replaceState(null, "", location.toString());
+        }
+    });
+
+    // #endregion
+</script>

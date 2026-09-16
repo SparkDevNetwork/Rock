@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -21,9 +21,13 @@ using System.Linq;
 using System.Net;
 using System.Web;
 
+using Microsoft.Extensions.DependencyInjection;
+
 using Rock;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
+using Rock.Net;
 using Rock.Web.Cache;
 
 namespace RockWeb
@@ -63,7 +67,7 @@ namespace RockWeb
                     return;
                 }
 
-                RockContext rockContext = new RockContext();
+                RockContext rockContext = RockApp.Current.CreateRockContext();
                 GetCalendarEventFeedArgs calendarProps = ValidateRequestData( httpContext );
 
                 if ( calendarProps == null )
@@ -71,7 +75,7 @@ namespace RockWeb
                     return;
                 }
 
-                calendarProps.ClientDeviceType = InteractionDeviceType.GetClientType( request.UserAgent );
+                calendarProps.ClientDeviceType = RockApp.Current.GetRequiredService<IUserAgentParser>().Parse( request.UserAgent ).ClientType;
 
                 // get the lava template
                 int templateDefinedValueId = 0;
@@ -141,7 +145,7 @@ namespace RockWeb
                 return false;
             }
 
-            RockContext rockContext = new RockContext();
+            RockContext rockContext = RockApp.Current.CreateRockContext();
             EventCalendarService eventCalendarService = new EventCalendarService( rockContext );
             EventCalendar eventCalendar = eventCalendarService.Get( calendarId );
 

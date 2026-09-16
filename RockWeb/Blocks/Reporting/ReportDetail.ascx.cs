@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -36,6 +36,7 @@ using System.Linq;
 using System.Runtime.Serialization;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+using Rock.Configuration;
 
 namespace RockWeb.Blocks.Reporting
 {
@@ -76,7 +77,7 @@ namespace RockWeb.Blocks.Reporting
         "Use Obsidian Components",
         Key = AttributeKey.UseObsidianComponents,
         Description = "Switches the filter components to use Obsidian if supported.",
-        DefaultBooleanValue = false,
+        DefaultBooleanValue = true,
         Category = "Advanced" )]
 
     [Rock.SystemGuid.BlockTypeGuid( "E431DBDF-5C65-45DC-ADC5-157A02045CCD" )]
@@ -102,6 +103,7 @@ namespace RockWeb.Blocks.Reporting
             public const string ParentCategoryId = "ParentCategoryId";
             public const string ReportId = "ReportId";
             public const string DataViewId = "DataViewId";
+            public const string ExpandedIds = "ExpandedIds";
         }
 
         #endregion PageParameterKey
@@ -254,7 +256,7 @@ namespace RockWeb.Blocks.Reporting
 
             if ( pnlEditDetails.Visible )
             {
-                var rockContext = new RockContext();
+                var rockContext = RockApp.Current.CreateRockContext();
 
                 foreach ( var field in ReportFieldsDictionary )
                 {
@@ -327,7 +329,7 @@ namespace RockWeb.Blocks.Reporting
                             var entityTypeId = fieldTypeSelection.FieldSelection.AsIntegerOrNull();
                             if ( entityTypeId.HasValue )
                             {
-                                var dataSelectComponent = this.GetDataSelectComponent( new RockContext(), entityTypeId.Value );
+                                var dataSelectComponent = this.GetDataSelectComponent( RockApp.Current.CreateRockContext(), entityTypeId.Value );
                                 if ( dataSelectComponent != null )
                                 {
                                     if ( dataSelectComponent.SortProperties( string.Empty ) == string.Empty )
@@ -498,7 +500,7 @@ namespace RockWeb.Blocks.Reporting
             ReportFieldType reportFieldType = ReportFieldType.Property;
             string fieldSelection = string.Empty;
             ReportFieldsDictionary.Add( new ReportFieldInfo { Guid = reportFieldGuid, ReportFieldType = reportFieldType, FieldSelection = fieldSelection } );
-            AddFieldPanelWidget( reportFieldGuid, reportFieldType, fieldSelection, true, new RockContext(), true, new ReportField { ShowInGrid = true } );
+            AddFieldPanelWidget( reportFieldGuid, reportFieldType, fieldSelection, true, RockApp.Current.CreateRockContext(), true, new ReportField { ShowInGrid = true } );
             kvSortFields.CustomKeys.Add( reportFieldGuid.ToString(), "(untitled)" );
             vMergeFields.CustomValues.Add( reportFieldGuid.ToString(), "(untitled)" );
             vRecipientFields.CustomValues.Add( reportFieldGuid.ToString(), "(untitled)" );
@@ -540,7 +542,7 @@ namespace RockWeb.Blocks.Reporting
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void btnEdit_Click( object sender, EventArgs e )
         {
-            var item = new ReportService( new RockContext() ).Get( int.Parse( hfReportId.Value ) );
+            var item = new ReportService( RockApp.Current.CreateRockContext() ).Get( int.Parse( hfReportId.Value ) );
             ShowEditDetails( item );
         }
 
@@ -554,7 +556,7 @@ namespace RockWeb.Blocks.Reporting
             // Create a new Report using the current item as a template.
             var id = int.Parse( hfReportId.Value );
 
-            var reportService = new ReportService( new RockContext() );
+            var reportService = new ReportService( RockApp.Current.CreateRockContext() );
 
             var newItem = reportService.GetNewFromTemplate( id );
 
@@ -578,8 +580,8 @@ namespace RockWeb.Blocks.Reporting
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void btnDelete_Click( object sender, EventArgs e )
         {
-            int? categoryId = null;
-            var rockContext = new RockContext();
+            string categoryId = null;
+            var rockContext = RockApp.Current.CreateRockContext();
             var reportService = new ReportService( rockContext );
             var report = reportService.Get( hfReportId.Value.AsInteger() );
 
@@ -594,16 +596,24 @@ namespace RockWeb.Blocks.Reporting
                 }
                 else
                 {
-                    categoryId = report.CategoryId;
+                    if ( report.CategoryId.HasValue )
+                    {
+                        categoryId = CategoryCache.Get( report.CategoryId.Value )?.IdKey;
+                    }
 
                     reportService.Delete( report );
                     rockContext.SaveChanges();
 
-                    // reload page, selecting the deleted data view's parent
+                    // reload page, selecting the deleted report's parent
                     var qryParams = new Dictionary<string, string>();
-                    if ( categoryId != null )
+                    if ( !string.IsNullOrEmpty( categoryId ) )
                     {
-                        qryParams["CategoryId"] = categoryId.ToString();
+                        qryParams["CategoryId"] = categoryId;
+                    }
+
+                    if ( !string.IsNullOrEmpty( PageParameter( PageParameterKey.ExpandedIds ) ) )
+                    {
+                        qryParams["ExpandedIds"] = PageParameter( PageParameterKey.ExpandedIds );
                     }
 
                     NavigateToPage( RockPage.Guid, qryParams );
@@ -631,7 +641,7 @@ namespace RockWeb.Blocks.Reporting
 
             Report report = null;
 
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             ReportService service = new ReportService( rockContext );
             ReportFieldService reportFieldService = new ReportFieldService( rockContext );
 
@@ -785,7 +795,13 @@ namespace RockWeb.Blocks.Reporting
             }
 
             var qryParams = new Dictionary<string, string>();
-            qryParams["ReportId"] = report.Id.ToString();
+            qryParams["ReportId"] = report.IdKey;
+
+            if ( !string.IsNullOrEmpty( PageParameter( PageParameterKey.ExpandedIds ) ) )
+            {
+                qryParams["ExpandedIds"] = PageParameter( PageParameterKey.ExpandedIds );
+            }
+
             NavigateToPage( RockPage.Guid, qryParams );
         }
 
@@ -853,12 +869,18 @@ namespace RockWeb.Blocks.Reporting
 
             if ( reportId == 0 )
             {
-                int? parentCategoryId = GetIdFromPageParameter( PageParameterKey.ParentCategoryId );
-                if ( parentCategoryId.HasValue )
+                var parentCategory = CategoryCache.Get( PageParameter( PageParameterKey.ParentCategoryId ), !PageCache.Layout.Site.DisablePredictableIds );
+                if ( parentCategory != null )
                 {
                     // Cancelling on Add, and we know the parentCategoryId, so we are probably in treeview mode, so navigate to the current page
                     var qryParams = new Dictionary<string, string>();
-                    qryParams["CategoryId"] = parentCategoryId.ToString();
+                    qryParams["CategoryId"] = parentCategory.IdKey;
+
+                    if ( !string.IsNullOrEmpty( PageParameter( PageParameterKey.ExpandedIds ) ) )
+                    {
+                        qryParams["ExpandedIds"] = PageParameter( PageParameterKey.ExpandedIds );
+                    }
+
                     NavigateToPage( RockPage.Guid, qryParams );
                 }
                 else
@@ -950,7 +972,7 @@ namespace RockWeb.Blocks.Reporting
         /// </summary>
         private void LoadDropDowns()
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             etpEntityType.EntityTypes = new EntityTypeService( rockContext )
                 .GetReportableEntities( this.CurrentPerson )
                 .OrderBy( t => t.FriendlyName ).ToList();
@@ -980,7 +1002,7 @@ namespace RockWeb.Blocks.Reporting
         private void LoadFieldsDropDown( RockDropDownList ddlFields )
         {
             int? entityTypeId = etpEntityType.SelectedEntityTypeId;
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
 
             if ( entityTypeId.HasValue )
             {
@@ -1118,7 +1140,7 @@ namespace RockWeb.Blocks.Reporting
         {
             pnlDetails.Visible = false;
 
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var reportService = new ReportService( rockContext );
             Report report = null;
 
@@ -1300,7 +1322,7 @@ namespace RockWeb.Blocks.Reporting
             tbDescription.Text = report.Description;
             cpCategory.SetValue( report.CategoryId );
 
-            RockContext rockContext = new RockContext();
+            RockContext rockContext = RockApp.Current.CreateRockContext();
 
             var dataViewId = report.DataViewId;
             var entityTypeId = report.EntityTypeId;
@@ -1684,7 +1706,7 @@ namespace RockWeb.Blocks.Reporting
                 fieldSelection = fieldSelectionValueParts[1];
             }
 
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
 
             Guid reportFieldGuid = new Guid( panelWidget.ID.Replace( "reportFieldWidget_", string.Empty ) );
 
@@ -1928,7 +1950,7 @@ namespace RockWeb.Blocks.Reporting
             var filterEntityType = EntityTypeCache.Get( componentGuid );
             var component = DataSelectContainer.GetComponent( filterEntityType?.GetEntityType()?.FullName );
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var result = component?.ExecuteComponentRequest( request, securityGrant, rockContext, RequestContext );
 

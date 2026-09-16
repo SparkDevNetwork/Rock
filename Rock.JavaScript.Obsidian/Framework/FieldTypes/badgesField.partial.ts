@@ -23,7 +23,7 @@ import { ComparisonType } from "@Obsidian/Enums/Reporting/comparisonType";
 import { containsComparisonTypes } from "@Obsidian/Core/Reporting/comparisonType";
 import { getStandardFilterComponent } from "./utils";
 
-export const enum ConfigurationValueKey {
+export const enum ConfigurationKey {
     ClientValues = "values",
     RepeatColumns = "repeatColumns",
     EnhancedSelection = "enhancedselection"
@@ -51,7 +51,7 @@ export class BadgesFieldType extends FieldTypeBase {
         }
 
         try {
-            const values = JSON.parse(configurationValues[ConfigurationValueKey.ClientValues] ?? "[]") as ListItemBag[];
+            const values = JSON.parse(configurationValues[ConfigurationKey.ClientValues] ?? "[]") as ListItemBag[];
             const userValues = value.split(",");
             const selectedValues = values.filter(o => userValues.includes(o.value ?? ""));
 

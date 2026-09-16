@@ -33,7 +33,7 @@
      * (/script)
      */
     import { ref, watch } from "vue";
-    import { usePluginHelper } from "./utils.partial";
+    import { usePluginHelper } from "../Internal/NoteEditor/utils";
     import { Editor, EditorEvent, EventDispatcher, Events } from "@Obsidian/Libs/tinymce";
     import { newGuid } from "@Obsidian/Utility/guid";
 

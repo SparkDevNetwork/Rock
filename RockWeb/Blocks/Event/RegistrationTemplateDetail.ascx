@@ -105,6 +105,17 @@
                                 </div>
                             </div>
                         </div>
+                        <div class="row">
+                            <div class="col-xs-12">
+                                <Rock:RockCheckBox ID="cbPreventDuplicateRegistrants" runat="server" Label="Prevent Duplicate Registrants" Help="When enabled, this prevents the same database record (same Person ID) from being added to the event multiple times. This setting does not resolve or detect separate records that may represent the same individual." />
+                                <div ID="divPreventDuplicateRegistrantsWarning" runat="server">
+                                    <Rock:NotificationBox ID="nbPreventDuplicateRegistrantsWarning" runat="server" Visible="true" NotificationBoxType="Warning">
+                                        <div><strong>Before enabling duplicate detection:</strong></div>
+                                        This feature can unintentionally expose attendee information. If someone knows a registrant's name plus their email, phone, or birthdate, they may be able to determine that person is attending this event. Consider whether your event requires this level of privacy protection before proceeding.
+                                    </Rock:NotificationBox>
+                                </div>
+                            </div>
+                        </div>
 
                         <hr />
 
@@ -158,6 +169,8 @@
                                         Help="Determines if individuals should be able to pay their registration costs in multiple, scheduled installments. Not all payment gateways support this feature." />
                                     <Rock:RockCheckBoxList ID="cblSelectablePaymentFrequencies" runat="server" Label="Selectable Payment Frequencies" Visible="false"
                                         Help="The payment frequencies that the individual can select from." RepeatDirection="Horizontal" />
+                                    <Rock:RockCheckBox ID="cbRequireFullPaymentOrPaymentPlan" runat="server" Label="Require Full Payment or Payment Plan" Visible="false"
+                                        Help="When enabled, registrants must either pay the registration in full or set up a valid payment plan that covers the remaining balance before they can save the registration. This setting takes precedence over other payment settings (such as Minimum Initial Payment) that would otherwise allow no or partial payment without a plan." />
                                 </div>
                             </div>
                             <div class="row">
@@ -185,16 +198,8 @@
                                             not be allowed to change any of the registrant information and attributes." />
                             </div>
                             <div class="col-md-6">
-                                <div class="row">
-                                    <div class="col-xs-6">
-                                        <Rock:RockDropDownList ID="ddlSignatureDocumentTemplate" runat="server" Label="Required Signature Document" AutoPostBack="true"
-                                            Help="A document that needs to be signed for registrations of this type." OnSelectedIndexChanged="ddlSignatureDocumentTemplate_SelectedIndexChanged" />
-                                    </div>
-                                    <div class="col-xs-6">
-                                        <Rock:RockCheckBox ID="cbDisplayInLine" runat="server" Label="In-Line Signature" Visible="false"
-                                            Help="When registering for this type of event, should the Required Signature Document be displayed during the registration steps? If not, a request will be sent after the registration is completed." />
-                                    </div>
-                                </div>
+                                <Rock:RockDropDownList ID="ddlSignatureDocumentTemplate" runat="server" Label="Required Signature Document" AutoPostBack="true"
+                                    Help="A document that needs to be signed for registrations of this type." OnSelectedIndexChanged="ddlSignatureDocumentTemplate_SelectedIndexChanged" />
                             </div>
                         </div>
                     </Rock:PanelWidget>
@@ -207,6 +212,65 @@
                         <div class="pull-right">
                             <asp:LinkButton ID="lbAddForm" runat="server" CssClass="btn btn-action btn-xs" OnClick="lbAddForm_Click" CausesValidation="false"><i class="ti ti-plus"></i> Add Form</asp:LinkButton>
                         </div>
+                    </Rock:PanelWidget>
+
+                    <%-- Registrant Eligibility --%>
+                    <Rock:PanelWidget ID="pwRegistrantEligibility" runat="server" Title="Registrant Eligibility">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <Rock:NumberRangeEditor ID="nreEligibilityAgeRange" runat="server" Label="Age Range" Help="Enter the age range allowed to register. You may use decimal values for more precise limits, such as 5.5." NumberType="Double" />
+                                <Rock:RockDropDownList ID="ddlEligibilityAgeClassification" runat="server" Label="Age Classification" Help="Limit registration to individuals who match the selected age classification." />
+                            </div>
+                            <div class="col-md-6">
+                                <Rock:NotificationBox ID="nbEligibilityAgeWarning" runat="server" CssClass="d-none" Visible="true" NotificationBoxType="Warning">
+                                    <div><strong>Warning</strong></div>
+                                    To ensure this filter works correctly, include a Birthdate Person Field in your form.
+                                </Rock:NotificationBox>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="control-label">Grade Range<Rock:HelpBlock ID="hbEligibilityGradeRange" runat="server" Text="Define the eligible grade range. The starting and ending grades are included in the range." /></label>
+                                    <div class="control-wrapper">
+                                        <div class="form-control-group">
+                                            <Rock:RockDropDownList ID="ddlEligibilityGradeOffsetMax" runat="server" CssClass="input-width-md" />
+                                            <span class="to"> to </span>
+                                            <Rock:RockDropDownList ID="ddlEligibilityGradeOffsetMin" runat="server" CssClass="input-width-md" />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <Rock:NotificationBox ID="nbEligibilityGradeWarning" runat="server" CssClass="d-none" Visible="true" NotificationBoxType="Warning">
+                                    <div><strong>Warning</strong></div>
+                                    To ensure this filter works correctly, include a Grade Person Field in your form.
+                                </Rock:NotificationBox>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <Rock:RockDropDownList ID="ddlEligibilityGender" runat="server" Label="Gender" Help="Select a single gender for eligibility. Only individuals who match this selection may register." />
+                            </div>
+                            <div class="col-md-6">
+                                <Rock:NotificationBox ID="nbEligibilityGenderWarning" runat="server" CssClass="d-none" Visible="true" NotificationBoxType="Warning">
+                                    <div><strong>Warning</strong></div>
+                                    To ensure this filter works correctly, include a Gender Person Field in your form.
+                                </Rock:NotificationBox>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <Rock:DataViewItemPicker ID="dvpEligibilityDataView" runat="server" Label="Data View" Help="Limit registration to individuals contained within the selected data view. This is an advanced configuration option and should be used with caution to avoid unintentionally preventing eligible individuals from registering." />
+                            </div>
+                        </div>
+
+                        <asp:HiddenField ID="hfHasGradeField" runat="server" />
+                        <asp:HiddenField ID="hfHasGenderField" runat="server" />
+                        <asp:HiddenField ID="hfHasBirthDateField" runat="server" />
                     </Rock:PanelWidget>
 
                     <%-- Registration Attributes --%>
@@ -292,6 +356,12 @@
                                 <Rock:RockTextBox ID="tbFeeTerm" runat="server" Label="Fee Term" Placeholder="Additional Options" MaxLength="100" />
                                 <Rock:RockTextBox ID="tbDiscountCodeTerm" runat="server" Label="Discount Code Term" Placeholder="Discount Code" MaxLength="100" />
                                 <Rock:RockTextBox ID="tbRegistrationAttributeTitleEnd" runat="server" Label="Registration Attribute Title - End" Placeholder="Registration Information" Help="The section title for attributes that are collected at the end of the registration entry process." MaxLength="200" />
+                            </div>
+                        </div>
+                        <div id="divFullPaymentOrPaymentPlanRequiredMessageRow" runat="server" class="row">
+                            <div class="col-md-12">
+                                <Rock:RockTextBox ID="tbFullPaymentOrPaymentPlanRequiredMessage" runat="server" Label="Full Payment or Payment Plan Required Message" TextMode="MultiLine" Rows="3"
+                                    Help="The message displayed to a registrant on the Registration Entry block when the registration cannot be saved because it is not paid in full and does not have a valid payment plan that covers the remaining balance. The following merge fields are available: 'RegistrationInstance' and 'Registration'. Note that for new registrations, 'Registration' refers to a transient unsaved object, so avoid referencing 'Registration.Id', 'Registration.Guid', or 'Registration.Payments'. <span class='tip tip-lava'></span>" />
                             </div>
                         </div>
                         <div class="row">
@@ -699,12 +769,118 @@
                         update: function (event, ui) {
                             {
                                 var postbackArg = 're-order-form:' + ui.item.attr('data-key') + ';' + ui.item.index();
-                                window.location = "javascript:__doPostBack('<%=upDetail.ClientID %>', '" +  postbackArg + "')";
+                                window.location = "javascript:__doPostBack('<%=upDetail.ClientID %>', '" + postbackArg + "')";
                             }
                         }
                     });
                 }
 
+                // Prevention
+                var $preventDuplicateRegistrants = $("#<%=cbPreventDuplicateRegistrants.ClientID %>");
+                var $divPreventDuplicateRegistrantsWarning = $("#<%=divPreventDuplicateRegistrantsWarning.ClientID %>");
+
+                $preventDuplicateRegistrants.on("change", function (event) {
+                    if (event.target.checked) {
+                        $divPreventDuplicateRegistrantsWarning.slideDown();
+                    }
+                    else {
+                        $divPreventDuplicateRegistrantsWarning.slideUp();
+                    }
+                });
+
+                // Eligibility
+                var $eligibilityAgeRangeLower = $("#<%=nreEligibilityAgeRange.ClientID %> .js-number-range-lower");
+                var $eligibilityAgeRangeUpper = $("#<%=nreEligibilityAgeRange.ClientID %> .js-number-range-upper");
+                var $eligibilityAgeClassification = $("#<%=ddlEligibilityAgeClassification.ClientID %>");
+                var $eligibilityHasBirthDate = $("#<%=hfHasBirthDateField.ClientID %>");
+                var $eligibilityAgeWarning = $("#<%=nbEligibilityAgeWarning.ClientID %>");
+
+                $($eligibilityAgeClassification)
+                    .add($eligibilityAgeRangeUpper)
+                    .add($eligibilityAgeRangeLower)
+                    .on("change", function (event) {
+                        var values = [$eligibilityAgeRangeLower.val(), $eligibilityAgeRangeUpper.val(), $eligibilityAgeClassification.val()];
+                        var hasAgeValue = values.some(v => !!v);
+                        var hasBirthDateField = $eligibilityHasBirthDate.val() === "<%=true.ToString() %>";
+                        <%
+                            // If this logic changes (i.e., adding/removing these specific CSS classes)
+                            // then the same has to be done in the JS in the RegistrationTemplateDetail.ascx file.
+                        %>
+                        if (hasAgeValue && !hasBirthDateField) {
+                            $eligibilityAgeWarning.removeClass("d-none").addClass("d-block");
+                        }
+                        else {
+                            $eligibilityAgeWarning.removeClass("d-block").addClass("d-none");
+                        }
+                    });
+
+                var $eligibilityGradeOffsetMax = $("#<%=ddlEligibilityGradeOffsetMax.ClientID %>");
+                var $eligibilityGradeOffsetMin = $("#<%=ddlEligibilityGradeOffsetMin.ClientID %>");
+                var $eligibilityHasGradeField = $("#<%=hfHasGradeField.ClientID %>");
+                var $eligibilityGradeWarning = $("#<%=nbEligibilityGradeWarning.ClientID %>");
+
+                $($eligibilityGradeOffsetMax)
+                    .add($eligibilityGradeOffsetMin)
+                    .on("change", function (event) {
+                        var values = [$eligibilityGradeOffsetMax.val(), $eligibilityGradeOffsetMin.val()];
+                        var hasEligibilityValue = values.some(v => !!v);
+                        var hasRequiredField = $eligibilityHasGradeField.val() === "<%=true.ToString() %>";
+
+                        <%
+                            // If this logic changes (i.e., adding/removing these specific CSS classes)
+                            // then the same has to be done in the JS in the RegistrationTemplateDetail.ascx file.
+                        %>
+                        if (hasEligibilityValue && !hasRequiredField) {
+                            $eligibilityGradeWarning.removeClass("d-none").addClass("d-block");
+                        }
+                        else {
+                            $eligibilityGradeWarning.removeClass("d-block").addClass("d-none");
+                        }
+                    });
+
+                var $eligibilityGender = $("#<%=ddlEligibilityGender.ClientID %>");
+                var $eligibilityHasGenderField = $("#<%=hfHasGenderField.ClientID %>");
+                var $eligibilityGenderWarning = $("#<%=nbEligibilityGenderWarning.ClientID %>");
+
+                $eligibilityGender
+                    .on("change", function (event) {
+                        var values = [$eligibilityGender.val()];
+                        var hasEligibilityValue = values.some(v => !!v);
+                        var hasRequiredField = $eligibilityHasGenderField.val() === "<%=true.ToString() %>";
+
+                        <%
+                            // If this logic changes (i.e., adding/removing these specific CSS classes)
+                            // then the same has to be done in the JS in the RegistrationTemplateDetail.ascx file.
+                        %>
+                        if (hasEligibilityValue && !hasRequiredField) {
+                            $eligibilityGenderWarning.removeClass("d-none").addClass("d-block");
+                        }
+                        else {
+                            $eligibilityGenderWarning.removeClass("d-block").addClass("d-none");
+                        }
+                    });
+
+                // Require Full Payment or Payment Plan: cross-panel message field visibility.
+                // Toggling cbRequireFullPaymentOrPaymentPlan (on the Set Cost On Template panel) shows or hides
+                // tbFullPaymentOrPaymentPlanRequiredMessage (on the Terms/Text panel) without a postback.
+                // When the boolean is enabled and the message field is empty, pre-populate with the editor
+                // default below. This default is editor-only; the runtime hardcoded fallback used when the
+                // persisted message is blank lives in Rock.Blocks/Event/RegistrationEntry.cs.
+                var $requireFullPaymentOrPaymentPlan = $("#<%=cbRequireFullPaymentOrPaymentPlan.ClientID %>");
+                var $fullPaymentOrPaymentPlanRequiredMessage = $("#<%=tbFullPaymentOrPaymentPlanRequiredMessage.ClientID %>");
+                var $fullPaymentOrPaymentPlanRequiredMessageRow = $("#<%=divFullPaymentOrPaymentPlanRequiredMessageRow.ClientID %>");
+                var defaultFullPaymentOrPaymentPlanRequiredMessage = "To complete your registration, please either pay the full amount or set up a payment plan.";
+
+                $requireFullPaymentOrPaymentPlan.on("change", function (event) {
+                    if (event.target.checked) {
+                        if (!$fullPaymentOrPaymentPlanRequiredMessage.val()) {
+                            $fullPaymentOrPaymentPlanRequiredMessage.val(defaultFullPaymentOrPaymentPlanRequiredMessage);
+                        }
+                        $fullPaymentOrPaymentPlanRequiredMessageRow.slideDown();
+                    } else {
+                        $fullPaymentOrPaymentPlanRequiredMessageRow.slideUp();
+                    }
+                });
             });
         </script>
     </ContentTemplate>

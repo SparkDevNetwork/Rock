@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -24,6 +24,7 @@ using System.Text.RegularExpressions;
 using System.Web;
 
 using Rock.Common.Mobile;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -130,7 +131,7 @@ namespace Rock.Web.HttpModules
             // The route falls back to a page, so let's build the route to that page 
             else
             {
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     var pageService = new PageService( rockContext );
 

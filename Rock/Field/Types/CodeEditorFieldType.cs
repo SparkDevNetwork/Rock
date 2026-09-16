@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -20,9 +20,12 @@ using System.ComponentModel;
 using System.Reflection;
 #if WEBFORMS
 using System.Web.UI;
+
 #endif
 using Rock.Attribute;
+using Rock.Enums.Security;
 using Rock.Reporting;
+using Rock.Security;
 using Rock.ViewModels.Utility;
 using Rock.Web.UI.Controls;
 
@@ -113,6 +116,12 @@ namespace Rock.Field.Types
 
         #region Edit Controls
 
+        /// <inheritdoc/>
+        public override StringValidationRule GetValidationRules( Dictionary<string, string> privateConfigurationValues )
+        {
+            return StringValueValidator.GetEffectiveRules( StringValidationProfile.Unrestricted );
+        }
+
         #endregion
 
         #region Formatting
@@ -149,6 +158,20 @@ namespace Rock.Field.Types
             {
                 return ComparisonHelper.StringFilterComparisonTypes;
             }
+        }
+
+        #endregion
+
+        #region Value Hinting
+
+        /// <inheritdoc/>
+        internal override FieldTypeHints GetFieldHints( Dictionary<string, string> privateConfigurationValues )
+        {
+            return new FieldTypeHints
+            {
+                IsCompleteList = false,
+                ValueFormat = "Source text, stored exactly as supplied. It is never executed, rendered or validated by this field type, whatever language the editor is set to."
+            };
         }
 
         #endregion

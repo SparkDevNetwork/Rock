@@ -37,6 +37,12 @@ export type ThemeFieldBag = {
     /** The child fields of this field. Only used by panel fields. */
     fields?: ThemeFieldBag[] | null;
 
+    /**
+     * Determines if the "Reset to default" button should be hidden for
+     * this field in the theme editor UI.
+     */
+    hideReset: boolean;
+
     /** Specifies the input width of the text input box. */
     inputWidth?: string | null;
 

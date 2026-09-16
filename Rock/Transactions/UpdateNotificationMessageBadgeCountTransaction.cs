@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -18,6 +18,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 
@@ -53,7 +54,7 @@ namespace Rock.Transactions
             // This gives us a way to lookup the badge counts and then
             // know what devices to notify.
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var personAliasService = new PersonAliasService( rockContext );
 

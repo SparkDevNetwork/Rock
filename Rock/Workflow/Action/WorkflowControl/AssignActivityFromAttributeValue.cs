@@ -35,8 +35,11 @@ namespace Rock.Workflow.Action
     [Export(typeof(ActionComponent))]
     [ExportMetadata( "ComponentName", "Activity Assign from Attribute Value" )]
 
-    [WorkflowAttribute("Attribute", "The person or group attribute value to assign this activity to.", true, "", "", 0, null,
-        new string[] { "Rock.Field.Types.PersonFieldType", "Rock.Field.Types.GroupFieldType" } )]
+    [WorkflowAttribute("Attribute",
+        Description = "The person or group attribute value to assign this activity to.",
+        IsRequired = true,
+        Order = 0,
+        FieldTypeClassNames = new string[] { "Rock.Field.Types.PersonFieldType", "Rock.Field.Types.GroupFieldType" } )]
     [Rock.SystemGuid.EntityTypeGuid( "F100A31F-E93A-4C7A-9E55-0FAF41A101C4")]
     public class AssignActivityFromAttributeValue : ActionComponent
     {

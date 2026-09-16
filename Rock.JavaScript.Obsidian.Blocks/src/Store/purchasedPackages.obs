@@ -1,0 +1,172 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Panel type="block"
+           title="Purchased Packages"
+           titleIconCssClass="ti ti-gift"
+           v-model:quickFilterValue="searchText">
+        <template #headerActions>
+            <RockButton :btnType="BtnType.Default"
+                        :btnSize="BtnSize.ExtraSmall"
+                        :isLoading="isRevoking"
+                        @click="onRevokeStoreKey">
+                Revoke Store Key
+            </RockButton>
+        </template>
+
+        <!-- Revoke failure -->
+        <NotificationBox v-if="revokeErrorMessage" alertType="danger" :dismissible="true" @dismiss="revokeErrorMessage = ''">
+            {{ revokeErrorMessage }}
+        </NotificationBox>
+
+        <!-- Store unavailable -->
+        <NotificationBox v-if="storeErrorMessage" alertType="warning">
+            <h4>Store Currently Not Available</h4>
+            <p>We're sorry, the Rock Store is currently not available. Check back soon!</p>
+            <small><em>{{ storeErrorMessage }}</em></small>
+        </NotificationBox>
+
+        <template v-else>
+            <!-- No packages purchased for the organization. -->
+            <NotificationBox v-if="packages.length === 0" alertType="warning">
+                No packages have been purchased for this organization.
+            </NotificationBox>
+
+            <!-- Packages exist but none match the current search text. -->
+            <NotificationBox v-else-if="filteredPackages.length === 0" alertType="info">
+                No packages match your search.
+            </NotificationBox>
+
+            <div class="purchasedpackage-list">
+                <PurchasedPackageCard v-for="storePackage in filteredPackages"
+                                      :key="storePackage.rowKey"
+                                      :storePackage="storePackage" />
+            </div>
+        </template>
+    </Panel>
+</template>
+
+<style scoped>
+.purchasedpackage-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xlarge);
+}
+</style>
+
+<script setup lang="ts">
+    import { computed, onMounted, ref } from "vue";
+    import Panel from "@Obsidian/Controls/panel.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import { BtnType } from "@Obsidian/Enums/Controls/btnType";
+    import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
+    import { useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
+    import { PurchasedPackagesInitializationBox } from "@Obsidian/ViewModels/Blocks/Store/PurchasedPackages/purchasedPackagesInitializationBox";
+    import { PurchasedPackageBag } from "@Obsidian/ViewModels/Blocks/Store/PurchasedPackages/purchasedPackageBag";
+    import PurchasedPackageCard from "./PurchasedPackages/purchasedPackageCard.partial.obs";
+
+    // #region Types
+
+    // A purchased package bag with a unique row key for use in v-for loops. Since multiple purchase records exist for duplicate packages.
+    type KeyedPurchasedPackageBag = PurchasedPackageBag & {
+        rowKey: number;
+    };
+
+    // #endregion Types
+
+    // #region Values
+
+    const config = useConfigurationValues<PurchasedPackagesInitializationBox>();
+    const invokeBlockAction = useInvokeBlockAction();
+    const reloadBlock = useReloadBlock();
+
+    const isRevoking = ref(false);
+    const revokeErrorMessage = ref("");
+
+    // Binding this (rather than leaving it undefined) is what makes the Panel's
+    // quick filter search box appear in the header.
+    const searchText = ref("");
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    const storeErrorMessage = computed((): string => config.storeErrorMessage ?? "");
+
+    const packages = computed((): KeyedPurchasedPackageBag[] => {
+        return (config.purchasedPackages ?? []).map((storePackage, index) => ({
+            ...storePackage,
+            rowKey: index
+        }));
+    });
+
+
+    const filteredPackages = computed((): KeyedPurchasedPackageBag[] => {
+        const search = searchText.value.trim().toLowerCase();
+
+        if (!search) {
+            return packages.value;
+        }
+
+        return packages.value
+            .filter(storePackage => (storePackage.name?.toLowerCase() ?? "").includes(search))
+            .sort((a, b) => {
+                const aName = a.name?.toLowerCase() ?? "";
+                const bName = b.name?.toLowerCase() ?? "";
+
+                const aMatchIndex = aName.indexOf(search);
+                const bMatchIndex = bName.indexOf(search);
+
+                if (aMatchIndex !== bMatchIndex) {
+                    return aMatchIndex - bMatchIndex;
+                }
+
+                if (aName.length !== bName.length) {
+                    return aName.length - bName.length;
+                }
+
+                return a.packageId - b.packageId;
+            });
+    });
+
+    // #endregion Computed Values
+
+    // #region Event Handlers
+
+    /**
+     * Revokes the organization's store key, then reloads the block. On failure
+     * the error is surfaced and the block is left in its current state.
+     */
+    async function onRevokeStoreKey(): Promise<void> {
+        isRevoking.value = true;
+        revokeErrorMessage.value = "";
+
+        try {
+            const result = await invokeBlockAction("RevokeStoreKey");
+
+            if (!result.isSuccess) {
+                revokeErrorMessage.value = result.errorMessage || "Unable to revoke the store key.";
+                return;
+            }
+
+            reloadBlock();
+        }
+        finally {
+            isRevoking.value = false;
+        }
+    }
+
+    // #endregion Event Handlers
+
+    // #region Lifecycle Hooks
+
+    onMounted(() => {
+        if (!config.isStoreConfigured) {
+            if (config.linkOrganizationPageUrl) {
+                window.location.href = config.linkOrganizationPageUrl;
+            }
+        }
+    });
+
+    // #endregion Lifecycle Hooks
+</script>

@@ -44,6 +44,7 @@
                             <p class="text-muted text-wrap">Upload and configure file processing settings.</p>
                             <FileUploader
                                           v-model="importedFile"
+                                          :binaryFileTypeGuid="BinaryFiletype.PersonDocument"
                                           label="TrueNCOA Results"
                                           help="The results file from TrueNCOA."
                                           rules="required"
@@ -95,6 +96,7 @@
     import CheckBox from "@Obsidian/Controls/checkBox.obs";
     import DefinedValuePicker from "@Obsidian/Controls/definedValuePicker.obs";
     import { DefinedType } from "@Obsidian/SystemGuids/definedType";
+    import { BinaryFiletype } from "@Obsidian/SystemGuids/binaryFiletype";
     import { BtnType } from "@Obsidian/Enums/Controls/btnType";
     import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
     import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";

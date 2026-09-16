@@ -34,16 +34,33 @@ namespace Rock.Workflow.Action
     [Export( typeof( ActionComponent ) )]
     [ExportMetadata( "ComponentName", "Connection Request Activity Add" )]
 
-    [WorkflowAttribute( "Connection Request Attribute", "The attribute that contains the connection request to add an activity to.", true, "", "", 0, null,
-        new string[] { "Rock.Field.Types.ConnectionRequestFieldType" } )]
-    [WorkflowAttribute( "Connection Activity Type Attribute", "The attribute that contains the activity type to add.", true, "", "", 1, null,
-        new string[] { "Rock.Field.Types.ConnectionActivityTypeFieldType" } )]
-    [WorkflowTextOrAttribute( "Note", "Attribute Value", "The note or an attribute that contains the note for the new activity. <span class='tip tip-lava'></span>", false, "", "", 2, "Note",
-        new string[] { "Rock.Field.Types.TextFieldType" } )]
-    [WorkflowAttribute( "Person Attribute", "An optional Person attribute that contains the person who is adding the activity.", false, "", "", 3, null,
-        new string[] { "Rock.Field.Types.PersonFieldType" } )]
-    [WorkflowAttribute( "Connection Request Activity Attribute", "An optional connection request activity attribute to store the request activity that is created.", false, "", "", 4, null,
-        new string[] { "Rock.Field.Types.ConnectionRequestActivityFieldType" } )]
+    [WorkflowAttribute( "Connection Request Attribute",
+        Description = "The attribute that contains the connection request to add an activity to.",
+        IsRequired = true,
+        Order = 0,
+        FieldTypeClassNames = new string[] { "Rock.Field.Types.ConnectionRequestFieldType" } )]
+    [WorkflowAttribute( "Connection Activity Type Attribute",
+        Description = "The attribute that contains the activity type to add.",
+        IsRequired = true,
+        Order = 1,
+        FieldTypeClassNames = new string[] { "Rock.Field.Types.ConnectionActivityTypeFieldType" } )]
+    [WorkflowTextOrAttribute( "Note",
+        "Attribute Value",
+        Description = "The note or an attribute that contains the note for the new activity. <span class='tip tip-lava'></span>",
+        IsRequired = false,
+        Order = 2,
+        Key = "Note",
+        FieldTypeClassNames = new string[] { "Rock.Field.Types.TextFieldType" } )]
+    [WorkflowAttribute( "Person Attribute",
+        Description = "An optional Person attribute that contains the person who is adding the activity.",
+        IsRequired = false,
+        Order = 3,
+        FieldTypeClassNames = new string[] { "Rock.Field.Types.PersonFieldType" } )]
+    [WorkflowAttribute( "Connection Request Activity Attribute",
+        Description = "An optional connection request activity attribute to store the request activity that is created.",
+        IsRequired = false,
+        Order = 4,
+        FieldTypeClassNames = new string[] { "Rock.Field.Types.ConnectionRequestActivityFieldType" } )]
 
     [Rock.SystemGuid.EntityTypeGuid( "A73CDF27-1B05-45F4-A436-EE6462DB01B5")]
     public class AddConnectionRequestActivity : ActionComponent

@@ -9,11 +9,11 @@
                                    v-model:campusGuid="campusGuid"
                                    :selectableAccountGuids="selectableAccountGuids"
                                    :accountAmountEntryMode="multiple ? 'multipleAccounts' : 'singleAccount'"
+                                   :alwaysHideCampus="alwaysHideCampus"
                                    :hideCampusIfKnown="hideCampusIfKnown"
                                    :orderBySelectableAccountsIndex="orderBySelectableAccountsIndex"
                                    :includeInactiveCampuses="includeInactiveCampuses"
-                                   :accountHeaderTemplate="accountHeaderTemplate"
-                                   :disableAccountCampusMappingLogic="disableAccountCampusMappingLogic" />
+                                   :accountHeaderTemplate="accountHeaderTemplate" />
 
         <template #settings>
             <div class="row">
@@ -21,22 +21,22 @@
                     <CheckBox label="Use Multiple Account Entry" v-model="multiple" help="If this is checked, we set <code>accountAmountEntryMode</code> prop to 'multipleAccounts' instead of the default 'singleAccount'. This allows you to enter amounts for every given account instead of having one amount that is entered for the chosen account." />
                 </div>
                 <div class="col-md-3">
-                    <CheckBox label="Hide Campus Picker if Known" v-model="hideCampusIfKnown" help="If this option is set and we pass in a campusGuid, then that campus will be used and the picker will be hidden." />
-                </div>
-                <div class="col-md-3">
-                    <CheckBox label="Order Accounts as Passed In" v-model="orderBySelectableAccountsIndex" help="By default the accounts are in an order as determined by the database, but if this option is passed, the accounts will appear in the same order as they were passed in" />
-                </div>
-                <div class="col-md-3">
-                    <CheckBox label="Include Inactive Campuses" v-model="includeInactiveCampuses" />
+                    <CheckBox label="Order Accounts as Passed In" v-model="orderBySelectableAccountsIndex" help="By default the accounts are in an order as determined by the database, but if this option is passed, the accounts will appear in the same order as they were passed in." />
                 </div>
             </div>
             <div class="row">
                 <div class="col-md-3">
-                    <CheckBox label="Disable Account-Campus Mapping Logic" v-model="disableAccountCampusMappingLogic" />
+                    <CheckBox label="Always Hide Campus Picker" v-model="alwaysHideCampus" help="If this option is set, the campus picker is never shown. Set it when the consumer manages campus selection itself (e.g., in a separate picker)." />
                 </div>
                 <div class="col-md-3">
-                    <TextBox label="Account Label Template" v-model="accountHeaderTemplate" help="Use Lava to specify how the account names should appear above the currency boxes (multi-account mode) or in the dropdown (single account mode). <code>{{ Account.PublicName }}</code> is the default" />
+                    <CheckBox label="Hide Campus Picker if Known" v-model="hideCampusIfKnown" help="If this option is set and we pass in a campusGuid, then that campus will be used and the picker will be hidden." />
                 </div>
+                <div class="col-md-3">
+                    <CheckBox label="Include Inactive Campuses" v-model="includeInactiveCampuses" help="If this option is set, inactive campuses will be included in the list of options." />
+                </div>
+                <!-- <div class="col-md-3">
+                    <TextBox label="Account Label Template" v-model="accountHeaderTemplate" help="Use Lava to specify how the account names should appear above the currency boxes (multi-account mode) or in the dropdown (single account mode). <code>{{ Account.PublicName }}</code> is the default" />
+                </div> -->
             </div>
         </template>
     </GalleryAndResult>
@@ -54,10 +54,10 @@
     const multiple = ref(false);
     const value = ref([]);
     const campusGuid = ref<Guid | null>(null);
+    const alwaysHideCampus = ref(false);
     const hideCampusIfKnown = ref(false);
     const orderBySelectableAccountsIndex = ref(false);
     const includeInactiveCampuses = ref(false);
-    const disableAccountCampusMappingLogic = ref(false);
     const accountHeaderTemplate = ref("{{ Account.PublicName }}");
 
     const selectableAccountGuids: Guid[] = [
@@ -68,6 +68,6 @@
 
     const importCode = getSfcControlImportPath("campusAccountAmountPicker");
     const exampleCode = computed(() => `<CampusAccountAmountPicker v-model="value" v-model:campusGuid="campusGuid"
-    :selectableAccountGuids="['${selectableAccountGuids.join("','")}']"\n    accountAmountEntryMode="${multiple.value ? "multipleAccounts" : "singleAccount"}"${hideCampusIfKnown.value ? `\n    hideCampusIfKnown` : ""}${orderBySelectableAccountsIndex.value ? `\n    orderBySelectableAccountsIndex` : ""}${includeInactiveCampuses.value ? `\n    includeInactiveCampuses` : ""}${accountHeaderTemplate.value !== "{{ Account.PublicName }}" ? `\n    accountHeaderTemplate="${accountHeaderTemplate.value}"` : ""}${disableAccountCampusMappingLogic.value ? `\n    disableAccountCampusMappingLogic` : ""} />`);
+    :selectableAccountGuids="['${selectableAccountGuids.join("','")}']"\n    accountAmountEntryMode="${multiple.value ? "multipleAccounts" : "singleAccount"}"${alwaysHideCampus.value ? `\n    alwaysHideCampus` : ""}${hideCampusIfKnown.value ? `\n    hideCampusIfKnown` : ""}${orderBySelectableAccountsIndex.value ? `\n    orderBySelectableAccountsIndex` : ""}${includeInactiveCampuses.value ? `\n    includeInactiveCampuses` : ""}${accountHeaderTemplate.value !== "{{ Account.PublicName }}" ? `\n    accountHeaderTemplate="${accountHeaderTemplate.value}"` : ""} />`);
 
 </script>

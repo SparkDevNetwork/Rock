@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -84,27 +84,6 @@ namespace Rock.Lava.Shortcodes
         /// </summary>
         public LavaShortcodeMetadataAttribute()
         {
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="LavaShortcodeMetadataAttribute" /> class.
-        /// </summary>
-        /// <param name="name">The name.</param>
-        /// <param name="tagName">Name of the tag.</param>
-        /// <param name="description">The description.</param>
-        /// <param name="documentation">The documentation.</param>
-        /// <param name="parameters">The parameters.</param>
-        /// <param name="enabledCommands">The enabled commands.</param>
-        [RockObsolete( "1.14" )]
-        [Obsolete( "Use the default constructor with named parameters instead." )]
-        public LavaShortcodeMetadataAttribute( string name, string tagName, string description, string documentation, string parameters, string enabledCommands )
-        {
-            this.Name = name;
-            this.TagName = tagName;
-            this.Description = description;
-            this.Documentation = documentation;
-            this.Parameters = parameters;
-            this.EnabledCommands = enabledCommands;
         }
     }
 }

@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -25,14 +25,19 @@ using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Web;
+
 using IdentityModel;
 using IdentityModel.Client;
+
 using Microsoft.IdentityModel.Protocols;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using Microsoft.IdentityModel.Tokens;
+
 using Newtonsoft.Json.Converters;
 using Newtonsoft.Json.Linq;
+
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Oidc.Client;
@@ -381,7 +386,7 @@ namespace Rock.Security.ExternalAuthentication
             string userName = "OIDC_" + oidcId;
             UserLogin user = null;
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 // Query for an existing user
                 var userLoginService = new UserLoginService( rockContext );

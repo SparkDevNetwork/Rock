@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -16,7 +16,7 @@
 //
 using System;
 
-namespace Rock.Tests.Shared
+namespace Rock.Tests.Shared.Constants
 {
     /// <summary>
     /// Well-known Guids that can be used to identify specific test records.

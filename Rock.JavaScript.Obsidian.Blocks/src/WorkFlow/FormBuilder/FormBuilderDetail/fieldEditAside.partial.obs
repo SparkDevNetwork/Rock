@@ -7,7 +7,11 @@
             </div>
 
             <div class="title">
-                <span v-if="asideIconSvg" class="inline-svg icon" v-html="asideIconSvg"></span>
+                <span class="aside-icon">
+                    <i v-if="asideTablerIcon" :class="['icon', asideTablerIcon]"></i>
+                    <span v-else-if="asideIconSvg" class="inline-svg icon" v-html="asideIconSvg"></span>
+                    <i v-if="asideHasRangeIndicator" class="aside-range-indicator ti ti-arrows-horizontal"></i>
+                </span>
                 {{ fieldName }}
             </div>
         </div>
@@ -30,8 +34,10 @@
                     <div v-else-if="conditionalSources!.length < 1">
                         <NotificationBox alertType="warning">No source fields available.</NotificationBox>
 
-                        <div class="d-flex justify-content-end">
-                            <RockButton btnType="default" btnSize="sm" disabled><i class="ti ti-pencil"></i></RockButton>
+                        <div class="d-flex justify-content-start">
+                            <RockButton btnType="default" btnSize="sm" disabled>
+                                <i class="ti ti-plus"></i> Add
+                            </RockButton>
                         </div>
                     </div>
 
@@ -43,8 +49,10 @@
                             </ul>
                         </div>
 
-                        <div class="d-flex justify-content-end">
-                            <RockButton btnType="default" btnSize="sm" @click="onConditionalEditClick"><i class="ti ti-pencil"></i></RockButton>
+                        <div class="d-flex justify-content-start">
+                            <RockButton btnType="default" btnSize="sm" @click="onConditionalEditClick">
+                                <i class="ti ti-plus"></i> Add
+                            </RockButton>
                         </div>
                     </div>
                 </Panel>
@@ -70,6 +78,51 @@
     </div>
 </template>
 
+<style scoped>
+.sidebar-panels :deep(.panel) {
+    margin-bottom: 0;
+    border-radius: 0;
+}
+
+.sidebar-panels :deep(.panel + .panel) {
+    border-top: 0;
+}
+
+.aside-icon {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    margin-right: 8px;
+    line-height: 1;
+}
+
+.aside-icon > .icon {
+    margin-right: 0;
+}
+
+.aside-icon > .icon.ti-hash {
+    font-size: calc(1.125rem - 1px);
+}
+
+.aside-icon > .aside-range-indicator {
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    margin-top: -5px;
+    font-size: 0.75rem;
+    line-height: 1;
+}
+
+.aside-icon > .icon.ti-decimal + .aside-range-indicator {
+    margin-top: -7px;
+}
+
+.aside-icon > .icon.ti-hash + .aside-range-indicator {
+    margin-top: -4px;
+}
+</style>
+
 <script setup lang="ts">
     import { computed, PropType, ref, watch } from "vue";
     import FieldFilterEditor from "@Obsidian/Controls/fieldFilterEditor.obs";
@@ -94,7 +147,13 @@
     import { FieldFilterRuleBag } from "@Obsidian/ViewModels/Reporting/fieldFilterRuleBag";
     import { FieldFilterSourceBag } from "@Obsidian/ViewModels/Reporting/fieldFilterSourceBag";
     import { FormField, FormFieldType } from "../Shared/types.partial";
-    import { getFilterRuleDescription, timeoutAsync, useFormSources } from "./utils.partial";
+    import {
+        fieldHasRangeIndicator,
+        getFieldTablerIcon,
+        getFilterRuleDescription,
+        timeoutAsync,
+        useFormSources
+    } from "./utils.partial";
     import { Guid } from "@Obsidian/Types";
 
     /**
@@ -227,6 +286,15 @@
 
     /** The icon to display in the title area. */
     const asideIconSvg = computed((): string => fieldType.value?.svg ?? "");
+
+    /**
+     * Tabler icon class for the title area when the field type has a
+     * Tabler mapping; falls through to `asideIconSvg` otherwise.
+     */
+    const asideTablerIcon = computed((): string | null => getFieldTablerIcon(props.modelValue.fieldTypeGuid));
+
+    /** True if the field type renders a range indicator alongside its icon. */
+    const asideHasRangeIndicator = computed((): boolean => fieldHasRangeIndicator(props.modelValue.fieldTypeGuid));
 
     /**
      * The validation rules for the attribute key. This uses custom logic
@@ -420,8 +488,7 @@
     }
 
     /**
-     * Event handler for when the field type editor has updated any configuration
-     * values.
+     * Event handler for when the field type editor has updated any configuration values.
      *
      * @param value The value that contains the changed information.
      */

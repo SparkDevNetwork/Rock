@@ -153,6 +153,16 @@ export default defineComponent({
         columnType: {
             type: String as PropType<string>,
             default: "attribute"
+        },
+
+        /**
+         * The smallest screen size at which these attribute columns are shown.
+         * Defaults to "md", which hides them on small screens; pass "xs" to
+         * always show them.
+         */
+        visiblePriority: {
+            type: String as PropType<"xs" | "sm" | "md" | "lg" | "xl">,
+            default: "md"
         }
     }
 });

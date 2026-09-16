@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -14,10 +14,12 @@
 // limitations under the License.
 // </copyright>
 //
+using System.ComponentModel;
+
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
-using System.ComponentModel;
 
 namespace Rock.Jobs
 {
@@ -60,7 +62,7 @@ namespace Rock.Jobs
         /// <param name="jobId">The job identifier.</param>
         public static void DeleteJob( int jobId )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var jobService = new ServiceJobService( rockContext );
                 var job = jobService.Get( jobId );

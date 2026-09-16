@@ -1,0 +1,76 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div ref="containerElement">
+        <div class="mb-3" v-html="instructions"></div>
+
+        <RockForm @submit="onVerify">
+            <div class="d-flex justify-content-center">
+                <CodeBox v-model="code"
+                         :maxLength="6"
+                         :allowedChars="digitsOnly"
+                         :disabled="isProcessing"
+                         rules="required"
+                         validationTitle="Code"
+                         @complete="onComplete" />
+            </div>
+
+            <RockButton :btnType="BtnType.Primary"
+                        :disabled="isProcessing"
+                        :isLoading="isProcessing"
+                        class="btn-lg btn-block mt-4 js-verify-button"
+                        type="submit">Next</RockButton>
+        </RockForm>
+
+        <RockButton :btnType="BtnType.Link"
+                    :disabled="isProcessing"
+                    class="btn-lg btn-block"
+                    type="button"
+                    @click="onResend">Resend</RockButton>
+    </div>
+</template>
+
+<script setup lang="ts">
+    import { PropType, ref } from "vue";
+    import CodeBox from "../codeBox.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import RockForm from "@Obsidian/Controls/rockForm.obs";
+    import { BtnType } from "@Obsidian/Enums/Controls/btnType";
+
+    defineProps({
+        instructions: {
+            type: String as PropType<string>,
+            default: ""
+        },
+
+        isProcessing: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "verify", code: string): void,
+        (e: "resend"): void
+    }>();
+
+    const code = ref<string>("");
+    const containerElement = ref<HTMLElement | undefined>();
+
+    /** The verification code is numeric, so only digits may be entered into each box. */
+    const digitsOnly = /^[0-9]$/;
+
+    function onVerify(): void {
+        emit("verify", code.value);
+    }
+
+    /** Moves focus to the Next button once all digits have been entered. */
+    function onComplete(): void {
+        const verifyButton = containerElement.value?.querySelector<HTMLButtonElement>("button.js-verify-button");
+        verifyButton?.focus();
+    }
+
+    function onResend(): void {
+        code.value = "";
+        emit("resend");
+    }
+</script>

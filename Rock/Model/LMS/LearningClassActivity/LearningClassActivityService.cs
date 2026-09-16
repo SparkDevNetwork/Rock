@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -133,7 +133,16 @@ namespace Rock.Model
             var completedActivities = new LearningClassActivityCompletionService( rockContext )
                 .Queryable()
                 .Where( a => a.LearningClassActivityId == learningClassActivityId )
-                .Where( a => a.IsStudentCompleted || a.IsFacilitatorCompleted )
+                .Where( a =>
+                    (
+                        a.IsStudentCompleted
+                        && a.LearningClassActivity.AssignTo == AssignTo.Student
+                    )
+                    || (
+                        a.IsFacilitatorCompleted
+                        && a.LearningClassActivity.AssignTo == AssignTo.Facilitator
+                    )
+                )
                 .Where( a => !a.RequiresGrading )
                 .Select( a => new
                 {

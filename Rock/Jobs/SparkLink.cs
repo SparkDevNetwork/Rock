@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -18,6 +18,7 @@ using System.ComponentModel;
 using System.Linq;
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 
@@ -30,7 +31,10 @@ namespace Rock.Jobs
     [DisplayName( "Spark Link" )]
     [Description( "This job fetches Rock notifications from the Spark Development Network." )]
 
-    [GroupField( "Notification Group", "The group that should receive incoming notifications", true, Rock.SystemGuid.Group.GROUP_ADMINISTRATORS )]
+    [GroupField( "Notification Group",
+        Description = "The group that should receive incoming notifications",
+        IsRequired = true,
+        DefaultValue = Rock.SystemGuid.Group.GROUP_ADMINISTRATORS )]
     public class SparkLink : RockJob
     {
         /// <summary>
@@ -45,7 +49,7 @@ namespace Rock.Jobs
         {
             var groupGuid = this.GetAttributeValue( "NotificationGroup" ).AsGuid();
 
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var group = new GroupService( rockContext ).Get( groupGuid );
 
             if ( group != null )

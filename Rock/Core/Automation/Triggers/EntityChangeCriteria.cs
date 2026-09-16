@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -171,6 +171,7 @@ namespace Rock.Core.Automation.Triggers
             // so Dynamic LINQ assumes you might be trying to use that.
             var config = new ParsingConfig
             {
+                AllowEqualsAndToStringMethodsOnObject = true,
                 DisableMemberAccessToIndexAccessorFallback = true
             };
 

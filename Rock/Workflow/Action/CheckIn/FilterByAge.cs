@@ -33,7 +33,10 @@ namespace Rock.Workflow.Action.CheckIn
     [Export( typeof( ActionComponent ) )]
     [ExportMetadata( "ComponentName", "Filter By Age" )]
 
-    [BooleanField( "Remove", "Select 'Yes' if group types should be removed.  Select 'No' if they should just be marked as excluded.", true, "", 0 )]
+    [BooleanField( "Remove",
+        Description = "Select 'Yes' if group types should be removed.  Select 'No' if they should just be marked as excluded.",
+        DefaultBooleanValue = true,
+        Order = 0 )]
     [Rock.SystemGuid.EntityTypeGuid( "3A77A36E-D613-44F7-ACA1-34666A85CD07")]
     public class FilterByAge : CheckInActionComponent
     {

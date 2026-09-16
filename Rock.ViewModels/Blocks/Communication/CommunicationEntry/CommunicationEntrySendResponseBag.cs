@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -57,6 +57,14 @@ namespace Rock.ViewModels.Blocks.Communication.CommunicationEntry
         /// The communication identifier.
         /// </value>
         public int CommunicationId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the hashed communication identifier key.
+        /// </summary>
+        /// <value>
+        /// The hashed communication identifier key.
+        /// </value>
+        public string CommunicationIdKey { get; set; }
 
         /// <summary>
         /// Gets the communication unique identifier.

@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -21,6 +21,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity;
 using System.Linq;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.UniversalSearch;
 using Rock.UniversalSearch.IndexModels;
@@ -119,23 +120,6 @@ namespace Rock.Model
             return attributes;
         }
 
-        /// <summary>
-        /// Get any alternate Ids that should be used when loading attribute value for this entity.
-        /// </summary>
-        /// <param name="rockContext"></param>
-        /// <returns>
-        /// A list of any alternate entity Ids that should be used when loading attribute values.
-        /// </returns>
-        [Obsolete( "Use GetAlternateEntityIdsByType instead." )]
-        [RockObsolete( "1.13" )]
-        public override List<int> GetAlternateEntityIds( RockContext rockContext )
-        {
-            //
-            // Find all the calendar Ids this event item is present on.
-            //
-            return this.EventCalendarItems.Select( c => c.Id ).ToList();
-        }
-
         /// <inheritdoc/>
         public override Dictionary<int, List<int>> GetAlternateEntityIdsByType( RockContext rockContext )
         {
@@ -157,7 +141,7 @@ namespace Rock.Model
         {
             var indexableItems = new List<IndexModelBase>();
 
-            var eventItems = new EventItemService( new RockContext() )
+            var eventItems = new EventItemService( RockApp.Current.CreateRockContext() )
                                 .GetIndexableActiveItems()
                                 .Include( i => i.EventItemAudiences )
                                 .Include( i => i.EventItemOccurrences )
@@ -195,7 +179,7 @@ namespace Rock.Model
         /// <param name="id">The identifier.</param>
         public void IndexDocument( int id )
         {
-            var eventItemEntity = new EventItemService( new RockContext() ).Get( id );
+            var eventItemEntity = new EventItemService( RockApp.Current.CreateRockContext() ).Get( id );
 
             // Check to ensure that the event item is on a calendar that is indexed
             if ( eventItemEntity != null && eventItemEntity.EventCalendarItems.Any( c => c.EventCalendar.IsIndexEnabled ) )

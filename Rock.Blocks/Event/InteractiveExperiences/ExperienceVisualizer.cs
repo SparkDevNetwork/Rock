@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -22,6 +22,7 @@ using System.Data.Entity;
 using System.Linq;
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Event.InteractiveExperiences;
 using Rock.Model;
@@ -61,7 +62,7 @@ namespace Rock.Blocks.Event.InteractiveExperiences
         Order = 1 )]
 
     [CampusField( "Campus",
-        includeInactive: false,
+        IncludeInactive = false,
         Description = "The campus to use when determining which experience occurrence to display. If no campus is selected then only occurrences with no campus will be considered.",
         IsRequired = false,
         Key = AttributeKey.Campus,
@@ -89,7 +90,7 @@ namespace Rock.Blocks.Event.InteractiveExperiences
         /// <inheritdoc/>
         public override object GetObsidianBlockInitialization()
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var box = new ExperienceVisualizerInitializationBox
                 {
@@ -226,7 +227,7 @@ namespace Rock.Blocks.Event.InteractiveExperiences
         [BlockAction]
         public BlockActionResult GetCurrentOccurrence()
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 return ActionOk( GetCurrentOccurrence( rockContext ) );
             }
@@ -248,7 +249,7 @@ namespace Rock.Blocks.Event.InteractiveExperiences
                 return ActionNotFound( "Invalid experience token." );
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var occurrenceIntegerId = IdHasher.Instance.GetId( occurrenceIdKey );
 

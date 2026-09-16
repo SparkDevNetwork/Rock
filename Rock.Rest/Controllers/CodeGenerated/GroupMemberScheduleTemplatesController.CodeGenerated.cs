@@ -21,6 +21,7 @@
 // </copyright>
 //
 
+using Rock.Configuration;
 using Rock.Model;
 using Rock.SystemGuid;
 
@@ -35,6 +36,6 @@ namespace Rock.Rest.Controllers
         /// <summary>
         /// Initializes a new instance of the <see cref="GroupMemberScheduleTemplatesController"/> class.
         /// </summary>
-        public GroupMemberScheduleTemplatesController() : base( new Rock.Model.GroupMemberScheduleTemplateService( new Rock.Data.RockContext() ) ) { } 
+        public GroupMemberScheduleTemplatesController() : base( new Rock.Model.GroupMemberScheduleTemplateService( RockApp.Current.CreateRockContext() ) ) { } 
     }
 }

@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -25,6 +25,7 @@ using System.Threading.Tasks;
 using Rock.Attribute;
 using Rock.Cms.ContentCollection.Attributes;
 using Rock.Cms.ContentCollection.Search;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Field;
 using Rock.Lava;
@@ -456,6 +457,13 @@ namespace Rock.Cms.ContentCollection.IndexDocuments
                 return;
             }
 
+            var component = ContentIndexContainer.GetActiveComponent();
+
+            if ( component == null )
+            {
+                return;
+            }
+
             // Try to get the old index so we can fill in trending values.
             var query = new SearchQuery
             {
@@ -475,7 +483,7 @@ namespace Rock.Cms.ContentCollection.IndexDocuments
                     MaxResults = 1
                 };
 
-                var results = await ContentIndexContainer.GetActiveComponent()?.SearchAsync( query, options );
+                var results = await component.SearchAsync( query, options );
 
                 if ( results != null && results.Documents.Count > 0 )
                 {
@@ -502,7 +510,7 @@ namespace Rock.Cms.ContentCollection.IndexDocuments
                 return;
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var personalizationItems = rockContext.Set<PersonalizedEntity>()
                     .AsNoTracking()

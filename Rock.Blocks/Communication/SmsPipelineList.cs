@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -21,6 +21,7 @@ using System.Data.Entity;
 using System.Linq;
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Obsidian.UI;
@@ -39,14 +40,15 @@ namespace Rock.Blocks.Communication
     [Category( "Communication" )]
     [Description( "Lists the SMS Pipelines currently in the system." )]
     [IconCssClass( "ti ti-list" )]
-    // [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( Model.SiteType.Web )]
 
     [LinkedPage( "Detail Page",
         Description = "The page that will show the sms pipeline details.",
         Key = AttributeKey.DetailPage )]
 
     [Rock.SystemGuid.EntityTypeGuid( "8141535c-4ebb-490f-875f-c62c1f7f4d00" )]
-    [Rock.SystemGuid.BlockTypeGuid( "da937cfd-f20e-4619-8cb8-d1a2738d2ff2" )]
+    [Rock.SystemGuid.BlockTypeGuid( "DB6FD0BF-FDCE-48DA-919C-240F029518A2" )]
+    // was [Rock.SystemGuid.BlockTypeGuid( "da937cfd-f20e-4619-8cb8-d1a2738d2ff2" )]
     [CustomizedGrid]
     public class SmsPipelineList : RockEntityListBlockType<SmsPipeline>
     {
@@ -143,7 +145,7 @@ namespace Rock.Blocks.Communication
         [BlockAction]
         public BlockActionResult Delete( string key )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var entityService = new SmsPipelineService( rockContext );
                 var entity = entityService.Get( key, !PageCache.Layout.Site.DisablePredictableIds );

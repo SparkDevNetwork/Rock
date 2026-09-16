@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -21,6 +21,7 @@ using System.ComponentModel;
 using System.Linq;
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Media;
@@ -74,7 +75,7 @@ namespace Rock.Blocks.Cms
         /// <inheritdoc/>
         public override object GetObsidianBlockInitialization()
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var box = new DetailBlockBox<MediaFolderBag, MediaFolderDetailOptionsBag>();
 
@@ -147,8 +148,8 @@ namespace Rock.Blocks.Cms
 
             if ( entity != null )
             {
-                var isViewable = entity.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson );
-                box.IsEditable = entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson );
+                var isViewable = BlockCache.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson );
+                box.IsEditable = BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson );
 
                 if ( loadAttributes )
                 {
@@ -259,7 +260,7 @@ namespace Rock.Blocks.Cms
             if ( entity.ContentChannelId.HasValue )
             {
                 var channel = ContentChannelCache.Get( entity.ContentChannelId.Value );
-                bag.ContentChannelItemAttributes = GetContentChannelItemAttributes( channel, new RockContext() );
+                bag.ContentChannelItemAttributes = GetContentChannelItemAttributes( channel, RockApp.Current.CreateRockContext() );
             }
 
             if ( loadAttributes )
@@ -349,7 +350,7 @@ namespace Rock.Blocks.Cms
         /// <inheritdoc/>
         protected override string RenewSecurityGrantToken()
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var entity = GetInitialEntity( rockContext );
 
@@ -408,7 +409,7 @@ namespace Rock.Blocks.Cms
                 return false;
             }
 
-            if ( !entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
+            if ( !BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
             {
                 error = ActionBadRequest( $"Not authorized to edit ${MediaFolder.FriendlyTypeName}." );
                 return false;
@@ -441,7 +442,7 @@ namespace Rock.Blocks.Cms
 
             foreach ( var attribute in channelAttributes )
             {
-                if ( attribute.FieldType.Class == typeof( Rock.Field.Types.MediaElementFieldType ).FullName )
+                if ( attribute.FieldType.Guid == SystemGuid.FieldType.MEDIA_ELEMENT.AsGuid() )
                 {
                     mediaElementAttributes.Add( new ListItemBag() { Text = attribute.Name, Value = attribute.Guid.ToStringSafe() } );
                 }
@@ -453,7 +454,7 @@ namespace Rock.Blocks.Cms
         /// <inheritdoc/>
         public BreadCrumbResult GetBreadCrumbs( PageReference pageReference )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var mediaFolderKey = pageReference.GetPageParameter( PageParameterKey.MediaFolderId );
                 var pageParameters = new Dictionary<string, string>();
@@ -523,7 +524,7 @@ namespace Rock.Blocks.Cms
         [BlockAction]
         public BlockActionResult Edit( string key )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 if ( !TryGetEntityForEditAction( key, rockContext, out var entity, out var actionError ) )
                 {
@@ -550,7 +551,7 @@ namespace Rock.Blocks.Cms
         [BlockAction]
         public BlockActionResult Save( DetailBlockBox<MediaFolderBag, MediaFolderDetailOptionsBag> box )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var entityService = new MediaFolderService( rockContext );
 
@@ -609,7 +610,7 @@ namespace Rock.Blocks.Cms
         [BlockAction]
         public BlockActionResult Delete( string key )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var entityService = new MediaFolderService( rockContext );
 
@@ -639,7 +640,7 @@ namespace Rock.Blocks.Cms
         [BlockAction]
         public BlockActionResult RefreshAttributes( DetailBlockBox<MediaFolderBag, MediaFolderDetailOptionsBag> box )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 if ( !TryGetEntityForEditAction( box.Entity.IdKey, rockContext, out var entity, out var actionError ) )
                 {
@@ -692,7 +693,7 @@ namespace Rock.Blocks.Cms
         [BlockAction]
         public BlockActionResult UpdateMediaFileAttributeDropdowns( Guid channelGuid )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var channel = ContentChannelCache.Get( channelGuid );
 

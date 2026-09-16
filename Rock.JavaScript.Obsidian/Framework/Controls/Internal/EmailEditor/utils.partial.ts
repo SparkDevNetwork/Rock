@@ -73,6 +73,7 @@ import {
     VideoComponentAdapter,
     GlobalAdapterOnComponentAddedEvent,
 } from "./types.partial";
+import { RockColor } from "@Obsidian/Core/Utilities/rockColor";
 import { isElement, isHTMLElement, isHTMLTableElement, replaceTagName } from "@Obsidian/Utility/dom";
 import { newGuid, toGuidOrNull } from "@Obsidian/Utility/guid";
 import { Enumerable } from "@Obsidian/Utility/linq";
@@ -120,6 +121,80 @@ export const RockCssClassContentEditable = `rock-content-editable` as const;
 export const RockRuntimeWrapperElementCssClass = "rock-runtime-wrapper-element" as const;
 
 export const SmallEmptyClass = `${RockRuntimeClassCssClassPrefix}-small` as const;
+
+/**
+ * Runtime CSS class applied to section components nested deeply enough to risk being dropped by some mail clients.
+ */
+export const NestedSectionCssClass = `${RockRuntimeClassCssClassPrefix}-nested-section` as const;
+
+/*
+    09/10/26 - JMH
+
+    Sections nested inside other sections stack seven tables per level. iOS Apple Mail
+    drops content at a table depth somewhere between 14 (renders) and 28 (dropped), and
+    the exact threshold has not been bisected. Flagging from the second level means a
+    two-deep template (about 21 tables) is warned about rather than silently at risk.
+
+    Reason: Threshold is unproven; warn early and tune here after a depth bisect.
+*/
+export const NestedSectionWarningMinimumAncestorCount = 1 as const;
+
+/**
+ * Decodes browser-encoded entities inside every Lava block (`{% %}`, `{{ }}`,
+ * and `{[ ]}` shortcodes).
+ *
+ * Browsers automatically encode characters like `&`, `>` and `<` when HTML is
+ * serialized from the editor. That breaks Lava such as:
+ *
+ * `{% if Total > Threshold %}`            -> `{% if Total &gt; Threshold %}`
+ * `{% assign isBig = a > b %}`            -> `{% assign isBig = a &gt; b %}`
+ * `where:'IsActive == true && Id == 1'`   -> `where:'IsActive == true &amp;&amp; Id == 1'`
+ *
+ * Used both when serializing the final email HTML and when loading a
+ * component's markup back into the design-time code editor, so the editor
+ * shows the same Lava that will be sent.
+ *
+ * Scope is the entire contents of each Lava block; all other HTML is left
+ * untouched. Decoding is delimiter-scoped, so there is no ambiguity about
+ * whether a given `>` is Lava or markup — only characters inside `{% %}`,
+ * `{{ }}`, or `{[ ]}` are decoded.
+ */
+export function decodeLavaEncodedEntities(html: string): string {
+    // Matches a full {% ... %} command/tag, a {{ ... }} output block, or a
+    // {[ ... ]} shortcode tag. Lazy matching keeps each match to a single
+    // delimiter pair, so the content a block wraps is never decoded.
+    const lavaBlockRegex = /{%[\s\S]*?%}|{{[\s\S]*?}}|{\[[\s\S]*?\]}/g;
+
+    // A textarea decodes character references as RCDATA: entities like `&gt;`
+    // become `>`, but tag-like text (e.g. `<div>`) is preserved verbatim
+    // rather than parsed. A <template> would instead parse `<div>` as an
+    // element and drop it, mangling Lava that embeds HTML strings.
+    const decoder = document.createElement("textarea");
+
+    const decodeEntities = (value: string): string => {
+        if (!value.includes("&")) {
+            return value;
+        }
+
+        // Read (never assign) `.value`: assigning it sets the textarea's dirty
+        // value flag, which permanently decouples `.value` from `.innerHTML`,
+        // so every later block would decode to "". Reset via `.innerHTML`.
+        decoder.innerHTML = value;
+        const decoded = decoder.value;
+        decoder.innerHTML = ""; // Reset to avoid retaining references.
+
+        return decoded;
+    };
+
+    return html.replace(lavaBlockRegex, (block) => {
+        // Skip blocks with no entities to decode.
+        if (!block.includes("&")) {
+            return block;
+        }
+
+        return decodeEntities(block);
+    });
+}
 
 export function getComponentCssClass(componentTypeName: ComponentTypeName): string {
     return `component-${componentTypeName}`;
@@ -762,14 +837,12 @@ export function ensureBodyWrapsEmailWrapper(document: Document): HTMLTableElemen
     wrapperTable.setAttribute("width", "100%");
     wrapperTable.setAttribute("role", "presentation");
     wrapperTable.style.minWidth = "100%";
-    wrapperTable.style.height = "100%"; // Forces full-height behavior
 
     const wrapperTbody = document.createElement("tbody");
     const wrapperRow = document.createElement("tr");
     const wrapperCell = document.createElement("td");
     wrapperCell.setAttribute("align", "center");
     wrapperCell.setAttribute("valign", "top"); // Prevent content from being squashed
-    wrapperCell.style.height = "100%"; // Ensures row stretches
 
     // Create `.email-row` (full width row)
 
@@ -2060,7 +2133,7 @@ function createComponentAdapter<TProps, TVersion extends string>(
 }
 
 function createTextComponentAdapter(): TextComponentAdapter {
-    const componentVersions = ["v0", "v2-alpha", "v17.3-alpha"] as const;
+    const componentVersions = ["v0", "v2-alpha", "v17.3-alpha", "v19.3"] as const;
     type ComponentVersion = typeof componentVersions[number];
 
     // Local settings should only be used for per-component customization or where there isn't a global alternative.
@@ -2349,6 +2422,35 @@ function createTextComponentAdapter(): TextComponentAdapter {
                 setStylePaddingPx(marginWrapperForTextTd?.style, localProps.marginPx); // Use padding for "margin".
                 setStyleBorder(borderWrapperForTextTd?.style, localProps.border);
                 setStyleBorderRadiusPx(borderWrapperForTextTd?.style, localProps.borderRadiusPx);
+            }
+        },
+
+        /*
+            - Fixes the text component background `bgcolor` attribute. The
+              delegated version above writes it as `rgb()`, which some clients
+              (Outlook) coerce to the wrong color -- a white background renders
+              green -- so it is re-emitted here as hex. Existing text components
+              are repaired on load: the version bump makes migrateComponent
+              re-run this write.
+         */
+        "v19.3": {
+            version: "v19.3",
+
+            createComponentElement(emailDocument: Document): HTMLElement {
+                const componentElement = adapters["v17.3-alpha"].createComponentElement(emailDocument);
+                componentElement.setAttribute("data-version", "v19.3");
+                return componentElement;
+            },
+
+            readLocalProps(componentElement: HTMLElement): TextLocalProps {
+                return adapters["v17.3-alpha"].readLocalProps(componentElement);
+            },
+
+            writeLocalProps(componentElement: HTMLElement, localProps: TextLocalProps): void {
+                adapters["v17.3-alpha"].writeLocalProps(componentElement, localProps);
+
+                const paddingWrapperForTextTd = componentElement.querySelector(".padding-wrapper-for-text > tbody > tr > td") as HTMLTableCellElement | null;
+                setAttributePropertyValue(paddingWrapperForTextTd, "bgcolor", toHexBgcolorAttributeValue(localProps.backgroundColor));
             }
         }
     };
@@ -2807,7 +2909,7 @@ function createDividerGlobalAdapter(): DividerGlobalAdapter {
                 setStylePaddingPx(marginWrapperTdRule?.style, globalProps.marginPx);
 
                 // horizontalAlignment
-                        // Only set attribute values on components that don't have the data attribute.
+                // Only set attribute values on components that don't have the data attribute.
                 emailDocument.querySelectorAll(`.component-divider:not([${attributeNames.DATA_COMPONENT_HORIZONTAL_ALIGNMENT}]) ${marginWrapperTdSelector}`)
                     .forEach(marginWrapperTd => {
                         setAttributePropertyValue(marginWrapperTd, "align", globalProps.horizontalAlignment);
@@ -3754,6 +3856,33 @@ export function getRowComponentHelper(): ComponentMigrationHelper & {
     return helper;
 }
 
+/**
+ * Finds the section components nested inside other sections deeply enough to be flagged.
+ *
+ * @param root The document or element to search.
+ * @param minimumAncestorCount The number of section ancestors a section must have to be included.
+ * @returns The offending section component elements, in document order.
+ */
+export function findNestedSectionElements(root: ParentNode, minimumAncestorCount: number = NestedSectionWarningMinimumAncestorCount): HTMLElement[] {
+    return Enumerable
+        .from(root.querySelectorAll(".component-section"))
+        .ofType<HTMLElement>((el): el is HTMLElement => isHTMLElement(el))
+        .where(section => countSectionAncestors(section) >= minimumAncestorCount)
+        .toArray();
+}
+
+function countSectionAncestors(section: Element): number {
+    let count = 0;
+    let ancestor = section.parentElement?.closest(".component-section");
+
+    while (ancestor) {
+        count++;
+        ancestor = ancestor.parentElement?.closest(".component-section");
+    }
+
+    return count;
+}
+
 type SectionComponentTypeName = Extract<EditorComponentTypeName,
     "section"
     | "one-column-section"
@@ -4077,7 +4206,7 @@ function addOrUpdateMetaTag(emailDocument: Document, name: string, content: stri
 }
 
 function createBodyGlobalAdapter(): BodyGlobalAdapter {
-    const globalVersions = ["v0", "v17.3-alpha", "v18.2"] as const;
+    const globalVersions = ["v0", "v17.3-alpha", "v18.2", "v19.1", "v19.3", "v20.1"] as const;
     type BodyGlobalVersion = (typeof globalVersions)[number];
 
     const attributeValues = {
@@ -4351,6 +4480,123 @@ function createBodyGlobalAdapter(): BodyGlobalAdapter {
                 addOrUpdateMetaTag(emailDocument, attributeValues.META_NAME_GLOBAL_BODY_VERSION, "v18.2");
 
                 adapters["v17.3-alpha"].writeGlobalProps(emailDocument, globalProps);
+            }
+        },
+
+        /*
+            - Removed the mobile `.email-wrapper { min-height: 100vh; }` declaration.
+         */
+        "v19.1": {
+            version: "v19.1",
+
+            readGlobalProps(emailDocument: Document): BodyGlobalProps {
+                return adapters["v18.2"].readGlobalProps(emailDocument);
+            },
+
+            writeGlobalProps(emailDocument: Document, globalProps: BodyGlobalProps): void {
+                adapters["v18.2"].writeGlobalProps(emailDocument, globalProps);
+
+                addOrUpdateMetaTag(emailDocument, attributeValues.META_NAME_GLOBAL_BODY_VERSION, "v19.1");
+
+                const emailWindow = emailDocument.defaultView;
+                const updatedRules: CSSRule[] = [];
+
+                findRockMediaStyleSheets(emailDocument).forEach(sheet => {
+                    const rules = Array.from(sheet.cssRules);
+
+                    rules.forEach(rule => {
+                        if (emailWindow && rule instanceof emailWindow.CSSMediaRule) {
+                            const nestedRules = Array.from(rule.cssRules);
+
+                            nestedRules.forEach(nestedRule => {
+                                if (emailWindow && nestedRule instanceof emailWindow.CSSStyleRule
+                                    && nestedRule.selectorText === ".email-wrapper"
+                                    && nestedRule.style.getPropertyValue("min-height") === "100vh") {
+                                    nestedRule.style.removeProperty("min-height");
+                                    updatedRules.push(nestedRule);
+                                }
+                            });
+                        }
+                    });
+                });
+
+                synchronizeRulesToDom(updatedRules);
+            }
+        },
+
+        /*
+            - Fixes the body background `bgcolor` attribute. The delegated
+              versions above write it as `rgb()`, which some clients (Outlook)
+              coerce to the wrong color -- a white body renders green -- so it is
+              re-emitted here as hex. Existing emails are repaired on load: the
+              version bump makes migrateGlobalProps re-run this write.
+         */
+        "v19.3": {
+            version: "v19.3",
+
+            readGlobalProps(emailDocument: Document): BodyGlobalProps {
+                return adapters["v19.1"].readGlobalProps(emailDocument);
+            },
+
+            writeGlobalProps(emailDocument: Document, globalProps: BodyGlobalProps): void {
+                adapters["v19.1"].writeGlobalProps(emailDocument, globalProps);
+
+                addOrUpdateMetaTag(emailDocument, attributeValues.META_NAME_GLOBAL_BODY_VERSION, "v19.3");
+
+                const bgcolorValue = toHexBgcolorAttributeValue(globalProps.backgroundColor);
+                emailDocument.querySelectorAll(`.component:not([data-component-background-color="true"]) .padding-wrapper-for-row`).forEach(element => {
+                    setAttributePropertyValue(element, "bgcolor", bgcolorValue);
+                });
+            }
+        },
+
+        /*
+            - Removes the `height: 100%` declarations on `html`, `body`, and
+              `.email-wrapper` (both the `rock-styles` rules and the inline styles
+              on the wrapper table and its cell). Clients that honor them (e.g.
+              iOS Mail) stretch the wrapper past its content and expose the gray
+              body background as a scrollable blank area below short emails. The
+              mobile `min-height: 100vh` counterpart was removed in v19.1.
+              Existing emails are repaired on load: the version bump makes
+              migrateGlobalProps re-run this write.
+         */
+        "v20.1": {
+            version: "v20.1",
+
+            readGlobalProps(emailDocument: Document): BodyGlobalProps {
+                return adapters["v19.3"].readGlobalProps(emailDocument);
+            },
+
+            writeGlobalProps(emailDocument: Document, globalProps: BodyGlobalProps): void {
+                adapters["v19.3"].writeGlobalProps(emailDocument, globalProps);
+
+                addOrUpdateMetaTag(emailDocument, attributeValues.META_NAME_GLOBAL_BODY_VERSION, "v20.1");
+
+                const updatedRules: CSSRule[] = [];
+
+                const removeFullHeight = (rule: CSSStyleRule): void => {
+                    if (rule.style.getPropertyValue("height") === "100%") {
+                        rule.style.removeProperty("height");
+                        updatedRules.push(rule);
+                    }
+                };
+
+                // Remove `height: 100%` from the `rock-styles` rules.
+                findRockStyleRules(emailDocument, "html, body").forEach(removeFullHeight);
+                findRockStyleRules(emailDocument, `.${EmailWrapperCssClass}`).forEach(removeFullHeight);
+
+                synchronizeRulesToDom(updatedRules);
+
+                // Remove the same declaration inlined on the wrapper table and its cell.
+                const wrapperTable = emailDocument.querySelector(`table.${EmailWrapperCssClass}`);
+                if (isHTMLElement(wrapperTable) && wrapperTable.style.getPropertyValue("height") === "100%") {
+                    wrapperTable.style.removeProperty("height");
+                }
+
+                const wrapperCell = wrapperTable?.querySelector(":scope > tbody > tr > td");
+                if (isHTMLElement(wrapperCell) && wrapperCell.style.getPropertyValue("height") === "100%") {
+                    wrapperCell.style.removeProperty("height");
+                }
             }
         }
     };
@@ -5288,7 +5534,7 @@ export function getComponentHelper(componentTypeName: ComponentTypeName) {
         case "divider":
         case "rsvp":
         case "code":
-        // These components have their own adapters and are not used by callers of getComponentHelper.
+            // These components have their own adapters and are not used by callers of getComponentHelper.
             return null;
         default:
             console.error(`Unknown component type: ${componentTypeName}`);
@@ -5581,8 +5827,8 @@ function createButtonComponentAdapter(): ButtonComponentAdapter {
             },
 
             writeLocalProps(componentElement: HTMLElement, localProps: ButtonLocalProps): void {
-            // This always assumes the componentElement is already migrated to latest version.
-            // We don't keep track of version-specific writers; only the latest writer.
+                // This always assumes the componentElement is already migrated to latest version.
+                // We don't keep track of version-specific writers; only the latest writer.
 
                 const {
                     text,
@@ -6807,7 +7053,7 @@ function findRockStyleRules(doc: Document, rulesetSelector: string): Enumerable<
 /**
  * Finds rock style CSS rules matching the specified ruleset selector within the document.
  *
- * This looks for `<style class="rock-styles">` elements within the `<body>` of the document
+ * This looks for `<style class="rock-media-styles">` elements within the `<head>` of the document
  *
  * @param emailDocument The document in which to find the rock style rules.
  * @returns An enumerable of matching CSSStyleRule objects.
@@ -6832,7 +7078,7 @@ function createRockMediaStyleSheet(emailDocument: Document): CSSStyleSheet {
         throw new Error("Document has no defaultView.");
     }
 
-    // Create the <style class="rock-media-styles"> element within <body>.
+    // Create the <style class="rock-media-styles"> element within <head>.
     const styleEl = emailDocument.createElement("style");
     styleEl.className = "rock-media-styles";
     emailDocument.head.append(styleEl);
@@ -6975,6 +7221,51 @@ function toBgcolorAttributeValue(backgroundColor: string | null): string | null 
     }
 
     return backgroundColor;
+}
+
+/**
+ * Cache of hex `bgcolor` attribute values keyed by their source color. The same
+ * background color is applied to many elements per migration and recurs across
+ * emails, so this avoids constructing a RockColor for every write.
+ */
+const hexBgcolorAttributeValueByColor = new Map<string, string>();
+
+/**
+ * Converts a CSS color into a hex value the legacy `bgcolor` attribute can render.
+ *
+ * @param backgroundColor The color as stored by the editor. May be a hex value,
+ * a named color, or `rgb()`/`rgba()` notation.
+ * @returns A hex color without an alpha channel, the `transparent` keyword for a
+ * fully transparent color, or the original value when it is null or empty.
+ */
+function toHexBgcolorAttributeValue(backgroundColor: string | null): string | null {
+    if (isNullish(backgroundColor) || backgroundColor === "") {
+        return backgroundColor;
+    }
+
+    const cachedValue = hexBgcolorAttributeValueByColor.get(backgroundColor);
+    if (cachedValue !== undefined) {
+        return cachedValue;
+    }
+
+    /*
+        07/01/26 - JMH
+
+        bgcolor is parsed by the HTML "rules for parsing a legacy colour value",
+        which only understand hex and named colors. An rgb()/rgba() value isn't
+        rejected but silently coerced to the wrong color -- white supplied as
+        rgb(255, 255, 255) renders as dark green in Outlook -- so the color is
+        normalized to hex here. bgcolor has no alpha channel, so a fully
+        transparent color uses the "transparent" keyword instead.
+
+        Reason: Emit only bgcolor-safe values so clients render the intended color.
+    */
+    const color = new RockColor(backgroundColor);
+    const bgcolorValue = color.alpha === 0 ? "transparent" : color.toHex();
+
+    hexBgcolorAttributeValueByColor.set(backgroundColor, bgcolorValue);
+
+    return bgcolorValue;
 }
 
 export const bodyGlobalAdapter = createBodyGlobalAdapter();

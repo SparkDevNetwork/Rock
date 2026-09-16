@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -20,8 +20,8 @@ using System.ComponentModel;
 using System.ComponentModel.Composition;
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
-using Rock.Field.Types;
 using Rock.Model;
 using Rock.Web.Cache;
 
@@ -173,7 +173,7 @@ namespace Rock.Communication.SmsActions
             // Get the filter expression for the message body.
             var attribute = action.Attributes.ContainsKey( AttributeKey.Message ) ? action.Attributes[AttributeKey.Message] : null;
             var msg = GetAttributeValue( action, AttributeKey.Message );
-            var filter = ValueFilterFieldType.GetFilterExpression( attribute?.QualifierValues, msg );
+            var filter = Web.UI.Controls.FilterExpression.FromJsonOrNull( msg );
 
             // Evaluate the message against the filter and return the match state.
             return filter != null ? filter.Evaluate( message, AttributeKey.Message ) : true;
@@ -203,7 +203,7 @@ namespace Rock.Communication.SmsActions
 
             if ( attachmentBinaryFileGuid.HasValue && attachmentBinaryFileGuid != Guid.Empty )
             {
-                binaryFile = new BinaryFileService( new RockContext() ).Get( attachmentBinaryFileGuid.Value );
+                binaryFile = new BinaryFileService( RockApp.Current.CreateRockContext() ).Get( attachmentBinaryFileGuid.Value );
             }
 
             // If there is no response message then return null.

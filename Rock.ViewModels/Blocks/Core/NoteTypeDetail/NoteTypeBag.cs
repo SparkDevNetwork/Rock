@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -105,14 +105,6 @@ namespace Rock.ViewModels.Blocks.Core.NoteTypeDetail
         public bool ShowEntityTypePicker { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether [requires approvals].
-        /// </summary>
-        /// <value>
-        ///   <c>true</c> if [requires approvals]; otherwise, <c>false</c>.
-        /// </value>
-        public bool RequiresApprovals { get; set; }
-
-        /// <summary>
         /// Gets or sets a value indicating whether [enabled AI approvals].
         /// </summary>
         /// <value>
@@ -124,10 +116,5 @@ namespace Rock.ViewModels.Blocks.Core.NoteTypeDetail
         /// Gets or sets the criteria for AI to automatically approve notes. 
         /// </summary>
         public string AIApprovalGuidelines { get; set; }
-
-        /// <summary>
-        /// Gets or sets the AI provider to use for AI approvals.
-        /// </summary>
-        public ListItemBag AIProvider { get; set; }
     }
 }

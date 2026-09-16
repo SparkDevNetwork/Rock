@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -20,7 +20,9 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.Linq;
+
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -125,7 +127,7 @@ namespace Rock.Achievement.Component
         /// <param name="streak">The streak.</param>
         protected override void UpdateOpenAttempt( AchievementAttempt openAttempt, AchievementTypeCache achievementTypeCache, Streak streak )
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var streakTypeService = new StreakTypeService( rockContext );
             var streakTypeCache = GetStreakTypeCache( achievementTypeCache );
 
@@ -226,7 +228,7 @@ namespace Rock.Achievement.Component
         /// <returns></returns>
         protected override List<AchievementAttempt> CreateNewAttempts( AchievementTypeCache achievementTypeCache, Streak streak, AchievementAttempt mostRecentClosedAttempt )
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var streakTypeService = new StreakTypeService( rockContext );
             var streakTypeCache = StreakTypeCache.Get( streak.StreakTypeId );
 

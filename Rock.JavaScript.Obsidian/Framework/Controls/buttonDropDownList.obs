@@ -2,9 +2,10 @@
 <template>
     <RockFormField :modelValue="internalValue" v-bind="fieldProps" name="button-dropdownlist">
         <template #default="{ field, uniqueId }">
-            <div class="dropdown">
+            <div class="dropdown" :class="dropdownClass">
                 <div :class="{ open: isDropDownOpen }" ref="dropdownElement">
-                    <RockButton class="dropdown-toggle" :btnType="btnType" :aria-expanded="isDropDownOpen ? 'true' : 'false'" @click.prevent.stop="toggleOpen" :id="uniqueId" v-bind="field">
+                    <RockButton class="dropdown-toggle" :btnType="btnType" :btnSize="btnSize" :aria-expanded="isDropDownOpen ? 'true' : 'false'" @click.prevent.stop="toggleOpen" :id="uniqueId" v-bind="field">
+                        <slot name="selectionPrepend" />
                         {{ selectionStyle === 'title' && internalValue ? selectedText : title }}
                         <span class="ti ti-caret-down-filled"></span>
                     </RockButton>
@@ -39,6 +40,7 @@ li.disabled > button {
     import RockButton from "./rockButton.obs";
     import { standardRockFormFieldProps, useStandardRockFormFieldProps, useVModelPassthrough } from "@Obsidian/Utility/component";
     import { BtnType } from "@Obsidian/Enums/Controls/btnType";
+    import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
 
     const props = defineProps({
         /** The v-model value this control */
@@ -71,6 +73,16 @@ li.disabled > button {
         btnType: {
             type: String as PropType<BtnType>,
             default: BtnType.Default
+        },
+
+        btnSize: {
+            type: String as PropType<BtnSize>,
+            default: BtnSize.Default
+        },
+
+        dropdownClass: {
+            type: String as PropType<string>,
+            default: ""
         },
 
         ...standardRockFormFieldProps

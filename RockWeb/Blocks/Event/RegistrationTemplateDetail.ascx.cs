@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -23,14 +23,17 @@ using System.Linq;
 using System.Text;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+using dotless.Core.Parser.Functions;
 using Newtonsoft.Json;
 using Rock;
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Financial;
 using Rock.Model;
 using Rock.Security;
+using Rock.Utility;
 using Rock.Web;
 using Rock.Web.Cache;
 using Rock.Web.UI;
@@ -59,101 +62,7 @@ namespace RockWeb.Blocks.Event
         EditorHeight = 300,
         IsRequired = false,
         Order = 1,
-        DefaultValue = @"{{ 'Global' | Attribute:'EmailHeader' }}
-<h1>{{ RegistrationInstance.RegistrationTemplate.RegistrationTerm }} Confirmation: {{ RegistrationInstance.Name }}</h1>
-
-{% assign registrants = Registration.Registrants | Where:'OnWaitList', false %}
-{% assign registrantCount = registrants | Size %}
-{% if registrantCount > 0 %}
-	<p>
-		The following {{ RegistrationInstance.RegistrationTemplate.RegistrantTerm | PluralizeForQuantity:registrantCount | Downcase }}
-		{% if registrantCount > 1 %}have{% else %}has{% endif %} been registered for {{ RegistrationInstance.Name }}:
-	</p>
-
-	<ul>
-	{% for registrant in registrants %}
-		<li>
-
-			<strong>{{ registrant.PersonAlias.Person.FullName }}</strong>
-
-			{% if registrant.Cost > 0 %}
-				- {{ registrant.Cost | FormatAsCurrency }}
-			{% endif %}
-
-			{% assign feeCount = registrant.Fees | Size %}
-			{% if feeCount > 0 %}
-				<br/>{{ RegistrationInstance.RegistrationTemplate.FeeTerm | PluralizeForQuantity:registrantCount }}:
-				<ul>
-				{% for fee in registrant.Fees %}
-					<li>
-                        {{ fee.RegistrationTemplateFee.Name }} {% if fee.RegistrationTemplateFee.FeeType == 'Multiple' %} - {{ fee.Option }} {% endif %}
-						{% if fee.Quantity > 1 %} ({{ fee.Quantity }} @ {{ fee.Cost | FormatAsCurrency }}){% endif %}: {{ fee.TotalCost | FormatAsCurrency }}
-					</li>
-				{% endfor %}
-				</ul>
-			{% endif %}
-
-		</li>
-	{% endfor %}
-	</ul>
-{% endif %}
-
-{% assign waitlist = Registration.Registrants | Where:'OnWaitList', true %}
-{% assign waitListCount = waitlist | Size %}
-{% if waitListCount > 0 %}
-    <p>
-        The following {{ RegistrationInstance.RegistrationTemplate.RegistrantTerm | PluralizeForQuantity:registrantCount | Downcase }}
-		{% if waitListCount > 1 %}have{% else %}has{% endif %} been added to the wait list for {{ RegistrationInstance.Name }}:
-   </p>
-
-    <ul>
-    {% for registrant in waitlist %}
-        <li>
-            <strong>{{ registrant.PersonAlias.Person.FullName }}</strong>
-        </li>
-    {% endfor %}
-    </ul>
-{% endif %}
-
-{% if Registration.TotalCost > 0 %}
-<p>
-    Total Cost: {{ Registration.TotalCost | FormatAsCurrency }}<br/>
-    {% if Registration.DiscountedCost != Registration.TotalCost %}
-        Discounted Cost: {{ Registration.DiscountedCost | FormatAsCurrency }}<br/>
-    {% endif %}
-    {% for payment in Registration.Payments %}
-        Paid {{ payment.Amount | FormatAsCurrency }} on {{ payment.Transaction.TransactionDateTime| Date:'M/d/yyyy' }}
-        <small>(Acct #: {{ payment.Transaction.FinancialPaymentDetail.AccountNumberMasked }}, Ref #: {{ payment.Transaction.TransactionCode }})</small><br>
-    {% endfor %}
-
-    {% assign paymentCount = Registration.Payments | Size %}
-
-    {% if paymentCount > 1 %}
-        Total Paid: {{ Registration.TotalPaid | FormatAsCurrency }}<br/>
-    {% endif %}
-
-    {% assign paymentPlan = Registration.PaymentPlanFinancialScheduledTransaction %}
-
-    {% if paymentPlan and paymentPlan.IsActive %}
-        Payment Plan: {{ paymentPlan.TotalAmount | FormatAsCurrency }} × {{ paymentPlan.NumberOfPayments }} ({{ paymentPlan.TransactionFrequencyValue | AsString }})<br>
-    {% else %}
-        Balance Due: {{ Registration.BalanceDue | FormatAsCurrency }}
-    {% endif %}
-</p>
-{% endif %}
-
-//- 16.4 fix
-{% if registrantCount > 0 %}
-    <p>
-        {{ RegistrationInstance.AdditionalConfirmationDetails }}
-    </p>
-{% endif %}
-
-<p>
-    If you have any questions please contact {{ RegistrationInstance.ContactPersonAlias.Person.FullName }} at {{ RegistrationInstance.ContactEmail }}.
-</p>
-
-{{ 'Global' | Attribute:'EmailFooter' }}"
+        DefaultValue = RegistrationTemplateDefaults.ConfirmationEmail
         )]
 
     [CodeEditorField(
@@ -164,63 +73,7 @@ namespace RockWeb.Blocks.Event
         EditorHeight = 300,
         IsRequired = false,
         Order = 2,
-        DefaultValue = @"{{ 'Global' | Attribute:'EmailHeader' }}
-{% capture externalSite %}{{ 'Global' | Attribute:'PublicApplicationRoot' }}{% endcapture %}
-{% assign registrantCount = Registration.Registrants | Size %}
-
-<h1>{{ RegistrationInstance.RegistrationTemplate.RegistrationTerm }} Reminder</h1>
-
-<p>
-    {{ RegistrationInstance.AdditionalReminderDetails }}
-</p>
-
-{% assign registrants = Registration.Registrants | Where:'OnWaitList', false %}
-{% assign registrantCount = registrants | Size %}
-{% if registrantCount > 0 %}
-	<p>
-		The following {{ RegistrationInstance.RegistrationTemplate.RegistrantTerm | PluralizeForQuantity:registrantCount | Downcase }}
-		{% if registrantCount > 1 %}have{% else %}has{% endif %} been registered for {{ RegistrationInstance.Name }}:
-	</p>
-
-	<ul>
-	{% for registrant in registrants %}
-		<li>{{ registrant.PersonAlias.Person.FullName }}</li>
-	{% endfor %}
-	</ul>
-{% endif %}
-
-{% assign waitlist = Registration.Registrants | Where:'OnWaitList', true %}
-{% assign waitListCount = waitlist | Size %}
-{% if waitListCount > 0 %}
-    <p>
-        The following {{ RegistrationInstance.RegistrationTemplate.RegistrantTerm | PluralizeForQuantity:registrantCount | Downcase }}
-		{% if waitListCount > 1 %}are{% else %}is{% endif %} still on the waiting list:
-   </p>
-
-    <ul>
-    {% for registrant in waitlist %}
-        <li>
-            <strong>{{ registrant.PersonAlias.Person.FullName }}</strong>
-        </li>
-    {% endfor %}
-    </ul>
-{% endif %}
-
-{% if Registration.BalanceDue > 0 %}
-<p>
-    This {{ RegistrationInstance.RegistrationTemplate.RegistrationTerm | Downcase  }} has a remaining balance
-    of {{ Registration.BalanceDue | FormatAsCurrency }}.
-    You can complete the payment for this {{ RegistrationInstance.RegistrationTemplate.RegistrationTerm | Downcase }}
-    using our <a href='{{ externalSite }}Registration?RegistrationId={{ Registration.Id }}&rckipid={{ Registration.PersonAlias.Person | PersonTokenCreate }}'>
-    online registration page</a>.
-</p>
-{% endif %}
-
-<p>
-    If you have any questions please contact {{ RegistrationInstance.ContactPersonAlias.Person.FullName }} at {{ RegistrationInstance.ContactEmail }}.
-</p>
-
-{{ 'Global' | Attribute:'EmailFooter' }}"
+        DefaultValue = RegistrationTemplateDefaults.ReminderEmail
         )]
 
     [CodeEditorField(
@@ -231,91 +84,7 @@ namespace RockWeb.Blocks.Event
         EditorHeight = 300,
         IsRequired = false,
         Order = 3,
-        DefaultValue = @"
-{% assign registrants = Registration.Registrants | Where:'OnWaitList', false %}
-{% assign registrantCount = registrants | Size %}
-{% if registrantCount > 0 %}
-    <p>
-        You have successfully registered the following
-        {{ RegistrationInstance.RegistrationTemplate.RegistrantTerm | PluralizeForQuantity:registrantCount | Downcase }}
-        for {{ RegistrationInstance.Name }}:
-    </p>
-
-    <ul>
-    {% for registrant in registrants %}
-        <li>
-
-            <strong>{{ registrant.PersonAlias.Person.FullName }}</strong>
-
-            {% if registrant.Cost > 0 %}
-                - {{ registrant.Cost | FormatAsCurrency }}
-            {% endif %}
-
-            {% assign feeCount = registrant.Fees | Size %}
-            {% if feeCount > 0 %}
-                <br/>{{ RegistrationInstance.RegistrationTemplate.FeeTerm | PluralizeForQuantity:registrantCount }}:
-                <ul class='list-unstyled'>
-                {% for fee in registrant.Fees %}
-                    <li>
-                        {{ fee.RegistrationTemplateFee.Name }} {% if fee.RegistrationTemplateFee.FeeType == 'Multiple' %} - {{ fee.Option }} {% endif %}
-                        {% if fee.Quantity > 1 %} ({{ fee.Quantity }} @ {{ fee.Cost | FormatAsCurrency }}){% endif %}: {{ fee.TotalCost | FormatAsCurrency }}
-                    </li>
-                {% endfor %}
-                </ul>
-            {% endif %}
-
-        </li>
-    {% endfor %}
-    </ul>
-{% endif %}
-
-{% assign waitlist = Registration.Registrants | Where:'OnWaitList', true %}
-{% assign waitListCount = waitlist | Size %}
-{% if waitListCount > 0 %}
-    <p>
-        The following were added to the wait list:
-    </p>
-
-    <ul>
-    {% for registrant in waitlist %}
-        <li>
-            <strong>{{ registrant.PersonAlias.Person.FullName }}</strong> - {{ registrant.Cost | FormatAsCurrency }}{% if registrant.Cost == 0 %} (not charged){% endif %} - <span class=""badge badge-warning"">Waiting List</span>
-        </li>
-    {% endfor %}
-    </ul>
-{% endif %}
-
-{% if Registration.TotalCost > 0 %}
-<p>
-    Total Cost: {{ Registration.TotalCost | FormatAsCurrency }}<br/>
-    {% if Registration.DiscountedCost != Registration.TotalCost %}
-        Discounted Cost: {{ Registration.DiscountedCost | FormatAsCurrency }}<br/>
-    {% endif %}
-    {% for payment in Registration.Payments %}
-        Paid {{ payment.Amount | FormatAsCurrency }} on {{ payment.Transaction.TransactionDateTime| Date:'M/d/yyyy' }}
-        <small>(Acct #: {{ payment.Transaction.FinancialPaymentDetail.AccountNumberMasked }}, Ref #: {{ payment.Transaction.TransactionCode }})</small><br/>
-    {% endfor %}
-
-    {% assign paymentCount = Registration.Payments | Size %}
-
-    {% if paymentCount > 1 %}
-        Total Paid: {{ Registration.TotalPaid | FormatAsCurrency }}<br/>
-    {% endif %}
-
-    {% assign paymentPlan = Registration.PaymentPlanFinancialScheduledTransaction %}
-
-    {% if paymentPlan and paymentPlan.IsActive %}
-        Payment Plan: {{ paymentPlan.TotalAmount | FormatAsCurrency }} × {{ paymentPlan.NumberOfPayments }} ({{ paymentPlan.TransactionFrequencyValue | AsString }})
-    {% else %}
-        Balance Due: {{ Registration.BalanceDue | FormatAsCurrency }}
-    {% endif %}
-</p>
-{% endif %}
-
-<p>
-    A confirmation email has been sent to {{ Registration.ConfirmationEmail }}. If you have any questions
-    please contact {{ RegistrationInstance.ContactPersonAlias.Person.FullName }} at {{ RegistrationInstance.ContactEmail }}.
-</p>"
+        DefaultValue = RegistrationTemplateDefaults.SuccessText
         )]
 
     [CodeEditorField(
@@ -326,56 +95,7 @@ namespace RockWeb.Blocks.Event
         EditorHeight = 300,
         IsRequired = false,
         Order = 4,
-        DefaultValue = @"{{ 'Global' | Attribute:'EmailHeader' }}
-{% capture externalSite %}{{ 'Global' | Attribute:'PublicApplicationRoot' }}{% endcapture %}
-
-<h1>{{ RegistrationInstance.RegistrationTemplate.RegistrationTerm }} Payment Reminder</h1>
-
-<p>
-    This {{ RegistrationInstance.RegistrationTemplate.RegistrationTerm | Downcase  }} for {{ RegistrationInstance.Name }} has a remaining balance
-    of {{ Registration.BalanceDue | FormatAsCurrency }}. The
-    {{ RegistrationInstance.RegistrationTemplate.RegistrantTerm | Downcase | Pluralize  }} for this
-    {{ RegistrationInstance.RegistrationTemplate.RegistrationTerm }} are below.
-</p>
-
-{% assign registrants = Registration.Registrants | Where:'OnWaitList', false %}
-{% assign registrantCount = registrants | Size %}
-{% if registrantCount > 0 %}
-	<ul>
-	{% for registrant in registrants %}
-		<li>{{ registrant.PersonAlias.Person.FullName }}</li>
-	{% endfor %}
-	</ul>
-{% endif %}
-
-{% assign waitlist = Registration.Registrants | Where:'OnWaitList', true %}
-{% assign waitListCount = waitlist | Size %}
-{% if waitListCount > 0 %}
-    <p>
-        The following {{ RegistrationInstance.RegistrationTemplate.RegistrantTerm | PluralizeForQuantity:registrantCount | Downcase }}
-		{% if waitListCount > 1 %}are{% else %}is{% endif %} still on the wait list:
-   </p>
-
-    <ul>
-    {% for registrant in waitlist %}
-        <li>
-            <strong>{{ registrant.PersonAlias.Person.FullName }}</strong>
-        </li>
-    {% endfor %}
-    </ul>
-{% endif %}
-
-<p>
-    You can complete the payment for this {{ RegistrationInstance.RegistrationTemplate.RegistrationTerm | Downcase }}
-    using our <a href='{{ externalSite }}Registration?RegistrationId={{ Registration.Id }}&rckipid={{ Registration.PersonAlias.Person | PersonTokenCreate }}'>
-    online registration page</a>.
-</p>
-
-<p>
-    If you have any questions please contact {{ RegistrationInstance.ContactPersonAlias.Person.FullName }} at {{ RegistrationInstance.ContactEmail }}.
-</p>
-
-{{ 'Global' | Attribute:'EmailFooter' }}"
+        DefaultValue = RegistrationTemplateDefaults.PaymentReminderEmail
         )]
 
     [CodeEditorField(
@@ -644,6 +364,7 @@ namespace RockWeb.Blocks.Event
 
             dvpConnectionStatus.DefinedTypeId = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.PERSON_CONNECTION_STATUS.AsGuid() ).Id;
             dvpRecordSource.DefinedTypeId = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.RECORD_SOURCE_TYPE.AsGuid() ).Id;
+            dvpEligibilityDataView.EntityTypeId = EntityTypeCache.GetId( Rock.SystemGuid.EntityType.PERSON.AsGuid() );
 
             var registrationAttributeSecurityField = gRegistrationAttributes.Columns.OfType<SecurityField>().FirstOrDefault();
             registrationAttributeSecurityField.EntityTypeId = EntityTypeCache.GetId<Attribute>() ?? 0;
@@ -726,32 +447,118 @@ The logged-in person's information will be used to complete the registrar inform
 
                 ShowDialog();
 
-                var postbackArgs = Request.Params["__EVENTARGUMENT"];
-                if ( postbackArgs.IsNotNullOrWhiteSpace() )
+                var eventTarget = Request["__EVENTTARGET"];
+                var eventArgs = Request["__EVENTARGUMENT"];
+                var log = string.Join( "\n", Request.Params.AllKeys.Select( k => k?.ToLower() ).Where( k => k?.Contains( "event" ) == true ).Select( k => k + ":" + Request[k] ) );
+                if ( eventTarget == upDetail.ClientID )
                 {
-                    var nameValue = postbackArgs.Split( new char[] { ':' } );
-                    if ( nameValue.Length == 2 )
+                    if ( eventArgs.IsNotNullOrWhiteSpace() )
                     {
-                        var values = nameValue[1].Split( new char[] { ';' } );
-                        if ( values.Length == 2 )
+                        var nameValue = eventArgs.Split( new char[] { ':' } );
+                        if ( nameValue.Length == 2 )
                         {
-                            var guid = values[0].AsGuid();
-                            var newIndex = values[1].AsInteger();
-
-                            switch ( nameValue[0] )
+                            var values = nameValue[1].Split( new char[] { ';' } );
+                            if ( values.Length == 2 )
                             {
-                                case "re-order-form":
-                                    {
-                                        SortForms( guid, newIndex + 1 );
-                                        break;
-                                    }
+                                var guid = values[0].AsGuid();
+                                var newIndex = values[1].AsInteger();
+
+                                switch ( nameValue[0] )
+                                {
+                                    case "re-order-form":
+                                        {
+                                            SortForms( guid, newIndex + 1 );
+                                            break;
+                                        }
+                                }
                             }
                         }
                     }
                 }
+
+                CheckRegistrantAgeEligibility();
+                CheckRegistrantGradeEligibility();
+                CheckRegistrantGenderEligibility();
             }
 
             base.OnLoad( e );
+        }
+
+        private void CheckRegistrantAgeEligibility()
+        {
+            var hasBirthDateField = FormFieldsState?
+                .Any( formAndFields => formAndFields.Value
+                    .Any( field => field.PersonFieldType == RegistrationPersonFieldType.Birthdate ) ) == true;
+
+            // Keep the hidden field up-to-date so we can skip a round-trip
+            // when the eligibility is changed and we need to determine whether or not to show the warning.
+            hfHasBirthDateField.Value = hasBirthDateField.ToString();
+
+            var hasBirthdateRelatedRegistrantEligibility =
+                nreEligibilityAgeRange.LowerValue.HasValue
+                || nreEligibilityAgeRange.UpperValue.HasValue
+                || ddlEligibilityAgeClassification.SelectedValueAsEnumOrNull<AgeClassification>().HasValue;
+
+            // If this logic changes (i.e., adding/removing these specific CSS classes)
+            // then the same has to be done in the JS in the RegistrationTemplateDetail.ascx file.
+            if ( hasBirthdateRelatedRegistrantEligibility && !hasBirthDateField )
+            {
+                nbEligibilityAgeWarning.CssClass = "d-block";
+            }
+            else
+            {
+                nbEligibilityAgeWarning.CssClass = "d-none";
+            }
+        }
+
+        private void CheckRegistrantGradeEligibility()
+        {
+            var hasGradeField = FormFieldsState?
+                .Any( formAndFields => formAndFields.Value
+                    .Any( field => field.PersonFieldType == RegistrationPersonFieldType.Grade ) ) == true;
+
+            // Keep the hidden field up-to-date so we can skip a round-trip
+            // when the eligibility is changed and we need to determine whether or not to show the warning.
+            hfHasGradeField.Value = hasGradeField.ToString();
+
+            var hasGradeRelatedRegistrantEligibility =
+                ddlEligibilityGradeOffsetMax.SelectedValue.IsNotNullOrWhiteSpace()
+                || ddlEligibilityGradeOffsetMin.SelectedValue.IsNotNullOrWhiteSpace();
+            
+            // If this logic changes (i.e., adding/removing these specific CSS classes)
+            // then the same has to be done in the JS in the RegistrationTemplateDetail.ascx file.
+            if ( hasGradeRelatedRegistrantEligibility && !hasGradeField )
+            {
+                nbEligibilityGradeWarning.CssClass = "d-block";
+            }
+            else
+            {
+                nbEligibilityGradeWarning.CssClass = "d-none";
+            }
+        }
+
+        private void CheckRegistrantGenderEligibility()
+        {
+            var hasGenderField = FormFieldsState?
+                .Any( formAndFields => formAndFields.Value
+                    .Any( field => field.PersonFieldType == RegistrationPersonFieldType.Gender ) ) == true;
+
+            // Keep the hidden field up-to-date so we can skip a round-trip
+            // when the eligibility is changed and we need to determine whether or not to show the warning.
+            hfHasGenderField.Value = hasGenderField.ToString();
+
+            var hasRegistrantEligibility = ddlEligibilityGender.SelectedValueAsEnumOrNull<Gender>();
+            
+            // If this logic changes (i.e., adding/removing these specific CSS classes)
+            // then the same has to be done in the JS in the RegistrationTemplateDetail.ascx file.
+            if ( hasRegistrantEligibility.HasValue && !hasGenderField )
+            {
+                nbEligibilityGenderWarning.CssClass = "d-block";
+            }
+            else
+            {
+                nbEligibilityGenderWarning.CssClass = "d-none";
+            }
         }
 
         /// <summary>
@@ -763,7 +570,7 @@ The logged-in person's information will be used to complete the registrar inform
         {
             var breadCrumbs = new List<BreadCrumb>();
 
-            var registrationTemplateId = PageParameter( pageReference, PageParameterKey.RegistrationTemplateId ).AsIntegerOrNull();
+            var registrationTemplateId = PageParameter( pageReference, PageParameterKey.RegistrationTemplateId ).AsIntegerOrNull() ?? Rock.Utility.IdHasher.Instance.GetId( PageParameter( pageReference, PageParameterKey.RegistrationTemplateId ) );
             if ( registrationTemplateId.HasValue )
             {
                 var registrationTemplate = GetRegistrationTemplate( registrationTemplateId.Value );
@@ -835,7 +642,7 @@ The logged-in person's information will be used to complete the registrar inform
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void btnEdit_Click( object sender, EventArgs e )
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var registrationTemplate = new RegistrationTemplateService( rockContext ).Get( hfRegistrationTemplateId.Value.AsInteger() );
 
             if ( registrationTemplate != null && ( UserCanEdit || registrationTemplate.IsAuthorized( Authorization.EDIT, this.CurrentPerson ) ) )
@@ -852,7 +659,7 @@ The logged-in person's information will be used to complete the registrar inform
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void btnDelete_Click( object sender, EventArgs e )
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
 
             var service = new RegistrationTemplateService( rockContext );
             var registrationTemplate = service.Get( hfRegistrationTemplateId.Value.AsInteger() );
@@ -886,7 +693,7 @@ The logged-in person's information will be used to complete the registrar inform
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnCopy_Click( object sender, EventArgs e )
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var registrationTemplate = new RegistrationTemplateService( rockContext )
                 .Get( hfRegistrationTemplateId.Value.AsInteger() );
 
@@ -1054,7 +861,7 @@ The logged-in person's information will be used to complete the registrar inform
         {
             ParseControls( true );
 
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
 
             var registrationTemplateService = new RegistrationTemplateService( rockContext );
 
@@ -1093,9 +900,10 @@ The logged-in person's information will be used to complete the registrar inform
             registrationTemplate.RequiredSignatureDocumentTemplateId = ddlSignatureDocumentTemplate.SelectedValueAsInt();
             // Rock’s signature system is only in-line enabled so if a new (non-legacy) template is selected
             // RegistrationTemplate.SignatureDocumentAction should be embed, if not then defer to the user's choice.
-            registrationTemplate.SignatureDocumentAction = documentTemplate?.IsLegacy == false || cbDisplayInLine.Checked ? SignatureDocumentAction.Embed : SignatureDocumentAction.Email;
+            registrationTemplate.SignatureDocumentAction = SignatureDocumentAction.Embed;
             registrationTemplate.WaitListEnabled = cbWaitListEnabled.Checked;
             registrationTemplate.ShowSmsOptIn = cbShowSmsOptIn.Checked;
+            registrationTemplate.AreDuplicateRegistrantsPrevented = cbPreventDuplicateRegistrants.Checked;
             registrationTemplate.RegistrarOption = ddlRegistrarOption.SelectedValueAsEnum<RegistrarOption>();
 
             registrationTemplate.RegistrationWorkflowTypeId = wtpRegistrationWorkflow.SelectedValueAsInt();
@@ -1130,6 +938,26 @@ The logged-in person's information will be used to complete the registrar inform
             registrationTemplate.IsPaymentPlanAllowed = paymentPlansFeatureData.IsPaymentPlanAllowed;
             registrationTemplate.PaymentPlanFrequencyValueIdsCollection = paymentPlansFeatureData.PaymentPlanFrequencyValueIds;
 
+            // Require Full Payment or Payment Plan settings.
+            if ( paymentPlansFeatureData.IsPaymentPlanAllowed )
+            {
+                registrationTemplate.IsFullPaymentOrPaymentPlanRequired = cbRequireFullPaymentOrPaymentPlan.Checked;
+                if ( registrationTemplate.IsFullPaymentOrPaymentPlanRequired )
+                {
+                    var messageText = tbFullPaymentOrPaymentPlanRequiredMessage.Text;
+                    registrationTemplate.FullPaymentOrPaymentPlanRequiredMessage = messageText.IsNullOrWhiteSpace() ? null : messageText;
+                }
+                else
+                {
+                    registrationTemplate.FullPaymentOrPaymentPlanRequiredMessage = null;
+                }
+            }
+            else
+            {
+                registrationTemplate.IsFullPaymentOrPaymentPlanRequired = false;
+                registrationTemplate.FullPaymentOrPaymentPlanRequiredMessage = null;
+            }
+
             registrationTemplate.ConfirmationFromName = tbConfirmationFromName.Text;
             registrationTemplate.ConfirmationFromEmail = tbConfirmationFromEmail.Text;
             registrationTemplate.ConfirmationSubject = tbConfirmationSubject.Text;
@@ -1160,6 +988,19 @@ The logged-in person's information will be used to complete the registrar inform
             registrationTemplate.SuccessTitle = tbSuccessTitle.Text;
             registrationTemplate.SuccessText = ceSuccessText.Text;
             registrationTemplate.RegistrationInstructions = heInstructions.Text;
+
+            // Eligibility
+            var registrantEligibilitySettings = registrationTemplate.GetRegistrantEligibilitySettingsOrNull()
+                ?? new RegistrationTemplate.RegistrantEligibilitySettings();
+            registrantEligibilitySettings.AgeClassification = ddlEligibilityAgeClassification.SelectedValueAsEnumOrNull<AgeClassification>();
+            var eligibilityDataViewId = dvpEligibilityDataView.SelectedValueAsId();
+            registrantEligibilitySettings.EligibilityDataViewGuid = eligibilityDataViewId.HasValue ? DataViewCache.Get( eligibilityDataViewId.Value )?.Guid : null;
+            registrantEligibilitySettings.Gender = ddlEligibilityGender.SelectedValueAsEnumOrNull<Gender>();
+            registrantEligibilitySettings.MinimumAge = nreEligibilityAgeRange.LowerValue;
+            registrantEligibilitySettings.MaximumAge = nreEligibilityAgeRange.UpperValue;
+            registrantEligibilitySettings.MaximumGradeOffset = ddlEligibilityGradeOffsetMax.SelectedValueAsInt(noneAsNull: false);
+            registrantEligibilitySettings.MinimumGradeOffset = ddlEligibilityGradeOffsetMin.SelectedValueAsInt(noneAsNull: false);
+            registrationTemplate.SetRegistrantEligibilitySettings( registrantEligibilitySettings );
 
             if ( !Page.IsValid || !registrationTemplate.IsValid )
             {
@@ -1626,7 +1467,7 @@ The logged-in person's information will be used to complete the registrar inform
         {
             if ( hfRegistrationTemplateId.Value.Equals( "0" ) )
             {
-                var parentCategoryId = PageParameter( PageParameterKey.ParentCategoryId ).AsIntegerOrNull();
+                var parentCategoryId = PageParameter( PageParameterKey.ParentCategoryId ).AsIntegerOrNull() ?? Rock.Utility.IdHasher.Instance.GetId( PageParameter( PageParameterKey.ParentCategoryId ) );
                 if ( parentCategoryId.HasValue )
                 {
                     // Canceling on Add, and we know the parentCategoryId, so we are probably in tree-view mode, so navigate to the current page.
@@ -1645,7 +1486,7 @@ The logged-in person's information will be used to complete the registrar inform
             else
             {
                 // Canceling on Edit. Return to Details.
-                var service = new RegistrationTemplateService( new RockContext() );
+                var service = new RegistrationTemplateService( RockApp.Current.CreateRockContext() );
                 var item = service.Get( int.Parse( hfRegistrationTemplateId.Value ) );
                 ShowReadonlyDetails( item );
             }
@@ -1736,6 +1577,10 @@ The logged-in person's information will be used to complete the registrar inform
             }
 
             BuildControls( true );
+
+            CheckRegistrantAgeEligibility();
+            CheckRegistrantGradeEligibility();
+            CheckRegistrantGenderEligibility();
         }
 
         /// <summary>
@@ -1829,6 +1674,10 @@ The logged-in person's information will be used to complete the registrar inform
             }
 
             BuildControls( true, e.FormGuid );
+
+            CheckRegistrantAgeEligibility();
+            CheckRegistrantGradeEligibility();
+            CheckRegistrantGenderEligibility();
         }
 
         /// <summary>
@@ -1909,6 +1758,10 @@ The logged-in person's information will be used to complete the registrar inform
 
             HideDialog();
             BuildControls( true );
+
+            CheckRegistrantAgeEligibility();
+            CheckRegistrantGradeEligibility();
+            CheckRegistrantGenderEligibility();
         }
 
         /// <summary>
@@ -1987,7 +1840,7 @@ The logged-in person's information will be used to complete the registrar inform
 
             if ( attributeId.HasValue )
             {
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     var attribute = new AttributeService( rockContext ).Get( attributeId.Value );
                     if ( attribute != null )
@@ -2517,9 +2370,7 @@ The logged-in person's information will be used to complete the registrar inform
         {
             var selectedTemplate = GetSelectedTemplate();
             var isNonLegacySelected = selectedTemplate != null && selectedTemplate.IsLegacy != true;
-            var isLegacySelected = selectedTemplate != null && selectedTemplate.IsLegacy == true;
 
-            cbDisplayInLine.Visible = isLegacySelected;
             cbAllowExternalUpdates.Enabled = !isNonLegacySelected;
             cbAllowExternalUpdates.Help = GetAllowExternalUpdatesHelpText( !isNonLegacySelected );
 
@@ -2548,7 +2399,7 @@ The logged-in person's information will be used to complete the registrar inform
 
             if ( registrationTemplate == null )
             {
-                rockContext = rockContext ?? new RockContext();
+                rockContext = rockContext ?? RockApp.Current.CreateRockContext();
                 registrationTemplate = new RegistrationTemplateService( rockContext )
                     .Queryable( "GroupType.Roles" )
                     .AsNoTracking()
@@ -2564,8 +2415,8 @@ The logged-in person's information will be used to complete the registrar inform
         /// </summary>
         private void ShowDetail()
         {
-            var registrationTemplateId = PageParameter( PageParameterKey.RegistrationTemplateId ).AsIntegerOrNull();
-            var parentCategoryId = PageParameter( PageParameterKey.ParentCategoryId ).AsIntegerOrNull();
+            var registrationTemplateId = PageParameter( PageParameterKey.RegistrationTemplateId ).AsIntegerOrNull() ?? Rock.Utility.IdHasher.Instance.GetId( PageParameter( PageParameterKey.RegistrationTemplateId ) );
+            var parentCategoryId = PageParameter( PageParameterKey.ParentCategoryId ).AsIntegerOrNull() ?? Rock.Utility.IdHasher.Instance.GetId( PageParameter( PageParameterKey.ParentCategoryId ) );
 
             if ( !registrationTemplateId.HasValue )
             {
@@ -2573,7 +2424,7 @@ The logged-in person's information will be used to complete the registrar inform
                 return;
             }
 
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
 
             RegistrationTemplate registrationTemplate = null;
             if ( registrationTemplateId.HasValue )
@@ -2826,8 +2677,6 @@ The logged-in person's information will be used to complete the registrar inform
             dvpConnectionStatus.SetValue( registrationTemplate.ConnectionStatusValueId );
             dvpRecordSource.SetValue( registrationTemplate.RegistrantRecordSourceValueId );
             ddlSignatureDocumentTemplate.SetValue( registrationTemplate.RequiredSignatureDocumentTemplateId );
-            cbDisplayInLine.Checked = registrationTemplate.SignatureDocumentAction == SignatureDocumentAction.Embed;
-            cbDisplayInLine.Visible = isLegacySignatureSelected;
             wtpRegistrationWorkflow.SetValue( registrationTemplate.RegistrationWorkflowTypeId );
             wtpRegistrantWorkflow.SetValue( registrationTemplate.RegistrantWorkflowTypeId );
             ddlRegistrarOption.SetValue( registrationTemplate.RegistrarOption.ConvertToInt() );
@@ -2840,6 +2689,8 @@ The logged-in person's information will be used to complete the registrar inform
 
             cbWaitListEnabled.Checked = registrationTemplate.WaitListEnabled;
             cbShowSmsOptIn.Checked = registrationTemplate.ShowSmsOptIn;
+            cbPreventDuplicateRegistrants.Checked = registrationTemplate.AreDuplicateRegistrantsPrevented;
+            divPreventDuplicateRegistrantsWarning.Attributes["style"] = registrationTemplate.AreDuplicateRegistrantsPrevented ? "display: block" : "display: none";
             cbAddPersonNote.Checked = registrationTemplate.AddPersonNote;
             cbLoginRequired.Checked = registrationTemplate.LoginRequired;
             cbAllowExternalUpdates.Checked = registrationTemplate.AllowExternalRegistrationUpdates;
@@ -2854,6 +2705,8 @@ The logged-in person's information will be used to complete the registrar inform
             cbCost.Value = registrationTemplate.Cost;
             cbMinimumInitialPayment.Value = registrationTemplate.MinimumInitialPayment;
             cbDefaultPaymentAmount.Value = registrationTemplate.DefaultPayment;
+            cbRequireFullPaymentOrPaymentPlan.Checked = registrationTemplate.IsFullPaymentOrPaymentPlanRequired;
+            tbFullPaymentOrPaymentPlanRequiredMessage.Text = registrationTemplate.FullPaymentOrPaymentPlanRequiredMessage;
             fgpFinancialGateway.SetValue( registrationTemplate.FinancialGatewayId );
 
             if ( IsRedirectionGateway( rockContext ) )
@@ -2898,12 +2751,46 @@ The logged-in person's information will be used to complete the registrar inform
             tbRegistrationAttributeTitleStart.Text = registrationTemplate.RegistrationAttributeTitleStart;
             tbRegistrationAttributeTitleEnd.Text = registrationTemplate.RegistrationAttributeTitleEnd;
 
+            var registrantEligibilitySettings = registrationTemplate.GetRegistrantEligibilitySettingsOrNull()
+                ?? new RegistrationTemplate.RegistrantEligibilitySettings();
+            if ( registrantEligibilitySettings.MaximumGradeOffset.HasValue )
+            {
+                ddlEligibilityGradeOffsetMax.SetValue( registrantEligibilitySettings.MaximumGradeOffset.Value );
+            }
+            else
+            {
+                ddlEligibilityGradeOffsetMax.ClearSelection();
+            }
+
+            if ( registrantEligibilitySettings.MinimumGradeOffset.HasValue )
+            {
+                ddlEligibilityGradeOffsetMin.SetValue( registrantEligibilitySettings.MinimumGradeOffset.Value );
+            }
+            else
+            {
+                ddlEligibilityGradeOffsetMin.ClearSelection();
+            }
+
+            var eligibilityDataViewGuid = registrantEligibilitySettings.EligibilityDataViewGuid;
+            dvpEligibilityDataView.SetValue( eligibilityDataViewGuid.HasValue ? DataViewCache.GetId( eligibilityDataViewGuid.Value ) : null );
+
+            ddlEligibilityAgeClassification.SetValue( registrantEligibilitySettings.AgeClassification?.ConvertToInt().ToString() ?? string.Empty );
+
+            ddlEligibilityGender.SetValue( registrantEligibilitySettings.Gender?.ConvertToInt().ToString() ?? string.Empty );
+
+            nreEligibilityAgeRange.LowerValue = registrantEligibilitySettings.MinimumAge;
+            nreEligibilityAgeRange.UpperValue = registrantEligibilitySettings.MaximumAge;
+
             tbSuccessTitle.Text = registrationTemplate.SuccessTitle;
             ceSuccessText.Text = registrationTemplate.SuccessText;
             heInstructions.Text = registrationTemplate.RegistrationInstructions;
             var defaultForm = FormState.FirstOrDefault();
             BuildControls( true, defaultForm.Guid );
             BindRegistrationAttributesGrid();
+
+            CheckRegistrantAgeEligibility();
+            CheckRegistrantGenderEligibility();
+            CheckRegistrantGradeEligibility();
         }
 
         /// <summary>
@@ -2991,7 +2878,7 @@ The logged-in person's information will be used to complete the registrar inform
                 lRegistrantFormsSummary.Text = $"<div>{None.TextHtml}</div>";
             }
 
-            var registrationAttributeNameList = new AttributeService( new RockContext() )
+            var registrationAttributeNameList = new AttributeService( RockApp.Current.CreateRockContext() )
                 .GetByEntityTypeId( new Registration().TypeId, true )
                 .AsQueryable()
                 .Where( a =>
@@ -3039,7 +2926,7 @@ The logged-in person's information will be used to complete the registrar inform
             }
 
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var placementService = new RegistrationTemplatePlacementService( rockContext );
 
@@ -3121,6 +3008,49 @@ The logged-in person's information will be used to complete the registrar inform
             foreach ( var documentType in SignatureDocumentTemplateState )
             {
                 ddlSignatureDocumentTemplate.Items.Add( new ListItem( documentType.Name, documentType.Id.ToString() ) );
+            }
+
+            ddlEligibilityAgeClassification.BindToEnum(insertBlankOption: true, ignoreTypes: new[] { AgeClassification.Unknown } );
+            ddlEligibilityGender.BindToEnum( insertBlankOption: true, ignoreTypes: new[] { Gender.Unknown } );
+            
+            var selectedGradeOffsetMax = ddlEligibilityGradeOffsetMax.SelectedValue.AsIntegerOrNull();
+            var selectedGradeOffsetMin = ddlEligibilityGradeOffsetMin.SelectedValue.AsIntegerOrNull();
+            ddlEligibilityGradeOffsetMax.Items.Clear();
+            ddlEligibilityGradeOffsetMin.Items.Clear();
+            var gradesDefinedType = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.SCHOOL_GRADES.AsGuid() );
+            if ( gradesDefinedType != null )
+            {
+                ddlEligibilityGradeOffsetMax.Items.Add( new ListItem() );
+                ddlEligibilityGradeOffsetMin.Items.Add( new ListItem() );
+                
+                foreach ( var gradeDefinedValue in gradesDefinedType.DefinedValues.OrderBy( dv => dv.Order ) )
+                {
+                    var gradeAbbreviation = gradeDefinedValue.GetAttributeValue( "Abbreviation" );
+                    var gradeOffset = gradeDefinedValue.Value.AsIntegerOrNull();
+
+                    if ( gradeAbbreviation.IsNotNullOrWhiteSpace() )
+                    {
+                        if ( gradeDefinedValue.IsActive
+                             || selectedGradeOffsetMax == gradeOffset )
+                        {
+                            ddlEligibilityGradeOffsetMax.Items.Add( new ListItem
+                            {
+                                Text = gradeAbbreviation,
+                                Value = gradeOffset.ToString()
+                            } );
+                        }
+
+                        if ( gradeDefinedValue.IsActive
+                             || selectedGradeOffsetMin == gradeOffset )
+                        {
+                            ddlEligibilityGradeOffsetMin.Items.Add( new ListItem
+                            {
+                                Text = gradeAbbreviation,
+                                Value = gradeOffset.ToString()
+                            } );
+                        }
+                    }
+                }
             }
         }
 
@@ -3943,7 +3873,7 @@ The logged-in person's information will be used to complete the registrar inform
                 if ( feeItems.Count > 1 )
                 {
                     var canUseSingleFeeType = true;
-                    var rockContext = new RockContext();
+                    var rockContext = RockApp.Current.CreateRockContext();
                     var registrationTemplateFeeItemService = new RegistrationTemplateFeeItemService( rockContext );
                     var registrationRegistrantFeeService = new RegistrationRegistrantFeeService( rockContext );
                     var configuredFeeItemIds = feeItems.Select( a => a.Id ).ToList();
@@ -4030,7 +3960,7 @@ The logged-in person's information will be used to complete the registrar inform
             var feeItem = feeItems.FirstOrDefault( a => a.Guid == feeItemGuid );
             if ( feeItem != null )
             {
-                if ( !new RegistrationTemplateFeeItemService( new RockContext() ).CanDelete( feeItem, out var errorMessage ) )
+                if ( !new RegistrationTemplateFeeItemService( RockApp.Current.CreateRockContext() ).CanDelete( feeItem, out var errorMessage ) )
                 {
                     nbFeeItemsConfigurationWarning.Text = errorMessage;
                     nbFeeItemsConfigurationWarning.Visible = true;
@@ -4153,7 +4083,7 @@ The logged-in person's information will be used to complete the registrar inform
 
             var lSharedGroupNames = e.Row.FindControl( "lSharedGroupNames" ) as Literal;
             var sharedGroupIds = RegistrationTemplatePlacementGuidGroupIdsState.GetValueOrNull( registrationTemplatePlacement.Guid );
-            var sharedGroupNameList = new GroupService( new RockContext() )
+            var sharedGroupNameList = new GroupService( RockApp.Current.CreateRockContext() )
                 .GetByIds( sharedGroupIds )
                 .Select( a => a.Name )
                 .ToList();
@@ -4253,7 +4183,7 @@ The logged-in person's information will be used to complete the registrar inform
             var sharedGroupIds = RegistrationTemplatePlacementGuidGroupIdsState.GetValueOrNull( registrationPlacementConfigurationGuid ) ?? new List<int>();
             hfPlacementConfigurationSharedGroupIdList.Value = sharedGroupIds.AsDelimited( "," );
 
-            gPlacementConfigurationSharedGroups.DataSource = new GroupService( new RockContext() )
+            gPlacementConfigurationSharedGroups.DataSource = new GroupService( RockApp.Current.CreateRockContext() )
                 .GetByIds( sharedGroupIds )
                 .OrderBy( a => a.Order )
                 .ThenBy( a => a.Name )
@@ -4369,7 +4299,7 @@ The logged-in person's information will be used to complete the registrar inform
                     return;
                 }
 
-                var placementGroupTypeId = new GroupService( new RockContext() )
+                var placementGroupTypeId = new GroupService( RockApp.Current.CreateRockContext() )
                     .Queryable()
                     .Where( g => g.Id == selectedGroupId.Value )
                     .Select( g => g.GroupTypeId )
@@ -4410,7 +4340,7 @@ The logged-in person's information will be used to complete the registrar inform
         /// <param name="sharedGroupIds">The shared group ids.</param>
         private void BindPlacementConfigurationSharedGroups( List<int> sharedGroupIds )
         {
-            gPlacementConfigurationSharedGroups.DataSource = new GroupService( new RockContext() )
+            gPlacementConfigurationSharedGroups.DataSource = new GroupService( RockApp.Current.CreateRockContext() )
                 .GetByIds( sharedGroupIds )
                 .OrderBy( a => a.Order )
                 .ThenBy( a => a.Name )
@@ -4422,7 +4352,7 @@ The logged-in person's information will be used to complete the registrar inform
 
         protected void fgpFinancialGateway_SelectedIndexChanged( object sender, EventArgs e )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 ShowHideBatchPrefixTextbox( rockContext );
                 ShowHidePaymentPlansFeature( GetPaymentPlansFeatureDataFromControls( rockContext ) );
@@ -4454,7 +4384,7 @@ The logged-in person's information will be used to complete the registrar inform
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void cbEnablePaymentPlans_CheckedChanged( object sender, EventArgs e )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 ShowHidePaymentPlansFeature( GetPaymentPlansFeatureDataFromControls( rockContext ) );
             }
@@ -4486,7 +4416,16 @@ The logged-in person's information will be used to complete the registrar inform
         {
             cbEnablePaymentPlans.Enabled = paymentPlansFeatureData.IsPaymentPlansFeatureSupported;
             cbEnablePaymentPlans.Checked = paymentPlansFeatureData.GetValueIfFeatureSupportedOrDefault( p => p.IsPaymentPlanAllowed );
-            cblSelectablePaymentFrequencies.Visible = paymentPlansFeatureData.GetValueIfFeatureSupportedOrDefault( p => p.IsPaymentPlanAllowed );
+
+            var isPaymentPlanAllowed = paymentPlansFeatureData.GetValueIfFeatureSupportedOrDefault( p => p.IsPaymentPlanAllowed );
+            cblSelectablePaymentFrequencies.Visible = isPaymentPlanAllowed;
+            cbRequireFullPaymentOrPaymentPlan.Visible = isPaymentPlanAllowed;
+
+            // Always render the message field row so JS can show/hide it without a postback when cbRequireFullPaymentOrPaymentPlan toggles.
+            // Initial display is set via inline style so the field is in the DOM and JS can find it.
+            divFullPaymentOrPaymentPlanRequiredMessageRow.Style["display"] = ( isPaymentPlanAllowed && cbRequireFullPaymentOrPaymentPlan.Checked )
+                ? string.Empty
+                : "none";
 
             // Clear selectable payment frequencies before adding them.
             cblSelectablePaymentFrequencies.Items.Clear();

@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -24,9 +24,11 @@ using System.Web.UI.WebControls;
 
 using Rock;
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Lava;
 using Rock.Model;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 
 namespace RockWeb.Blocks.Reporting
@@ -38,8 +40,14 @@ namespace RockWeb.Blocks.Reporting
     [Category( "Reporting" )]
     [Description( "List all the Interaction Session" )]
 
-    [LinkedPage( "Component Detail Page", "Page reference to the component detail page. This will be included as a variable in the Lava.", false, order: 0 )]
-    [LinkedPage( "Interaction Detail Page", "Page reference to the interaction detail page. This will be included as a variable in the Lava.", false, order: 1 )]
+    [LinkedPage( "Component Detail Page",
+        Description = "Page reference to the component detail page. This will be included as a variable in the Lava.",
+        IsRequired = false,
+        Order = 0 )]
+    [LinkedPage( "Interaction Detail Page",
+        Description = "Page reference to the interaction detail page. This will be included as a variable in the Lava.",
+        IsRequired = false,
+        Order = 1 )]
 
     [CodeEditorField( "Default Template",
         Description = "The Lava template to use as default.",
@@ -91,12 +99,31 @@ namespace RockWeb.Blocks.Reporting
     {% endfor %}
 {% endif %}" )]
 
-    [IntegerField( "Session Count", "The number of sessions to show per page.", true, 20, "", 3 )]
+    [IntegerField( "Session Count",
+        Description = "The number of sessions to show per page.",
+        IsRequired = true,
+        DefaultIntegerValue = 20,
+        Order = 3 )]
 
     [ContextAware( typeof( Person ) )]
     [Rock.SystemGuid.BlockTypeGuid( "EA90EF4F-C783-48CD-B575-AD785DE896E9" )]
     public partial class InteractionSessionList : Rock.Web.UI.RockBlock
     {
+
+        #region Keys
+
+        private static class PageParameterKey
+        {
+            public const string ChannelId = "ChannelId";
+            public const string StartDate = "StartDate";
+            public const string EndDate = "EndDate";
+            public const string Page = "Page";
+            public const string PersonId = "PersonId";
+            public const string PersonAliasId = "PersonAliasId";
+        }
+
+        #endregion Keys
+
         #region Fields
 
         private int? _channelId = null;
@@ -105,7 +132,7 @@ namespace RockWeb.Blocks.Reporting
         private int pageNumber = 0;
         private int? _personId = null;
 
-        #endregion
+        #endregion Fields
 
         #region Base Control Methods
 
@@ -117,7 +144,12 @@ namespace RockWeb.Blocks.Reporting
         {
             base.OnInit( e );
 
-            _channelId = PageParameter( "ChannelId" ).AsIntegerOrNull();
+            _channelId = new InteractionChannelService( RockApp.Current.CreateRockContext() ).GetSelect(
+                PageParameter( PageParameterKey.ChannelId ),
+                c => (int?) c.Id,
+                !PageCache.Layout.Site.DisablePredictableIds
+            );
+
             if ( !_channelId.HasValue )
             {
                 upnlContent.Visible = false;
@@ -145,27 +177,27 @@ namespace RockWeb.Blocks.Reporting
             {
                 if ( _channelId.HasValue )
                 {
-                    if ( !string.IsNullOrWhiteSpace( PageParameter( "StartDate" ) ) )
+                    if ( !string.IsNullOrWhiteSpace( PageParameter( PageParameterKey.StartDate ) ) )
                     {
-                        startDate = PageParameter( "StartDate" ).AsDateTime() ?? DateTime.MinValue;
+                        startDate = PageParameter( PageParameterKey.StartDate ).AsDateTime() ?? DateTime.MinValue;
                         if ( startDate != DateTime.MinValue )
                         {
                             drpDateFilter.LowerValue = startDate;
                         }
                     }
 
-                    if ( !string.IsNullOrWhiteSpace( PageParameter( "EndDate" ) ) )
+                    if ( !string.IsNullOrWhiteSpace( PageParameter( PageParameterKey.EndDate ) ) )
                     {
-                        endDate = PageParameter( "EndDate" ).AsDateTime() ?? DateTime.MaxValue;
+                        endDate = PageParameter( PageParameterKey.EndDate ).AsDateTime() ?? DateTime.MaxValue;
                         if ( endDate != DateTime.MaxValue )
                         {
                             drpDateFilter.UpperValue = endDate;
                         }
                     }
 
-                    if ( !string.IsNullOrEmpty( PageParameter( "Page" ) ) )
+                    if ( !string.IsNullOrEmpty( PageParameter( PageParameterKey.Page ) ) )
                     {
-                        pageNumber = PageParameter( "Page" ).AsInteger();
+                        pageNumber = PageParameter( PageParameterKey.Page ).AsInteger();
                     }
 
                     ShowList();
@@ -231,7 +263,7 @@ namespace RockWeb.Blocks.Reporting
 
             int skipCount = pageNumber * sessionCount;
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var interactionChannel = new InteractionChannelService( rockContext ).Get( _channelId.Value );
                 if ( interactionChannel != null )
@@ -325,22 +357,22 @@ namespace RockWeb.Blocks.Reporting
                     {
                         hlNext.Visible = hlNext.Enabled = true;
                         Dictionary<string, string> queryStringNext = new Dictionary<string, string>();
-                        queryStringNext.Add( "ChannelId", _channelId.ToString() );
-                        queryStringNext.Add( "Page", ( pageNumber + 1 ).ToString() );
+                        queryStringNext.Add( PageParameterKey.ChannelId, _channelId.ToString() );
+                        queryStringNext.Add( PageParameterKey.Page, ( pageNumber + 1 ).ToString() );
 
                         if ( _personId.HasValue )
                         {
-                            queryStringNext.Add( "PersonId", _personId.Value.ToString() );
+                            queryStringNext.Add( PageParameterKey.PersonId, _personId.Value.ToString() );
                         }
 
                         if ( startDate != DateTime.MinValue )
                         {
-                            queryStringNext.Add( "StartDate", startDate.ToShortDateString() );
+                            queryStringNext.Add( PageParameterKey.StartDate, startDate.ToShortDateString() );
                         }
 
                         if ( endDate != DateTime.MaxValue )
                         {
-                            queryStringNext.Add( "EndDate", endDate.ToShortDateString() );
+                            queryStringNext.Add( PageParameterKey.EndDate, endDate.ToShortDateString() );
                         }
 
                         var pageReferenceNext = new Rock.Web.PageReference( CurrentPageReference.PageId, CurrentPageReference.RouteId, queryStringNext );
@@ -360,22 +392,22 @@ namespace RockWeb.Blocks.Reporting
                     {
                         hlPrev.Visible = hlPrev.Enabled = true;
                         Dictionary<string, string> queryStringPrev = new Dictionary<string, string>();
-                        queryStringPrev.Add( "ChannelId", _channelId.ToString() );
-                        queryStringPrev.Add( "Page", ( pageNumber - 1 ).ToString() );
+                        queryStringPrev.Add( PageParameterKey.ChannelId, _channelId.ToString() );
+                        queryStringPrev.Add( PageParameterKey.Page, ( pageNumber - 1 ).ToString() );
 
                         if ( _personId.HasValue )
                         {
-                            queryStringPrev.Add( "PersonId", _personId.Value.ToString() );
+                            queryStringPrev.Add( PageParameterKey.PersonId, _personId.Value.ToString() );
                         }
 
                         if ( startDate != DateTime.MinValue )
                         {
-                            queryStringPrev.Add( "StartDate", startDate.ToShortDateString() );
+                            queryStringPrev.Add( PageParameterKey.StartDate, startDate.ToShortDateString() );
                         }
 
                         if ( endDate != DateTime.MaxValue )
                         {
-                            queryStringPrev.Add( "EndDate", endDate.ToShortDateString() );
+                            queryStringPrev.Add( PageParameterKey.EndDate, endDate.ToShortDateString() );
                         }
 
                         var pageReferencePrev = new Rock.Web.PageReference( CurrentPageReference.PageId, CurrentPageReference.RouteId, queryStringPrev );
@@ -391,24 +423,39 @@ namespace RockWeb.Blocks.Reporting
         /// </summary>
         public int? GetPersonId()
         {
-            int? personId = PageParameter( "PersonId" ).AsIntegerOrNull();
-            int? personAliasId = PageParameter( "PersonAliasId" ).AsIntegerOrNull();
-
-            if ( personAliasId.HasValue )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
-                personId = new PersonAliasService( new RockContext() ).GetPersonId( personAliasId.Value );
-            }
+                var personId = new PersonService( rockContext ).GetSelect(
+                    PageParameter( PageParameterKey.PersonId ),
+                    p => (int?) p.Id,
+                    !PageCache.Layout.Site.DisablePredictableIds
+                );
 
-            if ( !personId.HasValue )
-            {
-                var person = ContextEntity<Person>();
-                if ( person != null )
+                if ( !personId.HasValue )
                 {
-                    personId = person.Id;
+                    var person = ContextEntity<Person>();
+                    if ( person != null )
+                    {
+                        personId = person.Id;
+                    }
                 }
-            }
 
-            return personId;
+                if ( !personId.HasValue )
+                {
+                    var personAliasId = new PersonAliasService( rockContext ).GetSelect(
+                        PageParameter( PageParameterKey.PersonAliasId ),
+                        pa => (int?) pa.Id,
+                        !PageCache.Layout.Site.DisablePredictableIds
+                    );
+
+                    if ( personAliasId.HasValue )
+                    {
+                        personId = new PersonAliasService( rockContext ).GetPersonId( personAliasId.Value );
+                    }
+                }
+
+                return personId;
+            }
         }
 
         #endregion

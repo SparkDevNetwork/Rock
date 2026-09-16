@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -23,11 +23,13 @@ using System.Linq.Expressions;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 #endif
+
 using Newtonsoft.Json;
 
 using Rock.Attribute;
 using Rock.Model;
 using Rock.Reporting;
+using Rock.ViewModels.Utility;
 using Rock.Web.UI.Controls;
 
 #if REVIEW_WEBFORMS
@@ -35,6 +37,8 @@ using static Rock.Web.UI.Controls.ListItems;
 #else
 using KeyValuePair = System.Collections.Generic.KeyValuePair<System.Guid, string>;
 #endif
+
+using Rock.Configuration;
 
 namespace Rock.Field.Types
 {
@@ -125,9 +129,10 @@ namespace Rock.Field.Types
                     string formattedValue = string.Empty;
                     foreach ( var keyValuePair in keyValuePairs )
                     {
+                        var iconClass = values.Any( a => a == keyValuePair.Key ) ? "ti ti-square-check" : "ti ti-square";
                         formattedValue += string.Format( @"<div>
-                                <i class='far fa{1}-square'></i> {0}
-                               </div>", keyValuePair.Value, values.Any( a => a == keyValuePair.Key ) ? "-check" : "" );
+                                <i class='{1}'></i> {0}
+                               </div>", keyValuePair.Value, iconClass );
                     }
                     return formattedValue;
                 }
@@ -210,7 +215,7 @@ namespace Rock.Field.Types
                         foreach ( var selectedValue in selectedValues )
                         {
                             var searchValue = "," + selectedValue + ",";
-                            var qryToExtract = new AttributeValueService( new Data.RockContext() ).Queryable().Where( a => ( "," + a.Value + "," ).Contains( searchValue ) );
+                            var qryToExtract = new AttributeValueService( RockApp.Current.CreateRockContext() ).Queryable().Where( a => ( "," + a.Value + "," ).Contains( searchValue ) );
                             var valueExpression = FilterExpressionExtractor.Extract<AttributeValue>( qryToExtract, parameterExpression, "a" );
 
                             if ( comparisonType.Value != ComparisonType.Contains )
@@ -296,6 +301,57 @@ namespace Rock.Field.Types
         {
             var values = value.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).AsGuidList();
             return keyValuePairs.Where( a => values.Contains( a.Key ) ).Select( a => a.Value ).ToList().AsDelimited( "," );
+        }
+
+        #endregion
+
+        #region Value Hinting
+
+        /// <inheritdoc/>
+        /// <remarks>
+        /// The keys are guids invented by whoever configured the list rather than
+        /// references to any table, so they cannot be looked up anywhere. Listing them
+        /// is the only way a caller can supply a valid value.
+        /// </remarks>
+        internal override FieldTypeHints GetFieldHints( Dictionary<string, string> privateConfigurationValues )
+        {
+            var serializedItems = privateConfigurationValues.GetValueOrNull( VALUES_KEY );
+
+            if ( serializedItems.IsNullOrWhiteSpace() )
+            {
+                return null;
+            }
+
+            List<KeyValuePair> listItems;
+
+            try
+            {
+                listItems = JsonConvert.DeserializeObject<List<KeyValuePair>>( serializedItems );
+            }
+            catch
+            {
+                // Intentionally ignored: malformed configuration is not something this
+                // can describe, and failing here would take the caller down with it.
+                return null;
+            }
+
+            if ( listItems == null || !listItems.Any() )
+            {
+                return null;
+            }
+
+            return new FieldTypeHints
+            {
+                IsCompleteList = true,
+                Values = listItems
+                    .Select( i => new ListItemBag
+                    {
+                        Value = i.Key.ToString(),
+                        Text = i.Value
+                    } )
+                    .ToList(),
+                ValueFormat = "The guids of the checked items, separated by commas. Only the listed guids are recognized, and they identify entries in this field's own configured list rather than rows in any table, so they cannot be looked up elsewhere. Unchecked items are left out rather than recorded as unchecked."
+            };
         }
 
         #endregion

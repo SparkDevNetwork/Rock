@@ -141,3 +141,20 @@ BEGIN
     SELECT @name = (SELECT TOP 1 [name] FROM sysobjects WHERE [type] IN (N'FN', N'IF', N'TF', N'FS', N'FT') AND category = 0 AND [name] > @name ORDER BY [name])
 END
 GO
+
+----------------------------- v17+ -----------------------------
+
+/* Drop all user-defined table types */
+    
+DECLARE @SQL nvarchar(max) = N'';
+
+SELECT @SQL += N'DROP TYPE ' 
+    + QUOTENAME(SCHEMA_NAME(tt.schema_id)) 
+    + N'.' + QUOTENAME(tt.name) + N';' + CHAR(13) + CHAR(10)
+FROM sys.table_types AS tt
+WHERE tt.is_user_defined = 1;
+
+--PRINT @SQL;   -- review first
+EXEC sp_executesql @SQL;
+
+-------------------------------

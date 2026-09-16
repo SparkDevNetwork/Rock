@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -24,6 +24,7 @@ using System.Web.UI.WebControls;
 using System.Data.Entity;
 
 using Rock;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -40,12 +41,30 @@ namespace RockWeb.Blocks.Event
     [Category( "Event" )]
     [Description( "Block that takes a calendar item and displays occurrences for it using Lava." )]
     
-    [EventItemField("Event Item", "The event item to use to display occurrences for.", order: 0)]
-    [CampusesField("Campuses", "List of which campuses to show occurrences for. This setting will be ignored if 'Use Campus Context' is enabled.", required: false, order:1, includeInactive:true)]
-    [BooleanField("Use Campus Context", "Determine if the campus should be read from the campus context of the page.", order: 2)]
-    [SlidingDateRangeField("Date Range", "Optional date range to filter the occurrences on.", false, enabledSlidingDateRangeTypes: "Next,Upcoming,Current", order:3)]
-    [IntegerField("Max Occurrences", "The maximum number of occurrences to show.", false, 100, order: 4)]
-    [LinkedPage( "Registration Page", "The page to use for registrations.", order: 5 )]
+    [EventItemField( "Event Item",
+        Description = "The event item to use to display occurrences for.",
+        Order = 0 )]
+    [CampusesField( "Campuses",
+        Description = "List of which campuses to show occurrences for. This setting will be ignored if 'Use Campus Context' is enabled.",
+        IsRequired = false,
+        Order = 1,
+        IncludeInactive = true )]
+    [BooleanField( "Use Campus Context",
+        Description = "Determine if the campus should be read from the campus context of the page.",
+        Order = 2)]
+    [SlidingDateRangeField( "Date Range",
+        Description = "Optional date range to filter the occurrences on.",
+        IsRequired = false,
+        EnabledSlidingDateRangeTypes = "Next,Upcoming,Current",
+        Order = 3)]
+    [IntegerField( "Max Occurrences",
+        Description = "The maximum number of occurrences to show.",
+        IsRequired = false,
+        DefaultIntegerValue = 100,
+        Order = 4)]
+    [LinkedPage( "Registration Page",
+        Description = "The page to use for registrations.",
+        Order = 5 )]
 
     [CodeEditorField( "Lava Template",
         Description = "The Lava template used to display the results.<br>Available Lava fields include:<ul><li>RegistrationPage</li><li>EventItem</li><li>EventItemOccurrences</li></ul><span class='tip tip-lava'></span>",
@@ -126,7 +145,7 @@ namespace RockWeb.Blocks.Event
             if ( eventItemGuid != Guid.Empty )
             {
                 lMessages.Text = string.Empty;
-                RockContext rockContext = new RockContext();
+                RockContext rockContext = RockApp.Current.CreateRockContext();
 
                 // get event occurrences
                 var qry = new EventItemOccurrenceService( rockContext ).Queryable()

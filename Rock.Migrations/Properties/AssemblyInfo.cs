@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -16,4 +16,4 @@
 //
 using System.Runtime.CompilerServices;
 
-[assembly: InternalsVisibleTo( "Rock.Tests.Shared" )]
+[assembly: InternalsVisibleTo( "Rock.Tests.Integration" )]

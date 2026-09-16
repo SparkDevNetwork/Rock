@@ -1,0 +1,668 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="mobile-page-detail">
+        <Panel title="Mobile Page Builder"
+               titleIconCssClass="ti ti-device-mobile"
+               panelBodyCssClass="bg-interface-softer">
+            <template #subheaderLeft>
+                <div class="d-flex">
+                    <div class="col-lg-3 col-md-4 col-sm-4 hidden-xs text-center">
+                        <h6 class="">Blocks</h6>
+                    </div>
+                    <div class="col-lg-9 col-md-8 col-sm-8col-xs-12 text-center builder-divider">
+                        <h6 class="">Layout</h6>
+                    </div>
+                </div>
+            </template>
+
+            <div class="row row-eq-height row-no-gutters">
+                <div class="col-lg-3 col-md-4 col-sm-4 hidden-xs">
+                    <BlockPalette :blockTypes="blockTypes" :paletteDragSourceOptions="paletteDragSourceOptions" />
+                </div>
+                <div ref="zoneContainerElement" class="col-lg-9 col-md-8 col-sm-8 col-xs-12 builder-divider zone-container">
+                    <NotificationBox v-if="zoneErrorMessage" alertType="danger" v-text="zoneErrorMessage" />
+
+                    <template v-else>
+                        <BlockZone v-for="zone in zones"
+                                   :key="zone.name ?? ''"
+                                   :zone="zone"
+                                   :paletteDragOptions="paletteDragSourceOptions"
+                                   :reorderDragOptions="reorderDragSourceOptions"
+                                   :pendingBlockGuids="pendingBlockGuids"
+                                   @delete="onDeleteBlock"
+                                   @customAction="onCustomAction"
+                                   @refresh="onRefreshZones" />
+                    </template>
+                </div>
+            </div>
+        </Panel>
+    </div>
+</template>
+
+<style scoped>
+.builder-divider {
+    border-left: 1px solid var(--color-interface-soft);
+}
+
+.zone-container {
+    overflow-y: auto;
+    max-height: 684px;
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-large);
+    padding: var(--spacing-large);
+}
+
+/* No palette to divide from on extra-small screens, so drop the border. */
+@media (max-width: 767px) {
+    .builder-divider {
+        border-left: 0;
+    }
+}
+
+:deep(.panel-sub-header) {
+    padding: 0;
+}
+
+:deep(.panel-body) {
+    padding: 0;
+    overflow: hidden;
+    border-radius: 0 0 var(--rounded-medium) var(--rounded-medium);
+}
+</style>
+
+<style>
+/* Dragula mirror and transit styles — not scoped, since the mirror element is
+    appended directly to the body rather than rendered inside this component. */
+.gu-mirror {
+    cursor: grabbing;
+    box-shadow: 0 0 0 1px var(--color-primary);
+    border-radius: var(--rounded-small);
+    transform: rotate(-2deg);
+}
+
+.gu-transit {
+    opacity: 0.3;
+    pointer-events: none;
+}
+
+.block-zone.drag-over-empty .gu-transit {
+    background-color: var(--color-info-soft);
+    border: none;
+    opacity: 1;
+}
+
+body.is-dragging,
+body.is-dragging * {
+    cursor: grabbing !important;
+}
+</style>
+
+<script setup lang="ts">
+    // #region Types
+
+    import { computed, onBeforeUnmount, ref } from "vue";
+    import { IDragSourceOptions } from "@Obsidian/Directives/dragDrop";
+    import { emptyGuid, newGuid } from "@Obsidian/Utility/guid";
+    import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { alert, confirmDelete } from "@Obsidian/Utility/dialogs";
+    import { DetailBlockBox } from "@Obsidian/ViewModels/Blocks/detailBlockBox";
+    import { MobilePageBag } from "@Obsidian/ViewModels/Blocks/Mobile/MobilePageDetail/mobilePageBag";
+    import { MobilePageBlockBag } from "@Obsidian/ViewModels/Blocks/Mobile/MobilePageDetail/mobilePageBlockBag";
+    import { MobilePageBlockActionBag } from "@Obsidian/ViewModels/Blocks/Mobile/MobilePageDetail/mobilePageBlockActionBag";
+    import { MobilePageBlockTypeBag } from "@Obsidian/ViewModels/Blocks/Mobile/MobilePageDetail/mobilePageBlockTypeBag";
+    import { MobilePageZoneBag } from "@Obsidian/ViewModels/Blocks/Mobile/MobilePageDetail/mobilePageZoneBag";
+    import { MobilePageDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Mobile/MobilePageDetail/mobilePageDetailOptionsBag";
+    import BlockPalette from "./blockPalette.partial.obs";
+    import BlockZone from "./blockZone.partial.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import Panel from "@Obsidian/Controls/panel.obs";
+
+    // #endregion Types
+
+    const config = useConfigurationValues<DetailBlockBox<MobilePageBag, MobilePageDetailOptionsBag>>();
+    const invokeBlockAction = useInvokeBlockAction();
+
+    // #region Values
+
+    const zones = ref<MobilePageZoneBag[]>(config.entity?.builder?.zones ?? []);
+
+    const zoneErrorMessage = ref(config.entity?.builder?.zoneErrorMessage ?? "");
+
+    const pendingBlockGuids = ref<Set<string>>(new Set());
+
+    const zoneContainerElement = ref<HTMLElement>();
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    const blockTypes = computed((): MobilePageBlockTypeBag[] => {
+        return config.entity?.builder?.blockTypes ?? [];
+    });
+
+    // #endregion Computed Values
+
+    // #region Auto Scroll
+
+    /** Distance from an edge, in pixels, at which auto-scroll begins. */
+    const autoScrollEdgeSize = 60;
+
+    /** The fastest the container scrolls (pixels per frame) at the very edge. */
+    const autoScrollMaxSpeed = 18;
+
+    let autoScrollPointerX = 0;
+    let autoScrollPointerY = 0;
+    let autoScrollFrameId: number | null = null;
+
+    /**
+     * Records the pointer position and, only on the transition into an edge
+     * zone, starts the scroll loop. While idle no animation frames run.
+     *
+     * @param event The pointer move event fired during the drag.
+     */
+    function onAutoScrollPointerMove(event: PointerEvent): void {
+        autoScrollPointerX = event.clientX;
+        autoScrollPointerY = event.clientY;
+
+        if (autoScrollFrameId === null && getAutoScrollDelta() !== 0) {
+            autoScrollFrameId = requestAnimationFrame(autoScrollTick);
+        }
+    }
+
+    /**
+     * Returns how far to scroll the container this frame based on the pointer's
+     * proximity to an edge: negative scrolls up, positive scrolls down, and zero
+     * when the pointer is away from both edges or outside the container. Speed
+     * ramps up the closer the pointer gets to the edge.
+     */
+    function getAutoScrollDelta(): number {
+        const container = zoneContainerElement.value;
+
+        if (!container) {
+            return 0;
+        }
+
+        const rect = container.getBoundingClientRect();
+
+        if (autoScrollPointerX < rect.left || autoScrollPointerX > rect.right) {
+            return 0;
+        }
+
+        const distanceFromTop = autoScrollPointerY - rect.top;
+        const distanceFromBottom = rect.bottom - autoScrollPointerY;
+
+        if (distanceFromTop < autoScrollEdgeSize) {
+            const intensity = Math.min(Math.max((autoScrollEdgeSize - distanceFromTop) / autoScrollEdgeSize, 0), 1);
+            return -autoScrollMaxSpeed * intensity;
+        }
+
+        if (distanceFromBottom < autoScrollEdgeSize) {
+            const intensity = Math.min(Math.max((autoScrollEdgeSize - distanceFromBottom) / autoScrollEdgeSize, 0), 1);
+            return autoScrollMaxSpeed * intensity;
+        }
+
+        return 0;
+    }
+
+    /**
+     * Applies one frame of scrolling and reschedules itself while the pointer
+     * stays in an edge zone. Once the pointer leaves the edge the loop ends, so
+     * no frames are spent while idle. Holding still at the edge keeps scrolling
+     * because the tick reschedules on its own, not on pointer movement.
+     */
+    function autoScrollTick(): void {
+        const container = zoneContainerElement.value;
+        const delta = getAutoScrollDelta();
+
+        if (!container || delta === 0) {
+            autoScrollFrameId = null;
+            return;
+        }
+
+        container.scrollTop += delta;
+        autoScrollFrameId = requestAnimationFrame(autoScrollTick);
+    }
+
+    /**
+     * Starts listening for pointer moves=
+     */
+    function startAutoScroll(): void {
+        document.addEventListener("pointermove", onAutoScrollPointerMove);
+        document.addEventListener("pointerup", stopAutoScroll);
+        document.addEventListener("pointercancel", stopAutoScroll);
+    }
+
+    /** Stops the pointer listeners and any in-progress scroll loop. */
+    function stopAutoScroll(): void {
+        document.removeEventListener("pointermove", onAutoScrollPointerMove);
+        document.removeEventListener("pointerup", stopAutoScroll);
+        document.removeEventListener("pointercancel", stopAutoScroll);
+
+        if (autoScrollFrameId !== null) {
+            cancelAnimationFrame(autoScrollFrameId);
+            autoScrollFrameId = null;
+        }
+    }
+
+    // A drag can be interrupted by the component unmounting, so always clean up.
+    onBeforeUnmount(stopAutoScroll);
+
+    // #endregion Auto Scroll
+
+    // #region Drag and Drop
+
+    /**
+     * Builds a placeholder block bag to insert into a zone when a palette
+     * card is dropped. Stands in for the real block returned by the future
+     * AddBlock server action.
+     *
+     * @param blockType The block type that was dragged from the palette.
+     */
+    function createPlaceholderBlock(blockType: MobilePageBlockTypeBag): MobilePageBlockBag {
+        return {
+            id: 0,
+            idKey: null,
+            guid: newGuid(),
+            blockTypeGuid: emptyGuid,
+            order: 0,
+            name: blockType.name ?? "New Block",
+            typeName: blockType.name ?? "",
+            iconCssClass: blockType.iconCssClass,
+            cacheDuration: 0,
+            processLavaOnServer: false,
+            processLavaOnClient: false,
+            showOnPhone: true,
+            showOnTablet: true,
+            requiresNetwork: false,
+            canAdministrate: false,
+            customActions: []
+        };
+    }
+
+    // cleanup styling on any missed drag events
+    function resetDragState(): void {
+        document.body.classList.remove("is-dragging");
+
+        document.querySelectorAll(".block-zone.drag-over, .block-zone.drag-over-empty")
+            .forEach(el => el.classList.remove("drag-over", "drag-over-empty"));
+
+    }
+
+    /**
+     * The drag source options for the palette. Cards are copied (not moved)
+     * out of the palette so the palette keeps its full catalog, and each drop
+     * calls the AddBlock server action to persist the new block.
+     */
+    function getPaletteDragSourceOptions(): IDragSourceOptions {
+        return {
+            id: newGuid(),
+            copyElement: true,
+
+            dragBegin() {
+                document.body.classList.add("is-dragging");
+                startAutoScroll();
+            },
+
+            dragEnd() {
+                stopAutoScroll();
+            },
+
+            dragOver(operation) {
+                const zoneElement = operation.targetContainer?.closest(".block-zone");
+
+                zoneElement?.classList.add("drag-over");
+
+                if (zoneElement?.querySelector(".block-zone-empty")) {
+                    zoneElement.classList.add("drag-over-empty");
+                }
+            },
+
+            dragOut(operation) {
+                operation.targetContainer?.closest(".block-zone")?.classList.remove("drag-over", "drag-over-empty");
+            },
+
+            dragCancel() {
+                resetDragState();
+            },
+
+            async dragDrop(operation) {
+                resetDragState();
+
+                const clone = operation.element as HTMLElement;
+                const targetContainer = operation.targetContainer as HTMLElement | undefined;
+
+                const blockTypeKey = clone.dataset.blockTypeKey;
+                const zoneName = targetContainer?.dataset.zoneName;
+
+                const targetIndex = operation.targetIndex;
+
+                clone.remove();
+
+                if (!blockTypeKey || zoneName === undefined || targetIndex === undefined) {
+                    return;
+                }
+
+                const blockType = blockTypes.value.find(bt => bt.idKey === blockTypeKey);
+                const zone = zones.value.find(z => (z.name ?? "") === zoneName);
+
+                if (!blockType || !zone) {
+                    return;
+                }
+
+                if (!zone.blocks) {
+                    zone.blocks = [];
+                }
+
+                const sortedBlocks = [...zone.blocks].sort((a, b) => a.order - b.order);
+                const beforeIdKey = sortedBlocks[targetIndex]?.idKey ?? null;
+
+                const placeholder = createPlaceholderBlock(blockType);
+
+                // Slot the placeholder into the drop position, then renumber so
+                // the order property reflects the new sequence.
+                sortedBlocks.splice(targetIndex, 0, placeholder);
+                sortedBlocks.forEach((block, index) => block.order = index);
+
+                zone.blocks.push(placeholder);
+                pendingBlockGuids.value.add(placeholder.guid);
+
+                const result = await invokeBlockAction<MobilePageBlockBag>("AddBlock", {
+                    blockTypeIdKey: blockType.idKey,
+                    zoneName,
+                    beforeIdKey
+                });
+
+                pendingBlockGuids.value.delete(placeholder.guid);
+
+                const placeholderIndex = zone.blocks.findIndex(b => b.guid === placeholder.guid);
+
+                if (placeholderIndex === -1) {
+                    return;
+                }
+
+                if (result.isSuccess && result.data) {
+                    result.data.order = placeholder.order;
+
+                    // Swap the placeholder for the real block so the row works fully without a full zone refresh.
+                    zone.blocks.splice(placeholderIndex, 1, result.data);
+                }
+                else {
+                    // Mirrors dragula's own behavior for a rejected drop: the
+                    // card simply reverts, as though it was never dropped.
+                    zone.blocks.splice(placeholderIndex, 1);
+                    await alert(result.errorMessage ?? "Unable to add the block.");
+                }
+            }
+        };
+    }
+
+    const paletteDragSourceOptions = getPaletteDragSourceOptions();
+
+    /**
+     * The drag source options for reordering blocks. A single shared drake is
+     * used across every zone's list, so a block can be dragged within its own
+     * zone or dropped into a different one. Dragula's DOM move is reverted on
+     * drop so Vue re-renders the affected zones from the updated reactive data.
+     */
+    function getReorderDragSourceOptions(): IDragSourceOptions {
+        return {
+            id: newGuid(),
+            copyElement: false,
+            handleSelector: ".reorder-handle",
+
+            startDrag(operation, handle) {
+                return Array.from(operation.sourceContainer.querySelectorAll(".reorder-handle"))
+                    .some(node => node.contains(handle));
+            },
+
+            dragBegin() {
+                document.querySelectorAll<HTMLElement>(".block-zone-list").forEach(list => {
+                    list.style.minHeight = `${list.offsetHeight}px`;
+                });
+
+                startAutoScroll();
+            },
+
+            dragEnd() {
+                stopAutoScroll();
+
+                // Release the frozen heights so zones resize to their content again.
+                document.querySelectorAll<HTMLElement>(".block-zone-list").forEach(list => {
+                    list.style.minHeight = "";
+                });
+            },
+
+            async dragDrop(operation) {
+                const targetContainer = operation.targetContainer as HTMLElement | undefined;
+
+                if (!targetContainer || operation.targetIndex === undefined) {
+                    return;
+                }
+                // Prevent the Dragula DOM Update so Vue can handle it as single source of truth.
+                operation.element.remove();
+                operation.sourceContainer.insertBefore(operation.element, operation.sourceSibling ?? null);
+
+                const sourceZoneName = (operation.sourceContainer as HTMLElement).dataset.zoneName;
+                const targetZoneName = targetContainer.dataset.zoneName;
+
+                if (sourceZoneName === undefined || targetZoneName === undefined) {
+                    return;
+                }
+
+                if (sourceZoneName === targetZoneName) {
+                    await reorderBlockWithinZone(sourceZoneName, operation.sourceIndex, operation.targetIndex);
+                }
+                else {
+                    await moveBlockBetweenZones(sourceZoneName, targetZoneName, operation.sourceIndex, operation.targetIndex);
+                }
+            }
+        };
+    }
+
+    const reorderDragSourceOptions = getReorderDragSourceOptions();
+
+    // #endregion Drag and Drop
+
+    // #region Event Handlers
+
+    /**
+     * Confirms and deletes a block, then replaces the zones with the refreshed
+     * data returned by the server so the removed block disappears.
+     *
+     * @param block The block to delete.
+     */
+    async function onDeleteBlock(block: MobilePageBlockBag): Promise<void> {
+        const confirmed = await confirmDelete(`this ${block.name} block`);
+
+        if (!confirmed) {
+            return;
+        }
+
+        const result = await invokeBlockAction<MobilePageZoneBag[]>("DeleteBlock", { key: block.idKey });
+
+        if (result.isSuccess && result.data) {
+            zones.value = result.data;
+        }
+        else {
+            await alert(result.errorMessage ?? "Unable to delete the block.");
+        }
+    }
+
+    /**
+     * Launches a block's custom configuration action. The action component is
+     * loaded and mounted with the block's own context (page, block, block type)
+     * so it can invoke that block's actions.
+     *
+     * @param block The block the action belongs to.
+     * @param action The specific custom action that was clicked.
+     */
+    async function onCustomAction(block: MobilePageBlockBag, action: MobilePageBlockActionBag): Promise<void> {
+        const pageGuid = config.entity?.details?.guid;
+
+        if (!action.componentFileUrl || !pageGuid) {
+            return;
+        }
+
+        const rockPage = await import("@Obsidian/Templates/rockPage");
+
+        await rockPage.showCustomBlockAction(action.componentFileUrl, pageGuid, block.guid, block.blockTypeGuid);
+    }
+
+    /**
+     * Re-fetches the zones from the server. Called after a block is edited
+     * through the Block Properties modal so the card reflects the changes
+     * (name, settings) without a page reload.
+     */
+    async function onRefreshZones(): Promise<void> {
+        const result = await invokeBlockAction<MobilePageZoneBag[]>("GetZones");
+
+        if (result.isSuccess && result.data) {
+            zones.value = result.data;
+        }
+    }
+
+    /**
+     * Finds a zone by its name.
+     *
+     * @param zoneName The name of the zone to find.
+     */
+    function findZone(zoneName: string): MobilePageZoneBag | undefined {
+        return zones.value.find(zone => (zone.name ?? "") === zoneName);
+    }
+
+    /**
+     * Moves a block to a new position within its own zone and persists the new
+     * order. The order values are updated optimistically and reverted if the
+     * server rejects the change.
+     *
+     * @param zoneName The name of the zone the block belongs to.
+     * @param sourceIndex The index the block was dragged from.
+     * @param targetIndex The index the block was dropped at.
+     */
+    async function reorderBlockWithinZone(zoneName: string, sourceIndex: number, targetIndex: number): Promise<void> {
+        if (sourceIndex === targetIndex) {
+            return;
+        }
+
+        const zone = findZone(zoneName);
+        const blocks = zone?.blocks;
+
+        if (!blocks) {
+            return;
+        }
+
+        const sortedBlocks = [...blocks].sort((a, b) => a.order - b.order);
+        const movedBlock = sortedBlocks[sourceIndex];
+
+        if (!movedBlock?.idKey) {
+            return;
+        }
+
+        // Capture the current order values so the move can be reverted if the
+        // server rejects the change.
+        const previousOrders = new Map(blocks.map(block => [block.guid, block.order]));
+
+        // Apply the new sequence, then renumber so the order property drives
+        // the displayed order optimistically.
+        sortedBlocks.splice(sourceIndex, 1);
+        sortedBlocks.splice(targetIndex, 0, movedBlock);
+
+        // The moved block should be placed before whatever now follows it.
+        const beforeIdKey = sortedBlocks[targetIndex + 1]?.idKey ?? null;
+
+        sortedBlocks.forEach((block, index) => block.order = index);
+
+        const result = await invokeBlockAction("ReorderBlock", {
+            blockIdKey: movedBlock.idKey,
+            zoneName,
+            beforeIdKey
+        });
+
+        if (!result.isSuccess) {
+            // Revert the optimistic move so the UI matches the server.
+            blocks.forEach(block => {
+                const previousOrder = previousOrders.get(block.guid);
+
+                if (previousOrder !== undefined) {
+                    block.order = previousOrder;
+                }
+            });
+            await alert(result.errorMessage ?? "Unable to reorder the block.");
+        }
+    }
+
+    /**
+     * Moves a block out of one zone and into another at the dropped position,
+     * then persists the change. Both zones are updated optimistically and
+     * reverted together if the server rejects the move.
+     *
+     * @param sourceZoneName The name of the zone the block came from.
+     * @param targetZoneName The name of the zone the block was dropped into.
+     * @param sourceIndex The index the block was dragged from in the source zone.
+     * @param targetIndex The index the block was dropped at in the target zone.
+     */
+    async function moveBlockBetweenZones(sourceZoneName: string, targetZoneName: string, sourceIndex: number, targetIndex: number): Promise<void> {
+        const sourceZone = findZone(sourceZoneName);
+        const targetZone = findZone(targetZoneName);
+
+        if (!sourceZone?.blocks || !targetZone) {
+            return;
+        }
+
+        if (!targetZone.blocks) {
+            targetZone.blocks = [];
+        }
+
+        const sortedSource = [...sourceZone.blocks].sort((a, b) => a.order - b.order);
+        const movedBlock = sortedSource[sourceIndex];
+
+        // A not-yet-saved block has no key to persist, so ignore the move.
+        if (!movedBlock?.idKey) {
+            return;
+        }
+
+        // Snapshot both zones so the move can be reverted if the server rejects it.
+        const previousSourceBlocks = [...sourceZone.blocks];
+        const previousTargetBlocks = [...targetZone.blocks];
+        const previousOrders = new Map(
+            [...sourceZone.blocks, ...targetZone.blocks].map(block => [block.guid, block.order])
+        );
+
+        // Resolve the neighbor in the destination zone before mutating anything.
+        const sortedTarget = [...targetZone.blocks].sort((a, b) => a.order - b.order);
+        const beforeIdKey = sortedTarget[targetIndex]?.idKey ?? null;
+
+        // Move the block out of the source zone and into the target zone.
+        sourceZone.blocks.splice(sourceZone.blocks.indexOf(movedBlock), 1);
+        targetZone.blocks.push(movedBlock);
+
+        // Renumber the destination with the block slotted into its drop
+        // position, and renumber the source now that the block is gone, so the
+        // order property drives both zones optimistically.
+        sortedTarget.splice(targetIndex, 0, movedBlock);
+        sortedTarget.forEach((block, index) => block.order = index);
+        [...sourceZone.blocks].sort((a, b) => a.order - b.order).forEach((block, index) => block.order = index);
+
+        const result = await invokeBlockAction("ReorderBlock", {
+            blockIdKey: movedBlock.idKey,
+            zoneName: targetZoneName,
+            beforeIdKey
+        });
+
+        if (!result.isSuccess) {
+            sourceZone.blocks = previousSourceBlocks;
+            targetZone.blocks = previousTargetBlocks;
+            [...previousSourceBlocks, ...previousTargetBlocks].forEach(block => {
+                const previousOrder = previousOrders.get(block.guid);
+
+                if (previousOrder !== undefined) {
+                    block.order = previousOrder;
+                }
+            });
+            await alert(result.errorMessage ?? "Unable to move the block.");
+        }
+    }
+
+    // #endregion Event Handlers
+</script>

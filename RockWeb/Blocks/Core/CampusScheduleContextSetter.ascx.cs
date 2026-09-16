@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -23,6 +23,7 @@ using System.Web.UI.WebControls;
 
 using Rock;
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -264,7 +265,7 @@ namespace RockWeb.Blocks.Core
             var scheduleIdString = Request.QueryString["ScheduleId"];
             if ( scheduleIdString != null )
             {
-                var scheduleId = scheduleIdString.AsInteger();
+                var scheduleId = scheduleIdString.AsIntegerOrNull() ?? Rock.Utility.IdHasher.Instance.GetId( scheduleIdString ) ?? 0;
 
                 // if there is a query parameter, ensure that the Schedule Context cookie is set (and has an updated expiration)
                 // note, the Schedule Context might already match due to the query parameter, but has a different cookie context, so we still need to ensure the cookie context is updated
@@ -291,7 +292,7 @@ namespace RockWeb.Blocks.Core
                 var selectedSchedule = GetAttributeValue( AttributeKey.ScheduleGroup );
                 var selectedScheduleList = selectedSchedule.Split( ',' ).AsGuidList();
 
-                schedules.AddRange( new ScheduleService( new RockContext() ).Queryable()
+                schedules.AddRange( new ScheduleService( RockApp.Current.CreateRockContext() ).Queryable()
                     .Where( a => selectedScheduleList.Contains( a.Guid ) )
                     .Select( a => new ScheduleItem { Name = a.Name, Id = a.Id } )
                     .OrderBy( s => s.Name )
@@ -334,7 +335,7 @@ namespace RockWeb.Blocks.Core
         protected Campus SetCampusContext( int campusId, bool refreshPage = false )
         {
             bool pageScope = GetAttributeValue( AttributeKey.ContextScope ) == "Page";
-            var campus = new CampusService( new RockContext() ).Get( campusId );
+            var campus = new CampusService( RockApp.Current.CreateRockContext() ).Get( campusId );
             if ( campus == null )
             {
                 // clear the current campus context
@@ -377,7 +378,7 @@ namespace RockWeb.Blocks.Core
         protected Schedule SetScheduleContext( int scheduleId, bool refreshPage = false )
         {
             bool pageScope = GetAttributeValue( AttributeKey.ContextScope ) == "Page";
-            var schedule = new ScheduleService( new RockContext() ).Get( scheduleId );
+            var schedule = new ScheduleService( RockApp.Current.CreateRockContext() ).Get( scheduleId );
             if ( schedule == null )
             {
                 // clear the current schedule context

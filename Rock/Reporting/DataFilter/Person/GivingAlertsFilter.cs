@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -14,14 +14,6 @@
 // limitations under the License.
 // </copyright>
 //
-using Rock.Data;
-using Rock.Model;
-using Rock.Net;
-using Rock.ViewModels.Controls;
-using Rock.ViewModels.Utility;
-using Rock.Web.UI.Controls;
-using Rock.Web.Utilities;
-
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -30,6 +22,15 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+
+using Rock.Configuration;
+using Rock.Data;
+using Rock.Model;
+using Rock.Net;
+using Rock.ViewModels.Controls;
+using Rock.ViewModels.Utility;
+using Rock.Web.UI.Controls;
+using Rock.Web.Utilities;
 
 namespace Rock.Reporting.DataFilter
 {
@@ -219,12 +220,12 @@ function() {
 
             if ( selectionConfig != null )
             {
-                if ( selectionConfig.TransactionAlertTypeIds.Count > 0 )
+                if ( selectionConfig.TransactionAlertTypeIds != null && selectionConfig.TransactionAlertTypeIds.Count > 0 )
                 {
                     var alertTypeNames = new List<string>();
                     foreach ( var transactionAlertTypeId in selectionConfig.TransactionAlertTypeIds )
                     {
-                        var transactionAlertType = new FinancialTransactionAlertTypeService( new RockContext() )
+                        var transactionAlertType = new FinancialTransactionAlertTypeService( RockApp.Current.CreateRockContext() )
                             .Get( transactionAlertTypeId );
                         if ( transactionAlertType != null )
                         {
@@ -236,7 +237,10 @@ function() {
                 }
 
                 var comparisonType = selectionConfig.ComparisonValue.ConvertToEnumOrNull<ComparisonType>();
-                result += $" {comparisonType.ConvertToString()}: ${selectionConfig.Amount}";
+                if ( comparisonType != null )
+                {
+                    result += $" {comparisonType.ConvertToString()}: ${selectionConfig.Amount}";
+                }
 
                 if ( selectionConfig.DelimitedDateRangeValues.IsNotNullOrWhiteSpace() )
                 {
@@ -264,7 +268,7 @@ function() {
         public override Control[] CreateChildControls( Type entityType, FilterField filterControl )
         {
             var controls = new List<Control>();
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
 
             var rlbGivingAlerts = new RockListBox();
             rlbGivingAlerts.Label = "Alert Name";

@@ -21,6 +21,7 @@
 // </copyright>
 //
 
+using Rock.Configuration;
 using Rock.Model;
 using Rock.SystemGuid;
 
@@ -35,6 +36,6 @@ namespace Rock.Rest.Controllers
         /// <summary>
         /// Initializes a new instance of the <see cref="GroupsController"/> class.
         /// </summary>
-        public GroupsController() : base( new Rock.Model.GroupService( new Rock.Data.RockContext() ) ) { } 
+        public GroupsController() : base( new Rock.Model.GroupService( RockApp.Current.CreateRockContext() ) ) { } 
     }
 }

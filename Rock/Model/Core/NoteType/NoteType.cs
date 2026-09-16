@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -25,6 +25,8 @@ using Rock.AI.Classes.ChatCompletions;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Enums.Core;
+using Rock.Enums.Security;
+using Rock.Security;
 using Rock.Web.Cache;
 
 namespace Rock.Model
@@ -72,6 +74,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 50 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string EntityTypeQualifierColumn { get; set; }
 
         /// <summary>
@@ -83,6 +86,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 200 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string EntityTypeQualifierValue { get; set; }
 
         /// <summary>
@@ -94,6 +98,7 @@ namespace Rock.Model
         [Required]
         [MaxLength( 100 )]
         [DataMember( IsRequired = true )]
+        [StringValidation( StringValidationProfile.Name )]
         public string Name { get; set; }
 
         /// <summary>
@@ -113,6 +118,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 100 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string IconCssClass { get; set; }
 
         /// <summary>
@@ -167,6 +173,7 @@ namespace Rock.Model
         /// <value>The base color to use when calculating the color pair.</value>
         [DataMember]
         [MaxLength( 100 )]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string Color { get; set; }
 
         /// <summary>
@@ -179,6 +186,7 @@ namespace Rock.Model
         [MaxLength( 100 )]
         [Obsolete( "This property is no longer used and will be removed in the future." )]
         [RockObsolete( "1.16" )]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string BackgroundColor { get; set; }
 
         /// <summary>
@@ -191,6 +199,7 @@ namespace Rock.Model
         [MaxLength( 100 )]
         [Obsolete( "This property is no longer used and will be removed in the future." )]
         [RockObsolete( "1.16" )]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string FontColor { get; set; }
 
         /// <summary>
@@ -203,6 +212,7 @@ namespace Rock.Model
         [MaxLength( 100 )]
         [Obsolete( "This property is no longer used and will be removed in the future." )]
         [RockObsolete( "1.16" )]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string BorderColor { get; set; }
 
         /// <summary>
@@ -235,6 +245,7 @@ namespace Rock.Model
         [DataMember]
         [Obsolete( "This property is no longer used and will be removed in the future." )]
         [RockObsolete( "1.16" )]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string ApprovalUrlTemplate { get; set; }
 
         /// <summary>
@@ -277,6 +288,7 @@ namespace Rock.Model
         /// The additional settings json.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string AdditionalSettingsJson { get; set; }
 
         #endregion
@@ -345,29 +357,21 @@ namespace Rock.Model
             public string AIApprovalGuidelines { get; set; }
 
             /// <summary>
-            /// The <see cref="Rock.Model.AIProvider"/> to use for AI Approvals.
-            /// </summary>
-            public int? AIProviderId { get; set; }
-
-            /// <summary>
             /// Gets the System and User messages for the AI Approval Chat Completion request for the <paramref name="note"/>.
             /// </summary>
             /// <param name="note">The <see cref="Note"/> to generate the chat completion messages for.</param>
             /// <returns></returns>
-            public List<ChatCompletionsRequestMessage> AIApprovalRequestMessages( Note note )
+            public string GetApprovalRequestText( Note note )
             {
-                return new List<ChatCompletionsRequestMessage>
-                {
-                    new ChatCompletionsRequestMessage { Role = Enums.AI.ChatMessageRole.System, Content = "Please determine if the note delimited by ```Note Text``` should be approved based on the approval guidance delimited by ```Approval Guidance```. Please answer with only true to approve or false to not approve." },
-                    new ChatCompletionsRequestMessage { Role = Enums.AI.ChatMessageRole.User, Content = $@"
+                return $@"Please determine if the note delimited by ```Note Text``` should be approved based on the approval guidance delimited by ```Approval Guidance```. Please answer with only true to approve or false to not approve.
+
 ```Approval Guidance```
 {AIApprovalGuidelines}
 ```Approval Guidance```
 
 ```Note Text```
 {note.Text}
-```Note Text```" }
-                };
+```Note Text```";
             }
         }
 

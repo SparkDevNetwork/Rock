@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -22,6 +22,7 @@ using System.Data.Entity;
 using System.Linq;
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Enums.Lms;
@@ -377,7 +378,7 @@ namespace Rock.Blocks.Lms
                     }
                     else if ( box.Bag.Location?.Address != null )
                     {
-                        var locationService = new LocationService( new RockContext() );
+                        var locationService = new LocationService( RockApp.Current.CreateRockContext() );
                         var address = box.Bag.Location.Address;
                         var location = locationService.Get( address.Street1, address.Street2, address.City, address.State, address.Locality, address.PostalCode, address.Country, null );
                         locationId = location?.Id ?? 0;
@@ -1073,7 +1074,6 @@ namespace Rock.Blocks.Lms
             }
 
             var components = LearningActivityContainer.Instance.Components.Values;
-            var now = DateTime.Now;
             var studentCount = new LearningParticipantService( RockContext ).GetStudents( entity.Id ).Count();
 
             // Return all activities for the course.
@@ -1085,7 +1085,7 @@ namespace Rock.Blocks.Lms
                 .AddField( "dates", a => a.DatesDescription )
                 .AddField( "isPastDue", a => a.IsPastDue )
                 .AddField( "count", a => studentCount )
-                .AddField( "completedCount", a => a.LearningClassActivityCompletions.Count( c => c.IsStudentCompleted || c.IsFacilitatorCompleted ) )
+                .AddField( "completedCount", a => a.LearningClassActivityCompletions.Count( c => c.IsCompleted ) )
                 .AddField( "componentIconCssClass", a => components.FirstOrDefault( c => c.Value.EntityType.Id == a.LearningActivity.ActivityComponentId ).Value.IconCssClass )
                 .AddField( "componentHighlightColor", a => components.FirstOrDefault( c => c.Value.EntityType.Id == a.LearningActivity.ActivityComponentId ).Value.HighlightColor )
                 .AddField( "componentName", a => components.FirstOrDefault( c => c.Value.EntityType.Id == a.LearningActivity.ActivityComponentId ).Value.Name )
@@ -1207,7 +1207,7 @@ namespace Rock.Blocks.Lms
         [BlockAction]
         public BlockActionResult ReorderActivity( string key, string beforeKey )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var classId = GetClassId().ToIntSafe();
 

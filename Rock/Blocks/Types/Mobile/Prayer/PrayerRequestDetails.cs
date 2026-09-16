@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -24,6 +24,7 @@ using RestSharp.Extensions;
 
 using Rock.Attribute;
 using Rock.Common.Mobile.Blocks.Content;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Mobile;
 using Rock.Model;
@@ -49,7 +50,7 @@ namespace Rock.Blocks.Types.Mobile.Prayer
         Description = "If disabled, then the user will not be able to select a category and the default category will be used exclusively.",
         IsRequired = false,
         DefaultBooleanValue = true,
-        ControlType = Field.Types.BooleanFieldType.BooleanControlType.Checkbox,
+        BooleanControlType = Rock.Enums.Controls.BooleanControlType.Checkbox,
         Category = AttributeCategories.CategorySelection,
         Key = AttributeKeys.ShowCategory,
         Order = 0 )]
@@ -76,7 +77,7 @@ namespace Rock.Blocks.Types.Mobile.Prayer
         Description = "If enabled, prayer requests are automatically approved; otherwise they must be approved by an admin before they can be seen by the prayer team.",
         IsRequired = false,
         DefaultBooleanValue = true,
-        ControlType = Field.Types.BooleanFieldType.BooleanControlType.Checkbox,
+        BooleanControlType = Rock.Enums.Controls.BooleanControlType.Checkbox,
         Category = AttributeCategories.Features,
         Key = AttributeKeys.EnableAutoApprove,
         Order = 0 )]
@@ -93,7 +94,7 @@ namespace Rock.Blocks.Types.Mobile.Prayer
         Description = "If enabled, a 'Add/Edit Prayer Request' header will be displayed.",
         IsRequired = true,
         DefaultBooleanValue = true,
-        ControlType = Field.Types.BooleanFieldType.BooleanControlType.Checkbox,
+        BooleanControlType = Rock.Enums.Controls.BooleanControlType.Checkbox,
         Category = AttributeCategories.Features,
         Key = AttributeKeys.ShowHeader,
         Order = 2 )]
@@ -102,7 +103,7 @@ namespace Rock.Blocks.Types.Mobile.Prayer
         Description = "If enabled, requestors will be able to flag prayer requests as urgent.",
         IsRequired = false,
         DefaultBooleanValue = false,
-        ControlType = Field.Types.BooleanFieldType.BooleanControlType.Checkbox,
+        BooleanControlType = Rock.Enums.Controls.BooleanControlType.Checkbox,
         Category = AttributeCategories.Features,
         Key = AttributeKeys.ShowUrgentFlag,
         Order = 3 )]
@@ -111,7 +112,7 @@ namespace Rock.Blocks.Types.Mobile.Prayer
         Description = "If enabled, requestors will be able set whether or not they want their request displayed on the public website.",
         IsRequired = false,
         DefaultBooleanValue = false,
-        ControlType = Field.Types.BooleanFieldType.BooleanControlType.Checkbox,
+        BooleanControlType = Rock.Enums.Controls.BooleanControlType.Checkbox,
         Category = AttributeCategories.Features,
         Key = AttributeKeys.ShowPublicDisplayFlag,
         Order = 4 )]
@@ -120,7 +121,7 @@ namespace Rock.Blocks.Types.Mobile.Prayer
         Description = "If enabled, all prayers will be set to public by default.",
         IsRequired = false,
         DefaultBooleanValue = false,
-        ControlType = Field.Types.BooleanFieldType.BooleanControlType.Checkbox,
+        BooleanControlType = Rock.Enums.Controls.BooleanControlType.Checkbox,
         Category = AttributeCategories.Features,
         Key = AttributeKeys.DefaultToPublic,
         Order = 5 )]
@@ -136,7 +137,7 @@ namespace Rock.Blocks.Types.Mobile.Prayer
         Description = "Should the campus field be displayed? If there is only one active campus then the campus field will not show.",
         IsRequired = false,
         DefaultBooleanValue = true,
-        ControlType = Field.Types.BooleanFieldType.BooleanControlType.Checkbox,
+        BooleanControlType = Rock.Enums.Controls.BooleanControlType.Checkbox,
         Category = AttributeCategories.Features,
         Key = AttributeKeys.ShowCampus,
         Order = 7 )]
@@ -145,7 +146,7 @@ namespace Rock.Blocks.Types.Mobile.Prayer
         Description = "Require that a campus be selected. The campus will not be displayed if there is only one available campus, in which case if this is set to true then the single campus is automatically used.",
         IsRequired = false,
         DefaultBooleanValue = false,
-        ControlType = Field.Types.BooleanFieldType.BooleanControlType.Checkbox,
+        BooleanControlType = Rock.Enums.Controls.BooleanControlType.Checkbox,
         Category = AttributeCategories.Features,
         Key = AttributeKeys.RequireCampus,
         Order = 8 )]
@@ -154,7 +155,7 @@ namespace Rock.Blocks.Types.Mobile.Prayer
         Description = "Require that a last name be entered. First name is always required.",
         IsRequired = false,
         DefaultBooleanValue = true,
-        ControlType = Field.Types.BooleanFieldType.BooleanControlType.Checkbox,
+        BooleanControlType = Rock.Enums.Controls.BooleanControlType.Checkbox,
         Category = AttributeCategories.Features,
         Key = AttributeKeys.RequireLastName,
         Order = 9 )]
@@ -163,14 +164,14 @@ namespace Rock.Blocks.Types.Mobile.Prayer
         Description = "If enabled, the request will be linked to an existing person if a match can be made between the requester and an existing person.",
         IsRequired = false,
         DefaultBooleanValue = false,
-        ControlType = Field.Types.BooleanFieldType.BooleanControlType.Checkbox,
+        BooleanControlType = Rock.Enums.Controls.BooleanControlType.Checkbox,
         Category = AttributeCategories.Features,
         Key = AttributeKeys.EnablePersonMatching,
         Order = 10 )]
 
     [CustomDropdownListField( "Completion Action",
-        description: "What action to perform after saving the prayer request.",
-        listSource: "0^Show Completion Xaml,1^Pop Page",
+        Description = "What action to perform after saving the prayer request.",
+        ListSource = "0^Show Completion Xaml,1^Pop Page",
         IsRequired = true,
         DefaultValue = "0",
         Category = AttributeCategories.OnSaveBehavior,
@@ -558,7 +559,7 @@ namespace Rock.Blocks.Types.Mobile.Prayer
             string fieldsContent;
             var parameters = new Dictionary<string, string>();
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 Guid? requestGuid = RequestContext.GetPageParameter( PageParameterKeys.RequestGuid ).AsGuidOrNull();
                 PrayerRequest request = null;
@@ -654,7 +655,7 @@ namespace Rock.Blocks.Types.Mobile.Prayer
                 string firstName, lastName, email;
                 if ( usePassedInRequestor )
                 {
-                    rockContext = rockContext ?? new RockContext();
+                    rockContext = rockContext ?? RockApp.Current.CreateRockContext();
 
                     var person = new PersonService( rockContext )
                         .Get( requestorPersonGuid.Value );
@@ -753,7 +754,7 @@ namespace Rock.Blocks.Types.Mobile.Prayer
         /// <returns>The response to send back to the client.</returns>
         private CallbackResponse SaveRequest( Dictionary<string, object> parameters )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var prayerRequestService = new PrayerRequestService( rockContext );
                 PrayerRequest prayerRequest;

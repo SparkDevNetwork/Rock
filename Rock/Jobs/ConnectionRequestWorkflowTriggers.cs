@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -22,6 +22,7 @@ using System.Linq;
 using System.Text;
 using System.Web;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -100,7 +101,7 @@ namespace Rock.Jobs
                 int triggerWorkflow = 0;
                 int recordsWithError = 0;
 
-                var rockContext = new RockContext();
+                var rockContext = RockApp.Current.CreateRockContext();
                 DateTime midnightToday = RockDateTime.Today.AddDays( 1 );
 
                 var connectionRequestService = new ConnectionRequestService( rockContext );
@@ -130,7 +131,7 @@ namespace Rock.Jobs
                 {
                     try
                     {
-                        using ( var updateRockContext = new RockContext() )
+                        using ( var updateRockContext = RockApp.Current.CreateRockContext() )
                         {
                             updateRockContext.SourceOfChange = SOURCE_OF_CHANGE;
 

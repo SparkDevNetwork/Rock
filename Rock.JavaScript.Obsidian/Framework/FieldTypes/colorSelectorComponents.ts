@@ -15,7 +15,7 @@
 // </copyright>
 //
 import { computed, defineComponent, ref, watch } from "vue";
-import { ConfigurationValueKey } from "./colorSelectorField.types.partial";
+import { ConfigurationKey } from "./colorSelectorField.types.partial";
 import { deserializeColors, deserializeValue, serializeValue } from "./colorSelectorField.utils.partial";
 import { getFieldEditorProps, getFieldConfigurationProps } from "./utils";
 import ColorSelector from "@Obsidian/Controls/colorSelector.obs";
@@ -72,10 +72,10 @@ export const ConfigurationComponent = defineComponent({
             const newValue: Record<string, string> = {};
 
             // Construct the new value that will be emitted if it is different than the current value.
-            newValue[ConfigurationValueKey.Colors] = convertKeyValueItemStringToColors(colors.value);
+            newValue[ConfigurationKey.Colors] = convertKeyValueItemStringToColors(colors.value);
 
             // Compare the new value and the old value.
-            const anyValueChanged = newValue[ConfigurationValueKey.Colors] !== props.modelValue[ConfigurationValueKey.Colors];
+            const anyValueChanged = newValue[ConfigurationKey.Colors] !== props.modelValue[ConfigurationKey.Colors];
 
             // If any value changed then emit the new model value.
             if (anyValueChanged) {
@@ -102,14 +102,14 @@ export const ConfigurationComponent = defineComponent({
         // Watch for changes coming in from the parent component and update our
         // data to match the new information.
         watch(() => [props.modelValue, props.configurationProperties], () => {
-            colors.value = convertColorsToKeyValueItemString(props.modelValue[ConfigurationValueKey.Colors]);
+            colors.value = convertColorsToKeyValueItemString(props.modelValue[ConfigurationKey.Colors]);
         }, {
             immediate: true
         });
 
         // Watch for changes in properties that only require a local UI update.
         watch(colors, () => {
-            maybeUpdateConfiguration(ConfigurationValueKey.Colors, convertKeyValueItemStringToColors(colors.value));
+            maybeUpdateConfiguration(ConfigurationKey.Colors, convertKeyValueItemStringToColors(colors.value));
         });
 
         return {
@@ -135,7 +135,7 @@ export const EditComponent = defineComponent({
 
     setup(props, { emit }) {
         const items = computed<string[]>(() => {
-            return deserializeColors(props.configurationValues[ConfigurationValueKey.Colors] ?? "");
+            return deserializeColors(props.configurationValues[ConfigurationKey.Colors] ?? "");
         });
 
         const internalValue = useVModelPassthrough(props, "modelValue", emit);

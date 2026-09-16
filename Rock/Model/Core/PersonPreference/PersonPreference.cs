@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -22,6 +22,8 @@ using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 
 using Rock.Data;
+using Rock.Enums.Security;
+using Rock.Security;
 using Rock.Utility;
 
 namespace Rock.Model
@@ -77,6 +79,7 @@ namespace Rock.Model
 #if REVIEW_WEBFORMS
         [Index( "IX_PersonAliasIdKey", 1, IsUnique = true )]
 #endif
+        [StringValidation( StringValidationProfile.PlainText )]
         public string Key { get; set; }
 
         /// <summary>
@@ -102,6 +105,7 @@ namespace Rock.Model
         /// </summary>
         /// <value>The preference value.</value>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string Value { get; set; }
 
         /// <summary>

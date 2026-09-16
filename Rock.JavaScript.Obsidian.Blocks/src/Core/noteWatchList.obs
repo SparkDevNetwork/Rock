@@ -26,7 +26,6 @@
                       title="Watcher Person"
                       field="watcher"
                       :filter="pickExistingValueFilter"
-                      :filterValue="getWatcherRowValue"
                       visiblePriority="xs" />
 
         <TextColumn name="watcherGroup"
@@ -72,7 +71,6 @@
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
     import { GridSettingsOptions, NavigationUrlKey, PreferenceKey } from "./NoteWatchList/types.partial";
     import { computed, reactive, ref, watch } from "vue";
-    import { PersonFieldBag } from "@Obsidian/ViewModels/Core/Grid/personFieldBag";
     import { parseSlidingDateRangeString, slidingDateRangeToString } from "@Obsidian/Utility/slidingDateRange";
     import GridSettingsModal from "./NoteWatchList/gridSettingsModal.partial.obs";
 
@@ -114,11 +112,6 @@
         else {
             throw new Error(result.errorMessage ?? "Unknown error while trying to load grid data.");
         }
-    }
-
-    function getWatcherRowValue(row: Record<string, unknown>): string {
-        const watcher = row["watcher"] as PersonFieldBag;
-        return !watcher ? "" : `${watcher.nickName} ${watcher.lastName}`;
     }
 
     // #endregion

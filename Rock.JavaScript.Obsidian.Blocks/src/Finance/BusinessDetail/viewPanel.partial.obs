@@ -84,6 +84,14 @@
             valueBuilder.addHtmlValue("Address", props.modelValue.addressAsHtml);
         }
 
+        if (props.modelValue.previousAddress) {
+            // Label is pluralized when more than one previous address is joined with <br><br>.
+            const title = props.modelValue.previousAddress.includes("<br><br>")
+                ? "Previous Addresses"
+                : "Previous Address";
+            valueBuilder.addHtmlValue(title, props.modelValue.previousAddress);
+        }
+
         return valueBuilder.build();
     });
 

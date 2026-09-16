@@ -21,6 +21,7 @@
 // </copyright>
 //
 
+using Rock.Configuration;
 using Rock.Model;
 using Rock.SystemGuid;
 
@@ -35,6 +36,6 @@ namespace Rock.Rest.Controllers
         /// <summary>
         /// Initializes a new instance of the <see cref="PageShortLinksController"/> class.
         /// </summary>
-        public PageShortLinksController() : base( new Rock.Model.PageShortLinkService( new Rock.Data.RockContext() ) ) { } 
+        public PageShortLinksController() : base( new Rock.Model.PageShortLinkService( RockApp.Current.CreateRockContext() ) ) { } 
     }
 }

@@ -1,0 +1,206 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <NotificationBox v-if="!config.canView" alertType="warning">
+        <strong>Note</strong> A form could not be resolved for this page. Verify the WorkflowTypeId page parameter.
+    </NotificationBox>
+
+    <Panel v-else :title="config.formName ?? undefined" type="block">
+        <div class="d-flex flex-wrap justify-content-between align-items-end mb-3" style="gap: 0.5rem;">
+            <div class="d-flex align-items-end" style="gap: 0.5rem;">
+                <SlidingDateRangePicker v-model="slidingDateRange"
+                                        formGroupClasses="mb-0"
+                                        :enabledSlidingDateRangeUnits="enabledTimeUnits"
+                                        :enabledSlidingDateRangeTypes="enabledRangeTypes"
+                                        :isRangeClearable="false" />
+
+                <RockButton :btnType="BtnType.Default"
+                            :btnSize="BtnSize.Small"
+                            class="btn-square"
+                            title="Refresh"
+                            @click="onRefreshClick">
+                    <i class="ti ti-refresh"></i>
+                </RockButton>
+            </div>
+        </div>
+
+        <div v-if="isLoading"
+             class="d-flex align-items-center justify-content-center"
+             style="min-height: 300px;">
+            <LoadingIndicator />
+        </div>
+
+        <div v-else-if="chartData?.hasData">
+            <div class="row mb-3">
+                <div class="col-md-4 mb-2">
+                    <Kpi iconCssClass="ti ti-user"
+                         :value="chartData.totalViews ?? 0"
+                         label="Total Views"
+                         color="blue"
+                         :colorShade="500"
+                         isCard />
+                </div>
+                <div class="col-md-4 mb-2">
+                    <Kpi iconCssClass="ti ti-circle-check"
+                         :value="chartData.completions ?? 0"
+                         label="Completions"
+                         color="green"
+                         :colorShade="500"
+                         isCard />
+                </div>
+                <div class="col-md-4 mb-2">
+                    <Kpi iconCssClass="ti ti-percentage"
+                         :value="conversionRateDisplay"
+                         label="Conversion Rate"
+                         color="indigo"
+                         :colorShade="500"
+                         isCard />
+                </div>
+            </div>
+
+            <LineChart :labels="chartLabels"
+                       :series="chartSeries"
+                       :labelDateFormat="LabelDateFormat.Auto"
+                       :valueSuggestedMin="0"
+                       :valueSuggestedMax="5"
+                       :valuePrecision="0"
+                       height="350px" />
+        </div>
+
+        <div v-else class="form-analytics-empty-state d-flex flex-column align-items-center justify-content-center text-center p-5"
+             style="border: 1px dashed var(--color-interface-soft); border-radius: var(--rounded-lg); min-height: 300px;">
+            <i class="ti ti-alert-triangle text-muted mb-3" style="font-size: 3rem;"></i>
+            <h5 class="mb-2">Nothing To Show</h5>
+            <p class="text-muted mb-0" style="max-width: 540px;">
+                No views or completions were recorded for this form in the selected date range. Try widening the range or check back after the form has been used.
+            </p>
+        </div>
+    </Panel>
+</template>
+
+<script setup lang="ts">
+    import { computed, ref, watch } from "vue";
+    import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { LabelDateFormat, LineSeries, XYPoint, XYPointEnumerable } from "@Obsidian/Core/Controls/chart";
+    import { alert } from "@Obsidian/Utility/dialogs";
+    import { parseSlidingDateRangeString, RangeType, SlidingDateRange, slidingDateRangeToString, TimeUnit } from "@Obsidian/Utility/slidingDateRange";
+    import Kpi from "@Obsidian/Controls/kpi.obs";
+    import LineChart from "@Obsidian/Controls/lineChart.obs";
+    import LoadingIndicator from "@Obsidian/Controls/loadingIndicator.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import Panel from "@Obsidian/Controls/panel.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import SlidingDateRangePicker from "@Obsidian/Controls/slidingDateRangePicker.obs";
+    import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
+    import { BtnType } from "@Obsidian/Enums/Controls/btnType";
+    import { FormAnalyticsChartDataBag } from "@Obsidian/ViewModels/Blocks/WorkFlow/FormBuilder/FormAnalytics/formAnalyticsChartDataBag";
+    import { FormAnalyticsInitializationBox } from "@Obsidian/ViewModels/Blocks/WorkFlow/FormBuilder/FormAnalytics/formAnalyticsInitializationBox";
+    import { FormAnalyticsSeriesBag } from "@Obsidian/ViewModels/Blocks/WorkFlow/FormBuilder/FormAnalytics/formAnalyticsSeriesBag";
+
+    const config = useConfigurationValues<FormAnalyticsInitializationBox>();
+    const invokeBlockAction = useInvokeBlockAction();
+
+    // #region Values
+
+    const initialRange = parseSlidingDateRangeString(config.slidingDateRangeDelimitedValues ?? "")
+        ?? { rangeType: RangeType.Current, timeUnit: TimeUnit.Year };
+
+    const slidingDateRange = ref<SlidingDateRange | null>(initialRange);
+    const chartData = ref<FormAnalyticsChartDataBag | null>(config.chartData ?? null);
+    const isLoading = ref(false);
+
+    /*
+        5/8/26 - JMH
+
+        "Next" ranges and sub-hour units are excluded because they produce empty
+        or oversampled series the chart can't render cleanly.
+    */
+    const enabledRangeTypes = [RangeType.Current, RangeType.Previous, RangeType.Last, RangeType.DateRange];
+    const enabledTimeUnits = [TimeUnit.Hour, TimeUnit.Day, TimeUnit.Month, TimeUnit.Year];
+
+    // #endregion
+
+    // #region Computed Values
+
+    const conversionRateDisplay = computed((): string => {
+        const rate = chartData.value?.conversionRate ?? 0;
+        return `${Math.round(rate * 100)}%`;
+    });
+
+    const densifiedSeries = computed((): { labels: string[]; series: LineSeries[] } => {
+        const data = chartData.value;
+        if (!data?.windowStart || !data?.windowEnd || !data.series?.length) {
+            return { labels: [], series: [] };
+        }
+
+        const unit = (data.windowUnit === "month" ? "month" : "day") as "day" | "month";
+
+        const densified = data.series.map((s: FormAnalyticsSeriesBag) => {
+            const sourcePoints: XYPoint[] = (s.points ?? [])
+                .filter(p => !!p.date)
+                .map(p => ({ x: p.date!, y: p.value }));
+
+            return {
+                label: s.label ?? "",
+                points: XYPointEnumerable
+                    .fromData(sourcePoints)
+                    .selectFilledOverDateRange(data.windowStart!, data.windowEnd!, unit)
+                    .toArray()
+            };
+        });
+
+        // All densified series share the same x-axis, so the first is the canonical label set.
+        const labels = densified[0]?.points.map(p => p.x as string) ?? [];
+
+        return {
+            labels,
+            series: densified.map(s => ({
+                label: s.label,
+                data: s.points.map(p => (p.y ?? 0) as number)
+            }))
+        };
+    });
+
+    const chartLabels = computed((): string[] => densifiedSeries.value.labels);
+    const chartSeries = computed((): LineSeries[] => densifiedSeries.value.series);
+
+    // #endregion
+
+    // #region Functions
+
+    async function refresh(): Promise<void> {
+        // The picker emits null when the user clears the type dropdown; send an empty
+        // string so the server falls back to its default instead of failing.
+        const range = slidingDateRange.value;
+
+        isLoading.value = true;
+        try {
+            const result = await invokeBlockAction<FormAnalyticsChartDataBag>("GetChartData", {
+                slidingDateRangeDelimited: range ? slidingDateRangeToString(range) : ""
+            });
+
+            if (result.isSuccess && result.data) {
+                chartData.value = result.data;
+                return;
+            }
+
+            await alert(result.errorMessage ?? "Unknown error while loading analytics.");
+        }
+        finally {
+            isLoading.value = false;
+        }
+    }
+
+    // #endregion
+
+    // #region Event Handlers
+
+    async function onRefreshClick(): Promise<void> {
+        await refresh();
+    }
+
+    // #endregion
+
+    watch(() => slidingDateRange.value, async () => {
+        await refresh();
+    }, { deep: true });
+</script>

@@ -1,0 +1,119 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <template v-if="comments">
+        <NotesContainer title="Comments"
+                        :notes="comments.notes ?? []"
+                        :noteTypes="comments.noteTypes ?? []"
+                        :showAdd="comments.isAddAllowed"
+                        showAvatar
+                        descending
+                        @editNote="onEditNote"
+                        @watchNote="onWatchNote"
+                        @saveNote="onSaveNote"
+                        @deleteNote="onDeleteNote" />
+
+        <RockButton v-if="comments.loginUrl"
+                    btnType="link"
+                    class="pull-right"
+                    @click="onLoginToCommentClick">
+            Log In to Comment
+        </RockButton>
+    </template>
+</template>
+
+<script setup lang="ts">
+    import { ref } from "vue";
+    import { useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import NotesContainer from "@Obsidian/Controls/Internal/notesContainer.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import { NoteBag } from "@Obsidian/ViewModels/Controls/noteBag";
+    import { NoteEditBag } from "@Obsidian/ViewModels/Controls/noteEditBag";
+    import { SaveNoteRequestBag } from "@Obsidian/ViewModels/Controls/saveNoteRequestBag";
+    import { FundraisingParticipantCommentsBag } from "@Obsidian/ViewModels/Blocks/Fundraising/FundraisingParticipant/fundraisingParticipantCommentsBag";
+
+    // #region Values
+
+    const invokeBlockAction = useInvokeBlockAction();
+
+    const comments = ref<FundraisingParticipantCommentsBag>();
+
+    // #endregion Values
+
+    // #region Functions
+
+    /**
+     * Loads the participant's comments from the server.
+     */
+    async function loadComments(): Promise<void> {
+        const result = await invokeBlockAction<FundraisingParticipantCommentsBag>("GetComments");
+
+        if (result.isSuccess && result.data) {
+            comments.value = result.data;
+        }
+    }
+
+    // #endregion Functions
+
+    // #region Event Handlers
+
+    /**
+     * Begins editing a comment.
+     */
+    async function onEditNote(idKey: string): Promise<NoteEditBag> {
+        const result = await invokeBlockAction<NoteEditBag>("EditComment", { idKey });
+
+        if (result.isSuccess && result.data) {
+            return result.data;
+        }
+
+        throw new Error(result.errorMessage ?? "Unable to edit comment.");
+    }
+
+    /**
+     * Watches or unwatches a comment.
+     */
+    async function onWatchNote(idKey: string, isWatching: boolean): Promise<void> {
+        const result = await invokeBlockAction("WatchComment", { idKey, isWatching });
+
+        if (!result.isSuccess) {
+            throw new Error(result.errorMessage ?? "Unable to update comment.");
+        }
+    }
+
+    /**
+     * Saves a new or edited comment.
+     */
+    async function onSaveNote(note: SaveNoteRequestBag): Promise<NoteBag> {
+        const result = await invokeBlockAction<NoteBag>("SaveComment", { request: note });
+
+        if (result.isSuccess && result.data) {
+            return result.data;
+        }
+
+        throw new Error(result.errorMessage ?? "Unable to save the comment.");
+    }
+
+    /**
+     * Deletes a comment.
+     */
+    async function onDeleteNote(idKey: string): Promise<void> {
+        const result = await invokeBlockAction("DeleteComment", { idKey });
+
+        if (!result.isSuccess) {
+            throw new Error(result.errorMessage ?? "Unable to delete the comment.");
+        }
+    }
+
+    /**
+     * Navigates the anonymous viewer to the login page so they can comment.
+     */
+    function onLoginToCommentClick(): void {
+        if (comments.value?.loginUrl) {
+            window.location.href = comments.value.loginUrl;
+        }
+    }
+
+    // #endregion Event Handlers
+
+    loadComments();
+</script>

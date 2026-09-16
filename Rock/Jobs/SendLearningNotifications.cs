@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -28,6 +28,7 @@ using Microsoft.Extensions.Logging;
 using Rock.Attribute;
 using Rock.Cms.StructuredContent;
 using Rock.Communication;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Enums.Lms;
 using Rock.Lava;
@@ -89,12 +90,12 @@ namespace Rock.Jobs
             {
                 InitializeResultsCounters();
 
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     SendActivityNotifications( rockContext );
                 }
 
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     SendAnnouncements( rockContext );
                 }
@@ -264,7 +265,7 @@ namespace Rock.Jobs
 
                         if ( communicationId.HasValue )
                         {
-                            using ( var updateRockContext = new RockContext() )
+                            using ( var updateRockContext = RockApp.Current.CreateRockContext() )
                             {
                                 AddOrUpdateCompletionRecords( studentProgram, communicationId.Value, updateRockContext );
                             }
@@ -579,7 +580,7 @@ namespace Rock.Jobs
                     LearningClassActivityCompletionId = null,
                     ActivityName = activity.Name,
                     AvailableDate = activity.AvailableDateCalculated,
-                    DueDate = activity.DueDateCalculated,
+                    DueDate = activity.DueDateCalculated?.EndOfDay(),
                     Order = activity.Order
                 } );
             }
@@ -728,7 +729,7 @@ namespace Rock.Jobs
 
             if ( communicationPreference == CommunicationType.SMS )
             {
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     Rock.Model.Communication communication;
                     var communicationService = new CommunicationService( rockContext );

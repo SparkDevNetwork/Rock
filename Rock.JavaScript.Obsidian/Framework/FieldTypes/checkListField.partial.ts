@@ -24,7 +24,7 @@ import { FieldTypeBase } from "./fieldType";
 import { getStandardFilterComponent } from "./utils";
 import { KeyValueItem } from "@Obsidian/Types/Controls/keyValueItem";
 
-export const enum ConfigurationValueKey {
+export const enum ConfigurationKey {
     Values = "values",
     RepeatColumns = "repeatColumns",
     ListItems = "listItems"
@@ -56,7 +56,7 @@ export class CheckListFieldType extends FieldTypeBase {
         }
 
         try {
-            const values = JSON.parse(configurationValues[ConfigurationValueKey.ListItems] ?? "[]") as KeyValueItem[];
+            const values = JSON.parse(configurationValues[ConfigurationKey.ListItems] ?? "[]") as KeyValueItem[];
             const userValues = value.split(",");
             const selectedValues = values.filter(v => userValues.includes(v.key ?? ""));
 
@@ -90,7 +90,7 @@ export class CheckListFieldType extends FieldTypeBase {
 
         try {
             const rawValues = value.value.split(",");
-            const values = JSON.parse(configurationValues?.[ConfigurationValueKey.Values] ?? "[]") as ListItemBag[];
+            const values = JSON.parse(configurationValues?.[ConfigurationKey.Values] ?? "[]") as ListItemBag[];
             const selectedValues = values.filter(v => rawValues.includes(v.value ?? ""));
 
             if (selectedValues.length >= 1) {

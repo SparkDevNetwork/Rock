@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -19,6 +19,8 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Text;
+
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Lava;
 using Rock.Web.Cache;
@@ -203,7 +205,7 @@ namespace Rock.Model
 
                                     if ( this.EntityTypeId == EntityTypeCache.GetId<Person>() )
                                     {
-                                        var person = new PersonService( new RockContext() ).Get( this.EntityId );
+                                        var person = new PersonService( RockApp.Current.CreateRockContext() ).Get( this.EntityId );
                                         if ( person != null )
                                         {
                                             strBuilder.Append( $" for {person.FullName}" );
@@ -222,7 +224,7 @@ namespace Rock.Model
 
                                     if ( this.EntityTypeId == EntityTypeCache.GetId<Person>() )
                                     {
-                                        var person = new PersonService( new RockContext() ).Get( this.EntityId );
+                                        var person = new PersonService( RockApp.Current.CreateRockContext() ).Get( this.EntityId );
                                         if ( person != null )
                                         {
                                             strBuilder.Append( $"{person.NickName}'s " );
@@ -242,7 +244,7 @@ namespace Rock.Model
 
                                     if ( this.EntityTypeId == EntityTypeCache.GetId<Person>() )
                                     {
-                                        var person = new PersonService( new RockContext() ).Get( this.EntityId );
+                                        var person = new PersonService( RockApp.Current.CreateRockContext() ).Get( this.EntityId );
                                         if ( person != null )
                                         {
                                             strBuilder.Append( $"{person.NickName}'s " );
@@ -254,7 +256,7 @@ namespace Rock.Model
                                     var createdByPersonAlias = CreatedByPersonAlias;
                                     if ( this.CreatedByPersonAliasId.HasValue && createdByPersonAlias == null )
                                     {
-                                        createdByPersonAlias = new PersonAliasService( new RockContext() ).Get( this.CreatedByPersonAliasId.Value );
+                                        createdByPersonAlias = new PersonAliasService( RockApp.Current.CreateRockContext() ).Get( this.CreatedByPersonAliasId.Value );
                                     }
 
                                     if ( createdByPersonAlias != null )
@@ -273,7 +275,7 @@ namespace Rock.Model
 
                                     if ( this.EntityTypeId == EntityTypeCache.GetId<Person>() )
                                     {
-                                        var person = new PersonService( new RockContext() ).Get( this.EntityId );
+                                        var person = new PersonService( RockApp.Current.CreateRockContext() ).Get( this.EntityId );
                                         if ( person != null )
                                         {
                                             strBuilder.Append( $"{person.NickName}'s " );
@@ -285,7 +287,7 @@ namespace Rock.Model
                                     var createdByPersonAlias = CreatedByPersonAlias;
                                     if ( this.CreatedByPersonAliasId.HasValue && createdByPersonAlias == null )
                                     {
-                                        createdByPersonAlias = new PersonAliasService( new RockContext() ).Get( this.CreatedByPersonAliasId.Value );
+                                        createdByPersonAlias = new PersonAliasService( RockApp.Current.CreateRockContext() ).Get( this.CreatedByPersonAliasId.Value );
                                     }
 
                                     if ( createdByPersonAlias != null )
@@ -303,7 +305,7 @@ namespace Rock.Model
 
                                     if ( this.EntityTypeId == EntityTypeCache.GetId<Person>() )
                                     {
-                                        var person = new PersonService( new RockContext() ).Get( this.EntityId );
+                                        var person = new PersonService( RockApp.Current.CreateRockContext() ).Get( this.EntityId );
                                         if ( person != null )
                                         {
                                             strBuilder.Append( $"{person.NickName}'s " );
@@ -315,7 +317,7 @@ namespace Rock.Model
                                     var createdByPersonAlias = CreatedByPersonAlias;
                                     if ( this.CreatedByPersonAliasId.HasValue && createdByPersonAlias == null )
                                     {
-                                        createdByPersonAlias = new PersonAliasService( new RockContext() ).Get( this.CreatedByPersonAliasId.Value );
+                                        createdByPersonAlias = new PersonAliasService( RockApp.Current.CreateRockContext() ).Get( this.CreatedByPersonAliasId.Value );
                                     }
 
                                     if ( createdByPersonAlias != null )

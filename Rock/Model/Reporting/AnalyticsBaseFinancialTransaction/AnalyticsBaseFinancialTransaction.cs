@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -14,12 +14,15 @@
 // limitations under the License.
 // </copyright>
 //
-using Rock.Data;
-using Rock.Web.UI.Controls;
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Runtime.Serialization;
+
+using Rock.Data;
+using Rock.Enums.Security;
+using Rock.Security;
+using Rock.Web.UI.Controls;
 
 namespace Rock.Model
 {
@@ -46,6 +49,7 @@ namespace Rock.Model
 #if REVIEW_WEBFORMS
         [Index( "IX_TransactionKey", IsUnique = true )]
 #endif
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string TransactionKey { get; set; }
 
         /// <summary>
@@ -123,6 +127,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [MaxLength( 250 )]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string TransactionFrequency { get; set; }
 
         /// <summary>
@@ -145,6 +150,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [MaxLength( 20 )]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string GivingId { get; set; }
 
         /// <summary>
@@ -179,6 +185,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 50 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string TransactionCode { get; set; }
 
         /// <summary>
@@ -188,6 +195,7 @@ namespace Rock.Model
         /// A <see cref="System.String"/> representing a summary of the transaction.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string Summary { get; set; }
 
         /// <summary>

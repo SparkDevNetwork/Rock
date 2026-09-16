@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -22,6 +22,7 @@ using System.Data.Entity;
 using System.Linq;
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Obsidian.UI;
@@ -172,6 +173,14 @@ namespace Rock.Blocks.Core
                 LavaObject = row => row.BinaryFileType
             };
 
+            // Reused across all rows so we don't allocate a Person per row. The
+            // anonymous visitor instance is only a vehicle for the Guid lookup
+            // inside Authorization's in-memory cache.
+            var anonymousVisitorPerson = new Person
+            {
+                Guid = Rock.SystemGuid.Person.ANONYMOUS_VISITOR.AsGuid()
+            };
+
             return new GridBuilder<BinaryFileTypeData>()
                 .WithBlock( this, blockOptions )
                 .AddTextField( "idKey", a => a.BinaryFileType.IdKey )
@@ -183,6 +192,9 @@ namespace Rock.Blocks.Core
                 .AddField( "cacheToServerFileSystem", a => a.BinaryFileType.CacheToServerFileSystem )
                 .AddField( "requiresViewSecurity", a => a.BinaryFileType.RequiresViewSecurity )
                 .AddField( "isSecurityDisabled", a => !a.BinaryFileType.IsAuthorized( Authorization.ADMINISTRATE, RequestContext.CurrentPerson ) )
+                .AddField( "isPublicViewable", a => !a.BinaryFileType.RequiresViewSecurity
+                    || a.BinaryFileType.IsAuthorized( Authorization.VIEW, null )
+                    || a.BinaryFileType.IsAuthorized( Authorization.VIEW, anonymousVisitorPerson ) )
                 .AddAttributeFieldsFrom( a => a.BinaryFileType, _gridAttributes.Value );
         }
 
@@ -223,7 +235,7 @@ namespace Rock.Blocks.Core
         [BlockAction]
         public BlockActionResult Delete( string key )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var entityService = new BinaryFileTypeService( rockContext );
                 var entity = entityService.Get( key, !PageCache.Layout.Site.DisablePredictableIds );

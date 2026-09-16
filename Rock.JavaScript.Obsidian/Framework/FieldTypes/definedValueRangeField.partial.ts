@@ -29,7 +29,7 @@ export const enum ConfigurationPropertyKey {
     DefinedTypes = "definedTypes"
 }
 
-export const enum ConfigurationValueKey {
+export const enum ConfigurationKey {
     Values = "values",
     DisplayDescription = "displaydescription",
     DefinedType = "definedtype",
@@ -68,8 +68,8 @@ export class DefinedValueRangeFieldType extends FieldTypeBase {
             const clientValue = JSON.parse(value) as ClientValue;
 
             try {
-                const values = new List(JSON.parse(configurationValues[ConfigurationValueKey.Values] ?? "[]") as ValueItem[]);
-                const displayDescription = asBoolean(configurationValues[ConfigurationValueKey.DisplayDescription]);
+                const values = new List(JSON.parse(configurationValues[ConfigurationKey.Values] ?? "[]") as ValueItem[]);
+                const displayDescription = asBoolean(configurationValues[ConfigurationKey.DisplayDescription]);
                 const rawValues = (clientValue.value ?? "").split(",");
 
                 if (rawValues.length !== 2) {

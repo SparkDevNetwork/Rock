@@ -21,6 +21,7 @@
 // </copyright>
 //
 
+using Rock.Configuration;
 using Rock.Model;
 using Rock.SystemGuid;
 
@@ -35,6 +36,6 @@ namespace Rock.Rest.Controllers
         /// <summary>
         /// Initializes a new instance of the <see cref="FollowingEventNotificationsController"/> class.
         /// </summary>
-        public FollowingEventNotificationsController() : base( new Rock.Model.FollowingEventNotificationService( new Rock.Data.RockContext() ) ) { } 
+        public FollowingEventNotificationsController() : base( new Rock.Model.FollowingEventNotificationService( RockApp.Current.CreateRockContext() ) ) { } 
     }
 }

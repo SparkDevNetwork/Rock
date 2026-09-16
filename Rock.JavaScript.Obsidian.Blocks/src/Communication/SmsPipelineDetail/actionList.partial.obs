@@ -1,0 +1,668 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="sms-action-list" :class="{ 'sms-action-list-busy': isDeleting }">
+        <h4>Actions</h4>
+
+        <div class="sms-action-list-items"
+             v-dragSource="dragOptions"
+             v-dragTarget="dragOptions">
+            <DisplayCard v-for="action in actions"
+                         :key="action.guid"
+                         :iconCssClass="iconFor(action)"
+                         :title="action.name"
+                         :secondaryActions="getSecondaryActions(action)">
+                <template #prepend>
+                    <div>
+                        <i class="ti ti-menu-2 reorder-handle" style="cursor: grab;"></i>
+                    </div>
+                </template>
+                <template #description>{{ descriptionFor(action) }}</template>
+                <template #aside>
+                    <HighlightLabel v-if="!action.isActive" labelType="warning">Inactive</HighlightLabel>
+                    <span v-else-if="action.continueAfterProcessing">
+                        <i v-tooltip="'Processing continues to the next action after this one matches.'"
+                           class="ti ti-circle-arrow-down sms-action-continue-icon"></i>
+                        Continue
+                    </span>
+                </template>
+            </DisplayCard>
+        </div>
+
+        <p v-if="actions.length === 0" class="text-muted sms-action-list-empty">
+            No actions yet. Add one to start building this pipeline.
+        </p>
+
+        <DisplayCardAddButton @click="onAddAction" />
+
+        <Modal v-model="isEditVisible"
+               title="Action Settings"
+               modalContentClasses="sms-action-editor"
+               saveText="Save"
+               :isSaveButtonDisabled="isSaving"
+               @save="onSaveAction">
+            <ContentSectionContainer :sidebar="false">
+                <ContentSection title="General"
+                                icon="ti ti-settings"
+                                disableCollapse
+                                overflowText="Show Advanced Settings">
+                    <ContentStack>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <StaticFormControl v-if="existingComponentTitle"
+                                                   :modelValue="existingComponentTitle"
+                                                   label="Action Type" />
+
+                                <DropDownList v-else
+                                              :modelValue="editComponentEntityTypeGuid"
+                                              label="Action Type"
+                                              :items="componentItems"
+                                              rules="required"
+                                              :disabled="isTypeDisabled"
+                                              @update:modelValue="onTypeChanged" />
+                            </div>
+                            <div class="col-md-3">
+                                <CheckBox v-model="editIsActive"
+                                          label="Active"
+                                          help="An action that is not active will not attempt to process any SMS messages." />
+                            </div>
+                            <div class="col-md-3">
+                                <CheckBox v-model="editContinueAfterProcessing"
+                                          label="Continue"
+                                          help="If enabled, processing continues to subsequent actions even after this one matches." />
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <TextBox v-model="editName" label="Name" rules="required" />
+                            </div>
+                        </div>
+                    </ContentStack>
+
+                    <template #overflow>
+                        <ContentStack>
+                            <DatePicker v-model="editExpireDateTime"
+                                        label="Expire Date"
+                                        help="The Rock clean-up job will remove this SMS action after this date. The exact time and day will depend on your clean-up job schedule settings." />
+
+                            <CheckBox v-model="editIsInteractionLoggedAfterProcessing"
+                                      label="Log Interaction When Action Runs"
+                                      help="If enabled, when the action runs, an interaction will be written that includes the data from the incoming message (Pipeline Name and Id, the Action's Name, ToPhone, FromPhone, MessageBody, ReceivedDateTime, FromPerson)." />
+                        </ContentStack>
+                    </template>
+                </ContentSection>
+
+                <div v-if="isLoadingType" class="sms-action-fields-loading">
+                    <LoadingIndicator />
+                </div>
+
+                <template v-else>
+                    <ContentSection v-if="filterAttributes.length > 0" class="sms-action-filters" title="Filters" icon="ti ti-filter">
+                        <ContentStack>
+                            <RockField v-for="attr in filterAttributes"
+                                       :key="attr.attributeGuid ?? attr.key ?? ''"
+                                       :attribute="attr"
+                                       :modelValue="editAttributeValues[attr.key ?? '']"
+                                       @update:modelValue="onAttributeUpdate(attr.key ?? '', $event)"
+                                       :isEditMode="true" />
+                        </ContentStack>
+                    </ContentSection>
+
+                    <ContentSection v-for="category in nonFilterCategories"
+                                    :key="category.name"
+                                    class="sms-action-attributes"
+                                    :title="category.showHeader ? category.name : undefined">
+                        <ContentStack>
+                            <RockField v-for="attr in category.attributes"
+                                       :key="attr.attributeGuid ?? attr.key ?? ''"
+                                       :attribute="attr"
+                                       :modelValue="editAttributeValues[attr.key ?? '']"
+                                       @update:modelValue="onAttributeUpdate(attr.key ?? '', $event)"
+                                       :isEditMode="true" />
+                        </ContentStack>
+                    </ContentSection>
+                </template>
+            </ContentSectionContainer>
+        </Modal>
+    </div>
+</template>
+
+<style scoped>
+/* Separate the action list (ending in the Add button) from the section below it. */
+.sms-action-list {
+    margin-bottom: var(--spacing-large);
+}
+
+/*
+    The block container carries a `.sms-pipeline-detail` class whose global theme
+    rule renders every h4 as a bordered, padded section bar. Reset the heading to
+    the standard detail-heading style so it reads as a normal section title.
+*/
+.sms-action-list h4 {
+    margin: 0 0 var(--spacing-medium);
+    padding: 0;
+    font-size: var(--font-size-h4);
+    font-weight: var(--font-weight-semibold);
+    background: transparent;
+    border-top: 0;
+}
+
+.sms-action-list-items {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-medium);
+    margin-bottom: var(--spacing-medium);
+}
+
+.sms-action-list-empty {
+    margin-bottom: var(--spacing-medium);
+}
+
+/*
+    While a delete is in flight, lock the list and the add button so a second
+    add, edit, delete, or reorder cannot race the in-progress delete.
+*/
+.sms-action-list-busy .sms-action-list-items {
+    pointer-events: none;
+    opacity: 0.6;
+}
+
+.sms-action-list-busy :deep(.displaycard-add-button) {
+    pointer-events: none;
+    opacity: 0.6;
+}
+
+/* The aside indicator shown when an action continues to the next one. */
+.sms-action-continue-icon {
+    margin-right: var(--spacing-tiny);
+}
+
+/* Holds the spinner shown while the chosen type's fields load. */
+.sms-action-fields-loading {
+    padding: var(--spacing-xlarge) 0;
+}
+</style>
+
+<script setup lang="ts">
+    import { computed, PropType, ref } from "vue";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import ContentSection from "@Obsidian/Controls/contentSection.obs";
+    import ContentSectionContainer from "@Obsidian/Controls/contentSectionContainer.obs";
+    import ContentStack from "@Obsidian/Controls/contentStack.obs";
+    import DatePicker from "@Obsidian/Controls/datePicker.obs";
+    import DisplayCard from "@Obsidian/Controls/displayCard.obs";
+    import DisplayCardAddButton from "@Obsidian/Controls/displayCardAddButton.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import HighlightLabel from "@Obsidian/Controls/highlightLabel.obs";
+    import LoadingIndicator from "@Obsidian/Controls/loadingIndicator.obs";
+    import Modal from "@Obsidian/Controls/modal.obs";
+    import RockField from "@Obsidian/Controls/rockField.obs";
+    import StaticFormControl from "@Obsidian/Controls/staticFormControl.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import { DragSource as vDragSource, DragTarget as vDragTarget, useDragReorder } from "@Obsidian/Directives/dragDrop";
+    import { vTooltip } from "@Obsidian/Directives/tooltip";
+    import { MenuAction } from "@Obsidian/Types/Controls/dropDownMenu";
+    import { setPropertiesBoxValue, useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { useVModelPassthrough } from "@Obsidian/Utility/component";
+    import { alert, confirmDelete } from "@Obsidian/Utility/dialogs";
+    import { areEqual } from "@Obsidian/Utility/guid";
+    import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
+    import { SmsActionBag } from "@Obsidian/ViewModels/Blocks/Communication/SmsPipelineDetail/smsActionBag";
+    import { SmsActionComponentBag } from "@Obsidian/ViewModels/Blocks/Communication/SmsPipelineDetail/smsActionComponentBag";
+
+    // #region Types
+
+    type AttributeCategory = {
+        name: string;
+        showHeader: boolean;
+        attributes: PublicAttributeBag[];
+    };
+
+    // #endregion Types
+
+    const props = defineProps({
+        modelValue: {
+            type: Array as PropType<SmsActionBag[]>,
+            required: true
+        },
+
+        pipelineKey: {
+            type: String as PropType<string>,
+            required: true
+        },
+
+        availableComponents: {
+            type: Array as PropType<SmsActionComponentBag[]>,
+            required: true
+        },
+
+        filterCategoryName: {
+            type: String,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: SmsActionBag[]): void;
+    }>();
+
+    const invokeBlockAction = useInvokeBlockAction();
+
+    // #region Values
+
+    const actions = useVModelPassthrough(props, "modelValue", emit);
+
+    const isEditVisible = ref(false);
+    const isSaving = ref(false);
+    const isDeleting = ref(false);
+    const isLoadingType = ref(false);
+    const editIdKey = ref<string | null>();
+    const editComponentEntityTypeGuid = ref<string>("");
+    const existingComponentTitle = ref<string | null>();
+    const editName = ref<string>("");
+    // The name last auto-filled from the chosen component title; lets a type
+    // change re-fill the name until the user types their own.
+    const autoName = ref<string>("");
+    const editIsActive = ref(false);
+    const editContinueAfterProcessing = ref(false);
+    const editExpireDateTime = ref<string | null>(null);
+    const editIsInteractionLoggedAfterProcessing = ref(false);
+    const editAttributes = ref<Record<string, PublicAttributeBag>>({});
+    const editAttributeValues = ref<Record<string, string>>({});
+
+    const dragOptions = useDragReorder(actions, onOrderChanged);
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    // The type can only be chosen for a new action and is locked while the
+    // server is resolving the chosen type's attribute schema.
+    const isTypeDisabled = computed((): boolean => {
+        return isLoadingType.value || !!editIdKey.value;
+    });
+
+    const componentItems = computed((): ListItemBag[] => {
+        return props.availableComponents.map(c => ({
+            value: c.entityTypeGuid,
+            text: c.title ?? ""
+        }));
+    });
+
+    const schemaAttributes = computed((): PublicAttributeBag[] => {
+        return Object.values(editAttributes.value).slice().sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+    });
+
+    const filterAttributes = computed((): PublicAttributeBag[] => {
+        return schemaAttributes.value.filter(a => firstCategoryName(a) === props.filterCategoryName);
+    });
+
+    const nonFilterCategories = computed((): AttributeCategory[] => {
+        const buckets = new Map<string, PublicAttributeBag[]>();
+
+        for (const attr of schemaAttributes.value) {
+            const category = firstCategoryName(attr);
+
+            if (category === props.filterCategoryName) {
+                continue;
+            }
+
+            if (!buckets.has(category)) {
+                buckets.set(category, []);
+            }
+
+            buckets.get(category)!.push(attr);
+        }
+
+        return Array.from(buckets.entries()).map(([categoryName, attrs]) => ({
+            name: categoryName,
+            showHeader: categoryName !== "",
+            attributes: attrs
+        }));
+    });
+
+    // #endregion Computed Values
+
+    // #region Event Handlers
+
+    function onAttributeUpdate(key: string, value: unknown): void {
+        if (!key) {
+            return;
+        }
+
+        const rawValue = value == null ? "" : String(value);
+        const newValue = patchedFilterValue(rawValue);
+
+        // Skip no-op updates from child editors that re-emit the same bag on mount.
+        if (editAttributeValues.value[key] === newValue) {
+            return;
+        }
+
+        editAttributeValues.value = {
+            ...editAttributeValues.value,
+            [key]: newValue
+        };
+    }
+
+    async function onAddAction(): Promise<void> {
+        if (isDeleting.value) {
+            return;
+        }
+
+        const result = await invokeBlockAction<ValidPropertiesBox<SmsActionBag>>("AddAction", {
+            pipelineKey: props.pipelineKey
+        });
+
+        if (result.isSuccess && result.data?.bag) {
+            loadEditState(result.data.bag);
+            isEditVisible.value = true;
+        }
+        else {
+            await alert(result.errorMessage || "Unable to add a new action.");
+        }
+    }
+
+    async function onEditAction(key: string): Promise<void> {
+        if (isDeleting.value) {
+            return;
+        }
+
+        const result = await invokeBlockAction<ValidPropertiesBox<SmsActionBag>>("EditAction", {
+            key
+        });
+
+        if (result.isSuccess && result.data?.bag) {
+            loadEditState(result.data.bag);
+            isEditVisible.value = true;
+        }
+        else {
+            await alert(result.errorMessage || "Unable to edit the action.");
+        }
+    }
+
+    async function onDeleteAction(key: string): Promise<void> {
+        if (isDeleting.value) {
+            return;
+        }
+
+        // Name the action in the prompt so the user can confirm they are
+        // removing the one they intended.
+        const actionName = actions.value.find(a => a.idKey === key)?.name?.trim();
+        const confirmTypeName = actionName ? `"${actionName}" action` : "action";
+
+        if (!await confirmDelete(confirmTypeName)) {
+            return;
+        }
+
+        // Lock the list while the delete is in flight so a second add, edit, or
+        // delete cannot race it and renumber against a row being removed.
+        isDeleting.value = true;
+
+        try {
+            const result = await invokeBlockAction<string>("DeleteAction", {
+                actionIdKey: key
+            });
+
+            if (result.isSuccess) {
+                actions.value = actions.value.filter(a => a.idKey !== key);
+            }
+            else {
+                await alert(result.errorMessage || "Unable to delete the action.");
+            }
+        }
+        finally {
+            isDeleting.value = false;
+        }
+    }
+
+    async function onSaveAction(): Promise<void> {
+        if (isSaving.value) {
+            return;
+        }
+
+        const box: ValidPropertiesBox<SmsActionBag> = {};
+
+        setPropertiesBoxValue(box, "idKey", editIdKey.value);
+        setPropertiesBoxValue(box, "componentEntityTypeGuid", editComponentEntityTypeGuid.value);
+        setPropertiesBoxValue(box, "name", editName.value);
+        setPropertiesBoxValue(box, "isActive", editIsActive.value);
+        setPropertiesBoxValue(box, "continueAfterProcessing", editContinueAfterProcessing.value);
+        setPropertiesBoxValue(box, "expireDateTime", editExpireDateTime.value);
+        setPropertiesBoxValue(box, "isInteractionLoggedAfterProcessing", editIsInteractionLoggedAfterProcessing.value);
+        setPropertiesBoxValue(box, "attributeValues", { ...editAttributeValues.value });
+
+        isSaving.value = true;
+
+        try {
+            const result = await invokeBlockAction<ValidPropertiesBox<SmsActionBag>>("SaveAction", {
+                pipelineKey: props.pipelineKey,
+                box
+            });
+
+            if (result.isSuccess && result.data?.bag) {
+                const saved = result.data.bag;
+                const newActions = [...actions.value];
+                const index = newActions.findIndex(a => a.idKey === saved.idKey);
+
+                if (index >= 0) {
+                    newActions.splice(index, 1, saved);
+                }
+                else {
+                    newActions.push(saved);
+                }
+
+                actions.value = newActions;
+                isEditVisible.value = false;
+            }
+            else {
+                await alert(result.errorMessage || "Unable to save the action.");
+            }
+        }
+        finally {
+            isSaving.value = false;
+        }
+    }
+
+    /**
+     * Fills the action name from the chosen type and loads its attribute schema and default values.
+     *
+     * @param value The entity type GUID of the selected component.
+     */
+    async function onTypeChanged(value: string | string[]): Promise<void> {
+        if (Array.isArray(value) || editComponentEntityTypeGuid.value === value) {
+            return;
+        }
+
+        editComponentEntityTypeGuid.value = value ?? "";
+        editAttributes.value = {};
+        editAttributeValues.value = {};
+
+        if (!editComponentEntityTypeGuid.value) {
+            return;
+        }
+
+        // Fill the name from the selected type's title right away, and keep
+        // re-filling it on later type changes until the user types their own
+        // name. The title is read from the cached component list so the field
+        // updates immediately instead of waiting for the schema round-trip below.
+        const selectedComponent = props.availableComponents.find(c => areEqual(c.entityTypeGuid, editComponentEntityTypeGuid.value));
+        const title = selectedComponent?.title ?? "";
+        if (!editName.value || editName.value === autoName.value) {
+            editName.value = title;
+            autoName.value = title;
+        }
+
+        isLoadingType.value = true;
+
+        try {
+            const result = await invokeBlockAction<SmsActionComponentBag>("GetActionComponentEditDefinition", {
+                componentEntityTypeGuid: editComponentEntityTypeGuid.value
+            });
+
+            if (result.isSuccess && result.data) {
+                editAttributes.value = result.data.attributes ?? {};
+                editAttributeValues.value = normalizeFilterDefaults(result.data.defaultAttributeValues ?? {});
+            }
+        }
+        finally {
+            isLoadingType.value = false;
+        }
+    }
+
+    /**
+     * Persists a drag-reorder of the list using before-key semantics.
+     *
+     * @param item The action that was moved.
+     * @param beforeItem The action it now sits before, or null if it moved to the end.
+     */
+    async function onOrderChanged(item: SmsActionBag, beforeItem: SmsActionBag | null): Promise<void> {
+        const result = await invokeBlockAction<string>("ReorderAction", {
+            key: item.idKey,
+            beforeKey: beforeItem?.idKey ?? null
+        });
+
+        if (result.isSuccess) {
+            const newActions = [...actions.value];
+            const index = newActions.findIndex(a => a.idKey === item.idKey);
+            const moved = newActions.splice(index, 1)[0];
+
+            if (beforeItem) {
+                const beforeIndex = newActions.findIndex(a => a.idKey === beforeItem.idKey);
+                newActions.splice(beforeIndex, 0, moved);
+            }
+            else {
+                newActions.push(moved);
+            }
+
+            actions.value = newActions;
+        }
+        else {
+            await alert(result.errorMessage || "Unable to reorder actions.");
+        }
+    }
+
+    // #endregion Event Handlers
+
+    // #region Functions
+
+    function firstCategoryName(attr: PublicAttributeBag): string {
+        return attr.categories?.[0]?.name ?? "";
+    }
+
+    function componentFor(action: SmsActionBag): SmsActionComponentBag | undefined {
+        return props.availableComponents.find(c => areEqual(c.entityTypeGuid, action.componentEntityTypeGuid));
+    }
+
+    function descriptionFor(action: SmsActionBag): string | undefined {
+        return componentFor(action)?.description ?? undefined;
+    }
+
+    function iconFor(action: SmsActionBag): string {
+        return componentFor(action)?.iconCssClass ?? "ti ti-bolt";
+    }
+
+    function getSecondaryActions(action: SmsActionBag): MenuAction[] {
+        const idKey = action.idKey;
+
+        if (!idKey) {
+            return [];
+        }
+
+        return [
+            {
+                title: "Edit",
+                iconCssClass: "ti ti-edit text-info",
+                type: "default",
+                handler: () => onEditAction(idKey)
+            },
+            {
+                title: "Delete",
+                iconCssClass: "ti ti-trash text-danger",
+                type: "default",
+                handler: () => onDeleteAction(idKey)
+            }
+        ];
+    }
+
+    /*
+        Rewrites a CompoundFilterExpression value so any filter item with
+        comparison 0 (or missing) defaults to ComparisonType.Contains (8).
+        valueFilter.obs adds an empty filter item with comparison 0 on first
+        mount, which otherwise renders as a blank comparison dropdown between
+        the value box and the X.
+    */
+    function patchedFilterValue(raw: string): string {
+        if (!raw) {
+            return raw;
+        }
+
+        let parsed: unknown;
+        try {
+            parsed = JSON.parse(raw);
+        }
+        catch {
+            return raw;
+        }
+
+        const filters = (parsed as { filters?: unknown })?.filters;
+        if (!Array.isArray(filters)) {
+            return raw;
+        }
+
+        let touched = false;
+
+        if (filters.length === 0) {
+            filters.push({ value: "", comparison: 8 });
+            touched = true;
+        }
+
+        for (const item of filters) {
+            if (item && typeof item === "object") {
+                const comparison = (item as { comparison?: unknown }).comparison;
+                if (comparison == null || comparison === 0) {
+                    (item as { comparison: number }).comparison = 8;
+                    touched = true;
+                }
+            }
+        }
+
+        return touched ? JSON.stringify(parsed) : raw;
+    }
+
+    function normalizeFilterDefaults(values: Record<string, string>): Record<string, string> {
+        const result: Record<string, string> = {};
+
+        for (const [key, raw] of Object.entries(values)) {
+            result[key] = patchedFilterValue(raw);
+        }
+
+        return result;
+    }
+
+    /**
+     * Loads the modal's edit state from an action bag returned by the server.
+     *
+     * @param bag The action bag carrying scalars, the component type, and the attribute schema and values.
+     */
+    function loadEditState(bag: SmsActionBag): void {
+        const matched = props.availableComponents.find(c => areEqual(c.entityTypeGuid, bag.componentEntityTypeGuid));
+
+        editIdKey.value = bag.idKey;
+        editComponentEntityTypeGuid.value = matched?.entityTypeGuid ?? "";
+        existingComponentTitle.value = bag.idKey ? (matched?.title ?? null) : null;
+        editName.value = bag.name ?? "";
+        // An existing action's saved name counts as user-provided; a new action
+        // has no auto-filled name yet.
+        autoName.value = bag.idKey ? (bag.name ?? "") : "";
+        editIsActive.value = bag.isActive;
+        editContinueAfterProcessing.value = bag.continueAfterProcessing;
+        editExpireDateTime.value = bag.expireDateTime ?? null;
+        editIsInteractionLoggedAfterProcessing.value = bag.isInteractionLoggedAfterProcessing;
+        editAttributes.value = bag.attributes ?? {};
+        editAttributeValues.value = normalizeFilterDefaults(bag.attributeValues ?? {});
+    }
+
+    // #endregion Functions
+</script>

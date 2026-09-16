@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -20,12 +20,13 @@ using System.Linq;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Reporting;
 using Rock.Reporting.DataFilter.Person;
 using Rock.Tests.Integration.TestData;
-using Rock.Tests.Shared;
+using Rock.Tests.Shared.Constants;
 using Rock.Web.Cache;
 
 namespace Rock.Tests.Integration.Reporting.DataFilter.Person
@@ -55,7 +56,7 @@ namespace Rock.Tests.Integration.Reporting.DataFilter.Person
 
         private static void CreateTestData()
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
 
             // Add Personal Devices for Ted Decker
             // Sites: Internal, External
@@ -219,7 +220,7 @@ namespace Rock.Tests.Integration.Reporting.DataFilter.Person
         private IQueryable<IEntity> GetPersonQueryWithPersonalDevicesFilter( PersonalDevicesFilter.FilterSettings settings )
         {
             var settingsFilter = new PersonalDevicesFilter();
-            var dataContext = new RockContext();
+            var dataContext = RockApp.Current.CreateRockContext();
             var personService = new PersonService( dataContext );
 
             var parameterExpression = personService.ParameterExpression;

@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -26,6 +26,7 @@ using EF6.TagWith;
 
 using Microsoft.EntityFrameworkCore;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
@@ -117,7 +118,7 @@ namespace Rock.Reporting
         {
             args = args ?? new GetQueryableOptions();
 
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
 
             var service = Reflection.GetServiceForEntityType( queryEntityType, rockContext );
             var paramExpression = service.ParameterExpression;
@@ -239,7 +240,7 @@ namespace Rock.Reporting
                 Reason: TagWith() in certain situations is causing query to be null
                 (https://app.asana.com/0/474497188512037/1204855716691596/f)
              */
-            if ( returnType != null )
+            if ( returnType != null && !dataViewGetQueryArgs.IsQueryTaggingDisabled )
             {
 #if REVIEW_NET5_0_OR_GREATER
                 var tagWithMethod = typeof( EntityFrameworkQueryableExtensions ).GetMethod( nameof( EntityFrameworkQueryableExtensions.TagWith ) );
@@ -290,7 +291,7 @@ namespace Rock.Reporting
                 else
                 {
                     // Check security on the persisted Data View associated with this implementation.
-                    var rockContext = new RockContext();
+                    var rockContext = RockApp.Current.CreateRockContext();
                     var dataViewService = new DataViewService( rockContext );
                     var dataViewEntity = dataViewService.Get( dataView.Id );
 
@@ -352,7 +353,7 @@ namespace Rock.Reporting
             if ( usePersistedValues )
             {
                 // If this is a persisted DataView, get the ids for the expression by querying DataViewPersistedValue instead of evaluating all the filters
-                var rockContext = serviceInstance.Context ?? new RockContext();
+                var rockContext = serviceInstance.Context ?? RockApp.Current.CreateRockContext();
 
                 var persistedValuesQuery = rockContext.Set<DataViewPersistedValue>().Where( a => a.DataViewId == dataView.Id );
                 var ids = persistedValuesQuery.Select( v => v.EntityId );
@@ -689,7 +690,7 @@ namespace Rock.Reporting
         {
             if ( dataView.DisableUseOfReadOnlyContext )
             {
-                return new RockContext();
+                return RockApp.Current.CreateRockContext();
             }
             else
             {

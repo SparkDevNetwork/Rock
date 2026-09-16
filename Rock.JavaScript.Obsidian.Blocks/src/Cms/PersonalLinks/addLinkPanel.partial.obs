@@ -1,0 +1,96 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="popover-panel w-100 js-bookmark-configuration js-bookmark-add-link">
+        <h3 class="popover-title">Personal Link</h3>
+        <div class="panel-body">
+            <RockForm v-model:submit="submit" @submit="onSubmit">
+                <TextBox v-model="linkName" label="Name" rules="required" />
+                <UrlLinkBox v-model="linkUrl" label="Link URL" rules="required" />
+                <DropDownList v-model="selectedSectionValue"
+                              label="Section"
+                              :items="dropdownItems"
+                              :showBlankItem="hasSections" />
+            </RockForm>
+            <div class="actions">
+                <RockButton :btnType="BtnType.Primary" :btnSize="BtnSize.ExtraSmall" accessKey="s" title="Alt+s" @click="onSaveClick">Save</RockButton>
+                <RockButton :btnType="BtnType.Link" :btnSize="BtnSize.ExtraSmall" accessKey="c" title="Alt+c" @click="onCancelClick">Cancel</RockButton>
+            </div>
+        </div>
+    </div>
+</template>
+
+<script setup lang="ts">
+    import { computed, onMounted, ref } from "vue";
+    import RockForm from "@Obsidian/Controls/rockForm.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import UrlLinkBox from "@Obsidian/Controls/urlLinkBox.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import { BtnType } from "@Obsidian/Enums/Controls/btnType";
+    import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
+    import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { PersonalLinksInitializationBox } from "@Obsidian/ViewModels/Blocks/Cms/PersonalLinks/personalLinksInitializationBox";
+    import { SaveLinkRequestBag } from "@Obsidian/ViewModels/Blocks/Cms/PersonalLinks/saveLinkRequestBag";
+
+    const emit = defineEmits<{
+        (e: "save", bag: SaveLinkRequestBag): void;
+        (e: "cancel"): void;
+    }>();
+
+    const config = useConfigurationValues<PersonalLinksInitializationBox>();
+    const invokeBlockAction = useInvokeBlockAction();
+
+    const linkName = ref(config.currentPageTitle ?? document.title);
+    const linkUrl = ref(config.currentPageUrl ?? window.location.href);
+    const selectedSectionValue = ref<string>("");
+    const sectionItems = ref<ListItemBag[]>([]);
+    const submit = ref(false);
+
+    const hasSections = computed((): boolean => {
+        return sectionItems.value.length > 0;
+    });
+
+    const dropdownItems = computed((): ListItemBag[] => {
+        // When the person has no existing sections, show a disabled-looking
+        // "Links" placeholder so they can see where the link will be saved.
+        // Saving with value "" triggers auto-create of the Links section
+        // on the server.
+        if (!hasSections.value) {
+            return [{ value: "", text: "Links" }];
+        }
+        return sectionItems.value;
+    });
+
+    onMounted(async () => {
+        const result = await invokeBlockAction<ListItemBag[]>("GetSections");
+        if (result.isSuccess && result.data) {
+            sectionItems.value = result.data;
+        }
+    });
+
+    /**
+     * Triggers the RockForm's submit/validation pipeline.
+     */
+    function onSaveClick(): void {
+        submit.value = true;
+    }
+
+    /**
+     * Emits cancel so the parent returns to the View panel.
+     */
+    function onCancelClick(): void {
+        emit("cancel");
+    }
+
+    /**
+     * Emits the link payload once RockForm validation has passed.
+     */
+    function onSubmit(): void {
+        emit("save", {
+            sectionIdKey: selectedSectionValue.value || null,
+            name: linkName.value,
+            url: linkUrl.value
+        });
+    }
+</script>

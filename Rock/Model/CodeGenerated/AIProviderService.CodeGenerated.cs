@@ -37,6 +37,8 @@ namespace Rock.Model
         /// Initializes a new instance of the <see cref="AIProviderService"/> class
         /// </summary>
         /// <param name="context">The context.</param>
+        [System.CodeDom.Compiler.GeneratedCode( "Rock.CodeGeneration", "" )]
+        [System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
         public AIProviderService(RockContext context) : base(context)
         {
         }
@@ -49,6 +51,8 @@ namespace Rock.Model
         /// <returns>
         ///   <c>true</c> if this instance can delete the specified item; otherwise, <c>false</c>.
         /// </returns>
+        [System.CodeDom.Compiler.GeneratedCode( "Rock.CodeGeneration", "" )]
+        [System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
         public bool CanDelete( AIProvider item, out string errorMessage )
         {
             errorMessage = string.Empty;
@@ -66,9 +70,13 @@ namespace Rock.Model
         /// or selecting values. Do <b>not</b> use it for accessing the
         /// attributes after the entity has been loaded.
         /// </summary>
+        [System.CodeDom.Compiler.GeneratedCode( "Rock.CodeGeneration", "" )]
+        [System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
         public virtual ICollection<AIProviderQueryableAttributeValue> AIProviderAttributeValues { get; set; } 
 
         /// <inheritdoc/>
+        [System.CodeDom.Compiler.GeneratedCode( "Rock.CodeGeneration", "" )]
+        [System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
         public class AIProviderQueryableAttributeValue : QueryableAttributeValue
         {
         }
@@ -77,6 +85,8 @@ namespace Rock.Model
     /// <summary>
     /// Generated Extension Methods
     /// </summary>
+    [RockObsolete( "21.0" )]
+    [System.Obsolete( "This feature has been deprecated and is no longer used by Rock. AI configuration happens automatically." )]
     public static partial class AIProviderExtensionMethods
     {
         /// <summary>
@@ -85,6 +95,8 @@ namespace Rock.Model
         /// <param name="source">The source.</param>
         /// <param name="deepCopy">if set to <c>true</c> a deep copy is made. If false, only the basic entity properties are copied.</param>
         /// <returns></returns>
+        [System.CodeDom.Compiler.GeneratedCode( "Rock.CodeGeneration", "" )]
+        [System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
         public static AIProvider Clone( this AIProvider source, bool deepCopy )
         {
             if (deepCopy)
@@ -104,6 +116,8 @@ namespace Rock.Model
         /// </summary>
         /// <param name="source">The source.</param>
         /// <returns></returns>
+        [System.CodeDom.Compiler.GeneratedCode( "Rock.CodeGeneration", "" )]
+        [System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
         public static AIProvider CloneWithoutIdentity( this AIProvider source )
         {
             var target = new AIProvider();
@@ -127,6 +141,8 @@ namespace Rock.Model
         /// </summary>
         /// <param name="target">The target.</param>
         /// <param name="source">The source.</param>
+        [System.CodeDom.Compiler.GeneratedCode( "Rock.CodeGeneration", "" )]
+        [System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
         public static void CopyPropertiesFrom( this AIProvider target, AIProvider source )
         {
             target.Id = source.Id;

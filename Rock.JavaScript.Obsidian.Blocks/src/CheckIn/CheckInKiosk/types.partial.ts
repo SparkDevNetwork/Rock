@@ -321,6 +321,10 @@ export type AttendanceCountGroup = {
     count: number;
 
     children: AttendanceCountGroup[];
+
+    softThreshold?: number;
+
+    firmThreshold?: number;
 };
 
 /**

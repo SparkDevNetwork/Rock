@@ -1,0 +1,253 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="promotionrotator">
+        <div class="carousel slide"
+             @mouseenter="stopAutoSlide"
+             @mouseleave="startAutoSlide">
+
+            <!-- Indicators -->
+            <ol v-if="rotatorPromos.length > 1" class="carousel-indicators">
+                <li v-for="(promo, index) in rotatorPromos"
+                    :key="promo.packageId"
+                    :class="{ active: index === currentIndex }"
+                    @click="currentIndex = index">
+                </li>
+            </ol>
+
+            <!-- Slides -->
+            <div class="carousel-inner" role="listbox">
+                <Transition :name="slideTransitionName">
+                    <div :key="currentIndex" class="item active">
+                        <a v-if="currentPromo && isImageLoaded(currentPromo.imageLargeUrl)" @click.prevent="onPromoClick">
+                            <img :src="currentPromo.imageLargeUrl ?? ''" />
+                        </a>
+                    </div>
+                </Transition>
+            </div>
+
+            <!-- Controls -->
+            <a v-if="rotatorPromos.length > 1" class="left carousel-control" role="button" @click.prevent="prevSlide">
+                <span class="ti ti-chevron-left" aria-hidden="true"></span>
+                <span class="sr-only">Previous</span>
+            </a>
+            <a v-if="rotatorPromos.length > 1" class="right carousel-control" role="button" @click.prevent="nextSlide">
+                <span class="ti ti-chevron-right" aria-hidden="true"></span>
+                <span class="sr-only">Next</span>
+            </a>
+
+        </div>
+    </div>
+</template>
+
+<style scoped>
+/*
+    The dot colors, chevron offsets, and rotator spacing below are copied from
+    _blocks-store.scss so the rotator renders correctly on sites that do not reference
+    that stylesheet (e.g. external sites). The base carousel mechanics still come from
+    Bootstrap. Keep these in sync with the .promotionrotator rules in Rock.Frontend.Styles.
+*/
+.promotionrotator {
+    margin-bottom: 48px;
+}
+
+.carousel-control .ti-chevron-right {
+    right: 20px;
+}
+
+.carousel-control .ti-chevron-left {
+    left: 20px;
+}
+
+.carousel-inner {
+    display: grid;
+    max-height: 210px;
+    overflow: hidden;
+}
+
+.carousel-inner .item {
+    grid-area: 1 / 1;
+    cursor: pointer;
+}
+
+.carousel-inner .item a {
+    display: block;
+}
+
+.carousel-inner .item img {
+    display: block;
+    width: 100%;
+    max-height: 210px;
+    object-fit: cover;
+    object-position: center;
+}
+
+/*
+    Use core.css's -44px bottom value (not Store.css's -35px).
+    Replace Bootstrap's left/width/margin-left centering trick with
+    left:0/width:100%/text-align:center so indicators are always
+    centered regardless of how many dots are shown.
+*/
+.carousel-indicators {
+    bottom: -44px;
+    left: 0;
+    width: 100%;
+    margin-left: 0;
+    text-align: center;
+}
+
+.carousel-indicators li {
+    margin-left: 3px;
+    margin-right: 3px;
+    border-color: var(--color-interface-medium);
+}
+
+.carousel-indicators .active {
+    background-color: var(--color-interface-medium);
+}
+
+.slide-next-enter-active,
+.slide-prev-enter-active,
+.slide-next-leave-active,
+.slide-prev-leave-active {
+    transition: transform 0.65s ease;
+}
+
+.slide-next-enter-from {
+    transform: translateX(100%);
+}
+
+.slide-next-leave-to {
+    transform: translateX(-100%);
+}
+
+.slide-prev-enter-from {
+    transform: translateX(-100%);
+}
+
+.slide-prev-leave-to {
+    transform: translateX(100%);
+}
+</style>
+
+<script setup lang="ts">
+    import { computed, onMounted, onUnmounted, ref } from "vue";
+    import { PromoBag } from "@Obsidian/ViewModels/Blocks/Store/PromoList/promoBag";
+
+    const props = defineProps<{
+        promos: PromoBag[];
+    }>();
+
+    const emit = defineEmits<{
+        (e: "promoClick", packageId: number): void;
+    }>();
+
+    // #region Values
+
+    const currentIndex = ref(0);
+
+    /** 1 = advancing forward (next), -1 = stepping backward (prev). */
+    const direction = ref(1);
+
+    /** Large-image URLs that have finished downloading and decoding. A slide is only shown once its image is in this set. */
+    const loadedImageUrls = ref(new Set<string>());
+
+    let autoSlideTimer: ReturnType<typeof setInterval> | null = null;
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    /** Promos that have a large image — the rotator skips any without one. */
+    const rotatorPromos = computed((): PromoBag[] => props.promos.filter(p => !!p.imageLargeUrl));
+
+    /** The promo currently shown in the rotator. */
+    const currentPromo = computed((): PromoBag | undefined => rotatorPromos.value[currentIndex.value]);
+
+    /** Transition name driven by the direction so slides enter and exit the correct side. */
+    const slideTransitionName = computed((): string => direction.value === 1 ? "slide-next" : "slide-prev");
+
+    // #endregion Computed Values
+
+    // #region Event Handlers
+
+    /** Emits the currently shown promo's PackageId so the parent can navigate to its detail page. */
+    function onPromoClick(): void {
+        if (currentPromo.value) {
+            emit("promoClick", currentPromo.value.packageId);
+        }
+    }
+
+    // #endregion Event Handlers
+
+    // #region Functions
+
+    /** Returns true once the given image URL has been preloaded, so the slide can render at its final size without a flash of the full-sized image. */
+    function isImageLoaded(url: string | null | undefined): boolean {
+        return !!url && loadedImageUrls.value.has(url);
+    }
+
+    function preloadImages(): void {
+        for (const promo of rotatorPromos.value) {
+            const url = promo.imageLargeUrl;
+
+            if (!url || loadedImageUrls.value.has(url)) {
+                continue;
+            }
+
+            const image = new Image();
+            image.onload = (): void => {
+                loadedImageUrls.value.add(url);
+            };
+            image.src = url;
+        }
+    }
+
+    /** Advances the rotator to the next slide, wrapping around to the first. */
+    function nextSlide(): void {
+        if (rotatorPromos.value.length === 0) {
+            return;
+        }
+
+        direction.value = 1;
+        currentIndex.value = (currentIndex.value + 1) % rotatorPromos.value.length;
+    }
+
+    /** Steps the rotator back to the previous slide, wrapping around to the last. */
+    function prevSlide(): void {
+        if (rotatorPromos.value.length === 0) {
+            return;
+        }
+
+        direction.value = -1;
+        currentIndex.value = (currentIndex.value - 1 + rotatorPromos.value.length) % rotatorPromos.value.length;
+    }
+
+    /** Starts the auto-slide timer, first clearing any existing one so timers cannot stack up. */
+    function startAutoSlide(): void {
+        stopAutoSlide();
+        autoSlideTimer = setInterval(nextSlide, 5000);
+    }
+
+    /** Stops the auto-slide timer. */
+    function stopAutoSlide(): void {
+        if (autoSlideTimer !== null) {
+            clearInterval(autoSlideTimer);
+            autoSlideTimer = null;
+        }
+    }
+
+    // #endregion Functions
+
+    // #region Lifecycle Hooks
+
+    onMounted((): void => {
+        preloadImages();
+        startAutoSlide();
+    });
+
+    onUnmounted((): void => {
+        stopAutoSlide();
+    });
+
+    // #endregion Lifecycle Hooks
+</script>

@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -40,6 +40,7 @@ using Newtonsoft.Json;
 using OfficeOpenXml;
 #endif
 
+using Rock.Configuration;
 using Rock.Data;
 
 namespace Rock.Model
@@ -96,13 +97,13 @@ namespace Rock.Model
 
                 // Batch size
                 var batchSize = 1000;
-                RockContext rockContext = new RockContext();
+                RockContext rockContext = RockApp.Current.CreateRockContext();
 
                 // Calculate the number of batches
                 int batches = ( int ) Math.Ceiling( ( double ) analyticsSourcePostalCodes.Count / batchSize );
                 for ( int i = 0; i < batches; i++ )
                 {
-                    rockContext = new RockContext();
+                    rockContext = RockApp.Current.CreateRockContext();
 #if REVIEW_NET5_0_OR_GREATER
                     rockContext.ChangeTracker.AutoDetectChangesEnabled = false;
 #else
@@ -121,7 +122,7 @@ namespace Rock.Model
             }
             else
             {
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
 #if REVIEW_NET5_0_OR_GREATER
                     rockContext.BulkInsert( analyticsSourcePostalCodes, options =>
@@ -141,7 +142,7 @@ namespace Rock.Model
         /// </summary>
         public static void ClearTable()
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 try
                 {

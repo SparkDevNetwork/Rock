@@ -1,13 +1,17 @@
 {
   "private": true,
   "description": "Project for all Rock Obsidian UI functionality.",
+  "engines": {
+    "node": ">=24.5.0",
+    "npm": ">=11.5.0"
+  },
   "scripts": {
     "build-fast": "node Build/build-fast.js",
     "build": "npm run build-core && npm run build-framework && npm run copy-webforms-core && echo '' > dist/.buildstamp && echo DONE",
     "build:types": "node ./Build/build-types.js",
-    "build-framework": "npm run build:types && node ./Build/rollup-mt.js Framework/rollup.config.cjs",
+    "build-framework": "npm run build:types && node ./Build/framework-build.cjs",
     "build-core": "webpack --no-color && lessc --js System/vendor.less dist/System/obsidian-vendor.css && cleancss --source-map dist/System/obsidian-vendor.css -o dist/System/obsidian-vendor.min.css",
-    "watch": "node --max-old-space-size=8192 ./node_modules/rollup/dist/bin/rollup --config Framework/rollup.config.cjs --watch",
+    "watch": "node ./Build/framework-build.cjs --watch",
     "copy-webforms-core": "copyfiles -u 2 \"dist/System/*\" \"../RockWeb/Obsidian/\"",
     "clean": "rimraf dist",
     "lint": "eslint --ext .ts --ext .obs Framework",
@@ -21,6 +25,7 @@
     "@rollup/plugin-commonjs": "^25.0.8",
     "@rollup/plugin-node-resolve": "^15.3.1",
     "@rollup/plugin-terser": "^0.4.4",
+    "@sparkdevnetwork/obsidian-build-tools": "^1.0.13",
     "@types/d3-cloud": "1.2.7",
     "@types/dragula": "3.7.5",
     "@types/google.maps": "3.58.1",
@@ -42,6 +47,7 @@
     "jest": "^29.7.0",
     "jest-editor-support": "^31.1.2",
     "jest-environment-jsdom": "^29.7.0",
+    "jest-util": "^29.7.0",
     "less": "^4.4.2",
     "rimraf": "^5.0.10",
     "rollup": "^3.29.5",
@@ -64,6 +70,7 @@
     "@cap.js/widget": "^0.1.31",
     "@capaj/pluralize": "^1.0.4",
     "@floating-ui/vue": "^1.1.9",
+    "@googlemaps/markerclusterer": "^2.6.2",
     "@server-sent-stream/web": "^1.0.3",
     "@types/pdfobject": "^2.2.5",
     "ant-design-vue": "^3.2.20",

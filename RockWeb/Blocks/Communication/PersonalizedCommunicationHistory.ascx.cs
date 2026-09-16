@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -25,6 +25,7 @@ using System.Web.UI.WebControls;
 using Rock;
 using Rock.Attribute;
 using Rock.Communication;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Lava;
 using Rock.Model;
@@ -46,19 +47,19 @@ namespace RockWeb.Blocks.Communication
         IsConfigurable = false )]
     [LinkedPage(
         "Communication Detail Page",
-        required: false,
+        IsRequired = false,
         Key = AttributeKey.CommunicationDetailPage )]
     [LinkedPage(
         "Communication List Detail Page",
-        required: false,
+        IsRequired = false,
         Key = AttributeKey.CommunicationListDetailPage )]
     [LinkedPage(
         "Communication Segment Detail Page",
-        required: false,
+        IsRequired = false,
         Key = AttributeKey.CommunicationSegmentDetailPage )]
     [LinkedPage(
         "Communication Template Detail Page",
-        required: false,
+        IsRequired = false,
         Key = AttributeKey.CommunicationTemplateDetailPage )]
 
     #endregion Block Attributes
@@ -590,7 +591,7 @@ namespace RockWeb.Blocks.Communication
 
             if ( personId != null && contextIsRequired )
             {
-                var rockContext = new RockContext();
+                var rockContext = RockApp.Current.CreateRockContext();
 
                 var personService = new PersonService( rockContext );
 
@@ -619,7 +620,7 @@ namespace RockWeb.Blocks.Communication
         /// </summary>
         private void SetFilter()
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
 
             InitializeDataBindingServices();
 
@@ -730,7 +731,7 @@ namespace RockWeb.Blocks.Communication
              * To ensure this process is scalable, we identify the candidate Communication records for the current page and then retrieve only
              * the extended data set for those records.
              */
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
 
             var qryCommunications = GetCommunicationQuery( rockContext,
                 personId,
@@ -773,7 +774,7 @@ namespace RockWeb.Blocks.Communication
         private void InitializeDataBindingServices()
         {
             // Initialize the services and data used during the Grid data binding process.
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
 
             _gridPersonService = _gridPersonService ?? new PersonService( rockContext );
             _gridDataViewService = _gridDataViewService ?? new DataViewService( rockContext );
@@ -1090,7 +1091,7 @@ namespace RockWeb.Blocks.Communication
             mergeValues.Add( "Communication", item );
 
             // Add Page Links.
-            AddMergeFieldForPageLink( mergeValues, "DetailUrl", LinkedPageUrl( AttributeKey.CommunicationDetailPage ), $"CommunicationId={item.Id}" );
+            AddMergeFieldForPageLink( mergeValues, "DetailUrl", LinkedPageUrl( AttributeKey.CommunicationDetailPage ), $"CommunicationId={Rock.Utility.IdHasher.Instance.GetHash( item.Id )}" );
             AddMergeFieldForPageLink( mergeValues, "ListSegmentDetailUrlTemplate", LinkedPageUrl( AttributeKey.CommunicationSegmentDetailPage ), "DataViewId=@segmentId" );
 
             if ( includeDetailInfo )
@@ -1274,7 +1275,7 @@ namespace RockWeb.Blocks.Communication
                     return;
                 }
 
-                var rockContext = new RockContext();
+                var rockContext = RockApp.Current.CreateRockContext();
 
                 var communicationService = new CommunicationService( rockContext );
                 var qryCommunication = communicationService.Queryable()

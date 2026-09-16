@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -20,11 +20,12 @@ using System.Linq;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
+using Rock.Configuration;
 using Rock.Crm.ConnectionStatusChangeReport;
 using Rock.Data;
 using Rock.Tests.Integration.TestData.Crm;
-using Rock.Tests.Shared;
-using Rock.Tests.Shared.TestFramework;
+using Rock.Tests.Integration.TestFramework.Database;
+using Rock.Tests.Shared.Constants;
 using Rock.Web.Cache;
 
 namespace Rock.Tests.Integration.Performance.Crm
@@ -116,7 +117,7 @@ namespace Rock.Tests.Integration.Performance.Crm
         /// <returns></returns>
         protected RockContext GetDataContext()
         {
-            return new RockContext();
+            return RockApp.Current.CreateRockContext();
         }
 
         #region Support Methods

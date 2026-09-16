@@ -1,0 +1,283 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Grid :definition="config.gridDefinition ?? undefined"
+          :data="gridDataSource"
+          :entityTypeGuid="EntityType.Note"
+          :title="gridTitle"
+          keyField="idKey"
+          itemTerm="Celebration"
+          :showMergeTemplate="false"
+          stickyHeader
+          liveUpdates
+          gridSettings
+          :rowClass="rowClass"
+          :gridSettingsActive="hasActiveFilters"
+          @gridSettingsClick="isGridSettingsVisible = true"
+          @selectItem="onSelectItem">
+
+        <SelectColumn />
+        <DateColumn name="date"
+                    title="Date"
+                    field="date"
+                    width="150px"
+                    :filter="dateValueFilter"
+                    visiblePriority="xs" />
+
+        <PersonColumn name="requester"
+                      title="Requester"
+                      field="requester"
+                      width="200px"
+                      itemClass="text-nowrap"
+                      :showAsLink="true"
+                      :filter="pickExistingValueFilter"
+                      visiblePriority="xs" />
+
+        <LabelColumn v-if="!gridSettings.connectionType"
+                     name="type"
+                     title="Type"
+                     field="type"
+                     :filter="textValueFilter"
+                     visiblePriority="md" />
+
+        <LabelColumn name="opportunity"
+                     title="Opportunity"
+                     field="opportunity"
+                     defaultLabelClass="info"
+                     :filter="textValueFilter"
+                     visiblePriority="md" />
+
+        <Column name="storyDetails"
+                title="Story Details"
+                field="storyDetails"
+                visiblePriority="xs"
+                width="35%">
+            <template #format="{ row }">
+                <div class="line-clamp-6">
+                    <span v-if="row.storyAuthorName" class="story-author">{{ row.storyAuthorName }}: </span>{{ row.storyDetails }}
+                </div>
+            </template>
+        </Column>
+
+        <Column name="connectionRequestLink"
+                field="connectionRequestIdKey"
+                width="52"
+                :excludeFromExport="true"
+                itemClass="grid-columncommand"
+                visiblePriority="xs">
+            <template #format="{ row }">
+                <a v-if="connectionRequestDetailPageUrl && row.connectionRequestIdKey"
+                   :href="getConnectionRequestUrl(row)"
+                   target="_blank"
+                   class="btn btn-default btn-sm"
+                   title="View Connection Request"
+                   @click.stop>
+                    <i class="ti ti-external-link"></i>
+                </a>
+            </template>
+        </Column>
+
+    </Grid>
+
+    <GridSettingsModal v-model="gridSettings"
+                       v-model:visible="isGridSettingsVisible"
+                       :connectionTypeItems="connectionTypeItems"
+                       :isConnectionTypeFilterHidden="isConnectionTypeLockedByPageParam" />
+
+    <EditStoryModal v-if="selectedStory"
+                    v-model:visible="isEditStoryVisible"
+                    :noteIdKey="selectedStory.idKey"
+                    :initialText="selectedStory.storyDetails"
+                    :initialAuthor="selectedStory.storyAuthorPersonAliasGuid
+                        ? { value: selectedStory.storyAuthorPersonAliasGuid, text: selectedStory.storyAuthorName }
+                        : undefined"
+                    :errorMessage="editStoryError"
+                    @save="onStorySave" />
+</template>
+
+<style scoped>
+.story-author {
+    font-weight: 600;
+}
+
+:deep(.grid-row-no-edit) {
+    cursor: default;
+}
+</style>
+
+
+<script setup lang="ts">
+    import { computed, reactive, ref, watch } from "vue";
+    import GridSettingsModal from "./CelebrationsReport/gridSettingsModal.partial.obs";
+    import EditStoryModal from "./CelebrationsReport/editStoryModal.partial.obs";
+    import { GridSettingsOptions, NavigationUrlKey, PreferenceKey } from "./CelebrationsReport/types.partial";
+    import Grid, { DateColumn, PersonColumn, Column, dateValueFilter, textValueFilter, pickExistingValueFilter, LabelColumn, SelectColumn } from "@Obsidian/Controls/grid";
+    import { useConfigurationValues, useInvokeBlockAction, usePersonPreferences } from "@Obsidian/Utility/block";
+    import { RangeType, TimeUnit, parseSlidingDateRangeString, slidingDateRangeToString } from "@Obsidian/Utility/slidingDateRange";
+    import { safeParseJson } from "@Obsidian/Utility/stringUtils";
+    import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
+    import { CelebrationsReportOptionsBag } from "@Obsidian/ViewModels/Blocks/Connection/CelebrationsReport/celebrationsReportOptionsBag";
+    import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { EntityType } from "@Obsidian/SystemGuids/entityType";
+
+    type SelectedStory = {
+        idKey: string;
+        storyDetails: string;
+        storyAuthorName: string;
+        storyAuthorPersonAliasGuid: string;
+    };
+
+    const config = useConfigurationValues<ListBlockBox<CelebrationsReportOptionsBag>>();
+    const invokeBlockAction = useInvokeBlockAction();
+    const preferences = usePersonPreferences().blockPreferences;
+
+    // #region Values
+
+    const gridDataSource = ref<Promise<GridDataBag>>();
+    let gridData: GridDataBag | undefined;
+
+    const isGridSettingsVisible = ref(false);
+    const isEditStoryVisible = ref(false);
+    const selectedStory = ref<SelectedStory | null>(null);
+    const editStoryError = ref("");
+
+    const defaultDateRange = { rangeType: RangeType.Last, timeValue: 8, timeUnit: TimeUnit.Month };
+    const dateRangePrefValue = preferences.getValue(PreferenceKey.FilterDateRange);
+    const savedDateRange = parseSlidingDateRangeString(dateRangePrefValue);
+
+    const gridSettings = ref<GridSettingsOptions>({
+        slidingDateRange: savedDateRange ?? defaultDateRange,
+        connectionType: config.options?.initialConnectionType
+            ?? safeParseJson<ListItemBag>(preferences.getValue(PreferenceKey.FilterConnectionTypeGuid))
+            ?? null
+    });
+
+    // #endregion
+
+    // #region Computed Values
+
+    const connectionTypeItems = computed((): ListItemBag[] => {
+        return config.options?.connectionTypes ?? [];
+    });
+
+    const connectionRequestDetailPageUrl = computed((): string => {
+        return config.navigationUrls?.[NavigationUrlKey.ConnectionRequestDetailPage] ?? "";
+    });
+
+    /** True when the block was loaded with a ConnectionTypeId page parameter, locking the type. */
+    const isConnectionTypeLockedByPageParam = computed((): boolean => {
+        return !!config.options?.pageConnectionTypeName;
+    });
+
+    const gridTitle = computed((): string => {
+        return config.options?.pageConnectionTypeName
+            ? `${config.options.pageConnectionTypeName} Celebrations`
+            : "Connection Celebrations";
+    });
+
+    /** Gear icon is active when a (user-selectable) connection type is selected or a date range preference is explicitly saved. */
+    const hasActiveFilters = computed((): boolean => {
+        const hasConnectionTypeFilter = !isConnectionTypeLockedByPageParam.value && !!gridSettings.value.connectionType;
+        return hasConnectionTypeFilter || preferences.getValue(PreferenceKey.FilterDateRange) !== "";
+    });
+
+    // #endregion
+
+    // #region Functions
+
+    /**
+     * Builds the link to a row's connection request. The opportunity travels with the
+     * request so the Connections Hub has a Connection Type to render.
+     */
+    function getConnectionRequestUrl(row: Record<string, unknown>): string {
+        return connectionRequestDetailPageUrl.value
+            .replace("((Key))", row.connectionRequestIdKey as string)
+            .replace("((OpportunityKey))", (row.connectionOpportunityIdKey as string) ?? "");
+    }
+
+    /**
+     * Marks rows the current person cannot edit so they do not show the clickable cursor.
+     */
+    function rowClass(row: Record<string, unknown>): string {
+        return row["canEdit"] === true ? "" : "grid-row-no-edit";
+    }
+
+    /**
+     * Called when the grid is requesting the row data be loaded.
+     */
+    async function loadGridData(): Promise<GridDataBag> {
+        const result = await invokeBlockAction<GridDataBag>("GetGridData");
+
+        if (result.isSuccess && result.data) {
+            gridData = reactive(result.data);
+            return gridData;
+        }
+        else {
+            throw new Error(result.errorMessage ?? "Unknown error while trying to load grid data.");
+        }
+    }
+
+    /**
+     * Called when the user clicks a row. Opens the edit story modal.
+     */
+    function onSelectItem(key: string): void {
+        const row = gridData?.rows?.find(r => r["idKey"] === key);
+        if (!row || row["canEdit"] !== true) {
+            return;
+        }
+
+        selectedStory.value = {
+            idKey: row["idKey"] as string,
+            storyDetails: (row["storyDetails"] as string) ?? "",
+            storyAuthorName: (row["storyAuthorName"] as string) ?? "",
+            storyAuthorPersonAliasGuid: (row["storyAuthorPersonAliasGuid"] as string) ?? ""
+        };
+        editStoryError.value = "";
+        isEditStoryVisible.value = true;
+    }
+
+    /**
+     * Called when the edit story modal saves. Updates the note via block action
+     * and refreshes the matching grid row on success.
+     */
+    async function onStorySave(noteIdKey: string, text: string, authorPersonAliasGuid: string | undefined): Promise<void> {
+        const result = await invokeBlockAction<{ storyAuthorName: string; storyAuthorPersonAliasGuid: string }>(
+            "SaveCelebrationStory",
+            { key: noteIdKey, text, authorPersonAliasGuid: authorPersonAliasGuid ?? null }
+        );
+
+        if (result.isSuccess && gridData?.rows) {
+            const row = gridData.rows.find(r => r["idKey"] === noteIdKey);
+            if (row) {
+                row["storyDetails"] = text;
+                row["storyAuthorName"] = result.data?.storyAuthorName ?? "";
+                row["storyAuthorPersonAliasGuid"] = result.data?.storyAuthorPersonAliasGuid ?? "";
+            }
+            isEditStoryVisible.value = false;
+        }
+        else {
+            editStoryError.value = result.errorMessage ?? "An error occurred while saving the story.";
+        }
+    }
+
+    // #endregion
+
+    watch(gridSettings, async () => {
+        const settings = gridSettings.value;
+
+        preferences.setValue(
+            PreferenceKey.FilterDateRange,
+            settings.slidingDateRange ? slidingDateRangeToString(settings.slidingDateRange) : ""
+        );
+
+        preferences.setValue(
+            PreferenceKey.FilterConnectionTypeGuid,
+            settings.connectionType ? JSON.stringify(settings.connectionType) : ""
+        );
+
+        await preferences.save();
+        gridDataSource.value = loadGridData();
+    });
+
+    gridDataSource.value = loadGridData();
+</script>

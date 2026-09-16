@@ -1,0 +1,105 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="sort-dropdown dropdown" :class="{ open: isOpen }" ref="dropdownElement">
+        <button type="button"
+                class="btn dropdown-toggle sort-dropdown-toggle"
+                :aria-expanded="isOpen ? 'true' : 'false'"
+                @click.prevent.stop="toggleOpen">
+            <i v-if="selectedItem?.iconCssClass" :class="['sort-dropdown-icon', selectedItem.iconCssClass]"></i>
+            <span class="sort-dropdown-label">{{ selectedItem?.text }}</span>
+            <i class="ti ti-chevron-down"></i>
+        </button>
+
+        <ul class="dropdown-menu sort-dropdown-menu">
+            <li v-for="item of items" :key="item.value">
+                <a href="#" @click.prevent.stop="selectValue(item.value)">
+                    <i :class="['ti', 'ti-fw', { 'ti-check': internalValue === item.value }]"></i>
+                    {{ item.text }}
+                </a>
+            </li>
+        </ul>
+    </div>
+</template>
+
+<script setup lang="ts">
+    import { computed, PropType, ref, watch } from "vue";
+    import { useVModelPassthrough } from "@Obsidian/Utility/component";
+    import { SortItem } from "./types.partial";
+
+    const props = defineProps({
+        /** The currently-selected sort value. */
+        modelValue: {
+            type: String,
+            default: ""
+        },
+
+        /** The selectable sort options. */
+        items: {
+            type: Array as PropType<SortItem[]>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", v: string): void;
+    }>();
+
+    // #region Values
+
+    const isOpen = ref(false);
+    const dropdownElement = ref<HTMLElement>();
+    const internalValue = useVModelPassthrough(props, "modelValue", emit);
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    /**
+     * The sort item matching the current value, used to render the button
+     * label and icon.
+     */
+    const selectedItem = computed((): SortItem | undefined => {
+        return props.items.find(i => i.value === internalValue.value);
+    });
+
+    // #endregion Computed Values
+
+    // #region Functions
+
+    /** Closes the dropdown when a mousedown happens outside of it. */
+    function onDocumentMouseDown(event: MouseEvent): void {
+        if (event.target instanceof HTMLElement && dropdownElement.value?.contains(event.target) !== true) {
+            isOpen.value = false;
+        }
+    }
+
+    // #endregion Functions
+
+    // #region Event Handlers
+
+    /** Toggles the open state of the dropdown. */
+    function toggleOpen(): void {
+        isOpen.value = !isOpen.value;
+    }
+
+    /** Selects the given value and closes the dropdown. */
+    function selectValue(value: string): void {
+        internalValue.value = value;
+        isOpen.value = false;
+    }
+
+    // #endregion Event Handlers
+
+    // #region Watchers
+
+    watch(isOpen, () => {
+        if (isOpen.value) {
+            document.addEventListener("mousedown", onDocumentMouseDown);
+        }
+        else {
+            document.removeEventListener("mousedown", onDocumentMouseDown);
+        }
+    });
+
+    // #endregion Watchers
+</script>

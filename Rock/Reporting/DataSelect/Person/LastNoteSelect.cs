@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -22,9 +22,11 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Web.UI.WebControls;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Net;
+using Rock.Obsidian.UI.GridField;
 using Rock.ViewModels.Controls;
 using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
@@ -98,6 +100,12 @@ namespace Rock.Reporting.DataSelect.Person
             return result;
         }
 #endif
+
+        /// <inheritdoc/>
+        public override ObsidianGridField GetObsidianGridField( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
+        {
+            return new HtmlObsidianGridField();
+        }
 
         /// <summary>
         /// Gets the default column header text.
@@ -231,7 +239,7 @@ namespace Rock.Reporting.DataSelect.Person
             ddlNoteType.Label = "Note Type";
             parentControl.Controls.Add( ddlNoteType );
 
-            var noteTypeService = new NoteTypeService( new RockContext() );
+            var noteTypeService = new NoteTypeService( RockApp.Current.CreateRockContext() );
             var entityTypeIdPerson = EntityTypeCache.GetId<Rock.Model.Person>();
             var noteTypes = noteTypeService.Queryable().Where( a => a.EntityTypeId == entityTypeIdPerson ).OrderBy( a => a.Order ).ThenBy( a => a.Name ).Select( a => new
             {

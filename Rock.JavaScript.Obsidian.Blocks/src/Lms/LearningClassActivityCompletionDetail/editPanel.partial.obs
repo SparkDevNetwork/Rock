@@ -46,25 +46,33 @@
                                    @completed="onFacilitatorCompleted" />
         </div>
 
-        <div ref="buttonsContainer" class="activity-footer-actions d-flex justify-content-end">
-            <RockButton
-                        v-if="screenToShow === ComponentScreen.Scoring"
-                        btnType="link"
-                        @click="switchToScreen(ComponentScreen.Summary)">
-                View Summary
-            </RockButton>
-            <RockButton
-                        v-if="screenToShow === ComponentScreen.Summary"
-                        btnType="primary"
-                        @click="switchToScreen(ComponentScreen.Scoring)">
-                Score
-            </RockButton>
+        <div ref="buttonsContainer" class="activity-footer-actions d-flex justify-content-between align-items-center">
+            <CheckBox v-if="isRetakeEligible"
+                      v-model="isRetakeAssigned"
+                      label="Assign Retake"
+                      help="Check this box to delete this submission and require the student to retake the activity." />
+            <div v-else></div>
+
+            <div>
+                <RockButton
+                            v-if="screenToShow === ComponentScreen.Scoring"
+                            btnType="link"
+                            @click="switchToScreen(ComponentScreen.Summary)">
+                    View Summary
+                </RockButton>
+                <RockButton
+                            v-if="screenToShow === ComponentScreen.Summary"
+                            btnType="primary"
+                            @click="switchToScreen(ComponentScreen.Scoring)">
+                    Score
+                </RockButton>
+            </div>
         </div>
     </fieldset>
 </template>
 
 <script setup lang="ts">
-    import { Component, nextTick, PropType, ref, watch } from "vue";
+    import { Component, computed, nextTick, PropType, ref, watch } from "vue";
     import { setPropertiesBoxValue } from "@Obsidian/Utility/block";
     import { defineAsyncComponent, propertyRef, updateRefValue } from "@Obsidian/Utility/component";
     import NumberBox from "@Obsidian/Controls/numberBox.obs";
@@ -78,6 +86,7 @@
     import { AssignTo } from "@Obsidian/Enums/Lms/assignTo";
     import RockButton from "@Obsidian/Controls/rockButton.obs";
     import RockLabel from "@Obsidian/Controls/rockLabel.obs";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
 
     const props = defineProps({
         modelValue: {
@@ -113,6 +122,9 @@
     const completionValues = propertyRef(completionBag.value.completionValues ?? {}, "ActivityComponentCompletionJson");
     const wasCompletedOnTime = propertyRef(completionBag.value.wasCompletedOnTime ?? true, "WasCompletedOnTime");
 
+    // Transient flag (not an entity property): the facilitator's Assign Retake choice on save.
+    const isRetakeAssigned = propertyRef(completionBag.value.isRetakeAssigned ?? false, "IsRetakeAssigned");
+
     const isAssignedToFacilitatorAndUngraded =
         activityBag.value.assignTo === AssignTo.Facilitator
         && !completionBag.value.gradedByPersonAlias?.value;
@@ -135,11 +147,24 @@
         , facilitatorComment
         , pointsEarned
         , wasCompletedOnTime
+        , isRetakeAssigned
     ];
 
     // #endregion
 
     // #region Computed Values
+
+    /**
+     * Whether the entered score is below the activity's Retake Threshold, which makes the
+     * activity eligible for a facilitator-assigned retake.
+     */
+    const isRetakeEligible = computed((): boolean => {
+        const threshold = activityBag.value?.retakeThreshold;
+
+        return threshold != null
+            && pointsEarned.value != null
+            && pointsEarned.value < threshold;
+    });
 
     // #endregion
 
@@ -206,12 +231,20 @@
         setPropertiesBoxValue(newValue, "facilitatorComment", facilitatorComment.value);
         setPropertiesBoxValue(newValue, "pointsEarned", pointsEarned.value);
         setPropertiesBoxValue(newValue, "dueDate", dueDate.value);
+        setPropertiesBoxValue(newValue, "isRetakeAssigned", isRetakeAssigned.value);
 
         emit("update:modelValue", newValue);
     });
 
     watch(completionBag, () => {
         updateRefValue(completionValues, completionBag.value.completionValues ?? {});
+    });
+
+    // Clear the retake choice if the score is no longer below the threshold.
+    watch(isRetakeEligible, (eligible) => {
+        if (!eligible) {
+            isRetakeAssigned.value = false;
+        }
     });
 
     const componentUrl = activityBag.value.activityComponent?.componentUrl ?? "";

@@ -36,14 +36,25 @@ namespace Rock.Workflow.Action
     [Export( typeof( ActionComponent ) )]
     [ExportMetadata( "ComponentName", "Group Member Set Note Field" )]
 
-    [WorkflowAttribute( "Person", "Workflow attribute that contains the person to update in the group.", true, "", "", 0, null,
-        new string[] { "Rock.Field.Types.PersonFieldType" } )]
+    [WorkflowAttribute( "Person",
+        Description = "Workflow attribute that contains the person to update in the group.",
+        IsRequired = true,
+        Order = 0,
+        FieldTypeClassNames = new string[] { "Rock.Field.Types.PersonFieldType" } )]
 
-    [WorkflowAttribute( "Group", "Workflow Attribute that contains the group the person is in.", true, "", "", 1, null,
-        new string[] { "Rock.Field.Types.GroupFieldType" } )]
+    [WorkflowAttribute( "Group",
+        Description = "Workflow Attribute that contains the group the person is in.",
+        IsRequired = true,
+        Order = 1,
+        FieldTypeClassNames = new string[] { "Rock.Field.Types.GroupFieldType" } )]
 
-    [WorkflowTextOrAttribute( "Note", "Attribute Value", "Text or workflow attribute that contains the text to set the group member note to. <span class='tip tip-lava'></span>", true, "", "", 2, "Note",
-        new string[] { "Rock.Field.Types.TextFieldType" } )]
+    [WorkflowTextOrAttribute( "Note",
+        "Attribute Value",
+        Description = "Text or workflow attribute that contains the text to set the group member note to. <span class='tip tip-lava'></span>",
+        IsRequired = true,
+        Order = 2,
+        Key = "Note",
+        FieldTypeClassNames = new string[] { "Rock.Field.Types.TextFieldType" } )]
     [Rock.SystemGuid.EntityTypeGuid( "D54F30CD-8759-45BA-AF05-ABCFB0F21005")]
     public class SetGroupMemberNote : ActionComponent
     {

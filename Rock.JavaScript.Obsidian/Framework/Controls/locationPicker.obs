@@ -28,7 +28,7 @@
             <slot name="append" :isInputGroupSupported="isInputGroupSupported" />
         </template>
     </LocationAddressPicker>
-    <GeoPicker v-if="numericSelectedMode === LocationPickerMode.Point" v-model="pointValue" drawingMode="Point" v-model:showPopup="popupStatus" v-bind="fieldProps">
+    <GeoPicker v-if="numericSelectedMode === LocationPickerMode.Point" v-model="pointValue" drawingMode="Point" v-model:showPopup="popupStatus" v-bind="fieldProps" :mapStyleValueGuid="resolvedMapStyleValueGuid">
         <template #pickerContentSuperHeader v-if="options.length > 1">
             <RadioButtonList v-model="selectedMode" :items="options" horizontal />
         </template>
@@ -42,7 +42,7 @@
             <slot name="append" :isInputGroupSupported="isInputGroupSupported" />
         </template>
     </GeoPicker>
-    <GeoPicker v-if="numericSelectedMode === LocationPickerMode.Polygon" v-model="polygonValue" drawingMode="Polygon" v-model:showPopup="popupStatus" v-bind="fieldProps">
+    <GeoPicker v-if="numericSelectedMode === LocationPickerMode.Polygon" v-model="polygonValue" drawingMode="Polygon" v-model:showPopup="popupStatus" v-bind="fieldProps" :mapStyleValueGuid="resolvedMapStyleValueGuid">
         <template #pickerContentSuperHeader v-if="options.length > 1">
             <RadioButtonList v-model="selectedMode" :items="options" horizontal />
         </template>
@@ -64,6 +64,7 @@
     import GeoPicker from "./geoPicker.obs";
     import RadioButtonList from "./radioButtonList.obs";
     import { computed, PropType, ref, watch } from "vue";
+    import { Guid } from "@Obsidian/Types";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { AddressControlBag } from "@Obsidian/ViewModels/Controls/addressControlBag";
     import { SingleLocationPickerMode, LocationPickerModeFlag, LocationPickerMode } from "@Obsidian/Enums/Controls/locationPickerMode";
@@ -86,7 +87,30 @@
             default: () => LocationPickerMode.All
         },
 
+        /**
+         * GUID of a DefinedValue from the Map Styles DefinedType. Forwarded
+         * to the inner Point / Polygon GeoPickers; the Named and Address
+         * sub-pickers do not render a map and ignore this. Optional - when
+         * omitted (null / undefined) the GeoPicker uses its own default
+         * (MapStyleRock), which preserves the pre-existing behavior.
+         */
+        mapStyleValueGuid: {
+            type: String as PropType<Guid | null | undefined>,
+            default: null
+        },
+
         ...standardRockFormFieldProps
+    });
+
+    /**
+     * Resolves the map-style GUID to forward to the inner GeoPicker. The
+     * GeoPicker's prop is typed Guid (non-nullable) with a default of
+     * MapStyleRock. When our caller supplies null / undefined we let the
+     * GeoPicker use its own default by passing the same value the GeoPicker
+     * defaults to.
+     */
+    const resolvedMapStyleValueGuid = computed<Guid | undefined>(() => {
+        return props.mapStyleValueGuid ?? undefined;
     });
 
     const emit = defineEmits<{

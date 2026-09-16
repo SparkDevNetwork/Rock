@@ -1,0 +1,110 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <fieldset>
+        <TextBox v-model="name"
+                 label="Name"
+                 textMode="singleLine"
+                 :disabled="true" />
+        <TextBox v-model="friendlyName"
+                 label="Friendly Name"
+                 textMode="singleLine" />
+        <div class="row">
+            <div class="col-md-6">
+                <CheckBox v-model="isCommon"
+                          label="Common"
+                          help="There are various places that a user is prompted for an entity type. 'Common' entities will be listed first for the user to easily find them" />
+            </div>
+            <div class="col-md-6">
+                <CheckBox v-model="trackInteraction"
+                          label="Track Interaction"
+                          help="When enabled this will track which interaction was active when instances of this entity type are created." />
+            </div>
+        </div>
+        <CodeEditor v-model="indexResultTemplate"
+                    label="Index Results Template"
+                    help="The Lava used by the Universal Search feature to display results. Available merge fields include CurrentPerson, IndexDocument and DisplayOptions."
+                    mode="lava"
+                    :editorHeight="150" />
+        <CodeEditor v-model="indexDocumentUrl"
+                    label="Index Document URL Pattern"
+                    help="The Lava used by the Universal Search feature to determine the Rock URL of the document. Available merge fields include CurrentPerson, IndexDocument and DisplayOptions."
+                    mode="lava"
+                    :editorHeight="150" />
+        <CodeEditor v-model="linkUrlLavaTemplate"
+                    label="Link URL Pattern"
+                    help="The Lava used when Rock needs to create a URL to an entity based just on the entity type (ie. Tag Report). Available merge field is Entity."
+                    mode="lava"
+                    :editorHeight="80" />
+    </fieldset>
+</template>
+
+<script setup lang="ts">
+    import { PropType, ref, watch } from "vue";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import { EntityTypesBag } from "@Obsidian/ViewModels/Blocks/Core/EntityTypes/entityTypesBag";
+    import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
+    import { setPropertiesBoxValue } from "@Obsidian/Utility/block";
+    import { updateRefValue } from "@Obsidian/Utility/component";
+    import CodeEditor from "@Obsidian/Controls/codeEditor.obs";
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<ValidPropertiesBox<EntityTypesBag>>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: ValidPropertiesBox<EntityTypesBag>): void;
+    }>();
+
+    // #region Values
+
+    const name = ref(props.modelValue.bag?.name ?? "");
+    const friendlyName = ref(props.modelValue.bag?.friendlyName ?? "");
+    const isCommon = ref(props.modelValue.bag?.isCommon ?? false);
+    const trackInteraction = ref(props.modelValue.bag?.isRelatedToInteractionTrackedOnCreate ?? false);
+    const indexResultTemplate = ref(props.modelValue.bag?.indexResultTemplate ?? "");
+    const indexDocumentUrl = ref(props.modelValue.bag?.indexDocumentUrl ?? "");
+    const linkUrlLavaTemplate = ref(props.modelValue.bag?.linkUrlLavaTemplate ?? "");
+
+    // #endregion
+
+    // #region Computed Values
+
+    // #endregion
+
+    watch(() => props.modelValue, () => {
+        updateRefValue(name, props.modelValue.bag?.name ?? "");
+        updateRefValue(friendlyName, props.modelValue.bag?.friendlyName ?? "");
+        updateRefValue(isCommon, props.modelValue.bag?.isCommon ?? false);
+        updateRefValue(trackInteraction, props.modelValue.bag?.isRelatedToInteractionTrackedOnCreate ?? false);
+        updateRefValue(indexResultTemplate, props.modelValue.bag?.indexResultTemplate ?? "");
+        updateRefValue(indexDocumentUrl, props.modelValue.bag?.indexDocumentUrl ?? "");
+        updateRefValue(linkUrlLavaTemplate, props.modelValue.bag?.linkUrlLavaTemplate ?? "");
+    });
+
+    // Determines which values we want to track changes on (defined in the
+    // array) and then emit a new object defined as newValue.
+    watch([
+        friendlyName,
+        isCommon,
+        trackInteraction,
+        indexResultTemplate,
+        indexDocumentUrl,
+        linkUrlLavaTemplate], () => {
+            const newValue: ValidPropertiesBox<EntityTypesBag> = {
+                bag: { ...props.modelValue.bag } as EntityTypesBag
+            };
+
+            setPropertiesBoxValue(newValue, "friendlyName", friendlyName.value);
+            setPropertiesBoxValue(newValue, "isCommon", isCommon.value);
+            setPropertiesBoxValue(newValue, "isRelatedToInteractionTrackedOnCreate", trackInteraction.value);
+            setPropertiesBoxValue(newValue, "indexResultTemplate", indexResultTemplate.value);
+            setPropertiesBoxValue(newValue, "indexDocumentUrl", indexDocumentUrl.value);
+            setPropertiesBoxValue(newValue, "linkUrlLavaTemplate", linkUrlLavaTemplate.value);
+
+            emit("update:modelValue", newValue);
+        });
+
+</script>

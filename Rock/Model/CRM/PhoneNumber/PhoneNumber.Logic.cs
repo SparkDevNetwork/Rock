@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -24,6 +24,7 @@ using System.Data.Entity.Infrastructure;
 using System.Linq;
 using System.Runtime.Serialization;
 using System.Text.RegularExpressions;
+
 using Rock.Data;
 using Rock.Web.Cache;
 
@@ -75,17 +76,6 @@ namespace Rock.Model
             get { return PhoneNumber.FormattedNumber( CountryCode, Number, true ); }
             private set { }
         }
-
-        /// <summary>
-        /// Gets or sets the history changes.
-        /// </summary>
-        /// <value>
-        /// The history changes.
-        /// </value>
-        [NotMapped]
-        [RockObsolete( "1.14" )]
-        [Obsolete( "Does nothing. No longer needed. We replaced this with a private property under the SaveHook class for this entity.", true )]
-        private Dictionary<int, History.HistoryChangeList> PersonHistoryChanges { get; set; }
 
         #endregion
 

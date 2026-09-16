@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -21,6 +21,7 @@ using DbGeography = NetTopologySuite.Geometries.Geometry;
 #else
 using System.Data.Entity.Spatial;
 #endif
+
 using Newtonsoft.Json;
 
 namespace Rock.Core.Geography.Classes

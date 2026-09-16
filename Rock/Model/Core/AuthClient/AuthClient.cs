@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -18,7 +18,10 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
+
 using Rock.Data;
+using Rock.Enums.Security;
+using Rock.Security;
 
 namespace Rock.Model
 {
@@ -50,6 +53,7 @@ namespace Rock.Model
         /// The allowed claims.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string AllowedClaims { get; set; }
 
         /// <summary>
@@ -59,6 +63,7 @@ namespace Rock.Model
         /// The allowed scopes.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string AllowedScopes { get; set; }
 
         /// <summary>
@@ -78,6 +83,7 @@ namespace Rock.Model
         /// </value>
         [DataMember( IsRequired = true )]
         [Required]
+        [StringValidation( StringValidationProfile.Name )]
         public string Name { get; set; }
 
         /// <summary>
@@ -92,6 +98,7 @@ namespace Rock.Model
         [Index( IsUnique = true )]
 #endif
         [MaxLength(50)]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string ClientId { get; set; }
 
         /// <summary>
@@ -101,6 +108,7 @@ namespace Rock.Model
         /// The client secret hash.
         /// </value>
         [HideFromReporting]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string ClientSecretHash { get; set; }
 
         /// <summary>
@@ -111,6 +119,7 @@ namespace Rock.Model
         /// </value>
         [DataMember( IsRequired = true )]
         [Required]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string RedirectUri { get; set; }
 
         /// <summary>
@@ -121,6 +130,7 @@ namespace Rock.Model
         /// </value>
         [DataMember( IsRequired = true )]
         [Required]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string PostLogoutRedirectUri { get; set; }
 
         /// <summary>

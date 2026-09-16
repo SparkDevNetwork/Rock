@@ -11,12 +11,20 @@
     import { FormField } from "../Shared/types.partial";
 
     function getAttributeFromField(field: FormField): PublicAttributeBag {
+        // Campus auto-hides its picker at runtime when only one campus is
+        // selectable. On the builder canvas that leaves an empty tile, so
+        // force the picker visible at design time.
+        const configurationValues = {
+            ...(field.editConfigurationValues ?? {}),
+            forceVisible: "True"
+        };
+
         return {
             attributeGuid: newGuid(),
             fieldTypeGuid: field.universalFieldTypeGuid ?? field.fieldTypeGuid,
             name: !(field.isHideLabel ?? false) ? field.name : "",
             key: field.key,
-            configurationValues: field.editConfigurationValues,
+            configurationValues,
             isRequired: field.isRequired ?? false,
             description: field.description ?? "",
             order: 0,

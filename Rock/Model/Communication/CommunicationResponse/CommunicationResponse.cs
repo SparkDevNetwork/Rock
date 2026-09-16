@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -22,8 +22,12 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
+
 using Newtonsoft.Json;
+
 using Rock.Data;
+using Rock.Enums.Security;
+using Rock.Security;
 
 namespace Rock.Model
 {
@@ -50,6 +54,7 @@ namespace Rock.Model
         [Required]
         [MaxLength( 1000 )]
         [DataMember( IsRequired = true )]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string MessageKey { get; set; }
 
         /// <summary>
@@ -78,17 +83,6 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public bool IsRead { get; set; }
-
-        /// <summary>
-        /// Gets or sets the related SMS from defined value identifier.
-        /// </summary>
-        /// <value>
-        /// The related SMS from defined value identifier.
-        /// </value>
-        [DataMember]
-        [Obsolete( "Use RelatedSmsFromSystemPhoneNumberId instead." )]
-        [RockObsolete( "1.15" )]
-        public int? RelatedSmsFromDefinedValueId { get; set; }
 
         /// <summary>
         /// Gets or sets the related SMS system phone number identifier this
@@ -134,6 +128,7 @@ namespace Rock.Model
         /// The response.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string Response { get; set; }
 
         #endregion Entity Properties

@@ -79,18 +79,21 @@
                                          label="Email Preview Text"
                                          textMode="multiline" />
 
-                                <FileUploader v-model="currentAttachment"
-                                              :binaryFileTypeGuid="attachmentBinaryFileTypeGuid"
-                                              label="Attachments"
-                                              :uploadAsTemporary="true"
-                                              @update:modelValue="onAttachmentAdded" />
+                                <PillList :modelValue="displayedAttachments"
+                                          canAdd
+                                          canExpand
+                                          canRemove
+                                          label="Attachments"
+                                          @add="onAddAttachmentClicked"
+                                          @remove="onAttachmentRemovedAtIndex">
+                                    <template #itemContent="{ item }">{{ item?.text }}</template>
+                                </PillList>
 
-                                <div class="attachment">
-                                    <ul class="attachment-content">
-                                        <li v-for="binaryFileAttachment in internalEmailAttachmentBinaryFiles">
-                                            <a :href="`/GetFile.ashx?guid=${binaryFileAttachment.value}&fileName=${binaryFileAttachment.text}`" target="_blank" rel="noopener noreferrer">{{ binaryFileAttachment.text }}</a> <a><i class="ti ti-x" @click="onAttachmentRemoved(binaryFileAttachment)"></i></a>
-                                        </li>
-                                    </ul>
+                                <div ref="hiddenFileUploaderWrapper" class="d-none">
+                                    <FileUploader v-model="currentAttachment"
+                                                  :binaryFileTypeGuid="attachmentBinaryFileTypeGuid"
+                                                  uploadAsTemporary
+                                                  @update:modelValue="onAttachmentAdded" />
                                 </div>
                             </div>
                         </div>
@@ -137,11 +140,12 @@
 </style>
 
 <script setup lang="ts">
-    import { nextTick, onMounted, onUnmounted, PropType, ref, watch } from "vue";
+    import { computed, nextTick, onMounted, onUnmounted, PropType, ref, watch } from "vue";
     import ConditionalWell from "@Obsidian/Controls/conditionalWell.obs";
     import EmailBox from "@Obsidian/Controls/emailBox.obs";
     import FileUploader from "@Obsidian/Controls/fileUploader.obs";
     import Panel from "@Obsidian/Controls/panel.obs";
+    import PillList from "@Obsidian/Controls/pillList.obs";
     import RockButton from "@Obsidian/Controls/rockButton.obs";
     import RockForm from "@Obsidian/Controls/rockForm.obs";
     import TextBox from "@Obsidian/Controls/textBox.obs";
@@ -237,6 +241,7 @@
     const emailSettingsStepElement = ref<HTMLElement | undefined>();
     // Set to null to clear the attachment uploader.
     const currentAttachment = ref<ListItemBag | null | undefined>();
+    const hiddenFileUploaderWrapper = ref<HTMLElement | undefined>();
     const areMoreOptionsShown = ref<boolean>(!!props.replyToEmail || !!props.ccEmails || !!props.bccEmails);
     const messageIFrameElement = ref<HTMLIFrameElement>(document.createElement("iframe"));
     const emailPreviewElement = ref<HTMLElement | null | undefined>();
@@ -253,6 +258,12 @@
     const internalSubject = useVModelPassthrough(props, "subject", emit);
 
     // #endregion Values
+
+    // #region Computed Values
+
+    const displayedAttachments = computed<ListItemBag[]>(() => internalEmailAttachmentBinaryFiles.value ?? []);
+
+    // #endregion Computed Values
 
     // #region Functions
 
@@ -319,13 +330,28 @@
         currentAttachment.value = null;
     }
 
-    function onAttachmentRemoved(attachment: ListItemBag | null | undefined): void {
-        if (isNullish(attachment)) {
+    function onAttachmentRemovedAtIndex(_item: ListItemBag, index: number): void {
+        if (index < 0) {
             return;
         }
 
-        internalEmailAttachmentBinaryFiles.value = internalEmailAttachmentBinaryFiles.value
-            ?.filter(a => attachment !== a);
+        const list = internalEmailAttachmentBinaryFiles.value ?? [];
+        internalEmailAttachmentBinaryFiles.value = [
+            ...list.slice(0, index),
+            ...list.slice(index + 1)
+        ];
+    }
+
+    function onAddAttachmentClicked(): void {
+        // Programmatically open the file picker for the hidden FileUploader,
+        // matching the pattern used by attachmentPicker.partial.obs in the
+        // CommunicationEntry block.
+        if (hiddenFileUploaderWrapper.value) {
+            const group = hiddenFileUploaderWrapper.value.querySelector(".fileupload-group") as HTMLElement | null;
+            if (group) {
+                group.click();
+            }
+        }
     }
 
     // #endregion Event Handlers

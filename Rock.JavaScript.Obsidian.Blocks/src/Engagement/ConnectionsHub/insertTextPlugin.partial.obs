@@ -1,0 +1,71 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+</template>
+
+<script setup lang="ts">
+    /**
+     * InsertTextPlugin - Adds code-only method to insert text at the current cursor position in the editor.
+     *
+     * @example
+     * <!--
+     *      componentWithSmsMessageEditor.obs - This example shows just enough code to wire up the plugin.
+     *      FYI, the Vue - Official extension complains if template and script tags are used in comments,
+     *      so using (template) and (script) for now.
+     * -->
+     * (template)
+     *   <SmsMessageEditor>
+     *       <template #plugins>
+     *           <InsertTextPlugin ref="insertTextPlugin" />
+     *       </template>
+     *   </SmsMessageEditor>
+     *
+     *   <RockButton @click="onInsertTextClick">Insert Text</RockButton>
+     * (/template)
+     *
+     * (script setup lang="ts")
+     *   import InsertTextPlugin from "./insertTextPlugin.partial.obs";
+     *   ...
+     *
+     *   const insertTextPlugin = ref<InstanceType<typeof InsertTextPlugin> | undefined>();
+     *   ...
+     *
+     *   // Insert text the editor.
+     *   function onInsertTextClick(): void {
+     *     insertTextPlugin.insertText({ text: 'Some text to insert' });
+     *   }
+     * (/script)
+     */
+    import { PropType, watch } from "vue";
+    import { usePluginHelper } from "@Obsidian/Controls/Internal/NoteEditor/utils";
+
+    const props = defineProps({
+        insertTextRequest: {
+            type: Object as PropType<{ text: string; } | null | undefined>
+        }
+    });
+
+    const id = "rockinserttext" as const;
+
+    defineExpose({
+        id
+    });
+
+    //#region Values
+
+    const { editorInstance } = usePluginHelper();
+
+    //#endregion
+
+    //#region Watchers
+
+    // Watch for insert text requests from the host component and insert the requested text into the editor.
+    watch(() => props.insertTextRequest, (newValue) => {
+        if (newValue) {
+            if (editorInstance.value) {
+                editorInstance.value.insertContent(newValue.text);
+            }
+        }
+    });
+
+    //#endregion
+</script>

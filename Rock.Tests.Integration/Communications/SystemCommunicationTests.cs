@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -21,13 +21,14 @@ using System.Net.Mail;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using Rock.Communication;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Tests.Integration.Communications.Transport;
 using Rock.Tests.Integration.TestData;
 using Rock.Tests.Integration.TestData.Communications;
-using Rock.Tests.Shared;
-using Rock.Tests.Shared.TestFramework;
+using Rock.Tests.Integration.TestFramework.Database;
+using Rock.Tests.Shared.Constants;
 
 namespace Rock.Tests.Integration.Communications
 {
@@ -125,7 +126,7 @@ namespace Rock.Tests.Integration.Communications
                 RecipientStatus = CommunicationRecipientStatus.Pending
             };
 
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var communicationService = new CommunicationService( rockContext );
             var communication = communicationService.CreateEmailCommunication( createEmailArgs );
 

@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -18,7 +18,9 @@ using System;
 using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
+
 using Rock.Communication;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 
@@ -132,6 +134,14 @@ namespace Rock.Transactions
         public int? SystemCommunicationId { get; set; }
 
         /// <summary>
+        /// Gets or sets the communication topic <see cref="DefinedValue"/> identifier.
+        /// </summary>
+        /// <value>
+        /// The communication topic defined value identifier.
+        /// </value>
+        public int? CommunicationTopicValueId { get; set; }
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="SaveCommunicationTransaction"/> class.
         /// </summary>
         public SaveCommunicationTransaction()
@@ -202,7 +212,7 @@ namespace Rock.Transactions
         /// <returns>The identifier of the communication or <c>null</c> if one was not created.</returns>
         internal int? ExecuteAndReturnCommunicationId()
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var personService = new PersonService( rockContext );
                 int? senderPersonAliasId = null;
@@ -251,7 +261,8 @@ namespace Rock.Transactions
                     SendDateTime = this.SendDateTime,
                     RecipientStatus = this.RecipientStatus,
                     SenderPersonAliasId = senderPersonAliasId,
-                    SystemCommunicationId = this.SystemCommunicationId
+                    SystemCommunicationId = this.SystemCommunicationId,
+                    CommunicationTopicValueId = this.CommunicationTopicValueId
                 };
 
                 var communication = new CommunicationService( rockContext ).CreateEmailCommunication( createEmailCommunicationArgs );

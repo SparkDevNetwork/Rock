@@ -21,7 +21,7 @@ import { debounce } from "@Obsidian/Utility/util";
 import CheckBoxList from "@Obsidian/Controls/checkBoxList.obs";
 import { ComponentPickerGetComponentsOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/ComponentPickerGetComponentsOptionsBag";
 import TextBox from "@Obsidian/Controls/textBox.obs";
-import { ConfigurationValueKey } from "./componentsField.partial";
+import { ConfigurationKey } from "./componentsField.partial";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { updateRefValue } from "@Obsidian/Utility/component";
 
@@ -82,7 +82,7 @@ export const EditComponent = defineComponent({
         });
 
         watch(() => props.configurationValues, () => {
-            updateRefValue(containerType, props.configurationValues[ConfigurationValueKey.Container] ?? "");
+            updateRefValue(containerType, props.configurationValues[ConfigurationKey.Container] ?? "");
             loadOptionsDebounce();
         }, {
             immediate: true
@@ -127,10 +127,10 @@ export const ConfigurationComponent = defineComponent({
 
             // Construct the new value that will be emitted if it is different
             // than the current value.
-            newValue[ConfigurationValueKey.Container] = containerType.value;
+            newValue[ConfigurationKey.Container] = containerType.value;
 
             // Compare the new value and the old value.
-            const anyValueChanged = newValue[ConfigurationValueKey.Container] !== (props.modelValue[ConfigurationValueKey.Container]);
+            const anyValueChanged = newValue[ConfigurationKey.Container] !== (props.modelValue[ConfigurationKey.Container]);
 
             // If any value changed then emit the new model value.
             if (anyValueChanged) {
@@ -157,13 +157,13 @@ export const ConfigurationComponent = defineComponent({
         // Watch for changes coming in from the parent component and update our
         // data to match the new information.
         watch(() => [props.modelValue, props.configurationProperties], () => {
-            containerType.value = props.modelValue[ConfigurationValueKey.Container];
+            containerType.value = props.modelValue[ConfigurationKey.Container];
         }, {
             immediate: true
         });
 
         // Watch for changes in properties that only require a local UI update.
-        watch(containerType, () => maybeUpdateConfiguration(ConfigurationValueKey.Container, containerType.value));
+        watch(containerType, () => maybeUpdateConfiguration(ConfigurationKey.Container, containerType.value));
 
         return {
             containerType,

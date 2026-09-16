@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -38,9 +38,12 @@ using System.Threading.Tasks;
 using System.Web;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
+
 using Humanizer;
 using Humanizer.Localisation;
+
 using Ical.Net;
+
 #if REVIEW_WEBFORMS
 using ImageResizer;
 #endif
@@ -48,11 +51,11 @@ using ImageResizer;
 using Rock;
 using Rock.Attribute;
 using Rock.Cms.StructuredContent;
+using Rock.Core.Geography;
+using Rock.Core.Geography.Classes;
 using Rock.Data;
 using Rock.Enums.Core;
 using Rock.Enums.Geography;
-using Rock.Core.Geography;
-using Rock.Core.Geography.Classes;
 using Rock.Lava.Filters.Internal;
 using Rock.Logging;
 using Rock.Model;
@@ -63,7 +66,6 @@ using Rock.Web;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
-using UAParser;
 
 namespace Rock.Lava
 {
@@ -460,8 +462,10 @@ namespace Rock.Lava
                 var familyGroupTypeId = GroupTypeCache.Get( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY ).Id;
 
                 // Get all GroupMember records tied to this Person and the Family GroupType. Note that a given Person can belong to multiple families.
+                // Include deceased members so that a deceased person's family address still resolves; the query below targets this person's own
+                // family membership, which is filtered out by the default (IsDeceased == false) query when the person is deceased.
                 var groupMemberQuery = new GroupMemberService( LavaHelper.GetRockContextFromLavaContext( context ) )
-                    .Queryable( "GroupLocations.Location" )
+                    .Queryable( "GroupLocations.Location", true )
                     .AsNoTracking()
                     .Where( m => m.PersonId == person.Id &&
                                  m.Group.GroupTypeId == familyGroupTypeId );

@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -27,8 +27,9 @@ using Rock.Lava;
 using Rock.Lava.Fluid;
 using Rock.Model;
 using Rock.Tests.Integration.TestData.Core;
+using Rock.Tests.Integration.TestFramework.Lava;
 using Rock.Tests.Shared;
-using Rock.Tests.Shared.Lava;
+using Rock.Tests.Shared.Constants;
 using Rock.Web.Cache;
 
 namespace Rock.Tests.Integration.Core.Lava.Filters
@@ -45,7 +46,7 @@ namespace Rock.Tests.Integration.Core.Lava.Filters
         [ClassInitialize]
         public static void Initialize( TestContext context )
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
 
             // Add Followings for Ted Decker.
             var followingService = new FollowingService( rockContext );
@@ -257,7 +258,7 @@ namespace Rock.Tests.Integration.Core.Lava.Filters
 
             var tedDeckerGuid = TestGuids.TestPeople.TedDecker.AsGuid();
 
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
 
             var tedDeckerPerson = new PersonService( rockContext ).Queryable().First( x => x.Guid == tedDeckerGuid );
 

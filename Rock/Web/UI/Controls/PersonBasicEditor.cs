@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -1246,7 +1246,7 @@ namespace Rock.Web.UI.Controls
                 person.SuffixValueId = this.PersonSuffixValueId;
             }
 
-            if ( this.PersonGender.HasValue && this.PersonGender.HasValue )
+            if ( ShowGender && this.PersonGender.HasValue )
             {
                 person.Gender = this.PersonGender.Value;
             }

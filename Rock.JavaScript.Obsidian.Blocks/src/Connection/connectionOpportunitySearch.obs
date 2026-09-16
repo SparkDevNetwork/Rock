@@ -1,0 +1,157 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <NotificationBox v-if="errorMessage" :alertType="AlertType.Warning">
+        {{ errorMessage }}
+    </NotificationBox>
+
+    <div v-if="options.isSearchShown" class="connection-opportunity-search">
+        <h3>Search</h3>
+
+        <TextBox v-if="options.isNameFilterShown"
+                 v-model="searchName"
+                 label="Name" />
+
+        <CheckBoxList v-if="options.isCampusFilterShown"
+                      v-model="campusGuids"
+                      :label="options.campusLabel || 'Campuses'"
+                      :items="campusItems"
+                      horizontal />
+
+        <div v-for="attribute in attributeFilters"
+             :key="attribute.attributeGuid"
+             class="form-group">
+            <RockLabel :help="attribute.description ?? undefined">{{ attribute.name }}</RockLabel>
+            <RockAttributeFilter v-model="attributeFilterValues[attribute.key ?? '']"
+                                 :attribute="attribute" />
+        </div>
+
+        <RockButton :btnType="BtnType.Primary"
+                    :isLoading="isSearching"
+                    @click="onSearchClick">
+            Search
+        </RockButton>
+    </div>
+
+    <div ref="resultsElement"></div>
+</template>
+
+<style scoped>
+.connection-opportunity-search :deep(.checkbox-inline + .checkbox-inline) {
+    margin-left: var(--spacing-large);
+}
+</style>
+
+<script setup lang="ts">
+    import { onMounted, ref } from "vue";
+    import CheckBoxList from "@Obsidian/Controls/checkBoxList.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import RockAttributeFilter from "@Obsidian/Controls/rockAttributeFilter.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import RockLabel from "@Obsidian/Controls/rockLabel.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import { setInnerHTML } from "@Obsidian/Core/Utilities/domUtils";
+    import { AlertType } from "@Obsidian/Enums/Controls/alertType";
+    import { BtnType } from "@Obsidian/Enums/Controls/btnType";
+    import { ComparisonValue } from "@Obsidian/Types/Reporting/comparisonValue";
+    import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, useReloadBlock, useStaticContent } from "@Obsidian/Utility/block";
+    import { CustomBlockBox } from "@Obsidian/ViewModels/Blocks/customBlockBox";
+    import { ConnectionOpportunitySearchBag } from "@Obsidian/ViewModels/Blocks/Connection/ConnectionOpportunitySearch/connectionOpportunitySearchBag";
+    import { ConnectionOpportunitySearchOptionsBag } from "@Obsidian/ViewModels/Blocks/Connection/ConnectionOpportunitySearch/connectionOpportunitySearchOptionsBag";
+    import { PublicComparisonValueBag } from "@Obsidian/ViewModels/Utility/publicComparisonValueBag";
+
+    // #region Values
+
+    const config = useConfigurationValues<CustomBlockBox<ConnectionOpportunitySearchBag, ConnectionOpportunitySearchOptionsBag>>();
+    const invokeBlockAction = useInvokeBlockAction();
+    const staticContent = useStaticContent();
+
+    const options: ConnectionOpportunitySearchOptionsBag = config.options ?? {
+        isSearchShown: false,
+        isNameFilterShown: false,
+        isCampusFilterShown: false
+    };
+    const campusItems = options.campusItems ?? [];
+    const attributeFilters = options.attributeFilters ?? [];
+
+    const searchName = ref(config.bag?.searchName ?? "");
+    const campusGuids = ref<string[]>(config.bag?.campusGuids ?? []);
+    const attributeFilterValues = ref<Record<string, ComparisonValue>>(toComparisonValues(config.bag?.attributeFilterValues));
+    const resultsElement = ref<HTMLElement | null>(null);
+    const isSearching = ref(false);
+    const errorMessage = ref("");
+
+    // #endregion Values
+
+    // #region Event Handlers
+
+    /**
+     * Event handler for the Search button. Runs the search on the server and
+     * replaces the results with the rendered output.
+     */
+    async function onSearchClick(): Promise<void> {
+        errorMessage.value = "";
+        isSearching.value = true;
+
+        try {
+            const bag: ConnectionOpportunitySearchBag = {
+                searchName: searchName.value,
+                campusGuids: campusGuids.value,
+                attributeFilterValues: attributeFilterValues.value
+            };
+
+            const result = await invokeBlockAction<string>("Search", { bag });
+
+            if (result.isSuccess) {
+                if (resultsElement.value) {
+                    // setInnerHTML is used instead of the v-content directive so
+                    // any <script> in the admin's Lava template runs after a search.
+                    setInnerHTML(resultsElement.value, result.data ?? "");
+                }
+            }
+            else {
+                errorMessage.value = result.errorMessage || "Unable to search for opportunities.";
+            }
+        }
+        finally {
+            isSearching.value = false;
+        }
+    }
+
+    // #endregion Event Handlers
+
+    // #region Functions
+
+    /**
+     * Converts the attribute filter values received from the server into the
+     * shape expected by the attribute filter controls.
+     *
+     * @param values The attribute filter values keyed by attribute key.
+     *
+     * @returns The comparison values keyed by attribute key.
+     */
+    function toComparisonValues(values: Record<string, PublicComparisonValueBag> | null | undefined): Record<string, ComparisonValue> {
+        const result: Record<string, ComparisonValue> = {};
+
+        for (const [key, value] of Object.entries(values ?? {})) {
+            result[key] = {
+                comparisonType: value.comparisonType ?? null,
+                value: value.value ?? ""
+            };
+        }
+
+        return result;
+    }
+
+    // #endregion Functions
+
+    // #region Lifecycle Hooks
+
+    onMounted(() => {
+        // Show the results that were rendered on the server with the page.
+        resultsElement.value?.append(...staticContent);
+    });
+
+    onConfigurationValuesChanged(useReloadBlock());
+
+    // #endregion Lifecycle Hooks
+</script>

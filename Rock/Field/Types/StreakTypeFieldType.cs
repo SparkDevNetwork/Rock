@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -14,14 +14,16 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using Rock.Model;
-using System;
-using Rock.Web.Cache;
+
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
+using Rock.Model;
 using Rock.ViewModels.Utility;
+using Rock.Web.Cache;
 
 namespace Rock.Field.Types
 {
@@ -42,7 +44,7 @@ namespace Rock.Field.Types
         {
             var publicConfigurationValues = base.GetPublicConfigurationValues( privateConfigurationValues, usage, value );
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 publicConfigurationValues[VALUES_PUBLIC_KEY] = StreakTypeCache.All()
                     .Where( s => s.IsActive )
@@ -70,6 +72,23 @@ namespace Rock.Field.Types
             var entity = GetEntity( entityGuid.ToString() ) as StreakType;
             return entity?.Name ?? string.Empty;
         }
+
+        #region Value Hinting
+
+        /// <inheritdoc/>
+        internal override FieldTypeHints GetFieldHints( Dictionary<string, string> privateConfigurationValues )
+        {
+            // No Values. These are rows in a table that a caller can look up, and
+            // reading them here would cost a query for every attribute described.
+            return new FieldTypeHints
+            {
+                IsCompleteList = false,
+                ValueFormat = "The guid of a single row in the StreakType table, not its id or idKey and not its name. Only one value is stored, so a comma separated list is not valid here.",
+                Instructions = "To find the correct value, read the streak types and take the guid of the one you want."
+            };
+        }
+
+        #endregion
 
         /// <summary>
         /// Returns a dictionary of the items available for selection.

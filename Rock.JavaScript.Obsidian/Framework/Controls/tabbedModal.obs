@@ -2,7 +2,8 @@
 <template>
     <Modal v-model="internalValue">
         <slot name="prepend"></slot>
-        <TabbedContent :tabs="tabs" v-model:selectedTab="internalSelectedTab" :tabBarClass="{ 'tight-to-modal-sides': true, 'tight-to-modal-top': !$slots.prepend }">
+        <!-- Only an underlined bar is pulled up against the title, so its border can span the modal edge to edge. -->
+        <TabbedContent :tabs="tabs" v-model:selectedTab="internalSelectedTab" :tabBarType="tabBarType" :tabBarClass="{ 'tight-to-modal-sides': true, 'tight-to-modal-top': !$slots.prepend && tabBarType !== 'pills' }">
             <template #tabpane="slotProps">
                 <slot name="tabpane" v-bind="slotProps" />
             </template>
@@ -46,6 +47,12 @@
         selectedTab: {
             type: String as PropType<string>,
             default: ""
+        },
+
+        /** The style of tab bar to display. */
+        tabBarType: {
+            type: String as PropType<"tabs" | "pills">,
+            default: "tabs"
         }
     });
 

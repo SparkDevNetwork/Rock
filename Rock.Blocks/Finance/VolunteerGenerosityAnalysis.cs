@@ -1,15 +1,17 @@
-﻿using Rock;
-using Rock.Model;
-using Rock.Web.Cache;
-using Rock.Data;
 using System;
-using System.Linq;
-using System.ComponentModel;
 using System.Collections.Generic;
-using Rock.ViewModels.Blocks.Finance.VolunteerGenerosityAnalysis;
-using Rock.Obsidian.UI;
+using System.ComponentModel;
 using System.Globalization;
+using System.Linq;
+
+using Rock;
+using Rock.Configuration;
+using Rock.Data;
+using Rock.Model;
+using Rock.Obsidian.UI;
+using Rock.ViewModels.Blocks.Finance.VolunteerGenerosityAnalysis;
 using Rock.ViewModels.Utility;
+using Rock.Web.Cache;
 
 namespace Rock.Blocks.Finance
 {
@@ -50,7 +52,7 @@ namespace Rock.Blocks.Finance
         #region Methods
         public override object GetObsidianBlockInitialization()
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var datasetGuid = new Guid( VolunteerGenerosityDatasetGuid );
                 var dataset = PersistedDatasetCache.Get( datasetGuid );
@@ -185,7 +187,7 @@ namespace Rock.Blocks.Finance
         [BlockAction]
         public BlockActionResult RefreshData()
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var datasetGuid = new Guid( VolunteerGenerosityDatasetGuid );
                 var dataset = new PersistedDatasetService( rockContext )
@@ -216,7 +218,7 @@ namespace Rock.Blocks.Finance
                 PersistedDatasetCache.UpdateCachedEntity( dataset.Id, Microsoft.EntityFrameworkCore.EntityState.Modified );
 #endif
 
-                var lastUpdated = DateTime.Now.ToString( "yyyy-MM-dd HH:mm:ss" );
+                var lastUpdated = RockDateTime.Now.ToString( "yyyy-MM-dd HH:mm:ss" );
                 var estimatedRefreshTime = dataset.TimeToBuildMS.HasValue ? Math.Round( dataset.TimeToBuildMS.Value / 1000.0, 2 ) : 0.0; // Convert to seconds and round to 2 decimal places
 
                 return ActionOk( new { LastUpdated = lastUpdated, EstimatedRefreshTime = estimatedRefreshTime } );

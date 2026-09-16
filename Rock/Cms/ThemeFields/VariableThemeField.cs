@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -59,6 +59,12 @@ namespace Rock.Cms.ThemeFields
         public string DefaultValue { get; }
 
         /// <summary>
+        /// Determines if the "Reset to default" button should be hidden for
+        /// this field in the theme editor UI.
+        /// </summary>
+        public bool HideReset { get; }
+
+        /// <summary>
         /// Creates a new instance of <see cref="VariableThemeField"/>.
         /// </summary>
         /// <param name="jField">The JSON object to be parsed.</param>
@@ -71,6 +77,7 @@ namespace Rock.Cms.ThemeFields
             Key = jField.GetValue( "key" )?.ToString() ?? Variable;
             Description = jField.GetValue( "description" )?.ToString() ?? string.Empty;
             DefaultValue = jField.GetValue( "default" )?.ToString() ?? string.Empty;
+            HideReset = jField.GetValue( "hideReset" )?.ToObject<bool>() ?? false;
 
             if ( Name.IsNullOrWhiteSpace() )
             {

@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -20,6 +20,8 @@ using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
 
+using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Lava;
 using Rock.Model.Connection.ConnectionRequest.Options;
@@ -287,7 +289,7 @@ namespace Rock.Model
                 {
                     foreach ( var requestViewModel in statusViewModel.Requests )
                     {
-                        requestViewModel.StatusIconsHtml = GetStatusIconHtml( requestViewModel, connectionType, statusIconsTemplate );
+                        requestViewModel.StatusIconsHtml = GetIndicatorLabelHtml( requestViewModel, statusIconsTemplate );
                     }
                 }
 
@@ -366,7 +368,7 @@ namespace Rock.Model
 
             if ( !statusIconsTemplate.IsNullOrWhiteSpace() )
             {
-                viewModel.StatusIconsHtml = GetStatusIconHtml( viewModel, connectionType, statusIconsTemplate );
+                viewModel.StatusIconsHtml = GetIndicatorLabelHtml( viewModel, statusIconsTemplate );
             }
 
             return viewModel;
@@ -431,6 +433,8 @@ namespace Rock.Model
                 LastActivityDate = cr.LastActivityDate,
                 FollowupDate = cr.FollowupDate,
                 CanCurrentUserEdit = cr.CanCurrentUserEdit,
+                DueDate = cr.DueDate,
+                DueSoonDate = cr.DueSoonDate
             } );
         }
 
@@ -493,6 +497,8 @@ namespace Rock.Model
                 LastActivityDate = cr.LastActivityDate,
                 FollowupDate = cr.FollowupDate,
                 CanCurrentUserEdit = cr.CanCurrentUserEdit,
+                DueDate = cr.DueDate,
+                DueSoonDate = cr.DueSoonDate
             } );
         }
 
@@ -631,7 +637,9 @@ namespace Rock.Model
                         .FirstOrDefault(),
                     FollowupDate = cr.FollowupDate,
                     UserHasDirectAccess = false,
-                    CanCurrentUserEdit = canEditAllRequest
+                    CanCurrentUserEdit = canEditAllRequest,
+                    DueDate = cr.DueDate,
+                    DueSoonDate = cr.DueSoonDate
                 } );
 
             // Filter by connector
@@ -754,7 +762,9 @@ namespace Rock.Model
                         LastActivityDate = cr.LastActivityDate,
                         FollowupDate = cr.FollowupDate,
                         UserHasDirectAccess = cr.ConnectorPersonAliasId == currentPersonAliasId,
-                        CanCurrentUserEdit = cr.CanCurrentUserEdit
+                        CanCurrentUserEdit = cr.CanCurrentUserEdit,
+                        DueDate = cr.DueDate,
+                        DueSoonDate = cr.DueSoonDate
                     } )
                     .ToList()
                     .Select( cr => new ConnectionRequestViewModelSecurity
@@ -804,7 +814,9 @@ namespace Rock.Model
                         FollowupDate = cr.FollowupDate,
                         UserHasDirectAccess = cr.UserHasDirectAccess,
                         CanCurrentUserEdit = cr.UserHasDirectAccess ||
-                            cr.ConnectionRequest.IsAuthorized( Authorization.EDIT, currentPerson )
+                            cr.ConnectionRequest.IsAuthorized( Authorization.EDIT, currentPerson ),
+                        DueDate = cr.DueDate,
+                        DueSoonDate = cr.DueSoonDate
                     } )
                     .Where( cr => cr.UserHasDirectAccess ||
                              cr.ConnectionRequest.IsAuthorized( Authorization.VIEW, currentPerson ) );
@@ -870,7 +882,9 @@ namespace Rock.Model
                                 cr.ConnectorPersonAliasId == currentPersonAliasId,
                         CanCurrentUserEdit = campusIdQuery.Contains( null ) || // Global campus connector
                                 campusIdQuery.Contains( cr.CampusId ) || // In a connector group of the appropriate campus
-                                cr.ConnectorPersonAliasId == currentPersonAliasId
+                                cr.ConnectorPersonAliasId == currentPersonAliasId,
+                        DueDate = cr.DueDate,
+                        DueSoonDate = cr.DueSoonDate
                     } )
                     .Where( r =>
                         campusIdQuery.Contains( null ) || // Global campus connector
@@ -1046,29 +1060,41 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets the status icon HTML.
+        /// Gets the indicator label HTML.
         /// </summary>
-        /// <returns></returns>
-        private string GetStatusIconHtml( ConnectionRequestViewModel viewModel, ConnectionTypeCache connectionType, string template )
+        /// <param name="viewModel">The connection request view model.</param>
+        /// <param name="template">The Lava template to use to generate the HTML.</param>
+        /// <returns>The indicator label HTML.</returns>
+        /// <remarks>
+        ///     <para>
+        ///         <strong>This is an internal API</strong> that supports the Rock
+        ///         infrastructure and not subject to the same compatibility standards
+        ///         as public APIs. It may be changed or removed without notice in any
+        ///         release and should therefore not be directly used in any plug-ins.
+        ///     </para>
+        /// </remarks>
+        [RockInternal( "19.0", true )]
+        public static string GetIndicatorLabelHtml( ConnectionRequestViewModel viewModel, string template )
         {
-            if ( viewModel == null || connectionType == null || template.IsNullOrWhiteSpace() )
+            if ( viewModel == null || template.IsNullOrWhiteSpace() )
             {
                 return string.Empty;
             }
 
             var mergeFields = new Dictionary<string, object>();
 
-            var connectionRequestStatusIcons = new
+            var indicatorOptions = new
             {
                 viewModel.IsAssignedToYou,
-                viewModel.IsCritical,
-                viewModel.IsIdle,
-                viewModel.IsUnassigned
+                viewModel.IsUnassigned,
+                viewModel.IsOverdue,
+                viewModel.OverdueHtml,
+                viewModel.IsDueSoon,
+                viewModel.DueSoonHtml
             };
 
-            mergeFields.Add( "ConnectionRequestStatusIcons", connectionRequestStatusIcons );
+            mergeFields.Add( "IndicatorOptions", indicatorOptions );
 
-            mergeFields.Add( "IdleTooltip", string.Format( "Idle (no activity in {0} days)", connectionType.DaysUntilRequestIdle ) );
             return template.ResolveMergeFields( mergeFields );
         }
 
@@ -1100,7 +1126,7 @@ namespace Rock.Model
         internal ConnectionRequest CreateConnectionRequestWithDefaultConnector( int connectionOpportunityId, int personAliasId, int? campusId = null, ConnectionStatus status = null, RockContext rockContext = null )
         {
             // create a new RockContent if null was provided
-            rockContext = rockContext ?? new RockContext();
+            rockContext = rockContext ?? RockApp.Current.CreateRockContext();
 
             var connectionOpportunityService = new ConnectionOpportunityService( rockContext );
             status = status ?? connectionOpportunityService.GetStatuses( connectionOpportunityId )

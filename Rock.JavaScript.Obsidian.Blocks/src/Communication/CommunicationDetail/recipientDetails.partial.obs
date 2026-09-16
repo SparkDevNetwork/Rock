@@ -20,9 +20,7 @@
                           field="person"
                           title="Name"
                           width="200"
-                          :filter="pickExistingValueFilter"
-                          :filterValue="getPersonTextValue"
-                          :quickFilterValue="getPersonTextValue" />
+                          :filter="pickExistingValueFilter" />
 
             <DateTimeColumn name="lastActivityDateTime"
                             field="lastActivityDateTime"
@@ -366,16 +364,6 @@
     function getIsRowIsDeliveryFailure(row: Record<string, unknown>): boolean {
         const status = (row as RecipientGridRow).status;
         return status === CommunicationRecipientStatus.Failed;
-    }
-
-    /**
-     * Gets the text value for the "Person" column.
-     *
-     * @param row The row whose value to get.
-     */
-    function getPersonTextValue(row: Record<string, unknown>): string {
-        const person = (row as RecipientGridRow).person;
-        return !person ? "" : `${person.nickName} ${person.lastName}`;
     }
 
     /**

@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -18,7 +18,9 @@ using System;
 using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
+
 using Microsoft.Win32;
+
 using Rock.Data;
 using Rock.Model;
 using Rock.Update.Enum;
@@ -58,33 +60,6 @@ namespace Rock.Update.Helpers
             try
             {
                 envData.Add( "SqlVersion", DbService.ExecuteScalar( "SELECT SERVERPROPERTY('productversion')" ).ToString() );
-            }
-            catch
-            {
-                // Intentionally ignored.
-            }
-
-            try
-            {
-                using ( var rockContext = new RockContext() )
-                {
-                    var entityType = EntityTypeCache.Get( "Rock.Security.BackgroundCheck.ProtectMyMinistry", false, rockContext );
-                    if ( entityType != null )
-                    {
-                        var pmmUserName = new AttributeValueService( rockContext )
-                            .Queryable().AsNoTracking()
-                            .Where( v =>
-                                v.Attribute.EntityTypeId.HasValue &&
-                                v.Attribute.EntityTypeId.Value == entityType.Id &&
-                                v.Attribute.Key == "UserName" )
-                            .Select( v => v.Value )
-                            .FirstOrDefault();
-                        if ( !string.IsNullOrWhiteSpace( pmmUserName ) )
-                        {
-                            envData.Add( "PMMUserName", pmmUserName );
-                        }
-                    }
-                }
             }
             catch
             {

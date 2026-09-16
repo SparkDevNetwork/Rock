@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -21,6 +21,7 @@ using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 #endif
+
 using Rock.Attribute;
 using Rock.Model;
 using Rock.Reporting;
@@ -241,6 +242,34 @@ namespace Rock.Field.Types
             {
                 return ComparisonHelper.EqualOrBlankFilterComparisonTypes;
             }
+        }
+
+        #endregion
+
+        #region Value Hinting
+
+        /// <inheritdoc/>
+        /// <remarks>
+        /// The displayed value is a full profile link, but what is stored is only the
+        /// part after the configured base url. Said explicitly because the display and
+        /// the storage differ, and a caller copying the link stores the base url twice.
+        /// </remarks>
+        internal override FieldTypeHints GetFieldHints( Dictionary<string, string> privateConfigurationValues )
+        {
+            var baseUrl = privateConfigurationValues.GetValueOrNull( BASEURL );
+
+            var valueFormat = "The account name or handle on its own, not a full profile url. Rock builds the link by appending this to the base url configured on the field.";
+
+            if ( baseUrl.IsNotNullOrWhiteSpace() )
+            {
+                valueFormat += $" The base url here is '{baseUrl}', so store only what would follow it.";
+            }
+
+            return new FieldTypeHints
+            {
+                IsCompleteList = false,
+                ValueFormat = valueFormat
+            };
         }
 
         #endregion

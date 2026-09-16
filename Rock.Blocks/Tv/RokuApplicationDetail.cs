@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -20,14 +20,15 @@ using System.ComponentModel;
 using System.Linq;
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
 using Rock.Tv.Classes;
 using Rock.ViewModels.Blocks;
-using Rock.ViewModels.Blocks.Tv.RokuApplicationDetail;
 using Rock.ViewModels.Blocks.Cms.SiteDetail;
+using Rock.ViewModels.Blocks.Tv.RokuApplicationDetail;
 using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 
@@ -398,7 +399,7 @@ namespace Rock.Blocks.Tv
             }
 
             int channelMediumWebsiteValueId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.INTERACTIONCHANNELTYPE_WEBSITE.AsGuid() ).Id;
-            var retentionDuration = new InteractionChannelService( new RockContext() ).Queryable()
+            var retentionDuration = new InteractionChannelService( RockApp.Current.CreateRockContext() ).Queryable()
                     .Where( c => c.ChannelTypeMediumValueId == channelMediumWebsiteValueId && c.ChannelEntityId == site.Id )
                     .Select( c => c.RetentionDuration )
                     .FirstOrDefault();

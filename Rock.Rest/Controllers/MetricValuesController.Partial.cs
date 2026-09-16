@@ -22,6 +22,7 @@ using System.Reflection;
 using System.Web.Http;
 using System.Web.Http.OData;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Rest.Filters;
@@ -179,7 +180,7 @@ namespace Rock.Rest.Controllers
                     EntityId = a[1].AsIntegerOrNull()
                 } );
 
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
 
             List<string> seriesPartitionValues = new List<string>();
 

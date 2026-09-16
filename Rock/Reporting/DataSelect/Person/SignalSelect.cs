@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -23,6 +23,8 @@ using System.Web.UI.WebControls;
 
 using Rock.Data;
 using Rock.Model;
+using Rock.Net;
+using Rock.Obsidian.UI.GridField;
 
 namespace Rock.Reporting.DataSelect.Person
 {
@@ -92,6 +94,12 @@ namespace Rock.Reporting.DataSelect.Person
             return result;
         }
 #endif
+
+        /// <inheritdoc/>
+        public override ObsidianGridField GetObsidianGridField( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
+        {
+            return new HtmlObsidianGridField();
+        }
 
         /// <summary>
         /// Gets the default column header text.

@@ -664,7 +664,9 @@
             const expandedNote: ExpandedNoteBag = {
                 ...note,
                 noteType: type,
-                childNotes: []
+                // Preserve existing replies when editing an existing note.
+                // New replies should still initialize with no children.
+                childNotes: isEditingNote.value ? props.note.childNotes : []
             };
 
             if (isEditingNote.value) {

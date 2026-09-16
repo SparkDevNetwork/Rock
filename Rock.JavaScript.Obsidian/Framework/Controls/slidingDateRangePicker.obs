@@ -2,7 +2,7 @@
 <template>
     <RockFormField :modelValue="internalValue" formGroupClasses="slidingdaterange" name="slidingdaterange">
         <template #besideLabel v-if="previewLocation == 'Top' && isTimeUnit">
-            <div class="label label-info js-slidingdaterange-info slidingdaterange-info">{{ dateRangeText }}</div>
+            <div class="label label-info js-slidingdaterange-info label-form-control">{{ dateRangeText }}</div>
         </template>
         <template #default="{ uniqueId }">
             <div :id="uniqueId" class="form-control-group">

@@ -33,9 +33,21 @@ export type KioskConfigurationBag = {
     /** Gets or sets the enabled areas. */
     areas?: CheckInItemBag[] | null;
 
+    /**
+     * The campus identifier. This is used to provide a CSS class name to
+     * the kiosk for customization.
+     */
+    campusId?: number | null;
+
     /** Gets or sets the kiosk details. */
     kiosk?: WebKioskBag | null;
 
     /** Gets or sets the check-in template. */
     template?: ConfigurationTemplateBag | null;
+
+    /**
+     * The check-in template identifier. This is used to provide a CSS class name to
+     * the kiosk for customization.
+     */
+    templateId?: number | null;
 };

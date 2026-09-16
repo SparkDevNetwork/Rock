@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -30,7 +30,7 @@ namespace Rock.AI.Agent.Classes.Entity
     /// <summary>
     /// Result model for a person's profile.
     /// </summary>
-    internal class EntityResultBase
+    public class EntityResultBase
     {
         #region Fields
 
@@ -48,9 +48,9 @@ namespace Rock.AI.Agent.Classes.Entity
         internal int Id { get; set; }
 
         /// <summary>
-        /// Internal identifier of the phone number.
+        /// Internal identifier of the entity.
         /// </summary>
-        public string IdKey => Id.AsIdKey();
+        public string IdKey => Id != 0 ? Id.AsIdKey() : null;
 
         /// <summary>
         /// The unique identifier of the entity. This should be filled in whenever
@@ -69,16 +69,6 @@ namespace Rock.AI.Agent.Classes.Entity
         public DateTime? ModifiedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the person who created the entity.
-        /// </summary>
-        public PersonResult CreatedByPerson { get; set; }
-
-        /// <summary>
-        /// Gets or sets the person who last modified the entity.
-        /// </summary>
-        public PersonResult ModifiedByPerson { get; set; }
-
-        /// <summary>
         /// Attribute values of the entity.
         /// </summary>
         public List<AttributeValueResult> AttributeValues { get; set; }
@@ -92,7 +82,7 @@ namespace Rock.AI.Agent.Classes.Entity
         /// </summary>
         /// <param name="agentRequestContext">The context that describes the current request.</param>
         /// <returns><c>false</c> if the entire result should be excluded. This is used when nested properties to fully remove them.</returns>
-        public virtual bool Sanitize( IAgentRequestContext agentRequestContext )
+        public virtual bool Sanitize( AgentRequestContext agentRequestContext )
         {
             SanitizeNestedProperties( agentRequestContext );
             SanitizeAttributeSecurity( agentRequestContext );
@@ -106,7 +96,7 @@ namespace Rock.AI.Agent.Classes.Entity
         /// </summary>
         /// <param name="agentRequestContext">The context that describes the current request.</param>
         /// <returns><c>false</c> if the entire result should be excluded. This is used when nested properties to fully remove them.</returns>
-        protected virtual bool SanitizeResult( IAgentRequestContext agentRequestContext )
+        protected virtual bool SanitizeResult( AgentRequestContext agentRequestContext )
         {
             return true;
         }
@@ -115,7 +105,7 @@ namespace Rock.AI.Agent.Classes.Entity
         /// Sanitizes any nested properties for security related to the request context.
         /// </summary>
         /// <param name="agentRequestContext">The context that describes the current request.</param>
-        protected void SanitizeNestedProperties( IAgentRequestContext agentRequestContext )
+        protected void SanitizeNestedProperties( AgentRequestContext agentRequestContext )
         {
             var cache = _nestedPropertiesCache.GetOrAdd( GetType(), rt =>
             {
@@ -175,7 +165,7 @@ namespace Rock.AI.Agent.Classes.Entity
         /// Removes any attributes that the current person does not have view access to.
         /// </summary>
         /// <param name="agentRequestContext">The context that describes the current request.</param>
-        protected void SanitizeAttributeSecurity( IAgentRequestContext agentRequestContext )
+        protected void SanitizeAttributeSecurity( AgentRequestContext agentRequestContext )
         {
             if ( AttributeValues == null )
             {

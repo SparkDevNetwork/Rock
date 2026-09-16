@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -14,13 +14,15 @@
 // limitations under the License.
 // </copyright>
 //
-using Rock.Attribute;
-using Rock.Data;
-using Rock.Model;
 using System;
 using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
+
+using Rock.Attribute;
+using Rock.Configuration;
+using Rock.Data;
+using Rock.Model;
 
 namespace Rock.Jobs
 {
@@ -47,7 +49,7 @@ namespace Rock.Jobs
         /// <inheritdoc />
         public override void Execute()
         {
-            var lastId = new WorkflowService( new RockContext() )
+            var lastId = new WorkflowService( RockApp.Current.CreateRockContext() )
                 .Queryable()
                 .AsNoTracking()
                 .Select( i => ( int? ) i.Id )
@@ -74,7 +76,7 @@ namespace Rock.Jobs
         /// </summary>
         private void DeleteJob()
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var jobService = new ServiceJobService( rockContext );
                 var job = jobService.Get( GetJobId() );

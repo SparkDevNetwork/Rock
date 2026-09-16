@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -15,7 +15,7 @@
 // </copyright>
 //
 
-namespace Rock.Tests.Shared
+namespace Rock.Tests.Shared.Constants
 {
     /// <summary>
     /// Unique String identifiers 

@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -24,7 +24,7 @@ namespace Rock.Data
     /// sequence.
     /// </summary>
     /// <typeparam name="T">The type of items contained in the page.</typeparam>
-    internal class CursorPage<T>
+    public sealed class CursorPage<T>
     {
         #region Properties
 

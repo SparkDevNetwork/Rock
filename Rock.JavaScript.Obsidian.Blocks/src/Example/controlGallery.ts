@@ -50,7 +50,7 @@ import { Component, computed, defineComponent, onMounted, onUnmounted, ref, watc
 import { convertComponentName } from "./ControlGallery/common/utils.partial";
 import { getSecurityGrant, provideSecurityGrant, useConfigurationValues, onConfigurationValuesChanged, useReloadBlock } from "@Obsidian/Utility/block";
 import { ControlGalleryInitializationBox } from "@Obsidian/ViewModels/Blocks/Example/ControlGallery/controlGalleryInitializationBox";
-import { upperCaseFirstCharacter } from "@Obsidian/Utility/stringUtils";
+import { splitCase, toTitleCase, upperCaseFirstCharacter } from "@Obsidian/Utility/stringUtils";
 import GalleryAndResult from "./ControlGallery/common/galleryAndResult.partial.obs";
 import TextBox from "@Obsidian/Controls/textBox.obs";
 import Panel from "@Obsidian/Controls/panel.obs";
@@ -95,7 +95,6 @@ import CustomSelectGallery from "./ControlGallery/customSelectGallery.partial.ob
 import TabbedModalGallery from "./ControlGallery/tabbedModalGallery.partial.obs";
 import CategoryTreeGallery from "./ControlGallery/categoryTreeGallery.partial.obs";
 import PageNavButtonsGallery from "./ControlGallery/pageNavButtonsGallery.partial.obs";
-import SearchFieldGallery from "./ControlGallery/searchFieldGallery.partial.obs";
 import AttributeValuesContainerGallery from "./ControlGallery/attributeValuesContainerGallery.partial.obs";
 import SocialSecurityNumberBoxGallery from "./ControlGallery/socialSecurityNumberBoxGallery.partial.obs";
 import FieldFilterEditorGallery from "./ControlGallery/fieldFilterEditorGallery.partial.obs";
@@ -152,6 +151,7 @@ import CampusPickerGallery from "./ControlGallery/campusPickerGallery.partial.ob
 import ScheduleBuilderGallery from "./ControlGallery/scheduleBuilderGallery.partial.obs";
 import BinaryFilePickerGallery from "./ControlGallery/binaryFilePickerGallery.partial.obs";
 import EventItemPickerGallery from "./ControlGallery/eventItemPickerGallery.partial.obs";
+import DataViewFilterEditorGallery from "./ControlGallery/dataViewFilterEditorGallery.partial.obs";
 import DataViewPickerGallery from "./ControlGallery/dataViewPickerGallery.partial.obs";
 import WorkflowTypePickerGallery from "./ControlGallery/workflowTypePickerGallery.partial.obs";
 import FinancialGatewayPickerGallery from "./ControlGallery/financialGatewayPickerGallery.partial.obs";
@@ -244,6 +244,8 @@ import BlockTemplatePickerGallery from "./ControlGallery/blockTemplatePickerGall
 import AdaptiveMessagePickerGallery from "./ControlGallery/adaptiveMessagePickerGallery.partial.obs";
 import EmailEditorGallery from "./ControlGallery/emailEditorGallery.partial.obs";
 import KpiGallery from "./ControlGallery/kpiGallery.partial.obs";
+import KpiTileGallery from "./ControlGallery/kpiTileGallery.partial.obs";
+import RankedListBarChartGallery from "./ControlGallery/rankedListBarChartGallery.partial.obs";
 import LearningClassPickerGallery from "./ControlGallery/learningClassPickerGallery.partial.obs";
 import LearningClassActivityPickerGallery from "./ControlGallery/learningClassActivityPickerGallery.partial.obs";
 import DisplayCardGallery from "./ControlGallery/displayCardGallery.partial.obs";
@@ -260,8 +262,14 @@ import PieChartGallery from "./ControlGallery/pieChartGallery.partial.obs";
 import DoughnutChartGallery from "./ControlGallery/doughnutChartGallery.partial.obs";
 import ExperieceModePickerGallery from "./ControlGallery/experienceModePickerGallery.partial.obs";
 import SearchResultsSearchField from "./ControlGallery/searchResultsSearchFieldGallery.partial.obs";
+import PillListGallery from "./ControlGallery/pillListGallery.partial.obs";
+import DockedPanelGallery from "./ControlGallery/dockedPanelGallery.partial.obs";
+import EventItemOccurrencePickerGalleryPartial from "./ControlGallery/eventItemOccurrencePickerGallery.partial.obs";
+import LinearGaugeChartGallery from "./ControlGallery/linearGaugeChartGallery.partial.obs";
 import EventItemOccurrencePickerGallery from "./ControlGallery/eventItemOccurrencePickerGallery.partial.obs";
 import TooltipGallery from "./ControlGallery/tooltipGallery.partial.obs";
+import TreeListGallery from "./ControlGallery/treeListGallery.partial.obs";
+import SortableTreeGallery from "./ControlGallery/sortableTreeGallery.partial.obs";
 
 const controlGalleryComponents: Record<string, Component> = [
     NotificationBoxGallery,
@@ -327,6 +335,7 @@ const controlGalleryComponents: Record<string, Component> = [
     CodeEditorGallery,
     ModalGallery,
     EventItemPickerGallery,
+    DataViewFilterEditorGallery,
     DataViewPickerGallery,
     WorkflowTypePickerGallery,
     ComponentPickerGallery,
@@ -447,10 +456,11 @@ const controlGalleryComponents: Record<string, Component> = [
     TabbedModalGallery,
     CategoryTreeGallery,
     PageNavButtonsGallery,
-    SearchFieldGallery,
     AdaptiveMessagePickerGallery,
     EmailEditorGallery,
     KpiGallery,
+    KpiTileGallery,
+    RankedListBarChartGallery,
     LearningClassPickerGallery,
     LearningClassActivityPickerGallery,
     DisplayCardGallery,
@@ -467,8 +477,14 @@ const controlGalleryComponents: Record<string, Component> = [
     DoughnutChartGallery,
     ExperieceModePickerGallery,
     SearchResultsSearchField,
+    EventItemOccurrencePickerGalleryPartial,
+    PillListGallery,
+    DockedPanelGallery,
+    LinearGaugeChartGallery,
     EventItemOccurrencePickerGallery,
     TooltipGallery,
+    TreeListGallery,
+    SortableTreeGallery,
 ]
     // Fix vue 3 SFC putting name in __name.
     .map(a => {
@@ -847,13 +863,50 @@ export default defineComponent({
             const components = { ...source };
 
             if (componentFilter.value) {
+                const componentFilterLowerCase = componentFilter.value.toLowerCase();
+                const componentFilterWordsLowerCase = splitCase(componentFilter.value).toLowerCase().split(" ").filter(word => word.length > 0);
+
                 Object.keys(components).forEach(key => {
-                    if (!components[key].name!.toLowerCase().includes(componentFilter.value.toLowerCase())) {
+                    const component = components[key];
+                    const componentNameLowerCase = component.name!.toLowerCase();
+                    const componentNameWordsLowerCase = splitCase(component.name!).toLowerCase().split(" ").filter(word => word.length > 0);
+                    const componentNameSentenceLowerCase = componentNameWordsLowerCase.join(" ");
+
+                    const isMatch =
+                        // The filter text is found anywhere in the component name; e.g., Search "button" matches components with names "Button", "RadioButton", and "ButtonDropDownList"
+                        componentNameLowerCase.includes(componentFilterLowerCase)
+
+                        // OR the filter words are found in the component name with no other characters in between; e.g., Search "button list" matches a component named "Button List" but not "Button Drop Down List"
+                        || componentNameSentenceLowerCase.includes(componentFilterLowerCase)
+
+                        // OR all filter words are found in the component name; e.g., Search "button list" matches components with names "ButtonDropDownList" and "RadioButtonList"
+                        || areAllWordsInSentenceInOrderButNotNecessarilyConsecutive(componentNameWordsLowerCase, componentFilterWordsLowerCase);
+
+                    if (!isMatch) {
                         delete components[key];
+                        return;
                     }
                 });
             }
+
             return components;
+        }
+
+        /**
+         *
+         * (Case sensitive)
+         *
+         * @param sentenceWords
+         * @param searchWords
+         * @returns
+         */
+        function areAllWordsInSentenceInOrderButNotNecessarilyConsecutive(sentenceWords: string[], searchWords: string[]): boolean {
+            let lastIndex = -1;
+
+            return searchWords.every(searchWord => {
+                lastIndex = sentenceWords.findIndex((sentenceWord, index) => index > lastIndex && sentenceWord.includes(searchWord));
+                return lastIndex !== -1;
+            });
         }
 
         const filteredControlGalleryComponents = computed(() => {

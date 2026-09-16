@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -22,6 +22,7 @@ using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using System.Web;
+
 using Microsoft.IdentityModel.Tokens;
 
 namespace Rock.Security
@@ -170,16 +171,92 @@ namespace Rock.Security
             return EncryptString( plainText, _dataEncryptionKeyBytes );
         }
 
-        ///// <summary>
-        ///// Encrypts using v2: AES-CBC + HMAC-SHA256 (encrypt-then-MAC) and appends "V2" footer.
-        ///// Layout (before Base64): [ivLen:int][IV][CIPHERTEXT][TAG:32]["V2"].
-        ///// </summary>
-        ///// <param name="plainText">The UTF-8 text to encrypt. If null or empty, returns an empty string.</param>
-        ///// <param name="keyBytes">The data encryption key bytes. Used to derive separate ENC and MAC keys via HKDF-SHA256.</param>
-        ///// <returns>Base64 string of the v2 payload; empty string if <paramref name="plainText"/> is null/empty.</returns>
-        ///// <remarks>
-        ///// Authenticate-then-encrypt: tag is computed over [ivLen||IV||CIPHERTEXT]. Consumers must verify the tag before decryption.
-        ///// </remarks>
+        /// <summary>
+        /// Encrypts using v2: AES-CBC + HMAC-SHA256 (encrypt-then-MAC) and appends "V2" footer.
+        /// Layout (before Base64): [ivLen:int][IV][CIPHERTEXT][TAG:32]["V2"].
+        /// </summary>
+        /// <param name="plainText">The unencrypted data to encrypt. If null then an exception is thrown.</param>
+        /// <param name="contextInfo">The context information used in the key derivation process.</param>
+        /// <returns>The encrypted byte array.</returns>
+        /// <remarks>
+        /// Authenticate-then-encrypt: tag is computed over [ivLen||IV||CIPHERTEXT]. Consumers must verify the tag before decryption.
+        /// </remarks>
+        internal static byte[] EncryptBytes( byte[] plainText, byte[] contextInfo )
+        {
+            return EncryptBytes( plainText, contextInfo, _dataEncryptionKeyBytes );
+        }
+
+        /// <summary>
+        /// Encrypts using v2: AES-CBC + HMAC-SHA256 (encrypt-then-MAC) and appends "V2" footer.
+        /// Layout (before Base64): [ivLen:int][IV][CIPHERTEXT][TAG:32]["V2"].
+        /// </summary>
+        /// <param name="plainText">The unencrypted data to encrypt. If null then an exception is thrown.</param>
+        /// <param name="contextInfo">The context information used in the key derivation process.</param>
+        /// <param name="keyBytes">The data encryption key bytes. Used to derive separate ENC and MAC keys via HKDF-SHA256.</param>
+        /// <returns>The encrypted byte array.</returns>
+        /// <remarks>
+        /// Authenticate-then-encrypt: tag is computed over [ivLen||IV||CIPHERTEXT]. Consumers must verify the tag before decryption.
+        /// </remarks>
+        internal static byte[] EncryptBytes( byte[] plainText, byte[] contextInfo, byte[] keyBytes )
+        {
+            if ( plainText == null )
+            {
+                throw new ArgumentNullException( nameof( plainText ) );
+            }
+
+            if ( keyBytes == null || keyBytes.Length == 0 )
+            {
+                throw new ArgumentNullException( "DataEncryptionKey must be specified in configuration file" );
+            }
+
+            // derive distinct ENC/MAC keys from the single DataEncryptionKey
+            byte[] encKey;
+            byte[] macKey;
+            DeriveKeys( keyBytes, contextInfo, out encKey, out macKey );
+
+            using ( Aes aes = Aes.Create() )
+            {
+                aes.Mode = CipherMode.CBC;
+                aes.Padding = PaddingMode.PKCS7;
+                aes.Key = encKey;
+
+                // Create the streams used for encryption.
+                using ( MemoryStream msEncrypt = new MemoryStream() )
+                {
+                    // Create a decryptor to perform the stream transform.
+                    using ( ICryptoTransform encryptor = aes.CreateEncryptor( aes.Key, aes.IV ) )
+                    {
+                        // prepend the IV
+                        msEncrypt.Write( BitConverter.GetBytes( aes.IV.Length ), 0, sizeof( int ) );
+                        msEncrypt.Write( aes.IV, 0, aes.IV.Length );
+
+                        using ( CryptoStream csEncrypt = new CryptoStream( msEncrypt, encryptor, CryptoStreamMode.Write, true ) )
+                        {
+                            csEncrypt.Write( plainText, 0, plainText.Length );
+                        }
+                    }
+
+                    byte[] data = msEncrypt.ToArray();                 // [ivLen][IV][CIPHERTEXT]
+                    byte[] tag = ComputeHmacSha256( macKey, data );
+
+                    msEncrypt.Write( tag, 0, tag.Length );             // [..][TAG]
+                    msEncrypt.Write( _v2Footer, 0, _v2Footer.Length ); // [..][TAG]["V2"]
+
+                    return msEncrypt.ToArray();
+                }
+            }
+        }
+
+        /// <summary>
+        /// Encrypts using v2: AES-CBC + HMAC-SHA256 (encrypt-then-MAC) and appends "V2" footer.
+        /// Layout (before Base64): [ivLen:int][IV][CIPHERTEXT][TAG:32]["V2"].
+        /// </summary>
+        /// <param name="plainText">The UTF-8 text to encrypt. If null or empty, returns an empty string.</param>
+        /// <param name="keyBytes">The data encryption key bytes. Used to derive separate ENC and MAC keys via HKDF-SHA256.</param>
+        /// <returns>Base64 string of the v2 payload; empty string if <paramref name="plainText"/> is null/empty.</returns>
+        /// <remarks>
+        /// Authenticate-then-encrypt: tag is computed over [ivLen||IV||CIPHERTEXT]. Consumers must verify the tag before decryption.
+        /// </remarks>
         private static string EncryptString( string plainText, byte[] keyBytes )
         {
             if ( string.IsNullOrEmpty( plainText ) )
@@ -305,71 +382,6 @@ namespace Rock.Security
         }
 
         /// <summary>
-        /// Encrypts the string.
-        /// </summary>
-        /// <param name="plainText">The plain text.</param>
-        /// <param name="dataEncryptionKey">The data encryption key.</param>
-        /// <returns></returns>
-        /// <exception cref="System.ArgumentNullException">DataEncryptionKey must be specified in configuration file</exception>
-        [RockObsolete( "1.13" )]
-        [Obsolete("Do not use this method. Use the override without the dataEncryption key. That method will get the key from the web.config and store the computed key which will make subsequent encrypts faster by 10-15ms. This method will compute the key each time and will be much slower.")]
-        public static string EncryptString( string plainText, string dataEncryptionKey )
-        {
-            if (string.IsNullOrEmpty(plainText))
-            {
-                return string.Empty;
-            }
-
-            if ( string.IsNullOrEmpty( dataEncryptionKey ) )
-            {
-                throw new ArgumentNullException( "DataEncryptionKey must be specified in configuration file" );
-            }
-
-            string outStr = null;
-            RijndaelManaged aesAlg = null;
-
-            try
-            {
-                // Create a RijndaelManaged object
-                aesAlg = new RijndaelManaged();
-                
-                // generate the key from the shared secret and the salt
-                Rfc2898DeriveBytes key = new Rfc2898DeriveBytes( dataEncryptionKey, _salt );
-                var keyBytes = key.GetBytes( aesAlg.KeySize / 8 );
-                aesAlg.Key = keyBytes;
-
-                // Create a decryptor to perform the stream transform.
-                ICryptoTransform encryptor = aesAlg.CreateEncryptor( aesAlg.Key, aesAlg.IV );
-
-                // Create the streams used for encryption.
-                using ( MemoryStream msEncrypt = new MemoryStream() )
-                {
-                    // prepend the IV
-                    msEncrypt.Write( BitConverter.GetBytes( aesAlg.IV.Length ), 0, sizeof( int ) );
-                    msEncrypt.Write( aesAlg.IV, 0, aesAlg.IV.Length );
-                    using ( CryptoStream csEncrypt = new CryptoStream( msEncrypt, encryptor, CryptoStreamMode.Write ) )
-                    {
-                        using ( StreamWriter swEncrypt = new StreamWriter( csEncrypt ) )
-                        {
-                            //Write all data to the stream.
-                            swEncrypt.Write( plainText );
-                        }
-                    }
-                    outStr = Convert.ToBase64String( msEncrypt.ToArray() );
-                }
-            }
-            finally
-            {
-                // Clear the RijndaelManaged object.
-                if ( aesAlg != null )
-                    aesAlg.Clear();
-            }
-
-            // Return the encrypted bytes from the memory stream.
-            return outStr;
-        }
-
-        /// <summary>
         /// Decrypt the given string.  Assumes the string was encrypted using 
         /// EncryptString(), using an identical sharedSecret.
         /// </summary>
@@ -429,74 +441,6 @@ namespace Rock.Security
             }
 
             return null;
-        }
-
-        /// <summary>
-        /// Decrypts the string.
-        /// </summary>
-        /// <param name="cipherText">The cipher text.</param>
-        /// <param name="dataEncryptionKey">The data encryption key.</param>
-        /// <returns></returns>
-        /// <exception cref="System.ArgumentNullException">DataEncryptionKey must be specified in configuration file</exception>
-        [Obsolete( "Use the overload without the dataEncryptionKey param. It will cycle through all of the DataEncryptionKeys in the web.config until it works or there are none left and store the computed key which will subsequent decrypts faster by 10-15ms. This method will compute the key each time and will be much slower." )]
-        [RockObsolete( "1.13" )]
-        public static string DecryptString( string cipherText, string dataEncryptionKey )
-        {
-            if ( string.IsNullOrEmpty( cipherText ) )
-            {
-                return string.Empty;
-            }
-
-            if ( string.IsNullOrEmpty( dataEncryptionKey ) )
-            {
-                throw new ArgumentNullException( "DataEncryptionKey must be specified in configuration file" );
-            }
-
-            // Declare the string used to hold
-            // the decrypted text.
-            string plaintext = null;
-
-            RijndaelManaged aesAlg = null;
-
-            try
-            {
-                // Create a RijndaelManaged object
-                aesAlg = new RijndaelManaged();
-
-                // generate the key from the shared secret and the salt
-                Rfc2898DeriveBytes key = new Rfc2898DeriveBytes( dataEncryptionKey, _salt );
-                var keyBytes = key.GetBytes( aesAlg.KeySize / 8 );
-
-                // Create the streams used for decryption.                
-                byte[] bytes = Convert.FromBase64String( cipherText );
-                using ( MemoryStream msDecrypt = new MemoryStream( bytes ) )
-                {
-                    // Create a RijndaelManaged object
-                    // with the specified key and IV.
-                    aesAlg = new RijndaelManaged();
-                    aesAlg.Key = keyBytes;
-                    // Get the initialization vector from the encrypted stream
-                    aesAlg.IV = ReadByteArray( msDecrypt );
-                    // Create a decrytor to perform the stream transform.
-                    ICryptoTransform decryptor = aesAlg.CreateDecryptor( aesAlg.Key, aesAlg.IV );
-                    using ( CryptoStream csDecrypt = new CryptoStream( msDecrypt, decryptor, CryptoStreamMode.Read ) )
-                    {
-                        using ( StreamReader srDecrypt = new StreamReader( csDecrypt ) )
-
-                            // Read the decrypted bytes from the decrypting stream
-                            // and place them in a string.
-                            plaintext = srDecrypt.ReadToEnd();
-                    }
-                }
-            }
-            finally
-            {
-                // Clear the RijndaelManaged object.
-                if ( aesAlg != null )
-                    aesAlg.Clear();
-            }
-
-            return plaintext;
         }
 
         /// <summary>
@@ -588,6 +532,55 @@ namespace Rock.Security
             }
 
             return plaintext;
+        }
+
+        /// <summary>
+        /// Decrypts the array of bytes. Dual-mode Decrypt (footer → v2; else v2-no-footer; else v1)
+        /// </summary>
+        /// <param name="cipherData">The encrypted cipher data. If null then an exception is thrown.</param>
+        /// <param name="contextInfo">The context information used in the key derivation process.</param>
+        /// <returns>The decrypted byte array; otherwise <c>null</c>.</returns>
+        /// <exception cref="System.ArgumentNullException">DataEncryptionKey must be specified in configuration file</exception>
+        internal static byte[] DecryptBytes( byte[] cipherData, byte[] contextInfo )
+        {
+            return DecryptBytes( cipherData, contextInfo, _dataEncryptionKeyBytes );
+        }
+
+        /// <summary>
+        /// Decrypts the array of bytes. Dual-mode Decrypt (footer → v2; else v2-no-footer; else v1)
+        /// </summary>
+        /// <param name="cipherData">The encrypted cipher data. If null then an exception is thrown.</param>
+        /// <param name="contextInfo">The context information used in the key derivation process.</param>
+        /// <param name="keyBytes">The key bytes.</param>
+        /// <returns>The decrypted byte array; otherwise <c>null</c>.</returns>
+        /// <exception cref="System.ArgumentNullException">DataEncryptionKey must be specified in configuration file</exception>
+        internal static byte[] DecryptBytes( byte[] cipherData, byte[] contextInfo, byte[] keyBytes )
+        {
+            if ( cipherData == null )
+            {
+                throw new ArgumentNullException( nameof( cipherData ) );
+            }
+
+            if ( keyBytes == null || keyBytes.Length == 0 )
+            {
+                throw new ArgumentNullException( "DataEncryptionKey must be specified in configuration file" );
+            }
+
+            // Look for the V2 footer... and skip V1 attempt when the V2
+            // footer is present.
+            if ( cipherData.Length >= _hmacTagSize + _v2Footer.Length )
+            {
+                bool hasFooter =
+                    cipherData[cipherData.Length - 2] == _v2Footer[0] &&
+                    cipherData[cipherData.Length - 1] == _v2Footer[1];
+
+                if ( hasFooter )
+                {
+                    return TryDecryptV2Bytes_WithFooter( cipherData, keyBytes, contextInfo );
+                }
+            }
+
+            return null;
         }
 
         /// <summary>
@@ -688,6 +681,101 @@ namespace Rock.Security
             }
 
             return plaintext;
+        }
+
+        /// <summary>
+        /// Decrypts a v2 payload that ends with the "V2" footer.
+        /// </summary>
+        /// <param name="allBytes">The full Base64-decoded payload bytes.</param>
+        /// <param name="keyBytes">The DataEncryptionKey (root secret).</param>
+        /// <param name="contextInfo">The context information used in the key derivation process.</param>
+        /// <returns>Decrypted bytes on success; otherwise <c>null</c> if footer is missing, authentication fails, or decryption fails.</returns>
+        /// <remarks>
+        /// Flow:
+        ///     (1) confirm "V2" footer,
+        ///     (2) verify HMAC-SHA256 over [ivLen||IV||CIPHERTEXT],
+        ///     (3) only if the tag matches, decrypt with AES-CBC/PKCS7. No decrypt is attempted on tag failure.
+        /// </remarks>
+        private static byte[] TryDecryptV2Bytes_WithFooter( byte[] allBytes, byte[] keyBytes, byte[] contextInfo )
+        {
+            try
+            {
+                int footerLen = _v2Footer.Length;
+                int tagOffset = allBytes.Length - footerLen - _hmacTagSize;
+                if ( tagOffset <= 0 )
+                {
+                    return null;
+                }
+
+                if ( allBytes[allBytes.Length - 2] != _v2Footer[0] ||
+                     allBytes[allBytes.Length - 1] != _v2Footer[1] )
+                {
+                    return null;
+                }
+
+                byte[] data = new byte[tagOffset];
+                Buffer.BlockCopy( allBytes, 0, data, 0, data.Length );
+
+                byte[] tag = new byte[_hmacTagSize];
+                Buffer.BlockCopy( allBytes, tagOffset, tag, 0, _hmacTagSize );
+
+                byte[] encKey;
+                byte[] macKey;
+                DeriveKeys( keyBytes, contextInfo, out encKey, out macKey );
+
+                byte[] expected = ComputeHmacSha256( macKey, data );
+                if ( !ConstantTimeEquals( tag, expected ) )
+                {
+                    return null;
+                }
+
+                int offset = 0;
+                if ( data.Length < sizeof( int ) )
+                {
+                    return null;
+                }
+
+                int ivLen = BitConverter.ToInt32( data, offset );
+                if ( ivLen <= 0 || ivLen > 64 )
+                {
+                    return null;
+                }
+
+                offset += sizeof( int );
+                if ( data.Length < offset + ivLen )
+                {
+                    return null;
+                }
+
+                byte[] iv = new byte[ivLen];
+                Buffer.BlockCopy( data, offset, iv, 0, ivLen );
+                offset += ivLen;
+
+                byte[] cipherBytes = new byte[data.Length - offset];
+                Buffer.BlockCopy( data, offset, cipherBytes, 0, cipherBytes.Length );
+
+                // Decrypt with AES (CBC/PKCS7)
+                using ( Aes aes = Aes.Create() )
+                {
+                    //Explicit to avoid mode/padding surprises at runtime.
+                    aes.Mode = CipherMode.CBC;
+                    aes.Padding = PaddingMode.PKCS7;
+
+                    aes.Key = encKey;
+                    aes.IV = iv;
+
+                    using ( MemoryStream ms = new MemoryStream( cipherBytes ) )
+                    using ( ICryptoTransform decryptor = aes.CreateDecryptor( aes.Key, aes.IV ) )
+                    using ( CryptoStream cs = new CryptoStream( ms, decryptor, CryptoStreamMode.Read ) )
+                    {
+                        return cs.ReadBytesToEnd();
+                    }
+                }
+            }
+            catch
+            {
+                return null;
+            }
         }
 
         /// <summary>
@@ -817,12 +905,35 @@ namespace Rock.Security
 
         private static void DeriveKeys( byte[] ikm, out byte[] encKey, out byte[] macKey )
         {
+            DeriveKeys( ikm, _hkdfInfo, out encKey, out macKey );
+        }
+
+        private static void DeriveKeys( byte[] ikm, byte[] contextInfo, out byte[] encKey, out byte[] macKey )
+        {
             var prk = HkdfExtract( _salt, ikm );
-            var okm = HkdfExpand( prk, _hkdfInfo, 64 );
+            var okm = HkdfExpand( prk, contextInfo, 64 );
             encKey = new byte[32];
             macKey = new byte[32];
             Buffer.BlockCopy( okm, 0, encKey, 0, 32 );
             Buffer.BlockCopy( okm, 32, macKey, 0, 32 );
+        }
+
+        internal static byte[] BuildPurposeContext( string[] purposes )
+        {
+            using ( var ms = new MemoryStream() )
+            {
+                var label = Encoding.UTF8.GetBytes( "Rock.Security.Encryption.v2.Purpose" );
+                ms.Write( label, 0, label.Length );
+
+                foreach ( var purpose in purposes )
+                {
+                    var p = Encoding.UTF8.GetBytes( purpose );
+                    ms.Write( BitConverter.GetBytes( p.Length ), 0, sizeof( int ) ); // length-prefix
+                    ms.Write( p, 0, p.Length );
+                }
+
+                return ms.ToArray();
+            }
         }
 
         private static byte[] HkdfExtract( byte[] salt, byte[] ikm )

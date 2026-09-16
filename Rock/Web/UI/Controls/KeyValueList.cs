@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -24,6 +24,7 @@ using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 
@@ -89,7 +90,7 @@ namespace Rock.Web.UI.Controls
             if ( DefinedTypeId.HasValue )
             {
                 values = new Dictionary<string, string>();
-                new DefinedValueService( new RockContext() )
+                new DefinedValueService( RockApp.Current.CreateRockContext() )
                     .GetByDefinedTypeId( DefinedTypeId.Value )
                     .Where( v => v.IsActive )
                     .ToList()

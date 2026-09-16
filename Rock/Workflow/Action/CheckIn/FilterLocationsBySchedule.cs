@@ -32,7 +32,9 @@ namespace Rock.Workflow.Action.CheckIn
     [Description( "Removes schedules from all locations if that schedule was not selected (in family mode)" )]
     [Export(typeof(ActionComponent))]
     [ExportMetadata( "ComponentName", "Filter Locations By Schedule" )]
-    [BooleanField( "Remove", "Select 'Yes' if schedules should be removed. Select 'No' if they should just be marked as excluded.", true )]
+    [BooleanField( "Remove",
+        Description = "Select 'Yes' if schedules should be removed. Select 'No' if they should just be marked as excluded.",
+        DefaultBooleanValue = true )]
     [Rock.SystemGuid.EntityTypeGuid( "DC86310C-44CF-44F5-804E-5085A29F5AAE")]
     public class FilterLocationsBySchedule : CheckInActionComponent
     {

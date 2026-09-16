@@ -21,6 +21,7 @@
 // </copyright>
 //
 
+using Rock.Configuration;
 using Rock.Model;
 using Rock.SystemGuid;
 
@@ -35,6 +36,6 @@ namespace Rock.Rest.Controllers
         /// <summary>
         /// Initializes a new instance of the <see cref="AnalyticsSourceFamilyHistoricalsController"/> class.
         /// </summary>
-        public AnalyticsSourceFamilyHistoricalsController() : base( new Rock.Model.AnalyticsSourceFamilyHistoricalService( new Rock.Data.RockContext() ) ) { } 
+        public AnalyticsSourceFamilyHistoricalsController() : base( new Rock.Model.AnalyticsSourceFamilyHistoricalService( RockApp.Current.CreateRockContext() ) ) { } 
     }
 }

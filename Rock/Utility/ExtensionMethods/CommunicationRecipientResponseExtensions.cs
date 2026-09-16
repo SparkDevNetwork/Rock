@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -19,6 +19,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Mobile;
 using Rock.Model;
@@ -58,32 +59,15 @@ namespace Rock
                 Attachments = new List<ConversationAttachmentBag>()
             };
 
-            // Initially set the photo URL using the recipient photo ID.
-            if ( response.RecipientPhotoId.HasValue )
-            {
-                bag.PhotoUrl = MobileHelper.BuildPublicApplicationRootUrl( FileUrlHelper.GetImageUrl( response.RecipientPhotoId.Value, new GetImageUrlOptions { MaxWidth = 256, MaxHeight = 256 } ) );
-            }
-
-            if ( response.RecipientPersonGuid.HasValue )
-            {
-                using ( var rockContext = new RockContext() )
-                {
-                    // We want to use the recipient person guid to get the avatar view for the person.
-                    var photoUrl = new PersonService( rockContext )
-                        .Queryable()
-                        .FirstOrDefault( p => p.Guid == response.RecipientPersonGuid.Value )?.PhotoUrl;
-
-                    // Update the photo URL to use the avatar if there is one.
-                    if ( photoUrl.IsNotNullOrWhiteSpace() )
-                    {
-                        bag.PhotoUrl = MobileHelper.BuildPublicApplicationRootUrl( photoUrl );
-                    }
-                }
-            }
+            // Build the photo/avatar URL from the data already on the response (the service
+            // supplies the photo inputs), avoiding a per-message Person lookup. This mirrors
+            // Person.PhotoUrl, which is simply Person.GetPersonPhotoUrl( person ).
+            bag.PhotoUrl = MobileHelper.BuildPublicApplicationRootUrl(
+                Person.GetPersonPhotoUrl( response.Initials, response.RecipientPhotoId, response.Age, response.Gender, response.RecordTypeValueId, response.AgeClassification ) );
 
             if ( loadAttachments )
             {
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     // Load attachments from either the CommunicationAttachment
                     // table or the CommunicationResponseAttachment table.
@@ -137,7 +121,7 @@ namespace Rock
 
             // Load the attachments for all responses in two queries rather
             // than executing a query for every single response.
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 // Communication recipient responses can have duplicate communication IDs,
                 // so we want to ensure that we get each unique communication ID with all of

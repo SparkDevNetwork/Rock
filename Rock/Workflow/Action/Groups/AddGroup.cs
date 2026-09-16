@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -14,14 +14,15 @@
 // limitations under the License.
 // </copyright>
 //
-using Rock.Attribute;
-using Rock.Data;
-using Rock.Model;
-using Rock.Web.Cache;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
+
+using Rock.Attribute;
+using Rock.Data;
+using Rock.Model;
+using Rock.Web.Cache;
 
 namespace Rock.Workflow.Action.Groups
 {
@@ -72,7 +73,7 @@ namespace Rock.Workflow.Action.Groups
 
     [BooleanField( "Is Security Role",
         Key = AttributeKey.IsSecurityRole,
-        ControlType = Field.Types.BooleanFieldType.BooleanControlType.Checkbox,
+        BooleanControlType = Rock.Enums.Controls.BooleanControlType.Checkbox,
         Description = "When checked this will mark the Group as a Security Role even though it isn't a SecurityRole Group Type.",
         Order = 5 )]
 

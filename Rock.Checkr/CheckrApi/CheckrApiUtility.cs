@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -17,14 +17,18 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
+
 using Newtonsoft.Json;
+
 using RestSharp;
 using RestSharp.Authenticators;
-using Rock.Web.Cache;
+
 using Rock.Checkr.Constants;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
+using Rock.Web.Cache;
 
 namespace Rock.Checkr.CheckrApi
 {
@@ -79,7 +83,7 @@ namespace Rock.Checkr.CheckrApi
         {
             string token = null;
             var restClient = new RestClient( CheckrConstants.CHECKR_APISERVER );
-            using ( RockContext rockContext = new RockContext() )
+            using ( RockContext rockContext = RockApp.Current.CreateRockContext() )
             {
                 var settings = GetSettings( rockContext );
                 if ( settings != null )

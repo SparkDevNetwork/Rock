@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -25,6 +25,7 @@ using System.Threading;
 using System.Web;
 using ImageResizer;
 using Rock;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
@@ -55,7 +56,7 @@ namespace RockWeb
 
                 if ( isBinaryFile )
                 {
-                    using ( var rockContext = new RockContext() )
+                    using ( var rockContext = RockApp.Current.CreateRockContext() )
                     {
                         ProcessBinaryFileRequest( context, rockContext );
                     }
@@ -489,8 +490,9 @@ namespace RockWeb
                 return false;
             }
 
-            // SVGs are text can't be resized.
-            if ( mimeType == "image/svg+xml" )
+            // SVGs are text and can't be resized. WebP isn't supported by GDI+/ImageResizer
+            // on .NET Framework, so neither should be resized; stream the original bytes.
+            if ( mimeType == "image/svg+xml" || mimeType == "image/webp" )
             {
                 return false;
             }
@@ -747,7 +749,7 @@ namespace RockWeb
             };
             foreach ( string key in context.Request.QueryString )
             {
-                if ( nonResizeQueryStrings.Contains( key.ToLower() ) )
+                if ( key != null && nonResizeQueryStrings.Contains( key.ToLower() ) )
                 {
                     count++;
                 }

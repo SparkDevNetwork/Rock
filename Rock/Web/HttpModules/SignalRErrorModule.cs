@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -16,6 +16,7 @@
 //
 #if REVIEW_WEBFORMS
 using System.Web;
+
 using Microsoft.AspNet.SignalR.Hubs;
 
 namespace Rock.Web.HttpModules

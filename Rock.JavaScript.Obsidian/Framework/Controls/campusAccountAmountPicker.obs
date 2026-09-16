@@ -3,34 +3,37 @@
     <RockFormField :modelValue="internalValue" v-bind="standardFieldProps" disableLabel :rules="mutatedRules" name="campus-account-amount-picker">
         <Loading :isLoading="isLoading">
             <template v-if="accountAmountEntryMode == 'singleAccount'">
-                <CurrencyBox :currencyCodeDefinedValueGuid="currencyCodeDefinedValueGuid ?? undefined" v-model="amount" :class="amountEntrySingleCssClass" />
+                <CurrencyBox :currencyCodeDefinedValueGuid="currencyCodeDefinedValueGuid ?? undefined" v-model="amount" disableLabel :disabled="disabled || singleAmountReadOnly" :class="amountEntrySingleCssClass" />
                 <CampusPicker label="Campus"
                               v-model="internalCampusBag"
-                              v-if="!hideCampusPicker"
+                              v-if="isCampusPickerVisible"
                               :includeInactive="includeInactiveCampuses"
                               :campusTypeFilter="campusTypeFilter ?? undefined"
-                              :campusStatusFilter="campusStatusFilter ?? undefined" />
+                              :campusStatusFilter="campusStatusFilter ?? undefined"
+                              :disabled="disabled" />
                 <BaseAsyncPicker v-model="selectedAccount"
                                  v-bind="standardFieldProps"
                                  :label="undefined"
+                                 :disabled="disabled"
                                  :displayStyle="PickerDisplayStyle.Condensed"
                                  :items="accountPickerAccounts" />
             </template>
             <template v-else>
-                <CurrencyBox v-for="accountAmount in amounts" :key="accountAmount?.account?.value!" :label="accountAmount?.account?.text" v-model="accountAmount.amount" :currencyCodeDefinedValueGuid="currencyCodeDefinedValueGuid ?? undefined" />
+                <CurrencyBox v-for="accountAmount in amounts" :key="accountAmount?.account?.value!" :label="accountAmount?.account?.text" v-model="accountAmount.amount" :currencyCodeDefinedValueGuid="currencyCodeDefinedValueGuid ?? undefined" :disabled="disabled || !!accountAmount.readOnly" />
                 <CampusPicker label="Campus"
                               v-model="internalCampusBag"
-                              v-if="!hideCampusPicker"
+                              v-if="isCampusPickerVisible"
                               :includeInactive="includeInactiveCampuses"
                               :campusTypeFilter="campusTypeFilter ?? undefined"
-                              :campusStatusFilter="campusStatusFilter ?? undefined" />
+                              :campusStatusFilter="campusStatusFilter ?? undefined"
+                              :disabled="disabled" />
             </template>
         </Loading>
     </RockFormField>
 </template>
 
 <script setup lang="ts">
-    import { PropType, computed, ref, watch, watchEffect } from "vue";
+    import { PropType, computed, ref, watch } from "vue";
     import RockFormField from "./rockFormField.obs";
     import CurrencyBox from "./currencyBox.obs";
     import CampusPicker from "./campusPicker.obs";
@@ -38,7 +41,7 @@
     import { Guid } from "@Obsidian/Types";
     import { PickerDisplayStyle } from "@Obsidian/Enums/Controls/pickerDisplayStyle";
     import { useVModelPassthrough, standardRockFormFieldProps, useStandardRockFormFieldProps } from "@Obsidian/Utility/component";
-    import { toGuidOrNull } from "@Obsidian/Utility/guid";
+    import { areEqual, toGuidOrNull } from "@Obsidian/Utility/guid";
     import { useHttp } from "@Obsidian/Utility/http";
     import { useSuspense } from "@Obsidian/Utility/suspense";
     import { containsRequiredRule, normalizeRules } from "@Obsidian/ValidationRules";
@@ -52,6 +55,12 @@
         amount: number | null,
         account: ListItemBag | null,
         readOnly: boolean
+    };
+
+    type PresetAccountAmount = {
+        accountGuid?: Guid | null,
+        amount?: number | null,
+        isReadOnly: boolean
     };
 
     const props = defineProps({
@@ -89,13 +98,37 @@
         },
 
         /**
-         * Gets or sets the accountGuids of the selectable accounts (Required).
-         * This will be the accounts that will be displayed, but only if the Account is active, public, and within the start and end date of the Account
-         * Note: This has special logic. See comments on <seealso cref="SelectedAccountGuids"/>
+         * A pre-resolved list of accounts to present. Provide either this or
+         * `selectableAccountGuids` to control which accounts are shown. When
+         * set, the control renders these accounts as-is and does not fetch from
+         * the server, so the caller can include accounts the endpoint would
+         * not return (e.g., non-public) or apply custom labels.
+         */
+        accounts: {
+            type: Array as PropType<ListItemBag[] | null>,
+            default: null
+        },
+
+        /**
+         * Initial per-account amounts to seed, matched by account Guid. An entry
+         * flagged isReadOnly renders that account's amount input disabled so the
+         * giver cannot change it.
+         */
+        presetAccountAmounts: {
+            type: Array as PropType<PresetAccountAmount[] | null>,
+            default: null
+        },
+
+        /**
+         * The Guids of the selectable accounts to fetch and display. Provide
+         * either this or `accounts` to control which accounts are shown.
+         * Accounts specified here are shown only if active, public, and within
+         * their respective start and end date. An empty array (the default)
+         * fetches all eligible accounts.
          */
         selectableAccountGuids: {
             type: Array as PropType<Guid[]>,
-            required: true
+            default: () => []
         },
 
         /**
@@ -107,7 +140,16 @@
             default: false
         },
 
-        /** Whether to show the campus picker if one is provided */
+        /**
+         * If true, the campus picker is never rendered. Set this when the
+         * consumer manages campus selection itself (e.g., in a separate picker).
+         */
+        alwaysHideCampus: {
+            type: Boolean,
+            default: false
+        },
+
+        /** If true, the campus picker will be hidden when `campusGuid` has a value. */
         hideCampusIfKnown: {
             type: Boolean,
             default: false
@@ -137,6 +179,12 @@
             default: ""
         },
 
+        /** When true, the amount, account, and campus inputs are disabled. */
+        disabled: {
+            type: Boolean,
+            default: false
+        },
+
         ...standardRockFormFieldProps
     });
 
@@ -158,10 +206,12 @@
     const loadedAccountListItems = ref<ListItemBag[] | null>(null);
     const securityToken = useSecurityGrantToken();
     const isLoading = ref(false);
+    const hasLoadedOnce = ref(false);
 
     // Single Account Mode Variables
     const amount = ref<number | null>();
     const selectedAccount = ref<ListItemBag | null>(null);
+    const singleAmountReadOnly = ref(false);
 
     // Multiple Account Mode Variables
     const amounts = ref<AccountAmount[]>([]);
@@ -188,13 +238,17 @@
         }
     });
 
+    /** Whether the inner campus picker should render. */
+    const isCampusPickerVisible = computed((): boolean => {
+        return !props.alwaysHideCampus && !hideCampusPicker.value;
+    });
+
     const mutatedRules = computed(() => {
         if (containsRequiredRule(props.rules)) {
             const rules = normalizeRules(props.rules);
             const index = rules.indexOf("required");
             rules[index] = function accountAmountRequired(): string | true {
                 const hasAmount = !!internalValue.value?.some(aa => !!aa.amount);
-                console.log("validating", hasAmount);
                 return hasAmount || "Please enter an amount.";
             };
             return rules;
@@ -207,19 +261,65 @@
 
     // #region Watchers
 
+    // Inbound sync: populate the local editable state once the accounts have
+    // loaded (or the entry mode changes). Set account(s) and amount(s) as follows:
     watch([loadedAccountListItems, () => props.accountAmountEntryMode], () => {
         if (loadedAccountListItems.value && loadedAccountListItems.value.length) {
+            // Multiple Account Mode (loop over each account):
             if (props.accountAmountEntryMode === "multipleAccounts") {
                 amounts.value = loadedAccountListItems.value.map(account => {
+                    // If there's a read-only preset for this account, it always takes precedence, and locks the input.
+                    const preset = findPreset(account.value);
+                    if (preset?.isReadOnly) {
+                        return {
+                            amount: preset.amount ?? null,
+                            account,
+                            readOnly: true
+                        };
+                    }
+
+                    // If the individual has already entered an amount for this account, keep it.
+                    const existing = amounts.value.find(a => a.account?.value === account.value);
+                    if (existing) {
+                        return existing;
+                    }
+
+                    // If the incoming model value has an entry for this account, use it.
+                    const fromModel = props.modelValue?.find(aa => aa.account?.value === account.value);
+                    if (fromModel) {
+                        return fromModel;
+                    }
+
+                    // Finally, if there's a preset for this account, use it. Otherwise, start with a blank amount.
                     return {
-                        amount: null,
+                        amount: preset?.amount ?? null,
                         account,
                         readOnly: false
                     };
                 });
             }
+            // Single Account Mode:
             else {
-                selectedAccount.value = loadedAccountListItems.value[0];
+                // Has the individual already selected an account that is [still] in the list?
+                const isSelectedAccountInList =
+                    selectedAccount.value
+                    && loadedAccountListItems.value.some(a =>
+                        a.value === selectedAccount.value?.value
+                    );
+
+                if (!isSelectedAccountInList) {
+                    // If the model value has an account that is in the list, select it.
+                    const current = props.modelValue?.[0];
+                    const matchedModelAccount = current?.account?.value
+                        ? loadedAccountListItems.value.find(a => a.value === current.account?.value)
+                        : undefined;
+
+                    // If not, select the first account in the list.
+                    selectedAccount.value = matchedModelAccount ?? loadedAccountListItems.value[0];
+                }
+
+                // Resolve the amount for the selected account by the same precedence as multi-account mode above.
+                resolveSingleAccountAmount();
             }
         }
     });
@@ -230,12 +330,13 @@
         hideCampusPicker.value = !!(props.campusGuid && props.hideCampusIfKnown);
     }, { immediate: true });
 
-    watchEffect(() => {
+    // Outbound sync: rebuild the model value as a brand-new array whenever the local editable state changes.
+    watch([amount, selectedAccount, amounts, () => props.accountAmountEntryMode], () => {
         if (props.accountAmountEntryMode === "singleAccount") {
             internalValue.value = [{
                 account: selectedAccount.value,
                 amount: amount.value || null,
-                readOnly: false
+                readOnly: singleAmountReadOnly.value
             }];
         }
         else {
@@ -247,29 +348,96 @@
                 };
             });
         }
-    });
+    }, { deep: true });
 
-    watch(() => [props.orderBySelectableAccountsIndex, props.selectableAccountGuids, props.accountHeaderTemplate], () => loadAccountOptions());
+    watch(() => [props.orderBySelectableAccountsIndex, props.selectableAccountGuids, props.accountHeaderTemplate, props.accounts], () => loadAccountOptions());
+
+    // Re-seed (and re-lock) the single-mode amount when the giver picks a different account.
+    watch(selectedAccount, () => resolveSingleAccountAmount());
 
     // #endregion
 
     // #region Functions
 
+    /** Finds the seed preset for an account Guid, when one was provided. */
+    function findPreset(accountGuid: string | null | undefined): PresetAccountAmount | undefined {
+        const guid = toGuidOrNull(accountGuid);
+        if (!guid || !props.presetAccountAmounts) {
+            return undefined;
+        }
+
+        return props.presetAccountAmounts.find(preset => areEqual(preset.accountGuid, guid));
+    }
+
+    /**
+     * Resolves the selected single-mode account's amount and read-only state, by the same
+     * precedence as the multiple-account flow: a read-only preset wins and locks the input;
+     * otherwise an amount already in the box is kept; then the model value; then an editable
+     * preset seed; then blank.
+     */
+    function resolveSingleAccountAmount(): void {
+        const account = selectedAccount.value?.value;
+        const preset = findPreset(account);
+
+        // If there's a read-only preset for this account, it always takes precedence, and locks the input.
+        if (preset?.isReadOnly) {
+            singleAmountReadOnly.value = true;
+            amount.value = preset.amount ?? null;
+            return;
+        }
+
+        // The account is editable from here on.
+        singleAmountReadOnly.value = false;
+
+        // If the individual has already entered an amount (or one was kept across a switch), keep it.
+        if (amount.value) {
+            return;
+        }
+
+        // If the incoming model value has an entry for this account, use it.
+        const fromModel = props.modelValue?.find(aa => aa.account?.value === account);
+        if (fromModel) {
+            amount.value = fromModel.amount ?? null;
+            return;
+        }
+
+        // Finally, if there's a preset for this account, use it. Otherwise, start with a blank amount.
+        amount.value = preset?.amount ?? null;
+    }
+
     /** Loads the items from the server. */
     async function loadAccountOptions(): Promise<ListItemBag[]> {
+        // When the consumer supplies a resolved account list, render it as-is and
+        // skip the server fetch. This lets the consumer include accounts the
+        // endpoint would not return (e.g., non-public ones) and control the labels.
+        if (props.accounts) {
+            loadedAccountListItems.value = props.accounts.map(account => ({ text: account.text, value: account.value }));
+            hasLoadedOnce.value = true;
+            isLoading.value = false;
+            return loadedAccountListItems.value;
+        }
+
         const options: CampusAccountAmountPickerGetAccountsOptionsBag = {
             selectableAccountGuids: props.selectableAccountGuids.map(s => toGuidOrNull(s)).filter(g => g !== null).map(g => g as Guid),
             orderBySelectableAccountsIndex: props.orderBySelectableAccountsIndex,
             accountHeaderTemplate: props.accountHeaderTemplate,
             securityGrantToken: securityToken.value
         };
-        isLoading.value = true;
+
+        // Show the loading indicator only on the first fetch. Later reloads
+        // (such as adding an account) refresh in the background so amounts
+        // already entered stay visible instead of flashing the loader.
+        if (!hasLoadedOnce.value) {
+            isLoading.value = true;
+        }
+
         const result = await http.post<CampusAccountAmountPickerGetAccountsResultItemBag[]>("/api/v2/Controls/CampusAccountAmountPickerGetAccounts", undefined, options);
 
         if (result.isSuccess && result.data) {
             loadedAccounts.value = result.data;
             loadedAccountListItems.value = result.data.map(item => ({ text: item.name, value: item.value }));
 
+            hasLoadedOnce.value = true;
             isLoading.value = false;
             return loadedAccountListItems.value;
         }

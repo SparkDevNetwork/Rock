@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -30,6 +30,7 @@ using Microsoft.Extensions.Logging;
 using Rock;
 using Rock.Attribute;
 using Rock.Communication;
+using Rock.Configuration;
 using Rock.Core;
 using Rock.Data;
 using Rock.Model;
@@ -205,7 +206,7 @@ namespace RockWeb.Blocks.Crm
                 if ( setId.HasValue )
                 {
                     // if the user only has View auth to the page, mark the EntitySet as a Person Merge Request and let them edit the EntitySet note
-                    var rockContext = new RockContext();
+                    var rockContext = RockApp.Current.CreateRockContext();
                     var entitySetService = new EntitySetService( rockContext );
                     var entitySet = entitySetService.Get( setId.Value );
                     if ( entitySet != null )
@@ -261,7 +262,7 @@ namespace RockWeb.Blocks.Crm
 
                 if ( setId.HasValue )
                 {
-                    selectedPersonIds = new EntitySetItemService( new RockContext() )
+                    selectedPersonIds = new EntitySetItemService( RockApp.Current.CreateRockContext() )
                         .GetByEntitySetId( setId.Value, true )
                         .Select( i => i.EntityId )
                         .Distinct()
@@ -281,7 +282,7 @@ namespace RockWeb.Blocks.Crm
                 {
                     foreach ( var personId in selectedPersonIds )
                     {
-                        PersonService.UpdateAccountProtectionProfileForPerson( personId, new RockContext() );
+                        PersonService.UpdateAccountProtectionProfileForPerson( personId, RockApp.Current.CreateRockContext() );
                     }
 
                     if ( selectedPersonIds.Count == 0 )
@@ -290,7 +291,7 @@ namespace RockWeb.Blocks.Crm
                     }
 
                     // Get the selected people.
-                    var people = new PersonService( new RockContext() )
+                    var people = new PersonService( RockApp.Current.CreateRockContext() )
                         .Queryable( new PersonService.PersonQueryOptions
                         {
                             IncludeDeceased = true,
@@ -378,10 +379,10 @@ namespace RockWeb.Blocks.Crm
                 var selectedPersonIds = MergeData != null ? MergeData.People.Select( p => p.Id ).ToList() : new List<int>();
                 selectedPersonIds.Add( personId.Value );
 
-                PersonService.UpdateAccountProtectionProfileForPerson( personId.Value, new RockContext() );
+                PersonService.UpdateAccountProtectionProfileForPerson( personId.Value, RockApp.Current.CreateRockContext() );
 
                 // Get the people selected
-                var people = new PersonService( new RockContext() )
+                var people = new PersonService( RockApp.Current.CreateRockContext() )
                     .Queryable( new PersonService.PersonQueryOptions
                     {
                         IncludeDeceased = true,
@@ -416,7 +417,7 @@ namespace RockWeb.Blocks.Crm
                     .Select( p => p.Id ).ToList();
 
                 // Get the people selected
-                var people = new PersonService( new RockContext() )
+                var people = new PersonService( RockApp.Current.CreateRockContext() )
                     .Queryable( new PersonService.PersonQueryOptions
                     {
                         IncludeDeceased = true,
@@ -456,7 +457,7 @@ namespace RockWeb.Blocks.Crm
                 return;
             }
 
-            if ( rowValue.PersonProperty.Attribute != null && rowValue.PersonProperty.Attribute.FieldType.Field is Rock.Field.Types.MatrixFieldType )
+            if ( rowValue.PersonProperty.Attribute != null && rowValue.PersonProperty.Attribute.FieldType.Guid == Rock.SystemGuid.FieldType.MATRIX.AsGuid() )
             {
                 personMergeFieldRowEventArgs.SelectionControlType = MergePersonField.SelectionControlType.Checkbox;
                 personMergeFieldRowEventArgs.ContentDisplayType = MergePersonField.ContentDisplayType.ContentWrapper;
@@ -559,7 +560,7 @@ namespace RockWeb.Blocks.Crm
             var oldPhotos = new List<int>();
 
             var logger = new RockProcessLogger( Logger );
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             rockContext.Database.CommandTimeout = 90;
 
             try
@@ -720,7 +721,7 @@ namespace RockWeb.Blocks.Crm
                         foreach ( var property in MergeData.Properties.Where( p => p.Key.StartsWith( "attr_" ) ) )
                         {
                             var attribute = AttributeCache.Get( property.AttributeId.Value );
-                            if ( attribute.FieldType.Field is Rock.Field.Types.MatrixFieldType )
+                            if ( attribute.FieldType.Guid == Rock.SystemGuid.FieldType.MATRIX.AsGuid() )
                             {
                                 MergeAttributeMatrixAttributeValues( rockContext, primaryPerson, property, attribute );
                             }
@@ -1311,7 +1312,7 @@ namespace RockWeb.Blocks.Crm
             int? setId = PageParameter( "Set" ).AsIntegerOrNull();
             if ( setId.HasValue )
             {
-                var rockContext = new RockContext();
+                var rockContext = RockApp.Current.CreateRockContext();
                 var entitySet = new EntitySetService( rockContext ).Get( setId.Value );
                 entitySet.Note = tbEntitySetNote.Text;
 
@@ -1378,7 +1379,7 @@ namespace RockWeb.Blocks.Crm
         {
             Guid familyGuid = new Guid( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY );
 
-            var groupMemberService = new GroupMemberService( new RockContext() );
+            var groupMemberService = new GroupMemberService( RockApp.Current.CreateRockContext() );
             var families = groupMemberService.Queryable()
                 .Where( m => m.PersonId == personId && m.Group.GroupType.Guid == familyGuid )
                 .Select( m => m.Group )
@@ -1463,7 +1464,7 @@ namespace RockWeb.Blocks.Crm
 
             var personIds = MergeData.People.Select( a => a.Id ).ToArray();
 
-            var maxElevatedSecurityLevel = new GroupMemberService( new RockContext() )
+            var maxElevatedSecurityLevel = new GroupMemberService( RockApp.Current.CreateRockContext() )
                 .Queryable()
                 .IsInSecurityRoleGroupOrSecurityRoleGroupType()
                 .Where( a => a.Group.IsActive && personIds.Contains( a.PersonId ) && a.GroupMemberStatus == GroupMemberStatus.Active )
@@ -2156,7 +2157,7 @@ namespace RockWeb.Blocks.Crm
                 foreach ( var attribute in person.Attributes.OrderBy( a => a.Value.Order ) )
                 {
                     var value = person.GetAttributeValue( attribute.Key );
-                    var condensed = attribute.Value.FieldType.Class == typeof( Rock.Field.Types.ImageFieldType ).FullName;
+                    var condensed = attribute.Value.FieldType.Guid == Rock.SystemGuid.FieldType.IMAGE.AsGuid();
                     var formattedValue = attribute.Value.FieldType.Field.FormatValue( null, attribute.Value.EntityTypeId, person.Id, value, attribute.Value.QualifierValues, condensed );
 
                     var hasViewPermission = attribute.Value.IsAuthorized( Rock.Security.Authorization.VIEW, currentPerson )
@@ -2165,7 +2166,7 @@ namespace RockWeb.Blocks.Crm
                     AddProperty( "attr_" + attribute.Key, attribute.Value.Name, person.Id, value, formattedValue, hasViewPermission, selected: false, attribute: attribute.Value );
                 }
 
-                var groups = new GroupMemberService( new RockContext() ).Queryable().Include( gm => gm.Group ).Where( gm => gm.PersonId == person.Id ).ToList();
+                var groups = new GroupMemberService( RockApp.Current.CreateRockContext() ).Queryable().Include( gm => gm.Group ).Where( gm => gm.PersonId == person.Id ).ToList();
 
                 foreach ( var groupMember in groups )
                 {
@@ -2173,7 +2174,7 @@ namespace RockWeb.Blocks.Crm
                     foreach ( var attribute in groupMember.Attributes.OrderBy( a => a.Value.Order ) )
                     {
                         var value = groupMember.GetAttributeValue( attribute.Key );
-                        var condensed = attribute.Value.FieldType.Class == typeof( Rock.Field.Types.ImageFieldType ).FullName;
+                        var condensed = attribute.Value.FieldType.Guid == Rock.SystemGuid.FieldType.IMAGE.AsGuid();
                         var formattedValue = attribute.Value.FieldType.Field.FormatValue( null, attribute.Value.EntityTypeId, groupMember.Id, value, attribute.Value.QualifierValues, condensed );
 
                         var hasViewPermission = attribute.Value.IsAuthorized( Rock.Security.Authorization.VIEW, currentPerson )
@@ -2218,7 +2219,7 @@ namespace RockWeb.Blocks.Crm
                     foreach ( var attribute in family.Attributes.OrderBy( a => a.Value.Order ) )
                     {
                         string value = family.GetAttributeValue( attribute.Key );
-                        bool condensed = attribute.Value.FieldType.Class == typeof( Rock.Field.Types.ImageFieldType ).FullName;
+                        bool condensed = attribute.Value.FieldType.Guid == Rock.SystemGuid.FieldType.IMAGE.AsGuid();
                         string formattedValue = attribute.Value.FieldType.Field.FormatValue( null, attribute.Value.EntityTypeId, person.Id, value, attribute.Value.QualifierValues, condensed );
 
                         var hasViewPermission = attribute.Value.IsAuthorized( Rock.Security.Authorization.VIEW, currentPerson )
@@ -2242,7 +2243,7 @@ namespace RockWeb.Blocks.Crm
             foreach ( var person in people )
             {
                 // Fetch any change history (per property/value) for the person
-                var historyDataTable = new PersonService( new RockContext() ).GetLatestPersonHistoryChangesDataTable( person.Id );
+                var historyDataTable = new PersonService( RockApp.Current.CreateRockContext() ).GetLatestPersonHistoryChangesDataTable( person.Id );
                 if ( historyDataTable == null )
                 {
                     continue;
@@ -2313,7 +2314,7 @@ namespace RockWeb.Blocks.Crm
                 if ( personProperty.AttributeId.HasValue )
                 {
                     var attribute = AttributeCache.Get( personProperty.AttributeId.Value );
-                    if ( attribute.FieldType.Field is Rock.Field.Types.MatrixFieldType )
+                    if ( attribute.FieldType.Guid == Rock.SystemGuid.FieldType.MATRIX.AsGuid() )
                     {
                         personProperty.Values.ForEach( v => v.Selected = true );
                     }

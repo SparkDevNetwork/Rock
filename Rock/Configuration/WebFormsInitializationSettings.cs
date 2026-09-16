@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -19,6 +19,8 @@ using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Web.Configuration;
+
+using Rock.Enums.Configuration;
 
 namespace Rock.Configuration
 {
@@ -61,6 +63,7 @@ namespace Rock.Configuration
             AzureSignalRAccessKey = GetValue( "AzureSignalRAccessKey" )?.ToStringSafe();
             SparkApiUrl = GetValue( "SparkApiUrl" )?.ToStringSafe();
             NodeName = GetValue( "NodeName" )?.ToStringSafe();
+            DeploymentEnvironment = GetValue( "DeploymentEnvironment" )?.ConvertToEnumOrNull<DeploymentEnvironment>() ?? DeploymentEnvironment.Production;
 
             // Load old password keys.
             var oldPasswordKeys = new List<string>();

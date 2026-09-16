@@ -18,7 +18,7 @@ import { computed, defineComponent, ref, watch } from "vue";
 import { getFieldConfigurationProps, getFieldEditorProps } from "./utils";
 import CheckBox from "@Obsidian/Controls/checkBox.obs";
 import DropDownList from "@Obsidian/Controls/dropDownList.obs";
-import { ConfigurationPropertyKey, ConfigurationValueKey } from "./connectionActivityTypeField.partial";
+import { ConfigurationPropertyKey, ConfigurationKey } from "./connectionActivityTypeField.partial";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { asBoolean, asTrueOrFalseString } from "@Obsidian/Utility/booleanUtils";
 import { isNullOrWhiteSpace } from "@Obsidian/Utility/stringUtils";
@@ -37,7 +37,7 @@ export const EditComponent = defineComponent({
         const internalValue = ref<string>("");
 
         const connectionType = computed(() => {
-            return JSON.parse(props.configurationValues[ConfigurationValueKey.ConnectionTypeFilter] || "{}") as ListItemBag;
+            return JSON.parse(props.configurationValues[ConfigurationKey.ConnectionTypeFilter] || "{}") as ListItemBag;
         });
 
         // If a filter has been selected then there is no need to group the options since they all belong to the same group.
@@ -47,7 +47,7 @@ export const EditComponent = defineComponent({
 
         // The ConnectionActivityTypes to choose from.
         const options = computed((): ListItemBag[] => {
-            let clientValues = JSON.parse(props.configurationValues[ConfigurationValueKey.ClientValues] || "[]") as ListItemBag[];
+            let clientValues = JSON.parse(props.configurationValues[ConfigurationKey.ClientValues] || "[]") as ListItemBag[];
 
             if (connectionType.value.value) {
                 clientValues = clientValues.filter(c => c.category === connectionType.value.text);
@@ -120,13 +120,13 @@ export const ConfigurationComponent = defineComponent({
 
             // Construct the new value that will be emitted if it is different
             // than the current value.
-            newValue[ConfigurationValueKey.ConnectionTypeFilter] = connectionTypeBagSerialized.value ?? "";
-            newValue[ConfigurationValueKey.IncludeInactive] = asTrueOrFalseString(includeInactive.value);
-            newValue[ConfigurationValueKey.ClientValues] = props.modelValue[ConfigurationValueKey.ClientValues];
+            newValue[ConfigurationKey.ConnectionTypeFilter] = connectionTypeBagSerialized.value ?? "";
+            newValue[ConfigurationKey.IncludeInactive] = asTrueOrFalseString(includeInactive.value);
+            newValue[ConfigurationKey.ClientValues] = props.modelValue[ConfigurationKey.ClientValues];
 
             // Compare the new value and the old value.
-            const anyValueChanged = newValue[ConfigurationValueKey.ConnectionTypeFilter] !== (props.modelValue[ConfigurationValueKey.ConnectionTypeFilter])
-                || newValue[ConfigurationValueKey.IncludeInactive] !== (props.modelValue[ConfigurationValueKey.IncludeInactive]);
+            const anyValueChanged = newValue[ConfigurationKey.ConnectionTypeFilter] !== (props.modelValue[ConfigurationKey.ConnectionTypeFilter])
+                || newValue[ConfigurationKey.IncludeInactive] !== (props.modelValue[ConfigurationKey.IncludeInactive]);
 
             // If any value changed then emit the new model value.
             if (anyValueChanged) {
@@ -153,9 +153,9 @@ export const ConfigurationComponent = defineComponent({
         // Watch for changes coming in from the parent component and update our
         // data to match the new information.
         watch(() => [props.modelValue, props.configurationProperties], () => {
-            const connectionTypeBag = JSON.parse(props.modelValue[ConfigurationValueKey.ConnectionTypeFilter] || "{}") as ListItemBag;
+            const connectionTypeBag = JSON.parse(props.modelValue[ConfigurationKey.ConnectionTypeFilter] || "{}") as ListItemBag;
             connectionType.value = connectionTypeBag.value ?? "";
-            includeInactive.value = asBoolean(props.modelValue[ConfigurationValueKey.IncludeInactive]);
+            includeInactive.value = asBoolean(props.modelValue[ConfigurationKey.IncludeInactive]);
         }, {
             immediate: true
         });
@@ -169,8 +169,8 @@ export const ConfigurationComponent = defineComponent({
         });
 
         // Watch for changes in properties that only require a local UI update.
-        watch(connectionTypeBagSerialized, () => maybeUpdateConfiguration(ConfigurationValueKey.ConnectionTypeFilter, connectionTypeBagSerialized.value));
-        watch(includeInactive, () => maybeUpdateConfiguration(ConfigurationValueKey.IncludeInactive, asTrueOrFalseString(connectionType.value)));
+        watch(connectionTypeBagSerialized, () => maybeUpdateConfiguration(ConfigurationKey.ConnectionTypeFilter, connectionTypeBagSerialized.value));
+        watch(includeInactive, () => maybeUpdateConfiguration(ConfigurationKey.IncludeInactive, asTrueOrFalseString(connectionType.value)));
 
         return {
             connectionType,

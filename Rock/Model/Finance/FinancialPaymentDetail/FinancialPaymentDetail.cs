@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -14,13 +14,14 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
-using System;
 
 using Rock.Data;
+using Rock.Enums.Security;
 using Rock.Security;
 
 namespace Rock.Model
@@ -44,6 +45,7 @@ namespace Rock.Model
         /// The account number masked.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string AccountNumberMasked { get; set; }
 
         /// <summary>
@@ -87,6 +89,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [MaxLength( 50 )]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string GatewayPersonIdentifier { get; set; }
 
         /// <summary>
@@ -109,6 +112,7 @@ namespace Rock.Model
         [MaxLength( 256 )]
         [Obsolete( "Use NameOnCard" )]
         [RockObsolete( "1.12.4" )]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string NameOnCardEncrypted
         {
             get
@@ -136,6 +140,7 @@ namespace Rock.Model
         /// The name on card.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string NameOnCard
         {
             get
@@ -172,6 +177,7 @@ namespace Rock.Model
         [MaxLength( 256 )]
         [Obsolete( "Use ExpirationMonth" )]
         [RockObsolete( "1.12.4" )]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string ExpirationMonthEncrypted
         {
             get
@@ -202,6 +208,7 @@ namespace Rock.Model
         [MaxLength( 256 )]
         [Obsolete( "Use ExpirationYear" )]
         [RockObsolete( "1.12.4" )]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string ExpirationYearEncrypted
         {
             get
@@ -376,17 +383,6 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public virtual FinancialPersonSavedAccount FinancialPersonSavedAccount { get; set; }
-
-        /// <summary>
-        /// Gets or sets the history changes.
-        /// </summary>
-        /// <value>
-        /// The history changes.
-        /// </value>
-        [NotMapped]
-        [RockObsolete( "1.14" )]
-        [Obsolete( "Does nothing. No longer needed. We replaced this with a private property under the SaveHook class for this entity.", true )]
-        public virtual History.HistoryChangeList HistoryChangeList { get; set; }
 
         #endregion Navigation Properties
     }

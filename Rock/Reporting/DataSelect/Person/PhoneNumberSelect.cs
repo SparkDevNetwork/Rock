@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -26,6 +26,7 @@ using System.Web.UI.WebControls;
 using Rock.Data;
 using Rock.Model;
 using Rock.Net;
+using Rock.Obsidian.UI.GridField;
 using Rock.ViewModels.Controls;
 using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
@@ -374,6 +375,37 @@ namespace Rock.Reporting.DataSelect.Person
             return callbackField;
         }
 #endif
+
+        /// <inheritdoc/>
+        public override ObsidianGridField GetObsidianGridField( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
+        {
+            return new PhoneNumberField();
+        }
+
+        /// <summary>
+        /// Value-shaping subclass that extracts the friendly formatted number
+        /// from a <see cref="PhoneNumber"/> entity before delegating to
+        /// <see cref="PhoneObsidianGridField.TransformValue"/> for tel: link
+        /// rendering. Drops the WebForms inline PBX click-to-call handler
+        /// (which does not survive an Obsidian SPA); a future PBX integration
+        /// can extend this subclass.
+        /// </summary>
+        private class PhoneNumberField : PhoneObsidianGridField
+        {
+            public override object TransformValue( object rawValue, ObsidianGridFieldContext context )
+            {
+                if ( !( rawValue is PhoneNumber phoneNumber ) )
+                {
+                    return string.Empty;
+                }
+
+                var formatted = phoneNumber.NumberFormatted.IsNotNullOrWhiteSpace()
+                    ? phoneNumber.NumberFormatted
+                    : phoneNumber.Number;
+
+                return base.TransformValue( formatted, context );
+            }
+        }
 
         #endregion
     }

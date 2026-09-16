@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 #if NET472_OR_GREATER
 using System.Data.Entity;
@@ -6,6 +6,7 @@ using System.Data.Entity.Spatial;
 #endif
 using System.IO;
 using System.Linq;
+
 using CsvHelper;
 
 #if NET6_0_OR_GREATER
@@ -14,13 +15,14 @@ using Microsoft.EntityFrameworkCore;
 using NetTopologySuite.Geometries;
 #endif
 
+using Rock.Configuration;
 using Rock.Data;
+using Rock.Jobs;
 using Rock.Model;
-using Rock.Web.Cache;
-using Rock.ViewModels.Blocks.Communication.NcoaProcess;
 using Rock.SystemKey;
 using Rock.Utility.Settings.SparkData;
-using Rock.Jobs;
+using Rock.ViewModels.Blocks.Communication.NcoaProcess;
+using Rock.Web.Cache;
 
 #if NET472_OR_GREATER
 using Point = System.Data.Entity.Spatial.DbGeography;
@@ -110,7 +112,7 @@ namespace Rock.NCOA
                 throw new Exception( "Get Address: No Person Data View has been set. Please check System Settings > Spark Data Settings." );
             }
 
-            using ( RockContext rockContext = new RockContext() )
+            using ( RockContext rockContext = RockApp.Current.CreateRockContext() )
             {
                 var familyGroupType = GroupTypeCache.Get( SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid() );
                 var homeLoc = DefinedValueCache.Get( SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME.AsGuid() );
@@ -239,7 +241,7 @@ namespace Rock.NCOA
                 } );
 
                 // Making sure that the database is empty to avoid adding duplicate data.
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     var ncoaHistoryService = new NcoaHistoryService( rockContext );
                     ncoaHistoryService.DeleteRange( ncoaHistoryService.Queryable() );
@@ -389,7 +391,7 @@ namespace Rock.NCOA
             {
                 return ("", individualMoveErrorMessage);
             }
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 NcoaHistoryService ncoaHistoryService = new NcoaHistoryService( rockContext );
                 var successMessage = $"NCOA request processed, {ncoaHistoryService.Count()} {( ncoaHistoryService.Count() == 1 ? "address" : "addresses" )} processed, {ncoaHistoryService.MovedCount()} {( ncoaHistoryService.MovedCount() > 1 ? "were" : "was" )} marked as 'moved'";
@@ -439,7 +441,7 @@ namespace Rock.NCOA
         private string ProcessNcoaResultsInvalidAddress( bool markInvalidAsPrevious, int? previousValueId )
         {
             List<int> ncoaIds = null;
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 ncoaIds = new NcoaHistoryService( rockContext )
                     .Queryable().AsNoTracking()
@@ -452,7 +454,7 @@ namespace Rock.NCOA
 
             foreach ( int id in ncoaIds )
             {
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     var ncoaHistory = new NcoaHistoryService( rockContext ).Get( id );
                     if ( ncoaHistory != null )
@@ -555,7 +557,7 @@ namespace Rock.NCOA
         {
             List<int> ncoaIds = null;
             // Process the '48 Month Move' NCOA Types
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 ncoaIds = new NcoaHistoryService( rockContext )
                     .Queryable()
@@ -569,7 +571,7 @@ namespace Rock.NCOA
 
             foreach ( int id in ncoaIds )
             {
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     var ncoaHistory = new NcoaHistoryService( rockContext ).Get( id );
                     if ( ncoaHistory != null )
@@ -644,7 +646,7 @@ namespace Rock.NCOA
         {
             List<int> ncoaIds = null;
             // Process 'Move' NCOA Types (The 'Family' move types will be processed first)
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 ncoaIds = new NcoaHistoryService( rockContext )
                     .Queryable().AsNoTracking()
@@ -658,7 +660,7 @@ namespace Rock.NCOA
 
             foreach ( int id in ncoaIds )
             {
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     // Get the NCOA record and make sure it still hasn't been processed
                     var ncoaHistory = new NcoaHistoryService( rockContext ).Get( id );
@@ -944,7 +946,7 @@ namespace Rock.NCOA
         {
             List<int> ncoaIds = null;
             // Process 'Move' NCOA Types (For the remaining Individual move types that weren't updated with the family move)
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 ncoaIds = new NcoaHistoryService( rockContext )
                     .Queryable()
@@ -960,7 +962,7 @@ namespace Rock.NCOA
             foreach ( int id in ncoaIds )
             {
                 int personId = 0;
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     // Get the NCOA record and make sure it still hasn't been processed
                     var ncoaHistory = new NcoaHistoryService( rockContext ).Get( id );

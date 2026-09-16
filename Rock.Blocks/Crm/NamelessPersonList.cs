@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -20,7 +20,9 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
+
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Obsidian.UI;
@@ -58,7 +60,7 @@ namespace Rock.Blocks.Crm
         [BlockAction( "LinkToExistingPerson" )]
         public BlockActionResult LinkToExistingPerson( string existingPersonAliasGuid, int namelessPersonId )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var personAliasService = new PersonAliasService( rockContext );
                 var personService = new PersonService( rockContext );
@@ -99,7 +101,7 @@ namespace Rock.Blocks.Crm
         [BlockAction( "Save" )]
         public BlockActionResult Save( PersonBasicEditorBag personBag, int namelessPersonId )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var personService = new PersonService( rockContext );
                 var cleanMobilePhone = PhoneNumber.CleanNumber( personBag.MobilePhoneNumber );

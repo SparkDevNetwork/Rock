@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -20,7 +20,6 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
-using System.Web;
 
 using Rock.Attribute;
 using Rock.Cms;
@@ -45,7 +44,7 @@ namespace Rock.Blocks.Administration
     [Category( "Administration" )]
     [Description( "Displays the page properties." )]
     [IconCssClass( "ti ti-question-mark" )]
-    //[SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( Model.SiteType.Web )]
 
     #region Block Attributes
 
@@ -66,9 +65,16 @@ namespace Rock.Blocks.Administration
     #endregion Block Attributes
 
     [SystemGuid.EntityTypeGuid( "d256a348-e8dc-4886-a055-eae44e71ce92" )]
-    [SystemGuid.BlockTypeGuid( "4c2e12b8-dcd5-4ea6-a853-a02a5b121d13" )]
+    [Rock.SystemGuid.BlockTypeGuid( "C7988C3E-822D-4E73-882E-9B7684398BAA" )]
+    // was [SystemGuid.BlockTypeGuid( "4c2e12b8-dcd5-4ea6-a853-a02a5b121d13" )]
     public class PageProperties : RockEntityDetailBlockType<Page, PagePropertiesBag>
     {
+        #region Properties
+
+        private bool IsAllowingPredictableIds => !PageCache.Layout.Site.DisablePredictableIds;
+
+        #endregion Properties
+
         #region Keys
 
         private static class AttributeKey
@@ -295,7 +301,19 @@ namespace Rock.Blocks.Administration
                 // Existing entity was found, prepare for view mode by default.
                 if ( isViewable )
                 {
-                    box.Entity = enableFullEditMode ? GetEntityBagForEdit( entity ) : GetEntityBagForView( entity );
+                    /*
+                        5/29/26 - MSE
+
+                        When this block is not in full edit mode it opens straight to the
+                        edit form (for example, the page settings modal), so it needs the
+                        edit-formatted bag. Matrix and Content Channel Item store their view
+                        and edit values in different formats, so giving the edit form a view
+                        value makes it crash.
+
+                        Reason: https://app.asana.com/1/20866866924293/project/1208321217019996/task/1214719530367018
+                    */
+                    var rendersEditFormDirectly = !enableFullEditMode;
+                    box.Entity = rendersEditFormDirectly ? GetEntityBagForEdit( entity ) : GetEntityBagForView( entity );
                 }
                 else
                 {
@@ -699,24 +717,24 @@ namespace Rock.Blocks.Administration
         {
             var pageService = new PageService( RockContext );
             var pageId = PageParameter( PageParameterKey.Page );
-            var parentPageId = PageParameter( PageParameterKey.ParentPageId ).AsIntegerOrNull();
-            var id = !PageCache.Layout.Site.DisablePredictableIds ? pageId.AsIntegerOrNull() : null;
+            var parentPageId = PageParameter( PageParameterKey.ParentPageId );
+            var id = IsAllowingPredictableIds ? pageId.AsIntegerOrNull() : null;
             var guid = pageId.AsGuidOrNull();
 
             // If a zero identifier is specified then create a new entity.
             if ( ( id.HasValue && id.Value == 0 ) || ( guid.HasValue && guid.Value == Guid.Empty ) || ( !id.HasValue && !guid.HasValue && pageId.IsNullOrWhiteSpace() ) )
             {
-                return CreateNewPage( pageService, parentPageId );
+                return CreateNewPage( pageService, parentPageId, IsAllowingPredictableIds );
             }
 
-            var page = pageService.GetQueryableByKey( pageId, !PageCache.Layout.Site.DisablePredictableIds )
+            var page = pageService.GetQueryableByKey( pageId, IsAllowingPredictableIds )
                 .Include( "Layout" )
                 .Include( "PageRoutes" )
                 .FirstOrDefault();
 
             if ( page == null )
             {
-                page = CreateNewPage( pageService, parentPageId );
+                page = CreateNewPage( pageService, parentPageId, IsAllowingPredictableIds );
             }
 
             return page;
@@ -727,8 +745,13 @@ namespace Rock.Blocks.Administration
         /// </summary>
         /// <param name="pageService">The page service.</param>
         /// <returns></returns>
-        private static Page CreateNewPage( PageService pageService, int? parentPageId )
+        private static Page CreateNewPage( PageService pageService, string parentPageIdParam, bool isAllowingPredictableIds )
         {
+            var parentPageId = pageService.GetSelect(
+                parentPageIdParam,
+                p => ( int? ) p.Id,
+                isAllowingPredictableIds );
+
             var page = new Page { Id = 0, IsSystem = false, ParentPageId = parentPageId };
 
             // fetch the ParentPage (if there is one) so that security can check it, and also default some stuff based on the ParentPage
@@ -753,25 +776,26 @@ namespace Rock.Blocks.Administration
         private Dictionary<string, string> GetBoxNavigationUrls()
         {
             var queryParams = new Dictionary<string, string>();
-            var pageId = PageParameter(PageParameterKey.Page);
-            var parentPageId = PageParameter(PageParameterKey.ParentPageId);
-            var expandedIds = PageParameter(PageParameterKey.ExpandedIds);
-            var redirect = PageParameter(PageParameterKey.Redirect);
+            var pageId = PageParameter( PageParameterKey.Page );
+            var parentPageId = PageParameter( PageParameterKey.ParentPageId );
+            var expandedIds = PageParameter( PageParameterKey.ExpandedIds );
+            var redirect = PageParameter( PageParameterKey.Redirect );
 
-            if (string.IsNullOrWhiteSpace(pageId) || pageId == "0")
+            if ( string.IsNullOrWhiteSpace( pageId ) || pageId == "0" )
             {
-                if (!string.IsNullOrWhiteSpace(parentPageId))
+                if ( !string.IsNullOrWhiteSpace( parentPageId ) )
                 {
-                    if (int.TryParse(parentPageId, out int parentId))
+                    if ( int.TryParse( parentPageId, out int parentId ) )
                     {
                         queryParams[PageParameterKey.Page] = parentPageId;
-                            
-                        if (!string.IsNullOrWhiteSpace(expandedIds) && expandedIds.Split(',').All(id => int.TryParse(id, out _)))
+
+                        // If we have Expanded Ids and they're not just commas, pass them along
+                        if ( !string.IsNullOrWhiteSpace( expandedIds ) && !expandedIds.All( eid => eid == ',' ) )
                         {
                             queryParams[PageParameterKey.ExpandedIds] = expandedIds;
                         }
 
-                        if (!string.IsNullOrWhiteSpace(redirect))
+                        if ( !string.IsNullOrWhiteSpace( redirect ) )
                         {
                             queryParams[PageParameterKey.Redirect] = redirect;
                         }
@@ -781,8 +805,8 @@ namespace Rock.Blocks.Administration
 
             var urls = new Dictionary<string, string>
             {
-                [NavigationUrlKey.ReturnPage] = GetCleanPageUrl(queryParams),
-                [NavigationUrlKey.MedianTimeDetailPage] = this.GetLinkedPageUrl(AttributeKey.MedianTimeDetailPage, NavigationUrlKey.Page, "((Key))")
+                [NavigationUrlKey.ReturnPage] = GetCleanPageUrl( queryParams ),
+                [NavigationUrlKey.MedianTimeDetailPage] = this.GetLinkedPageUrl( AttributeKey.MedianTimeDetailPage, NavigationUrlKey.Page, "((Key))" )
             };
 
             return urls;
@@ -819,7 +843,7 @@ namespace Rock.Blocks.Administration
             {
                 // If editing an existing entity then load it and make sure it
                 // was found and can still be edited.
-                entity = entityService.Get( idKey, !PageCache.Layout.Site.DisablePredictableIds );
+                entity = entityService.Get( idKey, IsAllowingPredictableIds );
             }
             else
             {
@@ -954,6 +978,25 @@ namespace Rock.Blocks.Administration
                 }
             } );
 
+            /*
+                7/23/26 - MSE
+
+                PageRoute is not ICacheable and the PageRoute save hook only removes
+                deleted routes from the route table, so saved routes never take effect
+                on the running node without these two calls. The page cache flush makes
+                PageCache.PageRoutes (used by PageReference.BuildUrl) pick up the route
+                changes, and ReregisterRoutes rebuilds this node's route table and
+                publishes a message bus event so other web farm nodes do the same. The
+                legacy WebForms block made the same ReregisterRoutes call after saving.
+
+                Reason: Routes saved from Page Properties did not work until an application restart.
+            */
+            PageCache.FlushPage( entity.Id );
+
+#if REVIEW_WEBFORMS
+            Rock.Web.RockRouteHandler.ReregisterRoutes();
+#endif
+
             // Ensure navigation properties will work now.
             entity = entityService.Get( entity.Id );
             entity.LoadAttributes( RockContext );
@@ -965,14 +1008,15 @@ namespace Rock.Blocks.Administration
             if ( expandedIds != null )
             {
                 // remove the current pageId param to avoid extra treeview flash
-                var expandedIdList = expandedIds.SplitDelimitedValues().AsIntegerList();
-                expandedIdList.Remove( entity.Id );
+                var expandedIdList = expandedIds.SplitDelimitedValues().ToList();
+                expandedIdList.Remove( entity.Id.ToString() );
+                expandedIdList.Remove( entity.IdKey );
 
                 // add the parentPageId to the expanded ids
                 var parentPageParam = this.PageParameter( PageParameterKey.ParentPageId );
-                if ( !string.IsNullOrEmpty( parentPageParam ) && parentPageId.HasValue && !expandedIdList.Contains( parentPageId.Value ) )
+                if ( !string.IsNullOrEmpty( parentPageParam ) && !expandedIdList.Contains( parentPageParam ) )
                 {
-                    expandedIdList.Add( parentPageId.Value );
+                    expandedIdList.Add( parentPageParam );
                 }
 
                 qryParams[PageParameterKey.ExpandedIds] = expandedIdList.AsDelimited( "," );
@@ -1023,7 +1067,7 @@ namespace Rock.Blocks.Administration
                 }
             }
 
-            int? parentPageId = entity.ParentPageId;
+            string parentPageId = entity.ParentPage?.IdKey;
 
             pageService.Delete( entity );
 
@@ -1042,22 +1086,22 @@ namespace Rock.Blocks.Administration
 
             // reload page, selecting the deleted page's parent
             var qryParams = new Dictionary<string, string>();
-            if ( parentPageId.HasValue )
+            if ( !string.IsNullOrEmpty( parentPageId ) )
             {
-                qryParams[PageParameterKey.Page] = parentPageId.ToString();
-
-                string expandedIds = this.RequestContext.GetPageParameter( PageParameterKey.ExpandedIds );
-                if ( expandedIds != null )
-                {
-                    // remove the current pageId param to avoid extra treeview flash
-                    var expandedIdList = expandedIds.SplitDelimitedValues().AsIntegerList();
-                    expandedIdList.Remove( parentPageId.Value );
-
-                    qryParams[PageParameterKey.ExpandedIds] = expandedIdList.AsDelimited( "," );
-                }
+                qryParams[PageParameterKey.Page] = parentPageId;
             }
 
-            return ActionOk( this.GetCurrentPageUrl( qryParams ) );
+            string expandedIds = this.RequestContext.GetPageParameter( PageParameterKey.ExpandedIds );
+            if ( expandedIds != null )
+            {
+                // remove the current pageId param to avoid extra treeview flash
+                var expandedIdList = expandedIds.SplitDelimitedValues().ToList();
+                expandedIdList.Remove( PageParameter( PageParameterKey.ParentPageId ) );
+
+                qryParams[PageParameterKey.ExpandedIds] = expandedIdList.AsDelimited( "," );
+            }
+
+            return ActionOk( this.GetCurrentPageUrl( qryParams, true ) );
         }
 
         /// <summary>
@@ -1103,18 +1147,15 @@ namespace Rock.Blocks.Administration
                         if ( expandedIds != null )
                         {
                             // remove the current pageId param to avoid extra treeview flash
-                            var expandedIdList = expandedIds.SplitDelimitedValues().AsIntegerList();
-                            expandedIdList.Remove( copiedPage.Id );
+                            var expandedIdList = expandedIds.SplitDelimitedValues().ToList();
+                            expandedIdList.Remove( copiedPage.Id.ToString() );
+                            expandedIdList.Remove( copiedPage.IdKey );
 
                             // add the parentPageId to the expanded ids
-                            var parentPageParam = this.PageParameter( PageParameterKey.ParentPageId );
-                            if ( !string.IsNullOrEmpty( parentPageParam ) )
+                            var parentPageId = this.PageParameter( PageParameterKey.ParentPageId );
+                            if ( !string.IsNullOrEmpty( parentPageId ) && !expandedIdList.Contains( parentPageId ) )
                             {
-                                var parentPageId = parentPageParam.AsIntegerOrNull();
-                                if ( parentPageId.HasValue && !expandedIdList.Contains( parentPageId.Value ) )
-                                {
-                                    expandedIdList.Add( parentPageId.Value );
-                                }
+                                expandedIdList.Add( parentPageId );
                             }
 
                             qryParams[PageParameterKey.ExpandedIds] = expandedIdList.AsDelimited( "," );

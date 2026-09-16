@@ -1,0 +1,102 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Modal v-model="isVisible"
+           :title="title"
+           :isSaveButtonDisabled="isSaving"
+           saveText="Save"
+           @save="onSave">
+        <NotificationBox v-if="!isNullOrWhiteSpace(errorMessage)"
+                         alertType="danger"
+                         dismissible
+                         @dismiss="emit('dismissErrorMessage')">
+            {{ errorMessage }}
+        </NotificationBox>
+        <div class="row">
+            <div class="col-md-4">
+                <DropDownList v-model="connector"
+                              :items="connectorItems"
+                              label="Connector"
+                              showBlankItem
+                              blankValue="Unassigned"
+                              enhanceForLongLists />
+            </div>
+        </div>
+        <RequestTable :requestDetails="requestDetails"
+                      :viewOptions="viewOptions"
+                      isConnectorVisible />
+    </Modal>
+</template>
+
+<script setup lang="ts">
+    import Modal from "@Obsidian/Controls/modal.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import RequestTable from "./requestTable.partial.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import { ref, PropType, watch, computed } from "vue";
+    import { useVModelPassthrough } from "@Obsidian/Utility/component";
+    import { isNullOrWhiteSpace, pluralize } from "@Obsidian/Utility/stringUtils";
+    import { BulkRequestViewBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/bulkRequestViewBag";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { ViewOptions } from "./types.partial";
+
+    const props = defineProps({
+        visible: {
+            type: Boolean as PropType<boolean>,
+            required: true
+        },
+
+        connectorItems: {
+            type: Array as PropType<ListItemBag[]>,
+            required: true
+        },
+
+        requestDetails: {
+            type: Array as PropType<BulkRequestViewBag[]>,
+            default: []
+        },
+
+        viewOptions: {
+            type: Object as PropType<ViewOptions>,
+            required: true
+        },
+
+        isSaving: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        errorMessage: {
+            type: String as PropType<string>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:visible", value: boolean): void;
+        (e: "updateConnector", value: string): void;
+        (e: "close"): void;
+        (e: "dismissErrorMessage"): void;
+    }>();
+
+    const isVisible = useVModelPassthrough(props, "visible", emit);
+
+    const connector = ref();
+
+    const title = computed(() => `Assign ${pluralize("Request", props.requestDetails.length)}`);
+
+    function onSave(): void {
+        emit("updateConnector", connector.value);
+    }
+
+    function resetModal(): void {
+        connector.value = undefined;
+    }
+
+    watch(isVisible, () => {
+        if (!isVisible.value) {
+            resetModal();
+            emit("close");
+        }
+    });
+
+</script>

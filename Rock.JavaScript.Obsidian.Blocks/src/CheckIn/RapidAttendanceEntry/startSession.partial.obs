@@ -1,0 +1,489 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <RockForm class="rapid-attendance-entry-start-session"
+              v-model:submit="submit"
+              :formResetKey="formResetKey"
+              @submit="onStartEntrySubmit">
+        <LoadingIndicator v-if="isInitialLoading" :delay="250" />
+
+        <div v-show="!isInitialLoading">
+            <NotificationBox v-if="startEntryErrorMessage || serverErrorMessage" :alertType="AlertType.Danger">
+                {{ startEntryErrorMessage || serverErrorMessage }}
+            </NotificationBox>
+
+            <div v-if="isCampusPickerVisible" class="row">
+                <div class="col-md-3">
+                    <CampusPicker v-model="campus"
+                                  label="Campus"
+                                  showBlankItem
+                                  :campusTypeFilter="campusTypeFilter ?? undefined"
+                                  :campusStatusFilter="campusStatusFilter ?? undefined" />
+                </div>
+            </div>
+
+            <div v-if="isGroupDropDownVisible || isGroupPickerVisible" class="row">
+                <div class="col-md-6">
+                    <DropDownList v-if="isGroupDropDownVisible"
+                                  v-model="groupDropDownValue"
+                                  label="Group"
+                                  rules="required"
+                                  :items="groupItems ?? []"
+                                  :showBlankItem="true" />
+
+                    <GroupPicker v-else
+                                 v-model="group"
+                                 label="Group"
+                                 rules="required" />
+                </div>
+            </div>
+
+            <div v-if="isLocationPickerVisible || isSchedulePickerVisible" class="well well-conditional">
+                <div v-if="isLocationPickerVisible" class="row">
+                    <div class="col-md-6">
+                        <DropDownList v-model="locationGuid"
+                                      label="Location"
+                                      rules="required"
+                                      :items="locationItems ?? []"
+                                      :showBlankItem="true" />
+                    </div>
+                </div>
+
+                <div v-if="isSchedulePickerVisible" class="row">
+                    <div class="col-md-6">
+                        <DropDownList v-model="scheduleGuid"
+                                      label="Schedule"
+                                      rules="required"
+                                      :items="scheduleItems ?? []"
+                                      :showBlankItem="true" />
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-3">
+                    <DatePicker v-model="attendanceDate"
+                                label="Attendance Date"
+                                rules="required" />
+                </div>
+            </div>
+        </div>
+    </RockForm>
+</template>
+
+<script setup lang="ts">
+    import { computed, onMounted, PropType, ref, watch } from "vue";
+    import { PreferenceKey } from "./types.partial";
+    import CampusPicker from "@Obsidian/Controls/campusPicker.obs";
+    import DatePicker from "@Obsidian/Controls/datePicker.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import GroupPicker from "@Obsidian/Controls/groupPicker.obs";
+    import LoadingIndicator from "@Obsidian/Controls/loadingIndicator.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import RockForm from "@Obsidian/Controls/rockForm.obs";
+    import { AlertType } from "@Obsidian/Enums/Controls/alertType";
+    import { Guid } from "@Obsidian/Types";
+    import { useInvokeBlockAction, usePersonPreferences } from "@Obsidian/Utility/block";
+    import { ICancellationToken } from "@Obsidian/Utility/cancellation";
+    import { useVModelPassthrough } from "@Obsidian/Utility/component";
+    import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
+    import { safeParseJson } from "@Obsidian/Utility/stringUtils";
+    import { BasicSuspenseProvider, provideSuspense } from "@Obsidian/Utility/suspense";
+    import { debounceAsync } from "@Obsidian/Utility/util";
+    import { RapidAttendanceEntryLocationsBag } from "@Obsidian/ViewModels/Blocks/CheckIn/RapidAttendanceEntry/rapidAttendanceEntryLocationsBag";
+    import { RapidAttendanceEntrySessionBag } from "@Obsidian/ViewModels/Blocks/CheckIn/RapidAttendanceEntry/rapidAttendanceEntrySessionBag";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+
+    const invokeBlockAction = useInvokeBlockAction();
+    const preferences = usePersonPreferences().blockPreferences;
+    const suspense = new BasicSuspenseProvider(undefined);
+
+    provideSuspense(suspense);
+
+    const props = defineProps({
+        /**
+         * Set to true to validate and submit the form. Two-way bound; the
+         * form resets it to false after the attempt.
+         */
+        submit: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        /**
+         * Whether the campus picker is shown.
+         * The selected campus limits the location list.
+         */
+        isCampusPickerVisible: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        /**
+         * The campus type defined value guids that limit which campuses the
+         * campus picker offers.
+         */
+        campusTypeFilter: {
+            type: Array as PropType<Guid[] | null>,
+            default: null
+        },
+
+        /**
+         * The campus status defined value guids that limit which campuses the
+         * campus picker offers.
+         */
+        campusStatusFilter: {
+            type: Array as PropType<Guid[] | null>,
+            default: null
+        },
+
+        /**
+         * The group the block is locked to. When set, no group selection is
+         * offered.
+         */
+        attendanceGroup: {
+            type: Object as PropType<ListItemBag | null>,
+            default: null
+        },
+
+        /**
+         * The selectable groups when constrained to a parent group. Null shows
+         * the full group picker.
+         */
+        groupItems: {
+            type: Array as PropType<ListItemBag[] | null>,
+            default: null
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "startEntry", session: RapidAttendanceEntrySessionBag): void,
+        (e: "update:submit", value: boolean): void
+    }>();
+
+    // #region Values
+
+    const submit = useVModelPassthrough(props, "submit", emit);
+
+    const campus = ref<ListItemBag | null>(safeParseJson<ListItemBag>(preferences.getValue(PreferenceKey.Campus)) ?? null);
+    const group = ref<ListItemBag | null>(getInitialGroup());
+    const locationGuid = ref<string>(preferences.getValue(PreferenceKey.Location));
+    const locationItems = ref<ListItemBag[] | null>(null);
+    const totalLocationCount = ref(0);
+    const scheduleGuid = ref<string>(preferences.getValue(PreferenceKey.Schedule));
+    const scheduleItems = ref<ListItemBag[] | null>(null);
+    const attendanceDate = ref<string | null>(preferences.getValue(PreferenceKey.AttendanceDate) || RockDateTime.now().toASPString("yyyy-MM-dd"));
+    const serverErrorMessage = ref("");
+    const isInitialLoading = ref(true);
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    /** The guid of the selected group, regardless of selection mode. */
+    const selectedGroupGuid = computed((): Guid | null =>
+        group.value?.value || null
+    );
+
+    /**
+     * Whether the group dropdown is shown: the block is constrained to a
+     * parent group, and there is not exactly one child group, since a lone
+     * child is auto-selected and the dropdown is hidden. No children shows
+     * the empty dropdown rather than nothing.
+     */
+    const isGroupDropDownVisible = computed((): boolean =>
+        !props.attendanceGroup
+        && !!props.groupItems
+        && props.groupItems.length !== 1
+    );
+
+    /**
+     * Whether the full group picker is shown: neither the Attendance Group
+     * nor the Parent Group block setting constrains the choice.
+     */
+    const isGroupPickerVisible = computed((): boolean =>
+        !props.attendanceGroup && !props.groupItems
+    );
+
+    /**
+     * Bridges the group dropdown's string value to the group list item it
+     * represents.
+     */
+    const groupDropDownValue = computed<string>({
+        get(): string {
+            return group.value?.value ?? "";
+        },
+        set(value: string): void {
+            group.value = props.groupItems?.find(g => g.value === value) ?? null;
+        }
+    });
+
+    /**
+     * Whether the location dropdown is shown: the locations are loaded and at
+     * least one is offered. Hidden only when the group's lone location is
+     * auto-selected; a list the campus filter narrowed to one still offers a
+     * choice. A group with none shows the no-locations error instead.
+     */
+    const isLocationPickerVisible = computed((): boolean =>
+        !!selectedGroupGuid.value
+        && (locationItems.value?.length ?? 0) > 0
+        && !(totalLocationCount.value === 1 && locationItems.value?.length === 1)
+    );
+
+    /**
+     * Whether the schedule dropdown is shown: the schedules are loaded and
+     * there is not exactly one, since a lone schedule is auto-selected and
+     * its dropdown is hidden.
+     */
+    const isSchedulePickerVisible = computed((): boolean =>
+        !!locationGuid.value
+        && scheduleItems.value !== null
+        && scheduleItems.value.length !== 1
+    );
+
+    /**
+     * The error shown when the selected group has no locations to offer.
+     * Evaluates as soon as the location list loads, so the operator learns
+     * before trying to start entry. Distinguishes a campus filter that
+     * excluded every location from a group with none at all.
+     */
+    const startEntryErrorMessage = computed((): string => {
+        const hasNoLocations = !!selectedGroupGuid.value
+            && locationItems.value !== null
+            && locationItems.value.length === 0;
+
+        if (!hasNoLocations) {
+            return "";
+        }
+
+        return totalLocationCount.value > 0
+            ? "The selected group has no locations at the selected campus. Choose a different campus or group."
+            : "The selected group has no locations configured. At least one location is required to record attendance.";
+    });
+
+    /**
+     * Changes whenever a required selection changes, which resets RockForm's
+     * validation summary so a stale message from a prior submit (for example,
+     * one for a now-hidden field) does not linger.
+     */
+    const formResetKey = computed((): string =>
+        [selectedGroupGuid.value, locationGuid.value, scheduleGuid.value, attendanceDate.value].join("|")
+    );
+
+    // #endregion Computed Values
+
+    // #region Functions
+
+    /**
+     * Gets the initial group selection: the locked Attendance Group when one is
+     * configured, otherwise the remembered selection when it is still offered,
+     * otherwise the only selectable group when exactly one exists.
+     */
+    function getInitialGroup(): ListItemBag | null {
+        if (props.attendanceGroup) {
+            return props.attendanceGroup;
+        }
+
+        const savedGroup = safeParseJson<ListItemBag>(preferences.getValue(PreferenceKey.Group)) ?? null;
+
+        if (!props.groupItems) {
+            return savedGroup;
+        }
+
+        const matchedItem = props.groupItems.find(g => g.value === savedGroup?.value);
+
+        if (matchedItem) {
+            return matchedItem;
+        }
+
+        return props.groupItems.length === 1 ? props.groupItems[0] : null;
+    }
+
+    /**
+     * Loads the locations for the selected group, limited to the selected
+     * campus when the campus picker is shown. Keeps the current selection when
+     * it is still offered and auto-selects when exactly one location exists.
+     */
+    async function loadLocations(cancellationToken: ICancellationToken): Promise<void> {
+        if (!selectedGroupGuid.value) {
+            locationItems.value = null;
+            locationGuid.value = "";
+            totalLocationCount.value = 0;
+            return;
+        }
+
+        const previousLocationGuid = locationGuid.value;
+
+        const result = await invokeBlockAction<RapidAttendanceEntryLocationsBag>("GetLocations", {
+            groupGuid: selectedGroupGuid.value,
+            campusGuid: props.isCampusPickerVisible ? campus.value?.value ?? null : null
+        });
+
+        if (cancellationToken.isCancellationRequested) {
+            return;
+        }
+
+        const items = result.isSuccess && result.data?.items ? result.data.items : [];
+
+        locationItems.value = items;
+        totalLocationCount.value = result.data?.totalLocationCount ?? 0;
+
+        if (locationGuid.value && !items.some(i => i.value === locationGuid.value)) {
+            locationGuid.value = "";
+        }
+
+        if (!locationGuid.value && totalLocationCount.value === 1 && items.length === 1) {
+            locationGuid.value = items[0].value ?? "";
+        }
+
+        // A kept selection does not fire the location watcher, so the schedule
+        // list is rebuilt here to cover a group change to a shared location.
+        if (locationGuid.value && locationGuid.value === previousLocationGuid) {
+            await loadSchedulesDebounced();
+        }
+    }
+
+    /**
+     * Loads the active schedules for the selected group and location. Keeps the
+     * current selection when it is still offered and auto-selects when exactly
+     * one schedule exists.
+     */
+    async function loadSchedules(cancellationToken: ICancellationToken): Promise<void> {
+        if (!selectedGroupGuid.value || !locationGuid.value) {
+            scheduleItems.value = null;
+            scheduleGuid.value = "";
+            return;
+        }
+
+        const result = await invokeBlockAction<ListItemBag[]>("GetSchedules", {
+            groupGuid: selectedGroupGuid.value,
+            locationGuid: locationGuid.value
+        });
+
+        if (cancellationToken.isCancellationRequested) {
+            return;
+        }
+
+        const items = result.isSuccess && result.data ? result.data : [];
+
+        scheduleItems.value = items;
+
+        if (scheduleGuid.value && !items.some(i => i.value === scheduleGuid.value)) {
+            scheduleGuid.value = "";
+        }
+
+        if (!scheduleGuid.value && items.length === 1) {
+            scheduleGuid.value = items[0].value ?? "";
+        }
+    }
+
+    /** Debounced `loadLocations`; a new call supersedes any in-flight load. */
+    const loadLocationsDebounced = debounceAsync(loadLocations, { eager: true });
+
+    /** Debounced `loadSchedules`; a new call supersedes any in-flight load. */
+    const loadSchedulesDebounced = debounceAsync(loadSchedules, { eager: true });
+
+    // #endregion Functions
+
+    // #region Event Handlers
+
+    /**
+     * Starts the session for the current selections and emits it on success.
+     * Required validation cannot block the no-locations case because the
+     * location dropdown is not rendered then, so the submit guards on it.
+     */
+    async function onStartEntrySubmit(): Promise<void> {
+        serverErrorMessage.value = "";
+
+        if (startEntryErrorMessage.value) {
+            return;
+        }
+
+        const result = await invokeBlockAction<RapidAttendanceEntrySessionBag>("StartSession", {
+            groupGuid: selectedGroupGuid.value,
+            locationGuid: locationGuid.value,
+            scheduleGuid: scheduleGuid.value,
+            attendanceDate: attendanceDate.value
+        });
+
+        if (result.isSuccess && result.data) {
+            emit("startEntry", result.data);
+
+            // Save the date to ensure the bypass works on the next block load.
+            preferences.setValue(PreferenceKey.AttendanceDate, attendanceDate.value ?? "");
+            await preferences.save();
+        }
+        else {
+            serverErrorMessage.value = result.errorMessage || "Unable to start the session. Review the selections and try again.";
+        }
+    }
+
+    // #endregion Event Handlers
+
+    // #region Watchers
+
+    watch(() => campus.value?.value ?? null, async () => {
+        // Hide stale items while the reload is in flight.
+        locationItems.value = null;
+
+        preferences.setValue(PreferenceKey.Campus, campus.value ? JSON.stringify(campus.value) : "");
+        await preferences.save();
+
+        await loadLocationsDebounced();
+    });
+
+    watch(selectedGroupGuid, async () => {
+        // Hide stale items while the reload is in flight.
+        locationItems.value = null;
+        scheduleItems.value = null;
+
+        preferences.setValue(PreferenceKey.Group, group.value ? JSON.stringify(group.value) : "");
+        await preferences.save();
+
+        await loadLocationsDebounced();
+    });
+
+    watch(locationGuid, async () => {
+        // Hide stale items while the reload is in flight.
+        scheduleItems.value = null;
+
+        preferences.setValue(PreferenceKey.Location, locationGuid.value);
+        await preferences.save();
+
+        await loadSchedulesDebounced();
+    });
+
+    watch(scheduleGuid, async () => {
+        preferences.setValue(PreferenceKey.Schedule, scheduleGuid.value);
+        await preferences.save();
+    });
+
+    watch(attendanceDate, async () => {
+        preferences.setValue(PreferenceKey.AttendanceDate, attendanceDate.value ?? "");
+        await preferences.save();
+    });
+
+    // A server error describes the selections it rejected; any change to them
+    // makes it stale.
+    watch([selectedGroupGuid, locationGuid, scheduleGuid, attendanceDate], () => {
+        serverErrorMessage.value = "";
+    });
+
+    // #endregion Watchers
+
+    // #region Lifecycle Hooks
+
+    onMounted(async () => {
+        try {
+            await loadLocationsDebounced();
+
+            if (suspense.hasPendingOperations()) {
+                await new Promise<void>(resolve => suspense.addFinishedHandler(resolve));
+            }
+        }
+        finally {
+            isInitialLoading.value = false;
+        }
+    });
+
+    // #endregion Lifecycle Hooks
+</script>

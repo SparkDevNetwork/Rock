@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -22,6 +22,7 @@ using System.Linq;
 using Rock.Attribute;
 using Rock.Common.Mobile;
 using Rock.Common.Mobile.Enums;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Mobile;
 using Rock.Model;
@@ -194,7 +195,7 @@ namespace Rock.Blocks.Types.Mobile.Cms
             /// The display campus types key.
             /// </summary>
             public const string DisplayCampusTypes = "DisplayCampusTypes";
-                
+
             /// <summary>
             /// The display campus statuses key.
             /// </summary>
@@ -306,7 +307,7 @@ namespace Rock.Blocks.Types.Mobile.Cms
         /// </returns>
         public override object GetMobileConfigurationValues()
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 return new Rock.Common.Mobile.Blocks.Cms.ProfileDetails.Configuration
                 {
@@ -327,7 +328,7 @@ namespace Rock.Blocks.Types.Mobile.Cms
         [BlockAction]
         public BlockActionResult GetMobilePersonProfileDetails( Guid personGuid )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var person = new PersonService( rockContext ).Get( personGuid );
                 var site = MobileHelper.GetCurrentApplicationSite( true, rockContext );
@@ -346,12 +347,11 @@ namespace Rock.Blocks.Types.Mobile.Cms
         /// Updates a user profile based off the MobilePerson passed in.
         /// </summary>
         /// <param name="profile">The profile to use to update the user.</param>
-        /// <param name="user">The user to update.</param>
+        /// <param name="personId">The Identifier of the person to edit.</param>
         /// <returns></returns>
-        private MobilePerson UpdateUserProfile( MobilePerson profile, UserLogin user )
+        private MobilePerson UpdateUserProfile( MobilePerson profile, int personId )
         {
-            var personId = user.PersonId.Value;
-            var rockContext = new Data.RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
 
             var personService = new PersonService( rockContext );
             var phoneNumberService = new PhoneNumberService( rockContext );
@@ -498,12 +498,11 @@ namespace Rock.Blocks.Types.Mobile.Cms
              * We have to provide a new RockContext, since EF Core has a caching mechanism that will return the old person with
              * the wrong primary campus.
              */
-            using ( var rockContext2 = new RockContext() )
+            using ( var rockContext2 = RockApp.Current.CreateRockContext() )
             {
                 person = new PersonService( rockContext2 ).Get( person.Id );
 
                 var mobilePerson = MobileHelper.GetMobilePerson( person, MobileHelper.GetCurrentApplicationSite() );
-                mobilePerson.AuthToken = MobileHelper.GetAuthenticationToken( user.UserName );
 
                 return mobilePerson;
             }
@@ -524,7 +523,14 @@ namespace Rock.Blocks.Types.Mobile.Cms
                 return ActionStatusCode( System.Net.HttpStatusCode.Unauthorized );
             }
 
-            return ActionOk( UpdateUserProfile( profile, user ) );
+            var updatedPerson = UpdateUserProfile( profile, user.PersonId.Value );
+
+            if ( user != null )
+            {
+                updatedPerson.AuthToken = MobileHelper.GetAuthenticationToken( user.UserName );
+            }
+
+            return ActionOk( updatedPerson );
         }
 
         /// <summary>
@@ -536,17 +542,8 @@ namespace Rock.Blocks.Types.Mobile.Cms
         [BlockAction]
         public object UpdatePersonProfile( MobilePerson profile, Guid personGuid )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
-                var user = new UserLoginService( rockContext )
-                    .Queryable()
-                    .FirstOrDefault( x => x.Person != null && x.Person.Guid == personGuid );
-
-                if ( user == null )
-                {
-                    return ActionStatusCode( System.Net.HttpStatusCode.Unauthorized );
-                }
-
                 var personToEdit = new PersonService( rockContext ).Get( personGuid );
                 if ( personToEdit == null )
                 {
@@ -558,7 +555,7 @@ namespace Rock.Blocks.Types.Mobile.Cms
                     return ActionStatusCode( System.Net.HttpStatusCode.Unauthorized );
                 }
 
-                return ActionOk( UpdateUserProfile( profile, user ) );
+                return ActionOk( UpdateUserProfile( profile, personToEdit.Id ) );
             }
         }
 

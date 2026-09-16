@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -20,6 +20,7 @@ using System.Linq;
 #if REVIEW_WEBFORMS
 using System.Web.Routing;
 #endif
+
 using Rock.Data;
 using Rock.Tasks;
 using Rock.Web.Cache;

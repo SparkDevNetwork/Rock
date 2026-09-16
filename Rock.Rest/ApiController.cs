@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -34,6 +34,7 @@ using FromUriAttribute = Microsoft.AspNetCore.Mvc.FromQueryAttribute;
 #endif
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Rest.Filters;
@@ -822,7 +823,7 @@ namespace Rock.Rest
             IHasAttributes modelWithAttributes = model as IHasAttributes;
             if ( modelWithAttributes != null )
             {
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     modelWithAttributes.LoadAttributes( rockContext );
                     Rock.Web.Cache.AttributeCache attributeCache = modelWithAttributes.Attributes.ContainsKey( attributeKey ) ? modelWithAttributes.Attributes[attributeKey] : null;

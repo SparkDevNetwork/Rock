@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -14,11 +14,14 @@
 // limitations under the License.
 // </copyright>
 //
-using Rock.Data;
-using Rock.Utility;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
+
+using Rock.Data;
+using Rock.Enums.Security;
+using Rock.Security;
+using Rock.Utility;
 
 namespace Rock.Model
 {
@@ -49,6 +52,7 @@ namespace Rock.Model
         /// The attendance type name
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string AttendanceTypeName { get; set; }
 
         #endregion Entity Properties Specific to Analytics
@@ -82,6 +86,7 @@ namespace Rock.Model
         /// The name of the location.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string LocationName { get; set; }
 
         /// <summary>
@@ -91,6 +96,7 @@ namespace Rock.Model
         /// The name of the campus.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string CampusName { get; set; }
 
         /// <summary>
@@ -100,6 +106,7 @@ namespace Rock.Model
         /// The campus short code.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string CampusShortCode { get; set; }
 
         /// <summary>
@@ -109,6 +116,7 @@ namespace Rock.Model
         /// The name of the schedule.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string ScheduleName { get; set; }
 
         /// <summary>
@@ -118,6 +126,7 @@ namespace Rock.Model
         /// The name of the group.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string GroupName { get; set; }
 
         /// <summary>
@@ -127,6 +136,7 @@ namespace Rock.Model
         /// The name of the group type.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string AreaName { get; set; }
 
         /// <summary>
@@ -136,6 +146,7 @@ namespace Rock.Model
         /// The name of the device.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string DeviceName { get; set; }
 
         /// <summary>
@@ -145,6 +156,7 @@ namespace Rock.Model
         /// The RSVP status.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string RSVPStatus { get; set; }
 
         #endregion Entity Properties

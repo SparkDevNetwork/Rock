@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -14,7 +14,9 @@
 // limitations under the License.
 // </copyright>
 //
-using System.ComponentModel;using Rock.Attribute;
+using System.ComponentModel;
+
+using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 
@@ -28,7 +30,7 @@ namespace Rock.Jobs
 
     [IntegerField(
         "Command Timeout",
-        AttributeKey.CommandTimeout,
+        Key = AttributeKey.CommandTimeout,
         Description = "Maximum amount of time (in seconds) to wait for each SQL command to complete. On a large database with lots of data, this could take several minutes or more.",
         IsRequired = false,
         DefaultIntegerValue = 60 * 60 )]

@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -15,14 +15,16 @@
 // </copyright>
 //
 
-using System.Collections.Generic;
 using System;
+using System.Collections.Generic;
 
 namespace Rock.AI.Utilities
 {
     /// <summary>
     /// A set of helpful utilities for AI work.
     /// </summary>
+    [Obsolete( "This feature has been deprecated and is no longer used by Rock. AI configuration happens automatically." )]
+    [RockObsolete( "21.0" )]
     public static class AIHelpers
     {
 

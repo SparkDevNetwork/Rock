@@ -20,7 +20,7 @@ import { defineAsyncComponent } from "@Obsidian/Utility/component";
 import { FieldTypeBase } from "./fieldType";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
-export const enum ConfigurationValueKey {
+export const enum ConfigurationKey {
     GroupRolePickerLabel = "groupAndRolePickerLabel"
 }
 

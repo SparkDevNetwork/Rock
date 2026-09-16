@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -21,6 +21,9 @@ using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 
 using Rock.Data;
+using Rock.Enums.Cms;
+using Rock.Enums.Security;
+using Rock.Security;
 using Rock.Web.Cache;
 
 namespace Rock.Model
@@ -52,6 +55,7 @@ namespace Rock.Model
 #if REVIEW_WEBFORMS
         [Index( IsUnique = true )]
 #endif
+        [StringValidation( StringValidationProfile.PlainText )]
         public string AccessKey { get; set; }
 
         /// <summary>
@@ -63,6 +67,7 @@ namespace Rock.Model
         [Required]
         [MaxLength( 100 )]
         [DataMember( IsRequired = true )]
+        [StringValidation( StringValidationProfile.Name )]
         public string Name { get; set; }
 
         /// <summary>
@@ -72,6 +77,7 @@ namespace Rock.Model
         /// A <see cref="System.String"/> representing the description of the PersistedDataset.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.LavaAndBasicHtml )]
         public string Description { get; set; }
 
         /// <summary>
@@ -120,6 +126,7 @@ namespace Rock.Model
         /// The enabled lava commands.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string EnabledLavaCommands { get; set; }
 
         /// <summary>
@@ -138,6 +145,7 @@ namespace Rock.Model
         /// The result data.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string ResultData { get; set; }
 
         /// <summary>
@@ -165,6 +173,7 @@ namespace Rock.Model
         /// The build script.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string BuildScript { get; set; }
 
         /// <summary>
@@ -222,6 +231,14 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public DateTime? ExpireDateTime { get; set; }
+
+        /// <summary>
+        /// Gets or sets the outcome of the last attempt to persist the <see cref="ResultData"/>.
+        /// </summary>
+        /// <value>
+        /// The status of the persisted dataset.
+        /// </value>
+        public PersistedDatasetStatus Status { get; set; }
 
         #endregion Entity Properties
 

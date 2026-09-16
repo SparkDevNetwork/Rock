@@ -53,8 +53,6 @@ export const Group = {
     GroupFinanceUsers: "2539CF5D-E2CE-4706-8BBF-4A9DF8E763E9",
     /** Role for individuals allowed to develop Lava Applications. */
     GroupLavaApplicationDevelopers: "F88EC798-2DCC-119C-4459-CF0F304CC036",
-    /** The security group used by mobile app */
-    GroupMobileApp: "EDD336D5-1429-41D9-8D41-2581A05F0E16",
     /** RSR - Mobile Application Users */
     GroupMobileApplicationUsers: "42175217-1BA4-401B-AA4E-21EC4F1F0AB4",
     /** Get the photo request application group */

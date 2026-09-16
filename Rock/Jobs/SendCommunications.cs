@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -26,6 +26,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Logging;
 using Rock.Model;
@@ -101,7 +102,7 @@ namespace Rock.Jobs
             List<Model.Communication> sendCommunications = null;
             var startDateTime = RockDateTime.Now;
             var stopWatch = Stopwatch.StartNew();
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 sendCommunications = new CommunicationService( rockContext )
                     .GetQueued( expirationDays, 0, false, false )
@@ -203,7 +204,7 @@ namespace Rock.Jobs
 
                 startDateTime = RockDateTime.Now;
                 stopWatch = Stopwatch.StartNew();
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     var qryExpiredRecipients = new CommunicationRecipientService( rockContext ).Queryable()
                         .Where( cr =>
@@ -270,7 +271,7 @@ namespace Rock.Jobs
             var startDateTime = RockDateTime.Now;
             var stopWatch = Stopwatch.StartNew();
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 // Get the communications for which to send email metrics reminders.
                 var emailMetricsReminders = new CommunicationService( rockContext )
@@ -308,7 +309,7 @@ namespace Rock.Jobs
                     return statusMessage;
                 }
 
-                var communicationPage = PageCache.Get( SystemGuid.Page.NEW_COMMUNICATION.AsGuid(), rockContext );
+                var communicationPage = PageCache.Get( SystemGuid.Page.NEW_COMMUNICATION_OBSIDIAN.AsGuid(), rockContext );
                 var communicationPageRoute = communicationPage?.GetBestMatchingRoute( new Dictionary<string, string> { ["CommunicationId"] = "0" } );
 
                 if ( communicationPage == null || communicationPageRoute == null )
@@ -388,7 +389,7 @@ namespace Rock.Jobs
             {
                 Parameters = new Dictionary<string, string>
                 {
-                    ["CommunicationId"] = data.Communication.Id.ToString()
+                    ["CommunicationId"] = data.Communication.Id.AsIdKey()
                 }
             };
             var metricsUrl = internalApplicationRoot.EnsureTrailingForwardslash() + communicationPage.BuildUrl().RemoveLeadingForwardslash();

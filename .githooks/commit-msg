@@ -1,7 +1,15 @@
 #!/bin/bash
-
 # set all strings to UTF-8
 LC_CTYPE=en_US.utf8
+
+# Pre-check: if it looks like a public release note (starts with "+ (Domain)")
+# but is missing the required verb, catch it early with a clear message.
+if echo "$1" | grep -qP '^\+\s+\(\w[\w\s]*\)\s+(?!Add|Fix|Improv|Updat)'; then
+    echo "ERROR: Public release notes must start with Add, Fix, Improve, or Update after the domain tag." >&2
+    echo ""  >&2
+    echo " See commit guidelines: https://community.rockrms.com/developer/developer-codex/coding-standards/committing-code" >&2
+    exit 1
+fi
 
 # regex to validate the commit message against
 # The domains come from the official "Rock Domain" list at https://admin.sparkdevnetwork.org/admin/general/defined-types

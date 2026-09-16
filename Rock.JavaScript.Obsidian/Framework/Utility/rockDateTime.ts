@@ -740,6 +740,56 @@ export class RockDateTime {
     }
 
     /**
+     * Converts this date into a compact elapsed time string such as "5m", "3h",
+     * "9d", "2w", or "1y".
+     *
+     * This format is intended for UI displays where space is limited (e.g. grid
+     * columns, badges, activity lists). Months are intentionally skipped to avoid
+     * ambiguity (28–31 days), using weeks instead.
+     *
+     * @param currentDateTime Optional reference time. Defaults to now.
+     *
+     * @returns A compact elapsed time string.
+     */
+    public toElapsedShortString(currentDateTime?: RockDateTime): string {
+        const start = this.dateTime;
+        const end = (currentDateTime ?? RockDateTime.now()).dateTime;
+
+        let diffMs = end.toMillis() - start.toMillis();
+        diffMs = Math.abs(diffMs);
+
+        const seconds = diffMs / 1000;
+        const minutes = seconds / 60;
+        const hours = minutes / 60;
+        const days = hours / 24;
+        const weeks = days / 7;
+        const years = days / 365;
+
+        if (seconds < 60) {
+            return `${Math.floor(seconds)}s`;
+        }
+
+        if (minutes < 60) {
+            return `${Math.floor(minutes)}m`;
+        }
+
+        if (hours < 24) {
+            return `${Math.floor(hours)}h`;
+        }
+
+        if (days < 14) {
+            return `${Math.floor(days)}d`;
+        }
+
+        if (weeks < 52) {
+            return `${Math.floor(weeks)}w`;
+        }
+
+        return `${Math.floor(years)}y`;
+    }
+
+
+    /**
      * Formats this instance as a string that can be used in HTTP headers and
      * cookies.
      *

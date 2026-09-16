@@ -21,6 +21,7 @@
 // </copyright>
 //
 
+using Rock.Configuration;
 using Rock.Model;
 using Rock.SystemGuid;
 
@@ -35,6 +36,6 @@ namespace Rock.Rest.Controllers
         /// <summary>
         /// Initializes a new instance of the <see cref="BenevolenceWorkflowsController"/> class.
         /// </summary>
-        public BenevolenceWorkflowsController() : base( new Rock.Model.BenevolenceWorkflowService( new Rock.Data.RockContext() ) ) { } 
+        public BenevolenceWorkflowsController() : base( new Rock.Model.BenevolenceWorkflowService( RockApp.Current.CreateRockContext() ) ) { } 
     }
 }

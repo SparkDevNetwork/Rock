@@ -1,0 +1,264 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="rapid-attendance-entry-search-sidebar">
+        <div ref="searchHeaderElement" class="rapid-attendance-entry-search-sidebar-header">
+            <TextBox v-model="searchTerm"
+                     placeholder="Name..."
+                     isClearable>
+                <template #inputGroupPrepend>
+                    <div class="input-group-addon">
+                        <i class="ti ti-search"></i>
+                    </div>
+                </template>
+            </TextBox>
+
+            <a v-if="addFamilyPageUrl"
+               :href="addFamilyPageUrl"
+               class="btn btn-default btn-xs btn-block"
+               target="_blank"
+               rel="noopener">
+                <i class="ti ti-users-plus"></i>
+                Add Family
+                <i class="ti ti-external-link"></i>
+            </a>
+        </div>
+
+        <div ref="resultsElement"
+             class="rapid-attendance-entry-search-results"
+             :class="{ 'is-scrollable': isResultsScrollable }">
+            <LoadingIndicator v-if="isSearching && !searchResults" :delay="250" />
+
+            <template v-if="searchResults">
+                <DisplayCard v-for="result in searchResults"
+                             :key="result.personGuid"
+                             :class="{ 'is-selected': result.personGuid === selectedPersonGuid, 'is-inactive': !result.isActive }"
+                             minWidth="0"
+                             :onClick="() => onResultClick(result)">
+
+                    <template #aside>
+                        <i class="ti rapid-attendance-entry-search-result-attended"
+                           :class="isAttended(result) ? 'ti-circle-check-filled is-attended' : 'ti-circle'"></i>
+                    </template>
+
+                    <template #description>
+                        <div class="rapid-attendance-entry-search-result">
+                            <div class="rapid-attendance-entry-search-result-name">
+                                {{ result.name }}
+                                <span v-if="result.age != null" class="rapid-attendance-entry-search-result-age">{{ result.age }}</span>
+                            </div>
+
+                            <div v-if="result.familyMemberNames" class="rapid-attendance-entry-search-result-family">
+                                {{ result.familyMemberNames }}
+                            </div>
+
+                            <HighlightLabel v-if="result.campusName" labelType="campus">
+                                <span class="rapid-attendance-entry-search-result-campus">{{ result.campusName }}</span>
+                            </HighlightLabel>
+
+                            <div class="rapid-attendance-entry-search-result-details">
+                                <div v-if="result.email">
+                                    <i class="ti ti-address-book"></i>
+                                    <span>{{ result.email }}</span>
+                                </div>
+
+                                <div v-if="result.mobilePhone">
+                                    <i class="ti ti-phone"></i>
+                                    <span>{{ result.mobilePhone }}</span>
+                                </div>
+
+                                <div v-if="result.addressHtml">
+                                    <i class="ti ti-map-pin"></i>
+                                    <span v-html="result.addressHtml"></span>
+                                </div>
+                            </div>
+                        </div>
+                    </template>
+                </DisplayCard>
+
+                <div v-if="!searchResults.length && !isSearching" class="rapid-attendance-entry-no-results">No matches found.</div>
+            </template>
+        </div>
+    </div>
+</template>
+
+<script setup lang="ts">
+    import { nextTick, onMounted, onUnmounted, PropType, ref, watch } from "vue";
+    import { useNavigationGuard } from "./utils.partial";
+    import DisplayCard from "@Obsidian/Controls/displayCard.obs";
+    import HighlightLabel from "@Obsidian/Controls/highlightLabel.obs";
+    import LoadingIndicator from "@Obsidian/Controls/loadingIndicator.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import { Guid } from "@Obsidian/Types";
+    import { useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { ICancellationToken } from "@Obsidian/Utility/cancellation";
+    import { debounceAsync } from "@Obsidian/Utility/util";
+    import { RapidAttendanceEntrySearchResultBag } from "@Obsidian/ViewModels/Blocks/CheckIn/RapidAttendanceEntry/rapidAttendanceEntrySearchResultBag";
+    import { RapidAttendanceEntrySessionBag } from "@Obsidian/ViewModels/Blocks/CheckIn/RapidAttendanceEntry/rapidAttendanceEntrySessionBag";
+
+    const invokeBlockAction = useInvokeBlockAction();
+    const navigationGuard = useNavigationGuard();
+
+    const props = defineProps({
+        /** The guid of the selected person. Highlights that person's card. */
+        selectedPersonGuid: {
+            type: String as PropType<Guid | null>,
+            default: null
+        },
+
+        /** The URL of the Add Family page, or null to hide the button. */
+        addFamilyPageUrl: {
+            type: String as PropType<string | null>,
+            default: null
+        },
+
+        /**
+         * The active session, used to flag results already attended for its
+         * occurrence.
+         */
+        session: {
+            type: Object as PropType<RapidAttendanceEntrySessionBag | null>,
+            default: null
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "select", result: RapidAttendanceEntrySearchResultBag): void,
+        (e: "clear"): void
+    }>();
+
+    defineExpose({ refresh });
+
+    // #region Values
+
+    const searchTerm = ref("");
+    const searchResults = ref<RapidAttendanceEntrySearchResultBag[] | null>(null);
+    const isSearching = ref(false);
+
+    const searchHeaderElement = ref<HTMLElement>();
+    const resultsElement = ref<HTMLElement>();
+    const isResultsScrollable = ref(false);
+    let resultsResizeObserver: ResizeObserver | undefined;
+
+    // #endregion Values
+
+    // #region Functions
+
+    /**
+     * Searches for people matching the current term. An empty term clears
+     * the results instead of searching.
+     */
+    async function searchPeople(cancellationToken: ICancellationToken): Promise<void> {
+        const term = searchTerm.value.trim();
+
+        if (!term) {
+            searchResults.value = null;
+            isSearching.value = false;
+            return;
+        }
+
+        const result = await invokeBlockAction<RapidAttendanceEntrySearchResultBag[]>("SearchPeople", {
+            searchTerm: term,
+            session: props.session
+        });
+
+        if (cancellationToken.isCancellationRequested) {
+            return;
+        }
+
+        searchResults.value = result.isSuccess && result.data ? result.data : [];
+        isSearching.value = false;
+    }
+
+    /** Debounced `searchPeople`; a new call supersedes any in-flight search. */
+    const searchPeopleDebounced = debounceAsync(searchPeople, { delay: 400 });
+
+    /**
+     * Tracks whether the results overflow, so the right padding can tighten for
+     * the scrollbar.
+     */
+    function updateResultsScrollable(): void {
+        const el = resultsElement.value;
+        isResultsScrollable.value = !!el && el.scrollHeight > el.clientHeight;
+    }
+
+    /**
+     * Whether the result's person is marked attended for the session's saved
+     * occurrence.
+     */
+    function isAttended(result: RapidAttendanceEntrySearchResultBag): boolean {
+        return !!result.isAttended;
+    }
+
+    /**
+     * Re-runs the current search so the cards reflect the latest saved
+     * attendance.
+     */
+    function refresh(): void {
+        void searchPeopleDebounced();
+    }
+
+    // #endregion Functions
+
+    // #region Event Handlers
+
+    /**
+     * Emits the clicked result for the parent to select, after guarding any
+     * unsaved entry. Re-clicking the current selection is a no-op so it neither
+     * reloads the family nor prompts.
+     */
+    async function onResultClick(result: RapidAttendanceEntrySearchResultBag): Promise<void> {
+        if (result.personGuid === props.selectedPersonGuid) {
+            return;
+        }
+
+        if (!(await navigationGuard())) {
+            return;
+        }
+
+        emit("select", result);
+    }
+
+    // #endregion Event Handlers
+
+    // #region Watchers
+
+    watch(searchTerm, async (newValue, oldValue) => {
+        // An emptied search (clear button or manual delete) resets the entry panel.
+        if (!newValue.trim()) {
+            // Guard unsaved entry before discarding it; restore the prior term if
+            // the operator chooses to stay.
+            if (oldValue.trim() && !(await navigationGuard())) {
+                searchTerm.value = oldValue;
+                return;
+            }
+
+            emit("clear");
+
+            // Return focus to the search box for the next search.
+            nextTick(() => searchHeaderElement.value?.querySelector<HTMLInputElement>(".rock-text-box input")?.focus());
+        }
+
+        isSearching.value = true;
+        await searchPeopleDebounced();
+    });
+
+    // Re-check overflow whenever the result set changes.
+    watch(searchResults, () => nextTick(updateResultsScrollable));
+
+    // #endregion Watchers
+
+    // #region Lifecycle Hooks
+
+    onMounted(() => {
+        if (window.ResizeObserver && resultsElement.value) {
+            resultsResizeObserver = new ResizeObserver(updateResultsScrollable);
+            resultsResizeObserver.observe(resultsElement.value);
+        }
+    });
+
+    onUnmounted(() => {
+        resultsResizeObserver?.disconnect();
+    });
+
+    // #endregion Lifecycle Hooks
+</script>

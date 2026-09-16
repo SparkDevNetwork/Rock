@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -202,6 +202,13 @@ namespace Rock.Data.Interception
         /// <param name="interceptionContext">Contextual information associated with the call.</param>
         public void ReaderExecuting( DbCommand command, DbCommandInterceptionContext<DbDataReader> interceptionContext )
         {
+            if ( command.CommandText.StartsWith( "--" ) && command.CommandText.Contains( "-- ROCKTAG:RECOMPILE" ) )
+            {
+                command.CommandText = command.CommandText
+                    .Replace( "-- ROCKTAG:RECOMPILE", "" )
+                    + " OPTION (RECOMPILE)";
+            }
+
             StartTiming( command, interceptionContext );
         }
 

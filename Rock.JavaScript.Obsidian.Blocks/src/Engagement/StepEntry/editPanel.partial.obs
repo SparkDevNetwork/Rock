@@ -1,0 +1,140 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="row">
+        <div class="col-md-6">
+            <PersonPicker v-model="personAlias"
+                          label="Person"
+                          :disabled="!props.options?.isPersonSelectable"
+                          :rules="personRules" />
+        </div>
+        <div :class="props.options?.hasEndDate ? 'col-md-3' : 'col-md-6'">
+            <DatePicker v-model="startDateTime"
+                        :label="startDateLabel"
+                        :rules="startDateRules" />
+        </div>
+        <div v-if="props.options?.hasEndDate" class="col-md-3">
+            <DatePicker v-model="endDateTime"
+                        label="End Date" />
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6">
+            <StepStatusPicker v-model="stepStatus"
+                              label="Status"
+                              rules="required"
+                              :showBlankItem="true"
+                              :stepProgramGuid="props.options?.stepProgramGuid" />
+        </div>
+        <div class="col-md-6">
+            <CampusPicker v-model="campus"
+                          label="Campus"
+                          forceVisible />
+        </div>
+    </div>
+
+    <TextBox v-model="note"
+             label="Note"
+             textMode="multiline"
+             :rows="4" />
+
+    <AttributeValuesContainer v-model="attributeValues" :attributes="attributes" isEditMode :numberOfColumns="2" />
+</template>
+
+<script setup lang="ts">
+    import { computed, PropType, ref, watch } from "vue";
+    import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
+    import CampusPicker from "@Obsidian/Controls/campusPicker.obs";
+    import DatePicker from "@Obsidian/Controls/datePicker.obs";
+    import PersonPicker from "@Obsidian/Controls/personPicker.obs";
+    import StepStatusPicker from "@Obsidian/Controls/stepStatusPicker.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import { setPropertiesBoxValue, watchPropertyChanges } from "@Obsidian/Utility/block";
+    import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
+    import { StepEntryBag } from "@Obsidian/ViewModels/Blocks/Engagement/StepEntry/stepEntryBag";
+    import { StepEntryOptionsBag } from "@Obsidian/ViewModels/Blocks/Engagement/StepEntry/stepEntryOptionsBag";
+    import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<ValidPropertiesBox<StepEntryBag>>,
+            required: true
+        },
+
+        options: {
+            type: Object as PropType<StepEntryOptionsBag>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: ValidPropertiesBox<StepEntryBag>): void,
+        (e: "propertyChanged", value: string): void
+    }>();
+
+    // #region Values
+
+    const attributes = ref(props.modelValue?.bag?.attributes ?? {});
+    const attributeValues = ref(props.modelValue?.bag?.attributeValues ?? {});
+    const personAlias = propertyRef(props.modelValue?.bag?.personAlias ?? undefined, "PersonAlias");
+    const campus = propertyRef(props.modelValue?.bag?.campus ?? null, "Campus");
+    const startDateTime = propertyRef(props.modelValue?.bag?.startDateTime ?? "", "StartDateTime");
+    const endDateTime = propertyRef(props.modelValue?.bag?.endDateTime ?? "", "EndDateTime");
+    const stepStatus = propertyRef(props.modelValue?.bag?.stepStatus ?? null, "StepStatus");
+    const note = propertyRef(props.modelValue?.bag?.note ?? "", "Note");
+
+    const propRefs = [personAlias, campus, startDateTime, endDateTime, stepStatus, note];
+
+    // #endregion
+
+    // #region Computed Values
+
+    /** Gets the validation rules for the person picker. Required only when the person is selectable. */
+    const personRules = computed((): string => {
+        return props.options?.isPersonSelectable ? "required" : "";
+    });
+
+    /** Gets the label for the start date picker. Shows "Start Date" when an end date exists, otherwise "Date". */
+    const startDateLabel = computed((): string => {
+        return props.options?.hasEndDate ? "Start Date" : "Date";
+    });
+
+    /** Gets the validation rules for the start date picker. Required when the step type requires a date. */
+    const startDateRules = computed((): string => {
+        return props.options?.isDateRequired ? "required" : "";
+    });
+
+    // #endregion
+
+    // Watch for parental changes in our model value and update all our values.
+    watch(() => props.modelValue, () => {
+        updateRefValue(attributes, props.modelValue?.bag?.attributes ?? {});
+        updateRefValue(attributeValues, props.modelValue?.bag?.attributeValues ?? {});
+        updateRefValue(personAlias, props.modelValue?.bag?.personAlias ?? undefined);
+        updateRefValue(campus, props.modelValue?.bag?.campus ?? null);
+        updateRefValue(startDateTime, props.modelValue?.bag?.startDateTime ?? "");
+        updateRefValue(endDateTime, props.modelValue?.bag?.endDateTime ?? "");
+        updateRefValue(stepStatus, props.modelValue?.bag?.stepStatus ?? null);
+        updateRefValue(note, props.modelValue?.bag?.note ?? "");
+    });
+
+    // Emit a new ValidPropertiesBox when any tracked value changes.
+    watch([attributeValues, ...propRefs], () => {
+        const newValue: ValidPropertiesBox<StepEntryBag> = {
+            bag: { ...props.modelValue.bag } as StepEntryBag
+        };
+
+        setPropertiesBoxValue(newValue, "attributeValues", attributeValues.value);
+        setPropertiesBoxValue(newValue, "personAlias", personAlias.value);
+        setPropertiesBoxValue(newValue, "campus", campus.value);
+        setPropertiesBoxValue(newValue, "startDateTime", startDateTime.value);
+        setPropertiesBoxValue(newValue, "endDateTime", endDateTime.value);
+        setPropertiesBoxValue(newValue, "stepStatus", stepStatus.value);
+        setPropertiesBoxValue(newValue, "note", note.value);
+
+        emit("update:modelValue", newValue);
+    });
+
+    // Automatically emit which property changed.
+    watchPropertyChanges(propRefs, emit);
+</script>

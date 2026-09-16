@@ -232,6 +232,11 @@
             this.captchaToken = token;
             this.$hfToken.val(token);
 
+            // Notify the page that the CAPTCHA has been solved so client code can
+            // react (e.g., reveal a Next button) without needing a server postback.
+            // Fires for both Visible and Invisible modes.
+            this.$controlSelector.trigger('rockcaptcha:solved', [{ token: token }]);
+
             if (this.postBackScript) {
                 window.location = "javascript:" + this.postBackScript;
             }

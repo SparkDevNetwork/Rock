@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -56,6 +56,20 @@ namespace Rock.Utility
         /// The maximum number of tries.
         /// </value>
         private int MaximumNumberOfTries { get; set; }
+
+        /// <summary>
+        /// The action invoked to pause execution between synchronous retries.
+        /// Defaults to <see cref="Thread.Sleep(TimeSpan)"/>. This is used by
+        /// unit testing.
+        /// </summary>
+        internal Action<TimeSpan> WaitBetweenTries { get; set; } = duration => Thread.Sleep( duration );
+
+        /// <summary>
+        /// The function invoked to pause execution between asynchronous retries.
+        /// Defaults to <see cref="Task.Delay(TimeSpan)"/>. This is used by
+        /// unit testing.
+        /// </summary>
+        internal Func<TimeSpan, Task> WaitBetweenTriesAsync { get; set; } = duration => Task.Delay( duration );
 
         /// <summary>
         /// Initializes a new instance of the <see cref="MethodRetry"/> class.
@@ -131,7 +145,7 @@ namespace Rock.Utility
 
                 numberOfAttempts++;
                 var waitFor = this.GetNextWaitInterval( numberOfAttempts );
-                Thread.Sleep( waitFor );
+                WaitBetweenTries( waitFor );
             }
 
             return default;
@@ -159,7 +173,7 @@ namespace Rock.Utility
 
                 numberOfAttempts++;
                 var waitFor = this.GetNextWaitInterval( numberOfAttempts );
-                await Task.Delay( waitFor ).ConfigureAwait( false );
+                await WaitBetweenTriesAsync( waitFor ).ConfigureAwait( false );
             }
 
             return default;

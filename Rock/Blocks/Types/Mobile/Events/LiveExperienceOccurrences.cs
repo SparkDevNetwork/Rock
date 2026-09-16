@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -20,6 +20,7 @@ using System.Linq;
 
 using Rock.Attribute;
 using Rock.Common.Mobile.Blocks.Content;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Event.InteractiveExperiences;
 using Rock.Model;
@@ -93,7 +94,7 @@ namespace Rock.Blocks.Types.Mobile.Events
         /// <value>
         /// The template to use when rendering the content.
         /// </value>
-        protected string Template => Rock.Field.Types.BlockTemplateFieldType.GetTemplateContent( GetAttributeValue( AttributeKeys.Template ) );
+        protected string Template => Field.Helper.GetBlockTemplateContent( GetAttributeValue( AttributeKeys.Template ) );
 
         #endregion
 
@@ -157,7 +158,7 @@ namespace Rock.Blocks.Types.Mobile.Events
         {
             var showAll = GetAttributeValue( AttributeKeys.ShowAll ).AsBoolean();
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var occurrenceService = new InteractiveExperienceOccurrenceService( rockContext );
                 var validOccurrences = showAll

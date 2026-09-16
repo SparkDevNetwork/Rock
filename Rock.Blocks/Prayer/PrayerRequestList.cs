@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -24,12 +24,14 @@ using System.Linq;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Enums.AI;
+using Rock.Enums.Controls;
 using Rock.Model;
 using Rock.Obsidian.UI;
 using Rock.Security;
 using Rock.Utility;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Prayer.PrayerRequestList;
+using Rock.ViewModels.Controls;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 
@@ -47,7 +49,39 @@ namespace Rock.Blocks.Prayer
 
     [LinkedPage( "Detail Page",
         Description = "The page that will show the prayer request details.",
-        Key = AttributeKey.DetailPage )]
+        Key = AttributeKey.DetailPage,
+        Order = 0 )]
+
+    [IntegerField( "Expires After (days)",
+        Description = "Number of days until the request will expire.",
+        IsRequired = false,
+        DefaultIntegerValue = 14,
+        Key = AttributeKey.ExpireDays,
+        Order = 1 )]
+
+    [BooleanField( "Show Prayer Count",
+        Description = "If enabled, the block will show the current prayer count for each request in the list.",
+        DefaultBooleanValue = false,
+        Key = AttributeKey.ShowPrayerCount,
+        Order = 2 )]
+
+    [BooleanField( "Show 'Approved' column",
+        Description = "If enabled, the Approved column will be shown with a Yes/No toggle button.",
+        DefaultBooleanValue = true,
+        Key = AttributeKey.ShowApprovedColumn,
+        Order = 3 )]
+
+    [BooleanField( "Show Grid Filter",
+        Description = "If enabled, the grid filter will be visible.",
+        DefaultBooleanValue = true,
+        Key = AttributeKey.ShowGridFilter,
+        Order = 4 )]
+
+    [BooleanField( "Show Public Only",
+        Description = "If enabled, it will limit the list only to the prayer requests that are public.",
+        DefaultBooleanValue = false,
+        Key = AttributeKey.ShowPublicOnly,
+        Order = 5 )]
 
     [SecurityAction( Authorization.APPROVE, "The roles and/or users that have access to approve prayer requests." )]
 
@@ -58,11 +92,27 @@ namespace Rock.Blocks.Prayer
     [CustomizedGrid]
     public class PrayerRequestList : RockEntityListBlockType<PrayerRequest>
     {
+        #region Fields
+
+        /// <summary>
+        /// The number of viewable prayer comments, keyed by prayer request Id.
+        /// Loaded once per grid build in <see cref="GetListItems"/> so the Comments
+        /// column can be populated without a per-row database lookup.
+        /// </summary>
+        private Dictionary<int, int> _prayerCommentCounts = new Dictionary<int, int>();
+
+        #endregion Fields
+
         #region Keys
 
         private static class AttributeKey
         {
             public const string DetailPage = "DetailPage";
+            public const string ExpireDays = "ExpireDays";
+            public const string ShowPrayerCount = "ShowPrayerCount";
+            public const string ShowApprovedColumn = "ShowApprovedColumn";
+            public const string ShowGridFilter = "ShowGridFilter";
+            public const string ShowPublicOnly = "ShowPublicOnly";
         }
 
         private static class NavigationUrlKey
@@ -77,6 +127,7 @@ namespace Rock.Blocks.Prayer
             public const string FilterUrgent = "filter-urgent";
             public const string FilterCommenting = "filter-commenting";
             public const string FilterShowExpiredRequests = "filter-show-expired-requests";
+            public const string FilterDateRange = "filter-date-range";
         }
 
         #region Properties
@@ -98,6 +149,10 @@ namespace Rock.Blocks.Prayer
         private bool FilterShowExpiredRequests => BlockPersonPreferences
             .GetValue( PreferenceKey.FilterShowExpiredRequests )
             .AsBoolean();
+
+        private SlidingDateRangeBag FilterDateRange => BlockPersonPreferences
+            .GetValue( PreferenceKey.FilterDateRange )
+            .ToSlidingDateRangeBagOrNull();
 
         #endregion Properties
 
@@ -128,7 +183,21 @@ namespace Rock.Blocks.Prayer
         private PrayerRequestListOptionsBag GetBoxOptions()
         {
             var options = new PrayerRequestListOptionsBag();
-            options.ShowIsApprovedColumn = IsPersonApproveAuthorized();
+
+            // The Approved column is only shown when the block setting is enabled AND
+            // the current person is authorized to approve prayer requests.
+            options.ShowIsApprovedColumn = GetAttributeValue( AttributeKey.ShowApprovedColumn ).AsBoolean()
+                && IsPersonApproveAuthorized();
+            options.IsCampusColumnVisible = CampusCache.All( false ).Count > 1;
+            options.IsPrayerCountColumnVisible = GetAttributeValue( AttributeKey.ShowPrayerCount ).AsBoolean();
+            options.IsGridFilterVisible = GetAttributeValue( AttributeKey.ShowGridFilter ).AsBooleanOrNull() ?? true;
+            options.IsPublicOnly = GetAttributeValue( AttributeKey.ShowPublicOnly ).AsBoolean();
+
+            // When the block is scoped to a specific person via context, every row will
+            // belong to that same person, so hide the Name column to reduce clutter.
+            // Only Person context collapses the column; other context types (e.g. Group)
+            // still show different people per row and should keep the Name visible.
+            options.IsNameColumnVisible = RequestContext.GetContextEntity<Person>() == null;
 
             return options;
         }
@@ -186,6 +255,13 @@ namespace Rock.Blocks.Prayer
                 qry = qry.Where( p => p.RequestedByPersonAlias != null && p.RequestedByPersonAlias.PersonId == personContext.Id );
             }
 
+            // If the block is configured to only show public prayer requests, enforce
+            // that here regardless of the individual's public/private filter preference.
+            if ( GetAttributeValue( AttributeKey.ShowPublicOnly ).AsBoolean() )
+            {
+                qry = qry.Where( p => p.IsPublic == true );
+            }
+
             // Filter by IsPublic
             if ( !string.IsNullOrWhiteSpace( FilterPublicOrPrivate ) )
             {
@@ -238,11 +314,36 @@ namespace Rock.Blocks.Prayer
                 }
             }
 
-            // If 'Show Expired Requests' is false, filter them out... they're included by default.
+            // Filter by the entered date range. This is always applied and defaults to the
+            // last 3 months so the grid never materializes an unbounded number of rows (which
+            // is what enabling 'Show Expired Requests' would otherwise do, since requests
+            // accumulate over time). The individual can widen the range as needed.
+            var defaultDateRange = new SlidingDateRangeBag
+            {
+                RangeType = SlidingDateRangeType.Last,
+                TimeUnit = TimeUnitType.Month,
+                TimeValue = 3
+            };
+
+            var dateRange = FilterDateRange.Validate( defaultDateRange ).ActualDateRange;
+            if ( dateRange.Start.HasValue )
+            {
+                qry = qry.Where( p => p.EnteredDateTime >= dateRange.Start.Value );
+            }
+
+            if ( dateRange.End.HasValue )
+            {
+                qry = qry.Where( p => p.EnteredDateTime < dateRange.End.Value );
+            }
+
+            // If 'Show Expired Requests' is false, filter them out... they're included
+            // by default. Compare against Today (midnight) rather than Now so a request
+            // remains visible for the entire day it is scheduled to expire, matching the
+            // long-standing webforms behavior.
             if ( !FilterShowExpiredRequests )
             {
-                var currentDateTime = RockDateTime.Now;
-                qry = qry.Where( p => !p.ExpirationDate.HasValue || p.ExpirationDate > currentDateTime );
+                var today = RockDateTime.Today;
+                qry = qry.Where( p => !p.ExpirationDate.HasValue || today <= p.ExpirationDate );
             }
 
             return qry;
@@ -257,6 +358,52 @@ namespace Rock.Blocks.Prayer
         }
 
         /// <inheritdoc/>
+        protected override List<PrayerRequest> GetListItems( IQueryable<PrayerRequest> queryable, RockContext rockContext )
+        {
+            var items = queryable.ToList();
+
+            if ( items.Count == 0 )
+            {
+                return items;
+            }
+
+            /*
+                6/9/2026 - CLAUDE
+
+                The Comments column count is loaded here with a single grouped query
+                rather than per-row. The block was previously given a comment count
+                only by way of a customized-grid Lava column ({{ Row.Id | Notes:'2'
+                | Size }}), which issued a separate database lookup for every rendered
+                row. On instances with thousands of requests (e.g. when 'Show Expired
+                Requests' was enabled) that per-row Lava caused page timeouts.
+
+                Reason: Replace per-row Lava note lookups with one efficient aggregate query.
+            */
+            var prayerCommentNoteTypeId = NoteTypeCache.Get( Rock.SystemGuid.NoteType.PRAYER_COMMENT.AsGuid() )?.Id;
+
+            if ( !prayerCommentNoteTypeId.HasValue )
+            {
+                return items;
+            }
+
+            // Use the (unordered, still unexecuted) filtered queryable as a subquery basis for
+            // Contains so EF generates a single SQL statement instead of a large WHERE IN list.
+            // The ordered queryable is intentionally not reused here because an ORDER BY is not
+            // valid inside an IN subquery.
+            var prayerRequestIdQuery = GetListQueryable( rockContext ).Select( p => p.Id );
+            var currentPersonId = GetCurrentPerson()?.Id;
+
+            _prayerCommentCounts = new NoteService( rockContext )
+                .GetByNoteTypeId( prayerCommentNoteTypeId.Value )
+                .AreViewableBy( currentPersonId )
+                .Where( n => n.EntityId.HasValue && prayerRequestIdQuery.Contains( n.EntityId.Value ) )
+                .GroupBy( n => n.EntityId.Value )
+                .ToDictionary( g => g.Key, g => g.Count() );
+
+            return items;
+        }
+
+        /// <inheritdoc/>
         protected override GridBuilder<PrayerRequest> GetGridBuilder()
         {
             var builder = new GridBuilder<PrayerRequest>()
@@ -267,8 +414,13 @@ namespace Rock.Blocks.Prayer
                 .AddTextField( "category", a => a.Category?.Name )
                 .AddTextField( "text", a => a.Text )
                 .AddDateTimeField( "enteredDateTime", a => a.EnteredDateTime )
-                .AddField( "prayerCount", a => a.PrayerCount )
-                .AddField( "flagCount", a => a.FlagCount )
+                // Coalesce the nullable counts to 0 so numeric column filters (e.g.
+                // "Less Than 2") include requests that have never been prayed for or
+                // flagged. Sending null causes those rows to be excluded from any
+                // numeric comparison on the client.
+                .AddField( "prayerCount", a => a.PrayerCount ?? 0 )
+                .AddField( "flagCount", a => a.FlagCount ?? 0 )
+                .AddField( "commentCount", a => _prayerCommentCounts.GetValueOrDefault( a.Id, 0 ) )
                 .AddTextField( "moderationFlags", a => GetModerationFlagsText( a.ModerationFlags ) )
                 .AddAttributeFields( GetGridAttributes() );
 
@@ -386,6 +538,26 @@ namespace Rock.Blocks.Prayer
             }
 
             entity.IsApproved = isApproved;
+
+            // When a request is approved, capture who approved it and when, reset any
+            // moderator flags that had accumulated, and extend the expiration date by
+            // the number of days configured on the block. This mirrors the behavior of
+            // the original webforms block and prevents freshly approved requests from
+            // being hidden by the expired-requests filter. (GitHub issue #6950)
+            if ( isApproved )
+            {
+                entity.ApprovedByPersonAliasId = RequestContext.CurrentPerson?.PrimaryAliasId;
+                entity.ApprovedOnDateTime = RockDateTime.Now;
+
+                if ( entity.FlagCount.HasValue && entity.FlagCount > 0 )
+                {
+                    entity.FlagCount = 0;
+                }
+
+                var expireDays = GetAttributeValue( AttributeKey.ExpireDays ).AsIntegerOrNull() ?? 14;
+                entity.ExpirationDate = RockDateTime.Now.AddDays( expireDays );
+            }
+
             RockContext.SaveChanges();
 
             return ActionOk();
@@ -417,10 +589,34 @@ namespace Rock.Blocks.Prayer
                 return ActionBadRequest( errorMessage );
             }
 
+            // Remove related notes (comments) before deleting the request itself.
+            // Notes reference the prayer request polymorphically (by EntityTypeId and
+            // EntityId), so there is no FK to catch orphans automatically. This mirrors
+            // the webforms Delete behavior.
+            DeleteAllRelatedNotes( entity, RockContext );
+
             entityService.Delete( entity );
             RockContext.SaveChanges();
 
             return ActionOk();
+        }
+
+        /// <summary>
+        /// Deletes all comments/notes related to the given prayer request.
+        /// </summary>
+        /// <param name="prayerRequest">The prayer request whose notes should be removed.</param>
+        /// <param name="rockContext">The Rock Context.</param>
+        private void DeleteAllRelatedNotes( PrayerRequest prayerRequest, RockContext rockContext )
+        {
+            var prayerRequestEntityTypeId = EntityTypeCache.Get( SystemGuid.EntityType.PRAYER_REQUEST.AsGuid() ).Id;
+            var noteTypeIdsForPrayerRequest = EntityNoteTypesCache.Get()
+                .EntityNoteTypes
+                .First( a => a.EntityTypeId.Equals( prayerRequestEntityTypeId ) )
+                .NoteTypeIds;
+            var noteService = new NoteService( rockContext );
+            var prayerRequestComments = noteService.Queryable()
+                .Where( n => noteTypeIdsForPrayerRequest.Contains( n.NoteTypeId ) && n.EntityId == prayerRequest.Id );
+            rockContext.BulkDelete( prayerRequestComments );
         }
 
         #endregion

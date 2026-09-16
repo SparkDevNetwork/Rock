@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -17,7 +17,9 @@
 
 using System;
 using System.Collections.Generic;
+
 using Newtonsoft.Json;
+
 using Rock.AI.Classes.TextCompletions;
 
 namespace Rock.AI.OpenAI.OpenAIApiClient.Classes.TextCompletions
@@ -25,6 +27,8 @@ namespace Rock.AI.OpenAI.OpenAIApiClient.Classes.TextCompletions
     /// <summary>
     /// The Response object for a completion.
     /// </summary>
+    [Obsolete( "This feature has been deprecated and is no longer used by Rock. AI configuration happens automatically." )]
+    [RockObsolete( "21.0" )]
     internal class OpenAITextCompletionsResponse
     {
         #region Properties

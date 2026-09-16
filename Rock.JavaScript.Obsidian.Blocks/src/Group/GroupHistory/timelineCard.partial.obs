@@ -1,0 +1,185 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="timeline-card" :class="{ 'is-right': isRightAligned }">
+        <div class="timeline-card-panel">
+            <div class="timeline-card-date">
+                <span class="timeline-card-date-month">{{ monthText }}</span>
+                <span class="timeline-card-date-day">{{ dayText }}</span>
+                <span class="timeline-card-date-year">{{ yearText }}</span>
+            </div>
+
+            <div class="timeline-card-events">
+                <HistoryEvent v-for="(historyEvent, index) in day.events ?? []"
+                              :key="index"
+                              :historyEvent="historyEvent" />
+            </div>
+        </div>
+
+        <span class="timeline-card-dot"></span>
+    </div>
+</template>
+
+<style scoped>
+.timeline-card {
+    position: relative;
+    display: flex;
+    width: 100%;
+    margin-bottom: 24px;
+}
+
+.timeline-card-panel {
+    position: relative;
+    display: flex;
+    gap: 24px;
+    width: calc(50% - 44px);
+    padding: 24px;
+    background-color: var(--color-interface-softer);
+    border-radius: 4px;
+}
+
+/* The caret pointing from the card toward the timeline rail. */
+.timeline-card-panel::after {
+    position: absolute;
+    top: 48px;
+    right: -7px;
+    width: 15px;
+    height: 15px;
+    content: "";
+    background-color: var(--color-interface-softer);
+    transform: rotate(45deg);
+}
+
+.timeline-card.is-right .timeline-card-panel {
+    flex-direction: row-reverse;
+    margin-left: auto;
+}
+
+.timeline-card.is-right .timeline-card-panel::after {
+    right: auto;
+    left: -7px;
+}
+
+.timeline-card-date {
+    display: flex;
+    flex-shrink: 0;
+    flex-direction: column;
+    padding-right: 24px;
+    text-align: center;
+    border-right: 1px solid var(--color-interface-soft);
+}
+
+.timeline-card.is-right .timeline-card-date {
+    padding-right: 0;
+    padding-left: 24px;
+    border-right: 0;
+    border-left: 1px solid var(--color-interface-soft);
+}
+
+.timeline-card-date-month,
+.timeline-card-date-year {
+    font-size: var(--font-size-small);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-interface-medium);
+}
+
+.timeline-card-date-day {
+    font-size: var(--font-size-h3);
+    font-weight: var(--font-weight-semibold);
+    line-height: 1.1;
+    color: var(--color-interface-stronger);
+}
+
+.timeline-card-events {
+    display: flex;
+    flex: 1 1 0;
+    flex-direction: column;
+    gap: 24px;
+    min-width: 0;
+}
+
+/* The bullseye marker sitting on the timeline rail. */
+.timeline-card-dot {
+    position: absolute;
+    top: 44px;
+    left: 50%;
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 23px;
+    height: 23px;
+    background-color: var(--color-info-strong);
+    border: 2px solid var(--color-info-soft);
+    border-radius: 999px;
+    transform: translateX(-50%);
+}
+
+.timeline-card-dot::after {
+    width: 7px;
+    height: 7px;
+    content: "";
+    background-color: var(--color-interface-softest);
+    border-radius: 999px;
+}
+
+@media (max-width: 991px) {
+    .timeline-card-panel,
+    .timeline-card.is-right .timeline-card-panel {
+        flex-direction: row;
+        width: 100%;
+        margin-left: 0;
+    }
+
+    .timeline-card-panel::after,
+    .timeline-card-dot {
+        display: none;
+    }
+
+    .timeline-card.is-right .timeline-card-date {
+        padding-right: 24px;
+        padding-left: 0;
+        border-right: 1px solid var(--color-interface-soft);
+        border-left: 0;
+    }
+}
+</style>
+
+<script setup lang="ts">
+    import { computed, PropType } from "vue";
+    import HistoryEvent from "./historyEvent.partial.obs";
+    import { GroupHistoryDayBag } from "@Obsidian/ViewModels/Blocks/Group/GroupHistory/groupHistoryDayBag";
+    import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
+
+    const props = defineProps({
+        day: {
+            type: Object as PropType<GroupHistoryDayBag>,
+            required: true
+        },
+
+        /** True when the card sits to the right of the timeline rail. */
+        isRightAligned: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        }
+    });
+
+    // #region Computed Values
+
+    const date = computed((): RockDateTime | null => {
+        return props.day.date ? RockDateTime.parseISO(props.day.date) : null;
+    });
+
+    const monthText = computed((): string => {
+        return date.value?.toASPString("MMM.") ?? "";
+    });
+
+    const dayText = computed((): string => {
+        return date.value?.toASPString("dd") ?? "";
+    });
+
+    const yearText = computed((): string => {
+        return date.value?.toASPString("yyyy") ?? "";
+    });
+
+    // #endregion Computed Values
+</script>

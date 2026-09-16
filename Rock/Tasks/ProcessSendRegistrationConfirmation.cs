@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -18,6 +18,7 @@ using System.Data.Entity;
 using System.Linq;
 
 using Rock.Communication;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 
@@ -34,11 +35,26 @@ namespace Rock.Tasks
         /// <param name="message"></param>
         public override void Execute( Message message )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
+                /*
+                     3/12/2026 - NA
+
+                     Do not add AsNoTracking() to this query. The returned entities are used by a Lava
+                     template during the merge/render process. The template may access related navigation
+                     properties which are retrieved through lazy loading. Lazy loading requires the
+                     DbContext to track the entity. If AsNoTracking() is added, the context cannot
+                     retrieve those navigation properties and the Lava merge may fail.
+
+                     A common error that appears when this occurs is:
+
+                     "Lava Error: When an object is returned with a NoTracking merge option, Load can
+                     only be called when the EntityCollection or EntityReference does not contain objects."
+
+                     Reason: Lazy loading of navigation properties is required for the Lava merge process.
+                */
                 var registration = new RegistrationService( rockContext )
                     .Queryable( "RegistrationInstance.RegistrationTemplate" )
-                    .AsNoTracking()
                     .FirstOrDefault( r => r.Id == message.RegistrationId );
 
                 if ( registration != null &&

@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -19,8 +19,10 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
+
 using Fluid;
 using Fluid.Ast;
+
 using Parlot;
 
 namespace Rock.Lava.Fluid
@@ -48,9 +50,10 @@ namespace Rock.Lava.Fluid
 
             lock ( _factoryLock )
             {
-                _factoryMethods[name] = factoryMethod;
+                var newFactoryMethods = new Dictionary<string, Func<string, ILavaTag>>( _factoryMethods, _factoryMethods.Comparer );
+                newFactoryMethods[name] = factoryMethod;
+                _factoryMethods = newFactoryMethods;
             }
-
         }
 
         #endregion
@@ -82,10 +85,8 @@ namespace Rock.Lava.Fluid
 
             ILavaTag lavaTag = null;
 
-            if ( _factoryMethods.ContainsKey( registeredTagName ) )
+            if ( _factoryMethods.TryGetValue( registeredTagName, out var factoryMethod ) )
             {
-                var factoryMethod = _factoryMethods[registeredTagName];
-
                 lavaTag = factoryMethod( _tagName );
             }
 

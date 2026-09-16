@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -21,6 +21,7 @@ using System.ComponentModel;
 using System.Linq;
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Obsidian.UI;
@@ -269,7 +270,7 @@ namespace Rock.Blocks.Core
         protected override GridBuilder<Model.Attribute> GetGridBuilder()
         {
             // Grid data is built later so we can't dispose of rockContext via `using`
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var builder = new GridBuilder<Model.Attribute>()
                 .WithBlock( this )
                 .AddTextField( "id", a => a.Id.ToString() )
@@ -453,7 +454,8 @@ namespace Rock.Blocks.Core
                 EntityTypeQualifierValue = attribute.EntityTypeQualifierValue,
                 ValidQualifierColumns = validQualifierProperties,
                 IsLegacyPlugin = isLegacyPlugin,
-                EntityTypeGuid = entityTypeCache?.Guid ?? Guid.Empty
+                EntityTypeGuid = entityTypeCache?.Guid ?? Guid.Empty,
+                IsIndexingEnabledVisible = entityTypeCache?.IsIndexingSupported == true && entityTypeCache.IsIndexingEnabled
             };
         }
 
@@ -489,7 +491,7 @@ namespace Rock.Blocks.Core
 
             var entityId = GetEntityId();
 
-            var attributeValue = new AttributeValueService( new RockContext() ).GetByAttributeIdAndEntityId( attribute.Id, entityId );
+            var attributeValue = new AttributeValueService( RockApp.Current.CreateRockContext() ).GetByAttributeIdAndEntityId( attribute.Id, entityId );
             string value = attributeValue != null && !string.IsNullOrWhiteSpace( attributeValue.Value ) ? attributeValue.Value : attribute.DefaultValue;
 
             return ActionOk( new
@@ -520,7 +522,7 @@ namespace Rock.Blocks.Core
                 return ActionBadRequest();
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var entityId = GetEntityId();
                 var attributeValueService = new AttributeValueService( rockContext );
@@ -564,7 +566,7 @@ namespace Rock.Blocks.Core
         [BlockAction]
         public BlockActionResult GetEditAttribute( Guid attributeGuid )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var attributeService = new AttributeService( rockContext );
                 var attribute = attributeService.Get( attributeGuid );
@@ -610,7 +612,7 @@ namespace Rock.Blocks.Core
         [BlockAction]
         public BlockActionResult SaveEditAttribute( Guid? entityTypeGuid, string entityTypeQualifierColumn, string entityTypeQualifierValue, PublicEditableAttributeBag attribute )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var attributeService = new AttributeService( rockContext );
 
@@ -672,7 +674,7 @@ namespace Rock.Blocks.Core
         [BlockAction]
         public BlockActionResult DeleteAttribute( Guid attributeGuid )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var attributeService = new AttributeService( rockContext );
                 var attribute = attributeService.Get( attributeGuid );
@@ -708,7 +710,7 @@ namespace Rock.Blocks.Core
         [BlockAction]
         public BlockActionResult ReorderItem( string key, string beforeKey )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 // Get the queryable and make sure it is ordered correctly.
                 var qry = GetListQueryable( rockContext );
@@ -741,6 +743,8 @@ namespace Rock.Blocks.Core
         public bool IsLegacyPlugin { get; set; }
 
         public Guid EntityTypeGuid { get; set; }
+
+        public bool IsIndexingEnabledVisible { get; set; }
 
         public PublicEditableAttributeBag Attribute { get; set; }
     }

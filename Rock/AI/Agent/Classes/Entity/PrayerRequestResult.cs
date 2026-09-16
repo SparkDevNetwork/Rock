@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -64,10 +64,5 @@ namespace Rock.AI.Agent.Classes.Entity
         /// Gets or sets the number of times this prayer request has been prayed for.
         /// </summary>
         public int? PrayerCount { get; set; }
-
-        /// <summary>
-        /// Gets or sets the author of the note.
-        /// </summary>
-        public PersonResult RequestedByPerson { get; set; }
     }
 }

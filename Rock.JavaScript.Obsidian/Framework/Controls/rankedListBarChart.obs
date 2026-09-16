@@ -1,0 +1,279 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <ContentSection :title="title" light disableCollapse :overflowText="overflowLabel">
+        <template v-if="isBadgeShown || $slots.headerActions" #headerActions>
+            <HighlightLabel v-if="isBadgeShown">{{ totalBadgeText }}</HighlightLabel>
+            <slot name="headerActions" />
+        </template>
+
+        <div v-if="!hasItems">
+            <slot name="empty">
+                <div class="nothing-to-show-container">
+                    <i class="nothing-to-show-icon ti ti-alert-triangle"></i>
+                    <div class="nothing-to-show-body">
+                        <p class="nothing-to-show-text">Nothing To Show</p>
+                        <small class="nothing-to-show-help-text">Not enough data has been collected yet. Check again later.</small>
+                    </div>
+                </div>
+            </slot>
+        </div>
+
+        <div v-else class="ranked-list">
+            <div v-for="(item, index) in visibleItems" :key="index" class="ranked-row">
+                <div class="ranked-row-header">
+                    <span class="ranked-label" :title="item.label ?? ''">{{ item.label }}</span>
+                    <span class="ranked-stats">
+                        <slot name="stats" :item="item" />
+                        <template v-if="!isDefaultStatsHidden">
+                            <span class="ranked-percent">{{ itemPercent(item.count) }}</span>
+                            <span class="ranked-count">{{ item.count.toLocaleString() }}</span>
+                        </template>
+                    </span>
+                </div>
+                <slot name="bar" :item="item" :width="itemBarWidth(item.count)">
+                    <div class="ranked-track">
+                        <div class="ranked-fill" :style="{ width: itemBarWidth(item.count), backgroundColor: barColor }"></div>
+                    </div>
+                </slot>
+            </div>
+        </div>
+
+        <template v-if="hiddenItems.length > 0" #overflow>
+            <div class="ranked-list">
+                <div v-for="(item, index) in hiddenItems" :key="index" class="ranked-row">
+                    <div class="ranked-row-header">
+                        <span class="ranked-label" :title="item.label ?? ''">{{ item.label }}</span>
+                        <span class="ranked-stats">
+                            <slot name="stats" :item="item" />
+                            <template v-if="!isDefaultStatsHidden">
+                                <span class="ranked-percent">{{ itemPercent(item.count) }}</span>
+                                <span class="ranked-count">{{ item.count.toLocaleString() }}</span>
+                            </template>
+                        </span>
+                    </div>
+                    <slot name="bar" :item="item" :width="itemBarWidth(item.count)">
+                        <div class="ranked-track">
+                            <div class="ranked-fill" :style="{ width: itemBarWidth(item.count), backgroundColor: barColor }"></div>
+                        </div>
+                    </slot>
+                </div>
+            </div>
+        </template>
+    </ContentSection>
+</template>
+
+<style scoped>
+.ranked-row {
+    margin-bottom: var(--spacing-medium);
+}
+
+.ranked-row-header {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: var(--spacing-medium);
+    margin-bottom: var(--spacing-xsmall);
+}
+
+.ranked-label {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: var(--color-interface-stronger);
+}
+
+.ranked-stats {
+    display: flex;
+    align-items: baseline;
+    gap: var(--spacing-medium);
+    flex-shrink: 0;
+}
+
+.ranked-percent {
+    font-size: var(--font-size-small);
+    color: var(--color-interface-medium);
+}
+
+.ranked-count {
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-interface-stronger);
+}
+
+.ranked-track {
+    height: 20px;
+    background-color: var(--color-interface-soft);
+    border-radius: 9999px;
+    overflow: hidden;
+}
+
+.ranked-fill {
+    height: 100%;
+    border-radius: 9999px;
+}
+
+/* The built-in empty state, matching the metrics block's Nothing To Show. Overridden entirely
+   when the consumer supplies the "empty" slot. */
+.nothing-to-show-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: var(--spacing-small);
+    min-height: 300px;
+    color: var(--color-interface-medium);
+}
+
+.nothing-to-show-icon {
+    font-size: 60px;
+    line-height: 1;
+}
+
+.nothing-to-show-body {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--spacing-tiny);
+}
+
+.nothing-to-show-text {
+    margin: 0;
+}
+
+.nothing-to-show-help-text {
+    margin: 0;
+    font-size: var(--font-size-xsmall);
+}
+</style>
+
+<script setup lang="ts" generic="T extends { label?: string | null; count: number }">
+    import { computed } from "vue";
+    import ContentSection from "@Obsidian/Controls/contentSection.obs";
+    import HighlightLabel from "@Obsidian/Controls/highlightLabel.obs";
+    import { asFormattedString } from "@Obsidian/Utility/numberUtils";
+    import { pluralize } from "@Obsidian/Utility/stringUtils";
+
+    // #region Types
+
+    const props = withDefaults(defineProps<{
+        /** The section title shown above the ranked rows. */
+        title?: string;
+
+        /**
+         * The rows to render, ordered highest to lowest. Each item needs a "label" (optional
+         * string) and a numeric "count"; any extra properties are preserved and exposed to the
+         * "stats" and "bar" slots, so blocks can pass their own view models directly.
+         */
+        items: T[];
+
+        /** The number of rows shown before the rest collapse into the section's Show More overflow. */
+        visibleCount?: number;
+
+        /** The CSS color of the bar fill. */
+        barColor?: string;
+
+        /**
+         * The singular noun for the total badge (for example "Link"). The badge reads
+         * "{count} Total {Term}s" and is pluralized from the row count.
+         */
+        itemTerm?: string;
+
+        /** When true, a badge showing the total row count is shown in the section header. */
+        isTotalBadgeShown?: boolean;
+
+        /**
+         * When true, the built-in percent and count are not rendered, leaving only whatever the
+         * "stats" slot provides. The slot always renders alongside the defaults, so hide them
+         * here when the slot fully replaces them.
+         */
+        isDefaultStatsHidden?: boolean;
+
+        /** The Show More toggle label. Defaults to "Show {n} More" naming the hidden row count. */
+        overflowText?: string;
+    }>(), {
+        title: undefined,
+        visibleCount: 5,
+        barColor: "var(--color-categorical-1)",
+        itemTerm: undefined,
+        isTotalBadgeShown: false,
+        isDefaultStatsHidden: false,
+        overflowText: undefined
+    });
+
+    // #endregion Types
+
+    // #region Computed Values
+
+    // Whether there is any data to chart; drives the empty state and hides the header badge.
+    const hasItems = computed<boolean>(() => {
+        return props.items.length > 0;
+    });
+
+    // The total badge shows only when requested, given a term to pluralize, and with data present.
+    const isBadgeShown = computed<boolean>(() => {
+        return props.isTotalBadgeShown && !!props.itemTerm && hasItems.value;
+    });
+
+    // The total of every row, used as the percentage denominator even while collapsed so the
+    // shown percentages do not change when the hidden rows are revealed.
+    const totalCount = computed<number>(() => {
+        return props.items.reduce((sum, item) => sum + item.count, 0);
+    });
+
+    // The highest count across every row, used to scale the bars so the top row fills the track
+    // and the scale stays fixed whether or not the hidden rows are shown.
+    const maxCount = computed<number>(() => {
+        return Math.max(0, ...props.items.map(item => item.count));
+    });
+
+    // The rows always shown, before the Show More overflow.
+    const visibleItems = computed<T[]>(() => {
+        return props.items.slice(0, props.visibleCount);
+    });
+
+    // The rows moved into the section's Show More overflow, hidden by default.
+    const hiddenItems = computed<T[]>(() => {
+        return props.items.slice(props.visibleCount);
+    });
+
+    // The overflow toggle label, defaulting to naming how many rows are hidden.
+    const overflowLabel = computed<string>(() => {
+        return props.overflowText ?? `Show ${hiddenItems.value.length} More`;
+    });
+
+    // The header badge text, built from the row count and the caller's item term.
+    const totalBadgeText = computed<string>(() => {
+        return `${asFormattedString(props.items.length)} Total ${pluralize(props.itemTerm ?? "", props.items.length)}`;
+    });
+
+    // #endregion Computed Values
+
+    // #region Functions
+
+    /**
+     * Gets the CSS width for a row's bar, scaled so the highest count fills the track.
+     *
+     * @param count The row's count.
+     */
+    function itemBarWidth(count: number): string {
+        if (maxCount.value <= 0) {
+            return "0%";
+        }
+
+        return `${(count / maxCount.value) * 100}%`;
+    }
+
+    /**
+     * Gets a row's share of the total, as a rounded percentage string.
+     *
+     * @param count The row's count.
+     */
+    function itemPercent(count: number): string {
+        if (totalCount.value <= 0) {
+            return "0%";
+        }
+
+        return `${Math.round((count / totalCount.value) * 100)}%`;
+    }
+
+    // #endregion Functions
+</script>

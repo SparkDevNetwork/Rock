@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -20,9 +20,10 @@ using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using Rock;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
-using Rock.Tests.Shared.TestFramework;
+using Rock.Tests.Integration.TestFramework.Database;
 
 namespace Rock.Tests.Integration.Performance.CheckIn
 {
@@ -41,7 +42,7 @@ namespace Rock.Tests.Integration.Performance.CheckIn
         [TestCleanup]
         public void Cleanup()
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var acService = new AttendanceCodeService( rockContext );
                 var attendanceService = new AttendanceService( rockContext );
@@ -101,7 +102,7 @@ namespace Rock.Tests.Integration.Performance.CheckIn
 
             int lastAttendanceCodeId;
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 lastAttendanceCodeId = new AttendanceCodeService( rockContext )
                     .Queryable()
@@ -125,7 +126,7 @@ namespace Rock.Tests.Integration.Performance.CheckIn
             }
             finally
             {
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     rockContext.Database.ExecuteSqlCommand( $"delete from AttendanceCode where id > {lastAttendanceCodeId}" );
                 }

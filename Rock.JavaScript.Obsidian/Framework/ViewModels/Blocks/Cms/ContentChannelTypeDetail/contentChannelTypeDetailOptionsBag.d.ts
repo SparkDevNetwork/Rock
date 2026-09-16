@@ -25,5 +25,11 @@ import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
 /** The additional configuration options for the Content Channel Type Detail block. */
 export type ContentChannelTypeDetailOptionsBag = {
+    /**
+     * Gets or sets the Content Channel Item attribute keys already defined
+     * on any Content Channel of this type. Type-level item attributes must not reuse these keys.
+     */
+    contentChannelItemAttributeKeys?: string[] | null;
+
     dateRangeTypes?: ListItemBag[] | null;
 };

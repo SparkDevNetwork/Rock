@@ -18,7 +18,7 @@ import { Component } from "vue";
 import { defineAsyncComponent } from "@Obsidian/Utility/component";
 import { FieldTypeBase } from "./fieldType";
 
-export const enum ConfigurationValueKey {
+export const enum ConfigurationKey {
     DefinedType = "DefinedType",
     DefinedTypes = "DefinedTypes",
     DefinedTypeValues = "DefinedTypeValues",

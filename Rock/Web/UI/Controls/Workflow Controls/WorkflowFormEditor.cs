@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -20,6 +20,7 @@ using System.Web.UI;
 using System.Web.UI.WebControls;
 
 using Rock;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -303,12 +304,12 @@ namespace Rock.Web.UI.Controls
             foreach ( var attributeItem in workflowTypeAttributes )
             {
                 var fieldType = FieldTypeCache.Get( attributeItem.Value.FieldTypeId );
-                if ( fieldType?.Field is Rock.Field.Types.GroupFieldType )
+                if ( fieldType?.Guid == SystemGuid.FieldType.GROUP.AsGuid() )
                 {
                     _ddlPersonEntryFamilyAttribute.Items.Add( new ListItem( attributeItem.Value.Name, attributeItem.Key.ToString() ) );
                 }
 
-                if ( fieldType?.Field is Rock.Field.Types.PersonFieldType )
+                if ( fieldType?.Guid == SystemGuid.FieldType.PERSON.AsGuid() )
                 {
                     _ddlPersonEntryPersonAttribute.Items.Add( new ListItem( attributeItem.Value.Name, attributeItem.Key.ToString() ) );
                     _ddlPersonEntrySpouseAttribute.Items.Add( new ListItem( attributeItem.Value.Name, attributeItem.Key.ToString() ) );
@@ -348,7 +349,9 @@ namespace Rock.Web.UI.Controls
             foreach ( var attributeItem in workflowTypeAttributes )
             {
                 var fieldType = FieldTypeCache.Get( attributeItem.Value.FieldTypeId );
-                if ( fieldType != null && fieldType.Field is Rock.Field.Types.TextFieldType )
+                var isTextField = fieldType?.Guid == SystemGuid.FieldType.TEXT.AsGuid()
+                    || fieldType?.Guid == SystemGuid.FieldType.ENCRYPTED_TEXT.AsGuid();
+                if ( isTextField )
                 {
                     var li = new ListItem( attributeItem.Value.Name, attributeItem.Key.ToString() );
                     li.Selected = workflowActionForm.ActionAttributeGuid.HasValue && workflowActionForm.ActionAttributeGuid.Value.ToString() == li.Value;
@@ -511,7 +514,7 @@ namespace Rock.Web.UI.Controls
             var systemEmailCategory = CategoryCache.Get( Rock.SystemGuid.Category.SYSTEM_COMMUNICATION_WORKFLOW.AsGuid() );
             if ( systemEmailCategory != null )
             {
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     _ddlNotificationSystemEmail.DataSource = new SystemCommunicationService( rockContext ).Queryable()
                         .Where( e => e.CategoryId == systemEmailCategory.Id )
@@ -735,7 +738,7 @@ namespace Rock.Web.UI.Controls
             {
                 ID = "_dvpPersonEntryRecordSource",
                 Label = "Record Source",
-                Required = true,
+                Required = false,
                 DefinedTypeId = DefinedTypeCache.GetId( Rock.SystemGuid.DefinedType.RECORD_SOURCE_TYPE.AsGuid() )
             };
 

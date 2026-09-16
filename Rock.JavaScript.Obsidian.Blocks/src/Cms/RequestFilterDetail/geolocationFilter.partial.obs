@@ -17,42 +17,36 @@
            saveText="Save"
            cancelText="Cancel"
            :onSave="onSave">
-        <div class="row form-row d-flex flex-wrap align-items-center">
-            <div class="col flex-grow-0">
-                <div class="form-group">
-                    <span class="text-nowrap">Where</span>
-                </div>
+        <div class="row">
+            <div class="col-sm-6">
+                <DropDownList :modelValue="theFilter.locationComponent?.toString() ?? ''"
+                              @update:modelValue="val => theFilter.locationComponent = Number(val)"
+                              :items="locationComponents"
+                              label="Location Component"
+                              help="The geographic field used to evaluate the visitor's location."
+                              :showBlankItem="false" />
             </div>
-            <div class="col flex-grow-0">
-                <div class="form-group">
-                    <DropDownList :modelValue="theFilter.locationComponent?.toString() ?? ''"
-                                  @update:modelValue="val => theFilter.locationComponent = Number(val)"
-                                  :items="locationComponents"
-                                  class="input-width-lg"
-                                  :showBlankItem="false" />
-                </div>
+        </div>
+
+        <div class="row">
+            <div class="col-sm-3">
+                <DropDownList :modelValue="theFilter.comparisonType?.toString() ?? ''"
+                              @update:modelValue="val => theFilter.comparisonType = Number(val)"
+                              :items="comparisonTypes"
+                              label="Match Type"
+                              help="How the location value is compared."
+                              :showBlankItem="false" />
             </div>
-            <div class="col flex-grow-0">
-                <div class="form-group">
-                    <span class="text-nowrap">is</span>
-                </div>
-            </div>
-            <div class="col flex-grow-0">
-                <div class="form-group">
-                    <DropDownList :modelValue="theFilter.comparisonType?.toString() ?? ''"
-                                  @update:modelValue="val => theFilter.comparisonType = Number(val)"
-                                  :items="comparisonTypes"
-                                  class="input-width-lg"
-                                  :showBlankItem="false" />
-                </div>
-            </div>
-            <div class="col">
-                <div class="form-group">
-                    <TextBox :modelValue="theFilter.value ?? ''"
-                             @update:modelValue="val => theFilter.value = val"
-                             rules="required"
-                             validationTitle="Value" />
-                </div>
+        </div>
+
+        <div class="row">
+            <div class="col-sm-6">
+                <TextBox :modelValue="theFilter.value ?? ''"
+                         @update:modelValue="val => theFilter.value = val"
+                         label="Value"
+                         help="The location value used for the comparison."
+                         rules="required"
+                         validationTitle="Value" />
             </div>
         </div>
     </Modal>

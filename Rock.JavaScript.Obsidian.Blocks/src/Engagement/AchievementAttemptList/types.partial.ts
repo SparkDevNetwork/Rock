@@ -15,6 +15,7 @@
 // </copyright>
 //
 
+import { SlidingDateRange } from "@Obsidian/Utility/slidingDateRange";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
 export const enum NavigationUrlKey {
@@ -30,7 +31,9 @@ export const enum PreferenceKey {
 
     FilterStatus = "filter-status",
 
-    FilterAchievementType = "filter-achievement-type"
+    FilterAchievementType = "filter-achievement-type",
+
+    FilterCreatedDateRange = "filter-created-date-range"
 }
 
 export type GridSettingsOptions = {
@@ -43,4 +46,6 @@ export type GridSettingsOptions = {
     status?: string | null;
 
     achievementType?: ListItemBag | null;
+
+    createdDateRange?: SlidingDateRange | null;
 };

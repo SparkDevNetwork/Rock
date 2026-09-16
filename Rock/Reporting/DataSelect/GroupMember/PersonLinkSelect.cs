@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -26,6 +26,7 @@ using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Net;
+using Rock.Obsidian.UI.GridField;
 using Rock.ViewModels.Controls;
 
 #if REVIEW_NET5_0_OR_GREATER
@@ -42,8 +43,12 @@ namespace Rock.Reporting.DataSelect.GroupMember
     [Description( "Show person's name as an optional link that navigates to the person's record" )]
     [Export( typeof( DataSelectComponent ) )]
     [ExportMetadata( "ComponentName", "Select Person Name" )]
-    [BooleanField( "Show As Link", "", true )]
-    [CustomRadioListField( "Display Order", "", "0^FirstName LastName,1^LastName&#44; FirstName", true, "0" )]
+    [BooleanField( "Show As Link",
+        DefaultBooleanValue = true )]
+    [CustomRadioListField( "Display Order",
+        ListSource = "0^FirstName LastName,1^LastName&#44; FirstName",
+        IsRequired = true,
+        DefaultValue = "0" )]
     [Rock.SystemGuid.EntityTypeGuid( "52E351C8-F44C-49CC-B547-13C28A5F3386" )]
     public class PersonLinkSelect : DataSelectComponent, IRecipientDataSelect
     {
@@ -142,6 +147,12 @@ namespace Rock.Reporting.DataSelect.GroupMember
             return result;
         }
 #endif
+
+        /// <inheritdoc/>
+        public override ObsidianGridField GetObsidianGridField( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
+        {
+            return new HtmlObsidianGridField();
+        }
 
         /// <summary>
         /// Comma-delimited list of the Entity properties that should be used for Sorting. Normally, you should leave this as null which will make it sort on the returned field

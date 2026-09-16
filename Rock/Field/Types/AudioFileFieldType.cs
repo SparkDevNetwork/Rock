@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -21,6 +21,7 @@ using System.Linq;
 #if WEBFORMS
 using System.Web.UI;
 #endif
+
 using Rock.Attribute;
 using Rock.Configuration;
 using Rock.Data;
@@ -57,7 +58,7 @@ namespace Rock.Field.Types
             var binaryFileGuid = privateValue.AsGuidOrNull();
             if ( binaryFileGuid.HasValue )
             {
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     var binaryFileService = new BinaryFileService( rockContext );
                     var binaryFileInfo = binaryFileService.Queryable().AsNoTracking().Where( a => a.Guid == binaryFileGuid.Value )
@@ -119,7 +120,7 @@ namespace Rock.Field.Types
             var binaryFileGuid = privateValue.AsGuidOrNull();
             if ( binaryFileGuid.HasValue )
             {
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     var binaryFileService = new BinaryFileService( rockContext );
                     var filename = binaryFileService
@@ -148,7 +149,7 @@ namespace Rock.Field.Types
         {
             if ( !string.IsNullOrWhiteSpace( privateValue ) && Guid.TryParse( privateValue, out Guid guidValue ) )
             {
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     var binaryFileInfo = new BinaryFileService( rockContext )
                         .Queryable()
@@ -181,7 +182,7 @@ namespace Rock.Field.Types
             var binaryFileGuid = value.AsGuidOrNull();
             if ( binaryFileGuid.HasValue )
             {
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     var binaryFileService = new BinaryFileService( rockContext );
                     var mimeType = binaryFileService.Queryable().AsNoTracking().Where( a => a.Guid == binaryFileGuid.Value )
@@ -223,7 +224,7 @@ namespace Rock.Field.Types
                 return null;
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var binaryFileId = new BinaryFileService( rockContext ).GetId( binaryFileGuid.Value );
 
@@ -248,6 +249,28 @@ namespace Rock.Field.Types
         }
 
         #endregion
+        #region Value Hinting
+
+        /// <inheritdoc/>
+        /// <remarks>
+        /// Adds what this field type expects to the shared description of a
+        /// binary file reference. The guid alone does not say which files make sense
+        /// here, and the wrong kind of file saves without complaint.
+        /// </remarks>
+        internal override FieldTypeHints GetFieldHints( Dictionary<string, string> privateConfigurationValues )
+        {
+            var hints = base.GetFieldHints( privateConfigurationValues );
+
+            if ( hints != null )
+            {
+                hints.ValueFormat += " Nothing validates the kind of file on write, but the value is rendered as an audio player, so a file that is not audio saves cleanly and then fails to play.";
+            }
+
+            return hints;
+        }
+
+        #endregion
+
         #region WebForms
 #if WEBFORMS
 

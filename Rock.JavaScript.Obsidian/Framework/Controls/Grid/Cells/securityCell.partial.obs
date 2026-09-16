@@ -1,6 +1,7 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <button class="btn btn-security btn-sm"
+    <button v-if="isVisible"
+            class="btn btn-security btn-sm"
             title="Secure"
             type="button"
             :disabled="isDisabled"
@@ -13,6 +14,7 @@
     import { standardCellProps } from "@Obsidian/Core/Controls/grid";
     import { IGridState } from "@Obsidian/Types/Controls/grid";
     import { showSecurity } from "@Obsidian/Utility/dialogs";
+    import { areEqual, emptyGuid } from "@Obsidian/Utility/guid";
     import { computed } from "vue";
 
     const props = defineProps(standardCellProps);
@@ -38,6 +40,39 @@
         }
     });
 
+    /**
+     * The persisted identifier (IdKey or Guid) of the entity this row
+     * represents. Read from the column's idField when one is provided,
+     * otherwise the grid row key is used. These are separate concepts: the
+     * row key is a UI identity and may exist for rows that have not been
+     * saved to the database yet, while this value must only ever identify
+     * a persisted entity.
+     */
+    const entityKey = computed((): string | undefined => {
+        const field = props.column.props.idField;
+
+        if (typeof field === "string" && field !== "") {
+            const value = props.row[field];
+
+            return typeof value === "string" ? value : undefined;
+        }
+
+        return props.grid.getRowKey(props.row);
+    });
+
+    /**
+     * Will be `true` if the button should be rendered at all. A row without a
+     * persisted identifier cannot be secured, so no button is offered. This
+     * mirrors the WebForms SecurityField behavior of hiding the button unless
+     * the row had a positive Id. A missing, zero, or empty-guid identifier is
+     * not a persisted identity.
+     */
+    const isVisible = computed((): boolean => {
+        const key = entityKey.value;
+
+        return !!key && key !== "0" && !areEqual(key, emptyGuid);
+    });
+
     /** Will be `true` if the button should be disabled. */
     const isDisabled = computed((): boolean => {
         const field = props.column.props.disabledField;
@@ -55,7 +90,7 @@
      * @param event The event that triggered us.
      */
     async function onClick(event: Event): Promise<void> {
-        const key = props.grid.getRowKey(props.row);
+        const key = entityKey.value;
 
         // Remove focus from the button.
         if (event.target instanceof HTMLElement) {

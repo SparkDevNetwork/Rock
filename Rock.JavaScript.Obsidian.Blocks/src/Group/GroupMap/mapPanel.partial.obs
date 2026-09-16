@@ -1,0 +1,1149 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="group-map-panel">
+        <div class="col-lg-2 col-md-12 col-sm-12 col-xs-12 map-filter-container">
+            <template v-if="isLoading">
+                <div v-for="groupIndex in 3" :key="groupIndex" class="skeleton-group">
+                    <div class="skeleton skeleton-text" style="width: 45%;"></div>
+                    <div v-for="itemIndex in 3" :key="itemIndex" class="skeleton skeleton-text"></div>
+                </div>
+            </template>
+
+            <template v-else>
+                <div v-if="options.isCampusFilterShown ?? false" class="map-filter-campus">
+                    <CheckBoxList v-model="selectedCampusIds"
+                                  label="Campus Filter"
+                                  help="Select the campuses to narrow the results down to families with that home campus."
+                                  :items="options.campuses ?? []" />
+                </div>
+
+                <div class="map-filter-inline">
+                    <CheckBoxList v-model="selectedLayers"
+                                  label="Group Layers"
+                                  help="Show or hide the group, its child groups, and member home locations on the map."
+                                  :items="layerItems" />
+                </div>
+
+                <div v-if="hasGeoFence && connectionStatusItems.length > 0" class="map-filter-inline">
+                    <CheckBoxList v-model="selectedStatusIds"
+                                  label="Families in Area"
+                                  help="Show families living within the group's area, colored by their connection status."
+                                  :items="connectionStatusItems" />
+                </div>
+
+                <div v-if="familyChartItems.length > 0" class="family-chart">
+                    <div class="family-chart-total">{{ familyTotal }} {{ familyTotal === 1 ? "Family" : "Families" }}</div>
+
+                    <TransitionGroup tag="div" name="family-segment" class="family-chart-bar">
+                        <span v-for="item in familyChartItems"
+                              :key="item.key"
+                              class="family-chart-segment"
+                              :style="{ flexGrow: item.count, backgroundColor: `#${item.color}` }"></span>
+                    </TransitionGroup>
+
+                    <div class="family-chart-legend">
+                        <div v-for="item in familyChartItems" :key="item.key" class="family-chart-legend-item">
+                            <span class="map-legend-swatch" :style="{ backgroundColor: `#${item.color}` }"></span>
+                            <span class="family-chart-legend-label">{{ item.label }}</span>
+                            <span class="family-chart-legend-count">{{ item.count }}</span>
+                        </div>
+                    </div>
+                </div>
+            </template>
+        </div>
+
+        <div class="col-lg-10 col-md-12 col-sm-12 col-xs-12 p-0 group-map-canvas-container">
+            <div ref="mapContainer" class="group-map-canvas w-100" :style="mapCanvasStyle"></div>
+
+            <div v-if="hasLegendContent" class="map-legend-popover">
+                <button v-if="!isLegendOpen"
+                        type="button"
+                        class="map-legend-toggle"
+                        title="Legend"
+                        @click="isLegendOpen = true">
+                    <i class="ti ti-info-circle"></i>
+                </button>
+
+                <div v-else class="map-legend-card">
+                    <div class="map-legend-card-header">
+                        <span class="map-legend-card-title">Legend</span>
+                        <button type="button" class="map-legend-close" title="Close" @click="isLegendOpen = false">
+                            <i class="ti ti-x"></i>
+                        </button>
+                    </div>
+
+                    <div v-if="groupLegendItems.length > 0" class="map-legend">
+                        <div v-for="item in groupLegendItems" :key="item.key" class="map-legend-item">
+                            <span class="map-legend-swatch" :style="{ backgroundColor: `#${item.color}` }"></span>
+                            <span class="map-legend-label">{{ item.label }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</template>
+
+<style scoped>
+.group-map-panel {
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.map-filter-container {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-large);
+    border-right: 1px solid var(--color-interface-soft);
+    padding: var(--spacing-medium);
+}
+
+.map-legend {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-tiny);
+}
+
+.map-legend-item {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-xsmall);
+}
+
+.map-legend-swatch {
+    flex: 0 0 auto;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+}
+
+.map-legend-label {
+    flex: 1;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.family-chart {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xsmall);
+}
+
+.family-chart-total {
+    font-size: var(--font-size-small);
+    font-weight: var(--font-weight-bold);
+}
+
+.family-chart-bar {
+    display: flex;
+    height: 10px;
+    border-radius: 999px;
+    overflow: hidden;
+    background-color: var(--color-interface-softer);
+}
+
+.family-chart-segment {
+    min-width: 4px;
+    transition: flex-grow 0.3s ease, min-width 0.3s ease, opacity 0.3s ease;
+}
+
+.family-segment-enter-from,
+.family-segment-leave-to {
+    flex-grow: 0 !important;
+    min-width: 0;
+    opacity: 0;
+}
+
+.family-chart-legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--spacing-tiny) var(--spacing-small);
+}
+
+.family-chart-legend-item {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-tiny);
+}
+
+.family-chart-legend-count {
+    font-weight: var(--font-weight-bold);
+}
+
+.group-map-canvas-container {
+    position: relative;
+}
+
+.map-legend-popover {
+    position: absolute;
+    top: var(--spacing-small);
+    left: var(--spacing-small);
+    z-index: 5;
+}
+
+.map-legend-toggle {
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    border: none;
+    border-radius: 50%;
+    background-color: var(--color-interface-softest);
+    color: var(--color-interface-strong);
+    font-size: var(--font-size-regular);
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+    cursor: pointer;
+}
+
+.map-legend-card {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-small);
+    width: 240px;
+    max-width: calc(100vw - var(--spacing-large));
+    padding: var(--spacing-small);
+    border-radius: var(--rounded-small);
+    background-color: var(--color-interface-softest);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+}
+
+.map-legend-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.map-legend-card-title {
+    font-size: var(--font-size-small);
+    font-weight: var(--font-weight-semibold);
+}
+
+.map-legend-close {
+    padding: 0;
+    border: none;
+    background: transparent;
+    color: var(--color-interface-medium);
+    line-height: 1;
+    cursor: pointer;
+}
+
+/* Below Bootstrap's lg breakpoint (1200px) the filters stack above the map, so lay the
+   checkbox lists out horizontally instead of vertically. */
+@media (max-width: 1199px) {
+    .map-filter-container {
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        border-right: none;
+        border-bottom: 1px solid var(--color-interface-soft);
+        padding: var(--spacing-medium) var(--spacing-large);
+    }
+
+    .map-filter-container > * {
+        margin-bottom: 0;
+    }
+
+    /* Campus filter takes its own row; the remaining lists share the next row. */
+    .map-filter-campus {
+        flex-basis: 100%;
+    }
+
+    .map-filter-inline {
+        flex: 1;
+    }
+
+    /* Hide the families chart once the panel leaves the left column and goes horizontal. */
+    .family-chart {
+        display: none;
+    }
+}
+</style>
+
+<script setup lang="ts">
+    /// <reference types="google.maps" />
+    /* global google */
+    import { computed, CSSProperties, onMounted, onUnmounted, PropType, ref, watch } from "vue";
+    import CheckBoxList from "@Obsidian/Controls/checkBoxList.obs";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { loadMapResources } from "@Obsidian/Utility/geo";
+    import { isNullOrWhiteSpace } from "@Obsidian/Utility/stringUtils";
+    import { emptyGuid } from "@Obsidian/Utility/guid";
+    import { useHttp } from "@Obsidian/Utility/http";
+    import { useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { GeoPickerGoogleMapSettingsBag } from "@Obsidian/ViewModels/Rest/Controls/geoPickerGoogleMapSettingsBag";
+    import { GroupMapInitializationBag } from "@Obsidian/ViewModels/Blocks/Group/GroupMap/groupMapInitializationBag";
+    import { GroupMapOptionsBag } from "@Obsidian/ViewModels/Blocks/Group/GroupMap/groupMapOptionsBag";
+
+    const props = defineProps({
+        bag: {
+            type: Object as PropType<GroupMapInitializationBag>,
+            required: true
+        },
+
+        options: {
+            type: Object as PropType<GroupMapOptionsBag>,
+            required: true
+        },
+
+        /** Whether the child-groups layer should be shown. */
+        showChildGroups: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        /** The group type Ids that scope the child-groups layer. */
+        groupTypeIds: {
+            type: Array as PropType<number[]>,
+            default: () => []
+        }
+    });
+
+    // #region Types
+
+    /* eslint-disable @typescript-eslint/naming-convention -- The api/Groups/GetMapInfo/* endpoints serialize PascalCase, so these payload types must match. */
+
+    type MapItemPoint = {
+        Latitude: number;
+        Longitude: number;
+    };
+
+    /** A location returned by the api/Groups/GetMapInfo/* endpoints (legacy PascalCase payload). */
+    type MapItem = {
+        Name: string;
+        EntityId: number;
+        LocationId: number;
+        Point: MapItemPoint | null;
+        PolygonPoints: MapItemPoint[];
+    };
+
+    /* eslint-enable @typescript-eslint/naming-convention */
+    type AdvancedMarkerWrapper = {
+        position: google.maps.LatLng;
+        map: google.maps.Map | null;
+        // eslint-disable-next-line @typescript-eslint/naming-convention
+        marker_element: google.maps.marker.AdvancedMarkerElement;
+        getPosition(): google.maps.LatLng;
+        setPosition(position: google.maps.LatLng): void;
+        setMap(newMap: google.maps.Map | null): void;
+    };
+
+    /** A point marker: legacy Marker (no mapId) or AdvancedMarker wrapper (mapId set). */
+    type MapMarker = google.maps.Marker | AdvancedMarkerWrapper;
+
+    /** Anything addMapItem places for a layer: a point marker or an area polygon. */
+    type MapOverlay = MapMarker | google.maps.Polygon;
+
+    /** A group-layer legend row: a swatch color paired with its layer label. */
+    type LegendSwatch = {
+        key: string;
+        label: string;
+        color: string;
+    };
+
+    /** A family connection-status entry in the families chart: swatch, label, and count. */
+    type FamilyChartItem = LegendSwatch & {
+        count: number;
+    };
+
+    // #endregion Types
+
+    // #region Values
+
+    const http = useHttp();
+    const invokeBlockAction = useInvokeBlockAction();
+
+    const mapContainer = ref<HTMLDivElement | null>(null);
+
+    // True while the map resources and layers load; drives the filter skeletons.
+    const isLoading = ref(true);
+
+    const isLegendOpen = ref(false);
+
+    const selectedCampusIds = ref<string[]>([]);
+
+    const selectedLayers = ref<string[]>(["group", "childGroups", "members"]);
+
+    const selectedStatusIds = ref<string[]>([]);
+
+    // Overlays held by each base layer, counting area polygons as well as point markers so a
+    // geofence-only layer still offers its toggle. The overlay arrays below are plain
+    // variables, so these counts are what the toggles and legend react to.
+    const groupOverlayCount = ref(0);
+    const childGroupOverlayCount = ref(0);
+    const memberOverlayCount = ref(0);
+
+    // Legend swatch color per layer, resolved once its overlays are placed. Marker and polygon
+    // colors come from unrelated settings, so the swatch has to follow whichever was drawn.
+    const groupSwatchColor = ref("");
+    const childGroupSwatchColor = ref("");
+    const memberSwatchColor = ref("");
+
+    const familyMarkerCounts = ref<Record<number, number>>({});
+
+    // Whether the group has its own geofence polygon. The families layer and campus
+    // filter only apply within that area, so both stay hidden until it is present.
+    const hasGeoFence = ref(false);
+
+    let map: google.maps.Map | null = null;
+
+    // A single shared info window, reused for every marker/polygon click.
+    let infoWindow: google.maps.InfoWindow | null = null;
+
+    // The overlays for each base layer, tracked so each can be shown/hidden independently.
+    let groupOverlays: MapOverlay[] = [];
+    let childGroupOverlays: MapOverlay[] = [];
+    let memberOverlays: MapOverlay[] = [];
+
+    // Fetched family overlays keyed by connection status Id, cached so re-checking a
+    // status is instant. Cleared and re-fetched when the campus filter changes.
+    const familyOverlays = new Map<number, MapOverlay[]>();
+
+    // Bumped whenever the campus filter changes so in-flight family fetches that
+    // resolve afterward can be discarded (replaces the legacy jqXHR abort).
+    let familyRequestGeneration = 0;
+
+    // Bumped on each child-groups reload so a fetch that resolves after a newer reload
+    // has started can be discarded instead of leaking untracked overlays onto the map.
+    let childRequestGeneration = 0;
+
+    // Map Style values resolved server-side by loadMapResources. When the style
+    // has a mapId we use AdvancedMarkerElement; otherwise we apply the style JSON
+    // and fall back to the legacy Marker.
+    let styles: google.maps.MapTypeStyle[] = [];
+    let mapId: string | null = null;
+    let centerLatitude = 0;
+    let centerLongitude = 0;
+
+    const defaultZoom = 12;
+
+    // The running bounds of every placed overlay; the map fits to this once layers load.
+    let bounds: google.maps.LatLngBounds | null = null;
+
+    let polygonColorIndex = 0;
+
+    // Polygon stacking order by layer. The parent group's shapes must sit beneath the child
+    // groups so an overlapping child area stays clickable; without an explicit zIndex, reloading
+    // the child layer can leave the parent polygon on top and swallow the child's clicks.
+    const polygonZIndexByLayer = {
+        group: 1,
+        members: 2,
+        families: 2,
+        childGroups: 3
+    };
+
+    // Legacy teardrop pin used for the non-mapId Marker path.
+    const pinSvgPath = "M 0,0 C -2,-20 -10,-22 -10,-30 A 10,10 0 1,1 10,-30 C 10,-22 2,-20 0,0 z";
+
+    // Jitter range used to separate markers that share an exact position.
+    const overlapMin = 0.999999;
+    const overlapMax = 1.000001;
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    const mapCanvasStyle = computed((): CSSProperties => ({
+        height: `${props.options.mapHeight ?? 600}px`
+    }));
+
+    const layerItems = computed((): ListItemBag[] => {
+        const items: ListItemBag[] = [];
+
+        if (groupOverlayCount.value > 0) {
+            items.push({ value: "group", text: props.bag.groupName ?? "Group" });
+        }
+
+        if (childGroupOverlayCount.value > 0) {
+            items.push({ value: "childGroups", text: "Child Groups" });
+        }
+
+        if (memberOverlayCount.value > 0) {
+            items.push({ value: "members", text: "Group Members" });
+        }
+
+        return items;
+    });
+
+    const connectionStatusItems = computed((): ListItemBag[] => {
+        return (props.options.connectionStatuses ?? []).map(status => ({
+            value: `${status.id}`,
+            text: status.name ?? ""
+        }));
+    });
+
+    // The group-layer legend rows: a base layer that is both checked and non-empty.
+    // Correlates each layer's on-map color with its label (no counts).
+    const groupLegendItems = computed((): LegendSwatch[] => {
+        const items: LegendSwatch[] = [];
+
+        if (selectedLayers.value.includes("group") && groupOverlayCount.value > 0) {
+            items.push({ key: "group", label: props.bag.groupName ?? "Group", color: groupSwatchColor.value });
+        }
+
+        if (selectedLayers.value.includes("childGroups") && childGroupOverlayCount.value > 0) {
+            items.push({ key: "childGroups", label: "Child Groups", color: childGroupSwatchColor.value });
+        }
+
+        if (selectedLayers.value.includes("members") && memberOverlayCount.value > 0) {
+            items.push({ key: "members", label: "Group Members", color: memberSwatchColor.value });
+        }
+
+        return items;
+    });
+
+    // The family chart entries: each checked, non-empty connection status with its count.
+    // Reacts to the family checkboxes and the campus filter through the marker counts.
+    const familyChartItems = computed((): FamilyChartItem[] => {
+        const items: FamilyChartItem[] = [];
+
+        for (const status of props.options.connectionStatuses ?? []) {
+            const count = familyMarkerCounts.value[status.id] ?? 0;
+
+            if (selectedStatusIds.value.includes(`${status.id}`) && count > 0) {
+                items.push({ key: `status-${status.id}`, label: status.name ?? "", color: status.color ?? "", count });
+            }
+        }
+
+        return items;
+    });
+
+    // Total families currently shown across the checked connection statuses.
+    const familyTotal = computed((): number => familyChartItems.value.reduce((sum, item) => sum + item.count, 0));
+
+    // Whether there is any group-layer legend content to surface in the map popover.
+    const hasLegendContent = computed((): boolean => groupLegendItems.value.length > 0);
+
+    // #endregion Computed Values
+
+    // #region Functions
+
+    /**
+     * Places a single map item's point marker and/or area polygon on the map,
+     * extends the shared bounds, and returns the overlays created so the caller
+     * can track them per layer for show/hide.
+     */
+    function addMapItem(mapItem: MapItem, color: string, polygonZIndex: number): MapOverlay[] {
+        const items: MapOverlay[] = [];
+
+        if (mapItem.Point) {
+            const position = new google.maps.LatLng(mapItem.Point.Latitude, mapItem.Point.Longitude);
+            bounds?.extend(position);
+
+            const marker = createMarker(position, htmlDecode(mapItem.Name), color || "FE7569");
+
+            items.push(marker);
+
+            wireMarkerInfoWindow(marker, mapItem);
+        }
+
+        if (mapItem.PolygonPoints && mapItem.PolygonPoints.length > 0) {
+            const polygonBounds = new google.maps.LatLngBounds();
+            const polygonPoints = mapItem.PolygonPoints.map(point => {
+                const position = new google.maps.LatLng(point.Latitude, point.Longitude);
+                bounds?.extend(position);
+                polygonBounds.extend(position);
+                return position;
+            });
+
+            const polygonColor = getNextPolygonColor();
+            const polygon = new google.maps.Polygon({
+                paths: polygonPoints,
+                map,
+                strokeColor: polygonColor,
+                fillColor: polygonColor,
+                zIndex: polygonZIndex
+            });
+
+            items.push(polygon);
+
+            if (mapItem.EntityId === props.bag.groupId) {
+                hasGeoFence.value = true;
+            }
+
+            wirePolygonInfoWindow(polygon, polygonBounds.getCenter(), mapItem);
+        }
+
+        return items;
+    }
+
+    /**
+     * Builds a point marker, choosing the AdvancedMarkerElement wrapper when the
+     * Map Style has a mapId and the legacy Marker otherwise.
+     */
+    function createMarker(position: google.maps.LatLng, title: string, color: string): MapMarker {
+        // Stack overlapping pins by latitude so the more southern pin (lower on screen,
+        // visually nearer) draws in front, regardless of which layer added it.
+        const zIndex = Math.round(position.lat() * -100000);
+
+        if (isNullOrWhiteSpace(mapId)) {
+            const pinImage: google.maps.Symbol = {
+                path: pinSvgPath,
+                fillColor: "#" + color,
+                fillOpacity: 1,
+                strokeColor: "#000",
+                strokeWeight: 1,
+                scale: 1,
+                labelOrigin: new google.maps.Point(0, -28)
+            };
+
+            return new google.maps.Marker({
+                position,
+                map,
+                title,
+                icon: pinImage,
+                label: String.fromCharCode(9679),
+                zIndex
+            });
+        }
+
+        const pinGlyph = new google.maps.marker.PinElement({ glyphColor: "black" });
+
+        const wrapper: AdvancedMarkerWrapper = {
+            position,
+            map,
+            marker_element: new google.maps.marker.AdvancedMarkerElement({
+                position,
+                map,
+                title,
+                content: pinGlyph.element,
+                zIndex
+            }),
+            getPosition(): google.maps.LatLng {
+                return this.position;
+            },
+            setPosition(newPosition: google.maps.LatLng): void {
+                this.position = newPosition;
+                this.marker_element.position = newPosition;
+            },
+            setMap(newMap: google.maps.Map | null): void {
+                this.map = newMap;
+                this.marker_element.map = newMap;
+            }
+        };
+
+        return wrapper;
+    }
+
+    /**
+     * Returns the next polygon color from the Polygon Colors block setting,
+     * cycling back to the first once the list is exhausted.
+     */
+    function getNextPolygonColor(): string {
+        const colors = props.options.polygonColors ?? [];
+        if (colors.length === 0) {
+            return "#FE7569";
+        }
+
+        const color = colors[polygonColorIndex % colors.length];
+        polygonColorIndex++;
+        return color;
+    }
+
+    /**
+     * Decodes HTML entities in a map item name (mirrors the legacy htmlDecode).
+     */
+    function htmlDecode(input: string): string {
+        const div = document.createElement("div");
+        div.innerHTML = input;
+        return div.childNodes.length === 0 ? "" : (div.childNodes[0].nodeValue ?? "");
+    }
+
+    /**
+     * Requests the rendered info window HTML for a clicked map item. The Lava and
+     * linked-page URLs are resolved server-side, so nothing is trusted from the
+     * client. Returns null when there is nothing to show (blank template or error).
+     */
+    async function fetchInfoWindow(mapItem: MapItem): Promise<string | null> {
+        const result = await invokeBlockAction<string>("GetInfoWindow", {
+            request: {
+                groupId: mapItem.EntityId,
+                locationId: mapItem.LocationId
+            }
+        });
+
+        if (result.isSuccess && result.data) {
+            return result.data;
+        }
+
+        return null;
+    }
+
+    /**
+     * Opens the info window over a point marker on click. The legacy Marker anchors
+     * the window directly; the AdvancedMarker anchors via its wrapped element.
+     */
+    function wireMarkerInfoWindow(marker: MapMarker, mapItem: MapItem): void {
+        const isLegacyMarker = isNullOrWhiteSpace(mapId);
+        const clickTarget = isLegacyMarker
+            ? (marker as google.maps.Marker)
+            : (marker as AdvancedMarkerWrapper).marker_element;
+
+        google.maps.event.addListener(clickTarget, "click", async () => {
+            const content = await fetchInfoWindow(mapItem);
+
+            if (content === null || !infoWindow) {
+                return;
+            }
+
+            infoWindow.setContent(content);
+
+            if (isLegacyMarker) {
+                infoWindow.open(map, marker as google.maps.Marker);
+            }
+            else {
+                infoWindow.open({ anchor: (marker as AdvancedMarkerWrapper).marker_element, map });
+            }
+        });
+    }
+
+    /**
+     * Opens the info window at the center of a polygon on click.
+     */
+    function wirePolygonInfoWindow(polygon: google.maps.Polygon, center: google.maps.LatLng, mapItem: MapItem): void {
+        google.maps.event.addListener(polygon, "click", async () => {
+            const content = await fetchInfoWindow(mapItem);
+
+            if (content === null || !infoWindow) {
+                return;
+            }
+
+            infoWindow.setContent(content);
+            infoWindow.setPosition(center);
+            infoWindow.open(map);
+        });
+    }
+
+    /**
+     * Initializes the Google Map from the resolved Map Style. When the style
+     * carries a mapId the style JSON is ignored (Google applies the cloud-hosted
+     * style); otherwise the style JSON is applied directly.
+     */
+    function renderMap(): void {
+        if (!mapContainer.value) {
+            return;
+        }
+
+        const isMapIdEmpty = isNullOrWhiteSpace(mapId);
+
+        const mapOptions: google.maps.MapOptions = {
+            mapTypeId: "roadmap",
+            center: new google.maps.LatLng(centerLatitude, centerLongitude),
+            zoom: defaultZoom,
+            ...(isMapIdEmpty ? { styles } : { mapId: mapId as string })
+        };
+
+        map = new google.maps.Map(mapContainer.value, mapOptions);
+        map.setTilt(45);
+
+        bounds = new google.maps.LatLngBounds();
+        infoWindow = new google.maps.InfoWindow();
+    }
+
+    /**
+     * Builds the child-groups endpoint URL. The "Show Child Groups" toggle only
+     * controls whether descendants are walked; the selected group types scope
+     * which child groups come back.
+     */
+    function buildChildGroupsUrl(groupId: number): string {
+        let url = `/api/Groups/GetMapInfo/${groupId}/Children?includeDescendants=${props.showChildGroups}`;
+
+        if (props.groupTypeIds.length > 0) {
+            url += `&groupTypeIds=${props.groupTypeIds.join(",")}`;
+        }
+
+        return url;
+    }
+
+    /**
+     * Re-fetches just the child-groups layer after the "Show Child Groups" or
+     * group-types settings change, swapping it in place without disturbing the
+     * other layers or the current map viewport.
+     */
+    async function reloadChildGroupLayer(): Promise<void> {
+        // Invalidate any earlier reload still in flight so its overlays are discarded.
+        childRequestGeneration++;
+        const generation = childRequestGeneration;
+
+        // Drop the current child overlays before refetching.
+        for (const overlay of childGroupOverlays) {
+            clearOverlayListeners(overlay);
+        }
+
+        setAllMap(childGroupOverlays, null);
+        childGroupOverlays = [];
+
+        const groupId = props.bag.groupId;
+
+        if (!groupId) {
+            childGroupOverlayCount.value = 0;
+            childGroupSwatchColor.value = "";
+            return;
+        }
+
+        const overlays = await fetchLayer(buildChildGroupsUrl(groupId), props.bag.childGroupColor ?? "", polygonZIndexByLayer.childGroups);
+
+        // A newer reload started while this fetch was in flight; discard these overlays
+        // instead of leaving them untracked (and un-torn-down) on the map.
+        if (generation !== childRequestGeneration) {
+            for (const overlay of overlays) {
+                clearOverlayListeners(overlay);
+            }
+
+            setAllMap(overlays, null);
+            return;
+        }
+
+        childGroupOverlays = overlays;
+        childGroupOverlayCount.value = childGroupOverlays.length;
+        childGroupSwatchColor.value = getSwatchColor(childGroupOverlays, props.bag.childGroupColor ?? "");
+
+        applyLayerVisibility();
+    }
+
+    /**
+     * Fetches a single layer's map items and places them, returning the overlays
+     * created so the caller can track them for show/hide.
+     */
+    async function fetchLayer(url: string, color: string, polygonZIndex: number): Promise<MapOverlay[]> {
+        const result = await http.get<MapItem[]>(url);
+
+        const overlays: MapOverlay[] = [];
+
+        if (result.isSuccess && result.data) {
+            for (const mapItem of result.data) {
+                overlays.push(...addMapItem(mapItem, color, polygonZIndex));
+            }
+        }
+
+        return overlays;
+    }
+
+    /**
+     * Loads the group, child-group, and member layers in parallel, fits the map
+     * to their combined bounds, then reveals the highest-priority non-empty layer
+     * (matching the legacy group > members > child-groups precedence).
+     */
+    async function loadLayers(): Promise<void> {
+        const groupId = props.bag.groupId;
+
+        if (!groupId) {
+            return;
+        }
+
+        const tasks: Promise<void>[] = [
+            fetchLayer(`/api/Groups/GetMapInfo/${groupId}`, props.bag.groupColor ?? "", polygonZIndexByLayer.group)
+                .then(overlays => {
+                    groupOverlays = overlays;
+                }),
+            fetchLayer(`/api/Groups/GetMapInfo/${groupId}/Members/Active`, props.bag.memberColor ?? "", polygonZIndexByLayer.members)
+                .then(overlays => {
+                    memberOverlays = overlays;
+                }),
+            fetchLayer(buildChildGroupsUrl(groupId), props.bag.childGroupColor ?? "", polygonZIndexByLayer.childGroups)
+                .then(overlays => {
+                    childGroupOverlays = overlays;
+                })
+        ];
+
+        await Promise.all(tasks);
+
+        groupOverlayCount.value = groupOverlays.length;
+        childGroupOverlayCount.value = childGroupOverlays.length;
+        memberOverlayCount.value = memberOverlays.length;
+
+        groupSwatchColor.value = getSwatchColor(groupOverlays, props.bag.groupColor ?? "");
+        childGroupSwatchColor.value = getSwatchColor(childGroupOverlays, props.bag.childGroupColor ?? "");
+        memberSwatchColor.value = getSwatchColor(memberOverlays, props.bag.memberColor ?? "");
+
+        adjustOverlappedMarkers(collectMarkers([...groupOverlays, ...childGroupOverlays, ...memberOverlays]));
+
+        if (map && bounds && !bounds.isEmpty()) {
+            map.fitBounds(bounds);
+        }
+
+        // Reveal only the highest-priority non-empty layer, matching the legacy default.
+        if (groupOverlayCount.value > 0) {
+            selectedLayers.value = ["group"];
+        }
+        else if (memberOverlayCount.value > 0) {
+            selectedLayers.value = ["members"];
+        }
+        else if (childGroupOverlayCount.value > 0) {
+            selectedLayers.value = ["childGroups"];
+        }
+        else {
+            selectedLayers.value = [];
+        }
+
+        applyLayerVisibility();
+    }
+
+    /**
+     * Shows or hides each base layer's overlays according to the current
+     * selectedLayers checkbox state.
+     */
+    function applyLayerVisibility(): void {
+        setAllMap(groupOverlays, selectedLayers.value.includes("group") ? map : null);
+        setAllMap(childGroupOverlays, selectedLayers.value.includes("childGroups") ? map : null);
+        setAllMap(memberOverlays, selectedLayers.value.includes("members") ? map : null);
+    }
+
+    /**
+     * Adds or removes a set of overlays from the map in one pass.
+     */
+    function setAllMap(overlays: MapOverlay[], targetMap: google.maps.Map | null): void {
+        for (const overlay of overlays) {
+            overlay.setMap(targetMap);
+        }
+    }
+
+    /**
+     * Collects the point markers (excluding area polygons) from a set of overlays.
+     * Only the overlap adjustment needs this, since polygons have no getPosition().
+     */
+    function collectMarkers(overlays: MapOverlay[]): MapMarker[] {
+        return overlays.filter(overlay => !(overlay instanceof google.maps.Polygon)) as MapMarker[];
+    }
+
+    /**
+     * Resolves a layer's legend swatch color: its marker color when the layer placed any point
+     * markers, otherwise the fill color of its first area polygon so the swatch matches the
+     * shape actually on the map (a group whose only location is a geofence draws no marker).
+     */
+    function getSwatchColor(overlays: MapOverlay[], markerColor: string): string {
+        if (collectMarkers(overlays).length > 0) {
+            return markerColor;
+        }
+
+        const polygon = overlays.find(overlay => overlay instanceof google.maps.Polygon) as google.maps.Polygon | undefined;
+
+        // The cycling Polygon Colors list is applied per shape as it is created, so read the
+        // color back off the shape rather than recomputing which turn it took.
+        const polygonColor = polygon?.get("strokeColor") as string | undefined;
+
+        // Marker colors arrive from the server already stripped of "#"; polygon colors do not.
+        return (polygonColor ?? markerColor).replace("#", "");
+    }
+
+    /**
+     * Nudges apart any two markers that share an exact position so both remain
+     * clickable (ported from the legacy adjustOverlappedMarkers).
+     */
+    function adjustOverlappedMarkers(markers: MapMarker[]): void {
+        if (markers.length < 2) {
+            return;
+        }
+
+        for (let i = 0; i < markers.length - 1; i++) {
+            const position = markers[i].getPosition();
+
+            if (!position) {
+                continue;
+            }
+
+            for (let j = i + 1; j < markers.length; j++) {
+                const otherPosition = markers[j].getPosition();
+
+                if (otherPosition && position.equals(otherPosition)) {
+                    const newLatitude = position.lat() * (Math.random() * (overlapMax - overlapMin) + overlapMin);
+                    const newLongitude = position.lng() * (Math.random() * (overlapMax - overlapMin) + overlapMin);
+                    markers[i].setPosition(new google.maps.LatLng(newLatitude, newLongitude));
+                }
+            }
+        }
+    }
+
+    /**
+     * Clears the click listeners for a single overlay. AdvancedMarker listeners
+     * live on the wrapped element rather than the wrapper itself.
+     */
+    function clearOverlayListeners(overlay: MapOverlay): void {
+        google.maps.event.clearInstanceListeners(overlay);
+
+        const wrapper = overlay as AdvancedMarkerWrapper;
+        if (wrapper.marker_element) {
+            google.maps.event.clearInstanceListeners(wrapper.marker_element);
+        }
+    }
+
+    /**
+     * Tears down the Google Maps handles so listener tables and tile loaders
+     * can be GC'd. Only touches Google objects when the map was actually created.
+     */
+    function teardownMap(): void {
+        if (map) {
+            const overlays: MapOverlay[] = [
+                ...groupOverlays,
+                ...childGroupOverlays,
+                ...memberOverlays,
+                ...Array.from(familyOverlays.values()).flat()
+            ];
+
+            for (const overlay of overlays) {
+                clearOverlayListeners(overlay);
+                overlay.setMap(null);
+            }
+
+            if (infoWindow) {
+                infoWindow.close();
+                google.maps.event.clearInstanceListeners(infoWindow);
+            }
+
+            google.maps.event.clearInstanceListeners(map);
+        }
+
+        infoWindow = null;
+        map = null;
+        bounds = null;
+        groupOverlays = [];
+        childGroupOverlays = [];
+        memberOverlays = [];
+        familyOverlays.clear();
+    }
+
+    /**
+     * Builds the Families endpoint URL for a connection status, scoping to the
+     * selected campuses when the campus filter is in use.
+     */
+    function buildFamiliesUrl(statusId: number): string {
+        let url = `/api/Groups/GetMapInfo/${props.bag.groupId}/Families/${statusId}`;
+
+        if (selectedCampusIds.value.length > 0) {
+            url += `?CampusIds=${selectedCampusIds.value.join(",")}`;
+        }
+
+        return url;
+    }
+
+    /**
+     * Looks up the marker color configured for a connection status.
+     */
+    function getStatusColor(statusId: number): string {
+        const status = (props.options.connectionStatuses ?? []).find(s => s.id === statusId);
+        return status?.color ?? "";
+    }
+
+    /**
+     * Shows a connection status's families, fetching them on first use and caching
+     * the overlays so a later re-check is instant.
+     */
+    async function showFamilyStatus(statusId: number): Promise<void> {
+        const cached = familyOverlays.get(statusId);
+
+        if (cached) {
+            setAllMap(cached, map);
+            return;
+        }
+
+        // Reserve the slot so a rapid re-check does not start a second fetch.
+        familyOverlays.set(statusId, []);
+
+        const generation = familyRequestGeneration;
+        const overlays = await fetchLayer(buildFamiliesUrl(statusId), getStatusColor(statusId), polygonZIndexByLayer.families);
+
+        if (generation !== familyRequestGeneration) {
+            setAllMap(overlays, null);
+            return;
+        }
+
+        familyOverlays.set(statusId, overlays);
+        familyMarkerCounts.value = { ...familyMarkerCounts.value, [statusId]: collectMarkers(overlays).length };
+
+        if (!selectedStatusIds.value.includes(`${statusId}`)) {
+            setAllMap(overlays, null);
+        }
+    }
+
+    /**
+     * Hides a connection status's families without discarding the cached overlays.
+     */
+    function hideFamilyStatus(statusId: number): void {
+        const cached = familyOverlays.get(statusId);
+
+        if (cached) {
+            setAllMap(cached, null);
+        }
+    }
+
+    /**
+     * Clears every fetched family layer and re-fetches the checked statuses against
+     * the new campus filter (ported from the legacy campus-picker handler).
+     */
+    async function reloadFamiliesForCampusChange(): Promise<void> {
+        familyRequestGeneration++;
+
+        for (const overlays of familyOverlays.values()) {
+            setAllMap(overlays, null);
+        }
+
+        familyOverlays.clear();
+        familyMarkerCounts.value = {};
+
+        await Promise.all(selectedStatusIds.value.map(id => showFamilyStatus(Number(id))));
+    }
+
+    // #endregion Functions
+
+    // #region Watchers
+
+    // Show or hide the base layers as the person toggles the Group Layers checkboxes.
+    watch(selectedLayers, () => {
+        applyLayerVisibility();
+    });
+
+    // Fetch/show or hide family layers as connection statuses are toggled.
+    watch(selectedStatusIds, (newIds, oldIds) => {
+        const added = newIds.filter(id => !oldIds.includes(id));
+        const removed = oldIds.filter(id => !newIds.includes(id));
+
+        added.forEach(id => showFamilyStatus(Number(id)));
+        removed.forEach(id => hideFamilyStatus(Number(id)));
+    });
+
+    // Clear and re-fetch the family layers whenever the campus filter changes.
+    watch(selectedCampusIds, () => {
+        reloadFamiliesForCampusChange();
+    });
+
+    // Re-fetch the child-groups layer when the settings (Show Child Groups / group
+    // types) change, matching the legacy re-render on Apply.
+    watch([() => props.showChildGroups, () => props.groupTypeIds], () => {
+        reloadChildGroupLayer();
+    });
+
+    // #endregion Watchers
+
+    // #region Lifecycle Hooks
+
+    onMounted(async (): Promise<void> => {
+        try {
+            const settings = await loadMapResources({ mapStyleValueGuid: props.options.mapStyleValueGuid ?? emptyGuid });
+
+            // googleMapId lives on the Google-specific settings bag, so cast to read it.
+            mapId = (settings as GeoPickerGoogleMapSettingsBag).googleMapId ?? "";
+            centerLatitude = settings.centerLatitude ?? 33.590795;
+            centerLongitude = settings.centerLongitude ?? -112.126459;
+
+            try {
+                styles = JSON.parse(settings.mapStyle ?? "");
+            }
+            catch {
+                // The style JSON can be empty for cloud-styled (mapId) maps; ignore.
+            }
+
+            renderMap();
+            await loadLayers();
+        }
+        finally {
+            // Clear the skeletons once loading settles, even if a resource fetch failed.
+            isLoading.value = false;
+        }
+    });
+
+    onUnmounted((): void => {
+        teardownMap();
+    });
+
+    // #endregion Lifecycle Hooks
+</script>

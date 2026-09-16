@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -19,7 +19,9 @@ using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
 using System.Text.RegularExpressions;
+
 using Rock.Communication;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -181,7 +183,7 @@ namespace Rock.ElectronicSignature
         public static bool SendSignatureCompletionCommunication( int signatureDocumentId, out List<string> errorMessages )
         {
             errorMessages = new List<string>();
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var signatureDocument = new SignatureDocumentService( rockContext ).Queryable()
                 .Where( a => a.Id == signatureDocumentId )
                 .Include( s => s.SignatureDocumentTemplate.CompletionSystemCommunication )

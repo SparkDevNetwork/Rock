@@ -31,7 +31,7 @@ export type PublicValueItem = {
     providerEntityTypeId?: number;
 };
 
-export const enum ConfigurationValueKey {
+export const enum ConfigurationKey {
     BinaryFileType = "binaryFileType",
     FilePath = "filePath",
     OriginalProviderEntityTypeGuid = "originalProviderEntityTypeGuid",
@@ -61,8 +61,8 @@ export class BackgroundCheckFieldType extends FieldTypeBase {
         try {
             const clientValue = JSON.parse(value || "{}") as PublicValueItem;
 
-            const filePath = configurationValues[ConfigurationValueKey.FilePath];
-            const entityTypeGuid = configurationValues[ConfigurationValueKey.OriginalProviderEntityTypeGuid];
+            const filePath = configurationValues[ConfigurationKey.FilePath];
+            const entityTypeGuid = configurationValues[ConfigurationKey.OriginalProviderEntityTypeGuid];
 
             if (clientValue.isFileBased) {
                 htmlValue = `<a href='${filePath}?EntityTypeGuid=${entityTypeGuid}&RecordKey=${clientValue.binaryFileGuid}' title='${escapeHtml(clientValue.fileName ?? "")}' class='btn btn-xs btn-default'>View</a>`;

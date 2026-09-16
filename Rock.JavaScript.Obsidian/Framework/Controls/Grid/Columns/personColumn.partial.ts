@@ -19,8 +19,59 @@ import { standardColumnProps } from "@Obsidian/Core/Controls/grid";
 import { Component, defineComponent, PropType } from "vue";
 import PersonCell from "../Cells/personCell.partial.obs";
 import PersonSkeletonCell from "../Cells/personSkeletonCell.partial.obs";
-import { ColumnDefinition, ExportValueFunction, QuickFilterValueFunction, SortValueFunction } from "@Obsidian/Types/Controls/grid";
+import { ColumnDefinition, ExportValueFunction, FilterValueFunction, QuickFilterValueFunction, SortValueFunction } from "@Obsidian/Types/Controls/grid";
 import { PersonFieldBag } from "@Obsidian/ViewModels/Core/Grid/personFieldBag";
+
+/**
+ * Gets the value to use when filtering a cell of this column.
+ *
+ * @param row The row that will be displayed.
+ * @param column The column that will be displayed.
+ *
+ * @returns A string value or undefined if the cell has no value.
+ */
+function getFilterValue(row: Record<string, unknown>, column: ColumnDefinition): string | undefined {
+    if (!column.field) {
+        return undefined;
+    }
+
+    const value = row[column.field] as PersonFieldBag | undefined;
+
+    if (!value || typeof value !== "object") {
+        return undefined;
+    }
+
+    if (!value.idKey) {
+        return undefined;
+    }
+
+    return value.idKey;
+}
+
+/**
+ * Gets the value to use when using the quicker filter on this column.
+ *
+ * @param row The row that will be displayed.
+ * @param column The column that will be displayed.
+ *
+ * @returns A string value or undefined if the cell has no value.
+ */
+function getQuickFilterValue(row: Record<string, unknown>, column: ColumnDefinition): string | undefined {
+    if (!column.field) {
+        return undefined;
+    }
+
+    const value = row[column.field] as PersonFieldBag | undefined;
+
+    if (!value || typeof value !== "object") {
+        return undefined;
+    }
+
+    // Always quick filter on nickName and then lastName. It is more natural to
+    // search for "Ted Dec" than "Decker, Ted" when using a quick filter, even
+    // if the display value is "Decker, Ted".
+    return `${value.nickName ?? ""} ${value.lastName ?? ""}`;
+}
 
 /**
  * Gets the value to use when displaying a cell of this column.
@@ -67,9 +118,14 @@ export default defineComponent({
             default: PersonSkeletonCell
         },
 
+        filterValue: {
+            type: Function as PropType<FilterValueFunction>,
+            default: getFilterValue
+        },
+
         quickFilterValue: {
             type: Function as PropType<QuickFilterValueFunction>,
-            default: getDisplayedValue
+            default: getQuickFilterValue
         },
 
         exportValue: {

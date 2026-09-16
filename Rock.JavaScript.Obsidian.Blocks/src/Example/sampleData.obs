@@ -1,0 +1,198 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Panel title="Sample Data Import" class="panel-block">
+
+        <NotificationBox :alertType="AlertType.Warning">
+            <strong>Important!</strong> Never load sample data into your production (real) Rock system.
+            This sample data is for training and testing purposes only.
+            <template v-if="isStopwatchEnabled">
+                <br />Loading data from: {{ xmlDocumentUrl }}
+            </template>
+        </NotificationBox>
+
+        <NotificationBox v-if="!isXmlFileAvailable && (importState === ImportState.Idle || importState === ImportState.Starting)"
+                         :alertType="AlertType.Danger">
+            <strong>Problem Detected</strong> &mdash; The sample data file is not available.
+            It's either missing or there is a network problem preventing access.
+        </NotificationBox>
+
+        <div v-if="importState !== ImportState.Importing && importState !== ImportState.Success" ref="formContainer">
+            <TextBox v-model="password"
+                     label="Password to use for Logins"
+                     help="The password to use for any user logins that are created in the sample data. Note: If you don't provide a password no logins will be added."
+                     type="password"
+                     autocomplete="new-password"
+                     @keydown.enter="onLoadData" />
+
+            <div class="actions">
+                <RockButton :btnType="BtnType.Primary"
+                            :disabled="!isXmlFileAvailable || importState === ImportState.Starting"
+                            @click="onLoadData">
+                    {{ importState === ImportState.Starting ? "Loading...(this may take a few minutes)" : "Load Sample Data" }}
+                </RockButton>
+            </div>
+        </div>
+
+    </Panel>
+
+    <NotificationBox v-if="progressMessage"
+                     class="mt-3"
+                     :alertType="progressAlertType"
+                     :heading="importState === ImportState.Error ? 'Oops!' : ''">
+        <div v-html="progressMessage"></div>
+    </NotificationBox>
+
+    <NotificationBox v-if="isStopwatchEnabled && importState !== ImportState.Success && (importState === ImportState.Importing || logMessages)"
+                     class="mt-3"
+                     :alertType="AlertType.Info">
+        <strong>Stopwatch Log</strong><br />
+        <pre style="border: none; font-family: monospace; white-space: pre-wrap; display: block;"
+             v-html="logMessages"></pre>
+    </NotificationBox>
+
+    <NotificationBox v-if="importState === ImportState.Success"
+                     class="mt-3"
+                     :alertType="AlertType.Success"
+                     heading="Success">
+        <div v-html="completionMessage"></div>
+    </NotificationBox>
+</template>
+
+<script setup lang="ts">
+    import { ref, onMounted, nextTick } from "vue";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import Panel from "@Obsidian/Controls/panel.obs";
+    import { useConfigurationValues, useInvokeBlockAction, onConfigurationValuesChanged, useReloadBlock } from "@Obsidian/Utility/block";
+    import { getTopic } from "@Obsidian/Utility/realTime";
+    import { BtnType } from "@Obsidian/Enums/Controls/btnType";
+    import { CustomBlockBox } from "@Obsidian/ViewModels/Blocks/customBlockBox";
+    import { SampleDataBag } from "@Obsidian/ViewModels/Blocks/Example/SampleData/sampleDataBag";
+    import { SampleDataOptionsBag } from "@Obsidian/ViewModels/Blocks/Example/SampleData/sampleDataOptionsBag";
+    import { TaskActivityProgressStatusBag } from "@Obsidian/ViewModels/Utility/taskActivityProgressStatusBag";
+    import { TaskActivityProgressLogBag } from "@Obsidian/ViewModels/Utility/taskActivityProgressLogBag";
+    import { TaskActivityProgressUpdateBag } from "@Obsidian/ViewModels/Utility/taskActivityProgressUpdateBag";
+    import { AlertType } from "@Obsidian/Enums/Controls/alertType";
+
+    enum ImportState {
+        Idle = "idle",
+        Starting = "starting",
+        Importing = "importing",
+        Success = "success",
+        Error = "error"
+    }
+
+    const config = useConfigurationValues<CustomBlockBox<SampleDataBag, SampleDataOptionsBag>>();
+    const invokeBlockAction = useInvokeBlockAction();
+
+    onConfigurationValuesChanged(useReloadBlock());
+
+    // #region Values
+
+    const password = ref("");
+    const isXmlFileAvailable = config.bag?.isXmlFileAvailable ?? false;
+    const isStopwatchEnabled = config.bag?.isStopwatchEnabled ?? false;
+    const xmlDocumentUrl = config.bag?.xmlDocumentUrl ?? "";
+    const formContainer = ref<HTMLElement>();
+
+    const importState = ref(ImportState.Idle);
+    const progressMessage = ref("");
+    const progressAlertType = ref<AlertType>(AlertType.Info);
+    const logMessages = ref("");
+    const completionMessage = ref("");
+
+    let realTimeConnectionId = "";
+
+    // #endregion
+
+    // #region Functions
+
+    /**
+     * Initialize the real-time engine and start monitoring for updates
+     * to the sample data import progress.
+     */
+    async function startRealTime(): Promise<void> {
+        const topic = await getTopic("Rock.RealTime.Topics.TaskActivityProgressTopic");
+
+        topic.onDisconnected(async () => {
+            await startRealTime();
+        });
+
+        topic.onReconnected(async () => {
+            realTimeConnectionId = topic.connectionId ?? "";
+        });
+
+        topic.on("taskStarted", (_bag: TaskActivityProgressStatusBag) => {
+            importState.value = ImportState.Importing;
+            progressMessage.value = "Starting sample data import...";
+            progressAlertType.value = AlertType.Info;
+            logMessages.value = "";
+            completionMessage.value = "";
+        });
+
+        topic.on("updateTaskProgress", (data: TaskActivityProgressUpdateBag) => {
+            if (data?.message) {
+                progressMessage.value = data.message;
+            }
+        });
+
+        topic.on("updateTaskLog", (data: TaskActivityProgressLogBag) => {
+            if (data?.message) {
+                logMessages.value += data.message;
+            }
+        });
+
+        topic.on("taskCompleted", (bag: TaskActivityProgressStatusBag) => {
+            if (bag.errors?.length) {
+                importState.value = ImportState.Error;
+                progressAlertType.value = AlertType.Danger;
+                progressMessage.value = bag.message ?? "Import failed.";
+            }
+            else {
+                importState.value = ImportState.Success;
+                progressAlertType.value = AlertType.Info;
+                progressMessage.value = "";
+                completionMessage.value = bag.message ?? "Sample data loaded successfully.";
+            }
+        });
+
+        realTimeConnectionId = topic.connectionId ?? "";
+    }
+
+    /**
+     * Handles the click event for the Load Sample Data button.
+     */
+    async function onLoadData(): Promise<void> {
+        if (importState.value === ImportState.Starting || importState.value === ImportState.Importing) {
+            return;
+        }
+
+        importState.value = ImportState.Starting;
+        progressMessage.value = "";
+        logMessages.value = "";
+
+        const result = await invokeBlockAction("LoadSampleData", {
+            password: password.value,
+            sessionId: realTimeConnectionId
+        });
+
+        if (!result.isSuccess) {
+            importState.value = ImportState.Idle;
+            progressMessage.value = result.errorMessage ?? "An unknown error occurred while starting the import.";
+            progressAlertType.value = AlertType.Danger;
+        }
+    }
+
+    // #endregion
+
+    // Initialize real-time connection when component mounts.
+    startRealTime();
+
+    // Auto-focus the password field on initial load.
+    onMounted(() => {
+        nextTick(() => {
+            formContainer.value?.querySelector<HTMLInputElement>("input")?.focus();
+        });
+    });
+</script>

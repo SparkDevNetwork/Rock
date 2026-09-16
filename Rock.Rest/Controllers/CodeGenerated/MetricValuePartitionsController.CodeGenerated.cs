@@ -21,6 +21,7 @@
 // </copyright>
 //
 
+using Rock.Configuration;
 using Rock.Model;
 using Rock.SystemGuid;
 
@@ -35,6 +36,6 @@ namespace Rock.Rest.Controllers
         /// <summary>
         /// Initializes a new instance of the <see cref="MetricValuePartitionsController"/> class.
         /// </summary>
-        public MetricValuePartitionsController() : base( new Rock.Model.MetricValuePartitionService( new Rock.Data.RockContext() ) ) { } 
+        public MetricValuePartitionsController() : base( new Rock.Model.MetricValuePartitionService( RockApp.Current.CreateRockContext() ) ) { } 
     }
 }

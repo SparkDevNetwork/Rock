@@ -1,0 +1,167 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Modal v-model="isVisible"
+           title="Settings"
+           saveText="Save"
+           @save="onSave">
+        <SectionHeader title="Filters" />
+
+        <SlidingDateRangePicker v-model="dateRange" label="Date Range" />
+
+        <NumberRangeBox v-model="transactionAmount" label="Transaction Amount" />
+
+        <div v-if="showPerson">
+            <PersonPicker v-model="person" label="Person" />
+        </div>
+
+        <div v-if="showCampus">
+            <CampusPicker v-model="campus" label="Campus" :showBlankItem="true" />
+        </div>
+
+        <div v-if="showAlertTypeFilters">
+            <CheckBoxList v-model="alertCategories" label="Alert Category" :items="alertCategoryItems" horizontal />
+        </div>
+
+        <div v-if="showAlertTypeFilters && alertTypeItems.length > 0">
+            <CheckBoxList v-model="alertTypes" label="Alert Types" :items="alertTypeItems" horizontal />
+        </div>
+
+        <RockButton :btnType="BtnType.Default" :btnSize="BtnSize.ExtraSmall" @click="onClear">
+            <i class="ti ti-filter-x"></i> Clear Filters
+        </RockButton>
+    </Modal>
+</template>
+
+<script setup lang="ts">
+    import { PropType, ref, watch } from "vue";
+    import { GridSettingsOptions } from "./types.partial";
+    import Modal from "@Obsidian/Controls/modal.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import SectionHeader from "@Obsidian/Controls/sectionHeader.obs";
+    import CheckBoxList from "@Obsidian/Controls/checkBoxList.obs";
+    import PersonPicker from "@Obsidian/Controls/personPicker.obs";
+    import CampusPicker from "@Obsidian/Controls/campusPicker.obs";
+    import NumberRangeBox from "@Obsidian/Controls/numberRangeBox.obs";
+    import SlidingDateRangePicker from "@Obsidian/Controls/slidingDateRangePicker.obs";
+    import { useVModelPassthrough } from "@Obsidian/Utility/component";
+    import { deepEqual } from "@Obsidian/Utility/util";
+    import { enumToListItemBag } from "@Obsidian/Utility/enumUtils";
+    import { AlertTypeDescription } from "@Obsidian/Enums/Finance/alertType";
+    import { BtnType } from "@Obsidian/Enums/Controls/btnType";
+    import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { SlidingDateRange } from "@Obsidian/Utility/slidingDateRange";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<GridSettingsOptions>,
+            required: true
+        },
+
+        visible: {
+            type: Boolean as PropType<boolean>,
+            required: true
+        },
+
+        alertTypeItems: {
+            type: Array as PropType<ListItemBag[]>,
+            default: () => []
+        },
+
+        showDateRange: {
+            type: Boolean as PropType<boolean>,
+            default: true
+        },
+
+        showAlertTypeFilters: {
+            type: Boolean as PropType<boolean>,
+            default: true
+        },
+
+        showPerson: {
+            type: Boolean as PropType<boolean>,
+            default: true
+        },
+
+        showCampus: {
+            type: Boolean as PropType<boolean>,
+            default: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: GridSettingsOptions): void;
+        (e: "update:visible", value: boolean): void;
+        (e: "close"): void;
+    }>();
+
+    // #region Values
+
+    const isVisible = useVModelPassthrough(props, "visible", emit);
+
+    const dateRange = ref<SlidingDateRange | null>(props.modelValue.dateRange ?? null);
+    const alertCategories = ref(props.modelValue.alertCategories ?? []);
+    const person = ref(props.modelValue.person);
+    const transactionAmount = ref(props.modelValue.transactionAmount);
+    const campus = ref(props.modelValue.campus);
+    const alertTypes = ref(props.modelValue.alertTypes ?? []);
+
+    const alertCategoryItems = enumToListItemBag(AlertTypeDescription);
+
+    // #endregion Values
+
+    // #region Event Handlers
+
+    /**
+     * Called when the clear filters button is clicked; resets all filter values.
+     */
+    function onClear(): void {
+        dateRange.value = null;
+        alertCategories.value = [];
+        person.value = undefined;
+        transactionAmount.value = { lower: null, upper: null };
+        campus.value = undefined;
+        alertTypes.value = [];
+    }
+
+    /**
+     * Called when the save button is clicked.
+     */
+    function onSave(): void {
+        const value: GridSettingsOptions = {
+            dateRange: dateRange.value,
+            alertCategories: alertCategories.value,
+            person: person.value,
+            transactionAmount: transactionAmount.value,
+            campus: campus.value,
+            alertTypes: alertTypes.value
+        };
+
+        if (!deepEqual(value, props.modelValue, true)) {
+            emit("update:modelValue", value);
+        }
+
+        isVisible.value = false;
+    }
+
+    // #endregion Event Handlers
+
+    // #region Watchers
+
+    watch(() => props.modelValue, () => {
+        dateRange.value = props.modelValue.dateRange ?? null;
+        alertCategories.value = props.modelValue.alertCategories ?? [];
+        person.value = props.modelValue.person;
+        transactionAmount.value = props.modelValue.transactionAmount;
+        campus.value = props.modelValue.campus;
+        alertTypes.value = props.modelValue.alertTypes ?? [];
+    });
+
+    watch(isVisible, () => {
+        if (!isVisible.value) {
+            emit("close");
+        }
+    });
+
+    // #endregion Watchers
+</script>

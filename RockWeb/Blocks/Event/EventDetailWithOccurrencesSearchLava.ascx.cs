@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -23,6 +23,7 @@ using System.Web.UI.WebControls;
 
 using Rock;
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -73,10 +74,22 @@ namespace RockWeb.Blocks.Event
 {% endfor %}
 " )]
 
-    [SlidingDateRangeField( "Default Date Range", "The Default date range selection", false, "Next|10|Week||", enabledSlidingDateRangeTypes: "Next,Upcoming,Current", order: 3 )]
+    [SlidingDateRangeField( "Default Date Range",
+        Description = "The Default date range selection",
+        IsRequired = false,
+        DefaultValue = "Next|10|Week||",
+        EnabledSlidingDateRangeTypes = "Next,Upcoming,Current",
+        Order = 3 )]
 
-    [LinkedPage( "Event Detail Page", "The page to use for showing event details.", required: false, order: 4 )]
-    [BooleanField( "Use Campus Context", "Set this to true to set the campus filter based on the campus context.", defaultValue: false, order: 5 )]
+    [LinkedPage( "Event Detail Page",
+        Description = "The page to use for showing event details.",
+        IsRequired = false,
+        Order = 4 )]
+
+    [BooleanField( "Use Campus Context",
+        Description = "Set this to true to set the campus filter based on the campus context.",
+        DefaultBooleanValue = false,
+        Order = 5 )]
     [Rock.SystemGuid.BlockTypeGuid( "B7788DFF-783D-40A3-BFD4-EA9561F950A8" )]
     public partial class EventDetailWithOccurrencesSearchLava : RockBlock
     {
@@ -144,7 +157,7 @@ namespace RockWeb.Blocks.Event
         {
             hfEventItemId.Value = eventItemId.ToString();
 
-            var eventItem = new EventItemService( new RockContext() ).Get( eventItemId );
+            var eventItem = new EventItemService( RockApp.Current.CreateRockContext() ).Get( eventItemId );
             string eventLavaTemplate = this.GetAttributeValue( "EventLavaTemplate" );
             var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson, new Rock.Lava.CommonMergeFieldsOptions() );
             mergeFields.Add( "Event", eventItem );
@@ -197,7 +210,7 @@ namespace RockWeb.Blocks.Event
         /// </summary>
         private void ShowResults()
         {
-            RockContext rockContext = new RockContext();
+            RockContext rockContext = RockApp.Current.CreateRockContext();
 
             int eventItemId = hfEventItemId.Value.AsInteger();
             var qry = new EventItemOccurrenceService( rockContext ).Queryable().Where( e => e.EventItem.IsActive && e.EventItemId == eventItemId );

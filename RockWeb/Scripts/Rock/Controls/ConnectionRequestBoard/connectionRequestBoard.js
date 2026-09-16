@@ -6,6 +6,7 @@
     Rock.controls.connectionRequestBoard = (function () {
 
         let _controlClientId = '';
+        let _isSequentialStatusEnforced = false;
 
         //
         // Region: Loading Helpers
@@ -23,6 +24,10 @@
         //
         const getWorkflowCheckApiUrl = function (connectionOpportunityId, fromStatusId, toStatusId) {
             return Rock.settings.get('baseUrl') + 'api/ConnectionRequests/DoesStatusChangeCauseWorkflows/' + connectionOpportunityId + '/' + fromStatusId + '/' + toStatusId;
+        };
+
+        const getStatusChangeCheckApiUrl = function (connectionRequestId, toStatusId) {
+            return Rock.settings.get('baseUrl') + 'api/ConnectionRequests/IsStatusChangeAllowed/' + connectionRequestId + '/' + toStatusId;
         };
 
         const getStatusViewModelsApiUrl = function (connectionOpportunityId) {
@@ -234,6 +239,20 @@
             }
 
             const url = getWorkflowCheckApiUrl(connectionOpportunityId, fromStatusId, toStatusId);
+
+            $.get({
+                url: url,
+                success: callback
+            });
+        }
+
+        const isStatusChangeAllowed = function (connectionRequestId, fromStatusId, toStatusId, callback) {
+            if (!_isSequentialStatusEnforced || fromStatusId === toStatusId) {
+                callback(true);
+                return;
+            }
+
+            const url = getStatusChangeCheckApiUrl(connectionRequestId, toStatusId);
 
             $.get({
                 url: url,
@@ -488,14 +507,44 @@
                 return;
             }
 
-            doesStatusChangeCauseWorkflows(opportunityId, oldStatusId, newStatusId, function (data) {
-                if (data && data.DoesCauseWorkflows) {
-                    const from = data.FromStatusName ? data.FromStatusName : 'that status';
-                    const to = data.ToStatusName ? data.ToStatusName : 'this status';
-                    const msg = 'Changing the status from "' + from + '" to "' + to + '" will trigger workflows to launch. Do you wish to continue with this change?';
+            isStatusChangeAllowed(requestId, oldStatusId, newStatusId, function (isAllowed) {
+                if (!isAllowed) {
+                    bootbox.dialog({
+                        message: 'Sequential status mode is enabled for this connection type, so you can only change this request to the next status.',
+                        buttons: {
+                            ok: {
+                                label: 'OK',
+                                className: 'btn-primary'
+                            }
+                        }
+                    });
 
-                    promptConfirmation(msg,
-                        function () {
+                    // Move the card back as this status change is not allowed.
+                    moveCard(requestId, oldStatusId, originalIndex);
+                }
+                else {
+                    doesStatusChangeCauseWorkflows(opportunityId, oldStatusId, newStatusId, function (data) {
+                        if (data && data.DoesCauseWorkflows) {
+                            const from = data.FromStatusName ? data.FromStatusName : 'that status';
+                            const to = data.ToStatusName ? data.ToStatusName : 'this status';
+                            const msg = 'Changing the status from "' + from + '" to "' + to + '" will trigger workflows to launch. Do you wish to continue with this change?';
+
+                            promptConfirmation(msg,
+                                function () {
+                                    sendPostback('card-drop-confirmed', requestId, newStatusId, newIndex);
+
+                                    updateColCount(newStatusId, 1);
+                                    indexCardsInColumn(newStatusId);
+
+                                    updateColCount(oldStatusId, -1);
+                                    indexCardsInColumn(oldStatusId);
+                                },
+                                function () {
+                                    moveCard(requestId, oldStatusId, originalIndex);
+                                }
+                            );
+                        }
+                        else {
                             sendPostback('card-drop-confirmed', requestId, newStatusId, newIndex);
 
                             updateColCount(newStatusId, 1);
@@ -503,20 +552,8 @@
 
                             updateColCount(oldStatusId, -1);
                             indexCardsInColumn(oldStatusId);
-                        },
-                        function () {
-                            moveCard(requestId, oldStatusId, originalIndex);
                         }
-                    );
-                }
-                else {
-                    sendPostback('card-drop-confirmed', requestId, newStatusId, newIndex);
-
-                    updateColCount(newStatusId, 1);
-                    indexCardsInColumn(newStatusId);
-
-                    updateColCount(oldStatusId, -1);
-                    indexCardsInColumn(oldStatusId);
+                    });
                 }
             });
         };
@@ -655,6 +692,7 @@
             // Initialize the board by rendering the cols and cards
             _optionsHash = newOptionsHash;
             _controlClientId = options.controlClientId;
+            _isSequentialStatusEnforced = options.isSequentialStatusEnforced;
             fetchAndRenderStatusesAndCards(options);
 
             // Reset dragscrollnow that the board is refreshed

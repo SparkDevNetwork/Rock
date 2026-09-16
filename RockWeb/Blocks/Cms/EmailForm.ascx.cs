@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -27,6 +27,7 @@ using System.Web.UI.WebControls;
 using Rock;
 using Rock.Attribute;
 using Rock.Communication;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
@@ -55,6 +56,8 @@ namespace RockWeb.Blocks.Cms
         "CC Email(s)",
         Description = "CC Email addresses (comma delimited) to send the contents to. <span class='tip tip-lava'></span>",
         IsRequired = false,
+        AllowHtml = true,
+        AllowLava = true,
         Order = 1,
         Key = AttributeKey.CCEmail )]
 
@@ -62,6 +65,8 @@ namespace RockWeb.Blocks.Cms
         "BCC Email(s)",
         Description = "BCC Email addresses (comma delimited) to send the contents to. <span class='tip tip-lava'></span>",
         IsRequired = false,
+        AllowHtml = true,
+        AllowLava = true,
         Order = 2,
         Key = AttributeKey.BCCEmail )]
 
@@ -69,6 +74,8 @@ namespace RockWeb.Blocks.Cms
         "Subject",
         Description = "The subject line for the email. <span class='tip tip-lava'></span>",
         IsRequired = true,
+        AllowHtml = true,
+        AllowLava = true,
         Order = 3,
         Key = AttributeKey.Subject )]
 
@@ -76,6 +83,8 @@ namespace RockWeb.Blocks.Cms
         "From Email",
         Description = "The email address to use for the from. <span class='tip tip-lava'></span>",
         IsRequired = true,
+        AllowHtml = true,
+        AllowLava = true,
         Order = 4,
         Key = AttributeKey.FromEmail )]
 
@@ -83,6 +92,8 @@ namespace RockWeb.Blocks.Cms
         "From Name",
         Description = "The name to use for the from address. <span class='tip tip-lava'></span>",
         IsRequired = true,
+        AllowHtml = true,
+        AllowLava = true,
         Order = 5,
         Key = AttributeKey.FromName )]
 
@@ -446,7 +457,7 @@ namespace RockWeb.Blocks.Cms
                 mergeFields.Add( "FormFields", formFields );
 
                 // get attachments
-                var rockContext = new RockContext();
+                var rockContext = RockApp.Current.CreateRockContext();
                 var binaryFileService = new BinaryFileService( rockContext );
                 var binaryFileType = new BinaryFileTypeService( rockContext ).Get( Rock.SystemGuid.BinaryFiletype.DEFAULT.AsGuid() );
                 for ( int i = 0; i < Request.Files.Count; i++ )

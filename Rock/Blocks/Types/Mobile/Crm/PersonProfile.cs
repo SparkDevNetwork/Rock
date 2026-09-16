@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -14,20 +14,22 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
+using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
+using System.Text.RegularExpressions;
 
 using Rock.Attribute;
 using Rock.Common.Mobile.Blocks.Crm.PersonProfile;
+using Rock.Common.Mobile.ViewModel;
+using Rock.Configuration;
+using Rock.Data;
+using Rock.Mobile;
 using Rock.Model;
+using Rock.Security;
 using Rock.Web.Cache;
 using Rock.Web.UI;
-using System.Linq;
-using Rock.Mobile;
-using Rock.Data;
-using System;
-using System.Collections.Generic;
-using Rock.Security;
-using Rock.Common.Mobile.ViewModel;
 
 namespace Rock.Blocks.Types.Mobile.Crm
 {
@@ -107,6 +109,16 @@ namespace Rock.Blocks.Types.Mobile.Crm
     [Rock.SystemGuid.BlockTypeGuid( Rock.SystemGuid.BlockType.MOBILE_CRM_PERSON_PROFILE )]
     public class PersonProfile : RockBlockType
     {
+        #region Fields
+
+        /// <summary>
+        /// Matches any run of line breaks, used to flatten a multi-line formatted
+        /// address into the single line the mobile shell renders.
+        /// </summary>
+        private static readonly Regex _newlineRegex = new Regex( @"[\r\n]+" );
+
+        #endregion
+
         #region IRockMobileBlockType Implementation
 
         /// <inheritdoc/>
@@ -257,7 +269,7 @@ namespace Rock.Blocks.Types.Mobile.Crm
         /// </summary>
         private static bool CheckReminderConfiguration()
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var personAliasEntityTypeId = EntityTypeCache.Get( typeof( PersonAlias ) ).Id;
 
@@ -419,8 +431,9 @@ namespace Rock.Blocks.Types.Mobile.Crm
         /// Gets the contact information for the person.
         /// </summary>
         /// <param name="person"></param>
+        /// <param name="rockContext">The context used to resolve the person's home address.</param>
         /// <returns></returns>
-        private ContactInformationBag GetPersonContactInformation( Person person )
+        private ContactInformationBag GetPersonContactInformation( Person person, RockContext rockContext )
         {
             // The list of allowed phone types we want to display.
             var phoneNumberTypeGuids = GetAttributeValue( AttributeKey.PhoneTypes )
@@ -445,7 +458,43 @@ namespace Rock.Blocks.Types.Mobile.Crm
                 PhoneNumbers = phoneNumbers,
                 Email = email,
                 CommunicationPreference = person.CommunicationPreference.ToMobile(),
+                Address = GetPersonHomeAddress( person, rockContext )
             };
+        }
+
+        /// <summary>
+        /// Gets the person's home address formatted as a single line.
+        /// </summary>
+        /// <param name="person">The person whose home address should be resolved.</param>
+        /// <param name="rockContext">The context used to load the person's family locations.</param>
+        /// <returns>The formatted home address, or <c>null</c> when the person has no resolvable home address.</returns>
+        private string GetPersonHomeAddress( Person person, RockContext rockContext )
+        {
+            /*
+                8/10/26 - CLAUDE
+
+                GetHomeLocation() reads PrimaryFamily.GroupLocations, so it needs a person
+                attached to a live context. The person handed to this block comes from
+                RequestContext.GetContextEntity<Person>(), which is not guaranteed to have
+                those navigation properties available, so re-load it here the same way the
+                edit actions in this block do.
+
+                Reason: GetHomeLocation() returns null for a person whose PrimaryFamily was never loaded.
+            */
+            var homeLocation = new PersonService( rockContext )
+                .Get( person.Id )
+                ?.GetHomeLocation();
+
+            var address = homeLocation?.GetFullStreetAddress();
+
+            if ( address.IsNullOrWhiteSpace() )
+            {
+                return null;
+            }
+
+            // The formatted address is multi-line, since it is built from the country's
+            // address format. The mobile panel row renders a single truncated line.
+            return _newlineRegex.Replace( address, ", " ).Trim( ' ', ',' );
         }
 
         /// <summary>
@@ -705,7 +754,7 @@ namespace Rock.Blocks.Types.Mobile.Crm
         [BlockAction]
         public BlockActionResult GetPersonProfileData()
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var person = RequestContext.GetContextEntity<Person>();
 
@@ -719,7 +768,7 @@ namespace Rock.Blocks.Types.Mobile.Crm
                     HeaderTemplate = GetHeaderTemplate( person ),
                     BadgeBarTemplate = GetBadgeBarTemplate( person ),
                     CustomActionsTemplate = GetCustomActionsTemplate( person ),
-                    ContactInformation = GetPersonContactInformation( person ),
+                    ContactInformation = GetPersonContactInformation( person, rockContext ),
                     DemographicInformation = GetPersonDemographicInformation( person ),
                     PersonInformation = GetPersonBag( person, rockContext )
                 } );
@@ -742,7 +791,7 @@ namespace Rock.Blocks.Types.Mobile.Crm
                 return ActionNotFound();
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var person = new PersonService( rockContext )
                     .Get( requestPersonId.Value );
@@ -775,7 +824,7 @@ namespace Rock.Blocks.Types.Mobile.Crm
                 return ActionNotFound();
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var person = new PersonService( rockContext )
                     .Get( requestPersonId.Value );
@@ -812,7 +861,7 @@ namespace Rock.Blocks.Types.Mobile.Crm
                 return ActionNotFound( "Unable to find a Person from context." );
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var person = new PersonService( rockContext )
                     .Get( requestPersonId.Value );
@@ -843,7 +892,7 @@ namespace Rock.Blocks.Types.Mobile.Crm
         public BlockActionResult UpdatePerson( PersonBag personBag )
         {
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var person = new PersonService( rockContext ).Get( personBag.Guid );
                 if ( person == null )
@@ -883,7 +932,7 @@ namespace Rock.Blocks.Types.Mobile.Crm
                 return ActionForbidden();
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var person = new PersonService( rockContext )
                     .Get( requestPersonId.Value );

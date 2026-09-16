@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -18,10 +18,12 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Data.Entity;
 using System.Linq;
 using System.Net.Mime;
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
@@ -71,7 +73,7 @@ namespace Rock.Blocks.Cms
         /// <inheritdoc/>
         public override object GetObsidianBlockInitialization()
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var box = new DetailBlockBox<ContentChannelTypeBag, ContentChannelTypeDetailOptionsBag>();
 
@@ -87,7 +89,7 @@ namespace Rock.Blocks.Cms
         /// <inheritdoc/>
         public BreadCrumbResult GetBreadCrumbs( PageReference pageReference )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var contentTypeId = pageReference.GetPageParameter( PageParameterKey.ContentChannelTypeId );
                 var contentTypeName = new ContentChannelTypeService( rockContext )
@@ -114,9 +116,65 @@ namespace Rock.Blocks.Cms
         /// <returns>The options that provide additional details to the block.</returns>
         private ContentChannelTypeDetailOptionsBag GetBoxOptions( bool isEditable, RockContext rockContext )
         {
-            var options = new ContentChannelTypeDetailOptionsBag();
-            options.DateRangeTypes = typeof( ContentChannelDateType ).ToEnumListItemBag();
+            var contentChannelTypeId = GetInitialEntity( rockContext )?.Id ?? 0;
+
+            var options = new ContentChannelTypeDetailOptionsBag
+            {
+                DateRangeTypes = typeof( ContentChannelDateType ).ToEnumListItemBag(),
+                ContentChannelItemAttributeKeys = GetContentChannelItemAttributeKeysFromChannels( contentChannelTypeId, rockContext )
+            };
+
             return options;
+        }
+
+        /// <summary>
+        /// Gets Content Channel Item attribute keys defined on any Content Channel of this type.
+        /// </summary>
+        /// <param name="contentChannelTypeId">The content channel type identifier.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns>A distinct list of attribute keys.</returns>
+        private List<string> GetContentChannelItemAttributeKeysFromChannels( int contentChannelTypeId, RockContext rockContext )
+        {
+            if ( contentChannelTypeId <= 0 )
+            {
+                return new List<string>();
+            }
+
+            /*
+                7/17/26 - MSE
+
+                Channel item attribute keys must not be reused at the type level (and vice versa).
+                Channel detail reserves type keys; type detail reserves keys already used on any
+                channel of this type so Keys stay unique across both qualifiers.
+
+                Reason: Prevent duplicate ContentChannelItem attribute Keys across type and channel.
+            */
+            var channelIdValues = new ContentChannelService( rockContext )
+                .Queryable()
+                .AsNoTracking()
+                .Where( c => c.ContentChannelTypeId == contentChannelTypeId )
+                .Select( c => c.Id.ToString() )
+                .ToList();
+
+            if ( !channelIdValues.Any() )
+            {
+                return new List<string>();
+            }
+
+            var contentChannelItemEntityTypeId = EntityTypeCache.Get<ContentChannelItem>().Id;
+
+            return new AttributeService( rockContext )
+                .Queryable()
+                .AsNoTracking()
+                .Where( a =>
+                    a.EntityTypeId == contentChannelItemEntityTypeId &&
+                    a.EntityTypeQualifierColumn == "ContentChannelId" &&
+                    channelIdValues.Contains( a.EntityTypeQualifierValue ) &&
+                    a.Key != null &&
+                    a.Key != string.Empty )
+                .Select( a => a.Key )
+                .Distinct()
+                .ToList();
         }
 
         /// <summary>
@@ -138,6 +196,50 @@ namespace Rock.Blocks.Cms
             }
 
             return true;
+        }
+
+        /// <summary>
+        /// Validates that type-level item attribute keys do not conflict with item attributes
+        /// already defined on any content channel of this type.
+        /// </summary>
+        private bool ValidateItemAttributeKeysAgainstChannels( int contentChannelTypeId, List<PublicEditableAttributeBag> itemAttributes, RockContext rockContext, out string errorMessage )
+        {
+            errorMessage = null;
+
+            if ( contentChannelTypeId <= 0 || itemAttributes == null || !itemAttributes.Any() )
+            {
+                return true;
+            }
+
+            var channelKeys = GetContentChannelItemAttributeKeysFromChannels( contentChannelTypeId, rockContext );
+            if ( !channelKeys.Any() )
+            {
+                return true;
+            }
+
+            var channelKeySet = new HashSet<string>( channelKeys, StringComparer.OrdinalIgnoreCase );
+            var conflictingKeys = itemAttributes
+                .Where( a => a.Key.IsNotNullOrWhiteSpace() && channelKeySet.Contains( a.Key ) )
+                .Select( a => a.Key )
+                .Distinct( StringComparer.OrdinalIgnoreCase )
+                .OrderBy( k => k )
+                .ToList();
+
+            if ( !conflictingKeys.Any() )
+            {
+                return true;
+            }
+
+            if ( conflictingKeys.Count == 1 )
+            {
+                errorMessage = $"An item attribute with the key '{conflictingKeys[0]}' already exists on a Content Channel of this type. Please use a different key.";
+            }
+            else
+            {
+                errorMessage = $"The following item attribute keys already exist on a Content Channel of this type: {conflictingKeys.AsDelimited( ", " )}. Please use different keys.";
+            }
+
+            return false;
         }
 
         /// <summary>
@@ -265,7 +367,7 @@ namespace Rock.Blocks.Cms
         /// <inheritdoc/>
         protected override string RenewSecurityGrantToken()
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var entity = GetInitialEntity( rockContext );
 
@@ -399,7 +501,7 @@ namespace Rock.Blocks.Cms
         [BlockAction]
         public BlockActionResult Edit( string key )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 if ( !TryGetEntityForEditAction( key, rockContext, out var entity, out var actionError ) )
                 {
@@ -423,7 +525,7 @@ namespace Rock.Blocks.Cms
         [BlockAction]
         public BlockActionResult Save( DetailBlockBox<ContentChannelTypeBag, ContentChannelTypeDetailOptionsBag> box )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var entityService = new ContentChannelTypeService( rockContext );
 
@@ -440,6 +542,14 @@ namespace Rock.Blocks.Cms
 
                 // Ensure everything is valid before saving.
                 if ( !ValidateContentChannelType( entity, rockContext, out var validationMessage ) )
+                {
+                    return ActionBadRequest( validationMessage );
+                }
+
+                // Block type item attribute keys that already exist on a channel of this type.
+                // New types (Id == 0) have no channels yet, so there is nothing to conflict with.
+                if ( entity.Id > 0
+                     && !ValidateItemAttributeKeysAgainstChannels( entity.Id, box.Entity.ItemAttributes, rockContext, out validationMessage ) )
                 {
                     return ActionBadRequest( validationMessage );
                 }

@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -20,6 +20,7 @@ using System.Linq;
 #if WEBFORMS
 using System.Web.UI;
 #endif
+
 using Rock.Attribute;
 using Rock.Reporting;
 
@@ -95,6 +96,20 @@ namespace Rock.Field.Types
             {
                 return ComparisonHelper.StringFilterComparisonTypes;
             }
+        }
+
+        #endregion
+
+        #region Value Hinting
+
+        /// <inheritdoc/>
+        internal override FieldTypeHints GetFieldHints( Dictionary<string, string> privateConfigurationValues )
+        {
+            return new FieldTypeHints
+            {
+                IsCompleteList = false,
+                ValueFormat = "A url pointing at an audio file, stored as supplied. It is a link rather than the audio itself, and nothing checks what the url returns, so a url that is not audio saves cleanly and then fails to play."
+            };
         }
 
         #endregion

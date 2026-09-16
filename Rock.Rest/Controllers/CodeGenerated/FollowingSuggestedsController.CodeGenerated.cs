@@ -21,6 +21,7 @@
 // </copyright>
 //
 
+using Rock.Configuration;
 using Rock.Model;
 using Rock.SystemGuid;
 
@@ -35,6 +36,6 @@ namespace Rock.Rest.Controllers
         /// <summary>
         /// Initializes a new instance of the <see cref="FollowingSuggestedsController"/> class.
         /// </summary>
-        public FollowingSuggestedsController() : base( new Rock.Model.FollowingSuggestedService( new Rock.Data.RockContext() ) ) { } 
+        public FollowingSuggestedsController() : base( new Rock.Model.FollowingSuggestedService( RockApp.Current.CreateRockContext() ) ) { } 
     }
 }

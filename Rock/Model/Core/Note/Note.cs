@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -14,8 +14,6 @@
 // limitations under the License.
 // </copyright>
 //
-using Newtonsoft.Json;
-using Rock.Data;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -23,6 +21,12 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
+
+using Newtonsoft.Json;
+
+using Rock.Data;
+using Rock.Enums.Security;
+using Rock.Security;
 
 namespace Rock.Model
 {
@@ -76,6 +80,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 200 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string Caption { get; set; }
 
         /// <summary>
@@ -112,6 +117,7 @@ namespace Rock.Model
         /// A <see cref="System.String"/> representing the text/body of the note.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.LavaAndBasicHtml )]
         public string Text { get; set; }
 
         /// <summary>
@@ -181,6 +187,7 @@ namespace Rock.Model
         /// The note URL.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string NoteUrl { get; set; }
 
         /// <summary>

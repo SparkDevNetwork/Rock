@@ -48,22 +48,22 @@ namespace Rock.Workflow.Action
         FieldTypeClassNames = new string[] { "Rock.Field.Types.PersonFieldType" } )]
 
     [WorkflowTextOrAttribute(
-        textLabel: "Inactive Reason",
-        attributeLabel: "Attribute Value",
-        description: "The value (guid of an existing defined value) or attribute to use for the inactivate reason. The attribute should be defined value.",
-        required: false,
-        order: 1,
-        key: AttributeKey.InactiveReason,
-        fieldTypeClassNames: new string[] { "Rock.Field.Types.DefinedValueFieldType" } )]
+        "Inactive Reason",
+        "Attribute Value",
+        Description = "The value (guid of an existing defined value) or attribute to use for the inactivate reason. The attribute should be defined value.",
+        IsRequired = false,
+        Order = 1,
+        Key = AttributeKey.InactiveReason,
+        FieldTypeClassNames = new string[] { "Rock.Field.Types.DefinedValueFieldType" } )]
 
     [WorkflowTextOrAttribute(
-        textLabel: "Inactive Note",
-        attributeLabel: "Attribute Value",
-        description: "The value or attribute to use for the inactivate reason note.",
-        required: false,
-        order: 2,
-        key: AttributeKey.InactiveNote,
-        fieldTypeClassNames: new string[] { "Rock.Field.Types.TextFieldType", "Rock.Field.Types.MemoFieldType" } )]
+        "Inactive Note",
+        "Attribute Value",
+        Description = "The value or attribute to use for the inactivate reason note.",
+        IsRequired = false,
+        Order = 2,
+        Key = AttributeKey.InactiveNote,
+        FieldTypeClassNames = new string[] { "Rock.Field.Types.TextFieldType", "Rock.Field.Types.MemoFieldType" } )]
 
     [CustomDropdownListField(
         "Multi-Family Logic",

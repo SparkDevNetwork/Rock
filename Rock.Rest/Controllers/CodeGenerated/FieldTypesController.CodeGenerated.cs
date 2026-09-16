@@ -21,6 +21,7 @@
 // </copyright>
 //
 
+using Rock.Configuration;
 using Rock.Model;
 using Rock.SystemGuid;
 
@@ -35,6 +36,6 @@ namespace Rock.Rest.Controllers
         /// <summary>
         /// Initializes a new instance of the <see cref="FieldTypesController"/> class.
         /// </summary>
-        public FieldTypesController() : base( new Rock.Model.FieldTypeService( new Rock.Data.RockContext() ) ) { } 
+        public FieldTypesController() : base( new Rock.Model.FieldTypeService( RockApp.Current.CreateRockContext() ) ) { } 
     }
 }

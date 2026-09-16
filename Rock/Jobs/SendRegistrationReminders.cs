@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -23,6 +23,7 @@ using System.Web;
 
 using Rock.Attribute;
 using Rock.Communication;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -36,7 +37,11 @@ namespace Rock.Jobs
     [DisplayName( "Registration Reminder" )]
     [Description( "Send any registration reminders that are due to be sent." )]
 
-    [IntegerField( "Expire Date", "The number of days past the registration reminder to refrain from sending the email. This would only be used if something went wrong and acts like a safety net to prevent sending the reminder after the fact.", true, 1, key: "ExpireDate" )]
+    [IntegerField( "Expire Date",
+        Description = "The number of days past the registration reminder to refrain from sending the email. This would only be used if something went wrong and acts like a safety net to prevent sending the reminder after the fact.",
+        IsRequired = true,
+        DefaultIntegerValue = 1,
+        Key = "ExpireDate" )]
     public class SendRegistrationReminders : RockJob
     {
         /// <summary>
@@ -56,7 +61,7 @@ namespace Rock.Jobs
             int remindersSent = 0;
             var errors = new List<string>();
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 DateTime now = RockDateTime.Now;
                 DateTime expireDate = now.AddDays( expireDays * -1 );

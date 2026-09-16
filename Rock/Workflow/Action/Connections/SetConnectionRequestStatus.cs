@@ -34,11 +34,20 @@ namespace Rock.Workflow.Action
     [Export( typeof( ActionComponent ) )]
     [ExportMetadata( "ComponentName", "Connection Request Set Status" )]
 
-    [WorkflowAttribute( "Connection Request Attribute", "The attribute that contains the connection request.", true, "", "", 0, null,
-        new string[] { "Rock.Field.Types.ConnectionRequestFieldType" } )]
-    [WorkflowAttribute( "Connection Status Attribute", "The attribute that contains the connection status.", false, "", "", 1, null,
-        new string[] { "Rock.Field.Types.ConnectionStatusFieldType" } )]
-    [ConnectionStatusField( "Connection Status", "The connection status to use (if Connection Status Attribute is not specified).", false, "", "", 2 )]
+    [WorkflowAttribute( "Connection Request Attribute",
+        Description = "The attribute that contains the connection request.",
+        IsRequired = true,
+        Order = 0,
+        FieldTypeClassNames = new string[] { "Rock.Field.Types.ConnectionRequestFieldType" } )]
+    [WorkflowAttribute( "Connection Status Attribute",
+        Description = "The attribute that contains the connection status.",
+        IsRequired = false,
+        Order = 1,
+        FieldTypeClassNames = new string[] { "Rock.Field.Types.ConnectionStatusFieldType" } )]
+    [ConnectionStatusField("Connection Status",
+        Description = "The connection status to use (if Connection Status Attribute is not specified).",
+        IsRequired = false,
+        Order = 2)]
 
     [Rock.SystemGuid.EntityTypeGuid( "60AFBB6A-B210-4C56-8AD5-2DA3311EDAA8")]
     public class SetConnectionRequestStatus : ActionComponent

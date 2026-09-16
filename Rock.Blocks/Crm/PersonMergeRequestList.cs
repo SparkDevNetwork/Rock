@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -19,6 +19,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
@@ -133,7 +134,7 @@ namespace Rock.Blocks.Crm
                 .WithBlock( this )
                 .AddTextField( "idKey", a => a.EntitySet.IdKey )
                 .AddTextField( "note", a => a.Note )
-                .AddTextField( "requestor", a => a.Requestor.FullName )
+                .AddTextField( "requestor", a => a.Requestor?.FullName )
                 .AddDateTimeField( "date", a => a.Date )
                 .AddField( "mergeRecords", a => a.MergeRecords.ConvertAll( p => p.FullName ) );
         }

@@ -151,8 +151,10 @@
 							<small>({{ member.GroupRole.Name }})</small>
 
 							{% for phone in member.Person.PhoneNumbers %}
-							<br />{% if phone.IsUnlisted != true %}<a href="tel:{{ phone.NumberFormatted }}">{{ phone.NumberFormatted }}</a>{% else %}Unlisted{% endif %}  <small>({{ phone.NumberTypeValue.Value }})</small>
-							{% endfor %}
+                                {% if phone.NumberTypeValue.IsActive == true %}
+							        <br />{% if phone.IsUnlisted != true %}<a href="tel:{{ phone.NumberFormatted }}">{{ phone.NumberFormatted }}</a>{% else %}Unlisted{% endif %}  <small>({{ phone.NumberTypeValue.Value }})</small>
+                                {% endif %}
+                            {% endfor %}
 
 							{% assign memberAddress =  member.Person | Address:'Home' %}
 							{% if memberAddress != '' %}
@@ -165,9 +167,11 @@
 
 						{% if AllowedActions.Edit == true or AllowedActions.ManageMembers == true %}
 						<div class="pull-left rollover-item" style="position: absolute; right:0; top:0;">
+							{% if ButtonVisibility.AllowGroupMemberDelete == true %}
 							<a href="#" onclick="{{ member.Id | Postback:'DeleteGroupMember' }}" >
 							<i class="ti ti-x"></i>
 							</a>
+							{% endif %}
 							<a href="#" onclick="{{ member.Id | Postback:'EditGroupMember' }}" class="margin-l-sm">
 							<i class="ti ti-pencil"></i>
 							</a>
@@ -218,8 +222,10 @@
 							<small>({{ member.GroupRole.Name }})</small>
 
 							{% for phone in member.Person.PhoneNumbers %}
-							<br />{% if phone.IsUnlisted != true %}<a href="tel:{{ phone.NumberFormatted }}">{{ phone.NumberFormatted }}</a>{% else %}Unlisted{% endif %}  <small>({{ phone.NumberTypeValue.Value }})</small>
-							{% endfor %}
+                                {% if phone.NumberTypeValue.IsActive == true %}
+							        <br />{% if phone.IsUnlisted != true %}<a href="tel:{{ phone.NumberFormatted }}">{{ phone.NumberFormatted }}</a>{% else %}Unlisted{% endif %}  <small>({{ phone.NumberTypeValue.Value }})</small>
+                                {% endif %}
+                            {% endfor %}
 
 							{% assign memberAddress =  member.Person | Address:'Home' %}
 							{% if memberAddress != '' %}
@@ -232,9 +238,11 @@
 
 						{% if AllowedActions.Edit == true or AllowedActions.ManageMembers == true %}
 						<div class="pull-left rollover-item" style="position: absolute; right:0; top:0;">
+							{% if ButtonVisibility.AllowGroupMemberDelete == true %}
 							<a href="#" onclick="{{ member.Id | Postback:'DeleteGroupMember' }}" >
 							<i class="ti ti-x"></i>
 							</a>
+							{% endif %}
 							<a href="#" onclick="{{ member.Id | Postback:'EditGroupMember' }}" class="margin-l-sm">
 							<i class="ti ti-pencil"></i>
 							</a>
@@ -285,8 +293,10 @@
 							<small>({{ member.GroupRole.Name }})</small>
 
 							{% for phone in member.Person.PhoneNumbers %}
-							<br />{% if phone.IsUnlisted != true %}<a href="tel:{{ phone.NumberFormatted }}">{{ phone.NumberFormatted }}</a>{% else %}Unlisted{% endif %}  <small>({{ phone.NumberTypeValue.Value }})</small>
-							{% endfor %}
+                                {% if phone.NumberTypeValue.IsActive == true %}
+							        <br />{% if phone.IsUnlisted != true %}<a href="tel:{{ phone.NumberFormatted }}">{{ phone.NumberFormatted }}</a>{% else %}Unlisted{% endif %}  <small>({{ phone.NumberTypeValue.Value }})</small>
+                                {% endif %}
+                            {% endfor %}
 
 							{% assign memberAddress =  member.Person | Address:'Home' %}
 							{% if memberAddress != '' %}
@@ -299,9 +309,11 @@
 
 						{% if AllowedActions.Edit == true or AllowedActions.ManageMembers == true %}
 						<div class="pull-left rollover-item" style="position: absolute; right:0; top:0;">
+							{% if ButtonVisibility.AllowGroupMemberDelete == true %}
 							<a href="#" onclick="{{ member.Id | Postback:'DeleteGroupMember' }}" >
 							<i class="ti ti-x"></i>
 							</a>
+							{% endif %}
 							<a href="#" onclick="{{ member.Id | Postback:'EditGroupMember' }}" class="margin-l-sm">
 							<i class="ti ti-pencil"></i>
 							</a>

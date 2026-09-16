@@ -21,6 +21,7 @@
 // </copyright>
 //
 
+using Rock.Configuration;
 using Rock.Model;
 using Rock.SystemGuid;
 
@@ -35,6 +36,6 @@ namespace Rock.Rest.Controllers
         /// <summary>
         /// Initializes a new instance of the <see cref="GroupMemberAssignmentsController"/> class.
         /// </summary>
-        public GroupMemberAssignmentsController() : base( new Rock.Model.GroupMemberAssignmentService( new Rock.Data.RockContext() ) ) { } 
+        public GroupMemberAssignmentsController() : base( new Rock.Model.GroupMemberAssignmentService( RockApp.Current.CreateRockContext() ) ) { } 
     }
 }

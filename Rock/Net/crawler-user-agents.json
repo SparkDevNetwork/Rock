@@ -1,0 +1,5844 @@
+[
+  {
+    "pattern": "Googlebot\\/",
+    "url": "http://www.google.com/bot.html"
+  },
+  {
+    "pattern": "Googlebot-Mobile"
+  },
+  {
+    "pattern": "Googlebot-Image"
+  },
+  {
+    "pattern": "Googlebot-News"
+  },
+  {
+    "pattern": "Googlebot-Video"
+  },
+  {
+    "pattern": "AdsBot-Google([^-]|$)",
+    "url": "https://support.google.com/webmasters/answer/1061943?hl=en"
+  },
+  {
+    "pattern": "AdsBot-Google-Mobile",
+    "url": "https://support.google.com/adwords/answer/2404197"
+  },
+  {
+    "pattern": "Feedfetcher-Google",
+    "url": "https://support.google.com/webmasters/answer/178852"
+  },
+  {
+    "pattern": "Mediapartners-Google",
+    "url": "https://support.google.com/webmasters/answer/1061943?hl=en"
+  },
+  {
+    "pattern": "Mediapartners \\(Googlebot\\)",
+    "url": "https://support.google.com/webmasters/answer/1061943?hl=en"
+  },
+  {
+    "pattern": "APIs-Google",
+    "url": "https://support.google.com/webmasters/answer/1061943?hl=en"
+  },
+  {
+    "pattern": "Google-InspectionTool",
+    "url": "https://developers.google.com/search/docs/crawling-indexing/overview-google-crawlers"
+  },
+  {
+    "pattern": "Storebot-Google",
+    "url": "https://developers.google.com/search/docs/crawling-indexing/overview-google-crawlers"
+  },
+  {
+    "pattern": "GoogleOther",
+    "url": "https://developers.google.com/search/docs/crawling-indexing/overview-google-crawlers"
+  },
+  {
+    "pattern": "bingbot",
+    "url": "http://www.bing.com/bingbot.htm"
+  },
+  {
+    "pattern": "Slurp",
+    "url": "http://help.yahoo.com/help/us/ysearch/slurp"
+  },
+  {
+    "pattern": "[wW]get"
+  },
+  {
+    "pattern": "LinkedInBot"
+  },
+  {
+    "pattern": "Python-urllib"
+  },
+  {
+    "pattern": "python-requests"
+  },
+  {
+    "pattern": "aiohttp",
+    "url": "https://docs.aiohttp.org/en/stable/"
+  },
+  {
+    "pattern": "httpx",
+    "url": "https://www.python-httpx.org"
+  },
+  {
+    "pattern": "libwww-perl"
+  },
+  {
+    "pattern": "httpunit"
+  },
+  {
+    "pattern": "Nutch"
+  },
+  {
+    "pattern": "Go-http-client",
+    "url": "https://golang.org/pkg/net/http/"
+  },
+  {
+    "pattern": "phpcrawl",
+    "url": "http://phpcrawl.cuab.de/"
+  },
+  {
+    "pattern": "msnbot",
+    "url": "http://search.msn.com/msnbot.htm"
+  },
+  {
+    "pattern": "jyxobot"
+  },
+  {
+    "pattern": "FAST-WebCrawler"
+  },
+  {
+    "pattern": "FAST Enterprise Crawler"
+  },
+  {
+    "pattern": "BIGLOTRON"
+  },
+  {
+    "pattern": "Teoma",
+    "url": "http://about.ask.com/en/docs/about/webmasters.shtml"
+  },
+  {
+    "pattern": "convera",
+    "url": "http://ews.converasearch.com/crawl.htm"
+  },
+  {
+    "pattern": "^Seekbot",
+    "url": "http://www.seekbot.net/bot.html"
+  },
+  {
+    "pattern": "Gigabot",
+    "url": "http://www.gigablast.com/spider.html"
+  },
+  {
+    "pattern": "Gigablast",
+    "url": "https://github.com/gigablast/open-source-search-engine"
+  },
+  {
+    "pattern": "exabot"
+  },
+  {
+    "pattern": "ia_archiver"
+  },
+  {
+    "pattern": "GingerCrawler"
+  },
+  {
+    "pattern": "webmon "
+  },
+  {
+    "pattern": "HTTrack"
+  },
+  {
+    "pattern": "grub\\.org"
+  },
+  {
+    "pattern": "UsineNouvelleCrawler"
+  },
+  {
+    "pattern": "antibot"
+  },
+  {
+    "pattern": "netresearchserver"
+  },
+  {
+    "pattern": "speedy"
+  },
+  {
+    "pattern": "fluffy"
+  },
+  {
+    "pattern": "findlink"
+  },
+  {
+    "pattern": "msrbot"
+  },
+  {
+    "pattern": "panscient"
+  },
+  {
+    "pattern": "yacybot"
+  },
+  {
+    "pattern": "AISearchBot"
+  },
+  {
+    "pattern": "ips-agent"
+  },
+  {
+    "pattern": "tagoobot"
+  },
+  {
+    "pattern": "MJ12bot"
+  },
+  {
+    "pattern": "woriobot"
+  },
+  {
+    "pattern": "yanga"
+  },
+  {
+    "pattern": "buzzbot"
+  },
+  {
+    "pattern": "mlbot"
+  },
+  {
+    "pattern": "yandex\\.com\\/bots",
+    "url": "https://yandex.ru/support/webmaster/robot-workings/check-yandex-robots.html#robot-in-logs"
+  },
+  {
+    "pattern": "purebot"
+  },
+  {
+    "pattern": "Linguee Bot",
+    "url": "http://www.linguee.com/bot"
+  },
+  {
+    "pattern": "CyberPatrol",
+    "url": "http://www.cyberpatrol.com/cyberpatrolcrawler.asp"
+  },
+  {
+    "pattern": "voilabot"
+  },
+  {
+    "pattern": "Baiduspider",
+    "url": "http://www.baidu.jp/spider/"
+  },
+  {
+    "pattern": "citeseerxbot"
+  },
+  {
+    "pattern": "spbot",
+    "url": "http://www.seoprofiler.com/bot"
+  },
+  {
+    "pattern": "twengabot",
+    "url": "http://www.twenga.com/bot.html"
+  },
+  {
+    "pattern": "postrank",
+    "url": "http://www.postrank.com"
+  },
+  {
+    "pattern": "Turnitin",
+    "url": "http://www.turnitin.com"
+  },
+  {
+    "pattern": "scribdbot",
+    "url": "http://www.scribd.com"
+  },
+  {
+    "pattern": "page2rss",
+    "url": "http://www.page2rss.com"
+  },
+  {
+    "pattern": "sitebot",
+    "url": "http://www.sitebot.org"
+  },
+  {
+    "pattern": "linkdex",
+    "url": "http://www.linkdex.com"
+  },
+  {
+    "pattern": "Adidxbot",
+    "url": "https://www.bing.com/webmasters/help/which-crawlers-does-bing-use-8c184ec0"
+  },
+  {
+    "pattern": "ezooms",
+    "url": "http://www.phpbb.com/community/viewtopic.php?f=64&t=935605&start=450#p12948289"
+  },
+  {
+    "pattern": "dotbot"
+  },
+  {
+    "pattern": "Mail\\.RU_Bot"
+  },
+  {
+    "pattern": "discobot",
+    "url": "http://discoveryengine.com/discobot.html"
+  },
+  {
+    "pattern": "heritrix",
+    "url": "https://github.com/internetarchive/heritrix3/wiki"
+  },
+  {
+    "pattern": "findthatfile",
+    "url": "http://www.findthatfile.com/"
+  },
+  {
+    "pattern": "europarchive\\.org"
+  },
+  {
+    "pattern": "NerdByNature\\.Bot",
+    "url": "http://www.nerdbynature.net/bot"
+  },
+  {
+    "pattern": "(sistrix|SISTRIX) [cC]rawler",
+    "url": "https://www.sistrix.com/tutorials/crawling-errors-in-the-optimizer/"
+  },
+  {
+    "pattern": "Ahrefs(Bot|SiteAudit)"
+  },
+  {
+    "pattern": "fuelbot"
+  },
+  {
+    "pattern": "^CrunchBot"
+  },
+  {
+    "pattern": "IndeedBot"
+  },
+  {
+    "pattern": "mappydata"
+  },
+  {
+    "pattern": "woobot"
+  },
+  {
+    "pattern": "ZoominfoBot"
+  },
+  {
+    "pattern": "PrivacyAwareBot"
+  },
+  {
+    "pattern": "Multiviewbot"
+  },
+  {
+    "pattern": "SWIMGBot"
+  },
+  {
+    "pattern": "Grobbot"
+  },
+  {
+    "pattern": "eright"
+  },
+  {
+    "pattern": "Apercite"
+  },
+  {
+    "pattern": "semanticbot"
+  },
+  {
+    "pattern": "Aboundex",
+    "url": "http://www.aboundex.com/crawler/"
+  },
+  {
+    "pattern": "domaincrawler"
+  },
+  {
+    "pattern": "wbsearchbot",
+    "url": "http://www.warebay.com/bot.html"
+  },
+  {
+    "pattern": "summify",
+    "url": "http://summify.com"
+  },
+  {
+    "pattern": "CCBot",
+    "url": "http://www.commoncrawl.org/bot.html"
+  },
+  {
+    "pattern": "edisterbot"
+  },
+  {
+    "pattern": "SeznamBot"
+  },
+  {
+    "pattern": "ec2linkfinder"
+  },
+  {
+    "pattern": "gslfbot"
+  },
+  {
+    "pattern": "aiHitBot"
+  },
+  {
+    "pattern": "intelium_bot"
+  },
+  {
+    "pattern": "facebookexternalhit",
+    "url": "https://developers.facebook.com/docs/sharing/webmasters/crawler/"
+  },
+  {
+    "pattern": "Yeti",
+    "url": "http://naver.me/bot"
+  },
+  {
+    "pattern": "RetrevoPageAnalyzer"
+  },
+  {
+    "pattern": "lb-spider"
+  },
+  {
+    "pattern": "Sogou",
+    "url": "http://www.sogou.com/docs/help/webmasters.htm#07"
+  },
+  {
+    "pattern": "lssbot",
+    "url": "https://www.lssbot.com/"
+  },
+  {
+    "pattern": "careerbot",
+    "url": "http://www.career-x.de/bot.html"
+  },
+  {
+    "pattern": "wotbox",
+    "url": "http://www.wotbox.com"
+  },
+  {
+    "pattern": "wocbot",
+    "url": "http://www.wocodi.com/crawler"
+  },
+  {
+    "pattern": "ichiro",
+    "url": "http://help.goo.ne.jp/help/article/1142"
+  },
+  {
+    "pattern": "DuckDuckBot",
+    "url": "http://duckduckgo.com/duckduckbot.html"
+  },
+  {
+    "pattern": "lssrocketcrawler"
+  },
+  {
+    "pattern": "drupact",
+    "url": "http://www.arocom.de/drupact"
+  },
+  {
+    "pattern": "webcompanycrawler"
+  },
+  {
+    "pattern": "acoonbot",
+    "url": "http://www.acoon.de/robot.asp"
+  },
+  {
+    "pattern": "openindexspider",
+    "url": "http://www.openindex.io/en/webmasters/spider.html"
+  },
+  {
+    "pattern": "gnam gnam spider"
+  },
+  {
+    "pattern": "web-archive-net\\.com\\.bot"
+  },
+  {
+    "pattern": "backlinkcrawler",
+    "url": "http://www.backlinktest.com/crawler.html"
+  },
+  {
+    "pattern": "coccoc",
+    "url": "http://help.coccoc.vn/"
+  },
+  {
+    "pattern": "integromedb",
+    "url": "http://www.integromedb.org/Crawler"
+  },
+  {
+    "pattern": "content crawler spider"
+  },
+  {
+    "pattern": "toplistbot"
+  },
+  {
+    "pattern": "it2media-domain-crawler"
+  },
+  {
+    "pattern": "ip-web-crawler\\.com"
+  },
+  {
+    "pattern": "siteexplorer\\.info"
+  },
+  {
+    "pattern": "elisabot"
+  },
+  {
+    "pattern": "proximic",
+    "url": "http://www.proximic.com/info/spider.php"
+  },
+  {
+    "pattern": "changedetection",
+    "url": "http://www.changedetection.com/bot.html"
+  },
+  {
+    "pattern": "arabot"
+  },
+  {
+    "pattern": "WeSEE:Search"
+  },
+  {
+    "pattern": "niki-bot"
+  },
+  {
+    "pattern": "CrystalSemanticsBot",
+    "url": "http://www.crystalsemantics.com/user-agent/"
+  },
+  {
+    "pattern": "rogerbot",
+    "url": "http://moz.com/help/pro/what-is-rogerbot-"
+  },
+  {
+    "pattern": "360Spider",
+    "url": "http://needs-be.blogspot.co.uk/2013/02/how-to-block-spider360.html"
+  },
+  {
+    "pattern": "psbot",
+    "url": "http://www.picsearch.com/bot.html"
+  },
+  {
+    "pattern": "InterfaxScanBot",
+    "url": "http://scan-interfax.ru"
+  },
+  {
+    "pattern": "CC Metadata Scaper",
+    "url": "http://wiki.creativecommons.org/Metadata_Scraper"
+  },
+  {
+    "pattern": "g00g1e\\.net",
+    "url": "http://www.g00g1e.net/"
+  },
+  {
+    "pattern": "GrapeshotCrawler",
+    "url": "http://www.grapeshot.co.uk/crawler.php"
+  },
+  {
+    "pattern": "urlappendbot",
+    "url": "http://www.profound.net/urlappendbot.html"
+  },
+  {
+    "pattern": "brainobot"
+  },
+  {
+    "pattern": "fr-crawler"
+  },
+  {
+    "pattern": "binlar"
+  },
+  {
+    "pattern": "SimpleCrawler"
+  },
+  {
+    "pattern": "Twitterbot",
+    "url": "https://dev.twitter.com/cards/getting-started"
+  },
+  {
+    "pattern": "cXensebot",
+    "url": "http://www.cxense.com/bot.html"
+  },
+  {
+    "pattern": "smtbot",
+    "url": "http://www.similartech.com/smtbot"
+  },
+  {
+    "pattern": "bnf\\.fr_bot",
+    "url": "http://www.bnf.fr/fr/outils/a.dl_web_capture_robot.html"
+  },
+  {
+    "pattern": "A6-Indexer",
+    "url": "http://www.a6corp.com/a6-web-scraping-policy/"
+  },
+  {
+    "pattern": "ADmantX",
+    "url": "http://www.admantx.com"
+  },
+  {
+    "pattern": "Facebot",
+    "url": "https://developers.facebook.com/docs/sharing/best-practices#crawl"
+  },
+  {
+    "pattern": "OrangeBot\\/"
+  },
+  {
+    "pattern": "memorybot",
+    "url": "http://mignify.com/bot.htm"
+  },
+  {
+    "pattern": "AdvBot",
+    "url": "http://advbot.net/bot.html"
+  },
+  {
+    "pattern": "MegaIndex",
+    "url": "https://www.megaindex.ru/?tab=linkAnalyze"
+  },
+  {
+    "pattern": "SemanticScholarBot",
+    "url": "https://www.semanticscholar.org/crawler"
+  },
+  {
+    "pattern": "ltx71",
+    "url": "http://ltx71.com/"
+  },
+  {
+    "pattern": "nerdybot",
+    "url": "http://nerdybot.com/"
+  },
+  {
+    "pattern": "xovibot",
+    "url": "http://www.xovibot.net/"
+  },
+  {
+    "pattern": "BUbiNG",
+    "url": "http://law.di.unimi.it/BUbiNG.html"
+  },
+  {
+    "pattern": "Qwantify",
+    "url": "https://www.qwant.com/"
+  },
+  {
+    "pattern": "archive\\.org_bot",
+    "url": "http://www.archive.org/details/archive.org_bot"
+  },
+  {
+    "pattern": "Applebot",
+    "url": "http://www.apple.com/go/applebot"
+  },
+  {
+    "pattern": "TweetmemeBot",
+    "url": "http://datasift.com/bot.html"
+  },
+  {
+    "pattern": "crawler4j",
+    "url": "https://github.com/yasserg/crawler4j"
+  },
+  {
+    "pattern": "findxbot",
+    "url": "http://www.findxbot.com"
+  },
+  {
+    "pattern": "S[eE][mM]rushBot",
+    "url": "http://www.semrush.com/bot.html"
+  },
+  {
+    "pattern": "yoozBot",
+    "url": "http://yooz.ir"
+  },
+  {
+    "pattern": "lipperhey",
+    "url": "http://www.lipperhey.com/"
+  },
+  {
+    "pattern": "Y!J",
+    "url": "https://www.yahoo-help.jp/app/answers/detail/p/595/a_id/42716/~/%E3%82%A6%E3%82%A7%E3%83%96%E3%83%9A%E3%83%BC%E3%82%B8%E3%81%AB%E3%82%A2%E3%82%AF%E3%82%BB%E3%82%B9%E3%81%99%E3%82%8B%E3%82%B7%E3%82%B9%E3%83%86%E3%83%A0%E3%81%AE%E3%83%A6%E3%83%BC%E3%82%B6%E3%83%BC%E3%82%A8%E3%83%BC%E3%82%B8%E3%82%A7%E3%83%B3%E3%83%88%E3%81%AB%E3%81%A4%E3%81%84%E3%81%A6"
+  },
+  {
+    "pattern": "Domain Re-Animator Bot",
+    "url": "http://domainreanimator.com"
+  },
+  {
+    "pattern": "AddThis",
+    "url": "https://www.addthis.com"
+  },
+  {
+    "pattern": "Screaming Frog SEO Spider",
+    "url": "http://www.screamingfrog.co.uk/seo-spider"
+  },
+  {
+    "pattern": "MetaURI",
+    "url": "http://www.useragentstring.com/MetaURI_id_17683.php"
+  },
+  {
+    "pattern": "Scrapy",
+    "url": "http://scrapy.org/"
+  },
+  {
+    "pattern": "Livelap[bB]ot",
+    "url": "http://site.livelap.com/crawler"
+  },
+  {
+    "pattern": "OpenHoseBot",
+    "url": "http://www.openhose.org/bot.html"
+  },
+  {
+    "pattern": "CapsuleChecker",
+    "url": "http://www.capsulink.com/about"
+  },
+  {
+    "pattern": "collection@infegy\\.com",
+    "url": "http://infegy.com/"
+  },
+  {
+    "pattern": "IstellaBot",
+    "url": "http://www.tiscali.it/"
+  },
+  {
+    "pattern": "DeuSu\\/",
+    "url": "https://deusu.de/robot.html"
+  },
+  {
+    "pattern": "betaBot"
+  },
+  {
+    "pattern": "Cliqzbot\\/",
+    "url": "http://cliqz.com/company/cliqzbot"
+  },
+  {
+    "pattern": "MojeekBot\\/",
+    "url": "https://www.mojeek.com/bot.html"
+  },
+  {
+    "pattern": "netEstate NE Crawler",
+    "url": "http://www.website-datenbank.de/"
+  },
+  {
+    "pattern": "SafeSearch microdata crawler",
+    "url": "https://safesearch.avira.com"
+  },
+  {
+    "pattern": "Gluten Free Crawler\\/",
+    "url": "http://glutenfreepleasure.com/"
+  },
+  {
+    "pattern": "Sonic",
+    "url": "http://www.yama.info.waseda.ac.jp/~crawler/info.html"
+  },
+  {
+    "pattern": "Sysomos",
+    "url": "http://www.sysomos.com"
+  },
+  {
+    "pattern": "Trove",
+    "url": "http://www.trove.com"
+  },
+  {
+    "pattern": "deadlinkchecker",
+    "url": "http://www.deadlinkchecker.com"
+  },
+  {
+    "pattern": "Slack-ImgProxy",
+    "url": "https://api.slack.com/robots"
+  },
+  {
+    "pattern": "Embedly",
+    "url": "http://support.embed.ly"
+  },
+  {
+    "pattern": "RankActiveLinkBot",
+    "url": "https://rankactive.com/resources/rankactive-linkbot"
+  },
+  {
+    "pattern": "iskanie",
+    "url": "http://www.iskanie.com"
+  },
+  {
+    "pattern": "SafeDNSBot",
+    "url": "https://www.safedns.com/searchbot"
+  },
+  {
+    "pattern": "SkypeUriPreview"
+  },
+  {
+    "pattern": "Veoozbot",
+    "url": "http://www.veooz.com/veoozbot.html"
+  },
+  {
+    "pattern": "Slackbot",
+    "url": "https://api.slack.com/robots"
+  },
+  {
+    "pattern": "redditbot",
+    "url": "http://www.reddit.com/feedback"
+  },
+  {
+    "pattern": "datagnionbot",
+    "url": "http://www.datagnion.com/bot.html"
+  },
+  {
+    "pattern": "Google-Adwords-Instant",
+    "url": "http://www.google.com/adsbot.html"
+  },
+  {
+    "pattern": "adbeat_bot"
+  },
+  {
+    "pattern": "WhatsApp",
+    "url": "https://www.whatsapp.com/"
+  },
+  {
+    "pattern": "contxbot"
+  },
+  {
+    "pattern": "pinterest\\.com\\/bot",
+    "url": "http://www.pinterest.com/bot.html"
+  },
+  {
+    "pattern": "electricmonk",
+    "url": "https://www.duedil.com/our-crawler/"
+  },
+  {
+    "pattern": "GarlikCrawler",
+    "url": "http://garlik.com/"
+  },
+  {
+    "pattern": "BingPreview\\/",
+    "url": "https://www.bing.com/webmaster/help/which-crawlers-does-bing-use-8c184ec0"
+  },
+  {
+    "pattern": "vebidoobot",
+    "url": "https://blog.vebidoo.de/vebidoobot/"
+  },
+  {
+    "pattern": "FemtosearchBot",
+    "url": "http://femtosearch.com"
+  },
+  {
+    "pattern": "Yahoo Link Preview",
+    "url": "https://help.yahoo.com/kb/mail/yahoo-link-preview-SLN23615.html"
+  },
+  {
+    "pattern": "MetaJobBot",
+    "url": "http://www.metajob.de/the/crawler"
+  },
+  {
+    "pattern": "DomainStatsBot",
+    "url": "http://domainstats.io/our-bot"
+  },
+  {
+    "pattern": "mindUpBot",
+    "url": "http://www.datenbutler.de/"
+  },
+  {
+    "pattern": "Daum\\/",
+    "url": "http://cs.daum.net/faq/15/4118.html?faqId=28966"
+  },
+  {
+    "pattern": "Jugendschutzprogramm-Crawler",
+    "url": "http://www.jugendschutzprogramm.de"
+  },
+  {
+    "pattern": "Xenu Link Sleuth",
+    "url": "http://home.snafu.de/tilman/xenulink.html"
+  },
+  {
+    "pattern": "Pcore-HTTP",
+    "url": "https://bitbucket.org/softvisio/pcore/overview"
+  },
+  {
+    "pattern": "moatbot",
+    "url": "https://moat.com"
+  },
+  {
+    "pattern": "KosmioBot",
+    "url": "http://kosm.io/bot.html"
+  },
+  {
+    "pattern": "[pP]ingdom",
+    "url": "http://www.pingdom.com"
+  },
+  {
+    "pattern": "AppInsights",
+    "url": "https://docs.microsoft.com/en-us/azure/azure-monitor/app/app-insights-overview"
+  },
+  {
+    "pattern": "PhantomJS",
+    "url": "http://phantomjs.org/"
+  },
+  {
+    "pattern": "Gowikibot",
+    "url": "http://www.gowikibot.com"
+  },
+  {
+    "pattern": "PiplBot",
+    "url": "http://www.pipl.com/bot/"
+  },
+  {
+    "pattern": "Discordbot",
+    "url": "https://discordapp.com"
+  },
+  {
+    "pattern": "TelegramBot"
+  },
+  {
+    "pattern": "Jetslide",
+    "url": "http://jetsli.de/crawler"
+  },
+  {
+    "pattern": "newsharecounts",
+    "url": "http://newsharecounts.com/crawler"
+  },
+  {
+    "pattern": "James BOT",
+    "url": "http://cognitiveseo.com/bot.html"
+  },
+  {
+    "pattern": "Bark[rR]owler",
+    "url": "http://www.exensa.com/crawl"
+  },
+  {
+    "pattern": "TinEye",
+    "url": "http://www.tineye.com/crawler.html"
+  },
+  {
+    "pattern": "SocialRankIOBot",
+    "url": "http://socialrank.io/about"
+  },
+  {
+    "pattern": "trendictionbot",
+    "url": "http://www.trendiction.de/bot"
+  },
+  {
+    "pattern": "Ocarinabot"
+  },
+  {
+    "pattern": "epicbot",
+    "url": "http://www.epictions.com/epicbot"
+  },
+  {
+    "pattern": "Primalbot",
+    "url": "https://www.primal.com"
+  },
+  {
+    "pattern": "DuckDuckGo-Favicons-Bot",
+    "url": "http://duckduckgo.com"
+  },
+  {
+    "pattern": "GnowitNewsbot",
+    "url": "http://www.gnowit.com"
+  },
+  {
+    "pattern": "Leikibot",
+    "url": "http://www.leiki.com"
+  },
+  {
+    "pattern": "LinkArchiver",
+    "url": "https://github.com/thisisparker/linkarchiver"
+  },
+  {
+    "pattern": "YaK\\/",
+    "url": "http://linkfluence.com"
+  },
+  {
+    "pattern": "PaperLiBot",
+    "url": "http://support.paper.li/entries/20023257-what-is-paper-li"
+  },
+  {
+    "pattern": "Digg Deeper",
+    "url": "http://digg.com/about"
+  },
+  {
+    "pattern": "^dcrawl",
+    "url": "https://github.com/kgretzky/dcrawl"
+  },
+  {
+    "pattern": "Snacktory",
+    "url": "https://github.com/karussell/snacktory"
+  },
+  {
+    "pattern": "AndersPinkBot",
+    "url": "http://anderspink.com/bot.html"
+  },
+  {
+    "pattern": "Fyrebot"
+  },
+  {
+    "pattern": "EveryoneSocialBot",
+    "url": "http://everyonesocial.com"
+  },
+  {
+    "pattern": "Mediatoolkitbot",
+    "url": "http://mediatoolkit.com"
+  },
+  {
+    "pattern": "Luminator-robots"
+  },
+  {
+    "pattern": "ExtLinksBot",
+    "url": "https://extlinks.com/Bot.html"
+  },
+  {
+    "pattern": "SurveyBot"
+  },
+  {
+    "pattern": "NING\\/"
+  },
+  {
+    "pattern": "okhttp"
+  },
+  {
+    "pattern": "Nuzzel"
+  },
+  {
+    "pattern": "omgili",
+    "url": "http://omgili.com"
+  },
+  {
+    "pattern": "PocketParser",
+    "url": "https://getpocket.com/pocketparser_ua"
+  },
+  {
+    "pattern": "YisouSpider"
+  },
+  {
+    "pattern": "um-LN"
+  },
+  {
+    "pattern": "ToutiaoSpider",
+    "url": "http://web.toutiao.com/media_cooperation/"
+  },
+  {
+    "pattern": "MuckRack",
+    "url": "http://muckrack.com"
+  },
+  {
+    "pattern": "Jamie's Spider",
+    "url": "http://jamiembrown.com/"
+  },
+  {
+    "pattern": "AHC\\/",
+    "url": "https://github.com/AsyncHttpClient/async-http-client"
+  },
+  {
+    "pattern": "NetcraftSurveyAgent"
+  },
+  {
+    "pattern": "Laserlikebot"
+  },
+  {
+    "pattern": "^Apache-HttpClient"
+  },
+  {
+    "pattern": "AppEngine-Google"
+  },
+  {
+    "pattern": "Jetty"
+  },
+  {
+    "pattern": "Upflow"
+  },
+  {
+    "pattern": "Thinklab",
+    "url": "thinklab.com"
+  },
+  {
+    "pattern": "Traackr\\.com",
+    "url": "https://www.traackr.com/"
+  },
+  {
+    "pattern": "Twurly",
+    "url": "http://twurly.org"
+  },
+  {
+    "pattern": "Mastodon"
+  },
+  {
+    "pattern": "http_get"
+  },
+  {
+    "pattern": "DnyzBot"
+  },
+  {
+    "pattern": "botify"
+  },
+  {
+    "pattern": "007ac9 Crawler"
+  },
+  {
+    "pattern": "BehloolBot"
+  },
+  {
+    "pattern": "BrandVerity",
+    "url": "http://www.brandverity.com/why-is-brandverity-visiting-me"
+  },
+  {
+    "pattern": "check_http"
+  },
+  {
+    "pattern": "BDCbot"
+  },
+  {
+    "pattern": "ZumBot"
+  },
+  {
+    "pattern": "EZID"
+  },
+  {
+    "pattern": "ICC-Crawler",
+    "url": "http://ucri.nict.go.jp/en/icccrawler.html"
+  },
+  {
+    "pattern": "ArchiveBot",
+    "url": "https://github.com/ArchiveTeam/ArchiveBot"
+  },
+  {
+    "pattern": "^LCC ",
+    "url": "http://corpora.informatik.uni-leipzig.de/crawler_faq.html"
+  },
+  {
+    "pattern": "filterdb\\.iss\\.net\\/crawler",
+    "url": "http://filterdb.iss.net/crawler/"
+  },
+  {
+    "pattern": "BLP_bbot"
+  },
+  {
+    "pattern": "BomboraBot",
+    "url": "http://www.bombora.com/bot"
+  },
+  {
+    "pattern": "Buck\\/",
+    "url": "https://app.hypefactors.com/media-monitoring/about.html"
+  },
+  {
+    "pattern": "Companybook-Crawler",
+    "url": "https://www.companybooknetworking.com/"
+  },
+  {
+    "pattern": "Genieo",
+    "url": "http://www.genieo.com/webfilter.html"
+  },
+  {
+    "pattern": "magpie-crawler",
+    "url": "http://www.brandwatch.net"
+  },
+  {
+    "pattern": "MeltwaterNews",
+    "url": "http://www.meltwater.com"
+  },
+  {
+    "pattern": "Moreover",
+    "url": "http://www.moreover.com"
+  },
+  {
+    "pattern": "newspaper\\/"
+  },
+  {
+    "pattern": "ScoutJet",
+    "url": "http://www.scoutjet.com/"
+  },
+  {
+    "pattern": "(^| )sentry\\/",
+    "url": "https://sentry.io"
+  },
+  {
+    "pattern": "StorygizeBot",
+    "url": "http://www.storygize.com"
+  },
+  {
+    "pattern": "UptimeRobot",
+    "url": "http://www.uptimerobot.com/"
+  },
+  {
+    "pattern": "OutclicksBot",
+    "url": "https://www.outclicks.net"
+  },
+  {
+    "pattern": "seoscanners",
+    "url": "https://github.com/monperrus/crawler-user-agents/issues/384#issuecomment-2575367162"
+  },
+  {
+    "pattern": "Hatena"
+  },
+  {
+    "pattern": "Google Web Preview"
+  },
+  {
+    "pattern": "MauiBot"
+  },
+  {
+    "pattern": "AlphaBot",
+    "url": "http://alphaseobot.com/bot.html"
+  },
+  {
+    "pattern": "SBL-BOT",
+    "url": "http://sbl.net"
+  },
+  {
+    "pattern": "IAS crawler",
+    "url": "http://integralads.com/site-indexing-policy/"
+  },
+  {
+    "pattern": "adscanner"
+  },
+  {
+    "pattern": "Netvibes",
+    "url": "http://www.netvibes.com"
+  },
+  {
+    "pattern": "acapbot"
+  },
+  {
+    "pattern": "Baidu-YunGuanCe",
+    "url": "https://ce.baidu.com/topic/topic20150908"
+  },
+  {
+    "pattern": "bitlybot",
+    "url": "http://bit.ly/"
+  },
+  {
+    "pattern": "blogmuraBot",
+    "url": "http://www.blogmura.com"
+  },
+  {
+    "pattern": "Bot\\.AraTurka\\.com",
+    "url": "http://www.araturka.com"
+  },
+  {
+    "pattern": "bot-pge\\.chlooe\\.com"
+  },
+  {
+    "pattern": "BoxcarBot",
+    "url": "https://boxcar.io/"
+  },
+  {
+    "pattern": "BTWebClient",
+    "url": "http://www.utorrent.com/"
+  },
+  {
+    "pattern": "ContextAd Bot"
+  },
+  {
+    "pattern": "Digincore bot",
+    "url": "http://www.digincore.com/crawler.html"
+  },
+  {
+    "pattern": "Disqus",
+    "url": "https://disqus.com/"
+  },
+  {
+    "pattern": "Feedly",
+    "url": "https://www.feedly.com/fetcher.html"
+  },
+  {
+    "pattern": "Fetch\\/"
+  },
+  {
+    "pattern": "Fever",
+    "url": "http://feedafever.com"
+  },
+  {
+    "pattern": "Flamingo_SearchEngine"
+  },
+  {
+    "pattern": "FlipboardProxy",
+    "url": "https://about.flipboard.com/browserproxy/"
+  },
+  {
+    "pattern": "g2reader-bot",
+    "url": "http://www.g2reader.com/"
+  },
+  {
+    "pattern": "G2 Web Services",
+    "url": "https://www.g2webservices.com/"
+  },
+  {
+    "pattern": "imrbot",
+    "url": "http://www.mignify.com"
+  },
+  {
+    "pattern": "K7MLWCBot",
+    "url": "http://www.k7computing.com"
+  },
+  {
+    "pattern": "Kemvibot",
+    "url": "http://kemvi.com"
+  },
+  {
+    "pattern": "Landau-Media-Spider",
+    "url": "http://bots.landaumedia.de/bot.html"
+  },
+  {
+    "pattern": "linkapediabot",
+    "url": "http://www.linkapedia.com"
+  },
+  {
+    "pattern": "vkShare",
+    "url": "http://vk.com/dev/Share"
+  },
+  {
+    "pattern": "Siteimprove\\.com"
+  },
+  {
+    "pattern": "BLEXBot\\/",
+    "url": "http://webmeup-crawler.com"
+  },
+  {
+    "pattern": "DareBoost",
+    "url": "https://www.dareboost.com/"
+  },
+  {
+    "pattern": "ZuperlistBot\\/"
+  },
+  {
+    "pattern": "Miniflux\\/",
+    "url": "https://miniflux.net"
+  },
+  {
+    "pattern": "Feedspot",
+    "url": "http://www.feedspot.com/fs/bot"
+  },
+  {
+    "pattern": "Diffbot\\/",
+    "url": "http://www.diffbot.com"
+  },
+  {
+    "pattern": "SEOkicks",
+    "url": "https://www.seokicks.de/robot.html"
+  },
+  {
+    "pattern": "tracemyfile"
+  },
+  {
+    "pattern": "Nimbostratus-Bot"
+  },
+  {
+    "pattern": "zgrab",
+    "url": "https://github.com/zmap/zgrab2"
+  },
+  {
+    "pattern": "PR-CY\\.RU",
+    "url": "https://a.pr-cy.ru/"
+  },
+  {
+    "pattern": "AdsTxtCrawler"
+  },
+  {
+    "pattern": "Datafeedwatch",
+    "url": "https://www.datafeedwatch.com/"
+  },
+  {
+    "pattern": "Zabbix",
+    "url": "https://www.zabbix.com/documentation/3.4/manual/web_monitoring"
+  },
+  {
+    "pattern": "TangibleeBot",
+    "url": "http://tangiblee.com/bot"
+  },
+  {
+    "pattern": "google-xrawler",
+    "url": "https://webmasters.stackexchange.com/questions/105560/what-is-the-google-xrawler-user-agent-used-for"
+  },
+  {
+    "pattern": "axios",
+    "url": "https://github.com/axios/axios"
+  },
+  {
+    "pattern": "Amazon CloudFront",
+    "url": "https://aws.amazon.com/cloudfront/"
+  },
+  {
+    "pattern": "Pulsepoint "
+  },
+  {
+    "pattern": "CloudFlare-AlwaysOnline",
+    "url": "https://www.cloudflare.com/always-online/"
+  },
+  {
+    "pattern": "Cloudflare-Healthchecks",
+    "url": "https://developers.cloudflare.com/health-checks/"
+  },
+  {
+    "pattern": "Cloudflare-Traffic-Manager",
+    "url": "https://developers.cloudflare.com/load-balancing/monitors/"
+  },
+  {
+    "pattern": "CloudFlare-Prefetch",
+    "url": "https://developers.cloudflare.com/speed/optimization/content/prefetch-urls/"
+  },
+  {
+    "pattern": "Cloudflare-SSLDetector",
+    "url": "https://developers.cloudflare.com/ssl/origin-configuration/ssl-tls-recommender/"
+  },
+  {
+    "pattern": "https:\\/\\/developers\\.cloudflare\\.com\\/security-center\\/",
+    "url": "https://developers.cloudflare.com/ssl/origin-configuration/ssl-tls-recommender/"
+  },
+  {
+    "pattern": "Google-Structured-Data-Testing-Tool",
+    "url": "https://search.google.com/structured-data/testing-tool"
+  },
+  {
+    "pattern": "WordupInfoSearch"
+  },
+  {
+    "pattern": "WebDataStats",
+    "url": "https://webdatastats.com/"
+  },
+  {
+    "pattern": "HttpUrlConnection"
+  },
+  {
+    "pattern": "ZoomBot",
+    "url": "http://suite.seozoom.it/bot.html"
+  },
+  {
+    "pattern": "VelenPublicWebCrawler",
+    "url": "https://velen.io/"
+  },
+  {
+    "pattern": "MoodleBot"
+  },
+  {
+    "pattern": "jpg-newsbot",
+    "url": "https://vipnytt.no/bots/"
+  },
+  {
+    "pattern": "outbrain",
+    "url": "https://www.outbrain.com/help/advertisers/invalid-url/"
+  },
+  {
+    "pattern": "W3C_Validator",
+    "url": "https://validator.w3.org/services"
+  },
+  {
+    "pattern": "Validator\\.nu",
+    "url": "https://validator.w3.org/services"
+  },
+  {
+    "pattern": "W3C-checklink",
+    "url": "https://validator.w3.org/services"
+  },
+  {
+    "pattern": "W3C-mobileOK",
+    "url": "https://validator.w3.org/services"
+  },
+  {
+    "pattern": "W3C_I18n-Checker",
+    "url": "https://validator.w3.org/services"
+  },
+  {
+    "pattern": "FeedValidator",
+    "url": "https://validator.w3.org/services"
+  },
+  {
+    "pattern": "W3C_CSS_Validator",
+    "url": "https://validator.w3.org/services"
+  },
+  {
+    "pattern": "W3C_Unicorn",
+    "url": "https://validator.w3.org/services"
+  },
+  {
+    "pattern": "Google-PhysicalWeb"
+  },
+  {
+    "pattern": "Blackboard",
+    "url": "https://help.blackboard.com/Learn/Administrator/Hosting/Tools_Management/SafeAssign"
+  },
+  {
+    "pattern": "ICBot\\/",
+    "url": "https://ideasandcode.xyz"
+  },
+  {
+    "pattern": "BazQux",
+    "url": "https://bazqux.com/fetcher"
+  },
+  {
+    "pattern": "Twingly",
+    "url": "https://twingly.com"
+  },
+  {
+    "pattern": "Rivva",
+    "url": "http://rivva.de"
+  },
+  {
+    "pattern": "Experibot",
+    "url": "https://amirkr.wixsite.com/experibot"
+  },
+  {
+    "pattern": "awesomecrawler"
+  },
+  {
+    "pattern": "Dataprovider\\.com",
+    "url": "https://www.dataprovider.com/"
+  },
+  {
+    "pattern": "GroupHigh\\/",
+    "url": "http://www.grouphigh.com/"
+  },
+  {
+    "pattern": "theoldreader\\.com",
+    "url": "https://www.theoldreader.com/"
+  },
+  {
+    "pattern": "AnyEvent",
+    "url": "http://software.schmorp.de/pkg/AnyEvent.html"
+  },
+  {
+    "pattern": "Uptimebot\\.org",
+    "url": "http://uptimebot.org/"
+  },
+  {
+    "pattern": "Nmap Scripting Engine",
+    "url": "https://nmap.org/book/nse.html"
+  },
+  {
+    "pattern": "2ip\\.ru",
+    "url": "https://2ip.ru/cms/"
+  },
+  {
+    "pattern": "Clickagy",
+    "url": "https://www.clickagy.com"
+  },
+  {
+    "pattern": "Caliperbot",
+    "url": "http://www.conductor.com/caliperbot"
+  },
+  {
+    "pattern": "MBCrawler",
+    "url": "https://monitorbacklinks.com"
+  },
+  {
+    "pattern": "online-webceo-bot",
+    "url": "http://online.webceo.com"
+  },
+  {
+    "pattern": "B2B Bot"
+  },
+  {
+    "pattern": "AddSearchBot",
+    "url": "http://www.addsearch.com/bot"
+  },
+  {
+    "pattern": "Google Favicon"
+  },
+  {
+    "pattern": "HubSpot"
+  },
+  {
+    "pattern": "Chrome-Lighthouse",
+    "url": "https://developers.google.com/speed/pagespeed/insights"
+  },
+  {
+    "pattern": "HeadlessChrome",
+    "url": "https://developers.google.com/web/updates/2017/04/headless-chrome"
+  },
+  {
+    "pattern": "CheckMarkNetwork\\/",
+    "url": "https://www.checkmarknetwork.com/"
+  },
+  {
+    "pattern": "www\\.uptime\\.com",
+    "url": "http://www.uptime.com/uptimebot"
+  },
+  {
+    "pattern": "Streamline3Bot\\/",
+    "url": "https://www.ubtsupport.com/legal/Streamline3Bot.php"
+  },
+  {
+    "pattern": "serpstatbot\\/",
+    "url": "http://serpstatbot.com"
+  },
+  {
+    "pattern": "MixnodeCache\\/",
+    "url": "https://cache.mixnode.com/"
+  },
+  {
+    "pattern": "^curl",
+    "url": "https://curl.haxx.se/"
+  },
+  {
+    "pattern": "SimpleScraper",
+    "url": "https://github.com/ramonkcom/simple-scraper/"
+  },
+  {
+    "pattern": "RSSingBot",
+    "url": "http://www.rssing.com"
+  },
+  {
+    "pattern": "Jooblebot",
+    "url": "http://jooble.org/jooble-bot"
+  },
+  {
+    "pattern": "fedoraplanet",
+    "url": "http://fedoraplanet.org/"
+  },
+  {
+    "pattern": "Friendica",
+    "url": "https://hoyer.xyz"
+  },
+  {
+    "pattern": "NextCloud",
+    "url": "https://nextcloud.com/"
+  },
+  {
+    "pattern": "Tiny Tiny RSS",
+    "url": "http://tt-rss.org/"
+  },
+  {
+    "pattern": "RegionStuttgartBot",
+    "url": "http://it.region-stuttgart.de/competenzatlas/unternehmen-suchen/"
+  },
+  {
+    "pattern": "Bytespider",
+    "url": "https://stackoverflow.com/questions/57908900/what-is-the-bytespider-user-agent"
+  },
+  {
+    "pattern": "Datanyze",
+    "url": "https://www.datanyze.com/dnyzbot/"
+  },
+  {
+    "pattern": "Google-Site-Verification",
+    "url": "https://support.google.com/webmasters/answer/9008080"
+  },
+  {
+    "pattern": "TrendsmapResolver",
+    "url": "https://www.trendsmap.com/"
+  },
+  {
+    "pattern": "tweetedtimes",
+    "url": "https://tweetedtimes.com/"
+  },
+  {
+    "pattern": "NTENTbot",
+    "url": "https://ntent.com/ntentbot/"
+  },
+  {
+    "pattern": "Gwene",
+    "url": "https://gwene.org"
+  },
+  {
+    "pattern": "SimplePie",
+    "url": "http://simplepie.org"
+  },
+  {
+    "pattern": "SearchAtlas",
+    "url": "http://SearchAtlas.com"
+  },
+  {
+    "pattern": "Superfeedr",
+    "url": "http://superfeedr.com"
+  },
+  {
+    "pattern": "feedbot",
+    "url": "http://wp.com"
+  },
+  {
+    "pattern": "UT-Dorkbot",
+    "url": "https://security.utexas.edu/dorkbot"
+  },
+  {
+    "pattern": "Amazonbot",
+    "url": "https://developer.amazon.com/support/amazonbot"
+  },
+  {
+    "pattern": "AmazonProductDiscovery",
+    "url": "https://vendorcentral.amazon.com/support/amazonproductbot"
+  },
+  {
+    "pattern": "AmazonSellerInitiatedListing",
+    "url": "https://vendorcentral.amazon.com/support/amazonproductbot"
+  },
+  {
+    "pattern": "SerendeputyBot",
+    "url": "http://serendeputy.com/about/serendeputy-bot"
+  },
+  {
+    "pattern": "Eyeotabot",
+    "url": "http://www.eyeota.com"
+  },
+  {
+    "pattern": "officestorebot",
+    "url": "https://aka.ms/officestorebot"
+  },
+  {
+    "pattern": "Neticle Crawler",
+    "url": "https://neticle.com/bot/en/"
+  },
+  {
+    "pattern": "SurdotlyBot",
+    "url": "http://sur.ly/bot.html"
+  },
+  {
+    "pattern": "LinkisBot"
+  },
+  {
+    "pattern": "AwarioSmartBot",
+    "url": "https://awario.com/bots.html"
+  },
+  {
+    "pattern": "AwarioRssBot",
+    "url": "https://awario.com/bots.html"
+  },
+  {
+    "pattern": "RyteBot",
+    "url": "https://bot.ryte.com/"
+  },
+  {
+    "pattern": "FreeWebMonitoring SiteChecker",
+    "url": "https://www.freewebmonitoring.com/bot.html"
+  },
+  {
+    "pattern": "AspiegelBot",
+    "url": "https://aspiegel.com"
+  },
+  {
+    "pattern": "NAVER Blog Rssbot",
+    "url": "http://www.naver.com"
+  },
+  {
+    "pattern": "zenback bot",
+    "url": "http://corp.logly.co.jp/"
+  },
+  {
+    "pattern": "SentiBot",
+    "url": "https://sites.google.com/senti1.com/sentibot-eu/home"
+  },
+  {
+    "pattern": "Domains Project\\/",
+    "url": "https://github.com/tb0hdan/domains"
+  },
+  {
+    "pattern": "Pandalytics",
+    "url": "https://domainsbot.com/pandalytics/"
+  },
+  {
+    "pattern": "VKRobot"
+  },
+  {
+    "pattern": "bidswitchbot",
+    "url": "https://www.bidswitch.com/about-us/"
+  },
+  {
+    "pattern": "tigerbot"
+  },
+  {
+    "pattern": "NIXStatsbot",
+    "url": "http://www.nixstats.com/bot.html"
+  },
+  {
+    "pattern": "Atom Feed Robot",
+    "url": "https://rssmicro.com"
+  },
+  {
+    "pattern": "[Cc]urebot"
+  },
+  {
+    "pattern": "PagePeeker\\/",
+    "url": "https://pagepeeker.com/robots/"
+  },
+  {
+    "pattern": "Vigil\\/",
+    "url": "http://vigil-app.com/bot.html"
+  },
+  {
+    "pattern": "rssbot\\/",
+    "url": "https://github.com/iovxw/rssbot"
+  },
+  {
+    "pattern": "startmebot\\/",
+    "url": "https://start.me/bot"
+  },
+  {
+    "pattern": "JobboerseBot",
+    "url": "http://www.jobboerse.com/bot.htm"
+  },
+  {
+    "pattern": "seewithkids",
+    "url": "http://seewithkids.com/bot"
+  },
+  {
+    "pattern": "NINJA bot"
+  },
+  {
+    "pattern": "Cutbot",
+    "url": "http://cutbot.net/"
+  },
+  {
+    "pattern": "BublupBot",
+    "url": "https://www.bublup.com/bublup-bot.html"
+  },
+  {
+    "pattern": "BrandONbot",
+    "url": "http://brandonmedia.net"
+  },
+  {
+    "pattern": "RidderBot",
+    "url": "https://ridder.co/"
+  },
+  {
+    "pattern": "Taboolabot",
+    "url": "http://www.taboola.com"
+  },
+  {
+    "pattern": "Dubbotbot",
+    "url": "http://dubbot.com"
+  },
+  {
+    "pattern": "FindITAnswersbot",
+    "url": "http://search.it-influentials.com/bot.htm"
+  },
+  {
+    "pattern": "infoobot",
+    "url": "https://www.infoo.nl/bot.html"
+  },
+  {
+    "pattern": "Refindbot",
+    "url": "https://refind.com/about"
+  },
+  {
+    "pattern": "BlogTraffic\\/\\d\\.\\d+ Feed-Fetcher",
+    "url": "http://www.blogtraffic.de/rss-bot.html"
+  },
+  {
+    "pattern": "SeobilityBot",
+    "url": "https://www.seobility.net/sites/bot.html"
+  },
+  {
+    "pattern": "Cincraw",
+    "url": "http://cincrawdata.net/bot/"
+  },
+  {
+    "pattern": "Dragonbot",
+    "url": "http://www.dragonmetrics.com"
+  },
+  {
+    "pattern": "VoluumDSP-content-bot",
+    "url": "https://codewise.com"
+  },
+  {
+    "pattern": "FreshRSS",
+    "url": "https://freshrss.org"
+  },
+  {
+    "pattern": "BitBot",
+    "url": "https://bitbot.dev"
+  },
+  {
+    "pattern": "^PHP-Curl-Class",
+    "url": "https://github.com/php-curl-class/php-curl-class"
+  },
+  {
+    "pattern": "Google-Certificates-Bridge"
+  },
+  {
+    "pattern": "centurybot"
+  },
+  {
+    "pattern": "Viber",
+    "url": "https://www.viber.com/"
+  },
+  {
+    "pattern": "e\\.ventures Investment Crawler",
+    "url": "https://www.eventures.vc/"
+  },
+  {
+    "pattern": "evc-batch",
+    "url": "https://www.eventures.vc/"
+  },
+  {
+    "pattern": "PetalBot",
+    "url": "https://webmaster.petalsearch.com/site/petalbot"
+  },
+  {
+    "pattern": "virustotal",
+    "url": "https://www.virustotal.com/gui/home/url"
+  },
+  {
+    "pattern": "(^| )PTST\\/",
+    "url": "https://www.webpagetest.org"
+  },
+  {
+    "pattern": "minicrawler",
+    "url": "https://www.testomato.com/bot"
+  },
+  {
+    "pattern": "Cookiebot",
+    "url": "https://www.cookiebot.com/"
+  },
+  {
+    "pattern": "trovitBot",
+    "url": "http://www.trovit.com/bot.html"
+  },
+  {
+    "pattern": "seostar\\.co",
+    "url": "https://seostar.co/robot/"
+  },
+  {
+    "pattern": "IonCrawl",
+    "url": "https://www.ionos.de/terms-gtc/faq-crawler-en"
+  },
+  {
+    "pattern": "Uptime-Kuma",
+    "url": "https://uptime.kuma.pet/"
+  },
+  {
+    "pattern": "Seekport",
+    "url": "https://bot.seekport.com"
+  },
+  {
+    "pattern": "FreshpingBot",
+    "url": "https://www.freshworks.com/website-monitoring/"
+  },
+  {
+    "pattern": "Feedbin",
+    "url": "https://feedbin.com/"
+  },
+  {
+    "pattern": "CriteoBot",
+    "url": "https://www.criteo.com/"
+  },
+  {
+    "pattern": "Snap URL Preview Service",
+    "url": "https://snap.com/"
+  },
+  {
+    "pattern": "Better Uptime Bot",
+    "url": "https://betteruptime.com/"
+  },
+  {
+    "pattern": "RuxitSynthetic",
+    "url": "https://www.dynatrace.com/support/help/platform-modules/digital-experience/synthetic-monitoring/browser-monitors/configure-browser-monitors#expand--default-user-agent"
+  },
+  {
+    "pattern": "Google-Read-Aloud",
+    "url": "https://developers.google.com/search/docs/crawling-indexing/overview-google-crawlers"
+  },
+  {
+    "pattern": "Valve\\/Steam"
+  },
+  {
+    "pattern": "OdklBot\\/",
+    "url": "https://odnoklassniki.ru/"
+  },
+  {
+    "pattern": "GPTBot",
+    "url": "https://platform.openai.com/docs/gptbot"
+  },
+  {
+    "pattern": "ChatGPT-User",
+    "url": "https://openai.com/bot"
+  },
+  {
+    "pattern": "OAI-SearchBot",
+    "url": "https://platform.openai.com/docs/bots"
+  },
+  {
+    "pattern": "YandexRenderResourcesBot\\/",
+    "url": "http://yandex.com/bots"
+  },
+  {
+    "pattern": "LightspeedSystemsCrawler"
+  },
+  {
+    "pattern": "ev-crawler\\/",
+    "url": "https://headline.com/legal/crawler"
+  },
+  {
+    "pattern": "BitSightBot\\/",
+    "url": "https://www.bitsight.com"
+  },
+  {
+    "pattern": "woorankreview\\/",
+    "url": "https://www.woorank.com/"
+  },
+  {
+    "pattern": "Google-Safety",
+    "url": "https://developers.google.com/search/docs/crawling-indexing/overview-google-crawlers"
+  },
+  {
+    "pattern": "AwarioBot",
+    "url": "https://awario.com/bots.html"
+  },
+  {
+    "pattern": "DataForSeoBot",
+    "url": "https://dataforseo.com/dataforseo-bot"
+  },
+  {
+    "pattern": "Linespider",
+    "url": "https://help2.line.me/linesearchbot/web/?contentId=50006055&lang=en"
+  },
+  {
+    "pattern": "WellKnownBot",
+    "url": "https://well-known.dev/about/#bot)"
+  },
+  {
+    "pattern": "A Patent Crawler",
+    "url": "http://scitas.epfl.ch/"
+  },
+  {
+    "pattern": "StractBot",
+    "url": "https://trystract.com/webmasters"
+  },
+  {
+    "pattern": "search\\.marginalia\\.nu",
+    "url": "https://search.marginalia.nu"
+  },
+  {
+    "pattern": "YouBot",
+    "url": "https://you.com/"
+  },
+  {
+    "pattern": "Nicecrawler",
+    "url": "http://www.nicecrawler.com/"
+  },
+  {
+    "pattern": "Neevabot",
+    "url": "https://neeva.com/neevabot"
+  },
+  {
+    "pattern": "BrightEdge Crawler",
+    "url": "https://www.brightedge.com/"
+  },
+  {
+    "pattern": "SiteCheckerBotCrawler",
+    "url": "http://sitechecker.pro"
+  },
+  {
+    "pattern": "TombaPublicWebCrawler",
+    "url": "https://tombascraper.com"
+  },
+  {
+    "pattern": "CrawlyProjectCrawler",
+    "url": "https://crawlyproject.digitaldragon.dev/"
+  },
+  {
+    "pattern": "KomodiaBot",
+    "url": "http://www.komodia.com/newwiki/index.php/URL_server_crawler"
+  },
+  {
+    "pattern": "KStandBot",
+    "url": "http://url-classification.io"
+  },
+  {
+    "pattern": "CISPA Webcrawler",
+    "url": "https://vuln-notify-checker.cispa.saarland"
+  },
+  {
+    "pattern": "MTRobot",
+    "url": "https://metrics-tools.de/robot.html"
+  },
+  {
+    "pattern": "hyscore\\.io",
+    "url": "https://hyscore.io/crawler/"
+  },
+  {
+    "pattern": "AlexandriaOrgBot",
+    "url": "https://www.alexandria.org/bot.html"
+  },
+  {
+    "pattern": "2ip bot",
+    "url": "http://2ip.io"
+  },
+  {
+    "pattern": "Yellowbrandprotectionbot",
+    "url": "https://www.yellowbp.com/bot.html"
+  },
+  {
+    "pattern": "SEOlizer",
+    "url": "https://www.seolizer.de/bot.html"
+  },
+  {
+    "pattern": "vuhuvBot",
+    "url": "http://vuhuv.com/bot.html"
+  },
+  {
+    "pattern": "INETDEX-BOT",
+    "url": "https://inetdex.com/bot.html"
+  },
+  {
+    "pattern": "Synapse",
+    "url": "https://github.com/matrix-org/synapse"
+  },
+  {
+    "pattern": "t3versionsBot",
+    "url": "https://www.t3versions.com/bot"
+  },
+  {
+    "pattern": "deepnoc",
+    "url": "https://deepnoc.com/bot"
+  },
+  {
+    "pattern": "Cocolyzebot",
+    "url": "https://cocolyze.com/bot"
+  },
+  {
+    "pattern": "hypestat",
+    "url": "https://hypestat.com/bot"
+  },
+  {
+    "pattern": "ReverseEngineeringBot",
+    "url": "https://torus.company/bot.html"
+  },
+  {
+    "pattern": "sempi\\.tech",
+    "url": "http://sempi.tech/bot.html"
+  },
+  {
+    "pattern": "Iframely",
+    "url": "https://iframely.com/docs/about"
+  },
+  {
+    "pattern": "MetaInspector",
+    "url": "https://github.com/jaimeiniesta/metainspector"
+  },
+  {
+    "pattern": "node-fetch",
+    "url": "https://github.com/bitinn/node-fetch"
+  },
+  {
+    "pattern": "l9explore",
+    "url": "https://github.com/LeakIX/l9explore"
+  },
+  {
+    "pattern": "python-opengraph",
+    "url": "https://github.com/jaywink/python-opengraph"
+  },
+  {
+    "pattern": "OpenGraphCheck",
+    "url": "https://opengraphcheck.com"
+  },
+  {
+    "pattern": "developers\\.google\\.com\\/\\+\\/web\\/snippet",
+    "url": "https://developers.google.com/+/web/snippet"
+  },
+  {
+    "pattern": "SenutoBot",
+    "url": "https://www.senuto.com"
+  },
+  {
+    "pattern": "MaCoCu",
+    "url": "https://www.clarin.si/info/macocu-massive-collection-and-curation-of-monolingual-and-bilingual-data"
+  },
+  {
+    "pattern": "NewsBlur",
+    "url": "http://www.newsblur.com"
+  },
+  {
+    "pattern": "inoreader",
+    "url": "http://inoreader.com"
+  },
+  {
+    "pattern": "NetSystemsResearch",
+    "url": "http://netsystemsresearch.com"
+  },
+  {
+    "pattern": "PageThing",
+    "url": "http://pagething.com"
+  },
+  {
+    "pattern": "WordPress\\/",
+    "url": "https://wordpress.org"
+  },
+  {
+    "pattern": "PhxBot"
+  },
+  {
+    "pattern": "ImagesiftBot",
+    "url": "https://imagesift.com/about"
+  },
+  {
+    "pattern": "Expanse",
+    "url": "https://www.paloaltonetworks.com/cortex/cortex-xpanse"
+  },
+  {
+    "pattern": "InternetMeasurement",
+    "url": "https://internet-measurement.com"
+  },
+  {
+    "pattern": "^BW\\/",
+    "url": "https://builtwith.com/biup"
+  },
+  {
+    "pattern": "GeedoBot",
+    "url": "http://www.geedo.com"
+  },
+  {
+    "pattern": "Audisto Crawler",
+    "url": "https://audisto.com/help/crawler/bot/"
+  },
+  {
+    "pattern": "PerplexityBot\\/",
+    "url": "https://docs.perplexity.ai/docs/perplexitybot"
+  },
+  {
+    "pattern": "[cC]laude[bB]ot",
+    "url": "https://www.anthropic.com/"
+  },
+  {
+    "pattern": "Monsidobot",
+    "url": "http://monsido.com/bot.html"
+  },
+  {
+    "pattern": "GroupMeBot",
+    "url": "https://groupme.com/"
+  },
+  {
+    "pattern": "Vercelbot",
+    "url": "https://github.com/vercel/vercel/discussions/5095#discussioncomment-58705"
+  },
+  {
+    "pattern": "vercel-screenshot"
+  },
+  {
+    "pattern": "facebookcatalog\\/",
+    "url": "https://developers.facebook.com/docs/sharing/webmasters/web-crawlers"
+  },
+  {
+    "pattern": "meta-externalads\\/",
+    "url": "https://developers.facebook.com/docs/sharing/webmasters/web-crawlers"
+  },
+  {
+    "pattern": "meta-externalagent\\/",
+    "url": "https://developers.facebook.com/docs/sharing/webmasters/web-crawlers"
+  },
+  {
+    "pattern": "meta-externalfetcher\\/",
+    "url": "https://developers.facebook.com/docs/sharing/webmasters/web-crawlers"
+  },
+  {
+    "pattern": "AcademicBotRTU",
+    "url": "https://academicbot.rtu.lv"
+  },
+  {
+    "pattern": "KeybaseBot",
+    "url": "https://book.keybase.io/docs/chat/link-previews"
+  },
+  {
+    "pattern": "Lemmy",
+    "url": "https://leminal.space"
+  },
+  {
+    "pattern": "CookieHubScan",
+    "url": "https://www.cookiehub.com/"
+  },
+  {
+    "pattern": "Hydrozen\\.io",
+    "url": "https://docs.hydrozen.io/overview/misc/user-agent-and-ip-list"
+  },
+  {
+    "pattern": "HTTP Banner Detection",
+    "url": "https://security.ipip.net"
+  },
+  {
+    "pattern": "SummalyBot",
+    "url": "https://github.com/misskey-dev/summaly"
+  },
+  {
+    "pattern": "MicrosoftPreview\\/",
+    "url": "https://www.bing.com/webmasters/help/which-crawlers-does-bing-use-8c184ec0"
+  },
+  {
+    "pattern": "GeedoProductSearch",
+    "url": "http://www.geedo.com/product-search.html"
+  },
+  {
+    "pattern": "TikTokSpider"
+  },
+  {
+    "pattern": "OnCrawl\\/",
+    "url": "http://www.oncrawl.com"
+  },
+  {
+    "pattern": "sindresorhus\\/got",
+    "url": "https://github.com/sindresorhus/got"
+  },
+  {
+    "pattern": "CensysInspect\\/",
+    "url": "https://about.censys.io"
+  },
+  {
+    "pattern": "SBIntuitionsBot\\/",
+    "url": "https://www.sbintuitions.co.jp/bot/"
+  },
+  {
+    "pattern": "sitebulb",
+    "url": "https://sitebulb.com/"
+  },
+  {
+    "pattern": "YextBot\\/",
+    "url": "https://hitchhikers.yext.com/modules/kg140-yext-site-crawler/01-create-a-crawler/"
+  },
+  {
+    "pattern": "DatadogSynthetics",
+    "url": "https://docs.datadoghq.com/synthetics/"
+  },
+  {
+    "pattern": "Google-Ads-Conversions",
+    "url": "https://developers.google.com/google-ads/api/docs/conversions/upload-online"
+  },
+  {
+    "pattern": "ObservePoint",
+    "url": "https://help.observepoint.com/en/articles/9101465-allow-exclude-observepoint-traffic#h_2a8176c9b9"
+  },
+  {
+    "pattern": "Checkly",
+    "url": "https://www.checklyhq.com/docs/"
+  },
+  {
+    "pattern": "ALittle Client",
+    "url": "https://udger.com/resources/ua-list/bot-detail?bot=ALittle+Client"
+  },
+  {
+    "pattern": "AliyunSecBot",
+    "url": "https://service.alibaba.com"
+  },
+  {
+    "pattern": "Claude-Web",
+    "url": "https://anthropic.com"
+  },
+  {
+    "pattern": "anthropic-ai",
+    "url": "https://anthropic.com"
+  },
+  {
+    "pattern": "Claude-User",
+    "url": "https://useragents.io/uas/mozilla-5-0-applewebkit-537-36-khtml-like-gecko-compatible-claudebot-1-0-supportanthropic-com_954fa13a8e1e46d8267fb56e2d48100e"
+  },
+  {
+    "pattern": "Claude-SearchBot",
+    "url": "https://useragents.io/uas/mozilla-5-0-applewebkit-537-36-khtml-like-gecko-compatible-claudebot-1-0-supportanthropic-com_954fa13a8e1e46d8267fb56e2d48100e"
+  },
+  {
+    "pattern": "Google-Extended",
+    "url": "https://developers.google.com/search/docs/crawling-indexing/overview-google-crawlers"
+  },
+  {
+    "pattern": "cohere-ai",
+    "url": "https://cohere.com"
+  },
+  {
+    "pattern": "Timpibot",
+    "url": "https://timpi.io"
+  },
+  {
+    "pattern": "SERankingBacklinksBot",
+    "url": "https://seranking.com/backlinks-crawler"
+  },
+  {
+    "pattern": "CMSChecker"
+  },
+  {
+    "pattern": "Wayback",
+    "url": "https://archive.org"
+  },
+  {
+    "pattern": "Playwright",
+    "url": "https://playwright.dev"
+  },
+  {
+    "pattern": "Puppeteer",
+    "url": "https://pptr.dev"
+  },
+  {
+    "pattern": "Selenium",
+    "url": "https://www.selenium.dev"
+  },
+  {
+    "pattern": "Nikto",
+    "url": "https://cirt.net/Nikto2"
+  },
+  {
+    "pattern": "sqlmap",
+    "url": "https://sqlmap.org"
+  },
+  {
+    "pattern": "ZmEu",
+    "url": "https://en.wikipedia.org/wiki/ZmEu_(vulnerability_scanner)"
+  },
+  {
+    "pattern": "masscan",
+    "url": "https://github.com/robertdavidgraham/masscan"
+  },
+  {
+    "pattern": "WPScan",
+    "url": "https://wpscan.com"
+  },
+  {
+    "pattern": "[aA]cunetix",
+    "url": "https://www.acunetix.com"
+  },
+  {
+    "pattern": "Nessus",
+    "url": "https://www.tenable.com/products/nessus"
+  },
+  {
+    "pattern": "[dD]ir[Bb]uster",
+    "url": "https://github.com/KajanM/DirBuster"
+  },
+  {
+    "pattern": "StatusCake",
+    "url": "https://www.statuscake.com"
+  },
+  {
+    "pattern": "colly",
+    "url": "https://go-colly.org"
+  },
+  {
+    "pattern": "[mM]echanize",
+    "url": "https://github.com/sparklemotion/mechanize"
+  },
+  {
+    "pattern": "air\\.ai\\/scanning"
+  },
+  {
+    "pattern": "asnriskscorer"
+  },
+  {
+    "pattern": "OICrawler",
+    "url": "https://openindex.ai"
+  },
+  {
+    "pattern": "l9scan",
+    "url": "https://github.com/LeakIX/l9scan"
+  },
+  {
+    "pattern": "SlaccaleBot"
+  },
+  {
+    "pattern": "CustomAsyncHttpClient"
+  },
+  {
+    "pattern": "^HTTPie\\/",
+    "url": "https://httpie.io"
+  },
+  {
+    "pattern": "Gemini-Deep-Research",
+    "url": "https://developers.google.com/search/docs/crawling-indexing/google-common-crawlers"
+  },
+  {
+    "pattern": "Perplexity-User",
+    "url": "https://docs.perplexity.ai/guides/bots"
+  },
+  {
+    "pattern": "PerplexityUser",
+    "url": "https://perplexity.ai"
+  },
+  {
+    "pattern": "meta-webindexer",
+    "url": "https://developers.facebook.com/docs/sharing/webmasters/web-crawlers#meta-webindexer"
+  },
+  {
+    "pattern": "DuckAssistBot",
+    "url": "https://duckduckgo.com/duckduckgo-help-pages/results/duckassistbot"
+  },
+  {
+    "pattern": "MistralAI-User"
+  },
+  {
+    "pattern": "webzio",
+    "url": "https://webz.io/blog/company/from-omgilibot-to-the-webzbot-duo-a-powerful-leap-for-ethical-and-comprehensive-data-collection/#"
+  },
+  {
+    "pattern": "newsai\\/",
+    "url": "https://knownagents.com/agents/newsai"
+  },
+  {
+    "pattern": "^ArenaUnfurlBot",
+    "url": "https://arena.ai/"
+  },
+  {
+    "pattern": "A360-Search",
+    "url": "https://area360.uk/"
+  },
+  {
+    "pattern": "AASA-Bot",
+    "url": "https://developer.apple.com/documentation/xcode/allowing-apps-and-websites-to-link-to-your-content"
+  },
+  {
+    "pattern": "AccessStatus",
+    "url": "https://accesslink.fr/page/a-propos-de-accessstatus/"
+  },
+  {
+    "pattern": "Acquia optimize",
+    "url": "https://knownagents.com/agents/acquia-optimize-monsido"
+  },
+  {
+    "pattern": "ActiveComply",
+    "url": "https://knownagents.com/agents/activecomply-bot"
+  },
+  {
+    "pattern": "AdkernelTopicCrawler",
+    "url": "http://adkernel.com/robot/"
+  },
+  {
+    "pattern": "AlertSite",
+    "url": "https://smartbear.com/product/alertsite/"
+  },
+  {
+    "pattern": "AllAfrica",
+    "url": "https://allafrica.com/misc/info/about/"
+  },
+  {
+    "pattern": "Amazing-SearchBot",
+    "url": "https://amazing.com/bot.html"
+  },
+  {
+    "pattern": "Amazon-Bedrock-AgentCore-Browser",
+    "url": "https://docs.aws.amazon.com/bedrock-agentcore/"
+  },
+  {
+    "pattern": "AmazonBuyForMe",
+    "url": "https://buyforme.amazon/"
+  },
+  {
+    "pattern": "Amzn-SearchBot",
+    "url": "https://developer.amazon.com/amazonbot"
+  },
+  {
+    "pattern": "Amzn-User",
+    "url": "https://developer.amazon.com/amazonbot"
+  },
+  {
+    "pattern": "Anchor Browser",
+    "url": "https://knownagents.com/agents/anchor-browser"
+  },
+  {
+    "pattern": "Anomura",
+    "url": "https://docs.direqt-search.com/direqt-bots/direqt-crawlers-and-user-agents"
+  },
+  {
+    "pattern": "AP3A\\.240617\\.008",
+    "url": "https://knownagents.com/agents/008"
+  },
+  {
+    "pattern": "ApifyBot",
+    "url": "https://knownagents.com/agents/apifybot"
+  },
+  {
+    "pattern": "ApifyWebsiteContentCrawler",
+    "url": "https://apify.com/apify/website-content-crawler"
+  },
+  {
+    "pattern": "Archive-It",
+    "url": "http://archive-it.org/files/site-owners-special.html"
+  },
+  {
+    "pattern": "artemis web reader",
+    "url": "https://artemis.jamesg.blog/bot"
+  },
+  {
+    "pattern": "atlassian-bot",
+    "url": "https://support.atlassian.com/organization-administration/docs/connect-custom-website-to-rovo/"
+  },
+  {
+    "pattern": "Attracta",
+    "url": "https://attracta.com/"
+  },
+  {
+    "pattern": "AudigentAdBot",
+    "url": "http://audigent.com/bot.html"
+  },
+  {
+    "pattern": "Authory",
+    "url": "https://authory.com/about"
+  },
+  {
+    "pattern": "Automaton|Newsify Feed Fetcher",
+    "url": "https://knownagents.com/agents/automaton"
+  },
+  {
+    "pattern": "AwarioRendererBot",
+    "url": "https://awario.com/help/"
+  },
+  {
+    "pattern": "AzureAI-SearchBot",
+    "url": "https://azure.microsoft.com/en-us/products/ai-services"
+  },
+  {
+    "pattern": "BestChange",
+    "url": "https://bestchange.com/"
+  },
+  {
+    "pattern": "bigsur\\.ai",
+    "url": "https://bigsur.ai/"
+  },
+  {
+    "pattern": "bl\\.uk_lddc_bot",
+    "url": "https://bl.uk/legal-deposit-web-archiving"
+  },
+  {
+    "pattern": "BlingERP",
+    "url": "https://bling.com.br/"
+  },
+  {
+    "pattern": "Blockaid",
+    "url": "https://knownagents.com/agents/blockaid"
+  },
+  {
+    "pattern": "Bloglines",
+    "url": "http://bloglines.com/"
+  },
+  {
+    "pattern": "BlogVault",
+    "url": "https://blogvault.net/"
+  },
+  {
+    "pattern": "bluesky-domain-status-classifier",
+    "url": "https://blueskyweb.xyz/"
+  },
+  {
+    "pattern": "Bluesky\\/",
+    "url": "https://knownagents.com/agents/bluesky-link-preview-service"
+  },
+  {
+    "pattern": "bne\\.es_bot",
+    "url": "https://bne.es/es/colecciones/archivo-web-espanola/aviso-webmasters"
+  },
+  {
+    "pattern": "Brightbot",
+    "url": "https://brightdata.com/brightbot"
+  },
+  {
+    "pattern": "BrowserBot-Observer",
+    "url": "https://obsrvr.net/about"
+  },
+  {
+    "pattern": "BufferLinkPreviewBot",
+    "url": "https://scraper.buffer.com/about/bots/link-preview-bot"
+  },
+  {
+    "pattern": "Bugsnag",
+    "url": "https://knownagents.com/agents/bugsnag-script-fetcher"
+  },
+  {
+    "pattern": "Buttondown",
+    "url": "https://buttondown.email/features"
+  },
+  {
+    "pattern": "CapitalOneBot",
+    "url": "https://developer.capitalone.com/"
+  },
+  {
+    "pattern": "CertChief",
+    "url": "https://cert.chief.app/"
+  },
+  {
+    "pattern": "channable",
+    "url": "https://channable.com/"
+  },
+  {
+    "pattern": "Channel3Bot",
+    "url": "https://trychannel3.com/channel3bot"
+  },
+  {
+    "pattern": "Chirp|gotosocial",
+    "url": "http://binarycanary.com/"
+  },
+  {
+    "pattern": "ClickUpLinkUnfurler",
+    "url": "https://clickup.com/"
+  },
+  {
+    "pattern": "Cloudflare-AutoRAG",
+    "url": "https://developers.cloudflare.com/autorag"
+  },
+  {
+    "pattern": "Cloudflare-Custom-Hostname-Verification",
+    "url": "https://knownagents.com/agents/cloudflare-custom-hostname-verification"
+  },
+  {
+    "pattern": "Cloudflare-Stream-Webhook",
+    "url": "https://knownagents.com/agents/cloudflare-stream-webhook"
+  },
+  {
+    "pattern": "CloudflareRadarURLScanner",
+    "url": "https://knownagents.com/agents/cloudflare-radar-url-scanner"
+  },
+  {
+    "pattern": "Cloudtrellis",
+    "url": "https://cloudtrellis.com/"
+  },
+  {
+    "pattern": "[cC]ludo",
+    "url": "https://knownagents.com/agents/cludo"
+  },
+  {
+    "pattern": "Code\\/1\\.",
+    "url": "https://github.com/features/copilot"
+  },
+  {
+    "pattern": "Collapsify",
+    "url": "https://developers.cloudflare.com/"
+  },
+  {
+    "pattern": "ContextualBot[\\s\\S]*outcomes\\.net",
+    "url": "http://outcomes.net/"
+  },
+  {
+    "pattern": "Convermax",
+    "url": "https://docs.convermax.com/"
+  },
+  {
+    "pattern": "cookie-maestro",
+    "url": "https://cookiemaestro.com/documentatie/limit-cookie-maestro-using-robots-txt"
+  },
+  {
+    "pattern": "CookieHubVerify",
+    "url": "https://cookiehub.com/"
+  },
+  {
+    "pattern": "CookieYesbot",
+    "url": "http://cookieyes.com/documentation/cookieyesbot"
+  },
+  {
+    "pattern": "Crazy Egg",
+    "url": "https://knownagents.com/agents/crazy-egg"
+  },
+  {
+    "pattern": "Current[\\s\\S]*RSS Reader",
+    "url": "https://currentreader.app/"
+  },
+  {
+    "pattern": "cypex\\.ai\\/scanning",
+    "url": "https://cypex.ai/"
+  },
+  {
+    "pattern": "DeepCrawl",
+    "url": "https://lumar.io/spdr/"
+  },
+  {
+    "pattern": "DigiCert DCV",
+    "url": "https://digicert.com/"
+  },
+  {
+    "pattern": "dlvr\\.it",
+    "url": "http://dlvr.it/"
+  },
+  {
+    "pattern": "Dotcom-Monitor",
+    "url": "https://knownagents.com/agents/doctom-monitor"
+  },
+  {
+    "pattern": "DrataAutopilot",
+    "url": "https://knownagents.com/agents/drata-autopilot"
+  },
+  {
+    "pattern": "DreamHost Data Team",
+    "url": "http://dreamhost.com/support/"
+  },
+  {
+    "pattern": "ds9",
+    "url": "https://data.dss.sps.copyright.com/docs/user_agent.html"
+  },
+  {
+    "pattern": " DVbot",
+    "url": "http://doubleverify.com/"
+  },
+  {
+    "pattern": "EcoVadisSustainabilityBot",
+    "url": "https://ecovadis.com/"
+  },
+  {
+    "pattern": "elmah\\.io Uptime Monitoring",
+    "url": "https://knownagents.com/agents/elmah-io-uptime-monitoring"
+  },
+  {
+    "pattern": "EvernoteRichLinkBot",
+    "url": "https://evernote.com/"
+  },
+  {
+    "pattern": "EzLynx",
+    "url": "http://ezoic.com/bot.html"
+  },
+  {
+    "pattern": "EzoicBot",
+    "url": "https://ezoic.com/bot/"
+  },
+  {
+    "pattern": "FacebookBot",
+    "url": "https://developers.facebook.com/docs/sharing/bot/"
+  },
+  {
+    "pattern": "FastDAST",
+    "url": "https://knownagents.com/agents/black-duck-fast-dynamic"
+  },
+  {
+    "pattern": "Feeder \\/",
+    "url": "https://knownagents.com/agents/feeder"
+  },
+  {
+    "pattern": "FeedFlow",
+    "url": "https://feedflow.dev/"
+  },
+  {
+    "pattern": "FindFiles\\.net",
+    "url": "https://findfiles.net/bot"
+  },
+  {
+    "pattern": "FirecrawlAgent",
+    "url": "https://firecrawl.dev/"
+  },
+  {
+    "pattern": "FyndSearchEngine-Crawler",
+    "url": "https://fynd.bot/"
+  },
+  {
+    "pattern": "FyndSearchEngine-ReCrawler",
+    "url": "https://fynd.bot/"
+  },
+  {
+    "pattern": "Goodreads",
+    "url": "https://goodreads.com/"
+  },
+  {
+    "pattern": "Google Trust Services",
+    "url": "https://knownagents.com/agents/google-trust-services-dcv-check"
+  },
+  {
+    "pattern": "Google-Agent",
+    "url": "https://developers.google.com/crawling/docs/crawlers-fetchers/google-user-triggered-fetchers"
+  },
+  {
+    "pattern": "Google-Gemini-CLI",
+    "url": "https://geminicli.com/"
+  },
+  {
+    "pattern": "Google-NotebookLM",
+    "url": "https://developers.google.com/search/docs/crawling-indexing/google-user-triggered-fetchers"
+  },
+  {
+    "pattern": "GoogleAgent-Mariner",
+    "url": "https://deepmind.google/technologies/project-mariner/"
+  },
+  {
+    "pattern": "Greppr Web Crawler",
+    "url": "https://greppr.org/"
+  },
+  {
+    "pattern": "Hardenize",
+    "url": "https://hardenize.com/"
+  },
+  {
+    "pattern": "HoneybadgerBot",
+    "url": "https://knownagents.com/agents/honeybadgerbot"
+  },
+  {
+    "pattern": "IbouBot",
+    "url": "https://ibou.io/iboubot.html"
+  },
+  {
+    "pattern": "imageSpider",
+    "url": "https://knownagents.com/agents/imagespider"
+  },
+  {
+    "pattern": "Innologica",
+    "url": "https://knownagents.com/agents/innologica"
+  },
+  {
+    "pattern": "kagi-fetcher",
+    "url": "https://help.kagi.com/kagi/ai/kagi-ai.html"
+  },
+  {
+    "pattern": "Kangaroo Bot",
+    "url": "https://kangaroollm.com.au/kangaroo-bot/"
+  },
+  {
+    "pattern": "Known Agent",
+    "url": "https://knownagents.com/"
+  },
+  {
+    "pattern": "KrawlerBot",
+    "url": "https://krawler.app/robot"
+  },
+  {
+    "pattern": "laion-huggingface-processor",
+    "url": "https://knownagents.com/agents/laion-huggingface-processor"
+  },
+  {
+    "pattern": "LinkCheckerBot",
+    "url": "https://knownagents.com/agents/linkchecker-bot"
+  },
+  {
+    "pattern": "LinkupBot",
+    "url": "https://linkup.so/bot"
+  },
+  {
+    "pattern": "LMArenaUnfurlBot",
+    "url": "https://lmarena.ai/"
+  },
+  {
+    "pattern": "lyonl-asset-proxy",
+    "url": "https://lyonl.com/crawler"
+  },
+  {
+    "pattern": "lyonl-crawler",
+    "url": "https://lyonl.com/crawler"
+  },
+  {
+    "pattern": "MagiBot",
+    "url": "https://magi.com/bots"
+  },
+  {
+    "pattern": "MagpieRSS",
+    "url": "http://magpierss.sf.net/"
+  },
+  {
+    "pattern": "mail\\.ru",
+    "url": "https://knownagents.com/agents/mailrubot"
+  },
+  {
+    "pattern": "MailChimp",
+    "url": "http://mailchimp.com/"
+  },
+  {
+    "pattern": "Manus-User",
+    "url": "https://knownagents.com/agents/manus-user"
+  },
+  {
+    "pattern": "McontextualBot",
+    "url": "http://mcontextual.net/mcontextual-bot"
+  },
+  {
+    "pattern": "Mediumbot-MetaTagFetcher",
+    "url": "https://medium.com/"
+  },
+  {
+    "pattern": "MetaIAB Facebook",
+    "url": "https://knownagents.com/agents/facebook"
+  },
+  {
+    "pattern": "MixrankBot",
+    "url": "https://knownagents.com/agents/mixrankbot"
+  },
+  {
+    "pattern": "ModernizeBot",
+    "url": "https://modernizeyourwebsite.com/bot"
+  },
+  {
+    "pattern": "MontasticMonitor",
+    "url": "https://knownagents.com/agents/montasticmonitor"
+  },
+  {
+    "pattern": "NanoInteractive",
+    "url": "https://nanointeractive.com/crawler/"
+  },
+  {
+    "pattern": "NestDaddybot",
+    "url": "https://nestdaddy.com/bot"
+  },
+  {
+    "pattern": "Netcraft SSL Server Survey",
+    "url": "https://knownagents.com/agents/netcraft-ssl-server-survey"
+  },
+  {
+    "pattern": "Netcraft Web Server Survey",
+    "url": "https://netcraft.com/blog/june-2025-web-server-survey"
+  },
+  {
+    "pattern": "NetSeer crawler",
+    "url": "http://netseer.com/crawler.html"
+  },
+  {
+    "pattern": "Netumo|netumo",
+    "url": "https://docs.netumo.com/"
+  },
+  {
+    "pattern": "NewRelicSynthetics",
+    "url": "https://knownagents.com/agents/new-relic"
+  },
+  {
+    "pattern": "NewsRoom\\.BI",
+    "url": "http://newsroom.bi/bot.html"
+  },
+  {
+    "pattern": "Nitro-",
+    "url": "https://knownagents.com/agents/nitro"
+  },
+  {
+    "pattern": "NitroBot",
+    "url": "https://knownagents.com/agents/nitrobot"
+  },
+  {
+    "pattern": "Noibu",
+    "url": "https://noibu.com/"
+  },
+  {
+    "pattern": "NostoCrawlerBot",
+    "url": "http://my.nosto.com/tagging"
+  },
+  {
+    "pattern": "OneTrust",
+    "url": "https://knownagents.com/agents/onetrust-cmp-scanner"
+  },
+  {
+    "pattern": "opencode-smartfetch",
+    "url": "https://opencode.ai/"
+  },
+  {
+    "pattern": ";Owler",
+    "url": "https://knownagents.com/agents/owler"
+  },
+  {
+    "pattern": "ParselySharesBot",
+    "url": "https://docs.parse.ly/"
+  },
+  {
+    "pattern": "PhindBot",
+    "url": "https://knownagents.com/agents/phindbot"
+  },
+  {
+    "pattern": "PodchaserParser",
+    "url": "https://podchaser.com/"
+  },
+  {
+    "pattern": "Podimo",
+    "url": "https://podimo.com/"
+  },
+  {
+    "pattern": "Poggio-Citations",
+    "url": "https://docs.poggio.io/api/robots"
+  },
+  {
+    "pattern": "productsup\\.io\\/crawler",
+    "url": "https://help.productsup.com/en/29437-29446-import-data-by-crawling-your-website.html"
+  },
+  {
+    "pattern": "qcbot",
+    "url": "http://quic.cloud/bot.html"
+  },
+  {
+    "pattern": "Qualys",
+    "url": "https://knownagents.com/agents/qualys"
+  },
+  {
+    "pattern": "Quora-Bot",
+    "url": "http://quora.com/"
+  },
+  {
+    "pattern": "Qwantbot",
+    "url": "https://help.qwant.com/"
+  },
+  {
+    "pattern": "Qwarrybot",
+    "url": "http://qwarry.com/bot.html"
+  },
+  {
+    "pattern": "RSiteAuditor",
+    "url": "https://dataforseo.com/apis/on-page-api"
+  },
+  {
+    "pattern": "RSS\\.Social",
+    "url": "https://rss.social/bot"
+  },
+  {
+    "pattern": "Salesforce\\.com",
+    "url": "https://knownagents.com/agents/sfdc-callout"
+  },
+  {
+    "pattern": "Scope3",
+    "url": "https://docs.scope3.com/docs/scope3-crawler"
+  },
+  {
+    "pattern": "scraping@nytimes\\.com",
+    "url": "https://github.com/nytimes"
+  },
+  {
+    "pattern": "Scrubby",
+    "url": "http://scrubtheweb.com/"
+  },
+  {
+    "pattern": "Scrunchbot",
+    "url": "https://scrunchai.com/bots"
+  },
+  {
+    "pattern": "seo4ajax\\.com",
+    "url": "https://seo4ajax.com/"
+  },
+  {
+    "pattern": "SequelWP",
+    "url": "https://sequelwp.com/"
+  },
+  {
+    "pattern": "ServerDensity",
+    "url": "https://knownagents.com/agents/server-density"
+  },
+  {
+    "pattern": "ShapBot",
+    "url": "https://docs.parallel.ai/resources/crawler"
+  },
+  {
+    "pattern": "ShortPixel",
+    "url": "https://shortpixel.com/"
+  },
+  {
+    "pattern": "Silktide",
+    "url": "https://silktide.com/"
+  },
+  {
+    "pattern": "SiteLock",
+    "url": "https://knownagents.com/agents/sitelock"
+  },
+  {
+    "pattern": "SmarshBot",
+    "url": "https://smarsh.com/platform/compliance-management/web-archive"
+  },
+  {
+    "pattern": "SMTnetPMBot",
+    "url": "https://smtnet.com/"
+  },
+  {
+    "pattern": "Software-Security-Research",
+    "url": "https://reverse-proxies-measurements.softsec.ruhr-uni-bochum.de/"
+  },
+  {
+    "pattern": "SottopopNone",
+    "url": "https://upcontent.com/robots"
+  },
+  {
+    "pattern": "Spider[\\s\\S]*spider\\.com",
+    "url": "https://www.spider.com/solutions/web-crawler"
+  },
+  {
+    "pattern": "Splunk",
+    "url": "https://knownagents.com/agents/splunk"
+  },
+  {
+    "pattern": "StatusNestBacklinkSpider",
+    "url": "https://statusnest.com/bot"
+  },
+  {
+    "pattern": "stepstoneCrawlBot",
+    "url": "https://thestepstonegroup.com/crawler/"
+  },
+  {
+    "pattern": "TavilyBot",
+    "url": "https://knownagents.com/agents/tavilybot"
+  },
+  {
+    "pattern": "ThousandEyes",
+    "url": "https://knownagents.com/agents/thousand-eyes-cloud-agent"
+  },
+  {
+    "pattern": "Trae\\/",
+    "url": "https://trae.ai/"
+  },
+  {
+    "pattern": "TwinAgent",
+    "url": "https://twin.so/"
+  },
+  {
+    "pattern": "uipbot",
+    "url": "https://knownagents.com/agents/uipbot"
+  },
+  {
+    "pattern": "um-FC",
+    "url": "https://ubermetrics-technologies.com/"
+  },
+  {
+    "pattern": "um-IC",
+    "url": "https://ubermetrics-technologies.com/"
+  },
+  {
+    "pattern": "UptimeStatistics",
+    "url": "https://knownagents.com/agents/uptimestatistics"
+  },
+  {
+    "pattern": "Verispider",
+    "url": "http://projecthoneypot.org/"
+  },
+  {
+    "pattern": "visionheight\\.com\\/scan",
+    "url": "https://knownagents.com/agents/visionheight-comscan"
+  },
+  {
+    "pattern": "Watchbot monitoring robot",
+    "url": "https://watchbot.fflow.net/"
+  },
+  {
+    "pattern": "Watchful",
+    "url": "https://knownagents.com/agents/watchful"
+  },
+  {
+    "pattern": "weborama-fetcher",
+    "url": "http://weborama.com/"
+  },
+  {
+    "pattern": "webspidermount",
+    "url": "https://webspidermount.com/features/"
+  },
+  {
+    "pattern": "WepchSearchEngine",
+    "url": "https://wepch.com/search-engine"
+  },
+  {
+    "pattern": "wknd-bot",
+    "url": "https://developer.wunderkind.co/docs/server-side-tracking-implementation"
+  },
+  {
+    "pattern": "WPMU DEV Hub",
+    "url": "https://wpmudev.com/"
+  },
+  {
+    "pattern": "WTotem",
+    "url": "https://knownagents.com/agents/wtotem"
+  },
+  {
+    "pattern": "XoviOnpageCrawler",
+    "url": "http://xovi.de/"
+  },
+  {
+    "pattern": "yelpspider",
+    "url": "https://yelp.com/"
+  },
+  {
+    "pattern": "ZanistaBot",
+    "url": "https://zanista.ai/crawler-info"
+  },
+  {
+    "pattern": "ZoomInfo-",
+    "url": "https://knownagents.com/agents/zoominfo"
+  },
+  {
+    "pattern": "7Siters",
+    "url": "https://7ooo.ru/siters/"
+  },
+  {
+    "pattern": "Accessible Web Bot",
+    "url": "https://accessibleweb.com/bot/"
+  },
+  {
+    "pattern": "AtVowBot",
+    "url": "https://brandeem.com/"
+  },
+  {
+    "pattern": "Bibliotheque Nacional de France Crawler",
+    "url": "https://www.bnf.fr/en/web-legal-deposit"
+  },
+  {
+    "pattern": "Bling ERP",
+    "url": "https://www.bling.com.br/"
+  },
+  {
+    "pattern": "CDSCbot",
+    "url": "https://wiki.communitydata.science/CommunityData:Fediverse_research"
+  },
+  {
+    "pattern": "Critical CSS Bot",
+    "url": "https://criticalcss.com/"
+  },
+  {
+    "pattern": "CybaaBot",
+    "url": "https://cybaa.io/bot-policy"
+  },
+  {
+    "pattern": "CyberFindCrawler",
+    "url": "https://cyberfind.net/bot.html"
+  },
+  {
+    "pattern": "Dark Visitor",
+    "url": "https://darkvisitors.com/"
+  },
+  {
+    "pattern": "Determ",
+    "url": "https://www.determ.com/"
+  },
+  {
+    "pattern": "DNSScanner",
+    "url": "https://rapef.info/_contacts/"
+  },
+  {
+    "pattern": "Drupalbot",
+    "url": "https://www.drupal.org/"
+  },
+  {
+    "pattern": "eMoney Advisor",
+    "url": "https://emoneyadvisor.com/"
+  },
+  {
+    "pattern": "everyfeed-spider",
+    "url": "http://everyfeed.com/"
+  },
+  {
+    "pattern": "ExteContextCrawl",
+    "url": "http://crawl001.exte.ai/"
+  },
+  {
+    "pattern": "FediDB",
+    "url": "https://fedidb.org/crawler.html"
+  },
+  {
+    "pattern": "FediIndex",
+    "url": "https://fedi.wrm.sr/about"
+  },
+  {
+    "pattern": "FediList Agent",
+    "url": "https://fedilist.com/"
+  },
+  {
+    "pattern": "Fedineko",
+    "url": "https://fedineko.org/about"
+  },
+  {
+    "pattern": "FedReporter Bot for FFIEC",
+    "url": "https://www.fedreporter.com/"
+  },
+  {
+    "pattern": "Feedsearch Bot",
+    "url": "https://feedearch.dev/"
+  },
+  {
+    "pattern": "Feedsearch-Crawler",
+    "url": "https://pypi.org/project/feedsearch-crawler"
+  },
+  {
+    "pattern": "fiperbot",
+    "url": "https://fiper.net/"
+  },
+  {
+    "pattern": "FleebsBot",
+    "url": "https://fleebs.com/bot"
+  },
+  {
+    "pattern": "Fluid",
+    "url": "http://leak.info/bot.html"
+  },
+  {
+    "pattern": "Flyriverbot",
+    "url": "https://flyriver.com/crawler"
+  },
+  {
+    "pattern": "Freshbot",
+    "url": "http://webagent.wise-guys.nl/"
+  },
+  {
+    "pattern": "Gaisbot",
+    "url": "http://gais.cs.ccu.edu.tw/robot.php"
+  },
+  {
+    "pattern": "GenomeCrawlerd",
+    "url": "https://nokia.com/genomecrawler"
+  },
+  {
+    "pattern": "HaloBot",
+    "url": "https://haloscan.com/"
+  },
+  {
+    "pattern": "IRLbot",
+    "url": "http://irl.cs.tamu.edu/crawler"
+  },
+  {
+    "pattern": "kaikki\\.org-digital-archive",
+    "url": "https://kaikki.org/"
+  },
+  {
+    "pattern": "kb\\.dk_bot",
+    "url": "https://www.kb.dk/en/"
+  },
+  {
+    "pattern": "Library Of Congress Web Archiving",
+    "url": "https://www.loc.gov/programs/web-archiving/"
+  },
+  {
+    "pattern": "MagnetmeBot",
+    "url": "https://magnet.me/"
+  },
+  {
+    "pattern": "MatchorySearch",
+    "url": "https://matchory.com/"
+  },
+  {
+    "pattern": "Minoru's Fediverse Crawler",
+    "url": "https://nodes.fediverse.party/"
+  },
+  {
+    "pattern": "MirrorWebCrawler",
+    "url": "https://www.mirrorweb.com/"
+  },
+  {
+    "pattern": "mithril-crawler",
+    "url": "https://498-search-engine.github.io/website/"
+  },
+  {
+    "pattern": "ModatScanner",
+    "url": "https://modat.io/"
+  },
+  {
+    "pattern": "NapBot",
+    "url": "http://napbot.com/"
+  },
+  {
+    "pattern": "New York Times Newsgathering",
+    "url": "https://www.nytimes.com/"
+  },
+  {
+    "pattern": "NLUX_IAHarvester",
+    "url": "http://crawl.bnl.lu/"
+  },
+  {
+    "pattern": "NoahBot",
+    "url": "https://noahwire.com/bot-info"
+  },
+  {
+    "pattern": "PlagAwareBot",
+    "url": "https://plagaware.com/bot"
+  },
+  {
+    "pattern": "Rakuten Image extraction bot",
+    "url": "https://www.rakuten.com/"
+  },
+  {
+    "pattern": "ResearchBot",
+    "url": "https://kaust.edu.sa/bot"
+  },
+  {
+    "pattern": "rss-is-dead\\.lol web bot",
+    "url": "https://rss-is-dead.lol/"
+  },
+  {
+    "pattern": "seoLyt",
+    "url": "https://seolyt.com/"
+  },
+  {
+    "pattern": "SirdataBot",
+    "url": "https://semantic-api.docs.sirdata.net/contextual-api/contextual-api/introduction"
+  },
+  {
+    "pattern": "SitesOverPagesBot",
+    "url": "https://sitesoverpages.com/bot"
+  },
+  {
+    "pattern": "SleepBot",
+    "url": "http://sleepbot.com/"
+  },
+  {
+    "pattern": "Sosospider",
+    "url": "http://help.soso.com/webspider.htm"
+  },
+  {
+    "pattern": "Termly",
+    "url": "https://termly.io/"
+  },
+  {
+    "pattern": "TLS tester",
+    "url": "https://testssl.sh/dev/"
+  },
+  {
+    "pattern": "trafilatura",
+    "url": "https://github.com/adbar/trafilatura"
+  },
+  {
+    "pattern": "UrlBeeBot",
+    "url": "https://urlbee.com/"
+  },
+  {
+    "pattern": "videootv Bot",
+    "url": "https://www.digitalgreen.org/"
+  },
+  {
+    "pattern": "vmcrawl",
+    "url": "https://docs.vmst.io/vmcrawl"
+  },
+  {
+    "pattern": "WadooBot",
+    "url": "https://wadoo.net/wadoobot/"
+  },
+  {
+    "pattern": "Website-info\\.net-Robot",
+    "url": "https://website-info.net/robot"
+  },
+  {
+    "pattern": "WebZIP",
+    "url": "http://spidersoft.com/"
+  },
+  {
+    "pattern": "WikiDo",
+    "url": "http://wikido.com/"
+  },
+  {
+    "pattern": "WOVN Crawler",
+    "url": "https://wovn.io/"
+  },
+  {
+    "pattern": "YoudaoBot",
+    "url": "http://youdao.com/help/webmaster/spider/"
+  },
+  {
+    "pattern": "ZyBorg",
+    "url": "http://wisenutbot.com/"
+  },
+  {
+    "pattern": "Aranet-SearchBot",
+    "url": "https://aranet.ai/bot"
+  },
+  {
+    "pattern": "crawl4ai",
+    "url": "https://github.com/unclecode/crawl4ai"
+  },
+  {
+    "pattern": "DeepSeekBot",
+    "url": "http://deepseek.com/bot"
+  },
+  {
+    "pattern": "iaskspider",
+    "url": "https://www.iask.com/"
+  },
+  {
+    "pattern": "KunatoCrawler",
+    "url": "http://kunato.ai/bot.html"
+  },
+  {
+    "pattern": "TerraCotta",
+    "url": "https://github.com/CeramicTeam/CeramicTerracotta"
+  },
+  {
+    "pattern": "ABEvalBot",
+    "url": "https://knownagents.com/agents/abevalbot"
+  },
+  {
+    "pattern": "blekkobot",
+    "url": "https://knownagents.com/agents/blekkobot"
+  },
+  {
+    "pattern": "br-crawler",
+    "url": "https://knownagents.com/agents/br-crawler"
+  },
+  {
+    "pattern": "BuddyBot",
+    "url": "https://knownagents.com/agents/buddybot"
+  },
+  {
+    "pattern": "CapterraBot",
+    "url": "https://www.capterra.com"
+  },
+  {
+    "pattern": "carbon-umbrella-bot",
+    "url": "https://knownagents.com/agents/carbon-umbrella-bot"
+  },
+  {
+    "pattern": "caveman-hunter",
+    "url": "https://fedi.buzz/"
+  },
+  {
+    "pattern": "Centro Ads\\.txt Crawler",
+    "url": "https://knownagents.com/agents/centro-ads-txt-crawler"
+  },
+  {
+    "pattern": "WISEbot",
+    "url": "http://www.cision.com"
+  },
+  {
+    "pattern": "CodaBot",
+    "url": "https://coda.io/"
+  },
+  {
+    "pattern": "Corporama matcher",
+    "url": "https://corporama.fr/"
+  },
+  {
+    "pattern": "CyotekWebCopy",
+    "url": "https://www.cyotek.com/cyotek-webcopy"
+  },
+  {
+    "pattern": "Datadog Agent",
+    "url": "https://www.datadoghq.com/"
+  },
+  {
+    "pattern": "Dazzle BlueSky Bot",
+    "url": "https://knownagents.com/agents/dazzle-bluesky-bot"
+  },
+  {
+    "pattern": "DominicBot",
+    "url": "https://vanylla.org/bot"
+  },
+  {
+    "pattern": "Dow Jones Searchbot",
+    "url": "https://www.dowjones.com/"
+  },
+  {
+    "pattern": "Download Ninja",
+    "url": "https://knownagents.com/agents/download-ninja"
+  },
+  {
+    "pattern": "EmailWolf",
+    "url": "https://knownagents.com/agents/emailwolf"
+  },
+  {
+    "pattern": "fedistatsCrawler",
+    "url": "https://knownagents.com/agents/fedistatscrawler"
+  },
+  {
+    "pattern": "GoParserBot",
+    "url": "https://knownagents.com/agents/goparserbot"
+  },
+  {
+    "pattern": "gsa-crawler",
+    "url": "https://knownagents.com/agents/gsa-crawler"
+  },
+  {
+    "pattern": "HanaleiBot",
+    "url": "https://knownagents.com/agents/hanaleibot"
+  },
+  {
+    "pattern": "NicheIndex",
+    "url": "https://nicheindex.co"
+  },
+  {
+    "pattern": "HeadOnlyScraper",
+    "url": "https://knownagents.com/agents/headonlyscraper"
+  },
+  {
+    "pattern": "HenkBot",
+    "url": "https://valyu.ai/crawler"
+  },
+  {
+    "pattern": "Impact\\.com Agent",
+    "url": "https://impact.com/"
+  },
+  {
+    "pattern": "Keydrop\\.io",
+    "url": "https://onlyscans.com/about"
+  },
+  {
+    "pattern": "larbin",
+    "url": "http://larbin.sourceforge.net/"
+  },
+  {
+    "pattern": "SENTINEL-LinkCheck",
+    "url": "https://sentinel.oblivionzone.com/bot"
+  },
+  {
+    "pattern": "linko",
+    "url": "https://linko.app/crawler"
+  },
+  {
+    "pattern": "LinkpadBot",
+    "url": "https://linkpad.org/robot/"
+  },
+  {
+    "pattern": "lwp-trivial",
+    "url": "https://metacpan.org/pod/LWP"
+  },
+  {
+    "pattern": "Magus Bot",
+    "url": "https://knownagents.com/agents/magus-bot"
+  },
+  {
+    "pattern": "NaverBot",
+    "url": "https://www.naver.com/"
+  },
+  {
+    "pattern": "loopimprovements\\.com",
+    "url": "http://loopimprovements.com/robot.html"
+  },
+  {
+    "pattern": "OpenTheBoxBot",
+    "url": "https://knownagents.com/agents/opentheboxbot"
+  },
+  {
+    "pattern": "OWLer-W",
+    "url": "https://openwebsearch.eu/"
+  },
+  {
+    "pattern": "peer39_crawler",
+    "url": "https://www.peer39.com/"
+  },
+  {
+    "pattern": "Pixalate\\.com",
+    "url": "https://www.pixalate.com/"
+  },
+  {
+    "pattern": "Poduptime",
+    "url": "https://fediverse.observer"
+  },
+  {
+    "pattern": "Pomothy-Bot",
+    "url": "https://knownagents.com/agents/pomothy-bot"
+  },
+  {
+    "pattern": "PulsePoint-Crawler",
+    "url": "https://www.pulsepoint.com/"
+  },
+  {
+    "pattern": "rawweb-bot",
+    "url": "https://knownagents.com/agents/rawweb-bot"
+  },
+  {
+    "pattern": "semantic-visions",
+    "url": "https://semantic-visions.com/"
+  },
+  {
+    "pattern": "Sindup",
+    "url": "https://www.sindup.com/"
+  },
+  {
+    "pattern": "SiteSucker",
+    "url": "https://ricks-apps.com/osx/sitesucker/"
+  },
+  {
+    "pattern": "SpringserveBot",
+    "url": "https://www.springserve.com/"
+  },
+  {
+    "pattern": "SQWatcher",
+    "url": "http://sqcompliance.com/sqwatcher.html"
+  },
+  {
+    "pattern": "Supabase Paired Crawler",
+    "url": "https://supabase.com/"
+  },
+  {
+    "pattern": "sv-watchagent",
+    "url": "https://semantic-visions.com/"
+  },
+  {
+    "pattern": "Swiftbot",
+    "url": "http://swiftype.com/swiftbot"
+  },
+  {
+    "pattern": "SynthesiBot",
+    "url": "https://knownagents.com/agents/synthesibot"
+  },
+  {
+    "pattern": "TaraGroup Intelligent Bot",
+    "url": "https://knownagents.com/agents/taragroup-intelligent-bot"
+  },
+  {
+    "pattern": "Thinkbot",
+    "url": "https://boston.conman.org/2025/08/21.1"
+  },
+  {
+    "pattern": "TSMbot",
+    "url": "https://knownagents.com/agents/tsmbot"
+  },
+  {
+    "pattern": "TSM-turingos",
+    "url": "https://knownagents.com/agents/turingos"
+  },
+  {
+    "pattern": "UGAResearchAgent",
+    "url": "https://nislabuga-scan.uga.edu/"
+  },
+  {
+    "pattern": "UrlSuMa\\.de crawler",
+    "url": "https://urlsuma.de/"
+  },
+  {
+    "pattern": "WanscannerBot",
+    "url": "https://abuse.pend.re"
+  },
+  {
+    "pattern": "WebCapture",
+    "url": "https://knownagents.com/agents/webcapture-2-0"
+  },
+  {
+    "pattern": "WebCopier",
+    "url": "http://www.maximumsoft.com/"
+  },
+  {
+    "pattern": "cognitiveseo\\.com",
+    "url": "http://cognitiveseo.com/bot.html"
+  },
+  {
+    "pattern": "Xing Bot",
+    "url": "https://www.xing.com/"
+  },
+  {
+    "pattern": "XML Sitemaps Generator",
+    "url": "http://www.xml-sitemaps.com"
+  },
+  {
+    "pattern": "YandoriRSSBot",
+    "url": "https://knownagents.com/agents/yandorirssbot"
+  },
+  {
+    "pattern": "Zealbot",
+    "url": "https://knownagents.com/agents/zealbot"
+  },
+  {
+    "pattern": "008\\/",
+    "url": "https://datadome.co/bots/008-2/"
+  },
+  {
+    "pattern": "monitoring360bot\\/",
+    "url": "https://app.360monitoring.com/bot.html"
+  },
+  {
+    "pattern": "AdagioBot",
+    "url": "https://datadome.co/bots/adagio-digital/"
+  },
+  {
+    "pattern": "adbeat\\.com",
+    "url": "https://www.adbeat.com/operation_policy"
+  },
+  {
+    "pattern": "AdminLabs",
+    "url": "https://datadome.co/bots/adminlabs/"
+  },
+  {
+    "pattern": "advanced_crawler",
+    "url": "https://datadome.co/bots/advanced-crawler/"
+  },
+  {
+    "pattern": "Adventurer",
+    "url": "https://datadome.co/bots/adventurer/"
+  },
+  {
+    "pattern": "AGAKIDSBOT",
+    "url": "https://agakids.ru/project/"
+  },
+  {
+    "pattern": "AgencyAnalyticsBot",
+    "url": "https://agencyanalytics.com/features/seo-site-audit"
+  },
+  {
+    "pattern": "AI2Bot",
+    "url": "https://datadome.co/bots/ai2bot/"
+  },
+  {
+    "pattern": "AkismetBot",
+    "url": "https://akismet.com/development/api/"
+  },
+  {
+    "pattern": "alexa site audit",
+    "url": "https://www.alexa.com/help/webmasters"
+  },
+  {
+    "pattern": "Algolia Crawler",
+    "url": "https://www.algolia.com/doc/"
+  },
+  {
+    "pattern": "alienfarm",
+    "url": "https://datadome.co/bots/alienfarm/"
+  },
+  {
+    "pattern": "allOrigins",
+    "url": "https://allorigins.win/"
+  },
+  {
+    "pattern": "AmazonAdBot",
+    "url": "https://advertising.amazon.com/resources/"
+  },
+  {
+    "pattern": "KendraBot",
+    "url": "https://docs.aws.amazon.com/kendra/latest/dg/what-is-kendra.html"
+  },
+  {
+    "pattern": "AppSiteAssociation",
+    "url": "https://developer.apple.com/documentation/applications/allowing-app-linking-to-your-website"
+  },
+  {
+    "pattern": "Aragog\\/",
+    "url": "https://wordads.co/"
+  },
+  {
+    "pattern": "Aranea",
+    "url": "http://unesco.uniba.sk/guest/"
+  },
+  {
+    "pattern": "ArchiveBox",
+    "url": "https://archivebox.io/"
+  },
+  {
+    "pattern": "ArquivoBot",
+    "url": "https://arquivo.pt/about"
+  },
+  {
+    "pattern": "Arquivo-web-crawler",
+    "url": "https://arquivo.pt/robot"
+  },
+  {
+    "pattern": "ArtemisBot",
+    "url": "https://datadome.co/bots/artemis-web-reader/"
+  },
+  {
+    "pattern": "Asana\\/",
+    "url": "https://datadome.co/bots/asana-crawler/"
+  },
+  {
+    "pattern": "AudistoBot",
+    "url": "https://audisto.com/webcrawler/"
+  },
+  {
+    "pattern": "Autoconfig Test from USTC",
+    "url": "https://datadome.co/bots/autoconfig-test-from-ustc/"
+  },
+  {
+    "pattern": "tracking-quality-spider",
+    "url": "https://datadome.co/bots/awin-com-crawler/"
+  },
+  {
+    "pattern": "Bad Neighborhood Header Detector",
+    "url": "https://datadome.co/bots/bad-neighborhood/"
+  },
+  {
+    "pattern": "BaiduAdsBot",
+    "url": "https://datadome.co/bots/baidu-ads-server-proxy/"
+  },
+  {
+    "pattern": "BDBot\\/",
+    "url": "https://datadome.co/bots/bdbot/"
+  },
+  {
+    "pattern": "BeeperBot",
+    "url": "https://www.beeper.com/"
+  },
+  {
+    "pattern": "BetterUptimeBot",
+    "url": "https://betteruptime.com/docs"
+  },
+  {
+    "pattern": "BnFBot",
+    "url": "https://www.bnf.fr/en/web-services"
+  },
+  {
+    "pattern": "BigUpDataBot",
+    "url": "https://datadome.co/bots/bigupdata/"
+  },
+  {
+    "pattern": "BinaryCanary",
+    "url": "https://www.binarycanary.com/monitoring/"
+  },
+  {
+    "pattern": "Bitbucket-Webhooks",
+    "url": "https://support.atlassian.com/bitbucket-cloud"
+  },
+  {
+    "pattern": "bl\\.uk_ldfc_bot",
+    "url": "https://www.bl.uk/legal-deposit/web-archiving"
+  },
+  {
+    "pattern": "BlackDuck-FD",
+    "url": "https://www.synopsys.com/software-integrity/security-testing/dynamic-analysis.html"
+  },
+  {
+    "pattern": "Blogtrottr",
+    "url": "https://datadome.co/bots/blogtrottr/"
+  },
+  {
+    "pattern": "BlueskyPreviewBot",
+    "url": "https://docs.bsky.app"
+  },
+  {
+    "pattern": "BoardGamePricesBot",
+    "url": "https://datadome.co/bots/boardgameprices/"
+  },
+  {
+    "pattern": "BotPoke",
+    "url": "https://datadome.co/bots/botpoke/"
+  },
+  {
+    "pattern": "BDFetch",
+    "url": "http://www.brandprotect.com/"
+  },
+  {
+    "pattern": "Brandwatch",
+    "url": "https://www.brandwatch.com/legal/crawlers/"
+  },
+  {
+    "pattern": "BraveBot",
+    "url": "https://search.brave.com/help/web-discovery-project"
+  },
+  {
+    "pattern": "brokenlinkcheck\\.com",
+    "url": "https://datadome.co/bots/brokenlinkcheck-com/"
+  },
+  {
+    "pattern": "BW\\/",
+    "url": "https://builtwith.com/biup"
+  },
+  {
+    "pattern": "Bushbaby",
+    "url": "https://datadome.co/bots/bushbaby/"
+  },
+  {
+    "pattern": "Butterfly",
+    "url": "http://labs.topsy.com/butterfly/"
+  },
+  {
+    "pattern": "rss-parser",
+    "url": "https://buttondown.email/about"
+  },
+  {
+    "pattern": "CaliberBot",
+    "url": "https://www.calibermind.com/platform"
+  },
+  {
+    "pattern": "CapitalOneShopping",
+    "url": "https://datadome.co/bots/capital-one-shopping-bot/"
+  },
+  {
+    "pattern": "Catchpoint",
+    "url": "ttps://catchpoint.com/bots"
+  },
+  {
+    "pattern": "centuryb\\.o\\.t9",
+    "url": "https://datadome.co/bots/centurybot9/"
+  },
+  {
+    "pattern": "CERT PL",
+    "url": "https://cert.pl/skanowanie"
+  },
+  {
+    "pattern": "certytags",
+    "url": "https://certybot.certytags.com/"
+  },
+  {
+    "pattern": "ChargeBeeBot",
+    "url": "https://chargebee.com/resources"
+  },
+  {
+    "pattern": "Charlotte",
+    "url": "https://datadome.co/bots/charlotte-bot/"
+  },
+  {
+    "pattern": "ChatGLM-Spider",
+    "url": "https://chatglm.cn/"
+  },
+  {
+    "pattern": "Chatwork LinkPreview",
+    "url": "https://www.chatwork.com/"
+  },
+  {
+    "pattern": "CheckHost",
+    "url": "https://datadome.co/bots/check-host/"
+  },
+  {
+    "pattern": "Goodzer",
+    "url": "https://discord.com/discovery/applications/1065250549408223252"
+  },
+  {
+    "pattern": "Chrome Privacy Preserving Prefetch Proxy",
+    "url": "https://datadome.co/bots/chrome-privacypreserving-prefetch-proxy/"
+  },
+  {
+    "pattern": "CirrusExplorer",
+    "url": "https://cseu.ro/explorer.php"
+  },
+  {
+    "pattern": "CLASSLA-web",
+    "url": "https://www.clarin.si/info/classla-web-crawler/"
+  },
+  {
+    "pattern": "Clearscopebot",
+    "url": "https://datadome.co/bots/clearscope-clearscopebot/"
+  },
+  {
+    "pattern": "WorldBot",
+    "url": "https://datadome.co/bots/clickagy-intelligence-bot/"
+  },
+  {
+    "pattern": "Cloudflare-Validator",
+    "url": "https://datadome.co/bots/cloudflare-crawler/"
+  },
+  {
+    "pattern": "cloudflare-csup",
+    "url": "https://datadome.co/bots/cloudflare-csup/"
+  },
+  {
+    "pattern": "Cloudflare-Custom-Error-Page-Crawler",
+    "url": "https://developers.cloudflare.com"
+  },
+  {
+    "pattern": "Cloudflare-Radar-Scanner",
+    "url": "https://radar.cloudflare.com"
+  },
+  {
+    "pattern": "Cloudflare-SpeedTest",
+    "url": "https://www.cloudflare.com/speedtest"
+  },
+  {
+    "pattern": "Cloudflare-Stream-Hook",
+    "url": "https://developers.cloudflare.com/stream/webhooks/"
+  },
+  {
+    "pattern": "cognitiveSEO Bot",
+    "url": "https://cognitiveseo.com/bot"
+  },
+  {
+    "pattern": "cohere-training-data-crawler",
+    "url": "https://datadome.co/bots/cohere-training-data-crawler/"
+  },
+  {
+    "pattern": "CommaFeed",
+    "url": "https://datadome.co/bots/commafeed/"
+  },
+  {
+    "pattern": "researchscan\\.comsys\\.rwth-aachen\\.de",
+    "url": "http://researchscan.comsys.rwth-aachen.de/"
+  },
+  {
+    "pattern": "contentkingapp",
+    "url": "https://whatis.contentkingapp.com/"
+  },
+  {
+    "pattern": "CookieHub Bot",
+    "url": "https://www.cookiehub.com/docs"
+  },
+  {
+    "pattern": "Cotoyogi",
+    "url": "https://ds.rois.ac.jp/center8/crawler/"
+  },
+  {
+    "pattern": "Coveobot",
+    "url": "https://platform.cloud.coveo.com/"
+  },
+  {
+    "pattern": "Crawlson",
+    "url": "https://www.crawlson.com/"
+  },
+  {
+    "pattern": "RepoLookoutBot",
+    "url": "https://www.repo-lookout.org/"
+  },
+  {
+    "pattern": "Criticalcss\\.com",
+    "url": "https://criticalcss.com/"
+  },
+  {
+    "pattern": "cron-job\\.org",
+    "url": "https://cron-job.org/en/"
+  },
+  {
+    "pattern": "DnBCrawler",
+    "url": "https://datadome.co/bots/dnbcrawler/"
+  },
+  {
+    "pattern": "DMBrowser",
+    "url": "https://www.dotcom-monitor.com/wiki/knowledge-base-main/"
+  },
+  {
+    "pattern": "DomCopBot",
+    "url": "https://www.domcop.com/bot"
+  },
+  {
+    "pattern": "downnotifier\\.com",
+    "url": "https://datadome.co/bots/downnotifier-com-monitoring/"
+  },
+  {
+    "pattern": "DowntimeDetector\\/",
+    "url": "https://datadome.co/bots/downtimedetector/"
+  },
+  {
+    "pattern": "Dlc\\/",
+    "url": "https://www.drlinkcheck.com/"
+  },
+  {
+    "pattern": "Dratabot",
+    "url": "https://dratabot.com"
+  },
+  {
+    "pattern": "EasyBib AutoCite",
+    "url": "http://www.easybib.com/"
+  },
+  {
+    "pattern": "easybill-ImportManager",
+    "url": "https://www.easybill.de/api/"
+  },
+  {
+    "pattern": "EasyCron\\/",
+    "url": "https://www.easycron.com"
+  },
+  {
+    "pattern": "easyDNS Monitoring",
+    "url": "http://easyurl.net/monitoring"
+  },
+  {
+    "pattern": "EchoboxBot\\/",
+    "url": "https://www.echobox.com/"
+  },
+  {
+    "pattern": "Cronless",
+    "url": "https://datadome.co/bots/cronless/"
+  },
+  {
+    "pattern": "crusty\\/",
+    "url": "https://github.com/let4be/crusty"
+  },
+  {
+    "pattern": "csirt\\.cz",
+    "url": "https://csirt.cz/cs/dns-crawler"
+  },
+  {
+    "pattern": "CXK_Bot",
+    "url": "https://datadome.co/bots/cxk_bot/"
+  },
+  {
+    "pattern": "daumoa",
+    "url": "http://cs.daum.net/faq/15/4118.html?faqId=28966"
+  },
+  {
+    "pattern": "DaspeedBot",
+    "url": "https://datadome.co/bots/dawap-bot/"
+  },
+  {
+    "pattern": "Dead Link Checker",
+    "url": "http://www.dead-link-checker.com/"
+  },
+  {
+    "pattern": "Deskyobot",
+    "url": "https://www.deskyo.com/bot"
+  },
+  {
+    "pattern": "Detectify",
+    "url": "https://detectify.com/what-is-detectify"
+  },
+  {
+    "pattern": "Devin",
+    "url": "https://docs.devin.ai/get-started/devin-intro"
+  },
+  {
+    "pattern": "DF Bot",
+    "url": "https://datadome.co/bots/df-bot/"
+  },
+  {
+    "pattern": "DingTalkBot-LinkService",
+    "url": "https://www.dingtalk.com/"
+  },
+  {
+    "pattern": "Discourse Forum Onebox",
+    "url": "https://discourse.org/"
+  },
+  {
+    "pattern": "Dmbot",
+    "url": "https://datadome.co/bots/dmbot/"
+  },
+  {
+    "pattern": "SustainabilityCrawler",
+    "url": "https://datadome.co/bots/ecovadis-bot/"
+  },
+  {
+    "pattern": "edansbot",
+    "url": "https://datadome.co/bots/edansbot/"
+  },
+  {
+    "pattern": "EdgeWatch",
+    "url": "https://about.edgewatch.com/"
+  },
+  {
+    "pattern": "Do Not Track Verifier",
+    "url": "https://datadome.co/bots/eff-crawler/"
+  },
+  {
+    "pattern": "elmahio-uptimebot",
+    "url": "https://elmah.io"
+  },
+  {
+    "pattern": "eMoneyBot",
+    "url": "https://emoneyadvisor.com"
+  },
+  {
+    "pattern": "EpivozCrawler",
+    "url": "https://www.techmeme.com"
+  },
+  {
+    "pattern": "eRepublik\\.tools",
+    "url": "https://erepublik.tools"
+  },
+  {
+    "pattern": "EvoUptimeBot",
+    "url": "https://www.evo.agency"
+  },
+  {
+    "pattern": "ExodusMovement",
+    "url": "https://www.exodus.io"
+  },
+  {
+    "pattern": "Ezgif",
+    "url": "https://ezgif.com/about"
+  },
+  {
+    "pattern": "factset_spyderbot",
+    "url": "https://www.factset.com/"
+  },
+  {
+    "pattern": "FastmailUA",
+    "url": "https://www.fastmail.com/policies/bots/"
+  },
+  {
+    "pattern": "FDL Stats Bot",
+    "url": "https://ftwentertainment.com"
+  },
+  {
+    "pattern": "Fedicabot",
+    "url": "https://fedica.com/info/fedicabot"
+  },
+  {
+    "pattern": "FedReporterDataBot",
+    "url": "https://fedreporter.net/FedReporterBotDocumentation/Readme.txt"
+  },
+  {
+    "pattern": "Feed Image Audit",
+    "url": "https://image-validator.com/"
+  },
+  {
+    "pattern": "FeedBurner",
+    "url": "http://www.feedburner.com/"
+  },
+  {
+    "pattern": "feeder\\.co",
+    "url": "https://feeder.co/crawler"
+  },
+  {
+    "pattern": "Feedpresso Content Index Bot",
+    "url": "https://datadome.co/bots/feedpresso-crawler/"
+  },
+  {
+    "pattern": "Feedwind",
+    "url": "http://feed.mikle.com/support/description/"
+  },
+  {
+    "pattern": "fidget-spinner-bot",
+    "url": "https://datadome.co/bots/fidget-spinner-bot/"
+  },
+  {
+    "pattern": "FirmoGraph",
+    "url": "https://datadome.co/bots/firmograph/"
+  },
+  {
+    "pattern": "FlipboardRSS",
+    "url": "http://flipboard.com/browserproxy"
+  },
+  {
+    "pattern": "Foregenix",
+    "url": "http://www.foregenix.com/scan"
+  },
+  {
+    "pattern": "Freespoke\\/",
+    "url": "https://docs.freespoke.com/search/bot/"
+  },
+  {
+    "pattern": "Friendly testing bot",
+    "url": "https://datadome.co/bots/friendly-testing-bot/"
+  },
+  {
+    "pattern": "friendly-spider",
+    "url": "https://datadome.co/bots/friendly-spider/"
+  },
+  {
+    "pattern": "FriendlyCrawler\\/",
+    "url": "https://datadome.co/bots/friendlycrawler/"
+  },
+  {
+    "pattern": "FullStoryBot\\/",
+    "url": "https://help.fullstory.com/spp-ref/343521-what-is-the-fullstorybot"
+  },
+  {
+    "pattern": "Funnelback",
+    "url": "https://docs.squiz.net/funnelback/docs/latest/"
+  },
+  {
+    "pattern": "FuseonBot\\/",
+    "url": "https://datadome.co/bots/fuseonbot/"
+  },
+  {
+    "pattern": "Gabanzabot\\/",
+    "url": "https://datadome.co/bots/gabanzabot/"
+  },
+  {
+    "pattern": "gdnplus\\.com",
+    "url": "https://datadome.co/bots/gdnp-crawler/"
+  },
+  {
+    "pattern": "getthit\\.com",
+    "url": "https://www.getthit.com/bot"
+  },
+  {
+    "pattern": "GG PeekBot",
+    "url": "https://www.gg.pl/"
+  },
+  {
+    "pattern": "Ghost Inspector",
+    "url": "https://ghostinspector.com/"
+  },
+  {
+    "pattern": "github-camo",
+    "url": "https://github.com/atmos/camo"
+  },
+  {
+    "pattern": "GlobalWebSearch",
+    "url": "https://datadome.co/bots/globalwebsearch/"
+  },
+  {
+    "pattern": "Golfe\\/",
+    "url": "https://datadome.co/bots/6hphjxgx/"
+  },
+  {
+    "pattern": "Google-Apps-Script",
+    "url": "https://script.google.com/"
+  },
+  {
+    "pattern": "GoogleStackdriverMonitoring",
+    "url": "https://cloud.google.com/monitoring"
+  },
+  {
+    "pattern": "GoogleAssociationService\\/",
+    "url": "https://developers.google.com/identity/credential-sharing/digital-asset-links#:~:text=then%20act%20upon.-,Overview,as%20location%2C%20with%20website%20B."
+  },
+  {
+    "pattern": "GoogleImageProxy",
+    "url": "https://support.google.com/webmasters/answer/1061943?hl=en"
+  },
+  {
+    "pattern": "GoogleProducer",
+    "url": "https://developers.google.com/search/docs/crawling-indexing/google-user-triggered-fetchers#googleproducer"
+  },
+  {
+    "pattern": "Googlebot-IA\\/",
+    "url": "https://scholar.google.com/intl/en/scholar/libraries.html"
+  },
+  {
+    "pattern": "Google-Trust-Services\\/",
+    "url": "https://pki.goog/"
+  },
+  {
+    "pattern": "Google-Area120",
+    "url": "https://area120.google.com/"
+  },
+  {
+    "pattern": "Google-CloudVertexBot",
+    "url": "https://developers.google.com/search/docs/crawling-indexing/google-common-crawlers#google-cloudvertexbot"
+  },
+  {
+    "pattern": "GoogleAssociationService$",
+    "url": "https://developers.google.com/digital-asset-links"
+  },
+  {
+    "pattern": "GoogleDocs",
+    "url": "https://docs.google.com/"
+  },
+  {
+    "pattern": "GoPay",
+    "url": "https://doc.gopay.com/"
+  },
+  {
+    "pattern": "GotSiteMonitor\\.com",
+    "url": "https://datadome.co/bots/gotsitemonitor/"
+  },
+  {
+    "pattern": "synthetic-monitoring-agent\\/",
+    "url": "https://grafana.com/"
+  },
+  {
+    "pattern": "Grammarly\\/",
+    "url": "https://datadome.co/bots/grammarly/"
+  },
+  {
+    "pattern": "gregcrawler",
+    "url": "https://datadome.co/bots/gregcrawler/"
+  },
+  {
+    "pattern": "GroovinaAdsbot\\/",
+    "url": "https://www.groovinads.com/"
+  },
+  {
+    "pattern": "Grover\\/",
+    "url": "https://datadome.co/bots/grover-bot/"
+  },
+  {
+    "pattern": "GTmetrix",
+    "url": "https://gtmetrix.com/"
+  },
+  {
+    "pattern": "GuestpostsBot\\/",
+    "url": "https://guestposts.com.br/"
+  },
+  {
+    "pattern": "Gulper Web Bot",
+    "url": "https://datadome.co/bots/gulperbot/"
+  },
+  {
+    "pattern": "Verity\\/",
+    "url": "https://gumgum.com/verity"
+  },
+  {
+    "pattern": "HappyWing",
+    "url": "https://datadome.co/bots/happywing/"
+  },
+  {
+    "pattern": "harsilbot\\/",
+    "url": "http://www.harsil.com/bot"
+  },
+  {
+    "pattern": "HawaiiBot",
+    "url": "https://datadome.co/bots/hawaiibot/"
+  },
+  {
+    "pattern": "hCardValidator",
+    "url": "http://hcard.geekhood.net/"
+  },
+  {
+    "pattern": "Hello World",
+    "url": "https://datadome.co/bots/hello-world/"
+  },
+  {
+    "pattern": "HelloworkJobPostingBot\\/",
+    "url": "https://www.hellowork-group.com/en/"
+  },
+  {
+    "pattern": "HetrixTools",
+    "url": "https://hetrixtools.com/uptime-monitoring-bot.html"
+  },
+  {
+    "pattern": "HIFIBot\\/",
+    "url": "https://hi.fi/"
+  },
+  {
+    "pattern": "Hlidam\\.to robot",
+    "url": "https://hlidam.to/"
+  },
+  {
+    "pattern": "Honeybadger Uptime Check",
+    "url": "https://www.honeybadger.io/"
+  },
+  {
+    "pattern": "HostTracker\\/",
+    "url": "https://datadome.co/bots/hosttracker/"
+  },
+  {
+    "pattern": "Hotjar",
+    "url": "https://www.hotjar.com/"
+  },
+  {
+    "pattern": "hstspreload-bot",
+    "url": "https://hstspreload.org/"
+  },
+  {
+    "pattern": "Huckabot\\/",
+    "url": "https://huckabuy.com/"
+  },
+  {
+    "pattern": "Hype Machine\\/",
+    "url": "https://hypem.com/latest"
+  },
+  {
+    "pattern": "Web Screen Service By hyperhost",
+    "url": "https://datadome.co/bots/hyperhost-ua-crawler/"
+  },
+  {
+    "pattern": "AdsBot-IAB",
+    "url": "https://iabtechlab.com/ads-txt/"
+  },
+  {
+    "pattern": "iAskBot\\/",
+    "url": "https://datadome.co/bots/iaskspider/"
+  },
+  {
+    "pattern": "IBM Crawler",
+    "url": "https://datadome.co/bots/ibm-crawler/"
+  },
+  {
+    "pattern": "IFTTT\\/",
+    "url": "https://ifttt.com/feed/details"
+  },
+  {
+    "pattern": "ImageFetcher\\/",
+    "url": "http://wsrv.nl/"
+  },
+  {
+    "pattern": "ImageMind",
+    "url": "https://datadome.co/bots/imagemind/"
+  },
+  {
+    "pattern": "img2dataset",
+    "url": "https://github.com/rom1504/img2dataset"
+  },
+  {
+    "pattern": "imgproxy\\/",
+    "url": "https://imgproxy.net/"
+  },
+  {
+    "pattern": "impendoom-bot\\/",
+    "url": "https://impendoom.com/"
+  },
+  {
+    "pattern": "IndeedJobBot",
+    "url": "https://www.indeed.com/about/indeed-crawlers"
+  },
+  {
+    "pattern": "Innguma\\/",
+    "url": "https://factory.innguma.com/fetcher/"
+  },
+  {
+    "pattern": "Instapaper\\/",
+    "url": "https://www.instapaper.com/publishers"
+  },
+  {
+    "pattern": "Integromat\\/",
+    "url": "https://developers.make.com/api-documentation"
+  },
+  {
+    "pattern": "intelx\\.io_bot",
+    "url": "https://intelx.io/"
+  },
+  {
+    "pattern": "internetVista monitor",
+    "url": "https://datadome.co/bots/internetvista-monitor/"
+  },
+  {
+    "pattern": "Irokez\\.cz monitoring",
+    "url": "https://datadome.co/bots/irokez-cz-monitoring/"
+  },
+  {
+    "pattern": "IsDownBot\\/",
+    "url": "https://help.isdown.app/custom-monitors/isdownbot"
+  },
+  {
+    "pattern": "ISSCyberRiskCrawler\\/",
+    "url": "https://datadome.co/bots/isscyberriskcrawler/"
+  },
+  {
+    "pattern": "iubenda-radar\\/",
+    "url": "https://www.iubenda.com/"
+  },
+  {
+    "pattern": "UptimeBot\\/",
+    "url": "https://jaggedpixel.co/"
+  },
+  {
+    "pattern": "jetmon\\/",
+    "url": "https://automattic.com/"
+  },
+  {
+    "pattern": "jobswithgptcom-bot",
+    "url": "https://jobswithgpt.com/bot.html"
+  },
+  {
+    "pattern": "Jumio",
+    "url": "https://github.com/Jumio/implementation-guides/blob/master/netverify/callback.md"
+  },
+  {
+    "pattern": "Kagibot\\/",
+    "url": "https://kagi.com/"
+  },
+  {
+    "pattern": "KangarooBot\\/",
+    "url": "https://datadome.co/bots/kangaroo-bot/"
+  },
+  {
+    "pattern": "KargoBot-Artemis",
+    "url": "https://www.kargo.com/"
+  },
+  {
+    "pattern": "kazbtbot\\/",
+    "url": "http://kazbt.com/"
+  },
+  {
+    "pattern": "keycdn-tools\\/",
+    "url": "https://tools.keycdn.com/"
+  },
+  {
+    "pattern": "keys-so-bot",
+    "url": "https://datadome.co/bots/keys-so-bot/"
+  },
+  {
+    "pattern": "kinsta-bot",
+    "url": "https://kinsta.com/"
+  },
+  {
+    "pattern": "Klaviyo\\/",
+    "url": "https://www.klaviyo.com/"
+  },
+  {
+    "pattern": "Kukei\\.eu-Bot\\/",
+    "url": "https://kukei.eu/"
+  },
+  {
+    "pattern": "LAC_IAHarvester",
+    "url": "https://library-archives.canada.ca/eng/services/government-canada/web-social-media-preservation-program/Pages/web-archive.aspx"
+  },
+  {
+    "pattern": "LastModBot\\/",
+    "url": "https://last-modified.com/"
+  },
+  {
+    "pattern": "LegalMonster",
+    "url": "https://www.legalmonster.com/"
+  },
+  {
+    "pattern": "Let's Encrypt",
+    "url": "https://letsencrypt.org/"
+  },
+  {
+    "pattern": "Level9SearchBot\\/",
+    "url": "https://level9.com/"
+  },
+  {
+    "pattern": "loc\\.gov\\/programs\\/web-archiving",
+    "url": "https://www.loc.gov/programs/web-archiving/for-site-owners"
+  },
+  {
+    "pattern": "LinerBot\\/",
+    "url": "https://docs.getliner.com/docs/linerbot"
+  },
+  {
+    "pattern": "LinkTiger",
+    "url": "https://linktiger.com/"
+  },
+  {
+    "pattern": "LinkAce\\/",
+    "url": "https://www.linkace.org/"
+  },
+  {
+    "pattern": "LinksIndexerBot\\/",
+    "url": "https://linksindexer.com/bot"
+  },
+  {
+    "pattern": "LinkWalker\\/",
+    "url": "https://datadome.co/bots/linkwalker/"
+  },
+  {
+    "pattern": "LogicMonitor",
+    "url": "https://www.logicmonitor.com/support/about-logicmonitor/overview/logicmonitor-public-ip-addresses-dns-names"
+  },
+  {
+    "pattern": "LoomlyBot",
+    "url": "https://www.loomly.com/"
+  },
+  {
+    "pattern": "Macrobondbot",
+    "url": "https://www.macrobond.com/"
+  },
+  {
+    "pattern": "MADBbot\\/",
+    "url": "https://madb.zapto.org/bot.html"
+  },
+  {
+    "pattern": "Magellan",
+    "url": "https://datadome.co/bots/magellan/"
+  },
+  {
+    "pattern": "magicsearchdev\\/",
+    "url": "https://datadome.co/bots/magicsearchdev/"
+  },
+  {
+    "pattern": "Magnet\\.me-web\\/",
+    "url": "https://magnet.me/bot.html"
+  },
+  {
+    "pattern": "MainWP\\/",
+    "url": "https://www.dshost.com.au/"
+  },
+  {
+    "pattern": "Make\\/",
+    "url": "https://www.make.com/en/"
+  },
+  {
+    "pattern": "ManageWP",
+    "url": "https://managewp.com/"
+  },
+  {
+    "pattern": "MarketGoo\\/",
+    "url": "https://www.marketgoo.com/"
+  },
+  {
+    "pattern": "MarketingMiner",
+    "url": "https://datadome.co/bots/marketingminer-bot/"
+  },
+  {
+    "pattern": "dbot\\)",
+    "url": "https://www.marsflag.com/ja/marsfinder/"
+  },
+  {
+    "pattern": "Mattermost-Bot\\/",
+    "url": "https://datadome.co/bots/mattermost-bot/"
+  },
+  {
+    "pattern": "Mavifinds",
+    "url": "https://brandimi.com/mavifinds-bot/"
+  },
+  {
+    "pattern": "MB-LinkChecker",
+    "url": "https://www.marcobeierer.com/tools"
+  },
+  {
+    "pattern": "MedialogiaBot",
+    "url": "https://www.mlg.ru/"
+  },
+  {
+    "pattern": "MediaMonitoringBot\\/",
+    "url": "https://mediamonitoringbot.com/"
+  },
+  {
+    "pattern": "MediavineMetadataParser\\/",
+    "url": "https://radar.cloudflare.com/bots/directory/mediavine-metadata-parser/mediavine.com"
+  },
+  {
+    "pattern": "Pywikibot\\/",
+    "url": "https://www.mediawiki.org/wiki/Manual:Pywikibot"
+  },
+  {
+    "pattern": "CentComBot\\/",
+    "url": "https://centcom.melonmesa.com/"
+  },
+  {
+    "pattern": "MergadoBot",
+    "url": "https://datadome.co/bots/mergadobot/"
+  },
+  {
+    "pattern": "Meta-ExternalHit\\/",
+    "url": "https://datadome.co/bots/meta-externalagent/"
+  },
+  {
+    "pattern": "Metorik",
+    "url": "https://metorik.com/"
+  },
+  {
+    "pattern": "MgidBot",
+    "url": "https://www.mgid.com"
+  },
+  {
+    "pattern": "Miniature\\.io\\/",
+    "url": "https://miniature.io/"
+  },
+  {
+    "pattern": "mirrorweb\\.com",
+    "url": "https://www.mirrorweb.com/"
+  },
+  {
+    "pattern": "MissinglettrBot\\/",
+    "url": "https://missinglettr.com/"
+  },
+  {
+    "pattern": "crawler_eb_germany",
+    "url": "https://datadome.co/bots/crawler_eb_germany/"
+  },
+  {
+    "pattern": "ModularConnector\\/",
+    "url": "https://uniqoders.com/"
+  },
+  {
+    "pattern": "Mollie HTTP client",
+    "url": "https://www.mollie.com/"
+  },
+  {
+    "pattern": "Monibot",
+    "url": "https://datadome.co/bots/monibot/"
+  },
+  {
+    "pattern": "monitis -",
+    "url": "https://www.monitis.com/"
+  },
+  {
+    "pattern": "MonitoRSS\\/",
+    "url": "https://monitorss.xyz/"
+  },
+  {
+    "pattern": "MonSpark\\/",
+    "url": "https://monspark.com/"
+  },
+  {
+    "pattern": "montastic-monitor",
+    "url": "https://montastic.com/"
+  },
+  {
+    "pattern": "MonTools\\.com",
+    "url": "https://datadome.co/bots/montools/"
+  },
+  {
+    "pattern": "MotoMinerBot\\/",
+    "url": "https://motominer.com/Bot"
+  },
+  {
+    "pattern": "MRGbot\\/",
+    "url": "https://www.mrg.ro/"
+  },
+  {
+    "pattern": "MxToolbox",
+    "url": "https://datadome.co/bots/mxtoolbox-bot/"
+  },
+  {
+    "pattern": "my-tiny-bot",
+    "url": "https://datadome.co/bots/my-tiny-bot/"
+  },
+  {
+    "pattern": "MyBot\\/",
+    "url": "https://datadome.co/bots/mybot/"
+  },
+  {
+    "pattern": "nbertaupete95",
+    "url": "https://datadome.co/bots/nbertaupete95/"
+  },
+  {
+    "pattern": "NetAPI",
+    "url": "https://datadome.co/bots/netapi/"
+  },
+  {
+    "pattern": "NetpeakCheckerBot\\/",
+    "url": "https://netpeaksoftware.com/"
+  },
+  {
+    "pattern": "NetShelter ContentScan",
+    "url": "https://datadome.co/bots/netshelter-contentscan/"
+  },
+  {
+    "pattern": "NETVIGIE",
+    "url": "https://netvigie.com/"
+  },
+  {
+    "pattern": "NewRelicbot\\/",
+    "url": "https://newrelic.com/"
+  },
+  {
+    "pattern": "nyt_scraping",
+    "url": "https://int.nyt.com/assets/scraping.json"
+  },
+  {
+    "pattern": "NewsNow\\/",
+    "url": "https://www.newsnow.co.uk/h/"
+  },
+  {
+    "pattern": "NLNZ_IAHarvester",
+    "url": "https://natlib.govt.nz/publishers-and-authors/web-harvesting"
+  },
+  {
+    "pattern": "NodePing",
+    "url": "https://datadome.co/bots/nodeping/"
+  },
+  {
+    "pattern": "nomore404\\.com robot",
+    "url": "https://datadome.co/bots/nomore404-com-robot/"
+  },
+  {
+    "pattern": "noorobot",
+    "url": "https://noordigital.com/"
+  },
+  {
+    "pattern": "Nooshub\\/",
+    "url": "https://www.nooshub.com/"
+  },
+  {
+    "pattern": "Notabot",
+    "url": "https://corp.helpfeel.com/ja/home"
+  },
+  {
+    "pattern": "Novaact\\/",
+    "url": "https://datadome.co/bots/novaact/"
+  },
+  {
+    "pattern": "Novellum",
+    "url": "https://crawl.corp.novellum.ai/docs"
+  },
+  {
+    "pattern": "NsToolsBot\\/",
+    "url": "https://ns.tools/"
+  },
+  {
+    "pattern": "nvdorz",
+    "url": "https://datadome.co/bots/nvdorz/"
+  },
+  {
+    "pattern": "Odin;",
+    "url": "https://docs.getodin.com/"
+  },
+  {
+    "pattern": "Offline Explorer",
+    "url": "https://datadome.co/bots/offline-explorer/"
+  },
+  {
+    "pattern": "OhDear\\/",
+    "url": "https://ohdear.app/docs/faq/what-is-the-oh-dear-checker"
+  },
+  {
+    "pattern": "Omnisend\\/",
+    "url": "https://bots.omnisend.io/cf.txt"
+  },
+  {
+    "pattern": "Online Domain Tools",
+    "url": "https://datadome.co/bots/online-domain-tools/"
+  },
+  {
+    "pattern": "WebCEO Online\\/",
+    "url": "https://datadome.co/bots/online-webceo-bot/"
+  },
+  {
+    "pattern": "OnlineOrNot\\.com_bot",
+    "url": "https://onlineornot.com"
+  },
+  {
+    "pattern": "OpenGraph\\.io\\/",
+    "url": "https://www.opengraph.io/"
+  },
+  {
+    "pattern": "OpenRSS",
+    "url": "https://openrss.org/"
+  },
+  {
+    "pattern": "OpenVAS",
+    "url": "https://openvas.org/"
+  },
+  {
+    "pattern": "Owler \\(ows\\.eu",
+    "url": "https://ows.eu/owler"
+  },
+  {
+    "pattern": "Operator\\/",
+    "url": "https://datadome.co/bots/operator/"
+  },
+  {
+    "pattern": "Orbbot\\/",
+    "url": "https://datadome.co/bots/orbbot/"
+  },
+  {
+    "pattern": "zebra-v2-bot",
+    "url": "https://datadome.co/bots/zebra-v2-bot/"
+  },
+  {
+    "pattern": "Orlo-LinkPreview\\/",
+    "url": "https://orlo.tech/"
+  },
+  {
+    "pattern": "Cozi-iCalendar-FeedReader",
+    "url": "https://ourfamilywizard.com/"
+  },
+  {
+    "pattern": "OutsellURLValidator",
+    "url": "https://www.outsell.com/"
+  },
+  {
+    "pattern": "Overcast\\/",
+    "url": "https://overcast.fm/"
+  },
+  {
+    "pattern": "PRTGCloudBot\\/",
+    "url": "https://www.paessler.com/"
+  },
+  {
+    "pattern": "Pagespeed\\/",
+    "url": "http://www.pagespeed.de/"
+  },
+  {
+    "pattern": "PanguBot",
+    "url": "https://datadome.co/bots/pangubot/"
+  },
+  {
+    "pattern": "Panopta",
+    "url": "https://www.panopta.com/"
+  },
+  {
+    "pattern": "Paqlebot\\/",
+    "url": "http://www.paqle.dk/about/paqlebot"
+  },
+  {
+    "pattern": "parse\\.ly scraper\\/",
+    "url": "https://www.parse.ly/"
+  },
+  {
+    "pattern": "PayPal\\/",
+    "url": "https://www.paypal.com/ipn"
+  },
+  {
+    "pattern": "PDF24 URL To PDF",
+    "url": "https://tools.pdf24.org/webpage-to-pdf"
+  },
+  {
+    "pattern": "PingAdmin\\.Ru\\/",
+    "url": "http://ping-admin.ru/"
+  },
+  {
+    "pattern": "pingping\\.io\\/",
+    "url": "https://pingping.io/"
+  },
+  {
+    "pattern": "PlayStore-Google",
+    "url": "https://support.google.com/webmasters/answer/1061943"
+  },
+  {
+    "pattern": "Plesk screenshot bot",
+    "url": "https://www.plesk.com/"
+  },
+  {
+    "pattern": "PocketCasts\\/",
+    "url": "https://support.pocketcasts.com/knowledge-base/pocket-casts-feed-parser/"
+  },
+  {
+    "pattern": "Potions\\/",
+    "url": "https://get-potions.com/"
+  },
+  {
+    "pattern": "PressEngineBot",
+    "url": "https://www.pressengine.net/"
+  },
+  {
+    "pattern": "PricedroneShoppingBot\\/",
+    "url": "http://pricedrone.com/robot/"
+  },
+  {
+    "pattern": "PriEcoBot\\/",
+    "url": "https://datadome.co/bots/priecobot/"
+  },
+  {
+    "pattern": "PrintFriendly\\.com",
+    "url": "https://www.printfriendly.com/"
+  },
+  {
+    "pattern": "Pro-Sitemaps\\/",
+    "url": "https://pro-sitemaps.com/"
+  },
+  {
+    "pattern": "ProbelySPDR\\/",
+    "url": "https://probely.com/sos"
+  },
+  {
+    "pattern": "ProjectShield-UrlCheck",
+    "url": "https://projectshield.withgoogle.com/"
+  },
+  {
+    "pattern": "Blackbox Exporter\\/",
+    "url": "https://github.com/prometheus/blackbox_exporter"
+  },
+  {
+    "pattern": "Protopage\\/",
+    "url": "https://datadome.co/bots/protopage/"
+  },
+  {
+    "pattern": "PS_Daily\\/",
+    "url": "https://datadome.co/bots/ps-daily/"
+  },
+  {
+    "pattern": "pulsetic\\.com",
+    "url": "https://pulsetic.com/"
+  },
+  {
+    "pattern": "PWABuilderHttpAgent",
+    "url": "https://www.pwabuilder.com/"
+  },
+  {
+    "pattern": "QualifiedBot\\/",
+    "url": "https://www.qualified.com/legal/qualified-crawler-user-agent"
+  },
+  {
+    "pattern": "Quantcastbot\\/",
+    "url": "http://www.quantcast.com/bot"
+  },
+  {
+    "pattern": "Rackspace Monitoring\\/",
+    "url": "https://support.rackspace.com/how-to/about-the-rackspace-monitoring-agent/"
+  },
+  {
+    "pattern": "rakutenusabot-image\\/",
+    "url": "https://product-image.ebates.com/item-gsp/rakutenusabot.html"
+  },
+  {
+    "pattern": "top100\\.rambler\\.ru crawler",
+    "url": "https://datadome.co/bots/rambler-bot/"
+  },
+  {
+    "pattern": "RankurBot\\/",
+    "url": "http://rankur.com/technology.html"
+  },
+  {
+    "pattern": "RavenCrawler\\/",
+    "url": "https://datadome.co/bots/ravencrawler/"
+  },
+  {
+    "pattern": "Readable\\/",
+    "url": "https://readable.com/"
+  },
+  {
+    "pattern": "Recurly Webhooks\\/",
+    "url": "https://docs.recurly.com/docs/webhooks"
+  },
+  {
+    "pattern": "RED\\/",
+    "url": "https://redbot.org/"
+  },
+  {
+    "pattern": "Reelevant\\/",
+    "url": "https://reelevant.com/"
+  },
+  {
+    "pattern": "remove\\.bg\\/",
+    "url": "https://www.remove.bg/"
+  },
+  {
+    "pattern": "Retool\\/",
+    "url": "https://docs.tryretool.com/docs/apis"
+  },
+  {
+    "pattern": "RetroListeCOM\\/",
+    "url": "https://retroliste.com/"
+  },
+  {
+    "pattern": "RevvimGort\\/",
+    "url": "https://revvim.com"
+  },
+  {
+    "pattern": "reward-gateway",
+    "url": "https://www.rewardgateway.co"
+  },
+  {
+    "pattern": "Riddler \\(http:\\/\\/riddler\\.io",
+    "url": "http://riddler.io/about"
+  },
+  {
+    "pattern": "RobotsChecker\\/",
+    "url": "http://www.blocked.org.uk/"
+  },
+  {
+    "pattern": "RSSAPI\\/",
+    "url": "https://rssapi.net"
+  },
+  {
+    "pattern": "rss2tg",
+    "url": "https://rss2tg.duck.consulting"
+  },
+  {
+    "pattern": "RssReaderBot",
+    "url": "https://datadome.co/bots/rssreaderbot/"
+  },
+  {
+    "pattern": "s4a-probe-bot\\/",
+    "url": "https://www.seo4ajax.com/webscraper/"
+  },
+  {
+    "pattern": "SFDC-Callout\\/",
+    "url": "https://help.salesforce.com/articleView?id=000321501&type=1&mode=1"
+  },
+  {
+    "pattern": "page-preview-tool",
+    "url": "https://www.salesviewer.com/en/"
+  },
+  {
+    "pattern": "SandobaCrawler\\/",
+    "url": "https://www.sandoba.com/en/crawler/"
+  },
+  {
+    "pattern": "Sansec Security Monitor\\/",
+    "url": "https://sansec.io/monitor"
+  },
+  {
+    "pattern": "GIFTEDVISITOR SCAN",
+    "url": "https://datadome.co/bots/scan/"
+  },
+  {
+    "pattern": "Schema-Markup-Validator",
+    "url": "https://validator.schema.org/"
+  },
+  {
+    "pattern": "Scoop\\.it\\/",
+    "url": "https://datadome.co/bots/scoop-it/"
+  },
+  {
+    "pattern": "ScourRSSBot\\/",
+    "url": "https://scour.ing/bot"
+  },
+  {
+    "pattern": "ScrapeheroBot\\/",
+    "url": "https://scrapehero.de/"
+  },
+  {
+    "pattern": "screeenly-bot",
+    "url": "https://3.screeenly.com/ua"
+  },
+  {
+    "pattern": "SEBot-WA",
+    "url": "https://help.seranking.com/en/project-tools/website-audit/overview"
+  },
+  {
+    "pattern": "Searcherweb",
+    "url": "https://datadome.co/bots/searcherweb/"
+  },
+  {
+    "pattern": "Searcherxweb",
+    "url": "https://datadome.co/bots/searcherxweb/"
+  },
+  {
+    "pattern": "SearchExpress",
+    "url": "https://datadome.co/bots/searchexpress/"
+  },
+  {
+    "pattern": "SecurityHeaders",
+    "url": "https://securityheaders.com/"
+  },
+  {
+    "pattern": "semaltbot\\/",
+    "url": "https://datadome.co/bots/semaltbot/"
+  },
+  {
+    "pattern": "SendGrid Event API",
+    "url": "https://sendgrid.com/docs/for-developers/tracking-events/event/"
+  },
+  {
+    "pattern": "SentryUptimeBot\\/",
+    "url": "https://docs.sentry.io/product/alerts/uptime-monitoring/troubleshooting/#verify-firewall-configuration"
+  },
+  {
+    "pattern": "seo-audit-check-bot\\/",
+    "url": "https://www.webceo.com/webceo-bots.htm"
+  },
+  {
+    "pattern": "s4a\\/",
+    "url": "https://www.seo4ajax.com/"
+  },
+  {
+    "pattern": "ClarityBot\\/",
+    "url": "https://www.seoclarity.net/bot.html"
+  },
+  {
+    "pattern": "SeoSiteCheckup",
+    "url": "https://datadome.co/bots/seositecheckup/"
+  },
+  {
+    "pattern": "SeoulBot",
+    "url": "https://datadome.co/bots/seoulbot/"
+  },
+  {
+    "pattern": "SERPtimizerBot",
+    "url": "http://serptimizer.com/serptimizer-bot"
+  },
+  {
+    "pattern": "Server Density Service Monitoring",
+    "url": "https://www.stackpath.com/"
+  },
+  {
+    "pattern": "ServerHunterSpider\\/",
+    "url": "https://www.serverhunter.com/"
+  },
+  {
+    "pattern": "SeznamHomepageCrawler\\/",
+    "url": "http://napoveda.seznam.cz/en/seznambot-intro/"
+  },
+  {
+    "pattern": "Shopify-Captain-Hook",
+    "url": "https://shopify.dev/docs/apps/build/webhooks"
+  },
+  {
+    "pattern": "Shortwave Image Fetcher",
+    "url": "https://www.shortwave.com/"
+  },
+  {
+    "pattern": "linkReader\\/",
+    "url": "https://sider.ai/"
+  },
+  {
+    "pattern": "Sidetrade indexer bot",
+    "url": "https://datadome.co/bots/sidetrade-crawler/"
+  },
+  {
+    "pattern": "^Silk\\/",
+    "url": "https://www.useragentstring.com/pages/silk/"
+  },
+  {
+    "pattern": "SinceraSyntheticUser\\/",
+    "url": "https://datadome.co/bots/sincera-bot/"
+  },
+  {
+    "pattern": "Optimizer\\)",
+    "url": "https://www.sistrix.com/faq/uptime"
+  },
+  {
+    "pattern": "Site24x7",
+    "url": "https://www.site24x7.com/"
+  },
+  {
+    "pattern": "SiteAuditBot\\/",
+    "url": "https://datadome.co/bots/siteauditbot/"
+  },
+  {
+    "pattern": "SiteCheck-sitecrawl",
+    "url": "https://support.siteimprove.com/hc/en-gb/articles/206345523-What-IP-addresses-and-user-agents-are-used-by-Siteimprove-"
+  },
+  {
+    "pattern": "SiteScoreBot",
+    "url": "https://datadome.co/bots/sitescorebot/"
+  },
+  {
+    "pattern": "SiteSearch360\\/",
+    "url": "https://www.sitesearch360.com/"
+  },
+  {
+    "pattern": "SiteUptime\\.com",
+    "url": "https://datadome.co/bots/siteuptime-com/"
+  },
+  {
+    "pattern": "Konturbot\\/",
+    "url": "https://datadome.co/bots/skb-kontur-bot/"
+  },
+  {
+    "pattern": "SkroutzBot",
+    "url": "https://www.skroutz.gr/"
+  },
+  {
+    "pattern": "SkyworkSpider",
+    "url": "https://datadome.co/bots/skyworkspider/"
+  },
+  {
+    "pattern": "SlickBot\\/",
+    "url": "https://www.slickstream.com/"
+  },
+  {
+    "pattern": "SmartologyBot\\/",
+    "url": "https://smartology.net/smartologybot/"
+  },
+  {
+    "pattern": "SnapURLPreview\\/",
+    "url": "https://business.snapchat.com/legal/snapchat-automated-crawler"
+  },
+  {
+    "pattern": "SnapchatAds\\/",
+    "url": "https://businesshelp.snapchat.com/s/article/adsbot-crawler"
+  },
+  {
+    "pattern": "Snipcart\\/",
+    "url": "https://snipcart.com/"
+  },
+  {
+    "pattern": "solarwinds\\/",
+    "url": "https://documentation.solarwinds.com/en/success_center/observability/content/get-started/dem_getting_started_guide.htm"
+  },
+  {
+    "pattern": "Sora POS\\/",
+    "url": "https://www.sora-caisse.com/sora.pdf"
+  },
+  {
+    "pattern": "SparkShipping",
+    "url": "https://www.sparkshipping.com/"
+  },
+  {
+    "pattern": "SparkPost",
+    "url": "https://www.sparkpost.com/"
+  },
+  {
+    "pattern": "Spawning-AI",
+    "url": "https://datadome.co/bots/spawning-bot/"
+  },
+  {
+    "pattern": "IDG\\/EU",
+    "url": "https://datadome.co/bots/spaziodati-bot/"
+  },
+  {
+    "pattern": "Specificfeeds",
+    "url": "https://follow.it/"
+  },
+  {
+    "pattern": "Spectate\\/",
+    "url": "https://docs.spectate.net/faq/uptime-monitor-bot"
+  },
+  {
+    "pattern": "SpiderLing",
+    "url": "http://nlp.fi.muni.cz/projects/biwec/"
+  },
+  {
+    "pattern": "splash Version\\/",
+    "url": "https://www.zyte.com/splash/"
+  },
+  {
+    "pattern": "Rigor\\)",
+    "url": "https://www.splunk.com/"
+  },
+  {
+    "pattern": "TwinWaveScanner",
+    "url": "https://www.splunk.com/en_us/products/attack-analyzer.html"
+  },
+  {
+    "pattern": "SSL Labs \\(https:\\/\\/www\\.ssllabs\\.com",
+    "url": "https://www.ssllabs.com/"
+  },
+  {
+    "pattern": "SSSSBot\\/",
+    "url": "https://datadome.co/bots/ssssbot/"
+  },
+  {
+    "pattern": "Stape\\/",
+    "url": "https://stape.io/helpdesk/documentation/stape-scanner"
+  },
+  {
+    "pattern": "StartpagePrivateImageProxy\\/",
+    "url": "https://datadome.co/bots/startpage-bot/"
+  },
+  {
+    "pattern": "Statabot\\/",
+    "url": "https://www.stata.com/support/statabot"
+  },
+  {
+    "pattern": "StatistikAustria\\/",
+    "url": "https://www.statistik.at/ueber-uns/innovationen-und-experimentelle-statistik/einsatz-von-kassenscannerdaten-und-webscraping-in-der-preisstatistik"
+  },
+  {
+    "pattern": "StatsDroneBot",
+    "url": "https://statsdrone.com/statsdrone-bot-documentation/"
+  },
+  {
+    "pattern": "Stripe\\/",
+    "url": "https://stripe.com/docs/webhooks"
+  },
+  {
+    "pattern": "Sucuri",
+    "url": "https://blog.sucuri.net/2012/10/ask-sucuri-how-does-sitecheck-work.html"
+  },
+  {
+    "pattern": "Svix-Webhooks\\/",
+    "url": "https://docs.svix.com/receiving/source-ips"
+  },
+  {
+    "pattern": "SwifteqLinkChecker",
+    "url": "https://www.swifteq.com/"
+  },
+  {
+    "pattern": "Swisscows",
+    "url": "https://swisscows.com/"
+  },
+  {
+    "pattern": "Datadog Synthetic",
+    "url": "https://docs.datadoghq.com/synthetics/"
+  },
+  {
+    "pattern": "TactiScout\\/",
+    "url": "http://find-it.world/TempCrawl/Crawltheque.php"
+  },
+  {
+    "pattern": "tchelebi\\/",
+    "url": "https://tchelebi.io/"
+  },
+  {
+    "pattern": "bitdiscovery",
+    "url": "https://www.tenable.com/products/tenable-asm"
+  },
+  {
+    "pattern": "Test Certificate Info",
+    "url": "https://datadome.co/bots/test-certificate-info/"
+  },
+  {
+    "pattern": "Testcrawler",
+    "url": "https://datadome.co/bots/testcrawler/"
+  },
+  {
+    "pattern": "test-bot",
+    "url": "https://datadome.co/bots/test-bot/"
+  },
+  {
+    "pattern": "TestLocally\\/",
+    "url": "https://testlocal.ly/"
+  },
+  {
+    "pattern": "TestURI",
+    "url": "https://datadome.co/bots/testuri-crawler/"
+  },
+  {
+    "pattern": "TextRazor",
+    "url": "https://datadome.co/bots/textrazor-crawler/"
+  },
+  {
+    "pattern": "The Knowledge AI",
+    "url": "https://datadome.co/bots/the-knowledge-ai/"
+  },
+  {
+    "pattern": "TheInternetSearchx",
+    "url": "https://datadome.co/bots/theinternetsearch/"
+  },
+  {
+    "pattern": "thesis-research-bot",
+    "url": "https://datadome.co/bots/thesis-research-bot/"
+  },
+  {
+    "pattern": "Trellis-Services",
+    "url": "https://www.mediavine.com/"
+  },
+  {
+    "pattern": "trentwil\\.es",
+    "url": "https://trentwil.es/domains.html"
+  },
+  {
+    "pattern": "Trustly\\/",
+    "url": "https://www.trustly.net/"
+  },
+  {
+    "pattern": "TTD-Content",
+    "url": "https://www.thetradedesk.com/us/ttd-content"
+  },
+  {
+    "pattern": "Tweakers",
+    "url": "https://tweakers.net/"
+  },
+  {
+    "pattern": "TwilioProxy\\/",
+    "url": "https://www.upday.com/"
+  },
+  {
+    "pattern": "UASlinkChecker\\/",
+    "url": "https://udger.com/support/UASlinkChecker"
+  },
+  {
+    "pattern": "hgfAlphaXCrawl\\/",
+    "url": "https://datadome.co/bots/uni-passau_bot/"
+  },
+  {
+    "pattern": "Unshorten\\.It\\!",
+    "url": "https://unshorten.it/"
+  },
+  {
+    "pattern": "updown\\.io",
+    "url": "https://updown.io"
+  },
+  {
+    "pattern": "Uptime\\/",
+    "url": "https://uptime.com/"
+  },
+  {
+    "pattern": "uptimedoctor",
+    "url": "http://uptimestatistics.com/"
+  },
+  {
+    "pattern": "Uptimia",
+    "url": "https://datadome.co/bots/uptimia/"
+  },
+  {
+    "pattern": "uptrends",
+    "url": "https://www.uptrends.com/"
+  },
+  {
+    "pattern": "Urlcheckr\\/",
+    "url": "https://www.urlcheckr.com/"
+  },
+  {
+    "pattern": "URLSuMaBot",
+    "url": "https://www.urlsuma.de/bot.aspx"
+  },
+  {
+    "pattern": "useeBookChecker\\/",
+    "url": "https://datadome.co/bots/useebookchecker/"
+  },
+  {
+    "pattern": "Vagabondo\\/",
+    "url": "https://datadome.co/bots/vagabondo-bot/"
+  },
+  {
+    "pattern": "VaultPress",
+    "url": "https://vaultpress.com/"
+  },
+  {
+    "pattern": "videootvBot",
+    "url": "https://videoo.tv/"
+  },
+  {
+    "pattern": "VsuSearchSpider\\/",
+    "url": "https://datadome.co/bots/vsusearchspider/"
+  },
+  {
+    "pattern": "vu-server-health-scanner\\/",
+    "url": "http://130.37.198.75/index.html"
+  },
+  {
+    "pattern": "WARDBot\\/",
+    "url": "https://ward.ai/robot"
+  },
+  {
+    "pattern": "WebsiteOps",
+    "url": "https://watchful.net/faqs/technical-support/how-do-i-whitelist-the-watchful-ip-address"
+  },
+  {
+    "pattern": "WatchMouse",
+    "url": "https://asm.saas.broadcom.com/"
+  },
+  {
+    "pattern": "Web Measure\\/",
+    "url": "https://webresearch.eecs.umich.edu/overview-of-web-measurements/"
+  },
+  {
+    "pattern": "Webflow",
+    "url": "https://datadome.co/bots/webflow-bot/"
+  },
+  {
+    "pattern": "webgains-bot",
+    "url": "https://datadome.co/bots/webgains-bot/"
+  },
+  {
+    "pattern": "webprosbot\\/",
+    "url": "https://datadome.co/bots/webprosbot/"
+  },
+  {
+    "pattern": "websitepulse",
+    "url": "https://www.websitepulse.com/kb/websitepulse"
+  },
+  {
+    "pattern": "WebSniffer\\/",
+    "url": "http://websniffer.com/"
+  },
+  {
+    "pattern": "WSM\\/",
+    "url": "https://webspidermount.com/"
+  },
+  {
+    "pattern": "WebwikiBot\\/",
+    "url": "https://www.webwiki.com/"
+  },
+  {
+    "pattern": "WEDOS OnLine",
+    "url": "https://www.wedos.online"
+  },
+  {
+    "pattern": "WhatsMyIP\\.org",
+    "url": "http://whatsmyip.org/ua"
+  },
+  {
+    "pattern": "WhatWeb\\/",
+    "url": "https://www.whatweb.net/"
+  },
+  {
+    "pattern": "Wheregoes\\.com",
+    "url": "https://wheregoes.com/"
+  },
+  {
+    "pattern": "wheresitup\\.com\\/",
+    "url": "https://wheresitup.com/"
+  },
+  {
+    "pattern": "Citoid",
+    "url": "https://www.mediawiki.org/wiki/Citoid"
+  },
+  {
+    "pattern": "WireReaderBot\\/",
+    "url": "https://datadome.co/bots/wirereaderbot/"
+  },
+  {
+    "pattern": "ZoteroTranslationServer\\/WMF",
+    "url": "https://wikitech.wikimedia.org/wiki/Zotero"
+  },
+  {
+    "pattern": "wmtips\\.com\\/",
+    "url": "http://www.wmtips.com/tools/"
+  },
+  {
+    "pattern": "WordCountBot\\/",
+    "url": "https://weglot.com/"
+  },
+  {
+    "pattern": "Wordup-1",
+    "url": "https://datadome.co/bots/wordup-1/"
+  },
+  {
+    "pattern": "workona-favicon-service\\/",
+    "url": "https://datadome.co/bots/workona-bot/"
+  },
+  {
+    "pattern": "Indy Library",
+    "url": "https://secure.ogone.com/"
+  },
+  {
+    "pattern": "WJHRO\\/",
+    "url": "https://docs.worldpay.com/apis"
+  },
+  {
+    "pattern": "WormlyBot",
+    "url": "https://www.wormly.com/help/server-monitoring/website"
+  },
+  {
+    "pattern": "WovnCrawler\\/",
+    "url": "https://support.wovn.io/hc/ja/articles/360043165091"
+  },
+  {
+    "pattern": "wowLink Crawler\\/",
+    "url": "https://datadome.co/bots/wowlink-crawler/"
+  },
+  {
+    "pattern": "WP Time Capsule",
+    "url": "https://docs.wptimecapsule.com/"
+  },
+  {
+    "pattern": "WPUmbrella",
+    "url": "https://wp-umbrella.com/bot"
+  },
+  {
+    "pattern": "wpbot\\/",
+    "url": "https://datadome.co/bots/wpbot/"
+  },
+  {
+    "pattern": "WPMU DEV Broken Link Checker",
+    "url": "https://wpmudev.com/docs/hub-2-0/broken-link-checker-2/"
+  },
+  {
+    "pattern": "WPMUDEV Uptime Monitor",
+    "url": "https://wpmudev.com/monitor/"
+  },
+  {
+    "pattern": "WPSec\\/",
+    "url": "https://wpsec.com/"
+  },
+  {
+    "pattern": "WRTNBot",
+    "url": "https://datadome.co/bots/wrtnbot/"
+  },
+  {
+    "pattern": "abuse\\.xmco\\.fr",
+    "url": "https://abuse.xmco.fr/"
+  },
+  {
+    "pattern": "XY-Archive-Compliance",
+    "url": "https://xy-archive.helpscoutdocs.com/article/61-does-xy-archive-have-a-dedicated-ip-address"
+  },
+  {
+    "pattern": "Yahoo Ad monitoring",
+    "url": "https://developer.yahoo.com/api/"
+  },
+  {
+    "pattern": "YahooMailProxy",
+    "url": "https://help.yahoo.com/kb/yahoo-mail-proxy-SLN28749.html"
+  },
+  {
+    "pattern": "YahooCacheSystem",
+    "url": "https://developer.yahoo.com/oauth2/guide/"
+  },
+  {
+    "pattern": "YLT Chrome",
+    "url": "http://yellowlab.tools/"
+  },
+  {
+    "pattern": "YokoyGroupAG\\/",
+    "url": "https://yokoy.io/"
+  },
+  {
+    "pattern": "Yuuperbot",
+    "url": "https://datadome.co/bots/yuuperbot/"
+  },
+  {
+    "pattern": "Zapier",
+    "url": "https://zapier.com/"
+  },
+  {
+    "pattern": "Zendesk Webhook",
+    "url": "https://support.zendesk.com/"
+  },
+  {
+    "pattern": "Zombiebot\\/",
+    "url": "http://www.zombiedomain.net/robot/"
+  },
+  {
+    "pattern": "zzhbot",
+    "url": "https://datadome.co/bots/zzhbot/"
+  },
+  {
+    "pattern": "Penthouse Critical Path CSS Generator",
+    "url": "https://criticalcss.com/"
+  },
+  {
+    "pattern": "Google-AdWords-Express",
+    "url": "https://developers.google.com/search/docs/crawling-indexing/google-user-triggered-fetchers#googleproducer"
+  },
+  {
+    "pattern": "Notion\\/",
+    "url": "https://www.iubenda.com/"
+  },
+  {
+    "pattern": "SSL Labs$",
+    "url": "https://www.qualys.com/apps/pci-compliance/"
+  },
+  {
+    "pattern": "Skroutz ImageBot",
+    "url": "https://www.skroutz.gr/"
+  },
+  {
+    "pattern": "Tumblr\\/",
+    "url": "https://automattic.com/"
+  },
+  {
+    "pattern": "upday\\/",
+    "url": "https://www.upday.com/"
+  },
+  {
+    "pattern": "watchTowr",
+    "url": "https://watchtowr.com"
+  },
+  {
+    "pattern": "PRTG Network Monitor",
+    "url": "https://www.paessler.com/manuals/prtg/http_transaction_sensor"
+  },
+  {
+    "pattern": "GeedoShopProductFinder",
+    "url": "https://geedo.com/product-finder/"
+  },
+  {
+    "pattern": "WatchForBot",
+    "url": "https://watchfor.io/bot"
+  },
+  {
+    "pattern": "ListGemBot",
+    "url": "https://listgem.com/bot"
+  }
+]

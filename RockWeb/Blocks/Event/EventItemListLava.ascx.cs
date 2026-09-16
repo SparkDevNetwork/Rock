@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -23,6 +23,7 @@ using System.Web.UI;
 
 using Rock;
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Lava;
 using Rock.Model;
@@ -40,12 +41,32 @@ namespace RockWeb.Blocks.Event
     [Category( "Event" )]
     [Description( "Renders calendar items using Lava." )]
 
-    [EventCalendarField( "Event Calendar", "The event calendar to be displayed", true, "8A444668-19AF-4417-9C74-09F842572974", order: 0 )]
-    [CampusesField( "Campuses", "List of which campuses to show occurrences for. This setting will be ignored if 'Use Campus Context' is enabled.", required: false, order: 1, includeInactive:true )]
-    [BooleanField( "Use Campus Context", "Determine if the campus should be read from the campus context of the page.", order: 2 )]
-    [LinkedPage( "Details Page", "Detail page for events", order: 3 )]
-    [SlidingDateRangeField( "Date Range", "Optional date range to filter the items on. (defaults to next 1000 days)", false, order: 4 )]
-    [IntegerField( "Max Occurrences", "The maximum number of occurrences to show.", false, 100, order: 5 )]
+    [EventCalendarField( "Event Calendar",
+        Description = "The event calendar to be displayed",
+        IsRequired = true,
+        DefaultValue = "8A444668-19AF-4417-9C74-09F842572974",
+        Order = 0 )]
+    [CampusesField( "Campuses",
+        Description = "List of which campuses to show occurrences for. This setting will be ignored if 'Use Campus Context' is enabled.",
+        IsRequired = false,
+        Order = 1,
+        IncludeInactive = true )]
+    [BooleanField( "Use Campus Context",
+        Description = "Determine if the campus should be read from the campus context of the page.",
+        DefaultBooleanValue = false,
+        Order = 2 )]
+    [LinkedPage( "Details Page",
+        Description = "Detail page for events",
+        Order = 3 )]
+    [SlidingDateRangeField( "Date Range",
+        Description = "Optional date range to filter the items on. (defaults to next 1000 days)",
+        IsRequired = false,
+        Order = 4 )]
+    [IntegerField( "Max Occurrences",
+        Description = "The maximum number of occurrences to show.",
+        IsRequired = false,
+        DefaultIntegerValue = 100,
+        Order = 5 )]
 
     [CodeEditorField( "Lava Template",
         Description = "The lava template to use for the results",
@@ -116,7 +137,7 @@ namespace RockWeb.Blocks.Event
         /// </summary>
         private void LoadContent()
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var eventCalendarGuid = GetAttributeValue( "EventCalendar" ).AsGuid();
             var eventCalendar = new EventCalendarService( rockContext ).Get( eventCalendarGuid );
 

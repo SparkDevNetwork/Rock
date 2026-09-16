@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -18,17 +18,19 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Data.Entity;
 using System.Linq;
+
+using Rock;
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Obsidian.UI;
+using Rock.Security;
 using Rock.SystemKey;
 using Rock.Utility;
-using Rock;
 using Rock.ViewModels.Blocks;
-using System.Data.Entity;
-using Rock.Security;
 using Rock.ViewModels.Blocks.Engagement.CampaignList;
 
 namespace Rock.Blocks.Engagement
@@ -41,14 +43,15 @@ namespace Rock.Blocks.Engagement
     [Category( "Engagement" )]
     [Description( "Block for viewing list of campaign connection configurations." )]
     [IconCssClass( "ti ti-list" )]
-    // [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( Model.SiteType.Web )]
 
     [LinkedPage( "Detail Page",
         Description = "The page that will show the campaign details.",
         Key = AttributeKey.DetailPage )]
 
     [Rock.SystemGuid.EntityTypeGuid( "68FF1164-17C0-4D30-A937-B2E628CCBFDE" )]
-    [Rock.SystemGuid.BlockTypeGuid( "9BD8B4B1-638E-4F35-9593-1E854BDA44DC" )]
+    // was [Rock.SystemGuid.BlockTypeGuid( "9BD8B4B1-638E-4F35-9593-1E854BDA44DC" )]
+    [Rock.SystemGuid.BlockTypeGuid( "6BA9D764-E30F-48D1-AB20-8991371B6316" )]
     [CustomizedGrid]
     public class CampaignList : RockListBlockType<CampaignConnectionRow>
     {
@@ -77,6 +80,8 @@ namespace Rock.Blocks.Engagement
             /// The connection campaign identifier
             /// </summary>
             public const string ConnectionCampaignGuid = "ConnectionCampaignGuid";
+            public const string AutoEdit = "autoEdit";
+            public const string ReturnUrl = "returnUrl";
         }
 
         #endregion PageParameterKeys
@@ -126,9 +131,16 @@ namespace Rock.Blocks.Engagement
         /// <returns>A dictionary of key names and URL values.</returns>
         private Dictionary<string, string> GetBoxNavigationUrls()
         {
+            var detailPageQryParams = new Dictionary<string, string>
+            {
+                [PageParameterKey.ConnectionCampaignGuid] = "((Key))",
+                [PageParameterKey.AutoEdit] = "true",
+                [PageParameterKey.ReturnUrl] = this.GetCurrentPageUrl()
+            };
+
             return new Dictionary<string, string>
             {
-                [NavigationUrlKey.DetailPage] = this.GetLinkedPageUrl( AttributeKey.DetailPage, new Dictionary<string, string> { [PageParameterKey.ConnectionCampaignGuid] = "((Key))", ["autoEdit"] = "true", ["returnUrl"] = this.GetCurrentPageUrl() } )
+                [NavigationUrlKey.DetailPage] = this.GetLinkedPageUrl( AttributeKey.DetailPage, detailPageQryParams )
             };
         }
 
@@ -216,7 +228,7 @@ namespace Rock.Blocks.Engagement
                 return ActionBadRequest( "Campaign not found." );
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var entitySetService = new EntitySetService( rockContext );
                 var entitySet = entitySetService.Get( campaignConnectionItem.EntitySetId );

@@ -21,6 +21,7 @@
 // </copyright>
 //
 
+using Rock.Configuration;
 using Rock.Model;
 using Rock.SystemGuid;
 
@@ -35,6 +36,6 @@ namespace Rock.Rest.Controllers
         /// <summary>
         /// Initializes a new instance of the <see cref="BenevolenceRequestsController"/> class.
         /// </summary>
-        public BenevolenceRequestsController() : base( new Rock.Model.BenevolenceRequestService( new Rock.Data.RockContext() ) ) { } 
+        public BenevolenceRequestsController() : base( new Rock.Model.BenevolenceRequestService( RockApp.Current.CreateRockContext() ) ) { } 
     }
 }

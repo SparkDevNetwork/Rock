@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -21,7 +21,9 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
+
 using Rock.Data;
+using Rock.Enums.Security;
 using Rock.Security;
 using Rock.Web.Cache;
 
@@ -48,6 +50,7 @@ namespace Rock.Model
         [Required]
         [MaxLength( 100 )]
         [DataMember( IsRequired = true )]
+        [StringValidation( StringValidationProfile.Name )]
         public string Name { get; set; }
 
         /// <summary>
@@ -57,6 +60,7 @@ namespace Rock.Model
         /// A <see cref="System.String"/> representing the description of the EventCalendar.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.LavaAndBasicHtml )]
         public string Description { get; set; }
 
         /// <summary>
@@ -67,6 +71,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 100 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string IconCssClass { get; set; }
 
         /// <summary>
@@ -141,16 +146,6 @@ namespace Rock.Model
 
         #endregion
         #region Public Methods
-
-        /// <summary>
-        /// Returns the default authorization for a specific action.
-        /// </summary>
-        /// <param name="action">A <see cref="System.String"/> representing the name of the action.</param>
-        /// <returns>A <see cref="System.Boolean"/> that is <c>true</c> if the specified action is allowed by default; otherwise <c>false</c>.</returns>
-        public override bool IsAllowedByDefault( string action )
-        {
-            return false;
-        }
 
         /// <inheritdoc/>
         public override string ToString()

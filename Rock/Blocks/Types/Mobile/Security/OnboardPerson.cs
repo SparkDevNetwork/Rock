@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -25,6 +25,7 @@ using Rock.Common.Mobile;
 using Rock.Common.Mobile.Blocks.Security.OnboardPerson;
 using Rock.Common.Mobile.Enums;
 using Rock.Communication;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Enums.Security;
 using Rock.Mobile;
@@ -51,7 +52,7 @@ namespace Rock.Blocks.Types.Mobile.Security
     [BooleanField( "Allow Skip of Onboarding",
         Description = "Allows the user to skip the onboarding process and go straight to the homepage.",
         IsRequired = true,
-        ControlType = Field.Types.BooleanFieldType.BooleanControlType.Checkbox,
+        BooleanControlType = Rock.Enums.Controls.BooleanControlType.Checkbox,
         DefaultBooleanValue = true,
         Key = AttributeKeys.AllowSkipOfOnboarding,
         Order = 0 )]
@@ -137,22 +138,22 @@ namespace Rock.Blocks.Types.Mobile.Security
         Key = AttributeKeys.DisplayCampusStatuses,
         Order = 1 )]
 
-    [CampusField( name: "Online Campus",
-        description: "The campus to pick for the user if they press the 'Online Campus' button.",
-        required: false,
-        includeInactive: false,
-        category: AttributeCategories.Campus,
-        key: AttributeKeys.OnlineCampus,
-        order: 2,
+    [CampusField( "Online Campus",
+        Description = "The campus to pick for the user if they press the 'Online Campus' button.",
+        IsRequired = false,
+        IncludeInactive = false,
+        Category = AttributeCategories.Campus,
+        Key = AttributeKeys.OnlineCampus,
+        Order = 2,
         ForceVisible = true )]
 
-    [CampusField( name: "Do Not Attend Campus",
-        description: "The campus to pick for the user if they press the 'Do Not Attend' button.",
-        required: false,
-        includeInactive: false,
-        category: AttributeCategories.Campus,
-        key: AttributeKeys.DoNotAttendCampus,
-        order: 3,
+    [CampusField( "Do Not Attend Campus",
+        Description = "The campus to pick for the user if they press the 'Do Not Attend' button.",
+        IsRequired = false,
+        IncludeInactive = false,
+        Category = AttributeCategories.Campus,
+        Key = AttributeKeys.DoNotAttendCampus,
+        Order = 3,
         ForceVisible = true )]
 
     #endregion
@@ -180,6 +181,8 @@ namespace Rock.Blocks.Types.Mobile.Security
     [TextField( "Hello Screen Title",
         Description = "The title to display at the top of the Hello screen. <span class='tip tip-lava'></span>",
         IsRequired = true,
+        AllowHtml = true,
+        AllowLava = true,
         DefaultValue = "Hello!",
         Category = AttributeCategories.Titles,
         Key = AttributeKeys.HelloScreenTitle,
@@ -188,6 +191,8 @@ namespace Rock.Blocks.Types.Mobile.Security
     [TextField( "Hello Screen Subtitle",
         Description = "The text to display at the top of the Hello screen underneath the title. <span class='tip tip-lava'></span>",
         IsRequired = true,
+        AllowHtml = true,
+        AllowLava = true,
         DefaultValue = "Welcome to the {{ 'Global' | Attribute:'OrganizationName' }} mobile app. Please sign-in so we can personalize your experience.",
         Category = AttributeCategories.Titles,
         Key = AttributeKeys.HelloScreenSubtitle,
@@ -196,6 +201,8 @@ namespace Rock.Blocks.Types.Mobile.Security
     [TextField( "Code Sent Screen Title",
         Description = "The title to display at the top of the Code Sent screen. <span class='tip tip-lava'></span>",
         IsRequired = true,
+        AllowHtml = true,
+        AllowLava = true,
         DefaultValue = "Code Sent...",
         Category = AttributeCategories.Titles,
         Key = AttributeKeys.CodeSentScreenTitle,
@@ -204,6 +211,8 @@ namespace Rock.Blocks.Types.Mobile.Security
     [TextField( "Code Sent Screen Subtitle",
         Description = "The text to display at the top of the Code Sent screen underneath the title. <span class='tip tip-lava'></span>",
         IsRequired = true,
+        AllowHtml = true,
+        AllowLava = true,
         DefaultValue = "You should be receiving a verification code from us shortly. When it arrives type or paste it below.",
         Category = AttributeCategories.Titles,
         Key = AttributeKeys.CodeSentScreenSubtitle,
@@ -212,6 +221,8 @@ namespace Rock.Blocks.Types.Mobile.Security
     [TextField( "Name Screen Title",
         Description = "The title to display at the top of the Name screen. <span class='tip tip-lava'></span>",
         IsRequired = true,
+        AllowHtml = true,
+        AllowLava = true,
         DefaultValue = "Let’s Get to Know You",
         Category = AttributeCategories.Titles,
         Key = AttributeKeys.NameScreenTitle,
@@ -220,6 +231,8 @@ namespace Rock.Blocks.Types.Mobile.Security
     [TextField( "Name Screen Subtitle",
         Description = "The text to display at the top of the Name screen underneath the title. <span class='tip tip-lava'></span>",
         IsRequired = true,
+        AllowHtml = true,
+        AllowLava = true,
         DefaultValue = "To maximize your experience we’d like to know a little about you.",
         Category = AttributeCategories.Titles,
         Key = AttributeKeys.NameScreenSubtitle,
@@ -228,6 +241,8 @@ namespace Rock.Blocks.Types.Mobile.Security
     [TextField( "Personal Information Screen Title",
         Description = "The title to display at the top of the Personal Information screen. <span class='tip tip-lava'></span>",
         IsRequired = true,
+        AllowHtml = true,
+        AllowLava = true,
         DefaultValue = "Tell Us More",
         Category = AttributeCategories.Titles,
         Key = AttributeKeys.PersonalInformationScreenTitle,
@@ -236,6 +251,8 @@ namespace Rock.Blocks.Types.Mobile.Security
     [TextField( "Personal Information Screen Subtitle",
         Description = "The text to display at the top of the Personal Information screen underneath the title. <span class='tip tip-lava'></span>",
         IsRequired = true,
+        AllowHtml = true,
+        AllowLava = true,
         DefaultValue = "The more we know the more we can tailor our ministry to you.",
         Category = AttributeCategories.Titles,
         Key = AttributeKeys.PersonalInformationScreenSubtitle,
@@ -244,6 +261,8 @@ namespace Rock.Blocks.Types.Mobile.Security
     [TextField( "Contact Information Screen Title",
         Description = "The title to display at the top of the Contact Information screen. <span class='tip tip-lava'></span>",
         IsRequired = true,
+        AllowHtml = true,
+        AllowLava = true,
         DefaultValue = "Stay Connected",
         Category = AttributeCategories.Titles,
         Key = AttributeKeys.ContactInformationScreenTitle,
@@ -252,6 +271,8 @@ namespace Rock.Blocks.Types.Mobile.Security
     [TextField( "Contact Information Screen Subtitle",
         Description = "The text to display at the top of the Contact Information screen underneath the title. <span class='tip tip-lava'></span>",
         IsRequired = true,
+        AllowHtml = true,
+        AllowLava = true,
         DefaultValue = "Help us keep you in the loop by providing your contact information.",
         Category = AttributeCategories.Titles,
         Key = AttributeKeys.ContactInformationScreenSubtitle,
@@ -260,6 +281,8 @@ namespace Rock.Blocks.Types.Mobile.Security
     [TextField( "Interests Screen Title",
         Description = "The title to display at the top of the Interests screen. <span class='tip tip-lava'></span>",
         IsRequired = true,
+        AllowHtml = true,
+        AllowLava = true,
         DefaultValue = "Topics Of Interest",
         Category = AttributeCategories.Titles,
         Key = AttributeKeys.InterestsScreenTitle,
@@ -268,6 +291,8 @@ namespace Rock.Blocks.Types.Mobile.Security
     [TextField( "Interests Screen Subtitle",
         Description = "The text to display at the top of the Interests screen underneath the title. <span class='tip tip-lava'></span>",
         IsRequired = true,
+        AllowHtml = true,
+        AllowLava = true,
         DefaultValue = "What topics are you most interested in.",
         Category = AttributeCategories.Titles,
         Key = AttributeKeys.InterestsScreenSubtitle,
@@ -276,6 +301,8 @@ namespace Rock.Blocks.Types.Mobile.Security
     [TextField( "Notifications Screen Title",
         Description = "The title to display at the top of the Notifications screen. <span class='tip tip-lava'></span>",
         IsRequired = true,
+        AllowHtml = true,
+        AllowLava = true,
         DefaultValue = "Enable Notifications",
         Category = AttributeCategories.Titles,
         Key = AttributeKeys.NotificationsScreenTitle,
@@ -284,6 +311,8 @@ namespace Rock.Blocks.Types.Mobile.Security
     [TextField( "Notifications Screen Subtitle",
         Description = "The text to display at the top of the Notifications screen underneath the title. <span class='tip tip-lava'></span>",
         IsRequired = true,
+        AllowHtml = true,
+        AllowLava = true,
         DefaultValue = "We’d like to keep you in the loop with important alerts and notifications.",
         Category = AttributeCategories.Titles,
         Key = AttributeKeys.NotificationsScreenSubtitle,
@@ -292,6 +321,8 @@ namespace Rock.Blocks.Types.Mobile.Security
     [TextField( "Campus Screen Title",
         Description = "The title to display at the top of the Campus screen. <span class='tip tip-lava'></span>",
         IsRequired = true,
+        AllowHtml = true,
+        AllowLava = true,
         DefaultValue = "Find Your Campus",
         Category = AttributeCategories.Titles,
         Key = AttributeKeys.CampusScreenTitle,
@@ -300,6 +331,8 @@ namespace Rock.Blocks.Types.Mobile.Security
     [TextField( "Campus Screen Subtitle",
         Description = "The text to display at the top of the Campus screen underneath the title. <span class='tip tip-lava'></span>",
         IsRequired = true,
+        AllowHtml = true,
+        AllowLava = true,
         DefaultValue = "Select the campus you attend to get targets news and information about events.",
         Category = AttributeCategories.Titles,
         Key = AttributeKeys.CampusScreenSubtitle,
@@ -308,6 +341,8 @@ namespace Rock.Blocks.Types.Mobile.Security
     [TextField( "Create Login Screen Title",
         Description = "The title to display at the top of the Create Login screen. <span class='tip tip-lava'></span>",
         IsRequired = true,
+        AllowHtml = true,
+        AllowLava = true,
         DefaultValue = "Create Login",
         Category = AttributeCategories.Titles,
         Key = AttributeKeys.CreateLoginScreenTitle,
@@ -316,6 +351,8 @@ namespace Rock.Blocks.Types.Mobile.Security
     [TextField( "Create Login Screen Subtitle",
         Description = "The text to display at the top of the Create Login screen underneath the title. <span class='tip tip-lava'></span>",
         IsRequired = true,
+        AllowHtml = true,
+        AllowLava = true,
         DefaultValue = "Create a login to help signing in quicker in the future.",
         Category = AttributeCategories.Titles,
         Key = AttributeKeys.CreateLoginScreenSubtitle,
@@ -1053,7 +1090,7 @@ namespace Rock.Blocks.Types.Mobile.Security
         /// </returns>
         public override object GetMobileConfigurationValues()
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var systemCommunication = new SystemCommunicationService( rockContext ).Get( SystemCommunicationGuid ?? Guid.Empty );
 
@@ -1637,7 +1674,7 @@ namespace Rock.Blocks.Types.Mobile.Security
         [BlockAction]
         public BlockActionResult SendCode( SendCodeRequest request )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var identityVerificationService = new IdentityVerificationService( rockContext );
                 var systemCommunication = new SystemCommunicationService( rockContext ).Get( this.SystemCommunicationGuid ?? Guid.Empty );
@@ -1792,7 +1829,7 @@ namespace Rock.Blocks.Types.Mobile.Security
         [BlockAction]
         public BlockActionResult VerifyCode( VerifyCodeRequest request )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var identityVerificationService = new IdentityVerificationService( rockContext );
                 var state = Rock.Security.Encryption.DecryptString( request.State ).FromJsonOrThrow<EncryptedState>();
@@ -1873,7 +1910,7 @@ namespace Rock.Blocks.Types.Mobile.Security
         [BlockAction]
         public BlockActionResult CreatePerson( CreatePersonRequest request )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 string username = null;
                 Person person = null;
@@ -1996,10 +2033,14 @@ namespace Rock.Blocks.Types.Mobile.Security
                             if ( personalDevice != null )
                             {
                                 personalDevice.PersonAliasId = person.PrimaryAliasId;
-                                if ( ShowNotificationsRequest )
+                              // A null or empty token (the user skipped the notifications screen
+                                // or denied the OS prompt) must not overwrite a valid registration
+                                // that the launch prompt already stored, so only write when a token
+                                // was actually supplied.
+                                if ( ShowNotificationsRequest && request.Details.PushToken.IsNotNullOrWhiteSpace() )
                                 {
                                     personalDevice.DeviceRegistrationId = request.Details.PushToken;
-                                    personalDevice.NotificationsEnabled = request.Details.PushToken.IsNotNullOrWhiteSpace();
+                                    personalDevice.NotificationsEnabled = true;
                                 }
 
                                 rockContext.SaveChanges();
@@ -2055,7 +2096,7 @@ namespace Rock.Blocks.Types.Mobile.Security
                 return ActionUnauthorized( "Must be logged in to perform this action." );
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var person = new PersonService( rockContext ).Get( RequestContext.CurrentPerson.Id );
                 var username = RequestContext.CurrentUser.UserName;
@@ -2093,10 +2134,14 @@ namespace Rock.Blocks.Types.Mobile.Security
                         if ( personalDevice != null )
                         {
                             personalDevice.PersonAliasId = person.PrimaryAliasId;
-                            if ( ShowNotificationsRequest )
+                            // A null or empty token (the user skipped the notifications screen
+                            // or denied the OS prompt) must not overwrite a valid registration
+                            // that the launch prompt already stored, so only write when a token
+                            // was actually supplied.
+                            if ( ShowNotificationsRequest && details.PushToken.IsNotNullOrWhiteSpace() )
                             {
                                 personalDevice.DeviceRegistrationId = details.PushToken;
-                                personalDevice.NotificationsEnabled = details.PushToken.IsNotNullOrWhiteSpace();
+                                personalDevice.NotificationsEnabled = true;
                             }
                         }
                     }

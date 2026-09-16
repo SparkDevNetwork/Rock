@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -18,8 +18,12 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
+
+using Rock.Attribute;
 using Rock.Data;
+using Rock.Enums.Security;
 using Rock.Lava;
+using Rock.Security;
 
 namespace Rock.Model
 {
@@ -86,6 +90,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 10 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string StatusCode { get; set; }
 
         /// <summary>
@@ -96,6 +101,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 150 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string ExceptionType { get; set; }
 
         /// <summary>
@@ -105,6 +111,7 @@ namespace Rock.Model
         /// A <see cref="System.String"/> representing the description of the exception.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string Description { get; set; }
 
         /// <summary>
@@ -115,6 +122,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 50 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string Source { get; set; }
 
         /// <summary>
@@ -124,6 +132,7 @@ namespace Rock.Model
         /// A <see cref="System.String"/> representing the StackTrace of the exception that occurred.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string StackTrace { get; set; }
 
         /// <summary>
@@ -134,6 +143,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 250 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string PageUrl { get; set; }
 
         /// <summary>
@@ -143,6 +153,7 @@ namespace Rock.Model
         /// A <see cref="System.String"/> containing a table of the ServerVariables at the time the exception occurred.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string ServerVariables { get; set; }
 
         /// <summary>
@@ -152,6 +163,7 @@ namespace Rock.Model
         /// A <see cref="System.String"/> representing the URL Query String from the page that threw the exception.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string QueryString { get; set; }
 
         /// <summary>
@@ -161,6 +173,7 @@ namespace Rock.Model
         /// A <see cref="System.String"/> representing a table containing the value of the form items posted during the page request.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string Form { get; set; }
 
         /// <summary>
@@ -170,7 +183,43 @@ namespace Rock.Model
         /// A <see cref="System.String"/> containing the session cooks from the client when the exception occurred
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string Cookies { get; set; }
+
+        /// <summary>
+        /// Gets the hash used to group related exceptions: the SHA-256 hash of the <see cref="ExceptionType"/>, a
+        /// pipe and the first <see cref="ExceptionLogService.DescriptionGroupingPrefixLength"/> characters of the
+        /// <see cref="Description"/>.
+        /// </summary>
+        /// <value>
+        /// A 32 byte array containing the exception group hash. This is a non-persisted computed column that SQL
+        /// Server derives from the other columns, so it is never set from code and is only populated on entities
+        /// that were loaded from the database.
+        /// </value>
+        /*
+            8/28/26 - MSE
+
+            The Exception List block groups exceptions by this hash in SQL, and the covering index for that query
+            INCLUDEs it in place of the unbounded [Description] column. Letting SQL Server derive it means every
+            insert path (EF, raw SQL in migrations, imports) is covered with nothing to backfill.
+
+            The hash is a fixed 32 bytes because that index is the only thing that stores this column, and a
+            bounded width keeps the index sized by the schema rather than by however long an install's exception
+            messages happen to be. The trade-off is that a hash cannot be displayed, so the grid reads each
+            group's description back from its most recent exception by Id.
+
+            Added by the AddExceptionLogExceptionGroupHash migration and indexed by the
+            PostV20AddExceptionListIndex job.
+
+            Reason: SQL-derived grouping hash so exceptions can be grouped in SQL against a schema-bounded covering index.
+        */
+        [DataMember]
+        [MaxLength( 32 )]
+        [Column( TypeName = "binary" )]
+        [DatabaseGenerated( DatabaseGeneratedOption.Computed )]
+        [LavaHidden]
+        [RockInternal( "20.0", true )]
+        public byte[] ExceptionGroupHash { get; private set; }
 
         #endregion
 

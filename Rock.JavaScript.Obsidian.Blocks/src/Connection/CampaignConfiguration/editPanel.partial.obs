@@ -1,0 +1,290 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <ContentSectionContainer :sidebar="false">
+        <ContentSection light>
+            <ContentStack>
+                <div class="row">
+                    <div class="col-md-6">
+                        <TextBox v-model="name"
+                                 label="Campaign Name"
+                                 rules="required" />
+                    </div>
+                    <div class="col-md-6">
+                        <CheckBox v-model="isActive"
+                                  label="Active" />
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <DropDownList v-model="connectionTypeGuid"
+                                      label="Connection Type"
+                                      help="Setting the Connection Type defines the available Connection Opportunities to use for this campaign."
+                                      :items="options.connectionTypeOptions ?? []"
+                                      :showBlankItem="true"
+                                      rules="required"
+                                      @update:modelValue="onConnectionTypeChanged" />
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <DropDownList v-if="connectionTypeGuid"
+                                      v-model="connectionOpportunityGuid"
+                                      label="Connection Opportunity"
+                                      help="The specific opportunity where the connection request will be created and managed."
+                                      :items="connectionOpportunityOptions"
+                                      :showBlankItem="true"
+                                      rules="required" />
+                    </div>
+                </div>
+            </ContentStack>
+        </ContentSection>
+
+        <ContentSection title="Connection Request Settings" icon="ti ti-users" disableCollapse>
+            <ContentStack title="Who Should Be Connected" description="Defines which individuals are eligible to receive connection requests.">
+                <div class="row">
+                    <div class="col-md-6">
+                        <DataViewPicker v-model="dataView"
+                                        label="Requestor Data View"
+                                        help="The data view to use to select individuals for connection."
+                                        :entityTypeGuid="EntityType.Person"
+                                        rules="required" />
+                    </div>
+                </div>
+                <RadioButtonList v-model="familyLimitsValue"
+                                        label="Family Limits"
+                                        help="Given the list of people in the data view, should we create the connection request for each person or limit to just the head of the house for each family."
+                                        :items="familyLimitsOptions"
+                                        rules="required" />
+                <div class="row">
+                    <div class="col-md-6">
+                        <GroupPicker v-model="optOutGroup"
+                             label="Opt Out Group"
+                             help="Your Data View can handle this filtering, but you can also use this group to limit who gets a connection request. Consider adding a manual workflow to your connection request to add people to this group." />
+                    </div>
+                </div>
+
+
+            </ContentStack>
+            <ContentStack title="Request Creation Settings" description="Defines how connection requests are generated and assigned to connectors.">
+                <RadioButtonList v-model="createConnectionRequestOptionValue"
+                                 label="Create Connection Requests"
+                                 help="Choose whether you want to automatically create all the connection requests at once or only as needed based on the daily limits of assigned connection requests."
+                                 :items="enumToListItemBag(CreateConnectionRequestOptionsDescription)"
+                                 rules="required" />
+
+                <NumberBox v-model="dailyLimitAssigned"
+                           label="Daily Limit of Assigned Connection Requests"
+                           inputClasses="input-width-md"
+                           help="The number of requests each connector will be assigned each day. This can be overridden by Group Member attributes. Leave blank to not auto assign." />
+            </ContentStack>
+            <ContentStack title="Recurrence Settings" description="Defines when individuals become eligible to receive a new connection request.">
+                <NumberBox v-model="daysBetweenConnection"
+                           label="Number of Days Between Connection"
+                           rules="required"
+                           inputClasses="input-width-md"
+                           help="The number of days since the last connection request was modified before a new connection request should be created." />
+
+                <InlineCheckBox v-model="preferPreviousConnector"
+                                label="Prefer Previous Connector"
+                                help="When creating a new request, should the previous connector be used if they are still a connector." />
+            </ContentStack>
+        </ContentSection>
+
+        <ContentSection title="Advanced Settings" icon="ti ti-adjustments-cog" disableCollapse>
+            <ContentStack title="Request Comments Lava Template" description="Defines the message included with generated connection requests. Includes [Person] and [Family] merge fields for use in the template <span class='tip tip-lava'></span>.">
+                <CodeEditor v-model="requestCommentsLavaTemplate"
+                            mode="lava"
+                            editor="monaco"
+                            :editorHeight="200" />
+            </ContentStack>
+        </ContentSection>
+
+    </ContentSectionContainer>
+</template>
+
+<script setup lang="ts">
+    import { ref, watch, computed, PropType } from "vue";
+    import { setPropertiesBoxValue } from "@Obsidian/Utility/block";
+    import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
+    import { useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { enumToListItemBag } from "@Obsidian/Utility/enumUtils";
+    import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import ContentSectionContainer from "@Obsidian/Controls/contentSectionContainer.obs";
+    import ContentSection from "@Obsidian/Controls/contentSection.obs";
+    import { EntityType } from "@Obsidian/SystemGuids/entityType";
+    import ContentStack from "@Obsidian/Controls/contentStack.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import InlineCheckBox from "@Obsidian/Controls/inlineCheckBox.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import CodeEditor from "@Obsidian/Controls/codeEditor.obs";
+    import RadioButtonList from "@Obsidian/Controls/radioButtonList.obs";
+    import NumberBox from "@Obsidian/Controls/numberBox.obs";
+    import DataViewPicker from "@Obsidian/Controls/dataViewPicker.obs";
+    import GroupPicker from "@Obsidian/Controls/groupPicker.obs";
+    import { CampaignConfigurationBag } from "@Obsidian/ViewModels/Blocks/Connection/CampaignConfiguration/campaignConfigurationBag";
+    import { CampaignConfigurationOptionsBag } from "@Obsidian/ViewModels/Blocks/Connection/CampaignConfiguration/campaignConfigurationOptionsBag";
+    import { FamilyLimits } from "@Obsidian/Enums/Connection/familyLimits";
+    import { CreateConnectionRequestOptions, CreateConnectionRequestOptionsDescription } from "@Obsidian/Enums/Connection/createConnectionRequestOptions";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<ValidPropertiesBox<CampaignConfigurationBag>>,
+            required: true
+        },
+        options: {
+            type: Object as PropType<CampaignConfigurationOptionsBag>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: ValidPropertiesBox<CampaignConfigurationBag>): void;
+    }>();
+
+    const invokeBlockAction = useInvokeBlockAction();
+
+    // #region Values
+
+    const name = propertyRef(props.modelValue.bag?.name ?? "", "Name");
+    const isActive = propertyRef(props.modelValue.bag?.isActive ?? false, "IsActive");
+    const connectionTypeGuid = propertyRef(props.modelValue.bag?.connectionTypeGuid ?? "", "ConnectionTypeGuid");
+    const connectionOpportunityGuid = propertyRef(props.modelValue.bag?.connectionOpportunityGuid ?? "", "ConnectionOpportunityGuid");
+    const requestCommentsLavaTemplate = propertyRef(props.modelValue.bag?.requestCommentsLavaTemplate ?? "", "RequestCommentsLavaTemplate");
+    const dataView = propertyRef(props.modelValue.bag?.dataView ?? null, "DataView");
+    const familyLimits = propertyRef<FamilyLimits | null>(props.modelValue.bag?.familyLimits ?? null, "FamilyLimits");
+    const optOutGroup = propertyRef(props.modelValue.bag?.optOutGroup ?? null, "OptOutGroup");
+    const createConnectionRequestOption = propertyRef<CreateConnectionRequestOptions | null>(props.modelValue.bag?.createConnectionRequestOption ?? null, "CreateConnectionRequestOption");
+    const dailyLimitAssigned = propertyRef(props.modelValue.bag?.dailyLimitAssigned ?? null, "DailyLimitAssigned");
+    const daysBetweenConnection = propertyRef(props.modelValue.bag?.daysBetweenConnection ?? null, "DaysBetweenConnection");
+    const preferPreviousConnector = propertyRef(props.modelValue.bag?.preferPreviousConnector ?? false, "PreferPreviousConnector");
+
+    const connectionOpportunityOptions = ref<ListItemBag[]>(props.options.connectionOpportunityOptions ?? []);
+
+    const familyLimitsOptions: ListItemBag[] = [
+        { text: "Limit to Head of House", value: FamilyLimits.HeadOfHouse.toString() },
+        { text: "Everyone in Data View", value: FamilyLimits.Everyone.toString() }
+    ];
+
+    const propRefs = [
+        name, isActive, connectionTypeGuid, connectionOpportunityGuid, requestCommentsLavaTemplate, dataView, familyLimits, optOutGroup,
+        createConnectionRequestOption, dailyLimitAssigned, daysBetweenConnection, preferPreviousConnector
+    ];
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    const familyLimitsValue = computed({
+        get(): string {
+            return familyLimits.value?.toString() ?? "";
+        },
+        set(newValue: string) {
+            if (!newValue) {
+                familyLimits.value = null;
+            }
+            else {
+                familyLimits.value = parseInt(newValue, 10) as FamilyLimits;
+            }
+        }
+    });
+
+    const createConnectionRequestOptionValue = computed<string>({
+        get(): string {
+            return createConnectionRequestOption.value?.toString() ?? "";
+        },
+        set(newValue: string) {
+            if (!newValue) {
+                createConnectionRequestOption.value = null;
+            }
+            else {
+                createConnectionRequestOption.value = parseInt(newValue, 10) as CreateConnectionRequestOptions;
+            }
+        }
+    });
+
+    // #endregion Computed Values
+
+    // #region Functions
+
+    /**
+     * Loads the connection opportunities for the given connection type Guid
+     * and updates the opportunities dropdown.
+     */
+    async function loadConnectionOpportunities(connectionTypeGuid: string): Promise<void> {
+        if (!connectionTypeGuid) {
+            connectionOpportunityOptions.value = [];
+            return;
+        }
+
+        const result = await invokeBlockAction<ListItemBag[]>("GetConnectionOpportunities", {
+            connectionTypeGuid: connectionTypeGuid
+        });
+
+        if (result.isSuccess && result.data) {
+            connectionOpportunityOptions.value = result.data;
+        }
+        else {
+            connectionOpportunityOptions.value = [];
+        }
+    }
+
+    // #endregion Functions
+
+    // #region Event Handlers
+
+    /**
+     * Called when the connection type selection changes.
+     * Reloads the connection opportunities list and clears the selected opportunity.
+     */
+    async function onConnectionTypeChanged(value: string | string[]): Promise<void> {
+        const newConnectionTypeGuid = Array.isArray(value) ? (value[0] ?? "") : value;
+        connectionOpportunityGuid.value = "";
+
+        await loadConnectionOpportunities(newConnectionTypeGuid);
+    }
+
+    // #endregion Event Handlers
+
+    // Watch for parental changes in our model value and update all our values.
+    watch(() => props.modelValue, () => {
+        updateRefValue(name, props.modelValue.bag?.name ?? "");
+        updateRefValue(isActive, props.modelValue.bag?.isActive ?? false);
+        updateRefValue(connectionTypeGuid, props.modelValue.bag?.connectionTypeGuid ?? "");
+        updateRefValue(connectionOpportunityGuid, props.modelValue.bag?.connectionOpportunityGuid ?? "");
+        updateRefValue(requestCommentsLavaTemplate, props.modelValue.bag?.requestCommentsLavaTemplate ?? "");
+        updateRefValue(dataView, props.modelValue.bag?.dataView ?? null);
+        updateRefValue(familyLimits, props.modelValue.bag?.familyLimits ?? null);
+        updateRefValue(optOutGroup, props.modelValue.bag?.optOutGroup ?? null);
+        updateRefValue(createConnectionRequestOption, props.modelValue.bag?.createConnectionRequestOption ?? null);
+        updateRefValue(dailyLimitAssigned, props.modelValue.bag?.dailyLimitAssigned ?? null);
+        updateRefValue(daysBetweenConnection, props.modelValue.bag?.daysBetweenConnection ?? null);
+        updateRefValue(preferPreviousConnector, props.modelValue.bag?.preferPreviousConnector ?? false);
+    });
+
+    // Determines which values we want to track changes on (defined in the
+    // array) and then emit a new object defined as newValue.
+    watch([...propRefs], () => {
+        const newValue: ValidPropertiesBox<CampaignConfigurationBag> = {
+            bag: { ...props.modelValue.bag } as CampaignConfigurationBag
+        };
+
+        setPropertiesBoxValue(newValue, "name", name.value);
+        setPropertiesBoxValue(newValue, "isActive", isActive.value);
+        setPropertiesBoxValue(newValue, "connectionTypeGuid", connectionTypeGuid.value);
+        setPropertiesBoxValue(newValue, "connectionOpportunityGuid", connectionOpportunityGuid.value);
+        setPropertiesBoxValue(newValue, "requestCommentsLavaTemplate", requestCommentsLavaTemplate.value);
+        setPropertiesBoxValue(newValue, "dataView", dataView.value);
+        setPropertiesBoxValue(newValue, "familyLimits", familyLimits.value);
+        setPropertiesBoxValue(newValue, "optOutGroup", optOutGroup.value);
+        setPropertiesBoxValue(newValue, "createConnectionRequestOption", createConnectionRequestOption.value);
+        setPropertiesBoxValue(newValue, "dailyLimitAssigned", dailyLimitAssigned.value);
+        setPropertiesBoxValue(newValue, "daysBetweenConnection", daysBetweenConnection.value);
+        setPropertiesBoxValue(newValue, "preferPreviousConnector", preferPreviousConnector.value);
+
+        emit("update:modelValue", newValue);
+    });
+</script>

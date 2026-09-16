@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -28,7 +28,7 @@ namespace Rock.Rest
         /// <param name="context">The exception logger context.</param>
         public override void Log( ExceptionLoggerContext context )
         {
-            Rock.Model.ExceptionLogService.LogException( context.Exception, null );
+            Rock.Model.ExceptionLogService.LogException( context.Exception, System.Web.HttpContext.Current );
         }
     }
 }

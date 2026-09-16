@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -25,6 +25,7 @@ using System.Web;
 using Microsoft.EntityFrameworkCore;
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -39,11 +40,11 @@ namespace Rock.Jobs
 
     [IntegerField(
         "Duplicate Prevention Day Range",
-        description: "This setting will keep additional step records from being added if a step was already added within the number of days provided.",
-        required: false,
-        defaultValue: 7,
-        order: 1,
-        key: AttributeKey.DuplicatePreventionDayRange )]
+        Description = "This setting will keep additional step records from being added if a step was already added within the number of days provided.",
+        IsRequired = false,
+        DefaultIntegerValue = 7,
+        Order = 1,
+        Key = AttributeKey.DuplicatePreventionDayRange )]
 
     [IntegerField(
         "Command Timeout",
@@ -156,7 +157,7 @@ namespace Rock.Jobs
             out List<string> errorMessages )
         {
             errorMessages = new List<string>();
-            var rockContextGetList = new RockContext();
+            var rockContextGetList = RockApp.Current.CreateRockContext();
             rockContextGetList.Database.SetCommandTimeout( _sqlCommandTimeoutSeconds );
 
             // Steps are created with a status of "complete", so if we need to know the status id
@@ -261,7 +262,7 @@ namespace Rock.Jobs
 
                 var existingStepId = existingIncompleteStepIdsByPersonId.GetValueOrNull( personId );
 
-                using ( var rockContextLoop = new RockContext() )
+                using ( var rockContextLoop = RockApp.Current.CreateRockContext() )
                 {
                     var stepServiceLoop = new StepService( rockContextLoop );
                     Step step;
@@ -331,7 +332,7 @@ namespace Rock.Jobs
         private List<StepTypeView> GetStepTypeViews()
         {
             var personEntityTypeId = EntityTypeCache.Get<Person>().Id;
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             rockContext.Database.SetCommandTimeout( _sqlCommandTimeoutSeconds );
             var stepTypeService = new StepTypeService( rockContext );
 

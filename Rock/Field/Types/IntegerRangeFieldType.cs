@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -21,6 +21,7 @@ using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 #endif
+
 using Rock.Attribute;
 using Rock.Web.UI.Controls;
 
@@ -126,6 +127,19 @@ namespace Rock.Field.Types
         public override bool HasFilterControl()
         {
             return false;
+        }
+
+        #endregion
+
+        #region Value Hinting
+
+        /// <inheritdoc/>
+        internal override FieldTypeHints GetFieldHints( Dictionary<string, string> privateConfigurationValues )
+        {
+            return new FieldTypeHints
+            {
+                ValueFormat = "Two whole numbers separated by a comma, the lower bound first, as in 5,50. Either side may be left empty to leave that end of the range open, so ,50 means fifty and below and 5, means five and above. The comma is required even when one side is empty."
+            };
         }
 
         #endregion

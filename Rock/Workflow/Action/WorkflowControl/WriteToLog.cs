@@ -32,7 +32,9 @@ namespace Rock.Workflow.Action
     [Description( "Writes a message to Workflow log." )]
     [Export( typeof( ActionComponent ) )]
     [ExportMetadata( "ComponentName", "Write To Log" )]
-    [MemoField( "Message", "The message to write to the log. <span class='tip tip-lava'></span>", true, "" )]
+    [MemoField( "Message",
+        Description = "The message to write to the log. <span class='tip tip-lava'></span>",
+        IsRequired = true )]
     [Rock.SystemGuid.EntityTypeGuid( "B442940A-0C8B-4F44-8359-1E0AF3AAAB4C")]
     public class WriteToLog : ActionComponent
     {

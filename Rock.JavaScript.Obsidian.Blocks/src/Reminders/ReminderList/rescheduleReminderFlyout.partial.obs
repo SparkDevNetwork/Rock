@@ -1,0 +1,66 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <ReminderActionFlyout :visible="visible"
+                          :anchorEl="anchorEl"
+                          title="Reschedule Reminder"
+                          iconCssClass="ti ti-calendar-clock"
+                          @update:visible="onVisibleChange"
+                          @save="onSave">
+        <DatePicker v-model="reminderDate"
+                    label="Reminder Date"
+                    :disallowPastDateSelection="true"
+                    rules="required" />
+    </ReminderActionFlyout>
+</template>
+
+<script setup lang="ts">
+    import { PropType, ref, watch } from "vue";
+    import DatePicker from "@Obsidian/Controls/datePicker.obs";
+    import ReminderActionFlyout from "./reminderActionFlyout.partial.obs";
+    import { ReminderListBag } from "@Obsidian/ViewModels/Blocks/Reminders/ReminderList/reminderListBag";
+
+    const props = defineProps({
+        visible: {
+            type: Boolean,
+            required: true
+        },
+        anchorEl: {
+            type: Object as PropType<HTMLElement | null>,
+            default: null
+        },
+        reminder: {
+            type: Object as PropType<ReminderListBag | null>,
+            default: null
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:visible", value: boolean): void;
+        (e: "save", payload: { idKey: string; newReminderDate: string }): void;
+    }>();
+
+    const reminderDate = ref<string>("");
+
+    /** Pre-fill with the existing date so users can adjust without re-entering. */
+    watch(() => props.reminder, (next) => {
+        reminderDate.value = next?.reminderDate ?? "";
+    }, { immediate: true });
+
+    function onVisibleChange(value: boolean): void {
+        emit("update:visible", value);
+    }
+
+    /**
+     * RockForm has already validated by the time this fires. The chrome closes
+     * itself; we just need to dispatch the payload upward.
+     */
+    function onSave(): void {
+        if (!props.reminder?.idKey || !reminderDate.value) {
+            return;
+        }
+        emit("save", {
+            idKey: props.reminder.idKey,
+            newReminderDate: reminderDate.value
+        });
+    }
+</script>

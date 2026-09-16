@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -23,6 +23,7 @@ using System.Linq.Expressions;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Net;
@@ -91,7 +92,7 @@ namespace Rock.Reporting.DataFilter.Person
             }
 
             List<Guid> registrationTemplateGuids = selectionValues[0].Split( ',' ).AsGuidList();
-            var registrationTemplates = new RegistrationTemplateService( new RockContext() )
+            var registrationTemplates = new RegistrationTemplateService( RockApp.Current.CreateRockContext() )
                 .GetByGuids( registrationTemplateGuids )
                 .ToList()
                 .Select( rt => rt.ToListItemBag() );
@@ -164,7 +165,7 @@ namespace Rock.Reporting.DataFilter.Person
             string[] selectionValues = selection.Split( '|' );
             if ( selectionValues.Length >= 1 )
             {
-                var rockContext = new RockContext();
+                var rockContext = RockApp.Current.CreateRockContext();
                 var registrationTemplateGuids = selectionValues[0].Split( ',' ).AsGuidList();
                 var registrationTemplates = new RegistrationTemplateService( rockContext ).GetByGuids( registrationTemplateGuids );
 
@@ -317,7 +318,7 @@ namespace Rock.Reporting.DataFilter.Person
             SlidingDateRangePicker registeredOnDateRangePicker = controls[2] as SlidingDateRangePicker;
 
             List<int> registrationTemplateIdList = registrationTemplatePicker.SelectedValues.AsIntegerList();
-            var registrationTemplateGuids = new RegistrationTemplateService( new RockContext() ).GetByIds( registrationTemplateIdList ).Select( a => a.Guid ).Distinct().ToList();
+            var registrationTemplateGuids = new RegistrationTemplateService( RockApp.Current.CreateRockContext() ).GetByIds( registrationTemplateIdList ).Select( a => a.Guid ).Distinct().ToList();
 
             // convert pipe to comma delimited
             var delimitedValues = registeredOnDateRangePicker.DelimitedValues.Replace( "|", "," );
@@ -350,7 +351,7 @@ namespace Rock.Reporting.DataFilter.Person
             if ( selectionValues.Length >= 1 )
             {
                 List<Guid> registrationTemplateGuids = selectionValues[0].Split( ',' ).AsGuidList();
-                var registrationTemplates = new RegistrationTemplateService( new RockContext() ).GetByGuids( registrationTemplateGuids );
+                var registrationTemplates = new RegistrationTemplateService( RockApp.Current.CreateRockContext() ).GetByGuids( registrationTemplateGuids );
                 if ( registrationTemplates != null )
                 {
                     registrationTemplatePicker.SetValues( registrationTemplates );

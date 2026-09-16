@@ -19,7 +19,7 @@ import { computed, defineComponent, ref, watch } from "vue";
 import { getFieldConfigurationProps, getFieldEditorProps } from "./utils";
 import CheckBox from "@Obsidian/Controls/checkBox.obs";
 import PersonPicker from "@Obsidian/Controls/personPicker.obs";
-import { ConfigurationValueKey } from "./personField.partial";
+import { ConfigurationKey } from "./personField.partial";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { asBoolean, asTrueFalseOrNull } from "@Obsidian/Utility/booleanUtils";
 
@@ -36,10 +36,10 @@ export const EditComponent = defineComponent({
         const internalValue = ref({} as ListItemBag);
 
         const includeBusinesses = computed((): boolean => {
-            return asBoolean(props.configurationValues[ConfigurationValueKey.IncludeBusinesses] ?? "");
+            return asBoolean(props.configurationValues[ConfigurationKey.IncludeBusinesses] ?? "");
         });
 
-        const enableSelfSelection = computed(() => asTrueFalseOrNull(props.configurationValues[ConfigurationValueKey.EnableSelfSelection]));
+        const enableSelfSelection = computed(() => asTrueFalseOrNull(props.configurationValues[ConfigurationKey.EnableSelfSelection]));
 
         watch(() => props.modelValue, () => {
             internalValue.value = JSON.parse(props.modelValue || "{}");
@@ -90,11 +90,11 @@ export const ConfigurationComponent = defineComponent({
 
             // Construct the new value that will be emitted if it is different
             // than the current value.
-            newValue[ConfigurationValueKey.EnableSelfSelection] = asTrueFalseOrNull(enableSelfSelection.value) ?? "False";
-            newValue[ConfigurationValueKey.IncludeBusinesses] = asTrueFalseOrNull(includeBusinesses.value) ?? "False";
+            newValue[ConfigurationKey.EnableSelfSelection] = asTrueFalseOrNull(enableSelfSelection.value) ?? "False";
+            newValue[ConfigurationKey.IncludeBusinesses] = asTrueFalseOrNull(includeBusinesses.value) ?? "False";
 
-            const anyValueChanged = newValue[ConfigurationValueKey.EnableSelfSelection] !== (props.modelValue[ConfigurationValueKey.EnableSelfSelection] ?? "False")
-                || newValue[ConfigurationValueKey.IncludeBusinesses] !== (props.modelValue[ConfigurationValueKey.IncludeBusinesses] ?? "False");
+            const anyValueChanged = newValue[ConfigurationKey.EnableSelfSelection] !== (props.modelValue[ConfigurationKey.EnableSelfSelection] ?? "False")
+                || newValue[ConfigurationKey.IncludeBusinesses] !== (props.modelValue[ConfigurationKey.IncludeBusinesses] ?? "False");
 
             // If any value changed then emit the new model value.
             if (anyValueChanged) {
@@ -121,8 +121,8 @@ export const ConfigurationComponent = defineComponent({
         // Watch for changes coming in from the parent component and update our
         // data to match the new information.
         watch(() => [props.modelValue, props.configurationProperties], () => {
-            enableSelfSelection.value = asBoolean(props.modelValue[ConfigurationValueKey.EnableSelfSelection]);
-            includeBusinesses.value = asBoolean(props.modelValue[ConfigurationValueKey.IncludeBusinesses]);
+            enableSelfSelection.value = asBoolean(props.modelValue[ConfigurationKey.EnableSelfSelection]);
+            includeBusinesses.value = asBoolean(props.modelValue[ConfigurationKey.IncludeBusinesses]);
         }, {
             immediate: true
         });
@@ -136,8 +136,8 @@ export const ConfigurationComponent = defineComponent({
         });
 
         // Watch for changes in properties that only require a local UI update.
-        watch(enableSelfSelection, () => maybeUpdateConfiguration(ConfigurationValueKey.EnableSelfSelection, asTrueFalseOrNull(enableSelfSelection.value) ?? "False"));
-        watch(includeBusinesses, () => maybeUpdateConfiguration(ConfigurationValueKey.IncludeBusinesses, asTrueFalseOrNull(includeBusinesses.value) ?? "False"));
+        watch(enableSelfSelection, () => maybeUpdateConfiguration(ConfigurationKey.EnableSelfSelection, asTrueFalseOrNull(enableSelfSelection.value) ?? "False"));
+        watch(includeBusinesses, () => maybeUpdateConfiguration(ConfigurationKey.IncludeBusinesses, asTrueFalseOrNull(includeBusinesses.value) ?? "False"));
 
         return {
             enableSelfSelection,

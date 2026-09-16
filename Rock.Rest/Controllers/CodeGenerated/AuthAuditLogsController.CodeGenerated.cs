@@ -21,6 +21,7 @@
 // </copyright>
 //
 
+using Rock.Configuration;
 using Rock.Model;
 using Rock.SystemGuid;
 
@@ -35,6 +36,6 @@ namespace Rock.Rest.Controllers
         /// <summary>
         /// Initializes a new instance of the <see cref="AuthAuditLogsController"/> class.
         /// </summary>
-        public AuthAuditLogsController() : base( new Rock.Model.AuthAuditLogService( new Rock.Data.RockContext() ) ) { } 
+        public AuthAuditLogsController() : base( new Rock.Model.AuthAuditLogService( RockApp.Current.CreateRockContext() ) ) { } 
     }
 }

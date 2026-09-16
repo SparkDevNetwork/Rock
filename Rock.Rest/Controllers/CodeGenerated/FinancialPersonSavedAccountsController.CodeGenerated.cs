@@ -21,6 +21,7 @@
 // </copyright>
 //
 
+using Rock.Configuration;
 using Rock.Model;
 using Rock.SystemGuid;
 
@@ -35,6 +36,6 @@ namespace Rock.Rest.Controllers
         /// <summary>
         /// Initializes a new instance of the <see cref="FinancialPersonSavedAccountsController"/> class.
         /// </summary>
-        public FinancialPersonSavedAccountsController() : base( new Rock.Model.FinancialPersonSavedAccountService( new Rock.Data.RockContext() ) ) { } 
+        public FinancialPersonSavedAccountsController() : base( new Rock.Model.FinancialPersonSavedAccountService( RockApp.Current.CreateRockContext() ) ) { } 
     }
 }

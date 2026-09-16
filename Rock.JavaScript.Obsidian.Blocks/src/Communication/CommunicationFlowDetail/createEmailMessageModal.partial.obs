@@ -6,7 +6,8 @@
            title="Create Email">
         <template #headerActions>
             <button class="btn btn-panel-action clickable"
-                  @click="onPreviewClicked">
+                    type="button"
+                    @click="onPreviewClicked">
                 <i class="ti ti-eye" />
         </button>
         </template>

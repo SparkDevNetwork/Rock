@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -238,7 +238,7 @@ namespace Rock.WebFarm
 
             // If another process has started recently, then it will have set the RestartDateTime to a more
             // recent time than my start
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var node = GetNode( rockContext, NodeName );
 
@@ -287,7 +287,7 @@ namespace Rock.WebFarm
 
             Debug( "Start Stage 1" );
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 // Check that the WebFarmEnable = true.If yes, continue
                 if ( !IsEnabled() )
@@ -402,7 +402,7 @@ namespace Rock.WebFarm
 
             Debug( "Start Stage 2" );
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 // Mark IsActive true
                 // Update LastSeenDateTime = now
@@ -460,7 +460,7 @@ namespace Rock.WebFarm
                 PublishEvent( EventType.Shutdown, payload: shutdownReasonText );
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 if ( !isOverlappedRecycling )
                 {
@@ -503,7 +503,7 @@ namespace Rock.WebFarm
                 $"{currentPerson.FullName} (Person Id: {currentPerson.Id})";
             var payload = $"{personName} requested Rock restart";
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 AddLog( rockContext, WebFarmNodeLog.SeverityLevel.Info, _nodeId, EventType.Shutdown, payload );
                 rockContext.SaveChanges();
@@ -524,7 +524,7 @@ namespace Rock.WebFarm
                 return;
             }
 
-            if ( senderNodeName == NodeName )
+            if ( IsCurrentNode( senderNodeName ) )
             {
                 // Don't talk to myself
                 return;
@@ -556,13 +556,13 @@ namespace Rock.WebFarm
                 return;
             }
 
-            if ( senderNodeName == NodeName )
+            if ( IsCurrentNode( senderNodeName ) )
             {
                 // Don't talk to myself
                 return;
             }
 
-            if ( !recipientNodeName.IsNullOrWhiteSpace() && recipientNodeName != NodeName )
+            if ( !recipientNodeName.IsNullOrWhiteSpace() && !IsCurrentNode( recipientNodeName ) )
             {
                 // This message is not for me
                 return;
@@ -576,7 +576,7 @@ namespace Rock.WebFarm
 
             Debug( $"Got a Pong from {senderNodeName}" );
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var node = GetNode( rockContext, senderNodeName );
 
@@ -611,7 +611,7 @@ namespace Rock.WebFarm
 
             await DoLeadershipPollAsync();
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 AddMetrics( rockContext );
                 rockContext.SaveChanges();
@@ -639,12 +639,12 @@ namespace Rock.WebFarm
             PublishEvent( EventType.Ping, payload: _leadershipPingKey.Value.ToString() );
 
             // Assert this node's leadership in the database
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var webFarmNodeService = new WebFarmNodeService( rockContext );
                 var nodes = webFarmNodeService.Queryable().ToList();
-                var thisNode = nodes.FirstOrDefault( wfn => wfn.NodeName == NodeName );
-                var otherNodes = nodes.Where( wfn => wfn.NodeName != NodeName );
+                var thisNode = nodes.FirstOrDefault( wfn => IsCurrentNode( wfn.NodeName ) );
+                var otherNodes = nodes.Where( wfn => !IsCurrentNode( wfn.NodeName ) );
 
                 if ( !thisNode.IsLeader )
                 {
@@ -675,7 +675,7 @@ namespace Rock.WebFarm
 
                 Debug( "Checking for unresponsive nodes" );
 
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     var webFarmNodeService = new WebFarmNodeService( rockContext );
                     var unresponsiveNodes = webFarmNodeService.Queryable()
@@ -911,7 +911,7 @@ namespace Rock.WebFarm
             {
                 var text = isEnabled ? "enabled" : "disabled";
 
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     AddLog( rockContext, WebFarmNodeLog.SeverityLevel.Info, _nodeId, EventType.Availability, $"The farm has been {text}" );
                     rockContext.SaveChanges();
@@ -1045,6 +1045,18 @@ namespace Rock.WebFarm
         }
 
         /// <summary>
+        /// Returns <c>true</c> if the supplied node name refers to the current node.
+        /// Comparison is case-insensitive to match SQL Server's default collation, so
+        /// stored WebFarmNode rows and the in-process <see cref="NodeName"/> stay in sync
+        /// even when their casing differs.
+        /// </summary>
+        /// <param name="nodeName">The node name to test.</param>
+        private static bool IsCurrentNode( string nodeName )
+        {
+            return string.Equals( nodeName, NodeName, StringComparison.OrdinalIgnoreCase );
+        }
+
+        /// <summary>
         /// Publishes the event.
         /// </summary>
         /// <param name="eventType">Type of the event.</param>
@@ -1067,7 +1079,7 @@ namespace Rock.WebFarm
             var eventType = EventType.Error;
             var text = callerMethod.IsNullOrWhiteSpace() ? message : $"[{callerMethod}]: {message}";
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 AddLog( rockContext, severity, _nodeId, eventType, text );
             }

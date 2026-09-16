@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -17,9 +17,10 @@
 using System;
 using System.Collections.Generic;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
-using Rock.Tests.Shared;
+using Rock.Tests.Shared.Constants;
 using Rock.Web.Cache;
 
 namespace Rock.Tests.Integration.TestData.Core
@@ -41,7 +42,7 @@ namespace Rock.Tests.Integration.TestData.Core
         /// <param name="accessKey"></param>
         public void AddPersistedDatasetForPersonBasicInfo( Guid datasetGuid, string accessKey )
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
 
             // Add a Persisted Dataset containing some test people.
             var datasetLava = @"
@@ -99,7 +100,7 @@ namespace Rock.Tests.Integration.TestData.Core
         /// <param name="accessKey"></param>
         public void AddDatasetForContentChannelItemInfo( Guid datasetGuid, string accessKey, List<string> contentChannelItemIdentifiers )
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
 
             var itemGuids = new List<string>();
 

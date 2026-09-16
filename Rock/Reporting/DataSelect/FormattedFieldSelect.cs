@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -27,15 +27,19 @@ using System.Linq.Expressions;
 using System.Runtime.Serialization;
 using System.Web.UI.WebControls;
 
-using Rock;
-using Rock.Data;
-using Rock.Web.UI.Controls;
 using Newtonsoft.Json;
+
+using Rock;
+using Rock.Configuration;
+using Rock.Data;
+using Rock.Lava;
 using Rock.Net;
+using Rock.Obsidian.UI.GridField;
+using Rock.Security;
 using Rock.ViewModels.Controls;
 using Rock.ViewModels.Rest.Controls;
 using Rock.ViewModels.Utility;
-using Rock.Security;
+using Rock.Web.UI.Controls;
 
 namespace Rock.Reporting.DataSelect
 {
@@ -268,6 +272,43 @@ namespace Rock.Reporting.DataSelect
         }
 #endif
 
+        /// <inheritdoc/>
+        public override ObsidianGridField GetObsidianGridField( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
+        {
+            SelectionData data = DeserializeSelectionData( selection );
+            return new FormattedLavaField
+            {
+                LavaTemplate = data.Template,
+                LavaKey = data.Property
+            };
+        }
+
+        /// <summary>
+        /// Value-shaping subclass that resolves a Lava template against the
+        /// current column's own value (not peer columns), mirroring the
+        /// single-value merge behavior of WebForms <c>LavaBoundField</c>.
+        /// </summary>
+        private class FormattedLavaField : HtmlObsidianGridField
+        {
+            public string LavaTemplate { get; set; }
+
+            public string LavaKey { get; set; }
+
+            public override object TransformValue( object rawValue, ObsidianGridFieldContext context )
+            {
+                if ( string.IsNullOrWhiteSpace( LavaTemplate ) )
+                {
+                    return rawValue?.ToString() ?? string.Empty;
+                }
+
+                var options = new CommonMergeFieldsOptions();
+                var mergeFields = LavaHelper.GetCommonMergeFields( null, null, options );
+                mergeFields[LavaKey.IsNullOrWhiteSpace() ? "Item" : LavaKey] = rawValue;
+
+                return LavaTemplate.ResolveMergeFields( mergeFields );
+            }
+        }
+
         /// <summary>
         /// Gets the expression.
         /// </summary>
@@ -497,7 +538,7 @@ namespace Rock.Reporting.DataSelect
         {
 #if REVIEW_WEBFORMS
             var dbContext = Rock.Reflection.GetDbContextForEntityType( entityType );
-            var workspace = ( ( IObjectContextAdapter ) new RockContext() ).ObjectContext.MetadataWorkspace;
+            var workspace = ( ( IObjectContextAdapter ) RockApp.Current.CreateRockContext() ).ObjectContext.MetadataWorkspace;
             var itemCollection = ( ObjectItemCollection ) ( workspace.GetItemCollection( DataSpace.OSpace ) );
             var metaEntityType = itemCollection
                 .OfType<EntityType>()

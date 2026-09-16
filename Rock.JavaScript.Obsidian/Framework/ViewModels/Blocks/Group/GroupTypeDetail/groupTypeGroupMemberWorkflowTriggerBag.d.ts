@@ -49,9 +49,6 @@ export type GroupTypeGroupMemberWorkflowTriggerBag = {
     /** Gets or sets the name of the workflow trigger. */
     name?: string | null;
 
-    /** Gets or sets the order of the workflow trigger. */
-    order: number;
-
     /** Gets or sets a value indicating whether a note is required on placement. */
     requireNoteOnPlacement: boolean;
 

@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -35,6 +35,12 @@ namespace Rock.ViewModels.Utility
         /// </summary>
         /// <value>The name of the category.</value>
         public string Name { get; set; }
+
+        /// <summary>
+        /// Gets or sets the description of the category.
+        /// </summary>
+        /// <value>The description of the category</value>
+        public string Description { get; set; }
 
         /// <summary>
         /// Gets or sets the order of the category. This provides ordering

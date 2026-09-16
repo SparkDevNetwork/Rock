@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -27,6 +27,7 @@ using Rock.Blocks;
 using Rock.Common.Mobile;
 using Rock.Common.Mobile.Enums;
 using Rock.Communication.Chat;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.DownhillCss;
 using Rock.Mobile.JsonFields;
@@ -130,7 +131,7 @@ namespace Rock.Mobile
                 return null;
             }
 
-            rockContext = rockContext ?? new Data.RockContext();
+            rockContext = rockContext ?? RockApp.Current.CreateRockContext();
 
             // Get user login for the app and verify that it matches the request's key
             var appUserLogin = new UserLoginService( rockContext ).Get( additionalSettings.ApiKeyId.Value );
@@ -431,6 +432,11 @@ namespace Rock.Mobile
                 throw new Exception( "Invalid or non-existing AdditionalSettings property on site." );
             }
 
+            if ( !site.DefaultPageId.HasValue )
+            {
+                throw new InvalidOperationException( "Cannot build mobile package: the site has no default page configured." );
+            }
+
             // Get all the system phone formats.
             var phoneFormats = DefinedTypeCache.Get( SystemGuid.DefinedType.COMMUNICATION_PHONE_COUNTRY_CODE )
                 .DefinedValues
@@ -680,7 +686,7 @@ namespace Rock.Mobile
 
             // Load all the pages.
             var blockIds = new List<int>();
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 AddPagesToUpdatePackage( package, applicationRoot, rockContext, new[] { PageCache.Get( site.DefaultPageId.Value ) } );
 
@@ -711,7 +717,7 @@ namespace Rock.Mobile
                     // when we get the block configuration values.
                     if ( mobileBlockEntity is RockBlockType rockBlockType )
                     {
-                        rockBlockType.RockContext = new RockContext();
+                        rockBlockType.RockContext = RockApp.Current.CreateRockContext();
                     }
 
                     var mobileBlockTypeGuid = mobileBlockEntity.MobileBlockTypeGuid;

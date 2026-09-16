@@ -3,6 +3,7 @@
   <PropertyGroup>
     <OutputType>Library</OutputType>
     <TargetFramework>net472</TargetFramework>
+    <IsPackable>False</IsPackable>
   </PropertyGroup>
 
   <ItemGroup>

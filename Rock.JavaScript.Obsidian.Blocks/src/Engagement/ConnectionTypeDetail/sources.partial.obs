@@ -1,0 +1,203 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <ContentStack title="Source List"
+                  description="The sources where connection requests can originate, used to track and organize requests."
+                  headerLocation="top">
+        <NotificationBox v-if="errorMessage" :alertType="AlertType.Danger">
+            {{ errorMessage }}
+        </NotificationBox>
+        <Grid :data="gridData" keyField="guid" itemTerm="Source" liveUpdates light @addItem="onAdd">
+            <TextColumn name="name" field="name" title="Name" />
+            <EditColumn @click="onEdit" />
+            <DeleteColumn @click="onDelete" />
+        </Grid>
+    </ContentStack>
+
+    <Modal v-model="isModalVisible" :title="`${isEditing ? 'Edit' : 'Create'} Source`" saveText="Save" cancelText="Cancel"
+           :onSave="onSave">
+        <TextBox v-model="sourceName" label="Name" rules="required" />
+    </Modal>
+</template>
+
+<script setup lang="ts">
+    import { computed, PropType, ref } from "vue";
+    import Grid, { DeleteColumn, EditColumn, TextColumn } from "@Obsidian/Controls/grid";
+    import Modal from "@Obsidian/Controls/modal.obs";
+    import ContentStack from "@Obsidian/Controls/contentStack.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import { newGuid } from "@Obsidian/Utility/guid";
+    import { useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { AlertType } from "@Obsidian/Enums/Controls/alertType";
+    import { CanDeleteRequestBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionTypeDetail/canDeleteRequestBag";
+    import { CanDeleteResponseBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionTypeDetail/canDeleteResponseBag";
+    import { ConnectionTypeSourceBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionTypeDetail/connectionTypeSourceBag";
+    import { EntityKey } from "./types.partial";
+
+    const props = defineProps({
+        /**
+         * The sources configured for this connection type.
+         */
+        sources: {
+            type: Array as PropType<ConnectionTypeSourceBag[]>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:sources", value: ConnectionTypeSourceBag[]): void
+    }>();
+
+    // #region Values
+
+    const invokeBlockAction = useInvokeBlockAction();
+    const theSource = ref<ConnectionTypeSourceBag>(createNewSource());
+    const isModalVisible = ref(false);
+    const isEditing = ref(false);
+    const errorMessage = ref<string | null>(null);
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    const sources = computed({
+        get(): ConnectionTypeSourceBag[] {
+            return props.sources ?? [];
+        },
+        set(value: ConnectionTypeSourceBag[]) {
+            emit("update:sources", value);
+        }
+    });
+
+    /**
+     * Grid rows for the source list, sorted alphabetically by name.
+     */
+    const gridData = computed(() => {
+        const rows = [...(sources.value ?? [])]
+            .sort((a, b) => (a.name ?? "").localeCompare(b.name ?? ""))
+            .map(s => ({
+                guid: s.guid,
+                name: s.name ?? ""
+            }));
+
+        return { rows };
+    });
+
+    const sourceName = computed({
+        get(): string {
+            return theSource.value.name ?? "";
+        },
+        set(value: string) {
+            theSource.value.name = value;
+        }
+    });
+
+    // #endregion Computed Values
+
+    // #region Functions
+
+    /**
+     * Creates a new source instance for editing in the modal.
+     */
+    function createNewSource(): ConnectionTypeSourceBag {
+        return {
+            guid: newGuid(),
+            name: ""
+        };
+    }
+
+    // #endregion Functions
+
+    // #region Event Handlers
+
+    /**
+     * Called when the Add Source button is clicked.
+     */
+    function onAdd(): void {
+        isEditing.value = false;
+        errorMessage.value = null;
+        theSource.value = createNewSource();
+        isModalVisible.value = true;
+    }
+
+    /**
+     * Called when the Edit button for a source row is clicked.
+     *
+     * @param guid The unique identifier of the source to edit.
+     */
+    function onEdit(guid: string): void {
+        const selected = (sources.value ?? []).find(s => s.guid === guid);
+
+        if (!selected) {
+            return;
+        }
+
+        isEditing.value = true;
+        theSource.value = { ...selected };
+        errorMessage.value = null;
+        isModalVisible.value = true;
+    }
+
+    /**
+     * Called when the Delete button for a source row is clicked.
+     *
+     * @param guid The unique identifier of the source to delete.
+     */
+    async function onDelete(guid: string): Promise<void> {
+        const result = await invokeBlockAction<CanDeleteResponseBag>("CanDeleteEntity", {
+            request: {
+                entityKey: EntityKey.ConnectionTypeSource,
+                entityGuid: guid
+            } as CanDeleteRequestBag
+        });
+
+        if (!result.isSuccess || !result.data) {
+            errorMessage.value = result.errorMessage || "Unable to delete this source.";
+            return;
+        }
+
+        if (!result.data.canDelete) {
+            errorMessage.value = result.data.errorMessage || "This source cannot be deleted.";
+            return;
+        }
+
+        sources.value = (sources.value ?? []).filter(s => s.guid !== guid);
+        errorMessage.value = null;
+    }
+
+    /**
+     * Called when the source modal Save button is clicked.
+     */
+    function onSave(): void {
+        const currentSources = sources.value ?? [];
+        const idx = currentSources.findIndex(s => s.guid === theSource.value.guid);
+
+        const name = (theSource.value.name ?? "").trim().toLowerCase();
+        if (name) {
+            const isDuplicate = currentSources.some(s =>
+                s.guid !== theSource.value.guid
+                && (s.name ?? "").trim().toLowerCase() === name);
+
+            if (isDuplicate) {
+                errorMessage.value = `A source already exists with the name '${theSource.value.name}'. Please use a different name.`;
+                return;
+            }
+        }
+
+        let updatedSources: ConnectionTypeSourceBag[];
+
+        if (idx >= 0) {
+            updatedSources = [...currentSources];
+            updatedSources.splice(idx, 1, { ...theSource.value });
+        }
+        else {
+            updatedSources = [...currentSources, { ...theSource.value }];
+        }
+
+        sources.value = updatedSources;
+        errorMessage.value = null;
+        isModalVisible.value = false;
+    }
+
+    // #endregion Event Handlers
+</script>

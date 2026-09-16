@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -21,7 +21,11 @@ using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
 
+using Microsoft.Extensions.DependencyInjection;
+
+using Rock.AI;
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Enums.Connection;
@@ -74,6 +78,7 @@ namespace Rock.Blocks.Engagement
             public const string Status = "Status";
             public const string ConnectionStatusAutomation = "ConnectionStatusAutomation";
             public const string ConnectionWorkflow = "ConnectionWorkflow";
+            public const string ConnectionTypeSource = "ConnectionTypeSource";
         }
 
         #endregion Keys
@@ -101,33 +106,79 @@ namespace Rock.Blocks.Engagement
         /// <returns>The options that provide additional details to the block.</returns>
         private ConnectionTypeDetailOptionsBag GetBoxOptions( bool isEditable )
         {
-            var currentPerson = RequestContext.CurrentPerson;
             var currentConnectionTypeId = GetInitialEntity()?.Id ?? 0;
-            var communicationTemplates = new CommunicationTemplateService( RockContext ).Queryable()
-                .AsNoTracking()
-                .Where( t => t.IsActive && t.UsageType == null )
-                .ToList()
-                .Where( t => t.IsAuthorized( Authorization.VIEW, currentPerson ) )
-                .Where( t => !t.SupportsEmailWizard() )
-                .OrderBy( t => t.Name )
-                .Select( t => t.ToListItemBag() )
-                .ToList();
 
-            var connectionTypes = new ConnectionTypeService( RockContext ).Queryable()
-                .AsNoTracking()
+            var connectionTypes = ConnectionTypeCache.All()
                 .Where( ct => ct.Id != currentConnectionTypeId )
                 .OrderBy( ct => ct.Order )
                 .ThenBy( ct => ct.Name )
                 .ToListItemBagList();
 
+            var personEntityTypeId = EntityTypeCache.Get( SystemGuid.EntityType.PERSON ).Id;
+            var personNoteTypeItems = NoteTypeCache.All()
+                .Where( nt => nt.EntityTypeId == personEntityTypeId && nt.UserSelectable )
+                .ToListItemBagList();
+
             var options = new ConnectionTypeDetailOptionsBag
             {
-                CommunicationTemplateOptions = communicationTemplates,
                 ConnectionTypeOptions = connectionTypes,
-                HasActiveAIProvider = AIProviderCache.All( RockContext ).Any( a => a.IsActive )
+                HasActiveAIProvider = RockApp.Current.GetRequiredService<TextProcessingService>().IsAvailable,
+                PersonNoteTypeItems = personNoteTypeItems,
+                OpportunityConnectionRequestAttributeKeys = GetOpportunityConnectionRequestAttributeKeys( currentConnectionTypeId )
             };
 
             return options;
+        }
+
+        /// <summary>
+        /// Gets Connection Request attribute keys defined on any Connection Opportunity
+        /// that belongs to the specified Connection Type.
+        /// </summary>
+        /// <param name="connectionTypeId">The connection type identifier.</param>
+        /// <returns>A distinct list of attribute keys.</returns>
+        private List<string> GetOpportunityConnectionRequestAttributeKeys( int connectionTypeId )
+        {
+            if ( connectionTypeId <= 0 )
+            {
+                return new List<string>();
+            }
+
+            /*
+                7/17/26 - MSE
+
+                Opportunity detail already reserves type-level request attribute keys.
+                The reverse path was open: create the key on an opportunity first, then
+                reuse it on the type. Reserve opportunity keys on the type editor so
+                Keys stay unique across type and opportunity request attributes.
+
+                Reason: Prevent duplicate ConnectionRequest attribute Keys across type and opportunity.
+            */
+            var opportunityIdValues = new ConnectionOpportunityService( RockContext )
+                .Queryable()
+                .AsNoTracking()
+                .Where( o => o.ConnectionTypeId == connectionTypeId )
+                .Select( o => o.Id.ToString() )
+                .ToList();
+
+            if ( !opportunityIdValues.Any() )
+            {
+                return new List<string>();
+            }
+
+            var connectionRequestEntityTypeId = EntityTypeCache.Get<ConnectionRequest>().Id;
+
+            return new AttributeService( RockContext )
+                .Queryable()
+                .AsNoTracking()
+                .Where( a =>
+                    a.EntityTypeId == connectionRequestEntityTypeId &&
+                    a.EntityTypeQualifierColumn == "ConnectionOpportunityId" &&
+                    opportunityIdValues.Contains( a.EntityTypeQualifierValue ) &&
+                    a.Key != null &&
+                    a.Key != string.Empty )
+                .Select( a => a.Key )
+                .Distinct()
+                .ToList();
         }
 
         /// <summary>
@@ -167,6 +218,25 @@ namespace Rock.Blocks.Engagement
                     return false;
                 }
 
+                if ( !ValidateConnectionRequestAttributeKeysAgainstOpportunities( connectionType.Id, bag.ConnectionRequestAttributes, out errorMessage ) )
+                {
+                    return false;
+                }
+
+                foreach ( var activityType in bag.ActivityTypes )
+                {
+                    if ( activityType.PersonNoteCreationBehavior == PersonNoteCreationBehavior.DoNotCreatePersonNote )
+                    {
+                        continue;
+                    }
+
+                    if ( activityType.PersonNoteType?.Value == null || activityType.PersonNoteType.Value.IsNullOrWhiteSpace()  )
+                    {
+                        errorMessage = "A Person Note Type is required for the selected activity type configuration.";
+                        return false;
+                    }
+                }
+
                 var statusGuids = statuses
                     .Select( s => s.Guid )
                     .Where( g => g != Guid.Empty )
@@ -198,13 +268,36 @@ namespace Rock.Blocks.Engagement
                 */
                 if ( bag.DueDateCalculationMode == DueDateCalculationMode.DurationPerStatus )
                 {
-                    var invalidDueDurationStatusNames = statuses
-                        .Where( s =>
-                            !s.RequestStatusDueDateOffsetInDays.HasValue ||
-                            s.RequestStatusDueDateOffsetInDays.Value <= 0 )
-                        .Select( s => s.Name.Trim() )
-                        .Distinct()
-                        .ToList();
+                    var connectionTypeAdditionalSettings = connectionType.GetConnectionTypeAdditionalSettings();
+                    var defaultStatusDueDateOffsetInDays = connectionTypeAdditionalSettings?.DefaultStatusDueDateOffsetInDays;
+                    var defaultStatusDueSoonOffsetInDays = connectionTypeAdditionalSettings?.DefaultStatusDueSoonOffsetInDays;
+                    var invalidDueDurationStatusNames = new List<string>();
+                    var invalidDueSoonStatusNames = new List<string>();
+
+                    foreach ( var status in statuses )
+                    {
+                        if ( !status.RequestStatusDueDateOffsetInDays.HasValue || status.RequestStatusDueDateOffsetInDays <= 0 )
+                        {
+                            status.RequestStatusDueDateOffsetInDays = defaultStatusDueDateOffsetInDays;
+                        }
+                        if ( !status.RequestStatusDueSoonOffsetInDays.HasValue || status.RequestStatusDueSoonOffsetInDays <= 0 )
+                        {
+                            status.RequestStatusDueSoonOffsetInDays = defaultStatusDueSoonOffsetInDays;
+                        }
+
+                        if ( !status.RequestStatusDueDateOffsetInDays.HasValue || status.RequestStatusDueDateOffsetInDays <= 0 )
+                        {
+                            invalidDueDurationStatusNames.Add( status.Name.Trim() );
+                        }
+
+                        if ( !status.RequestStatusDueSoonOffsetInDays.HasValue ||
+                            status.RequestStatusDueSoonOffsetInDays.Value <= 0 ||
+                            ( status.RequestStatusDueDateOffsetInDays.HasValue &&
+                            status.RequestStatusDueSoonOffsetInDays.Value > status.RequestStatusDueDateOffsetInDays.Value ) )
+                        {
+                            invalidDueSoonStatusNames.Add( status.Name.Trim() );
+                        }
+                    }
 
                     if ( invalidDueDurationStatusNames.Any() )
                     {
@@ -213,38 +306,10 @@ namespace Rock.Blocks.Engagement
                         return false;
                     }
 
-                    var invalidDueSoonStatusNames = statuses
-                        .Where( s =>
-                            !s.RequestStatusDueSoonOffsetInDays.HasValue ||
-                            s.RequestStatusDueSoonOffsetInDays.Value <= 0 ||
-                            ( s.RequestStatusDueDateOffsetInDays.HasValue &&
-                             s.RequestStatusDueSoonOffsetInDays.Value > s.RequestStatusDueDateOffsetInDays.Value ) )
-                        .Select( s => s.Name.Trim() )
-                        .Distinct()
-                        .ToList();
-
                     if ( invalidDueSoonStatusNames.Any() )
                     {
                         var label = invalidDueSoonStatusNames.Count == 1 ? "status" : "statuses";
                         errorMessage = $"A Due Soon Window is required and must not exceed Status Due Duration for the following {label}: {string.Join( ", ", invalidDueSoonStatusNames )}.";
-                        return false;
-                    }
-                }
-
-                if ( bag.EnableFutureFollowup )
-                {
-                    var invalidFutureFollowupStatusNames = statuses
-                        .Where( s =>
-                            !s.AutoFutureFollowUpPauseInDays.HasValue ||
-                            s.AutoFutureFollowUpPauseInDays.Value <= 0 )
-                        .Select( s => s.Name.Trim() )
-                        .Distinct()
-                        .ToList();
-
-                    if ( invalidFutureFollowupStatusNames.Any() )
-                    {
-                        var label = invalidFutureFollowupStatusNames.Count == 1 ? "status" : "statuses";
-                        errorMessage = $"Future Follow-Up Duration is required for the following {label}: {string.Join( ", ", invalidFutureFollowupStatusNames )}.";
                         return false;
                     }
                 }
@@ -328,8 +393,12 @@ namespace Rock.Blocks.Engagement
                 return;
             }
 
-            var isViewable = entity.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson );
-            box.IsEditable = entity.IsAuthorized( Authorization.ADMINISTRATE, RequestContext.CurrentPerson );
+            var isViewable = BlockCache.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson );
+
+            // Match the WebForms behavior: editing is allowed by block-level Administrate rights or
+            // Administrate rights on the connection type itself.
+            box.IsEditable = BlockCache.IsAuthorized( Authorization.ADMINISTRATE, RequestContext.CurrentPerson )
+                || entity.IsAuthorized( Authorization.ADMINISTRATE, RequestContext.CurrentPerson );
 
             if ( entity.Id != 0 )
             {
@@ -439,6 +508,7 @@ namespace Rock.Blocks.Engagement
 
             bag.ActivityTypes = GetConnectionActivityTypeBags( entity.Id, out var activityTypeIdToGuidMap );
             bag.Statuses = GetConnectionStatusBags( entity.Id, out var statusIdToGuidMap );
+            bag.Sources = GetConnectionTypeSourceBags( entity.Id );
             bag.Workflows = GetConnectionWorkflowBags( entity.Id, statusIdToGuidMap, activityTypeIdToGuidMap );
             bag.AdditionalSettings = GetAdditionalSettingsBag( entity );
 
@@ -509,6 +579,9 @@ namespace Rock.Blocks.Engagement
             box.IfValidProperty( nameof( box.Bag.RequiresPlacementGroupToConnect ),
                 () => entity.RequiresPlacementGroupToConnect = box.Bag.RequiresPlacementGroupToConnect );
 
+            box.IfValidProperty( nameof( box.Bag.ShouldRecalculateRequestDueAndDueSoonDates ),
+                () => entity.ShouldRecalculateRequestDueAndDueSoonDates = box.Bag.ShouldRecalculateRequestDueAndDueSoonDates );
+
             box.IfValidProperty( nameof( box.Bag.AdditionalSettings ), () =>
             {
                 var settings = box.Bag.AdditionalSettings ?? new ConnectionTypeAdditionalSettingsBag();
@@ -532,7 +605,13 @@ namespace Rock.Blocks.Engagement
                         CommunicationTemplateCategoryGuid = communicationSettings.CommunicationTemplateCategoryGuid,
                         SmsSnippetCategoryGuid = communicationSettings.SmsSnippetCategoryGuid
                     },
-                    AIInsightsPrompt = settings.AIInsightsPrompt
+                    AIInsightsPrompt = settings.AIInsightsPrompt,
+                    AISummaryTrigger = settings.AISummaryTrigger,
+                    AISummaryCacheDurationMinutes = settings.AISummaryCacheDurationMinutes,
+                    DefaultOpportunityDueDateOffsetInDays = settings.DefaultOpportunityDueDateOffsetInDays,
+                    DefaultOpportunityDueSoonOffsetInDays = settings.DefaultOpportunityDueSoonOffsetInDays,
+                    DefaultStatusDueDateOffsetInDays = settings.DefaultStatusDueDateOffsetInDays,
+                    DefaultStatusDueSoonOffsetInDays = settings.DefaultStatusDueSoonOffsetInDays
                 } );
             } );
 
@@ -620,7 +699,10 @@ namespace Rock.Blocks.Engagement
                 return false;
             }
 
-            if ( !entity.IsAuthorized( Authorization.ADMINISTRATE, RequestContext.CurrentPerson ) )
+            // Match the WebForms behavior: editing is allowed by block-level Administrate rights or
+            // Administrate rights on the connection type itself.
+            if ( !BlockCache.IsAuthorized( Authorization.ADMINISTRATE, RequestContext.CurrentPerson )
+                && !entity.IsAuthorized( Authorization.ADMINISTRATE, RequestContext.CurrentPerson ) )
             {
                 error = ActionBadRequest( $"Not authorized to edit {ConnectionType.FriendlyTypeName}." );
                 return false;
@@ -669,6 +751,54 @@ namespace Rock.Blocks.Engagement
 
                 updateEntity( entity, bag );
             }
+        }
+
+        /// <summary>
+        /// Validates that type-level Connection Request attribute keys do not conflict
+        /// with request attributes already defined on any opportunity of this type.
+        /// </summary>
+        /// <param name="connectionTypeId">The connection type identifier.</param>
+        /// <param name="connectionRequestAttributes">The type-level request attributes from the client.</param>
+        /// <param name="errorMessage">The validation error message when invalid.</param>
+        /// <returns><c>true</c> if the keys are valid; otherwise <c>false</c>.</returns>
+        private bool ValidateConnectionRequestAttributeKeysAgainstOpportunities( int connectionTypeId, List<PublicEditableAttributeBag> connectionRequestAttributes, out string errorMessage )
+        {
+            errorMessage = null;
+
+            if ( connectionTypeId <= 0 || connectionRequestAttributes == null || !connectionRequestAttributes.Any() )
+            {
+                return true;
+            }
+
+            var opportunityKeys = GetOpportunityConnectionRequestAttributeKeys( connectionTypeId );
+            if ( !opportunityKeys.Any() )
+            {
+                return true;
+            }
+
+            var opportunityKeySet = new HashSet<string>( opportunityKeys, StringComparer.OrdinalIgnoreCase );
+            var conflictingKeys = connectionRequestAttributes
+                .Where( a => a.Key.IsNotNullOrWhiteSpace() && opportunityKeySet.Contains( a.Key ) )
+                .Select( a => a.Key )
+                .Distinct( StringComparer.OrdinalIgnoreCase )
+                .OrderBy( k => k )
+                .ToList();
+
+            if ( !conflictingKeys.Any() )
+            {
+                return true;
+            }
+
+            if ( conflictingKeys.Count == 1 )
+            {
+                errorMessage = $"A connection request attribute with the key '{conflictingKeys[0]}' already exists on a Connection Opportunity of this type. Please use a different key.";
+            }
+            else
+            {
+                errorMessage = $"The following connection request attribute keys already exist on a Connection Opportunity of this type: {conflictingKeys.AsDelimited( ", " )}. Please use different keys.";
+            }
+
+            return false;
         }
 
         /// <summary>
@@ -794,7 +924,8 @@ namespace Rock.Blocks.Engagement
                     Guid = activityType.Guid,
                     Name = activityType.Name,
                     IsActive = activityType.IsActive,
-                    PersonNoteCreationBehavior = activityType.PersonNoteCreationBehavior
+                    PersonNoteCreationBehavior = activityType.PersonNoteCreationBehavior ?? PersonNoteCreationBehavior.DoNotCreatePersonNote,
+                    PersonNoteType = activityType.PersonNoteType?.ToListItemBag()
                 };
 
                 bag.LoadAttributesAndValuesForPublicEdit( activityType, RequestContext.CurrentPerson, enforceSecurity: true );
@@ -862,6 +993,30 @@ namespace Rock.Blocks.Engagement
             }
 
             return bags;
+        }
+
+        /// <summary>
+        /// Gets the connection type source bags for the specified connection type.
+        /// </summary>
+        /// <param name="connectionTypeId">The connection type identifier.</param>
+        /// <returns>A list of ConnectionTypeSourceBag.</returns>
+        private List<ConnectionTypeSourceBag> GetConnectionTypeSourceBags( int connectionTypeId )
+        {
+            if ( connectionTypeId == 0 )
+            {
+                return new List<ConnectionTypeSourceBag>();
+            }
+
+            return new ConnectionTypeSourceService( RockContext ).Queryable()
+                .AsNoTracking()
+                .Where( s => s.ConnectionTypeId == connectionTypeId )
+                .OrderBy( s => s.Name )
+                .Select( s => new ConnectionTypeSourceBag
+                {
+                    Guid = s.Guid,
+                    Name = s.Name
+                } )
+                .ToList();
         }
 
         /// <summary>
@@ -969,7 +1124,13 @@ namespace Rock.Blocks.Engagement
                     CommunicationTemplateCategoryGuid = communicationSettings.CommunicationTemplateCategoryGuid,
                     SmsSnippetCategoryGuid = communicationSettings.SmsSnippetCategoryGuid
                 },
-                AIInsightsPrompt = additionalSettings.AIInsightsPrompt
+                AIInsightsPrompt = additionalSettings.AIInsightsPrompt,
+                AISummaryTrigger = additionalSettings.AISummaryTrigger ?? AISummaryTriggerMode.Manual,
+                AISummaryCacheDurationMinutes = additionalSettings.AISummaryCacheDurationMinutes ?? 5,
+                DefaultOpportunityDueDateOffsetInDays = additionalSettings.DefaultOpportunityDueDateOffsetInDays,
+                DefaultOpportunityDueSoonOffsetInDays = additionalSettings.DefaultOpportunityDueSoonOffsetInDays,
+                DefaultStatusDueDateOffsetInDays = additionalSettings.DefaultStatusDueDateOffsetInDays,
+                DefaultStatusDueSoonOffsetInDays = additionalSettings.DefaultStatusDueSoonOffsetInDays,
             };
         }
 
@@ -1382,9 +1543,21 @@ namespace Rock.Blocks.Engagement
 
             RockContext.WrapTransaction( () =>
             {
+                // ShouldRecalculateRequestDueAndDueSoonDates is [NotMapped], so EF won't
+                // detect it as a change. If it's the only thing that changed, the entity
+                // stays Unchanged and the save hook never fires — force it to Modified.
+                if ( entity.ShouldRecalculateRequestDueAndDueSoonDates
+                    && RockContext.Entry( entity ).State == System.Data.Entity.EntityState.Unchanged )
+                {
+                    RockContext.Entry( entity ).State = System.Data.Entity.EntityState.Modified;
+                }
+
                 // Save the connection type first to ensure it has an Id ( if it's a new connection type )
                 // before saving the related entities.
-                RockContext.SaveChanges();
+                if ( isNew )
+                {
+                    RockContext.SaveChanges();
+                }
 
                 // Activity Types
                 box.IfValidProperty( nameof( box.Bag.ActivityTypes ), () =>
@@ -1410,6 +1583,7 @@ namespace Rock.Blocks.Engagement
                             activityType.Name = bag.Name;
                             activityType.IsActive = bag.IsActive;
                             activityType.PersonNoteCreationBehavior = bag.PersonNoteCreationBehavior;
+                            activityType.PersonNoteTypeId = bag.PersonNoteType?.GetEntityId<NoteType>( RockContext );
                         } );
                 } );
 
@@ -1519,6 +1693,31 @@ namespace Rock.Blocks.Engagement
                                 } );
                         }
                     }
+                } );
+
+                // Sources
+                box.IfValidProperty( nameof( box.Bag.Sources ), () =>
+                {
+                    var sourceService = new ConnectionTypeSourceService( RockContext );
+                    var sourceBags = ( box.Bag.Sources ?? new List<ConnectionTypeSourceBag>() ).Where( b => b != null ).ToList();
+
+                    foreach ( var b in sourceBags.Where( b => b.Guid == Guid.Empty ) )
+                    {
+                        b.Guid = Guid.NewGuid();
+                    }
+
+                    SyncRelatedEntities(
+                        sourceService,
+                        sourceService.Queryable().Where( s => s.ConnectionTypeId == entity.Id ),
+                        sourceBags,
+                        existingKeySelector: s => s.Guid,
+                        incomingKeySelector: b => b.Guid,
+                        createNew: b => new ConnectionTypeSource { Guid = b.Guid },
+                        updateEntity: ( source, bag ) =>
+                        {
+                            source.ConnectionType = entity;
+                            source.Name = bag.Name;
+                        } );
                 } );
 
                 // Workflows
@@ -1695,6 +1894,14 @@ namespace Rock.Blocks.Engagement
                 return actionError;
             }
 
+            // Match the WebForms behavior: deleting a connection type ( and cascading to its
+            // opportunities and request activities ) requires Administrate rights on the connection
+            // type itself, not merely block-level Administrate.
+            if ( !entity.IsAuthorized( Authorization.ADMINISTRATE, RequestContext.CurrentPerson ) )
+            {
+                return ActionBadRequest( $"Not authorized to delete {ConnectionType.FriendlyTypeName}." );
+            }
+
             if ( !entityService.CanDelete( entity, out var errorMessage ) )
             {
                 return ActionBadRequest( errorMessage );
@@ -1775,6 +1982,18 @@ namespace Rock.Blocks.Engagement
             else if ( entityKey == EntityKey.ConnectionStatusAutomation )
             {
                 var service = new ConnectionStatusAutomationService( RockContext );
+                var entity = service.Get( request.EntityGuid );
+
+                if ( entity == null )
+                {
+                    return ActionOk( new CanDeleteResponseBag { CanDelete = true } );
+                }
+
+                canDelete = service.CanDelete( entity, out errorMessage );
+            }
+            else if ( entityKey == EntityKey.ConnectionTypeSource )
+            {
+                var service = new ConnectionTypeSourceService( RockContext );
                 var entity = service.Get( request.EntityGuid );
 
                 if ( entity == null )

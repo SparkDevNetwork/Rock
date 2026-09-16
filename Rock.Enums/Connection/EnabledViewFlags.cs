@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -16,6 +16,7 @@
 //
 
 using System;
+using System.ComponentModel;
 
 namespace Rock.Enums.Connection
 {
@@ -48,6 +49,7 @@ namespace Rock.Enums.Connection
         /// <summary>
         /// Enables the Snapshot view for high-level summaries.
         /// </summary>
+        [Description( "Operational Snapshot" )]
         Snapshot = 0x0008,
 
         /// <summary>

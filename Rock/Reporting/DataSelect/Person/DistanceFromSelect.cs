@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -24,6 +24,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Web.UI.WebControls;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Net;
@@ -430,7 +431,7 @@ namespace Rock.Reporting.DataSelect.Person
                 if ( selectionValues.Length >= 2 )
                 {
                     var locationPicker = controls[0] as LocationPicker;
-                    var selectedLocation = new LocationService( new RockContext() ).Get( selectionValues[0].AsGuid() );
+                    var selectedLocation = new LocationService( RockApp.Current.CreateRockContext() ).Get( selectionValues[0].AsGuid() );
                     locationPicker.SetBestPickerModeForLocation( selectedLocation );
                     locationPicker.Location = selectedLocation;
 

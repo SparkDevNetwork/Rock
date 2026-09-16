@@ -21,6 +21,7 @@
 // </copyright>
 //
 
+using Rock.Configuration;
 using Rock.Model;
 using Rock.SystemGuid;
 
@@ -35,6 +36,6 @@ namespace Rock.Rest.Controllers
         /// <summary>
         /// Initializes a new instance of the <see cref="ConnectionOpportunityCampusController"/> class.
         /// </summary>
-        public ConnectionOpportunityCampusController() : base( new Rock.Model.ConnectionOpportunityCampusService( new Rock.Data.RockContext() ) ) { } 
+        public ConnectionOpportunityCampusController() : base( new Rock.Model.ConnectionOpportunityCampusService( RockApp.Current.CreateRockContext() ) ) { } 
     }
 }

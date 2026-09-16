@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -22,6 +22,7 @@ using System.Web.UI;
 #endif
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.ViewModels.Utility;
@@ -58,9 +59,9 @@ namespace Rock.Field.Types
                 return string.Empty;
             }
 
-            using ( var rockContext = new RockContext() )
+            if ( groupGuid.HasValue )
             {
-                if ( groupGuid.HasValue )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     var groupName = new GroupService( rockContext ).GetSelect( groupGuid.Value, g => g.Name );
 
@@ -69,14 +70,14 @@ namespace Rock.Field.Types
                         return $"Group: {groupName}";
                     }
                 }
-                else if ( groupTypeGuid.HasValue )
-                {
-                    var groupTypeName = new GroupTypeService( rockContext ).GetSelect( groupTypeGuid.Value, gt => gt.Name );
+            }
+            else if ( groupTypeGuid.HasValue )
+            {
+                var groupTypeName = GroupTypeCache.Get( groupTypeGuid.Value )?.Name;
 
-                    if ( groupTypeName != null )
-                    {
-                        return $"Group type: {groupTypeName}";
-                    }
+                if ( groupTypeName != null )
+                {
+                    return $"Group type: {groupTypeName}";
                 }
             }
 
@@ -101,7 +102,7 @@ namespace Rock.Field.Types
             ViewModels.Utility.ListItemBag group = null;
             if ( groupGuid.HasValue )
             {
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     group = new GroupService( rockContext ).Get( groupGuid.Value )?.ToListItemBag();
                 }
@@ -157,6 +158,16 @@ namespace Rock.Field.Types
 
         #endregion
 
+        #region Persistence
+
+        /// <inheritdoc/>
+        public override PersistedValues GetPersistedValues( string privateValue, Dictionary<string, string> privateConfigurationValues, IDictionary<string, object> cache )
+        {
+            return GetSimpleTextPersistedValues( privateValue, privateConfigurationValues );
+        }
+
+        #endregion
+
         #region IEntityReferenceFieldType
 
         /// <inheritdoc/>
@@ -167,7 +178,7 @@ namespace Rock.Field.Types
                 return null;
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 // We only use one of these at a time when formatting the value
                 // so we don't need to reference both.
@@ -215,6 +226,22 @@ namespace Rock.Field.Types
 
         #endregion
 
+        #region Field Type Hints
+
+        /// <inheritdoc/>
+        internal override FieldTypeHints GetFieldHints( Dictionary<string, string> privateConfigurationValues )
+        {
+            // No Values. The set is unbounded or depends on other configuration, so
+            // the shape of the value and where to get one is what can be described.
+            return new FieldTypeHints
+            {
+                IsCompleteList = false,
+                ValueFormat = "Two guids joined by a pipe, in the order GroupType.Guid|Group.Guid. Both parts are required and the order is fixed.",
+                Instructions = "To find the correct value, look up the group and take its group type guid followed by its own guid."
+            };
+        }
+
+        #endregion
         #region WebForms
 #if WEBFORMS
 
@@ -330,7 +357,7 @@ namespace Rock.Field.Types
             GroupTypeGroupPicker groupTypeGroupPicker = control as GroupTypeGroupPicker;
             if ( groupTypeGroupPicker != null )
             {
-                var rockContext = new RockContext();
+                var rockContext = RockApp.Current.CreateRockContext();
 
                 Guid? groupTypeGuid = null;
                 Guid? groupGuid = null;
@@ -377,7 +404,7 @@ namespace Rock.Field.Types
                 groupTypeGroupPicker.GroupId = null;
 
                 string[] parts = ( value ?? string.Empty ).Split( '|' );
-                var rockContext = new RockContext();
+                var rockContext = RockApp.Current.CreateRockContext();
                 if ( parts.Length >= 1 )
                 {
                     var groupType = new GroupTypeService( rockContext ).Get( parts[0].AsGuid() );

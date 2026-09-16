@@ -1,4 +1,4 @@
-﻿namespace Rock.CodeGeneration.Utility
+namespace Rock.CodeGeneration.Utility
 {
     /// <summary>
     /// The type of alert message to show in <see cref="Controls.Alert"/>.

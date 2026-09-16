@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -24,8 +24,8 @@ using System.Web.UI;
 using System.Web.UI.WebControls;
 using Rock;
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
-using Rock.Field.Types;
 using Rock.Model;
 using Rock.Security;
 using Rock.Web.Cache;
@@ -230,7 +230,7 @@ namespace RockWeb.Blocks.Reporting
             base.OnInit( e );
 
             _blockTypeEntityId = EntityTypeCache.GetId<Block>().Value;
-            _block = new BlockService( new RockContext() ).Get( this.BlockId );
+            _block = new BlockService( RockApp.Current.CreateRockContext() ).Get( this.BlockId );
 
             pnlHeading.Visible = GetAttributeValue( AttributeKey.ShowBlockTitle ).AsBoolean();
             lBlockTitle.Text = GetAttributeValue( AttributeKey.BlockTitleText );
@@ -414,8 +414,7 @@ namespace RockWeb.Blocks.Reporting
             cbShowFilterButton.Checked = GetAttributeValue( AttributeKey.ShowFilterButton ).AsBoolean();
             rtbFilterButtonText.Text = GetAttributeValue( AttributeKey.FilterButtonText );
             ddlFilterButtonSize.SetValue( GetAttributeValue( AttributeKey.FilterButtonSize ).AsInteger() );
-            var ppFieldType = new PageReferenceFieldType();
-            ppFieldType.SetEditValue( ppRedirectPage, null, GetAttributeValue( AttributeKey.RedirectPage ) );
+            ppRedirectPage.SetValueFromAttributeValue( GetAttributeValue( AttributeKey.RedirectPage ) );
 
             ddlSelectionAction.SelectedValue = GetSelectAction().ConvertToInt().ToString();
 
@@ -439,8 +438,7 @@ namespace RockWeb.Blocks.Reporting
             SetAttributeValue( AttributeKey.ShowFilterButton, cbShowFilterButton.Checked.ToString() );
             SetAttributeValue( AttributeKey.FilterButtonText, rtbFilterButtonText.Text );
             SetAttributeValue( AttributeKey.FilterButtonSize, ddlFilterButtonSize.SelectedValue );
-            var ppFieldType = new PageReferenceFieldType();
-            SetAttributeValue( AttributeKey.RedirectPage, ppFieldType.GetEditValue( ppRedirectPage, null ) );
+            SetAttributeValue( AttributeKey.RedirectPage, ppRedirectPage.GetValueAsAttributeValue() );
             SetAttributeValue( AttributeKey.DoesSelectionCausePostback, ddlSelectionAction.SelectedValue );
 
             SaveAttributeValues();
@@ -460,7 +458,7 @@ namespace RockWeb.Blocks.Reporting
         /// <param name="e">The <see cref="GridReorderEventArgs"/> instance containing the event data.</param>
         protected void gFilters_GridReorder( object sender, GridReorderEventArgs e )
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var attributeService = new AttributeService( rockContext );
 
             var attributes = attributeService.Get( _blockTypeEntityId, "Id", _block.Id.ToString() )
@@ -504,7 +502,7 @@ namespace RockWeb.Blocks.Reporting
         /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
         protected void gFilters_Edit( object sender, RowEventArgs e )
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var attributeService = new AttributeService( rockContext );
             var attribute = new AttributeService( rockContext ).Get( e.RowKeyId );
 
@@ -530,7 +528,7 @@ namespace RockWeb.Blocks.Reporting
         /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
         protected void gFilters_Delete( object sender, RowEventArgs e )
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var attributeService = new AttributeService( rockContext );
 
             var attribute = attributeService.Get( e.RowKeyId );
@@ -552,7 +550,7 @@ namespace RockWeb.Blocks.Reporting
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void gFilters_Add( object sender, EventArgs e )
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var attributeService = new AttributeService( rockContext );
 
             // Reset attribute editor fields.
@@ -621,7 +619,7 @@ namespace RockWeb.Blocks.Reporting
         private void BindGrid()
         {
             IQueryable<Rock.Model.Attribute> query = null;
-            var attributeService = new AttributeService( new RockContext() );
+            var attributeService = new AttributeService( RockApp.Current.CreateRockContext() );
 
             query = attributeService.Get( _blockTypeEntityId, "Id", _block.Id.ToString() );
             gFilters.DataSource = query.OrderBy( a => a.Order ).ToList();
@@ -813,7 +811,7 @@ namespace RockWeb.Blocks.Reporting
                 }
             }
 
-            _block.LoadAttributes( new RockContext() );
+            _block.LoadAttributes( RockApp.Current.CreateRockContext() );
 
             if ( _block.Attributes != null )
             {

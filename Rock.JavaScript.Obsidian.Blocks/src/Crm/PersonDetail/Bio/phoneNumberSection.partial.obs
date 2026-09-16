@@ -1,0 +1,145 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div ref="containerRef" class="expand-section">
+        <div v-for="(phoneNumber, index) in phoneNumbers" :key="index" class="btn-phone">
+            <dl class="reversed-label">
+                <dt>
+                    <a v-if="canOriginateCall(phoneNumber)"
+                       href="#"
+                       class="originate-call text-link stretched-link"
+                       @click.prevent="onOriginateCallClick(phoneNumber)">{{ phoneNumber.formattedNumber }}</a>
+                    <a v-else-if="isTelephoneLink(phoneNumber)"
+                       :href="`tel:${phoneNumber.smsTelUri}`"
+                       class="text-link stretched-link">{{ phoneNumber.formattedNumber }}</a>
+                    <template v-else>{{ phoneNumber.formattedNumber }}</template>
+                    <i v-if="phoneNumber.isMessagingEnabled" class="ti ti-message text-muted text-sm ml-2"></i>
+                    <i v-if="phoneNumber.isMessagingOptedOut"
+                       class="ti ti-ban text-danger text-sm ml-2"
+                       data-toggle="tooltip"
+                       data-placement="top"
+                       :title="phoneNumber.messagingOptedOutTooltip ?? ''"
+                       :aria-label="phoneNumber.messagingOptedOutTooltip ?? ''"></i>
+                </dt>
+                <dd>{{ phoneNumber.phoneTypeText }}</dd>
+            </dl>
+            <span class="profile-row-icon">
+                <i class="ti ti-phone"></i>
+            </span>
+        </div>
+    </div>
+</template>
+
+<script setup lang="ts">
+    import { onMounted, PropType, ref } from "vue";
+    import { alert } from "@Obsidian/Utility/dialogs";
+    import { get } from "@Obsidian/Utility/http";
+    import { tooltip } from "@Obsidian/Utility/tooltip";
+    import { BioPhoneNumberBag } from "@Obsidian/ViewModels/Blocks/Crm/PersonDetail/Bio/bioPhoneNumberBag";
+
+    // #region Types
+
+    // The legacy PBX API serializes its response with PascalCase properties.
+    type OriginateResponse = {
+        // eslint-disable-next-line @typescript-eslint/naming-convention
+        Success?: boolean;
+
+        // eslint-disable-next-line @typescript-eslint/naming-convention
+        Message?: string | null;
+    };
+
+    // #endregion Types
+
+    const props = defineProps({
+        phoneNumbers: {
+            type: Array as PropType<BioPhoneNumberBag[]>,
+            required: true
+        },
+
+        isCallOriginationAvailable: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        isCallOriginationEnabled: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        currentPersonGuid: {
+            type: String as PropType<string | null>,
+            default: null
+        },
+
+        currentPersonFullName: {
+            type: String as PropType<string | null>,
+            default: null
+        }
+    });
+
+    // #region Values
+
+    const containerRef = ref<HTMLElement | null>(null);
+
+    // A user agent check is used instead of viewport width so that tel: links
+    // only appear on devices that can actually place a call.
+    const isMobileDevice = /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent);
+
+    // #endregion Values
+
+    // #region Event Handlers
+
+    /**
+     * Event handler for when a phone number with call origination has been
+     * clicked.
+     */
+    async function onOriginateCallClick(phoneNumber: BioPhoneNumberBag): Promise<void> {
+        const result = await get<OriginateResponse>("/api/Pbx/Originate", {
+            sourcePersonGuid: props.currentPersonGuid ?? "",
+            destinationPhone: phoneNumber.rawNumber ?? "",
+            callerId: props.currentPersonFullName ?? ""
+        });
+
+        if (!result.isSuccess || !result.data?.Success) {
+            const message = result.data?.Message ?? result.errorMessage ?? "";
+            await alert(`An error occurred while attempting to place call. ${message}`.trim());
+        }
+    }
+
+    // #endregion Event Handlers
+
+    // #region Functions
+
+    /**
+     * Determines if the phone number can originate a call through the PBX.
+     */
+    function canOriginateCall(phoneNumber: BioPhoneNumberBag): boolean {
+        return props.isCallOriginationAvailable
+            && !phoneNumber.isUnlisted
+            && !!props.currentPersonGuid
+            && !!phoneNumber.rawNumber;
+    }
+
+    /**
+     * Determines if the phone number should render as a tel: link.
+     */
+    function isTelephoneLink(phoneNumber: BioPhoneNumberBag): boolean {
+        return props.isCallOriginationEnabled
+            && isMobileDevice
+            && !phoneNumber.isUnlisted
+            && !!phoneNumber.smsTelUri;
+    }
+
+    // #endregion Functions
+
+    // #region Lifecycle Hooks
+
+    onMounted(() => {
+        if (!containerRef.value) {
+            return;
+        }
+
+        tooltip(Array.from(containerRef.value.querySelectorAll("[data-toggle=\"tooltip\"]")));
+    });
+
+    // #endregion Lifecycle Hooks
+</script>

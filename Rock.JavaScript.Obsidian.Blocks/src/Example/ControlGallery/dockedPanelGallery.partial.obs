@@ -1,0 +1,327 @@
+<template>
+    <GalleryAndResult :importCode="importCode"
+                      :exampleCode="exampleCode">
+        <DockedPanel v-model="isOpen"
+                     v-model:depth="depth"
+                     v-model:snapPoint="snapPoint"
+                     :mode="mode"
+                     :position="position"
+                     :canResize="canResize"
+                     :minDepth="minDepth"
+                     :maxDepth="maxDepth"
+                     :snapPoints="useSnapPoints ? snapPoints : []"
+                     :snapOnTap="snapOnTap"
+                     :dragHandle="dragHandle"
+                     :bodyDragHandle="bodyDragHandle"
+                     :squareAtMaxDepth="squareAtMaxDepth">
+            <template #header>
+                <div style="padding: var(--spacing-xsmall) var(--spacing-large);
+                            border-bottom: 1px solid var(--color-interface-soft);">
+                    <h3 style="margin: 0;">Example Docked Panel</h3>
+                </div>
+            </template>
+
+            <template #default>
+                <div style="padding: var(--spacing-large);">
+                    <h4>Overview</h4>
+                    <p>
+                        The <strong>DockedPanel</strong> component displays secondary or contextual content in
+                        a persistent panel that docks to the side of the screen. Its visibility and
+                        size are controlled by the component that uses it.
+                    </p>
+
+                    <h4>Props</h4>
+                    <ul>
+                        <li>
+                            <strong>v-model (modelValue)</strong> <em>Boolean</em><br />
+                            Determines whether the DockedPanel is open or closed.
+                        </li>
+                        <li>
+                            <strong>depth / minDepth / maxDepth</strong> <em>String</em><br />
+                            The panel’s size (and resize bounds) along the axis it docks to: its width for
+                            "right", its height for "bottom". A panel only resizes along that one axis, so a
+                            single depth covers both positions. Accepts any valid CSS length value and updates
+                            automatically when resizing is enabled.
+                        </li>
+                        <li>
+                            <strong>width / minWidth / maxWidth</strong> <em>String</em> — <em>deprecated</em><br />
+                            The former per-axis size props. Still honored as a fallback for depth, but new code
+                            should use depth / minDepth / maxDepth.
+                        </li>
+                        <li>
+                            <strong>canResize</strong> <em>Boolean</em><br />
+                            Enables a resize handle that allows the individual to adjust the panel’s depth.
+                        </li>
+                        <li>
+                            <strong>position</strong> <em>"right" | "bottom"</em><br />
+                            The edge the panel docks to. "right" slides in from the side; "bottom" slides up from
+                            the bottom like a mobile sheet. The depth prop controls the size along whichever axis
+                            it docks to.
+                        </li>
+                        <li>
+                            <strong>dragHandle</strong> <em>"auto" | "header"</em><br />
+                            Which surface resizes the panel. "auto" shows a thin edge handle; "header" makes the
+                            whole header the grab surface, the way a mobile bottom sheet is dragged by its header.
+                        </li>
+                        <li>
+                            <strong>bodyDragHandle</strong> <em>Boolean</em><br />
+                            When true (with canResize), the body content is also a drag surface.
+                        </li>
+                        <li>
+                            <strong>snapPoints / snapPoint / snapOnTap</strong><br />
+                            Stops the panel snaps between instead of resizing freely. A number is a fraction of the
+                            available extent, "content" fits the content, and a pixel string is an absolute size.
+                            snapPoint is the two-way-bound active index (drag or tap updates it, setting it moves
+                            the panel); snapOnTap toggles between the first and last stop on a tap.
+                        </li>
+                        <li>
+                            <strong>squareAtMaxDepth</strong> <em>Boolean</em><br />
+                            For a bottom sheet with snap points, straightens the top corners as it approaches its
+                            largest stop: full radius up to the second-to-last stop, interpolating to fully square
+                            at the max stop. No effect on the right dock or without snap points.
+                        </li>
+                    </ul>
+
+                    <h4>Emitted Events</h4>
+                    <ul>
+                        <li>
+                            <strong>update:modelValue</strong><br />
+                            Emitted when the open or close state of the DockedPanel changes.
+                        </li>
+                        <li>
+                            <strong>update:depth</strong><br />
+                            Emitted when the DockedPanel is resized by the individual. (update:width is also
+                            emitted for the deprecated width v-model.)
+                        </li>
+                    </ul>
+
+                    <h4>Slots</h4>
+                    <ul>
+                        <li>
+                            <strong>header</strong><br />
+                            (Optional) Displays content at the top of the DockedPanel. This area stays fixed while the main content scrolls.
+                        </li>
+                        <li>
+                            <strong>default</strong><br />
+                            (Required) The main content area of the DockedPanel. This area scrolls vertically when the content exceeds the available height or width.
+                        </li>
+                        <li>
+                            <strong>footer</strong><br />
+                            (Optional) Displays content at the bottom of the DockedPanel, typically used for actions. This area stays fixed while the main content scrolls.
+                        </li>
+                    </ul>
+
+                    <h4>Behavior</h4>
+                    <ul>
+                        <li>
+                            The DockedPanel is a controlled component, meaning its open and close state must be managed externally.
+                        </li>
+                        <li>
+                            It does not close automatically in response to interaction.
+                        </li>
+                        <li>
+                            The DockedPanel is non-modal and does not block interaction with the main page content.
+                        </li>
+                        <li>
+                            When resizing is enabled, any depth changes are emitted and must be handled by the parent component.
+                        </li>
+                        <li>
+                            On a resizable bottom sheet with snap points, the body supports <strong>pull-to-resize</strong>
+                            by touch: dragging down while the list is scrolled to the top collapses the sheet to a
+                            smaller stop, and dragging up while it is scrolled to the bottom expands it to a larger
+                            stop. Overscroll is contained so the list does not trigger the browser's pull-to-refresh.
+                        </li>
+                    </ul>
+
+                    <h4>Usage Guidelines</h4>
+                    <ul>
+                        <li>
+                            Include a clear action, such as a Close button, to update the bound <code>v-model</code> value.
+                        </li>
+                        <li>
+                            Bind the <code>depth</code> prop when <code>canResize</code> is enabled so that resize changes persist.
+                        </li>
+                        <li>
+                            Use the DockedPanel for secondary or contextual content that benefits from remaining visible alongside the primary content.
+                        </li>
+                        <li>
+                            If you need to block interaction or dismiss automatically, consider using a modal instead.
+                        </li>
+                    </ul>
+                </div>
+            </template>
+
+            <template #footer>
+                <div style="padding: var(--spacing-xsmall) var(--spacing-large);
+                            background-color: var(--color-interface-softer);
+                            border-top: 1px solid var(--color-interface-soft);
+                            display: flex;
+                            flex-direction: row;
+                            justify-content: flex-end;
+                            align-items: center;
+                            gap: var(--spacing-xsmall);">
+                    <RockButton btnType="default"
+                                @click="isOpen = false">
+                        Close
+                    </RockButton>
+                </div>
+            </template>
+        </DockedPanel>
+
+        <RockButton @click="isOpen = !isOpen">Toggle Docked Panel</RockButton>
+
+        <template #settings>
+            <div class="automatic-layout">
+                <Switch v-model="canResize"
+                        label="Can Resize?"
+                        help="When enabled, the user can resize the docked panel by dragging the resize handle." />
+
+                <DropDownList v-model="dragHandle"
+                              v-if="canResize"
+                              label="Drag Handle"
+                              help="'Header' makes the whole header the grab surface, the way a mobile bottom sheet is dragged by its header. 'Auto' uses a thin edge resize handle."
+                              :items="dragHandleItems" />
+
+                <Switch v-model="bodyDragHandle"
+                        v-if="canResize"
+                        label="Body Drag Handle?"
+                        help="When enabled (with Can Resize), the body content is also a drag surface, so a content-heavy panel can be resized by dragging anywhere on its content." />
+
+                <DropDownList v-model="mode"
+                              label="Mode"
+                              help="In 'float' mode, the panel will overlay existing content. In 'push' mode, the panel will push existing content to make room for itself. Push reserves horizontal space for the right location and vertical space for the bottom location."
+                              :items="modeItems" />
+
+                <DropDownList v-model="position"
+                              label="Location"
+                              help="Which edge the panel docks to. 'Right' slides in from the side; 'Bottom' slides up from the bottom like a mobile sheet. The depth setting controls its size along that axis."
+                              :items="positionItems" />
+
+                <TextBox v-model="depth"
+                         label="Depth"
+                         help="The panel's size along the axis it docks to (width for Right, height for Bottom). Must be a valid CSS length value. Ignored while snap points are on." />
+
+                <TextBox v-model="minDepth"
+                         label="Min Depth"
+                         help="The smallest the panel can be dragged along its docking axis. Must be a valid CSS length value." />
+
+                <TextBox v-model="maxDepth"
+                         label="Max Depth"
+                         help="The largest the panel can be dragged along its docking axis. Must be a valid CSS length value." />
+            </div>
+
+            <div class="automatic-layout">
+                <Switch v-model="useSnapPoints"
+                        label="Simulate Snap Points?"
+                        help="When enabled, the panel snaps between the stops in snapPoints (this demo uses content/half/full) instead of resizing freely. Requires Can Resize." />
+
+                <Switch v-model="snapOnTap"
+                        v-if="useSnapPoints"
+                        label="Snap On Tap?"
+                        help="When enabled, tapping the resize handle without dragging toggles between the first and last stop." />
+
+                <NumberBox v-model="snapPoint"
+                           v-if="useSnapPoints"
+                           label="Active Snap Point"
+                           help="Index into snapPoints of the current stop. Two-way bound; drag or tap updates it, and setting it moves the panel." />
+
+                <Switch v-model="squareAtMaxDepth"
+                        v-if="useSnapPoints && position === 'bottom'"
+                        label="Square At Max Depth?"
+                        help="When enabled, a bottom sheet's rounded top corners straighten as it approaches its largest stop, becoming fully square at the max stop (like a sheet turning into a full-screen surface)." />
+            </div>
+        </template>
+    </GalleryAndResult>
+</template>
+
+<style scoped>
+.settings {
+    max-height: 350px;
+    overflow: auto;
+}
+</style>
+
+<script setup lang="ts">
+    import { computed, ref } from "vue";
+    import GalleryAndResult from "./common/galleryAndResult.partial.obs";
+    import { getSfcControlImportPath } from "./common/utils.partial";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import DockedPanel from "@Obsidian/Controls/Internal/dockedPanel.obs";
+    import NumberBox from "@Obsidian/Controls/numberBox.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import Switch from "@Obsidian/Controls/switch.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+
+    const isOpen = ref<boolean>(false);
+    const mode = ref<"float" | "push">("float");
+    const position = ref<"right" | "bottom">("right");
+    const depth = ref<string>("400px");
+    const minDepth = ref<string>("250px");
+    const maxDepth = ref<string>("100%");
+    const canResize = ref<boolean>(false);
+    const dragHandle = ref<"auto" | "header">("auto");
+    const bodyDragHandle = ref<boolean>(false);
+    const squareAtMaxDepth = ref<boolean>(false);
+    const useSnapPoints = ref<boolean>(false);
+    const snapOnTap = ref<boolean>(false);
+    const snapPoint = ref<number>(0);
+
+    // Demo stops: collapse to the header, half of the available extent, then full.
+    const snapPoints = computed((): (number | string)[] => {
+        return position.value === "bottom" ? ["content", 0.5, 1] : ["300px", 0.5, 0.9];
+    });
+
+    const modeItems: ListItemBag[] = [
+        { text: "Float", value: "float" },
+        { text: "Push", value: "push" }
+    ];
+
+    const positionItems: ListItemBag[] = [
+        { text: "Right", value: "right" },
+        { text: "Bottom", value: "bottom" }
+    ];
+
+    const dragHandleItems: ListItemBag[] = [
+        { text: "Auto (edge handle)", value: "auto" },
+        { text: "Header", value: "header" }
+    ];
+
+    const importCode = getSfcControlImportPath("dockedPanel");
+    const exampleCode = computed((): string => {
+        const sizeAttrs = `depth="${depth.value}" minDepth="${minDepth.value}" maxDepth="${maxDepth.value}"`;
+        const handleAttrs = `${dragHandle.value === "header" ? "dragHandle=\"header\" " : ""}${bodyDragHandle.value ? "bodyDragHandle " : ""}${squareAtMaxDepth.value ? "squareAtMaxDepth " : ""}`;
+
+        return `<!--
+    The DockedPanel provides layout only.
+    No padding, margins, or visual styling are applied automatically.
+    Consumers are responsible for styling header, body, and footer content.
+-->
+<DockedPanel v-model="isOpen" mode="${mode.value}" position="${position.value}" ${canResize.value ? "canResize " : ""}${handleAttrs}${sizeAttrs}>
+    <template #header>
+        <div style="padding: 16px; border-bottom: 1px solid #e0e0e0;">
+            <h3 style="margin: 0;">DockedPanel Title</h3>
+        </div>
+    </template>
+
+    <template #default>
+        <div style="padding: 16px;">
+            <p>
+                DockedPanel content goes here.
+                This area scrolls when content exceeds the available height.
+            </p>
+        </div>
+    </template>
+
+    <template #footer>
+        <div style="padding: 16px; border-top: 1px solid #e0e0e0; text-align: right;">
+            <RockButton btnType="default"
+                        @click="isOpen = false">
+                Close
+            </RockButton>
+        </div>
+    </template>
+</DockedPanel>`;
+    });
+
+</script>

@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -17,6 +17,8 @@
 using System;
 using System.Linq;
 using System.Web;
+
+using Rock.Configuration;
 using Rock.Data;
 
 namespace Rock.Model
@@ -88,7 +90,7 @@ namespace Rock.Model
                 }
 
                 // NOTE: Session can be null (probably because it is a REST call). Or maybe it hasn't been set in Session yet So, we'll get it from the Database;
-                var rockContext = new RockContext();
+                var rockContext = RockApp.Current.CreateRockContext();
 
                 var personAliasQuery = new PersonAliasService( rockContext ).Queryable().Where( a => a.PersonId == currentPerson.Id );
 

@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -24,12 +24,15 @@ using System.Web;
 using System.Web.Compilation;
 using System.Web.Routing;
 
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 using Rock.Bus.Message;
 using Rock.Cms.Utm;
+using Rock.Configuration;
 using Rock.Logging;
 using Rock.Model;
+using Rock.Net;
 using Rock.Tasks;
 using Rock.Utility;
 using Rock.Web.Cache;
@@ -178,7 +181,7 @@ namespace Rock.Web
 
                             if ( shortlink.IsNotNullOrWhiteSpace() )
                             {
-                                using ( var rockContext = new Rock.Data.RockContext() )
+                                using ( var rockContext = RockApp.Current.CreateRockContext() )
                                 {
                                     var pageShortLink = new PageShortLinkService( rockContext ).GetByToken( shortlink, site.Id );
                                     var pageShortLinkCache = pageShortLink != null ? PageShortLinkCache.Get( pageShortLink.Id ) : null;
@@ -202,13 +205,16 @@ namespace Rock.Web
                                                 }
                                             }
 
-                                            var (_, urlWithUtm, purposeKey) = pageShortLinkCache.GetCurrentUrlData( rockContext );
+                                            var inboundRequestUrl = routeHttpRequest.Url?.OriginalString;
+                                            var (_, urlWithUtm, purposeKey) = pageShortLinkCache.GetCurrentUrlData( rockContext, inboundRequestUrl );
 
-                                            // Dummy interaction to get UTM source value from the Request/ShortLink url.
+                                            // A dummy interaction is used to resolve the UTM defined values for the
+                                            // redirect URL. The `GetCurrentUrlData()` call above has already applied
+                                            // the precedence of UTM values (configured vs inbound vs baked in), so we
+                                            // can just do a single pass of resolving the UTM values from the URL for
+                                            // logging the interaction with the correct UTM values.
                                             var interactionUtm = new Interaction();
 
-                                            // First, set the UTM field values associated with the shortlink;
-                                            // then overwrite with any values that are specified in the original request.
                                             interactionUtm.SetUTMFieldsFromURL( urlWithUtm );
 
                                             var addShortLinkInteractionMsg = new AddShortLinkInteraction.Message
@@ -224,6 +230,8 @@ namespace Rock.Web
                                                 UtmSource = UtmHelper.GetUtmSourceNameFromDefinedValueOrText( interactionUtm.SourceValueId, interactionUtm.Source ),
                                                 UtmMedium = UtmHelper.GetUtmMediumNameFromDefinedValueOrText( interactionUtm.MediumValueId, interactionUtm.Medium ),
                                                 UtmCampaign = UtmHelper.GetUtmCampaignNameFromDefinedValueOrText( interactionUtm.CampaignValueId, interactionUtm.Campaign ),
+                                                UtmTerm = interactionUtm.Term,
+                                                UtmContent = interactionUtm.Content,
                                                 PurposeKey = purposeKey
                                             };
 
@@ -264,7 +272,7 @@ namespace Rock.Web
                             // get the device type
                             string u = routeHttpRequest.UserAgent;
 
-                            var clientType = InteractionDeviceType.GetClientType( u );
+                            var clientType = RockApp.Current.GetRequiredService<IUserAgentParser>().Parse( u ).ClientType;
 
                             bool redirect = false;
 
@@ -494,7 +502,7 @@ namespace Rock.Web
         {
             RouteCollection routes = RouteTable.Routes;
 
-            PageRouteService pageRouteService = new PageRouteService( new Rock.Data.RockContext() );
+            PageRouteService pageRouteService = new PageRouteService( RockApp.Current.CreateRockContext() );
 
             var routesToInsert = new RouteCollection();
 
@@ -536,7 +544,7 @@ namespace Rock.Web
         public static void RemoveRockPageRoutes()
         {
             RouteCollection routes = RouteTable.Routes;
-            PageRouteService pageRouteService = new PageRouteService( new Rock.Data.RockContext() );
+            PageRouteService pageRouteService = new PageRouteService( RockApp.Current.CreateRockContext() );
             var pageRoutes = pageRouteService.Queryable().ToList();
 
             // First we have to remove the routes stored in the DB without removing the ODataService routes because we can't reload them.
@@ -612,7 +620,7 @@ namespace Rock.Web
                 string routeValue = routeRequestContext.RouteData.Values.Values.FirstOrDefault().ToStringSafe();
 
                 // See if the route value string matches a shortlink for this site.
-                var pageShortLink = new PageShortLinkService( new Rock.Data.RockContext() ).GetByToken( routeValue, site.Id );
+                var pageShortLink = new PageShortLinkService( RockApp.Current.CreateRockContext() ).GetByToken( routeValue, site.Id );
                 if ( pageShortLink != null && pageShortLink.SiteId == site.Id )
                 {
                     // The route entered matches a shortlink for the site, so lets NOT set the page ID for a catch-all route and let the shortlink logic take over.

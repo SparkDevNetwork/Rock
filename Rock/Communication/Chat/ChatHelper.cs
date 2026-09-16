@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -340,7 +340,7 @@ namespace Rock.Communication.Chat
             }
             else
             {
-                RockContext = new RockContext();
+                RockContext = RockApp.Current.CreateRockContext();
                 ShouldDisposeRockContext = true;
             }
 
@@ -1317,6 +1317,22 @@ namespace Rock.Communication.Chat
                             continue;
                         }
 
+                        // Defensively guard against multiple Rock groups resolving to the same Chat Channel key.
+                        // A Chat Channel key must map to exactly one group; a duplicate indicates corrupt data 
+                        // (for example, groups incorrectly created via direct SQL, etc.). Without this guard,
+                        // the Dictionary.Add below would throw "An item with the same key has already been added"
+                        // and abort the entire sync for every group. Instead, record the collision to the
+                        // Exception Log so an admin can correct the offending group, then skip this duplicate and keep
+                        // syncing the remaining groups.
+                        if ( groupIdByQueryableKeys.TryGetValue( channel.QueryableKey, out var existingGroupId ) )
+                        {
+                            var duplicateChatChannelKeyException = new Exception( $"Skipped syncing Group '{rockChatGroup.Name}' (Id: {rockChatGroup.GroupId}) to the external chat system because its Chat Channel key '{channel.QueryableKey}' is already used by Group Id: {existingGroupId}. A Chat Channel key must be unique to a single group; clear the ChatChannelKey on the duplicate group so it can receive its own channel." );
+
+                            ExceptionLogService.LogException( duplicateChatChannelKeyException );
+
+                            continue;
+                        }
+
                         groupIdByQueryableKeys.Add( channel.QueryableKey, rockChatGroup.GroupId );
 
                         // Does it already exist in the external chat system?
@@ -2258,6 +2274,7 @@ namespace Rock.Communication.Chat
                         var membersToCreate = new List<ChatChannelMember>();
                         var membersToUpdate = new Dictionary<ChatChannelMember, ChatChannelMember>();
                         var membersToDelete = new List<string>();
+                        var membersToEnforcePushPreferences = new List<ChatChannelMember>();
 
                         foreach ( var chatChannelMember in command.MembersToCreateOrUpdate )
                         {
@@ -2276,8 +2293,12 @@ namespace Rock.Communication.Chat
                                 }
                                 else
                                 {
-                                    // Add them to the results as an already up-to-date member.
+                                    // Add them to the results as an already up-to-date member. The external chat
+                                    // system's member queries don't return push notification preferences, so we
+                                    // can't detect drift for these otherwise-unchanged members; always re-enforce
+                                    // Rock's push notification mode for them below.
                                     AddMemberToResult( existingMember.Key, ChatSyncType.Skip );
+                                    membersToEnforcePushPreferences.Add( chatChannelMember );
                                 }
                             }
                             else
@@ -2344,6 +2365,18 @@ namespace Rock.Communication.Chat
                             if ( updatedResult?.HasException == true )
                             {
                                 crudExceptions.Add( updatedResult.Exception );
+                            }
+                        }
+
+                        if ( membersToEnforcePushPreferences.Any() )
+                        {
+                            // Created and updated members already had their push notification preferences set by the
+                            // create and update calls above.
+                            var pushPreferenceResult = await ChatProvider.UpdateChatChannelMemberPushPreferencesAsync( membersToEnforcePushPreferences );
+
+                            if ( pushPreferenceResult?.HasException == true )
+                            {
+                                crudExceptions.Add( pushPreferenceResult.Exception );
                             }
                         }
 

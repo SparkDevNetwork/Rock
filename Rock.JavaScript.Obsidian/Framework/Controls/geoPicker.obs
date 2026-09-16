@@ -45,7 +45,7 @@
 </template>
 
 <script setup lang="ts">
-    import { PropType, ref, watch, onBeforeMount } from "vue";
+    import { PropType, ref, watch, onBeforeMount, onBeforeUnmount } from "vue";
     import { standardRockFormFieldProps, useStandardRockFormFieldProps, useVModelPassthrough } from "@Obsidian/Utility/component";
     import ContentDropDownPicker from "@Obsidian/Controls/contentDropDownPicker.obs";
     import GeoPickerMap from "@Obsidian/Controls/geoPickerMap.obs";
@@ -166,6 +166,32 @@
         if (!internalShowPopup.value) {
             isFullscreen.value = false;
         }
+    });
+
+    // While in fullscreen, pressing Escape should drop back to the normal
+    // popup size without closing the picker. The picker uses a CSS-based
+    // fullscreen (no browser fullscreen API), so the browser does not
+    // emit a fullscreen-exit event for us; we listen for the key directly.
+    function handleFullscreenEscape(e: KeyboardEvent): void {
+        if (e.key === "Escape" && isFullscreen.value) {
+            isFullscreen.value = false;
+            // Stop the event from bubbling up to handlers that would close
+            // the whole picker (e.g., a top-level dropdown dismiss).
+            e.stopPropagation();
+        }
+    }
+
+    watch(isFullscreen, (val) => {
+        if (val) {
+            window.addEventListener("keydown", handleFullscreenEscape, true);
+        }
+        else {
+            window.removeEventListener("keydown", handleFullscreenEscape, true);
+        }
+    });
+
+    onBeforeUnmount(() => {
+        window.removeEventListener("keydown", handleFullscreenEscape, true);
     });
 
     watch(() => props.modelValue, () => {

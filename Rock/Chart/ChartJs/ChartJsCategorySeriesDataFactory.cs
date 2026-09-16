@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+
 using Newtonsoft.Json;
 
 namespace Rock.Chart
@@ -353,22 +354,6 @@ namespace Rock.Chart
             }
 
             return maxValue;
-        }
-
-        #endregion
-
-        #region Obsolete
-
-        /// <summary>
-        /// Get the chart configuration in JSON format that is compatible for use with the Chart.js component.
-        /// </summary>
-        /// <param name="args">The arguments.</param>
-        /// <returns></returns>
-        [Obsolete( "Use the GetJson(ChartJsCategorySeriesDataFactory.GetJsonArgs args) method instead." )]
-        [RockObsolete( "1.14" )]
-        public string GetChartDataJson( ChartJsDataFactory.GetJsonArgs args )
-        {
-            return GetJson( ( ChartJsCategorySeriesDataFactory.GetJsonArgs ) args );
         }
 
         #endregion

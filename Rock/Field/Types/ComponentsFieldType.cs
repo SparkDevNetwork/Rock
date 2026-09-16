@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -93,6 +93,24 @@ namespace Rock.Field.Types
             {
                 return ComparisonHelper.ContainsFilterComparisonTypes;
             }
+        }
+
+        #endregion
+
+        #region Value Hinting
+
+        /// <inheritdoc/>
+        internal override FieldTypeHints GetFieldHints( Dictionary<string, string> privateConfigurationValues )
+        {
+            // No Values. Which components are available comes from the container named
+            // in configuration and from what is registered at runtime, so the set is
+            // not something this can enumerate reliably.
+            return new FieldTypeHints
+            {
+                IsCompleteList = false,
+                ValueFormat = "One or more guids identifying rows in the EntityType table, separated by commas, each being the entity type of a component. Not the component's name or class name, and not an id or idKey.",
+                Instructions = "To find the correct values, read the entity types for the components of the container this setting is configured against and take the guid of each one you want."
+            };
         }
 
         #endregion

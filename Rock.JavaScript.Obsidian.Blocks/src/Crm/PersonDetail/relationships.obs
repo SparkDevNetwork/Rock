@@ -1,0 +1,170 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div v-if="config.isVisible" class="card card-profile">
+        <div class="card-header group-hover">
+            <span class="card-title">{{ config.title }}</span>
+            <div v-if="config.canEdit" class="panel-labels group-hover-item group-hover-show">
+                <button type="button" class="btn btn-link btn-xs" title="Add Relationship" @click.prevent="onAddClick">
+                    <i class="ti ti-plus"></i>
+                </button>
+            </div>
+        </div>
+
+        <NotificationBox v-if="config.accessWarningMessage" alertType="info">
+            {{ config.accessWarningMessage }}
+        </NotificationBox>
+
+        <template v-else>
+            <div v-if="relationships.length > 0" class="horizontal-dl horizontal-dl-striped">
+                <dl v-for="(relationship, index) in relationships" :key="relationship.idKey ?? index" class="group-hover">
+                    <dt>
+                        <PersonLink :personId="relationship.personId" :personName="relationship.person?.text ?? ''" />
+                        <span v-if="relationship.isDeceased" class="text-danger"> (Deceased)</span>
+                    </dt>
+                    <dd class="group-hover-item group-hover-hide">{{ config.isRoleNameVisible ? relationship.roleName : "" }}</dd>
+                    <div v-if="config.canEdit" class="group-hover-item group-hover-show group-hover-0-show">
+                        <RockButton :btnType="BtnType.Default" :btnSize="BtnSize.ExtraSmall" isSquare @click="onEditClick(relationship)">
+                            <i class="ti ti-pencil"></i>
+                        </RockButton>
+                        <RockButton :btnType="BtnType.Danger" :btnSize="BtnSize.ExtraSmall" isSquare class="ml-1" @click="onRemoveClick(relationship)">
+                            <i class="ti ti-x"></i>
+                        </RockButton>
+                    </div>
+                </dl>
+            </div>
+            <div v-else class="card-body"></div>
+        </template>
+
+        <Modal v-model="isModalOpen" :title="modalTitle" saveText="Save" @save="onSaveClick">
+            <GroupRolePicker v-model="selectedRole"
+                             label="Relationship Type"
+                             rules="required"
+                             :groupTypeGuid="config.groupTypeGuid ?? null"
+                             :excludeGroupRoles="excludedGroupRoles" />
+
+            <PersonPicker v-model="selectedPerson"
+                          label="Person"
+                          rules="required" />
+        </Modal>
+    </div>
+</template>
+
+<script setup lang="ts">
+    import { computed, ref } from "vue";
+    import GroupRolePicker from "@Obsidian/Controls/groupRolePicker.obs";
+    import Modal from "@Obsidian/Controls/modal.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import PersonLink from "@Obsidian/Controls/personLink.obs";
+    import PersonPicker from "@Obsidian/Controls/personPicker.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
+    import { BtnType } from "@Obsidian/Enums/Controls/btnType";
+    import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
+    import { alert, confirm } from "@Obsidian/Utility/dialogs";
+    import { Guid } from "@Obsidian/Types";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { RelationshipBag } from "@Obsidian/ViewModels/Blocks/Crm/PersonDetail/Relationships/relationshipBag";
+    import { RelationshipsOptionsBag } from "@Obsidian/ViewModels/Blocks/Crm/PersonDetail/Relationships/relationshipsOptionsBag";
+    import { SaveRelationshipRequestBag } from "@Obsidian/ViewModels/Blocks/Crm/PersonDetail/Relationships/saveRelationshipRequestBag";
+
+    // #region Values
+
+    const config = useConfigurationValues<RelationshipsOptionsBag>();
+    const invokeBlockAction = useInvokeBlockAction();
+
+    const relationships = ref<RelationshipBag[]>(config.relationships ?? []);
+
+    const isModalOpen = ref(false);
+    const editingGroupMemberIdKey = ref<string | null>(null);
+    const selectedPerson = ref<ListItemBag | undefined>(undefined);
+    const selectedRole = ref<ListItemBag | ListItemBag[] | null>(null);
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    const modalTitle = computed((): string => {
+        return editingGroupMemberIdKey.value ? "Edit Relationship" : "Add Relationship";
+    });
+
+    const excludedGroupRoles = computed((): Guid[] => {
+        return config.ownerRoleGuid ? [config.ownerRoleGuid] : [];
+    });
+
+    // #endregion Computed Values
+
+    // #region Event Handlers
+
+    /**
+     * Opens the modal to add a new relationship.
+     */
+    function onAddClick(): void {
+        editingGroupMemberIdKey.value = null;
+        selectedPerson.value = undefined;
+        selectedRole.value = null;
+        isModalOpen.value = true;
+    }
+
+    /**
+     * Opens the modal to edit an existing relationship.
+     *
+     * @param relationship The relationship to edit.
+     */
+    function onEditClick(relationship: RelationshipBag): void {
+        editingGroupMemberIdKey.value = relationship.idKey ?? null;
+        selectedPerson.value = relationship.person ?? undefined;
+        selectedRole.value = relationship.role ?? null;
+        isModalOpen.value = true;
+    }
+
+    /**
+     * Removes a relationship after the individual confirms it.
+     *
+     * @param relationship The relationship to remove.
+     */
+    async function onRemoveClick(relationship: RelationshipBag): Promise<void> {
+        const isConfirmed = await confirm("Are you sure you want to remove this relationship?");
+
+        if (!isConfirmed) {
+            return;
+        }
+
+        const result = await invokeBlockAction<RelationshipBag[]>("DeleteRelationship", {
+            groupMemberIdKey: relationship.idKey
+        });
+
+        if (result.isSuccess && result.data) {
+            relationships.value = result.data;
+        }
+        else {
+            await alert(result.errorMessage ?? "Unable to remove the relationship.");
+        }
+    }
+
+    /**
+     * Saves the relationship being added or edited in the modal.
+     */
+    async function onSaveClick(): Promise<void> {
+        const role = Array.isArray(selectedRole.value) ? (selectedRole.value[0] ?? null) : selectedRole.value;
+
+        const bag: SaveRelationshipRequestBag = {
+            groupMemberIdKey: editingGroupMemberIdKey.value,
+            person: selectedPerson.value ?? null,
+            role: role
+        };
+
+        const result = await invokeBlockAction<RelationshipBag[]>("SaveRelationship", { bag });
+
+        if (result.isSuccess && result.data) {
+            relationships.value = result.data;
+            isModalOpen.value = false;
+        }
+        else {
+            await alert(result.errorMessage ?? "Unable to save the relationship.");
+        }
+    }
+
+    // #endregion Event Handlers
+
+    onConfigurationValuesChanged(useReloadBlock());
+</script>

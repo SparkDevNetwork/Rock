@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -102,6 +102,7 @@ namespace Rock.Blocks.Group
 
             box.NavigationUrls = GetBoxNavigationUrls();
             box.Options = GetBoxOptions();
+            box.QualifiedAttributeProperties = AttributeCache.GetAttributeQualifiedColumns<GroupType>();
 
             return box;
         }
@@ -288,14 +289,19 @@ namespace Rock.Blocks.Group
 
             var roleBags = GetGroupTypeRoleBags( entity.Id );
 
-            // If this is a new group type being created, we set the default role to
-            // the default "member" role that was seeded within GetGroupTypeRoleBags().
-            var defaultGroupRole = entity.DefaultGroupRole.ToListItemBag()
-                ?? new ListItemBag
+            // A new group type has no stored default role, so fall back to the seeded
+            // "Member" role from GetGroupTypeRoleBags(). An existing group type can have
+            // no roles at all, in which case there is no default to assign.
+            var defaultGroupRole = entity.DefaultGroupRole.ToListItemBag();
+
+            if ( defaultGroupRole == null && roleBags.Count > 0 )
+            {
+                defaultGroupRole = new ListItemBag
                 {
                     Value = roleBags[0].Guid.ToString(),
                     Text = roleBags[0].Name
                 };
+            }
 
             return new GroupTypeBag
             {
@@ -307,6 +313,7 @@ namespace Rock.Blocks.Group
                 AllowGroupSpecificRecordSource = entity.AllowGroupSpecificRecordSource,
                 AllowGroupSync = entity.AllowGroupSync,
                 AllowMultipleLocations = entity.AllowMultipleLocations,
+                IsMeetingStyleEnabled = entity.IsMeetingStyleEnabled,
                 AllowSpecificGroupMemberAttributes = entity.AllowSpecificGroupMemberAttributes,
                 AllowSpecificGroupMemberWorkflows = entity.AllowSpecificGroupMemberWorkflows,
                 AttendanceCountsAsWeekendService = entity.AttendanceCountsAsWeekendService,
@@ -393,6 +400,13 @@ namespace Rock.Blocks.Group
 
             var bag = GetCommonEntityBag( entity );
 
+            if ( entity.Attributes == null )
+            {
+                entity.LoadAttributes( RockContext );
+            }
+
+            bag.LoadAttributesAndValuesForPublicView( entity, RequestContext.CurrentPerson, enforceSecurity: true );
+
             return bag;
         }
 
@@ -446,6 +460,9 @@ namespace Rock.Blocks.Group
 
             box.IfValidProperty( nameof( box.Bag.AllowMultipleLocations ),
                 () => entity.AllowMultipleLocations = box.Bag.AllowMultipleLocations );
+
+            box.IfValidProperty( nameof( box.Bag.IsMeetingStyleEnabled ),
+                () => entity.IsMeetingStyleEnabled = box.Bag.IsMeetingStyleEnabled );
 
             box.IfValidProperty( nameof( box.Bag.AllowSpecificGroupMemberAttributes ),
                 () => entity.AllowSpecificGroupMemberAttributes = box.Bag.AllowSpecificGroupMemberAttributes );
@@ -1076,7 +1093,6 @@ namespace Rock.Blocks.Group
                 var bag = new GroupTypeGroupMemberWorkflowTriggerBag
                 {
                     Guid = t.Guid,
-                    Order = t.Order,
                     Name = t.Name,
                     IsActive = t.IsActive,
                     WorkflowType = t.WorkflowType?.ToListItemBag(),
@@ -1233,7 +1249,6 @@ namespace Rock.Blocks.Group
 
                 if ( existing.Name != bag.Name ||
                      existing.IsActive != bag.IsActive ||
-                     existing.Order != bag.Order ||
                      existing.WorkflowTypeId != ( bag.WorkflowType?.GetEntityId<WorkflowType>( RockContext ) ?? 0 ) ||
                      existing.TriggerType != bag.TriggerType ||
                      existing.TypeQualifier != BuildGroupMemberWorkflowTriggerTypeQualifier( bag ) )
@@ -1663,7 +1678,6 @@ namespace Rock.Blocks.Group
                                 trigger.GroupType = entity;
                                 trigger.Name = bag.Name;
                                 trigger.IsActive = bag.IsActive;
-                                trigger.Order = bag.Order;
                                 trigger.WorkflowTypeId = bag.WorkflowType?.GetEntityId<WorkflowType>( RockContext ) ?? 0;
                                 trigger.TriggerType = bag.TriggerType;
                                 trigger.TypeQualifier = BuildGroupMemberWorkflowTriggerTypeQualifier( bag );
@@ -1952,7 +1966,7 @@ namespace Rock.Blocks.Group
 
                         // Inherited Group attributes
                         responseBag.InheritedGroupAttributes.AddRange(
-                            attributeService.GetByEntityTypeId( groupEntityTypeId, true )
+                            attributeService.GetByEntityTypeId( groupEntityTypeId, false )
                                 .Where( a =>
                                     a.EntityTypeQualifierColumn.Equals( "GroupTypeId", StringComparison.OrdinalIgnoreCase ) &&
                                     a.EntityTypeQualifierValue.Equals( qualifierValue ) )
@@ -1971,7 +1985,7 @@ namespace Rock.Blocks.Group
 
                         // Inherited GroupMember attributes
                         responseBag.InheritedGroupMemberAttributes.AddRange(
-                            attributeService.GetByEntityTypeId( groupMemberEntityTypeId, true )
+                            attributeService.GetByEntityTypeId( groupMemberEntityTypeId, false )
                                 .Where( a =>
                                     a.EntityTypeQualifierColumn.Equals( "GroupTypeId", StringComparison.OrdinalIgnoreCase ) &&
                                     a.EntityTypeQualifierValue.Equals( qualifierValue ) )
@@ -1990,7 +2004,7 @@ namespace Rock.Blocks.Group
 
                         // Inherited GroupType attributes
                         responseBag.InheritedGroupTypeAttributes.AddRange(
-                            attributeService.GetByEntityTypeId( groupTypeEntityTypeId, true )
+                            attributeService.GetByEntityTypeId( groupTypeEntityTypeId, false )
                                 .Where( a =>
                                     a.EntityTypeQualifierColumn.Equals( "Id", StringComparison.OrdinalIgnoreCase ) &&
                                     a.EntityTypeQualifierValue.Equals( qualifierValue ) )

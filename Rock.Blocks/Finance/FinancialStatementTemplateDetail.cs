@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -21,6 +21,7 @@ using System.ComponentModel;
 using System.Linq;
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Financial;
@@ -29,6 +30,7 @@ using Rock.Security;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Finance.FinancialStatementTemplateDetail;
 using Rock.ViewModels.Utility;
+using Rock.Web;
 using Rock.Web.Cache;
 
 namespace Rock.Blocks.Finance
@@ -49,7 +51,7 @@ namespace Rock.Blocks.Finance
 
     [Rock.SystemGuid.EntityTypeGuid( "feea3b29-3fce-4216-ab28-e1f69c67a574" )]
     [Rock.SystemGuid.BlockTypeGuid( "3d13455f-7e5c-46f7-975a-4a5ce12bd330" )]
-    public class FinancialStatementTemplateDetail : RockEntityDetailBlockType<FinancialStatementTemplate, FinancialStatementTemplateBag>
+    public class FinancialStatementTemplateDetail : RockEntityDetailBlockType<FinancialStatementTemplate, FinancialStatementTemplateBag>, IBreadCrumbBlock
     {
         #region Keys
 
@@ -223,7 +225,7 @@ namespace Rock.Blocks.Finance
             var transactionSettings = entity.ReportSettings.TransactionSettings;
             if ( transactionSettings.AccountSelectionOption == Rock.Financial.FinancialStatementTemplateTransactionSettingAccountSelectionOption.AllTaxDeductibleAccounts )
             {
-                var accountList = new FinancialAccountService( new RockContext() ).Queryable()
+                var accountList = new FinancialAccountService( RockApp.Current.CreateRockContext() ).Queryable()
                         .Where( a => a.IsActive && a.IsTaxDeductible )
                         .ToList();
 
@@ -233,7 +235,7 @@ namespace Rock.Blocks.Finance
             {
                 if ( transactionSettings.SelectedAccountIds.Any() )
                 {
-                    var accountList = new FinancialAccountService( new RockContext() )
+                    var accountList = new FinancialAccountService( RockApp.Current.CreateRockContext() )
                         .GetByIds( transactionSettings.SelectedAccountIds )
                         .Where( a => a.IsActive )
                         .ToList();
@@ -476,6 +478,32 @@ namespace Rock.Blocks.Finance
                 {
                     imageTemplatePreview.IsTemporary = false;
                 }
+            }
+        }
+
+        /// <inheritdoc/>
+        public BreadCrumbResult GetBreadCrumbs( PageReference pageReference )
+        {
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
+            {
+                var key = pageReference.GetPageParameter( PageParameterKey.FinancialStatementTemplateId );
+                var pageParameters = new Dictionary<string, string>();
+
+                var name = new FinancialStatementTemplateService( rockContext )
+                    .GetSelect( key, mf => mf.Name );
+
+                if ( name != null )
+                {
+                    pageParameters.Add( PageParameterKey.FinancialStatementTemplateId, key );
+                }
+
+                var breadCrumbPageRef = new PageReference( pageReference.PageId, 0, pageParameters );
+                var breadCrumb = new BreadCrumbLink( name ?? "New Template", breadCrumbPageRef );
+
+                return new BreadCrumbResult
+                {
+                    BreadCrumbs = new List<IBreadCrumb> { breadCrumb }
+                };
             }
         }
 

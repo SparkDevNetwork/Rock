@@ -2,7 +2,7 @@
 <template>
     <TabbedBar v-model="selectedTab" :tabs="tabs" type="pills" />
 
-    <div class="tabbed-content mt-4">
+    <div ref="tabbedContentElement" class="tabbed-content mt-4">
         <div v-if="selectedTab == 'Basic Settings'">
 
             <div class="row">
@@ -43,8 +43,10 @@
                     <CheckBox v-model="menuDisplayIcon"
                               label="Show Icon" />
 
-                    <IconPicker v-model="iconCssClass"
-                                label="Icon CSS Class" />
+                    <div ref="iconPickerWrapper">
+                        <IconPicker v-model="iconCssClass"
+                                    label="Icon CSS Class" />
+                    </div>
                 </div>
             </div>
             <div class="row">
@@ -82,7 +84,7 @@
             <fieldset>
                 <h4>Menu</h4>
                 <DropDownList v-model="displayInNavWhen"
-                              text="Display When"
+                              label="Display When"
                               :items="displayWhenItems" />
 
                 <InlineCheckbox v-model="menuDisplayDescription"
@@ -182,10 +184,13 @@
             </div>
         </div>
     </div>
+
+    <!-- Grows the iframe dialog by the amount the open icon popup overflows the content, so the popup is not clipped. -->
+    <div :style="{ paddingBottom: `${overflowPadding}px` }"></div>
 </template>
 
 <script setup lang="ts">
-    import { computed, PropType, ref, watch } from "vue";
+    import { computed, onUnmounted, PropType, ref, watch } from "vue";
     import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
     import TextBox from "@Obsidian/Controls/textBox.obs";
     import NumberBox from "@Obsidian/Controls/numberBox.obs";
@@ -293,6 +298,11 @@
         pageDisplayTitle, pageDisplayBreadCrumb, pageDisplayIcon, pageDisplayDescription, displayInNavWhen, menuDisplayDescription, menuDisplayChildPages, breadCrumbDisplayName, breadCrumbDisplayIcon,
         requiresEncryption, enableViewState, includeAdminFooter, allowIndexing, bodyCssClass, cacheControlHeaderSettings, rateLimitPeriodDurationSeconds, rateLimitRequestPerPeriod, headerContent];
 
+    const tabbedContentElement = ref<HTMLElement>();
+    const iconPickerWrapper = ref<HTMLElement>();
+    const overflowPadding = ref(0);
+    let popupResizeObserver: ResizeObserver | undefined;
+
     // #endregion
 
     // #region Computed Values
@@ -326,7 +336,53 @@
         return `${labelText} Parameter Name`;
     }
 
+    /*
+        9/14/26 - CEH
+
+        Temporary workaround. This block is opened from the WebForms admin bar into a
+        legacy iframe dialog that sizes the iframe to the page body. The icon picker
+        popup is absolutely positioned, so it adds no body height and gets clipped.
+
+        The Obsidian Modal already solves this for blocks it hosts by measuring body
+        scrollHeight against clientHeight and padding below the content by the overflow
+        (see adjustOverflowPadding in modal.obs). The code below does the same for the
+        iframe dialog, scoped to the one popup that can overflow here.
+
+        Once this block opens in an Obsidian Modal, delete all of it: the padding div,
+        the tabbedContentElement and iconPickerWrapper refs, overflowPadding,
+        popupResizeObserver, adjustOverflowPadding, the watcher, and the onUnmounted hook.
+
+        Reason: Duplicates the Obsidian Modal's overflow padding for the WebForms iframe dialog.
+    */
+
+    /**
+     * Pads below the tabbed content by however far the open icon popup overflows it
+     * so the body, and therefore the iframe dialog, grows to contain the popup.
+     */
+    function adjustOverflowPadding(): void {
+        const contentElement = tabbedContentElement.value;
+
+        overflowPadding.value = contentElement ? contentElement.scrollHeight - contentElement.clientHeight : 0;
+    }
+
     // #endregion
+
+    // The wrapper mounts and unmounts with the Basic Settings tab, so track the popup only while it exists.
+    watch(iconPickerWrapper, (wrapper) => {
+        popupResizeObserver?.disconnect();
+        overflowPadding.value = 0;
+
+        const popupElement = wrapper?.querySelector<HTMLElement>(".picker-menu");
+
+        if (!popupElement || !document.getElementById("dialog")) {
+            return;
+        }
+
+        popupResizeObserver = new ResizeObserver(adjustOverflowPadding);
+        popupResizeObserver.observe(popupElement);
+    }, { flush: "post" });
+
+    onUnmounted(() => popupResizeObserver?.disconnect());
 
     // Update the Layouts dropdown items if the site changes.
     watch(() => site.value, async () => {
@@ -371,7 +427,7 @@
         updateRefValue(pageDisplayBreadCrumb, props.modelValue.bag?.pageDisplayBreadCrumb ?? false);
         updateRefValue(pageDisplayIcon, props.modelValue.bag?.pageDisplayIcon ?? false);
         updateRefValue(pageDisplayDescription, props.modelValue.bag?.pageDisplayDescription ?? false);
-        updateRefValue(displayInNavWhen, props.modelValue.bag?.displayInNavWhen.toString() ?? "");
+        updateRefValue(displayInNavWhen, props.modelValue.bag?.displayInNavWhen?.toString() ?? "");
         updateRefValue(menuDisplayDescription, props.modelValue.bag?.menuDisplayDescription ?? false);
         updateRefValue(menuDisplayChildPages, props.modelValue.bag?.menuDisplayChildPages ?? false);
         updateRefValue(breadCrumbDisplayName, props.modelValue.bag?.breadCrumbDisplayName ?? false);

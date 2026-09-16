@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -146,7 +146,7 @@ namespace Rock.Workflow.Action
             if ( HttpContext.Current?.Handler is System.Web.UI.Page page )
             {
                 var obsidianWorkflowEntryBlock = page.ControlsOfTypeRecursive<Rock.Web.UI.RockBlockTypeWrapper>()
-                    .Where( bw => bw.BlockCache?.BlockType?.Guid == new Guid( "9116AAD8-CF16-4BCE-B0CF-5B4D565710ED" ) )
+                    .Where( bw => bw.BlockCache?.BlockType?.Guid == Rock.SystemGuid.BlockType.WORKFLOW_ENTRY.AsGuid() )
                     .FirstOrDefault();
 
                 // If we are being processed by the new Obsidian Workflow

@@ -1,0 +1,300 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="activity-card">
+        <div class="activity-card-header">
+            <div class="activity-card-person">
+                <PersonAvatar v-if="activityEntry.cardEntry?.photoUrl"
+                              :photoUrl="activityEntry.cardEntry.photoUrl"
+                              :photoSize="24"
+                              marginRight="2" />
+                <div v-else-if="activityEntry.createdBy === 'Rock'"
+                     class="activity-card-system-avatar">
+                    <img src="/Assets/Images/rock-logo-circle.svg" width="16" height="16">
+                </div>
+                <div class="activity-card-details">
+                    <div class="activity-card-text"><span class="activity-card-text-highlight">{{ activityEntry.createdBy }}</span> {{ actionText }} <span class="activity-card-text-highlight">{{ activityEntry.cardEntry?.title }}</span>.</div>
+                    <div class="activity-card-meta">
+                        <div>{{ entryDateTimeElapsed }}</div>
+                        <template v-if="activityEntry.cardEntry?.connectionRequestIdKey">
+                            <div class="activity-card-meta-separator">•</div>
+                            <div>in <span class="text-link cursor-pointer" @click="navigateToConnectionRequest">{{ activityEntry.cardEntry.connectionOpportunityName }}</span></div>
+                            <div class="activity-card-meta-separator">•</div>
+                            <div>{{ activityEntry.cardEntry.connectionRequestStatus }}</div>
+                        </template>
+                    </div>
+                </div>
+            </div>
+            <div class="activity-card-actions">
+                <DropDownContent v-if="(activityEntry.entryType === ActivityEntryType.RequestNote && canEditNote) || (activityEntry.entryType === ActivityEntryType.Activity && canEditActivity) || (activityEntry.entryType === ActivityEntryType.StatusChange && canEditActivity)"
+                                 v-model="isSecondaryActionDropdownOpen"
+                                 enableFlip>
+                    <template #default>
+                        <div class="dropdown-content activity-card-menu">
+                            <div class="dropdown-content-item activity-card-menu-item"
+                                 @click.stop="onEdit">
+                                Edit
+                            </div>
+                            <div v-if="activityEntry.entryType !== ActivityEntryType.StatusChange"
+                                 class="dropdown-content-item activity-card-menu-item text-danger"
+                                 @click.stop="onDelete">
+                                Delete
+                            </div>
+                        </div>
+                    </template>
+                </DropDownContent>
+                <Badge :isCircle="true" :class="badgeClasses" class="activity-card-badge-icon">
+                    <i :class="iconClass"></i>
+                </Badge>
+            </div>
+        </div>
+
+        <RockForm v-if="isEditingNote" @submit="onSaveNote">
+            <NotificationBox v-if="isErrorMessageVisible"
+                             alertType="danger"
+                             dismissible
+                             @dismiss="onErrorMessageDismissed">
+                {{ errorMessage }}
+            </NotificationBox>
+            <div class="activity-card-note-editor">
+                <TextBox v-model="noteText"
+                         textMode="multiline"
+                         :rules="noteValidationRules"
+                         validationTitle="Note"
+                         inputGroupClasses="request-note-editor">
+                    <template #inputGroupAppend>
+                        <div class="activity-card-note-editor-actions">
+                            <RockButton :btnType="BtnType.Link"
+                                        :btnSize="BtnSize.Small"
+                                        @click="onCancelNoteEdit">
+                                Cancel
+                            </RockButton>
+                            <RockButton type="submit"
+                                        :btnType="BtnType.Primary"
+                                        :btnSize="BtnSize.Small">
+                                Save Note
+                            </RockButton>
+                        </div>
+                    </template>
+                </TextBox>
+            </div>
+        </RockForm>
+        <div v-else-if="!isNullOrWhiteSpace(activityEntry.cardEntry?.content)"
+             class="activity-card-text">
+            {{ activityEntry.cardEntry?.content }}
+        </div>
+        <div v-if="activityEntry.cardEntry?.attachments && activityEntry.cardEntry.attachments.length > 0" class="activity-card-attachments">
+            <template v-for="(attachment, index) in activityEntry.cardEntry.attachments">
+                <a :href="`/GetFile.ashx?guid=${attachment.value}&fileName=${attachment.text}`" target="_blank" rel="noopener noreferrer">{{ isNullOrWhiteSpace(attachment.text) ? `View Attachment ${index}` : attachment.text }}</a>
+            </template>
+        </div>
+    </div>
+</template>
+
+<script setup lang="ts">
+    import { ref, PropType, watch, computed } from "vue";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import { ActivityEntryBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/activityEntryBag";
+    import PersonAvatar from "@Obsidian/Controls/personAvatar.obs";
+    import { ActivityEntryType } from "@Obsidian/Enums/Connection/activityEntryType";
+    import { isNullOrWhiteSpace } from "@Obsidian/Utility/stringUtils";
+    import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
+    import DropDownContent from "@Obsidian/Controls/dropDownContent.obs";
+    import Badge from "@Obsidian/Controls/badge.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import RockForm from "@Obsidian/Controls/rockForm.obs";
+    import { BtnType } from "@Obsidian/Enums/Controls/btnType";
+    import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
+    import { ConnectionRequestNoteBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/connectionRequestNoteBag";
+    import { SaveStatusHistoryNoteBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/saveStatusHistoryNoteBag";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+
+    const props = defineProps({
+        activityEntry: {
+            type: Object as PropType<ActivityEntryBag>,
+            default: {}
+        },
+        connectionRequestIdKey: {
+            type: String as PropType<string>,
+        },
+        canEditActivity: {
+            type: Boolean as PropType<boolean>,
+            required: true
+        },
+        canEditNote: {
+            type: Boolean as PropType<boolean>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "editNote", value: ConnectionRequestNoteBag): void;
+        (e: "deleteNote", value: string): void;
+        (e: "editActivity", value: ActivityEntryBag): void;
+        (e: "deleteActivity", value: string): void;
+        (e: "saveStatusHistoryNote", value: SaveStatusHistoryNoteBag): void;
+    }>();
+
+    defineExpose({
+        processSave
+    });
+
+    const isSecondaryActionDropdownOpen = ref(false);
+    const badgeClasses = ref();
+    const iconClass = ref();
+    const isEditingNote = ref(false);
+    const noteText = ref("");
+
+    const isErrorMessageVisible = ref(false);
+    const errorMessage = ref();
+
+    function navigateToConnectionRequest(): void {
+        const cardEntry = props.activityEntry.cardEntry;
+        if (!cardEntry?.connectionOpportunityIdKey || !cardEntry?.connectionRequestIdKey) {
+            return;
+        }
+
+        const url = new URL(window.location.href);
+        url.searchParams.set("ConnectionOpportunity", cardEntry.connectionOpportunityIdKey);
+        url.searchParams.set("Request", cardEntry.connectionRequestIdKey);
+        window.location.href = url.toString();
+    }
+
+    const actionText = computed(() => {
+        switch (props.activityEntry.entryType) {
+            case ActivityEntryType.Activity:
+                return "created an";
+            case ActivityEntryType.RequestNote:
+                return "added a";
+            case ActivityEntryType.Communication:
+                return "sent an";
+            case ActivityEntryType.StatusChange: {
+                const entry = props.activityEntry.cardEntry;
+                if (!isNullOrWhiteSpace(entry?.previousValue) && !isNullOrWhiteSpace(entry?.newValue)) {
+                    return `changed the connection request status from ${entry?.previousValue} to`;
+                }
+                else if (!isNullOrWhiteSpace(props.activityEntry.cardEntry?.previousValue)) {
+                    return `cleared the connection request status, previously`;
+                }
+                else if (!isNullOrWhiteSpace(props.activityEntry.cardEntry?.newValue)) {
+                    return `set the connection request status to`;
+                }
+                else {
+                    return "updated the connection request status";
+                }
+            }
+        }
+    });
+
+    const entryDateTimeElapsed = computed(() => {
+        if (isNullOrWhiteSpace(props.activityEntry?.entryDateTime)) {
+            return;
+        }
+
+        return RockDateTime.parseISO(props.activityEntry!.entryDateTime!)?.toElapsedString();
+    });
+
+    // Request notes are always required. A status-change note is only required when the status it is
+    // attached to is configured to require one (CardEntry.isNoteRequired), so its rule is dynamic.
+    const noteValidationRules = computed(() => {
+        if (props.activityEntry.entryType === ActivityEntryType.StatusChange) {
+            return props.activityEntry.cardEntry?.isNoteRequired ? "required" : "";
+        }
+
+        return "required";
+    });
+
+    function onEdit(): void {
+        isSecondaryActionDropdownOpen.value = false;
+
+        if (props.activityEntry.entryType === ActivityEntryType.Activity) {
+            emit("editActivity", props.activityEntry);
+        }
+        else if (props.activityEntry.entryType === ActivityEntryType.RequestNote
+            || props.activityEntry.entryType === ActivityEntryType.StatusChange) {
+            isEditingNote.value = true;
+            noteText.value = props.activityEntry.cardEntry?.content ?? "";
+        }
+    }
+
+    function onCancelNoteEdit(): void {
+        isEditingNote.value = false;
+    }
+
+    function onSaveNote(): void {
+        // A status-change note is saved to its own status-history record, identified by the
+        // StatusHistoryIdKey on the card entry rather than by the feed key.
+        if (props.activityEntry.entryType === ActivityEntryType.StatusChange) {
+            const bag: SaveStatusHistoryNoteBag = {
+                statusHistoryIdKey: props.activityEntry.cardEntry?.statusHistoryIdKey,
+                note: noteText.value,
+                key: props.activityEntry.key
+            };
+
+            emit("saveStatusHistoryNote", bag);
+            return;
+        }
+
+        // Extract the note id key.
+        const idKey = props.activityEntry.key?.split("_")[1] ?? "";
+
+        const bag: ConnectionRequestNoteBag = {
+            connectionRequestIdKey: props.connectionRequestIdKey,
+            noteIdKey: idKey,
+            noteText: noteText.value
+        };
+
+        emit("editNote", bag);
+    }
+
+    function processSave(errorText: string | null): void {
+        if (isNullOrWhiteSpace(errorText)) {
+            isEditingNote.value = false;
+            return;
+        }
+        errorMessage.value = errorText;
+        isErrorMessageVisible.value = true;
+    }
+
+    function onDelete(): void {
+        isSecondaryActionDropdownOpen.value = false;
+
+        if (props.activityEntry.entryType === ActivityEntryType.Activity) {
+            const activityIdKey = props.activityEntry.key?.split("_")[1] ?? "";
+            emit("deleteActivity", activityIdKey);
+        }
+        else {
+            const noteIdKey = props.activityEntry.key?.split("_")[1] ?? "";
+            emit("deleteNote", noteIdKey);
+        }
+    }
+
+    function onErrorMessageDismissed(): void {
+        isErrorMessageVisible.value = false;
+    }
+
+    watch(() => props.activityEntry, () => {
+        switch (props.activityEntry.entryType) {
+            case ActivityEntryType.Activity:
+                badgeClasses.value = "bg-interface-softer text-interface-strong";
+                iconClass.value = "ti ti-activity";
+                break;
+            case ActivityEntryType.RequestNote:
+                badgeClasses.value = "bg-warning-soft text-warning-strong";
+                iconClass.value = "ti ti-note";
+                break;
+            case ActivityEntryType.Communication:
+                badgeClasses.value = "bg-info-soft text-info-strong";
+                if (props.activityEntry.cardEntry?.title === "SMS") {
+                    iconClass.value = "ti ti-message-circle";
+                }
+                else {
+                    iconClass.value = "ti ti-mail";
+                }
+                break;
+            case ActivityEntryType.StatusChange:
+                badgeClasses.value = "bg-interface-softer text-interface-strong";
+                iconClass.value = "ti ti-arrows-left-right";
+                break;
+        }
+    }, { immediate: true });
+</script>

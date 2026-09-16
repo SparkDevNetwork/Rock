@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -23,6 +23,7 @@ using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
 using Rock;
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
@@ -36,7 +37,12 @@ namespace RockWeb.Blocks.Prayer
     [Description( "Shows a list of prayer comments and allows the noteId that is passed in (via querystring) to be editable." )]
 
     [ContextAware( typeof( PrayerRequest ) )]
-    [TextField( "Title", "The title of the notes/comments section.", false, "Comments", "Behavior", 0 )]
+    [TextField( "Title",
+        Description = "The title of the notes/comments section.",
+        IsRequired = false,
+        DefaultValue = "Comments",
+        Category = "Behavior",
+        Order = 0 )]
     [Rock.SystemGuid.BlockTypeGuid( "4F3778DF-A25C-4E59-9242-B1D6813311E1" )]
     public partial class PrayerCommentDetail : RockBlock
     {
@@ -81,7 +87,7 @@ namespace RockWeb.Blocks.Prayer
 
                     this.Page.ClientScript.RegisterStartupScript( this.GetType(), string.Format( "scroll-to-comment-{0}", this.ClientID ), script, true );
 
-                    prayerComment = new NoteService( new RockContext() ).Get( int.Parse( noteId ) );
+                    prayerComment = new NoteService( RockApp.Current.CreateRockContext() ).Get( int.Parse( noteId ) );
                 }
                 else
                 {
@@ -153,7 +159,7 @@ namespace RockWeb.Blocks.Prayer
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void lbAddNote_Click( object sender, EventArgs e )
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var service = new NoteService( rockContext );
 
             var note = new Note();
@@ -186,7 +192,7 @@ namespace RockWeb.Blocks.Prayer
             phNotesBefore.Controls.Clear();
             phNotesAfter.Controls.Clear();
 
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var service = new NoteService( rockContext );
 
             foreach ( var note in service.Get( noteType.Id, contextEntity.Id ) )
@@ -322,7 +328,7 @@ namespace RockWeb.Blocks.Prayer
                 return;
             }
 
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             NoteService noteService = new NoteService( rockContext );
             Note note = noteService.Get( noteId );
             if ( note != null )

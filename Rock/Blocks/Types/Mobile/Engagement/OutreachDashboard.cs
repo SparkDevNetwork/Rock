@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -20,8 +20,8 @@ using System.Data.Entity;
 using System.Linq;
 
 using Rock.Attribute;
-using Rock.Common.Mobile.Blocks.Engagement.OutreachDashboard;
 using Rock.Common.Mobile.Blocks.Engagement.ContactProfile;
+using Rock.Common.Mobile.Blocks.Engagement.OutreachDashboard;
 using Rock.Common.Mobile.Blocks.Engagement.OutreachOnboarding.cs;
 using Rock.Enums.Core;
 using Rock.Enums.Engagement;
@@ -52,11 +52,11 @@ namespace Rock.Blocks.Types.Mobile.Engagement
         Key = AttributeKeys.MyContact,
         Order = 2 )]
 
-    [TextField( "Toolbox Name",
-        Description = "The public name of this experience.",
+
+    [LinkedPage( "Add Contact Page",
+        Description = "The page to open when someone taps on add contact button.",
         IsRequired = false,
-        DefaultValue = "Beacon",
-        Key = AttributeKeys.ToolboxName,
+        Key = AttributeKeys.AddContact,
         Order = 3 )]
 
     [TextField( "Toolbox Subtitle",
@@ -64,14 +64,14 @@ namespace Rock.Blocks.Types.Mobile.Engagement
         IsRequired = false,
         DefaultValue = "The subtitle that appears below the Toolbox Name.",
         Key = AttributeKeys.ToolboxSubtitle,
-        Order = 4 )]
+        Order = 5 )]
 
     [IntegerField(
         "Completion Lookback Period",
         Description = "The number of days to look back when calculating on-time completion.",
         IsRequired = true,
         DefaultValue = "30",
-        Order = 5,
+        Order = 6,
         Key = AttributeKeys.CompletionLookbackPeriod )]
 
     [SystemGuid.EntityTypeGuid( SystemGuid.EntityType.MOBILE_OUTREACH_OUTREACH_DASHBOARD_BLOCK_TYPE )]
@@ -85,7 +85,7 @@ namespace Rock.Blocks.Types.Mobile.Engagement
             public const string BaptismInfo = "BaptismInfo";
             public const string DetailPage = "DetailPage";
             public const string MyContact = "MyContact";
-            public const string ToolboxName = "ToolboxName";
+            public const string AddContact = "AddContact";
             public const string ToolboxSubtitle = "ToolboxSubtitle";
             public const string CompletionLookbackPeriod = "CompletionLookbackPeriod";
         }
@@ -305,6 +305,8 @@ namespace Rock.Blocks.Types.Mobile.Engagement
                 PersonProfileUrl = MobileHelper.BuildPublicApplicationRootUrl( GetCurrentPerson().PhotoUrl ),
                 NumberOfTouchpointsGeneratedPerDay = ( int ) Math.Round( count ),
                 TouchpointCountCompletedDayOfWeek = weeklyCompletedTouchpoint,
+                LookbackPeriodInDays = GetAttributeValue( AttributeKeys.CompletionLookbackPeriod ).AsInteger(),
+                OutreachTouchpointGenerationEnabled = person.OutreachTouchpointGenerationEnabled
             };
 
             return ActionOk( data );
@@ -327,7 +329,7 @@ namespace Rock.Blocks.Types.Mobile.Engagement
             person = personService.Get( person.Id );
             person.OutreachTouchpointSchedule = ( DaysOfWeekFlags ) ( ( int ) savePreferenceBag.DayOfWeek );
             person.OutreachEnableDailyNotification = savePreferenceBag.DailyNotificationsEnabled;
-            person.OutreachNotificationTimeOfDay = savePreferenceBag.DailyNotificationsEnabled ? ( OutreachNotificationTimeOfDay? ) savePreferenceBag.TimeOfDay : null; // Clear out time of day if daily notifications are disabled
+            person.OutreachNotificationTimeOfDay = savePreferenceBag.TimeOfDay?.ToNative();
             person.OutreachEnableSpecialEventsNotification = savePreferenceBag.SpecialEventNotificationsEnabled;
 
             RockContext.SaveChanges();
@@ -401,7 +403,7 @@ namespace Rock.Blocks.Types.Mobile.Engagement
                 DetailPage = GetAttributeValue( AttributeKeys.DetailPage ).AsGuidOrNull(),
                 BaptismInfoUrl = ResolveURL( GetAttributeValue( AttributeKeys.BaptismInfo ) ),
                 MyContactPage = GetAttributeValue( AttributeKeys.MyContact ).AsGuidOrNull(),
-                ToolboxName = GetAttributeValue( AttributeKeys.ToolboxName ),
+                AddContactPage = GetAttributeValue( AttributeKeys.AddContact ).AsGuidOrNull(),
                 ToolboxSubtitle = GetAttributeValue( AttributeKeys.ToolboxSubtitle )
             };
         }

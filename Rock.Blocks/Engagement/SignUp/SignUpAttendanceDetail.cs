@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -20,7 +20,9 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
+
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
@@ -102,7 +104,7 @@ namespace Rock.Blocks.Engagement.SignUp
         /// <inheritdoc/>
         public override object GetObsidianBlockInitialization()
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var box = new SignUpAttendanceDetailInitializationBox();
 
@@ -428,7 +430,7 @@ namespace Rock.Blocks.Engagement.SignUp
         [BlockAction]
         public BlockActionResult SaveAttendance( SignUpAttendanceBag bag )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var occurrenceData = GetOccurrenceData( rockContext, shouldTrackAttendanceRecords: true );
 

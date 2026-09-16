@@ -1,0 +1,303 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Panel title="NCOA Results"
+           type="block">
+        <template #headerActions>
+
+            <a :href="processNcoaUrl" class="btn btn-default btn-xs">
+                <i class="fa fa-upload"></i> Process NCOA
+            </a>
+            <span class="label label-default">
+                Results: {{ totalCount }}
+            </span>
+            <button @click.prevent.stop="onGridSettingsClick" class="btn btn-panel-action" :class="{ 'active': hasSettingsFilters }"><i class="ti ti-adjustments-horizontal"></i></button>
+
+        </template>
+
+        <div v-for="(family, idx) in ncoaResults" :key="idx" class="m-4">
+            <h3 class="pl-0">{{ family.familyName }}</h3>
+
+            <div v-for="(row, rowIdx) in family.ncoaItems" :key="row.idKey ?? rowIdx">
+                <div class="well">
+                    <div class="row">
+                        <div class="col-md-4 col-xs-12">
+                            <div class="row">
+                                <div class="col-lg-6 col-md-12">
+                                    <h4 v-if="row.type?.toLowerCase() === 'move'">
+                                        <span class="label label-success">
+                                            {{ row.moveType }}
+                                        </span>
+                                    </h4>
+                                    <h4 v-else-if="row.type?.toLowerCase() === 'month48move'">
+                                        <span class="label label-info">48 Month Move</span>
+                                    </h4>
+                                    <h4 v-else-if="row.addressStatus?.toLowerCase() === 'invalid'">
+                                        <span class="label label-warning">Invalid Address</span>
+                                    </h4>
+                                    <dl v-if="row.moveDate">
+                                        <dt>Move Date</dt>
+                                        <dd>{{ row.moveDate }}</dd>
+                                    </dl>
+                                </div>
+                                <div class="col-lg-6 col-md-12">
+                                    <dl v-if="row.familyMembers?.trim()">
+                                        <dt>Family Members</dt>
+                                        <dd v-for="(member, i) in row.familyMembers.split(',').map(m => m.trim())"
+                                            :key="i">
+                                            {{ member }}
+                                            <a v-if="i === 0" :href="'/Person/' + row.individualIdKey" target="_blank">
+                                                <i class="ti ti-users"></i>
+                                            </a>
+                                        </dd>
+                                    </dl>
+                                    <template v-else>
+                                        <dl>
+                                            <dt>Individual</dt>
+                                            <dd>
+                                                {{ row.individualName }}
+                                                <a :href="'/Person/' + row.individualIdKey" target="_blank">
+                                                    <i class="ti ti-users"></i>
+                                                </a>
+                                            </dd>
+                                        </dl>
+                                        <dl v-if="row.otherFamilyMembers?.trim()">
+                                            <dt>Other Family Members</dt>
+                                            <dd v-for="(member, i) in row.otherFamilyMembers.split(',').map(m => m.trim())"
+                                                :key="i">
+                                                {{ member }}
+                                            </dd>
+                                        </dl>
+                                    </template>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4 col-xs-12">
+                            <div class="row">
+                                <div class="col-lg-6 col-md-12">
+                                    <dl>
+                                        <dt>Original Address</dt>
+                                        <dd v-html="row.originalAddress"></dd>
+                                    </dl>
+                                </div>
+                                <div class="col-lg-6 col-md-12">
+                                    <dl v-if="row.type?.toLowerCase() === 'move'">
+                                        <dt>New Address</dt>
+                                        <dd v-html="row.newAddress"></dd>
+                                    </dl>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4 col-xs-12">
+                            <div class="row">
+                                <div class="col-lg-5 col-md-12" v-if="row.moveDistance">
+                                    <dl>
+                                        <dt>Move Distance</dt>
+                                        <dd>{{ row.moveDistance }}</dd>
+                                    </dl>
+                                </div>
+                                <div class="col-lg-7 col-md-12">
+                                    <label v-if="row.processStatus"
+                                           class="label label-default margin-b-sm"
+                                           :class="{ 'label-success': row.processStatus.toLowerCase() === 'processed' }">
+                                        {{ row.processStatus }}
+                                    </label>
+                                    <div>
+                                        <RockButton v-if="row.type?.toLocaleLowerCase() === 'move' && row.processStatus?.toLocaleLowerCase() === 'not processed'"
+                                                    @click="markNcoaHistoryItem(row.idKey ?? '', true)">
+                                            Mark Processed
+                                        </RockButton>
+                                        <RockButton v-else-if="(row.addressStatus?.toLocaleLowerCase() === 'invalid' || row.type?.toLocaleLowerCase() === 'month48move') && row.processStatus?.toLocaleLowerCase() === 'not processed'"
+                                                    @click="markNcoaHistoryItem(row.idKey ?? '', false)">
+                                            Mark Address As Previous
+                                        </RockButton>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div v-if="row.otherFamilyMembers?.trim() || warnings[row.idKey ?? '']" class="row">
+                        <div class="col-xs-12">
+                            <div v-if="row.otherFamilyMembers?.trim()" class="alert alert-warning font-size-sm">
+                                <p>Auto processing this move would result in a split family.</p>
+                            </div>
+                            <div v-if="warnings[row.idKey ?? '']" class="alert alert-warning font-size-sm">
+                                <p>{{ warnings[row.idKey ?? ''] }}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <hr>
+            </div>
+        </div>
+        <div class="clearfix">
+            <button class="btn btn-primary pull-left" v-if="canPrev" @click.prevent="prevPage">
+                <i class="ti ti-chevron-left"></i> Prev
+            </button>
+
+            <button class="btn btn-primary pull-right" v-if="canNext" @click.prevent="nextPage">
+                Next <i class="ti ti-chevron-right"></i>
+            </button>
+        </div>
+    </Panel>
+
+    <GridSettingsModal v-model="gridSettings" v-model:visible="isGridSettingsVisible" />
+</template>
+
+<script setup lang="ts">
+    import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, usePersonPreferences, useReloadBlock } from "@Obsidian/Utility/block";
+    import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
+    import { NcoaResultsOptionsBag } from "@Obsidian/ViewModels/Blocks/Crm/NcoaResults/ncoaResultsOptionsBag";
+    import { NcoaResultsBag } from "@Obsidian/ViewModels/Blocks/Crm/NcoaResults/ncoaResultsBag";
+    import { PreferenceKey, GridSettingsOptions } from "./NcoaResults/types.partial";
+    import { computed, ref, watch } from "vue";
+    import Panel from "@Obsidian/Controls/panel.obs";
+    import GridSettingsModal from "./NcoaResults/gridSettingsModal.partial.obs";
+    import { safeParseJson } from "@Obsidian/Utility/stringUtils";
+    import { parseSlidingDateRangeString, slidingDateRangeToString } from "@Obsidian/Utility/slidingDateRange";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import { NcoaFamilyGroupBag } from "@Obsidian/ViewModels/Blocks/Crm/NcoaResults/ncoaFamilyGroupBag";
+    import { Processed } from "@Obsidian/Enums/Core/processed";
+
+    const config = useConfigurationValues<ListBlockBox<NcoaResultsOptionsBag>>();
+    const invokeBlockAction = useInvokeBlockAction();
+    const preferences = usePersonPreferences().blockPreferences;
+
+    // All blocks auto reload when changing block settings unless there is an
+    // explicit reason not to (like using a custom reload function instead),
+    // in which case you can remove this code.
+    onConfigurationValuesChanged(useReloadBlock());
+
+    // #region Values
+
+    const ncoaResults = ref<NcoaFamilyGroupBag[] | null>(null);
+
+    const isGridSettingsVisible = ref(false);
+
+    const gridSettings = ref<GridSettingsOptions>({
+        filterProcessed: preferences.getValue(PreferenceKey.FilterProcessed) || Processed.ManualUpdateRequiredOrNotProcessed.toString(),
+        filterMoveDate: parseSlidingDateRangeString(preferences.getValue(PreferenceKey.FilterMoveDate)) ?? null,
+        filterNcoaProcessedDate: parseSlidingDateRangeString(preferences.getValue(PreferenceKey.FilterNcoaProcessedDate)) ?? null,
+        filterMoveType: preferences.getValue(PreferenceKey.FilterMoveType),
+        filterAddressStatus: preferences.getValue(PreferenceKey.FilterAddressStatus),
+        filterInvalidReason: preferences.getValue(PreferenceKey.FilterInvalidReason),
+        filterMoveDistance: Number.parseFloat(preferences.getValue(PreferenceKey.FilterMoveDistance)) || null,
+        filterLastName: preferences.getValue(PreferenceKey.FilterLastName),
+        filterCampus: safeParseJson(preferences.getValue(PreferenceKey.FilterCampus))
+    });
+
+    const currentPage = ref(1);
+    const pageSize = ref(config.options?.resultCount ?? 20);
+    const totalCount = ref(0);
+
+    // #endregion
+
+    // #region Functions
+
+    /**
+     * Called when the grid is requesting the row data be loaded.
+     */
+    async function loadNcoaResults(): Promise<void> {
+        const result = await invokeBlockAction<NcoaResultsBag>("GetNcoaData", {
+            pageNumber: currentPage.value,
+        });
+
+        if (result.isSuccess && result.data) {
+            ncoaResults.value = result.data.ncoaList ?? null;
+            totalCount.value = result.data.totalResults ?? 0;
+        }
+        else {
+            throw new Error(result.errorMessage ?? "Unknown error while trying to load grid data.");
+        }
+    }
+
+    // #endregion
+
+    // #region Event Handlers
+
+    /**
+    * Called when the grid setting icon is clicked, displays the block filters.
+    *
+    */
+    function onGridSettingsClick(): void {
+        isGridSettingsVisible.value = true;
+    }
+
+    // #endregion
+
+    loadNcoaResults();
+    watch(
+        gridSettings, async (value) => {
+            preferences.setValue(PreferenceKey.FilterProcessed, value.filterProcessed || Processed.All.toString());
+            preferences.setValue(PreferenceKey.FilterMoveDate, value.filterMoveDate ? slidingDateRangeToString(value.filterMoveDate) : "");
+            preferences.setValue(PreferenceKey.FilterNcoaProcessedDate, value.filterNcoaProcessedDate ? slidingDateRangeToString(value.filterNcoaProcessedDate) : "");
+            preferences.setValue(PreferenceKey.FilterMoveType, value.filterMoveType);
+            preferences.setValue(PreferenceKey.FilterAddressStatus, value.filterAddressStatus);
+            preferences.setValue(PreferenceKey.FilterInvalidReason, value.filterInvalidReason);
+            preferences.setValue(PreferenceKey.FilterMoveDistance, value.filterMoveDistance?.toString() || "");
+            preferences.setValue(PreferenceKey.FilterLastName, value.filterLastName);
+            preferences.setValue(PreferenceKey.FilterCampus, JSON.stringify(value.filterCampus));
+
+            await preferences.save();
+
+            currentPage.value = 1;
+            loadNcoaResults();
+        },
+        { deep: true }
+    );
+
+    const processNcoaUrl = computed((): string => config.navigationUrls?.["NcoaProcessPage"] ?? "");
+
+    const hasSettingsFilters = computed((): boolean => {
+        return (!!gridSettings.value.filterProcessed.length && gridSettings.value.filterProcessed !== Processed.All.toString())
+            || !!gridSettings.value.filterMoveDate
+            || !!gridSettings.value.filterNcoaProcessedDate
+            || !!gridSettings.value.filterMoveType.length
+            || !!gridSettings.value.filterAddressStatus.length
+            || !!gridSettings.value.filterInvalidReason.length
+            || !!gridSettings.value.filterMoveDistance
+            || !!gridSettings.value.filterLastName.length
+            || !!gridSettings.value.filterCampus;
+    });
+
+    const warnings = ref<Record<string, string>>({});
+
+    const markNcoaHistoryItem = async (ncoaHistoryIdKey: string, isMarkProcessed: boolean): Promise<void> => {
+        const result = await invokeBlockAction("UpdateNcoaHistoryItem", {
+            ncoaHistoryIdKey: ncoaHistoryIdKey,
+            isMarkProcessed: isMarkProcessed
+        });
+
+        if (result.isSuccess) {
+            loadNcoaResults();
+        }
+        else if (result.errorMessage) {
+            warnings.value[ncoaHistoryIdKey] = result.errorMessage;
+        }
+    };
+
+    const totalPages = computed(() => {
+        const pages = Math.ceil((totalCount.value || 0) / (pageSize.value || 1));
+        return pages > 0 ? pages : 1;
+    });
+
+    const canPrev = computed(() => currentPage.value > 1);
+    const canNext = computed(() => currentPage.value < totalPages.value);
+
+    function prevPage(): void {
+        if (!canPrev.value) {
+            return;
+        }
+        currentPage.value--;
+        loadNcoaResults();
+    }
+
+    function nextPage(): void {
+        if (!canNext.value) {
+            return;
+        }
+        currentPage.value++;
+        loadNcoaResults();
+    }
+
+
+</script>

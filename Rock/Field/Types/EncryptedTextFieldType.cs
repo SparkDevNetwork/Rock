@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -21,6 +21,7 @@ using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 #endif
+
 using Rock.Attribute;
 using Rock.Security;
 using Rock.Web.UI.Controls;
@@ -40,7 +41,6 @@ namespace Rock.Field.Types
 
         private const string IS_PASSWORD_KEY = "ispassword";
         private const string NUMBER_OF_ROWS = "numberofrows";
-        private const string ALLOW_HTML = "allowhtml";
 
         #endregion
 
@@ -128,6 +128,28 @@ namespace Rock.Field.Types
 
         #endregion
 
+        #region Value Hinting
+
+        /// <inheritdoc/>
+        /// <remarks>
+        /// Inherits from the plain text field type, so nothing about it signals that
+        /// the stored form differs from what is typed. A caller writing the raw value
+        /// straight in produces a row that decrypts to nothing and is not recoverable
+        /// afterwards, which is why this says so rather than staying silent the way
+        /// the base does.
+        /// </remarks>
+        internal override FieldTypeHints GetFieldHints( Dictionary<string, string> privateConfigurationValues )
+        {
+            return new FieldTypeHints
+            {
+                IsCompleteList = false,
+                ValueFormat = "Encrypted text rather than the text itself. Rock encrypts the value on the way in and decrypts it on the way out, so plain text written directly into storage cannot be read back.",
+                Instructions = "Set this through the normal attribute value path so the encryption is applied, and never by writing the stored column directly."
+            };
+        }
+
+        #endregion
+
         #region WebForms
 #if WEBFORMS
 
@@ -141,7 +163,6 @@ namespace Rock.Field.Types
             var configKeys = base.ConfigurationKeys();
 
             configKeys.Add( NUMBER_OF_ROWS );
-            configKeys.Add( ALLOW_HTML );
             return configKeys;
         }
 
@@ -163,14 +184,6 @@ namespace Rock.Field.Types
             nb.Label = "Rows";
             nb.Help = "The number of rows to display (note selecting a value greater than 1 will override the Password Field setting).";
 
-            // Allow HTML
-            var cb = new RockCheckBox();
-            controls.Add( cb );
-            cb.AutoPostBack = true;
-            cb.CheckedChanged += OnQualifierUpdated;
-            cb.Label = "Allow HTML";
-            cb.Help = "Controls whether server should prevent HTML from being entered in this field or not.";
-
             return controls;
         }
 
@@ -185,17 +198,12 @@ namespace Rock.Field.Types
             var configurationValues = base.ConfigurationValues( controls );
 
             configurationValues.Add( NUMBER_OF_ROWS, new ConfigurationValue( "Rows", "The number of rows to display (note selecting a value greater than 1 will override the Password Field setting).", "" ) );
-            configurationValues.Add( ALLOW_HTML, new ConfigurationValue( "Allow HTML", "Controls whether server should prevent HTML from being entered in this field or not.", "" ) );
 
             if ( controls != null )
             {
-                if ( controls.Count > 3 && controls[3] != null && controls[3] is NumberBox )
+                if ( controls.Count > 6 && controls[6] != null && controls[6] is NumberBox )
                 {
-                    configurationValues[NUMBER_OF_ROWS].Value = ( ( NumberBox ) controls[3] ).Text;
-                }
-                if ( controls.Count > 4 && controls[4] != null && controls[4] is RockCheckBox )
-                {
-                    configurationValues[ALLOW_HTML].Value = ( ( RockCheckBox ) controls[4] ).Checked.ToString();
+                    configurationValues[NUMBER_OF_ROWS].Value = ( ( NumberBox ) controls[6] ).Text;
                 }
             }
 
@@ -214,16 +222,10 @@ namespace Rock.Field.Types
 
             if ( controls != null && configurationValues != null )
             {
-                if ( controls.Count > 3 && controls[3] != null && controls[3] is NumberBox && configurationValues.ContainsKey( NUMBER_OF_ROWS ) )
+                if ( controls.Count > 6 && controls[6] != null && controls[6] is NumberBox && configurationValues.ContainsKey( NUMBER_OF_ROWS ) )
                 {
-                    ( ( NumberBox ) controls[3] ).Text = configurationValues[NUMBER_OF_ROWS].Value;
+                    ( ( NumberBox ) controls[6] ).Text = configurationValues[NUMBER_OF_ROWS].Value;
                 }
-
-                if ( controls.Count > 4 && controls[4] != null && controls[4] is RockCheckBox && configurationValues.ContainsKey( ALLOW_HTML ) )
-                {
-                    ( ( RockCheckBox ) controls[4] ).Checked = configurationValues[ALLOW_HTML].Value.AsBoolean();
-                }
-
             }
         }
 
@@ -259,12 +261,6 @@ namespace Rock.Field.Types
                         tb.Rows = rows.Value;
                     }
                 }
-                if ( configurationValues.ContainsKey( ALLOW_HTML ) )
-                {
-                    tb.ValidateRequestMode = configurationValues[ALLOW_HTML].Value.AsBoolean() ?
-                        ValidateRequestMode.Disabled : ValidateRequestMode.Enabled;
-                }
-
             }
 
             return tb;

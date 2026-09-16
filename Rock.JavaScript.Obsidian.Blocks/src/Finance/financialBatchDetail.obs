@@ -32,7 +32,7 @@
 </template>
 
 <script setup lang="ts">
-    import { computed, ref } from "vue";
+    import { computed, onBeforeUnmount, ref } from "vue";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
     import DetailBlock from "@Obsidian/Templates/detailBlock";
@@ -40,7 +40,7 @@
     import { PanelAction } from "@Obsidian/Types/Controls/panelAction";
     import EditPanel from "./FinancialBatchDetail/editPanel.partial.obs";
     import ViewPanel from "./FinancialBatchDetail/viewPanel.partial.obs";
-    import { getSecurityGrant, provideSecurityGrant, refreshDetailAttributes, useConfigurationValues, useInvokeBlockAction, onConfigurationValuesChanged, useReloadBlock } from "@Obsidian/Utility/block";
+    import { getSecurityGrant, provideSecurityGrant, refreshDetailAttributes, useBlockBrowserBus, useConfigurationValues, useInvokeBlockAction, onConfigurationValuesChanged, useReloadBlock } from "@Obsidian/Utility/block";
     import { debounce } from "@Obsidian/Utility/util";
     import { makeUrlRedirectSafe } from "@Obsidian/Utility/url";
     import { NavigationUrlKey } from "./FinancialBatchDetail/types.partial";
@@ -321,5 +321,22 @@
         addQuickReturn(config.entity.name, "Batches", 50);
     }
 
-    onConfigurationValuesChanged(useReloadBlock());
+    const reloadBlock = useReloadBlock();
+
+    onConfigurationValuesChanged(reloadBlock);
+
+    // Refresh the batch (control amount, totals, variance) when a sibling block on the page moves
+    // transactions in or out of this batch. The message string must match the one the Transaction
+    // List block publishes.
+    const browserBus = useBlockBrowserBus();
+
+    browserBus.subscribe("finance.transactionList.transactionsMoved", () => {
+        reloadBlock();
+    });
+
+    // Tear down the browser bus subscription so the document listener and handler are not
+    // leaked (and not invoked again) if this block is unmounted or reloaded.
+    onBeforeUnmount(() => {
+        browserBus.dispose();
+    });
 </script>

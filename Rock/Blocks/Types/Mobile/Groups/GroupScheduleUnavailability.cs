@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -22,6 +22,7 @@ using System.Data.Entity;
 using System.Linq;
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Utility;
@@ -78,7 +79,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
         /// <value>
         /// The type template.
         /// </value>
-        protected string TypeTemplate => Field.Types.BlockTemplateFieldType.GetTemplateContent( GetAttributeValue( AttributeKey.TypeTemplate ) );
+        protected string TypeTemplate => Field.Helper.GetBlockTemplateContent( GetAttributeValue( AttributeKey.TypeTemplate ) );
 
         /// <summary>
         /// Gets the current person ID, or 0 if unable to.
@@ -118,7 +119,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
         /// <returns>A <see cref="ContentBag"/></returns>
         private ContentBag GetScheduleContent()
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
 
             // The dictionary of merge fields.
             var mergeFields = RequestContext.GetCommonMergeFields();
@@ -239,7 +240,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
         [BlockAction]
         public BlockActionResult DeleteScheduledUnavailability( Guid attendanceGuid )
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
 
             // The schedule exclusion service.
             var scheduleExclusionService = new PersonScheduleExclusionService( rockContext );
@@ -312,7 +313,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
             // Loop through each Guid we need to schedule the blackout for.
             foreach ( var guid in personGuids )
             {
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     // First, attempt to get the person using the group member service.
                     var groupMember = new GroupMemberService( rockContext ).GetNoTracking( guid.AsGuid() );

@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -25,6 +25,7 @@ using System.Threading;
 using System.Threading.Tasks;
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.SystemKey;
@@ -118,7 +119,7 @@ namespace Rock.Communication.Transport
             var communicationCategoryId = 0;
             var communicationEntityTypeId = 0;
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 // Requery the Communication
                 communication = new CommunicationService( rockContext ).Get( communication.Id );
@@ -405,7 +406,7 @@ namespace Rock.Communication.Transport
 
                 CommunicationRecipient communicationRecipient = null;
 
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     CommunicationRecipientService communicationRecipientService = new CommunicationRecipientService( rockContext );
                     int? recipientId = recipient.CommunicationRecipientId;
@@ -478,7 +479,7 @@ namespace Rock.Communication.Transport
                     }
                 }
             }
-            catch ( TwilioExceptions.ApiException ex ) when ( ex.Code == 21610 )
+            catch ( TwilioExceptions.ApiException ex ) when ( ex.Code == TwilioErrorCode.RecipientUnsubscribed )
             {
                 // This recipient has previously opted out of receiving messages from this number (e.g. by texting "STOP").
                 // They'll need to text "START" to this number before they can receive messages again.
@@ -503,7 +504,7 @@ namespace Rock.Communication.Transport
 
         private async Task SendToCommunicationRecipient( Model.Communication communication, string fromPhone, Dictionary<string, object> mergeFields, Person currentPerson, List<Uri> attachmentMediaUrls, int personEntityTypeId, int communicationCategoryId, int communicationEntityTypeId, string publicAppRoot, string callbackUrl, CommunicationRecipient recipient )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 try
                 {
@@ -559,14 +560,32 @@ namespace Rock.Communication.Transport
                     recipient.Status = CommunicationRecipientStatus.Failed;
                     recipient.StatusNote = "Twilio Exception: " + ex.Message;
 
-                    if ( DisableSmsErrorCodes.Contains( ex.Code ) )
+                    var isOptOutErrorCode = OptOutErrorCodes.Contains( ex.Code );
+                    var isInvalidNumberErrorCode = InvalidNumberErrorCodes.Contains( ex.Code );
+
+                    if ( isOptOutErrorCode || isInvalidNumberErrorCode )
                     {
                         // Disable SMS for this number because the response indicates that Rock should not send messages to that number anymore.
                         var phoneNumber = recipient.PersonAlias.Person.PhoneNumbers.Where( p => p.IsMessagingEnabled ).FirstOrDefault();
                         if ( phoneNumber != null )
                         {
                             phoneNumber.IsMessagingEnabled = false;
-                            phoneNumber.IsMessagingOptedOut = true;
+
+                            /*
+                                5/4/26 - JPH
+
+                                Only mark the phone number as opted-out when the Twilio error code actually represents a recipient opt-out
+                                (e.g., the recipient is on Twilio's STOP list). The other "disable" codes are bad-number errors (landline,
+                                invalid mobile, unreachable carrier, etc.); conflating them with opt-out caused the danger icon to persist
+                                and SMS to remain suppressed even after the admin corrected the number on the person profile.
+
+                                Reason: Issue #6816 - bad-number Twilio errors should disable messaging without setting IsMessagingOptedOut.
+                            */
+                            if ( isOptOutErrorCode )
+                            {
+                                phoneNumber.IsMessagingOptedOut = true;
+                                phoneNumber.MessagingOptedOutDateTime = RockDateTime.Now;
+                            }
                         }
 
                         // Add this to the Person Activity history
@@ -663,7 +682,7 @@ namespace Rock.Communication.Transport
 
         private Rock.Model.CommunicationRecipient GetNextPending( int communicationId, int mediumEntityId, bool isBulkCommunication )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var recipient = Model.Communication.GetNextPending( communicationId, mediumEntityId, rockContext );
                 if ( ValidRecipient( recipient, isBulkCommunication ) )
@@ -1096,19 +1115,59 @@ namespace Rock.Communication.Transport
         #region 
 
         /// <summary>
-        /// If the Twilio API returns any of these exceptions then SMS should be disabled (PhoneNumberIsMessagingEnabled) for the phone number along with any other actions taken.
-        /// https://www.twilio.com/docs/api/errors/
+        /// Named constants for the Twilio API error codes that Rock reacts to. The Twilio .NET SDK does not
+        /// expose these as a typed enum, so they are defined here to keep the catch handlers free of magic numbers.
+        /// See https://www.twilio.com/docs/api/errors/ for the canonical list.
         /// </summary>
-        private static readonly List<int> DisableSmsErrorCodes = new List<int>
+        private static class TwilioErrorCode
         {
-            21211,
-            21214,
-            21612,
-            21614,
-            21610,
-            30006,
-            60205,
-            63033
+            /// <summary>21211 - Invalid 'To' Phone Number.</summary>
+            public const int InvalidToPhoneNumber = 21211;
+
+            /// <summary>21214 - 'To' phone number cannot be reached.</summary>
+            public const int ToPhoneNumberCannotBeReached = 21214;
+
+            /// <summary>21610 - Recipient has previously opted out of receiving messages from this number (Twilio STOP list).</summary>
+            public const int RecipientUnsubscribed = 21610;
+
+            /// <summary>21612 - The 'To' phone number is not currently reachable via SMS or MMS.</summary>
+            public const int ToPhoneNumberNotReachable = 21612;
+
+            /// <summary>21614 - 'To' number is not a valid mobile number.</summary>
+            public const int ToPhoneNumberNotMobile = 21614;
+
+            /// <summary>30006 - Landline or unreachable carrier.</summary>
+            public const int LandlineOrUnreachableCarrier = 30006;
+
+            /// <summary>60205 - SMS is not supported by landline phone number.</summary>
+            public const int SmsNotSupportedByLandline = 60205;
+
+            /// <summary>63033 - Permission to send a message to this user has not been granted.</summary>
+            public const int PermissionToSendNotGranted = 63033;
+        }
+
+        /// <summary>
+        /// Twilio error codes that indicate the destination phone number cannot receive SMS (e.g., bad number, landline).
+        /// SMS should be disabled for the number, but the recipient has not opted out and IsMessagingOptedOut should NOT be set.
+        /// </summary>
+        private static readonly List<int> InvalidNumberErrorCodes = new List<int>
+        {
+            TwilioErrorCode.InvalidToPhoneNumber,
+            TwilioErrorCode.ToPhoneNumberCannotBeReached,
+            TwilioErrorCode.ToPhoneNumberNotReachable,
+            TwilioErrorCode.ToPhoneNumberNotMobile,
+            TwilioErrorCode.LandlineOrUnreachableCarrier,
+            TwilioErrorCode.SmsNotSupportedByLandline,
+            TwilioErrorCode.PermissionToSendNotGranted
+        };
+
+        /// <summary>
+        /// Twilio error codes that indicate the recipient has explicitly opted out of receiving messages.
+        /// Both IsMessagingEnabled and IsMessagingOptedOut should reflect this, and MessagingOptedOutDateTime should be set.
+        /// </summary>
+        private static readonly List<int> OptOutErrorCodes = new List<int>
+        {
+            TwilioErrorCode.RecipientUnsubscribed
         };
 
         /// <summary>

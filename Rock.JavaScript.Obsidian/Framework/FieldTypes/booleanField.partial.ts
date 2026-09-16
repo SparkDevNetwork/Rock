@@ -21,7 +21,7 @@ import { defineAsyncComponent } from "@Obsidian/Utility/component";
 import { FieldTypeBase } from "./fieldType";
 import { getStandardFilterComponent } from "./utils";
 
-export const enum ConfigurationValueKey {
+export const enum ConfigurationKey {
     BooleanControlType = "BooleanControlType",
     FalseText = "falsetext",
     TrueText = "truetext"
@@ -68,10 +68,10 @@ export class BooleanFieldType extends FieldTypeBase {
             return "";
         }
         else if (boolValue === true) {
-            return configurationValues[ConfigurationValueKey.TrueText] || "Yes";
+            return configurationValues[ConfigurationKey.TrueText] || "Yes";
         }
         else {
-            return configurationValues[ConfigurationValueKey.FalseText] || "No";
+            return configurationValues[ConfigurationKey.FalseText] || "No";
         }
     }
 

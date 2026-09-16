@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -22,6 +22,7 @@ using System.Web.UI;
 #endif
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.ViewModels.Utility;
@@ -152,7 +153,18 @@ namespace Rock.Field.Types
         public override string GetPrivateEditValue( string publicValue, Dictionary<string, string> privateConfigurationValues )
         {
             var jsonValue = publicValue.FromJsonOrNull<JsonValue>();
-            return jsonValue != null ? $"{jsonValue.InteractionChannel?.Value}|{jsonValue.InteractionComponent?.Value}" : string.Empty;
+
+            if ( jsonValue == null )
+            {
+                return string.Empty;
+            }
+
+            if ( jsonValue.InteractionChannel == null && jsonValue.InteractionComponent == null )
+            {
+                return string.Empty;
+            }
+
+            return $"{jsonValue.InteractionChannel?.Value}|{jsonValue.InteractionComponent?.Value}";
         }
 
         #region Parse Helpers
@@ -220,7 +232,7 @@ namespace Rock.Field.Types
                 return null;
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var entityReferences = new List<ReferencedEntity>();
 
@@ -258,6 +270,27 @@ namespace Rock.Field.Types
             {
                 new ReferencedProperty( EntityTypeCache.GetId<InteractionChannel>().Value, nameof( InteractionChannel.Name ) ),
                 new ReferencedProperty( EntityTypeCache.GetId<InteractionComponent>().Value, nameof( InteractionComponent.Name ) )
+            };
+        }
+
+        #endregion
+
+        #region Value Hinting
+
+        /// <inheritdoc/>
+        /// <remarks>
+        /// A single guid is read as the component rather than the channel, which is
+        /// the opposite of the order the two appear in when both are present. Worth
+        /// stating, because a caller supplying only a channel guid silently stores it
+        /// as a component.
+        /// </remarks>
+        internal override FieldTypeHints GetFieldHints( Dictionary<string, string> privateConfigurationValues )
+        {
+            return new FieldTypeHints
+            {
+                IsCompleteList = false,
+                ValueFormat = "Two guids separated by a pipe, the InteractionChannel first and the InteractionComponent second. To store a component on its own, supply the two parts with the channel half empty rather than a bare guid, because a value with no pipe is read as the component and never as the channel.",
+                Instructions = "To find the correct values, read the interaction channels to get the channel guid, then read that channel's components to get the component guid."
             };
         }
 
@@ -390,7 +423,7 @@ namespace Rock.Field.Types
 
             if ( interactionChannelInteractionComponentPicker != null )
             {
-                var rockContext = new RockContext();
+                var rockContext = RockApp.Current.CreateRockContext();
                 Guid? interactionChannelGuid = null;
                 Guid? interactionComponentGuid = null;
 

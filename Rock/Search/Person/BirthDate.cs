@@ -20,6 +20,7 @@ using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.Linq;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 
@@ -69,7 +70,7 @@ namespace Rock.Search.Person
                 return new List<Model.Person>().AsQueryable();
             }
 
-            var personService = new PersonService( new RockContext() );
+            var personService = new PersonService( RockApp.Current.CreateRockContext() );
 
             return personService.Queryable()
                 .Where( a => a.BirthDate.HasValue && a.BirthDate.Value == birthDate );

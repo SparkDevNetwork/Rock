@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -21,8 +21,10 @@ using System.Data.Entity;
 using System.Linq;
 using System.Text;
 using System.Web;
+
 using Rock.Attribute;
 using Rock.Communication;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -35,8 +37,15 @@ namespace Rock.Jobs
     [DisplayName( "Send Note Notifications" )]
     [Description( "Send note watch notifications." )]
 
-    [SystemCommunicationField( "Note Watch Notification Email", "", defaultSystemCommunicationGuid: Rock.SystemGuid.SystemCommunication.NOTE_WATCH_NOTIFICATION, required: false, order: 1 )]
-    [IntegerField( "Cutoff Days", "Just in case the Note Notification service hasn't run for a while, this is the max number of days between the note edited date and the notification.", required: true, defaultValue: 7, order: 3 )]
+    [SystemCommunicationField( "Note Watch Notification Email",
+        DefaultSystemCommunicationGuid = Rock.SystemGuid.SystemCommunication.NOTE_WATCH_NOTIFICATION,
+        IsRequired = false,
+        Order = 1 )]
+    [IntegerField( "Cutoff Days",
+        Description = "Just in case the Note Notification service hasn't run for a while, this is the max number of days between the note edited date and the notification.",
+        IsRequired = true,
+        DefaultIntegerValue = 7,
+        Order = 3 )]
     public class SendNoteNotifications : RockJob
     {
         /// <summary>
@@ -224,7 +233,7 @@ namespace Rock.Jobs
             var errors = new List<string>();
             List<int> noteIdsToProcessNoteWatchesList = new List<int>();
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var noteService = new NoteService( rockContext );
                 var noteWatchService = new NoteWatchService( rockContext );
@@ -250,7 +259,7 @@ namespace Rock.Jobs
 
             // make a list of notifications to send to each personId
             Dictionary<int, NoteWatchPersonToNotifyList> personNotificationDigestList = new Dictionary<int, NoteWatchPersonToNotifyList>();
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 foreach ( int noteId in noteIdsToProcessNoteWatchesList )
                 {
@@ -310,7 +319,7 @@ namespace Rock.Jobs
                 }
             }
 
-            using ( var rockUpdateContext = new RockContext() )
+            using ( var rockUpdateContext = RockApp.Current.CreateRockContext() )
             {
                 var notesToMarkNotified = new NoteService( rockUpdateContext ).Queryable().Where( a => noteIdsToProcessNoteWatchesList.Contains( a.Id ) );
 

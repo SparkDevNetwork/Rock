@@ -20,7 +20,7 @@ import { getFieldEditorProps, getFieldConfigurationProps } from "./utils";
 import GroupRolePicker from "@Obsidian/Controls/groupRolePicker.obs";
 import GroupTypePicker from "@Obsidian/Controls/groupTypePicker.obs";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
-import { ConfigurationValueKey } from "./groupRoleField.partial";
+import { ConfigurationKey } from "./groupRoleField.partial";
 import { toGuidOrNull } from "@Obsidian/Utility/guid";
 import { Guid } from "@Obsidian/Types";
 
@@ -42,7 +42,7 @@ export const EditComponent = defineComponent({
         }, { immediate: true });
 
         const groupTypeValue = computed((): ListItemBag => {
-            return JSON.parse(props.configurationValues[ConfigurationValueKey.GroupType] || "{}");
+            return JSON.parse(props.configurationValues[ConfigurationKey.GroupType] || "{}");
         });
 
         watch(() => internalValue.value, () => {
@@ -92,10 +92,10 @@ export const ConfigurationComponent = defineComponent({
 
             // Construct the new value that will be emitted if it is different
             // than the current value.
-            newValue[ConfigurationValueKey.GroupType] = JSON.stringify(groupType.value ?? "");
+            newValue[ConfigurationKey.GroupType] = JSON.stringify(groupType.value ?? "");
 
             // Compare the new value and the old value.
-            const anyValueChanged = newValue[ConfigurationValueKey.GroupType] !== (props.modelValue[ConfigurationValueKey.GroupType] ?? "");
+            const anyValueChanged = newValue[ConfigurationKey.GroupType] !== (props.modelValue[ConfigurationKey.GroupType] ?? "");
 
             // If any value changed then emit the new model value.
             if (anyValueChanged) {
@@ -123,12 +123,12 @@ export const ConfigurationComponent = defineComponent({
         // Watch for changes coming in from the parent component and update our
         // data to match the new information.
         watch(() => [props.modelValue, props.configurationProperties], () => {
-            groupType.value = JSON.parse(props.modelValue[ConfigurationValueKey.GroupType] || "{}");
+            groupType.value = JSON.parse(props.modelValue[ConfigurationKey.GroupType] || "{}");
         }, {
             immediate: true
         });
 
-        watch(groupType, val => maybeUpdateConfiguration(ConfigurationValueKey.GroupType, JSON.stringify(val ?? "")));
+        watch(groupType, val => maybeUpdateConfiguration(ConfigurationKey.GroupType, JSON.stringify(val ?? "")));
 
         return {
             groupType

@@ -1,0 +1,47 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="note-item">
+        <div class="note-item-content">
+            <PersonAvatar v-if="note.createdByPhotoUrl"
+                          :photoUrl="note.createdByPhotoUrl"
+                          marginRight="0" />
+            <div class="note-item-content-details">
+                <div class="note-item-content-details-name">{{ note.createdByName }}</div>
+                <div class="note-item-content-details-info">
+                    <span class="note-item-content-details-info-type">
+                        {{ note.noteTypeName }}
+                    </span>
+                    <span class="note-item-content-details-info-datetime" v-if="!isNullOrWhiteSpace(createdDateTimeElapsed)">
+                        • {{ createdDateTimeElapsed }}
+                    </span>
+                </div>
+            </div>
+        </div>
+        <div class="note-item-text">
+            {{ note.text }}
+        </div>
+    </div>
+</template>
+
+<script setup lang="ts">
+    import { PropType, computed } from "vue";
+    import PersonAvatar from "@Obsidian/Controls/personAvatar.obs";
+    import { PersonNoteBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/personNoteBag";
+    import { isNullOrWhiteSpace } from "@Obsidian/Utility/stringUtils";
+    import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
+
+    const props = defineProps({
+        note: {
+            type: Object as PropType<PersonNoteBag>,
+            default: {}
+        },
+    });
+
+    const createdDateTimeElapsed = computed(() => {
+        if (isNullOrWhiteSpace(props.note.createdDateTime)) {
+            return;
+        }
+
+        return RockDateTime.parseISO(props.note.createdDateTime!)?.toElapsedString();
+    });
+</script>

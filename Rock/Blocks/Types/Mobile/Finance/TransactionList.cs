@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -15,14 +15,15 @@
 // </copyright>
 //
 
-using Rock.Attribute;
-using Rock.Common.Mobile.Blocks.Finance.TransactionList;
-using Rock.Common.Mobile.ViewModel;
-using Rock.Model;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+
+using Rock.Attribute;
+using Rock.Common.Mobile.Blocks.Finance.TransactionList;
+using Rock.Common.Mobile.ViewModel;
+using Rock.Model;
 
 namespace Rock.Blocks.Types.Mobile.Finance
 {
@@ -133,8 +134,8 @@ namespace Rock.Blocks.Types.Mobile.Finance
         [BlockAction]
         public BlockActionResult GetTransactionList( TransactionListRequestBag options )
         {
-            int? personId = GetCurrentPerson().Id;
-            if (personId == null )
+            var person = GetCurrentPerson();
+            if ( person == null )
             {
                 return ActionOk( new TransactionListResponseBag
                 {
@@ -142,10 +143,19 @@ namespace Rock.Blocks.Types.Mobile.Finance
                 } );
             }
 
+            // Filter by the person's GivingId so that individuals who contribute as
+            // part of a family (combined giving) see all transactions authorized by
+            // anyone in their giving group. GivingId resolves to "G{GivingGroupId}"
+            // for family givers and "P{PersonId}" for individual givers, so a single
+            // expression correctly handles both cases without branching. This matches
+            // the dominant pattern across Rock Web finance blocks and the website's
+            // behavior, which already shows combined family giving.
+            var givingId = person.GivingId;
+
             var transactions = new FinancialTransactionService( RockContext )
                 .Queryable()
                 .Where( t => t.TransactionDateTime.HasValue && t.TransactionDateTime.Value.Year == options.Year )
-                .Where( t => t.AuthorizedPersonAlias.PersonId == personId )
+                .Where( t => t.AuthorizedPersonAlias.Person.GivingId == givingId )
                 .ToList()
                 .Select( t => new TransactionItemBag
                 {

@@ -1,21 +1,26 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <a href="#" @click.prevent="showModal" role="button" :class="classes"><i class="ti ti-lock"></i></a>
+    <a v-if="isVisible" href="#" @click.prevent="showModal" role="button" :class="classes"><i class="ti ti-lock"></i></a>
 </template>
 
 <script setup lang="ts">
     import { PropType, computed } from "vue";
     import { showSecurity } from "@Obsidian/Utility/dialogs";
+    import { areEqual, emptyGuid } from "@Obsidian/Utility/guid";
     import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
 
     const props = defineProps({
-        /** The type of entity to secure */
+        /** The identifier of the entity type to secure, as an Id, IdKey or Guid. */
         entityTypeIdKey: {
             type: String,
             default: "0"
         },
 
-        /** The ID of the entity being secured */
+        /**
+         * The identifier of the entity being secured, as an Id, IdKey or
+         * Guid. "0" opens the entity type's default security; an empty or
+         * empty-guid value hides the button.
+         */
         entityIdKey: {
             type: String,
             default: "0"
@@ -60,6 +65,17 @@
         }
 
         return title;
+    });
+
+    /**
+     * Will be `true` if the button should be rendered at all. An empty or
+     * empty-guid entityIdKey means the entity has not been saved yet, so
+     * there is nothing to secure and no button is offered. An explicit "0"
+     * (also the prop default) intentionally remains valid because it opens
+     * the entity type's default security.
+     */
+    const isVisible = computed((): boolean => {
+        return !!props.entityIdKey && !areEqual(props.entityIdKey, emptyGuid);
     });
 
     const classes = computed(() => {

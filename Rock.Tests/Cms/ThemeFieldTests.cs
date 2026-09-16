@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -11,6 +11,7 @@ using Rock.Cms;
 using Rock.Cms.ThemeFields;
 using Rock.Enums.Cms;
 using Rock.Tests.Shared;
+using Rock.Tests.Shared.TestFramework;
 
 namespace Rock.Tests.Cms
 {

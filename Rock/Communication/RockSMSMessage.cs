@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -18,6 +18,8 @@ using System;
 using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
+
+using Rock.Configuration;
 using Rock.Model;
 using Rock.Web.Cache;
 
@@ -40,39 +42,6 @@ namespace Rock.Communication
             get
             {
                 return EntityTypeCache.Get( SystemGuid.EntityType.COMMUNICATION_MEDIUM_SMS.AsGuid() ).Id;
-            }
-        }
-
-        /// <summary>
-        /// Gets or sets from number.
-        /// </summary>
-        /// <value>
-        /// From number.
-        /// </value>
-        [Obsolete( "Use FromSystemPhoneNumber instead." )]
-        [RockObsolete( "1.15" )]
-        public DefinedValueCache FromNumber
-        {
-            get
-            {
-                if ( !_fromSystemPhoneNumberId.HasValue )
-                {
-                    return null;
-                }
-
-                var systemPhoneNumberCache = SystemPhoneNumberCache.Get( _fromSystemPhoneNumberId.Value );
-
-                if ( systemPhoneNumberCache == null )
-                {
-                    return null;
-                }
-
-                return DefinedValueCache.Get( systemPhoneNumberCache.Guid );
-            }
-
-            set
-            {
-                _fromSystemPhoneNumberId = SystemPhoneNumberCache.Get( value.Guid )?.Id;
             }
         }
 
@@ -183,7 +152,7 @@ namespace Rock.Communication
             // If the response recipient exists use it
             if ( FromSystemPhoneNumber.AssignedToPersonAliasId.HasValue )
             {
-                person = new Rock.Model.PersonAliasService( new Data.RockContext() )
+                person = new Rock.Model.PersonAliasService( RockApp.Current.CreateRockContext() )
                     .GetPerson( FromSystemPhoneNumber.AssignedToPersonAliasId.Value );
             }
 

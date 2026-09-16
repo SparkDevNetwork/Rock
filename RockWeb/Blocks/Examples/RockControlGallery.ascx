@@ -495,6 +495,11 @@
                         <Rock:AccountPicker ID="acctpExample" runat="server" Label="Rock:AccountPicker" />
                     </div>
 
+                     <a id="AccountPicker2"></a>
+                    <div runat="server" class="r-example">
+                        <Rock:AccountPicker ID="acctpExampleMulti" AllowMultiSelect="true" runat="server" Label="Rock:AccountPicker (Multiselect)" />
+                    </div>
+
                     <a id="FinancialGatewayPicker"></a>
                     <div runat="server" class="r-example">
                         <Rock:FinancialGatewayPicker ID="fgpFinancialGatewayPicker" runat="server" Label="Rock:FinancialGatewayPicker"/>

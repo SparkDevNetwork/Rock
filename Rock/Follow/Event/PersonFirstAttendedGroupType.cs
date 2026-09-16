@@ -22,6 +22,7 @@ using System.Linq;
 
 using Rock;
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 
@@ -34,8 +35,15 @@ namespace Rock.Follow.Event
     [Export( typeof( EventComponent ) )]
     [ExportMetadata( "ComponentName", "PersonFirstAttendedGroupType" )]
 
-    [GroupTypeField( "Group Type", "The group type to evaluate if person has just attended for the first time", true, order: 0 )]
-    [IntegerField( "Max Days Back", "Maximum number of days back to consider", false, 30, "", 1)]
+    [GroupTypeField( "Group Type",
+        Description = "The group type to evaluate if person has just attended for the first time",
+        IsRequired = true,
+        Order = 0 )]
+    [IntegerField( "Max Days Back",
+        Description = "Maximum number of days back to consider",
+        IsRequired = false,
+        DefaultIntegerValue = 30,
+        Order = 1 )]
     [Rock.SystemGuid.EntityTypeGuid( "F74232DD-62B6-4F04-BF5F-9E5CF159CD8B")]
     public class PersonFirstAttendedGroupType : EventComponent
     {
@@ -69,7 +77,7 @@ namespace Rock.Follow.Event
                 {
                     var person = personAlias.Person;
 
-                    DateTime? firstAttended = new AttendanceService( new RockContext() )
+                    DateTime? firstAttended = new AttendanceService( RockApp.Current.CreateRockContext() )
                         .Queryable().AsNoTracking()
                         .Where( a =>
                             a.DidAttend.HasValue &&

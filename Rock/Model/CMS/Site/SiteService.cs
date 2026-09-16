@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -22,6 +22,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 using Rock.Common.Mobile.Enums;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Mobile;
 using Rock.Utility;
@@ -208,7 +209,7 @@ namespace Rock.Model
                 {
                     // Use a new RockContext since our own context is corrupted
                     // by the exception.
-                    using ( var deleteRockContext = new RockContext() )
+                    using ( var deleteRockContext = RockApp.Current.CreateRockContext() )
                     {
                         var deleteBinaryFileService = new BinaryFileService( deleteRockContext );
 

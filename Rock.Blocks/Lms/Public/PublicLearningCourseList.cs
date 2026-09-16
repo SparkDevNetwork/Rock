@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -56,7 +56,7 @@ namespace Rock.Blocks.Lms
         "Show Completion Status",
         Key = AttributeKey.ShowCompletionStatus,
         Description = "Determines if the individual's completion status should be shown.",
-        ControlType = Field.Types.BooleanFieldType.BooleanControlType.Toggle,
+        BooleanControlType = Rock.Enums.Controls.BooleanControlType.Toggle,
         IsRequired = true,
         DefaultBooleanValue = true,
         Order = 3 )]
@@ -66,7 +66,7 @@ namespace Rock.Blocks.Lms
         Description = "If selected, all non-public courses will be excluded.",
         IsRequired = false,
         DefaultBooleanValue = true,
-        ControlType = Field.Types.BooleanFieldType.BooleanControlType.Toggle,
+        BooleanControlType = Rock.Enums.Controls.BooleanControlType.Toggle,
         Key = AttributeKey.PublicOnly,
         Order = 4 )]
 

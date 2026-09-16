@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -46,5 +46,11 @@ namespace Rock.ViewModels.Blocks.Engagement.ConnectionTypeDetail
         /// Gets or sets the person note creation behavior.
         /// </summary>
         public PersonNoteCreationBehavior? PersonNoteCreationBehavior { get; set; }
+
+        /// <summary>
+        /// The note type that will be used when adding activity notes to
+        /// requests of this type.
+        /// </summary>
+        public ListItemBag PersonNoteType { get; set; }
     }
 }

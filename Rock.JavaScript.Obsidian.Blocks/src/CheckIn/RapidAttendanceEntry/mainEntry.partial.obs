@@ -1,0 +1,567 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div ref="entryElement" class="rapid-attendance-entry-main">
+        <template v-if="selectedResult">
+            <LoadingIndicator v-if="isLoadingFamily" :delay="250" />
+
+            <NotificationBox v-else-if="familyErrorMessage" :alertType="AlertType.Warning">
+                {{ familyErrorMessage }}
+            </NotificationBox>
+
+            <template v-else-if="family">
+                <ContentSectionContainer :sidebar="false">
+                    <ContentSection v-if="family.headerHtml" light disableCollapse>
+                        <div class="rapid-attendance-entry-family-header-row">
+                            <div class="rapid-attendance-entry-family-header" v-html="family.headerHtml"></div>
+
+                            <div class="rapid-attendance-entry-family-header-actions">
+                                <RockButton :btnType="BtnType.Default"
+                                            :btnSize="BtnSize.Small"
+                                            title="Edit Family"
+                                            @click="isEditFamilyModalShown = true">
+                                    <i class="ti ti-pencil"></i>
+                                </RockButton>
+
+                                <RockButton :btnType="BtnType.Default"
+                                            :btnSize="BtnSize.Small"
+                                            title="Add Person to Family"
+                                            @click="onAddPersonClick">
+                                    <i class="ti ti-user-plus"></i>
+                                </RockButton>
+                            </div>
+                        </div>
+                    </ContentSection>
+
+                    <NotificationBox v-if="saveSuccessMessage"
+                                     :alertType="AlertType.Success"
+                                     dismissible
+                                     @dismiss="saveSuccessMessage = ''">
+                        {{ saveSuccessMessage }}
+                    </NotificationBox>
+
+                    <NotificationBox v-if="saveErrorMessage"
+                                     :alertType="AlertType.Warning"
+                                     dismissible
+                                     @dismiss="saveErrorMessage = ''">
+                        {{ saveErrorMessage }}
+                    </NotificationBox>
+
+                    <AttendanceSection v-if="session"
+                                       :members="family.members ?? []"
+                                       :canCheckInGuests="family.canCheckInGuests ?? []"
+                                       :attendedPersonGuids="attendedPersonGuids"
+                                       :minimumAttendanceAge="config.minimumAttendanceAge"
+                                       @toggle="applyAttendanceChange" />
+
+                    <PersonEntry v-if="currentPersonInput"
+                                 v-model:selectedPersonGuid="selectedPersonGuid"
+                                 :members="family.members ?? []"
+                                 :headerHtml="personHeaderHtml"
+                                 :input="currentPersonInput"
+                                 :workflowListTitle="config.workflowListTitle"
+                                 :workflowItems="config.workflowItems"
+                                 :noteTypeItems="config.noteTypeItems"
+                                 :connectionOpportunitiesListTitle="config.connectionOpportunitiesListTitle"
+                                 :connectionOpportunityItems="family.connectionOpportunityItems"
+                                 :prayerOptions="config.prayerOptions"
+                                 @editPerson="onEditPersonClick" />
+                </ContentSectionContainer>
+
+                <EditFamilyModal v-model="isEditFamilyModalShown"
+                                 :familyGuid="family.familyGuid"
+                                 @saved="onFamilySaved" />
+
+                <EditPersonModal v-model="isEditPersonModalShown"
+                                 :familyGuid="family.familyGuid"
+                                 :personGuid="editPersonGuid"
+                                 @saved="onPersonSaved" />
+            </template>
+        </template>
+
+        <NotificationBox v-else :alertType="AlertType.Info">
+            Search for an individual to begin.
+        </NotificationBox>
+    </div>
+</template>
+
+<script setup lang="ts">
+    import { computed, nextTick, onBeforeUnmount, PropType, ref, watch } from "vue";
+    import AttendanceSection from "./attendanceSection.partial.obs";
+    import EditFamilyModal from "./editFamilyModal.partial.obs";
+    import EditPersonModal from "./editPersonModal.partial.obs";
+    import PersonEntry from "./personEntry.partial.obs";
+    import { PersonInputState } from "./types.partial";
+    import { useUpdateEditorIsDirty } from "./utils.partial";
+    import ContentSection from "@Obsidian/Controls/contentSection.obs";
+    import ContentSectionContainer from "@Obsidian/Controls/contentSectionContainer.obs";
+    import LoadingIndicator from "@Obsidian/Controls/loadingIndicator.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import { AlertType } from "@Obsidian/Enums/Controls/alertType";
+    import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
+    import { BtnType } from "@Obsidian/Enums/Controls/btnType";
+    import { Guid } from "@Obsidian/Types";
+    import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { useVModelPassthrough } from "@Obsidian/Utility/component";
+    import { RapidAttendanceEntryFamilyBag } from "@Obsidian/ViewModels/Blocks/CheckIn/RapidAttendanceEntry/rapidAttendanceEntryFamilyBag";
+    import { RapidAttendanceEntryInitializationBox } from "@Obsidian/ViewModels/Blocks/CheckIn/RapidAttendanceEntry/rapidAttendanceEntryInitializationBox";
+    import { RapidAttendanceEntryPersonDetailBag } from "@Obsidian/ViewModels/Blocks/CheckIn/RapidAttendanceEntry/rapidAttendanceEntryPersonDetailBag";
+    import { RapidAttendanceEntryPersonInputBag } from "@Obsidian/ViewModels/Blocks/CheckIn/RapidAttendanceEntry/rapidAttendanceEntryPersonInputBag";
+    import { RapidAttendanceEntrySaveBag } from "@Obsidian/ViewModels/Blocks/CheckIn/RapidAttendanceEntry/rapidAttendanceEntrySaveBag";
+    import { RapidAttendanceEntrySaveResponseBag } from "@Obsidian/ViewModels/Blocks/CheckIn/RapidAttendanceEntry/rapidAttendanceEntrySaveResponseBag";
+    import { RapidAttendanceEntrySearchResultBag } from "@Obsidian/ViewModels/Blocks/CheckIn/RapidAttendanceEntry/rapidAttendanceEntrySearchResultBag";
+    import { RapidAttendanceEntrySessionBag } from "@Obsidian/ViewModels/Blocks/CheckIn/RapidAttendanceEntry/rapidAttendanceEntrySessionBag";
+
+    const config = useConfigurationValues<RapidAttendanceEntryInitializationBox>();
+    const invokeBlockAction = useInvokeBlockAction();
+
+    const props = defineProps({
+        /**
+         * The search result whose family is being worked. Null shows the
+         * empty state.
+         */
+        selectedResult: {
+            type: Object as PropType<RapidAttendanceEntrySearchResultBag | null>,
+            default: null
+        },
+
+        /**
+         * The active session attendance is recorded under, or null when
+         * attendance is not being taken.
+         */
+        session: {
+            type: Object as PropType<RapidAttendanceEntrySessionBag | null>,
+            default: null
+        },
+
+        /**
+         * Set to true to save everything entered. Two-way bound; reset to
+         * false after the attempt.
+         */
+        submit: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "attendanceCountChanged", count: number | null): void,
+        (e: "saved"): void,
+        (e: "update:submit", value: boolean): void
+    }>();
+
+    // #region Values
+
+    const submit = useVModelPassthrough(props, "submit", emit);
+
+    const updateEditorIsDirty = useUpdateEditorIsDirty();
+
+    const entryElement = ref<HTMLElement>();
+
+    const family = ref<RapidAttendanceEntryFamilyBag | null>(null);
+    const isLoadingFamily = ref(false);
+    const familyErrorMessage = ref("");
+
+    const attendedPersonGuids = ref<Guid[]>([]);
+
+    /** The attended set as last saved, the baseline the dirty check compares against. */
+    const savedAttendedPersonGuids = ref<Guid[]>([]);
+
+    const selectedPersonGuid = ref<Guid | null>(null);
+    const personHeaderHtml = ref("");
+
+    /** The entries typed for each person, keyed by person guid. */
+    const personInputs = ref<Record<string, PersonInputState>>({});
+
+    const saveSuccessMessage = ref("");
+    const saveErrorMessage = ref("");
+
+    const isEditFamilyModalShown = ref(false);
+    const isEditPersonModalShown = ref(false);
+
+    /** The person opened in the edit modal. Null opens the modal to add a new family member. */
+    const editPersonGuid = ref<Guid | null>(null);
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    /** The selected person's entries, or null until a person is selected. */
+    const currentPersonInput = computed((): PersonInputState | null =>
+        selectedPersonGuid.value ? personInputs.value[selectedPersonGuid.value] ?? null : null
+    );
+
+    /**
+     * Whether the attended roster differs from what was last saved. Compared as a
+     * set so re-checking back to the saved state reads as clean.
+     */
+    const isAttendanceDirty = computed((): boolean => {
+        if (attendedPersonGuids.value.length !== savedAttendedPersonGuids.value.length) {
+            return true;
+        }
+
+        const savedSet = new Set(savedAttendedPersonGuids.value);
+
+        return attendedPersonGuids.value.some(personGuid => !savedSet.has(personGuid));
+    });
+
+    /** Whether any per-person entry or the attended roster has unsaved changes a navigation would discard. */
+    const isDirty = computed((): boolean => buildPersonInputs().length > 0 || isAttendanceDirty.value);
+
+    // #endregion Computed Values
+
+    // #region Functions
+
+    /**
+     * Scrolls the entry panel to its top after a selection or save. On stacked
+     * mobile the whole screen scrolls; on desktop the panel is its own scroll
+     * region, so its scroll is reset instead.
+     */
+    function scrollEntryToTop(): void {
+        nextTick(() => {
+            const el = entryElement.value;
+
+            if (!el) {
+                return;
+            }
+
+            el.scrollTo({ top: 0, behavior: "smooth" });
+            el.scrollIntoView({ behavior: "smooth", block: "start" });
+        });
+    }
+
+    /** Creates a person's entry state with the configured defaults applied. */
+    function createPersonInput(): PersonInputState {
+        return {
+            prayerText: "",
+            prayerCategory: config.prayerOptions?.defaultCategory ?? null,
+            isUrgent: false,
+            isPublic: config.prayerOptions?.isPublicByDefault ?? false,
+            noteTypeGuid: config.noteTypeItems?.[0]?.value ?? "",
+            noteText: "",
+            workflowTypeGuids: [],
+            connectionOpportunityGuids: []
+        };
+    }
+
+    /**
+     * Applies one person's attended state to the roster. The single apply
+     * path; real-time updates will route through here too.
+     */
+    function applyAttendanceChange(personGuid: Guid, didAttend: boolean): void {
+        const isAttended = attendedPersonGuids.value.includes(personGuid);
+
+        if (didAttend && !isAttended) {
+            attendedPersonGuids.value.push(personGuid);
+        }
+        else if (!didAttend && isAttended) {
+            attendedPersonGuids.value = attendedPersonGuids.value.filter(g => g !== personGuid);
+        }
+    }
+
+    /**
+     * Loads the selected result's family and resets the per-person entries.
+     * The searched person starts selected.
+     */
+    async function loadFamily(): Promise<void> {
+        const result = props.selectedResult;
+
+        family.value = null;
+        familyErrorMessage.value = "";
+        saveSuccessMessage.value = "";
+        saveErrorMessage.value = "";
+        selectedPersonGuid.value = null;
+        personInputs.value = {};
+
+        if (!result) {
+            return;
+        }
+
+        isLoadingFamily.value = true;
+
+        const response = await invokeBlockAction<RapidAttendanceEntryFamilyBag>("GetFamily", {
+            familyGuid: result.familyGuid,
+            session: props.session
+        });
+
+        // A newer selection supersedes this load.
+        if (props.selectedResult !== result) {
+            return;
+        }
+
+        isLoadingFamily.value = false;
+
+        if (!response.isSuccess || !response.data) {
+            familyErrorMessage.value = response.errorMessage || "Unable to load the family. Try the search again.";
+            return;
+        }
+
+        family.value = response.data;
+
+        const roster = [...(response.data.members ?? []), ...(response.data.canCheckInGuests ?? [])];
+        attendedPersonGuids.value = roster.filter(p => p.didAttend).map(p => p.personGuid);
+        savedAttendedPersonGuids.value = [...attendedPersonGuids.value];
+
+        emit("attendanceCountChanged", response.data.attendanceCount ?? null);
+
+        const members = response.data.members ?? [];
+        const searched = members.find(m => m.personGuid === result.personGuid);
+        selectedPersonGuid.value = (searched ?? members[0])?.personGuid ?? null;
+    }
+
+    /**
+     * Refreshes the family header after an Edit Family save, leaving the
+     * per-person entries and attendance toggles in place.
+     */
+    async function onFamilySaved(): Promise<void> {
+        const result = props.selectedResult;
+
+        if (!result || !family.value) {
+            return;
+        }
+
+        const response = await invokeBlockAction<RapidAttendanceEntryFamilyBag>("GetFamily", {
+            familyGuid: result.familyGuid,
+            session: props.session
+        });
+
+        if (family.value && response.isSuccess && response.data) {
+            family.value.headerHtml = response.data.headerHtml;
+        }
+
+        saveSuccessMessage.value = "Family updated.";
+        scrollEntryToTop();
+    }
+
+    /** Opens the edit modal to add a new member to the loaded family. */
+    function onAddPersonClick(): void {
+        editPersonGuid.value = null;
+        isEditPersonModalShown.value = true;
+    }
+
+    /** Opens the edit modal for the selected person. */
+    function onEditPersonClick(): void {
+        if (!selectedPersonGuid.value) {
+            return;
+        }
+
+        editPersonGuid.value = selectedPersonGuid.value;
+        isEditPersonModalShown.value = true;
+    }
+
+    /**
+     * Reloads the family roster after a member is added or edited, then selects the saved person and refreshes
+     * their summary. The per-person entries are left in place.
+     */
+    async function onPersonSaved(personGuid: Guid): Promise<void> {
+        const wasAdding = editPersonGuid.value === null;
+        const result = props.selectedResult;
+
+        if (!result || !family.value) {
+            return;
+        }
+
+        const response = await invokeBlockAction<RapidAttendanceEntryFamilyBag>("GetFamily", {
+            familyGuid: result.familyGuid,
+            session: props.session
+        });
+
+        if (response.isSuccess && response.data) {
+            family.value = response.data;
+
+            const roster = [...(response.data.members ?? []), ...(response.data.canCheckInGuests ?? [])];
+            attendedPersonGuids.value = roster.filter(p => p.didAttend).map(p => p.personGuid);
+            savedAttendedPersonGuids.value = [...attendedPersonGuids.value];
+            emit("attendanceCountChanged", response.data.attendanceCount ?? null);
+
+            const members = response.data.members ?? [];
+
+            if (members.some(m => m.personGuid === personGuid)) {
+                selectedPersonGuid.value = personGuid;
+            }
+            else if (!members.some(m => m.personGuid === selectedPersonGuid.value)) {
+                selectedPersonGuid.value = members[0]?.personGuid ?? null;
+            }
+        }
+
+        // The selection may not have changed (editing the current person), so refresh the summary directly.
+        await loadPersonHeader();
+
+        // Refresh the search results so the edited person's name, age, and family appear updated on the card.
+        emit("saved");
+
+        saveSuccessMessage.value = wasAdding ? "Family member added." : "Individual updated.";
+        scrollEntryToTop();
+    }
+
+    /** Loads the rendered personal summary for the selected person. */
+    async function loadPersonHeader(): Promise<void> {
+        const personGuid = selectedPersonGuid.value;
+
+        if (!personGuid) {
+            personHeaderHtml.value = "";
+            return;
+        }
+
+        // Keep the prior header until the new one loads, so the section doesn't
+        // collapse to a blank and flicker the scrollbar while switching people.
+        const response = await invokeBlockAction<RapidAttendanceEntryPersonDetailBag>("GetPerson", {
+            personGuid
+        });
+
+        // A newer selection supersedes this load.
+        if (selectedPersonGuid.value !== personGuid) {
+            return;
+        }
+
+        personHeaderHtml.value = response.isSuccess ? response.data?.headerHtml ?? "" : "";
+    }
+
+    /** Builds the per-person entries that have anything to save. */
+    function buildPersonInputs(): RapidAttendanceEntryPersonInputBag[] {
+        const inputs: RapidAttendanceEntryPersonInputBag[] = [];
+
+        for (const [personGuid, state] of Object.entries(personInputs.value)) {
+            const prayerRequest = state.prayerText.trim()
+                ? {
+                    text: state.prayerText,
+                    categoryGuid: state.prayerCategory?.value || null,
+                    isUrgent: state.isUrgent,
+                    isPublic: state.isPublic
+                }
+                : null;
+
+            const note = state.noteText.trim() && state.noteTypeGuid
+                ? {
+                    noteTypeGuid: state.noteTypeGuid,
+                    text: state.noteText
+                }
+                : null;
+
+            const hasInput = !!prayerRequest
+                || !!note
+                || state.workflowTypeGuids.length > 0
+                || state.connectionOpportunityGuids.length > 0;
+
+            if (hasInput) {
+                inputs.push({
+                    personGuid,
+                    prayerRequest,
+                    note,
+                    workflowTypeGuids: state.workflowTypeGuids,
+                    connectionOpportunityGuids: state.connectionOpportunityGuids
+                });
+            }
+        }
+
+        return inputs;
+    }
+
+    /** Saves the roster and every person's entries in one call. */
+    async function save(): Promise<void> {
+        if (!family.value) {
+            return;
+        }
+
+        saveSuccessMessage.value = "";
+        saveErrorMessage.value = "";
+
+        const roster = [...(family.value.members ?? []), ...(family.value.canCheckInGuests ?? [])];
+
+        const bag: RapidAttendanceEntrySaveBag = {
+            session: props.session,
+            attendances: props.session
+                ? roster.map(p => ({
+                    personGuid: p.personGuid,
+                    didAttend: attendedPersonGuids.value.includes(p.personGuid)
+                }))
+                : null,
+            personInputs: buildPersonInputs()
+        };
+
+        const response = await invokeBlockAction<RapidAttendanceEntrySaveResponseBag>("Save", { bag });
+
+        if (response.isSuccess) {
+            saveSuccessMessage.value = "Changes saved successfully.";
+            personInputs.value = {};
+            savedAttendedPersonGuids.value = [...attendedPersonGuids.value];
+
+            if (selectedPersonGuid.value) {
+                personInputs.value[selectedPersonGuid.value] = createPersonInput();
+            }
+
+            if (response.data?.attendanceCount != null) {
+                emit("attendanceCountChanged", response.data.attendanceCount);
+            }
+
+            emit("saved");
+        }
+        else {
+            saveErrorMessage.value = response.errorMessage || "Unable to save. Review the entries and try again.";
+        }
+
+        // Surface the result message at the top of the panel.
+        scrollEntryToTop();
+    }
+
+    // #endregion Functions
+
+    // #region Watchers
+
+    // Immediate so a remount (returning from setup) reloads the still-selected
+    // family.
+    watch(() => props.selectedResult, loadFamily, { immediate: true });
+
+    // Once the family loads (so the panel is at full height) scroll to its top;
+    // waiting for the load avoids scrolling to the short loading state.
+    watch(family, () => {
+        if (family.value) {
+            scrollEntryToTop();
+        }
+    });
+
+    // A new session means a different occurrence, so the roster state must
+    // reload.
+    watch(() => props.session, () => {
+        if (props.selectedResult) {
+            loadFamily();
+        }
+    });
+
+    watch(selectedPersonGuid, () => {
+        if (selectedPersonGuid.value && !personInputs.value[selectedPersonGuid.value]) {
+            personInputs.value[selectedPersonGuid.value] = createPersonInput();
+        }
+
+        loadPersonHeader();
+    });
+
+    watch(() => props.submit, async () => {
+        if (props.submit) {
+            try {
+                await save();
+            }
+            finally {
+                submit.value = false;
+            }
+        }
+    });
+
+    // Report the dirty state up so the block's navigation guard can warn before
+    // a family switch, Back to Setup, search clear, or page unload discards it.
+    watch(isDirty, (value) => {
+        updateEditorIsDirty(value);
+    }, { immediate: true });
+
+    // #endregion Watchers
+
+    // #region Lifecycle Hooks
+
+    // Clear the block's dirty tracking when the entry pane unmounts (e.g., Back
+    // to Setup), so a stale flag doesn't make the guard prompt later.
+    onBeforeUnmount(() => {
+        updateEditorIsDirty(false);
+    });
+
+    // #endregion Lifecycle Hooks
+</script>

@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -21,11 +21,13 @@ using System.Linq;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Reporting;
-using Rock.Tests.Shared;
-using Rock.Tests.Shared.TestFramework;
+using Rock.Tests.Integration.TestFramework.Database;
+using Rock.Tests.Shared.Constants;
+using Rock.Tests.Shared.Utility;
 using Rock.Web.Cache;
 
 namespace Rock.Tests.Integration.Reporting.DataFilter
@@ -42,7 +44,7 @@ namespace Rock.Tests.Integration.Reporting.DataFilter
         [TestMethod]
         public void DataView_AllDataViews_CanExecute()
         {
-            var dataContext = new RockContext();
+            var dataContext = RockApp.Current.CreateRockContext();
             var dataViewService = new DataViewService( dataContext );
             var dataViewIdList = dataViewService.Queryable()
                 .Select( dv => dv.Id )
@@ -54,7 +56,7 @@ namespace Rock.Tests.Integration.Reporting.DataFilter
 
             foreach ( var dataViewId in dataViewIdList )
             {
-                dataContext = new RockContext();
+                dataContext = RockApp.Current.CreateRockContext();
                 dataViewService = new DataViewService( dataContext );
 
                 var dataView = dataViewService.Get( dataViewId );
@@ -97,7 +99,7 @@ namespace Rock.Tests.Integration.Reporting.DataFilter
         [TestMethod]
         public void DataViewCache_AllDataViews_CanExecute()
         {
-            var dataContext = new RockContext();
+            var dataContext = RockApp.Current.CreateRockContext();
             var manager = DataViewQueryBuilder.Instance;
 
             // Get the complete list of DataView identifiers in the current database.
@@ -112,7 +114,7 @@ namespace Rock.Tests.Integration.Reporting.DataFilter
 
             foreach ( var dataViewId in dataViewIdList )
             {
-                dataContext = new RockContext();
+                dataContext = RockApp.Current.CreateRockContext();
                 dataViewService = new DataViewService( dataContext );
 
                 var dataView = manager.GetDataViewDefinition( dataViewId );
@@ -172,7 +174,7 @@ namespace Rock.Tests.Integration.Reporting.DataFilter
             var dataViewCacheMales1 = DataViewCache.Get( TestGuids.DataViews.Males );
 
             // Get the sample Data View definition from the database.
-            var dataContext = new RockContext();
+            var dataContext = RockApp.Current.CreateRockContext();
             var dataViewService = new DataViewService( dataContext );
             var dataViewMales = dataViewService.Get( TestGuids.DataViews.Males );
             var descriptionOld = dataViewMales.Description;
@@ -206,7 +208,7 @@ namespace Rock.Tests.Integration.Reporting.DataFilter
             var selectionOld = dataViewCacheAge1.DataViewFilter?.ChildFilters?.FirstOrDefault()?.Selection;
 
             // Get the sample Data View definition from the database.
-            var dataContext = new RockContext();
+            var dataContext = RockApp.Current.CreateRockContext();
             var dataViewService = new DataViewService( dataContext );
 
             var dataViewAge = dataViewService.Get( TestGuids.DataViews.ThirtyFiveAndOlder );
@@ -249,7 +251,7 @@ namespace Rock.Tests.Integration.Reporting.DataFilter
 
         private void VerifyDataViewResultSetCount( string dataViewGuid, int expectedCount )
         {
-            var dataContext = new RockContext();
+            var dataContext = RockApp.Current.CreateRockContext();
             var manager = DataViewQueryBuilder.Instance;
 
             var dataView = manager.GetDataViewDefinition( dataViewGuid.AsGuid() );
@@ -288,7 +290,7 @@ namespace Rock.Tests.Integration.Reporting.DataFilter
 
         private void VerifyDataFilterResultSetCount( string dataFilterGuid, Type resultEntityType, int expectedCount )
         {
-            var dataContext = new RockContext();
+            var dataContext = RockApp.Current.CreateRockContext();
             var manager = DataViewQueryBuilder.Instance;
 
             var filter = manager.GetDataViewFilterDefinition( dataFilterGuid.AsGuid() );

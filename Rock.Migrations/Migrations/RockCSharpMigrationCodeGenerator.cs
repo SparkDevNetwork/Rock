@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -37,8 +37,8 @@ namespace Rock.Migrations
         /// <value>
         ///   <c>true</c> if this instance is frozen; otherwise, <c>false</c>.
         /// </value>
-        public bool IsFrozen => false;
-        private const string MigrationTokenOwner = "develop";
+        public bool IsFrozen => true;
+        private const string MigrationTokenOwner = "release-20.0";
 
         /// <summary>
         /// </summary>

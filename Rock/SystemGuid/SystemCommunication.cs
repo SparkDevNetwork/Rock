@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -113,13 +113,6 @@ namespace Rock.SystemGuid
         /// Gets the template guid for workflow form notifications
         /// </summary>
         public const string WORKFLOW_FORM_NOTIFICATION = "88C7D1CC-3478-4562-A301-AE7D4D7FFF6D";
-
-        /// <summary>
-        /// Gets the template guid for digital signature invite
-        /// </summary>
-        [RockObsolete( "1.14" )]
-        [Obsolete( "No longer used" )]
-        public const string DIGITAL_SIGNATURE_INVITE = "791F2DE4-5A59-60AE-4F2F-FDC3EBC4FFA9";
 
         /// <summary>
         /// Gets the template guid for the system Electronic Signature Receipt
@@ -267,6 +260,11 @@ namespace Rock.SystemGuid
         /// Gets the template guid for the Learning Class Announcements Notifications system communication.
         /// </summary>
         public const string LEARNING_ANNOUNCEMENT_NOTIFICATIONS = "8824EE58-CB4C-47E8-BB86-1944C64C6C95";
+
+        /// <summary>
+        /// Gets the template guid for the Learning Activity Retake Required system communication.
+        /// </summary>
+        public const string LEARNING_ACTIVITY_RETAKE_REQUIRED = "9E2B7C14-5A3D-4F86-B0E1-7C4A2D9F6B38";
 
         #endregion
 

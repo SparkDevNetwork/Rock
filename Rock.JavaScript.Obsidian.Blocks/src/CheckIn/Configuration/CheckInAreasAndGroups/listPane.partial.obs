@@ -1,0 +1,240 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="area-group-list-pane">
+        <div class="area-group-pane-header">
+            <div class="heading">
+                <div class="heading-text">
+                    <h5 class="heading-title">Areas &amp; Groups</h5>
+                </div>
+            </div>
+            <div class="header-actions">
+                <button type="button" class="btn btn-default" @click="$emit('addArea')">
+                    <i class="ti ti-plus"></i> Add Area
+                </button>
+                <button type="button" class="btn btn-default btn-square" @click="$emit('listSettings')">
+                    <i class="ti ti-adjustments"></i>
+                </button>
+            </div>
+        </div>
+
+        <div class="area-group-pane-body" ref="bodyEl">
+            <NotificationBox v-if="errorMessage"
+                             :alertType="AlertType.Warning"
+                             v-html="errorMessage" />
+
+            <div v-if="isLoading" class="area-group-detail-loading">
+                <LoadingIndicator :delay="250" />
+            </div>
+
+            <div v-else-if="!hasAnyAreasOrGroups" class="area-group-empty-state">
+                <i class="empty-icon ti ti-stack-2 ti-2x"></i>
+                <div class="empty-title">No Groups or Areas to Configure</div>
+                <div class="empty-subtitle">Click + Add Area to Get Started</div>
+            </div>
+
+            <SortableTree v-else
+                          :nodes="tree"
+                          selectedNodeQueryParameterKey="AreaOrGroup"
+                          :selectedNodeKey="selectedNodeKey"
+                          :groupBy="groupByNodeType"
+                          :iconCssClass="iconForNode"
+                          :handleCssClass="handleClassForNode"
+                          :actions="treeActions"
+                          :autoCollapse="autoCollapse"
+                          :beforeSelect="navigationGuard"
+                          :isNodeDraggable="isNodeDraggable"
+                          @update:selectedNodeKey="$emit('update:selectedNodeKey', $event)"
+                          @reorder="$emit('reorder', $event)" />
+        </div>
+    </div>
+</template>
+
+<script setup lang="ts">
+    import { computed, nextTick, PropType, ref, watch } from "vue";
+    import { isPlaceholderKey, useNavigationGuard } from "./utils.partial";
+    import LoadingIndicator from "@Obsidian/Controls/loadingIndicator.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import SortableTree from "@Obsidian/Controls/sortableTree.obs";
+    import { ISortableTreeAction, ISortableTreeNode, ISortableTreeReorderEvent } from "@Obsidian/Controls/Internal/SortableTree/types.partial";
+    import { AlertType } from "@Obsidian/Enums/Controls/alertType";
+    import { CheckInTreeNodeType } from "@Obsidian/Enums/CheckIn/checkInTreeNodeType";
+    import { CheckInTreeNodeBag } from "@Obsidian/ViewModels/Blocks/CheckIn/Configuration/CheckInAreasAndGroups/checkInTreeNodeBag";
+
+    const navigationGuard = useNavigationGuard();
+
+    const props = defineProps({
+        /** The tree of areas and groups to render. */
+        tree: {
+            type: Array as PropType<CheckInTreeNodeBag[]>,
+            required: true
+        },
+
+        /**
+         * The currently-selected node key. Forwarded to the SortableTree control.
+         */
+        selectedNodeKey: {
+            type: String as PropType<string>,
+            required: true
+        },
+
+        /**
+         * True while the parent is refetching the tree (filter / campus /
+         * show-inactive change). Replaces the tree with a loading indicator so
+         * a partially-loaded tree doesn't flash.
+         */
+        isLoading: {
+            type: Boolean,
+            default: false
+        },
+
+        /**
+         * When true, selecting a node collapses every branch outside its
+         * ancestor chain. Wired to the inverse of the individual's "Disable
+         * Auto-Collapse" block person preference.
+         */
+        autoCollapse: {
+            type: Boolean,
+            default: true
+        },
+
+        /**
+         * Optional error to surface above the tree (typically a failed
+         * reorder). The pane scrolls to the top whenever this transitions
+         * from empty to non-empty so the message is visible. The parent
+         * clears it on the next reorder attempt.
+         */
+        errorMessage: {
+            type: String as PropType<string>,
+            default: ""
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "addArea"): void;
+        (e: "listSettings"): void;
+        (e: "update:selectedNodeKey", key: string): void;
+        (e: "addAreaUnder", parent: CheckInTreeNodeBag): void;
+        (e: "addGroupUnder", parent: CheckInTreeNodeBag): void;
+        (e: "reorder", payload: ISortableTreeReorderEvent): void;
+    }>();
+
+    // #region Values
+
+    const bodyEl = ref<HTMLElement | null>(null);
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    /** Determines whether there are any areas or groups to display. */
+    const hasAnyAreasOrGroups = computed((): boolean =>
+        props.tree.length > 0
+    );
+
+    /**
+     * The maximum allowed nesting depth (1-indexed level count). Preexisting
+     * data deeper than this still renders, but the inline "Add Area" and
+     * "Add Group" actions hide on rows whose children would land past the cap.
+     */
+    const maxNodeDepth = 5;
+
+    /**
+     * Identity-keyed depth map (0-indexed) covering every node in the tree.
+     * Recomputed when the tree array reference changes (i.e., after a refetch
+     * or a structural mutation).
+     */
+    const depthByNode = computed((): WeakMap<CheckInTreeNodeBag, number> => {
+        const map = new WeakMap<CheckInTreeNodeBag, number>();
+        const stamp = (nodes: CheckInTreeNodeBag[], depth: number): void => {
+            for (const n of nodes) {
+                map.set(n, depth);
+                if (n.children?.length) {
+                    stamp(n.children, depth + 1);
+                }
+            }
+        };
+        stamp(props.tree, 0);
+        return map;
+    });
+
+    /**
+     * True when adding a new area or group under `node` would land at a depth
+     * within the level cap. The cap is enforced for both Add actions so any
+     * row at the deepest allowed level loses its inline create affordances.
+     * Existing deeper hierarchies (preexisting data) still render; only the
+     * UI for *adding* new descendants is suppressed.
+     */
+    function canHostNewChild(node: ISortableTreeNode): boolean {
+        const depth = depthByNode.value.get(node as CheckInTreeNodeBag) ?? 0;
+        return depth + 1 < maxNodeDepth;
+    }
+
+    /** Action buttons rendered in each row's trailing actions area. */
+    const treeActions = computed((): ISortableTreeAction[] => [
+        {
+            iconCssClass: "ti-stack-2",
+            label: "Add Area",
+            handler: (node) => emit("addAreaUnder", node as CheckInTreeNodeBag),
+            isVisible: (node) => groupByNodeType(node) === "area" && canHostNewChild(node)
+        },
+        {
+            iconCssClass: "ti-users-group",
+            label: "Add Group",
+            handler: (node) => emit("addGroupUnder", node as CheckInTreeNodeBag),
+            isVisible: (node) => canHostNewChild(node)
+        }
+    ]);
+
+    // #endregion Computed Values
+
+    // #region Functions
+
+    /** Scrolls the pane body back to the top. */
+    function scrollBodyToTop(): void {
+        bodyEl.value?.scrollTo({ top: 0 });
+    }
+
+    /**
+     * Splits each parent's children into an "area" sub-list (rendered first)
+     * and a "group" sub-list (rendered second).
+     */
+    function groupByNodeType(node: ISortableTreeNode): string | null {
+        return (node as CheckInTreeNodeBag).nodeType === CheckInTreeNodeType.Area ? "area" : "group";
+    }
+
+    /** Resolves the row's icon based on whether it's an area or a group. */
+    function iconForNode(node: ISortableTreeNode): string {
+        return (node as CheckInTreeNodeBag).nodeType === CheckInTreeNodeType.Area ? "ti-stack-2" : "ti-users-group";
+    }
+
+    /**
+     * Areas use the control's default handle color; groups override with a
+     * lighter palette. The empty string means "no extra class, use default."
+     */
+    function handleClassForNode(node: ISortableTreeNode): string {
+        return (node as CheckInTreeNodeBag).nodeType === CheckInTreeNodeType.Area ? "" : "area-group-handle";
+    }
+
+    /**
+     * Placeholder rows (unsaved new areas / groups, idKey "0") can't be
+     * reordered because they have no persisted record; the server's reorder
+     * actions return "not found" on the sentinel key.
+     */
+    function isNodeDraggable(node: ISortableTreeNode): boolean {
+        return !isPlaceholderKey(node.idKey ?? "");
+    }
+
+    // #endregion Functions
+
+    // #region Watchers
+
+    // Surface the error by scrolling the pane body back to the top whenever
+    // the message transitions from empty to non-empty.
+    watch(() => props.errorMessage, (newValue, oldValue) => {
+        if (newValue && !oldValue) {
+            nextTick(() => scrollBodyToTop());
+        }
+    });
+
+    // #endregion Watchers
+</script>

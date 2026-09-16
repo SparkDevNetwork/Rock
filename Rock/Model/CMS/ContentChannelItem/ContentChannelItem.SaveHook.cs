@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System.Linq;
+
 using Rock.Data;
 
 namespace Rock.Model
@@ -54,12 +55,12 @@ namespace Rock.Model
             {
                 base.PostSave();
 
-                var contentChannelItemSerivce = new ContentChannelItemService( RockContext );
-                var contentChannelSlugSerivce = new ContentChannelItemSlugService( RockContext );
+                var contentChannelItemService = new ContentChannelItemService( RockContext );
+                var contentChannelSlugService = new ContentChannelItemSlugService( RockContext );
 
-                if ( !contentChannelSlugSerivce.Queryable().Any( a => a.ContentChannelItemId == Entity.Id ) && contentChannelItemSerivce.Queryable().Any( a => a.Id == Entity.Id ) )
+                if ( !contentChannelSlugService.Queryable().Any( a => a.ContentChannelItemId == Entity.Id ) && contentChannelItemService.Queryable().Any( a => a.Id == Entity.Id ) )
                 {
-                    contentChannelSlugSerivce.SaveSlug( Entity.Id, Entity.Title, null );
+                    contentChannelSlugService.SaveSlug( Entity.Id, Entity.Title, null );
                 }
             }
         }

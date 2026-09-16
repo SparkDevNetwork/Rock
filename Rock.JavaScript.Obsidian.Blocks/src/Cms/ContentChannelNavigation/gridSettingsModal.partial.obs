@@ -1,0 +1,172 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Modal v-model="isVisible"
+           title="Filter Settings"
+           saveText="Apply"
+           @save="onSave">
+
+        <SectionHeader title="Filters" />
+
+        <DateRangePicker v-model="dateRange"
+                         label="Date Range" />
+
+        <div class="row">
+            <div class="col-md-6">
+                <DropDownList v-model="status"
+                              label="Status"
+                              :items="statusItems"
+                              :showBlankItem="true" />
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6">
+                <TextBox v-model="title"
+                         label="Title"
+                         :isClearable="true" />
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6">
+                <PersonPicker v-model="createdBy"
+                              label="Created By"
+                              :enableSelfSelection="true" />
+            </div>
+        </div>
+
+        <SectionHeader v-if="hasAttributeFilters"
+                       title="Attribute Filters"
+                       description="Filter items by content channel item attributes."
+                       class="mt-4" />
+
+        <template v-for="(attr, index) in props.attributeFilters" :key="attr.key ?? index">
+            <div v-if="attr.key" class="row">
+                <div class="col-md-6">
+                    <div class="form-group attribute-filter-group">
+                        <RockLabel>{{ attr.name }}</RockLabel>
+                        <RockAttributeFilter v-model="attributeFilterValues[attr.key]"
+                                             :attribute="attr" />
+                    </div>
+                </div>
+            </div>
+        </template>
+    </Modal>
+</template>
+
+<style scoped>
+/* Suppress labels rendered by inner filter components since we already display the attribute name via RockLabel. */
+.attribute-filter-group :deep(.field-criteria .form-group > .control-label) {
+    display: none;
+}
+
+.attribute-filter-group :deep(.field-criteria > div) {
+    display: block;
+    float: left;
+}
+</style>
+
+<script setup lang="ts">
+    import { computed, PropType, ref, watch } from "vue";
+    import { GridSettingsOptions } from "./types.partial";
+    import DateRangePicker from "@Obsidian/Controls/dateRangePicker.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import Modal from "@Obsidian/Controls/modal.obs";
+    import PersonPicker from "@Obsidian/Controls/personPicker.obs";
+    import RockAttributeFilter from "@Obsidian/Controls/rockAttributeFilter.obs";
+    import RockLabel from "@Obsidian/Controls/rockLabel.obs";
+    import SectionHeader from "@Obsidian/Controls/sectionHeader.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import { useVModelPassthrough } from "@Obsidian/Utility/component";
+    import { enumToListItemBag } from "@Obsidian/Utility/enumUtils";
+    import { deepEqual } from "@Obsidian/Utility/util";
+    import { ComparisonValue } from "@Obsidian/Types/Reporting/comparisonValue";
+    import { DateRangeParts } from "@Obsidian/Types/Controls/dateRangePicker";
+    import { ContentChannelItemStatusDescription } from "@Obsidian/Enums/Cms/contentChannelItemStatus";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<GridSettingsOptions>,
+            required: true
+        },
+
+        visible: {
+            type: Boolean as PropType<boolean>,
+            required: true
+        },
+
+        attributeFilters: {
+            type: Array as PropType<PublicAttributeBag[]>,
+            default: () => []
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: GridSettingsOptions): void;
+        (e: "update:visible", value: boolean): void;
+        (e: "close"): void;
+    }>();
+
+    // #region Values
+
+    const isVisible = useVModelPassthrough(props, "visible", emit);
+
+    const dateRange = ref<DateRangeParts>({
+        lowerValue: props.modelValue.dateRangeLower,
+        upperValue: props.modelValue.dateRangeUpper
+    });
+    const status = ref(props.modelValue.status);
+    const title = ref(props.modelValue.title);
+    const createdBy = ref<ListItemBag | undefined>(props.modelValue.createdBy);
+    const attributeFilterValues = ref<Record<string, ComparisonValue>>({ ...props.modelValue.attributeFilterValues });
+
+    const statusItems = enumToListItemBag(ContentChannelItemStatusDescription);
+
+    const hasAttributeFilters = computed((): boolean => props.attributeFilters.length > 0);
+
+    // #endregion Values
+
+    // #region Event Handlers
+
+    function onSave(): void {
+        const value: GridSettingsOptions = {
+            dateRangeLower: dateRange.value?.lowerValue ?? "",
+            dateRangeUpper: dateRange.value?.upperValue ?? "",
+            status: status.value,
+            title: title.value,
+            createdBy: createdBy.value,
+            attributeFilterValues: { ...attributeFilterValues.value }
+        };
+
+        if (!deepEqual(value, props.modelValue, true)) {
+            emit("update:modelValue", value);
+        }
+
+        isVisible.value = false;
+    }
+
+    // #endregion Event Handlers
+
+    // #region Watchers
+
+    watch(() => props.modelValue, () => {
+        dateRange.value = {
+            lowerValue: props.modelValue.dateRangeLower,
+            upperValue: props.modelValue.dateRangeUpper
+        };
+        status.value = props.modelValue.status;
+        title.value = props.modelValue.title;
+        createdBy.value = props.modelValue.createdBy;
+        attributeFilterValues.value = { ...props.modelValue.attributeFilterValues };
+    });
+
+    watch(isVisible, () => {
+        if (!isVisible.value) {
+            emit("close");
+        }
+    });
+
+    // #endregion Watchers
+</script>

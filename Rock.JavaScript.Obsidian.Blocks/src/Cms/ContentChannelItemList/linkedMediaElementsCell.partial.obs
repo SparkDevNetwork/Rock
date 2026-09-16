@@ -1,0 +1,187 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div>
+        <button v-if="isVisible"
+                ref="linkedMediaElementsButton"
+                class="btn btn-default btn-sm"
+                type="button"
+                @mouseenter="onButtonEnter"
+                @mouseleave="onButtonLeave"
+                @click.prevent.stop="onClick"
+                @pointerdown="onPointerDown">
+            <i class="ti ti-device-tv"></i>
+        </button>
+        <div v-else v-tooltip="tooltip" class="no-media-tooltip">
+            &nbsp;
+        </div>
+    </div>
+
+    <LinkedMediaElementsFlyout v-model="isFlyoutOpen"
+                               :anchorEl="linkedMediaElementsButton"
+                               :contentChannelItemIdKey="contentChannelItemIdKey"
+                               @flyoutEnter="onFlyoutEnter"
+                               @flyoutLeave="onFlyoutLeave" />
+</template>
+
+<style scoped>
+.no-media-tooltip {
+    width: 32px;
+    height: 32px;
+}
+</style>
+
+<script setup lang="ts">
+    import { computed, ref } from "vue";
+    import LinkedMediaElementsFlyout from "./linkedMediaElementsFlyout.partial.obs";
+    import { GridRowItem } from "./types.partial";
+    import { standardCellProps } from "@Obsidian/Core/Controls/grid";
+    import { vTooltip } from "@Obsidian/Directives/tooltip";
+
+    const props = defineProps(standardCellProps);
+
+    // #region Values
+
+    const linkedMediaElementsButton = ref<HTMLElement | null>(null);
+    const isFlyoutOpen = ref(false);
+
+    let closeFlyoutTimer: number | null = null;
+    let lastPointerType: "mouse" | "touch" | "pen" | null = null;
+
+    const tooltip = "No Linked Media Elements";
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    const gridRowItem = computed<GridRowItem>(() => {
+        return props.row as GridRowItem;
+    });
+
+    const isVisible = computed<boolean>(() => {
+        return gridRowItem.value.hasLinkedMediaElements;
+    });
+
+    const contentChannelItemIdKey = computed<string>(() => {
+        return gridRowItem.value.idKey;
+    });
+
+    // #endregion Computed Values
+
+    // #region Functions
+
+    /**
+     * Closes the flyout to view linked media elements and clears the close
+     * timer if it is set.
+     */
+    function closeFlyout(): void {
+        isFlyoutOpen.value = false;
+        closeFlyoutTimer = null;
+    }
+
+    // #endregion Functions
+
+    // #region Event Handlers
+
+    /**
+     * Called when the individual mouses over the button to view linked
+     * media elements.
+     */
+    function onButtonEnter(): void {
+        if (lastPointerType === "touch") {
+            return;
+        }
+
+        cancelFlyoutClose();
+        isFlyoutOpen.value = true;
+    }
+
+    /**
+     * Called when the individual mouses out of the button to view linked
+     * media elements.
+     */
+    function onButtonLeave(): void {
+        if (lastPointerType === "touch") {
+            return;
+        }
+
+        scheduleFlyoutClose();
+    }
+
+    /**
+     * Called when the individual mouses over the flyout to view linked
+     * media elements.
+     */
+    function onFlyoutEnter(): void {
+        if (lastPointerType === "touch") {
+            return;
+        }
+
+        cancelFlyoutClose();
+    }
+
+    /**
+     * Called when the individual mouses out of the flyout to view linked
+     * media elements.
+     */
+    function onFlyoutLeave(): void {
+        if (lastPointerType === "touch") {
+            return;
+        }
+
+        scheduleFlyoutClose();
+    }
+
+    /**
+     * Schedules the flyout to be closed. This is used when the individual
+     * mouses out of the button or flyout, but we want to give them a little
+     * bit of time to mouse over either again before closing the flyout.
+     */
+    function scheduleFlyoutClose(): void {
+        cancelFlyoutClose();
+
+        closeFlyoutTimer = window.setTimeout(() => {
+            closeFlyout();
+        }, 250);
+    }
+
+    /**
+     * Cancels the flyout close timer if it is currently set.
+     */
+    function cancelFlyoutClose(): void {
+        if (closeFlyoutTimer !== null) {
+            window.clearTimeout(closeFlyoutTimer);
+            closeFlyoutTimer = null;
+        }
+    }
+
+    /**
+     * Called when the individual clicks the button to view linked
+     * media elements.
+     */
+    function onClick(): void {
+        // Don't do anything. We've already opened the flyout on hover.
+    }
+
+    /**
+     * Called when the individual touches or clicks the button to view linked
+     * media elements.
+     * @param e The pointer event.
+     */
+    function onPointerDown(e: PointerEvent): void {
+        // Update the last pointer type so that we can know to bypass mouse
+        // interactions for touch inputs.
+        lastPointerType = e.pointerType as "mouse" | "touch" | "pen";
+
+        // Regardlesss of pointer type, go ahead and toggle the flyout's visibility.
+        // This gives individuals to final say about whether the flyout is open or closed.
+        if (isFlyoutOpen.value) {
+            closeFlyout();
+        }
+        else {
+            isFlyoutOpen.value = true;
+        }
+    }
+
+    // #endregion Event Handlers
+
+</script>

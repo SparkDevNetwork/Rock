@@ -1,0 +1,175 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Panel v-model="isExpanded"
+           title="Test Pipeline"
+           titleIconCssClass="ti ti-flask"
+           :hasCollapse="true"
+           :hasFullscreen="false"
+           class="sms-test-panel">
+        <NotificationBox alertType="info" class="mb-3">
+            <p class="mb-1">Using the form below will allow you to test your pipeline without having to use your SMS Provider.</p>
+            <p class="mb-0">While this message originates and ends here in this testing block, there could be side effects such as running a workflow, creating a conversation, creating a connection request, or sending additional SMS messages.</p>
+        </NotificationBox>
+
+        <RockForm @submit="onSendTest">
+            <div class="row">
+                <div class="col-sm-6">
+                    <TextBox v-model="testRequest.fromNumber"
+                             label="From Number"
+                             rules="required"
+                             placeholder="+16235553322"
+                             help="This is the number for the person sending the text. The number must be formatted correctly. (ex: +16235553322)" />
+                </div>
+                <div class="col-sm-6">
+                    <TextBox v-model="testRequest.toNumber"
+                             label="To Number"
+                             rules="required"
+                             placeholder="+15559991234"
+                             help="This will probably be the number linked to your SMS provider. The number must be formatted correctly. (ex: +15559991234)" />
+                </div>
+            </div>
+
+            <TextBox v-model="testRequest.message" label="Message" rules="required" />
+
+            <RockButton type="submit"
+                        btnType="default"
+                        class="margin-t-sm"
+                        :isLoading="isTesting">
+                Send
+            </RockButton>
+        </RockForm>
+
+        <template v-if="testResult">
+            <NotificationBox v-if="testResult.errorMessage" alertType="warning" class="mt-3">
+                {{ testResult.errorMessage }}
+            </NotificationBox>
+            <div v-else class="form-group static-control margin-t-lg">
+                <label class="control-label">Response</label>
+                <div class="control-wrapper">
+                    <div class="form-control-static"
+                         :class="{ 'text-muted': !testResult.responseMessage }">
+                        {{ testResult.responseMessage || "No outbound response" }}
+                    </div>
+                </div>
+            </div>
+        </template>
+
+        <div v-if="testResult?.outcomes?.length"
+             class="form-group static-control margin-t-lg">
+            <label class="control-label">Action Outcomes</label>
+            <div class="control-wrapper">
+                <div v-for="(outcome, idx) in testResult.outcomes"
+                     :key="idx"
+                     class="sms-outcome-card">
+                    <div class="sms-outcome-name">{{ outcome.actionName }}</div>
+                    <dl class="sms-outcome-details">
+                        <dt>Should Process</dt>
+                        <dd>{{ outcome.shouldProcess ? "Yes" : "No" }}</dd>
+                        <template v-if="outcome.responseMessage">
+                            <dt>Response</dt>
+                            <dd>{{ outcome.responseMessage }}</dd>
+                        </template>
+                        <template v-if="outcome.isInteractionLogged">
+                            <dt>Interaction Logged</dt>
+                            <dd>Yes</dd>
+                        </template>
+                        <template v-if="outcome.errorMessage">
+                            <dt>Error</dt>
+                            <dd class="text-danger">{{ outcome.errorMessage }}</dd>
+                        </template>
+                        <template v-if="outcome.exceptionMessage">
+                            <dt>Exception</dt>
+                            <dd class="text-danger">{{ outcome.exceptionMessage }}</dd>
+                        </template>
+                    </dl>
+                </div>
+            </div>
+        </div>
+    </Panel>
+</template>
+
+<style scoped>
+.sms-outcome-card {
+    padding: var(--spacing-small) var(--spacing-medium);
+    margin-bottom: var(--spacing-small);
+    border: 1px solid var(--color-interface-soft);
+    border-radius: var(--rounded-small);
+    background-color: var(--color-interface-softest);
+}
+
+.sms-outcome-name {
+    font-weight: var(--font-weight-semibold);
+    margin-bottom: var(--spacing-tiny);
+}
+
+.sms-outcome-details {
+    display: grid;
+    grid-template-columns: max-content 1fr;
+    gap: var(--spacing-tiny) var(--spacing-small);
+    margin: 0;
+}
+
+.sms-outcome-details dt {
+    font-weight: var(--font-weight-regular);
+    color: var(--color-interface-medium);
+}
+
+.sms-outcome-details dd {
+    margin: 0;
+}
+</style>
+
+<script setup lang="ts">
+    import { PropType, ref } from "vue";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import Panel from "@Obsidian/Controls/panel.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import RockForm from "@Obsidian/Controls/rockForm.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import type { SmsActionTestRequestBag } from "@Obsidian/ViewModels/Blocks/Communication/SmsPipelineDetail/smsActionTestRequestBag";
+    import type { SmsActionTestResponseBag } from "@Obsidian/ViewModels/Blocks/Communication/SmsPipelineDetail/smsActionTestResponseBag";
+
+    defineProps({
+        isTesting: {
+            type: Boolean,
+            default: false
+        },
+
+        testResult: {
+            type: Object as PropType<SmsActionTestResponseBag | null>,
+            required: false,
+            default: null
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "sendTest", request: SmsActionTestRequestBag): void;
+    }>();
+
+    // #region Values
+
+    // Collapsed by default; the test tool stays out of the way until needed.
+    const isExpanded = ref(false);
+
+    // Non-nullable local shape so TextBox v-model type-checks; spread into the
+    // bag on emit.
+    const testRequest = ref({
+        fromNumber: "",
+        toNumber: "",
+        message: ""
+    });
+
+    // #endregion Values
+
+    // #region Event Handlers
+
+    function onSendTest(): void {
+        emit("sendTest", {
+            fromNumber: testRequest.value.fromNumber,
+            toNumber: testRequest.value.toNumber,
+            message: testRequest.value.message
+        });
+    }
+
+    // #endregion Event Handlers
+</script>

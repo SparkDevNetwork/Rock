@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Web.Cache;
 
@@ -290,7 +291,7 @@ namespace Rock.Model
             {
                 PersonId = person.Id;
 
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     PersonName = person.FullName;
                     var family = person.GetFamily( rockContext );
@@ -334,6 +335,7 @@ namespace Rock.Model
                 Cost = registrant.Cost;
                 DiscountApplies = registrant.DiscountApplies;
                 OnWaitList = registrant.OnWaitList;
+                SignatureDocumentId = registrant.SignatureDocumentId;
 
                 Person person = null;
                 Group family = null;
@@ -533,7 +535,7 @@ namespace Rock.Model
                 // if FirstName isn't prompted for in a registration form, and using an existing Person, get the person's FirstName/NickName from the database
                 if ( this.PersonId.HasValue )
                 {
-                    return new PersonService( new RockContext() ).GetSelect( this.PersonId.Value, s => s.NickName ) ?? string.Empty;
+                    return new PersonService( RockApp.Current.CreateRockContext() ).GetSelect( this.PersonId.Value, s => s.NickName ) ?? string.Empty;
                 }
             }
             else
@@ -557,7 +559,7 @@ namespace Rock.Model
                 // if LastName isn't prompted for in a registration form, and using an existing Person, get the person's lastname from the database
                 if ( this.PersonId.HasValue )
                 {
-                    return new PersonService( new RockContext() ).GetSelect( this.PersonId.Value, s => s.LastName ) ?? string.Empty;
+                    return new PersonService( RockApp.Current.CreateRockContext() ).GetSelect( this.PersonId.Value, s => s.LastName ) ?? string.Empty;
                 }
             }
             else
@@ -581,7 +583,7 @@ namespace Rock.Model
                 // if Email isn't prompted for in a registration form, and using an existing Person, get the person's email from the database
                 if ( this.PersonId.HasValue )
                 {
-                    return new PersonService( new RockContext() ).GetSelect( this.PersonId.Value, s => s.Email ) ?? string.Empty;
+                    return new PersonService( RockApp.Current.CreateRockContext() ).GetSelect( this.PersonId.Value, s => s.Email ) ?? string.Empty;
                 }
             }
             else

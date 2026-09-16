@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -26,7 +26,9 @@ using System.Runtime.Serialization;
 
 using Rock.Attribute;
 using Rock.Data;
+using Rock.Enums.Security;
 using Rock.Lava;
+using Rock.Security;
 using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 
@@ -88,6 +90,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 50 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string EntityTypeQualifierColumn { get; set; }
 
         /// <summary>
@@ -98,6 +101,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 200 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string EntityTypeQualifierValue { get; set; }
 
         /// <summary>
@@ -110,6 +114,7 @@ namespace Rock.Model
         [MaxLength( 1000 )]
         [DataMember( IsRequired = true )]
         [TypeScriptType( "string" )]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string Key { get; set; }
 
         /// <summary>
@@ -121,6 +126,7 @@ namespace Rock.Model
         [Required]
         [MaxLength( 1000 )]
         [DataMember( IsRequired = true )]
+        [StringValidation( StringValidationProfile.Name )]
         public string Name { get; set; }
 
         /// <summary>
@@ -130,6 +136,7 @@ namespace Rock.Model
         /// A <see cref="System.String"/> that represents the description of the Attribute.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.LavaAndBasicHtml )]
         public string Description { get; set; }
 
         /// <summary>
@@ -159,6 +166,7 @@ namespace Rock.Model
         /// A <see cref="System.String"/> representing the Attribute's default value.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string DefaultValue { get; set; }
 
         /// <summary>
@@ -176,6 +184,7 @@ namespace Rock.Model
         /// </summary>
         /// <value>The persisted text value.</value>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string DefaultPersistedTextValue { get; set; }
 
         /// <summary>
@@ -183,6 +192,7 @@ namespace Rock.Model
         /// </summary>
         /// <value>The persisted HTML value.</value>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string DefaultPersistedHtmlValue { get; set; }
 
         /// <summary>
@@ -190,6 +200,7 @@ namespace Rock.Model
         /// </summary>
         /// <value>The persisted condensed text value.</value>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string DefaultPersistedCondensedTextValue { get; set; }
 
         /// <summary>
@@ -197,6 +208,7 @@ namespace Rock.Model
         /// </summary>
         /// <value>The persisted condensed HTML value.</value>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string DefaultPersistedCondensedHtmlValue { get; set; }
 
         /// <summary>
@@ -236,6 +248,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 100 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string IconCssClass { get; set; }
 
         /// <summary>
@@ -244,6 +257,7 @@ namespace Rock.Model
         /// <value>The color of the attribute.</value>
         [MaxLength( 100 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string AttributeColor { get; set; }
 
         /// <summary>
@@ -314,6 +328,7 @@ namespace Rock.Model
         /// The pre HTML.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string PreHtml { get; set; }
 
         /// <summary>
@@ -323,6 +338,7 @@ namespace Rock.Model
         /// The post HTML.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string PostHtml { get; set; }
 
         /// <summary>
@@ -349,6 +365,7 @@ namespace Rock.Model
         /// <inheritdoc/>
         [RockInternal( "17.0" )]
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string AdditionalSettingsJson { get; set; }
 
         #endregion

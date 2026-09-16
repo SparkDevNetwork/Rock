@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -187,7 +187,7 @@ namespace Rock.Lava
 
             if ( templatePath.StartsWith( "~~" ) )
             {
-                var rockPage = RockRequestContextAccessor.Current.Page;
+                var rockPage = RockRequestContextAccessor.Current?.Page;
 
 #if REVIEW_WEBFORMS
                 if ( rockPage == null && HttpContext.Current?.Items?.Contains( "Rock:PageId" ) == true )
@@ -196,7 +196,7 @@ namespace Rock.Lava
                 }
 #endif
 
-                return RockApp.Current.MapPath( templatePath, rockPage.Layout.Site.Theme ?? "Rock" );
+                return RockApp.Current.MapPath( templatePath, rockPage?.Layout.Site.Theme ?? "Rock" );
             }
             else if ( templatePath.StartsWith( "~" ) )
             {

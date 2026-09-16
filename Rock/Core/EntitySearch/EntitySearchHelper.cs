@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -44,6 +44,7 @@ namespace Rock.Core.EntitySearch
         /// </summary>
         private readonly static ParsingConfig _parsingConfig = new ParsingConfig
         {
+            AllowEqualsAndToStringMethodsOnObject = true,
             DisableMemberAccessToIndexAccessorFallback = true,
             CustomTypeProvider = new DynamicLinqCustomTypeProvider()
         };

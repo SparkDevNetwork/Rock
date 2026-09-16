@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -70,6 +70,13 @@ namespace Rock.ViewModels.Group.GroupMember
         /// The date and time the group member was added.
         /// </summary>
         public DateTimeOffset? DateTimeAdded { get; set; }
+
+        /// <summary>
+        /// Determines whether the group member is archived. An archived group
+        /// member is no longer considered part of the group, so clients should
+        /// treat an update with this set to true the same as a removal.
+        /// </summary>
+        public bool IsArchived { get; set; }
 
         /// <summary>
         /// The person associated with the group member.

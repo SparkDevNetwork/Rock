@@ -93,7 +93,7 @@
         const n = props.activityFlow?.nodes
             ?.map(n => ({
                 ...n,
-                color: getCssVariableValue(n.color ?? "", "#555")
+                color: getCssVariableValue(n.color ?? "", getCssVariableValue("--color-interface-medium", "#8B8BA7"))
             }))
             ?? [];
 

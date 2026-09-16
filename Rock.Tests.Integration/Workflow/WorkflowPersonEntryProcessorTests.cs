@@ -1,12 +1,12 @@
-﻿using System;
 using System.Linq;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
-using Rock.Tests.Shared;
-using Rock.Tests.Shared.TestFramework;
+using Rock.Tests.Integration.TestFramework.Database;
+using Rock.Tests.Shared.Constants;
 using Rock.ViewModels.Rest.Controls;
 using Rock.ViewModels.Workflow;
 using Rock.Web.Cache;
@@ -23,7 +23,7 @@ namespace Rock.Tests.Integration.Workflow
         [IsolatedTestDatabase]
         public void SameNameOfLoggedInPersonAndSpouse_UsesExistingPeople()
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var personService = new PersonService( rockContext );
                 var personAliasService = new PersonAliasService( rockContext );
@@ -70,7 +70,7 @@ namespace Rock.Tests.Integration.Workflow
         [IsolatedTestDatabase]
         public void MatchedNameOfPersonAndSpouse_UsesExistingPeople()
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var personService = new PersonService( rockContext );
                 var personAliasService = new PersonAliasService( rockContext );
@@ -118,7 +118,7 @@ namespace Rock.Tests.Integration.Workflow
         [IsolatedTestDatabase]
         public void ChangingNameOfLoggedInPerson_CreatesNewPersonAndSpouseInNewFamily()
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var personService = new PersonService( rockContext );
                 var personAliasService = new PersonAliasService( rockContext );
@@ -172,7 +172,7 @@ namespace Rock.Tests.Integration.Workflow
         [IsolatedTestDatabase]
         public void ChangingNameOfLoggedInSpouse_CreatesNewSpouseInSameFamily()
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var personService = new PersonService( rockContext );
                 var personAliasService = new PersonAliasService( rockContext );
@@ -225,7 +225,7 @@ namespace Rock.Tests.Integration.Workflow
         [IsolatedTestDatabase]
         public void ChangingNameOfLoggedInPersonToMatchedPerson_CreatesNewSpouseInMatchedFamily()
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var personService = new PersonService( rockContext );
                 var personAliasService = new PersonAliasService( rockContext );
@@ -282,7 +282,7 @@ namespace Rock.Tests.Integration.Workflow
         [IsolatedTestDatabase]
         public void ChangingNameOfLoggedInSpouseToMatchedPerson_CreatesNewSpouseInOriginalFamily()
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var personService = new PersonService( rockContext );
                 var personAliasService = new PersonAliasService( rockContext );
@@ -337,7 +337,7 @@ namespace Rock.Tests.Integration.Workflow
         [IsolatedTestDatabase]
         public void NewPersonAndEmptySpouse_DoesNotCreateSpouse()
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var personService = new PersonService( rockContext );
                 var personAliasService = new PersonAliasService( rockContext );

@@ -33,16 +33,31 @@ namespace Rock.Workflow.Action
     [Export( typeof( ActionComponent ) )]
     [ExportMetadata( "ComponentName", "Connection Request Set State" )]
 
-    [WorkflowAttribute( "Connection Request Attribute", "The attribute that contains the connection request.", true, "", "", 0, null,
-        new string[] { "Rock.Field.Types.ConnectionRequestFieldType" } )]
+    [WorkflowAttribute( "Connection Request Attribute",
+        Description = "The attribute that contains the connection request.",
+        IsRequired = true,
+        Order = 0,
+        FieldTypeClassNames = new string[] { "Rock.Field.Types.ConnectionRequestFieldType" } )]
 
-    [WorkflowAttribute( "Connection State Attribute", "The attribute that contains the connection state.", false, "", "", 1, null,
-        new string[] { "Rock.Field.Types.ConnectionStateFieldType" } )]
-    [ConnectionStateField("Connection State", "The connection state to use (if Connection State Attribute is not specified).", false, "", "", 2)]
+    [WorkflowAttribute( "Connection State Attribute",
+        Description = "The attribute that contains the connection state.",
+        IsRequired = false,
+        Order = 1,
+        FieldTypeClassNames = new string[] { "Rock.Field.Types.ConnectionStateFieldType" } )]
+    [ConnectionStateField("Connection State",
+        Description = "The connection state to use (if Connection State Attribute is not specified).",
+        IsRequired = false,
+        Order = 2)]
 
-    [WorkflowAttribute( "Follow Up Date Attribute", "The attribute that contains the follow-up date when state is being set to Future Follow Up.", false, "", "", 3, null,
-        new string[] { "Rock.Field.Types.DateFieldType" } )]
-    [DateField( "Follow Up Date", "The follow-up date when state is being set to Future Follow Up (if Follow Up Date Attribute is not specified).", false, "", "", 4 )]
+    [WorkflowAttribute( "Follow Up Date Attribute",
+        Description = "The attribute that contains the follow-up date when state is being set to Future Follow Up.",
+        IsRequired = false,
+        Order = 3,
+        FieldTypeClassNames = new string[] { "Rock.Field.Types.DateFieldType" } )]
+    [DateField( "Follow Up Date",
+        Description = "The follow-up date when state is being set to Future Follow Up (if Follow Up Date Attribute is not specified).",
+        IsRequired = false,
+        Order = 4)]
 
     [Rock.SystemGuid.EntityTypeGuid( "3C3B389B-BE46-495E-A5AC-2B2C7BA41DBA")]
     public class SetConnectionRequestState : ActionComponent

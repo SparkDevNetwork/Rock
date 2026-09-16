@@ -77,10 +77,6 @@
             valueBuilder.addTextValue("Enabled Lava Commands", props.modelValue.enabledLavaCommands.map(c => c.text).join(", "));
         }
 
-        if (props.modelValue.refreshIntervalHours && !props.modelValue.refreshInterval) {
-            valueBuilder.addTextValue("Refresh Interval", `${props.modelValue.refreshIntervalHours} hour(s)`);
-        }
-
         if (props.modelValue.memoryCacheDurationHours) {
             valueBuilder.addTextValue("Memory Cache", `${props.modelValue.memoryCacheDurationHours} hour(s)`);
         }
@@ -117,19 +113,11 @@
         }
 
         if (props.modelValue.refreshInterval) {
-            let intervalValue = props.modelValue.refreshInterval;
-            let intervalType = props.modelValue.persistedScheduleIntervalType;
-
-            if (intervalValue >= 1440) { // Days
-                intervalType = "Days";
-                intervalValue /= 1440;
-            }
-            else if (intervalValue >= 60) { // Hours
-                intervalType = "Hours";
-                intervalValue /= 60;
-            }
-
-            valueBuilder.addTextValue("Persistence Interval", `Every ${intervalValue} ${intervalType}`);
+            // The bag carries RefreshInterval as a count in the unit
+            // specified by PersistedScheduleIntervalType (set by the C#
+            // GetCommonEntityBag), so display them together as-is.
+            const intervalType = props.modelValue.persistedScheduleIntervalType ?? "Mins";
+            valueBuilder.addTextValue("Persistence Interval", `Every ${props.modelValue.refreshInterval} ${intervalType}`);
         }
 
         return valueBuilder.build();

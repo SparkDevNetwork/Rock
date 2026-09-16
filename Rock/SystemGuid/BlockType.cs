@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -285,27 +285,27 @@ namespace Rock.SystemGuid
         #region Mobile Block Types
 
         /// <summary>
-        /// The mobile Connection &gt; <see cref="Rock.Blocks.Types.Mobile.Connection.ConnectionTypeList">Connection Type List</see> block type.
+        /// The mobile Connection &gt; <see cref="Rock.Blocks.Types.Mobile.Connection.ConnectionTypeListLegacy">Connection Type List</see> block type.
         /// </summary>
         public const string MOBILE_CONNECTION_CONNECTION_TYPE_LIST = "31E1FCCF-C4B1-4D84-992C-DEACAF3697CF";
 
         /// <summary>
-        /// The mobile Connection &gt; <see cref="Rock.Blocks.Types.Mobile.Connection.ConnectionOpportunityList">Connection Opportunity List</see> block type.
+        /// The mobile Connection &gt; <see cref="Rock.Blocks.Types.Mobile.Connection.ConnectionOpportunityListLegacy">Connection Opportunity List</see> block type.
         /// </summary>
         public const string MOBILE_CONNECTION_CONNECTION_OPPORTUNITY_LIST = "0015A574-C10A-4530-897C-F7B7C3D9393E";
 
         /// <summary>
-        /// The mobile Connection &gt; <see cref="Rock.Blocks.Types.Mobile.Connection.ConnectionRequestList">Connection Request List</see> block type.
+        /// The mobile Connection &gt; <see cref="Rock.Blocks.Types.Mobile.Connection.ConnectionRequestListLegacy">Connection Request List</see> block type.
         /// </summary>
         public const string MOBILE_CONNECTION_CONNECTION_REQUEST_LIST = "612E9E13-434F-4E47-958D-37E1C3EEF304";
 
         /// <summary>
-        /// The mobile Connection &gt; <see cref="Rock.Blocks.Types.Mobile.Connection.ConnectionRequestDetail">Connection Request Detail</see> block type.
+        /// The mobile Connection &gt; <see cref="Rock.Blocks.Types.Mobile.Connection.ConnectionRequestDetailLegacy">Connection Request Detail</see> block type.
         /// </summary>
         public const string MOBILE_CONNECTION_CONNECTION_REQUEST_DETAIL = "EF537CC9-5E53-4832-A473-0D5EA439C296";
 
         /// <summary>
-        /// The mobile Connection &gt; <see cref="Rock.Blocks.Types.Mobile.Connection.AddConnectionRequest">Add Connection Request</see> block type.
+        /// The mobile Connection &gt; <see cref="Rock.Blocks.Types.Mobile.Connection.AddConnectionRequestLegacy">Add Connection Request</see> block type.
         /// </summary>
         public const string MOBILE_CONNECTION_ADD_CONNECTION_REQUEST = "1380115A-B3F0-49BC-A6BC-432A59DC27A2";
 
@@ -420,7 +420,7 @@ namespace Rock.SystemGuid
         public const string MOBILE_FINANCE_TRANSACTION_LIST = "D29C24EA-A52B-4470-A8D9-D7082FFF19DE";
 
         /// <summary>
-        /// The mobile my contact &gt; <see cref="Rock.Blocks.Types.Mobile.Engagement.MyContact">My Contact</see> block type.
+        /// The mobile my contacts &gt; <see cref="Rock.Blocks.Types.Mobile.Engagement.MyContact">My Contacts</see> block type.
         /// </summary>
         public const string MOBILE_OUTREACH_MY_CONTACTS = "5C8E3D6E-1F2D-4A2D-8E3C-2F3B1C6D7E8F";
 
@@ -477,11 +477,6 @@ namespace Rock.SystemGuid
         /// The obsidian event field type gallery
         /// </summary>
         public const string OBSIDIAN_EXAMPLE_FIELD_TYPE_GALLERY = "B9C209C2-ABB8-4B48-A68E-944572007B03";
-
-        /// <summary>
-        /// Workflow Entry
-        /// </summary>
-        public const string OBSIDIAN_WORKFLOW_ENTRY = "9116AAD8-CF16-4BCE-B0CF-5B4D565710ED";
 
         #endregion Obsidian Block Types
 

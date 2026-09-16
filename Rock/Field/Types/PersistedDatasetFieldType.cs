@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -21,6 +21,7 @@ using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 #endif
+
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
@@ -162,6 +163,21 @@ namespace Rock.Field.Types
             return new List<ReferencedProperty>
             {
                 new ReferencedProperty( EntityTypeCache.GetId<PersistedDataset>().Value, nameof( PersistedDataset.Name ) )
+            };
+        }
+
+        #endregion
+
+        #region Value Hinting
+
+        /// <inheritdoc/>
+        internal override FieldTypeHints GetFieldHints( Dictionary<string, string> privateConfigurationValues )
+        {
+            return new FieldTypeHints
+            {
+                IsCompleteList = false,
+                ValueFormat = "The guid of a row in the PersistedDataset table. Not its id or idKey.",
+                Instructions = "To find the correct value, read the persisted datasets and take its guid."
             };
         }
 

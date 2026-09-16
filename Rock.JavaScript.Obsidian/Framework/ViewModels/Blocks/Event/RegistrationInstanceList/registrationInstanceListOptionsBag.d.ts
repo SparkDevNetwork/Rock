@@ -23,12 +23,23 @@
 
 /** The additional configuration options for the Registration Instance List block. */
 export type RegistrationInstanceListOptionsBag = {
+    /** The title used for CSV exports (becomes the exported file name). */
+    exportTitle?: string | null;
+
+    /**
+     * Whether the grid should render. Mirrors the WebForms
+     * pnlContent.Visible = _canView gate: the grid only appears
+     * when a RegistrationTemplate has been resolved from the
+     * RegistrationTemplateId page parameter.
+     */
+    isVisible: boolean;
+
     /** The name of the registration instance. */
     registrationInstanceName?: string | null;
 
-    /** Whether to show the details list column. */
-    showDetailsColumn: boolean;
-
     /** Whether to show the wait list column. */
     showWaitList: boolean;
+
+    /** The CSS class for the icon displayed next to the grid title. */
+    titleIconCssClass?: string | null;
 };

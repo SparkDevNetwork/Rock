@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -20,9 +20,11 @@ using System.Linq;
 #if WEBFORMS
 using System.Web.UI;
 #endif
+
 using Rock.Attribute;
 using Rock.Model;
 using Rock.Reporting;
+using Rock.ViewModels.Utility;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Field.Types
@@ -92,6 +94,34 @@ namespace Rock.Field.Types
             }
 
             return string.Empty;
+        }
+
+        #endregion
+
+        #region Value Hinting
+
+        /// <inheritdoc/>
+        /// <remarks>
+        /// Numbers rather than names, which is the opposite of what the displayed
+        /// value suggests, so it is spelled out with the mapping. A caller that sends
+        /// 'Monday' stores something that reads back as Sunday, because a name parses
+        /// to zero.
+        /// </remarks>
+        internal override FieldTypeHints GetFieldHints( Dictionary<string, string> privateConfigurationValues )
+        {
+            return new FieldTypeHints
+            {
+                IsCompleteList = true,
+                Values = Enum.GetValues( typeof( DayOfWeek ) )
+                    .Cast<DayOfWeek>()
+                    .Select( d => new ListItemBag
+                    {
+                        Value = ( ( int ) d ).ToString(),
+                        Text = d.ToString()
+                    } )
+                    .ToList(),
+                ValueFormat = "One or more day numbers separated by commas, not day names. Sunday is 0 through Saturday is 6, so Monday and Wednesday is stored as 1,3."
+            };
         }
 
         #endregion

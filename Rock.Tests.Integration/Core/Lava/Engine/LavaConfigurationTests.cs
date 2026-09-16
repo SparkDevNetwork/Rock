@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -22,11 +22,13 @@ using System.Text.RegularExpressions;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Lava;
 using Rock.Lava.Fluid;
 using Rock.Model;
-using Rock.Tests.Shared;
+using Rock.Tests.Shared.Constants;
+using Rock.Tests.Shared.Utility;
 
 namespace Rock.Tests.Integration.Core.Lava.Engine
 {
@@ -265,7 +267,7 @@ namespace Rock.Tests.Integration.Core.Lava.Engine
 
                 var shortcodeProvider = new TestLavaDynamicShortcodeProvider();
 
-                var rockContext = new RockContext();
+                var rockContext = RockApp.Current.CreateRockContext();
                 var lavaShortCodeService = new LavaShortcodeService( rockContext );
 
                 // Create a new Shortcode.
@@ -365,7 +367,7 @@ namespace Rock.Tests.Integration.Core.Lava.Engine
                 }
 
                 // Get the shortcode and add it to the cache.
-                var rockContext = new RockContext();
+                var rockContext = RockApp.Current.CreateRockContext();
 
                 var lavaShortcodeService = new LavaShortcodeService( rockContext );
 

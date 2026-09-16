@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -33,6 +33,7 @@ using Rock.Utility;
 using Rock.Web.UI;
 
 using CheckInLabel = Rock.CheckIn.CheckInLabel;
+using Rock.Configuration;
 
 namespace RockWeb.Blocks.CheckIn
 {
@@ -43,9 +44,18 @@ namespace RockWeb.Blocks.CheckIn
     [Category( "Check-in" )]
     [Description( "Displays the details of a successful check out." )]
 
-    [TextField( "Title", "Title to display.", false, "Checked Out", "Text", 5 )]
-    [TextField( "Detail Message", "The message to display indicating person has been checked out. Use {0} for person, {1} for group, {2} for location, and {3} for schedule.", false,
-        "{0} was checked out of {1} in {2} at {3}.", "Text", 6 )]
+    [TextField( "Title",
+        Description = "Title to display.",
+        IsRequired = false,
+        DefaultValue = "Checked Out",
+        Category = "Text",
+        Order = 5 )]
+    [TextField( "Detail Message",
+        Description = "The message to display indicating person has been checked out. Use {0} for person, {1} for group, {2} for location, and {3} for schedule.",
+        IsRequired = false,
+        DefaultValue = "{0} was checked out of {1} in {2} at {3}.",
+        Category = "Text",
+        Order = 6 )]
 
     [Rock.SystemGuid.BlockTypeGuid( "F499C4A9-9A60-404B-9383-B950EE6D7821" )]
     public partial class CheckoutSuccess : CheckInBlock
@@ -83,7 +93,7 @@ namespace RockWeb.Blocks.CheckIn
                         var printFromClient = new List<CheckInLabel>();
                         var printFromServer = new List<CheckInLabel>();
 
-                        using ( var rockContext = new RockContext() )
+                        using ( var rockContext = RockApp.Current.CreateRockContext() )
                         {
                             var attendanceService = new AttendanceService( rockContext );
 
@@ -230,7 +240,7 @@ namespace RockWeb.Blocks.CheckIn
                 var personAliasGuid = Request.Cookies[Rock.Security.Authorization.COOKIE_UNSECURED_PERSON_IDENTIFIER].Value.AsGuidOrNull();
                 if ( personAliasGuid.HasValue )
                 {
-                    var personAlias = new PersonAliasService( new RockContext() ).GetByAliasGuid( personAliasGuid.Value );
+                    var personAlias = new PersonAliasService( RockApp.Current.CreateRockContext() ).GetByAliasGuid( personAliasGuid.Value );
                     if ( personAlias != null )
                     {
                         personAliasId = personAlias.Id;

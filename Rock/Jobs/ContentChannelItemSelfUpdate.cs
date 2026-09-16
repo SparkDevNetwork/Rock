@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -21,6 +21,7 @@ using System.Linq;
 using System.Text;
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 
@@ -46,6 +47,7 @@ namespace Rock.Jobs
         IsRequired = true,
         KeyPrompt = "Template Key",
         ValuePrompt = "Target Key",
+        AllowHtml = true,
         Order = 1,
         Key = AttributeKey.AttributeLinks )]
 
@@ -80,15 +82,11 @@ namespace Rock.Jobs
 
             var errors = new List<string>();
             List<Exception> exceptions = new List<Exception>();
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var contentChannelId = new ContentChannelService( rockContext ).GetId( contentChannelGuid.Value );
             var contentChannelItems = new ContentChannelItemService( rockContext ).Queryable().Where( i => i.ContentChannelId == contentChannelId ).ToList();
 
-#if REVIEW_WEBFORMS
-            var attributeLinks = new Field.Types.KeyValueListFieldType().GetValuesFromString( null, GetAttributeValue( AttributeKey.AttributeLinks ), null, false );
-#else
-            var attributeLinks = new Field.Types.KeyValueListFieldType().GetValuesFromString( GetAttributeValue( AttributeKey.AttributeLinks ), null, false );
-#endif
+            var attributeLinks = Field.Helper.GetKeyValueListValuesFromString( GetAttributeValue( AttributeKey.AttributeLinks ), null, false );
             var itemMergeFields = new Dictionary<string, object>( Lava.LavaHelper.GetCommonMergeFields( null ) );
             var jobResultStringBuilder = new StringBuilder();
             var totalItems = contentChannelItems.Count();

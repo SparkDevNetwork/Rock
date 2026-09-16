@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -19,10 +19,13 @@ using System.Collections.Generic;
 using System.Linq;
 #if WEBFORMS
 using System.Web.UI;
+
 #endif
 using Rock.Attribute;
 using Rock.Data;
+using Rock.Enums.Security;
 using Rock.Model;
+using Rock.Security;
 using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
@@ -186,6 +189,12 @@ namespace Rock.Field.Types
             return string.Empty;
         }
 
+        /// <inheritdoc/>
+        public override StringValidationRule GetValidationRules( Dictionary<string, string> privateConfigurationValues )
+        {
+            return StringValueValidator.GetEffectiveRules( StringValidationProfile.Unrestricted );
+        }
+
         #endregion
 
         #region IEntityReferenceFieldType
@@ -228,24 +237,27 @@ namespace Rock.Field.Types
         /// </summary>
         /// <param name="value">The value.</param>
         /// <returns>The content of the selected template.</returns>
+        [Obsolete( "Use the GetBlockTemplateContent method on Rock.Field.Helper instead." )]
+        [RockObsolete( "20.0" )]
         public static string GetTemplateContent( string value )
         {
-            var values = value.Split( new[] { '|' }, 2 );
-
-            if ( values.Length >= 1 )
-            {
-                if ( values[0].AsGuid() == _CustomGuid && values.Length >= 2 )
-                {
-                    return values[1];
-                }
-                else
-                {
-                    return DefinedValueCache.Get( values[0].AsGuid() )?.Description ?? string.Empty;
-                }
-            }
-
-            return string.Empty;
+            return Helper.GetBlockTemplateContent( value );
         }
+
+        #region Value Hinting
+
+        /// <inheritdoc/>
+        internal override FieldTypeHints GetFieldHints( Dictionary<string, string> privateConfigurationValues )
+        {
+            return new FieldTypeHints
+            {
+                IsCompleteList = false,
+                ValueFormat = "Two parts separated by a pipe, the guid of the DefinedValue holding the block template first and the template content second, as in a3b1c2d4-0000-0000-0000-000000000000|{% raw %}. Either part may be empty, and a value with no pipe is read as the guid alone with no content.",
+                Instructions = "The template guid comes from the block templates defined for the template block value this field is configured against. When the template is a custom one rather than a defined one, the second part carries the Lava itself."
+            };
+        }
+
+        #endregion
 
         #region WebForms
 #if WEBFORMS

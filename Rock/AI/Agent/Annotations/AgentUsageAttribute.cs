@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -21,7 +21,7 @@ namespace Rock.AI.Agent.Annotations
     /// multiple times.
     /// </summary>
     [System.AttributeUsage( System.AttributeTargets.Class | System.AttributeTargets.Method, Inherited = false, AllowMultiple = true )]
-    internal class AgentUsageAttribute : System.Attribute
+    public class AgentUsageAttribute : System.Attribute
     {
         /// <summary>
         /// The usage guidance for the tool.

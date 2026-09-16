@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -14,16 +14,17 @@
 // limitations under the License.
 // </copyright>
 //
-using Rock.Data;
-using Rock.Lava;
-using Rock.Model;
-using Rock.Web.Cache;
-
 using System;
 using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
 using System.Runtime.Serialization;
+
+using Rock.Configuration;
+using Rock.Data;
+using Rock.Lava;
+using Rock.Model;
+using Rock.Web.Cache;
 
 namespace Rock.CheckIn
 {
@@ -258,7 +259,7 @@ namespace Rock.CheckIn
         /// <returns></returns>
         private static KioskDevice Create( int id )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var campusLocations = new Dictionary<int, int>();
                 CampusCache.All()
@@ -299,7 +300,7 @@ namespace Rock.CheckIn
         {
             int? kioskDeviceTypeValueId = DefinedValueCache.GetId( Rock.SystemGuid.DefinedValue.DEVICE_TYPE_CHECKIN_KIOSK.AsGuid() );
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var deviceService = new DeviceService( rockContext );
                 var ids = deviceService.Queryable().Where( d => d.DeviceTypeValueId == kioskDeviceTypeValueId ).Select( d => d.Id ).ToList().ConvertAll( d => d.ToString() );

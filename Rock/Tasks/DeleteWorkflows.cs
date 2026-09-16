@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -17,6 +17,8 @@
 
 using System.Collections.Generic;
 using System.Linq;
+
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 
@@ -35,7 +37,7 @@ namespace Rock.Tasks
         {
             while ( message.WorkflowIds.Any() )
             {
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     var workflowIdSet = message.WorkflowIds.Take( 100 ).ToList();
                     message.WorkflowIds = message.WorkflowIds.Skip( 100 ).ToList();

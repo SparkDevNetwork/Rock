@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -22,6 +22,7 @@ using System.IO;
 using System.Linq;
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
@@ -43,14 +44,15 @@ namespace Rock.Blocks.Cms
     [Category( "CMS" )]
     [Description( "Displays the details of a particular layout." )]
     [IconCssClass( "ti ti-question-mark" )]
-    // [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( Model.SiteType.Web )]
 
     #region Block Attributes
 
     #endregion
 
     [Rock.SystemGuid.EntityTypeGuid( "b85c080a-f645-430a-b0d4-8eee689f4265" )]
-    [Rock.SystemGuid.BlockTypeGuid( "64c3b64a-cdb3-4e5f-bc54-0e3d50aac564" )]
+    [Rock.SystemGuid.BlockTypeGuid( "68B9D63D-D714-473A-89F2-62EB1602E00A" )]
+    // was [Rock.SystemGuid.BlockTypeGuid( "64c3b64a-cdb3-4e5f-bc54-0e3d50aac564" )]
     public class LayoutDetail : RockDetailBlockType, IBreadCrumbBlock
     {
         #region Keys
@@ -73,7 +75,7 @@ namespace Rock.Blocks.Cms
         /// <inheritdoc/>
         public override object GetObsidianBlockInitialization()
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var box = new DetailBlockBox<LayoutBag, LayoutDetailOptionsBag>();
 
@@ -90,7 +92,7 @@ namespace Rock.Blocks.Cms
         /// <inheritdoc/>
         public BreadCrumbResult GetBreadCrumbs( PageReference pageReference )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var key = pageReference.GetPageParameter( PageParameterKey.LayoutId );
                 var pageParameters = new Dictionary<string, string>();
@@ -374,7 +376,7 @@ namespace Rock.Blocks.Cms
         /// <inheritdoc/>
         protected override string RenewSecurityGrantToken()
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var entity = GetInitialEntity( rockContext );
 
@@ -455,7 +457,7 @@ namespace Rock.Blocks.Cms
         [BlockAction]
         public BlockActionResult Edit( string key )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 if ( !TryGetEntityForEditAction( key, rockContext, out var entity, out var actionError ) )
                 {
@@ -481,7 +483,7 @@ namespace Rock.Blocks.Cms
         [BlockAction]
         public BlockActionResult Save( DetailBlockBox<LayoutBag, LayoutDetailOptionsBag> box )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var entityService = new LayoutService( rockContext );
 
@@ -546,7 +548,7 @@ namespace Rock.Blocks.Cms
         [BlockAction]
         public BlockActionResult RefreshAttributes( DetailBlockBox<LayoutBag, LayoutDetailOptionsBag> box )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 if ( !TryGetEntityForEditAction( box.Entity.IdKey, rockContext, out var entity, out var actionError ) )
                 {

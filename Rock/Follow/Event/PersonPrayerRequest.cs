@@ -21,6 +21,7 @@ using System.Data.Entity;
 using System.Linq;
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 
@@ -33,7 +34,11 @@ namespace Rock.Follow.Event
     [Export( typeof( EventComponent ) )]
     [ExportMetadata( "ComponentName", "PersonPrayerRequest" )]
 
-    [IntegerField( "Max Days Back", "Maximum number of days back to consider", false, 30, "", 0)]
+    [IntegerField( "Max Days Back",
+        Description = "Maximum number of days back to consider",
+        IsRequired = false,
+        DefaultIntegerValue = 30,
+        Order = 0 )]
     [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.PERSON_PRAYER_REQUEST )]
     public class PersonPrayerRequest : EventComponent
     {
@@ -97,7 +102,7 @@ namespace Rock.Follow.Event
 
         private bool HasPublicPrayerRequest( PersonAlias personAlias, DateTime cutoffDateTime )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 return new PrayerRequestService( rockContext )
                     .Queryable().AsNoTracking()
@@ -113,7 +118,7 @@ namespace Rock.Follow.Event
 
         private bool HasPublicOrPrivatePrayerRequest( PersonAlias personAlias, DateTime cutoffDateTime )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 return new PrayerRequestService( rockContext )
                     .Queryable().AsNoTracking()

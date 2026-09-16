@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -22,17 +22,19 @@ using System.Data.Entity;
 using System.Linq;
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Obsidian.UI;
 using Rock.Security;
 using Rock.SystemGuid;
+using Rock.Utility;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Core.SignatureDocumentList;
 using Rock.Web.Cache;
-using Person = Rock.Model.Person;
 using Rock.Web.UI.Controls;
-using Rock.Utility;
+
+using Person = Rock.Model.Person;
 
 namespace Rock.Blocks.Core
 {
@@ -117,7 +119,7 @@ namespace Rock.Blocks.Core
                 if ( documentTypeId.HasValue && documentTypeId.Value != 0 )
                 {
                     // Following the same logic as the Signature Document Detail to hide the Block if the Current Person is not authorized to view.
-                    var signatureDocumentTemplateService = new SignatureDocumentTemplateService( new RockContext() );
+                    var signatureDocumentTemplateService = new SignatureDocumentTemplateService( RockApp.Current.CreateRockContext() );
                     var signatureDocumentTemplate = signatureDocumentTemplateService.Get( documentTypeId.Value );
 
                     bool canEdit = signatureDocumentTemplate?.IsAuthorized( Authorization.EDIT, currentPerson ) ?? false;

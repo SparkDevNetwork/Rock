@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -31,11 +31,6 @@ namespace Rock.ViewModels.Blocks.Group.GroupTypeDetail
         /// Gets or sets the unique identifier of the workflow trigger.
         /// </summary>
         public Guid Guid { get; set; }
-
-        /// <summary>
-        /// Gets or sets the order of the workflow trigger.
-        /// </summary>
-        public int Order { get; set; }
 
         /// <summary>
         /// Gets or sets the name of the workflow trigger.

@@ -21,6 +21,7 @@
 // </copyright>
 //
 
+using Rock.Configuration;
 using Rock.Model;
 using Rock.SystemGuid;
 
@@ -35,6 +36,6 @@ namespace Rock.Rest.Controllers
         /// <summary>
         /// Initializes a new instance of the <see cref="AnalyticsDimCampusController"/> class.
         /// </summary>
-        public AnalyticsDimCampusController() : base( new Rock.Model.AnalyticsDimCampusService( new Rock.Data.RockContext() ) ) { } 
+        public AnalyticsDimCampusController() : base( new Rock.Model.AnalyticsDimCampusService( RockApp.Current.CreateRockContext() ) ) { } 
     }
 }

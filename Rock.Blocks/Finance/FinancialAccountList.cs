@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -21,6 +21,7 @@ using System.Data.Entity;
 using System.Linq;
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Obsidian.UI;
@@ -180,11 +181,20 @@ namespace Rock.Blocks.Finance
             var accountService = new FinancialAccountService( rockContext );
             var accountQuery = accountService.Queryable();
 
+            /*
+                7/17/26 - MSE
+
+                When neither AccountId nor TopLevel is provided, return all accounts (matching
+                the legacy WebForms AccountList). The #6465 fix incorrectly treated the no-parameter
+                case as top-level-only, which prevented reordering child accounts for the give page.
+
+                Reason: Restore all-accounts mode for global Order reordering.
+            */
             if ( parentAccountId.HasValue )
             {
                 accountQuery = accountQuery.Where( account => account.ParentAccountId == parentAccountId.Value );
             }
-            else if ( topLevelOnly || !parentAccountId.HasValue )
+            else if ( topLevelOnly )
             {
                 accountQuery = accountQuery.Where( account => account.ParentAccountId == null );
             }
@@ -227,7 +237,7 @@ namespace Rock.Blocks.Finance
         [BlockAction]
         public BlockActionResult ReorderItem( string key, string beforeKey )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 // Get the queryable and make sure it is ordered correctly.
                 var qry = GetListQueryable( rockContext );
@@ -255,7 +265,7 @@ namespace Rock.Blocks.Finance
         [BlockAction]
         public BlockActionResult Delete( string key )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var entityService = new FinancialAccountService( rockContext );
                 var entity = entityService.Get( key, !PageCache.Layout.Site.DisablePredictableIds );

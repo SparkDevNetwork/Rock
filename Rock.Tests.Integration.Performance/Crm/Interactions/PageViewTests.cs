@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -6,9 +6,10 @@ using System.Linq;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
-using Rock.Tests.Shared.TestFramework;
+using Rock.Tests.Integration.TestFramework.Database;
 using Rock.Transactions;
 using Rock.Web.Cache;
 
@@ -25,7 +26,7 @@ namespace Rock.Tests.Integration.Performance.Crm.Interactions
         public void PerformanceTest0()
         {
             // make sure rockContext is initialized so the extra 10 seconds doesn't throw off the stats
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var warmup = new AttributeService( rockContext ).Queryable().FirstOrDefault();
             }
@@ -201,7 +202,7 @@ namespace Rock.Tests.Integration.Performance.Crm.Interactions
 
         private void DoTestRound( string roundName )
         {
-            int[] personAliasIds = new PersonAliasService( new RockContext() ).Queryable().Select( a => a.Id ).ToArray();
+            int[] personAliasIds = new PersonAliasService( RockApp.Current.CreateRockContext() ).Queryable().Select( a => a.Id ).ToArray();
 
             Stopwatch stopwatch = Stopwatch.StartNew();
             var pageViewTransactionList = new ConcurrentQueue<InteractionTransaction>();

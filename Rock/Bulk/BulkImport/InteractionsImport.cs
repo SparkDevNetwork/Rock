@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -16,6 +16,8 @@
 //
 using System.Collections.Generic;
 using System.Linq;
+
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 
@@ -55,7 +57,7 @@ namespace Rock.BulkImport
             var distinctPersonAliasIds = this.Interactions.Where( a => a.Interaction.PersonAliasId.HasValue ).Select( a => a.Interaction.PersonAliasId.Value ).Distinct().ToList();
             List<int> validPersonAliasIdBuilder = new List<int>();
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 while ( distinctPersonAliasIds.Any() )
                 {

@@ -21,6 +21,7 @@
 // </copyright>
 //
 
+using Rock.Configuration;
 using Rock.Model;
 using Rock.SystemGuid;
 
@@ -37,6 +38,6 @@ namespace Rock.Rest.Controllers
         /// <summary>
         /// Initializes a new instance of the <see cref="EntityCampusFiltersController"/> class.
         /// </summary>
-        public EntityCampusFiltersController() : base( new Rock.Model.EntityCampusFilterService( new Rock.Data.RockContext() ) ) { } 
+        public EntityCampusFiltersController() : base( new Rock.Model.EntityCampusFilterService( RockApp.Current.CreateRockContext() ) ) { } 
     }
 }

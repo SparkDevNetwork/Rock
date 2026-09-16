@@ -1,0 +1,174 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div ref="containerRef" class="action-container" :class="{ open: isDropDownOpen }">
+        <button type="button"
+                class="dropdown-toggle btn btn-default btn-go btn-square stretched-link"
+                title="Actions"
+                aria-label="Actions"
+                aria-haspopup="true"
+                :aria-expanded="isDropDownOpen"
+                @click="onDropDownClick">
+            <i class="ti ti-bolt"></i>
+        </button>
+        <ul class="dropdown-menu">
+            <li v-if="isImpersonateVisible" :class="{ disabled: !isImpersonateEnabled }">
+                <a href="#" @click.prevent="onImpersonateClick"><i class="ti-fw ti ti-lock-open"></i>&nbsp;Impersonate</a>
+            </li>
+            <li>
+                <a :href="vCardUrl" @click="onVCardClick"><i class="ti ti-id"></i>&nbsp;Download vCard</a>
+            </li>
+            <li v-if="customActionsHtml" ref="customActionsDividerRef" role="separator" class="divider"></li>
+            <template v-if="workflowActions.length > 0">
+                <li role="separator" class="divider"></li>
+                <li v-for="(workflowAction, index) in workflowActions" :key="index">
+                    <a :href="workflowAction.url ?? undefined"><i :class="getWorkflowActionIconClass(workflowAction)"></i> {{ workflowAction.name }}</a>
+                </li>
+            </template>
+        </ul>
+        <span>Actions</span>
+    </div>
+</template>
+
+<script setup lang="ts">
+    import { onMounted, onUnmounted, PropType, ref, watch } from "vue";
+    import { BioWorkflowActionBag } from "@Obsidian/ViewModels/Blocks/Crm/PersonDetail/Bio/bioWorkflowActionBag";
+
+    const props = defineProps({
+        vCardUrl: {
+            type: String as PropType<string>,
+            required: true
+        },
+
+        isImpersonateVisible: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        isImpersonateEnabled: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        customActionsHtml: {
+            type: String as PropType<string | null>,
+            default: null
+        },
+
+        workflowActions: {
+            type: Array as PropType<BioWorkflowActionBag[]>,
+            default: () => []
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "impersonate"): void;
+    }>();
+
+    // #region Values
+
+    const containerRef = ref<HTMLElement | null>(null);
+    const customActionsDividerRef = ref<HTMLElement | null>(null);
+    const isDropDownOpen = ref(false);
+
+    // #endregion Values
+
+    // #region Event Handlers
+
+    /**
+     * Event handler for when the drop down toggle button has been clicked.
+     */
+    function onDropDownClick(): void {
+        isDropDownOpen.value = !isDropDownOpen.value;
+    }
+
+    /**
+     * Event handler for when the Impersonate action has been clicked.
+     */
+    function onImpersonateClick(): void {
+        if (!props.isImpersonateEnabled) {
+            return;
+        }
+
+        isDropDownOpen.value = false;
+        emit("impersonate");
+    }
+
+    /**
+     * Event handler for when the Download vCard action has been clicked. The
+     * link triggers a file download rather than navigating, so the drop down
+     * is closed manually.
+     */
+    function onVCardClick(): void {
+        isDropDownOpen.value = false;
+    }
+
+    /**
+     * Event handler for when the mouse is pressed down somewhere in the
+     * document.
+     *
+     * @param event The current event.
+     */
+    function onDocumentMouseDown(event: MouseEvent): void {
+        if (event.target instanceof HTMLElement && containerRef.value?.contains(event.target) !== true) {
+            isDropDownOpen.value = false;
+        }
+    }
+
+    /**
+     * Event handler for when a key is pressed while the drop down is open.
+     *
+     * @param event The current event.
+     */
+    function onDocumentKeyDown(event: KeyboardEvent): void {
+        if (event.key === "Escape") {
+            isDropDownOpen.value = false;
+        }
+    }
+
+    // #endregion Event Handlers
+
+    // #region Functions
+
+    /**
+     * Gets the icon classes for the specified workflow action.
+     */
+    function getWorkflowActionIconClass(workflowAction: BioWorkflowActionBag): string {
+        return `ti-fw ${workflowAction.iconCssClass ?? ""}`;
+    }
+
+    // #endregion Functions
+
+    // #region Watchers
+
+    // Watch for the drop down being opened or closed and add/remove the
+    // document event handlers that close it on an outside click or Escape.
+    watch(isDropDownOpen, () => {
+        if (isDropDownOpen.value) {
+            document.addEventListener("mousedown", onDocumentMouseDown);
+            document.addEventListener("keydown", onDocumentKeyDown);
+        }
+        else {
+            document.removeEventListener("mousedown", onDocumentMouseDown);
+            document.removeEventListener("keydown", onDocumentKeyDown);
+        }
+    });
+
+    // #endregion Watchers
+
+    // #region Lifecycle Hooks
+
+    onMounted(() => {
+        // The custom actions are pre-built list items provided by the block
+        // settings, so they are inserted as raw elements after the divider.
+        if (props.customActionsHtml && customActionsDividerRef.value) {
+            customActionsDividerRef.value.insertAdjacentHTML("afterend", props.customActionsHtml);
+        }
+    });
+
+    onUnmounted(() => {
+        document.removeEventListener("mousedown", onDocumentMouseDown);
+        document.removeEventListener("keydown", onDocumentKeyDown);
+    });
+
+    // #endregion Lifecycle Hooks
+</script>

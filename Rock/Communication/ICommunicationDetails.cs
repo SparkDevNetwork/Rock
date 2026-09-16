@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -16,6 +16,7 @@
 //
 using System;
 using System.Collections.Generic;
+
 using Rock.Utility;
 
 namespace Rock.Communication
@@ -102,16 +103,6 @@ namespace Rock.Communication
         #endregion
 
         #region SMS Properties
-
-        /// <summary>
-        /// Gets or sets from number.
-        /// </summary>
-        /// <value>
-        /// From number.
-        /// </value>
-        [Obsolete( "Use SmsFromSystemPhoneNumberId instead." )]
-        [RockObsolete( "1.15" )]
-        int? SMSFromDefinedValueId { get; set; }
 
         /// <summary>
         /// Gets or sets the system phone number identifier to use when sending an SMS message.

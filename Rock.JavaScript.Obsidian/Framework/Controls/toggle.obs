@@ -6,7 +6,7 @@
                    formGroupClasses="toggle"
                    name="toggle">
         <template #default="{ uniqueId, field }">
-            <div class="control-wrapper">
+            <div class="control-wrapper" :class="{ 'toggle-disabled': disabled }">
                 <div class="toggle-container">
                     <div :class="getButtonGroupClass">
                         <JavaScriptAnchor :class="modelValue ? unselectedClasses : offButtonSelectedClasses"

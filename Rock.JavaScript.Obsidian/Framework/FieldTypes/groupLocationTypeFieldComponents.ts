@@ -19,7 +19,7 @@ import { computed, defineComponent, ref, watch } from "vue";
 import { getFieldEditorProps, getFieldConfigurationProps } from "./utils";
 import GroupTypePicker from "@Obsidian/Controls/groupTypePicker.obs";
 import DropDownList from "@Obsidian/Controls/dropDownList.obs";
-import { ConfigurationValueKey } from "./groupLocationTypeField.partial";
+import { ConfigurationKey } from "./groupLocationTypeField.partial";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { ControlLazyMode } from "@Obsidian/Enums/Controls/controlLazyMode";
 import { updateRefValue } from "@Obsidian/Utility/component";
@@ -39,8 +39,8 @@ export const EditComponent = defineComponent({
         /** The options to choose from in the drop down list */
         const options = computed((): ListItemBag[] => {
             try {
-                const groupType = JSON.parse(props.configurationValues[ConfigurationValueKey.GroupType] || "{}") as ListItemBag;
-                const locationTypes = JSON.parse(props.configurationValues[ConfigurationValueKey.GroupTypeLocations] || "{}");
+                const groupType = JSON.parse(props.configurationValues[ConfigurationKey.GroupType] || "{}") as ListItemBag;
+                const locationTypes = JSON.parse(props.configurationValues[ConfigurationKey.GroupTypeLocations] || "{}");
                 if (groupType.value) {
                     return JSON.parse(locationTypes[groupType.value] || "[]") as ListItemBag[];
                 }
@@ -104,10 +104,10 @@ export const ConfigurationComponent = defineComponent({
 
             // Construct the new value that will be emitted if it is different
             // than the current value.
-            newValue[ConfigurationValueKey.GroupType] = JSON.stringify(groupType.value ?? "");
-            newValue[ConfigurationValueKey.GroupTypeLocations] = props.modelValue[ConfigurationValueKey.GroupTypeLocations];
+            newValue[ConfigurationKey.GroupType] = JSON.stringify(groupType.value ?? "");
+            newValue[ConfigurationKey.GroupTypeLocations] = props.modelValue[ConfigurationKey.GroupTypeLocations];
 
-            const anyValueChanged = newValue[ConfigurationValueKey.GroupType] !== props.modelValue[ConfigurationValueKey.GroupType];
+            const anyValueChanged = newValue[ConfigurationKey.GroupType] !== props.modelValue[ConfigurationKey.GroupType];
 
             // If any value changed then emit the new model value.
             if (anyValueChanged) {
@@ -135,7 +135,7 @@ export const ConfigurationComponent = defineComponent({
         // Watch for changes coming in from the parent component and update our
         // data to match the new information.
         watch(() => [props.modelValue, props.configurationProperties], () => {
-            updateRefValue(groupType, JSON.parse(props.modelValue[ConfigurationValueKey.GroupType] || "{}"));
+            updateRefValue(groupType, JSON.parse(props.modelValue[ConfigurationKey.GroupType] || "{}"));
         }, {
             immediate: true
         });
@@ -146,7 +146,7 @@ export const ConfigurationComponent = defineComponent({
             }
         });
 
-        watch(groupType, val => maybeUpdateConfiguration(ConfigurationValueKey.GroupType, JSON.stringify(val ?? "")));
+        watch(groupType, val => maybeUpdateConfiguration(ConfigurationKey.GroupType, JSON.stringify(val ?? "")));
 
         return {
             groupType,

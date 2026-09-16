@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -19,6 +19,7 @@ using System.ComponentModel;
 using Microsoft.EntityFrameworkCore;
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 
@@ -32,7 +33,7 @@ namespace Rock.Jobs
 
     [IntegerField(
         "Command Timeout",
-        AttributeKey.CommandTimeout,
+        Key = AttributeKey.CommandTimeout,
         Description = "Maximum amount of time (in seconds) to wait for each SQL command to complete. On a large database with lots of data, this could take several minutes or more.",
         IsRequired = false,
         DefaultIntegerValue = 3600 )]
@@ -51,7 +52,7 @@ namespace Rock.Jobs
             var commandTimeout = GetAttributeValue( AttributeKey.CommandTimeout ).AsIntegerOrNull() ?? 3600;
 
             // If this somehow fails and throws an exeption, the DeleteJob() call below won't run and it will try again later.
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 rockContext.Database.SetCommandTimeout( commandTimeout );
                 rockContext.Database.ExecuteSqlCommand( Plugin.HotFixes.HotFixMigrationResource._153_FixERAStartDate_RecoverERAStartDate_Update );

@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -20,6 +20,7 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using System.Web;
 using Rock;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
@@ -53,7 +54,7 @@ namespace RockWeb
                     int? fileId = IdHasher.Instance.GetId( fileIdKey );
                     if ( fileId.HasValue )
                     {
-                        return new BinaryFileService( new RockContext() ).BeginGet( cb, context, fileId.Value );
+                        return new BinaryFileService( RockApp.Current.CreateRockContext() ).BeginGet( cb, context, fileId.Value );
                     }
                 }
 
@@ -61,7 +62,7 @@ namespace RockWeb
                 if ( !string.IsNullOrEmpty( fileGuidString ) )
                 {
                     Guid fileGuid = new Guid( fileGuidString );
-                    return new BinaryFileService( new RockContext() ).BeginGet( cb, context, fileGuid );
+                    return new BinaryFileService( RockApp.Current.CreateRockContext() ).BeginGet( cb, context, fileGuid );
                 }
 
             }
@@ -72,11 +73,11 @@ namespace RockWeb
 
                 if ( fileGuid != Guid.Empty )
                 {
-                    return new BinaryFileService( new RockContext() ).BeginGet( cb, context, fileGuid );
+                    return new BinaryFileService( RockApp.Current.CreateRockContext() ).BeginGet( cb, context, fileGuid );
                 }
                 else if ( fileId != 0 )
                 {
-                    return new BinaryFileService( new RockContext() ).BeginGet( cb, context, fileId );
+                    return new BinaryFileService( RockApp.Current.CreateRockContext() ).BeginGet( cb, context, fileId );
                 }
             }
 
@@ -96,19 +97,36 @@ namespace RockWeb
             {
                 context.Response.Clear();
 
-                var rockContext = new RockContext();
+                var rockContext = RockApp.Current.CreateRockContext();
 
                 bool requiresViewSecurity;
                 BinaryFile binaryFile = new BinaryFileService( rockContext ).EndGet( result, context, out requiresViewSecurity );
                 if ( binaryFile != null )
                 {
                     binaryFile.BinaryFileType = binaryFile.BinaryFileType ?? new BinaryFileTypeService( rockContext ).Get( binaryFile.BinaryFileTypeId.Value );
-                    //UserLogin currentUser = UserLoginService.GetCurrentUser();
-                    var currentUser = new UserLoginService( rockContext ).GetByUserName( UserLogin.GetCurrentUserName() );
-                    Person currentPerson = currentUser?.Person;
+
+                    // Resolve the current person from the request's HttpContext directly rather than via
+                    // UserLoginService.GetCurrentUser(). That helper reads identity through HttpContext.Current /
+                    // Thread.CurrentPrincipal, which is not reliable inside this IHttpAsyncHandler's EndProcessRequest
+                    // continuation: the ADO.NET completion callback runs on a thread pool worker where
+                    // HttpContext.Current can be null and Thread.CurrentPrincipal may not carry the request's identity.
+                    // The passed-in `context` (via IAsyncResult.AsyncState) IS the request's HttpContext, so read
+                    // Identity.Name from it and translate "rckipid=<token>" ourselves via PersonTokenService.
+                    Person currentPerson = null;
+                    var identityName = context.User?.Identity?.Name ?? string.Empty;
+                    if ( identityName.StartsWith( "rckipid=" ) )
+                    {
+                        var personToken = new PersonTokenService( rockContext ).GetByImpersonationToken( identityName.Substring( 8 ) );
+                        currentPerson = personToken?.PersonAlias?.Person;
+                    }
+                    else if ( identityName.IsNotNullOrWhiteSpace() )
+                    {
+                        currentPerson = new UserLoginService( rockContext ).GetByUserName( identityName )?.Person;
+                    }
+
                     var parentEntityAllowsView = binaryFile.ParentEntityAllowsView( currentPerson );
 
-                    // If no parent entity is specified then check if there is scecurity on the BinaryFileType
+                    // If no parent entity is specified then check if there is security on the BinaryFileType
                     // Use BinaryFileType.RequiresViewSecurity because checking security for every file is slow (~40ms+ per request)
                     if ( parentEntityAllowsView == null && requiresViewSecurity )
                     {

@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -23,6 +23,7 @@ using System.Runtime.Serialization;
 
 using Rock.Bus.Message;
 using Rock.Data;
+using Rock.Enums.Security;
 using Rock.Net.Geolocation;
 using Rock.Security;
 using Rock.Web.Cache;
@@ -42,6 +43,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 100 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string AbbreviatedName
         {
             get
@@ -117,7 +119,15 @@ namespace Rock.Model
             {
                 // ensure that the BinaryFile.IsTemporary flag is set to false for any BinaryFiles that are associated with this record
                 var fieldTypeCache = FieldTypeCache.Get( this.FieldTypeId );
-                if ( fieldTypeCache?.Field is Rock.Field.Types.BinaryFileFieldType )
+                var isBinaryFileType = fieldTypeCache?.Guid == SystemGuid.FieldType.BINARY_FILE.AsGuid()
+                    || fieldTypeCache?.Guid == SystemGuid.FieldType.AUDIO_FILE.AsGuid()
+                    || fieldTypeCache?.Guid == SystemGuid.FieldType.BACKGROUNDCHECK.AsGuid()
+                    || fieldTypeCache?.Guid == SystemGuid.FieldType.FILE.AsGuid()
+                    || fieldTypeCache?.Guid == SystemGuid.FieldType.IMAGE.AsGuid()
+                    || fieldTypeCache?.Guid == SystemGuid.FieldType.LABEL.AsGuid()
+                    || fieldTypeCache?.Guid == SystemGuid.FieldType.VIDEO_FILE.AsGuid();
+
+                if ( isBinaryFileType )
                 {
                     Guid? binaryFileGuid = DefaultValue.AsGuidOrNull();
                     if ( binaryFileGuid.HasValue )
@@ -190,6 +200,12 @@ namespace Rock.Model
             if ( ( !entityTypeId.HasValue || entityTypeId.Value == 0 ) && entityTypeQualifierColumn == Attribute.SYSTEM_SETTING_QUALIFIER && string.IsNullOrEmpty( entityTypeQualifierValue ) )
             {
                 Rock.Web.SystemSettings.Remove();
+
+                if ( this.Key == SystemKey.SystemSetting.ROCK_SECURITY_SETTINGS )
+                {
+                    // Invalidate the cached security settings for all Rock instances.
+                    Rock.Web.Cache.RockCache.Remove( Rock.Security.SecuritySettingsService.SecuritySettingsCacheKey );
+                }
 
                 if ( this.Key == SystemKey.SystemSetting.COUNTRIES_RESTRICTED_FROM_ACCESSING )
                 {

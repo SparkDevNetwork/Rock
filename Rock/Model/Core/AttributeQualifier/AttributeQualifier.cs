@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -20,9 +20,12 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
+
 using Rock.Data;
-using Rock.Web.Cache;
+using Rock.Enums.Security;
 using Rock.Lava;
+using Rock.Security;
+using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -76,6 +79,7 @@ namespace Rock.Model
 #if REVIEW_WEBFORMS
         [Index( "IX_AttributeIdKey", 1, IsUnique = true )]
 #endif
+        [StringValidation( StringValidationProfile.PlainText )]
         public string Key { get; set; }
         
         /// <summary>
@@ -85,6 +89,7 @@ namespace Rock.Model
         /// A <see cref="System.String"/> representing the value of the AttributeQualifier.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string Value { get; set; }
 
         #endregion

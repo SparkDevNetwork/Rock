@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -20,10 +20,12 @@ using System.Linq;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
+using Rock.Configuration;
 using Rock.Data;
+using Rock.Enums.Controls;
 using Rock.Field.Types;
 using Rock.Model;
-using Rock.Tests.Shared.TestFramework;
+using Rock.Tests.Integration.TestFramework.Database;
 using Rock.Web.Cache;
 
 namespace Rock.Tests.Integration.Core.Model
@@ -55,40 +57,40 @@ namespace Rock.Tests.Integration.Core.Model
 
         private static void CreateTestData()
         {
-            var dataContext = new RockContext();
+            var dataContext = RockApp.Current.CreateRockContext();
 
             var definedTypeService = new DefinedTypeService( dataContext );
 
             var attributes1 = new Dictionary<string, object>();
 
-            attributes1.Add( "core_CountryAddressLine1Requirement", DataEntryRequirementLevelSpecifier.Required );
-            attributes1.Add( "core_CountryAddressLine2Requirement", DataEntryRequirementLevelSpecifier.Required );
-            attributes1.Add( "core_CountryAddressCityRequirement", DataEntryRequirementLevelSpecifier.Required );
-            attributes1.Add( "core_CountryAddressStateRequirement", DataEntryRequirementLevelSpecifier.Required );
-            attributes1.Add( "core_CountryAddressLocalityRequirement", DataEntryRequirementLevelSpecifier.Required );
-            attributes1.Add( "core_CountryAddressPostalCodeRequirement", DataEntryRequirementLevelSpecifier.Required );
+            attributes1.Add( "core_CountryAddressLine1Requirement", RequirementLevel.Required );
+            attributes1.Add( "core_CountryAddressLine2Requirement", RequirementLevel.Required );
+            attributes1.Add( "core_CountryAddressCityRequirement", RequirementLevel.Required );
+            attributes1.Add( "core_CountryAddressStateRequirement", RequirementLevel.Required );
+            attributes1.Add( "core_CountryAddressLocalityRequirement", RequirementLevel.Required );
+            attributes1.Add( "core_CountryAddressPostalCodeRequirement", RequirementLevel.Required );
 
             definedTypeService.AddOrUpdateValue( SystemGuid.DefinedType.LOCATION_COUNTRIES, CountryCodeWithMandatoryAddressRequirements, "Test-1", attributes1 );
 
             var attributes2 = new Dictionary<string, object>();
 
-            attributes2.Add( "core_CountryAddressLine1Requirement", DataEntryRequirementLevelSpecifier.Optional );
-            attributes2.Add( "core_CountryAddressLine2Requirement", DataEntryRequirementLevelSpecifier.Optional );
-            attributes2.Add( "core_CountryAddressCityRequirement", DataEntryRequirementLevelSpecifier.Optional );
-            attributes2.Add( "core_CountryAddressStateRequirement", DataEntryRequirementLevelSpecifier.Optional );
-            attributes2.Add( "core_CountryAddressLocalityRequirement", DataEntryRequirementLevelSpecifier.Optional );
-            attributes2.Add( "core_CountryAddressPostalCodeRequirement", DataEntryRequirementLevelSpecifier.Optional );
+            attributes2.Add( "core_CountryAddressLine1Requirement", RequirementLevel.Optional );
+            attributes2.Add( "core_CountryAddressLine2Requirement", RequirementLevel.Optional );
+            attributes2.Add( "core_CountryAddressCityRequirement", RequirementLevel.Optional );
+            attributes2.Add( "core_CountryAddressStateRequirement", RequirementLevel.Optional );
+            attributes2.Add( "core_CountryAddressLocalityRequirement", RequirementLevel.Optional );
+            attributes2.Add( "core_CountryAddressPostalCodeRequirement", RequirementLevel.Optional );
 
             definedTypeService.AddOrUpdateValue( SystemGuid.DefinedType.LOCATION_COUNTRIES, CountryCodeWithOptionalAddressRequirements, "Test-2", attributes2 );
 
             var attributes3 = new Dictionary<string, object>();
 
-            attributes3.Add( "core_CountryAddressLine1Requirement", DataEntryRequirementLevelSpecifier.Optional );
-            attributes3.Add( "core_CountryAddressLine2Requirement", DataEntryRequirementLevelSpecifier.Optional );
-            attributes3.Add( "core_CountryAddressCityRequirement", DataEntryRequirementLevelSpecifier.Required );
-            attributes3.Add( "core_CountryAddressStateRequirement", DataEntryRequirementLevelSpecifier.Required );
-            attributes3.Add( "core_CountryAddressLocalityRequirement", DataEntryRequirementLevelSpecifier.Optional );
-            attributes3.Add( "core_CountryAddressPostalCodeRequirement", DataEntryRequirementLevelSpecifier.Optional );
+            attributes3.Add( "core_CountryAddressLine1Requirement", RequirementLevel.Optional );
+            attributes3.Add( "core_CountryAddressLine2Requirement", RequirementLevel.Optional );
+            attributes3.Add( "core_CountryAddressCityRequirement", RequirementLevel.Required );
+            attributes3.Add( "core_CountryAddressStateRequirement", RequirementLevel.Required );
+            attributes3.Add( "core_CountryAddressLocalityRequirement", RequirementLevel.Optional );
+            attributes3.Add( "core_CountryAddressPostalCodeRequirement", RequirementLevel.Optional );
 
             definedTypeService.AddOrUpdateValue( SystemGuid.DefinedType.LOCATION_COUNTRIES, CountryCodeWithMixedAddressRequirements, "Test-3", attributes3 );
 
@@ -96,7 +98,7 @@ namespace Rock.Tests.Integration.Core.Model
 
         private static void RemoveTestData()
         {
-            var dataContext = new RockContext();
+            var dataContext = RockApp.Current.CreateRockContext();
 
             // Remove Defined Values for Countries
             var definedTypeService = new DefinedTypeService( dataContext );
@@ -116,7 +118,7 @@ namespace Rock.Tests.Integration.Core.Model
         [TestMethod]
         public void LocationAddress_WithMissingRequiredFields_FailsValidationCheck()
         {
-            var dataContext = new RockContext();
+            var dataContext = RockApp.Current.CreateRockContext();
 
             var locationTypeValueId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.LOCATION_TYPE_BUILDING ).Id;
 
@@ -140,7 +142,7 @@ namespace Rock.Tests.Integration.Core.Model
         [TestMethod]
         public void LocationAddress_WithMissingOptionalFields_IsAdded()
         {
-            var dataContext = new RockContext();
+            var dataContext = RockApp.Current.CreateRockContext();
 
             var street2Guid = Guid.NewGuid().ToString();
 
@@ -161,7 +163,7 @@ namespace Rock.Tests.Integration.Core.Model
         [TestMethod]
         public void LocationAddress_WithSuppliedRequiredFields_IsAdded()
         {
-            var dataContext = new RockContext();
+            var dataContext = RockApp.Current.CreateRockContext();
 
             var street2Guid = Guid.NewGuid().ToString();
 
@@ -193,7 +195,7 @@ namespace Rock.Tests.Integration.Core.Model
         [TestMethod]
         public void LocationAddress_WithSuppliedRequiredFieldsAndEmptyOptionalFields_IsAdded()
         {
-            var dataContext = new RockContext();
+            var dataContext = RockApp.Current.CreateRockContext();
 
             var cityGuid = Guid.NewGuid().ToString();
 
@@ -221,7 +223,7 @@ namespace Rock.Tests.Integration.Core.Model
         [TestMethod]
         public void LocationAddress_WithMissingRequiredFieldsAndPopulatedOptionalFields_ThrowsIncompleteException()
         {
-            var dataContext = new RockContext();
+            var dataContext = RockApp.Current.CreateRockContext();
 
             // Country has mixed address requirements. Optional fields are supplied, one required field (State) is not.
             var location = new Location()
@@ -244,7 +246,7 @@ namespace Rock.Tests.Integration.Core.Model
         [TestMethod]
         public void LocationAddress_WithAllEmptyFields_ThrowsEmptyAddressException()
         {
-            var dataContext = new RockContext();
+            var dataContext = RockApp.Current.CreateRockContext();
 
             var location = new Location()
             {

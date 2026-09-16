@@ -1,0 +1,282 @@
+﻿<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Panel title="Convert Business" class="panel panel-block" type="block" :hasTitle="true">
+        <NotificationBox v-if="successMessage" alertType="success" v-html="successMessage" />
+        <NotificationBox v-if="warningMessage" alertType="warning" v-html="warningMessage" />
+        <NotificationBox v-if="errorMessage" alertType="validation" :heading="errorHeading || undefined" v-html="errorMessage" />
+
+        <PersonPicker v-model="sourcePerson"
+                      includeBusinesses
+                      label="Person or Business"
+                      help="Select the person or business that you want to convert."
+                      @update:modelValue="onSourcePersonChanged" />
+
+        <RockForm v-if="isToPersonVisible" @submit="onConvertToPerson">
+            <NotificationBox alertType="info">
+                This business will be converted to a person using the following details.
+            </NotificationBox>
+
+            <div class="row">
+                <div class="col-md-6">
+                    <TextBox v-model="personFirstName" label="First Name" rules="required" />
+                    <TextBox v-model="personLastName" label="Last Name" rules="required" />
+                    <DefinedValuePicker v-model="personConnectionStatus"
+                                        :definedTypeGuid="DefinedType.PersonConnectionStatus"
+                                        label="Connection Status"
+                                        rules="required"
+                                        lazyMode="lazy"
+                                        :enhanceForLongLists="true"
+                                        :multiple="false" />
+                </div>
+
+                <div class="col-md-6">
+                    <DefinedValuePicker v-model="personMaritalStatus"
+                                        :definedTypeGuid="DefinedType.PersonMaritalStatus"
+                                        label="Marital Status"
+                                        :enhanceForLongLists="true"
+                                        :showBlankItem="true"
+                                        :multiple="false" />
+                    <GenderPicker v-model="personGenderStringValue" label="Gender" />
+                </div>
+            </div>
+
+            <div class="actions">
+                <RockButton btnType="primary" type="submit" autoLoading :isLoading="isConverting" loadingText="Converting...">Convert</RockButton>
+                <RockButton btnType="link" @click="onCancel">Cancel</RockButton>
+            </div>
+        </RockForm>
+
+        <RockForm v-if="isToBusinessVisible" @submit="onConvertToBusiness">
+            <NotificationBox alertType="info">
+                This person will be converted to a Business with the following name.
+            </NotificationBox>
+
+            <div class="row">
+                <div class="col-sm-6">
+                    <TextBox v-model="businessName" label="Name" rules="required" />
+                </div>
+            </div>
+
+            <div class="actions">
+                <RockButton btnType="primary" type="submit" autoLoading :isLoading="isConverting" loadingText="Converting...">Convert</RockButton>
+                <RockButton btnType="link" @click="onCancel">Cancel</RockButton>
+            </div>
+        </RockForm>
+    </Panel>
+</template>
+
+<script setup lang="ts">
+    import { ref } from "vue";
+    import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { DefinedType } from "@Obsidian/SystemGuids/definedType";
+    import Panel from "@Obsidian/Controls/panel.obs";
+    import { Gender } from "@Obsidian/Enums/Crm/gender";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import PersonPicker from "@Obsidian/Controls/personPicker.obs";
+    import RockForm from "@Obsidian/Controls/rockForm.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import DefinedValuePicker from "@Obsidian/Controls/definedValuePicker.obs";
+    import GenderPicker from "@Obsidian/Controls/genderPicker.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { ConversionSelectionResultBag } from "@Obsidian/ViewModels/Blocks/Finance/ConvertBusiness/conversionSelectionResultBag";
+    import { ConvertBusinessBag } from "@Obsidian/ViewModels/Blocks/Finance/ConvertBusiness/convertBusinessBag";
+    import { ConversionResultBag } from "@Obsidian/ViewModels/Blocks/Finance/ConvertBusiness/conversionResultBag";
+    import { ConvertToBusinessRequestBag } from "@Obsidian/ViewModels/Blocks/Finance/ConvertBusiness/convertToBusinessRequestBag";
+    import { ConvertToPersonRequestBag } from "@Obsidian/ViewModels/Blocks/Finance/ConvertBusiness/convertToPersonRequestBag";
+
+    const config = useConfigurationValues<ConvertBusinessBag | null>();
+    const invokeBlockAction = useInvokeBlockAction();
+
+    // #region Values
+
+    const sourcePerson = ref<ListItemBag | undefined>();
+
+    const successMessage = ref<string>("");
+    const warningMessage = ref<string>("");
+    const errorHeading = ref<string>("");
+    const errorMessage = ref<string>("");
+
+    const isToPersonVisible = ref(false);
+    const isToBusinessVisible = ref(false);
+
+    const personFirstName = ref("");
+    const personLastName = ref("");
+    const personConnectionStatus = ref<ListItemBag | undefined>(config?.defaultPersonConnectionStatus ?? {});
+    const defaultPersonConnectionStatus = ref(config?.defaultPersonConnectionStatus ?? {});
+    const personMaritalStatus = ref<ListItemBag | undefined>();
+    const personGenderStringValue = ref<string>(Gender.Unknown.toString());
+    const businessName = ref("");
+
+    const isConverting = ref(false);
+    const emptyListItemBag: ListItemBag = {};
+
+    // #endregion
+
+    // #region Functions
+
+    function clearMessages(): void {
+        successMessage.value = "";
+        warningMessage.value = "";
+        errorHeading.value = "";
+        errorMessage.value = "";
+    }
+
+    /**
+     * Resets the fields in the conversion panel back to empty/default values.
+     */
+    function resetConversionPanels(): void {
+        isToPersonVisible.value = false;
+        isToBusinessVisible.value = false;
+
+        personFirstName.value = "";
+        personLastName.value = "";
+        personConnectionStatus.value = defaultPersonConnectionStatus.value;
+        personMaritalStatus.value = undefined;
+        personGenderStringValue.value = Gender.Unknown.toString();
+        businessName.value = "";
+    }
+
+    // #endregion
+
+    // #region Event Handlers
+
+    /**
+     * Event handler for changes to the selected source person/business.
+     * Clears any existing messages, resets conversion UI panels, and then
+     * calls the server to evaluate what conversion options are available
+     * for the selected record. Based on the server result, it either shows
+     * the "convert to person" or "convert to business" panel, or displays
+     * an error explaining why conversion cannot proceed.
+     *
+     * @returns {Promise<void>} A promise that resolves when the selection has been evaluated and the UI has been updated.
+     */
+    async function onSourcePersonChanged(): Promise<void> {
+        clearMessages();
+        resetConversionPanels();
+
+        const personAliasGuid = sourcePerson.value?.value;
+        if (!personAliasGuid) {
+            return;
+        }
+
+        const response = await invokeBlockAction<ConversionSelectionResultBag>("SelectPerson", {
+            personAliasGuid
+        });
+
+        if (response.isError) {
+            errorMessage.value = response.errorMessage ?? "Unable to evaluate the selected person or business.";
+            return;
+        }
+
+        const result = response.data;
+        if (!result) {
+            return;
+        }
+
+        if (result.errorText) {
+            errorHeading.value = result.errorHeading ?? "Cannot convert person record to a business.";
+            errorMessage.value = result.errorText;
+            return;
+        }
+
+        if (result.mode === "ToPerson") {
+            isToPersonVisible.value = true;
+            personFirstName.value = result.personFirstName ?? "";
+            personLastName.value = result.personLastName ?? "";
+            personConnectionStatus.value = result.personConnectionStatus ?? config?.defaultPersonConnectionStatus ?? {};
+            personGenderStringValue.value = (result.personGender ?? Gender.Unknown).toString();
+            return;
+        }
+
+        if (result.mode === "ToBusiness") {
+            isToBusinessVisible.value = true;
+            businessName.value = result.businessName ?? "";
+        }
+    }
+
+    /**
+     * Event handler for converting the selected business record into a person.
+     * Clears any existing messages, builds the conversion request payload from
+     * the current form values, and then calls the server to perform the conversion.
+     * On success, shows a success message and resets the selection and panels.
+     *
+     * @returns {Promise<void>} A promise that resolves when the conversion attempt completes and the UI has been updated.
+     */
+    async function onConvertToPerson(): Promise<void> {
+        clearMessages();
+        isConverting.value = true;
+        try {
+            const genderValue = Number.parseInt(personGenderStringValue.value || Gender.Unknown.toString(), 10);
+
+            const bag: ConvertToPersonRequestBag = {
+                sourcePersonAliasGuid: sourcePerson.value?.value,
+                personFirstName: personFirstName.value,
+                personLastName: personLastName.value,
+                personConnectionStatus: personConnectionStatus.value,
+                personMaritalStatus: personMaritalStatus.value,
+                personGender: (Number.isNaN(genderValue) ? Gender.Unknown : genderValue) as Gender
+            };
+
+            const response = await invokeBlockAction<ConversionResultBag>("ConvertToPerson", { bag });
+
+            if (response.isError) {
+                errorMessage.value = response.errorMessage ?? "Unable to convert the selected business to a person.";
+                return;
+            }
+
+            successMessage.value = response.data?.successMessage ?? "The business has been converted to a person.";
+            sourcePerson.value = emptyListItemBag;
+            resetConversionPanels();
+        }
+        finally {
+            isConverting.value = false;
+        }
+    }
+
+    /**
+     * Event handler for converting the selected person record into a business.
+     * Clears any existing messages, builds the conversion request payload from
+     * the current form values, and then calls the server to perform the conversion.
+     * On success, shows a success message and resets the selection and panels.
+     *
+     * @returns {Promise<void>} A promise that resolves when the conversion attempt completes and the UI has been updated.
+     */
+    async function onConvertToBusiness(): Promise<void> {
+        clearMessages();
+        isConverting.value = true;
+        try {
+            const bag: ConvertToBusinessRequestBag = {
+                sourcePersonAliasGuid: sourcePerson.value?.value,
+                businessName: businessName.value
+            };
+
+            const response = await invokeBlockAction<ConversionResultBag>("ConvertToBusiness", { bag });
+
+            if (response.isError) {
+                errorMessage.value = response.errorMessage ?? "Unable to convert the selected person to a business.";
+                return;
+            }
+
+            successMessage.value = response.data?.successMessage ?? "The person has been converted to a business.";
+            sourcePerson.value = emptyListItemBag;
+            resetConversionPanels();
+        }
+        finally {
+            isConverting.value = false;
+        }
+    }
+
+    /**
+     * Event handler for canceling the "convert" flow.
+     * Clears any existing messages, clears the current selection, and resets
+     * the conversion UI panels back to their initial state.
+     */
+    function onCancel(): void {
+        clearMessages();
+        sourcePerson.value = emptyListItemBag;
+        resetConversionPanels();
+    }
+
+    // #endregion
+</script>

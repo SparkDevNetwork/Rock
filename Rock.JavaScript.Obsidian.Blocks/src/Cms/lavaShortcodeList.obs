@@ -56,7 +56,7 @@
 
                     <template #default>
                         <ContentStack>
-                            <span v-html="shortcode.documentation"></span>
+                            <div class="lava-shortcode-documentation" v-html="shortcode.documentation"></div>
 
                             <div class="lava-shortcode-edit-disabled-notification-box mt-spacing-lg">
                                 <NotificationBox v-if="isNullOrWhiteSpace(shortcode.idKey) && shortcode.isSystem" alertType="info">

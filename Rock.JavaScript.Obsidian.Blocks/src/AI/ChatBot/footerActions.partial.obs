@@ -1,0 +1,207 @@
+<template>
+    <div class="footer-actions" ref="footerActionsElement">
+        <div v-if="sortedAnchors.length > 0" class="anchors-container">
+            <div v-for="anchor in sortedAnchors"
+                 :key="anchor.id"
+                 class="anchor">
+                <span class="anchor-type">{{ anchor.entityTypeName }}</span>
+                <span class="anchor-text">{{ anchor.name }}</span>
+                <span class="anchor-clear" @click="onDeleteAnchor(anchor.entityTypeId)"><i class="ti ti-x"></i></span>
+            </div>
+        </div>
+
+        <div class="action-bar">
+            <div class="action-bar-container">
+                <TextBox v-model="message"
+                         textMode="multiline"
+                         :rows="1"
+                         placeholder="Ask me anything..."
+                         @keydown.enter="onKeyDown"
+                         @keyup.enter="onSubmit">
+                </TextBox>
+
+                <button v-if="isDebugAllowed"
+                        :class="isDebugEnabled ? 'btn btn-warning btn-chat-debug' : 'btn btn-default btn-chat-debug'"
+                        type="button"
+                        :title="isDebugEnabled ? 'Disable Debug Mode' : 'Enable Debug Mode'"
+                        @click.prevent="onToggleDebugClick">
+                    <i v-if="isDebugEnabled" class="ti ti-bug"></i>
+                    <i v-else class="ti ti-bug-off"></i>
+                </button>
+
+                <button class="btn btn-default btn-chat-clear"
+                        type="button"
+                        @click.prevent="onClearMessages"
+                        title="Clear Chat History">
+                    <i class="ti ti-eraser"></i>
+                </button>
+
+                <button class="btn btn-primary btn-chat-submit"
+                        type="button"
+                        :disabled="isSendDisabled"
+                        @click.prevent="onSubmit"><i class="ti ti-arrow-up"></i></button>
+            </div>
+        </div>
+    </div>
+</template>
+
+<script setup lang="ts">
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import { nextTick, onBeforeUnmount, onMounted, PropType, ref, watch } from "vue";
+    import { ChatAnchorBag } from "./types";
+    import { useVModelPassthrough } from "@Obsidian/Utility/component";
+
+    const props = defineProps({
+        message: {
+            type: String as PropType<string>,
+            required: true
+        },
+
+        sortedAnchors: {
+            type: Array as PropType<ChatAnchorBag[]>,
+            required: true
+        },
+
+        isDebugAllowed: {
+            type: Boolean as PropType<boolean>,
+            required: true
+        },
+
+        isDebugEnabled: {
+            type: Boolean as PropType<boolean>,
+            required: true
+        },
+
+        isSendDisabled: {
+            type: Boolean as PropType<boolean>,
+            required: true
+        },
+
+        isDockedMode: {
+            type: Boolean as PropType<boolean>,
+            required: true
+        },
+    });
+
+    const emit = defineEmits<{
+        (e: "update:message", value: string): void;
+        (e: "submit"): void;
+        (e: "toggleDebug"): void;
+        (e: "clearMessages"): void;
+        (e: "deleteAnchor", entityTypeId: number): void;
+        (e: "updateBottomPadding", value: number): void;
+    }>();
+
+    // The maximum number of text lines the input will grow to before it begins
+    // to scroll internally instead of growing any taller.
+    const maxInputRows = 6;
+
+    const footerActionsElement = ref<HTMLElement | null>(null);
+    const message = useVModelPassthrough(props, "message", emit);
+    let shiftKeyPressedAtStart = false;
+
+    /**
+     * Resizes the message input so its height grows with the entered text
+     * (including soft-wrapped lines), up to a maximum number of rows. Once the
+     * content exceeds that maximum the input stops growing and scrolls instead.
+     */
+    function autoResizeInput(): void {
+        const textArea = footerActionsElement.value?.querySelector("textarea");
+
+        if (!textArea) {
+            return;
+        }
+
+        const style = window.getComputedStyle(textArea);
+        const lineHeight = parseFloat(style.lineHeight) || 20;
+        const verticalPadding = parseFloat(style.paddingTop) + parseFloat(style.paddingBottom);
+        const verticalBorder = parseFloat(style.borderTopWidth) + parseFloat(style.borderBottomWidth);
+
+        // The maximum height that fits maxInputRows lines of text. The textarea
+        // uses border-box sizing, so include the padding and border.
+        const maxHeight = (lineHeight * maxInputRows) + verticalPadding + verticalBorder;
+
+        // Collapse the height first so scrollHeight reflects only the content
+        // height rather than the previously applied height.
+        textArea.style.height = "auto";
+
+        const contentHeight = textArea.scrollHeight + verticalBorder;
+        const newHeight = Math.min(contentHeight, maxHeight);
+
+        textArea.style.height = `${newHeight}px`;
+        textArea.style.overflowY = contentHeight > maxHeight ? "auto" : "hidden";
+    }
+
+    function onKeyDown(ev: KeyboardEvent): void {
+        if (ev.shiftKey) {
+            shiftKeyPressedAtStart = true;
+        }
+    }
+
+    function onSubmit(): void {
+        // Don't submit on Shift-Enter since that's used to create a new
+        // line in the message.
+        if (shiftKeyPressedAtStart) {
+            shiftKeyPressedAtStart = false;
+            return;
+        }
+
+        emit("submit");
+    }
+
+    function onToggleDebugClick(): void {
+        emit("toggleDebug");
+    }
+
+    function onClearMessages(): void {
+        emit("clearMessages");
+    }
+
+    function onDeleteAnchor(entityTypeId: number): void {
+        emit("deleteAnchor", entityTypeId);
+    }
+
+    /**
+     * Resizes the input and reports the footer's new height so the message list
+     * keeps enough bottom padding to clear the input.
+     */
+    function resizeAndReportHeight(): void {
+        autoResizeInput();
+
+        if (footerActionsElement.value) {
+            emit("updateBottomPadding", footerActionsElement.value.clientHeight);
+        }
+    }
+
+    // Resize the input whenever the message changes from outside the textarea
+    // (for example, when it is cleared after a message is sent). Typed input is
+    // handled by the native input listener attached in onMounted.
+    watch(message, () => {
+        nextTick(resizeAndReportHeight);
+    });
+
+    onMounted(() => {
+        // If we aren't docked, then focus the input so the user can start
+        // typing immediately.
+        if (!props.isDockedMode) {
+            const textArea = footerActionsElement.value?.querySelector("textarea");
+            if (textArea) {
+                // Calling focus() directly here doesn't work for unknown
+                // reasons, but wrapping it in a setTimeout does. This might
+                // be caused by some other focus event being processed after
+                // we initialize.
+                setTimeout(() => textArea.focus(), 0);
+            }
+        }
+
+        // Resize directly off the textarea's input event so the height tracks
+        // every keystroke and paste, independent of Vue's reactivity timing.
+        footerActionsElement.value?.querySelector("textarea")?.addEventListener("input", resizeAndReportHeight);
+
+        resizeAndReportHeight();
+    });
+
+    onBeforeUnmount(() => {
+        footerActionsElement.value?.querySelector("textarea")?.removeEventListener("input", resizeAndReportHeight);
+    });
+</script>

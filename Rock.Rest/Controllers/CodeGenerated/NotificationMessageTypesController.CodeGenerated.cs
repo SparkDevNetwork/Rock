@@ -21,6 +21,7 @@
 // </copyright>
 //
 
+using Rock.Configuration;
 using Rock.Model;
 using Rock.SystemGuid;
 
@@ -35,6 +36,6 @@ namespace Rock.Rest.Controllers
         /// <summary>
         /// Initializes a new instance of the <see cref="NotificationMessageTypesController"/> class.
         /// </summary>
-        public NotificationMessageTypesController() : base( new Rock.Model.NotificationMessageTypeService( new Rock.Data.RockContext() ) ) { } 
+        public NotificationMessageTypesController() : base( new Rock.Model.NotificationMessageTypeService( RockApp.Current.CreateRockContext() ) ) { } 
     }
 }

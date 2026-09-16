@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -26,13 +26,15 @@ using System.Text;
 
 using Rock.Attribute;
 using Rock.Communication.Chat;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Enums.Communication.Chat;
 using Rock.Enums.Group;
+using Rock.Lava;
 using Rock.Security;
-using Rock.SystemGuid;
 using Rock.UniversalSearch;
 using Rock.UniversalSearch.IndexModels;
+using Rock.Utility;
 using Rock.Web.Cache;
 
 #if REVIEW_NET5_0_OR_GREATER
@@ -46,49 +48,6 @@ namespace Rock.Model
         #region Properties
 
         /// <summary>
-        /// Gets the securable object that security permissions should be inherited from.  If block is located on a page
-        /// security will be inherited from the page, otherwise it will be inherited from the site.
-        /// </summary>
-        /// <value>
-        /// The parent authority. If the block is located on the page, security will be
-        /// inherited from the page, otherwise it will be inherited from the site.
-        /// </value>
-        public override Security.ISecured ParentAuthority
-        {
-            get
-            {
-                if ( ParentGroupId.HasValue )
-                {
-                    return GroupCache.Get( ParentGroupId.Value );
-                }
-                else
-                {
-                    return base.ParentAuthority;
-                }
-            }
-        }
-
-        /// <summary>
-        /// An optional additional parent authority.  (i.e for Groups, the GroupType is main parent
-        /// authority, but parent group is an additional parent authority )
-        /// </summary>
-        public override Security.ISecured ParentAuthorityPre
-        {
-            get
-            {
-                if ( this.GroupTypeId > 0 )
-                {
-                    GroupTypeCache groupType = GroupTypeCache.Get( this.GroupTypeId );
-                    return groupType;
-                }
-                else
-                {
-                    return base.ParentAuthorityPre;
-                }
-            }
-        }
-
-        /// <summary>
         /// Gets a value indicating whether [allows interactive bulk indexing].
         /// </summary>
         /// <value>
@@ -99,15 +58,20 @@ namespace Rock.Model
         public bool AllowsInteractiveBulkIndexing => true;
 
         /// <summary>
-        /// Gets or sets the history change list.
+        /// Gets the URL of the group's photo, or <see langword="null"/> when
+        /// <see cref="PhotoId"/> is null. Mirrors <see cref="Person.PhotoUrl"/>
+        /// in shape but without the person-aware no-photo fallback; the
+        /// design intentionally omits the hero region entirely when no photo
+        /// is set rather than rendering a placeholder.
         /// </summary>
         /// <value>
-        /// The history change list.
+        /// URL of the photo, or <see langword="null"/> when no photo is set.
         /// </value>
+        [LavaVisible]
         [NotMapped]
-        [RockObsolete( "1.14" )]
-        [Obsolete( "Does nothing. No longer needed. We replaced this with a private property under the SaveHook class for this entity.", true )]
-        public virtual History.HistoryChangeList HistoryChangeList { get; set; }
+        public virtual string PhotoUrl => PhotoId.HasValue
+            ? FileUrlHelper.GetImageUrl( PhotoId.Value )
+            : null;
 
         /// <summary>
         /// Gets whether this group is overriding its parent group type's peer network configuration in any way.
@@ -213,6 +177,220 @@ namespace Rock.Model
 
         #endregion Properties
 
+        #region ISecured
+
+        /*
+             3/12/2026 - NA
+
+             ⚠ SECURITY NOTICE ⚠
+
+             If the model implements custom ISecured behavior, the corresponding
+             {Entity}Cache class MUST implement the same security logic.
+
+             ModelCache<T>.SetFromEntity() only snapshots SupportedActions. Security
+             methods such as ParentAuthority, ParentAuthorityPre, IsAuthorized, and
+             IsAllowedByDefault are NOT copied automatically. If the cache does not
+             override them, it will fall back to ModelCache defaults and may evaluate
+             permissions differently than the model.
+
+             Reason: Prevent security mismatches between model entities and cache objects.
+        */
+
+        /// <inheritdoc/>
+        public override Security.ISecured ParentAuthority
+        {
+            get
+            {
+                if ( ParentGroupId.HasValue )
+                {
+                    return GroupCache.Get( ParentGroupId.Value );
+                }
+                else
+                {
+                    return base.ParentAuthority;
+                }
+            }
+        }
+
+        /// <summary>
+        /// An optional additional parent authority.  (i.e for Groups, the GroupType is main parent
+        /// authority, but parent group is an additional parent authority )
+        /// </summary>
+        public override Security.ISecured ParentAuthorityPre
+        {
+            get
+            {
+                if ( this.GroupTypeId > 0 )
+                {
+                    GroupTypeCache groupType = GroupTypeCache.Get( this.GroupTypeId );
+                    return groupType;
+                }
+                else
+                {
+                    return base.ParentAuthorityPre;
+                }
+            }
+        }
+
+        /// <inheritdoc/>
+        public override bool IsAuthorized( string action, Person person )
+        {
+            // Check to see if user is authorized using normal authorization rules
+            bool authorized = base.IsAuthorized( action, person );
+
+            if ( authorized || person == null )
+            {
+                return authorized;
+            }
+
+            var groupType = GroupTypeCache.Get( this.GroupTypeId );
+
+            if ( groupType == null )
+            {
+                return authorized;
+            }
+
+            // if the person isn't authorized through normal security roles, check if the person has a group role that authorizes them
+            // First, check if there are any roles that could authorized them. If not, we can avoid a database lookup.
+            List<int> checkMemberRoleIds = new List<int>();
+            if ( action == Authorization.VIEW )
+            {
+                checkMemberRoleIds.AddRange( groupType.Roles.Where( a => a.CanView || a.CanTakeAttendance ).Select( a => a.Id ) );
+            }
+            else if ( action == Authorization.MANAGE_MEMBERS )
+            {
+                checkMemberRoleIds.AddRange( groupType.Roles.Where( a => a.CanEdit || a.CanManageMembers ).Select( a => a.Id ) );
+            }
+            else if ( action == Authorization.EDIT )
+            {
+                checkMemberRoleIds.AddRange( groupType.Roles.Where( a => a.CanEdit ).Select( a => a.Id ) );
+            }
+            else if ( action == Authorization.TAKE_ATTENDANCE )
+            {
+                checkMemberRoleIds.AddRange( groupType.Roles.Where( a => a.CanEdit || a.CanTakeAttendance ).Select( a => a.Id ) );
+            }
+
+            if ( !checkMemberRoleIds.Any() )
+            {
+                return authorized;
+            }
+
+            // For each occurrence of this person in this group for the roles that might grant them auth,
+            // check to see if their role is valid for the group type and if the role grants them authorization
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
+            {
+                foreach ( int roleId in new GroupMemberService( rockContext )
+                    .Queryable().AsNoTracking()
+                    .Where( m =>
+                        m.PersonId == person.Id &&
+                        m.GroupId == this.Id &&
+                        m.GroupMemberStatus == GroupMemberStatus.Active )
+                    .Select( m => m.GroupRoleId ) )
+                {
+                    var role = groupType.Roles.FirstOrDefault( r => r.Id == roleId );
+                    if ( role != null && DoesRoleGrantAction( role, action ) )
+                    {
+                        return true;
+                    }
+                }
+            }
+
+            return authorized;
+        }
+
+        /// <summary>
+        /// Determines whether the specified action is authorized for the person, using a caller-supplied
+        /// lookup of the person's active group-member roles instead of querying the database per group.
+        /// </summary>
+        /// <remarks>
+        /// This is a batched-data variant of <see cref="IsAuthorized(string, Person)"/>. The normal
+        /// authorization rules (security roles and inherited authority) are evaluated identically; only the
+        /// group-member-role grant check differs: it reads from <paramref name="personActiveRoleIdsByGroupId"/>
+        /// rather than opening a <see cref="RockContext"/> and querying GroupMember. Callers that need to
+        /// authorize many groups for a single person should prefetch that lookup once (a single query keyed
+        /// by GroupId) and pass it in, avoiding the N+1 database round-trips the per-group overload incurs.
+        /// </remarks>
+        /// <param name="action">The action to check (e.g. <see cref="Authorization.EDIT"/>).</param>
+        /// <param name="person">The person to check authorization for.</param>
+        /// <param name="personActiveRoleIdsByGroupId">
+        /// The person's active group-member role ids keyed by GroupId. A group with no entry is treated as
+        /// the person having no active membership in that group.
+        /// </param>
+        /// <returns><c>true</c> if the person is authorized to perform the action; otherwise <c>false</c>.</returns>
+        internal bool IsAuthorized( string action, Person person, IReadOnlyDictionary<int, List<int>> personActiveRoleIdsByGroupId )
+        {
+            // Check to see if user is authorized using normal authorization rules. This is cache-based
+            // (security roles and inherited authority) and does not hit the database.
+            bool authorized = base.IsAuthorized( action, person );
+
+            if ( authorized || person == null )
+            {
+                return authorized;
+            }
+
+            var groupType = GroupTypeCache.Get( this.GroupTypeId );
+
+            if ( groupType == null )
+            {
+                return authorized;
+            }
+
+            // If the person has no prefetched active membership in this group, no group-member role can grant auth.
+            if ( personActiveRoleIdsByGroupId == null
+                || !personActiveRoleIdsByGroupId.TryGetValue( this.Id, out var roleIds )
+                || roleIds == null )
+            {
+                return authorized;
+            }
+
+            // Evaluate the person's active roles against the group type's roles, using the same grant
+            // rules as the database-backed overload.
+            foreach ( int roleId in roleIds )
+            {
+                var role = groupType.Roles.FirstOrDefault( r => r.Id == roleId );
+                if ( role != null && DoesRoleGrantAction( role, action ) )
+                {
+                    return true;
+                }
+            }
+
+            return authorized;
+        }
+
+        /// <summary>
+        /// Determines whether the specified group type role grants the specified authorization action.
+        /// Shared by the database-backed and prefetched <c>IsAuthorized</c> overloads so both apply identical rules.
+        /// </summary>
+        /// <param name="role">The group type role to evaluate.</param>
+        /// <param name="action">The authorization action being checked.</param>
+        /// <returns><c>true</c> if the role grants the action; otherwise <c>false</c>.</returns>
+        private static bool DoesRoleGrantAction( GroupTypeRoleCache role, string action )
+        {
+            if ( action == Authorization.VIEW )
+            {
+                return role.CanView || role.CanTakeAttendance;
+            }
+
+            if ( action == Authorization.MANAGE_MEMBERS )
+            {
+                return role.CanEdit || role.CanManageMembers;
+            }
+
+            if ( action == Authorization.EDIT )
+            {
+                return role.CanEdit;
+            }
+
+            if ( action == Authorization.TAKE_ATTENDANCE )
+            {
+                return role.CanEdit || role.CanTakeAttendance;
+            }
+
+            return false;
+        }
+
+        #endregion
+
         #region Indexing Methods
 
         /// <summary>
@@ -222,7 +400,7 @@ namespace Rock.Model
         {
             List<IndexModelBase> indexableItems = new List<IndexModelBase>();
 
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
 
             // return people
             var groups = new GroupService( rockContext )
@@ -256,7 +434,7 @@ namespace Rock.Model
         /// <param name="id"></param>
         public void IndexDocument( int id )
         {
-            var groupEntity = new GroupService( new RockContext() ).Get( id );
+            var groupEntity = new GroupService( RockApp.Current.CreateRockContext() ).Get( id );
             if ( groupEntity == null )
             {
                 return;
@@ -304,7 +482,7 @@ namespace Rock.Model
         public ModelFieldFilterConfig GetIndexFilterConfig()
         {
             ModelFieldFilterConfig filterConfig = new ModelFieldFilterConfig();
-            filterConfig.FilterValues = new GroupTypeService( new RockContext() ).Queryable().AsNoTracking().Where( t => t.IsIndexEnabled ).Select( t => t.Name ).ToList();
+            filterConfig.FilterValues = new GroupTypeService( RockApp.Current.CreateRockContext() ).Queryable().AsNoTracking().Where( t => t.IsIndexEnabled ).Select( t => t.Name ).ToList();
             filterConfig.FilterLabel = "Group Types";
             filterConfig.FilterField = "groupTypeName";
 
@@ -399,21 +577,25 @@ namespace Rock.Model
             var groupType = GroupTypeCache.Get( group.GroupTypeId );
             if ( groupType?.Roles != null && groupType.Roles.Any() )
             {
-                var groupMemberService = new GroupMemberService( new RockContext() );
+                var groupMemberService = new GroupMemberService( RockApp.Current.CreateRockContext() );
                 foreach ( var role in groupType.Roles.Where( a => a.MinCount.HasValue || a.MaxCount.HasValue ) )
                 {
                     int curCount = groupMemberService.Queryable().Where( m => m.GroupId == group.Id && m.GroupRoleId == role.Id && m.GroupMemberStatus == GroupMemberStatus.Active ).Count();
 
+                    var encodedRoleNameLower = System.Net.WebUtility.HtmlEncode( role.Name.ToLower() );
+
                     if ( role.MinCount.HasValue && role.MinCount.Value > curCount )
                     {
-                        string format = "The <strong>{1}</strong> role is currently below its minimum requirement of {2:N0} active {3}.<br/>";
-                        roleLimitWarnings.AppendFormat( format, role.Name.Pluralize().ToLower(), role.Name.ToLower(), role.MinCount, role.MinCount == 1 ? groupType.GroupMemberTerm.ToLower() : groupType.GroupMemberTerm.Pluralize().ToLower() );
+                        string format = "The <strong>{0}</strong> role is currently below its minimum requirement of {1:N0} active {2}.<br/>";
+                        var memberTerm = role.MinCount == 1 ? groupType.GroupMemberTerm.ToLower() : groupType.GroupMemberTerm.Pluralize().ToLower();
+                        roleLimitWarnings.AppendFormat( format, encodedRoleNameLower, role.MinCount, System.Net.WebUtility.HtmlEncode( memberTerm ) );
                     }
 
                     if ( role.MaxCount.HasValue && role.MaxCount.Value < curCount )
                     {
-                        string format = "The <strong>{1}</strong> role is currently above its maximum limit of {2:N0} active {3}.<br/>";
-                        roleLimitWarnings.AppendFormat( format, role.Name.Pluralize().ToLower(), role.Name.ToLower(), role.MaxCount, role.MaxCount == 1 ? groupType.GroupMemberTerm.ToLower() : groupType.GroupMemberTerm.Pluralize().ToLower() );
+                        string format = "The <strong>{0}</strong> role is currently above its maximum limit of {1:N0} active {2}.<br/>";
+                        var memberTerm = role.MaxCount == 1 ? groupType.GroupMemberTerm.ToLower() : groupType.GroupMemberTerm.Pluralize().ToLower();
+                        roleLimitWarnings.AppendFormat( format, encodedRoleNameLower, role.MaxCount, System.Net.WebUtility.HtmlEncode( memberTerm ) );
                     }
                 }
             }
@@ -432,96 +614,6 @@ namespace Rock.Model
             return this.GroupMemberWorkflowTriggers.Union( this.GroupType.GroupMemberWorkflowTriggers ).OrderBy( a => a.Order ).ThenBy( a => a.Name );
         }
 
-        /// <summary>
-        /// Determines whether the specified action is authorized.
-        /// </summary>
-        /// <param name="action">The action.</param>
-        /// <param name="person">The person.</param>
-        /// <returns>
-        ///   <c>true</c> if the specified action is authorized; otherwise, <c>false</c>.
-        /// </returns>
-        public override bool IsAuthorized( string action, Person person )
-        {
-            // Check to see if user is authorized using normal authorization rules
-            bool authorized = base.IsAuthorized( action, person );
-
-            if ( authorized || person == null )
-            {
-                return authorized;
-            }
-
-            var groupType = GroupTypeCache.Get( this.GroupTypeId );
-
-            if ( groupType == null )
-            {
-                return authorized;
-            }
-
-            // if the person isn't authorized through normal security roles, check if the person has a group role that authorizes them
-            // First, check if there are any roles that could authorized them. If not, we can avoid a database lookup.
-            List<int> checkMemberRoleIds = new List<int>();
-            if ( action == Authorization.VIEW )
-            {
-                checkMemberRoleIds.AddRange( groupType.Roles.Where( a => a.CanView || a.CanTakeAttendance ).Select( a => a.Id ) );
-            }
-            else if ( action == Authorization.MANAGE_MEMBERS )
-            {
-                checkMemberRoleIds.AddRange( groupType.Roles.Where( a => a.CanEdit || a.CanManageMembers ).Select( a => a.Id ) );
-            }
-            else if ( action == Authorization.EDIT )
-            {
-                checkMemberRoleIds.AddRange( groupType.Roles.Where( a => a.CanEdit ).Select( a => a.Id ) );
-            }
-            else if ( action == Authorization.TAKE_ATTENDANCE )
-            {
-                checkMemberRoleIds.AddRange( groupType.Roles.Where( a => a.CanEdit || a.CanTakeAttendance ).Select( a => a.Id ) );
-            }
-
-            if ( !checkMemberRoleIds.Any() )
-            {
-                return authorized;
-            }
-
-            // For each occurrence of this person in this group for the roles that might grant them auth,
-            // check to see if their role is valid for the group type and if the role grants them authorization
-            using ( var rockContext = new RockContext() )
-            {
-                foreach ( int roleId in new GroupMemberService( rockContext )
-                    .Queryable().AsNoTracking()
-                    .Where( m =>
-                        m.PersonId == person.Id &&
-                        m.GroupId == this.Id &&
-                        m.GroupMemberStatus == GroupMemberStatus.Active )
-                    .Select( m => m.GroupRoleId ) )
-                {
-                    var role = groupType.Roles.FirstOrDefault( r => r.Id == roleId );
-                    if ( role != null )
-                    {
-                        if ( action == Authorization.VIEW && ( role.CanView || role.CanTakeAttendance ) )
-                        {
-                            return true;
-                        }
-
-                        if ( action == Authorization.MANAGE_MEMBERS && ( role.CanEdit || role.CanManageMembers ) )
-                        {
-                            return true;
-                        }
-
-                        if ( action == Authorization.EDIT && role.CanEdit )
-                        {
-                            return true;
-                        }
-
-                        if ( action == Authorization.TAKE_ATTENDANCE && ( role.CanEdit || role.CanTakeAttendance ) )
-                        {
-                            return true;
-                        }
-                    }
-                }
-            }
-
-            return authorized;
-        }
 
         /// <summary>
         /// Determines whether is a Security role based on either <see cref="Group.IsSecurityRole" />
@@ -579,7 +671,7 @@ namespace Rock.Model
                 if ( result )
                 {
                     string errorMessage;
-                    using ( var rockContext = new RockContext() )
+                    using ( var rockContext = RockApp.Current.CreateRockContext() )
                     {
                         // validate that a campus is not required
                         var groupType = this.GroupType ?? new GroupTypeService( rockContext ).Queryable().Where( gt => gt.Id == this.GroupTypeId ).FirstOrDefault();
@@ -588,7 +680,7 @@ namespace Rock.Model
                         {
                             if ( groupType.GroupsRequireCampus && this.CampusId == null )
                             {
-                                errorMessage = string.Format( "{0} require a campus.", groupType.Name.Pluralize() );
+                                errorMessage = string.Format( "{0} require a campus.", System.Net.WebUtility.HtmlEncode( groupType.Name.Pluralize() ) );
                                 ValidationResults.Add( new ValidationResult( errorMessage ) );
                                 result = false;
                             }

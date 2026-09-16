@@ -1,0 +1,128 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="fundraising-donation-entry">
+        <LoadingIndicator v-if="isRedirecting" />
+        <template v-else>
+            <NotificationBox v-if="!config.options?.isTransactionEntryPageConfigured" alertType="warning">
+                The Transaction Entry Page block setting has not been configured.
+            </NotificationBox>
+
+            <NotificationBox v-if="errorMessage" alertType="danger">
+                {{ errorMessage }}
+            </NotificationBox>
+
+            <RockForm @submit="onNext">
+                <StaticFormControl v-if="config.bag?.isOpportunityLocked"
+                                   label="Fundraising Opportunity"
+                                   :modelValue="config.bag?.opportunityTitle ?? ''" />
+                <DropDownList v-else
+                              v-model="selectedOpportunity"
+                              label="Fundraising Opportunity"
+                              :items="opportunityOptions"
+                              rules="required" />
+
+                <DropDownList v-model="selectedParticipant"
+                              label="Participant"
+                              :items="participantOptions"
+                              rules="required" />
+
+                <div class="actions">
+                    <RockButton :btnType="BtnType.Primary"
+                                type="submit"
+                                :disabled="isNavigating">
+                        Next
+                    </RockButton>
+                </div>
+            </RockForm>
+        </template>
+    </div>
+</template>
+
+<script setup lang="ts">
+    import { onMounted, ref, watch } from "vue";
+    import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
+    import { CustomBlockBox } from "@Obsidian/ViewModels/Blocks/customBlockBox";
+    import { FundraisingDonationEntryBag } from "@Obsidian/ViewModels/Blocks/Finance/FundraisingDonationEntry/fundraisingDonationEntryBag";
+    import { FundraisingDonationEntryOptionsBag } from "@Obsidian/ViewModels/Blocks/Finance/FundraisingDonationEntry/fundraisingDonationEntryOptionsBag";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { BtnType } from "@Obsidian/Enums/Controls/btnType";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import StaticFormControl from "@Obsidian/Controls/staticFormControl.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import RockForm from "@Obsidian/Controls/rockForm.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import LoadingIndicator from "@Obsidian/Controls/loadingIndicator.obs";
+
+    const config = useConfigurationValues<CustomBlockBox<FundraisingDonationEntryBag, FundraisingDonationEntryOptionsBag>>();
+    const invokeBlockAction = useInvokeBlockAction();
+
+    // #region Values
+
+    const selectedOpportunity = ref(config.bag?.selectedOpportunityValue ?? "");
+    const selectedParticipant = ref("");
+    const opportunityOptions = ref<ListItemBag[]>(config.bag?.opportunityOptions ?? []);
+    const participantOptions = ref<ListItemBag[]>(config.bag?.participantOptions ?? []);
+    const errorMessage = ref("");
+    const isNavigating = ref(false);
+
+    // Bypass cases supply a redirect URL; show a loading indicator instead of the form while navigating away.
+    const isRedirecting = !!config.bag?.redirectUrl;
+
+    // #endregion
+
+    // #region Functions
+
+    /**
+     * Loads the participants for the newly selected fundraising opportunity.
+     */
+    async function loadParticipants(): Promise<void> {
+        selectedParticipant.value = "";
+        participantOptions.value = [];
+        errorMessage.value = "";
+
+        if (!selectedOpportunity.value) {
+            return;
+        }
+
+        const result = await invokeBlockAction<ListItemBag[]>("GetParticipants", { opportunityKey: selectedOpportunity.value });
+
+        if (result.isSuccess && result.data) {
+            participantOptions.value = result.data;
+        }
+        else {
+            errorMessage.value = result.errorMessage ?? "Unable to load participants for the selected opportunity.";
+        }
+    }
+
+    /**
+     * Resolves the payment page URL for the selected participant and navigates there.
+     */
+    async function onNext(): Promise<void> {
+        errorMessage.value = "";
+        isNavigating.value = true;
+
+        const result = await invokeBlockAction<string>("GetNextUrl", { participantKey: selectedParticipant.value });
+
+        if (result.isSuccess && result.data) {
+            window.location.href = result.data;
+        }
+        else {
+            isNavigating.value = false;
+            errorMessage.value = result.errorMessage ?? "Unable to continue to the payment page.";
+        }
+    }
+
+    // #endregion
+
+    // Reload participants whenever the donor changes the selected opportunity.
+    watch(selectedOpportunity, loadParticipants);
+
+    onMounted(() => {
+        // When the participant is already known, the server provides a URL to navigate to immediately.
+        if (config.bag?.redirectUrl) {
+            window.location.href = config.bag.redirectUrl;
+        }
+    });
+
+    onConfigurationValuesChanged(useReloadBlock());
+</script>

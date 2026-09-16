@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -19,10 +19,11 @@ using System.Linq;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Reporting.DataFilter.Person;
-using Rock.Tests.Shared;
+using Rock.Tests.Shared.Constants;
 
 namespace Rock.Tests.Integration.Reporting.DataFilter
 {
@@ -58,7 +59,7 @@ namespace Rock.Tests.Integration.Reporting.DataFilter
         private IQueryable<IEntity> GetPersonQueryWithLocationFilter( LocationFilter.FilterSettings settings )
         {
             var settingsFilter = new LocationFilter();
-            var dataContext = new RockContext();
+            var dataContext = RockApp.Current.CreateRockContext();
 
             var personService = new PersonService( dataContext );
             var parameterExpression = personService.ParameterExpression;

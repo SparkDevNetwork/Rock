@@ -7,7 +7,7 @@
         <template #edit>
             <CodeEditor v-model="organizationPrompt"
                         label="Organization Prompt"
-                        help="This prompt will be included with every AI request to provide context about your organization. It can include Lava syntax, but the Lava will only be processed one time, not for every request. If not blank, then a default prompt will be used that includes the organization name, address and phone number."
+                        help="This prompt will be included with every AI request to provide context about your organization. It can include Lava syntax, but the Lava will only be processed one time, not for every request. If blank, then a default prompt will be used that includes the organization name, address and phone number."
                         mode="lava"
                         editor="monaco" />
         </template>

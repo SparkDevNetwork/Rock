@@ -56,14 +56,13 @@
                       field="owner"
                       :hideAvatar="true"
                       :filter="pickExistingValueFilter"
-                      :filterValue="getPersonNameFilterValue"
                       visiblePriority="xs" />
 
         <NumberColumn name="entityCount"
-                    title="Entity Count"
-                    field="entityCount"
-                    :filter="numberValueFilter"
-                    visiblePriority="md" />
+                      title="Entity Count"
+                      field="entityCount"
+                      :filter="numberValueFilter"
+                      visiblePriority="md" />
 
         <BooleanColumn name="isActive"
                        title="Active"
@@ -88,7 +87,6 @@
     import { GridSettingsOptions, NavigationUrlKey, PreferenceKey } from "./TagList/types.partial";
     import { computed, reactive, ref, watch } from "vue";
     import GridSettingsModal from "./TagList/gridSettingsModal.partial.obs";
-    import { PersonFieldBag } from "@Obsidian/ViewModels/Core/Grid/personFieldBag";
 
     const config = useConfigurationValues<ListBlockBox<TagListOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
@@ -157,16 +155,6 @@
         else {
             throw new Error(result.errorMessage ?? "Unknown error while trying to load grid data.");
         }
-    }
-
-    /**
-    * Gets the filter value text to use for the name column.
-    *
-    * @param row The row to be filtered.
-    */
-    function getPersonNameFilterValue(row: Record<string, unknown>): string {
-        const person = row["owner"] as PersonFieldBag;
-        return !person ? "" : `${person.nickName} ${person.lastName}`;
     }
 
     // #endregion

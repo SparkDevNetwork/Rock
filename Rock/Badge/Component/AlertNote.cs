@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -24,6 +24,7 @@ using System.IO;
 using System.Linq;
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -39,7 +40,13 @@ namespace Rock.Badge.Component
     [Export( typeof( BadgeComponent ) )]
     [ExportMetadata( "ComponentName", "Alert Note" )]
 
-    [NoteTypeField( "Note Types", "The note types you want to look for alerts on.", true, "Rock.Model.Person", "", "", true, Rock.SystemGuid.NoteType.PERSON_TIMELINE_NOTE, order: 0 )]
+    [NoteTypeField( "Note Types",
+        Description = "The note types you want to look for alerts on.",
+        AllowMultiple = true,
+        EntityType = typeof( Rock.Model.Person ),
+        IsRequired = true,
+        DefaultValue = SystemGuid.NoteType.PERSON_TIMELINE_NOTE,
+        Order = 0 )]
     [CodeEditorField( "Badge Content",
         Description = "",
         EditorMode = CodeEditorMode.Lava,
@@ -64,7 +71,7 @@ namespace Rock.Badge.Component
             int? currentPersonId = currentUser != null ? currentUser.PersonId : null;
 
             // check for alert note
-            var alertNotesExist = new NoteService( new RockContext() ).Queryable().AsNoTracking()
+            var alertNotesExist = new NoteService( RockApp.Current.CreateRockContext() ).Queryable().AsNoTracking()
                                 .Where( n => noteTypes.Contains( n.NoteType.Guid )
                                         && n.EntityId.Value == entity.Id
                                         && n.IsAlert == true

@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -26,21 +26,22 @@ using System.Web.Hosting;
 #endif
 
 using CsvHelper;
-using SlingshotCore = global::Slingshot.Core;
 
 using Rock.Attribute;
 #if REVIEW_NET5_0_OR_GREATER
 using Rock.Configuration;
 #endif
+using Rock.Data;
 using Rock.Model;
-using Rock.RealTime.Topics;
 using Rock.RealTime;
+using Rock.RealTime.Topics;
 using Rock.Slingshot;
 using Rock.ViewModels.Blocks.BulkImport;
 using Rock.ViewModels.Utility;
 using Rock.Web;
 using Rock.Web.Cache;
-using Rock.Data;
+
+using SlingshotCore = global::Slingshot.Core;
 
 namespace Rock.Blocks.BulkImport
 {

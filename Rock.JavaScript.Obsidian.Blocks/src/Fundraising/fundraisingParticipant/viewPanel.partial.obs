@@ -1,0 +1,154 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="row">
+        <!-- Left Sidebar -->
+        <div class="col-md-4 margin-t-md">
+            <img v-if="config.photoUrl"
+                 :src="config.photoUrl"
+                 :class="config.imageCssClass ?? undefined" />
+            <RockButton btnType="primary" class="btn-block margin-t-md" @click="onMainPageClick">
+                {{ config.mainPageButtonText }}
+            </RockButton>
+            <RockButton v-if="config.isEditProfileVisible"
+                        btnType="default"
+                        btnSize="sm"
+                        class="btn-block margin-t-sm"
+                        @click="onEditProfileClick">
+                Edit Profile
+            </RockButton>
+        </div>
+
+        <!-- Main -->
+        <div class="col-md-8">
+            <div v-if="config.isClipboardIconVisible" class="pull-right">
+                <CopyButton :value="profileLinkUrl"
+                            tooltip="Copy Profile Link"
+                            tooltipPlacement="top"
+                            :btnSize="BtnSize.Small">
+                </CopyButton>
+            </div>
+            <div v-html="config.profileHtml"></div>
+
+            <NotificationBox v-if="config.profileWarningText"
+                             :alertType="AlertType.Success"
+                             dismissible>
+                {{ config.profileWarningText }}
+            </NotificationBox>
+        </div>
+    </div>
+
+    <!-- Progress -->
+    <div v-html="config.progressHtml"></div>
+
+    <!-- Requirements -->
+    <template v-if="config.requirements">
+        <div v-html="config.requirementsHeaderHtml"></div>
+        <GroupMemberRequirementsContainer :groupGuid="config.requirements.groupGuid ?? undefined"
+                                          :groupRoleGuid="config.requirements.groupRoleGuid ?? undefined"
+                                          :groupMemberGuid="config.requirements.groupMemberGuid ?? undefined"
+                                          :personGuid="config.requirements.personGuid ?? undefined"
+                                          :workflowEntryLinkedPageValue="config.requirements.workflowEntryLinkedPageValue ?? undefined" />
+    </template>
+
+    <!-- Tabs. The tab bar is only shown when there is more than one tab to switch
+         between, matching the original behavior; a lone tab renders its panel directly. -->
+    <TabbedContent v-if="tabs.length > 1" :tabs="tabs" lazyLoad>
+        <template #tabpane="{ item }">
+            <UpdatesTab v-if="item === updatesTabName" />
+            <ContributionsTab v-else-if="item === TabName.Contributions" />
+            <CommentsTab v-else-if="item === TabName.Comments" />
+        </template>
+    </TabbedContent>
+    <template v-else-if="tabs.length === 1">
+        <UpdatesTab v-if="tabs[0] === updatesTabName" />
+        <ContributionsTab v-else-if="tabs[0] === TabName.Contributions" />
+        <CommentsTab v-else-if="tabs[0] === TabName.Comments" />
+    </template>
+</template>
+
+<script setup lang="ts">
+    import { computed } from "vue";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import CopyButton from "@Obsidian/Controls/copyButton.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import TabbedContent from "@Obsidian/Controls/tabbedContent.obs";
+    import GroupMemberRequirementsContainer from "@Obsidian/Controls/groupMemberRequirementsContainer.obs";
+    import ContributionsTab from "./contributionsTab.partial.obs";
+    import UpdatesTab from "./updatesTab.partial.obs";
+    import CommentsTab from "./commentsTab.partial.obs";
+    import { AlertType } from "@Obsidian/Enums/Controls/alertType";
+    import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
+    import { FundraisingParticipantInitializationBox } from "@Obsidian/ViewModels/Blocks/Fundraising/FundraisingParticipant/fundraisingParticipantInitializationBox";
+    import { NavigationUrlKey, TabName } from "./types.partial";
+
+    const props = defineProps<{
+        box: FundraisingParticipantInitializationBox;
+    }>();
+
+    const emit = defineEmits<{
+        (e: "editProfile"): void;
+    }>();
+
+    // #region Values
+
+    // The link copied by the "Copy Profile Link" button is simply the page the viewer is on.
+    const profileLinkUrl = window.location.href;
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    // Alias the box prop so the template reads `config.*` and stays in sync when the parent
+    // replaces the box after a save.
+    const config = computed(() => props.box);
+
+    /**
+     * The tabs available to the viewer, in display order. Mirrors the original block:
+     * Updates first (when an update content channel exists), then Contributions.
+     * The Updates tab uses its dynamic label (e.g. "Trip Updates (5)") as the tab
+     * string so it displays correctly in the tab bar.
+     */
+    const tabs = computed((): string[] => {
+        const result: string[] = [];
+
+        if (config.value.isUpdatesTabVisible) {
+            result.push(config.value.updatesTabLabel ?? TabName.Updates);
+        }
+
+        if (config.value.isContributionsTabVisible) {
+            result.push(TabName.Contributions);
+        }
+
+        if (config.value.isCommentingEnabled) {
+            result.push(TabName.Comments);
+        }
+
+        return result;
+    });
+
+    /** The actual tab string used for the Updates tab (dynamic label or fallback). */
+    const updatesTabName = computed((): string => config.value.updatesTabLabel ?? TabName.Updates);
+
+    // #endregion Computed Values
+
+    // #region Event Handlers
+
+    /**
+     * Navigates to the opportunity main page.
+     */
+    function onMainPageClick(): void {
+        const url = config.value.navigationUrls?.[NavigationUrlKey.MainPage];
+        if (url) {
+            window.location.href = url;
+        }
+    }
+
+    /**
+     * Requests that the block switch to edit profile mode.
+     */
+    function onEditProfileClick(): void {
+        emit("editProfile");
+    }
+
+    // #endregion Event Handlers
+</script>

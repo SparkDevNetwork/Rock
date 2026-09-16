@@ -1,0 +1,137 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Modal v-model="isOpen"
+           title="Bookmarked Attributes"
+           saveText="Save"
+           :isSaveButtonDisabled="isSaving"
+           @save="onSave">
+        <DropDownList v-model="selectedCategory"
+                      label="Category"
+                      :items="categories"
+                      enhanceForLongLists
+                      :showBlankItem="false" />
+
+        <CheckBoxList label="Attributes"
+                      :items="currentCategoryItems"
+                      :modelValue="currentCategorySelection"
+                      @update:modelValue="onCategorySelectionChanged" />
+    </Modal>
+</template>
+
+<script setup lang="ts">
+    import { computed, PropType, ref, watch } from "vue";
+    import Modal from "@Obsidian/Controls/modal.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import CheckBoxList from "@Obsidian/Controls/checkBoxList.obs";
+    import { useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { useVModelPassthrough } from "@Obsidian/Utility/component";
+    import { alert } from "@Obsidian/Utility/dialogs";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { KeyAttributesConfigurationBag } from "@Obsidian/ViewModels/Blocks/Crm/PersonDetail/KeyAttributes/keyAttributesConfigurationBag";
+    import { KeyAttributesViewBag } from "@Obsidian/ViewModels/Blocks/Crm/PersonDetail/KeyAttributes/keyAttributesViewBag";
+
+    const props = defineProps({
+        modelValue: {
+            type: Boolean as PropType<boolean>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: boolean): void;
+        (e: "saved", value: KeyAttributesViewBag): void;
+    }>();
+
+    // #region Values
+
+    const invokeBlockAction = useInvokeBlockAction();
+    const isOpen = useVModelPassthrough(props, "modelValue", emit);
+
+    const categories = ref<ListItemBag[]>([]);
+    const attributesByCategory = ref<Record<string, ListItemBag[]>>({});
+    const selectedGuids = ref<string[]>([]);
+    const selectedCategory = ref<string>("");
+    const isSaving = ref(false);
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    const currentCategoryItems = computed((): ListItemBag[] => {
+        return attributesByCategory.value[selectedCategory.value] ?? [];
+    });
+
+    const currentCategorySelection = computed((): string[] => {
+        const itemValues = new Set(currentCategoryItems.value.map(i => i.value ?? ""));
+
+        return selectedGuids.value.filter(guid => itemValues.has(guid));
+    });
+
+    // #endregion Computed Values
+
+    // #region Event Handlers
+
+    function onCategorySelectionChanged(newSelection: string[]): void {
+        const categoryValues = currentCategoryItems.value.map(i => i.value ?? "");
+        const newSelectionSet = new Set(newSelection);
+
+        // Keep selections outside the current category, plus the still-checked
+        // ones inside it.
+        const retained = selectedGuids.value.filter(guid => !categoryValues.includes(guid) || newSelectionSet.has(guid));
+
+        // Append any newly checked attributes, preserving existing order.
+        for (const guid of newSelection) {
+            if (!retained.includes(guid)) {
+                retained.push(guid);
+            }
+        }
+
+        selectedGuids.value = retained;
+    }
+
+    async function onSave(): Promise<void> {
+        isSaving.value = true;
+
+        try {
+            const result = await invokeBlockAction<KeyAttributesViewBag>("SaveConfiguration", { selectedAttributeGuids: selectedGuids.value });
+
+            if (result.isSuccess && result.data) {
+                emit("saved", result.data);
+                isOpen.value = false;
+            }
+            else {
+                await alert(result.errorMessage || "Unable to save the selected attributes.");
+            }
+        }
+        finally {
+            isSaving.value = false;
+        }
+    }
+
+    // #endregion Event Handlers
+
+    // #region Functions
+
+    async function loadConfiguration(): Promise<void> {
+        const result = await invokeBlockAction<KeyAttributesConfigurationBag>("GetConfiguration");
+
+        if (result.isSuccess && result.data) {
+            categories.value = result.data.categories ?? [];
+            attributesByCategory.value = result.data.attributesByCategory ?? {};
+            selectedGuids.value = [...(result.data.selectedAttributeGuids ?? [])];
+            selectedCategory.value = categories.value[0]?.value ?? "";
+        }
+    }
+
+    // #endregion Functions
+
+    // #region Watchers
+
+    watch(isOpen, async (open) => {
+        if (open) {
+            await loadConfiguration();
+        }
+    });
+
+    // #endregion Watchers
+</script>

@@ -30,4 +30,7 @@ import { Guid } from "@Obsidian/Types";
 export type EntityTypePickerGetEntityTypesOptionsBag = {
     /** List of GUIDs of Entity Types that you wish to include in the list. If blank, it will load all. */
     entityTypeGuids?: Guid[] | null;
+
+    /** List of GUIDs of Entity Types that you wish to exclude from the list. */
+    excludedEntityTypeGuids?: Guid[] | null;
 };

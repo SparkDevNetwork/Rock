@@ -20,8 +20,11 @@ using System.ComponentModel.Composition;
 using System.Data.Entity.SqlServer;
 using System.Linq;
 using System.Linq.Expressions;
+
 using Rock.Data;
 using Rock.Model;
+using Rock.Net;
+using Rock.Obsidian.UI.GridField;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
@@ -93,6 +96,28 @@ namespace Rock.Reporting.DataSelect.Person
             return result;
         }
 #endif
+
+        /// <inheritdoc/>
+        public override ObsidianGridField GetObsidianGridField( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
+        {
+            return new GradeField();
+        }
+
+        /// <summary>
+        /// Value-shaping subclass that converts a graduation year (int?) into a
+        /// grade text label (e.g. "5th", "K", "12th") via
+        /// <see cref="Rock.Model.Person.GradeFormatted"/>, matching the WebForms
+        /// <see cref="CallbackField"/> behavior.
+        /// </summary>
+        private class GradeField : TextObsidianGridField
+        {
+            public override object TransformValue( object rawValue, ObsidianGridFieldContext context )
+            {
+                var fakePerson = new Rock.Model.Person();
+                fakePerson.GraduationYear = rawValue as int?;
+                return fakePerson.GradeFormatted;
+            }
+        }
 
         /// <summary>
         /// Gets the default column header text.

@@ -1,0 +1,1003 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <NotificationBox v-if="blockError" alertType="warning" v-html="blockError" />
+
+    <RockForm v-else v-model:submit="submitForm" @submit="onSave">
+        <Panel type="block"
+               :title="panelTitle"
+               titleIconCssClass="ti ti-user">
+
+            <template #headerActions>
+                <div class="panel-experience-mode">
+                    <ExperienceModePicker />
+                </div>
+
+                <HighlightLabel v-if="options.familyName"
+                                labelType="default"
+                                iconCssClass="ti ti-users">
+                    {{ options.familyName }}
+                </HighlightLabel>
+
+                <HighlightLabel v-if="options.campusName"
+                                labelType="campus"
+                                iconCssClass="ti ti-building">
+                    {{ options.campusName }}
+                </HighlightLabel>
+            </template>
+
+            <NotificationBox v-if="errorMessage" ref="errorNotificationBox" alertType="danger" class="mb-3" v-html="errorMessage" />
+
+            <div class="row">
+                <div class="col-md-3 mb-4">
+                    <ContentSection light>
+                        <div>
+                            <ImageEditor v-model="photo"
+                                         :binaryFileTypeGuid="BinaryFiletype.PersonImage"
+                                         :noPictureUrl="options.noPictureUrl ?? undefined"
+                                         label="Profile Photo"
+                                         help="The photo shown with this person throughout Rock, including check-in and directories." />
+
+                            <DefinedValuePicker v-if="options.isConnectionStatusEditable"
+                                                v-model="connectionStatus"
+                                                :definedTypeGuid="DefinedType.PersonConnectionStatus"
+                                                label="Connection Status"
+                                                help="This person's relationship to your church, such as Member or Attendee."
+                                                rules="required" />
+                            <StaticFormControl v-else label="Connection Status" :modelValue="connectionStatus?.text ?? ''" />
+
+                            <DefinedValuePicker v-if="options.isRecordStatusEditable"
+                                                v-model="recordStatus"
+                                                :definedTypeGuid="DefinedType.PersonRecordStatus"
+                                                label="Record Status"
+                                                help="Whether this person's record is active. Inactive retires a record without deleting it."
+                                                :showBlankItem="false" />
+                            <StaticFormControl v-else label="Record Status" :modelValue="recordStatus?.text ?? ''" />
+
+                            <p v-if="isRecordInactive && options.isOnlyActiveFamilyMember && options.isRecordStatusEditable" class="text-muted mb-3">
+                                {{ familyInactiveMessage }}
+                            </p>
+
+                            <ConditionalWell v-if="isRecordInactive">
+                                <DefinedValuePicker v-if="options.isRecordStatusEditable"
+                                                    v-model="recordStatusReason"
+                                                    :definedTypeGuid="DefinedType.PersonRecordStatusReason"
+                                                    label="Reason"
+                                                    help="Why this record is inactive. Used for reporting on why people leave."
+                                                    :showBlankItem="true" />
+                                <StaticFormControl v-else label="Reason" :modelValue="recordStatusReason?.text ?? ''" />
+
+                                <DatePicker v-if="isReasonDeceased && options.isRecordStatusEditable"
+                                            v-model="deceasedDate"
+                                            label="Deceased Date"
+                                            help="The date this person passed away. Must be on or after their birth date."
+                                            :disallowFutureDateSelection="true"
+                                            :rules="deceasedDateRules" />
+                                <StaticFormControl v-else-if="isReasonDeceased" label="Deceased Date" :modelValue="options.deceasedDateText ?? ''" />
+
+                                <TextBox v-if="options.isRecordStatusEditable"
+                                         v-model="inactiveReasonNote"
+                                         label="Note"
+                                         textMode="multiline"
+                                         :rows="3"
+                                         help="Additional detail about why this record is inactive." />
+                                <StaticFormControl v-else label="Note" :modelValue="inactiveReasonNote" />
+                            </ConditionalWell>
+
+                            <DefinedValuePicker v-if="options.isRecordSourceEditable"
+                                                v-model="recordSource"
+                                                :definedTypeGuid="DefinedType.RecordSourceType"
+                                                label="Record Source"
+                                                help="How this record first entered Rock. Set automatically when the record is created; changing it replaces the original attribution."
+                                                :showBlankItem="true" />
+                            <StaticFormControl v-else label="Record Source" :modelValue="recordSource?.text ?? ''" />
+                        </div>
+                    </ContentSection>
+                </div>
+                <div class="col-md-9">
+                    <NotificationBox v-if="options.accountProtectionProfileMessage"
+                                     :alertType="protectionProfileAlertType"
+                                     class="mb-3">
+                        {{ options.accountProtectionProfileMessage }}
+                    </NotificationBox>
+                    <ContentSectionContainer :sidebar="false">
+                        <ContentSection title="Personal Information"
+                                        icon="ti ti-user-circle"
+                                        disableCollapse>
+                            <ContentStack title="Name"
+                                          description="Enter the person's legal name, plus the name they go by. Rock shows the nickname wherever their name appears.">
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        <DefinedValuePicker v-model="title"
+                                                            :definedTypeGuid="DefinedType.PersonTitle"
+                                                            label="Title"
+                                                            class="input-width-md"
+                                                            :showBlankItem="true" />
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-xs-6">
+                                        <FirstNameTextBox v-model="firstName"
+                                                          label="First Name"
+                                                          help="The person's legal first name."
+                                                          rules="nospecialcharacters|noemojisorspecialfonts" />
+                                    </div>
+                                    <div class="col-xs-6">
+                                        <TextBox v-model="nickName"
+                                                 label="Nickname"
+                                                 help="The name this person goes by. Rock uses it wherever their name is displayed. When blank, the first name is used."
+                                                 rules="nospecialcharacters|noemojisorspecialfonts" />
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-xs-6">
+                                        <TextBox v-model="middleName"
+                                                 label="Middle Name"
+                                                 rules="nospecialcharacters|noemojisorspecialfonts" />
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-xs-6">
+                                        <TextBox v-model="lastName"
+                                                 label="Last Name"
+                                                 rules="nospecialcharacters|noemojisorspecialfonts" />
+                                    </div>
+                                    <div class="col-xs-6">
+                                        <DefinedValuePicker v-model="suffix"
+                                                            :definedTypeGuid="DefinedType.PersonSuffix"
+                                                            label="Suffix"
+                                                            class="input-width-md"
+                                                            :showBlankItem="true" />
+                                    </div>
+                                </div>
+                            </ContentStack>
+
+                            <ContentStack title="Demographics"
+                                          description="Provide the details Rock uses for check-in, ministry placement, and reporting.">
+                                <RadioButtonList v-model="gender"
+                                                 label="Gender"
+                                                 :items="genderItems"
+                                                 :showBlankItem="false" />
+
+                                <BirthdayPicker v-model="birthDate"
+                                                label="Birth Date"
+                                                :rules="birthDateRules" />
+
+                                <CheckBox v-model="isLockedAsChild"
+                                          label=""
+                                          text="Consider Person As Child">
+                                    <template #textAppend>
+                                        <HelpBlock text="Whether this person is classified as a child, even when their age or family role would make them an adult. Also keeps data automation from moving them into their own family." />
+                                    </template>
+                                </CheckBox>
+
+                                <div v-if="isGradeShown" class="row">
+                                    <div class="col-xs-6">
+                                        <GradePicker v-model="grade"
+                                                     label="Grade"
+                                                     :showBlankItem="true" />
+                                    </div>
+                                    <div class="col-xs-6">
+                                        <YearPicker v-model="graduationYear"
+                                                    label="Graduation Year" />
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-xs-6">
+                                        <DefinedValuePicker v-model="maritalStatus"
+                                                            :definedTypeGuid="DefinedType.PersonMaritalStatus"
+                                                            label="Marital Status"
+                                                            :showBlankItem="true" />
+                                    </div>
+                                    <div v-if="isAnniversaryShown" class="col-xs-6">
+                                        <DatePicker v-model="anniversaryDate"
+                                                    label="Anniversary" />
+                                    </div>
+                                </div>
+
+                                <div v-if="isRaceShown" class="row">
+                                    <div class="col-xs-6">
+                                        <RacePicker v-model="race"
+                                                    :rules="isRaceRequired ? 'required' : ''"
+                                                    :showBlankItem="true" />
+                                    </div>
+                                </div>
+
+                                <div v-if="isEthnicityShown" class="row">
+                                    <div class="col-xs-6">
+                                        <EthnicityPicker v-model="ethnicity"
+                                                         :rules="isEthnicityRequired ? 'required' : ''"
+                                                         :showBlankItem="true" />
+                                    </div>
+                                </div>
+                            </ContentStack>
+                        </ContentSection>
+
+                        <ContentSection title="Communication"
+                                        icon="ti ti-message"
+                                        disableCollapse>
+                            <ContentStack title="Contact Info"
+                                          description="Enter this person's phone numbers and email address. Only one number can be SMS enabled. Select ‘Unlisted’ to hide a number from directories and other shared listings.">
+                                <div v-for="phoneNumber in phoneNumbers" :key="phoneNumber.phoneTypeGuid" class="row">
+                                    <div class="col-xs-6">
+                                        <PhoneNumberBox v-model="phoneNumber.number"
+                                                        v-model:countryCode="phoneNumber.countryCode"
+                                                        :label="phoneNumber.phoneTypeLabel ?? ''" />
+                                    </div>
+                                    <div class="col-xs-6">
+                                        <div class="form-group">
+                                            <!-- Spacer label aligns the checkbox row with the phone input below its label. -->
+                                            <label class="control-label">&nbsp;</label>
+                                            <div class="control-wrapper phone-number-options">
+                                                <InlineCheckBox v-if="phoneNumber.isSmsEditable"
+                                                                :modelValue="phoneNumber.isMessagingEnabled"
+                                                                label="SMS"
+                                                                @update:modelValue="value => onSmsChanged(phoneNumber, value)" />
+                                                <InlineCheckBox v-model="phoneNumber.isUnlisted"
+                                                                label="Unlisted" />
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-xs-6">
+                                        <EmailBox v-model="email"
+                                                  label="Email" />
+                                    </div>
+                                    <div class="col-xs-6">
+                                        <div class="form-group">
+                                            <!-- Spacer label aligns the checkbox with the email input below its label. -->
+                                            <label class="control-label">&nbsp;</label>
+                                            <div class="control-wrapper">
+                                                <InlineCheckBox v-model="isEmailActive"
+                                                                label="Email Is Deliverable"
+                                                                help="Whether this address can receive mail. Rock clears this automatically after a hard bounce." />
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </ContentStack>
+
+                            <ContentStack title="Preferences"
+                                          description="Set how this person is reached and who can reach them.">
+                                <RadioButtonList v-model="emailPreference"
+                                                 label="Email Preference"
+                                                 help="What kind of email this person has agreed to receive."
+                                                 :items="emailPreferenceItems"
+                                                 :showBlankItem="false" />
+
+                                <RadioButtonList v-model="communicationPreference"
+                                                 label="Communication Preference"
+                                                 help="How this person prefers to be contacted. SMS requires a phone number with SMS enabled."
+                                                 :items="communicationPreferenceItems"
+                                                 :showBlankItem="false" />
+
+                                <RadioButtonList v-if="isChatVisible"
+                                                 v-model="chatProfileVisibility"
+                                                 label="Chat Profile Visibility"
+                                                 help="Whether this person's profile can be found in chat."
+                                                 :items="chatProfileVisibilityItems"
+                                                 :showBlankItem="false" />
+
+                                <RadioButtonList v-if="isChatVisible"
+                                                 v-model="chatDirectMessages"
+                                                 label="Chat Direct Messages"
+                                                 help="Who can start a direct message with this person in chat."
+                                                 :items="chatDirectMessagesItems"
+                                                 :showBlankItem="false" />
+                            </ContentStack>
+                        </ContentSection>
+
+                        <ContentSection v-if="isGivingSectionVisible"
+                                        title="Giving"
+                                        icon="ti ti-cash">
+                            <ContentStack description="Set how this person's giving is grouped on contribution statements.">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <DropDownList v-model="givingGroup"
+                                                      label="Giving Group"
+                                                      help="The family this person's giving is combined with on contribution statements. If blank, their giving is kept separate."
+                                                      :items="givingGroupItems"
+                                                      :showBlankItem="true" />
+                                    </div>
+                                </div>
+
+                                <div v-if="isEnvelopeNumberVisible" class="row">
+                                    <div class="col-xs-6 col-sm-6 col-md-4">
+                                        <TextBox v-model="givingEnvelopeNumber"
+                                                 label="Envelope Number"
+                                                 rules="integer"
+                                                 help="The giving envelope number assigned to this person." />
+                                    </div>
+                                    <div class="col-xs-6 col-sm-6 col-md-8">
+                                        <div class="form-group">
+                                            <!-- Spacer label aligns the button with the envelope input below its label. -->
+                                            <label class="control-label">&nbsp;</label>
+                                            <div class="control-wrapper">
+                                                <RockButton :btnType="BtnType.Default"
+                                                            :isLoading="isGeneratingEnvelopeNumber"
+                                                            @click="onGenerateEnvelopeNumber">
+                                                    <i class="ti ti-refresh"></i> Generate
+                                                </RockButton>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </ContentStack>
+                        </ContentSection>
+
+                        <ContentSection title="Search & Lookup"
+                                        icon="ti ti-search">
+                            <ContentStack description="Set additional values that will find this person in a search or at check-in.">
+                                <ValueList v-model="previousLastNames"
+                                           label="Previous Last Names"
+                                           help="Former last names for this person. Rock searches these alongside the current name." />
+
+                                <div @focusout="onAlternateIdsFocusOut">
+                                    <ValueList v-model="alternateIds"
+                                               label="Alternate Identifiers"
+                                               help="Identifiers such as barcodes or fingerprints that check-in can use to find this person. Each must be unique across all people."
+                                               trailblazerField />
+
+                                    <NotificationBox v-for="duplicate in alternateIdDuplicates"
+                                                     :key="duplicate"
+                                                     alertType="warning"
+                                                     class="mt-2">
+                                        <strong>{{ duplicate }}</strong> was entered more than once in this list. Each identifier must be unique.
+                                    </NotificationBox>
+
+                                    <NotificationBox v-if="alternateIdsInUseList.length === 1"
+                                                     alertType="warning"
+                                                     class="mt-2">
+                                        The identifier <strong>{{ alternateIdsInUseList[0].identifier }}</strong> is already assigned to {{ alternateIdsInUseList[0].name }}. Each identifier must be unique.
+                                    </NotificationBox>
+                                    <NotificationBox v-else-if="alternateIdsInUseList.length > 1"
+                                                     alertType="warning"
+                                                     class="mt-2">
+                                        These identifiers are already assigned to other people. Each must be unique.
+                                        <ul class="mb-0">
+                                            <li v-for="conflict in alternateIdsInUseList" :key="conflict.identifier">
+                                                <strong>{{ conflict.identifier }}</strong> - {{ conflict.name }}
+                                            </li>
+                                        </ul>
+                                    </NotificationBox>
+                                </div>
+
+                                <KeyValueList v-model="searchKeys"
+                                              label="Search Keys"
+                                              help="Additional values that will find this person in a search, such as a maiden name or a legacy system ID."
+                                              :keyOptions="searchKeyTypeItems"
+                                              valuePlaceholder="Value"
+                                              trailblazerField />
+                            </ContentStack>
+                        </ContentSection>
+                    </ContentSectionContainer>
+                </div>
+            </div>
+
+            <template #footerActions>
+                <RockButton :btnType="BtnType.Primary"
+                            :isLoading="isSaving"
+                            autoDisable
+                            autoLoading
+                            @click="onStartSubmitForm">
+                    Save
+                </RockButton>
+                <RockButton :btnType="BtnType.Link"
+                            @click="onCancel">
+                    Cancel
+                </RockButton>
+            </template>
+
+        </Panel>
+    </RockForm>
+</template>
+
+<style scoped>
+.phone-number-options {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.phone-number-options :deep(.checkbox) {
+    margin: 0;
+}
+</style>
+
+<script setup lang="ts">
+    import { computed, nextTick, ref, watch } from "vue";
+    import Panel from "@Obsidian/Controls/panel.obs";
+    import RockForm from "@Obsidian/Controls/rockForm.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import HighlightLabel from "@Obsidian/Controls/highlightLabel.obs";
+    import ExperienceModePicker from "@Obsidian/Controls/experienceModePicker.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import FirstNameTextBox from "@Obsidian/Controls/firstNameTextBox.obs";
+    import DefinedValuePicker from "@Obsidian/Controls/definedValuePicker.obs";
+    import ImageEditor from "@Obsidian/Controls/imageEditor.obs";
+    import StaticFormControl from "@Obsidian/Controls/staticFormControl.obs";
+    import DatePicker from "@Obsidian/Controls/datePicker.obs";
+    import ConditionalWell from "@Obsidian/Controls/conditionalWell.obs";
+    import ContentSectionContainer from "@Obsidian/Controls/contentSectionContainer.obs";
+    import ContentSection from "@Obsidian/Controls/contentSection.obs";
+    import ContentStack from "@Obsidian/Controls/contentStack.obs";
+    import RadioButtonList from "@Obsidian/Controls/radioButtonList.obs";
+    import BirthdayPicker from "@Obsidian/Controls/birthdayPicker.obs";
+    import GradePicker from "@Obsidian/Controls/gradePicker.obs";
+    import YearPicker from "@Obsidian/Controls/yearPicker.obs";
+    import RacePicker from "@Obsidian/Controls/racePicker.obs";
+    import EthnicityPicker from "@Obsidian/Controls/ethnicityPicker.obs";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import InlineCheckBox from "@Obsidian/Controls/inlineCheckBox.obs";
+    import HelpBlock from "@Obsidian/Controls/helpBlock.obs";
+    import PhoneNumberBox from "@Obsidian/Controls/phoneNumberBox.obs";
+    import EmailBox from "@Obsidian/Controls/emailBox.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import ValueList from "@Obsidian/Controls/valueList.obs";
+    import KeyValueList from "@Obsidian/Controls/keyValueList.obs";
+    import { KeyValueItem } from "@Obsidian/Types/Controls/keyValueItem";
+    import { confirm } from "@Obsidian/Utility/dialogs";
+    import { AlertType } from "@Obsidian/Enums/Controls/alertType";
+    import { Gender, GenderDescription } from "@Obsidian/Enums/Crm/gender";
+    import { EmailPreference, EmailPreferenceDescription } from "@Obsidian/Enums/Crm/emailPreference";
+    import { CommunicationType, CommunicationTypeDescription } from "@Obsidian/Enums/Communication/communicationType";
+    import { enumToListItemBag } from "@Obsidian/Utility/enumUtils";
+    import { BtnType } from "@Obsidian/Enums/Controls/btnType";
+    import { setPropertiesBoxValue, useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { makeUrlRedirectSafe } from "@Obsidian/Utility/url";
+    import { areEqual, toGuidOrNull } from "@Obsidian/Utility/guid";
+    import { BinaryFiletype } from "@Obsidian/SystemGuids/binaryFiletype";
+    import { DefinedType } from "@Obsidian/SystemGuids/definedType";
+    import { DefinedValue } from "@Obsidian/SystemGuids/definedValue";
+    import { NavigationUrlKey } from "./EditPerson/types.partial";
+    import { DetailBlockBox } from "@Obsidian/ViewModels/Blocks/detailBlockBox";
+    import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { BirthdayPickerBag } from "@Obsidian/ViewModels/Controls/birthdayPickerBag";
+    import { ValidationRule } from "@Obsidian/ValidationRules";
+    import { EditPersonBag } from "@Obsidian/ViewModels/Blocks/Crm/PersonDetail/EditPerson/editPersonBag";
+    import { EditPersonOptionsBag } from "@Obsidian/ViewModels/Blocks/Crm/PersonDetail/EditPerson/editPersonOptionsBag";
+    import { EditPersonPhoneNumberBag } from "@Obsidian/ViewModels/Blocks/Crm/PersonDetail/EditPerson/editPersonPhoneNumberBag";
+
+    const config = useConfigurationValues<DetailBlockBox<EditPersonBag, EditPersonOptionsBag>>();
+    const invokeBlockAction = useInvokeBlockAction();
+
+    // #region Values
+
+    const blockError = ref("");
+    const errorMessage = ref("");
+
+    // The top-of-block error banner, scrolled into view when a save fails (it only exists while errorMessage is set).
+    const errorNotificationBox = ref<InstanceType<typeof NotificationBox> | null>(null);
+
+    const isSaving = ref(false);
+    const isNavigating = ref(false);
+    const submitForm = ref(false);
+
+    // Personal Information > Name
+    const title = ref<ListItemBag | null>(config.entity?.title ?? null);
+    const firstName = ref(config.entity?.firstName ?? "");
+    const nickName = ref(config.entity?.nickName ?? "");
+    const middleName = ref(config.entity?.middleName ?? "");
+    const lastName = ref(config.entity?.lastName ?? "");
+    const suffix = ref<ListItemBag | null>(config.entity?.suffix ?? null);
+
+    // Status & Photo (left column)
+    const recordStatus = ref<ListItemBag | null>(config.entity?.recordStatus ?? null);
+    const connectionStatus = ref<ListItemBag | null>(config.entity?.connectionStatus ?? null);
+    const recordSource = ref<ListItemBag | null>(config.entity?.recordSource ?? null);
+    const recordStatusReason = ref<ListItemBag | null>(config.entity?.recordStatusReason ?? null);
+    const deceasedDate = ref(config.entity?.deceasedDate ?? "");
+    const inactiveReasonNote = ref(config.entity?.inactiveReasonNote ?? "");
+    const photo = ref<ListItemBag | null>(config.entity?.photo ?? null);
+
+    // Demographics
+    // Ordered to match the design (Unknown last), which the shared GenderPicker cannot do.
+    const genderItems: ListItemBag[] = [
+        { text: GenderDescription[Gender.Male], value: Gender.Male.toString() },
+        { text: GenderDescription[Gender.Female], value: Gender.Female.toString() },
+        { text: GenderDescription[Gender.Unknown], value: Gender.Unknown.toString() }
+    ];
+    const gender = ref((config.entity?.gender ?? Gender.Unknown).toString());
+    const birthDate = ref<BirthdayPickerBag | null>(config.entity?.birthDate ?? null);
+    const grade = ref<ListItemBag | null>(config.entity?.grade ?? null);
+    const graduationYear = ref(config.entity?.graduationYear?.toString() ?? "");
+    const maritalStatus = ref<ListItemBag | null>(config.entity?.maritalStatus ?? null);
+    const anniversaryDate = ref(config.entity?.anniversaryDate ?? "");
+    const race = ref<ListItemBag | null>(config.entity?.race ?? null);
+    const ethnicity = ref<ListItemBag | null>(config.entity?.ethnicity ?? null);
+    const isLockedAsChild = ref(config.entity?.isLockedAsChild ?? false);
+
+    // Communication > Contact Info
+    // Coerce the number and country code to strings so the PhoneNumberBox formatter never receives null.
+    // No ref type annotation: inference keeps number/countryCode as non-null strings from the map below.
+    const phoneNumbers = ref((config.entity?.phoneNumbers ?? []).map(phoneNumber => ({
+        ...phoneNumber,
+        number: phoneNumber.number ?? "",
+        countryCode: phoneNumber.countryCode ?? ""
+    })));
+    const email = ref(config.entity?.email ?? "");
+    const isEmailActive = ref(config.entity?.isEmailActive ?? false);
+
+    // Communication > Preferences
+    const emailPreferenceItems = enumToListItemBag(EmailPreferenceDescription);
+
+    // Only Email and SMS are offered here so use exlicit subset of the enum instead of enumToListItemBag().
+    const communicationPreferenceItems: ListItemBag[] = [
+        { text: CommunicationTypeDescription[CommunicationType.Email], value: CommunicationType.Email.toString() },
+        { text: CommunicationTypeDescription[CommunicationType.SMS], value: CommunicationType.SMS.toString() }
+    ];
+
+    const chatProfileVisibilityItems: ListItemBag[] = [
+        { text: "Inherit From System Default", value: "" },
+        { text: "Hidden", value: "false" },
+        { text: "Visible to Everyone", value: "true" }
+    ];
+
+    const chatDirectMessagesItems: ListItemBag[] = [
+        { text: "Inherit From System Default", value: "" },
+        { text: "Only People in Shared Channel", value: "false" },
+        { text: "Anyone Can Start a Conversation", value: "true" }
+    ];
+    const emailPreference = ref((config.entity?.emailPreference ?? EmailPreference.EmailAllowed).toString());
+
+    // Match WebForms: only SMS maps to SMS; every other value (RecipientPreference, Email, Push) shows and saves as Email.
+    const communicationPreference = ref((config.entity?.communicationPreference === CommunicationType.SMS ? CommunicationType.SMS : CommunicationType.Email).toString());
+    const chatProfileVisibility = ref(config.entity?.isChatProfilePublic == null ? "" : config.entity.isChatProfilePublic.toString());
+    const chatDirectMessages = ref(config.entity?.isChatOpenDirectMessageAllowed == null ? "" : config.entity.isChatOpenDirectMessageAllowed.toString());
+
+    // Giving
+    const givingGroup = ref<string>(config.entity?.givingGroupGuid ?? "");
+    const givingEnvelopeNumber = ref(config.entity?.givingEnvelopeNumber ?? "");
+    const isGeneratingEnvelopeNumber = ref(false);
+
+    // Search & Lookup
+    const previousLastNames = ref<string[]>(config.entity?.previousLastNames ?? []);
+    const alternateIds = ref<string[]>(config.entity?.alternateIds ?? []);
+
+    // Alternate identifier inline validation: values entered twice in this list, and values already
+    // assigned to other people (identifier -> owner name from the server).
+    const alternateIdDuplicates = ref<string[]>([]);
+    const alternateIdsInUse = ref<Record<string, string>>({});
+
+    // The KeyValueList models each search key as { key: search type guid, value: search value }.
+    const searchKeys = ref<KeyValueItem[]>((config.entity?.searchKeys ?? []).map(searchKey => ({
+        key: searchKey.searchType?.value ?? "",
+        value: searchKey.searchValue ?? ""
+    })));
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    const options = computed((): EditPersonOptionsBag => {
+        return config.options ?? {} as EditPersonOptionsBag;
+    });
+
+    const panelTitle = computed<string>(() => {
+        const displayName = [nickName.value || firstName.value, lastName.value]
+            .filter(name => !!name)
+            .join(" ")
+            .trim();
+
+        return displayName || "Person";
+    });
+
+    const protectionProfileAlertType = computed<AlertType>(() => {
+        return options.value.accountProtectionProfileAlertType?.toLowerCase() === "danger"
+            ? AlertType.Danger
+            : AlertType.Warning;
+    });
+
+    const isRecordInactive = computed<boolean>(() => {
+        return areEqual(recordStatus.value?.value, DefinedValue.PersonRecordStatusInactive);
+    });
+
+    const isReasonDeceased = computed<boolean>(() => {
+        return areEqual(recordStatusReason.value?.value, DefinedValue.PersonRecordStatusReasonDeceased);
+    });
+
+    const familyInactiveMessage = computed<string>(() => {
+        const personName = nickName.value || firstName.value || "This person";
+        const family = options.value.familyName || "family";
+        return `${personName} is the only active member of the ${family}. Saving will also mark the family inactive.`;
+    });
+
+    const isGradeShown = computed<boolean>(() => !options.value.isGradeHidden);
+
+    const isMarried = computed<boolean>(() => {
+        return areEqual(maritalStatus.value?.value, DefinedValue.PersonMaritalStatusMarried);
+    });
+
+    const isAnniversaryShown = computed<boolean>(() => isMarried.value && !options.value.isAnniversaryDateHidden);
+
+    const isRaceShown = computed<boolean>(() => (options.value.raceOption ?? "Hide") !== "Hide");
+    const isRaceRequired = computed<boolean>(() => options.value.raceOption === "Required");
+
+    const isEthnicityShown = computed<boolean>(() => (options.value.ethnicityOption ?? "Hide") !== "Hide");
+    const isEthnicityRequired = computed<boolean>(() => options.value.ethnicityOption === "Required");
+
+    const isChatVisible = computed<boolean>(() => options.value.isChatVisible ?? false);
+
+    const isGivingSectionVisible = computed<boolean>(() => options.value.isGivingSectionVisible ?? false);
+    const isEnvelopeNumberVisible = computed<boolean>(() => options.value.isEnvelopeNumberVisible ?? false);
+    const givingGroupItems = computed<ListItemBag[]>(() => options.value.givingGroups ?? []);
+
+    // A leading blank option lets a new search key row start with no type selected (matches WebForms).
+    const searchKeyTypeItems = computed<ListItemBag[]>(() => [
+        { value: "", text: "" },
+        ...(options.value.searchKeyTypes ?? [])
+    ]);
+
+    const alternateIdsInUseList = computed<{ identifier: string; name: string }[]>(() =>
+        Object.entries(alternateIdsInUse.value).map(([identifier, name]) => ({ identifier, name })));
+
+    // Mirror the block setting (WebForms parity): once a birth month and day are present, the year
+    // becomes required. The rule reads the birthDate ref directly because RockFormField hands it a
+    // date-key string, not the BirthdayPickerBag.
+    const birthDateRules = computed<ValidationRule[]>(() => {
+        if (!options.value.isCompleteBirthDateRequired) {
+            return [];
+        }
+
+        return [(): string | boolean => {
+            const value = birthDate.value;
+            if (value && value.month && value.day && !value.year) {
+                return "Birth Date requires a year.";
+            }
+            return true;
+        }];
+    });
+
+    // A deceased date, once entered, may not precede a complete birth date (matches WebForms).
+    // Only enforced when the birth date has a year; the server re-checks authoritatively.
+    const deceasedDateRules = computed<ValidationRule[]>(() => {
+        return [(): string | boolean => {
+            const bd = birthDate.value;
+            if (!deceasedDate.value || !bd || !bd.year || !bd.month || !bd.day) {
+                return true;
+            }
+
+            const deceased = toComparableDate(deceasedDate.value);
+            if (deceased === null) {
+                return true;
+            }
+
+            const birth = bd.year * 10000 + bd.month * 100 + bd.day;
+            if (deceased < birth) {
+                return "Deceased Date must be on or after the birth date.";
+            }
+            return true;
+        }];
+    });
+
+    // #endregion Computed Values
+
+    // #region Functions
+
+    /**
+     * Parses a date string (ISO "yyyy-MM-dd" or US "M/D/yyyy") into a comparable yyyymmdd number,
+     * or null when the format is unrecognized (in which case the server performs the check).
+     */
+    function toComparableDate(dateString: string): number | null {
+        const iso = dateString.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/);
+        if (iso) {
+            return Number(iso[1]) * 10000 + Number(iso[2]) * 100 + Number(iso[3]);
+        }
+
+        const us = dateString.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})/);
+        if (us) {
+            return Number(us[3]) * 10000 + Number(us[1]) * 100 + Number(us[2]);
+        }
+
+        return null;
+    }
+
+    /**
+     * Keeps the Graduation Year in step with the selected Grade, matching the WebForms grade picker.
+     * Grade and Graduation Year are two views of the same stored value.
+     */
+    function syncGraduationYearFromGrade(): void {
+        const offsetText = grade.value?.value;
+
+        if (!offsetText) {
+            return;
+        }
+
+        const expectedYear = (options.value.gradeTransitionYear + options.value.gradeOffsetAdjustment + Number(offsetText)).toString();
+
+        // Guard against a feedback loop with the reverse watcher; only write when it actually differs.
+        if (graduationYear.value !== expectedYear) {
+            graduationYear.value = expectedYear;
+        }
+    }
+
+    /**
+     * Keeps the Grade in step with the entered Graduation Year, matching the WebForms grade picker.
+     */
+    function syncGradeFromGraduationYear(): void {
+        let expectedOffset = "";
+
+        if (graduationYear.value) {
+            const offset = Number(graduationYear.value) - options.value.gradeTransitionYear - options.value.gradeOffsetAdjustment;
+            expectedOffset = offset >= 0 ? offset.toString() : "";
+        }
+
+        if ((grade.value?.value ?? "") !== expectedOffset) {
+            grade.value = expectedOffset ? { value: expectedOffset } : null;
+        }
+    }
+
+    // #endregion Functions
+
+    // #region Watchers
+
+    // Redesign bug fix: when the record returns to Active, hide and clear the inactive-only fields.
+    watch(isRecordInactive, (inactive) => {
+        if (!inactive) {
+            recordStatusReason.value = null;
+            deceasedDate.value = "";
+            inactiveReasonNote.value = "";
+        }
+    });
+
+    // Clear the deceased date when the reason is no longer Deceased.
+    watch(isReasonDeceased, (deceased) => {
+        if (!deceased) {
+            deceasedDate.value = "";
+        }
+    });
+
+    // Keep Grade and Graduation Year in sync (they represent the same stored value).
+    watch(grade, syncGraduationYearFromGrade);
+    watch(graduationYear, syncGradeFromGraduationYear);
+
+    // #endregion Watchers
+
+    // #region Event Handlers
+
+    /**
+     * Enforces a single SMS-enabled number: turning SMS on for one row turns it off for every other.
+     */
+    function onSmsChanged(changed: EditPersonPhoneNumberBag, isEnabled: boolean): void {
+        phoneNumbers.value.forEach(phoneNumber => {
+            phoneNumber.isMessagingEnabled = isEnabled && phoneNumber.phoneTypeGuid === changed.phoneTypeGuid;
+        });
+    }
+
+    /**
+     * Validates the alternate identifiers inline: flags values entered twice in this list and values
+     * already assigned to other people. Returns whether the identifiers are valid.
+     */
+    async function validateAlternateIds(): Promise<boolean> {
+        // Same-list duplicates (client-side).
+        const seen = new Set<string>();
+        const duplicates: string[] = [];
+
+        for (const alternateId of alternateIds.value) {
+            const trimmed = alternateId.trim();
+
+            if (!trimmed) {
+                continue;
+            }
+
+            if (seen.has(trimmed)) {
+                if (!duplicates.includes(trimmed)) {
+                    duplicates.push(trimmed);
+                }
+            }
+            else {
+                seen.add(trimmed);
+            }
+        }
+
+        alternateIdDuplicates.value = duplicates;
+
+        // Already assigned to other people (server-side).
+        const distinctValues = [...seen];
+
+        if (distinctValues.length === 0) {
+            alternateIdsInUse.value = {};
+        }
+        else {
+            const result = await invokeBlockAction<Record<string, string>>("CheckAlternateIdsInUse", {
+                idKey: config.entity?.idKey,
+                alternateIds: distinctValues
+            });
+
+            alternateIdsInUse.value = (result.isSuccess && result.data) ? result.data : {};
+        }
+
+        return duplicates.length === 0 && Object.keys(alternateIdsInUse.value).length === 0;
+    }
+
+    /**
+     * Re-validates the alternate identifiers when focus leaves the whole field (not while moving
+     * between its own rows).
+     */
+    function onAlternateIdsFocusOut(event: FocusEvent): void {
+        const field = event.currentTarget as HTMLElement;
+        const movingTo = event.relatedTarget as Node | null;
+
+        if (movingTo && field.contains(movingTo)) {
+            return;
+        }
+
+        validateAlternateIds();
+    }
+
+    /**
+     * Fills the envelope number with the next available value from the server.
+     */
+    async function onGenerateEnvelopeNumber(): Promise<void> {
+        isGeneratingEnvelopeNumber.value = true;
+
+        try {
+            const result = await invokeBlockAction<string>("GenerateGivingEnvelopeNumber");
+
+            if (result.isSuccess && result.data) {
+                givingEnvelopeNumber.value = result.data;
+            }
+        }
+        finally {
+            isGeneratingEnvelopeNumber.value = false;
+        }
+    }
+
+    /**
+     * Warns before reusing an envelope number already assigned to others. Returns false only when the
+     * number is in use and the user declines, in which case the save should be aborted.
+     */
+    async function confirmEnvelopeNumberInUse(): Promise<boolean> {
+        const envelopeNumber = givingEnvelopeNumber.value.trim();
+        const originalEnvelopeNumber = (config.entity?.givingEnvelopeNumber ?? "").trim();
+
+        // Only check when the number changed to a non-blank value.
+        if (!envelopeNumber || envelopeNumber === originalEnvelopeNumber) {
+            return true;
+        }
+
+        const result = await invokeBlockAction<string>("CheckGivingEnvelopeNumberInUse", {
+            idKey: config.entity?.idKey,
+            envelopeNumber
+        });
+
+        if (result.isSuccess && result.data) {
+            return confirm(result.data);
+        }
+
+        return true;
+    }
+
+    /**
+     * Saves the edited person and redirects to the person profile on success.
+     */
+    async function onSave(): Promise<void> {
+        errorMessage.value = "";
+        isSaving.value = true;
+
+        try {
+            // Only the edited fields are marked valid; the server writes just those, leaving
+            // unbuilt sections untouched.
+            const box: ValidPropertiesBox<EditPersonBag> = {
+                bag: { ...config.entity } as EditPersonBag
+            };
+
+            setPropertiesBoxValue(box, "title", title.value);
+            setPropertiesBoxValue(box, "firstName", firstName.value);
+            setPropertiesBoxValue(box, "nickName", nickName.value);
+            setPropertiesBoxValue(box, "middleName", middleName.value);
+            setPropertiesBoxValue(box, "lastName", lastName.value);
+            setPropertiesBoxValue(box, "suffix", suffix.value);
+            setPropertiesBoxValue(box, "recordStatus", recordStatus.value);
+            setPropertiesBoxValue(box, "connectionStatus", connectionStatus.value);
+            setPropertiesBoxValue(box, "recordSource", recordSource.value);
+            setPropertiesBoxValue(box, "recordStatusReason", recordStatusReason.value);
+            setPropertiesBoxValue(box, "deceasedDate", deceasedDate.value);
+            setPropertiesBoxValue(box, "inactiveReasonNote", inactiveReasonNote.value);
+            setPropertiesBoxValue(box, "photo", photo.value);
+
+            // Demographics. Grade is not sent; only Graduation Year is persisted (the two are the same
+            // stored value, kept in sync client-side).
+            setPropertiesBoxValue(box, "gender", Number(gender.value) as Gender);
+            setPropertiesBoxValue(box, "birthDate", birthDate.value);
+            setPropertiesBoxValue(box, "graduationYear", graduationYear.value ? Number(graduationYear.value) : null);
+            setPropertiesBoxValue(box, "maritalStatus", maritalStatus.value);
+            setPropertiesBoxValue(box, "anniversaryDate", anniversaryDate.value);
+            setPropertiesBoxValue(box, "race", race.value);
+            setPropertiesBoxValue(box, "ethnicity", ethnicity.value);
+            setPropertiesBoxValue(box, "isLockedAsChild", isLockedAsChild.value);
+
+            // Communication > Contact Info.
+            setPropertiesBoxValue(box, "phoneNumbers", phoneNumbers.value);
+            setPropertiesBoxValue(box, "email", email.value);
+            setPropertiesBoxValue(box, "isEmailActive", isEmailActive.value);
+
+            // Communication > Preferences.
+            setPropertiesBoxValue(box, "emailPreference", Number(emailPreference.value) as EmailPreference);
+            setPropertiesBoxValue(box, "communicationPreference", Number(communicationPreference.value) as CommunicationType);
+            if (isChatVisible.value) {
+                setPropertiesBoxValue(box, "isChatProfilePublic", chatProfileVisibility.value === "" ? null : chatProfileVisibility.value === "true");
+                setPropertiesBoxValue(box, "isChatOpenDirectMessageAllowed", chatDirectMessages.value === "" ? null : chatDirectMessages.value === "true");
+            }
+
+            // Giving.
+            if (isGivingSectionVisible.value) {
+                setPropertiesBoxValue(box, "givingGroupGuid", toGuidOrNull(givingGroup.value));
+
+                if (isEnvelopeNumberVisible.value) {
+                    setPropertiesBoxValue(box, "givingEnvelopeNumber", givingEnvelopeNumber.value);
+
+                    // Warn before reusing an envelope number already assigned to someone else.
+                    if (!(await confirmEnvelopeNumberInUse())) {
+                        return;
+                    }
+                }
+            }
+
+            // Search & Lookup. Block the save when alternate identifiers fail the inline validation
+            // (the messages render beneath the field, including when Save is clicked from a row).
+            if (!(await validateAlternateIds())) {
+                return;
+            }
+
+            setPropertiesBoxValue(box, "previousLastNames", previousLastNames.value);
+            setPropertiesBoxValue(box, "alternateIds", alternateIds.value);
+            setPropertiesBoxValue(box, "searchKeys", searchKeys.value
+                .filter(searchKey => searchKey.key && searchKey.value)
+                .map(searchKey => ({ searchType: { value: searchKey.key }, searchValue: searchKey.value })));
+
+            const result = await invokeBlockAction<string>("Save", { box });
+
+            if (result.isSuccess && result.statusCode === 200 && typeof result.data === "string") {
+                isNavigating.value = true;
+                window.location.href = makeUrlRedirectSafe(result.data);
+            }
+            else if (!result.isSuccess) {
+                errorMessage.value = result.errorMessage ?? "Unknown error while trying to save the person.";
+
+                // Bring the error banner into view; the user may have scrolled down to the Save button.
+                nextTick(() => {
+                    errorNotificationBox.value?.$el?.scrollIntoView({ behavior: "smooth", block: "start" });
+                });
+            }
+        }
+        finally {
+            isSaving.value = false;
+        }
+    }
+
+    /**
+     * Returns to the person profile without saving.
+     */
+    function onCancel(): void {
+        const parentPageUrl = config.navigationUrls?.[NavigationUrlKey.ParentPage];
+
+        if (parentPageUrl) {
+            isNavigating.value = true;
+            window.location.href = makeUrlRedirectSafe(parentPageUrl);
+        }
+    }
+
+    /**
+     * Begins the form submission process.
+     */
+    function onStartSubmitForm(): void {
+        submitForm.value = true;
+    }
+
+    // #endregion Event Handlers
+
+    // Handle any initial error conditions.
+    if (config.errorMessage) {
+        blockError.value = config.errorMessage;
+    }
+    else if (!config.entity) {
+        blockError.value = "The person you are trying to edit could not be found.";
+    }
+</script>

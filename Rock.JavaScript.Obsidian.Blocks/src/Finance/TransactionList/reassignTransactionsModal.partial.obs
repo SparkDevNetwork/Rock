@@ -1,0 +1,82 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Modal v-model="isVisible"
+           title="Reassign Transactions"
+           saveText="Reassign"
+           @save="onSave">
+        <div class="row">
+            <div class="col-md-6">
+                <PersonPicker v-model="person"
+                              label="Reassign Transactions To"
+                              rules="required"
+                              :includeBusinesses="true" />
+            </div>
+        </div>
+        <RadioButtonList v-model="bankAccountAction"
+                         label="Reassign Bank Accounts"
+                         help="Determines whether the original person's saved bank accounts are moved, copied, or left unchanged."
+                         rules="required"
+                         :items="bankAccountActionItems" />
+    </Modal>
+</template>
+
+<script setup lang="ts">
+    import Modal from "@Obsidian/Controls/modal.obs";
+    import PersonPicker from "@Obsidian/Controls/personPicker.obs";
+    import RadioButtonList from "@Obsidian/Controls/radioButtonList.obs";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { PropType, ref, watch } from "vue";
+    import { useVModelPassthrough } from "@Obsidian/Utility/component";
+
+    const props = defineProps({
+        modelValue: {
+            type: Boolean as PropType<boolean>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: boolean): void;
+        (e: "save", person: ListItemBag, bankAccountAction: string): void;
+    }>();
+
+    // #region Values
+
+    const isVisible = useVModelPassthrough(props, "modelValue", emit);
+    const person = ref<ListItemBag | undefined>();
+    const bankAccountAction = ref<string>("MOVE");
+
+    const bankAccountActionItems: ListItemBag[] = [
+        { value: "MOVE", text: "Move bank accounts to selected individual" },
+        { value: "COPY", text: "Copy bank accounts to selected individual" },
+        { value: "NONE", text: "Do not adjust bank accounts" }
+    ];
+
+    // #endregion Values
+
+    // #region Event Handlers
+
+    /**
+     * Emits the chosen person and bank-account action when the user confirms. Does nothing when no
+     * person has been selected.
+     */
+    function onSave(): void {
+        if (person.value?.value) {
+            emit("save", person.value, bankAccountAction.value);
+        }
+    }
+
+    // #endregion Event Handlers
+
+    // #region Watchers
+
+    // Reset the form each time the modal is opened.
+    watch(isVisible, (visible) => {
+        if (visible) {
+            person.value = undefined;
+            bankAccountAction.value = "MOVE";
+        }
+    });
+
+    // #endregion Watchers
+</script>

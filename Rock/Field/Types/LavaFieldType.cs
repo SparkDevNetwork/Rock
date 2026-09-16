@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -21,8 +21,11 @@ using System.Web.UI;
 #endif
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
+using Rock.Enums.Security;
 using Rock.Model;
+using Rock.Security;
 
 namespace Rock.Field.Types
 {
@@ -51,6 +54,16 @@ namespace Rock.Field.Types
 
         #endregion
 
+        #region Editor Control
+
+        /// <inheritdoc/>
+        public override StringValidationRule GetValidationRules( Dictionary<string, string> privateConfigurationValues )
+        {
+            return StringValueValidator.GetEffectiveRules( StringValidationProfile.Unrestricted );
+        }
+
+        #endregion
+
         #region Persistence
 
         /// <inheritdoc/>
@@ -72,7 +85,7 @@ namespace Rock.Field.Types
                 return privateValue;
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var entity = Reflection.GetIEntityForEntityType( entityTypeId, entityId, rockContext );
 
@@ -142,6 +155,20 @@ namespace Rock.Field.Types
 
         #endregion
 
+        #region Value Hinting
+
+        /// <inheritdoc/>
+        internal override FieldTypeHints GetFieldHints( Dictionary<string, string> privateConfigurationValues )
+        {
+            return new FieldTypeHints
+            {
+                IsCompleteList = false,
+                ValueFormat = "A Lava template, stored exactly as written rather than as the text it produces. It is resolved when the value is displayed, so a value containing curly brace tags is intentional and must not be pre-rendered before storing."
+            };
+        }
+
+        #endregion
+
         #region WebForms
 #if WEBFORMS
 
@@ -164,7 +191,7 @@ namespace Rock.Field.Types
                 var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( null );
                 if ( entityTypeId.HasValue && entityId.HasValue )
                 {
-                    var entity = new EntityTypeService( new RockContext() ).GetEntity( entityTypeId.Value, entityId.Value );
+                    var entity = new EntityTypeService( RockApp.Current.CreateRockContext() ).GetEntity( entityTypeId.Value, entityId.Value );
                     if ( entity != null )
                     {
                         mergeFields.Add( "Entity", entity );

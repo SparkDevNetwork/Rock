@@ -1,0 +1,113 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <NotificationBox v-if="blockError" alertType="warning" v-html="blockError" />
+
+    <NotificationBox v-if="errorMessage" alertType="danger" v-html="errorMessage" />
+
+    <DetailBlock v-if="!blockError"
+                 v-model:mode="panelMode"
+                 :name="panelName"
+                 :entityKey="entityKey"
+                 :entityTypeGuid="entityTypeGuid"
+                 :isEditHidden="false"
+                 :isDeleteHidden="true"
+                 :isAuditHidden="true"
+                 :isSecurityHidden="true"
+                 :footerSecondaryActions="[]"
+                 @cancelEdit="onCancelEdit"
+                 @save="onSave">
+
+        <template #edit>
+            <EditPanel v-model="entityEditBag"
+                       :options="options" />
+        </template>
+
+    </DetailBlock>
+</template>
+
+<script setup lang="ts">
+    import { computed, ref } from "vue";
+    import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
+    import { DetailBlockBox } from "@Obsidian/ViewModels/Blocks/detailBlockBox";
+    import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
+    import { DetailPanelMode } from "@Obsidian/Enums/Controls/detailPanelMode";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import DetailBlock from "@Obsidian/Templates/detailBlock";
+    import EditPanel from "./CampaignConfiguration/editPanel.partial.obs";
+    import { CampaignConfigurationBag } from "@Obsidian/ViewModels/Blocks/Connection/CampaignConfiguration/campaignConfigurationBag";
+    import { CampaignConfigurationOptionsBag } from "@Obsidian/ViewModels/Blocks/Connection/CampaignConfiguration/campaignConfigurationOptionsBag";
+
+    const config = useConfigurationValues<DetailBlockBox<CampaignConfigurationBag, CampaignConfigurationOptionsBag>>();
+    const invokeBlockAction = useInvokeBlockAction();
+    onConfigurationValuesChanged(useReloadBlock());
+
+    // #region Values
+
+    const blockError = ref(config.errorMessage ?? "");
+    const errorMessage = ref("");
+    const panelMode = ref<DetailPanelMode>(DetailPanelMode.Edit);
+
+    const entityEditBag = ref<ValidPropertiesBox<CampaignConfigurationBag>>({
+        bag: config.entity ?? {} as CampaignConfigurationBag
+    });
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    const panelName = computed((): string => {
+        return entityEditBag.value.bag?.name || "Campaign Configuration";
+    });
+
+    const entityKey = computed((): string => {
+        return entityEditBag.value.bag?.guid ?? "";
+    });
+
+    const entityTypeGuid = computed((): string => {
+        return "469C88A7-DB85-4BED-981A-34DF401E13F9";
+    });
+
+    const options = computed((): CampaignConfigurationOptionsBag => {
+        return config.options ?? {} as CampaignConfigurationOptionsBag;
+    });
+
+    // #endregion Computed Values
+
+    // #region Event Handlers
+
+    /**
+     * Called when the cancel button is clicked in the edit panel.
+     * Navigates back to the parent page.
+     */
+    async function onCancelEdit(): Promise<boolean | string> {
+        if (config.navigationUrls?.["ParentPage"]) {
+            return config.navigationUrls["ParentPage"];
+        }
+
+        return false;
+    }
+
+    /**
+     * Called when the save button is clicked. Sends the campaign data to the server
+     * and navigates to the parent page on success.
+     */
+    async function onSave(): Promise<boolean | string> {
+        const bag = entityEditBag.value.bag;
+
+        const result = await invokeBlockAction<string>("Save", { bag });
+
+        if (result.isSuccess && result.data) {
+            return result.data;
+        }
+
+        errorMessage.value = result.errorMessage ?? "An unknown error occurred while saving.";
+        return false;
+    }
+
+    // #endregion Event Handlers
+
+    // Show a block-level error if no entity was returned (e.g., campaign not found).
+    if (!config.errorMessage && !config.entity) {
+        blockError.value = "The specified campaign configuration could not be found.";
+    }
+</script>

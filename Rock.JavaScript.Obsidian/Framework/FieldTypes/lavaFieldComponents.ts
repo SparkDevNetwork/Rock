@@ -19,7 +19,7 @@ import { getFieldConfigurationProps, getFieldEditorProps } from "./utils";
 import DropDownList from "@Obsidian/Controls/dropDownList.obs";
 import NumberBox from "@Obsidian/Controls/numberBox.obs";
 import CodeEditor from "@Obsidian/Controls/codeEditor.obs";
-import { ConfigurationPropertyKey, ConfigurationValueKey } from "./lavaField.partial";
+import { ConfigurationPropertyKey, ConfigurationKey } from "./lavaField.partial";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { toNumber, toNumberOrNull } from "@Obsidian/Utility/numberUtils";
 
@@ -39,12 +39,12 @@ export const EditComponent = defineComponent({
 
         // The selected code editor mode from the field type's configuration.
         const editorMode = computed((): number => {
-            return toNumber(props.configurationValues[ConfigurationValueKey.EditorMode]);
+            return toNumber(props.configurationValues[ConfigurationKey.EditorMode]);
         });
 
         // The selected code editor height from the field type's configuration.
         const editorHeight = computed((): number => {
-            const editorHeight = toNumberOrNull(props.configurationValues[ConfigurationValueKey.EditorHeight]) ?? minimumHeight;
+            const editorHeight = toNumberOrNull(props.configurationValues[ConfigurationKey.EditorHeight]) ?? minimumHeight;
             return editorHeight;
         });
 
@@ -108,12 +108,12 @@ export const ConfigurationComponent = defineComponent({
 
             // Construct the new value that will be emitted if it is different
             // than the current value.
-            newValue[ConfigurationValueKey.EditorMode] = editorMode.value ?? "";
-            newValue[ConfigurationValueKey.EditorHeight] = editorHeight.value?.toString() ?? "";
+            newValue[ConfigurationKey.EditorMode] = editorMode.value ?? "";
+            newValue[ConfigurationKey.EditorHeight] = editorHeight.value?.toString() ?? "";
 
             // Compare the new value and the old value.
-            const anyValueChanged = newValue[ConfigurationValueKey.EditorMode] !== (props.modelValue[ConfigurationValueKey.EditorMode])
-                || newValue[ConfigurationValueKey.EditorHeight] !== (props.modelValue[ConfigurationValueKey.EditorHeight]);
+            const anyValueChanged = newValue[ConfigurationKey.EditorMode] !== (props.modelValue[ConfigurationKey.EditorMode])
+                || newValue[ConfigurationKey.EditorHeight] !== (props.modelValue[ConfigurationKey.EditorHeight]);
 
             // If any value changed then emit the new model value.
             if (anyValueChanged) {
@@ -140,15 +140,15 @@ export const ConfigurationComponent = defineComponent({
         // Watch for changes coming in from the parent component and update our
         // data to match the new information.
         watch(() => [props.modelValue, props.configurationProperties], () => {
-            editorMode.value = props.modelValue[ConfigurationValueKey.EditorMode] ?? "";
-            editorHeight.value = toNumberOrNull(props.modelValue[ConfigurationValueKey.EditorHeight]);
+            editorMode.value = props.modelValue[ConfigurationKey.EditorMode] ?? "";
+            editorHeight.value = toNumberOrNull(props.modelValue[ConfigurationKey.EditorHeight]);
         }, {
             immediate: true
         });
 
         // Watch for changes in properties that only require a local UI update.
-        watch(editorMode, () => maybeUpdateConfiguration(ConfigurationValueKey.EditorMode, editorMode.value ?? ""));
-        watch(editorHeight, () => maybeUpdateConfiguration(ConfigurationValueKey.EditorHeight, editorHeight.value?.toString() ?? ""));
+        watch(editorMode, () => maybeUpdateConfiguration(ConfigurationKey.EditorMode, editorMode.value ?? ""));
+        watch(editorHeight, () => maybeUpdateConfiguration(ConfigurationKey.EditorHeight, editorHeight.value?.toString() ?? ""));
 
         return {
             editorMode,

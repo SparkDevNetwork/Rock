@@ -21,7 +21,6 @@
                       title="Person"
                       field="person"
                       :filter="pickExistingValueFilter"
-                      :filterValue="getPersonNameFilterValue"
                       visiblePriority="xs"
                       :showAsLink="true" />
 
@@ -59,7 +58,6 @@
     import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
     import { PageShortLinkClickListOptionsBag } from "@Obsidian/ViewModels/Blocks/Cms/PageShortLinkClickList/pageShortLinkClickListOptionsBag";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
-    import { PersonFieldBag } from "@Obsidian/ViewModels/Core/Grid/personFieldBag";
 
     const config = useConfigurationValues<ListBlockBox<PageShortLinkClickListOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
@@ -91,16 +89,6 @@
         else {
             throw new Error(result.errorMessage ?? "Unknown error while trying to load grid data.");
         }
-    }
-
-    /**
-    * Gets the filter value text to use for the name column.
-    *
-    * @param row The row to be filtered.
-    */
-    function getPersonNameFilterValue(row: Record<string, unknown>): string {
-        const person = row["person"] as PersonFieldBag;
-        return !person ? "" : `${person.nickName} ${person.lastName}`;
     }
 
     // #endregion

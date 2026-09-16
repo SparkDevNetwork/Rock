@@ -15,7 +15,7 @@
 // </copyright>
 //
 
-export enum ConfigurationValueKey {
+export enum ConfigurationKey {
     Colors = "colors",
     AllowMultiple = "allowMultiple"
 }

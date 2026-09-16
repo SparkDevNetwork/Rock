@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -23,6 +23,7 @@ using System.Web.UI;
 
 using Rock;
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Lava;
 using Rock.Model;
@@ -40,8 +41,14 @@ namespace RockWeb.Blocks.Reporting
     [Category( "Reporting" )]
     [Description( "List all the Interaction Channel" )]
 
-    [LinkedPage( "Session List Page", "Page reference to the session list page. This will be included as a variable in the Lava.", false, order: 0 )]
-    [LinkedPage( "Component List Page", "Page reference to the component list page. This will be included as a variable in the Lava.", false, order: 1 )]
+    [LinkedPage( "Session List Page",
+        Description = "Page reference to the session list page. This will be included as a variable in the Lava.",
+        IsRequired = false,
+        Order = 0 )]
+    [LinkedPage( "Component List Page",
+        Description = "Page reference to the component list page. This will be included as a variable in the Lava.",
+        IsRequired = false,
+        Order = 1 )]
     [CodeEditorField( "Default Template",
         Description = "The Lava template to use as default.",
         EditorMode = Rock.Web.UI.Controls.CodeEditorMode.Lava,
@@ -49,7 +56,7 @@ namespace RockWeb.Blocks.Reporting
         IsRequired = false,
         Order = 2,
         DefaultValue = @"{% if InteractionChannel != null and InteractionChannel != '' %}
-    <a href='{% if InteractionChannel.UsesSession == true %}{{ SessionListPage }}{% else %}{{ ComponentListPage }}{% endif %}?ChannelId={{ InteractionChannel.Id }}'>
+    <a href='{% if InteractionChannel.UsesSession == true %}{{ SessionListPage }}{% else %}{{ ComponentListPage }}{% endif %}?ChannelId={{ InteractionChannel.IdKey }}'>
         <div class='panel panel-widget collapsed'>
             <div class='panel-heading clearfix'>
                 {% if InteractionChannel.Name != '' %}<h1 class='panel-title pull-left'>{{ InteractionChannel.Name }}</h1>{% endif %}
@@ -63,7 +70,10 @@ namespace RockWeb.Blocks.Reporting
     </a>
 {% endif %}" )]
 
-    [InteractionChannelsField( "Interaction Channels", "Select interaction channel to limit the display. No selection will show all.", false, "", "", order: 3 )]
+    [InteractionChannelsField( "Interaction Channels",
+        Description = "Select interaction channel to limit the display. No selection will show all.",
+        IsRequired = false,
+        Order = 3 )]
     [ContextAware( typeof( Person ) )]
     [Rock.SystemGuid.BlockTypeGuid( "FBC2066B-8E7C-43CB-AFD2-FA9408F6699D" )]
     public partial class InteractionChannelList : Rock.Web.UI.RockBlock
@@ -74,6 +84,24 @@ namespace RockWeb.Blocks.Reporting
         private const string INCLUDE_INACTIVE_FILTER = "Include Inactive";
 
         #endregion
+
+        #region Keys
+
+        private static class PageParameterKey
+        {
+            public const string PersonId = "PersonId";
+            public const string PersonAliasId = "PersonAliasId";
+        }
+
+        private static class AttributeKey
+        {
+            public const string DefaultTemplate = "DefaultTemplate";
+            public const string InteractionChannels = "InteractionChannels";
+            public const string ComponentListPage = "ComponentListPage";
+            public const string SessionListPage = "SessionListPage";
+        }
+
+        #endregion Keys
 
         #region Base Control Methods
 
@@ -190,7 +218,7 @@ namespace RockWeb.Blocks.Reporting
         /// </summary>
         public void ShowList()
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var channelQry = new InteractionChannelService( rockContext )
                     .Queryable().AsNoTracking();
@@ -206,9 +234,9 @@ namespace RockWeb.Blocks.Reporting
                     channelQry = channelQry.Where( a => a.IsActive );
                 }
 
-                if ( !string.IsNullOrWhiteSpace( GetAttributeValue( "InteractionChannels" ) ) )
+                if ( !string.IsNullOrWhiteSpace( GetAttributeValue( AttributeKey.InteractionChannels ) ) )
                 {
-                    var selectedChannelIds = Array.ConvertAll( GetAttributeValue( "InteractionChannels" ).Split( ',' ), s => new Guid( s ) ).ToList();
+                    var selectedChannelIds = Array.ConvertAll( GetAttributeValue( AttributeKey.InteractionChannels ).Split( ',' ), s => new Guid( s ) ).ToList();
                     channelQry = channelQry.Where( a => selectedChannelIds.Contains( a.Guid ) );
                 }
 
@@ -220,14 +248,14 @@ namespace RockWeb.Blocks.Reporting
                 }
 
                 // Parse the default template so that it does not need to be parsed multiple times.
-                var parseResult = LavaService.ParseTemplate( GetAttributeValue( "DefaultTemplate" ) );
+                var parseResult = LavaService.ParseTemplate( GetAttributeValue( AttributeKey.DefaultTemplate ) );
                 var defaultLavaTemplate = parseResult.Template;
 
                 var options = new Rock.Lava.CommonMergeFieldsOptions();
                 options.GetPageContext = false;
                 var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson, options );
-                mergeFields.Add( "ComponentListPage", LinkedPageRoute( "ComponentListPage" ) );
-                mergeFields.Add( "SessionListPage", LinkedPageRoute( "SessionListPage" ) );
+                mergeFields.Add( "ComponentListPage", LinkedPageRoute( AttributeKey.ComponentListPage ) );
+                mergeFields.Add( "SessionListPage", LinkedPageRoute( AttributeKey.SessionListPage ) );
 
                 var channelItems = new List<ChannelItem>();
 
@@ -261,26 +289,39 @@ namespace RockWeb.Blocks.Reporting
         /// </summary>
         private int? GetPersonId()
         {
-            int? personId = PageParameter( "PersonId" ).AsIntegerOrNull();
-            if ( !personId.HasValue )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
-                var person = ContextEntity<Person>();
-                if ( person != null )
+                var personId = new PersonService( rockContext ).GetSelect(
+                    PageParameter( PageParameterKey.PersonId ),
+                    p => (int?) p.Id,
+                    !PageCache.Layout.Site.DisablePredictableIds
+                );
+
+                if ( !personId.HasValue)
                 {
-                    personId = person.Id;
+                    var person = ContextEntity<Person>();
+                    if ( person != null )
+                    {
+                        personId = person.Id;
+                    }
                 }
+
+                if ( !personId.HasValue )
+                {
+                    var personAliasId = new PersonAliasService( rockContext ).GetSelect(
+                        PageParameter( PageParameterKey.PersonAliasId ),
+                        pa => (int?) pa.Id,
+                        !PageCache.Layout.Site.DisablePredictableIds
+                    );
+
+                    if ( personAliasId.HasValue )
+                    {
+                        personId = new PersonAliasService( rockContext ).GetPersonId( personAliasId.Value );
+                    }
+                }
+
+                return personId;
             }
-
-			if ( !personId.HasValue )
-			{
-	            int? personAliasId = PageParameter( "PersonAliasId" ).AsIntegerOrNull();
-	            if ( personAliasId.HasValue )
-	            {
-	                personId = new PersonAliasService( new RockContext() ).GetPersonId( personAliasId.Value );
-	            }
-			}
-
-            return personId;
         }
 
         #endregion

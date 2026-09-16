@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -18,9 +18,12 @@ using System.Collections.Generic;
 #if WEBFORMS
 using System.Web.UI;
 using System.Web.UI.WebControls;
+
 #endif
 using Rock.Attribute;
+using Rock.Enums.Security;
 using Rock.Reporting;
+using Rock.Security;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Field.Types
@@ -43,7 +46,34 @@ namespace Rock.Field.Types
 
         #endregion
 
+        #region Formatting
+
+        /// <inheritdoc/>
+        public override string GetHtmlValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            if ( privateConfigurationValues.TryGetValue( "allowhtml", out var allowHtml ) && allowHtml.AsBoolean() )
+            {
+                return GetTextValue( privateValue, privateConfigurationValues );
+            }
+
+            return GetTextValue( privateValue, privateConfigurationValues )?.EncodeHtml();
+        }
+
+        #endregion
+
         #region Edit Control
+
+        /// <inheritdoc/>
+        public override StringValidationRule GetValidationRules( Dictionary<string, string> privateConfigurationValues )
+        {
+            if ( privateConfigurationValues?.TryGetValue( ALLOW_HTML, out var allowHtml ) == true && allowHtml.AsBoolean() )
+            {
+                return StringValueValidator.GetEffectiveRules( StringValidationProfile.LavaAndBasicHtml );
+            }
+
+            return StringValueValidator.GetEffectiveRules( StringValidationProfile.PlainText,
+                excludedRules: StringValidationRule.LavaFormatting | StringValidationRule.LavaCommands );
+        }
 
         #endregion
 
@@ -61,6 +91,46 @@ namespace Rock.Field.Types
             {
                 return ComparisonHelper.StringFilterComparisonTypes;
             }
+        }
+
+        #endregion
+
+        #region Value Hinting
+
+        /// <inheritdoc/>
+        /// <remarks>
+        /// Silent unless the configuration makes the value something other than
+        /// ordinary multi line text, on the same reasoning as the single line text
+        /// field type. Saying "text" on every memo attribute in a Rock database would
+        /// be noise, and noise teaches a reader to skim past the hints that matter.
+        /// </remarks>
+        internal override FieldTypeHints GetFieldHints( Dictionary<string, string> privateConfigurationValues )
+        {
+            var allowsHtml = privateConfigurationValues.GetValueOrDefault( ALLOW_HTML, string.Empty ).AsBoolean();
+            var maximumCharacters = privateConfigurationValues.GetValueOrNull( MAX_CHARACTERS ).AsIntegerOrNull();
+
+            if ( !allowsHtml && !maximumCharacters.HasValue )
+            {
+                return null;
+            }
+
+            var notes = new List<string>();
+
+            if ( allowsHtml )
+            {
+                notes.Add( "HTML is kept rather than stripped" );
+            }
+
+            if ( maximumCharacters.HasValue )
+            {
+                notes.Add( $"it is limited to {maximumCharacters.Value} characters" );
+            }
+
+            return new FieldTypeHints
+            {
+                IsCompleteList = false,
+                ValueFormat = $"Text, stored exactly as supplied, and may span multiple lines. On this field {notes.JoinStrings( ", " )}."
+            };
         }
 
         #endregion

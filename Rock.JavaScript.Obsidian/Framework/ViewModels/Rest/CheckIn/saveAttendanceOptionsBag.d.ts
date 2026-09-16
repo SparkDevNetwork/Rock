@@ -32,6 +32,13 @@ export type SaveAttendanceOptionsBag = {
     /** Gets or sets the kiosk identifier. */
     kioskId?: string | null;
 
+    /**
+     * When set and valid, this specifies the PIN code to use for authentication
+     * to enable the override mode in kiosk check-in. Location capacity filtering
+     * will not be performed when in this mode.
+     */
+    overridePinCode?: string | null;
+
     /** Gets or sets the requests. */
     requests?: AttendanceRequestBag[] | null;
 

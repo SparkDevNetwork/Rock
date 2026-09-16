@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -25,6 +25,7 @@ using System.Web;
 using Microsoft.EntityFrameworkCore;
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.SystemKey;
@@ -124,13 +125,13 @@ Update Family Status: {updateFamilyStatus}
             int recordsUpdated = 0;
             int recordsWithError = 0;
 
-            var persons = new PersonService( new RockContext() )
+            var persons = new PersonService( RockApp.Current.CreateRockContext() )
                 .Queryable()
                 .AsNoTracking()
                 .Where( p => !string.IsNullOrEmpty( p.FirstName ) && p.Gender == Gender.Unknown )
                 .ToList();
 
-            var firstNameGenderDictionary = new MetaFirstNameGenderLookupService( new RockContext() )
+            var firstNameGenderDictionary = new MetaFirstNameGenderLookupService( RockApp.Current.CreateRockContext() )
                             .Queryable()
                             .Where( n => n.FemalePercent >= autofillConfidence || n.MalePercent >= autofillConfidence )
                             .ToDictionary( k => k.FirstName, v => new { v.MalePercent, v.FemalePercent }, StringComparer.OrdinalIgnoreCase );
@@ -139,7 +140,7 @@ Update Family Status: {updateFamilyStatus}
             {
                 try
                 {
-                    using ( RockContext rockContext = new RockContext() )
+                    using ( RockContext rockContext = RockApp.Current.CreateRockContext() )
                     {
                         rockContext.SourceOfChange = SOURCE_OF_CHANGE;
                         rockContext.Database.SetCommandTimeout( commandTimeout );
@@ -245,7 +246,7 @@ Update Family Status: {updateFamilyStatus}
 
                 var personIds = new List<int>();
 
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     rockContext.SourceOfChange = SOURCE_OF_CHANGE;
                     // increase the timeout just in case.
@@ -348,7 +349,7 @@ Update Family Status: {updateFamilyStatus}
                         recordsProcessed++;
 
                         // Reactivate the person
-                        using ( var rockContext = new RockContext() )
+                        using ( var rockContext = RockApp.Current.CreateRockContext() )
                         {
                             rockContext.SourceOfChange = SOURCE_OF_CHANGE;
                             var person = new PersonService( rockContext ).Get( personId );
@@ -465,7 +466,7 @@ Update Family Status: {updateFamilyStatus}
                 }
 
                 var personIds = new List<int>();
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     var excludeAttributeIds = GetIgnoredPersonAttributeList( rockContext );
 
@@ -544,7 +545,7 @@ Update Family Status: {updateFamilyStatus}
                     recordsProcessed++;
 
                     // Inactivate the person
-                    using ( var rockContext = new RockContext() )
+                    using ( var rockContext = RockApp.Current.CreateRockContext() )
                     {
                         rockContext.SourceOfChange = SOURCE_OF_CHANGE;
                         try
@@ -619,7 +620,7 @@ Update Family Status: {updateFamilyStatus}
                 var personCampusAttendance = new List<PersonCampus>();
                 var personCampusGiving = new List<PersonCampus>();
 
-                using ( RockContext rockContext = new RockContext() )
+                using ( RockContext rockContext = RockApp.Current.CreateRockContext() )
                 {
                     rockContext.SourceOfChange = SOURCE_OF_CHANGE;
                     // increase the timeout just in case.
@@ -728,7 +729,7 @@ Update Family Status: {updateFamilyStatus}
                         recordsProcessed++;
 
                         // Using a new rockcontext for each one (to improve performance)
-                        using ( var rockContext = new RockContext() )
+                        using ( var rockContext = RockApp.Current.CreateRockContext() )
                         {
                             rockContext.SourceOfChange = SOURCE_OF_CHANGE;
 
@@ -960,7 +961,7 @@ Update Family Status: {updateFamilyStatus}
 
                 // Get a list of people marked as a child in any family, but who are now an "adult" based on their age
                 var adultChildIds = new List<int>();
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     // increase the timeout just in case.
                     rockContext.Database.SetCommandTimeout( commandTimeout );
@@ -1010,7 +1011,7 @@ Update Family Status: {updateFamilyStatus}
                         recordsProcessed++;
 
                         // Using a new rockcontext for each one (to improve performance)
-                        using ( var rockContext = new RockContext() )
+                        using ( var rockContext = RockApp.Current.CreateRockContext() )
                         {
                             rockContext.SourceOfChange = SOURCE_OF_CHANGE;
 
@@ -1292,7 +1293,7 @@ Update Family Status: {updateFamilyStatus}
                 var cacheConnectionStatusValue = DefinedValueCache.Get( connectionStatusValueId );
                 this.UpdateLastStatusMessage( $"Processing Connection Status Update for {cacheConnectionStatusValue}" );
                 int dataViewId = connectionStatusDataviewMapping.Value.Value;
-                using ( var dataViewRockContext = new RockContext() )
+                using ( var dataViewRockContext = RockApp.Current.CreateRockContext() )
                 {
                     dataViewRockContext.Database.SetCommandTimeout( commandTimeout );
                     var dataView = DataViewCache.Get( dataViewId );
@@ -1318,7 +1319,7 @@ Update Family Status: {updateFamilyStatus}
                     {
                         try
                         {
-                            using ( var updateRockContext = new RockContext() )
+                            using ( var updateRockContext = RockApp.Current.CreateRockContext() )
                             {
                                 updateRockContext.SourceOfChange = SOURCE_OF_CHANGE;
                                 // Attach the person to the updateRockContext so that it'll be tracked/saved using updateRockContext
@@ -1382,7 +1383,7 @@ Update Family Status: {updateFamilyStatus}
             {
                 int groupStatusValueId = groupStatusDataviewMapping.Key;
                 int dataViewId = groupStatusDataviewMapping.Value.Value;
-                using ( var dataViewRockContext = new RockContext() )
+                using ( var dataViewRockContext = RockApp.Current.CreateRockContext() )
                 {
                     dataViewRockContext.Database.SetCommandTimeout( commandTimeout );
                     var dataView = DataViewCache.Get( dataViewId );
@@ -1406,7 +1407,7 @@ Update Family Status: {updateFamilyStatus}
                     totalToUpdate += groupsToUpdate.Count();
                     foreach ( var group in groupsToUpdate )
                     {
-                        using ( var updateRockContext = new RockContext() )
+                        using ( var updateRockContext = RockApp.Current.CreateRockContext() )
                         {
                             updateRockContext.SourceOfChange = SOURCE_OF_CHANGE;
                             // Attach the group to the updateRockContext so that it'll be tracked/saved using updateRockContext

@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -15,27 +15,30 @@
 // </copyright>
 //
 #if REVIEW_WEBFORMS
-using Rock.Attribute;
-using Rock.Model;
-using System.Linq;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Entity;
-using Rock.Financial;
-using Rock.Web.Cache;
-using Rock.Data;
-using System;
-using Rock.Web.UI.Controls;
+using System.Linq;
 using System.Threading.Tasks;
-using Rock.Tasks;
+
+using MassTransit; //why?
+
+using Rock.Attribute;
 using Rock.Bus.Message;
-using Rock.ClientService.Finance.FinancialPersonSavedAccount.Options;
 using Rock.ClientService.Finance.FinancialPersonSavedAccount;
-using MassTransit;
+using Rock.ClientService.Finance.FinancialPersonSavedAccount.Options;
 using Rock.Common.Mobile.Blocks.Finance.Giving;
 using Rock.Common.Mobile.ViewModel;
-using Rock.Web.UI;
+using Rock.Configuration;
+using Rock.Data;
+using Rock.Financial;
+using Rock.Model;
+using Rock.Tasks;
 using Rock.ViewModels.Finance;
+using Rock.Web.Cache;
+using Rock.Web.UI;
+using Rock.Web.UI.Controls;
 
 namespace Rock.Blocks.Types.Mobile.Finance
 {
@@ -854,6 +857,9 @@ namespace Rock.Blocks.Types.Mobile.Finance
             PopulateTransactionDetails( commonTransactionAccountDetails, bag );
 
             paymentInfo.Amount = commonTransactionAccountDetails.Sum( tad => tad.Amount );
+            paymentInfo.AccountAllocations = commonTransactionAccountDetails
+                .Select( tad => new FinancialTransactionService.AccountAllocation( tad.AccountId, tad.Amount ) )
+                .ToList();
 
             var totalFeeCoverageAmounts = commonTransactionAccountDetails.Where( a => a.FeeCoverageAmount.HasValue ).Select( a => a.FeeCoverageAmount.Value );
             if ( totalFeeCoverageAmounts.Any() )
@@ -924,6 +930,12 @@ namespace Rock.Blocks.Types.Mobile.Finance
 
             PaymentSchedule schedule = GetSchedule( bag.ProcessDate, bag.FrequencyValueId );
             var mergeFields = RequestContext.GetCommonMergeFields();
+
+            // Let the success template tell an immediate charge apart from a gift that
+            // was handed to the gateway as a schedule, and know whether a receipt email
+            // is actually going to be sent.
+            mergeFields.Add( "IsScheduled", schedule != null );
+            mergeFields.Add( "IsReceiptEmailConfigured", ReceiptEmailSystemCommunicationGuid.HasValue );
 
             if ( schedule != null )
             {
@@ -1072,7 +1084,12 @@ namespace Rock.Blocks.Types.Mobile.Finance
         /// </summary>
         private PaymentSchedule GetSchedule( DateTime? startDate, string frequencyIdKey )
         {
-            startDate = startDate ?? RockDateTime.Today;
+            // ProcessDate arrives bound to the host server's clock, which is not
+            // necessarily the organization's time zone. Normalize it to a Rock date so
+            // the comparisons below are made against a single clock.
+            startDate = startDate.HasValue
+                ? RockDateTime.ConvertLocalDateTimeToRockDateTime( startDate.Value ).Date
+                : RockDateTime.Today;
 
             // Figure out if this is a one-time transaction or a future scheduled transaction
             if ( AllowScheduled )
@@ -1234,33 +1251,37 @@ namespace Rock.Blocks.Types.Mobile.Finance
         /// <param name="options">The options.</param>
         private void PopulateTransactionDetails<T>( ICollection<T> transactionDetails, TransactionRequestInfoBag options ) where T : ITransactionDetail, new()
         {
-            var selectedAccountAmounts = options.AccountAmountSelections.Where( kvp => kvp.Amount > 0m );
-            var totalSelectedAmounts = selectedAccountAmounts.Select( kvp => kvp.Amount ).Sum();
-            var isAch = options.CurrencyTypeValue.AsGuid() == Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_ACH.AsGuid();
-            var enableCoverTheFees = options.EnableCoverTheFees;
+            // Materialize into a stable order so fee distribution is deterministic.
+            var selected = options.AccountAmountSelections
+                .Where( kvp => kvp.Amount > 0m )
+                .OrderBy( kvp => kvp.AccountId )
+                .ToList();
+
+            if ( selected.Count == 0 )
+            {
+                return;
+            }
 
             var feeCoverageGatewayComponent = MyWellGatewayComponent as IFeeCoverageGatewayComponent;
-
-            foreach ( var selectedAccountAmount in selectedAccountAmounts )
-            {
-                var transactionDetail = new T();
-                var amount = selectedAccountAmount.Amount;
-
-                if ( feeCoverageGatewayComponent != null && enableCoverTheFees && options.FeeCoverageAmount.HasValue )
+            var canCoverFees = feeCoverageGatewayComponent != null && options.EnableCoverTheFees && options.FeeCoverageAmount.HasValue;
+            var allocations = selected
+                .Select( s =>
                 {
-                    decimal portionOfTotalAmount = decimal.Divide( selectedAccountAmount.Amount, totalSelectedAmounts );
-                    decimal feeCoverageAmountForAccount = decimal.Round( portionOfTotalAmount * options.FeeCoverageAmount.Value, 2 );
+                    // Get the account from the "AccountId" (which is likely a Guid, or less-likely, an IdKey).
+                    var account = FinancialAccountCache.Get( s.AccountId, !PageCache.Layout.Site.DisablePredictableIds );
 
-                    amount += feeCoverageAmountForAccount;
-                    transactionDetail.FeeCoverageAmount = feeCoverageAmountForAccount;
-                }
+                    return new FinancialTransactionService.AccountAllocation( account.Id, s.Amount );
+                } )
+                .ToList();
 
-                // Get the account from the account id
-                var account = new FinancialAccountService( RockContext ).Get( selectedAccountAmount.AccountId, !PageCache.Layout.Site.DisablePredictableIds );
-                transactionDetail.AccountId = account.Id;
-                transactionDetail.Amount = amount;
-                transactionDetails.Add( transactionDetail );
-            }
+            // The FinancialTransactionService.PopulateTransactionDetails method will handle the distribution of fee
+            // coverage amounts across the accounts, so we can just pass in the total fee coverage amount and
+            // let it handle the rest. It will update this in the transactionDetails collection.
+            FinancialTransactionService.PopulateTransactionDetails<T>(
+                transactionDetails,
+                allocations,
+                enableCoverTheFees: canCoverFees,
+                totalFeeCoverageAmount: options.FeeCoverageAmount );
         }
 
         /// <summary>
@@ -1269,7 +1290,7 @@ namespace Rock.Blocks.Types.Mobile.Finance
         /// <param name="savedAccountId">The saved account unique identifier.</param>
         private ReferencePaymentInfo GetSavedAccountReferenceInfo( string savedAccountId )
         {
-            var savedAccount = new FinancialPersonSavedAccountService( new RockContext() ).Get( savedAccountId );
+            var savedAccount = new FinancialPersonSavedAccountService( RockApp.Current.CreateRockContext() ).Get( savedAccountId );
             if ( savedAccount != null )
             {
                 return savedAccount.GetReferencePayment();
@@ -1583,6 +1604,26 @@ namespace Rock.Blocks.Types.Mobile.Finance
 
             referencePaymentInfo.Amount = options.AmountSelections.Sum( a => a.Amount );
 
+            /*
+                06/03/2026 - NA
+
+                We pass allowIntegerIdentifier: true (rather than the !DisablePredictableIds
+                pattern used elsewhere in this file) because AccountAllocations is internal
+                data flowing from the client through Rock to the gateway. The integer
+                AccountId is required by the gateway regardless of whether the site has
+                disabled predictable IDs in its user-facing surfaces, and a non-Vue caller
+                (REST, automation, integration test) might legitimately send an integer
+                here. Rejecting it would silently produce a bogus AccountId of 0 in the
+                allocation list.
+
+                Reason: Payment Gateways can use the FinancialAccount.Id.
+            */
+            referencePaymentInfo.AccountAllocations = options.AmountSelections
+                .Select( a => new FinancialTransactionService.AccountAllocation(
+                    FinancialAccountCache.Get( a.AccountId, allowIntegerIdentifier: true )?.Id ?? 0,
+                    a.Amount ) )
+                .ToList();
+
             // Update the transaction frequency with the new value.
             scheduledTransaction.TransactionFrequencyValueId = DefinedValueCache.Get( options.FrequencyValueId, !this.PageCache.Layout.Site.DisablePredictableIds )?.Id
                 ?? scheduledTransaction.TransactionFrequencyValueId;
@@ -1682,10 +1723,12 @@ namespace Rock.Blocks.Types.Mobile.Finance
                 HorizontalOptions=""Center""
                 StyleClass=""text-interface-strong, body"" />
 
-            <Label Text=""We sent a confirmation email to {{ Transaction.AuthorizedPersonAlias.Person.Email }}.""
-                HorizontalTextAlignment=""Center""
-                HorizontalOptions=""Center""
-                StyleClass=""text-interface-medium, body"" />
+            {% if IsReceiptEmailConfigured == true and IsScheduled == false %}
+                <Label Text=""We sent a confirmation email to {{ Transaction.AuthorizedPersonAlias.Person.Email }}.""
+                    HorizontalTextAlignment=""Center""
+                    HorizontalOptions=""Center""
+                    StyleClass=""text-interface-medium, body"" />
+            {% endif %}
         </StackLayout>
     </StackLayout>
 </Grid>";

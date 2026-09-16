@@ -21,6 +21,7 @@
 // </copyright>
 //
 
+using Rock.Configuration;
 using Rock.Model;
 using Rock.SystemGuid;
 
@@ -35,6 +36,6 @@ namespace Rock.Rest.Controllers
         /// <summary>
         /// Initializes a new instance of the <see cref="InteractionDeviceTypesController"/> class.
         /// </summary>
-        public InteractionDeviceTypesController() : base( new Rock.Model.InteractionDeviceTypeService( new Rock.Data.RockContext() ) ) { } 
+        public InteractionDeviceTypesController() : base( new Rock.Model.InteractionDeviceTypeService( RockApp.Current.CreateRockContext() ) ) { } 
     }
 }

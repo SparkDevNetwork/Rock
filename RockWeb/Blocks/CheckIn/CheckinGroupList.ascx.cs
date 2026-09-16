@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -24,6 +24,7 @@ using System.Web.UI.WebControls;
 using System.Data.Entity;
 
 using Rock;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -40,8 +41,13 @@ namespace RockWeb.Blocks.Checkin
     [Category( "Check-in" )]
     [Description( "Lists group types and their groups based off group types from query string." )]
 
-    [LinkedPage("Group Detail Page", "Link to the group details page", false)]
-    [BooleanField( "Allow Campus Filter", "Should block add an option to allow filtering attendance counts and percentage by campus?", false, "", 2 )]
+    [LinkedPage( "Group Detail Page",
+        Description = "Link to the group details page",
+        IsRequired = false )]
+    [BooleanField( "Allow Campus Filter",
+        Description = "Should block add an option to allow filtering attendance counts and percentage by campus?",
+        DefaultBooleanValue = false,
+        Order = 2 )]
     [Rock.SystemGuid.BlockTypeGuid( "67E83A02-6D23-4B90-A861-F81FF78B56C7" )]
     public partial class CheckinGroupList : Rock.Web.UI.RockBlock
     {
@@ -77,7 +83,7 @@ namespace RockWeb.Blocks.Checkin
             this.BlockUpdated += Block_BlockUpdated;
             this.AddConfigurationUpdateTrigger( upnlContent );
 
-            _rockContext = new RockContext();
+            _rockContext = RockApp.Current.CreateRockContext();
 
             _allowCampusFilter = GetAttributeValue( "AllowCampusFilter" ).AsBoolean();
             bddlCampus.Visible = _allowCampusFilter;
@@ -213,11 +219,14 @@ namespace RockWeb.Blocks.Checkin
             else if( !string.IsNullOrWhiteSpace( Request["GroupId"] ) )
             {
                 // get the root group type of this group
-                int groupId = Request["GroupId"].AsInteger();
-                var rootGroupType = GetRootGroupType( groupId );
-                if ( rootGroupType != null )
+                var groupId = Request["GroupId"].AsIntegerOrNull() ?? Rock.Utility.IdHasher.Instance.GetId( Request["GroupId"] );
+                if ( groupId.HasValue )
                 {
-                    groupTypeIds.Add( rootGroupType.Id );
+                    var rootGroupType = GetRootGroupType( groupId.Value );
+                    if ( rootGroupType != null )
+                    {
+                        groupTypeIds.Add( rootGroupType.Id );
+                    }
                 }
             }
 

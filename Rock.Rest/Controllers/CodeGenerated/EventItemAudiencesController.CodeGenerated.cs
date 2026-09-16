@@ -21,6 +21,7 @@
 // </copyright>
 //
 
+using Rock.Configuration;
 using Rock.Model;
 using Rock.SystemGuid;
 
@@ -35,6 +36,6 @@ namespace Rock.Rest.Controllers
         /// <summary>
         /// Initializes a new instance of the <see cref="EventItemAudiencesController"/> class.
         /// </summary>
-        public EventItemAudiencesController() : base( new Rock.Model.EventItemAudienceService( new Rock.Data.RockContext() ) ) { } 
+        public EventItemAudiencesController() : base( new Rock.Model.EventItemAudienceService( RockApp.Current.CreateRockContext() ) ) { } 
     }
 }

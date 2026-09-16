@@ -1,0 +1,65 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Block v-if="notifications.length > 0" title="Notifications">
+        <div v-for="notification in notifications"
+             :key="notification.guid"
+             :class="['alert', getAlertClass(notification)]">
+            <div class="pull-right">
+                <a class="action" @click.prevent="onDismiss(notification)">
+                    <i class="ti ti-x"></i>
+                </a>
+            </div>
+            <h4>
+                <i v-if="notification.iconCssClass" :class="notification.iconCssClass" class="mr-2"></i>
+                <span>{{ notification.title }}</span>
+            </h4>
+            <div class="notification-content" v-html="notification.message"></div>
+        </div>
+    </Block>
+</template>
+
+<style scoped>
+.action {
+    cursor: pointer;
+}
+</style>
+
+<script setup lang="ts">
+    import { ref } from "vue";
+    import Block from "@Obsidian/Templates/block";
+    import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
+    import { CustomBlockBox } from "@Obsidian/ViewModels/Blocks/customBlockBox";
+    import { NotificationListBag } from "@Obsidian/ViewModels/Blocks/Administration/NotificationList/notificationListBag";
+    import { NotificationListOptionsBag } from "@Obsidian/ViewModels/Blocks/Administration/NotificationList/notificationListOptionsBag";
+    import { NotificationItemBag } from "@Obsidian/ViewModels/Blocks/Administration/NotificationList/notificationItemBag";
+    import { NotificationClassificationDescription } from "@Obsidian/Enums/Communication/notificationClassification";
+
+    const config = useConfigurationValues<CustomBlockBox<NotificationListBag, NotificationListOptionsBag>>();
+    const invokeBlockAction = useInvokeBlockAction();
+
+    const notifications = ref<NotificationItemBag[]>(config.bag?.notifications ?? []);
+
+    /**
+     * Gets the alert class suffix for a notification classification.
+     */
+    function getAlertClass(notification: NotificationItemBag): string {
+        const description = NotificationClassificationDescription[notification.classification ?? 1];
+        return "alert-" + (description?.toLowerCase() ?? "info");
+    }
+
+    /**
+     * Dismisses a notification by marking it as read on the server and
+     * removing it from the displayed list.
+     */
+    async function onDismiss(notification: NotificationItemBag): Promise<void> {
+        const result = await invokeBlockAction("MarkAsRead", {
+            notificationRecipientGuid: notification.guid
+        });
+
+        if (result.isSuccess) {
+            notifications.value = notifications.value.filter(n => n.guid !== notification.guid);
+        }
+    }
+
+    onConfigurationValuesChanged(useReloadBlock());
+</script>

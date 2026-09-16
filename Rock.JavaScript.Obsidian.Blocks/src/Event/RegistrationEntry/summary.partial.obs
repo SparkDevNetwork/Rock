@@ -33,7 +33,7 @@
                 <Captcha ref="captchaElement" />
             </div>
 
-            <NotificationBox v-if="submitErrorMessage" alertType="danger">{{ submitErrorMessage }}</NotificationBox>
+            <NotificationBox v-if="submitErrorMessage" alertType="danger"><span v-html="submitErrorMessage"></span></NotificationBox>
 
             <div v-if="isCaptchaComplete || disableCaptchaSupport" class="actions text-right">
                 <RockButton v-if="viewModel.allowRegistrationUpdates" class="pull-left" btnType="default" @click="onPrevious" :isLoading="loading" autoDisable>
@@ -57,7 +57,9 @@
         GetPersistSessionArgs,
         PersistSession,
         RegistrationEntryTerms,
-        getRegistrantBasicInfo, use
+        getRegistrantBasicInfo,
+        use,
+        validateFullPaymentOrPaymentPlan
     } from "./utils.partial";
     import Captcha from "@Obsidian/Controls/captcha.obs";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
@@ -202,6 +204,17 @@
     async function onNext(): Promise<void> {
         try {
             loading.value = true;
+            submitErrorMessage.value = "";
+
+            // Pre-validate the "Require Full Payment or Payment Plan" rule before persisting the session,
+            // tokenizing a card, or handing the registrant off to a redirect gateway.
+            // The server still revalidates on SubmitRegistration / GetPaymentRedirect.
+            const fullPaymentValidationError = await validateFullPaymentOrPaymentPlan(viewModel.value, getRegistrationEntryBlockArgs(), invokeBlockAction);
+            if (fullPaymentValidationError) {
+                submitErrorMessage.value = fullPaymentValidationError;
+                loading.value = false;
+                return;
+            }
 
             if (isMakingPayment.value) {
                 // Use the gateway for payment.

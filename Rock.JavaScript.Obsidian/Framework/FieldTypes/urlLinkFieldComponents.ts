@@ -19,7 +19,7 @@ import CheckBox from "@Obsidian/Controls/checkBox.obs";
 import { useVModelPassthrough } from "@Obsidian/Utility/component";
 import UrlLinkBox from "@Obsidian/Controls/urlLinkBox.obs";
 import { asBoolean, asBooleanOrNull, asTrueFalseOrNull } from "@Obsidian/Utility/booleanUtils";
-import { ConfigurationValueKey } from "./urlLinkField.partial";
+import { ConfigurationKey } from "./urlLinkField.partial";
 import { getFieldConfigurationProps, getFieldEditorProps } from "./utils";
 
 export const EditComponent = defineComponent({
@@ -76,12 +76,12 @@ export const ConfigurationComponent = defineComponent({
 
             // Construct the new value that will be emitted if it is different
             // than the current value.
-            newValue[ConfigurationValueKey.ShouldAlwaysShowCondensed] = asTrueFalseOrNull(shouldAlwaysShowCondensed.value) ?? "False";
-            newValue[ConfigurationValueKey.ShouldRequireTrailingForwardSlash] = asTrueFalseOrNull(shouldRequireTrailingForwardSlash.value) ?? "False";
+            newValue[ConfigurationKey.ShouldAlwaysShowCondensed] = asTrueFalseOrNull(shouldAlwaysShowCondensed.value) ?? "False";
+            newValue[ConfigurationKey.ShouldRequireTrailingForwardSlash] = asTrueFalseOrNull(shouldRequireTrailingForwardSlash.value) ?? "False";
 
             // Compare the new value and the old value.
-            const anyValueChanged = newValue[ConfigurationValueKey.ShouldAlwaysShowCondensed] !== (props.modelValue[ConfigurationValueKey.ShouldAlwaysShowCondensed] ?? "False")
-                || newValue[ConfigurationValueKey.ShouldRequireTrailingForwardSlash] !== (props.modelValue[ConfigurationValueKey.ShouldRequireTrailingForwardSlash] ?? "False");
+            const anyValueChanged = newValue[ConfigurationKey.ShouldAlwaysShowCondensed] !== (props.modelValue[ConfigurationKey.ShouldAlwaysShowCondensed] ?? "False")
+                || newValue[ConfigurationKey.ShouldRequireTrailingForwardSlash] !== (props.modelValue[ConfigurationKey.ShouldRequireTrailingForwardSlash] ?? "False");
 
             // If any value changed then emit the new model value.
             if (anyValueChanged) {
@@ -108,8 +108,8 @@ export const ConfigurationComponent = defineComponent({
         // Watch for changes coming in from the parent component and update our
         // data to match the new information.
         watch(() => [props.modelValue, props.configurationProperties], () => {
-            shouldRequireTrailingForwardSlash.value = asBoolean(props.modelValue[ConfigurationValueKey.ShouldRequireTrailingForwardSlash]);
-            shouldAlwaysShowCondensed.value = asBoolean(props.modelValue[ConfigurationValueKey.ShouldAlwaysShowCondensed]);
+            shouldRequireTrailingForwardSlash.value = asBoolean(props.modelValue[ConfigurationKey.ShouldRequireTrailingForwardSlash]);
+            shouldAlwaysShowCondensed.value = asBoolean(props.modelValue[ConfigurationKey.ShouldAlwaysShowCondensed]);
         }, {
             immediate: true
         });
@@ -125,8 +125,8 @@ export const ConfigurationComponent = defineComponent({
         });
 
         // Watch for changes in properties that only require a local UI update.
-        watch(shouldRequireTrailingForwardSlash, () => maybeUpdateConfiguration(ConfigurationValueKey.ShouldRequireTrailingForwardSlash, asTrueFalseOrNull(shouldRequireTrailingForwardSlash.value) ?? "False"));
-        watch(shouldAlwaysShowCondensed, () => maybeUpdateConfiguration(ConfigurationValueKey.ShouldAlwaysShowCondensed, asTrueFalseOrNull(shouldAlwaysShowCondensed.value) ?? "False"));
+        watch(shouldRequireTrailingForwardSlash, () => maybeUpdateConfiguration(ConfigurationKey.ShouldRequireTrailingForwardSlash, asTrueFalseOrNull(shouldRequireTrailingForwardSlash.value) ?? "False"));
+        watch(shouldAlwaysShowCondensed, () => maybeUpdateConfiguration(ConfigurationKey.ShouldAlwaysShowCondensed, asTrueFalseOrNull(shouldAlwaysShowCondensed.value) ?? "False"));
 
         return {
             shouldRequireTrailingForwardSlash,

@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -15,14 +15,6 @@
 // </copyright>
 //
 
-using Rock.Data;
-using Rock.Enums.Core;
-using Rock.Enums.Crm;
-using Rock.Enums.Engagement;
-using Rock.Lava;
-using Rock.UniversalSearch;
-using Rock.Utility.Enums;
-
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -32,6 +24,16 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 
+using Rock.Data;
+using Rock.Enums.Core;
+using Rock.Enums.Crm;
+using Rock.Enums.Engagement;
+using Rock.Enums.Security;
+using Rock.Lava;
+using Rock.Security;
+using Rock.UniversalSearch;
+using Rock.Utility.Enums;
+
 namespace Rock.Model
 {
     /// <summary>
@@ -40,7 +42,7 @@ namespace Rock.Model
     [RockDomain( "CRM" )]
     [Table( "Person" )]
     [DataContract]
-    [CodeGenerateRest( ~Enums.CodeGenerateRestEndpoint.DeleteItem, DisableEntitySecurity = true )]
+    [CodeGenerateRest( ~( Enums.CodeGenerateRestEndpoint.CreateItem | Enums.CodeGenerateRestEndpoint.DeleteItem ), DisableEntitySecurity = true )]
     [Analytics( true, true )]
     [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.PERSON )]
     public partial class Person : Model<Person>, IRockIndexable
@@ -183,6 +185,7 @@ namespace Rock.Model
         [Index( "IX_IsDeceased_FirstName_LastName", IsUnique = false, Order = 2 )]
         [Index( "IX_IsDeceased_LastName_FirstName", IsUnique = false, Order = 3 )]
 #endif
+        [StringValidation( StringValidationProfile.Name )]
         public string FirstName { get; set; }
 
         /// <summary>
@@ -197,6 +200,7 @@ namespace Rock.Model
         [MaxLength( 50 )]
         [DataMember]
         [Previewable]
+        [StringValidation( StringValidationProfile.Name )]
         public string NickName { get; set; }
 
         /// <summary>
@@ -207,6 +211,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 50 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.Name )]
         public string MiddleName { get; set; }
 
         /// <summary>
@@ -222,6 +227,7 @@ namespace Rock.Model
         [Index( "IX_IsDeceased_FirstName_LastName", IsUnique = false, Order = 3 )]
         [Index( "IX_IsDeceased_LastName_FirstName", IsUnique = false, Order = 2 )]
 #endif
+        [StringValidation( StringValidationProfile.Name )]
         public string LastName { get; set; }
 
         /// <summary>
@@ -406,6 +412,7 @@ namespace Rock.Model
 #if REVIEW_WEBFORMS
         [Index( "IX_Email" )]
 #endif
+        [StringValidation( StringValidationProfile.PlainText )]
         public string Email { get; set; }
 
         /// <summary>
@@ -433,6 +440,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 250 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.BasicHtml )]
         public string EmailNote { get; set; }
 
         /// <summary>
@@ -461,6 +469,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 1000 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string ReviewReasonNote { get; set; }
 
         /// <summary>
@@ -471,6 +480,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 1000 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string InactiveReasonNote { get; set; }
 
         /// <summary>
@@ -481,6 +491,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 1000 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string SystemNote { get; set; }
 
         /// <summary>
@@ -501,6 +512,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 100 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string TopSignalColor { get; set; }
 
         /// <summary>
@@ -512,6 +524,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 100 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string TopSignalIconCssClass { get; set; }
 
         /// <summary>
@@ -596,6 +609,15 @@ namespace Rock.Model
         public int? ContributionFinancialAccountId { get; set; }
 
         /// <summary>
+        /// Gets or sets the identifier of the <see cref="Rock.Model.Schedule"/> the person prefers to attend (their preferred service time).
+        /// </summary>
+        /// <value>
+        /// The identifier of the person's preferred <see cref="Rock.Model.Schedule"/>.
+        /// </value>
+        [DataMember]
+        public int? PreferredServiceTimeScheduleId { get; set; }
+
+        /// <summary>
         /// Gets or sets the person's account protection profile, which determines the level of security applied to their account. Higher levels enforce stricter safeguards and limit automated changes.
         /// </summary>
         /// <value>
@@ -668,6 +690,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 200 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.Name )]
         public string FirstNamePronunciationOverride { get; set; }
 
         /// <summary>
@@ -678,6 +701,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 200 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.Name )]
         public string NickNamePronunciationOverride { get; set; }
 
         /// <summary>
@@ -688,6 +712,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 200 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.Name )]
         public string LastNamePronunciationOverride { get; set; }
 
         /// <summary>
@@ -698,6 +723,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 1000 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string PronunciationNote { get; set; }
 
 
@@ -1021,6 +1047,15 @@ namespace Rock.Model
         public virtual FinancialAccount ContributionFinancialAccount { get; set; }
 
         /// <summary>
+        /// Gets or sets the <see cref="Rock.Model.Schedule"/> the person prefers to attend (their preferred service time).
+        /// </summary>
+        /// <value>
+        /// The person's preferred <see cref="Rock.Model.Schedule"/>.
+        /// </value>
+        [LavaVisible]
+        public virtual Schedule PreferredServiceTimeSchedule { get; set; }
+
+        /// <summary>
         /// Gets or sets the <see cref="Rock.Model.DefinedValue"/> representing the Person's preferred language.
         /// </summary>
         /// <value>
@@ -1125,6 +1160,7 @@ namespace Rock.Model
             this.HasOptional( p => p.PrimaryFamily ).WithMany().HasForeignKey( p => p.PrimaryFamilyId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.PrimaryCampus ).WithMany().HasForeignKey( p => p.PrimaryCampusId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.ContributionFinancialAccount ).WithMany().HasForeignKey( p => p.ContributionFinancialAccountId ).WillCascadeOnDelete( false );
+            this.HasOptional( p => p.PreferredServiceTimeSchedule ).WithMany().HasForeignKey( p => p.PreferredServiceTimeScheduleId ).WillCascadeOnDelete( false );
             this.HasOptional( a => a.PreferredLanguageValue ).WithMany().HasForeignKey( a => a.PreferredLanguageValueId ).WillCascadeOnDelete( false );
             this.HasOptional( a => a.RaceValue ).WithMany().HasForeignKey( a => a.RaceValueId ).WillCascadeOnDelete( false );
             this.HasOptional( a => a.EthnicityValue ).WithMany().HasForeignKey( a => a.EthnicityValueId ).WillCascadeOnDelete( false );

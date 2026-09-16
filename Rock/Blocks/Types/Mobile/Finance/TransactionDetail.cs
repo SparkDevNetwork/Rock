@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -158,8 +158,11 @@ namespace Rock.Blocks.Types.Mobile.Finance
                         .FirstOrDefault();
             //var publicUrl = GlobalAttributesCache.Get().GetValue( "PublicApplicationRoot" );
 
+            var isImageShown = financialPaymentDetail.CurrencyTypeValueId == DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_CASH.AsGuid() )?.Id
+                || financialPaymentDetail.CurrencyTypeValueId == DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_CHECK.AsGuid() )?.Id;
             return new TransactionDetailResponseBag
             {
+                IsImageShown = isImageShown,
                 ImageSource = primaryImage != null ? FileUrlHelper.GetImageUrl( primaryImage.BinaryFileId ) : "",
                 TotalAmount = financialTransaction.TotalAmount.FormatAsCurrency(),
                 Details = transactionDetailList,

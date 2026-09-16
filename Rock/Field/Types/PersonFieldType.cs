@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -21,9 +21,10 @@ using System.Linq;
 using System.Linq.Expressions;
 #if WEBFORMS
 using System.Web.UI;
-using OpenXmlPowerTools;
 #endif
+
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Reporting;
@@ -60,7 +61,7 @@ namespace Rock.Field.Types
             {
                 Guid guid = privateValue.AsGuid();
 
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     formattedValue = new PersonAliasService( rockContext ).Queryable()
                     .AsNoTracking()
@@ -83,7 +84,7 @@ namespace Rock.Field.Types
             if ( !string.IsNullOrWhiteSpace( value ) )
             {
                 Guid guid = value.AsGuid();
-                int personId = new PersonAliasService( new RockContext() ).Queryable()
+                int personId = new PersonAliasService( RockApp.Current.CreateRockContext() ).Queryable()
                     .Where( a => a.Guid.Equals( guid ) )
                     .Select( a => a.PersonId )
                     .FirstOrDefault();
@@ -102,7 +103,7 @@ namespace Rock.Field.Types
         {
             if ( Guid.TryParse( privateValue, out Guid guid ) )
             {
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     var personAlias = new PersonAliasService( rockContext )
                         .GetNoTracking( guid );
@@ -152,7 +153,7 @@ namespace Rock.Field.Types
                 if ( comparisonValue != "0" )
                 {
                     Guid guid = filterValues[1].AsGuid();
-                    int personId = new PersonAliasService( new RockContext() ).Queryable()
+                    int personId = new PersonAliasService( RockApp.Current.CreateRockContext() ).Queryable()
                         .Where( a => a.Guid.Equals( guid ) )
                         .Select( a => a.PersonId )
                         .FirstOrDefault();
@@ -195,7 +196,7 @@ namespace Rock.Field.Types
             Guid? guid = value.AsGuidOrNull();
             if ( guid.HasValue )
             {
-                rockContext = rockContext ?? new RockContext();
+                rockContext = rockContext ?? RockApp.Current.CreateRockContext();
                 return new PersonAliasService( rockContext ).GetPerson( guid.Value );
             }
 
@@ -209,27 +210,7 @@ namespace Rock.Field.Types
         /// <inheritdoc/>
         public override PersistedValues GetPersistedValues( string privateValue, Dictionary<string, string> privateConfigurationValues, IDictionary<string, object> cache )
         {
-            if ( string.IsNullOrWhiteSpace( privateValue ) )
-            {
-                return new PersistedValues
-                {
-                    TextValue = string.Empty,
-                    CondensedTextValue = string.Empty,
-                    HtmlValue = string.Empty,
-                    CondensedHtmlValue = string.Empty
-                };
-            }
-
-            var textValue = GetTextValue( privateValue, privateConfigurationValues );
-            var condensedTextValue = textValue.Truncate( CondensedTruncateLength );
-
-            return new PersistedValues
-            {
-                TextValue = textValue,
-                CondensedTextValue = condensedTextValue,
-                HtmlValue = textValue,
-                CondensedHtmlValue = condensedTextValue
-            };
+            return GetSimpleTextPersistedValues( privateValue, privateConfigurationValues );
         }
 
         #endregion
@@ -246,7 +227,7 @@ namespace Rock.Field.Types
                 return null;
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var personAliasValues = new PersonAliasService( rockContext ).Queryable()
                     .Where( pa => pa.Guid == guid.Value )
@@ -286,6 +267,22 @@ namespace Rock.Field.Types
 
         #endregion
 
+        #region Field Type Hints
+
+        /// <inheritdoc/>
+        internal override FieldTypeHints GetFieldHints( Dictionary<string, string> privateConfigurationValues )
+        {
+            // No Values. The set is unbounded or depends on other configuration, so
+            // the shape of the value and where to get one is what can be described.
+            return new FieldTypeHints
+            {
+                IsCompleteList = false,
+                ValueFormat = "The guid of a row in the PersonAlias table, not the Person table. A person can have several aliases, so a Person guid will not resolve here.",
+                Instructions = "To find the correct value, look up the person and take the guid of their primary alias."
+            };
+        }
+
+        #endregion
         #region WebForms
 #if WEBFORMS
 
@@ -431,7 +428,7 @@ namespace Rock.Field.Types
 
                 if ( personId.HasValue )
                 {
-                    using ( var rockContext = new RockContext() )
+                    using ( var rockContext = RockApp.Current.CreateRockContext() )
                     {
                         var personAlias = new PersonAliasService( rockContext ).GetByAliasId( personId.Value );
                         if ( personAlias != null )
@@ -462,7 +459,7 @@ namespace Rock.Field.Types
                 Guid? personAliasGuid = value.AsGuidOrNull();
                 if ( personAliasGuid.HasValue )
                 {
-                    using ( var rockContext = new RockContext() )
+                    using ( var rockContext = RockApp.Current.CreateRockContext() )
                     {
                         person = new PersonAliasService( rockContext ).Queryable()
                             .Where( a => a.Guid == personAliasGuid.Value )
@@ -484,7 +481,7 @@ namespace Rock.Field.Types
         public int? GetEditValueAsEntityId( Control control, Dictionary<string, ConfigurationValue> configurationValues )
         {
             Guid guid = GetEditValue( control, configurationValues ).AsGuid();
-            var item = new PersonAliasService( new RockContext() ).Get( guid );
+            var item = new PersonAliasService( RockApp.Current.CreateRockContext() ).Get( guid );
             return item != null ? item.PersonId : ( int? ) null;
         }
 
@@ -496,7 +493,7 @@ namespace Rock.Field.Types
         /// <param name="id">The identifier.</param>
         public void SetEditValueFromEntityId( Control control, Dictionary<string, ConfigurationValue> configurationValues, int? id )
         {
-            var item = new PersonService( new RockContext() ).Get( id ?? 0 );
+            var item = new PersonService( RockApp.Current.CreateRockContext() ).Get( id ?? 0 );
             string guidValue = item != null ? item.PrimaryAlias.Guid.ToString() : string.Empty;
             SetEditValue( control, configurationValues, guidValue );
         }

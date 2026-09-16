@@ -6,16 +6,19 @@
            @save="onSave">
         <SectionHeader title="Filters" />
 
-        <div class="row">
+        <SlidingDateRangePicker v-model="createdDateRange"
+                                label="Created Date Range"
+                                :enabledSlidingDateRangeUnits="enabledDateRangeUnits" />
 
-            <div class="col-md-4">
+        <div class="row">
+            <div class="col-md-6">
                 <DropDownList v-model="status"
                               label="Status"
                               :items="statusItems"
                               showBlankItem />
             </div>
 
-            <div class="col-md-4">
+            <div class="col-md-6">
                 <AchievementTypePicker v-if="showAchievementTypePicker"
                                        v-model="achievementType"
                                        label="Achievement Type"
@@ -31,6 +34,8 @@
     import Modal from "@Obsidian/Controls/modal.obs";
     import { DateRangeParts } from "@Obsidian/Types/Controls/dateRangePicker";
     import SectionHeader from "@Obsidian/Controls/sectionHeader.obs";
+    import SlidingDateRangePicker from "@Obsidian/Controls/slidingDateRangePicker.obs";
+    import { RangeType, SlidingDateRange } from "@Obsidian/Utility/slidingDateRange";
     import { ref, PropType, watch } from "vue";
     import { GridSettingsOptions } from "./types.partial";
     import { useVModelPassthrough } from "@Obsidian/Utility/component";
@@ -52,6 +57,11 @@
         showAchievementTypePicker: {
             type: Boolean as PropType<boolean>,
             default: true
+        },
+
+        defaultSlidingDateRange: {
+            type: Object as PropType<SlidingDateRange>,
+            required: true
         }
     });
 
@@ -68,9 +78,12 @@
         lowerValue: props.modelValue.startDateFrom,
         upperValue: props.modelValue.startDateTo
     });
+    const createdDateRange = ref<SlidingDateRange | null>(props.modelValue.createdDateRange ?? props.defaultSlidingDateRange);
     const achievementType = ref(props.modelValue.achievementType);
     const status = ref(props.modelValue.status ?? "");
     const isVisible = useVModelPassthrough(props, "visible", emit);
+    // Attempts only occur in the past, so future-oriented range types are excluded.
+    const enabledDateRangeUnits: RangeType[] = [RangeType.Previous, RangeType.Last, RangeType.Current, RangeType.DateRange];
     const statusItems = [
         {
             text: "",
@@ -100,7 +113,8 @@
             startDateTo: dateRange.value?.upperValue,
             status: status.value,
             achievementType: achievementType.value,
-            achieverName: achieverName.value
+            achieverName: achieverName.value,
+            createdDateRange: createdDateRange.value
         };
 
         if (!deepEqual(value, props.modelValue, true)) {
@@ -118,6 +132,7 @@
             lowerValue: props.modelValue.startDateFrom,
             upperValue: props.modelValue.startDateTo
         };
+        createdDateRange.value = props.modelValue.createdDateRange ?? props.defaultSlidingDateRange;
         status.value = props.modelValue.status ?? "";
         achievementType.value = props.modelValue.achievementType;
     });

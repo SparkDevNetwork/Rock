@@ -1,5 +1,13 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
+    <div class="d-flex mb-spacing-sm">
+        <Toggle v-model="filterExpressionType"
+                trueText="All"
+                falseText="Any"
+                :btnSize="BtnSize.ExtraSmall"
+                onButtonActiveCssClass="btn-info"
+                offButtonActiveCssClass="btn-info" />
+    </div>
     <Grid :data="gridData"
           light
           keyField="guid"
@@ -10,115 +18,75 @@
         <DeleteColumn @click="onDelete" />
     </Grid>
 
-    <div class="d-flex justify-content-end">
-        <Toggle v-model="filterExpressionType"
-                trueText="All"
-                falseText="Any"
-                :btnSize="BtnSize.ExtraSmall"
-                onButtonActiveCssClass="btn-info"
-                offButtonActiveCssClass="btn-info" />
-    </div>
-
     <Modal
            v-model="isModalVisible"
            :title="`${isEditing ? 'Edit' : 'Add'} Page View Filter`"
            saveText="Save"
            cancelText="Cancel"
            :onSave="onSave">
-        <section class="row form-row d-flex flex-wrap align-items-center form-group">
-            <div class="col flex-grow-0">
+
+        <div class="row">
+            <div class="col-sm-12">
+                <DropDownList
+                            :modelValue="theFilter.siteGuids ?? []"
+                            @update:modelValue="val => theFilter.siteGuids = Array.isArray(val) ? val : []"
+                            :items="sites"
+                            label="Site(s)"
+                            help="The site where the page views occurred."
+                            :showBlankItem="false"
+                            multiple
+                            validationTitle="Site"
+                            rules="required" />
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-sm-6">
                 <div class="form-group">
-                    <DropDownList
-                                  :modelValue="theFilter.comparisonType?.toString() ?? ''"
-                                  @update:modelValue="val => theFilter.comparisonType = Number(val)"
-                                  :items="comparisonTypes"
-                                  class="input-width-xl"
-                                  :showBlankItem="false" />
+                    <PagePicker v-model="pagePickerValue" label="Pages" help="The specific pages where the views occurred." :multiple="true" showSelectCurrentPage />
+                    <InlineCheckbox label="Include descendant pages" help="Indicates whether views on child pages of the selected pages are included." v-model="theFilter.includeChildPages" class="mt-spacing-none" />
                 </div>
             </div>
-            <div class="col flex-grow-0">
-                <div class="form-group">
-                    <NumberBox
-                               v-model="theFilter.comparisonValue"
-                               class="input-width-sm" />
-                </div>
+        </div>
+
+        <div class="row form-row d-flex flex-wrap align-items-center">
+            <div class="col-sm-3">
+                <DropDownList
+                            :modelValue="theFilter.comparisonType?.toString() ?? ''"
+                            @update:modelValue="val => theFilter.comparisonType = Number(val)"
+                            :items="comparisonTypes"
+                            label="Page Views"
+                            help="The number of page views that match the selected criteria."
+                            :showBlankItem="false" />
             </div>
-            <div class="col flex-sm-grow-0">
-                <div class="form-group">
-                    <span class="text-nowrap">page views on the</span>
-                </div>
+            <div class="col-sm-2 mt-spacing-xs">
+                <NumberBox
+                        v-model="theFilter.comparisonValue" />
             </div>
-            <div class="w-100 d-sm-none"></div>
-            <div class="col">
-                <div class="form-group">
-                    <DropDownList
-                                  :modelValue="theFilter.siteGuids ?? []"
-                                  @update:modelValue="val => theFilter.siteGuids = Array.isArray(val) ? val : []"
-                                  :items="sites"
-                                  :showBlankItem="false"
-                                  multiple
-                                  validationTitle="Site"
-                                  rules="required" />
-                </div>
-            </div>
-            <div class="col flex-grow-0">
-                <div class="form-group"><span>site(s)</span></div>
-            </div>
-        </section>
-        <section class="row form-row d-flex flex-wrap align-items-center">
-            <div class="col flex-grow-0">
-                <div class="form-group">
-                    <span class="text-nowrap">In the following date range</span>
-                </div>
-            </div>
-            <div class="col">
-                <div class="form-group">
-                    <SlidingDateRangePicker v-model="slidingDateRange" previewLocation="Right" />
-                </div>
-            </div>
-        </section>
-        <section class="row form-row d-flex flex-wrap align-items-center">
-            <div class="col flex-grow-0">
-                <div class="form-group">
-                    <span class="text-nowrap">optionally limited to the following pages</span>
-                </div>
-            </div>
-            <div class="col">
-                <div class="form-group">
-                    <PagePicker v-model="pagePickerValue" :multiple="true" showSelectCurrentPage />
-                </div>
-            </div>
-            <div class="col">
-                <div class="form-group margin-l-md">
-                    <InlineCheckbox label="Include descendant pages" v-model="theFilter.includeChildPages" />
-                </div>
-            </div>
-        </section>
+        </div>
+
+        <div class="form-group">
+            <SlidingDateRangePicker label="Date Range" help="The timeframe when the page views occurred." v-model="slidingDateRange" previewLocation="Right" />
+        </div>
+
         <div class="row form-row">
-            <RockButton :btnSize="BtnSize.Small" :btnType="BtnType.Link" @click="toggleAdvancedOptions">Show Advanced Options</RockButton>
+            <RockButton :btnSize="BtnSize.Small" :btnType="BtnType.Link" @click="toggleAdvancedOptions">Show Advanced Filter Options</RockButton>
         </div>
 
         <section v-if="showAdvancedOptions" class="margin-t-md">
             <div v-for="(field, idx) in advancedOptions" :key="idx" class="row form-row d-flex flex-wrap align-items-center">
-                <div class="col flex-sm-grow-0">
-                    <div class="form-group">
-                        <span class="text-nowrap">{{ idx === 0 ? 'where the' : 'and the' }} {{ field.label }}</span>
-                    </div>
+                <div class="col-sm-3">
+                    <DropDownList
+                                    :modelValue="theFilter[field.comparisonType]?.toString() ?? ''"
+                                    @update:modelValue="val => theFilter[field.comparisonType] = Number(val)"
+                                    :items="advancedOptionsComparisonTypes"
+                                    :showBlankItem="false"
+                                    class="input-width-xl"
+                                    :label="field.label"
+                                    :help="field.help" />
                 </div>
-                <div class="col flex-grow-0">
-                    <div class="form-group">
-                        <DropDownList
-                                      :modelValue="theFilter[field.comparisonType]?.toString() ?? ''"
-                                      @update:modelValue="val => theFilter[field.comparisonType] = Number(val)"
-                                      :items="advancedOptionsComparisonTypes"
-                                      :showBlankItem="false"
-                                      class="input-width-xl" />
-                    </div>
-                </div>
-                <div class="col flex-grow-0">
-                    <div class="form-group">
-                        <TextBox v-model="theFilter[field.comparisonValue]" class="input-width-xxl" />
-                    </div>
+                <div class="col-sm-6 mt-spacing-xs">
+                    <TextBox v-model="theFilter[field.comparisonValue]" />
                 </div>
             </div>
         </section>
@@ -212,13 +180,13 @@
     const invokeBlockAction = useInvokeBlockAction();
 
     const advancedOptions = ([
-        { label: "URL", comparisonType: "pageUrlComparisonType", comparisonValue: "pageUrlComparisonValue" },
-        { label: "Referrer", comparisonType: "pageReferrerComparisonType", comparisonValue: "pageReferrerComparisonValue" },
-        { label: "Source", comparisonType: "sourceComparisonType", comparisonValue: "sourceComparisonValue" },
-        { label: "Medium", comparisonType: "mediumComparisonType", comparisonValue: "mediumComparisonValue" },
-        { label: "Campaign", comparisonType: "campaignComparisonType", comparisonValue: "campaignComparisonValue" },
-        { label: "Content", comparisonType: "contentComparisonType", comparisonValue: "contentComparisonValue" },
-        { label: "Term", comparisonType: "termComparisonType", comparisonValue: "termComparisonValue" }
+        { label: "URL", comparisonType: "pageUrlComparisonType", comparisonValue: "pageUrlComparisonValue", help: "The page URL where the view occurred." },
+        { label: "Referrer", comparisonType: "pageReferrerComparisonType", comparisonValue: "pageReferrerComparisonValue", help: "The referring URL that directed the visitor to the page." },
+        { label: "Source", comparisonType: "sourceComparisonType", comparisonValue: "sourceComparisonValue", help: "The traffic source that brought the visitor to the site." },
+        { label: "Medium", comparisonType: "mediumComparisonType", comparisonValue: "mediumComparisonValue", help: "The marketing channel used to reach the visitor." },
+        { label: "Campaign", comparisonType: "campaignComparisonType", comparisonValue: "campaignComparisonValue", help: "The campaign associated with the visit." },
+        { label: "Content", comparisonType: "contentComparisonType", comparisonValue: "contentComparisonValue", help: "The specific content or variation associated with the campaign." },
+        { label: "Term", comparisonType: "termComparisonType", comparisonValue: "termComparisonValue", help: "The search term or keyword associated with the visit." }
     ]);
 
     // #endregion Values

@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -20,9 +20,10 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
+
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
-using Rock.Field.Types;
 using Rock.Model;
 using Rock.Utility;
 using Rock.ViewModels.Blocks.Engagement.SignUp.SignUpDetail;
@@ -48,7 +49,7 @@ namespace Rock.Blocks.Engagement.SignUp
     [BooleanField( "Set Page Title",
         Key = AttributeKey.SetPageTitle,
         Description = "When enabled, sets the page title to be the name of the sign-up project.",
-        ControlType = BooleanFieldType.BooleanControlType.Checkbox,
+        BooleanControlType = Rock.Enums.Controls.BooleanControlType.Checkbox,
         DefaultBooleanValue = true,
         Order = 1 )]
 
@@ -136,7 +137,7 @@ namespace Rock.Blocks.Engagement.SignUp
         {
             var box = new SignUpDetailInitializationBox();
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 SetBoxInitialState( box, rockContext );
             }

@@ -22,8 +22,8 @@
 //
 using System.Linq;
 
+using Rock.Configuration;
 using Rock.Data;
-using Rock.Field.Types;
 using Rock.Web.Cache;
 
 namespace Rock.Model
@@ -53,10 +53,10 @@ namespace Rock.Model
                 if ( checkAttributeUsage )
                 {
                     // check if any MatrixAttributes are using this AttributeMatrixTemplate
-                    var matrixFieldTypeId = FieldTypeCache.Get<MatrixFieldType>().Id;
-                    var qualifierKey = MatrixFieldType.ATTRIBUTE_MATRIX_TEMPLATE;
+                    var matrixFieldTypeId = FieldTypeCache.Get( SystemGuid.FieldType.MATRIX.AsGuid() ).Id;
+                    var qualifierKey = "attributematrixtemplate";
                     var qualifierValue = item.Id.ToString();
-                    var usedAsMatrixTemplate = new AttributeService( new RockContext() ).Queryable()
+                    var usedAsMatrixTemplate = new AttributeService( RockApp.Current.CreateRockContext() ).Queryable()
                         .Where( a => a.FieldTypeId == matrixFieldTypeId )
                         .Any( a => a.AttributeQualifiers.Any( q => q.Key == qualifierKey && q.Value == qualifierValue ) );
                     if ( usedAsMatrixTemplate )

@@ -1,0 +1,228 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div v-if="isBlockVisible"
+         class="dataview-results"
+         :class="{ 'dataview-results-collapsed': !showResults }">
+        <NotificationBox v-if="errorMessage"
+                         alertType="danger">
+            {{ errorMessage }}
+        </NotificationBox>
+
+        <Grid v-else
+              :definition="config.gridDefinition ?? undefined"
+              :data="gridDataSource"
+              title="Results"
+              keyField="idKey"
+              :itemTerm="itemTerm"
+              :exportTitle="exportTitle"
+              :stickyHeader="config.gridDefinition?.enableStickyHeader ?? false"
+              :entityTypeGuid="entityTypeGuid"
+              :isCountMessageVisible="showResults"
+              :personKeyField="personKeyField"
+              :communicationRecipientPersonKeyFields="communicationRecipientPersonKeyFields"
+              :mergeTemplateAsPerson="isPersonDataSet"
+              :showCommunicate="isPersonDataSet"
+              :showPersonMerge="isPersonDataSet"
+              :showBulkUpdate="isPersonDataSet"
+              :showMergeTemplate="true"
+              :showLaunchWorkflow="true"
+              liveUpdates>
+
+            <template #gridHeaderBadges>
+                <button type="button"
+                        class="btn btn-xs mr-spacing-md"
+                        :class="showResults ? 'btn-default' : 'btn-primary'"
+                        :title="showResults ? 'Hide Results' : 'Show Results'"
+                        @click="onToggleResultsClick">
+                    <template v-if="showResults">Hide Results <i class="ti ti-chevron-up"></i></template>
+                    <template v-else>Show Results <i class="ti ti-chevron-down"></i></template>
+                </button>
+            </template>
+
+            <SelectColumn v-if="isPersonDataSet" />
+
+            <DynamicColumns :dynamicFields="dynamicFields"
+                            :columnComponents="columnComponents"
+                            :defaultColumnComponent="TextColumn" />
+
+        </Grid>
+    </div>
+</template>
+
+<style scoped>
+/*
+    6/2/26 - MSE
+
+    The grid is rendered directly rather than inside a Panel so it sits seamlessly
+    in the block, and the Show/Hide Results toggle lives in the grid header (the
+    gridHeaderBadges slot). When the results are collapsed we keep the grid header
+    (title + toggle) visible but hide the column headers, rows, footer, and
+    right-side toolbar, so the toggle stays reachable without a surrounding
+    panel to host it. The row count badge is bound to showResults (via the grid's
+    isCountMessageVisible prop), so it appears beside the toggle while results are
+    expanded and hides with the body when collapsed; it therefore needs no
+    collapsed-state rule here and never reports a stale count for unloaded data.
+*/
+.dataview-results-collapsed :deep(.grid-content-container),
+.dataview-results-collapsed :deep(.grid-footing) {
+    display: none;
+}
+
+.dataview-results-collapsed :deep(.grid-title-header > :not(.grid-title):not(.grid-badges)) {
+    display: none;
+}
+</style>
+
+<script setup lang="ts">
+    import { computed, ref } from "vue";
+    import Grid, { BooleanColumn, CurrencyColumn, DateColumn, DateTimeColumn, defaultColumnFilters, DynamicColumns, HtmlColumn, PersonColumn, pickExistingValueFilter, SelectColumn, TextColumn } from "@Obsidian/Controls/grid";
+    import NumberTextColumn from "./DataViewResults/numberTextColumn.partial";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import { Guid } from "@Obsidian/Types";
+    import { ColumnFilter } from "@Obsidian/Types/Controls/grid";
+    import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, usePersonPreferences, useReloadBlock } from "@Obsidian/Utility/block";
+    import { asBooleanOrNull, asTrueOrFalseString } from "@Obsidian/Utility/booleanUtils";
+    import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
+    import { DataViewResultsOptionsBag } from "@Obsidian/ViewModels/Blocks/Reporting/DataViewResults/dataViewResultsOptionsBag";
+    import { DynamicFieldDefinitionBag } from "@Obsidian/ViewModels/Core/Grid/dynamicFieldDefinitionBag";
+    import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
+
+    const config = useConfigurationValues<ListBlockBox<DataViewResultsOptionsBag>>();
+    const invokeBlockAction = useInvokeBlockAction();
+    const preferences = usePersonPreferences().blockPreferences;
+
+    const showResultsPreferenceKey = "data-view-show-results";
+
+    // Plain numbers use the "number" column type so the grid sorts and filters them
+    // numerically and shows the number filter, but they are rendered with NumberTextColumn
+    // (a text cell) rather than the standard NumberColumn so they display without thousands
+    // separators and keep their exact server-formatted value (e.g. an Id shows as "12345",
+    // not "12,345"), matching the legacy grid.
+    const columnComponents = {
+        "boolean": BooleanColumn,
+        "currency": CurrencyColumn,
+        "date": DateColumn,
+        "dateTime": DateTimeColumn,
+        "html": HtmlColumn,
+        "number": NumberTextColumn,
+        "person": PersonColumn,
+        "text": TextColumn
+    };
+
+    // #region Values
+
+    const isBlockVisible = config.options?.isBlockVisible === true;
+    const isPersonDataSet = config.options?.isPersonDataSet === true;
+
+    // Default to showing results when the preference has never been set.
+    const showResults = ref(asBooleanOrNull(preferences.getValue(showResultsPreferenceKey)) ?? true);
+
+    const gridDataSource = ref<Promise<GridDataBag>>();
+
+    // Holds the friendly failure message when the results cannot be loaded. When
+    // set, the block shows this message in place of the grid (including its
+    // column headers) rather than letting the grid surface it in its own body.
+    const errorMessage = ref("");
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    const itemTerm = computed((): string | undefined => {
+        return config.options?.itemTerm ?? undefined;
+    });
+
+    const exportTitle = computed((): string | undefined => {
+        return config.options?.exportTitle ?? undefined;
+    });
+
+    const entityTypeGuid = computed((): Guid | undefined => {
+        return config.options?.entityTypeGuid ?? undefined;
+    });
+
+    const personKeyField = computed((): string | undefined => {
+        return config.options?.personKeyField ?? undefined;
+    });
+
+    const communicationRecipientPersonKeyFields = computed((): string[] | undefined => {
+        return config.options?.communicationRecipientFields ?? undefined;
+    });
+
+    const dynamicFields = computed((): (DynamicFieldDefinitionBag & { filter?: ColumnFilter })[] => {
+        return config.gridDefinition?.dynamicFields
+            ?.filter((field: DynamicFieldDefinitionBag) => !!(field.columnType))
+            ?.map((field: DynamicFieldDefinitionBag) => {
+                let filter: ColumnFilter | undefined = defaultColumnFilters[field.columnType ?? ""];
+                if (!filter && field.columnType !== "html") {
+                    filter = pickExistingValueFilter;
+                }
+
+                return {
+                    ...field,
+                    filter: field.enableFiltering ? filter : undefined
+                };
+            }) ?? [];
+    });
+
+    // #endregion Computed Values
+
+    // #region Functions
+
+    /**
+     * Loads the data view results from the server. On failure the error is thrown
+     * so the caller can surface the friendly message in place of the grid.
+     */
+    async function loadGridData(): Promise<GridDataBag> {
+        const result = await invokeBlockAction<GridDataBag>("GetGridData");
+
+        if (result.isSuccess && result.data) {
+            return result.data;
+        }
+
+        throw new Error(result.errorMessage || "Unknown error while trying to load data view results.");
+    }
+
+    /**
+     * Begins loading the results and captures any failure into errorMessage so the
+     * block can show a standalone danger message instead of the grid and its
+     * column headers.
+     */
+    function loadResults(): void {
+        errorMessage.value = "";
+
+        const dataSource = loadGridData();
+
+        dataSource.catch((error) => {
+            errorMessage.value = error instanceof Error ? error.message : new String(error).toString();
+        });
+
+        gridDataSource.value = dataSource;
+    }
+
+    // #endregion Functions
+
+    // #region Event Handlers
+
+    /**
+     * Toggles whether the results grid is shown, persisting the choice as a person
+     * preference. The query only runs when results are shown.
+     */
+    async function onToggleResultsClick(): Promise<void> {
+        showResults.value = !showResults.value;
+
+        if (showResults.value && !gridDataSource.value) {
+            loadResults();
+        }
+
+        preferences.setValue(showResultsPreferenceKey, asTrueOrFalseString(showResults.value));
+        await preferences.save();
+    }
+
+    // #endregion Event Handlers
+
+    if (isBlockVisible && showResults.value) {
+        loadResults();
+    }
+
+    onConfigurationValuesChanged(useReloadBlock());
+</script>

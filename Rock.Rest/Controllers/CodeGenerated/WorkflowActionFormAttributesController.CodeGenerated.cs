@@ -21,6 +21,7 @@
 // </copyright>
 //
 
+using Rock.Configuration;
 using Rock.Model;
 using Rock.SystemGuid;
 
@@ -35,6 +36,6 @@ namespace Rock.Rest.Controllers
         /// <summary>
         /// Initializes a new instance of the <see cref="WorkflowActionFormAttributesController"/> class.
         /// </summary>
-        public WorkflowActionFormAttributesController() : base( new Rock.Model.WorkflowActionFormAttributeService( new Rock.Data.RockContext() ) ) { } 
+        public WorkflowActionFormAttributesController() : base( new Rock.Model.WorkflowActionFormAttributeService( RockApp.Current.CreateRockContext() ) ) { } 
     }
 }

@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -19,10 +19,9 @@ using System.Collections.Generic;
 using System.Data.Entity;
 using System.Diagnostics;
 using System.Linq;
-using System.Threading.Tasks;
 
+using Rock.Configuration;
 using Rock.Data;
-using Rock.Field.Types;
 using Rock.Web.Cache;
 
 namespace Rock.Model
@@ -84,11 +83,11 @@ namespace Rock.Model
             if ( checkIfUsedByAchievementType )
             {
                 // check if any MatrixAttributes are using this AttributeMatrixTemplate
-                var streakTypeFieldTypeId = FieldTypeCache.Get<StreakTypeFieldType>().Id;
+                var streakTypeFieldTypeId = FieldTypeCache.Get( SystemGuid.FieldType.STREAK_TYPE.AsGuid() ).Id;
                 var entityTypeIdAchievementType = EntityTypeCache.GetId<Rock.Model.AchievementType>();
 
                 var streakTypeGuid = item.Guid.ToString();
-                var usedAsAchievementType = new AttributeValueService( new RockContext() ).Queryable()
+                var usedAsAchievementType = new AttributeValueService( RockApp.Current.CreateRockContext() ).Queryable()
                     .Any( av =>
                         av.Attribute.FieldTypeId == streakTypeFieldTypeId
                         && av.Value == streakTypeGuid
@@ -408,7 +407,7 @@ namespace Rock.Model
         private static void RebuildStreakTypeFromAttendance( IProgress<int?> progress, StreakTypeCache streakTypeCache, out string errorMessage )
         {
             errorMessage = string.Empty;
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var streakTypeService = new StreakTypeService( rockContext );
             var streakType = streakTypeService.Get( streakTypeCache.Id );
 
@@ -483,7 +482,7 @@ namespace Rock.Model
             {
                 if ( batchCounter == 0 )
                 {
-                    rockContext = new RockContext();
+                    rockContext = RockApp.Current.CreateRockContext();
                 }
 
                 RebuildStreak( rockContext, streakTypeCache, streakType, streakType.StartDate, personId, out errorMessage );
@@ -523,7 +522,7 @@ namespace Rock.Model
         private static void RebuildStreakTypeFromInteraction( IProgress<int?> progress, StreakTypeCache streakTypeCache, out string errorMessage )
         {
             errorMessage = string.Empty;
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var streakTypeService = new StreakTypeService( rockContext );
             var streakType = streakTypeService.Get( streakTypeCache.Id );
 
@@ -582,7 +581,7 @@ namespace Rock.Model
             {
                 if ( batchCounter == 0 )
                 {
-                    rockContext = new RockContext();
+                    rockContext = RockApp.Current.CreateRockContext();
                 }
 
                 RebuildStreak( rockContext, streakTypeCache, streakType, streakType.StartDate, personId, out errorMessage );
@@ -621,7 +620,7 @@ namespace Rock.Model
         /// <param name="errorMessage">The error message.</param>
         public static void RebuildStreakFromAttendance( int streakTypeId, int personId, out string errorMessage )
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
 
             var streakTypeService = new StreakTypeService( rockContext );
             var streakType = streakTypeService.Get( streakTypeId );
@@ -662,7 +661,7 @@ namespace Rock.Model
         private static void RebuildStreakTypeFromFinancialTransaction( IProgress<int?> progress, StreakTypeCache streakTypeCache, out string errorMessage )
         {
             errorMessage = string.Empty;
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var streakTypeService = new StreakTypeService( rockContext );
             var streakType = streakTypeService.Get( streakTypeCache.Id );
 
@@ -724,7 +723,7 @@ namespace Rock.Model
                 // Create a new context every 100 persons to keep the change tracker from getting bogged down.
                 if ( batchCounter == 0 )
                 {
-                    rockContext = new RockContext();
+                    rockContext = RockApp.Current.CreateRockContext();
                 }
 
                 // Get the Person's Giving ID
@@ -1653,7 +1652,7 @@ namespace Rock.Model
         /// <param name="attendance">The attendance.</param>
         public static void HandleAttendanceRecord( Attendance attendance )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var streakTypeService = new StreakTypeService( rockContext );
                 streakTypeService.HandleAttendanceRecordForStreak( attendance?.Id, out var errorMessage );
@@ -1675,7 +1674,7 @@ namespace Rock.Model
         /// <param name="attendanceId">The attendance identifier.</param>
         public static void HandleAttendanceRecord( int attendanceId )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var streakTypeService = new StreakTypeService( rockContext );
 
@@ -1820,7 +1819,7 @@ namespace Rock.Model
         /// <param name="interactionId">The interaction identifier.</param>
         private static void HandleInteractionRecordInternal( int interactionId )
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var streakTypeService = new StreakTypeService( rockContext );
             var safeInteraction = new InteractionService( rockContext ).Get( interactionId );
 
@@ -1868,7 +1867,7 @@ namespace Rock.Model
 
             // Get the person's streaks
             var personId = interaction.PersonAlias.Person.Id;
-            var streakService = new StreakService( new RockContext() );
+            var streakService = new StreakService( RockApp.Current.CreateRockContext() );
             var enrolledInStreakTypeIdQuery = streakService.Queryable()
                 .AsNoTracking()
                 .Where( se => se.PersonAlias.PersonId == personId )
@@ -1909,7 +1908,7 @@ namespace Rock.Model
         /// <param name="transactionId">The financial transaction identifier.</param>
         public static void HandleFinancialTransactionRecord( int transactionId )
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var streakTypeService = new StreakTypeService( rockContext );
             var safeTransaction = new FinancialTransactionService( rockContext ).Get( transactionId );
 
@@ -1968,7 +1967,7 @@ namespace Rock.Model
 
             // Get the person's streaks
             var personId = transaction.AuthorizedPersonAlias.PersonId;
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var streakService = new StreakService( rockContext );
 
             var enrolledInStreakTypeIdQuery = streakService.Queryable()
@@ -2126,7 +2125,7 @@ namespace Rock.Model
         /// <returns>The number of streaks updated</returns>
         public static int HandlePostSaveChanges( int streakTypeId )
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var streakService = new StreakService( rockContext );
             var streakIds = streakService.Queryable().AsNoTracking()
                 .Where( se => se.StreakTypeId == streakTypeId )

@@ -1,0 +1,526 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <ContentSection v-if="isSectionVisible" title="Requirements" icon="ti ti-checklist">
+        <ContentStack v-if="inheritedGroupRequirements.length > 0"
+                      title="Inherited Requirements"
+                      description="These requirements are inherited from the group type and apply to this group."
+                      headerLocation="top">
+            <Grid :data="inheritedGridData" class="inherited-attributes" keyField="guid" itemTerm="Inherited Requirement" light :isFooterHidden="true">
+                <TextColumn name="name" field="name" />
+                <TextColumn name="groupRole" field="groupRole" />
+                <TextColumn name="ageClassification" field="ageClassification" />
+                <TextColumn name="inheritedFrom" field="inheritedFromGroupTypeName">
+                    <template #format="{ row }">
+                        <InheritedFromCell :name="row.inheritedFromGroupTypeName" :url="row.inheritedFromGroupTypeUrl" />
+                    </template>
+                </TextColumn>
+            </Grid>
+        </ContentStack>
+
+        <ContentStack v-if="canShowSpecificRequirements"
+                      headerLocation="top"
+                      title="Configure Group Requirements"
+                      description="Define the requirements that members must meet to join or remain in this group.">
+            <Grid :data="specificGridData"
+                  keyField="guid"
+                  itemTerm="Group Requirement"
+                  liveUpdates
+                  light
+                  :onAddItem="canAddSpecificRequirement ? onAdd : undefined">
+                <TextColumn name="name" field="name" title="Type" />
+                <TextColumn name="groupRole" field="groupRole" title="Group Role" />
+                <TextColumn name="ageClassification" field="ageClassification" title="Age Classification" />
+                <BooleanColumn name="mustMeetRequirementToAddMember"
+                               field="mustMeetRequirementToAddMember"
+                               title="Require Before Adding Members" />
+                <EditColumn @click="onEdit" />
+                <DeleteColumn @click="onDelete" />
+            </Grid>
+        </ContentStack>
+    </ContentSection>
+
+    <Modal v-model="isModalVisible"
+           :title="`${isEditing ? 'Edit' : 'Add'} Group Requirement`"
+           saveText="Save"
+           cancelText="Cancel"
+           :onSave="onSave">
+        <NotificationBox v-if="errorMessage" :alertType="AlertType.Danger">
+            {{ errorMessage }}
+        </NotificationBox>
+
+        <div class="row">
+            <div class="col-md-6">
+                <DropDownList label="Group Requirement Type"
+                              v-model="groupRequirementTypeValue"
+                              :items="groupRequirementTypeOptions ?? []"
+                              rules="required"
+                              help="The type of requirement being added." />
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6">
+                <DropDownList label="Applies to Role"
+                              v-model="groupRoleValue"
+                              :items="groupRoleItems"
+                              showBlankItem
+                              help="The group role this requirement applies to. Leave blank to apply it to all roles." />
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6">
+                <RadioButtonList label="Applies to Age Group"
+                                 v-model="appliesToAgeClassificationValue"
+                                 :items="enumToListItemBag(AppliesToAgeClassificationDescription)"
+                                 help="The age classification this requirement applies to." />
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6">
+                <DataViewPicker label="Applies to Data View"
+                                v-model="theGroupRequirement.appliesToDataView"
+                                :entityTypeGuid="EntityType.Person"
+                                help="An optional data view that further limits who this requirement applies to." />
+            </div>
+        </div>
+
+        <div v-if="renderDueDateSection" class="row">
+            <div class="col-md-6">
+                <DatePicker v-if="theGroupRequirement.dueDateType === DueDateType.ConfiguredDate"
+                            label="Requirement Due Date"
+                            v-model="theGroupRequirement.dueDateStaticDate"
+                            rules="required" />
+
+                <DropDownList v-if="theGroupRequirement.dueDateType === DueDateType.GroupAttribute"
+                              label="Due Date Group Attribute"
+                              v-model="dueDateAttributeValue"
+                              :items="groupAttributeOptions ?? []"
+                              rules="required" />
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-12">
+                <InlineCheckBox label="Allow Leader Override"
+                                v-model="theGroupRequirement.allowLeadersToOverride"
+                                help="Allows leaders to override this requirement." />
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-12">
+                <InlineCheckBox label="Require Before Adding Member"
+                                v-model="theGroupRequirement.mustMeetRequirementToAddMember"
+                                help="Members must meet this requirement before they can be added to the group." />
+            </div>
+        </div>
+    </Modal>
+</template>
+
+<script setup lang="ts">
+    import { AppliesToAgeClassification, AppliesToAgeClassificationDescription } from "@Obsidian/Enums/Group/appliesToAgeClassification";
+    import { InheritedGroupRequirementBag } from "@Obsidian/ViewModels/Blocks/Group/GroupDetail/inheritedGroupRequirementBag";
+    import { GroupRequirementTypeBag } from "@Obsidian/ViewModels/Blocks/Group/GroupDetail/groupRequirementTypeBag";
+    import { GroupRequirementBag } from "@Obsidian/ViewModels/Blocks/Group/GroupDetail/groupRequirementBag";
+    import Grid, { TextColumn, BooleanColumn, EditColumn, DeleteColumn } from "@Obsidian/Controls/grid";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { enumToListItemBag } from "@Obsidian/Utility/enumUtils";
+    import { DueDateType } from "@Obsidian/Enums/Group/dueDateType";
+    import { useInvokeGroupDetailBlockAction } from "./utils.partial";
+    import { AlertType } from "@Obsidian/Enums/Controls/alertType";
+    import { EntityType } from "@Obsidian/SystemGuids/entityType";
+    import { EntityKey } from "./types.partial";
+    import { newGuid } from "@Obsidian/Utility/guid";
+    import { computed, PropType, ref } from "vue";
+    import Modal from "@Obsidian/Controls/modal.obs";
+    import DatePicker from "@Obsidian/Controls/datePicker.obs";
+    import ContentStack from "@Obsidian/Controls/contentStack.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import InheritedFromCell from "./inheritedFromCell.partial.obs";
+    import ContentSection from "@Obsidian/Controls/contentSection.obs";
+    import InlineCheckBox from "@Obsidian/Controls/inlineCheckBox.obs";
+    import DataViewPicker from "@Obsidian/Controls/dataViewPicker.obs";
+    import RadioButtonList from "@Obsidian/Controls/radioButtonList.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+
+    const props = defineProps({
+        /**
+         * The editable list of per-group requirements.
+         */
+        groupRequirements: {
+            type: Array as PropType<GroupRequirementBag[] | null>,
+            required: true
+        },
+
+        /**
+         * The read-only requirements inherited from the active GroupType's
+         * inheritance chain.
+         */
+        inheritedGroupRequirements: {
+            type: Array as PropType<InheritedGroupRequirementBag[] | null>,
+            default: () => [] as InheritedGroupRequirementBag[]
+        },
+
+        /**
+         * Group role dropdown options for the Applies to Role picker.
+         */
+        groupRoleOptions: {
+            type: Array as PropType<ListItemBag[] | null>,
+            default: () => [] as ListItemBag[]
+        },
+
+        /**
+         * The active GroupType Id, used to scope lazy-loaded dropdown sources.
+         */
+        groupTypeId: {
+            type: Number as PropType<number | null>,
+            default: null
+        },
+
+        /**
+         * Whether the active group type permits per-group requirements.
+         */
+        enableSpecificGroupRequirements: {
+            type: Boolean,
+            default: false
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:groupRequirements", value: GroupRequirementBag[]): void
+    }>();
+
+    // #region Values
+
+    const blockAction = useInvokeGroupDetailBlockAction();
+
+    const theGroupRequirement = ref<GroupRequirementBag>(createNewGroupRequirement());
+    const isModalVisible = ref(false);
+    const isEditing = ref(false);
+    const errorMessage = ref<string | null>(null);
+
+    const groupRequirementTypeOptions = ref<GroupRequirementTypeBag[] | null>(null);
+    const groupAttributeOptions = ref<ListItemBag[] | null>(null);
+    let isLoadingRequirementOptions = false;
+    let lastLoadedGroupTypeId: number | null = null;
+
+    // #endregion
+
+    // #region Computed Values
+
+    /**
+     * Two-way proxy for the parent's `groupRequirements` v-model.
+     */
+    const groupRequirements = computed({
+        get(): GroupRequirementBag[] {
+            return props.groupRequirements ?? [];
+        },
+        set(value: GroupRequirementBag[]) {
+            emit("update:groupRequirements", value);
+        }
+    });
+
+    /**
+     * Inherited requirements sourced from the active Group Type's
+     * inheritance chain (read-only).
+     */
+    const inheritedGroupRequirements = computed((): InheritedGroupRequirementBag[] => props.inheritedGroupRequirements ?? []);
+
+    /**
+     * Whether the entire section renders. Visible when any inherited
+     * requirement, own requirement, or the group-type's
+     * EnableSpecificGroupRequirements flag is set. The read-only Inherited
+     * Requirements grid remains informational even when specific requirements
+     * are disabled.
+     */
+    const isSectionVisible = computed<boolean>(() => {
+        return inheritedGroupRequirements.value.length > 0
+            || groupRequirements.value.length > 0
+            || props.enableSpecificGroupRequirements;
+    });
+
+    /**
+     * Whether the editable "Specific Group Requirements" subsection renders.
+     * Visible when the group type allows specific requirements or when any
+     * already exist (legacy entries remain editable).
+     */
+    const canShowSpecificRequirements = computed<boolean>(() => {
+        return props.enableSpecificGroupRequirements || groupRequirements.value.length > 0;
+    });
+
+    /**
+     * Whether the Add button on the specific-requirements grid is enabled.
+     */
+    const canAddSpecificRequirement = computed<boolean>(() => props.enableSpecificGroupRequirements);
+
+    /**
+     * Row data for the read-only Inherited Requirements grid.
+     */
+    const inheritedGridData = computed(() => {
+        return {
+            rows: inheritedGroupRequirements.value.map(req => ({
+                guid: req.guid,
+                name: req.name ?? "",
+                groupRole: req.groupRoleName ?? "",
+                ageClassification: AppliesToAgeClassificationDescription[req.appliesToAgeClassification] ?? "",
+                inheritedFromGroupTypeName: req.inheritedFromGroupTypeName ?? "",
+                inheritedFromGroupTypeUrl: req.inheritedFromGroupTypeUrl ?? ""
+            }))
+        };
+    });
+
+    /**
+     * Row data for the editable Specific Group Requirements grid.
+     */
+    const specificGridData = computed(() => {
+        return {
+            rows: groupRequirements.value.map(req => ({
+                guid: req.guid,
+                name: req.groupRequirementType?.text ?? "",
+                groupRole: req.role?.text ?? "",
+                ageClassification: AppliesToAgeClassificationDescription[req.appliesToAgeClassification] ?? "",
+                mustMeetRequirementToAddMember: req.mustMeetRequirementToAddMember
+            }))
+        };
+    });
+
+    /**
+     * Group role dropdown options for the Applies to Role picker.
+     */
+    const groupRoleItems = computed((): ListItemBag[] => props.groupRoleOptions ?? []);
+
+    /**
+     * String proxy of `theGroupRequirement.groupRequirementType` for the
+     * Group Requirement Type dropdown. Setter also cascades the type's
+     * DueDateType into the requirement and clears any now-irrelevant
+     * due-date fields.
+     */
+    const groupRequirementTypeValue = computed({
+        get(): string {
+            return theGroupRequirement.value.groupRequirementType?.value ?? "";
+        },
+        set(value: string) {
+            const selected = (groupRequirementTypeOptions.value ?? []).find(o => o.value === value);
+            theGroupRequirement.value.groupRequirementType = selected
+                ? { value: selected.value, text: selected.text }
+                : null;
+
+            const newDueDateType = selected?.dueDateType ?? DueDateType.Immediate;
+            theGroupRequirement.value.dueDateType = newDueDateType;
+
+            if (newDueDateType !== DueDateType.ConfiguredDate) {
+                theGroupRequirement.value.dueDateStaticDate = null;
+            }
+            if (newDueDateType !== DueDateType.GroupAttribute) {
+                theGroupRequirement.value.dueDateAttribute = null;
+            }
+        }
+    });
+
+    /**
+     * String proxy of `theGroupRequirement.role` for the Applies to Role dropdown.
+     */
+    const groupRoleValue = computed({
+        get(): string {
+            return theGroupRequirement.value.role?.value ?? "";
+        },
+        set(value: string) {
+            const selected = groupRoleItems.value.find(o => o.value === value);
+            theGroupRequirement.value.role = selected ? selected : null;
+        }
+    });
+
+    /**
+     * String proxy of `theGroupRequirement.appliesToAgeClassification` for
+     * the Applies to Age Group radio list.
+     */
+    const appliesToAgeClassificationValue = computed({
+        get(): string {
+            return theGroupRequirement.value.appliesToAgeClassification.toString();
+        },
+        set(value: string) {
+            theGroupRequirement.value.appliesToAgeClassification = Number(value) as AppliesToAgeClassification;
+        }
+    });
+
+    /**
+     * String proxy of `theGroupRequirement.dueDateAttribute` for the
+     * Due Date Group Attribute dropdown.
+     */
+    const dueDateAttributeValue = computed({
+        get(): string {
+            return theGroupRequirement.value.dueDateAttribute?.value ?? "";
+        },
+        set(value: string) {
+            const selected = (groupAttributeOptions.value ?? []).find(o => o.value === value);
+            theGroupRequirement.value.dueDateAttribute = selected ? selected : null;
+        }
+    });
+
+    /**
+     * Whether the modal renders a due-date sub-control (date picker or
+     * group-attribute dropdown).
+     */
+    const renderDueDateSection = computed<boolean>(() => {
+        return theGroupRequirement.value.dueDateType === DueDateType.ConfiguredDate
+            || theGroupRequirement.value.dueDateType === DueDateType.GroupAttribute;
+    });
+
+    // #endregion
+
+    // #region Functions
+
+    /**
+     * Returns a fresh group requirement bag with the modal's default values.
+     */
+    function createNewGroupRequirement(): GroupRequirementBag {
+        return {
+            guid: "",
+            groupRequirementType: null,
+            role: null,
+            appliesToAgeClassification: AppliesToAgeClassification.All,
+            appliesToDataView: null,
+            allowLeadersToOverride: false,
+            mustMeetRequirementToAddMember: false,
+            dueDateType: DueDateType.Immediate,
+            dueDateStaticDate: null,
+            dueDateAttribute: null
+        };
+    }
+
+    /**
+     * Fetches the requirement modal's dropdown sources (requirement
+     * types + date-typed group attributes) on first call. Cache is keyed
+     * by the current groupTypeId so changing the group type mid-edit
+     * triggers a refresh on the next modal open. No-op while a fetch is
+     * already in flight.
+     */
+    async function ensureRequirementOptionsLoaded(): Promise<void> {
+        const currentGroupTypeId = props.groupTypeId ?? null;
+        const isCacheValid = groupRequirementTypeOptions.value !== null
+            && lastLoadedGroupTypeId === currentGroupTypeId;
+
+        if (isCacheValid || isLoadingRequirementOptions) {
+            return;
+        }
+
+        isLoadingRequirementOptions = true;
+        try {
+            const result = await blockAction.getGroupRequirementOptions(currentGroupTypeId);
+            if (result.isSuccess && result.data) {
+                groupRequirementTypeOptions.value = result.data.groupRequirementTypes ?? [];
+                groupAttributeOptions.value = result.data.groupAttributes ?? [];
+                lastLoadedGroupTypeId = currentGroupTypeId;
+            }
+            else {
+                groupRequirementTypeOptions.value = [];
+                groupAttributeOptions.value = [];
+                errorMessage.value = result.errorMessage || "Unable to load requirement options.";
+            }
+        }
+        finally {
+            isLoadingRequirementOptions = false;
+        }
+    }
+
+    // #endregion
+
+    // #region Event Handlers
+
+    /**
+     * Add button on the grid. Loads the modal's dropdown sources lazily
+     * (first open or after a Group Type change) and opens the modal with a
+     * blank requirement.
+     */
+    async function onAdd(): Promise<void> {
+        isEditing.value = false;
+        errorMessage.value = null;
+        theGroupRequirement.value = createNewGroupRequirement();
+        await ensureRequirementOptionsLoaded();
+        isModalVisible.value = true;
+    }
+
+    /**
+     * Edit button on a grid row. Loads the modal's dropdown sources lazily
+     * and opens the modal with a copy of the selected requirement.
+     *
+     * @param guid The unique identifier of the requirement to edit.
+     */
+    async function onEdit(guid: string): Promise<void> {
+        const selected = groupRequirements.value.find(r => r.guid === guid);
+        if (!selected) {
+            return;
+        }
+        theGroupRequirement.value = { ...selected };
+        isEditing.value = true;
+        errorMessage.value = null;
+        await ensureRequirementOptionsLoaded();
+        isModalVisible.value = true;
+    }
+
+    /**
+     * Delete button on a grid row. Checks server-side delete eligibility
+     * before removing the requirement from the local list.
+     *
+     * @param guid The unique identifier of the requirement to delete.
+     */
+    async function onDelete(guid: string): Promise<void> {
+        const result = await blockAction.canDeleteEntity({
+            entityKey: EntityKey.GroupRequirement,
+            entityGuid: guid
+        });
+
+        if (!result.isSuccess || !result.data) {
+            errorMessage.value = result.errorMessage || "Unable to delete this group requirement.";
+            return;
+        }
+
+        if (!result.data.canDelete) {
+            errorMessage.value = result.data.errorMessage || "This group requirement cannot be deleted.";
+            return;
+        }
+
+        groupRequirements.value = groupRequirements.value.filter(r => r.guid !== guid);
+        errorMessage.value = null;
+    }
+
+    /**
+     * Save button on the requirement modal. Blocks duplicates (same
+     * requirement type and role pair) and either updates or appends.
+     */
+    function onSave(): void {
+        const current = groupRequirements.value;
+
+        const duplicate = current.find(r =>
+            r.guid !== theGroupRequirement.value.guid &&
+            r.groupRequirementType?.value === theGroupRequirement.value.groupRequirementType?.value &&
+            (r.role?.value ?? null) === (theGroupRequirement.value.role?.value ?? null));
+
+        if (duplicate) {
+            const reqName = theGroupRequirement.value.groupRequirementType?.text ?? "";
+            const roleName = theGroupRequirement.value.role?.text;
+            errorMessage.value = roleName
+                ? `This group already has a group requirement of ${reqName} for group role ${roleName}.`
+                : `This group already has a group requirement of ${reqName}.`;
+            return;
+        }
+
+        const idx = current.findIndex(r => r.guid === theGroupRequirement.value.guid);
+        if (idx !== -1) {
+            const updated = [...current];
+            updated.splice(idx, 1, theGroupRequirement.value);
+            groupRequirements.value = updated;
+        }
+        else {
+            theGroupRequirement.value.guid = newGuid();
+            groupRequirements.value = [...current, theGroupRequirement.value];
+        }
+
+        errorMessage.value = null;
+        isModalVisible.value = false;
+    }
+
+    // #endregion
+</script>

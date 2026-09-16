@@ -1,0 +1,96 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Modal v-model="isVisible"
+           title="Settings"
+           saveText="Save"
+           @save="onSave">
+        <SectionHeader title="Filters" />
+
+        <div class="row">
+            <div class="col-md-12">
+                <CheckBox v-model="showChildGroups"
+                          label="Show Child Groups"
+                          help="Direct child groups are always shown on the map. Turn this on to also include groups nested below them, at any depth in the hierarchy." />
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-12">
+                <CheckBoxList v-model="groupTypeGuids"
+                              label="Group Types"
+                              :items="groupTypes"
+                              :repeatColumns="2" />
+            </div>
+        </div>
+    </Modal>
+</template>
+
+<script setup lang="ts">
+    import { PropType, ref, watch } from "vue";
+    import Modal from "@Obsidian/Controls/modal.obs";
+    import SectionHeader from "@Obsidian/Controls/sectionHeader.obs";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import CheckBoxList from "@Obsidian/Controls/checkBoxList.obs";
+    import { useVModelPassthrough } from "@Obsidian/Utility/component";
+    import { deepEqual } from "@Obsidian/Utility/util";
+    import { GroupMapSettings } from "./types.partial";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<GroupMapSettings>,
+            required: true
+        },
+
+        visible: {
+            type: Boolean as PropType<boolean>,
+            required: true
+        },
+
+        groupTypes: {
+            type: Array as PropType<ListItemBag[]>,
+            default: () => []
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: GroupMapSettings): void;
+        (e: "update:visible", value: boolean): void;
+    }>();
+
+    // #region Values
+
+    const isVisible = useVModelPassthrough(props, "visible", emit);
+    const showChildGroups = ref(props.modelValue.showChildGroups);
+    const groupTypeGuids = ref<string[]>([...props.modelValue.groupTypeGuids]);
+
+    // #endregion Values
+
+    // #region Event Handlers
+
+    /** Emits the edited settings up to the parent (only when changed) and closes the modal. */
+    function onSave(): void {
+        const value: GroupMapSettings = {
+            showChildGroups: showChildGroups.value,
+            groupTypeGuids: groupTypeGuids.value
+        };
+
+        if (!deepEqual(value, props.modelValue, true)) {
+            emit("update:modelValue", value);
+        }
+
+        isVisible.value = false;
+    }
+
+    // #endregion Event Handlers
+
+    // #region Watchers
+
+    // Re-seed the local editors whenever the bound settings change (e.g. reopened after a save).
+    watch(() => props.modelValue, () => {
+        showChildGroups.value = props.modelValue.showChildGroups;
+        groupTypeGuids.value = [...props.modelValue.groupTypeGuids];
+    });
+
+    // #endregion Watchers
+</script>

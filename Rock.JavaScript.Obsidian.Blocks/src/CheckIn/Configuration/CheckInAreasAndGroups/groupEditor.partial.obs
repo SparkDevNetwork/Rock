@@ -1,0 +1,404 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <RockForm hideErrors
+              @visibleValidationChanged="onFormValidationChanged"
+              @submit="onSubmit">
+        <div class="area-group-pane-header">
+            <div class="heading">
+                <i class="heading-icon is-group ti ti-users-group"></i>
+                <div class="heading-text">
+                    <h5 class="heading-title">{{ group?.name ?? "" }}</h5>
+                    <div v-if="group?.parentAreaName" class="heading-description">{{ group?.parentAreaName }}</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="area-group-pane-body" ref="bodyEl">
+            <NotificationBox v-if="saveSuccessMessage"
+                             :alertType="AlertType.Success">
+                {{ saveSuccessMessage }}
+            </NotificationBox>
+
+            <NotificationBox v-if="errorMessage"
+                             :alertType="AlertType.Warning"
+                             v-html="errorMessage" />
+
+            <RockValidation :errors="formErrors" />
+
+            <ContentSectionContainer :sidebar="false">
+                <ContentSection light>
+                    <ContentStack>
+                        <TextBox v-model="name"
+                                 label="Group Name"
+                                 rules="required" />
+
+                        <InlineCheckBox v-model="isActive"
+                                        label="Active" />
+
+                        <InlineCheckBox v-model="isSpecialNeeds"
+                                        label="Special Needs"
+                                        help="Only used by next-gen check-in. This will indicate that the group is intended for people with the Special Needs attribute set to true." />
+                    </ContentStack>
+                </ContentSection>
+
+                <ContentSection v-if="hasGroupAttributes"
+                                title="Group Attributes"
+                                icon="ti ti-users-group"
+                                :order="1">
+                    <ContentStack>
+                        <AttributeValuesContainer v-model="groupAttributeValues"
+                                                  :attributes="groupAttributes"
+                                                  :showCategoryLabel="false"
+                                                  isEditMode />
+                    </ContentStack>
+                </ContentSection>
+
+                <ContentSection v-if="hasFilterAttributes"
+                                :title="filterSectionTitle"
+                                icon="ti ti-adjustments"
+                                :order="2">
+                    <ContentStack>
+                        <AttributeValuesContainer v-model="attributeValues"
+                                                  :attributes="filterAttributes"
+                                                  :showCategoryLabel="false"
+                                                  isEditMode />
+                    </ContentStack>
+                </ContentSection>
+
+                <ContentSection title="Configure Named Locations" icon="ti ti-building" :order="3">
+                    <NamedLocationsSection :locations="locations"
+                                           :overflowLocations="overflowLocations"
+                                           @update:locations="onLocationsChanged"
+                                           @update:overflowLocations="onOverflowLocationsChanged" />
+                </ContentSection>
+            </ContentSectionContainer>
+        </div>
+
+        <div class="area-group-pane-footer">
+            <RockButton type="submit"
+                        btnType="primary"
+                        :isLoading="isSaving"
+                        loadingText="Saving">
+                Save
+            </RockButton>
+            <RockButton btnType="link"
+                        :disabled="isSaving"
+                        @click="onDeleteClick">
+                {{ isPersisted ? "Delete" : "Cancel" }}
+            </RockButton>
+        </div>
+    </RockForm>
+</template>
+
+<script setup lang="ts">
+    import { computed, onBeforeUnmount, onMounted, PropType, ref, watch } from "vue";
+    import NamedLocationsSection from "./namedLocationsSection.partial.obs";
+    import { useUpdateEditorIsDirty } from "./utils.partial";
+    import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
+    import ContentSection from "@Obsidian/Controls/contentSection.obs";
+    import ContentSectionContainer from "@Obsidian/Controls/contentSectionContainer.obs";
+    import ContentStack from "@Obsidian/Controls/contentStack.obs";
+    import InlineCheckBox from "@Obsidian/Controls/inlineCheckBox.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import RockForm from "@Obsidian/Controls/rockForm.obs";
+    import RockValidation from "@Obsidian/Controls/rockValidation.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import { AlertType } from "@Obsidian/Enums/Controls/alertType";
+    import { confirm } from "@Obsidian/Utility/dialogs";
+    import { FormError } from "@Obsidian/Utility/form";
+    import { GroupDetailBag } from "@Obsidian/ViewModels/Blocks/CheckIn/Configuration/CheckInAreasAndGroups/groupDetailBag";
+    import { NamedLocationBag } from "@Obsidian/ViewModels/Blocks/CheckIn/Configuration/CheckInAreasAndGroups/namedLocationBag";
+    import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
+
+    const updateEditorIsDirty = useUpdateEditorIsDirty();
+
+    const props = defineProps({
+        /**
+         * The group being edited. Identity changes (e.g., the individual
+         * selecting a different group) re-seed the form's local working copy.
+         */
+        group: {
+            type: Object as PropType<GroupDetailBag | null>,
+            default: null
+        },
+
+        /**
+         * True while the parent has a save in flight. Drives the Save button's
+         * loading state and disables Delete so the individual can't double-submit.
+         */
+        isSaving: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        /**
+         * An error message to display at the top of the editor. Bound through
+         * the parent so save/delete failures surface inside the editor without
+         * stealing the panel's terminal error slot.
+         */
+        errorMessage: {
+            type: String as PropType<string>,
+            default: ""
+        },
+
+        /**
+         * A success message to display at the top of the editor after a save
+         * completes. The parent sets it on a successful save and clears it
+         * when a new save starts or a different node is selected.
+         */
+        saveSuccessMessage: {
+            type: String as PropType<string>,
+            default: ""
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "save", bag: GroupDetailBag): void;
+        (e: "delete"): void;
+    }>();
+
+    // #region Values
+
+    const bodyEl = ref<HTMLElement | null>(null);
+    const formErrors = ref<FormError[]>([]);
+
+    /**
+     * True once the individual has actually interacted with the form. Driven by
+     * DOM input / change events on the body plus explicit marks from the
+     * non-DOM controls (the location grids). Programmatic value changes, such
+     * as AttributeValuesContainer's async children emitting on mount, do NOT
+     * fire DOM input / change events, so they leave this false; this is what
+     * prevents an untouched editor from reading dirty after seeding.
+     */
+    const wasFormTouched = ref<boolean>(false);
+
+    const name = ref<string>("");
+    const isActive = ref<boolean>(true);
+    const isSpecialNeeds = ref<boolean>(false);
+    const locations = ref<NamedLocationBag[]>([]);
+    const overflowLocations = ref<NamedLocationBag[]>([]);
+    const attributeValues = ref<Record<string, string>>({});
+    const groupAttributeValues = ref<Record<string, string>>({});
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    /**
+     * True once the group has been persisted. Drives the footer button's label
+     * (Delete vs Cancel) and whether the click prompts before discarding.
+     */
+    const isPersisted = computed((): boolean => !!props.group?.idKey);
+
+    /**
+     * Schema for the variant-specific filter attributes resolved through the
+     * group's GroupType inheritance chain. Drives the Check-in Filters
+     * section's AVC.
+     */
+    const filterAttributes = computed((): Record<string, PublicAttributeBag> =>
+        props.group?.attributes ?? {}
+    );
+
+    /** True when the resolved inherit chain contributes at least one filter attribute. */
+    const hasFilterAttributes = computed((): boolean =>
+        Object.keys(filterAttributes.value).length > 0
+    );
+
+    /**
+     * Title for the Check-in Filters section, suffixed with the area's
+     * "Inherit Check-in Setup Type From" selection so the individual can see
+     * which setup type drives these filters.
+     */
+    const filterSectionTitle = computed((): string => {
+        const inheritFrom = props.group?.inheritedGroupTypeName;
+        return inheritFrom ? `Check-in Filters - ${inheritFrom}` : "Check-in Filters";
+    });
+
+    /**
+     * Schema for the group's own attributes (defined directly on its group type,
+     * not inherited from an ancestor). Drives the Group Attributes section's AVC.
+     */
+    const groupAttributes = computed((): Record<string, PublicAttributeBag> =>
+        props.group?.groupAttributes ?? {}
+    );
+
+    /** True when the group defines at least one of its own attributes. */
+    const hasGroupAttributes = computed((): boolean =>
+        Object.keys(groupAttributes.value).length > 0
+    );
+
+    /**
+     * True when the editor has unsaved work: either a never-saved placeholder
+     * (empty idKey) sits in the form, or the individual has interacted with a
+     * persisted group's form.
+     */
+    const isDirty = computed((): boolean => {
+        if (!props.group) {
+            return false;
+        }
+        return !props.group.idKey || wasFormTouched.value;
+    });
+
+    // #endregion Computed Values
+
+    // #region Functions
+
+    /** Scrolls the editor body back to the top. */
+    function scrollBodyToTop(): void {
+        bodyEl.value?.scrollTo({ top: 0 });
+    }
+
+    /**
+     * Narrows a values record to only the keys present in the given schema, so
+     * the filter and group-attribute editors each work with a disjoint slice and
+     * can't clobber each other's values when emitting.
+     */
+    function pickValues(values: Record<string, string> | null | undefined, schema: Record<string, PublicAttributeBag> | null | undefined): Record<string, string> {
+        const source = values ?? {};
+        const result: Record<string, string> = {};
+        for (const key of Object.keys(schema ?? {})) {
+            if (key in source) {
+                result[key] = source[key];
+            }
+        }
+        return result;
+    }
+
+    /** Re-seeds every working-copy ref from the supplied bag. */
+    function seedFromBag(bag: GroupDetailBag | null): void {
+        name.value = bag?.name ?? "";
+        isActive.value = bag?.isActive ?? true;
+        isSpecialNeeds.value = bag?.isSpecialNeeds ?? false;
+        locations.value = (bag?.locations ?? []).map(l => ({ ...l }));
+        overflowLocations.value = (bag?.overflowLocations ?? []).map(l => ({ ...l }));
+        attributeValues.value = pickValues(bag?.attributeValues, bag?.attributes);
+        groupAttributeValues.value = pickValues(bag?.attributeValues, bag?.groupAttributes);
+
+        wasFormTouched.value = false;
+    }
+
+    /** Builds the bag for the parent to persist. */
+    function buildBag(): GroupDetailBag {
+        return {
+            idKey: props.group?.idKey ?? "",
+            name: name.value,
+            isActive: isActive.value,
+            isSpecialNeeds: isSpecialNeeds.value,
+            parentAreaName: props.group?.parentAreaName ?? "",
+            locations: locations.value,
+            overflowLocations: overflowLocations.value,
+            attributes: props.group?.attributes ?? {},
+            groupAttributes: props.group?.groupAttributes ?? {},
+            attributeValues: { ...attributeValues.value, ...groupAttributeValues.value }
+        };
+    }
+
+    // #endregion Functions
+
+    // #region Event Handlers
+
+    /** Handles the form submit (RockForm only fires this when validation passes). */
+    function onSubmit(): void {
+        emit("save", buildBag());
+    }
+
+    /**
+     * Handles the footer button click. Cancel on an unsaved group discards
+     * without confirmation; Delete prompts.
+     */
+    async function onDeleteClick(): Promise<void> {
+        if (!isPersisted.value) {
+            emit("delete");
+            return;
+        }
+        const confirmed = await confirm(`Are you sure you want to delete this "${props.group?.name ?? ""}" check-in group? Any attendance records connected with this group will be lost. This action cannot be undone.`);
+        if (confirmed) {
+            emit("delete");
+        }
+    }
+
+    /**
+     * Receives the current validation errors from RockForm so we can render
+     * them inside the body.
+     */
+    function onFormValidationChanged(errors: FormError[]): void {
+        formErrors.value = errors;
+    }
+
+    /** Marks the form as touched by the individual. */
+    function markFormTouched(): void {
+        wasFormTouched.value = true;
+    }
+
+    /**
+     * Applies a main-location change from the section and flags the form
+     * as touched.
+     */
+    function onLocationsChanged(value: NamedLocationBag[]): void {
+        locations.value = value;
+        markFormTouched();
+    }
+
+    /**
+     * Applies an overflow-location change from the section and flags the form
+     * as touched.
+     */
+    function onOverflowLocationsChanged(value: NamedLocationBag[]): void {
+        overflowLocations.value = value;
+        markFormTouched();
+    }
+
+    // #endregion Event Handlers
+
+    // #region Watchers
+
+    // Re-seed (and reset scroll) whenever the group reference itself changes:
+    // a new node selected, a placeholder created, or the same node's data
+    // refreshed after a save. Refreshing on save is what clears the dirty
+    // snapshot so the navigation guard doesn't fire after a successful save.
+    watch(() => props.group, () => {
+        seedFromBag(props.group);
+        scrollBodyToTop();
+    }, { immediate: true });
+
+    // Scroll the body to top when a status message (success, error, or
+    // validation errors) first appears so it lands in view regardless of
+    // where the individual was scrolled.
+    watch(
+        [() => props.saveSuccessMessage, () => props.errorMessage, () => formErrors.value.length],
+        (newVals, oldVals) => {
+            const justAppeared = newVals.some((value, i) => value && !oldVals[i]);
+            if (justAppeared) {
+                scrollBodyToTop();
+            }
+        }
+    );
+
+    // Push the dirty state up through the provided updater so the parent's
+    // navigation guard sees it without a v-model chain through DetailPane.
+    watch(isDirty, (value) => {
+        updateEditorIsDirty(value);
+    }, { immediate: true });
+
+    // #endregion Watchers
+
+    // #region Lifecycle Hooks
+
+    // Listen for genuine user interaction on the form body.
+    onMounted(() => {
+        bodyEl.value?.addEventListener("input", markFormTouched);
+        bodyEl.value?.addEventListener("change", markFormTouched);
+    });
+
+    // Clear the parent's dirty tracking on unmount.
+    // Without this, the dirty flag would linger and the navigation guard
+    // would prompt on the next selection even though no editor is open.
+    onBeforeUnmount(() => {
+        bodyEl.value?.removeEventListener("input", markFormTouched);
+        bodyEl.value?.removeEventListener("change", markFormTouched);
+        updateEditorIsDirty(false);
+    });
+
+    // #endregion Lifecycle Hooks
+</script>

@@ -1,0 +1,100 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <DropDownContent v-model="isOpen" placement="bottom-start" preventOverflowClipping enableFlip>
+        <template #anchor>
+            <button type="button"
+                    class="groupfinder-icon-select-trigger"
+                    :class="{ 'is-open': isOpen }"
+                    aria-haspopup="listbox"
+                    :aria-expanded="isOpen">
+                <span class="groupfinder-icon-select-value" :class="{ 'is-placeholder': !selectedItem }">
+                    <i v-if="triggerIconCssClass" :class="triggerIconCssClass" class="groupfinder-icon-select-icon"></i>
+                    <span class="groupfinder-icon-select-text">{{ selectedItem ? selectedItem.text : placeholder }}</span>
+                </span>
+                <i class="ti ti-chevron-down groupfinder-icon-select-caret"></i>
+            </button>
+        </template>
+        <ul class="groupfinder-icon-select-menu" role="listbox">
+            <li v-for="item in items" :key="item.value">
+                <button type="button"
+                        role="option"
+                        class="groupfinder-icon-select-option groupfinder-option-row"
+                        :class="{ 'is-selected': item.value === modelValue }"
+                        :aria-selected="item.value === modelValue"
+                        @click="onSelect(item.value)">
+                    <i v-if="item.iconCssClass" :class="item.iconCssClass" class="groupfinder-icon-select-icon"></i>
+                    <span>{{ item.text }}</span>
+                </button>
+            </li>
+        </ul>
+    </DropDownContent>
+</template>
+
+<script setup lang="ts">
+    import { computed, PropType, ref } from "vue";
+    import DropDownContent from "@Obsidian/Controls/dropDownContent.obs";
+
+    // #region Types
+
+    type IconSelectItem = { value: string; text: string; iconCssClass?: string };
+
+    // #endregion Types
+
+    const props = defineProps({
+        /** The selected value. Empty string means nothing is selected. */
+        modelValue: {
+            type: String,
+            default: ""
+        },
+
+        /** The options, each with a value, display text, and optional leading icon. */
+        items: {
+            type: Array as PropType<IconSelectItem[]>,
+            default: () => []
+        },
+
+        /** Text shown in the trigger when nothing is selected. */
+        placeholder: {
+            type: String,
+            default: "Select"
+        },
+
+        /** Optional leading icon shown in the trigger when nothing is selected. */
+        placeholderIconCssClass: {
+            type: String,
+            default: ""
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: string): void;
+    }>();
+
+    // #region Values
+
+    const isOpen = ref(false);
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    const selectedItem = computed((): IconSelectItem | null => {
+        return props.items.find(item => item.value === props.modelValue) ?? null;
+    });
+
+    const triggerIconCssClass = computed((): string => {
+        return selectedItem.value?.iconCssClass ?? props.placeholderIconCssClass;
+    });
+
+    // #endregion Computed Values
+
+    // #region Event Handlers
+
+    // Choosing the current value again clears it, so the filter can be reset from the list.
+    function onSelect(value: string): void {
+        emit("update:modelValue", props.modelValue === value ? "" : value);
+        isOpen.value = false;
+    }
+
+    // #endregion Event Handlers
+</script>

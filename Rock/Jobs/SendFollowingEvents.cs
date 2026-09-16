@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -23,12 +23,13 @@ using System.Reflection;
 
 using Rock.Attribute;
 using Rock.Communication;
+using Rock.Configuration;
 using Rock.Data;
+using Rock.Follow;
 using Rock.Lava;
 using Rock.Model;
 using Rock.Security;
 using Rock.Web.Cache;
-using Rock.Follow;
 
 namespace Rock.Jobs
 {
@@ -38,8 +39,14 @@ namespace Rock.Jobs
     [DisplayName( "Send Following Event Notification" )]
     [Description( "Calculates and sends any following event notices to those that are following the entities that have an event that occurred." )]
 
-    [SystemCommunicationField( "Following Event Notification Email Template", required: true, order: 0, key: "EmailTemplate" )]
-    [SecurityRoleField( "Eligible Followers", "The group that contains individuals who should receive following event notification", true, order: 1 )]
+    [SystemCommunicationField( "Following Event Notification Email Template",
+        IsRequired = true,
+        Order = 0,
+        Key = "EmailTemplate" )]
+    [SecurityRoleField( "Eligible Followers",
+        Description = "The group that contains individuals who should receive following event notification",
+        IsRequired = true,
+        Order = 1 )]
     public class SendFollowingEvents : RockJob
     {
         /// <summary> 
@@ -64,7 +71,7 @@ namespace Rock.Jobs
             {
                 var exceptionMsgs = new List<string>();
 
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     var followingService = new FollowingService( rockContext );
                     var followingEventTypeService = new FollowingEventTypeService( rockContext );

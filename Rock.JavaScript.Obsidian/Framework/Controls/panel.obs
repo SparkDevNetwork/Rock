@@ -15,12 +15,18 @@
                     </slot>
                 </h1>
 
+                <div v-if="$slots.panelLabels" class="panel-labels">
+                    <slot name="panelLabels" />
+                </div>
+
                 <div class="panel-header-actions">
 
                     <slot name="headerActions" />
 
                     <QuickFilter v-model="internalQuickFilterValue"
                                  quickFilterButtonClass="btn-panel-action" />
+
+                    <slot name="postFilterHeaderActions" />
 
                     <span v-if="isZoomActive && hasZoom" class="panel-action-zoom-control">
                         <span class="input-group">
@@ -87,6 +93,10 @@
                     </button>
                 </div>
             </div>
+
+            <template v-else-if="$slots.panelHeader">
+                <slot name="panelHeader" />
+            </template>
 
             <div v-if="$slots.subheaderLeft || $slots.subheaderRight" class="panel-sub-header">
                 <div class="panel-sub-header-left">

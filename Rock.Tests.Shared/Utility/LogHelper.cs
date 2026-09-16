@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -17,9 +17,10 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace Rock.Tests.Shared
+namespace Rock.Tests.Shared.Utility
 {
     /// <summary>
     /// Provides logging services for test projects.

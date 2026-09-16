@@ -50,7 +50,7 @@ export const ConnectionWorkflowTriggerType = {
     /** Request Assigned */
     RequestAssigned: 8,
 
-    /** Future Follow-up Date Reached */
+    /** Future Follow-Up Date Reached */
     FutureFollowupDateReached: 9,
 
     /** Request Becomes Due */
@@ -95,7 +95,7 @@ export const ConnectionWorkflowTriggerTypeDescription: Record<number, string> = 
 
     8: "Request Assigned",
 
-    9: "Future Followup Date Reached",
+    9: "Future Follow-Up Date Reached",
 
     10: "Request Becomes Due",
 

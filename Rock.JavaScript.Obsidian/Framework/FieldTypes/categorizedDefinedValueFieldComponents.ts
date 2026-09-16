@@ -22,7 +22,7 @@ import DropDownList from "@Obsidian/Controls/dropDownList.obs";
 import CategorizedValuePicker from "@Obsidian/Controls/categorizedValuePicker.obs";
 import RockLabel from "@Obsidian/Controls/rockLabel.obs";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
-import { ConfigurationValueKey } from "./categorizedDefinedValueField.partial";
+import { ConfigurationKey } from "./categorizedDefinedValueField.partial";
 import { Guid } from "@Obsidian/Types";
 import { emptyGuid, toGuidOrNull } from "@Obsidian/Utility/guid";
 
@@ -39,13 +39,13 @@ export const EditComponent = defineComponent({
     setup(props, { emit }) {
         const internalValue = ref<ListItemBag>({});
         const definedTypeValue = computed<Guid>(() => {
-            const definedType = JSON.parse(props.configurationValues[ConfigurationValueKey.DefinedType] || "{}") as ListItemBag;
+            const definedType = JSON.parse(props.configurationValues[ConfigurationKey.DefinedType] || "{}") as ListItemBag;
             return toGuidOrNull(definedType.value) ?? emptyGuid;
         });
 
         const selectableValues = computed((): ListItemBag[] => {
             try {
-                return JSON.parse(props.configurationValues[ConfigurationValueKey.SelectableDefinedValues] || "[]") as ListItemBag[];
+                return JSON.parse(props.configurationValues[ConfigurationKey.SelectableDefinedValues] || "[]") as ListItemBag[];
             }
             catch {
                 return [];
@@ -102,7 +102,7 @@ export const ConfigurationComponent = defineComponent({
         const options = computed((): ListItemBag[] => {
             try {
                 if (definedTypeValue.value) {
-                    const definedTypeValues = JSON.parse(props.modelValue[ConfigurationValueKey.DefinedTypeValues] || "{}");
+                    const definedTypeValues = JSON.parse(props.modelValue[ConfigurationKey.DefinedTypeValues] || "{}");
                     return JSON.parse(definedTypeValues[definedTypeValue.value] || "[]") as ListItemBag[];
                 }
                 else {
@@ -128,14 +128,14 @@ export const ConfigurationComponent = defineComponent({
 
             // Construct the new value that will be emitted if it is different
             // than the current value.
-            newValue[ConfigurationValueKey.DefinedType] = JSON.stringify(definedType ?? "");
-            newValue[ConfigurationValueKey.SelectableDefinedValues] = JSON.stringify(selectableDefinedValues.value ?? "");
-            newValue[ConfigurationValueKey.DefinedTypeValues] = props.modelValue[ConfigurationValueKey.DefinedTypeValues];
-            newValue[ConfigurationValueKey.DefinedTypes] = props.modelValue[ConfigurationValueKey.DefinedTypes];
+            newValue[ConfigurationKey.DefinedType] = JSON.stringify(definedType ?? "");
+            newValue[ConfigurationKey.SelectableDefinedValues] = JSON.stringify(selectableDefinedValues.value ?? "");
+            newValue[ConfigurationKey.DefinedTypeValues] = props.modelValue[ConfigurationKey.DefinedTypeValues];
+            newValue[ConfigurationKey.DefinedTypes] = props.modelValue[ConfigurationKey.DefinedTypes];
 
             // Compare the new value and the old value.
-            const anyValueChanged = newValue[ConfigurationValueKey.DefinedType] !== (props.modelValue[ConfigurationValueKey.DefinedType] ?? "")
-                || newValue[ConfigurationValueKey.SelectableDefinedValues] !== (props.modelValue[ConfigurationValueKey.SelectableDefinedValues] ?? "");
+            const anyValueChanged = newValue[ConfigurationKey.DefinedType] !== (props.modelValue[ConfigurationKey.DefinedType] ?? "")
+                || newValue[ConfigurationKey.SelectableDefinedValues] !== (props.modelValue[ConfigurationKey.SelectableDefinedValues] ?? "");
 
             // If any value changed then emit the new model value.
             if (anyValueChanged) {
@@ -163,16 +163,16 @@ export const ConfigurationComponent = defineComponent({
         // Watch for changes coming in from the parent component and update our
         // data to match the new information.
         watch(() => [props.modelValue, props.configurationProperties], () => {
-            const definedType = JSON.parse(props.modelValue[ConfigurationValueKey.DefinedType] || "{}");
+            const definedType = JSON.parse(props.modelValue[ConfigurationKey.DefinedType] || "{}");
             definedTypeValue.value = definedType.value ?? "";
-            selectableDefinedValues.value = JSON.parse(props.modelValue[ConfigurationValueKey.SelectableDefinedValues] || "[]");
-            definedTypes.value = JSON.parse(props.modelValue[ConfigurationValueKey.DefinedTypes] || "[]");
+            selectableDefinedValues.value = JSON.parse(props.modelValue[ConfigurationKey.SelectableDefinedValues] || "[]");
+            definedTypes.value = JSON.parse(props.modelValue[ConfigurationKey.DefinedTypes] || "[]");
         }, {
             immediate: true
         });
 
-        watch(definedTypeValue, val => maybeUpdateConfiguration(ConfigurationValueKey.DefinedType, val));
-        watch(selectableDefinedValues, val => maybeUpdateConfiguration(ConfigurationValueKey.SelectableDefinedValues, JSON.stringify(val ?? "")));
+        watch(definedTypeValue, val => maybeUpdateConfiguration(ConfigurationKey.DefinedType, val));
+        watch(selectableDefinedValues, val => maybeUpdateConfiguration(ConfigurationKey.SelectableDefinedValues, JSON.stringify(val ?? "")));
 
         return {
             definedTypeValue,

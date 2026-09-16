@@ -34,7 +34,10 @@ namespace Rock.Workflow.Action
     [Export( typeof( ActionComponent ) )]
     [ExportMetadata( "ComponentName", "Activate Activity" )]
 
-    [WorkflowActivityType( "Activity", "The activity type to activate", true, "", "", 0 )]
+    [WorkflowActivityType( "Activity",
+        Description = "The activity type to activate",
+        IsRequired = true,
+        Order = 0 )]
     [Rock.SystemGuid.EntityTypeGuid( "38907A90-1634-4A93-8017-619326A4A582")]
     public class ActivateActivity : ActionComponent
     {

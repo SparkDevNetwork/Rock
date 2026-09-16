@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -24,7 +24,9 @@ using System.Linq;
 using System.Runtime.Serialization;
 
 using Rock.Data;
+using Rock.Enums.Security;
 using Rock.Lava;
+using Rock.Security;
 
 namespace Rock.Model
 {
@@ -157,6 +159,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [MaxLength( 200 )]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string StatusMessage { get; set; }
 
         /// <summary>
@@ -194,6 +197,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 50 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string TransactionCode { get; set; }
 
         /// <summary>
@@ -203,6 +207,7 @@ namespace Rock.Model
         /// A <see cref="System.String"/> representing a summary of the scheduled transaction.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string Summary { get; set; }
 
         /// <summary>
@@ -213,6 +218,7 @@ namespace Rock.Model
         /// A <see cref="System.String"/> representing the financial gateway's unique identifier for the payment schedule.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string GatewayScheduleId { get; set; }
 
         /// <summary>
@@ -260,6 +266,7 @@ namespace Rock.Model
         /// </summary>
         /// <value></value>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string PreviousGatewayScheduleIdsJson
         {
             get
@@ -380,17 +387,6 @@ namespace Rock.Model
             set { _transactions = value; }
         }
         private ICollection<FinancialTransaction> _transactions;
-
-        /// <summary>
-        /// Gets or sets the history change list.
-        /// </summary>
-        /// <value>
-        /// The history change list.
-        /// </value>
-        [NotMapped]
-        [RockObsolete( "1.14" )]
-        [Obsolete( "Does nothing. No longer needed. We replaced this with a private property under the SaveHook class for this entity.", true )]
-        public virtual History.HistoryChangeList HistoryChangeList { get; set; }
 
         /// <summary>
         /// This will be any previous <see cref="GatewayScheduleId"/> that this <see cref="FinancialScheduledTransaction"/> has had.

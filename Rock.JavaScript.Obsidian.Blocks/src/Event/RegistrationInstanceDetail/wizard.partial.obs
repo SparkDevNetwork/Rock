@@ -1,0 +1,54 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="wizard">
+        <div class="wizard-item complete">
+            <a v-if="templateUrl" :href="templateUrl" class="wizard-item-link">
+                <div class="wizard-item-icon">
+                    <i class="ti ti-fw ti-clipboard"></i>
+                </div>
+                <div class="wizard-item-label">{{ templateName || "Template" }}</div>
+            </a>
+            <template v-else>
+                <div class="wizard-item-icon">
+                    <i class="ti ti-fw ti-clipboard"></i>
+                </div>
+                <div class="wizard-item-label">{{ templateName || "Template" }}</div>
+            </template>
+        </div>
+        <div class="wizard-item active">
+            <div class="wizard-item-icon">
+                <i class="ti ti-fw ti-file"></i>
+            </div>
+            <div class="wizard-item-label">{{ instanceName || "New Instance" }}</div>
+        </div>
+        <div class="wizard-item">
+            <div class="wizard-item-icon">
+                <i class="ti ti-fw ti-users"></i>
+            </div>
+            <div class="wizard-item-label">Registration</div>
+        </div>
+        <div class="wizard-item">
+            <div class="wizard-item-icon">
+                <i class="ti ti-fw ti-user"></i>
+            </div>
+            <div class="wizard-item-label">Registrant</div>
+        </div>
+    </div>
+</template>
+
+<script setup lang="ts">
+    defineProps({
+        templateName: {
+            type: String,
+            default: ""
+        },
+        templateUrl: {
+            type: String,
+            default: ""
+        },
+        instanceName: {
+            type: String,
+            default: ""
+        }
+    });
+</script>

@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -15,6 +15,14 @@
 // </copyright>
 //
 
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data.Entity;
+using System.Data.Entity.SqlServer;
+using System.Linq;
+using System.Text;
+
 using Rock.Attribute;
 using Rock.Constants;
 using Rock.Data;
@@ -22,8 +30,6 @@ using Rock.Model;
 using Rock.Obsidian.UI;
 using Rock.Security;
 using Rock.ViewModels.Blocks;
-using ChartDataBag = Rock.ViewModels.Blocks.Engagement.StepProgramDetail.ChartDataBag;
-using SeriesBag = Rock.ViewModels.Blocks.Engagement.StepProgramDetail.SeriesBag;
 using Rock.ViewModels.Blocks.Engagement.StepTypeDetail;
 using Rock.ViewModels.Controls;
 using Rock.ViewModels.Utility;
@@ -32,13 +38,8 @@ using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data.Entity;
-using System.Data.Entity.SqlServer;
-using System.Linq;
-using System.Text;
+using ChartDataBag = Rock.ViewModels.Blocks.Engagement.StepProgramDetail.ChartDataBag;
+using SeriesBag = Rock.ViewModels.Blocks.Engagement.StepProgramDetail.SeriesBag;
 
 namespace Rock.Blocks.Engagement
 {
@@ -74,11 +75,11 @@ namespace Rock.Blocks.Engagement
         Order = 1 )]
 
     [LinkedPage(
-        name: "Bulk Entry Page",
-        description: "The page to use for bulk entry of steps data",
-        required: false,
-        order: 2,
-        key: AttributeKey.BulkEntryPage )]
+        "Bulk Entry Page",
+        Description = "The page to use for bulk entry of steps data",
+        IsRequired = false,
+        Order = 2,
+        Key = AttributeKey.BulkEntryPage )]
 
     [CodeEditorField(
         "Key Performance Indicator Lava",
@@ -892,8 +893,9 @@ namespace Rock.Blocks.Engagement
             var attributes = attributeService.GetByEntityTypeQualifier( entityTypeId, qualifierColumn, qualifierValue, true ).ToList();
 
             // Delete any of those attributes that were removed in the UI
+            // except System attributes (IsSystem = true).
             var selectedAttributeGuids = viewStateAttributes.Select( a => a.Guid );
-            var attributesToDelete = attributes.Where( a => !selectedAttributeGuids.Contains( a.Guid ) );
+            var attributesToDelete = attributes.Where( a => !a.IsSystem && !selectedAttributeGuids.Contains( a.Guid ) );
 
             foreach ( var attr in attributesToDelete )
             {
@@ -1036,7 +1038,10 @@ namespace Rock.Blocks.Engagement
                 .AddTextField( "idKey", a => a.Attribute.Guid.ToString() )
                 .AddTextField( "attributeName", a => a.Attribute.Name )
                 .AddTextField( "fieldType", a => a.FieldType )
-                .AddField( "allowSearch", a => a.Attribute.IsAllowSearch );
+                .AddField( "allowSearch", a => a.Attribute.IsAllowSearch )
+                // Include IsSystem so the framework DeleteColumn disables the
+                // delete button as needed.
+                .AddField( "isSystem", a => a.Attribute.IsSystem );
         }
 
         /// <summary>
@@ -1616,6 +1621,42 @@ namespace Rock.Blocks.Engagement
             }
 
             stepType.StepProgramId = targetStepProgram.Id;
+
+            // Update workflow triggers for the transferred step type.
+            var stepWorkflowTriggerService = new StepWorkflowTriggerService( RockContext );
+            var stepTypeTriggers = stepWorkflowTriggerService.Queryable()
+                .Where( t => t.StepTypeId == stepType.Id )
+                .ToList();
+
+            foreach ( var trigger in stepTypeTriggers )
+            {
+                trigger.StepProgramId = targetStepProgram.Id;
+
+                /*
+                     4/1/2026 - MSE
+
+                     Updates Step Workflow Triggers when copying to a new Step Program by remapping
+                     any status-based qualifiers to the corresponding statuses in the target program.
+                     This ensures StatusChanged triggers continue to function correctly after the copy.
+
+                     Reason: Status IDs differ between programs, so existing qualifiers must be remapped to remain valid.
+                */
+                if ( trigger.TriggerType == StepWorkflowTrigger.WorkflowTriggerCondition.StatusChanged )
+                {
+                    var settings = new StepWorkflowTrigger.StatusChangeTriggerSettings( trigger.TypeQualifier );
+                    if ( settings.FromStatusId.HasValue && statusIdMappings.TryGetValue( settings.FromStatusId.Value, out var newFromId ) )
+                    {
+                        settings.FromStatusId = newFromId;
+                    }
+
+                    if ( settings.ToStatusId.HasValue && statusIdMappings.TryGetValue( settings.ToStatusId.Value, out var newToId ) )
+                    {
+                        settings.ToStatusId = newToId;
+                    }
+
+                    trigger.TypeQualifier = settings.ToSelectionString();
+                }
+            }
 
             DeletePrerequisites( stepType.Id );
 

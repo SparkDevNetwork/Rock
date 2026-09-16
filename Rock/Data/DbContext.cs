@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -35,10 +35,13 @@ using System.Web;
 
 using Microsoft.EntityFrameworkCore;
 
+using Rock.Attribute;
 using Rock.Bus.Message;
+using Rock.Configuration;
 using Rock.Model;
 using Rock.Net;
 using Rock.Observability;
+using Rock.Security;
 using Rock.Tasks;
 using Rock.Transactions;
 using Rock.UniversalSearch;
@@ -64,6 +67,16 @@ namespace Rock.Data
     public abstract class DbContext : EFDbContext
     {
         #region Properties
+
+        /// <summary>
+        /// Used to enable the validation of string values when it has been
+        /// enabled in the system settings. This should be removed in the
+        /// future, say around Rock v21, and the validation should then no
+        /// longer be optional. It is automatically enabled at the end of Rock
+        /// startup if the security setting is enabled.
+        /// </summary>
+        [RockInternal( "17.8", keepInternalForever: true )]
+        public static bool EnableStringValidation { get; set; }
 
         /// <summary>
         /// Gets or sets the entity save hook provider.
@@ -807,6 +820,39 @@ namespace Rock.Data
                         }
                     }
                 }
+
+                var updatedItemValues = updatedItems.Values.ToList();
+
+                // If there are any changed items, validate the new values
+                // before saving. This should be the last step before the save,
+                // so that any changes made by the PreSaveChanges() calls will
+                // be included in the validation.
+                if ( updatedItemValues.Count > 0 )
+                {
+                    try
+                    {
+                        ValidatePropertyValues( updatedItemValues );
+                    }
+                    catch ( PropertyValidationException ex )
+                    {
+                        if ( EnableStringValidation )
+                        {
+                            throw;
+                        }
+                        else
+                        {
+                            // Captures the full current call stack, all callers
+                            // included so that we get more information about
+                            // where this happened in the log.
+                            var stack = new System.Diagnostics.StackTrace( true ).ToString();
+
+                            ex.SetStackTrace( stack );
+                            ExceptionLogService.LogException( ex, HttpContext.Current );
+                        }
+                    }
+                }
+
+                return updatedItemValues;
             }
             catch
             {
@@ -816,8 +862,6 @@ namespace Rock.Data
 
                 throw;
             }
-
-            return updatedItems.Values.ToList();
         }
 
         /// <summary>
@@ -859,7 +903,7 @@ namespace Rock.Data
 
                         try
                         {
-                            using ( var rockContext = new RockContext() )
+                            using ( var rockContext = RockApp.Current.CreateRockContext() )
                             {
                                 var auditService = new AuditService( rockContext );
                                 auditService.AddRange( audits );
@@ -908,7 +952,7 @@ namespace Rock.Data
                             {
                                 ExecuteAfterCommit( () =>
                                 {
-                                    using ( var rockContext = new RockContext() )
+                                    using ( var rockContext = RockApp.Current.CreateRockContext() )
                                     {
                                         Rock.Attribute.Helper.UpdateDependantAttributesAndValues( dependantAttributeIds, entity.TypeId, entity.Id, rockContext );
                                     }
@@ -924,7 +968,7 @@ namespace Rock.Data
                             // value that references this entity needs to be updated.
                             ExecuteAfterCommit( () =>
                             {
-                                using ( var rockContext = new RockContext() )
+                                using ( var rockContext = RockApp.Current.CreateRockContext() )
                                 {
                                     Rock.Attribute.Helper.UpdateDependantAttributesAndValues( null, entity.TypeId, entity.Id, rockContext );
                                 }
@@ -979,6 +1023,8 @@ namespace Rock.Data
             var deleteContentCollectionIndexingMsgs = new List<BusStartedTaskMessage>();
             var addInteractionEntityTransactions = new List<AddInteractionEntityTransaction>();
             var interactionGuid = RockRequestContextAccessor.Current?.RelatedInteractionGuid;
+            var cacheSaveOptions = GetOptions<UpdateCacheSaveOptions>();
+            var isUpdateCacheDisabled = cacheSaveOptions?.IsUpdateCacheDisabled ?? false;
 
             foreach ( var item in updatedItems )
             {
@@ -1029,7 +1075,7 @@ namespace Rock.Data
                     }
                 }
 
-                if ( item.Entity is ICacheable cacheable )
+                if ( !isUpdateCacheDisabled && item.Entity is ICacheable cacheable )
                 {
                     /* 04/14/2022 MDP
 
@@ -1049,7 +1095,7 @@ namespace Rock.Data
                         var commitedSuccessfully = task.Result;
                         if ( commitedSuccessfully )
                         {
-                            using ( var rockContextUpdateCache = new RockContext() )
+                            using ( var rockContextUpdateCache = RockApp.Current.CreateRockContext() )
                             {
                                 cacheable.UpdateCache( item.PreSaveStateLegacy, rockContextUpdateCache );
                             }
@@ -1143,6 +1189,30 @@ namespace Rock.Data
                         // rest of the cleanup.
                     }
                 }
+            }
+        }
+
+        /// <summary>
+        /// Validates all the property values for the set of modified entities.
+        /// </summary>
+        /// <param name="contextItems">The context items that represent the entities.</param>
+        private void ValidatePropertyValues( List<ContextItem> contextItems )
+        {
+            // This code was benchmarked on 5/12/2026 by DSH. The timings showed
+            // that adding a new person (creating family, group member, etc.)
+            // caused an additional 0.038ms in this method. Saving an existing
+            // Person generated an additional 0.016ms. This was deemed acceptable
+            // for the gains of having this happen for every save rather than
+            // implementing the logic at a higher level in multiple places.
+
+            foreach ( var contextItem in contextItems )
+            {
+                if ( contextItem.PreSaveState != EntityContextState.Added && contextItem.PreSaveState != EntityContextState.Modified )
+                {
+                    continue;
+                }
+
+                StringValueValidator.ValidateAllStrings( contextItem.Entity );
             }
         }
 
@@ -1472,7 +1542,7 @@ namespace Rock.Data
                         {
                             var workflow = Rock.Model.Workflow.Activate( workflowType, trigger.WorkflowName );
 
-                            using ( var rockContext = new RockContext() )
+                            using ( var rockContext = RockApp.Current.CreateRockContext() )
                             {
                                 var workflowService = new WorkflowService( rockContext );
                                 if ( !workflowService.Process( workflow, entity, out var workflowErrors ) )

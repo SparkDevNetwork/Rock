@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -19,7 +19,10 @@ using System;
 using System.Linq;
 using System.Text;
 using System.Web;
+
 using DocumentFormat.OpenXml.Drawing.Charts;
+
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Security;
 using Rock.Utility;
@@ -121,45 +124,6 @@ namespace Rock.Model
             }
 
             return string.Empty;
-        }
-
-        /// <summary>
-        /// Gets the person photo URL.
-        /// </summary>
-        /// <param name="personId">The person identifier.</param>
-        /// <param name="photoId">The photo identifier.</param>
-        /// <param name="age">The age.</param>
-        /// <param name="gender">The gender.</param>
-        /// <param name="recordTypeValueGuid">The record type value unique identifier.</param>
-        /// <param name="ageClassification">The age classification.</param>
-        /// <param name="maxWidth">The maximum width.</param>
-        /// <param name="maxHeight">The maximum height.</param>
-        /// <returns></returns>
-        [RockObsolete( "1.15" )]
-        [System.Obsolete( "Use alternative method for GetPersonPhotoUrl.", true )]
-        public static string GetPersonPhotoUrl( int? personId, int? photoId, int? age, Gender gender, Guid? recordTypeValueGuid, AgeClassification? ageClassification, int? maxWidth = null, int? maxHeight = null )
-        {
-            
-            int? recordTypeId = null;
-
-            // Convert the record type value guid to an id
-            if ( recordTypeValueGuid.HasValue )
-            {
-                recordTypeId = DefinedValueCache.Get( recordTypeValueGuid.Value ).Id;
-            }
-
-            // Convert maxsizes to size by selecting the greater of the values of maxwidth and maxheight
-            int? size = maxWidth;
-
-            if ( maxHeight.HasValue )
-            {
-                if ( size.HasValue && size.Value < maxHeight.Value )
-                {
-                    size = maxHeight.Value;
-                }
-            }
-
-            return GetPersonPhotoUrl( string.Empty, photoId, age, gender, recordTypeId, ageClassification, size );
         }
 
         /// <summary>
@@ -353,7 +317,7 @@ namespace Rock.Model
                     var ageClassification = personPhotoImageTagArgs.AgeClassification;
                     if ( personId.HasValue && !ageClassification.HasValue )
                     {
-                        using ( var rockContext = new RockContext() )
+                        using ( var rockContext = RockApp.Current.CreateRockContext() )
                         {
                             ageClassification = new PersonService( rockContext ).GetSelect( personId.Value, s => s.AgeClassification );
                         }

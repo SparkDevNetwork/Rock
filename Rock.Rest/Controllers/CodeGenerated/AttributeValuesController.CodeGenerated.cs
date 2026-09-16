@@ -21,6 +21,7 @@
 // </copyright>
 //
 
+using Rock.Configuration;
 using Rock.Model;
 using Rock.SystemGuid;
 
@@ -35,6 +36,6 @@ namespace Rock.Rest.Controllers
         /// <summary>
         /// Initializes a new instance of the <see cref="AttributeValuesController"/> class.
         /// </summary>
-        public AttributeValuesController() : base( new Rock.Model.AttributeValueService( new Rock.Data.RockContext() ) ) { } 
+        public AttributeValuesController() : base( new Rock.Model.AttributeValueService( RockApp.Current.CreateRockContext() ) ) { } 
     }
 }

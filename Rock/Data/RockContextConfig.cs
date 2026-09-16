@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -16,7 +16,9 @@
 //
 #if REVIEW_WEBFORMS
 using System.Data.Entity;
+
 using EF6.TagWith;
+
 using Rock.Data.Interception;
 
 namespace Rock.Data

@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -21,6 +21,7 @@ using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 #endif
+
 using Rock.Attribute;
 using Rock.Model;
 using Rock.Reporting;
@@ -85,6 +86,20 @@ namespace Rock.Field.Types
                 return timeValue;
             }
             return null;
+        }
+
+        #endregion
+
+        #region Value Hinting
+
+        /// <inheritdoc/>
+        internal override FieldTypeHints GetFieldHints( Dictionary<string, string> privateConfigurationValues )
+        {
+            return new FieldTypeHints
+            {
+                IsCompleteList = false,
+                ValueFormat = "A time of day written as hours, minutes and seconds on a 24 hour clock, as in 13:30:00 for half past one in the afternoon. Rock parses this as a TimeSpan, so a display style value such as '1:30 PM' is not stored here."
+            };
         }
 
         #endregion

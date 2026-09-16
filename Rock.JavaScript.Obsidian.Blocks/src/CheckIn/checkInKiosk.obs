@@ -11,7 +11,8 @@
         </NotificationBox>
     </div>
 
-    <div v-else class="check-in-page">
+    <div v-else class="check-in-page"
+         :class="customPageClasses">
         <PageHeader :hasBack="hasBackButton"
                     :hideNavigation="!hasNavigation"
                     :isOverrideMode="isOverrideMode"
@@ -245,6 +246,24 @@
     // #endregion
 
     // #region Computed Values
+
+    const customPageClasses = computed((): string[] => {
+        const classes: string[] = [];
+
+        if (configuration.value.kiosk) {
+            classes.push(`kiosk-${configuration.value.kiosk.idNumber}`);
+        }
+
+        if (configuration.value.campusId != null && configuration.value.campusId !== undefined) {
+            classes.push(`campus-${configuration.value.campusId}`);
+        }
+
+        if (configuration.value.templateId != null && configuration.value.templateId !== undefined) {
+            classes.push(`configuration-template-${configuration.value.templateId}`);
+        }
+
+        return classes;
+    });
 
     const hasNavigation = computed((): boolean => {
         return currentScreen.value !== Screen.Welcome

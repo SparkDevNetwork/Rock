@@ -113,6 +113,8 @@ export const FieldType = {
     ConnectionStatus: "EC381D5D-729F-4581-A8F7-8C1FCE44DA98",
     /** Connection Type field type */
     ConnectionType: "50DA6F25-E81E-46E8-A773-4B479B4FB9E6",
+    /** Connection Type Settings field type */
+    ConnectionTypeSettings: "7D2A3C9F-4E15-4B71-A8CE-9F1B4D2E7C03",
     /** Connection Types field type */
     ConnectionTypes: "E4E72958-4604-498F-956B-BA095976A60B",
     /** Content Channel field type */
@@ -301,6 +303,8 @@ export const FieldType = {
     Report: "B7FA826C-3367-4BF2-90E5-8C6730079D82",
     /** Schedule field type */
     Schedule: "E9C12C59-98EA-4977-8318-647435BE9A9C",
+    /** Schedule Builder field type */
+    ScheduleBuilder: "09D6E619-E8BB-4CF4-8C25-296079A7C318",
     /** Schedules field type */
     Schedules: "EC6A5CAF-F6A2-47A4-9CBA-6E1C53D7E59B",
     /** Secondary auths field type */

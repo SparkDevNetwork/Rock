@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -16,8 +16,11 @@
 //
 
 using System;
+using System.Data.Entity;
 using System.Linq;
 
+using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model.Event.RegistrationInstance.Options;
 
@@ -35,7 +38,7 @@ namespace Rock.Model
         /// <returns>The <see cref="RegistrationSession"/> that was renewed or <c>null</c> if it could not be found.</returns>
         public static RegistrationSession TryToRenewSession( Guid sessionGuid )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var registrationSessionService = new RegistrationSessionService( rockContext );
                 var registrationService = new RegistrationService( rockContext );
@@ -107,10 +110,20 @@ namespace Rock.Model
                             MaxAttendees = context.RegistrationSettings.MaxAttendees,
                             RegistrationInstanceId = context.RegistrationSettings.RegistrationInstanceId
                         } ) ?? 0; // Default to 0 spots remaining if null.
-                        
-                        if ( spotsRemaining < registrationSession.RegistrationCount )
+
+                        // The registrants already saved for an existing registration
+                        // are spots it already holds, even if an administrator moved
+                        // someone off the wait list and pushed the registration over
+                        // capacity. Only the increase beyond those held spots needs
+                        // newly available capacity, so renewal can keep the held
+                        // spots and only the additional ones are limited by what
+                        // remains.
+                        var alreadyReservedSpots = GetReservedActiveSpotCount( rockContext, registrationSession.RegistrationId );
+                        var maxRenewableSpots = spotsRemaining + alreadyReservedSpots;
+
+                        if ( maxRenewableSpots < registrationSession.RegistrationCount )
                         {
-                            registrationSession.RegistrationCount = spotsRemaining;
+                            registrationSession.RegistrationCount = maxRenewableSpots;
                         }
                     }
 
@@ -136,7 +149,23 @@ namespace Rock.Model
         /// <returns>The <see cref="RegistrationSession"/> that was created or updated; or <c>null</c> if an error occurred.</returns>
         public static RegistrationSession CreateOrUpdateSession( Guid sessionGuid, Func<RegistrationSession> createSession, Action<RegistrationSession> updateSession, out string errorMessage )
         {
-            using ( var rockContext = new RockContext() )
+            return CreateOrUpdateSession( sessionGuid, createSession, updateSession, false, out errorMessage );
+        }
+
+        /// <summary>
+        /// Creates or update a registration session. This method operates
+        /// inside a database lock to prevent other sessions from being
+        /// modified at the same time.
+        /// </summary>
+        /// <param name="sessionGuid">The session unique identifier.</param>
+        /// <param name="createSession">The method to call to get a new <see cref="RegistrationSession"/> object that will be persisted to the database.</param>
+        /// <param name="updateSession">The method to call to update an existing <see cref="RegistrationSession"/> object with any new information.</param>
+        /// <param name="creditAlreadyReservedSpots">When <c>true</c>, the session's <see cref="RegistrationSession.RegistrationCount"/> is treated as the registration's full desired non-wait-list count, and only the increase beyond the registrants it has already saved is required to fit the available capacity. When <c>false</c>, the entire count must fit. Pass <c>true</c> only when the count represents the whole registration (such as the registration entry flow); pass <c>false</c> when reserving a single incremental spot.</param>
+        /// <param name="errorMessage">The error message.</param>
+        /// <returns>The <see cref="RegistrationSession"/> that was created or updated; or <c>null</c> if an error occurred.</returns>
+        public static RegistrationSession CreateOrUpdateSession( Guid sessionGuid, Func<RegistrationSession> createSession, Action<RegistrationSession> updateSession, bool creditAlreadyReservedSpots, out string errorMessage )
+        {
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var registrationSessionService = new RegistrationSessionService( rockContext );
                 var registrationInstanceService = new RegistrationInstanceService( rockContext );
@@ -241,7 +270,21 @@ namespace Rock.Model
                         MaxAttendees = timeoutSettings.MaxAttendees
                     } );
 
-                    if ( spotsRemaining.HasValue && ( spotsRemaining.Value < registrationSession.RegistrationCount ) )
+                    // The registrants already saved for an existing registration are
+                    // spots it already holds, even if an administrator moved someone
+                    // off the wait list and pushed the registration over capacity.
+                    // Only the increase beyond those held spots needs newly available
+                    // capacity, so a registrant returning to complete payment is never
+                    // blocked for the spots they already hold. This crediting only
+                    // applies when the count represents the entire registration; a
+                    // caller reserving a single incremental spot opts out so the spot
+                    // is still checked against capacity.
+                    var alreadyReservedSpots = creditAlreadyReservedSpots
+                        ? GetReservedActiveSpotCount( rockContext, registrationSession.RegistrationId )
+                        : 0;
+                    var requestedNewSpots = registrationSession.RegistrationCount - alreadyReservedSpots;
+
+                    if ( spotsRemaining.HasValue && ( spotsRemaining.Value < requestedNewSpots ) )
                     {
                         internalErrorMessage = "There is not enough capacity remaining for this many registrants.";
 
@@ -273,7 +316,7 @@ namespace Rock.Model
         /// <param name="sessionGuid">The session unique identifier.</param>
         public static void CloseAndRemoveSession( Guid sessionGuid )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 try
                 {
@@ -288,6 +331,66 @@ namespace Rock.Model
                     ExceptionLogService.LogException( e );
                 }
             }
+        }
+
+        /// <summary>
+        /// Removes every expired <see cref="RegistrationSession"/> that references the specified registration.
+        /// </summary>
+        /// <remarks>
+        ///     <para>
+        ///         An expired session no longer holds a reserved spot or an in-progress payment, so it
+        ///         should not keep a registration from being deleted. Unexpired sessions are left in place.
+        ///         Call this before <see cref="RegistrationService.CanDelete(Registration, out string)"/>
+        ///         so a registration is not blocked from deletion by a session that has already timed out.
+        ///     </para>
+        ///     <para>
+        ///         <strong>This is an internal API</strong> that supports the Rock
+        ///         infrastructure and not subject to the same compatibility standards
+        ///         as public APIs. It may be changed or removed without notice in any
+        ///         release and should therefore not be directly used in any plug-ins.
+        ///     </para>
+        /// </remarks>
+        /// <param name="registrationId">The identifier of the registration whose expired sessions should be removed.</param>
+        /// <returns>The number of expired sessions that were removed.</returns>
+        [RockInternal( "20.1" )]
+        public static int RemoveExpiredSessionsForRegistration( int registrationId )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var registrationSessionService = new RegistrationSessionService( rockContext );
+                var expiredSessionsQuery = registrationSessionService.Queryable()
+                    .Where( s => s.RegistrationId == registrationId && s.ExpirationDateTime < RockDateTime.Now );
+
+                registrationSessionService.DeleteRange( expiredSessionsQuery );
+
+                return rockContext.SaveChanges();
+            }
+        }
+
+        /// <summary>
+        /// Gets the number of non-wait-list registrants already saved for the registration.
+        /// </summary>
+        /// <remarks>
+        /// These represent spots the registration already holds, so they are
+        /// grandfathered when validating capacity for an existing registration's
+        /// session, such as a registrant returning to complete payment.
+        /// </remarks>
+        /// <param name="rockContext">The Rock context to query in.</param>
+        /// <param name="registrationId">The registration identifier, or <c>null</c> for a registration that has not been saved yet.</param>
+        /// <returns>The count of saved, non-wait-list registrants; or <c>0</c> when <paramref name="registrationId"/> is <c>null</c>.</returns>
+        private static int GetReservedActiveSpotCount( RockContext rockContext, int? registrationId )
+        {
+            if ( !registrationId.HasValue )
+            {
+                return 0;
+            }
+
+            return new RegistrationRegistrantService( rockContext )
+                .Queryable()
+                .AsNoTracking()
+                .Count( r => r.RegistrationId == registrationId.Value
+                    && !r.OnWaitList
+                    && !r.Registration.IsTemporary );
         }
     }
 }

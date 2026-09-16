@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -22,6 +22,7 @@ using System.Data.Entity;
 using System.Linq;
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Obsidian.UI;
@@ -189,7 +190,7 @@ namespace Rock.Blocks.Cms
                     .Count( i =>
                         ( i.StartDateTime.CompareTo( now ) < 0 ) &&
                         ( !i.ExpireDateTime.HasValue || i.ExpireDateTime.Value.CompareTo( now ) > 0 ) &&
-                        ( i.ApprovedByPersonAliasId.HasValue || !c.RequiresApproval )
+                        ( i.Status == ContentChannelItemStatus.Approved || !c.RequiresApproval || c.ContentChannelType.DisableStatus )
                 )
             } ).AsQueryable();
 
@@ -214,7 +215,7 @@ namespace Rock.Blocks.Cms
         [BlockAction]
         public BlockActionResult Delete( string key )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var entityService = new ContentChannelService( rockContext );
                 var contentChannelItemService = new ContentChannelItemService( rockContext );

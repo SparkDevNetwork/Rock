@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -20,9 +20,10 @@ using System.Linq;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
-using Rock.Tests.Shared.TestFramework;
+using Rock.Tests.Integration.TestFramework.Database;
 
 namespace Rock.Tests.Integration.Core.UniversalSearch.IndexModels
 {
@@ -33,7 +34,7 @@ namespace Rock.Tests.Integration.Core.UniversalSearch.IndexModels
         [Ignore]
         public void TestLoadByModel()
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var groupService = new GroupService( rockContext );
             //var group = groupService.Get( 285761 ); // 50k members
             var group = groupService.Get( 285760 ); // 500k members
@@ -45,7 +46,7 @@ namespace Rock.Tests.Integration.Core.UniversalSearch.IndexModels
         [Ignore]
         public void TestGroupIndexTransaction()
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var groupService = new GroupService( rockContext );
             var groupMemberService = new GroupMemberService( rockContext );
 

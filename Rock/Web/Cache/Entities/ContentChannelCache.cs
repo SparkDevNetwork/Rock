@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -157,6 +157,26 @@ namespace Rock.Web.Cache
         public string RootImageDirectory { get; private set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether items in this channel use the
+        /// structured content editor rather than the HTML editor.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if the channel uses structured content; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool IsStructuredContent { get; private set; }
+
+        /// <summary>
+        /// Gets or sets the Id of the DefinedValue that selects the structured
+        /// content editor tool set, or <c>null</c> to use the system default tools.
+        /// </summary>
+        /// <value>
+        /// The structured content tool DefinedValue Id.
+        /// </value>
+        [DataMember]
+        public int? StructuredContentToolValueId { get; private set; }
+
+        /// <summary>
         /// Gets or sets a value indicating whether this instance is index enabled.
         /// </summary>
         /// <value>
@@ -173,6 +193,33 @@ namespace Rock.Web.Cache
         /// </value>
         [DataMember]
         public bool EnablePersonalization { get; private set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether tagging is enabled for items in
+        /// this channel.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if tagging is enabled; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool IsTaggingEnabled { get; private set; }
+
+        /// <summary>
+        /// Gets or sets the Id of the category that tags applied to this channel's
+        /// items must belong to, or <c>null</c> when item tags are not restricted
+        /// to a single category.
+        /// </summary>
+        /// <value>
+        /// The item tag category identifier.
+        /// </value>
+        [DataMember]
+        public int? ItemTagCategoryId { get; private set; }
+
+        /// <summary>
+        /// Gets the category that tags applied to this channel's items must belong
+        /// to, or <c>null</c> when item tags are not restricted to a single category.
+        /// </summary>
+        public CategoryCache ItemTagCategory => ItemTagCategoryId.HasValue ? CategoryCache.Get( ItemTagCategoryId.Value ) : null;
 
         /// <summary>
         /// Gets or sets the category ids.
@@ -308,25 +355,6 @@ namespace Rock.Web.Cache
         }
 
         /// <summary>
-        /// Gets the parent authority.
-        /// </summary>
-        /// <value>
-        /// The parent authority.
-        /// </value>
-        public override ISecured ParentAuthority
-        {
-            get
-            {
-                using ( var rockContext = RockApp.Current.CreateRockContext() )
-                {
-                    var contentChannelType = new ContentChannelTypeService( rockContext ).Get( ContentChannelTypeId );
-                    return contentChannelType ?? base.ParentAuthority;
-                }
-
-            }
-        }
-
-        /// <summary>
         /// Gets the content channel type cache.
         /// </summary>
         /// <value>
@@ -362,6 +390,63 @@ namespace Rock.Web.Cache
         /// </value>
         public ContentLibraryConfiguration ContentLibraryConfiguration { get; set; }
 
+        /// <summary>
+        /// Gets the content channel items.
+        /// </summary>
+        /// <remarks>
+        /// If this channel's items are manually ordered, this collection will be sorted according to the
+        /// order specified in the database. If not, they will be sorted by their start date/time.
+        /// </remarks>
+        public List<ContentChannelItemCache> ContentChannelItems
+        {
+            get
+            {
+                var contentChannelItems = new List<ContentChannelItemCache>();
+
+                if ( _contentChannelItemIds == null )
+                {
+                    lock ( _obj )
+                    {
+                        if ( _contentChannelItemIds == null )
+                        {
+                            using ( var rockContext = RockApp.Current.CreateRockContext() )
+                            {
+                                var qry = new ContentChannelItemService( rockContext )
+                                    .Queryable()
+                                    .Where( i => i.ContentChannelId == Id );
+
+                                if ( ItemsManuallyOrdered )
+                                {
+                                    qry = qry.OrderBy( i => i.Order );
+                                }
+                                else
+                                {
+                                    qry = qry.OrderBy( i => i.StartDateTime );
+                                }
+
+                                _contentChannelItemIds = qry
+                                    .Select( c => c.Id )
+                                    .ToList();
+                            }
+                        }
+                    }
+                }
+
+                foreach ( var id in _contentChannelItemIds )
+                {
+                    var contentChannelItem = ContentChannelItemCache.Get( id );
+                    if ( contentChannelItem != null )
+                    {
+                        contentChannelItems.Add( contentChannelItem );
+                    }
+                }
+
+                return contentChannelItems;
+            }
+        }
+
+        private List<int> _contentChannelItemIds = null;
+
         #endregion
 
         #region Public Methods
@@ -390,10 +475,16 @@ namespace Rock.Web.Cache
             TimeToLive = contentChannel.TimeToLive;
             ContentControlType = contentChannel.ContentControlType;
             RootImageDirectory = contentChannel.RootImageDirectory;
+            IsStructuredContent = contentChannel.IsStructuredContent;
+            StructuredContentToolValueId = contentChannel.StructuredContentToolValueId;
             IsIndexEnabled = contentChannel.IsIndexEnabled;
             EnablePersonalization = contentChannel.EnablePersonalization;
+            IsTaggingEnabled = contentChannel.IsTaggingEnabled;
+            ItemTagCategoryId = contentChannel.ItemTagCategoryId;
             CategoryIds = contentChannel.Categories.Select( c => c.Id ).ToList();
             ContentLibraryConfigurationJson = contentChannel.ContentLibraryConfigurationJson;
+
+            _contentChannelItemIds = null;
         }
 
         /// <summary>
@@ -408,6 +499,24 @@ namespace Rock.Web.Cache
         }
 
         #endregion
+
+        #region ISecured
+
+        /*
+             3/12/2026 - NA
+
+             ⚠ SECURITY NOTICE ⚠
+
+             If the model implements custom ISecured behavior, the corresponding
+             {Entity}Cache class MUST implement the same security logic.
+
+             Reason: Prevent security mismatches between model entities and cache objects.
+        */
+
+        /// <inheritdoc />
+        public override ISecured ParentAuthority => ContentChannelType ?? base.ParentAuthority;
+
+        #endregion ISecured
 
     }
 }

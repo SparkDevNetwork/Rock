@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -16,17 +16,12 @@
 //
 using System.Collections.Generic;
 using System.Linq;
-using AngleSharp.Dom;
 #if WEBFORMS
 using System.Web.UI;
 #endif
+
 using Rock.Attribute;
-using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
-using Rock.Web;
-using Rock.ViewModels.Utility;
-using System;
-using Rock.Data;
 
 namespace Rock.Field.Types
 {
@@ -90,6 +85,20 @@ namespace Rock.Field.Types
         public override string GetPublicValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
         {
             return GetTextValue( privateValue, privateConfigurationValues );
+        }
+
+        #endregion
+
+        #region Value Hinting
+
+        /// <inheritdoc/>
+        internal override FieldTypeHints GetFieldHints( Dictionary<string, string> privateConfigurationValues )
+        {
+            return new FieldTypeHints
+            {
+                IsCompleteList = false,
+                ValueFormat = "The token a captcha challenge produced when a person completed it, stored as proof that the challenge was passed. It is not text a person types and not something to fill in when creating or editing a record, so leave it empty unless carrying an existing value through."
+            };
         }
 
         #endregion

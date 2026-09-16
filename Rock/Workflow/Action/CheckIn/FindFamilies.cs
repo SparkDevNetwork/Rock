@@ -109,6 +109,16 @@ namespace Rock.Workflow.Action.CheckIn
                         {
                             var personIds = personService.GetByFullName( checkInState.CheckIn.SearchValue, false ).AsNoTracking().Select( p => p.Id );
                             familyMemberQry = familyMemberQry.Where( f => personIds.Contains( f.PersonId ) );
+
+                            // Force SQL server to not cache the query plan if
+                            // we are searching by name and the search value is
+                            // less than 7 characters. Otherwise it will probably
+                            // use a bad query plan and then cache it for other
+                            // queries that have longer search values.
+                            if ( checkInState.CheckIn.SearchValue.Length < 7 )
+                            {
+                                familyMemberQry = familyMemberQry.WithRecompile();
+                            }
                         }
                         else if ( checkInState.CheckIn.SearchType.Guid.Equals( SystemGuid.DefinedValue.CHECKIN_SEARCH_TYPE_SCANNED_ID.AsGuid() ) )
                         {

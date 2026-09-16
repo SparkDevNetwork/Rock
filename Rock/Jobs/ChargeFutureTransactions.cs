@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -24,6 +24,7 @@ using System.Web;
 
 using Rock.Attribute;
 using Rock.Communication;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Financial;
 using Rock.Lava;
@@ -90,7 +91,7 @@ namespace Rock.Jobs
         {
             Guid? receiptEmail = GetAttributeValue( AttributeKey.ReceiptEmail ).AsGuidOrNull();
 
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var transactionService = new FinancialTransactionService( rockContext );
             var futureTransactions = transactionService.GetFutureTransactions()
                 .Where( ft => ft.FutureProcessingDateTime <= RockDateTime.Now
@@ -113,7 +114,7 @@ namespace Rock.Jobs
                     rockContext.SaveChanges();
 
                     // If this is a text to give transction, attempt to send the giver a notification that their transaction failed.
-                    Task.Run( () => SendTextToGiveFailureNotification( futureTransaction.Id ) );
+                    Task.Run( () => SendTextToGiveFailureNotification( futureTransaction.Id, errorMessage ) );
 
                     errors.Add( errorMessage );
                 }
@@ -172,14 +173,20 @@ namespace Rock.Jobs
         }
 
         /// <summary>
-        /// Sends a notification that a text to give transaction failed.
+        /// Sends a notification to the giver that a text to give transaction failed and then
+        /// deletes the failed transaction.  If any part of this process fails the transaction
+        /// will not be deleted.
         /// </summary>
         /// <param name="transactionId">The transaction identifier.</param>
-        private void SendTextToGiveFailureNotification( int transactionId )
+        /// <param name="errorMessage">The error message from the processing gateway.</param>
+        private void SendTextToGiveFailureNotification( int transactionId, string errorMessage )
         {
+            var exceptionMessage = $"{this.ServiceJobName} job was unable to notify the giver that their text-to-give failed (due to '{errorMessage}') and therefore the transaction with Id {transactionId} was not deleted.";
+
             var smsBody = GetAttributeValue( AttributeKey.TextToGiveFailureMessage );
             if ( string.IsNullOrWhiteSpace( smsBody ) )
             {
+                ExceptionLogService.LogException( exceptionMessage + " Reason: The job is missing the required 'Text to Give Failure Message'." );
                 return; // No response message.
             }
 
@@ -187,10 +194,11 @@ namespace Rock.Jobs
             var isSmsEnabled = ( smsFrom != null ) && MediumContainer.HasActiveSmsTransport();
             if ( !isSmsEnabled )
             {
+                ExceptionLogService.LogException( exceptionMessage + " Reason: Either the SMS Transport is not active or the job is missing the 'Send SMS Response From'." );
                 return; // Not configured to send SMS.
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var transactionService = new FinancialTransactionService( rockContext );
                 var transaction = transactionService.Get( transactionId );
@@ -198,6 +206,7 @@ namespace Rock.Jobs
 
                 if ( person == null )
                 {
+                    ExceptionLogService.LogException( exceptionMessage + " Reason: The person was missing from the transaction." );
                     return; // Broken transaction (shouldn't happen).
                 }
 
@@ -205,6 +214,7 @@ namespace Rock.Jobs
                 var smsNumber = smsNumbers.FirstOrDefault();
                 if ( smsNumber == null )
                 {
+                    ExceptionLogService.LogException( exceptionMessage + " Reason: The person does not have an SMS enabled phone number." );
                     return; // No SMS enabled numbers.
                 }
 
@@ -229,7 +239,15 @@ namespace Rock.Jobs
 
                 var smsRecipient = new RockSMSMessageRecipient( person, smsNumber.Number, mergeFields );
                 smsMessage.AddRecipient( smsRecipient );
-                smsMessage.Send();
+                if ( smsMessage.Send() )
+                {
+                    transactionService.Delete( transaction );
+                    rockContext.SaveChanges();
+                }
+                else
+                {
+                    ExceptionLogService.LogException( exceptionMessage + " Reason: The SMS message failed to send." );
+                }
             }
         }
 

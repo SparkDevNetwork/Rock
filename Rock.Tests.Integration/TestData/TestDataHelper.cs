@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -20,10 +20,12 @@ using System.Linq;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Tests.Integration.TestData.Engagement;
 using Rock.Tests.Shared;
+using Rock.Tests.Shared.Constants;
 using Rock.Web.Cache;
 
 namespace Rock.Tests.Integration.TestData
@@ -39,7 +41,7 @@ namespace Rock.Tests.Integration.TestData
         /// <returns></returns>
         public static Person GetTestPerson( string personGuid )
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
 
             var guid = new Guid( personGuid );
 
@@ -62,7 +64,7 @@ namespace Rock.Tests.Integration.TestData
         {
             if ( _PersonIdToAliasIdMap == null )
             {
-                var aliasService = new PersonAliasService( new RockContext() );
+                var aliasService = new PersonAliasService( RockApp.Current.CreateRockContext() );
 
                 _PersonIdToAliasIdMap = aliasService.Queryable()
                     .Where( x => !x.Person.IsSystem )
@@ -163,7 +165,7 @@ namespace Rock.Tests.Integration.TestData
         /// <param name="newAttributeValueGuid">If a <see cref="AttributeValue"/> doesn't already exist in the database, the <see cref="Guid"/> of the newly-created record will be returned, so you can delete it after the current tests complete.</param>
         public static void SetAttributeValue( Guid attributeGuid, int? entityId, string value, out string previousValue, out Guid newAttributeValueGuid )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 previousValue = null;
                 newAttributeValueGuid = Guid.Empty;
@@ -209,7 +211,7 @@ namespace Rock.Tests.Integration.TestData
         /// <param name="attributeValueGuid">The attribute value unique identifier.</param>
         public static void DeleteAttributeValue( Guid attributeValueGuid )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var attributeValueService = new AttributeValueService( rockContext );
                 var attributeValue = attributeValueService.Get( attributeValueGuid );
@@ -263,7 +265,7 @@ namespace Rock.Tests.Integration.TestData
         /// <param name="foreignKeyList"></param>
         public static void DeletePersonAliases( IEnumerable<string> foreignKeyList )
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
 
             var personAliasService = new PersonAliasService( rockContext );
             var personAliases = personAliasService.Queryable().Where( pa => foreignKeyList.Contains( pa.ForeignKey ) ).ToList();
@@ -277,10 +279,10 @@ namespace Rock.Tests.Integration.TestData
         {
             try
             {
-                var rockContext = new RockContext();
+                var rockContext = RockApp.Current.CreateRockContext();
 
                 // Delete Search Key
-                //using ( var rockContext = new RockContext() )
+                //using ( var rockContext = RockApp.Current.CreateRockContext() )
                 //{
                 var personSearchKeyService = new PersonSearchKeyService( rockContext );
                 var personSearchKeyQuery = personSearchKeyService.Queryable()
@@ -290,7 +292,7 @@ namespace Rock.Tests.Integration.TestData
                 //}
 
                 // Delete Connection Requests
-                //using ( var rockContext = new RockContext() )
+                //using ( var rockContext = RockApp.Current.CreateRockContext() )
                 //{
                 var connectionRequestActivityService = new ConnectionRequestActivityService( rockContext );
                 var connectionRequestActivityQuery = connectionRequestActivityService.Queryable()
@@ -299,7 +301,7 @@ namespace Rock.Tests.Integration.TestData
                 rockContext.SaveChanges();
                 //}
 
-                //using ( var rockContext = new RockContext() )
+                //using ( var rockContext = RockApp.Current.CreateRockContext() )
                 //{
                 var connectionRequestService = new ConnectionRequestService( rockContext );
                 var connectionRequestQuery = connectionRequestService.Queryable()
@@ -315,7 +317,7 @@ namespace Rock.Tests.Integration.TestData
                 rockContext.SaveChanges();
 
                 // Delete Person Aliases
-                //using ( var rockContext = new RockContext() )
+                //using ( var rockContext = RockApp.Current.CreateRockContext() )
                 //{
                 var personAliasService = new PersonAliasService( rockContext );
                 var personAliasQuery = personAliasService.Queryable()
@@ -325,7 +327,7 @@ namespace Rock.Tests.Integration.TestData
                 //}
 
                 // Delete Person
-                //using ( var rockContext = new RockContext() )
+                //using ( var rockContext = RockApp.Current.CreateRockContext() )
                 //{
                 var personService = new PersonService( rockContext );
                 var personQuery = personService.Queryable()
@@ -407,7 +409,7 @@ namespace Rock.Tests.Integration.TestData
 
         public static void DeleteCommunicationsByForeignKey( string foreignKey )
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var communicationService = new CommunicationService( rockContext );
 
             var communications = communicationService.Queryable().Where( x => x.ForeignKey == foreignKey );
@@ -416,7 +418,7 @@ namespace Rock.Tests.Integration.TestData
         }
         public static void DeleteCommunications( IEnumerable<Rock.Model.Communication> communications )
         {
-            DeleteCommunications( communications, new RockContext() );
+            DeleteCommunications( communications, RockApp.Current.CreateRockContext() );
         }
 
         private static void DeleteCommunications( IEnumerable<Rock.Model.Communication> communications, RockContext dataContext )
@@ -431,7 +433,7 @@ namespace Rock.Tests.Integration.TestData
 
         internal static RockContext GetActiveRockContext( RockContext rockContext )
         {
-            return rockContext ?? new RockContext();
+            return rockContext ?? RockApp.Current.CreateRockContext();
         }
 
         #region Asserts

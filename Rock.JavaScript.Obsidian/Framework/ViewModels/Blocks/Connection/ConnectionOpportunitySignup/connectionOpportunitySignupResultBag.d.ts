@@ -25,6 +25,13 @@ import { ConnectionOpportunitySignupResultType } from "@Obsidian/Enums/Blocks/Co
 
 /** A bag containing the response information after signing up. */
 export type ConnectionOpportunitySignupResultBag = {
+    /**
+     * Gets or sets the URL the client should redirect to after a
+     * successful signup. This is set when the response Lava template
+     * uses the PageRedirect filter.
+     */
+    redirectUrl?: string | null;
+
     /** Gets or sets the response message (success or error details). */
     responseMessage?: string | null;
 

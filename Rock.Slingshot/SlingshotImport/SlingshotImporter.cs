@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -31,10 +31,10 @@ using System.Threading;
 using CsvHelper;
 
 using Rock;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
-
 // Alias Slingshot.Core namespace to avoid conflict with Rock.Slingshot.*
 using SlingshotCore = global::Slingshot.Core;
 
@@ -761,7 +761,7 @@ namespace Rock.Slingshot
             this.ReportProgress( 0, $"Preparing {entityFriendlyName} Notes Import..." );
 
             var noteImportList = new List<Model.NoteImport>();
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var noteTypeService = new NoteTypeService( rockContext );
 
             var noteTypeLookup = noteTypeService.Queryable()
@@ -2103,7 +2103,7 @@ namespace Rock.Slingshot
                 }
             }
 
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var campusService = new CampusService( rockContext );
 
             // Flush the campuscache just in case it was updated in the Database without rock knowing about it
@@ -2147,7 +2147,7 @@ namespace Rock.Slingshot
         /// </summary>
         private void AddGroupTypes()
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var groupTypeService = new GroupTypeService( rockContext );
 
             foreach ( var importGroupType in this.SlingshotGroupTypeList.Where( a => !this.GroupTypeLookupByForeignId.ContainsKey( a.Id ) ) )
@@ -2188,7 +2188,7 @@ namespace Rock.Slingshot
             var personCategoryNames = this.SlingshotPersonAttributes.Where( a => !string.IsNullOrWhiteSpace( a.Category ) ).Select( a => a.Category ).Distinct().ToList();
             personCategoryNames.AddRange( this.SlingshotFamilyAttributes.Where( a => !string.IsNullOrWhiteSpace( a.Category ) ).Select( a => a.Category ).Distinct().ToList() );
 
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var categoryService = new CategoryService( rockContext );
 
             var attributeCategoryList = categoryService.Queryable().Where( a => a.EntityTypeId == entityTypeIdAttribute ).ToList();
@@ -2221,7 +2221,7 @@ namespace Rock.Slingshot
         {
             int entityTypeIdPerson = EntityTypeCache.GetId<Person>().Value;
 
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var attributeService = new AttributeService( rockContext );
 
             var entityTypeIdAttribute = EntityTypeCache.GetId<Rock.Model.Attribute>().Value;
@@ -2274,7 +2274,7 @@ namespace Rock.Slingshot
         {
             int entityTypeIdPerson = EntityTypeCache.GetId<Person>().Value;
 
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var attributeService = new AttributeService( rockContext );
 
             var entityTypeIdAttribute = EntityTypeCache.GetId<Rock.Model.Attribute>().Value;
@@ -2327,7 +2327,7 @@ namespace Rock.Slingshot
         {
             int entityTypeIdGroup = EntityTypeCache.GetId<Group>().Value;
 
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var attributeService = new AttributeService( rockContext );
             var entityTypeIdAttribute = EntityTypeCache.GetId<Rock.Model.Attribute>().Value;
             var attributeCategoryList = new CategoryService( rockContext ).Queryable().Where( a => a.EntityTypeId == entityTypeIdAttribute ).ToList();
@@ -2380,7 +2380,7 @@ namespace Rock.Slingshot
         {
             int entityTypeIdGroup = EntityTypeCache.GetId<Group>().Value;
 
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var attributeService = new AttributeService( rockContext );
             var entityTypeIdAttribute = EntityTypeCache.GetId<Rock.Model.Attribute>().Value;
             var attributeCategoryList = new CategoryService( rockContext ).Queryable().Where( a => a.EntityTypeId == entityTypeIdAttribute ).ToList();
@@ -2530,7 +2530,7 @@ namespace Rock.Slingshot
         {
             var definedTypeId = existingValues.Select( a => a.Value.DefinedTypeId ).First();
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var definedValueService = new DefinedValueService( rockContext );
 
@@ -2854,7 +2854,7 @@ namespace Rock.Slingshot
 
             if ( definedValuesToAdd.Any() )
             {
-                var rockContext = new RockContext();
+                var rockContext = RockApp.Current.CreateRockContext();
                 var definedValueService = new DefinedValueService( rockContext );
                 definedValueService.AddRange( definedValuesToAdd );
                 rockContext.SaveChanges();
@@ -2887,7 +2887,7 @@ namespace Rock.Slingshot
             int entityTypeIdGroup = EntityTypeCache.GetId<Group>().Value;
             int entityTypeIdAttribute = EntityTypeCache.GetId<Rock.Model.Attribute>().Value;
 
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
 
             // Person Attributes
             var personAttributes = new AttributeService( rockContext ).Queryable().Where( a => a.EntityTypeId == entityTypeIdPerson ).Select( a => a.Id ).ToList().Select( a => AttributeCache.Get( a ) ).ToList();

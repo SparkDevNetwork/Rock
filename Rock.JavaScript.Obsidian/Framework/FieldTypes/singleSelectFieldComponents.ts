@@ -22,7 +22,7 @@ import NumberBox from "@Obsidian/Controls/numberBox.obs";
 import RadioButtonList from "@Obsidian/Controls/radioButtonList.obs";
 import TextBox from "@Obsidian/Controls/textBox.obs";
 import { toNumberOrNull } from "@Obsidian/Utility/numberUtils";
-import { ConfigurationValueKey } from "./singleSelectField.partial";
+import { ConfigurationKey } from "./singleSelectField.partial";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { updateRefValue } from "@Obsidian/Utility/component";
 
@@ -52,7 +52,7 @@ export const EditComponent = defineComponent({
         /** The options to choose from in the drop down list */
         options(): ListItemBag[] {
             try {
-                const providedOptions = JSON.parse(this.configurationValues[ConfigurationValueKey.Values] ?? "[]") as ListItemBag[];
+                const providedOptions = JSON.parse(this.configurationValues[ConfigurationKey.Values] ?? "[]") as ListItemBag[];
 
                 if (this.isRadioButtons && !this.isRequired) {
                     providedOptions.unshift({
@@ -71,7 +71,7 @@ export const EditComponent = defineComponent({
         /** Any additional attributes that will be assigned to the drop down list control */
         ddlConfigAttributes(): Record<string, number | boolean> {
             const attributes: Record<string, number | boolean> = {};
-            const fieldTypeConfig = this.configurationValues[ConfigurationValueKey.FieldType];
+            const fieldTypeConfig = this.configurationValues[ConfigurationKey.FieldType];
 
             if (fieldTypeConfig === "ddl_enhanced") {
                 attributes.enhanceForLongLists = true;
@@ -83,7 +83,7 @@ export const EditComponent = defineComponent({
         /** Any additional attributes that will be assigned to the radio button control */
         rbConfigAttributes(): Record<string, number | boolean> {
             const attributes: Record<string, number | boolean> = {};
-            const repeatColumnsConfig = this.configurationValues[ConfigurationValueKey.RepeatColumns];
+            const repeatColumnsConfig = this.configurationValues[ConfigurationKey.RepeatColumns];
 
             if (repeatColumnsConfig) {
                 attributes["repeatColumns"] = toNumberOrNull(repeatColumnsConfig) || 0;
@@ -94,7 +94,7 @@ export const EditComponent = defineComponent({
 
         /** Is the control going to be radio buttons? */
         isRadioButtons(): boolean {
-            const fieldTypeConfig = this.configurationValues[ConfigurationValueKey.FieldType];
+            const fieldTypeConfig = this.configurationValues[ConfigurationKey.FieldType];
             return fieldTypeConfig === "rb";
         }
     },
@@ -132,7 +132,7 @@ export const FilterComponent = defineComponent({
 
         const options = computed((): ListItemBag[] => {
             try {
-                const providedOptions = JSON.parse(props.configurationValues[ConfigurationValueKey.Values] ?? "[]") as ListItemBag[];
+                const providedOptions = JSON.parse(props.configurationValues[ConfigurationKey.Values] ?? "[]") as ListItemBag[];
 
                 return providedOptions;
             }
@@ -216,18 +216,18 @@ export const ConfigurationComponent = defineComponent({
          * @returns true if a new modelValue was emitted to the parent component.
          */
         const maybeUpdateModelValue = (): boolean => {
-            const newValue: Record<string, string> = {...props.modelValue};
+            const newValue: Record<string, string> = { ...props.modelValue };
 
             // Construct the new value that will be emitted if it is different
             // than the current value.
-            newValue[ConfigurationValueKey.CustomValues] = internalRawValues.value ?? "";
-            newValue[ConfigurationValueKey.FieldType] = controlType.value ?? "";
-            newValue[ConfigurationValueKey.RepeatColumns] = repeatColumns.value?.toString() ?? "";
+            newValue[ConfigurationKey.CustomValues] = internalRawValues.value ?? "";
+            newValue[ConfigurationKey.FieldType] = controlType.value ?? "";
+            newValue[ConfigurationKey.RepeatColumns] = repeatColumns.value?.toString() ?? "";
 
             // Compare the new value and the old value.
-            const anyValueChanged = newValue[ConfigurationValueKey.CustomValues] !== (props.modelValue[ConfigurationValueKey.CustomValues] ?? "")
-                || newValue[ConfigurationValueKey.FieldType] !== (props.modelValue[ConfigurationValueKey.FieldType] ?? "")
-                || newValue[ConfigurationValueKey.RepeatColumns] !== (props.modelValue[ConfigurationValueKey.RepeatColumns] ?? "");
+            const anyValueChanged = newValue[ConfigurationKey.CustomValues] !== (props.modelValue[ConfigurationKey.CustomValues] ?? "")
+                || newValue[ConfigurationKey.FieldType] !== (props.modelValue[ConfigurationKey.FieldType] ?? "")
+                || newValue[ConfigurationKey.RepeatColumns] !== (props.modelValue[ConfigurationKey.RepeatColumns] ?? "");
 
             // If any value changed then emit the new model value.
             if (anyValueChanged) {
@@ -254,10 +254,10 @@ export const ConfigurationComponent = defineComponent({
         // Watch for changes coming in from the parent component and update our
         // data to match the new information.
         watch(() => [props.modelValue, props.configurationProperties], () => {
-            rawValues.value = props.modelValue[ConfigurationValueKey.CustomValues] ?? "";
+            rawValues.value = props.modelValue[ConfigurationKey.CustomValues] ?? "";
             internalRawValues.value = rawValues.value;
-            controlType.value = props.modelValue[ConfigurationValueKey.FieldType] ?? "ddl";
-            repeatColumns.value = toNumberOrNull(props.modelValue[ConfigurationValueKey.RepeatColumns]);
+            controlType.value = props.modelValue[ConfigurationKey.FieldType] ?? "ddl";
+            repeatColumns.value = toNumberOrNull(props.modelValue[ConfigurationKey.RepeatColumns]);
         }, {
             immediate: true
         });
@@ -271,8 +271,8 @@ export const ConfigurationComponent = defineComponent({
         });
 
         // Watch for changes in properties that only require a local UI update.
-        watch(controlType, () => maybeUpdateConfiguration(ConfigurationValueKey.FieldType, controlType.value ?? "ddl"));
-        watch(repeatColumns, () => maybeUpdateConfiguration(ConfigurationValueKey.RepeatColumns, repeatColumns.value?.toString() ?? ""));
+        watch(controlType, () => maybeUpdateConfiguration(ConfigurationKey.FieldType, controlType.value ?? "ddl"));
+        watch(repeatColumns, () => maybeUpdateConfiguration(ConfigurationKey.RepeatColumns, repeatColumns.value?.toString() ?? ""));
 
         return {
             controlType,

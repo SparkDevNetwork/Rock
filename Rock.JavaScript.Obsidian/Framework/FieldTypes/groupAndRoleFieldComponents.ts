@@ -18,7 +18,7 @@ import { computed, defineComponent, ref, watch } from "vue";
 import { getFieldEditorProps, getFieldConfigurationProps } from "./utils";
 import GroupAndRolePicker from "@Obsidian/Controls/groupAndRolePicker.obs";
 import TextBox from "@Obsidian/Controls/textBox.obs";
-import { ConfigurationValueKey, GroupAndRoleValue } from "./groupAndRoleField.partial";
+import { ConfigurationKey, GroupAndRoleValue } from "./groupAndRoleField.partial";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
 
@@ -46,7 +46,7 @@ export const EditComponent = defineComponent({
         }, { immediate: true });
 
         const groupLabel = computed((): string => {
-            return props.configurationValues[ConfigurationValueKey.GroupRolePickerLabel] ?? "Group";
+            return props.configurationValues[ConfigurationKey.GroupRolePickerLabel] ?? "Group";
         });
 
         watch(() => [group.value, groupType.value, groupRoleValue], () => {
@@ -104,9 +104,9 @@ export const ConfigurationComponent = defineComponent({
 
             // Construct the new value that will be emitted if it is different
             // than the current value.
-            newValue[ConfigurationValueKey.GroupRolePickerLabel] = groupAndRolePickerLabel.value ?? "";
+            newValue[ConfigurationKey.GroupRolePickerLabel] = groupAndRolePickerLabel.value ?? "";
 
-            const anyValueChanged = newValue[ConfigurationValueKey.GroupRolePickerLabel] !== props.modelValue[ConfigurationValueKey.GroupRolePickerLabel];
+            const anyValueChanged = newValue[ConfigurationKey.GroupRolePickerLabel] !== props.modelValue[ConfigurationKey.GroupRolePickerLabel];
 
             // If any value changed then emit the new model value.
             if (anyValueChanged) {
@@ -134,12 +134,12 @@ export const ConfigurationComponent = defineComponent({
         // Watch for changes coming in from the parent component and update our
         // data to match the new information.
         watch(() => [props.modelValue, props.configurationProperties], () => {
-            groupAndRolePickerLabel.value = props.modelValue[ConfigurationValueKey.GroupRolePickerLabel] ?? "Group";
+            groupAndRolePickerLabel.value = props.modelValue[ConfigurationKey.GroupRolePickerLabel] ?? "Group";
         }, {
             immediate: true
         });
 
-        watch(groupAndRolePickerLabel, val => maybeUpdateConfiguration(ConfigurationValueKey.GroupRolePickerLabel, val ?? ""));
+        watch(groupAndRolePickerLabel, val => maybeUpdateConfiguration(ConfigurationKey.GroupRolePickerLabel, val ?? ""));
 
         return {
             groupAndRolePickerLabel

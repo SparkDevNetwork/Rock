@@ -24,7 +24,6 @@
                       title="From"
                       field="createdBy"
                       :filter="pickExistingValueFilter"
-                      :filterValue="getPersonNameFilterValue"
                       visiblePriority="xs" />
 
         <TextColumn name="text"
@@ -37,7 +36,8 @@
     </Grid>
 
     <GridSettingsModal v-model="gridSettings"
-                       v-model:visible="isGridSettingsVisible" />
+                       v-model:visible="isGridSettingsVisible"
+                       :defaultSlidingDateRange="defaultSlidingDateRange" />
 </template>
 
 <script setup lang="ts">
@@ -49,10 +49,9 @@
     import { PrayerCommentListOptionsBag } from "@Obsidian/ViewModels/Blocks/Prayer/PrayerCommentList/prayerCommentListOptionsBag";
     import GridSettingsModal from "./PrayerCommentList/gridSettingsModal.partial.obs";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
-    import { NavigationUrlKey } from "./PrayerRequestList/types.partial";
-    import { PreferenceKey, GridSettingsOptions } from "./PrayerCommentList/types.partial";
+    import { NavigationUrlKey, PreferenceKey, GridSettingsOptions } from "./PrayerCommentList/types.partial";
     import { computed, reactive, ref, watch } from "vue";
-    import { PersonFieldBag } from "@Obsidian/ViewModels/Core/Grid/personFieldBag";
+    import { parseSlidingDateRangeString, RangeType, SlidingDateRange, slidingDateRangeToString, TimeUnit } from "@Obsidian/Utility/slidingDateRange";
 
     const config = useConfigurationValues<ListBlockBox<PrayerCommentListOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
@@ -63,10 +62,19 @@
     const isCategoryFilterVisible = config.options?.isCategoryFilterVisible ?? false;
     const gridDataSource = ref<Promise<GridDataBag>>();
     let gridData: GridDataBag | undefined;
+    // Default the date range to the last 3 months so the grid never loads an unbounded
+    // number of rows, since comments accumulate over time.
+    const defaultSlidingDateRange: SlidingDateRange = {
+        rangeType: RangeType.Last,
+        timeUnit: TimeUnit.Month,
+        timeValue: 3
+    };
+
     const gridSettings = ref<GridSettingsOptions>({
         category: preferences.getValue(PreferenceKey.FilterCategory)?.length > 0 ?
             JSON.parse(preferences.getValue(PreferenceKey.FilterCategory)) :
             undefined,
+        dateRange: parseSlidingDateRangeString(preferences.getValue(PreferenceKey.FilterDateRange)) ?? defaultSlidingDateRange,
     });
 
     // #endregion
@@ -76,9 +84,9 @@
     /**
      * Returns `true` if the grid settings filters are active; otherwise `false`.
      */
-    /** `true` if the grid settings is performing any filtering. */
     const hasSettingsFilters = computed((): boolean => {
-        return !!gridSettings.value.category;
+        return !!gridSettings.value.category
+            || !!gridSettings.value.dateRange;
     });
 
     /**
@@ -96,16 +104,6 @@
         }
     }
 
-    /**
-    * Gets the filter value text to use for the name column.
-    *
-    * @param row The row to be filtered.
-    */
-    function getPersonNameFilterValue(row: Record<string, unknown>): string {
-        const person = row["person"] as PersonFieldBag;
-        return !person ? "" : `${person.nickName} ${person.lastName}`;
-    }
-
     // #endregion
 
     // #region Event Handlers
@@ -121,7 +119,13 @@
                 let rowItem = gridData.rows?.find(x => x["idKey"] === key);
 
                 if (rowItem) {
-                    window.location.href = config.navigationUrls[NavigationUrlKey.DetailPage].replace("((Key))", key) + `&PrayerRequestId=${rowItem?.prayerRequestIdKey}`;
+                    let url = config.navigationUrls[NavigationUrlKey.DetailPage].replace("((Key))", key);
+
+                    if (rowItem.prayerRequestIdKey) {
+                        url += `&PrayerRequestId=${rowItem.prayerRequestIdKey}`;
+                    }
+
+                    window.location.href = url;
                 }
             }
         }
@@ -155,6 +159,9 @@
     watch(gridSettings, async () => {
         const category = JSON.stringify(gridSettings.value.category ?? "");
         preferences.setValue(PreferenceKey.FilterCategory, category);
+        preferences.setValue(PreferenceKey.FilterDateRange, gridSettings.value.dateRange
+            ? slidingDateRangeToString(gridSettings.value.dateRange)
+            : slidingDateRangeToString(defaultSlidingDateRange));
 
         await preferences.save();
 

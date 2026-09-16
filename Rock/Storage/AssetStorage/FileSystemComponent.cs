@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -36,7 +36,11 @@ namespace Rock.Storage.AssetStorage
     [Export( typeof( AssetStorageComponent ) )]
     [ExportMetadata( "ComponentName", "ServerFileSystem" )]
 
-    [TextField( name: "Root Folder", description: "", required: true, defaultValue: "~/", category: "", order: 0, key: "RootFolder" )]
+    [TextField( "Root Folder",
+        IsRequired = true,
+        DefaultValue = "~/",
+        Order = 0,
+        Key = "RootFolder" )]
     [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.STORAGE_ASSETSTORAGE_FILESYSTEM )]
     public class FileSystemComponent : AssetStorageComponent
     {
@@ -742,9 +746,9 @@ namespace Rock.Storage.AssetStorage
                 Name = fileInfo.Name,
                 Key = relativePath,
 #if REVIEW_WEBFORMS
-                Uri = $"{FileSystemComponentHttpContext.Request.UrlProxySafe().GetLeftPart( UriPartial.Authority )}/{relativePath.TrimStart( '~' )}",
+                Uri = $"{FileSystemComponentHttpContext.Request.UrlProxySafe().GetLeftPart( UriPartial.Authority ).EnsureTrailingForwardslash()}{relativePath.TrimStart( '~' ).RemoveLeadingForwardslash()}",
 #else
-                Uri = $"{Net.RockRequestContextAccessor.Current.RequestUri.GetLeftPart( UriPartial.Authority )}/{relativePath.TrimStart( '~' )}",
+                Uri = $"{Net.RockRequestContextAccessor.Current.RequestUri.GetLeftPart( UriPartial.Authority ).EnsureTrailingForwardslash()}/{relativePath.TrimStart( '~' ).RemoveLeadingForwardslash()}",
 #endif
                 Type = AssetType.File,
                 IconPath = createThumbnail ? GetThumbnail( assetStorageProvider, relativePath, fileInfo.LastWriteTime ) : string.Empty,

@@ -21,6 +21,7 @@
 // </copyright>
 //
 
+using Rock.Configuration;
 using Rock.Model;
 using Rock.SystemGuid;
 
@@ -35,6 +36,6 @@ namespace Rock.Rest.Controllers
         /// <summary>
         /// Initializes a new instance of the <see cref="ContentTopicsController"/> class.
         /// </summary>
-        public ContentTopicsController() : base( new Rock.Model.ContentTopicService( new Rock.Data.RockContext() ) ) { } 
+        public ContentTopicsController() : base( new Rock.Model.ContentTopicService( RockApp.Current.CreateRockContext() ) ) { } 
     }
 }

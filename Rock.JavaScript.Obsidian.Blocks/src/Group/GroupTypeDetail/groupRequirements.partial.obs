@@ -245,7 +245,7 @@
      */
     function createNewGroupRequirement(): GroupTypeGroupRequirementBag {
         return {
-            guid: newGuid(),
+            guid: "",
             groupRequirementType: null,
             role: null,
             appliesToAgeClassification: AppliesToAgeClassification.All,

@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -50,21 +50,6 @@ namespace Rock.Model
         /// Gets the responses from a person Alias ID for the SMS Phone number.
         /// </summary>
         /// <param name="fromPersonAliasId">From person alias identifier.</param>
-        /// <param name="relatedSmsFromDefinedValueId">The related SMS from defined value identifier.</param>
-        /// <returns></returns>
-        [Obsolete( "Use GetResponsesFromPersonAliasIdForSystemPhoneNumber() instead." )]
-        [RockObsolete( "1.15" )]
-        public IQueryable GetResponsesFromPersonAliasIdForSMSNumber( int fromPersonAliasId, int relatedSmsFromDefinedValueId )
-        {
-            return Queryable()
-                .Where( r => r.FromPersonAliasId == fromPersonAliasId )
-                .Where( r => r.RelatedSmsFromDefinedValueId == relatedSmsFromDefinedValueId );
-        }
-
-        /// <summary>
-        /// Gets the responses from a person Alias ID for the SMS Phone number.
-        /// </summary>
-        /// <param name="fromPersonAliasId">From person alias identifier.</param>
         /// <param name="relatedSmsFromSystemPhoneNumberId">The related SMS from system phone number identifier.</param>
         /// <returns></returns>
         public IQueryable GetResponsesFromPersonAliasIdForSystemPhoneNumber( int fromPersonAliasId, int relatedSmsFromSystemPhoneNumberId )
@@ -72,80 +57,6 @@ namespace Rock.Model
             return Queryable()
                 .Where( r => r.FromPersonAliasId == fromPersonAliasId )
                 .Where( r => r.RelatedSmsFromSystemPhoneNumberId == relatedSmsFromSystemPhoneNumberId );
-        }
-
-        /// <summary>
-        /// Gets the communications and response recipients.
-        /// </summary>
-        /// <param name="relatedSmsFromDefinedValueId">The related SMS from defined value identifier.</param>
-        /// <param name="startDateTime">The start date time.</param>
-        /// <param name="showReadMessages">if set to <c>true</c> [show read messages].</param>
-        /// <param name="maxCount">The maximum count.</param>
-        /// <returns></returns>
-        [RockObsolete( "1.15" )]
-        [Obsolete( "Use the GetCommunicationAndResponseRecipients() method instead." )]
-        public List<CommunicationRecipientResponse> GetCommunicationResponseRecipients( int relatedSmsFromDefinedValueId, DateTime startDateTime, bool showReadMessages, int maxCount )
-        {
-            return GetCommunicationResponseRecipients( relatedSmsFromDefinedValueId, startDateTime, showReadMessages, maxCount, null );
-        }
-
-        /// <summary>
-        /// Gets the communications and response recipients.
-        /// </summary>
-        /// <param name="relatedSmsFromDefinedValueId">The related SMS from defined value identifier.</param>
-        /// <param name="startDateTime">The start date time.</param>
-        /// <param name="showReadMessages">if set to <c>true</c> [show read messages].</param>
-        /// <param name="maxCount">The maximum count.</param>
-        /// <param name="personId">The person identifier.</param>
-        /// <returns></returns>
-        [RockObsolete( "1.15" )]
-        [Obsolete( "Use the GetCommunicationAndResponseRecipients() method instead." )]
-        public List<CommunicationRecipientResponse> GetCommunicationResponseRecipients( int relatedSmsFromDefinedValueId, DateTime startDateTime, bool showReadMessages, int maxCount, int? personId )
-        {
-            var smsMediumEntityTypeId = EntityTypeCache.GetId( SystemGuid.EntityType.COMMUNICATION_MEDIUM_SMS ).Value;
-
-            IQueryable<CommunicationResponse> communicationResponseQuery = this.Queryable()
-                .Where( r => r.RelatedMediumEntityTypeId == smsMediumEntityTypeId && r.RelatedSmsFromDefinedValueId == relatedSmsFromDefinedValueId && r.CreatedDateTime >= startDateTime && r.FromPersonAliasId.HasValue );
-
-            IQueryable<CommunicationRecipient> communicationRecipientQuery = new CommunicationRecipientService( this.Context as RockContext ).Queryable()
-                .Where( r =>
-                r.MediumEntityTypeId == smsMediumEntityTypeId
-                    && r.Communication.SMSFromDefinedValueId == relatedSmsFromDefinedValueId
-                    && r.CreatedDateTime >= startDateTime
-                    && r.Status == CommunicationRecipientStatus.Delivered );
-
-            if ( !showReadMessages )
-            {
-                communicationResponseQuery = communicationResponseQuery.Where( r => r.IsRead == false );
-            }
-
-            return GetCommunicationResponseRecipients( maxCount, personId, communicationResponseQuery, communicationRecipientQuery );
-        }
-
-        /// <summary>
-        /// Gets the communications and response recipients.
-        /// </summary>
-        /// <param name="relatedSmsFromDefinedValueId">The related SMS from defined value identifier.</param>
-        /// <param name="startDateTime">Messages must be created on or after this date to be considered.</param>
-        /// <param name="maxCount">The maximum number of results to return.</param>
-        /// <param name="filter">The filter that describes what kind of messages to consider.</param>
-        /// <param name="personId">The identifier of the person to limit results to.</param>
-        /// <returns>A list of <see cref="CommunicationRecipientResponse"/> objects that describe the recipient conversations.</returns>
-        [RockObsolete( "1.15" )]
-        [Obsolete( "Use the GetCommunicationAndResponseRecipients() method instead." )]
-        public List<CommunicationRecipientResponse> GetCommunicationResponseRecipients( int relatedSmsFromDefinedValueId, DateTime startDateTime, int maxCount, CommunicationMessageFilter filter, int? personId )
-        {
-            var definedValueCache = DefinedValueCache.Get( relatedSmsFromDefinedValueId );
-            var systemPhoneNumberCache = definedValueCache != null
-                ? SystemPhoneNumberCache.Get( definedValueCache.Guid )
-                : null;
-
-            if ( systemPhoneNumberCache == null )
-            {
-                return new List<CommunicationRecipientResponse>();
-            }
-
-            return GetCommunicationAndResponseRecipients( systemPhoneNumberCache.Id, startDateTime, maxCount, filter, personId );
         }
 
         /// <summary>
@@ -255,7 +166,14 @@ namespace Rock.Model
                     CommunicationSMSMessage = j.CommunicationRecipient.Communication.SMSMessage,
                     j.CommunicationRecipient.SentMessage,
                     RecipientPersonAliasId = j.CommunicationRecipient.PersonAliasId,
-                    RecipientPersonGuid = j.CommunicationRecipient.PersonAlias.Person.Guid
+                    RecipientPersonGuid = j.CommunicationRecipient.PersonAlias.Person.Guid,
+                    PersonAge = j.PersonAlias.Person.Age,
+                    PersonGender = j.PersonAlias.Person.Gender,
+                    PersonAgeClassification = j.PersonAlias.Person.AgeClassification,
+                    PersonPrimaryAliasGuid = j.PersonAlias.Person.Aliases
+                        .Where( a => a.AliasPersonId == j.PersonAlias.PersonId )
+                        .Select( a => ( Guid? ) a.Guid )
+                        .FirstOrDefault()
                 } );
 
             var mostRecentCommunicationRecipientQuery = communicationRecipientJoinQuery
@@ -282,7 +200,11 @@ namespace Rock.Model
                         s.SmsFromSystemPhoneNumberId,
                         s.SentMessage,
                         s.RecipientPersonAliasId,
-                        s.RecipientPersonGuid
+                        s.RecipientPersonGuid,
+                        s.PersonAge,
+                        s.PersonGender,
+                        s.PersonAgeClassification,
+                        s.PersonPrimaryAliasGuid
                     } ).OrderByDescending( s => s.CreatedDateTime ).FirstOrDefault()
                 ).OrderByDescending( s => s.CreatedDateTime );
 
@@ -303,7 +225,14 @@ namespace Rock.Model
                     FromPersonNickName = r.FromPersonAlias.Person.NickName,
                     FromPersonLastName = r.FromPersonAlias.Person.LastName,
                     FromPersonSuffixValueId = r.FromPersonAlias.Person.SuffixValueId,
-                    FromPersonPhotoId = r.FromPersonAlias.Person.PhotoId
+                    FromPersonPhotoId = r.FromPersonAlias.Person.PhotoId,
+                    FromPersonAge = r.FromPersonAlias.Person.Age,
+                    FromPersonGender = r.FromPersonAlias.Person.Gender,
+                    FromPersonAgeClassification = r.FromPersonAlias.Person.AgeClassification,
+                    FromPersonPrimaryAliasGuid = r.FromPersonAlias.Person.Aliases
+                        .Where( a => a.AliasPersonId == r.FromPersonAlias.PersonId )
+                        .Select( a => ( Guid? ) a.Guid )
+                        .FirstOrDefault()
                 } )
                 .Take( maxCount )
                 .ToList();
@@ -332,7 +261,12 @@ namespace Rock.Model
                     RecipientPersonAliasId = mostRecentResponse.FromPersonAliasId,
                     RecipientPersonGuid = mostRecentResponse.FromPersonGuid,
                     SMSMessage = mostRecentResponse.Response,
-                    CommunicationResponseId = mostRecentResponse.Id
+                    CommunicationResponseId = mostRecentResponse.Id,
+                    RecipientPrimaryAliasGuid = mostRecentResponse.FromPersonPrimaryAliasGuid,
+                    Initials = GetInitials( mostRecentResponse.FromPersonNickName, mostRecentResponse.FromPersonLastName ),
+                    Age = mostRecentResponse.FromPersonAge,
+                    Gender = mostRecentResponse.FromPersonGender,
+                    AgeClassification = mostRecentResponse.FromPersonAgeClassification
                 };
 
                 communicationRecipientResponseList.Add( communicationRecipientResponse );
@@ -371,7 +305,12 @@ namespace Rock.Model
                     RecipientPersonAliasId = mostRecentCommunicationRecipient.RecipientPersonAliasId,
                     RecipientPersonGuid = mostRecentCommunicationRecipient.RecipientPersonGuid,
                     SMSMessage = mostRecentCommunicationRecipient.SentMessage.IsNullOrWhiteSpace() ? mostRecentCommunicationRecipient.CommunicationSMSMessage : mostRecentCommunicationRecipient.SentMessage,
-                    CommunicationId = mostRecentCommunicationRecipient.CommunicationId
+                    CommunicationId = mostRecentCommunicationRecipient.CommunicationId,
+                    RecipientPrimaryAliasGuid = mostRecentCommunicationRecipient.PersonPrimaryAliasGuid,
+                    Initials = GetInitials( mostRecentCommunicationRecipient.PersonNickName, mostRecentCommunicationRecipient.PersonLastName ),
+                    Age = mostRecentCommunicationRecipient.PersonAge,
+                    Gender = mostRecentCommunicationRecipient.PersonGender,
+                    AgeClassification = mostRecentCommunicationRecipient.PersonAgeClassification
                 };
 
                 if ( mostRecentCommunicationRecipient?.PersonRecordTypeValueId == recordTypeValueIdNamelessId )
@@ -400,51 +339,19 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets the SMS conversation history for a person alias ID. Includes the communication sent by Rock that the person may be responding to.
+        /// Builds a person's initials (first character of nick name + last name) the same way
+        /// <see cref="Person.Initials"/> does, from values the conversation queries already
+        /// project - so we don't have to materialize the <see cref="Person"/>.
         /// </summary>
-        /// <param name="personAliasId">The person alias identifier.</param>
-        /// <param name="relatedSmsFromDefinedValueId">The related SMS from defined value identifier.</param>
-        /// <returns></returns>
-        [RockObsolete( "1.13" )]
-        [Obsolete( "Use GetCommunicationConversationForPerson instead." )]
-        public List<CommunicationRecipientResponse> GetCommunicationConversation( int personAliasId, int relatedSmsFromDefinedValueId )
+        /// <param name="nickName">The person's nick name.</param>
+        /// <param name="lastName">The person's last name.</param>
+        /// <returns>The person's initials.</returns>
+        private static string GetInitials( string nickName, string lastName )
         {
-            int? personId = new PersonAliasService( this.Context as RockContext ).GetPersonId( personAliasId );
-            if ( personId.HasValue )
-            {
-                return GetCommunicationConversationForPerson( personId.Value, relatedSmsFromDefinedValueId );
-            }
-            else
-            {
-                return new List<CommunicationRecipientResponse>();
-            }
-        }
+            var firstInitial = string.IsNullOrEmpty( nickName ) ? string.Empty : nickName.Substring( 0, 1 );
+            var lastInitial = string.IsNullOrEmpty( lastName ) ? string.Empty : lastName.Substring( 0, 1 );
 
-        /// <summary>
-        /// Gets the SMS conversation history for a person alias ID. Includes the communication sent by Rock that the person may be responding to.
-        /// </summary>
-        /// <param name="personId">The person identifier.</param>
-        /// <param name="relatedSmsFromDefinedValueId">The related SMS from defined value identifier.</param>
-        /// <returns>List&lt;CommunicationRecipientResponse&gt;.</returns>
-        [Obsolete( "Use the GetCommunicationConversationForPerson() method that takes a SystemPhoneNumberCache parameter." )]
-        [RockObsolete( "1.15" )]
-        public List<CommunicationRecipientResponse> GetCommunicationConversationForPerson( int personId, int relatedSmsFromDefinedValueId )
-        {
-            var definedValueCache = DefinedValueCache.Get( relatedSmsFromDefinedValueId );
-
-            if ( definedValueCache == null )
-            {
-                return new List<CommunicationRecipientResponse>();
-            }
-
-            var systemPhoneNumberCache = SystemPhoneNumberCache.Get( definedValueCache.Guid );
-
-            if ( systemPhoneNumberCache == null )
-            {
-                return new List<CommunicationRecipientResponse>();
-            }
-
-            return GetCommunicationConversationForPerson( personId, systemPhoneNumberCache );
+            return firstInitial + lastInitial;
         }
 
         /// <summary>
@@ -482,7 +389,14 @@ namespace Rock.Model
                     FromPersonNickName = r.FromPersonAlias.Person.NickName,
                     FromPersonLastName = r.FromPersonAlias.Person.LastName,
                     FromPersonSuffixValueId = r.FromPersonAlias.Person.SuffixValueId,
-                    FromPersonPhotoId = r.FromPersonAlias.Person.PhotoId
+                    FromPersonPhotoId = r.FromPersonAlias.Person.PhotoId,
+                    FromPersonAge = r.FromPersonAlias.Person.Age,
+                    FromPersonGender = r.FromPersonAlias.Person.Gender,
+                    FromPersonAgeClassification = r.FromPersonAlias.Person.AgeClassification,
+                    FromPersonPrimaryAliasGuid = r.FromPersonAlias.Person.Aliases
+                        .Where( a => a.AliasPersonId == r.FromPersonAlias.PersonId )
+                        .Select( a => ( Guid? ) a.Guid )
+                        .FirstOrDefault()
                 } );
 
             var communicationResponseList = communicationResponseQuery.ToList();
@@ -509,6 +423,11 @@ namespace Rock.Model
                     SMSMessage = communicationResponse.Response,
                     MessageStatus = CommunicationRecipientStatus.Delivered, // We are just going to call these delivered because we have them. Setting this will tell the UI to not display the status.
                     CommunicationResponseId = communicationResponse.Id,
+                    RecipientPrimaryAliasGuid = communicationResponse.FromPersonPrimaryAliasGuid,
+                    Initials = GetInitials( communicationResponse.FromPersonNickName, communicationResponse.FromPersonLastName ),
+                    Age = communicationResponse.FromPersonAge,
+                    Gender = communicationResponse.FromPersonGender,
+                    AgeClassification = communicationResponse.FromPersonAgeClassification,
                 };
 
                 communicationRecipientResponseList.Add( communicationRecipientResponse );
@@ -540,7 +459,14 @@ namespace Rock.Model
                     SenderPersonRecordTypeValueId = r.Communication.SenderPersonAlias.Person.RecordTypeValueId,
                     SenderPersonNickName = r.Communication.SenderPersonAlias.Person.NickName,
                     SenderPersonLastName = r.Communication.SenderPersonAlias.Person.LastName,
-                    SenderPersonSuffixValueId = r.Communication.SenderPersonAlias.Person.SuffixValueId
+                    SenderPersonSuffixValueId = r.Communication.SenderPersonAlias.Person.SuffixValueId,
+                    PersonAge = r.PersonAlias.Person.Age,
+                    PersonGender = r.PersonAlias.Person.Gender,
+                    PersonAgeClassification = r.PersonAlias.Person.AgeClassification,
+                    PersonPrimaryAliasGuid = r.PersonAlias.Person.Aliases
+                        .Where( a => a.AliasPersonId == r.PersonAlias.PersonId )
+                        .Select( a => ( Guid? ) a.Guid )
+                        .FirstOrDefault()
                 } )
                 .ToList();
 
@@ -572,6 +498,11 @@ namespace Rock.Model
                     SMSMessage = communicationRecipient.SentMessage,
                     MessageStatus = communicationRecipient.Status,
                     CommunicationId = communicationRecipient.CommunicationId,
+                    RecipientPrimaryAliasGuid = communicationRecipient.PersonPrimaryAliasGuid,
+                    Initials = GetInitials( communicationRecipient.PersonNickName, communicationRecipient.PersonLastName ),
+                    Age = communicationRecipient.PersonAge,
+                    Gender = communicationRecipient.PersonGender,
+                    AgeClassification = communicationRecipient.PersonAgeClassification,
                 };
 
                 if ( communicationRecipient.PersonRecordTypeValueId == recordTypeValueIdNamelessId )
@@ -589,48 +520,6 @@ namespace Rock.Model
             }
 
             return communicationRecipientResponseList.OrderBy( a => a.CreatedDateTime ).ToList();
-        }
-
-        /// <summary>
-        /// Updates the IsRead property of SMS Responses sent from the provided person to the SMSPhone number stored in SmsFromDefinedValue.
-        /// </summary>
-        /// <param name="fromPersonAliasId">From person alias identifier.</param>
-        /// <param name="relatedSmsFromDefinedValueId">The defined value ID of the from SMS phone number.</param>
-        [Obsolete( "Use UpdateReadPropertyByFromPersonId instead." )]
-        [RockObsolete( "1.13" )]
-        public void UpdateReadPropertyByFromPersonAliasId( int fromPersonAliasId, int relatedSmsFromDefinedValueId )
-        {
-            int? fromPersonId = new PersonAliasService( this.Context as RockContext ).GetPersonId( fromPersonAliasId );
-            if ( fromPersonId != null )
-            {
-                UpdateReadPropertyByFromPersonId( fromPersonId.Value, relatedSmsFromDefinedValueId );
-            }
-        }
-
-        /// <summary>
-        /// Updates the IsRead property of SMS Responses sent from the provided person to the SMSPhone number stored in SmsFromDefinedValue.
-        /// </summary>
-        /// <param name="fromPersonId">From person identifier.</param>
-        /// <param name="relatedSmsFromDefinedValueId">The defined value ID of the from SMS phone number.</param>
-        [Obsolete( "Use the UpdateReadPropertyByFromPersonId() method that takes a SystemPhoneNumberCache parameter." )]
-        [RockObsolete( "1.15" )]
-        public void UpdateReadPropertyByFromPersonId( int fromPersonId, int relatedSmsFromDefinedValueId )
-        {
-            var definedValueCache = DefinedValueCache.Get( relatedSmsFromDefinedValueId );
-
-            if ( definedValueCache == null )
-            {
-                return;
-            }
-
-            var systemPhoneNumberCache = SystemPhoneNumberCache.Get( definedValueCache.Guid );
-
-            if ( systemPhoneNumberCache == null )
-            {
-                return;
-            }
-
-            UpdateReadPropertyByFromPersonId( fromPersonId, systemPhoneNumberCache );
         }
 
         /// <summary>

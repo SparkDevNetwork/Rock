@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -24,6 +24,7 @@ using System.Web.UI.WebControls;
 
 using Rock;
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Field;
 using Rock.Model;
@@ -279,7 +280,7 @@ namespace Rock.Reporting.Dashboard
 
             pnlEditModel.Visible = true;
 
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var metricCategoryService = new MetricCategoryService( rockContext );
             MetricCategory metricCategory = null;
             if ( this.MetricId.HasValue )
@@ -351,7 +352,7 @@ namespace Rock.Reporting.Dashboard
             }
 
             var metricCategoryId = mpMetricCategoryPicker.SelectedValue.AsIntegerOrNull();
-            var metricCategory = new MetricCategoryService( new RockContext() ).Get( metricCategoryId ?? 0 );
+            var metricCategory = new MetricCategoryService( RockApp.Current.CreateRockContext() ).Get( metricCategoryId ?? 0 );
             Guid? metricGuid = metricCategory != null ? metricCategory.Metric.Guid : (Guid?)null;
             Guid? metricCategoryGuid = metricCategory != null ? metricCategory.Category.Guid : (Guid?)null; ;
 
@@ -403,7 +404,7 @@ namespace Rock.Reporting.Dashboard
                 return;
             }
             phMetricValuePartitions.Controls.Clear();
-            Metric metric = new MetricService( new RockContext() ).Get( metricId ?? 0 );
+            Metric metric = new MetricService( RockApp.Current.CreateRockContext() ).Get( metricId ?? 0 );
             if ( metric != null )
             {
                 foreach ( var metricPartition in metric.MetricPartitions )
@@ -465,7 +466,7 @@ namespace Rock.Reporting.Dashboard
                 if ( valueParts.Length > 1 )
                 {
                     Guid metricGuid = valueParts[0].AsGuid();
-                    var metric = new Rock.Model.MetricService( new Rock.Data.RockContext() ).Get( metricGuid );
+                    var metric = new Rock.Model.MetricService( RockApp.Current.CreateRockContext() ).Get( metricGuid );
                     if ( metric != null )
                     {
                         return metric.Id;
@@ -596,7 +597,7 @@ namespace Rock.Reporting.Dashboard
                 return results;
             }
 
-            using ( var rockContext = new Rock.Data.RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var metric = new Rock.Model.MetricService( rockContext ).Get( this.MetricId ?? 0 );
                 if ( metric == null )
@@ -808,7 +809,7 @@ namespace Rock.Reporting.Dashboard
         protected void mpMetricCategoryPicker_SelectItem( object sender, EventArgs e )
         {
             var metricCategoryId = mpMetricCategoryPicker.SelectedValue.AsIntegerOrNull();
-            var metricCategory = new MetricCategoryService( new RockContext() ).Get( metricCategoryId ?? 0 );
+            var metricCategory = new MetricCategoryService( RockApp.Current.CreateRockContext() ).Get( metricCategoryId ?? 0 );
             CreateDynamicControls( metricCategory != null ? metricCategory.MetricId : (int?)null );
         }
 
@@ -821,7 +822,7 @@ namespace Rock.Reporting.Dashboard
         {
             phMetricValuePartitions.Visible = rblSelectOrContext.SelectedValue == "0";
             var metricCategoryId = mpMetricCategoryPicker.SelectedValue.AsIntegerOrNull();
-            var metricCategory = new MetricCategoryService( new RockContext() ).Get( metricCategoryId ?? 0 );
+            var metricCategory = new MetricCategoryService( RockApp.Current.CreateRockContext() ).Get( metricCategoryId ?? 0 );
             CreateDynamicControls( metricCategory != null ? metricCategory.MetricId : (int?)null );
         }
 

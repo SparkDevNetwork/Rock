@@ -1,0 +1,212 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Modal v-model="isModalOpen"
+           title="Mobile Launcher Settings"
+           saveText="Save"
+           @save="onSave">
+
+        <NotificationBox v-if="errorMessage"
+                         v-text="errorMessage"
+                         alertType="warning" />
+
+        <LoadingIndicator v-else-if="isLoading" :delay="500" />
+
+        <div v-else>
+            <ListBox label="Enabled Devices"
+                     v-model="devices"
+                     :items="deviceListItems"
+                     enhanceForLongLists
+                     help="The devices to consider when determining a matching device kiosk, or leave blank for all. Typically the selection should include only one device kiosk for each geo-fenced area / campus." />
+
+            <p v-if="deviceListItems.length === 0" class="text-muted text-sm">
+                No devices available.
+            </p>
+
+            <DropDownList label="Theme"
+                          v-model="theme"
+                          :items="themeItems"
+                          showBlankItem
+                          blankValue=""
+                          help="The check-in theme this page renders in, overriding the theme configured on the site. Leave blank to use the site's theme." />
+
+            <DropDownList label="Check-in Configuration"
+                          v-model="checkInConfiguration"
+                          :items="checkInConfigurationListItems"
+                          placeholder="Select Configuration"
+                          help="The check-in configuration that will be used for the check-in process." />
+
+            <ListBox label="Check-in Areas"
+                     v-model="checkInAreas"
+                     :items="areaItems"
+                     enhanceForLongLists
+                     help="The check-in areas that will be used for the check-in process." />
+
+            <CheckBox label="Disable Location Services"
+                      v-model="isLocationServicesDisabled"
+                      help="If disabled, the mobile device's location services will not be used and instead a list of active campuses will be shown. The selected campus will be used to find a matching device from the Devices block setting." />
+        </div>
+    </Modal>
+</template>
+
+<script setup lang="ts">
+    import { computed, ref, watch } from "vue";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import ListBox from "@Obsidian/Controls/listBox.obs";
+    import LoadingIndicator from "@Obsidian/Controls/loadingIndicator.obs";
+    import Modal from "@Obsidian/Controls/modal.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import { setCustomSettingsBoxValue, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
+    import { CustomSettingsBag } from "@Obsidian/ViewModels/Blocks/CheckIn/MobileCheckInLauncher/customSettingsBag";
+    import { CustomSettingsOptionsBag } from "@Obsidian/ViewModels/Blocks/CheckIn/MobileCheckInLauncher/customSettingsOptionsBag";
+    import { CustomSettingsBox } from "@Obsidian/ViewModels/Blocks/customSettingsBox";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+
+    const invokeBlockAction = useInvokeBlockAction();
+    const reloadBlock = useReloadBlock();
+
+    const emit = defineEmits<{
+        (e: "close"): void;
+    }>();
+
+    // #region Values
+
+    const isLoading = ref(true);
+    const firstLoadComplete = ref(false);
+    const isModalOpen = ref(true);
+    const errorMessage = ref("");
+
+    const devices = ref<string[]>([]);
+    const deviceItems = ref<ListItemBag[]>([]);
+
+    const checkInConfiguration = ref("");
+    const checkInConfigurationItems = ref<ListItemBag[]>([]);
+
+    const checkInAreas = ref<string[]>([]);
+    const areaItems = ref<ListItemBag[]>([]);
+
+    const isLocationServicesDisabled = ref(false);
+
+    const theme = ref("");
+    const themeItems = ref<ListItemBag[]>([]);
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    const deviceListItems = computed((): ListItemBag[] => {
+        return deviceItems.value.map(d => ({
+            value: d.value,
+            text: d.text
+        }));
+    });
+
+    const checkInConfigurationListItems = computed((): ListItemBag[] => {
+        return checkInConfigurationItems.value.map(t => ({
+            value: t.value,
+            text: t.text
+        }));
+    });
+
+    // #endregion Computed Values
+
+    // #region Functions
+
+    /**
+     * Begins loading the current settings in the background so that the UI
+     * can be displayed.
+     */
+    async function startLoading(): Promise<void> {
+        await getCustomSettings();
+        isLoading.value = false;
+        firstLoadComplete.value = true;
+    }
+
+    /**
+     * Gets the current settings and options, limiting the available areas to
+     * the selected devices.
+     */
+    async function getCustomSettings(): Promise<void> {
+        const args = {
+            deviceIds: devices.value ?? []
+        };
+        const result = await invokeBlockAction<CustomSettingsBox<CustomSettingsBag, CustomSettingsOptionsBag>>("GetCustomSettings", args);
+
+        if (result.isSuccess && result.data && result.data.settings && result.data.options) {
+            deviceItems.value = result.data.options.deviceItems ?? [];
+
+            checkInConfigurationItems.value = result.data.options.checkInConfigurationOptions?.map(t => ({
+                value: t.id,
+                text: t.name
+            })) ?? [];
+
+            areaItems.value = result.data.options.areaItems ?? [];
+            themeItems.value = result.data.options.themeItems ?? [];
+
+            if (!firstLoadComplete.value) {
+                devices.value = result.data.settings.devices?.filter((id): id is string => id !== null && id !== undefined) ?? [];
+                checkInConfiguration.value = result.data.settings.checkInConfiguration ?? "";
+                checkInAreas.value = result.data.settings.checkInAreas?.filter((id): id is string => id !== null && id !== undefined) ?? [];
+                isLocationServicesDisabled.value = result.data.settings.isLocationServicesDisabled ?? false;
+                theme.value = result.data.settings.theme ?? "";
+            }
+
+            // Drop any selected area that the current devices no longer offer.
+            const availableAreaIds = new Set(areaItems.value.map(a => a.value));
+            checkInAreas.value = checkInAreas.value.filter(id => availableAreaIds.has(id));
+        }
+        else {
+            errorMessage.value = result.errorMessage || "Unknown error while loading custom settings.";
+        }
+    }
+
+    // #endregion Functions
+
+    // #region Event Handlers
+
+    /**
+     * Called when the individual clicks the Save button and all components
+     * have validated their values.
+     */
+    async function onSave(): Promise<void> {
+        const box: CustomSettingsBox<CustomSettingsBag, CustomSettingsOptionsBag> = {};
+
+        setCustomSettingsBoxValue(box, "devices", devices.value);
+        setCustomSettingsBoxValue(box, "checkInConfiguration", checkInConfiguration.value);
+        setCustomSettingsBoxValue(box, "checkInAreas", checkInAreas.value);
+        setCustomSettingsBoxValue(box, "isLocationServicesDisabled", isLocationServicesDisabled.value);
+        setCustomSettingsBoxValue(box, "theme", theme.value);
+
+        const data = {
+            box
+        };
+
+        const result = await invokeBlockAction("SaveCustomSettings", data);
+
+        if (result.isSuccess) {
+            isModalOpen.value = false;
+            reloadBlock();
+        }
+        else {
+            errorMessage.value = result.errorMessage || "Unknown error while saving custom settings.";
+        }
+    }
+
+    // #endregion Event Handlers
+
+    // #region Watchers
+
+    watch(isModalOpen, () => {
+        if (!isModalOpen.value) {
+            emit("close");
+        }
+    });
+
+    watch(devices, () => {
+        getCustomSettings();
+    });
+
+    // #endregion Watchers
+
+    startLoading();
+</script>

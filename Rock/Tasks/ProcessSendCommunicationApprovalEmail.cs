@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -18,6 +18,7 @@ using System.Collections.Generic;
 using System.Linq;
 
 using Rock.Communication;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.SystemKey;
@@ -36,7 +37,7 @@ namespace Rock.Tasks
         /// <param name="message"></param>
         public override void Execute( Message message )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var communication = new CommunicationService( rockContext ).Get( message.CommunicationId );
 
@@ -61,7 +62,7 @@ namespace Rock.Tasks
                             if ( string.IsNullOrEmpty( approvalPageUrl ) )
                             {
                                 var internalApplicationRoot = GlobalAttributesCache.Value( "InternalApplicationRoot" ).EnsureTrailingForwardslash();
-                                approvalPageUrl = $"{internalApplicationRoot}Communication/{communication.Id}";
+                                approvalPageUrl = $"{internalApplicationRoot}Communication/{communication.Id.AsIdKey()}";
                             }
 
                             foreach ( var approver in approvers )
@@ -99,7 +100,7 @@ namespace Rock.Tasks
             public int CommunicationId { get; set; }
 
             /// <summary>
-            /// Gets or sets the approval page URL. Defaults to ~/Communication/{communicationId}.
+            /// Gets or sets the approval page URL. Defaults to ~/Communication/{communication.Id.AsIdKey()}.
             /// </summary>
             /// <value>
             /// The approval page URL.

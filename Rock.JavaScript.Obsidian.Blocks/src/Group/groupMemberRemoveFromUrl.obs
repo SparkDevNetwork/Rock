@@ -1,0 +1,29 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div v-html="content"></div>
+</template>
+
+<script setup lang="ts">
+    import { ref } from "vue";
+    import { useConfigurationValues } from "@Obsidian/Utility/block";
+    import { CustomBlockBox } from "@Obsidian/ViewModels/Blocks/customBlockBox";
+    import { GroupMemberRemoveFromUrlBag } from "@Obsidian/ViewModels/Blocks/Group/GroupMemberRemoveFromUrl/groupMemberRemoveFromUrlBag";
+    import { GroupMemberRemoveFromUrlOptionsBag } from "@Obsidian/ViewModels/Blocks/Group/GroupMemberRemoveFromUrl/groupMemberRemoveFromUrlOptionsBag";
+
+    const config = useConfigurationValues<CustomBlockBox<GroupMemberRemoveFromUrlBag, GroupMemberRemoveFromUrlOptionsBag>>();
+
+    /*
+        7/10/26 - MSE
+
+        This block removes (or inactivates) a group member as a side effect of
+        server-side initialization. We intentionally do NOT wire up
+        onConfigurationValuesChanged(useReloadBlock()) here: an auto-reload would
+        re-run that destructive removal every time an admin edits a block setting.
+        The content is a one-time result of the initial request, so no reload is
+        wanted.
+
+        Reason: Avoid re-running the destructive removal on block-setting changes.
+    */
+
+    const content = ref(config.bag?.content ?? "");
+</script>

@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -65,6 +65,12 @@ namespace RockWeb
 
         public static Thread CompileThemesThread = null;
         public static Thread BlockTypeCompilationThread = null;
+
+        /// <summary>
+        /// How long to wait before logging another occurrence of a throttled
+        /// exception signature. See <see cref="ShouldThrottleException"/>.
+        /// </summary>
+        private static readonly TimeSpan ThrottledExceptionWindow = TimeSpan.FromMinutes( 5 );
 
         #endregion
 
@@ -251,6 +257,9 @@ namespace RockWeb
             StartEnsureChromeEngineThread();
 
             Rock.Bus.RockMessageBus.IsRockStarted = true;
+
+            // Enable enforcement if it has been requested in the security settings.
+            DbContext.EnableStringValidation = new SecuritySettingsService().SecuritySettings.EnableServerModelValidation;
         }
 
         /// <summary>
@@ -303,7 +312,9 @@ namespace RockWeb
 
                 // Compile the next-generation themes.
                 var stopwatchCompileTheme = Stopwatch.StartNew();
+#pragma warning disable CS0618 // Type or member is obsolete
                 var compileMessages = ThemeService.CompileAll( _threadCancellationTokenSource.Token );
+#pragma warning restore CS0618 // Type or member is obsolete
                 stopwatchCompileTheme.Stop();
 
                 if ( System.Web.Hosting.HostingEnvironment.IsDevelopmentEnvironment )
@@ -404,7 +415,7 @@ namespace RockWeb
                     Stopwatch stopwatchCompileBlockTypes = Stopwatch.StartNew();
 
                     // get a list of all block types that are used by blocks
-                    var allUsedBlockTypeIds = new BlockTypeService( new RockContext() ).Queryable()
+                    var allUsedBlockTypeIds = new BlockTypeService( RockApp.Current.CreateRockContext() ).Queryable()
                         .Where( a => a.Blocks.Any() )
                         .OrderBy( a => a.Category )
                         .Select( a => a.Id ).ToArray();
@@ -452,7 +463,7 @@ namespace RockWeb
 
                 if ( blockTypeWithCompiledType.BlockType.SiteTypeFlags != siteTypes || blockTypeWithCompiledType.BlockType.DefaultRole != defaultRole )
                 {
-                    using ( var rockContext = new RockContext() )
+                    using ( var rockContext = RockApp.Current.CreateRockContext() )
                     {
                         var blockTypeService = new BlockTypeService( rockContext );
                         var blockType = blockTypeService.Queryable()
@@ -549,7 +560,7 @@ namespace RockWeb
                 // mark user offline
                 if ( this.Session["RockUserId"] != null )
                 {
-                    using ( var rockContext = new RockContext() )
+                    using ( var rockContext = RockApp.Current.CreateRockContext() )
                     {
                         var userLoginService = new UserLoginService( rockContext );
 
@@ -628,22 +639,79 @@ namespace RockWeb
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void Application_Error( object sender, EventArgs e )
         {
-            bool IsIgnoredException( HttpException ex )
+            /*
+                7/23/26 - CLAUDE
+
+                This walks the whole inner-exception chain (rather than only
+                inspecting the top-level exception) because the noise signatures
+                below are frequently wrapped, e.g. the ViewState HttpException is
+                surfaced as an HttpUnhandledException and the postback
+                ArgumentException can be wrapped as well. Every signature checked
+                here is highly specific, so matching anywhere in the chain does
+                not risk ignoring a genuine application error.
+
+                Reason: Ignore high-volume, zero-diagnostic-value bot exceptions by default.
+            */
+            bool IsIgnoredException( Exception ex )
             {
-                if ( ex != null && ex.Message.IsNotNullOrWhiteSpace() && ex.StackTrace.IsNotNullOrWhiteSpace() )
+                while ( ex != null )
                 {
+                    var message = ex.Message ?? string.Empty;
+                    var stackTrace = ex.StackTrace ?? string.Empty;
+
                     // Ignore errors from SignalR when writing a response.
-                    if ( ex.Message.Contains( "The remote host closed the connection." ) && ex.StackTrace.Contains( "Microsoft.AspNet.SignalR.Owin.ServerResponse.Write" ) )
+                    if ( message.Contains( "The remote host closed the connection." ) && stackTrace.Contains( "Microsoft.AspNet.SignalR.Owin.ServerResponse.Write" ) )
                     {
                         return true;
                     }
 
                     // Ignore errors from the browser closing the connection before
                     // we have finished sending all the data.
-                    if ( ex.Message.Contains( "The remote host closed the connection" ) && ex.StackTrace.Contains( "System.Web.HttpResponse.Flush" ) )
+                    if ( message.Contains( "The remote host closed the connection" ) && stackTrace.Contains( "System.Web.HttpResponse.Flush" ) )
                     {
                         return true;
                     }
+
+                    // Ignore invalid ViewState, which is almost always caused by
+                    // bots POSTing malformed __VIEWSTATE data to WebForms pages.
+                    // The message is required in addition to the type so that a
+                    // "Validation of viewstate MAC failed" ViewStateException is
+                    // NOT swallowed here: that one signals a real web farm
+                    // machineKey misconfiguration and should still be logged.
+                    if ( ex is System.Web.UI.ViewStateException && message.Contains( "Invalid viewstate" ) )
+                    {
+                        return true;
+                    }
+
+                    // The HttpException that wraps a ViewState MAC or
+                    // deserialization failure from the same bot traffic.
+                    if ( message.Contains( "The state information is invalid for this page" ) )
+                    {
+                        return true;
+                    }
+
+                    // Ignore client-disconnect errors (Win32 0x800704CD = ERROR_NETNAME_DELETED):
+                    // the remote host closed the connection while we were still writing the
+                    // response. Benign and high-volume - a user navigating away or, most often,
+                    // a media player / CDN abandoning a Range request mid-stream (e.g. the Bible
+                    // audio "listen" endpoint served through BunnyCDN slicing). Keyed on the error
+                    // code so it catches every write path (WebForms Flush, SignalR, streamed Web
+                    // API content) regardless of which frame is on the stack. Placed low in the
+                    // chain since it is a broad message-only match: the specific stack-frame checks
+                    // above take precedence and this only runs when they do not match.
+                    if ( message.Contains( "0x800704CD" ) )
+                    {
+                        return true;
+                    }
+
+                    // The ArgumentException raised when WebForms event validation
+                    // rejects a postback, also overwhelmingly bot-driven.
+                    if ( ex is ArgumentException && message.Contains( "Invalid postback or callback argument" ) )
+                    {
+                        return true;
+                    }
+
+                    ex = ex.InnerException;
                 }
 
                 return false;
@@ -669,19 +737,22 @@ namespace RockWeb
                                 context.Response.StatusCode = 404;
                                 return;
                             }
+                        }
 
-                            if ( IsIgnoredException( httpEx ) )
-                            {
-                                context.ClearError();
-                                context.Response.StatusCode = 200;
-                                return;
-                            }
+                        // Evaluate the ignore list against the raw exception (not
+                        // just HttpExceptions) so bot signatures such as the
+                        // postback ArgumentException are covered as well.
+                        if ( IsIgnoredException( ex ) )
+                        {
+                            context.ClearError();
+                            context.Response.StatusCode = 200;
+                            return;
                         }
                     }
                     catch
                     {
                         // Check again, but don't access the context.
-                        if ( httpEx != null && IsIgnoredException( httpEx ) )
+                        if ( IsIgnoredException( ex ) )
                         {
                             return;
                         }
@@ -705,7 +776,30 @@ namespace RockWeb
                         }
                     }
 
-                    if ( !( ex is HttpRequestValidationException ) )
+                    /*
+                        9/11/26 - NA
+
+                        A malformed URL with invalid characters in the path (a stray "&",
+                        an encoded quote, an injected script snippet, etc.) makes ASP.NET
+                        request validation throw a 400 HttpException from
+                        ValidateInputIfRequiredByConfig before the request reaches any
+                        handler. This is overwhelmingly bot/scanner traffic and the
+                        framework already rejects it, so - exactly like the
+                        HttpRequestValidationException case (dangerous Form/QueryString
+                        values) - we leave it unhandled (the request still fails with a
+                        400) but skip the log and email noise. Matching the specific
+                        message keeps this narrow: every other 400 still logs.
+
+                        Reason: Suppress high-volume, zero-diagnostic-value "dangerous Request.Path" bot noise.
+                    */
+                    var isDangerousRequestPath = ex is HttpException dangerousPathEx
+                        && dangerousPathEx.GetHttpCode() == 400
+                        && ( dangerousPathEx.Message ?? string.Empty ).Contains( "potentially dangerous Request.Path" );
+
+                    // Note that a throttled exception is still left unhandled, so
+                    // the request fails visibly. Only the logging and the email
+                    // notification are skipped.
+                    if ( !( ex is HttpRequestValidationException ) && !isDangerousRequestPath && !ShouldThrottleException( ex ) )
                     {
                         LogAndSendNotification( ex );
                     }
@@ -831,7 +925,7 @@ namespace RockWeb
         /// </summary>
         private void MarkOnlineUsersOffline()
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var userLoginService = new UserLoginService( rockContext );
 
@@ -862,6 +956,103 @@ namespace RockWeb
                     context.Cache["RockExceptionOrder"] = "66";
                 }
             }
+        }
+
+        /*
+            7/27/26 - CLAUDE
+
+            Some exceptions are legitimate (they must not be swallowed by
+            IsIgnoredException, and the request still needs to fail visibly) but
+            arrive in volumes that make the Exception Log useless and add real
+            database load. The motivating case was a single scraper replaying one
+            ASP.NET_SessionId across dozens of concurrent requests, which produced
+            thousands of identical session request-queue-limit rows.
+
+            That exception identifies the request that got queued out, never the
+            request that was holding the session lock, so the first occurrence
+            carries all of the diagnostic value and every repeat carries none.
+            Keeping one per window leaves the condition detectable (a slow page
+            serializing a real user's session, a check-in kiosk, thread
+            starvation, or abuse) without the flood.
+
+            The window is deliberately global per signature rather than per
+            session. A per-session key is unbounded when many distinct sessions
+            are affected, which is exactly the botnet case this is meant to
+            survive. The occurrence that does get logged still records the
+            session cookie and client IP in its server variables.
+
+            Reason: Cap high-volume, low-diagnostic-value exceptions without hiding them.
+        */
+
+        /// <summary>
+        /// Determines whether an exception should be skipped because an equivalent
+        /// exception was already logged within <see cref="ThrottledExceptionWindow"/>.
+        /// </summary>
+        /// <param name="ex">The exception that is about to be logged.</param>
+        /// <returns><c>true</c> if this occurrence should not be logged; otherwise <c>false</c>.</returns>
+        private static bool ShouldThrottleException( Exception ex )
+        {
+            var signature = GetThrottledExceptionSignature( ex );
+            if ( signature == null )
+            {
+                return false;
+            }
+
+            try
+            {
+                var cacheKey = $"Rock:ThrottledException:{signature}";
+                if ( RockCache.Get( cacheKey ) != null )
+                {
+                    return true;
+                }
+
+                /*
+                    Two concurrent requests can both find the cache empty and both
+                    log. That race is acceptable for a throttle, and is far cheaper
+                    than a lock that would serialize every exception in the
+                    application. The cached value is the time of the occurrence that
+                    was allowed through, so the entry is meaningful if someone
+                    inspects the cache.
+                */
+                RockCache.AddOrUpdate( cacheKey, null, RockDateTime.Now.ToString( "s" ), ThrottledExceptionWindow );
+            }
+            catch
+            {
+                // Intentionally ignored: if the cache is unavailable, fail open and
+                // log the exception rather than risk losing it.
+                return false;
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// Gets a stable key identifying the throttled signature that this exception
+        /// matches. The inner exception chain is walked because these signatures are
+        /// frequently wrapped.
+        /// </summary>
+        /// <param name="ex">The exception to inspect.</param>
+        /// <returns>The signature key, or <c>null</c> when the exception should always be logged.</returns>
+        private static string GetThrottledExceptionSignature( Exception ex )
+        {
+            while ( ex != null )
+            {
+                /*
+                    Thrown by SessionStateModule while acquiring session state when
+                    more than aspnet:RequestQueueLimitPerSession (default 50)
+                    requests for one session id are queued on the exclusive session
+                    lock. It never reaches a Rock page or handler, so there is no
+                    block or route to correlate it with.
+                */
+                if ( ex is HttpException && ( ex.Message ?? string.Empty ).Contains( "The request queue limit of the session is exceeded" ) )
+                {
+                    return "SessionRequestQueueLimit";
+                }
+
+                ex = ex.InnerException;
+            }
+
+            return null;
         }
 
         private bool ServerVariablesContainFilterSettings( string filterSettings, Exception ex )
@@ -945,6 +1136,17 @@ namespace RockWeb
         /// <param name="ex">The ex.</param>
         private void LogAndSendNotification( Exception ex )
         {
+            var isExpectedRedirectAbort = ex is ThreadAbortException
+                && HttpContext.Current?.Items["Rock:ExpectedRedirectAbort"] as bool? == true;
+
+            if ( isExpectedRedirectAbort )
+            {
+                // This is an expected exception that happens when Redirect()
+                // is called as it immediately ends the request which causes
+                // the thread to be aborted.
+                return;
+            }
+
             int? pageId = ( Context.Items["Rock:PageId"] ?? string.Empty ).ToString().AsIntegerOrNull();
             int? siteId = ( Context.Items["Rock:SiteId"] ?? string.Empty ).ToString().AsIntegerOrNull();
 
@@ -1176,8 +1378,29 @@ namespace RockWeb
             if ( !Global.QueueInUse )
             {
                 Global.QueueInUse = true;
-                RockQueue.Drain( ( ex ) => WriteErrorToRockLog( ex, "Rock.Transactions", null ) );
-                Global.QueueInUse = false;
+
+                /*
+                 * 2026-04-27 - DSH
+                 * 
+                 * Do not use a finally block here to turn QueueInUse back off.
+                 * There is a rare case with try/catch/finally where an exception
+                 * thrown inside a catch block can cause the finally block to not
+                 * execute under specific conditions, such as no exception handler
+                 * further upstream to catch the exception. This can lead to the
+                 * QueueInUse flag being left in the true state, which would prevent
+                 * the transaction queue from being processed until the application
+                 * is restarted.
+                 */
+                try
+                {
+                    RockQueue.Drain( ( ex ) => WriteErrorToRockLog( ex, "Rock.Transactions", null ) );
+                    Global.QueueInUse = false;
+                }
+                catch ( Exception ex )
+                {
+                    Global.QueueInUse = false;
+                    WriteErrorToRockLog( ex, "Rock.Transactions", "An error occurred while draining the transaction queue." );
+                }
             }
         }
 

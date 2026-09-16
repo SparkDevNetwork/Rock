@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -22,11 +22,14 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Linq;
 using System.Runtime.Serialization;
+
 using Newtonsoft.Json.Linq;
 
 using Rock.Cms.ContentCollection.Attributes;
 using Rock.Data;
+using Rock.Enums.Security;
 using Rock.Lava;
+using Rock.Security;
 
 namespace Rock.Model
 {
@@ -90,6 +93,7 @@ namespace Rock.Model
         /// A <see cref="System.String"/> representing the status note.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string StatusNote { get; set; }
 
         /// <summary>
@@ -136,6 +140,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [MaxLength( 200 )]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string OpenedClient { get; set; }
 
         /// <summary>
@@ -146,6 +151,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [MaxLength( 100 )]
+        [StringValidation( StringValidationProfile.Name )]
         public string TransportEntityTypeName { get; set; }
 
         /// <summary>
@@ -160,6 +166,7 @@ namespace Rock.Model
         [DataMember]
         [MaxLength( 100 )]
         [IndexField]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string UniqueMessageId { get; set; }
 
         /// <summary>
@@ -173,6 +180,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [MaxLength( 6 )]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string ResponseCode { get; set; }
 
         /// <summary>
@@ -182,6 +190,7 @@ namespace Rock.Model
         /// The sent message.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string SentMessage { get; set; }
 
         /// <summary>
@@ -226,6 +235,7 @@ namespace Rock.Model
         /// A Json formatted <see cref="System.String"/> containing the AdditionalMergeValues for the communication recipient. 
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string AdditionalMergeValuesJson
         {
             get

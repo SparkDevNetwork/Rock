@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -25,6 +25,7 @@ using System.Linq.Expressions;
 using Microsoft.Extensions.Logging;
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Enums.Communication;
 using Rock.Model;
@@ -193,7 +194,7 @@ namespace Rock.Jobs
         /// <returns></returns>
         private RockContext CreateRockContext()
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
 #if REVIEW_WEBFORMS
             rockContext.Database.CommandTimeout = GetAttributeValue( AttributeKey.CommandTimeoutSeconds ).AsIntegerOrNull() ?? 300;
 #else
@@ -1026,13 +1027,6 @@ WHERE
 
             public void EnsureFlowHasLatestInstance( CommunicationFlow flow )
             {
-                if ( flow.CommunicationFlowInstances.Any() )
-                {
-                    // There is already a one-time flow instance so return.
-                    return;
-                }
-
-                // No instances yet so try to create one.
                 var schedule = flow.Schedule;
                 if ( schedule == null )
                 {
@@ -1047,6 +1041,18 @@ WHERE
                     return;
                 }
 
+                if ( flow.CommunicationFlowInstances.Any() )
+                {
+                    // There is already a one-time flow instance; update its start date if needed, then return.
+                    if ( _communicationFlowService.UpdateOneTimeFlowInstanceStartDate( flow, firstStartDateTime.Value.Date ) )
+                    {
+                        _saveChangesService.SaveChanges();
+                    }
+
+                    return;
+                }
+
+                // No instances yet so try to create one.
                 var instance = new CommunicationFlowInstance
                 {
                     CommunicationFlowId = flow.Id,

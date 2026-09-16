@@ -10,31 +10,31 @@
     <Rock:Lava ID="HeaderImage" runat="server">
         {%- assign headerImageId = CurrentPage | Attribute:'HeaderImage','Id' -%}
         {%- if headerImageId != '' -%}
-        <div class="hero has-overlay" style="background-image: url('{{ headerImageId | ImageUrl:'','rootUrl' }}&maxWidth=2500');">
+            <div class="hero has-overlay" style="background-image: url('{{ headerImageId | ImageUrl:'','rootUrl' }}&maxWidth=2500');">
         {%- else -%}
-        <div class="hero has-overlay" style="background-image:url('https://source.unsplash.com/mvxrY7z7gtM/2500x1800');">
+            <div class="hero has-overlay" style="background-image:url('https://images.unsplash.com/photo-1521127021408-f33c67dfcb76?fm=jpg&q=60&w=2500');">
         {%- endif -%}
     </Rock:Lava>
 
-<div class="container d-flex flex-column" style="min-height: 105vh">
-<div class="row mt-auto">
-        <div class="col-lg-8 col-md-8 col-sm-12 text-center mx-auto">
-            <Rock:Zone Name="Headline" CssClass="zone-headline" runat="server" />
-        </div>
-</div><div class="row mb-auto">
-        <div class="noframe-workflow col-lg-9 col-md-8 col-sm-12 mx-auto text-center">
-            <Rock:Zone Name="Workflow" CssClass="zone-workflow" runat="server" />
+        <div class="container d-flex flex-column" style="min-height: 105vh">
+            <div class="row mt-auto">
+                <div class="col-lg-8 col-md-8 col-sm-12 text-center mx-auto">
+                    <Rock:Zone Name="Headline" CssClass="zone-headline" runat="server" />
+                </div>
+            </div>
+            <div class="row mb-auto">
+                <div class="noframe-workflow col-lg-9 col-md-8 col-sm-12 mx-auto text-center">
+                    <Rock:Zone Name="Workflow" CssClass="zone-workflow" runat="server" />
+                </div>
+            </div>
+            <div class="d-none">
+                <Rock:Zone Name="Section A" runat="server" />
+            </div>
         </div>
     </div>
-    <div class="d-none">
-        <Rock:Zone Name="Section A" runat="server" />
-    </div>
-</div>
-</div>
-</div>
 
 
-<div class="section-3col">
+    <div class="section-3col">
         <div class="container">
             <div class="row">
                 <Rock:Zone Name="Section B" CssClass="col-md-4 py-sm-5 py-2 pt-5" runat="server" />
@@ -59,9 +59,9 @@
     <Rock:Lava ID="SecondaryImage" runat="server">
         {%- assign secondaryImageId = CurrentPage | Attribute:'SecondaryImage','Id' -%}
         {%- if secondaryImageId != '' -%}
-        <div class="secondary-hero py-5" style="background: linear-gradient(90deg, var(--secondary-hero-overlay-color, rgba(0,0,0,0)), var(--secondary-hero-overlay-color, rgba(0,0,0,0))),url('{{ secondaryImageId | ImageUrl: '', 'rootUrl' }}&maxWidth=2500') center center; background-size: cover;">
+            <div class="secondary-hero py-5" style="background: linear-gradient(90deg, var(--secondary-hero-overlay-color, rgba(0,0,0,0)), var(--secondary-hero-overlay-color, rgba(0,0,0,0))),url('{{ secondaryImageId | ImageUrl: '', 'rootUrl' }}&maxWidth=2500') center center; background-size: cover;">
         {%- else -%}
-        <div class="secondary-hero py-5" style="background: linear-gradient(90deg, var(--secondary-hero-overlay-color, rgba(0,0,0,0)), var(--secondary-hero-overlay-color, rgba(0,0,0,0))),url('https://images.unsplash.com/photo-1520512533001-af75c194690b?ixlib=rb-0.3.5&ixid=eyJhcHBfaWQiOjEyMDd9&s=d23a0082e9aa3caa886db02d419bdd3d&auto=format&fit=crop&w=2500&q=80&auto=enhance') center center; background-size: cover;">
+            <div class="secondary-hero py-5" style="background: linear-gradient(90deg, var(--secondary-hero-overlay-color, rgba(0,0,0,0)), var(--secondary-hero-overlay-color, rgba(0,0,0,0))),url('https://images.unsplash.com/photo-1520512533001-af75c194690b?ixlib=rb-0.3.5&ixid=eyJhcHBfaWQiOjEyMDd9&s=d23a0082e9aa3caa886db02d419bdd3d&auto=format&fit=crop&w=2500&q=80&auto=enhance') center center; background-size: cover;">
         {%- endif -%}
     </Rock:Lava>
         <div class="container d-flex flex-column" style="height: 95vh; max-height: 563px;">
@@ -80,8 +80,8 @@
     </footer>
 
     <div class="d-none">
-            <Rock:Zone Name="CTA Buttons" runat="server" />
-        </div>
+        <Rock:Zone Name="CTA Buttons" runat="server" />
+    </div>
 
 </asp:Content>
 

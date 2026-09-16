@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -21,6 +21,8 @@ using System.Diagnostics;
 using System.Linq;
 using System.Linq.Expressions;
 
+using Rock.Configuration;
+
 #if REVIEW_NET5_0_OR_GREATER
 using EFDbContext = Microsoft.EntityFrameworkCore.DbContext;
 #else
@@ -39,6 +41,25 @@ namespace Rock.Model
     /// </summary>
     public partial class DataView : Model<DataView>, ICategorized, ICacheable
     {
+        #region ISecured
+
+        /*
+             3/12/2026 - NA
+
+             ⚠ SECURITY NOTICE ⚠
+
+             If the model implements custom ISecured behavior, the corresponding
+             {Entity}Cache class MUST implement the same security logic.
+
+             ModelCache<T>.SetFromEntity() only snapshots SupportedActions. Security
+             methods such as ParentAuthority, ParentAuthorityPre, IsAuthorized, and
+             IsAllowedByDefault are NOT copied automatically. If the cache does not
+             override them, it will fall back to ModelCache defaults and may evaluate
+             permissions differently than the model.
+
+             Reason: Prevent security mismatches between model entities and cache objects.
+        */
+
         /// <summary>
         /// Gets the parent security authority for the DataView which is its Category
         /// </summary>
@@ -57,6 +78,8 @@ namespace Rock.Model
                 return base.ParentAuthority;
             }
         }
+
+        #endregion ISecured
 
         /// <summary>
         /// Returns true if this DataView is configured to be Persisted.
@@ -124,7 +147,7 @@ namespace Rock.Model
         {
             if ( this.DisableUseOfReadOnlyContext )
             {
-                return new RockContext();
+                return RockApp.Current.CreateRockContext();
             }
             else
             {
@@ -245,7 +268,7 @@ namespace Rock.Model
                 var rockContext = serviceInstance.Context as RockContext;
                 if ( rockContext == null )
                 {
-                    rockContext = new RockContext();
+                    rockContext = RockApp.Current.CreateRockContext();
                 }
 
                 var persistedValuesQuery = rockContext.Set<DataViewPersistedValue>().Where( a => a.DataViewId == this.Id );
@@ -294,7 +317,7 @@ namespace Rock.Model
                 This PersistResult database context needs to be writable (not read-only), so that the persisted values for the dataview will delete / insert.
                 
             */
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var dataViewService = new DataViewService( rockContext );
                 var persistStopwatch = Stopwatch.StartNew();

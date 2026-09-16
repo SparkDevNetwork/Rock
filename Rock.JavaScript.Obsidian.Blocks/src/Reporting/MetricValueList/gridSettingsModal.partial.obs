@@ -1,0 +1,124 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Modal v-model="isVisible"
+           title="Filters"
+           saveText="Apply"
+           @save="onSave">
+
+        <SlidingDateRangePicker v-model="slidingDateRange" label="Date Range" />
+
+        <div class="row">
+            <div class="col-md-6">
+                <DropDownList v-model="goalMeasure"
+                              label="Goal/Measure"
+                              :items="metricValueTypeItems"
+                              :showBlankItem="true" />
+            </div>
+        </div>
+
+        <template v-for="(filter, index) in partitionFilters" :key="filter.metricPartitionGuid ?? index">
+            <div class="row">
+                <div class="col-md-6">
+                    <RockField v-if="filter.attribute"
+                               :attribute="filter.attribute"
+                               :modelValue="partitionValueFor(filter)"
+                               @update:modelValue="setPartitionValue(filter, $event)"
+                               :isEditMode="true" />
+                </div>
+            </div>
+        </template>
+    </Modal>
+</template>
+
+<script setup lang="ts">
+    import { PropType, ref, watch } from "vue";
+    import { GridSettingsOptions } from "./types.partial";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import Modal from "@Obsidian/Controls/modal.obs";
+    import RockField from "@Obsidian/Controls/rockField.obs";
+    import SlidingDateRangePicker from "@Obsidian/Controls/slidingDateRangePicker.obs";
+    import { useVModelPassthrough } from "@Obsidian/Utility/component";
+    import { SlidingDateRange } from "@Obsidian/Utility/slidingDateRange";
+    import { deepEqual } from "@Obsidian/Utility/util";
+    import { MetricPartitionFilterBag } from "@Obsidian/ViewModels/Blocks/Reporting/MetricValueList/metricPartitionFilterBag";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<GridSettingsOptions>,
+            required: true
+        },
+
+        metricValueTypeItems: {
+            type: Array as PropType<ListItemBag[]>,
+            required: true
+        },
+
+        partitionFilters: {
+            type: Array as PropType<MetricPartitionFilterBag[]>,
+            required: true
+        },
+
+        visible: {
+            type: Boolean as PropType<boolean>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: GridSettingsOptions): void;
+        (e: "update:visible", value: boolean): void;
+        (e: "close"): void;
+    }>();
+
+    const isVisible = useVModelPassthrough(props, "visible", emit);
+
+    const slidingDateRange = ref<SlidingDateRange | null>(props.modelValue.slidingDateRange);
+    const goalMeasure = ref(props.modelValue.goalMeasure);
+    const partitionValues = ref<Record<string, string>>({ ...props.modelValue.partitionValues });
+
+    /** Reads a partition's currently picked value out of local state by its partition Guid. */
+    function partitionValueFor(filter: MetricPartitionFilterBag): string {
+        const guid = filter.metricPartitionGuid;
+        return guid ? partitionValues.value[guid] ?? "" : "";
+    }
+
+    /** Stores the picker value as-is; the server filters empties. */
+    function setPartitionValue(filter: MetricPartitionFilterBag, value: string): void {
+        const guid = filter.metricPartitionGuid;
+        if (!guid) {
+            return;
+        }
+
+        partitionValues.value = { ...partitionValues.value, [guid]: value };
+    }
+
+    /** Apply — emits the new settings if anything changed, then closes the modal. */
+    function onSave(): void {
+        const value: GridSettingsOptions = {
+            slidingDateRange: slidingDateRange.value,
+            goalMeasure: goalMeasure.value,
+            partitionValues: partitionValues.value
+        };
+
+        if (!deepEqual(value, props.modelValue, true)) {
+            emit("update:modelValue", value);
+        }
+
+        isVisible.value = false;
+    }
+
+    // Resync local state when the parent's gridSettings is replaced (e.g., after Apply).
+    watch(() => props.modelValue, () => {
+        slidingDateRange.value = props.modelValue.slidingDateRange;
+        goalMeasure.value = props.modelValue.goalMeasure;
+        partitionValues.value = { ...props.modelValue.partitionValues };
+    });
+
+    // Forward modal close (X / outside-click) to the parent.
+    watch(isVisible, () => {
+        if (!isVisible.value) {
+            emit("close");
+        }
+    });
+</script>

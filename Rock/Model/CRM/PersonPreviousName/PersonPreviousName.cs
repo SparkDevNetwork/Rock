@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -22,8 +22,11 @@ using System.Data.Entity.Infrastructure;
 using System.Data.Entity.ModelConfiguration;
 using System.Linq;
 using System.Runtime.Serialization;
+
 using Rock.Data;
+using Rock.Enums.Security;
 using Rock.Lava;
+using Rock.Security;
 
 namespace Rock.Model
 {
@@ -61,6 +64,7 @@ namespace Rock.Model
 #if REVIEW_WEBFORMS
         [Index( "IX_LastName", IsUnique = false )]
 #endif
+        [StringValidation( StringValidationProfile.Name )]
         public string LastName { get; set; }
 
         #endregion

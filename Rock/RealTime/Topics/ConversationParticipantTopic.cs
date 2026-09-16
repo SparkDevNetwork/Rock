@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -18,6 +18,7 @@
 using System;
 using System.Threading.Tasks;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -40,20 +41,20 @@ namespace Rock.RealTime.Topics
         public async Task JoinSmsNumber( Guid rockPhoneNumber )
         {
             var state = this.GetConnectionState<ConversationState>( Context.ConnectionId );
-            var definedValue = DefinedValueCache.Get( rockPhoneNumber );
+            var phoneNumber = SystemPhoneNumberCache.Get( rockPhoneNumber );
 
-            if ( definedValue == null )
+            if ( phoneNumber == null )
             {
                 throw new RealTimeException( "Phone number was not found." );
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var person = Context.CurrentPersonId.HasValue
                     ? new PersonService( rockContext ).Get( Context.CurrentPersonId.Value )
                     : null;
 
-                if ( !definedValue.IsAuthorized( Security.Authorization.VIEW, person ) )
+                if ( !phoneNumber.IsAuthorized( Security.Authorization.VIEW, person ) )
                 {
                     throw new RealTimeException( "You are not authorized for this phone number." );
                 }
@@ -64,7 +65,7 @@ namespace Rock.RealTime.Topics
 
                 if ( newValue == 1 )
                 {
-                    await Channels.AddToChannelAsync( Context.ConnectionId, GetChannelForPhoneNumber( definedValue ) );
+                    await Channels.AddToChannelAsync( Context.ConnectionId, GetChannelForPhoneNumber( phoneNumber ) );
                 }
             }
         }
@@ -77,9 +78,9 @@ namespace Rock.RealTime.Topics
         public async Task LeaveSmsNumber( Guid rockPhoneNumber )
         {
             var state = this.GetConnectionState<ConversationState>( Context.ConnectionId );
-            var definedValue = DefinedValueCache.Get( rockPhoneNumber );
+            var phoneNumber = SystemPhoneNumberCache.Get( rockPhoneNumber );
 
-            if ( definedValue == null )
+            if ( phoneNumber == null )
             {
                 throw new RealTimeException( "Phone number was not found." );
             }
@@ -96,7 +97,7 @@ namespace Rock.RealTime.Topics
 
             if ( newValue == 0 )
             {
-                await Channels.RemoveFromChannelAsync( Context.ConnectionId, GetChannelForPhoneNumber( definedValue ) );
+                await Channels.RemoveFromChannelAsync( Context.ConnectionId, GetChannelForPhoneNumber( phoneNumber ) );
             }
         }
 
@@ -124,7 +125,7 @@ namespace Rock.RealTime.Topics
         /// </summary>
         /// <param name="rockPhoneNumber">The rock phone number.</param>
         /// <returns>A string that represents the RealTime channel name.</returns>
-        private static string GetChannelForPhoneNumber( DefinedValueCache rockPhoneNumber )
+        private static string GetChannelForPhoneNumber( SystemPhoneNumberCache rockPhoneNumber )
         {
             return $"sms:{rockPhoneNumber.Guid}";
         }

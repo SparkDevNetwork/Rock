@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -34,16 +34,11 @@ namespace Rock.Enums.AI.Agent
         /// <summary>
         /// Fast, low-cost, general-purpose model for chat and standard tasks.
         /// </summary>
-        Default,
+        Medium = 0,
 
         /// <summary>
-        /// Optimized for code generation, structured output, and logic-heavy tasks.
+        /// High-performance model for high reasoning and code generation tasks.
         /// </summary>
-        Code,
-
-        /// <summary>
-        /// High-quality, reasoning-focused model used for writing, summarization, and complex queries.
-        /// </summary>
-        Research
+        High = 1,
     }
 }

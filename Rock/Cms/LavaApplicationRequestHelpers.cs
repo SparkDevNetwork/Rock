@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -17,8 +17,14 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Net.Http;
+using System.Text;
 using System.Web;
+using System.Xml;
+
+using Newtonsoft.Json;
 
 using Rock.Model;
 using Rock.Utility;
@@ -55,10 +61,27 @@ namespace Rock.Cms
 
             // Add the headers
             var headers = request.Headers.Cast<string>()
-                .Where( h => !h.Equals( "Authorization", StringComparison.InvariantCultureIgnoreCase ) )
-                .Where( h => !h.Equals( "Cookie", StringComparison.InvariantCultureIgnoreCase ) )
-                .ToDictionary( h => h, h => request.Headers[h] );
+                .Where( h => !h.Equals( "Authorization", StringComparison.OrdinalIgnoreCase ) )
+                .Where( h => !h.Equals( "Cookie", StringComparison.OrdinalIgnoreCase ) )
+                .ToDictionary( h => h, h => request.Headers[h], StringComparer.OrdinalIgnoreCase );
             dictionary.Add( "Headers", headers );
+
+            // Friendly client type derived from the client hint header so shared
+            // endpoints can branch per platform. The header is spoofable, so this
+            // is a rendering hint only and must never gate authorization. A string
+            // rather than a boolean so future clients (TV, Kiosk) can be added
+            // without breaking existing templates.
+            // X-Helix-Client is checked first so a client can declare itself
+            // explicitly. X-Rock-DeviceData is the fallback because the mobile
+            // shell stamps it on every request it makes, not only on Helix
+            // requests; without it a renderlavaendpoint call rendered inside a
+            // mobile block reports "Web" and takes an endpoint's HTML branch,
+            // which then fails the shell's XAML parse.
+            var helixClient = request.Headers["X-Helix-Client"].ToStringSafe();
+            var isMobileShell = helixClient.Equals( "RockMobile", StringComparison.OrdinalIgnoreCase )
+                || request.Headers["X-Rock-DeviceData"].IsNotNullOrWhiteSpace();
+            var clientType = isMobileShell ? "Mobile" : "Web";
+            dictionary.Add( "ClientType", clientType );
 
             try
             {
@@ -79,6 +102,44 @@ namespace Rock.Cms
                 dictionary.Add( "Cookies", cookieDictionary );
             }
             catch { }
+
+            // Add in the raw body content.
+            if ( !request.HttpMethod.Equals( "GET", StringComparison.OrdinalIgnoreCase ) )
+            {
+                using ( StreamReader reader = new StreamReader( request.InputStream, Encoding.UTF8 ) )
+                {
+                    dictionary.Add( "RawBody", reader.ReadToEnd() );
+                }
+
+                // Parse the body content if it is JSON or standard Form data.
+                if ( request.ContentType == "application/json" )
+                {
+                    try
+                    {
+                        dictionary.Add( "Body", JsonConvert.DeserializeObject( ( string ) dictionary["RawBody"] ) );
+                    }
+                    catch { }
+                }
+                else if ( request.ContentType == "application/x-www-form-urlencoded" )
+                {
+                    try
+                    {
+                        dictionary.Add( "Body", request.Form.Cast<string>().ToDictionary( q => q, q => request.Form[q] ) );
+                    }
+                    catch { }
+                }
+                else if ( request.ContentType == "application/xml" )
+                {
+                    try
+                    {
+                        XmlDocument doc = new XmlDocument();
+                        doc.LoadXml( ( string ) dictionary["RawBody"] );
+                        string jsonText = JsonConvert.SerializeXmlNode( doc );
+                        dictionary.Add( "Body", JsonConvert.DeserializeObject( ( jsonText ) ) );
+                    }
+                    catch { }
+                }
+            }
 
             return dictionary;
         }

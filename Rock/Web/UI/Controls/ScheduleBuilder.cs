@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -21,20 +21,22 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Web.UI;
+using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
 
 using Ical.Net;
-using Ical.Net.DataTypes;
-using Calendar = Ical.Net.Calendar;
 using Ical.Net.CalendarComponents;
+using Ical.Net.DataTypes;
 using Ical.Net.Serialization;
+
+using Calendar = Ical.Net.Calendar;
 
 namespace Rock.Web.UI.Controls
 {
     /// <summary>
     ///
     /// </summary>
-    public class ScheduleBuilder : CompositeControl, IRockControl
+    public class ScheduleBuilder : CompositeControl, IRockControlAdditionalRendering
     {
         #region IRockControl implementation
 
@@ -238,6 +240,7 @@ namespace Rock.Web.UI.Controls
 
         private Panel _scheduleBuilderPanel;
         private LinkButton _btnShowPopup;
+        private HtmlButton _btnSelectNone;
         private ModalDialog _modalDialog;
         private ScheduleBuilderPopupContents _scheduleBuilderPopupContents;
 
@@ -272,6 +275,7 @@ namespace Rock.Web.UI.Controls
                 }
 
                 sm.RegisterAsyncPostBackControl( _btnShowPopup );
+                sm.RegisterAsyncPostBackControl( _btnSelectNone );
             }
         }
 
@@ -311,8 +315,11 @@ namespace Rock.Web.UI.Controls
 
                 if ( ShowScheduleFriendlyTextAsToolTip )
                 {
-                    this.ToolTip = new Rock.Model.Schedule { iCalendarContent = _scheduleBuilderPopupContents.iCalendarContent }.ToFriendlyScheduleText( true );
+                    this.ToolTip = GetDisplayedScheduleFriendlyText();
                 }
+
+                UpdatePickerDisplayState();
+
             }
         }
 
@@ -399,6 +406,44 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets a value indicating whether a clear button should be shown when a schedule has been selected.
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if the clear button should be shown; otherwise, <c>false</c>.
+        /// </value>
+        public bool ShowClearButton
+        {
+            get
+            {
+                return ViewState["ShowClearButton"] as bool? ?? false;
+            }
+
+            set
+            {
+                ViewState["ShowClearButton"] = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether the current schedule friendly text should be displayed after the label.
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if the friendly text should be rendered after the label; otherwise, <c>false</c>.
+        /// </value>
+        public bool DisplayScheduleFriendlyTextAfterLabel
+        {
+            get
+            {
+                return ViewState["DisplayScheduleFriendlyTextAfterLabel"] as bool? ?? false;
+            }
+
+            set
+            {
+                ViewState["DisplayScheduleFriendlyTextAfterLabel"] = value;
+            }
+        }
+
+        /// <summary>
         /// Called by the ASP.NET page framework to notify server controls that use composition-based implementation to create any child controls they contain in preparation for posting back or rendering.
         /// </summary>
         protected override void CreateChildControls()
@@ -415,9 +460,19 @@ namespace Rock.Web.UI.Controls
             _btnShowPopup.CausesValidation = false;
             _btnShowPopup.ID = "btnShowPopup_" + this.ClientID;
             _btnShowPopup.CssClass = "picker-label";
-            _btnShowPopup.Text = "<i class='ti ti-calendar'></i> Edit Schedule";
+            _btnShowPopup.Text = "<span class='selected-names'><i class='ti ti-calendar'></i> Edit Schedule</span>";
             _btnShowPopup.ClientIDMode = ClientIDMode.Static;
             _btnShowPopup.Click += _btnShowPopup_Click;
+
+            _btnSelectNone = new HtmlButton();
+            _btnSelectNone.Attributes["role"] = "button";
+            _btnSelectNone.Attributes["type"] = "button";
+            _btnSelectNone.Attributes["aria-label"] = "Clear selection";
+            _btnSelectNone.Attributes["class"] = "btn picker-select-none";
+            _btnSelectNone.ID = "btnClearSchedule_" + this.ClientID;
+            _btnSelectNone.InnerHtml = "<i class='ti ti-x'></i>";
+            _btnSelectNone.CausesValidation = false;
+            _btnSelectNone.ServerClick += _btnSelectNone_Click;
 
             _modalDialog = new ModalDialog();
             _modalDialog.ID = "modalDialog_" + this.ClientID;
@@ -434,8 +489,11 @@ namespace Rock.Web.UI.Controls
 
             this.Controls.Add( _scheduleBuilderPanel );
             _scheduleBuilderPanel.Controls.Add( _btnShowPopup );
+            _scheduleBuilderPanel.Controls.Add( _btnSelectNone );
             _scheduleBuilderPanel.Controls.Add( _modalDialog );
             _modalDialog.Content.Controls.Add( _scheduleBuilderPopupContents );
+
+            UpdatePickerDisplayState();
 
             RockControlHelper.CreateChildControls( this, Controls );
         }
@@ -453,6 +511,30 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Renders content after the label.
+        /// </summary>
+        /// <param name="writer">The writer.</param>
+        public void RenderAfterLabel( HtmlTextWriter writer )
+        {
+            if ( !DisplayScheduleFriendlyTextAfterLabel )
+            {
+                return;
+            }
+
+            var friendlyText = GetDisplayedScheduleFriendlyText();
+            if ( friendlyText.IsNullOrWhiteSpace() )
+            {
+                return;
+            }
+
+            writer.WriteLine();
+            writer.AddAttribute( "class", "label label-info schedulebuilder-info" );
+            writer.RenderBeginTag( HtmlTextWriterTag.Div );
+            writer.WriteEncodedText( friendlyText );
+            writer.RenderEndTag();
+        }
+
+        /// <summary>
         /// This is where you implement the simple aspects of rendering your control.  The rest
         /// will be handled by calling RenderControlHelper's RenderControl() method.
         /// </summary>
@@ -461,6 +543,66 @@ namespace Rock.Web.UI.Controls
         {
             _scheduleBuilderPanel.RenderControl( writer );
             RegisterJavaScript();
+        }
+
+        /// <summary>
+        /// Updates the picker styling and clear-button visibility for the current value.
+        /// </summary>
+        private void UpdatePickerDisplayState()
+        {
+            if ( _scheduleBuilderPanel == null )
+            {
+                return;
+            }
+
+            var hasSchedule = GetDisplayedScheduleFriendlyText().IsNotNullOrWhiteSpace();
+            var pickerClasses = new List<string> { "picker" };
+
+            if ( ShowClearButton )
+            {
+                pickerClasses.Add( "picker-select" );
+                pickerClasses.Add( "rollover-container" );
+
+                if ( hasSchedule )
+                {
+                    pickerClasses.Add( "picker-show-clear" );
+                }
+            }
+
+            _scheduleBuilderPanel.CssClass = pickerClasses.AsDelimited( " " );
+
+            if ( _btnSelectNone != null )
+            {
+                if ( ShowClearButton && hasSchedule )
+                {
+                    _btnSelectNone.Style.Remove( HtmlTextWriterStyle.Display );
+                }
+                else
+                {
+                    _btnSelectNone.Style[HtmlTextWriterStyle.Display] = "none";
+                }
+            }
+        }
+
+        /// <summary>
+        /// Gets the friendly text for the current schedule value.
+        /// </summary>
+        /// <returns>The friendly text if a schedule is set; otherwise an empty string.</returns>
+        private string GetDisplayedScheduleFriendlyText()
+        {
+            try
+            {
+                var schedule = new Rock.Model.Schedule
+                {
+                    iCalendarContent = iCalendarContent
+                };
+
+                return schedule.HasSchedule() ? schedule.ToFriendlyScheduleText( true ) : string.Empty;
+            }
+            catch
+            {
+                return string.Empty;
+            }
         }
 
         /// <summary>
@@ -476,6 +618,16 @@ namespace Rock.Web.UI.Controls
             {
                 SaveSchedule( sender, e );
             }
+        }
+
+        /// <summary>
+        /// Handles the ServerClick event of the clear button.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void _btnSelectNone_Click( object sender, EventArgs e )
+        {
+            iCalendarContent = string.Empty;
         }
 
         /// <summary>
@@ -496,6 +648,7 @@ namespace Rock.Web.UI.Controls
     {
         private ValidationSummary _vsValidation;
         private DateTimePicker _dpStartDateTime;
+        private NumberBox _tbDurationDays;
         private NumberBox _tbDurationHours;
         private NumberBox _tbDurationMinutes;
         private HiddenField _hfCalendarEventDTStamp;
@@ -570,6 +723,7 @@ END:VCALENDAR
             _hfCalendarEventDTStamp = new HiddenField();
             _hfCalendarEventUid = new HiddenField();
 
+            _tbDurationDays = new NumberBox();
             _tbDurationHours = new NumberBox();
             _tbDurationMinutes = new NumberBox();
 
@@ -752,17 +906,18 @@ END:VCALENDAR
             calendarEvent.Uid = _hfCalendarEventUid.Value;
             calendarEvent.DtStart.HasTime = true;
 
+            int durationDays = TextBoxToPositiveInteger( _tbDurationDays, 0 );
             int durationHours = TextBoxToPositiveInteger( _tbDurationHours, 0 );
             int durationMins = TextBoxToPositiveInteger( _tbDurationMinutes, 0 );
 
-            if ( ( durationHours == 0 && durationMins == 0 ) || this.ShowDuration == false )
+            if ( ( durationDays == 0 && durationHours == 0 && durationMins == 0 ) || this.ShowDuration == false )
             {
                 // make a one second duration since a zero duration won't be included in occurrences
                 calendarEvent.Duration = new TimeSpan( 0, 0, 1 );
             }
             else
             {
-                calendarEvent.Duration = new TimeSpan( durationHours, durationMins, 0 );
+                calendarEvent.Duration = new TimeSpan( durationDays, durationHours, durationMins, 0 );
             }
 
 
@@ -1029,13 +1184,14 @@ END:VCALENDAR
                 if ( calendarEvent.DtStart != null )
                 {
                     _dpStartDateTime.SelectedDateTime = calendarEvent.DtStart.Value;
-                    int hours = ( calendarEvent.Duration.Days * 24 ) + calendarEvent.Duration.Hours;
-                    _tbDurationHours.Text = hours.ToString();
+                    _tbDurationDays.Text = calendarEvent.Duration.Days.ToString();
+                    _tbDurationHours.Text = calendarEvent.Duration.Hours.ToString();
                     _tbDurationMinutes.Text = calendarEvent.Duration.Minutes.ToString();
                 }
                 else
                 {
                     _dpStartDateTime.SelectedDateTime = null;
+                    _tbDurationDays.Text = string.Empty;
                     _tbDurationHours.Text = string.Empty;
                     _tbDurationMinutes.Text = string.Empty;
                 }
@@ -1246,6 +1402,13 @@ END:VCALENDAR
             _dpStartDateTime.Required = false;
             _dpStartDateTime.ValidationGroup = validationGroup;
 
+            _tbDurationDays.ClientIDMode = ClientIDMode.Static;
+            _tbDurationDays.ID = "tbDurationDays_" + this.ClientID;
+            _tbDurationDays.CssClass = "input-width-md";
+            _tbDurationDays.AppendText = "days";
+            _tbDurationDays.MinimumValue = "0";
+            _tbDurationDays.ValidationGroup = validationGroup;
+
             _tbDurationHours.ClientIDMode = ClientIDMode.Static;
             _tbDurationHours.ID = "tbDurationHours_" + this.ClientID;
             _tbDurationHours.CssClass = "input-width-md";
@@ -1438,6 +1601,7 @@ END:VCALENDAR
 
             Controls.Add( _vsValidation );
             Controls.Add( _dpStartDateTime );
+            Controls.Add( _tbDurationDays );
             Controls.Add( _tbDurationHours );
             Controls.Add( _tbDurationMinutes );
             Controls.Add( _radOneTime );
@@ -1527,6 +1691,8 @@ END:VCALENDAR
                 writer.Write( "<label class='control-label'>Duration</label>" );
                 writer.AddAttribute( "class", "form-control-group" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
+                _tbDurationDays.RenderControl( writer );
+
                 _tbDurationHours.RenderControl( writer );
 
                 _tbDurationMinutes.RenderControl( writer );

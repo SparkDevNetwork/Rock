@@ -73,8 +73,7 @@
                                                       :disabled="isSaving || isSendingTest"
                                                       label="Attachments"
                                                       :fileProcessor="smsAttachmentFileProcessor"
-                                                      :uploadAsTemporary="false"
-                                                      @update:modelValue="onAttachmentAdded" />
+                                                      :uploadAsTemporary="false" />
 
                                         <NotificationBox v-if="attachmentSizeMessage">{{ attachmentSizeMessage }}</NotificationBox>
                                         <NotificationBox v-if="mimeTypeMessageHtml" :alertType="mimeTypeAlertType" v-html="mimeTypeMessageHtml" />
@@ -391,7 +390,7 @@
     const isSendingTest = ref<boolean>(false);
     const isSendTestModalShown = ref<boolean>(false);
     const isSaveSuccessMessageShown = ref<boolean>(false);
-    const currentAttachment = ref<ListItemBag | null | undefined>();
+    const currentAttachment = ref<ListItemBag | null | undefined>(props.smsAttachmentBinaryFiles?.[0] ?? null);
     const saveElement = ref<HTMLElement | undefined>();
     const mimeTypeAlertType = ref<AlertType>("default");
     const mimeTypeMessageHtml = ref<string | null | undefined>();
@@ -555,19 +554,6 @@
         });
     }
 
-    function onAttachmentAdded(attachment: ListItemBag | null | undefined): void {
-        if (isNullish(attachment)) {
-            // Clear warnings.
-            attachmentSizeMessage.value = null;
-            mimeTypeMessageHtml.value = null;
-            return;
-        }
-
-        internalSmsAttachmentBinaryFiles.value = [
-            attachment
-        ];
-    }
-
     // #endregion Event Handlers
 
     // #region Functions
@@ -604,6 +590,20 @@
     // #endregion Functions
 
     // #region Watchers
+
+    watch(currentAttachment, (attachment) => {
+        if (isNullish(attachment)) {
+            // Clear warnings.
+            attachmentSizeMessage.value = null;
+            mimeTypeMessageHtml.value = null;
+            internalSmsAttachmentBinaryFiles.value = [];
+            return;
+        }
+
+        internalSmsAttachmentBinaryFiles.value = [
+            attachment
+        ];
+    });
 
     watch(saveElement, element => {
         if (element) {

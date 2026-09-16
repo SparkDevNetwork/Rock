@@ -103,7 +103,9 @@
         },
 
         /**
-         * The list of campuses available for this opportunity.
+         * The list of campuses to render Default Connector dropdowns for. This is usually the
+         * opportunity's selected campuses, but the parent falls back to all active campuses when
+         * the opportunity has none selected.
          */
         campuses: {
             type: Array as PropType<ListItemBag[]>,

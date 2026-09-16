@@ -117,13 +117,15 @@
                     </template>
 
                     <template v-if="Object.keys(sourceAttributesForFilter).length > 0 || registrantFeeItemsForFilter.length > 0" #drawer>
-                        <AttributeValuesContainer v-model="pendingSourceAttributeValuesForFilter" :attributes="sourceAttributesForFilter" isEditMode :numberOfColumns="1" />
-                        <DropDownList v-model="pendingRegistrantFeeItemValuesForFilter"
-                                      v-if="placementConfigurationSettings.areFeesDisplayed"
-                                      label="Fees"
-                                      :items="registrantFeeItemsForFilter ?? []"
-                                      :enhanceForLongLists="true"
-                                      :multiple="true" />
+                        <div class="filter-container">
+                            <AttributeValuesContainer v-model="pendingSourceAttributeValuesForFilter" :attributes="sourceAttributesForFilter" isEditMode :numberOfColumns="1" />
+                            <DropDownList v-model="pendingRegistrantFeeItemValuesForFilter"
+                                          v-if="placementConfigurationSettings.areFeesDisplayed"
+                                          label="Fees"
+                                          :items="registrantFeeItemsForFilter ?? []"
+                                          :enhanceForLongLists="true"
+                                          :multiple="true" />
+                        </div>
                         <RockButton :btnType="BtnType.Action"
                                     :btnSize="BtnSize.ExtraSmall"
                                     @click="applyPeopleFilter"
@@ -229,29 +231,30 @@
                     </template>
 
                     <template #drawer v-if="Object.keys(destinationGroupAttributesForFilter).length > 0 || Object.keys(destinationGroupMemberAttributesForFilter).length > 0">
-
-                        <AttributeValuesContainer v-model="pendingDestinationGroupAttributeValuesForFilter"
-                                                  :attributes="destinationGroupAttributesForFilter"
-                                                  isEditMode
-                                                  :numberOfColumns="3"
-                                                  columnBreakpoint="lg"
-                                                  :showCategoryLabel="false" />
-                        <div class="w-100 mb-2">
-                            <RockLabel v-if="Object.keys(destinationGroupMemberAttributesForFilter).length > 0"
-                                       @click="toggleIsGroupMemberFilterDisplayed"
-                                       class="group-member-filter-toggle">
-                                Group Member Filters <i :class="groupMemberFilterIcon"></i>
-                            </RockLabel>
-                            <TransitionVerticalCollapse>
-                                <div v-show="isGroupMemberFilterDisplayed">
-                                    <AttributeValuesContainer v-model="pendingDestinationGroupMemberAttributeValuesForFilter"
-                                                              :attributes="destinationGroupMemberAttributesForFilter"
-                                                              isEditMode
-                                                              :numberOfColumns="3"
-                                                              columnBreakpoint="lg"
-                                                              :showCategoryLabel="false" />
-                                </div>
-                            </TransitionVerticalCollapse>
+                        <div class="filter-container">
+                            <AttributeValuesContainer v-model="pendingDestinationGroupAttributeValuesForFilter"
+                                                      :attributes="destinationGroupAttributesForFilter"
+                                                      isEditMode
+                                                      :numberOfColumns="3"
+                                                      columnBreakpoint="lg"
+                                                      :showCategoryLabel="false" />
+                            <div class="w-100 mb-2">
+                                <RockLabel v-if="Object.keys(destinationGroupMemberAttributesForFilter).length > 0"
+                                           @click="toggleIsGroupMemberFilterDisplayed"
+                                           class="group-member-filter-toggle">
+                                    Group Member Filters <i :class="groupMemberFilterIcon"></i>
+                                </RockLabel>
+                                <TransitionVerticalCollapse>
+                                    <div v-show="isGroupMemberFilterDisplayed">
+                                        <AttributeValuesContainer v-model="pendingDestinationGroupMemberAttributeValuesForFilter"
+                                                                  :attributes="destinationGroupMemberAttributesForFilter"
+                                                                  isEditMode
+                                                                  :numberOfColumns="3"
+                                                                  columnBreakpoint="lg"
+                                                                  :showCategoryLabel="false" />
+                                    </div>
+                                </TransitionVerticalCollapse>
+                            </div>
                         </div>
                         <RockButton :btnType="BtnType.Action"
                                     :btnSize="BtnSize.ExtraSmall"
@@ -514,6 +517,13 @@
 
 :deep(.is-drag-over) {
     display: none;
+}
+
+.filter-container {
+    max-height: 400px;
+    overflow: hidden;
+    overflow-y: auto;
+    padding-right: var(--spacing-xsmall);
 }
 </style>
 
@@ -1860,6 +1870,15 @@
      * @param groupMember The updated group member message.
      */
     function onGroupMemberUpdatedFromServer(groupMember: GroupMemberUpdatedMessageBag): void {
+        // An archived group member is no longer considered part of the group
+        // (this block only shows unarchived members), so treat the update the
+        // same as a removal. A restore (isArchived changing back to false)
+        // flows through the add logic below.
+        if (groupMember.isArchived) {
+            onGroupMemberDeletedFromServer(groupMember.groupMemberGuid, groupMember);
+            return;
+        }
+
         // Handle case where a group member is added to the source group
         if (groupMember.groupIdKey === box.groupPlacementKeys?.sourceGroupIdKey) {
             if (isNullOrWhiteSpace(groupMember.person?.personIdKey)) {
@@ -1915,6 +1934,13 @@
 
             // Skip if no valid placement group was found (safety check)
             if (!placementGroup) {
+                return;
+            }
+
+            // Skip if this member is already rendered in the group so a duplicate
+            // notification cannot add a second card.
+            const isMemberAlreadyInGroup = placementGroup.groupMembers?.some(gm => gm.groupMemberIdKey === groupMember.groupMemberIdKey) ?? false;
+            if (isMemberAlreadyInGroup) {
                 return;
             }
 
@@ -1979,21 +2005,42 @@
             }
         }
         else {
-            const { placementGroup, existingPerson } = getPlacementContext(groupMember);
-            if (!placementGroup) {
-                return;
-            }
-
-            groupMember.person = existingPerson || groupMember.person;
-
-            // If the person does not have a Registrant in any of the included Registration Instances, then they should not be shown in the People To Place Panel.
-            // This matches with functionality from the old Webforms Block.
-            if (shouldPersonBeDisplayed(groupMember) && groupMember.person) {
-                peopleToPlace.value.push({ ...groupMember.person });
-            }
-
-            placementGroup.groupMembers = placementGroup.groupMembers?.filter(gm => gm.groupMemberIdKey !== groupMember.groupMemberIdKey);
+            removeGroupMemberFromLocalState(groupMember);
         }
+    }
+
+    /**
+     * Removes a group member from their destination group in local state and
+     * returns the person to the People to Place panel when they still qualify
+     * to be shown there. Safe to call for a member that has already been
+     * removed, in which case it does nothing.
+     *
+     * @param groupMember The group member details.
+     */
+    function removeGroupMemberFromLocalState(groupMember: GroupMemberUpdatedMessageBag): void {
+        const { placementGroup, existingPerson } = getPlacementContext(groupMember);
+        if (!placementGroup) {
+            return;
+        }
+
+        // If the member is no longer in the group then this removal has already
+        // been processed (e.g. an archived member being hard deleted later sends
+        // a second notification), so processing it again would duplicate the
+        // person in the People to Place panel.
+        const isMemberStillInGroup = placementGroup.groupMembers?.some(gm => gm.groupMemberIdKey === groupMember.groupMemberIdKey) ?? false;
+        if (!isMemberStillInGroup) {
+            return;
+        }
+
+        groupMember.person = existingPerson || groupMember.person;
+
+        // If the person does not have a Registrant in any of the included Registration Instances, then they should not be shown in the People To Place Panel.
+        // This matches with functionality from the old Webforms Block.
+        if (shouldPersonBeDisplayed(groupMember) && groupMember.person) {
+            peopleToPlace.value.push({ ...groupMember.person });
+        }
+
+        placementGroup.groupMembers = placementGroup.groupMembers?.filter(gm => gm.groupMemberIdKey !== groupMember.groupMemberIdKey);
     }
 
     /**

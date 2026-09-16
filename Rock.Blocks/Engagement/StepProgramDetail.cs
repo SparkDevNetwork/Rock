@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -23,6 +23,7 @@ using System.Data.Entity;
 using System.Linq;
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Enums.Engagement;
@@ -72,7 +73,7 @@ namespace Rock.Blocks.Engagement
     [BooleanField
         ( "Enable List View Display Options",
           Key = AttributeKey.EnableListViewDisplayOptions,
-          Description = "Allows selecting a display mode of Grid or Cards.",
+          Description = "Allows selecting the display mode when showing steps on a person's profile page.",
           DefaultValue = "false",
           Order = 3 )]
 
@@ -119,7 +120,11 @@ namespace Rock.Blocks.Engagement
         #endregion Keys
 
         private int currentColorIndex = 0;
-        private readonly string[] defaultColors = { "#ea5545", "#f46a9b", "#ef9b20", "#edbf33", "#ede15b", "#bdcf32", "#87bc45", "#27aeef", "#b33dc6" };
+
+        // Fallback colors for step types that don't have their own configured HighlightColor. Each node in
+        // this flow diagram is only distinguishable by color, so this cycles through the categorical
+        // palette in sequence rather than a single flat color.
+        private readonly string[] defaultColors = { "--color-categorical-1", "--color-categorical-2", "--color-categorical-3", "--color-categorical-4", "--color-categorical-5", "--color-categorical-6", "--color-categorical-7", "--color-categorical-8" };
 
         #region Methods
 
@@ -355,6 +360,7 @@ namespace Rock.Blocks.Engagement
             } ).ToList();
 
             bag.WorkflowTriggers = entity.StepWorkflowTriggers
+                .Where( wt => wt.StepTypeId == null )
                 .OrderBy( c => c.TypeName ).ThenBy( c => c.TriggerType.ConvertToString() )
                 .Select( wt => new StepProgramWorkflowTriggerBag()
                 {
@@ -633,7 +639,6 @@ namespace Rock.Blocks.Engagement
                 workflowTrigger.TriggerType = stateTrigger.WorkflowTrigger.Value.ConvertToEnum<StepWorkflowTrigger.WorkflowTriggerCondition>();
                 workflowTrigger.TypeQualifier = qualifierSettings.ToSelectionString();
                 workflowTrigger.WorkflowName = stateTrigger.WorkflowType.Text;
-                workflowTrigger.StepTypeId = null;
             }
         }
 
@@ -2430,7 +2435,7 @@ namespace Rock.Blocks.Engagement
             var legendHtml = lavaTemplate.ResolveMergeFields( mergeFields );
 
             var parameters = GetStepFlowParameters( maxLevels, dateRange, startingStepTypeIds );
-            var flowEdgeData = new DbService( new RockContext() ).GetDataTableFromSqlCommand( "spSteps_StepFlow", System.Data.CommandType.StoredProcedure, parameters );
+            var flowEdgeData = new DbService( RockApp.Current.CreateRockContext() ).GetDataTableFromSqlCommand( "spSteps_StepFlow", System.Data.CommandType.StoredProcedure, parameters );
             var flowEdgeResults = new List<SankeyDiagramEdgeBag>();
 
             foreach ( DataRow flowEdgeRow in flowEdgeData.Rows )

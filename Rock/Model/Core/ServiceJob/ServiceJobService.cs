@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -22,14 +22,15 @@ using System.Collections.Specialized;
 using System.Linq;
 using System.Threading.Tasks;
 
-#if REVIEW_WEBFORMS
-using System.Web.Compilation;
-#endif
+using Microsoft.Extensions.DependencyInjection;
+
 using Quartz;
 using Quartz.Impl;
 using Quartz.Impl.Matchers;
 
 using Rock.Attribute;
+using Rock.Bus.Locking;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Jobs;
 using Rock.ViewModels.Blocks.Core.ServiceJobDetail;
@@ -61,29 +62,6 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Schedules the Job to run immediately and waits for the job to finish.
-        /// Returns <c>false</c> with an <c>out</c> if the job is already running as a RunNow job or if an exception occurs.
-        /// </summary>
-        /// <param name="job">The job.</param>
-        /// <param name="errorMessage">The error message.</param>
-        /// <returns></returns>
-        [Obsolete]
-        [RockObsolete( "1.15" )]
-        public bool RunNow( ServiceJob job, out string errorMessage )
-        {
-            if ( RunNow( job ) )
-            {
-                errorMessage = string.Empty;
-                return true;
-            }
-            else
-            {
-                errorMessage = "Unable to run job.";
-                return false;
-            }
-        }
-
-        /// <summary>
         /// Runs the now.
         /// </summary>
         /// <param name="job">The job.</param>
@@ -112,7 +90,7 @@ namespace Rock.Model
             }
 
             // use a new RockContext instead of using this.Context so we can SaveChanges without affecting other RockContext's with pending changes.
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
 
             try
             {
@@ -136,46 +114,24 @@ namespace Rock.Model
                     return false;
                 }
 
-                // Check if another scheduler is running this job
-                try
+                // Probe the distributed lock as a hint. If we cannot grab it
+                // immediately, some other scheduler (on this node or elsewhere
+                // in the farm) is running the job — bail with false so the
+                // caller can surface "already running" to the user. If we do
+                // grab it, dispose immediately and proceed; the race window
+                // between this probe and the actual fire is acceptable because
+                // RockTriggerListener.VetoJobExecution will re-acquire and
+                // veto if another node wins the race in that window. This
+                // replaces a Quartz-internals enumeration
+                // (StdSchedulerFactory().AllSchedulers) that only saw local
+                // schedulers and does not compose across the farm.
+                var lockProvider = RockApp.Current.GetRequiredService<IDistributedLockProvider>();
+                using ( var probe = lockProvider.TryAcquire( typeof( RockTriggerListener ), jobId.ToString(), TimeSpan.Zero ) )
                 {
-#if REVIEW_NET5_0_OR_GREATER
-                    var allSchedulers = await new StdSchedulerFactory().GetAllSchedulers();
-#else
-                    var allSchedulers = new StdSchedulerFactory().AllSchedulers;
-#endif
-                    var otherSchedulers = allSchedulers
-                        .Where( s => s.SchedulerName != runNowSchedulerName );
-
-                    foreach ( var scheduler in otherSchedulers )
+                    if ( !probe.IsAcquired )
                     {
-#if REVIEW_NET5_0_OR_GREATER
-                        var currentlyExecutingJobs = await scheduler.GetCurrentlyExecutingJobs();
-#else
-                        var currentlyExecutingJobs = scheduler.GetCurrentlyExecutingJobs();
-#endif
-                        var isAlreadyRunning = currentlyExecutingJobs
-                            .Where( j =>
-                                j.JobDetail.Description == jobId.ToString() &&
-#if REVIEW_NET5_0_OR_GREATER
-                                j.JobDetail.ConcurrentExecutionDisallowed )
-#else
-                                j.JobDetail.ConcurrentExectionDisallowed )
-#endif
-                            .Any();
-
-                        if ( isAlreadyRunning )
-                        {
-                            // A job with that Id is already running and ConcurrentExectionDisallowed is true
-                            var errorMessage = $" Scheduler '{scheduler.SchedulerName}' is already executing job Id '{jobId}' (name: {job.Name})";
-                            System.Diagnostics.Debug.WriteLine( $"{RockDateTime.Now.ToString()} {errorMessage}" );
-                            return false;
-                        }
+                        return false;
                     }
-                }
-                catch
-                {
-                    // Was blank in the RunJobNowTransaction (intentional?)
                 }
 
                 // create the quartz job and trigger
@@ -201,6 +157,14 @@ namespace Rock.Model
                 // set up the listener to report back from the job when it completes
                 var listener = new RunNowRockJobListener( job.Id );
                 sched.ListenerManager.AddJobListener( listener, EverythingMatcher<JobKey>.AllJobs() );
+
+                // Register the trigger listener so Run Now goes through the same
+                // pre-execution gate as scheduled runs: cross-node distributed
+                // lock acquisition (VetoJobExecution in RockTriggerListener) plus
+                // the legacy "another scheduler already running this job" check.
+                // Without this, a Run Now on one node would bypass distributed
+                // coordination and could race a scheduled fire on another node.
+                sched.ListenerManager.AddTriggerListener( new RockTriggerListener(), EverythingMatcher<TriggerKey>.AllTriggers() );
 
                 // start the scheduler
                 sched.Start();
@@ -399,7 +363,7 @@ namespace Rock.Model
         /// <param name="jobId">The job identifier.</param>
         public static void DeleteJob( int jobId )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var jobService = new ServiceJobService( rockContext );
                 var job = jobService.Get( jobId );
@@ -459,7 +423,7 @@ namespace Rock.Model
         internal static void InitializeJobScheduler()
 #endif
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 // create scheduler
                 ISchedulerFactory schedulerFactory = new StdSchedulerFactory();

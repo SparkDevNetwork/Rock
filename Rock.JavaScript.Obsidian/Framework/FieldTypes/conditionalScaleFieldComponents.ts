@@ -19,7 +19,7 @@ import NumberBox from "@Obsidian/Controls/numberBox.obs";
 import ColorPicker from "@Obsidian/Controls/colorPicker.obs";
 import RockFormField from "@Obsidian/Controls/rockFormField.obs";
 import TextBox from "@Obsidian/Controls/textBox.obs";
-import { ClientValue, ConfigurationValueKey } from "./conditionalScaleField.partial";
+import { ClientValue, ConfigurationKey } from "./conditionalScaleField.partial";
 import { getFieldConfigurationProps, getFieldEditorProps } from "./utils";
 import { newGuid } from "@Obsidian/Utility/guid";
 import { toNumberOrNull } from "@Obsidian/Utility/numberUtils";
@@ -94,10 +94,10 @@ export const ConfigurationComponent = defineComponent({
 
             // Construct the new value that will be emitted if it is different
             // than the current value.
-            newValue[ConfigurationValueKey.ConfigurationJSON] = JSON.stringify(configuration.value ?? []);
+            newValue[ConfigurationKey.ConfigurationJSON] = JSON.stringify(configuration.value ?? []);
 
             // Compare the new value and the old value.
-            const anyValueChanged = newValue[ConfigurationValueKey.ConfigurationJSON] !== (props.modelValue[ConfigurationValueKey.ConfigurationJSON] ?? []);
+            const anyValueChanged = newValue[ConfigurationKey.ConfigurationJSON] !== (props.modelValue[ConfigurationKey.ConfigurationJSON] ?? []);
 
             // If any value changed then emit the new model value.
             if (anyValueChanged) {
@@ -146,13 +146,13 @@ export const ConfigurationComponent = defineComponent({
         // Watch for changes coming in from the parent component and update our
         // data to match the new information.
         watch(() => [props.modelValue, props.configurationProperties], () => {
-            configuration.value = parseModelValue(props.modelValue[ConfigurationValueKey.ConfigurationJSON]);
+            configuration.value = parseModelValue(props.modelValue[ConfigurationKey.ConfigurationJSON]);
         }, {
             immediate: true
         });
 
         // Watch for changes in properties that only require a local UI update.
-        watch(configuration, () => maybeUpdateConfiguration(ConfigurationValueKey.ConfigurationJSON, JSON.stringify(configuration.value) ?? ""), { deep: true });
+        watch(configuration, () => maybeUpdateConfiguration(ConfigurationKey.ConfigurationJSON, JSON.stringify(configuration.value) ?? ""), { deep: true });
 
         return {
             configuration,

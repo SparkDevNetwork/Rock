@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
@@ -7,7 +7,9 @@ using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
+using Rock;
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Core.NotificationMessageTypes;
 using Rock.Data;
 using Rock.Enums.Communication;
@@ -198,21 +200,10 @@ namespace Rock.Blocks.Communication
             box.CanEditOrAdministrate = BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) || BlockCache.IsAuthorized( Authorization.ADMINISTRATE, RequestContext.CurrentPerson );
             box.SecurityGrantToken = GetSecurityGrantToken();
 
-            if ( box.SystemPhoneNumbers.Count == 0 )
-            {
-                return box;
-            }
-
-            var responseListingStatusBag = LoadResponseListing( null );
-
-            if ( responseListingStatusBag.ErrorMessage.IsNotNullOrWhiteSpace() )
-            {
-                box.ErrorMessage = responseListingStatusBag.ErrorMessage;
-                return box;
-            }
-
-            box.Conversations = responseListingStatusBag.Conversations;
-
+            // Conversations are intentionally NOT loaded here. They are fetched by the
+            // ReloadConversations block action once the block has mounted, so the (potentially
+            // heavy) conversation query does not run inside the synchronous page render - which
+            // on large datasets can exceed the ASP.NET page timeout.
             return box;
         }
 
@@ -360,7 +351,7 @@ namespace Rock.Blocks.Communication
             if ( GetAttributeValue( AttributeKey.AllowUnrestrictedUploads ).AsBoolean() )
             {
                 // Enable uploading communication attachments without the normal permission restrictions
-                BinaryFileType binaryFileType = new BinaryFileTypeService( new RockContext() ).Get( Rock.SystemGuid.BinaryFiletype.COMMUNICATION_ATTACHMENT.AsGuid() );
+                BinaryFileType binaryFileType = new BinaryFileTypeService( RockApp.Current.CreateRockContext() ).Get( Rock.SystemGuid.BinaryFiletype.COMMUNICATION_ATTACHMENT.AsGuid() );
                 securityGrant.AddRule( new EntitySecurityGrantRule( binaryFileType.TypeId, binaryFileType.Id, Authorization.EDIT ) );
             }
 
@@ -413,7 +404,7 @@ namespace Rock.Blocks.Communication
 
             try
             {
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     rockContext.Database.SetCommandTimeout( GetAttributeValue( AttributeKey.DatabaseTimeoutSeconds ).AsIntegerOrNull() ?? 180 );
 
@@ -428,11 +419,9 @@ namespace Rock.Blocks.Communication
                     var smsSystemPhoneNumberId = SystemPhoneNumberCache.Get( SelectedSystemPhoneNumber.Value ).Id;
 
                     var responseListItems = communicationResponseService.GetCommunicationAndResponseRecipients( smsSystemPhoneNumberId, startDateTime, maxConversations, messageFilterOption, personId );
-                    var personService = new PersonService( rockContext );
 
                     foreach ( var r in responseListItems )
                     {
-                        var recipientPerson = r.PersonId.HasValue ? personService.Get( r.PersonId.Value ) : null;
                         var smsMessage = r.SMSMessage;
 
                         if ( r.SMSMessage.IsNullOrWhiteSpace() && r.HasAttachments( rockContext ) )
@@ -440,16 +429,22 @@ namespace Rock.Blocks.Communication
                             smsMessage = "Image";
                         }
 
+                        // The service already supplies the primary alias guid and the photo inputs,
+                        // so the photo URL is built here without re-loading the Person.
+                        var recipientPhotoUrl = r.PersonId.HasValue
+                            ? Rock.Model.Person.GetPersonPhotoUrl( r.Initials, r.RecipientPhotoId, r.Age, r.Gender, r.RecordTypeValueId, r.AgeClassification, 256 )
+                            : "/Assets/Images/person-no-photo-unknown.svg?width=256&height=256";
+
                         // TODO: Remove RecipientPersonAliasId when the ReminderList Block is converted to Obsidian.
                         bag.Conversations.Add( new ConversationBag()
                         {
                             ConversationKey = r.ConversationKey,
                             RecipientPersonAliasIdKey = r.RecipientPersonAliasId.HasValue ? IdHasher.Instance.GetHash( r.RecipientPersonAliasId.Value ) : null,
-                            RecipientPersonAliasGuid = recipientPerson.PrimaryAlias.Guid,
+                            RecipientPersonAliasGuid = r.RecipientPrimaryAliasGuid,
                             RecipientPersonAliasId = r.RecipientPersonAliasId ?? 0,
                             RecipientPhoneNumber = r.ContactKey,
                             IsConversationRead = r.IsRead,
-                            RecipientPhotoUrl = recipientPerson != null ? Rock.Model.Person.GetPersonPhotoUrl( recipientPerson, 256, 256 ) : "/Assets/Images/person-no-photo-unknown.svg?width=256&height=256",
+                            RecipientPhotoUrl = recipientPhotoUrl,
                             IsRecipientNamelessPerson = r.IsNamelessPerson,
                             RecipientFullName = r.FullName,
                             Messages = new List<MessageBag>
@@ -460,7 +455,7 @@ namespace Rock.Blocks.Communication
                                 SMSMessage = smsMessage,
                                 IsOutbound = r.IsOutbound,
                                 OutboundSenderFullName = r.OutboundSenderFullName,
-                                CreatedDateTime = r.CreatedDateTime,
+                                CreatedDateTime = r.CreatedDateTime?.ToRockDateTimeOffset(),
                             }
                         }
                         } );
@@ -730,7 +725,7 @@ namespace Rock.Blocks.Communication
 
             try
             {
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     rockContext.Database.SetCommandTimeout( GetAttributeValue( AttributeKey.DatabaseTimeoutSeconds ).AsIntegerOrNull() ?? 180 );
                     var communicationResponseService = new CommunicationResponseService( rockContext );
@@ -756,7 +751,7 @@ namespace Rock.Blocks.Communication
                             SMSMessage = response.SMSMessage,
                             IsOutbound = response.IsOutbound,
                             OutboundSenderFullName = response.OutboundSenderFullName,
-                            CreatedDateTime = response.CreatedDateTime,
+                            CreatedDateTime = response.CreatedDateTime?.ToRockDateTimeOffset(),
                             AttachmentUrls = attachmentUrls,
                         } );
                     }
@@ -929,7 +924,7 @@ namespace Rock.Blocks.Communication
                 return ActionBadRequest( "Request details are not valid." );
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var noteService = new NoteService( rockContext );
                 Note note = new Note()
@@ -1159,7 +1154,7 @@ namespace Rock.Blocks.Communication
             var snippetTypeGuid = Rock.SystemGuid.SnippetType.SMS.AsGuid();
             var currentPersonId = RequestContext.CurrentPerson?.Id;
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var snippet = new SnippetService( rockContext )
                     .GetAuthorizedSnippets( RequestContext.CurrentPerson,

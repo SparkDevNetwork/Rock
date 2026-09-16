@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
 
+using Rock.Attribute;
 using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
@@ -41,6 +42,14 @@ namespace Rock.Web.Cache
         /// <inheritdoc cref="Rock.Model.FinancialAccount.PublicName" />
         [DataMember]
         public string PublicName { get; private set; }
+
+        /// <inheritdoc cref="Rock.Model.FinancialAccount.PublicDescription" />
+        [DataMember]
+        public string PublicDescription { get; private set; }
+
+        /// <inheritdoc cref="Rock.Model.FinancialAccount.IsTaxDeductible" />
+        [DataMember]
+        public bool IsTaxDeductible { get; private set; }
 
         /// <inheritdoc cref="Rock.Model.FinancialAccount.ParentAccountId" />
         [DataMember]
@@ -326,7 +335,8 @@ namespace Rock.Web.Cache
         /// <param name="campus">The campus to use when searching for a child account.</param>
         /// <param name="forceChildAccounts">If this is <c>true</c> then child accounts will be checked, even if <see cref="UsesCampusChildAccounts"/> is <c>false</c>.</param>
         /// <returns>The <see cref="FinancialAccountCache"/> object that should be used for a transaction, this will never be <c>null</c>.</returns>
-        internal FinancialAccountCache GetMappedAccountForCampus( CampusCache campus, bool forceChildAccounts )
+        [RockInternal( "20.0", keepInternalForever: true )]
+        public FinancialAccountCache GetMappedAccountForCampus( CampusCache campus, bool forceChildAccounts )
         {
             if ( campus == null )
             {
@@ -372,6 +382,8 @@ namespace Rock.Web.Cache
             this.IsActive = financialAccount.IsActive;
             this.Order = financialAccount.Order;
             this.UsesCampusChildAccounts = financialAccount.UsesCampusChildAccounts;
+            this.PublicDescription = financialAccount.PublicDescription;
+            this.IsTaxDeductible = financialAccount.IsTaxDeductible;
         }
 
         /// <summary>

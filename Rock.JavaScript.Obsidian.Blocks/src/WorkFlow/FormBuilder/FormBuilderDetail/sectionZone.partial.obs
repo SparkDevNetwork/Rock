@@ -1,6 +1,6 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <ConfigurableZone class="zone-section" :modelValue="isSectionActive">
+    <ConfigurableZone :class="sectionClasses" :modelValue="isSectionActive">
         <div class="zone-body">
             <div class="d-flex flex-column" :class="sectionTypeClass" style="flex-grow: 1;">
                 <div>
@@ -10,6 +10,10 @@
                 </div>
 
                 <div class="form-section" v-drag-source="reorderDragOptions" v-drag-target="reorderDragOptions.id" v-drag-target:2="dragTargetId" :data-section-id="sectionGuid">
+                    <div v-if="!fields?.length" class="form-section-empty-placeholder text-muted">
+                        <i class="ti ti-circle-plus mr-1"></i>
+                        Add Form Fields
+                    </div>
                     <ConfigurableZone v-for="field in fields"
                                       :key="field.guid"
                                       :modelValue="isFieldActive(field)"
@@ -39,6 +43,24 @@
         </template>
     </ConfigurableZone>
 </template>
+
+<style scoped>
+.form-section {
+    display: flex;
+    flex: 1 1 auto;
+    flex-wrap: wrap;
+}
+
+.form-section-empty-placeholder {
+    display: flex;
+    flex: 1 1 100%;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    padding: var(--spacing-large);
+    text-align: center;
+}
+</style>
 
 <script setup lang="ts">
     import { Guid } from "@Obsidian/Types";
@@ -100,6 +122,14 @@
 
     /** The fields that exist in this section. */
     const fields = ref(props.modelValue.fields);
+
+    /** True when the section has no fields yet (drives the empty placeholder + dashed border). */
+    const isEmpty = computed((): boolean => !fields.value?.length);
+
+    /** Classes applied to the underlying ConfigurableZone root via fallthrough. */
+    const sectionClasses = computed((): string => {
+        return isEmpty.value ? "zone-section zone-section-empty" : "zone-section";
+    });
 
     /** The CSS class name to apply to the section. */
     const sectionTypeClass = computed((): string => {

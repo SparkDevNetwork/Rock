@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -24,6 +24,7 @@ using System.Web.UI.WebControls;
 using Rock;
 using Rock.Attribute;
 using Rock.Blocks;
+using Rock.Configuration;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
@@ -85,7 +86,7 @@ namespace RockWeb.Blocks.Reporting
         "Use Obsidian Components",
         Key = AttributeKey.UseObsidianComponents,
         Description = "Switches the filter components to use Obsidian if supported.",
-        DefaultBooleanValue = false,
+        DefaultBooleanValue = true,
         Category = "Advanced" )]
 
     [Rock.SystemGuid.BlockTypeGuid( "EB279DF9-D817-4905-B6AC-D9883F0DA2E4" )]
@@ -195,15 +196,12 @@ $(document).ready(function() {
         {
             if ( !Page.IsPostBack )
             {
-                string dataViewId = PageParameter( PageParameterKey.DataViewId ).AsIntegerOrNull()?.ToString() ?? string.Empty;
-                if ( string.IsNullOrEmpty( dataViewId ) )
-                {
-                    dataViewId = Rock.Utility.IdHasher.Instance.GetId( PageParameter( PageParameterKey.DataViewId ) ).ToStringSafe();
-                }
+                string dataViewId = PageParameter( PageParameterKey.DataViewId );
+                var dataView = new DataViewService( RockApp.Current.CreateRockContext() ).Get( dataViewId, !PageCache.Layout.Site.DisablePredictableIds );
 
-                if ( !string.IsNullOrWhiteSpace( dataViewId ) )
+                if ( dataView != null || dataViewId == "0" )
                 {
-                    ShowDetail( dataViewId.AsInteger(), PageParameter( PageParameterKey.ParentCategoryId ).AsIntegerOrNull() );
+                    ShowDetail( dataView != null ? dataView.Id : 0, PageParameter( PageParameterKey.ParentCategoryId ) );
                 }
                 else
                 {
@@ -221,7 +219,7 @@ $(document).ready(function() {
         protected override void LoadViewState( object savedState )
         {
             base.LoadViewState( savedState );
-            RockContext rockContext = new RockContext();
+            RockContext rockContext = RockApp.Current.CreateRockContext();
             int? entityTypeId = ViewState[ViewStateKey.EntityTypeId] as int?;
             var dataViewFilter = DataViewFilter.FromJson( ViewState[ViewStateKey.DataViewFilter].ToString() );
 
@@ -252,8 +250,8 @@ $(document).ready(function() {
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void btnEdit_Click( object sender, EventArgs e )
         {
-            var service = new DataViewService( new RockContext() );
-            var item = service.Get( int.Parse( hfDataViewId.Value ) );
+            var service = new DataViewService( RockApp.Current.CreateRockContext() );
+            var item = service.Get( hfDataViewId.Value, true );
             BindReadOnlyContextControls( service.ReadOnlyContextEnabled, item.DisableUseOfReadOnlyContext );
             ShowEditDetails( item );
         }
@@ -268,7 +266,7 @@ $(document).ready(function() {
             // Create a new Data View using the current item as a template.
             var id = int.Parse( hfDataViewId.Value );
 
-            var dataViewService = new DataViewService( new RockContext() );
+            var dataViewService = new DataViewService( RockApp.Current.CreateRockContext() );
 
             var newItem = dataViewService.GetNewFromTemplate( id );
 
@@ -305,7 +303,7 @@ $(document).ready(function() {
 
             DataView dataView = null;
 
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             DataViewService service = new DataViewService( rockContext );
 
             int dataViewId = hfDataViewId.Value.AsInteger();
@@ -481,7 +479,7 @@ $(document).ready(function() {
 
             var qryParams = new Dictionary<string, string>();
             var expandedIds = PageParameter( PageParameterKey.ExpandedIds );
-            qryParams[PageParameterKey.DataViewId] = dataView.Id.ToString();
+            qryParams[PageParameterKey.DataViewId] = dataView.IdKey;
             qryParams[PageParameterKey.ParentCategoryId] = null;
             if ( expandedIds.IsNotNullOrWhiteSpace() )
             {
@@ -514,12 +512,18 @@ $(document).ready(function() {
 
             if ( dataViewId == 0 )
             {
-                int? parentCategoryId = PageParameter( PageParameterKey.ParentCategoryId ).AsIntegerOrNull();
-                if ( parentCategoryId.HasValue )
+                var parentCategoryId = PageParameter( PageParameterKey.ParentCategoryId );
+                if ( !string.IsNullOrEmpty( parentCategoryId ) )
                 {
                     // Canceling on Add, and we know the parentCategoryId, so we are probably in TreeView mode, so navigate to the current page
+                    var parentCategory = CategoryCache.Get( parentCategoryId, !PageCache.Layout.Site.DisablePredictableIds );
                     var qryParams = new Dictionary<string, string>();
-                    qryParams[PageParameterKey.CategoryId] = parentCategoryId.ToString();
+
+                    if ( parentCategory != null )
+                    {
+                        qryParams[PageParameterKey.CategoryId] = parentCategory.IdKey;
+                    }
+
                     qryParams[PageParameterKey.DataViewId] = null;
                     qryParams[PageParameterKey.ParentCategoryId] = null;
                     NavigateToPage( RockPage.Guid, qryParams );
@@ -533,7 +537,7 @@ $(document).ready(function() {
             else
             {
                 // Canceling on Edit.  Return to Details
-                DataViewService service = new DataViewService( new RockContext() );
+                DataViewService service = new DataViewService( RockApp.Current.CreateRockContext() );
                 DataView item = service.Get( dataViewId );
                 ShowReadonlyDetails( item );
             }
@@ -546,9 +550,9 @@ $(document).ready(function() {
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void btnDelete_Click( object sender, EventArgs e )
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var dataViewService = new DataViewService( rockContext );
-            var dataView = dataViewService.Get( int.Parse( hfDataViewId.Value ) );
+            var dataView = dataViewService.Get( hfDataViewId.Value, true );
             if ( dataView == null )
             {
                 return;
@@ -562,7 +566,7 @@ $(document).ready(function() {
             }
             else
             {
-                var categoryId = dataView.CategoryId;
+                var category = dataView.Category;
 
                 // delete this DataView's DataViewFilter
                 try
@@ -580,9 +584,9 @@ $(document).ready(function() {
 
                 // reload page, selecting the deleted data view's parent
                 var qryParams = new Dictionary<string, string>();
-                if ( categoryId != null )
+                if ( category != null )
                 {
-                    qryParams[PageParameterKey.CategoryId] = categoryId.ToString();
+                    qryParams[PageParameterKey.CategoryId] = category.IdKey;
                 }
 
                 qryParams[PageParameterKey.DataViewId] = null;
@@ -602,7 +606,11 @@ $(document).ready(function() {
             queryParams.Add( PageParameterKey.ReportId, "0" );
             if ( hfDataViewId.ValueAsInt() != default( int ) )
             {
-                queryParams.Add( PageParameterKey.DataViewId, hfDataViewId.ValueAsInt().ToString() );
+                var dataView = DataViewCache.Get( hfDataViewId.Value, true );
+                if ( dataView != null )
+                {
+                    queryParams.Add( PageParameterKey.DataViewId, dataView.IdKey );
+                }
             }
 
             NavigateToLinkedPage( AttributeKey.ReportDetailPage, queryParams );
@@ -621,7 +629,7 @@ $(document).ready(function() {
                 return;
             }
 
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var dataViewService = new DataViewService( rockContext );
             var dataView = dataViewService.Get( dataViewId );
 
@@ -645,7 +653,7 @@ $(document).ready(function() {
         /// </summary>
         private void LoadDropDowns( DataView dataView )
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             etpEntityType.EntityTypes = new EntityTypeService( rockContext )
                 .GetReportableEntities( this.CurrentPerson )
                 .OrderBy( t => t.FriendlyName ).ToList();
@@ -696,14 +704,17 @@ $(document).ready(function() {
         /// </summary>
         /// <param name="dataViewId">The data view identifier.</param>
         /// <param name="parentCategoryId">The parent category id.</param>
-        public void ShowDetail( int dataViewId, int? parentCategoryId )
+        public void ShowDetail( int dataViewId, string parentCategoryId )
         {
             pnlDetails.Visible = false;
 
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
 
             var dataViewService = new DataViewService( rockContext );
             DataView dataView = null;
+
+            var categoryService = new CategoryService( rockContext );
+            var parentCategory = categoryService.Get( parentCategoryId, !PageCache.Layout.Site.DisablePredictableIds );
 
             if ( !dataViewId.Equals( 0 ) )
             {
@@ -713,7 +724,7 @@ $(document).ready(function() {
 
             if ( dataView == null )
             {
-                dataView = new DataView { Id = 0, IsSystem = false, CategoryId = parentCategoryId };
+                dataView = new DataView { Id = 0, IsSystem = false, CategoryId = parentCategory?.Id };
                 dataView.Name = string.Empty;
 
                 // hide the panel drawer that show created and last modified dates
@@ -879,7 +890,7 @@ $(document).ready(function() {
 
             lActionTitle.Text = dataView.Name;
 
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             BindDataTransformations( rockContext );
             ddlTransform.SetValue( dataView.TransformEntityTypeId ?? 0 );
 
@@ -977,7 +988,7 @@ $(document).ready(function() {
 
             DescriptionList descriptionListDataviews = new DescriptionList();
 
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             DataViewService dataViewService = new DataViewService( rockContext );
 
             // Get any related DataViews (using RelatedDataViewId )
@@ -1006,7 +1017,7 @@ $(document).ready(function() {
                 {
                     var dataViewDetailQueryParams = new Dictionary<string, string>()
                     {
-                        { PageParameterKey.DataViewId, relatedDataView.Id.ToString() }
+                        { PageParameterKey.DataViewId, relatedDataView.IdKey }
                     };
 
                     var dataViewDetailPageUrl = LinkedPageUrl( AttributeKey.DataViewDetailPage, dataViewDetailQueryParams );
@@ -1038,7 +1049,7 @@ $(document).ready(function() {
                 {
                     var reportDetailQueryParams = new Dictionary<string, string>()
                     {
-                        { PageParameterKey.ReportId, report.Id.ToString() }
+                        { PageParameterKey.ReportId, report.IdKey }
                     };
 
                     var reportDetailPageUrl = LinkedPageUrl( AttributeKey.ReportDetailPage, reportDetailQueryParams );
@@ -1078,11 +1089,11 @@ $(document).ready(function() {
                         groupSync.Group != null ? groupSync.Group.Name : "(Id: " + groupSync.GroupId.ToStringSafe() + ")",
                         groupSync.GroupTypeRole.Name );
 
-                    if ( !string.IsNullOrWhiteSpace( groupDetailPage ) )
+                    if ( !string.IsNullOrWhiteSpace( groupDetailPage ) && groupSync.Group != null )
                     {
                         var groupDetailPageParameters = new Dictionary<string, string>()
                         {
-                            { PageParameterKey.GroupId, groupSync.GroupId.ToString() }
+                            { PageParameterKey.GroupId, groupSync.Group.IdKey }
                         };
 
                         var groupDetailPageUrl = LinkedPageUrl( AttributeKey.GroupDetailPage, groupDetailPageParameters );
@@ -1233,7 +1244,7 @@ $(document).ready(function() {
             // create an temporary DataView record based on the current edited settings
             // it won't get saved to the database, and won't increment run counts, etc
             DataView dataView = new DataView();
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
 
             dataView.TransformEntityTypeId = ddlTransform.SelectedValueAsInt();
             if ( dataView.TransformEntityTypeId.HasValue )
@@ -1580,7 +1591,7 @@ $(document).ready(function() {
             var dataViewFilter = new DataViewFilter();
             dataViewFilter.Guid = Guid.NewGuid();
             dataViewFilter.ExpressionType = FilterExpressionType.GroupAll;
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
 
             BindDataTransformations( rockContext );
 
@@ -1785,7 +1796,7 @@ $(document).ready(function() {
             var filterEntityType = EntityTypeCache.Get( componentGuid );
             var component = Rock.Reporting.DataFilterContainer.GetComponent( filterEntityType?.GetEntityType()?.FullName );
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var result = component?.ExecuteComponentRequest( request, securityGrant, rockContext, RequestContext );
 

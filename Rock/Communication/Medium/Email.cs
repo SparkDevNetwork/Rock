@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -67,7 +67,7 @@ You can view an online version of this email here:
         Order = 4)]
 
     [IntegerField( "Bulk Email Threshold",
-        Description = "Auto-hides the 'Is Bulk Email' option when starting a new communication if the recipient count exceeds the specified threshold.",
+        Description = "Automatically sets the Message Classification to Bulk / Marketing when the recipient count exceeds this threshold to help meet bulk messaging rules.",
         IsRequired = false,
         Key = AttributeKey.BulkEmailThreshold,
         Order = 5 )]
@@ -88,6 +88,8 @@ You can view an online version of this email here:
         Description = "Used in the List-Unsubscribe email header. <span class='tip tip-lava'></span>",
         DefaultValue = "{{ 'Global' | Attribute:'PublicApplicationRoot' }}Unsubscribe/{{ Person | PersonActionIdentifier:'Unsubscribe' }}?CommunicationId={{ Communication.Id }}",
         IsRequired = false,
+        AllowHtml = true,
+        AllowLava = true,
         Key = AttributeKey.UnsubscribeURL,
         Order = 8 )]
 

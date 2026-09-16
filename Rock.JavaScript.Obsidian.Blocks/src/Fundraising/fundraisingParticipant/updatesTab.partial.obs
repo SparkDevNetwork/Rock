@@ -1,0 +1,15 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div v-html="config.updatesHtml"></div>
+</template>
+
+<script setup lang="ts">
+    import { useConfigurationValues } from "@Obsidian/Utility/block";
+    import { FundraisingParticipantInitializationBox } from "@Obsidian/ViewModels/Blocks/Fundraising/FundraisingParticipant/fundraisingParticipantInitializationBox";
+
+    // #region Values
+
+    const config = useConfigurationValues<FundraisingParticipantInitializationBox>();
+
+    // #endregion Values
+</script>

@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -24,13 +24,12 @@ using System.Linq;
 using Microsoft.Extensions.Logging;
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Crm.RecordSource;
 using Rock.Data;
 using Rock.Enums.Blocks.Engagement.SignUp;
-using Rock.Field.Types;
 using Rock.Model;
 using Rock.Tasks;
-using Rock.Utility;
 using Rock.ViewModels.Blocks.Engagement.SignUp.SignUpRegister;
 using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
@@ -62,7 +61,7 @@ namespace Rock.Blocks.Engagement.SignUp
     [BooleanField( "Include Children",
         Key = AttributeKey.IncludeChildren,
         Description = "Determines if children should be displayed as options when in Family and Group modes.",
-        ControlType = BooleanFieldType.BooleanControlType.Checkbox,
+        BooleanControlType = Rock.Enums.Controls.BooleanControlType.Checkbox,
         DefaultBooleanValue = false,
         IsRequired = false,
         Order = 1 )]
@@ -82,14 +81,14 @@ namespace Rock.Blocks.Engagement.SignUp
     [BooleanField( "Require Email",
         Key = AttributeKey.RequireEmail,
         Description = "When enabled, requires that a value be entered for email when registering in Anonymous mode.",
-        ControlType = BooleanFieldType.BooleanControlType.Checkbox,
+        BooleanControlType = Rock.Enums.Controls.BooleanControlType.Checkbox,
         DefaultBooleanValue = false,
         Order = 4 )]
 
     [BooleanField( "Require Mobile Phone",
         Key = AttributeKey.RequireMobilePhone,
         Description = "When enabled, requires that a value be entered for mobile phone when registering in Anonymous mode.",
-        ControlType = BooleanFieldType.BooleanControlType.Checkbox,
+        BooleanControlType = Rock.Enums.Controls.BooleanControlType.Checkbox,
         DefaultBooleanValue = false,
         Order = 5 )]
 
@@ -207,7 +206,7 @@ namespace Rock.Blocks.Engagement.SignUp
         {
             var box = new SignUpRegisterInitializationBox();
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 SetBoxInitialState( box, rockContext );
             }
@@ -1760,7 +1759,7 @@ namespace Rock.Blocks.Engagement.SignUp
         [BlockAction]
         public BlockActionResult Register( SignUpRegisterRequestBag bag )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 bool disableCaptcha = Captcha.CaptchaService.ShouldDisableCaptcha( GetAttributeValue( AttributeKey.DisableCaptchaSupport ).AsBoolean() );
                 if ( !disableCaptcha && !RequestContext.IsCaptchaValid )

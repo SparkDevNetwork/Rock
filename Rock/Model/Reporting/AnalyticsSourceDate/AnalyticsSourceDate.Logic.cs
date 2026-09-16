@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -27,6 +27,7 @@ using EntityFramework.Utilities;
 
 using Microsoft.EntityFrameworkCore;
 
+using Rock.Configuration;
 using Rock.Data;
 
 namespace Rock.Model
@@ -161,7 +162,7 @@ SET [SundayDateYear] = YEAR([SundayDate]);";
         public static void GenerateAnalyticsSourceDateData( int fiscalStartMonth, bool givingMonthUseSundayDate, DateTime startDate, DateTime endDate )
         {
             // remove all the rows and rebuild
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 try
                 {
@@ -250,7 +251,8 @@ SET [SundayDateYear] = YEAR([SundayDate]);";
                 int fiscalQuarter = GetFiscalQuarter( generateDate, fiscalStartMonth, RockDateTime.FirstDayOfWeek, _minimumDaysRequiredInFirstWeek );
 
                 analyticsSourceDate.FiscalWeek = fiscalWeekNumber;
-                analyticsSourceDate.FiscalWeekNumberInYear = generateDate.GetWeekOfYear( System.Globalization.CalendarWeekRule.FirstFourDayWeek, RockDateTime.FirstDayOfWeek );
+                // FiscalWeekNumberInYear is same as fiscalWeekNumber
+                analyticsSourceDate.FiscalWeekNumberInYear = GetFiscalWeekNumberInYear( generateDate, fiscalStartMonth, RockDateTime.FirstDayOfWeek, _minimumDaysRequiredInFirstWeek );
                 analyticsSourceDate.FiscalMonth = GetFiscalMonthName( generateDate, fiscalStartMonth, RockDateTime.FirstDayOfWeek, _minimumDaysRequiredInFirstWeek );
                 analyticsSourceDate.FiscalMonthAbbreviated = GetAbbreviatedMonthName( analyticsSourceDate.FiscalMonth );
                 analyticsSourceDate.FiscalMonthNumberInYear = fiscalMonthNumber;
@@ -333,7 +335,7 @@ SET [SundayDateYear] = YEAR([SundayDate]);";
                 generateDate = generateDate.AddDays( 1 );
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 // NOTE: We can't use rockContext.BulkInsert because that enforces that the <T> is Rock.Data.IEntity, so we'll just use EFBatchOperation directly
 #if REVIEW_NET5_0_OR_GREATER
@@ -374,6 +376,22 @@ SET [SundayDateYear] = YEAR([SundayDate]);";
             var weekNumber = GetWeekNumberFromDate( date, fiscalYearWeekStart, firstDayOfWeek );
 
             return weekNumber;
+        }
+
+        /// <summary>
+        /// Calculates the fiscal week number within the fiscal year for a given date.
+        /// This is the value persisted to AnalyticsSourceDate.FiscalWeekNumberInYear.
+        /// </summary>
+        /// <param name="date">The date to calculate the fiscal week for.</param>
+        /// <param name="fiscalYearStartMonth">The number of the month that represents the start of the fiscal calendar (e.g., April = 4).</param>
+        /// <param name="firstDayOfWeek">The first day of the week (<see cref="RockDateTime.FirstDayOfWeek"/>).</param>
+        /// <param name="minimumDaysRequiredInFirstWeek">The minimum number of days that need to be in the starting week for it to count as the first week.</param>
+        /// <returns></returns>
+        internal static int GetFiscalWeekNumberInYear( DateTime date, int fiscalYearStartMonth, DayOfWeek firstDayOfWeek, int minimumDaysRequiredInFirstWeek = 4 )
+        {
+            // Prior to v19.2 this used Calendar.GetWeekOfYear, which is calendar-year
+            // anchored and ignores fiscalYearStartMonth -- see Issue #6838.
+            return GetFiscalWeek( date, fiscalYearStartMonth, firstDayOfWeek, minimumDaysRequiredInFirstWeek );
         }
 
         /// <summary>

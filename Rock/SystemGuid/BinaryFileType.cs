@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -45,6 +45,11 @@ namespace Rock.SystemGuid
         /// Gets the Transaction Image (scanned check, scanned envelope, etc) file type guid
         /// </summary>
         public const string CONTRIBUTION_IMAGE = "6D18A9C4-34AB-444A-B95B-C644019465AC";
+
+        /// <summary>
+        /// The Person Document file type guid
+        /// </summary>
+        public const string PERSON_DOCUMENT = "2C0A9DA7-85B5-4D30-8C8C-638C3902B711";
 
         /// <summary>
         /// The Person Image file type guid

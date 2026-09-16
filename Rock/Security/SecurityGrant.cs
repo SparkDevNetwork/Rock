@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -142,6 +142,15 @@ namespace Rock.Security
             return rawToken
                 ? Encryption.EncryptString( json )
                 : $"{Version};{ExpiresDateTime.ToRockDateTimeOffset():O};{Encryption.EncryptString( json )}";
+        }
+
+        /// <summary>
+        /// Sets the amount of time that this security grant should be valid for.
+        /// </summary>
+        /// <param name="duration">The duration from the date and time the grant was created.</param>
+        internal void SetLifetime( TimeSpan duration )
+        {
+            ExpiresDateTime = CreatedDateTime.Add( duration );
         }
 
         /// <summary>

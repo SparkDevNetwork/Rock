@@ -1,6 +1,7 @@
 <template>
     <div class="contentsection-container"
-         :class="additionalSectionContainerClasses">
+         :class="additionalSectionContainerClasses"
+         ref="rootEl">
         <div class="contentsection-list">
             <slot />
         </div>
@@ -15,7 +16,7 @@
     import ContentSectionNav from "@Obsidian/Controls/Internal/contentSectionNav.obs";
     import { IContentSectionHolder, IContentSectionContainerHolder, provideSectionContainer } from "@Obsidian/Core/Controls/contentSection";
     import { Enumerable } from "@Obsidian/Utility/linq";
-    import { computed, PropType, shallowRef } from "vue";
+    import { computed, PropType, shallowRef, ref } from "vue";
 
     const props = defineProps({
         /**
@@ -36,6 +37,15 @@
             default: "right"
         },
     });
+
+    const rootEl = ref<HTMLElement | null>();
+
+
+    defineExpose({
+        getSections: () => sections.value,
+        getRootElRef: () => rootEl
+    });
+
 
     // #region Values
 

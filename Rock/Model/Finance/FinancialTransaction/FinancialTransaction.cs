@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -23,7 +23,9 @@ using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 
 using Rock.Data;
+using Rock.Enums.Security;
 using Rock.Lava;
+using Rock.Security;
 
 namespace Rock.Model
 {
@@ -116,6 +118,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 50 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string TransactionCode { get; set; }
 
         /// <summary>
@@ -125,6 +128,7 @@ namespace Rock.Model
         /// A <see cref="System.String"/> representing a summary of the transaction.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string Summary { get; set; }
 
         /// <summary>
@@ -162,6 +166,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [HideFromReporting]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string CheckMicrEncrypted { get; set; }
 
         /// <summary>
@@ -178,6 +183,7 @@ namespace Rock.Model
         [Index]
 #endif
         [HideFromReporting]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string CheckMicrHash { get; set; }
 
         /// <summary>
@@ -200,6 +206,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [HideFromReporting]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string CheckMicrParts { get; set; }
 
         /// <summary>
@@ -247,6 +254,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [MaxLength( 100 )]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string SettledGroupId { get; set; }
 
         /// <summary>
@@ -275,6 +283,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [MaxLength( 50 )]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string Status { get; set; }
 
         /// <summary>
@@ -285,6 +294,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [MaxLength( 200 )]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string StatusMessage { get; set; }
 
         /// <summary>
@@ -499,28 +509,6 @@ namespace Rock.Model
         }
 
         private ICollection<FinancialTransactionRefund> _refunds;
-
-        /// <summary>
-        /// Gets or sets the history change list.
-        /// </summary>
-        /// <value>
-        /// The history change list.
-        /// </value>
-        [NotMapped]
-        [RockObsolete( "1.14" )]
-        [Obsolete( "Does nothing. No longer needed. We replaced this with a private property under the SaveHook class for this entity.", true )]
-        public virtual History.HistoryChangeList HistoryChangeList { get; set; }
-
-        /// <summary>
-        /// Gets or sets the batch history change list.
-        /// </summary>
-        /// <value>
-        /// The batch history change list.
-        /// </value>
-        [NotMapped]
-        [RockObsolete( "1.14" )]
-        [Obsolete( "Does nothing. No longer needed. We replaced this with a private property under the SaveHook class for this entity.", true )]
-        public virtual Dictionary<int, History.HistoryChangeList> BatchHistoryChangeList { get; set; }
 
         /// <summary>
         /// Gets or sets the non cash asset type <see cref="Rock.Model.DefinedValue"/>.

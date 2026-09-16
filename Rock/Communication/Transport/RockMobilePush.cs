@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -29,6 +29,7 @@ using FirebaseAdmin.Messaging;
 using Google.Apis.Auth.OAuth2;
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Mobile;
 using Rock.Model;
@@ -213,7 +214,11 @@ namespace Rock.Communication.Transport
                                 recipient.MergeFields.TryAdd( mergeField.Key, mergeField.Value );
                             }
 
-                            var to = recipient.To.SplitDelimitedValues( "," ).Where( s => s.IsNotNullOrWhiteSpace() ).ToList();
+                            List<string> to;
+                            using ( var recipientRockContext = RockApp.Current.CreateRockContext() )
+                            {
+                                to = GetDeviceRegistrationIds( recipientRockContext, recipient, pushMessage.Data?.MobileApplicationId );
+                            }
 
                             PushMessage( to, pushMessage, recipient.MergeFields );
                         }
@@ -228,7 +233,15 @@ namespace Rock.Communication.Transport
                 {
                     try
                     {
-                        PushMessage( recipients.SelectMany( r => r.To.SplitDelimitedValues( "," ).Where( s => s.IsNotNullOrWhiteSpace() ).ToList() ).ToList(), pushMessage, mergeFields );
+                        List<string> to;
+                        using ( var recipientRockContext = RockApp.Current.CreateRockContext() )
+                        {
+                            to = recipients
+                                .SelectMany( r => GetDeviceRegistrationIds( recipientRockContext, r, pushMessage.Data?.MobileApplicationId ) )
+                                .ToList();
+                        }
+
+                        PushMessage( to, pushMessage, mergeFields );
                     }
                     catch ( Exception ex )
                     {
@@ -251,7 +264,7 @@ namespace Rock.Communication.Transport
         {
             var pushData = communication.PushData.FromJsonOrNull<PushData>();
 
-            using ( var communicationRockContext = new RockContext() )
+            using ( var communicationRockContext = RockApp.Current.CreateRockContext() )
             {
                 // Requery the Communication
                 communication = new CommunicationService( communicationRockContext )
@@ -292,7 +305,7 @@ namespace Rock.Communication.Transport
                     while ( recipientFound )
                     {
                         // make a new rockContext per recipient
-                        var recipientRockContext = new RockContext();
+                        var recipientRockContext = RockApp.Current.CreateRockContext();
                         var recipient = Model.Communication.GetNextPending( communication.Id, mediumEntityTypeId, recipientRockContext );
                         if ( recipient != null )
                         {
@@ -340,16 +353,20 @@ namespace Rock.Communication.Transport
                                             Data = GetPushNotificationData( communication.PushOpenAction, pushData, recipient )
                                         };
 
+                                        // Android config. ClickAction routes a system tray tap to
+                                        // MainActivity instead of the launcher, which is what delivers
+                                        // the notification data when the app is already backgrounded.
+                                        notification.Android = new AndroidConfig
+                                        {
+                                            Notification = new AndroidNotification
+                                            {
+                                                ClickAction = "Rock.Mobile.Main",
+                                                Sound = sound ?? string.Empty
+                                            }
+                                        };
+
                                         if ( sound.IsNotNullOrWhiteSpace() )
                                         {
-                                            notification.Android = new AndroidConfig
-                                            {
-                                                Notification = new AndroidNotification
-                                                {
-                                                    Sound = sound
-                                                }
-                                            };
-
                                             notification.Apns = new ApnsConfig
                                             {
                                                 Aps = new Aps
@@ -502,6 +519,44 @@ namespace Rock.Communication.Transport
                     DeactivateNotRegisteredDevices( msg.Tokens.ToList(), response );
                 }
             } );
+        }
+
+        /// <summary>
+        /// Gets the device registration identifiers for the direct push recipient.
+        /// Honors an explicitly populated recipient.To value for backwards compatibility,
+        /// otherwise resolves devices by person and optional site.
+        /// </summary>
+        /// <param name="rockContext">The Rock context.</param>
+        /// <param name="recipient">The recipient.</param>
+        /// <param name="siteId">The site identifier used to scope device selection.</param>
+        /// <returns>A list of device registration identifiers.</returns>
+        private static List<string> GetDeviceRegistrationIds( RockContext rockContext, RockMessageRecipient recipient, int? siteId )
+        {
+            var explicitDeviceIds = ( recipient.To ?? string.Empty )
+                .SplitDelimitedValues( "," )
+                .Where( s => s.IsNotNullOrWhiteSpace() )
+                .ToList();
+
+            if ( explicitDeviceIds.Any() )
+            {
+                return explicitDeviceIds;
+            }
+
+            if ( recipient.PersonId.HasValue )
+            {
+                return new PersonalDeviceService( rockContext ).Queryable()
+                    .Where( p => p.PersonAliasId.HasValue
+                        && p.PersonAlias.PersonId == recipient.PersonId.Value
+                        && p.IsActive
+                        && p.NotificationsEnabled
+                        && !string.IsNullOrEmpty( p.DeviceRegistrationId ) )
+                    .Where( p => !siteId.HasValue || siteId.Value == p.SiteId )
+                    .Select( p => p.DeviceRegistrationId )
+                    .Distinct()
+                    .ToList();
+            }
+
+            return new List<string>();
         }
 
         /// <summary>
@@ -663,7 +718,7 @@ namespace Rock.Communication.Transport
             {
                 Task.Run( () =>
                 {
-                    var rockContext = new RockContext();
+                    var rockContext = RockApp.Current.CreateRockContext();
                     var personalDeviceService = new PersonalDeviceService( rockContext );
                     int contextCount = 0;
 
@@ -692,7 +747,7 @@ namespace Rock.Communication.Transport
                             rockContext.SaveChanges();
                             rockContext.Dispose();
 
-                            rockContext = new RockContext();
+                            rockContext = RockApp.Current.CreateRockContext();
                             personalDeviceService = new PersonalDeviceService( rockContext );
                         }
                     }
@@ -744,7 +799,7 @@ namespace Rock.Communication.Transport
             {
                 Task.Run( () =>
                 {
-                    var rockContext = new RockContext();
+                    var rockContext = RockApp.Current.CreateRockContext();
                     var personalDeviceService = new PersonalDeviceService( rockContext );
                     int contextCount = 0;
 
@@ -773,7 +828,7 @@ namespace Rock.Communication.Transport
                             rockContext.SaveChanges();
                             rockContext.Dispose();
 
-                            rockContext = new RockContext();
+                            rockContext = RockApp.Current.CreateRockContext();
                             personalDeviceService = new PersonalDeviceService( rockContext );
                         }
                     }
@@ -823,7 +878,13 @@ namespace Rock.Communication.Transport
                                 recipient.MergeFields.TryAdd( mergeField.Key, mergeField.Value );
                             }
 
-                            PushMessageLegacy( sender, recipient.To.SplitDelimitedValues( "," ).ToList(), pushMessage, recipient.MergeFields );
+                            List<string> to;
+                            using ( var recipientRockContext = RockApp.Current.CreateRockContext() )
+                            {
+                                to = GetDeviceRegistrationIds( recipientRockContext, recipient, pushMessage.Data?.MobileApplicationId );
+                            }
+
+                            PushMessageLegacy( sender, to, pushMessage, recipient.MergeFields );
                         }
                         catch ( Exception ex )
                         {
@@ -836,7 +897,15 @@ namespace Rock.Communication.Transport
                 {
                     try
                     {
-                        PushMessageLegacy( sender, recipients.SelectMany( r => r.To.SplitDelimitedValues( "," ).ToList() ).ToList(), pushMessage, mergeFields );
+                        List<string> to;
+                        using ( var recipientRockContext = RockApp.Current.CreateRockContext() )
+                        {
+                            to = recipients
+                                .SelectMany( r => GetDeviceRegistrationIds( recipientRockContext, r, pushMessage.Data?.MobileApplicationId ) )
+                                .ToList();
+                        }
+
+                        PushMessageLegacy( sender, to, pushMessage, mergeFields );
                     }
                     catch ( Exception ex )
                     {
@@ -861,7 +930,7 @@ namespace Rock.Communication.Transport
         {
             var pushData = communication.PushData.FromJsonOrNull<PushData>();
 
-            using ( var communicationRockContext = new RockContext() )
+            using ( var communicationRockContext = RockApp.Current.CreateRockContext() )
             {
                 // Requery the Communication
                 communication = new CommunicationService( communicationRockContext )
@@ -905,7 +974,7 @@ namespace Rock.Communication.Transport
                     while ( recipientFound )
                     {
                         // make a new rockContext per recipient
-                        var recipientRockContext = new RockContext();
+                        var recipientRockContext = RockApp.Current.CreateRockContext();
                         var recipient = Model.Communication.GetNextPending( communication.Id, mediumEntityTypeId, recipientRockContext );
                         if ( recipient != null )
                         {

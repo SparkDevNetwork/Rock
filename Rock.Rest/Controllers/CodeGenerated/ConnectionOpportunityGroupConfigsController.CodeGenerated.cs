@@ -21,6 +21,7 @@
 // </copyright>
 //
 
+using Rock.Configuration;
 using Rock.Model;
 using Rock.SystemGuid;
 
@@ -35,6 +36,6 @@ namespace Rock.Rest.Controllers
         /// <summary>
         /// Initializes a new instance of the <see cref="ConnectionOpportunityGroupConfigsController"/> class.
         /// </summary>
-        public ConnectionOpportunityGroupConfigsController() : base( new Rock.Model.ConnectionOpportunityGroupConfigService( new Rock.Data.RockContext() ) ) { } 
+        public ConnectionOpportunityGroupConfigsController() : base( new Rock.Model.ConnectionOpportunityGroupConfigService( RockApp.Current.CreateRockContext() ) ) { } 
     }
 }

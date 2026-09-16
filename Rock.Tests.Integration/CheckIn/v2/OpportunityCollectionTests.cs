@@ -1,13 +1,14 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using Rock.CheckIn.v2;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
-using Rock.Tests.Shared.TestFramework;
+using Rock.Tests.Integration.TestFramework.Database;
 using Rock.Web.Cache;
 
 namespace Rock.Tests.Integration.CheckIn.v2
@@ -31,7 +32,7 @@ namespace Rock.Tests.Integration.CheckIn.v2
             var sunday9amGuid = new Guid( "ff6fb240-0c32-4542-be40-159c522f7e51" );
             var centralKioskGuid = new Guid( "61111232-01d7-427d-9c1f-d45cf4d3f7cb" );
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var nurseryGroup = new GroupService( rockContext ).Get( nurseryGroupGuid );
                 var schedule = new ScheduleService( rockContext ).Get( sunday9amGuid );

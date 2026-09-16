@@ -105,5 +105,18 @@ namespace Rock.ViewModels.Blocks.Cms.ContentChannelDetail
         ///   <c>true</c> if [disable content field]; otherwise, <c>false</c>.
         /// </value>
         public bool DisableContentField { get; set; }
+
+        /// <summary>
+        /// Gets or sets the content library inherited item attributes
+        /// from the Content Channel Type. These are provided on initial
+        /// load so dropdown selections persist before the async fetch completes.
+        /// </summary>
+        public List<ListItemBag> ContentLibraryInheritedItemAttributes { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Content Channel Item attribute keys defined on the
+        /// selected Content Channel Type. Channel-level item attributes must not reuse these keys.
+        /// </summary>
+        public List<string> ContentChannelTypeItemAttributeKeys { get; set; }
     }
 }

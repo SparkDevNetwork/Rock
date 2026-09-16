@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -20,7 +20,9 @@ using System.Linq;
 #if WEBFORMS
 using System.Web.UI;
 #endif
+
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security.SecurityGrantRules;
@@ -47,7 +49,7 @@ namespace Rock.Field.Types
         {
             ConnectionRequest connectionRequest = null;
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 Guid? guid = privateValue.AsGuidOrNull();
                 if ( guid.HasValue )
@@ -83,7 +85,7 @@ namespace Rock.Field.Types
 
             if ( guid.HasValue )
             {
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     var connectionRequest = new ConnectionRequestService( rockContext ).GetSelect( guid.Value, cr => new
                     {
@@ -136,7 +138,7 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public IEntity GetEntity( string value, RockContext rockContext )
         {
-            rockContext = rockContext ?? new RockContext();
+            rockContext = rockContext ?? RockApp.Current.CreateRockContext();
             Guid? guid = value.AsGuidOrNull();
             if ( guid.HasValue )
             {
@@ -153,27 +155,7 @@ namespace Rock.Field.Types
         /// <inheritdoc/>
         public override PersistedValues GetPersistedValues( string privateValue, Dictionary<string, string> privateConfigurationValues, IDictionary<string, object> cache )
         {
-            if ( string.IsNullOrWhiteSpace( privateValue ) )
-            {
-                return new PersistedValues
-                {
-                    TextValue = string.Empty,
-                    CondensedTextValue = string.Empty,
-                    HtmlValue = string.Empty,
-                    CondensedHtmlValue = string.Empty
-                };
-            }
-
-            var textValue = GetTextValue( privateValue, privateConfigurationValues );
-            var condensedTextValue = textValue.Truncate( CondensedTruncateLength );
-
-            return new PersistedValues
-            {
-                TextValue = textValue,
-                CondensedTextValue = condensedTextValue,
-                HtmlValue = textValue,
-                CondensedHtmlValue = condensedTextValue
-            };
+            return GetSimpleTextPersistedValues( privateValue, privateConfigurationValues );
         }
 
         #endregion
@@ -190,7 +172,7 @@ namespace Rock.Field.Types
                 return null;
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var connectionRequest = new ConnectionRequestService( rockContext ).GetNoTracking( guid.Value );
 
@@ -228,6 +210,21 @@ namespace Rock.Field.Types
         public void AddRulesToSecurityGrant( SecurityGrant grant, Dictionary<string, string> privateConfigurationValues )
         {
             grant.AddRule( new ConnectionRequestPickerSecurityGrantRule() );
+        }
+
+        #endregion
+
+        #region Value Hinting
+
+        /// <inheritdoc/>
+        internal override FieldTypeHints GetFieldHints( Dictionary<string, string> privateConfigurationValues )
+        {
+            return new FieldTypeHints
+            {
+                IsCompleteList = false,
+                ValueFormat = "The guid of a single row in the ConnectionRequest table, not its id or idKey and not its name. Only one value is stored, so a comma separated list is not valid here. This is one person's request, not the opportunity or the type it was made against.",
+                Instructions = "To find the correct value, read the connection requests and take the guid of the one you want."
+            };
         }
 
         #endregion
@@ -279,7 +276,7 @@ namespace Rock.Field.Types
 
                 if ( id.HasValue )
                 {
-                    using ( var rockContext = new RockContext() )
+                    using ( var rockContext = RockApp.Current.CreateRockContext() )
                     {
                         var connectionRequestGuid = new ConnectionRequestService( rockContext ).GetGuid( id.Value );
 
@@ -313,7 +310,7 @@ namespace Rock.Field.Types
                 Guid? guid = value.AsGuidOrNull();
                 if ( guid.HasValue )
                 {
-                    connectionRequest = new ConnectionRequestService( new RockContext() ).Get( guid.Value );
+                    connectionRequest = new ConnectionRequestService( RockApp.Current.CreateRockContext() ).Get( guid.Value );
                 }
 
                 picker.SetValue( connectionRequest );
@@ -329,7 +326,7 @@ namespace Rock.Field.Types
         public int? GetEditValueAsEntityId( System.Web.UI.Control control, Dictionary<string, ConfigurationValue> configurationValues )
         {
             Guid guid = GetEditValue( control, configurationValues ).AsGuid();
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 return new ConnectionRequestService( rockContext ).GetId( guid );
             }
@@ -343,7 +340,7 @@ namespace Rock.Field.Types
         /// <param name="id">The identifier.</param>
         public void SetEditValueFromEntityId( System.Web.UI.Control control, Dictionary<string, ConfigurationValue> configurationValues, int? id )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var itemGuid = new ConnectionRequestService( rockContext ).GetGuid( id ?? 0 );
                 string guidValue = itemGuid.HasValue ? itemGuid.ToString() : string.Empty;

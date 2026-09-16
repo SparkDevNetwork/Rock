@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -14,19 +14,20 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
 
 using Rock.Attribute;
+using Rock.Common.Mobile.Blocks.Crm.GroupMembers;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
+using Rock.Security;
 using Rock.SystemGuid;
 using Rock.Web.Cache;
-using Rock.Common.Mobile.Blocks.Crm.GroupMembers;
 using Rock.Web.UI;
-using Rock.Security;
-using System;
 
 namespace Rock.Blocks.Types.Mobile.Crm
 {
@@ -127,7 +128,7 @@ namespace Rock.Blocks.Types.Mobile.Crm
         /// <returns>System.String.</returns>
         private string GetMembersTemplateInternal( Rock.Model.Person person )
         {
-            var template = Field.Types.BlockTemplateFieldType.GetTemplateContent( GetAttributeValue( AttributeKey.MembersTemplate ) );
+            var template = Field.Helper.GetBlockTemplateContent( GetAttributeValue( AttributeKey.MembersTemplate ) );
             var mergeFields = RequestContext.GetCommonMergeFields();
 
             // Get the group type, or the family group type as a default.
@@ -145,7 +146,7 @@ namespace Rock.Blocks.Types.Mobile.Crm
             if ( groupType.Guid == SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid() )
             {
                 // We purposefully use a separate rockContext for this.
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     var memberService = new GroupMemberService( rockContext );
                     var groupMemberGroups = memberService.Queryable( true )
@@ -162,7 +163,7 @@ namespace Rock.Blocks.Types.Mobile.Crm
                 }
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var memberService = new GroupMemberService( rockContext );
 

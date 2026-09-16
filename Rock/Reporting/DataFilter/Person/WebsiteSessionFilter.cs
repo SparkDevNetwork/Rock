@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -14,6 +14,16 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.ComponentModel.Composition;
+using System.Linq;
+using System.Linq.Expressions;
+using System.Web.UI;
+using System.Web.UI.WebControls;
+
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Net;
@@ -23,15 +33,6 @@ using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 using Rock.Web.Utilities;
-
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.ComponentModel.Composition;
-using System.Linq;
-using System.Linq.Expressions;
-using System.Web.UI;
-using System.Web.UI.WebControls;
 
 namespace Rock.Reporting.DataFilter.Interaction
 {
@@ -227,7 +228,7 @@ function() {
                 var comparisonType = selectionConfig.ComparisonValue.ConvertToEnumOrNull<ComparisonType>();
                 result = comparisonType == null ? "Interactions" : $"{comparisonType.ConvertToString()} {selectionConfig.ViewsCount} Interactions";
 
-                if ( selectionConfig.WebsiteIds.Count > 0 )
+                if ( selectionConfig.WebsiteIds != null && selectionConfig.WebsiteIds.Count > 0 )
                 {
                     var websiteNames = new List<string>();
                     foreach ( var websiteId in selectionConfig.WebsiteIds )
@@ -251,7 +252,7 @@ function() {
                     }
                 }
 
-                if ( selectionConfig.PageIds.Count > 0 )
+                if ( selectionConfig.PageIds != null && selectionConfig.PageIds.Count > 0 )
                 {
                     var pages = new List<string>();
                     foreach ( var pageId in selectionConfig.PageIds )
@@ -284,7 +285,7 @@ function() {
         public override Control[] CreateChildControls( Type entityType, FilterField filterControl )
         {
             var controls = new List<Control>();
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
 
             var ddlIntegerCompare = ComparisonHelper.ComparisonControl( ComparisonHelper.NumericFilterComparisonTypes | ComparisonType.StartsWith );
             ddlIntegerCompare.ID = string.Format( "{0}_{1}", filterControl.ID, "ddlIntegerCompare" );

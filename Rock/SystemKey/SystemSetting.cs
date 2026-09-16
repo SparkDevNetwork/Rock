@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -49,16 +49,22 @@ namespace Rock.SystemKey
         /// <summary>
         /// The minimum distance in miles person/family has to have moved before automatically inactivating their record
         /// </summary>
+        [Obsolete( "This setting is no longer used." )]
+        [RockObsolete( "21.0" )]
         public const string NCOA_MINIMUM_MOVE_DISTANCE_TO_INACTIVATE = "core_MinimumMoveDistanceToInactivate";
 
         /// <summary>
         /// Should a NCOA 48 month move request change a family's address to 'previous'
         /// </summary>
+        [Obsolete( "This setting is no longer used." )]
+        [RockObsolete( "21.0" )]
         public const string NCOA_SET_48_MONTH_AS_PREVIOUS = "core_Set48monthAsPrevious";
 
         /// <summary>
         /// Should a NCOA invalid address change a family's address to 'previous'
         /// </summary>
+        [Obsolete( "This setting is no longer used." )]
+        [RockObsolete( "21.0" )]
         public const string NCOA_SET_INVALID_AS_PREVIOUS = "core-SetinvalidAsAddress";
 
         /// <summary>
@@ -138,34 +144,6 @@ namespace Rock.SystemKey
         /// The day of the week that is considered the 'Start Day' (First Day Of week). This is used to compute 'SundayDate'. Default is Monday.
         /// </summary>
         public const string START_DAY_OF_WEEK = "core_StartDayOfWeek";
-
-        /// <summary>
-        /// (Obsolete) Enable a redis cache cluster
-        /// </summary>
-        [Obsolete( "No longer needed since we no longer support Redis." )]
-        [RockObsolete( "1.15" )]
-        public const string REDIS_ENABLE_CACHE_CLUSTER = "EnableRedisCacheCluster";
-
-        /// <summary>
-        /// (Obsolete) Comma separated list of Redis endpoints (e.g. server.com:6379)
-        /// </summary>
-        [Obsolete( "No longer needed since we no longer support Redis." )]
-        [RockObsolete( "1.15" )]
-        public const string REDIS_ENDPOINT_LIST = "RedisEndpointList";
-
-        /// <summary>
-        /// (Obsolete) The redis password
-        /// </summary>
-        [Obsolete( "No longer needed since we no longer support Redis." )]
-        [RockObsolete( "1.15" )]
-        public const string REDIS_PASSWORD = "RedisPassword";
-
-        /// <summary>
-        /// (Obsolete) The redis database index number
-        /// </summary>
-        [Obsolete( "No longer needed since we no longer support Redis." )]
-        [RockObsolete( "1.15" )]
-        public const string REDIS_DATABASE_NUMBER = "RedisDatabaseNumber";
 
         /// <summary>
         /// Settings for Spark Data NCOA
@@ -283,6 +261,14 @@ namespace Rock.SystemKey
         public const string POPULATE_INTERACTION_SESSION_DATA_JOB_SETTINGS = "core_PopulateInteractionSessionDataJobSettings";
 
         /// <summary>
+        /// The most recent date (a <c>date</c>, not a <c>datetime</c>) for which the Rock Cleanup job's
+        /// Interaction Component Daily Count task has fully written aggregate rows. The next run picks up
+        /// from <c>(value + 1 day)</c> through yesterday. Null/missing means the task has never run and
+        /// the next run performs a full historical backfill.
+        /// </summary>
+        public const string INTERACTION_COMPONENT_DAILY_COUNT_LAST_PROCESSED_DATE = "core_InteractionComponentDailyCount_LastProcessedDate";
+
+        /// <summary>
         /// Number of minutes old the ROCK_SEGMENT_FILTERS cookie can be before it is considered stale and will be re-fetched from the database.
         /// </summary>
         public const string PERSONALIZATION_SEGMENT_COOKIE_AFFINITY_DURATION_MINUTES = "core_PersonalizationSegmentCookieAffinityDurationMinutes";
@@ -319,11 +305,15 @@ namespace Rock.SystemKey
         /// <summary>
         /// The Captcha site key.
         /// </summary>
+        [Obsolete( "Cloudflare Turnstile is no longer supported in Rock. It has been replaced by a built-in CAPTCHA system in v19." )]
+        [RockObsolete( "19.0" )]
         public const string CAPTCHA_SITE_KEY = "core_CaptchaSiteKey";
 
         /// <summary>
         /// The Captcha secret key.
         /// </summary>
+        [Obsolete( "Cloudflare Turnstile is no longer supported in Rock. It has been replaced by a built-in CAPTCHA system in v19." )]
+        [RockObsolete( "19.0" )]
         public const string CAPTCHA_SECRET_KEY = "core_CaptchaSecretKey";
 
         /// <summary>
@@ -466,5 +456,25 @@ namespace Rock.SystemKey
         /// configuration options in the UI.
         /// </summary>
         public const string TRAILBLAZER_MODE = "core_TrailblazerMode";
+
+        /// <summary>
+        /// The JSON that represents the connected services settings for the
+        /// Rock installation. The settings contains the options that have been
+        /// set by the administrator.
+        /// </summary>
+        public const string CONNECTED_SERVICES_MANIFEST = "core_ConnectedServicesManifest";
+
+        /// <summary>
+        /// The JSON that represents the connected services configuration for the
+        /// Rock installation. The configuration contains the data provided by
+        /// the API service.
+        /// </summary>
+        public const string CONNECTED_SERVICES_CONFIGURATION = "core_ConnectedServicesConfiguration";
+
+        /// <summary>
+        /// The JSON that represents the connected services authentication for
+        /// linking the Rock installation to a Spark organization.
+        /// </summary>
+        public const string CONNECTED_SERVICES_AUTH = "core_ConnectedServicesAuth";
     }
 }

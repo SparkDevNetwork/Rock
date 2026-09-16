@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -21,6 +21,7 @@ using System.Linq;
 using System.Text;
 using Rock;
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
@@ -155,7 +156,7 @@ namespace RockWeb.Blocks.GroupScheduling
             var rootGroupGuid = this.GetAttributeValue( AttributeKey.ParentGroup ).AsGuidOrNull();
             if ( rootGroupGuid.HasValue )
             {
-                gpGroups.RootGroupId = new GroupService( new RockContext() ).GetId( rootGroupGuid.Value );
+                gpGroups.RootGroupId = new GroupService( RockApp.Current.CreateRockContext() ).GetId( rootGroupGuid.Value );
             }
 
             btnSendCommunications.Visible = this.GetAttributeValue( AttributeKey.CommunicationsPage ).IsNotNullOrWhiteSpace();
@@ -173,7 +174,7 @@ namespace RockWeb.Blocks.GroupScheduling
         private Group GetGroupFromParameter( GroupService groupService )
         {
             var groupGuid = PageParameter( PageParameterKey.GroupGuid ).AsGuidOrNull();
-            var groupId = PageParameter( PageParameterKey.GroupId ).AsIntegerOrNull();
+            var groupId = PageParameter( PageParameterKey.GroupId ).AsIntegerOrNull() ?? Rock.Utility.IdHasher.Instance.GetId( PageParameter( PageParameterKey.GroupId ) );
             if ( groupGuid.HasValue )
             {
                 return groupService.Get( groupGuid.Value );
@@ -198,7 +199,7 @@ namespace RockWeb.Blocks.GroupScheduling
             var selectedGroupIds = new List<int>();
             var groupsWarningText = "Please select at least one group.";
 
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var groupService = new GroupService( rockContext );
 
             var group = GetGroupFromParameter( groupService );

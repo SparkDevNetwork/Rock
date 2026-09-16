@@ -85,6 +85,15 @@
     const configurationValues = ref<Record<string, string>>(props.modelValue?.configurationValues ?? {});
     const editConfigurationValues = ref<Record<string, string>>({});
 
+    /**
+     * Security grant token minted by the server for the currently selected
+     * field type. Field types that implement ISecurityGrantFieldType (e.g.
+     * AssetFieldType) need their rules in the grant before the default value
+     * editor can talk to the corresponding API endpoints. Plumbed onto
+     * defaultValueAttribute so RockField provides it to its children.
+     */
+    const securityGrantToken = ref<string | null>(null);
+
     const fieldType = computed((): IFieldType | null => {
         if (!fieldTypeValueGuidOrEmptyString.value) {
             return null;
@@ -165,7 +174,8 @@
             description: "",
             isRequired: false,
             order: 0,
-            categories: []
+            categories: [],
+            securityGrantToken: securityGrantToken.value
         };
     });
 
@@ -210,6 +220,7 @@
         configurationProperties.value = {};
         configurationValues.value = {};
         defaultValue.value = "";
+        securityGrantToken.value = null;
         isInternalUpdate = false;
 
         updateModelValue();
@@ -245,6 +256,7 @@
                     editConfigurationValues.value = result.data.editConfigurationValues;
                     valueFormat.value = result.data.valueFormat ?? "";
                     defaultValue.value = result.data.defaultValue ?? "";
+                    securityGrantToken.value = result.data.securityGrantToken ?? null;
                     isInternalUpdate = false;
 
                     updateModelValue();
@@ -266,6 +278,21 @@
      * configuration properties be updated from the server.
      */
     function onUpdateConfiguration(): void {
+        /*
+            8/21/2026 - NA
+
+            Propagate the current configuration up to the parent BEFORE firing the
+            normalization POST. Without this, the edited configuration only reaches
+            the parent when the POST's `.then(result` runs, so on slow networks a Save
+            that fires between the field's blur and the server response commits the
+            pre-edit values. The server re-parses customValues on save, so the POST
+            only refreshes UI-only state (e.g. the parsed Default Value options);
+            that refresh will still emit again when the response returns.
+
+            Reason: Prevents a save-timing race that could commit stale, pre-edit values.
+            See https://github.com/SparkDevNetwork/Rock/issues/6971
+        */
+        updateModelValue();
         updateFieldConfiguration(defaultValue.value ?? "");
     }
 

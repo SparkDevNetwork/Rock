@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Generic;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Logging;
 using Rock.Model;
@@ -118,7 +119,7 @@ namespace Rock.Transactions
         {
             try
             {
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     WorkflowTypeCache workflowType = null;
                     if ( WorkflowTypeGuid.HasValue )
@@ -167,8 +168,7 @@ namespace Rock.Transactions
     }
 
     /// <summary>
-    /// Writes any entity changes that are configured to be tracked
-    /// Or to use the Message Queue, use <seealso cref="Rock.Tasks.LaunchWorkflow" />
+    /// Writes any entity changes that are configured to be tracked.
     /// </summary>
     public class LaunchWorkflowTransaction<T> : LaunchWorkflowTransaction
     where T : Rock.Data.Entity<T>, new()

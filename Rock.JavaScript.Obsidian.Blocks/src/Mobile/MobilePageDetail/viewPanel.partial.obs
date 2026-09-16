@@ -1,0 +1,150 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <fieldset>
+
+        <ValueDetailList :modelValue="topValues" />
+
+        <div class="row">
+            <div class="col-md-4">
+                <ValueDetailList :modelValue="leftValues" />
+            </div>
+
+            <div class="col-md-4">
+                <ValueDetailList :modelValue="centerValues" />
+            </div>
+
+            <div class="col-md-4">
+                <ValueDetailList :modelValue="rightValues" />
+            </div>
+        </div>
+
+    </fieldset>
+</template>
+
+<script setup lang="ts">
+    // #region Types
+
+    import { computed, PropType } from "vue";
+    import ValueDetailList from "@Obsidian/Controls/valueDetailList.obs";
+    import { ValueDetailListItemBuilder } from "@Obsidian/Core/Controls/valueDetailListItemBuilder";
+    import { ValueDetailListItem } from "@Obsidian/Types/Controls/valueDetailListItem";
+    import { MobilePageDetailsBag } from "@Obsidian/ViewModels/Blocks/Mobile/MobilePageDetail/mobilePageDetailsBag";
+    import { DisplayInNavWhenDescription } from "@Obsidian/Enums/Cms/displayInNavWhen";
+    import { MobilePageType } from "@Obsidian/Enums/Cms/mobilePageType";
+
+    // #endregion Types
+
+    const props = defineProps({
+        /** The page details to display. */
+        modelValue: {
+            type: Object as PropType<MobilePageDetailsBag | null>,
+            required: false
+        },
+
+        /**
+         * The Layout Detail Page navigation URL template (contains the "((Key))"
+         * placeholder). When provided, the Layout field renders as a link.
+         */
+        layoutDetailPageUrl: {
+            type: String as PropType<string | null>,
+            required: false
+        }
+    });
+
+    // #region Computed Values
+
+    /** The resolved Layout Detail Page URL for the current layout, or null. */
+    const layoutHref = computed((): string | null => {
+        const key = props.modelValue?.layout?.value;
+
+        if (!props.layoutDetailPageUrl || !key) {
+            return null;
+        }
+
+        return props.layoutDetailPageUrl.replace("((Key))", key);
+    });
+
+    /** The description, displayed full-width at the top of the block. */
+    const topValues = computed((): ValueDetailListItem[] => {
+        const valueBuilder = new ValueDetailListItemBuilder();
+
+        if (!props.modelValue) {
+            return valueBuilder.build();
+        }
+
+        if (props.modelValue.description) {
+            valueBuilder.addTextValue("Description", props.modelValue.description);
+        }
+
+        return valueBuilder.build();
+    });
+
+    /** The values shown in the first (left) column. */
+    const leftValues = computed((): ValueDetailListItem[] => {
+        const valueBuilder = new ValueDetailListItemBuilder();
+        const bag = props.modelValue;
+
+        if (!bag) {
+            return valueBuilder.build();
+        }
+
+        valueBuilder.addTextValue("Display In Navigation", DisplayInNavWhenDescription[bag.displayInNavWhen] ?? "");
+
+        valueBuilder.addTextValue("Show Full Screen", bag.showFullScreen ? "Yes" : "No");
+
+        if (bag.route) {
+            valueBuilder.addTextValue("Route", bag.route);
+        }
+
+        return valueBuilder.build();
+    });
+
+    /** The values shown in the second (center) column. */
+    const centerValues = computed((): ValueDetailListItem[] => {
+        const valueBuilder = new ValueDetailListItemBuilder();
+        const bag = props.modelValue;
+
+        if (!bag) {
+            return valueBuilder.build();
+        }
+
+        // Native pages show the layout (linked when possible); web pages show the URL.
+        if (bag.pageType === MobilePageType.NativePage) {
+            const layoutText = bag.layout?.text ?? "";
+
+            if (layoutHref.value) {
+                valueBuilder.addHtmlValue("Layout", `<a href="${layoutHref.value}">${layoutText}</a>`);
+            }
+            else {
+                valueBuilder.addTextValue("Layout", layoutText);
+            }
+        }
+        else {
+            valueBuilder.addTextValue("Page URL", bag.webPageUrl ?? "");
+        }
+
+        valueBuilder.addTextValue("Auto Refresh", bag.autoRefresh ? "Yes" : "No");
+
+        return valueBuilder.build();
+    });
+
+    /** The values shown in the third (right) column. */
+    const rightValues = computed((): ValueDetailListItem[] => {
+        const valueBuilder = new ValueDetailListItemBuilder();
+        const bag = props.modelValue;
+
+        if (!bag) {
+            return valueBuilder.build();
+        }
+
+        valueBuilder.addTextValue("Hide Navigation Bar", bag.hideNavigationBar ? "Yes" : "No");
+
+        if (bag.pageIcon?.value) {
+            valueBuilder.addHtmlValue("Icon", `<img src="/GetImage.ashx?guid=${bag.pageIcon.value}" class="img-thumbnail" width="200" alt="Page Icon" />`);
+        }
+
+        return valueBuilder.build();
+    });
+
+    // #endregion Computed Values
+</script>

@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -21,6 +21,7 @@ using System.ComponentModel;
 using System.Linq;
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Enums.Cms;
 using Rock.Model;
@@ -100,12 +101,12 @@ namespace Rock.Blocks.Core
         Order = 8,
         Key = AttributeKey.Alignment )]
 
-    [CampusField( name: "Default Campus",
-        description: "When there is no campus value, what campus should be displayed?",
-        required: false,
-        includeInactive: true,
-        order: 9,
-        key: AttributeKey.DefaultCampus )]
+    [CampusField( "Default Campus",
+        Description = "When there is no campus value, what campus should be displayed?",
+        IsRequired = false,
+        IncludeInactive = true,
+        Order = 9,
+        Key = AttributeKey.DefaultCampus )]
 
     [BooleanField( "Update Family Campus on Change",
         Description = "When the individual changes the selected campus, should their family's campus (primary family) be updated?",
@@ -343,7 +344,7 @@ namespace Rock.Blocks.Core
         private Campus SetCampusContext( int campusId, bool refreshPage, string originalUrl, out string redirectUrl )
         {
             var pageScope = GetAttributeValue( AttributeKey.ContextScope ) == "Page";
-            var campus = new CampusService( new RockContext() ).Get( campusId );
+            var campus = new CampusService( RockApp.Current.CreateRockContext() ).Get( campusId );
 
             if ( campus != null )
             {

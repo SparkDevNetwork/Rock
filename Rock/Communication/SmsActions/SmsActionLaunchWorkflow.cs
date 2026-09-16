@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -19,7 +19,6 @@ using System.ComponentModel;
 using System.ComponentModel.Composition;
 
 using Rock.Attribute;
-using Rock.Field.Types;
 using Rock.Web.Cache;
 
 namespace Rock.Communication.SmsActions
@@ -51,7 +50,7 @@ namespace Rock.Communication.SmsActions
         Key = AttributeKey.PassNamelessPerson,
         Category = AttributeCategories.Workflow,
         Description = "If a matching person is not found in the database should a nameless person record be passed to the workflow.",
-        ControlType = BooleanFieldType.BooleanControlType.Checkbox,
+        BooleanControlType = Rock.Enums.Controls.BooleanControlType.Checkbox,
         DefaultBooleanValue = true,
         Order = 3 )]
 
@@ -60,6 +59,8 @@ namespace Rock.Communication.SmsActions
         Category = AttributeCategories.Workflow,
         Description = "The lava template to use for setting the workflow name. See the defined type's help text for a listing of merge fields. <span class='tip tip-lava'></span>",
         IsRequired = false,
+        AllowHtml = true,
+        AllowLava = true,
         Order = 4 )]
 
     [KeyValueListField( "Workflow Attributes",
@@ -68,6 +69,8 @@ namespace Rock.Communication.SmsActions
         Description = "Key/value list of workflow attributes to set with the given lava merge template. See the defined type’s help text for a listing of merge fields. <span class='tip tip-lava'></span>",
         IsRequired = false,
         DefaultValue = "",
+        AllowHtml = true,
+        AllowLava = true,
         KeyPrompt = "Attribute Key",
         ValuePrompt = "Merge Template",
         Order = 5 )]
@@ -182,7 +185,7 @@ namespace Rock.Communication.SmsActions
             //
             var attribute = action.Attributes.ContainsKey( AttributeKey.Message ) ? action.Attributes[AttributeKey.Message] : null;
             var msg = GetAttributeValue( action, AttributeKey.Message );
-            var filter = ValueFilterFieldType.GetFilterExpression( attribute?.QualifierValues, msg );
+            var filter = Web.UI.Controls.FilterExpression.FromJsonOrNull( msg );
 
             //
             // Evaluate the message against the filter and return the match state.
@@ -208,15 +211,11 @@ namespace Rock.Communication.SmsActions
             var workflowAttributes = action.Attributes["WorkflowAttributes"];
             if ( workflowAttributes != null )
             {
-                if ( workflowAttributes.FieldType.Field is KeyValueListFieldType keyValueField )
+                if ( workflowAttributes.FieldType.Guid == SystemGuid.FieldType.KEY_VALUE_LIST.AsGuid() )
                 {
-#if REVIEW_WEBFORMS
-                    workflowAttributesSettings = keyValueField.GetValuesFromString( null,
-#else
-                    workflowAttributesSettings = keyValueField.GetValuesFromString(
-#endif
+                    workflowAttributesSettings = Field.Helper.GetKeyValueListValuesFromString(
                         GetAttributeValue( action, AttributeKey.WorkflowAttributes ),
-                        workflowAttributes.QualifierValues,
+                        workflowAttributes.ConfigurationValues,
                         false );
                 }
             }

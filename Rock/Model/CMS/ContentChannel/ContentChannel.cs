@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -25,8 +25,11 @@ using System.Runtime.Serialization;
 using Newtonsoft.Json;
 
 using Rock.Cms;
+using Rock.Configuration;
 using Rock.Data;
+using Rock.Enums.Security;
 using Rock.Lava;
+using Rock.Security;
 using Rock.Tasks;
 using Rock.Transactions;
 using Rock.Web.Cache;
@@ -64,6 +67,7 @@ namespace Rock.Model
         [Required]
         [MaxLength( 100 )]
         [DataMember( IsRequired = true )]
+        [StringValidation( StringValidationProfile.Name )]
         public string Name { get; set; }
 
         /// <summary>
@@ -73,6 +77,7 @@ namespace Rock.Model
         /// The description.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.LavaAndBasicHtml )]
         public string Description { get; set; }
 
         /// <summary>
@@ -83,6 +88,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 100 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string IconCssClass { get; set; }
 
         /// <summary>
@@ -129,6 +135,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 200 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string ChannelUrl { get; set; }
 
         /// <summary>
@@ -139,6 +146,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 200 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string ItemUrl { get; set; }
 
         /// <summary>
@@ -167,6 +175,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 200 )]
         [DataMember]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string RootImageDirectory { get; set; }
 
         /// <summary>
@@ -229,6 +238,7 @@ namespace Rock.Model
         /// </summary>
         /// <value>The Content Library configuration JSON.</value>
         [DataMember]
+        [StringValidation( StringValidationProfile.Unrestricted )]
         public string ContentLibraryConfigurationJson
         {
             get
@@ -377,7 +387,7 @@ namespace Rock.Model
         /// <param name="contentChannelId">The content channel identifier.</param>
         public void DeleteIndexedDocumentsByContentChannel( int contentChannelId )
         {
-            var contentChannelItemIds = new ContentChannelItemService( new RockContext() ).Queryable()
+            var contentChannelItemIds = new ContentChannelItemService( RockApp.Current.CreateRockContext() ).Queryable()
                                     .Where( i => i.ContentChannelId == contentChannelId ).Select( a => a.Id ).ToList();
 
             int contentChannelItemEntityTypeId = EntityTypeCache.GetId<Rock.Model.ContentChannelItem>().Value;
@@ -401,7 +411,7 @@ namespace Rock.Model
         public void BulkIndexDocumentsByContentChannel( int contentChannelId )
         {
             // return all approved content channel items that are in content channels that should be indexed
-            var contentChannelItemIds = new ContentChannelItemService( new RockContext() )
+            var contentChannelItemIds = new ContentChannelItemService( RockApp.Current.CreateRockContext() )
                 .Queryable()
                 .Where( i => i.ContentChannelId == contentChannelId
                     && ( i.ContentChannel.RequiresApproval == false || i.ContentChannel.ContentChannelType.DisableStatus || i.Status == ContentChannelItemStatus.Approved ) )

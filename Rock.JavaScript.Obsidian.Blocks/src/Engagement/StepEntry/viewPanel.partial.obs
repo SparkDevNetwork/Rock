@@ -1,0 +1,213 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <fieldset>
+        <div class="d-flex align-items-center">
+            <div class="mr-3">
+                <div class="avatar avatar-xl" v-if="props.modelValue?.personPhotoUrl">
+                    <img :title="`${props.modelValue?.personAlias?.text} Profile Photo`" :src="props.modelValue?.personPhotoUrl" />
+                </div>
+            </div>
+            <div>
+                <h3 class="font-weight-semibold my-0">
+                    {{ props.modelValue?.personAlias?.text }}
+                </h3>
+                <span class="text-muted">{{ personSubTitle }}</span>
+            </div>
+        </div>
+
+        <div class="row mt-3">
+            <div v-if="showStartDate" class="col-sm-3 col-lg-2">
+                <strong>Start Date</strong><br />
+                {{ formattedStartDate }}
+            </div>
+
+            <div v-if="showCompletedDate" class="col-sm-3 col-lg-2">
+                <strong>Completed Date</strong><br />
+                {{ formattedCompletedDate }}
+            </div>
+            <div v-else-if="showEndDate" class="col-sm-3 col-lg-2">
+                <strong>End Date</strong><br />
+                {{ formattedEndDate }}
+            </div>
+
+            <div v-if="showDaysToComplete" class="col-sm-4">
+                <div class="kpi kpi-light text-blue-700 border-0 p-0">
+                    <div class="kpi-icon">
+                        <img class="svg-placeholder" src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1 1'></svg>">
+                        <div class="kpi-content">{{ formattedDaysToComplete }}</div>
+                    </div>
+                    <div class="kpi-stat">
+                        <span class="kpi-label text-color">
+                            {{ daysToComplete === 1 ? "Day" : "Days" }} to<br />
+                            Complete
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div v-if="props.modelValue?.noteHtml" class="mt-3">
+            <strong>Note</strong><br />
+            <span v-html="props.modelValue.noteHtml"></span>
+        </div>
+
+        <div v-if="hasWorkflows" class="mt-3">
+            <strong>Available Workflows</strong>
+            <div class="margin-b-md">
+                <RockButton v-for="(wf, index) in props.options?.availableWorkflows"
+                            :key="wf.guid ?? index"
+                            btnType="default"
+                            btnSize="xs"
+                            class="mr-1 mb-1"
+                            @click="wf.guid && onWorkflowClick(wf.guid)">
+                    {{ wf.workflowTypeName }}
+                </RockButton>
+            </div>
+        </div>
+
+        <div v-if="hasAttributes" class="row mt-3">
+            <div class="col-sm-12">
+                <AttributeValuesContainer :modelValue="attributeValues" :attributes="attributes" :numberOfColumns="2" />
+            </div>
+        </div>
+    </fieldset>
+</template>
+
+<script setup lang="ts">
+    import { computed, PropType, ref } from "vue";
+    import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import { StepEntryBag } from "@Obsidian/ViewModels/Blocks/Engagement/StepEntry/stepEntryBag";
+    import { StepEntryOptionsBag } from "@Obsidian/ViewModels/Blocks/Engagement/StepEntry/stepEntryOptionsBag";
+    import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<StepEntryBag | null>,
+            required: false
+        },
+
+        options: {
+            type: Object as PropType<StepEntryOptionsBag>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "launchWorkflow", triggerIdKey: string): void
+    }>();
+
+    // #region Values
+
+    const attributes = ref(props.modelValue?.attributes ?? {});
+    const attributeValues = ref(props.modelValue?.attributeValues ?? {});
+
+    // #endregion
+
+    // #region Computed Values
+
+    /** Gets the subtitle text below the person's name, combining connection status and campus. */
+    const personSubTitle = computed((): string => {
+        const connectionStatus = props.modelValue?.personConnectionStatus ?? "";
+        const campusName = props.modelValue?.campus?.text ?? "";
+        const showCampus = !props.options?.isSingleCampus && campusName.length > 0;
+
+        if (showCampus && connectionStatus.length > 0) {
+            return `${connectionStatus} - ${campusName}`;
+        }
+
+        return showCampus ? campusName : connectionStatus;
+    });
+
+    /** True if the start date should be shown. Only displayed when the step type has an end date. */
+    const showStartDate = computed((): boolean => {
+        return !!props.options?.hasEndDate && !!props.modelValue?.startDateTime;
+    });
+
+    /** Gets the start date formatted for display. */
+    const formattedStartDate = computed((): string => {
+        if (!props.modelValue?.startDateTime) {
+            return "";
+        }
+
+        return RockDateTime.parseISO(props.modelValue.startDateTime)?.toASPString("d") ?? "";
+    });
+
+    /** True if the completed date should be shown. */
+    const showCompletedDate = computed((): boolean => {
+        return !!props.modelValue?.completedDateTime;
+    });
+
+    /** Gets the completed date formatted for display. */
+    const formattedCompletedDate = computed((): string => {
+        if (!props.modelValue?.completedDateTime) {
+            return "";
+        }
+
+        return RockDateTime.parseISO(props.modelValue.completedDateTime)?.toASPString("d") ?? "";
+    });
+
+    /** True if the end date should be shown. Only displayed when there is no completed date. */
+    const showEndDate = computed((): boolean => {
+        return !showCompletedDate.value && !!props.modelValue?.endDateTime;
+    });
+
+    /** Gets the end date formatted for display. */
+    const formattedEndDate = computed((): string => {
+        if (!props.modelValue?.endDateTime) {
+            return "";
+        }
+
+        return RockDateTime.parseISO(props.modelValue.endDateTime)?.toASPString("d") ?? "";
+    });
+
+    /** Gets the number of days between the start date and the completed or end date. */
+    const daysToComplete = computed((): number => {
+        const startStr = props.modelValue?.startDateTime;
+        const endStr = props.modelValue?.completedDateTime ?? props.modelValue?.endDateTime;
+
+        if (!startStr || !endStr) {
+            return 0;
+        }
+
+        const start = RockDateTime.parseISO(startStr);
+        const end = RockDateTime.parseISO(endStr);
+
+        if (!start || !end) {
+            return 0;
+        }
+
+        return Math.floor((end.toMilliseconds() - start.toMilliseconds()) / (1000 * 60 * 60 * 24));
+    });
+
+    /** True if the days-to-complete KPI should be shown. */
+    const showDaysToComplete = computed((): boolean => {
+        return daysToComplete.value >= 1;
+    });
+
+    /** Gets the days-to-complete value formatted with locale-specific separators. */
+    const formattedDaysToComplete = computed((): string => {
+        return daysToComplete.value.toLocaleString();
+    });
+
+    /** True if there are manual workflow triggers available for this step. */
+    const hasWorkflows = computed((): boolean => {
+        return (props.options?.availableWorkflows?.length ?? 0) > 0;
+    });
+
+    /** True if there are step attributes to display. */
+    const hasAttributes = computed((): boolean => {
+        return Object.keys(attributes.value).length > 0;
+    });
+
+    // #endregion
+
+    // #region Event Handlers
+
+    /** Emits the launchWorkflow event when a workflow trigger button is clicked. */
+    function onWorkflowClick(guid: string): void {
+        emit("launchWorkflow", guid);
+    }
+
+    // #endregion
+</script>

@@ -31,6 +31,7 @@ import {
 import { ComputedRef, InjectionKey, Ref, inject, nextTick } from "vue";
 import { smoothScrollToTop } from "@Obsidian/Utility/page";
 import { PublicComparisonValueBag } from "@Obsidian/ViewModels/Utility/publicComparisonValueBag";
+import { InvokeBlockActionFunc } from "@Obsidian/Types/Utility/block";
 import { ComparisonValue } from "@Obsidian/Types/Reporting/comparisonValue";
 import { RegistrationEntryArgsBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationEntry/registrationEntryArgsBag";
 import { RegistrantsSameFamily } from "@Obsidian/Enums/Event/registrantsSameFamily";
@@ -134,6 +135,28 @@ export function convertComparisonValue(value: PublicComparisonValueBag): Compari
         value: value.value ?? "",
         comparisonType: value.comparisonType
     };
+}
+
+/**
+ * Pre-validates the "Require Full Payment or Payment Plan" rule by calling the server-side
+ * ValidateFullPaymentOrPaymentPlan block action without persisting anything.
+ * Returns null when validation passes (or does not apply), or the rendered HTML failure message when it fails.
+ */
+export async function validateFullPaymentOrPaymentPlan(
+    viewModel: RegistrationEntryInitializationBox,
+    args: RegistrationEntryArgsBag,
+    invokeBlockAction: InvokeBlockActionFunc): Promise<string | null> {
+    if (!viewModel.isFullPaymentOrPaymentPlanRequired) {
+        return null;
+    }
+
+    const result = await invokeBlockAction("ValidateFullPaymentOrPaymentPlan", { args });
+
+    if (result.isError) {
+        return result.errorMessage || "Unknown error";
+    }
+
+    return null;
 }
 
 /** An injection key to provide the registration entry state. */

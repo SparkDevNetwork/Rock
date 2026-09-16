@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -26,6 +26,7 @@ using Microsoft.EntityFrameworkCore;
 
 using Rock.Communication.Chat;
 using Rock.Communication.Chat.Sync;
+using Rock.Configuration;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Web.Cache;
@@ -364,7 +365,7 @@ namespace Rock.Model
 
                         try
                         {
-                            using ( var batchContext = new RockContext() )
+                            using ( var batchContext = RockApp.Current.CreateRockContext() )
                             {
                                 batchContext.Database.SetCommandTimeout( 180 );
                                 var groupMemberService = new GroupMemberService( batchContext );

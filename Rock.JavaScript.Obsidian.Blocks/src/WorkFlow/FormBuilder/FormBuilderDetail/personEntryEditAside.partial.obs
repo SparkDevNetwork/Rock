@@ -8,22 +8,20 @@
 
             <span class="title">
                 <i class="ti ti-fw ti-user icon"></i>
-                Person Entry
+                Person Entry Form
             </span>
         </div>
 
         <div ref="scrollableElement" class="sidebar-body">
             <RockForm v-model:submit="formSubmit" @validationChanged="onValidationChanged" class="sidebar-panels">
-                <div class="panel-body">
-                    <PersonEntrySettings v-model="internalValue"
-                                         isVertical
-                                         :recordStatusOptions="options.recordStatusOptions ?? []"
-                                         :recordSourceOptions="options.recordSourceOptions ?? []"
-                                         :connectionStatusOptions="options.connectionStatusOptions ?? []"
-                                         :campusTypeOptions="options.campusTypeOptions ?? []"
-                                         :campusStatusOptions="options.campusStatusOptions ?? []"
-                                         :addressTypeOptions="options.addressTypeOptions ?? []" />
-                </div>
+                <PersonEntrySettings v-model="internalValue"
+                                     isVertical
+                                     :recordStatusOptions="options.recordStatusOptions ?? []"
+                                     :recordSourceOptions="options.recordSourceOptions ?? []"
+                                     :connectionStatusOptions="options.connectionStatusOptions ?? []"
+                                     :campusTypeOptions="options.campusTypeOptions ?? []"
+                                     :campusStatusOptions="options.campusStatusOptions ?? []"
+                                     :addressTypeOptions="options.addressTypeOptions ?? []" />
             </RockForm>
         </div>
     </div>

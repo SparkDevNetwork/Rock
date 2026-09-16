@@ -21,6 +21,7 @@
 // </copyright>
 //
 
+using Rock.Configuration;
 using Rock.Model;
 using Rock.SystemGuid;
 
@@ -35,6 +36,6 @@ namespace Rock.Rest.Controllers
         /// <summary>
         /// Initializes a new instance of the <see cref="PluginMigrationsController"/> class.
         /// </summary>
-        public PluginMigrationsController() : base( new Rock.Model.PluginMigrationService( new Rock.Data.RockContext() ) ) { } 
+        public PluginMigrationsController() : base( new Rock.Model.PluginMigrationService( RockApp.Current.CreateRockContext() ) ) { } 
     }
 }

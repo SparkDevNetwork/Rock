@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -22,6 +22,7 @@ using System.Data.Entity;
 using System.Linq;
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Constants;
 using Rock.Data;
 using Rock.ElectronicSignature;
@@ -59,7 +60,7 @@ namespace Rock.Blocks.Core
 
     [BooleanField(
         "Show Legacy Signature Providers",
-        "Enable this setting to see the configuration for legacy signature providers. Note that support for these providers will be fully removed in the next full release.",
+        Description = "Enable this setting to see the configuration for legacy signature providers. Note that support for these providers will be fully removed in the next full release.",
         Key = AttributeKey.ShowLegacyExternalProviders,
         DefaultBooleanValue = false,
         Order = 1 )]
@@ -441,7 +442,7 @@ namespace Rock.Blocks.Core
                 BinaryFile binaryFile = pdfGenerator.GetAsBinaryFileFromHtml( binaryFileTypeId, "preview.pdf", signedDocumentHtml );
                 binaryFile.IsTemporary = true;
 
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     new BinaryFileService( rockContext ).Add( binaryFile );
                     rockContext.SaveChanges();
@@ -572,7 +573,7 @@ namespace Rock.Blocks.Core
         [BlockAction]
         public BlockActionResult GetPdfPreviewUrl( GetPdfPreviewUrlRequestBag requestBag )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 SignatureType signatureType = requestBag.SignatureType.IsNotNullOrWhiteSpace() ? requestBag.SignatureType.ConvertToEnum<SignatureType>() : SignatureType.Typed;
 
@@ -588,50 +589,12 @@ namespace Rock.Blocks.Core
         /// <param name="entityTypeGuid">The entity type unique identifier.</param>
         /// <returns></returns>
         [BlockAction]
+        [Obsolete( "Legacy signature providers are no longer supported in Rock." )]
+        [RockObsolete( "19.0" )]
         public BlockActionResult GetExternalProviders( Guid? entityTypeGuid )
         {
-            using ( var rockContext = new RockContext() )
-            {
-                var externalProviders = new List<ListItemBag>();
-                var errorMessage = string.Empty;
-
-                if ( !entityTypeGuid.HasValue )
-                {
-                    return ActionOk(new { externalProviders = externalProviders } );
-                }
-
-                var entityType = EntityTypeCache.Get( entityTypeGuid.Value );
-
-                if ( entityType == null )
-                {
-                    return ActionOk( new { externalProviders = externalProviders } );
-                }
-
-                var component = DigitalSignatureContainer.GetComponent( entityType.Name );
-                if ( component == null )
-                {
-                    return ActionOk( new { externalProviders = externalProviders } );
-                }
-
-                var errors = new List<string>();
-                var templates = component.GetTemplates( out errors );
-
-                if ( templates != null )
-                {
-                    foreach ( var keyVal in templates.OrderBy( d => d.Value ) )
-                    {
-                        externalProviders.Add( new ListItemBag() { Text = keyVal.Value, Value = keyVal.Key } );
-                    }
-
-                    return ActionOk( new { externalProviders = externalProviders } );
-                }
-                else
-                {
-                    errorMessage = string.Format( "<ul><li>{0}</li></ul>", errors.AsDelimited( "</li><li>" ) );
-
-                    return ActionBadRequest( errorMessage );
-                }
-            }
+            var externalProviders = new List<ListItemBag>();
+            return ActionOk( new { externalProviders = externalProviders } );
         }
 
         #endregion

@@ -20,8 +20,10 @@ import { ComparisonType } from "@Obsidian/Enums/Reporting/comparisonType";
 import { stringComparisonTypes } from "@Obsidian/Core/Reporting/comparisonType";
 import { FieldTypeBase } from "./fieldType";
 import { getStandardFilterComponent } from "./utils";
+import { asBoolean } from "@Obsidian/Utility/booleanUtils";
+import { escapeHtml } from "@Obsidian/Utility/stringUtils";
 
-export const enum ConfigurationValueKey {
+export const enum ConfigurationKey {
     NumberOfRows = "numberofrows",
     AllowHtml = "allowhtml",
     MaxCharacters = "maxcharacters",
@@ -47,6 +49,18 @@ const configurationComponent = defineAsyncComponent(async () => {
  * The field type handler for the Memo field.
  */
 export class MemoFieldType extends FieldTypeBase {
+    public override getHtmlValue(value: string, configurationValues: Record<string, string>, _isEscaped?: boolean): string {
+        return asBoolean(configurationValues?.["allowhtml"])
+            ? this.getTextValue(value, configurationValues)
+            : escapeHtml(this.getTextValue(value, configurationValues));
+    }
+
+    public override getCondensedHtmlValue(value: string, configurationValues: Record<string, string>, _isEscaped?: boolean): string {
+        return asBoolean(configurationValues?.["allowhtml"])
+            ? this.getCondensedTextValue(value, configurationValues)
+            : escapeHtml(this.getCondensedTextValue(value, configurationValues));
+    }
+
     public override getEditComponent(): Component {
         return editComponent;
     }

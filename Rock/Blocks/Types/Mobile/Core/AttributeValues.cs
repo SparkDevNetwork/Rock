@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -21,6 +21,7 @@ using System.Linq;
 
 using Rock.Attribute;
 using Rock.Common.Mobile.Blocks.Core.AttributeValues;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
@@ -127,11 +128,11 @@ namespace Rock.Blocks.Types.Mobile.Core
                 var canEdit = attribute.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson );
                 if ( canEdit )
                 {
-                    attributeBag = ToAttributeField( attribute, useAbbrevNames, true, value );
+                    attributeBag = ToAttributeField( attribute, useAbbrevNames, true, value, categories );
                 }
                 else
                 {
-                    attributeBag = ToAttributeField( attribute, useAbbrevNames, false, value );
+                    attributeBag = ToAttributeField( attribute, useAbbrevNames, false, value, categories );
                 }
 
                 attributeBags.Add( attributeBag );
@@ -147,8 +148,9 @@ namespace Rock.Blocks.Types.Mobile.Core
         /// <param name="useAbbreviatedName">if set to <c>true</c> [use abbreviated name].</param>
         /// <param name="canEdit">if set to <c>true</c> [can edit].</param>
         /// <param name="privateValue">The private value.</param>
+        /// <param name="selectedCategoryGuids">The category Guids configured on the block; used to restrict the categories reported on the returned <see cref="AttributeField"/> so the mobile shell only renders panels the admin selected.</param>
         /// <returns>AttributeField.</returns>
-        private AttributeField ToAttributeField( AttributeCache attribute, bool useAbbreviatedName, bool canEdit, string privateValue )
+        private AttributeField ToAttributeField( AttributeCache attribute, bool useAbbreviatedName, bool canEdit, string privateValue, List<Guid> selectedCategoryGuids )
         {
             // Get the corresponding attribute depending on if we're editing or not.
             var publicAttribute = canEdit ? PublicAttributeHelper.GetPublicAttributeForEdit( attribute )
@@ -179,12 +181,15 @@ namespace Rock.Blocks.Types.Mobile.Core
 
             return new AttributeField
             {
-                AttributeCategories = publicAttribute.Categories.Select( x => new Common.Mobile.Blocks.Core.AttributeValues.PublicAttributeCategoryBag
-                {
-                    Name = x.Name,
-                    Guid = x.Guid,
-                    Order = x.Order
-                } ).ToList(),
+                // Limit to the categories configured on the block so the mobile shell does not render panels for unselected categories that an attribute also happens to belong to.
+                AttributeCategories = publicAttribute.Categories
+                    .Where( x => selectedCategoryGuids.Contains( x.Guid ) )
+                    .Select( x => new Common.Mobile.Blocks.Core.AttributeValues.PublicAttributeCategoryBag
+                    {
+                        Name = x.Name,
+                        Guid = x.Guid,
+                        Order = x.Order
+                    } ).ToList(),
                 CanEdit = canEdit,
                 AttributeGuid = attribute.Guid,
                 ConfigurationValues = configurationValues,
@@ -248,7 +253,7 @@ namespace Rock.Blocks.Types.Mobile.Core
                 return ActionNotFound( "There was no context entity type provided." );
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var entity = RequestContext.GetContextEntity( entityType.GetEntityType() );
                 if ( entity == null || !( entity is IHasAttributes attributeEntity ) )
@@ -294,7 +299,7 @@ namespace Rock.Blocks.Types.Mobile.Core
                 return ActionNotFound( "There was no context entity type provided." );
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var entity = RequestContext.GetContextEntity( entityType.GetEntityType() );
                 if ( entity == null || !( entity is IHasAttributes attributeEntity ) )

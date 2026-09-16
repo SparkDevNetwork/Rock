@@ -21,7 +21,7 @@ import { ComparisonType } from "@Obsidian/Enums/Reporting/comparisonType";
 import { FieldTypeBase } from "./fieldType";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
-export const enum ConfigurationValueKey {
+export const enum ConfigurationKey {
     ClientValues = "values"
 }
 
@@ -42,7 +42,7 @@ export class ContentChannelTypeFieldType extends FieldTypeBase {
         }
 
         try {
-            const values = JSON.parse(configurationValues[ConfigurationValueKey.ClientValues] ?? "[]") as ListItemBag[];
+            const values = JSON.parse(configurationValues[ConfigurationKey.ClientValues] ?? "[]") as ListItemBag[];
             const selectedValue = values.find(o => o.value === value);
             return selectedValue?.text ?? value;
         }

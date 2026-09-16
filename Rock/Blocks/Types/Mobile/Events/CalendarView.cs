@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -23,6 +23,7 @@ using System.Text;
 
 using Rock.Attribute;
 using Rock.Common.Mobile.Blocks.Content;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Lava;
 using Rock.Mobile;
@@ -77,7 +78,7 @@ namespace Rock.Blocks.Types.Mobile.Events
         Description = "If enabled then the user will be able to apply custom filtering.",
         IsRequired = false,
         DefaultBooleanValue = true,
-        ControlType = Field.Types.BooleanFieldType.BooleanControlType.Checkbox,
+        BooleanControlType = Rock.Enums.Controls.BooleanControlType.Checkbox,
         Key = AttributeKeys.ShowFilter,
         Order = 4 )]
 
@@ -85,7 +86,7 @@ namespace Rock.Blocks.Types.Mobile.Events
         Description = "Determines if all events for the month should be listed in the detail section or only the selected days events.",
         IsRequired = false,
         DefaultBooleanValue = false,
-        ControlType = Field.Types.BooleanFieldType.BooleanControlType.Checkbox,
+        BooleanControlType = Rock.Enums.Controls.BooleanControlType.Checkbox,
         Key = AttributeKeys.ShowAllEventsInDetail,
         Order = 5 )]
 
@@ -93,7 +94,7 @@ namespace Rock.Blocks.Types.Mobile.Events
         Description = "Determines if multiple colored dots will be used on the calendar to indicate which audience types exist on that day.",
         IsRequired = false,
         DefaultBooleanValue = false,
-        ControlType = Field.Types.BooleanFieldType.BooleanControlType.Checkbox,
+        BooleanControlType = Rock.Enums.Controls.BooleanControlType.Checkbox,
         Key = AttributeKeys.ShowPerAudienceEventIndicators,
         Order = 6 )]
 
@@ -333,7 +334,7 @@ namespace Rock.Blocks.Types.Mobile.Events
         [BlockAction]
         public object GetEvents( DateTime beginDate, DateTime endDate )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var eventCalendar = new EventCalendarService( rockContext ).Get( Calendar ?? Guid.Empty );
                 var eventItemOccurrenceService = new EventItemOccurrenceService( rockContext );

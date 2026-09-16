@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -18,10 +18,11 @@ using System;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
-using Rock.Tests.Shared;
-using Rock.Tests.Shared.TestFramework;
+using Rock.Tests.Integration.TestFramework.Database;
+using Rock.Tests.Shared.Constants;
 
 namespace Rock.Tests.Integration.Core.Model
 {
@@ -66,7 +67,7 @@ namespace Rock.Tests.Integration.Core.Model
         [DataRow( "john.doe+jane.doe+no.doe@example.com", "local-part contains subaddress with embedded '+'" )]
         public void EmailField_WithEmailAddressValidationAttribute_AcceptsValidEmailAddress( string email, string description = null )
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
 
             var prayerRequest = CreateNewTestPrayerRequest( rockContext, email );
 
@@ -105,7 +106,7 @@ namespace Rock.Tests.Integration.Core.Model
         [DataRow( "i.like.underscores@but_they_are_not_allowed_in_this_part", "underscore is not allowed in domain-part" )]
         public void EmailField_WithEmailAddressValidationAttribute_RejectsInvalidEmailAddress( string email, string rule )
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var prayerRequestService = new PrayerRequestService( rockContext );
 
             var prayerRequest = CreateNewTestPrayerRequest( rockContext, email );

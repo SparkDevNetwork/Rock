@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -16,7 +16,7 @@
 //
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-using Rock.Tests.Shared;
+using Rock.Tests.Shared.TestFramework;
 
 namespace Rock.Tests.Integration.Performance.Core
 {
@@ -34,12 +34,9 @@ namespace Rock.Tests.Integration.Performance.Core
 
         private void CalculateGroupRequirementsJob_MeasurePerformance()
         {
-            TestHelper.ExecuteWithTimer( "Rock Cleanup: Cleanup Interaction Sessions", () =>
-            {
-                var jobTests = new global::Rock.Tests.Integration.Core.Jobs.RockCleanupJobTests();
+            var jobTests = new global::Rock.Tests.Integration.Core.Jobs.RockCleanupJobTests();
 
-                jobTests.RockCleanup_CleanupInteractionSessions_RemovesSessionsWithNoInteractions();
-            } );
+            jobTests.RockCleanup_CleanupInteractionSessions_RemovesSessionsWithNoInteractions();
         }
     }
 }

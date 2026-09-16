@@ -5,6 +5,7 @@
           keyField="idKey"
           itemTerm="Payment Account"
           :entityTypeGuid="EntityType.FinancialPersonSavedAccount"
+          :expectedRowCount=1
           stickyHeader
           light
           liveUpdates>
@@ -27,7 +28,7 @@
                     :filter="textValueFilter"
                     visiblePriority="xs" />
 
-        <DeleteColumn v-if="config.isDeleteEnabled" @click="onDeleteClick" />
+        <DeleteColumn @click="onDeleteClick" />
     </Grid>
 </template>
 

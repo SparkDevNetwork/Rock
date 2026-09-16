@@ -22,6 +22,7 @@ using System.Linq;
 
 using Rock;
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -36,15 +37,42 @@ namespace Rock.Follow.Event
     [Export( typeof( EventComponent ) )]
     [ExportMetadata( "ComponentName", "PersonHistory" )]
 
-    [TextField( "Fields", "Field name(s) to monitor in history data. Separate multiple items by a comma. If you look at a person's history data it would be in the format of 'Modified FIELD value from OLD to NEW'.", true, order: 0 )]
-    [IntegerField( "Max Days Back", "Maximum number of days back to look at a person's history.", true, 30, "", order: 1 )]
+    [TextField( "Fields",
+        Description = "Field name(s) to monitor in history data. Separate multiple items by a comma. If you look at a person's history data it would be in the format of 'Modified FIELD value from OLD to NEW'.",
+        IsRequired = true,
+        Order = 0 )]
+    [IntegerField( "Max Days Back",
+        Description = "Maximum number of days back to look at a person's history.",
+        IsRequired = true,
+        DefaultIntegerValue = 30,
+        Order = 1 )]
 
-    [BooleanField( "Match Both", "Require a match on both the Old Value and the New Value. This equates to an AND comparison, otherwise it equates to an OR comparison on the values.", true, category: "Values", order: 0 )]
-    [TextField( "Old Value", "Value to be matched as the old value or leave blank to match any old value.", false, category: "Values", order: 1 )]
-    [TextField( "New Value", "Value to be matched as the new value or leave blank to match any new value.", false, category: "Values", order: 2 )]
+    [BooleanField( "Match Both",
+        Description = "Require a match on both the Old Value and the New Value. This equates to an AND comparison, otherwise it equates to an OR comparison on the values.",
+        DefaultBooleanValue = true,
+        Category = "Values",
+        Order = 0 )]
+    [TextField( "Old Value",
+        Description = "Value to be matched as the old value or leave blank to match any old value.",
+        IsRequired = false,
+        Category = "Values",
+        Order = 1 )]
+    [TextField( "New Value",
+        Description = "Value to be matched as the new value or leave blank to match any new value.",
+        IsRequired = false,
+        Category = "Values",
+        Order = 2 )]
 
-    [BooleanField( "Negate Person", "Changes the Person match to a NOT Person match. If you want to trigger events only when it is NOT the specified person making the change then turn this option on.", category: "Changed By", order: 0 )]
-    [PersonField( "Person", "Filter by the person who changed the value. This is always an AND condition with the two value changes. If the Negate Changed By option is also set then this becomes and AND NOT condition.", false, category: "Changed By", order: 1 )]
+    [BooleanField( "Negate Person",
+        Description = "Changes the Person match to a NOT Person match. If you want to trigger events only when it is NOT the specified person making the change then turn this option on.",
+        Category = "Changed By",
+        Order = 0 )]
+    [PersonField( "Person",
+        Description = "Filter by the person who changed the value. This is always an AND condition with the two value changes. If the Negate Changed By option is also set then this becomes and AND NOT condition.",
+        IsRequired = false,
+        Category = "Changed By",
+        Order = 1 )]
+    [Rock.SystemGuid.BlockTypeGuid( "854C7AE2-6FA4-4D1A-BBB5-012484EA436E" )]
     [Rock.SystemGuid.EntityTypeGuid( "21737773-F15A-4338-9020-13EB0FF00E80")]
     public class PersonHistory : EventComponent
     {
@@ -91,7 +119,7 @@ namespace Rock.Follow.Event
                     //
                     // Populate all the other random variables we need for processing.
                     //
-                    PersonAlias targetPersonAlias = new PersonAliasService( new RockContext() ).Get( targetPersonGuid.AsGuid() );
+                    PersonAlias targetPersonAlias = new PersonAliasService( RockApp.Current.CreateRockContext() ).Get( targetPersonGuid.AsGuid() );
                     DateTime daysBackDate = RockDateTime.Now.AddDays( -daysBack );
                     var person = personAlias.Person;
                     int personEntityTypeId = EntityTypeCache.Get( typeof( Person ) ).Id;
@@ -101,7 +129,7 @@ namespace Rock.Follow.Event
                     // Start building the basic query. We want all History items that are for
                     // people objects and use the Demographic Changes category.
                     //
-                    var qry = new HistoryService( new RockContext() ).Queryable()
+                    var qry = new HistoryService( RockApp.Current.CreateRockContext() ).Queryable()
                         .Where( h => h.EntityTypeId == personEntityTypeId && h.EntityId == person.Id && h.CategoryId == categoryId );
 
                     //

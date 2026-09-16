@@ -10,20 +10,13 @@
           :onAddItem="config.isAddEnabled ? onAddItem : undefined"
           @selectItem="onSelectItem">
 
-        <Column name="system"
-                title="System"
-                width="70%"
-                :filter="textValueFilter"
-                :filterValue="getRowSystemFilterValue"
-                visiblePriority="xs">
-            <template #format="{ row }">
-                <div class="d-flex flex-column">
-                    <div class="text-semibold">{{ row.name }}</div>
-
-                    <div>{{ row.description }}</div>
-                </div>
-            </template>
-        </Column>
+        <HighlightDetailColumn name="system"
+                               title="System"
+                               field="name"
+                               detailField="description"
+                               width="70%"
+                               :filter="textValueFilter"
+                               visiblePriority="xs" />
 
         <NumberColumn name="scalesCount"
                       title="Scales"
@@ -45,7 +38,7 @@
 <script setup lang="ts">
     import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
-    import Grid, { textValueFilter, numberValueFilter, DeleteColumn, BooleanColumn, NumberColumn, Column } from "@Obsidian/Controls/grid";
+    import Grid, { textValueFilter, numberValueFilter, DeleteColumn, BooleanColumn, NumberColumn, HighlightDetailColumn } from "@Obsidian/Controls/grid";
     import { alert } from "@Obsidian/Utility/dialogs";
     import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
     import { LearningGradingSystemListOptionsBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningGradingSystemList/learningGradingSystemListOptionsBag";
@@ -65,15 +58,6 @@
     // #endregion
 
     // #region Functions
-
-    /**
-     * Gets the filter value text to use for the system column.
-     *
-     * @param row The row to be filtered.
-     */
-    function getRowSystemFilterValue(row: Record<string, unknown>): string {
-        return row.name + " " + row.description;
-    }
 
     /**
      * Called when the grid is requesting the row data be loaded.

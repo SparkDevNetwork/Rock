@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -20,9 +20,13 @@ using System.Linq;
 using System.Web;
 using System.Net;
 
+using Microsoft.Extensions.DependencyInjection;
+
 using Rock;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
+using Rock.Net;
 using Ical.Net.DataTypes;
 using Calendar = Ical.Net.Calendar;
 
@@ -56,7 +60,7 @@ namespace RockWeb
         /// <param name="httpContext">The HTTP context.</param>
         public void ProcessRequest( HttpContext httpContext )
         {
-            string interactionDeviceType = InteractionDeviceType.GetClientType( httpContext.Request.UserAgent );
+            string interactionDeviceType = RockApp.Current.GetRequiredService<IUserAgentParser>().Parse( httpContext.Request.UserAgent ).ClientType;
 
             try
             {
@@ -105,7 +109,7 @@ namespace RockWeb
             // Create each of the attendances
             foreach ( var attendance in attendances )
             {
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     var attendanceOccurrenceService = new AttendanceOccurrenceService( rockContext );
 
@@ -186,7 +190,7 @@ namespace RockWeb
         /// <returns></returns>
         private List<Attendance> GetAttendances( CalendarProps calendarProps )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var attendanceService = new AttendanceService( rockContext );
                 var attendances = attendanceService
@@ -242,7 +246,7 @@ namespace RockWeb
                 return null;
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var personAliasService = new PersonAliasService( rockContext );
                 int? personId = personAliasService.Queryable().AsNoTracking().Where( pa => pa.Guid == personAliasGuid ).Select( pa => pa.PersonId ).Cast<int?>().FirstOrDefault();

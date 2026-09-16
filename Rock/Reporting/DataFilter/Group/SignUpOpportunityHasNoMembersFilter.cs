@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -25,6 +25,7 @@ using System.Linq.Expressions;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Net;
@@ -219,7 +220,7 @@ namespace Rock.Reporting.DataFilter.Group
             groupTypePicker.AddCssClass( "js-group-type-picker" );
             groupTypePicker.UseGuidAsValue = true;
             groupTypePicker.Required = true;
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 groupTypePicker.GroupTypes = new GroupTypeService( rockContext )
                     .Queryable()
@@ -341,12 +342,17 @@ function() {
         {
             var selectionConfig = SelectionConfig.Parse( selection );
 
+            if ( selectionConfig == null )
+            {
+                return null;
+            }
+
             var timeframe = selectionConfig.HidePastOpportunities
                 ? "Current"
                 : "Current or past";
 
             string groupTypeName = null;
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var groupTypeGuid = selectionConfig.GroupTypeGuid.AsGuidOrNull();
                 if ( groupTypeGuid.HasValue )

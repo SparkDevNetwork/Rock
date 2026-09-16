@@ -88,7 +88,8 @@
                                 <Loading :isLoading="isAutoScheduling" :isSmall="true" class="d-inline-block" />
                             </RockButton>
 
-                            <RockButton :btnSize="BtnSize.ExtraSmall"
+                            <RockButton v-tooltip.html.wide="sendConfirmationsTooltip"
+                                        :btnSize="BtnSize.ExtraSmall"
                                         :disabled="isSchedulingDisabled"
                                         class="ml-1"
                                         @click="onSendConfirmationsClick">
@@ -306,11 +307,13 @@
     import { AlertType } from "@Obsidian/Enums/Controls/alertType";
     import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
     import { DragScroll as vDragScroll } from "@Obsidian/Directives/dragScroll";
+    import { vTooltip } from "@Obsidian/Directives/tooltip";
     import { ModalAlertType } from "@Obsidian/Enums/Controls/modalAlertType";
     import { Guid } from "@Obsidian/Types";
     import { PanelAction } from "@Obsidian/Types/Controls/panelAction";
     import { getSecurityGrant, onConfigurationValuesChanged, provideSecurityGrant, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
     import { newGuid } from "@Obsidian/Utility/guid";
+    import { getTopic } from "@Obsidian/Utility/realTime";
     import { DateTimeFormat, RockDateTime } from "@Obsidian/Utility/rockDateTime";
     import { pluralize } from "@Obsidian/Utility/stringUtils";
     import { GroupSchedulerAppliedFiltersBag } from "@Obsidian/ViewModels/Blocks/Group/Scheduling/GroupScheduler/groupSchedulerAppliedFiltersBag";
@@ -323,6 +326,9 @@
     import { GroupSchedulerSendConfirmationsResponseBag } from "@Obsidian/ViewModels/Blocks/Group/Scheduling/GroupScheduler/groupSchedulerSendConfirmationsResponseBag";
     import { GroupSchedulerUnassignedResourceCountBag } from "@Obsidian/ViewModels/Blocks/Group/Scheduling/GroupScheduler/groupSchedulerUnassignedResourceCountBag";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { TaskActivityProgressLogBag } from "@Obsidian/ViewModels/Utility/taskActivityProgressLogBag";
+    import { TaskActivityProgressStatusBag } from "@Obsidian/ViewModels/Utility/taskActivityProgressStatusBag";
+    import { TaskActivityProgressUpdateBag } from "@Obsidian/ViewModels/Utility/taskActivityProgressUpdateBag";
 
     const config = useConfigurationValues<GroupSchedulerInitializationBox>();
     const invokeBlockAction = useInvokeBlockAction();
@@ -367,6 +373,17 @@
     const isSendingConfirmations = ref(false);
     const sendConfirmationsResponse = ref<GroupSchedulerSendConfirmationsResponseBag | null>(null);
     const isSendConfirmationsModalVisible = ref(false);
+
+    // Live progress streamed into the Send Confirmations button's tooltip while the background task runs.
+    const liveSendMessage = ref<string>("");
+    const liveSendPercentage = ref<number>(0);
+    const liveSendErrors = ref<string[]>([]);
+
+    let sendConfirmationsTaskGuid: Guid | null = null;
+
+    // The Realtime topic is cached by getTopic(), but its event handlers must be attached exactly once per
+    // component instance to avoid stacking duplicate callbacks on each subsequent send.
+    let sendConfirmationsTopicWired = false;
 
     const reloadAllOccurrences = ref(false);
     const reloadOccurrencesContainingResource = ref<number | null>(null);
@@ -590,6 +607,61 @@
 
         return message;
     });
+
+    /**
+     * HTML content rendered inside the Send Confirmations button's tooltip while the background task is running.
+     * Falls back to a static description when idle so the tooltip still gives the person context outside of a run.
+     */
+    const sendConfirmationsTooltip = computed((): string => {
+        if (!isSendingConfirmations.value) {
+            return "Send confirmations to scheduled recipients.";
+        }
+
+        const percent = Math.max(0, Math.min(100, liveSendPercentage.value));
+        const lines: string[] = [];
+        lines.push(`<div><strong>Sending confirmations... ${percent.toFixed(0)}%</strong></div>`);
+
+        if (liveSendMessage.value) {
+            lines.push(`<div>${escapeHtml(liveSendMessage.value)}</div>`);
+        }
+
+        if (liveSendErrors.value.length > 0) {
+            // Cap the number of error rows shown in the tooltip to keep it readable.
+            const maxErrorsShown = 10;
+            const shown = liveSendErrors.value.slice(-maxErrorsShown);
+            const hidden = liveSendErrors.value.length - shown.length;
+
+            lines.push("<hr style=\"margin: 4px 0; opacity: 0.4;\">");
+            lines.push("<div><strong>Errors</strong></div>");
+            lines.push("<ul style=\"margin: 0; padding-left: 1.25em; text-align: left;\">");
+            for (const err of shown) {
+                lines.push(`<li>${escapeHtml(err)}</li>`);
+            }
+            lines.push("</ul>");
+
+            if (hidden > 0) {
+                lines.push(`<div style="opacity: 0.7;">+ ${hidden} earlier error${hidden === 1 ? "" : "s"}</div>`);
+            }
+        }
+
+        return lines.join("");
+    });
+
+    /**
+     * Minimal HTML escape for safely inserting server-provided strings into the tooltip content.
+     *
+     * @param value The raw string to escape.
+     *
+     * @returns The escaped HTML-safe string.
+     */
+    function escapeHtml(value: string): string {
+        return value
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#39;");
+    }
 
     const isBusy = computed((): boolean => {
         return isSelectingFilters.value
@@ -1030,6 +1102,11 @@
 
     /**
      * Sends confirmations based on the currently-applied filters.
+     *
+     * Starts a background task on the server and streams progress + final results to this client via the
+     * Rock Realtime (SignalR) channel keyed by a client-generated TaskGuid. The HTTP roundtrip that kicks
+     * the work off returns immediately, so reverse-proxy timeouts on long recipient sets (issue #6835)
+     * no longer break the UX.
      */
     async function sendConfirmations(): Promise<void> {
         isSendConfirmationsReviewModalVisible.value = false;
@@ -1041,17 +1118,148 @@
         isSendingConfirmations.value = true;
         sendConfirmationsResponse.value = null;
         blockActionErrorMessage.value = "";
+        liveSendMessage.value = "Preparing...";
+        liveSendPercentage.value = 0;
+        liveSendErrors.value = [];
 
-        const result = await invokeBlockAction<GroupSchedulerSendConfirmationsResponseBag>("SendConfirmations", { bag: filters.value });
-        isSendingConfirmations.value = false;
+        // Generate the task identifier on the client and use it as the realtime channel key. The server
+        // echoes this back as the TaskId on each progress event so we can ignore stale events from any
+        // prior runs whose connection happens to still be subscribed.
+        const taskGuid = newGuid();
+        sendConfirmationsTaskGuid = taskGuid;
 
-        if (!result.isSuccess) {
-            blockActionErrorMessage.value = result.errorMessage || "Unknown error while sending confirmations.";
+        try {
+            const topic = await getTopic("Rock.RealTime.Topics.TaskActivityProgressTopic");
+
+            // Wire the handlers once per topic instance. getTopic returns a cached topic, so re-calling
+            // .on() each time would stack duplicate listeners; guard with a flag stored on the topic ref.
+            if (!sendConfirmationsTopicWired) {
+                topic.on("taskStarted", onSendConfirmationsTaskStarted);
+                topic.on("updateTaskProgress", onSendConfirmationsTaskProgress);
+                topic.on("updateTaskLog", onSendConfirmationsTaskLog);
+                topic.on("taskCompleted", onSendConfirmationsTaskCompleted);
+                sendConfirmationsTopicWired = true;
+            }
+
+            const subscribeResult = await invokeBlockAction("SubscribeToRealTime", {
+                connectionId: topic.connectionId,
+                taskGuid
+            });
+
+            if (!subscribeResult.isSuccess) {
+                throw new Error(subscribeResult.errorMessage || "Failed to subscribe to real-time progress channel.");
+            }
+
+            const startResult = await invokeBlockAction("StartSendConfirmations", {
+                bag: filters.value,
+                taskGuid
+            });
+
+            if (!startResult.isSuccess) {
+                throw new Error(startResult.errorMessage || "Unknown error while starting the Send Confirmations task.");
+            }
+            // The outcome arrives via onSendConfirmationsTaskCompleted.
+        }
+        catch (ex) {
+            // If kickoff failed, clear the spinner and surface the error.
+            sendConfirmationsTaskGuid = null;
+            isSendingConfirmations.value = false;
+            liveSendMessage.value = "";
+            liveSendPercentage.value = 0;
+            liveSendErrors.value = [];
+            blockActionErrorMessage.value = ex instanceof Error
+                ? ex.message
+                : "Unknown error while sending confirmations.";
+        }
+    }
+
+    /**
+     * Handles the `taskStarted` event of the `TaskActivityProgress` topic for the Send Confirmations task.
+     *
+     * @param bag The status payload from the server.
+     */
+    function onSendConfirmationsTaskStarted(bag: TaskActivityProgressStatusBag): void {
+        if (!isCurrentSendConfirmationsTask(bag.taskId)) {
+            return;
+        }
+        liveSendMessage.value = bag.message ?? "Sending confirmations...";
+        liveSendPercentage.value = 0;
+    }
+
+    /**
+     * Handles the `updateTaskProgress` event of the `TaskActivityProgress` topic, fired once per individual
+     * processed by the Send Confirmations task.
+     *
+     * @param bag The progress update payload (running count and current message).
+     */
+    function onSendConfirmationsTaskProgress(bag: TaskActivityProgressUpdateBag): void {
+        if (!isCurrentSendConfirmationsTask(bag.taskId)) {
+            return;
+        }
+        liveSendMessage.value = bag.message ?? "";
+        liveSendPercentage.value = bag.completionPercentage ?? 0;
+    }
+
+    /**
+     * Handles the `updateTaskLog` event of the `TaskActivityProgress` topic, fired once per new error string
+     * emitted by the Send Confirmations task. Appends the message to the live error list shown in the
+     * Send Confirmations button's tooltip.
+     *
+     * @param bag The log payload (a single error message).
+     */
+    function onSendConfirmationsTaskLog(bag: TaskActivityProgressLogBag): void {
+        if (!isCurrentSendConfirmationsTask(bag.taskId)) {
+            return;
+        }
+        if (bag.message) {
+            liveSendErrors.value = [...liveSendErrors.value, bag.message];
+        }
+    }
+
+    /**
+     * Handles the `taskCompleted` event of the `TaskActivityProgress` topic. Reads the `GroupSchedulerSendConfirmationsResponseBag`
+     * from `bag.data`, opens the existing results modal, and clears the live progress state on the button's tooltip.
+     *
+     * @param bag The completion status payload (with the response bag attached as `data`).
+     */
+    function onSendConfirmationsTaskCompleted(bag: TaskActivityProgressStatusBag): void {
+        if (!isCurrentSendConfirmationsTask(bag.taskId)) {
             return;
         }
 
-        sendConfirmationsResponse.value = result.data;
+        // Get the completion payload from the Data field. Fall back to the bag's own Errors/Warnings if
+        // Data isn't populated for any reason (e.g. the faulted continuation path on the server).
+        const data = (bag.data as GroupSchedulerSendConfirmationsResponseBag | undefined) ?? null;
+        const completion: GroupSchedulerSendConfirmationsResponseBag = data ?? {
+            errors: bag.errors ?? [],
+            warnings: bag.warnings ?? [],
+            anyCommunicationsToSend: false,
+            communicationsSentCount: 0,
+            eligibleRecipientCount: 0
+        };
+
+        sendConfirmationsResponse.value = completion;
+        sendConfirmationsTaskGuid = null;
+        isSendingConfirmations.value = false;
+        liveSendMessage.value = "";
+        liveSendPercentage.value = 0;
+        liveSendErrors.value = [];
         isSendConfirmationsModalVisible.value = true;
+    }
+
+    /**
+     * Checks whether a topic-event TaskId matches the currently in-flight Send Confirmations task. Used to
+     * ignore stray events from previous runs whose connection may still be subscribed to the topic.
+     *
+     * @param taskId The TaskId echoed back by the server on a real-time event.
+     *
+     * @returns true if the event belongs to the current Send Confirmations task.
+     */
+    function isCurrentSendConfirmationsTask(taskId: string | null | undefined): boolean {
+        if (!sendConfirmationsTaskGuid || !taskId) {
+            return false;
+        }
+        return taskId.toLowerCase() === sendConfirmationsTaskGuid.toLowerCase();
     }
 
     /**

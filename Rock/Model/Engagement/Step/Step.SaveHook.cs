@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -18,6 +18,7 @@
 using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
+
 using Rock.Data;
 using Rock.Tasks;
 using Rock.Web.Cache;
@@ -61,7 +62,7 @@ namespace Rock.Model
                             if ( Entity.CampusId.HasValue && campusName.IsNullOrWhiteSpace() )
                             {
                                 var campus = CampusCache.Get( Entity.CampusId.Value );
-                                campusName = campus.Name;
+                                campusName = campus?.Name;
                             }
 
                             if ( campusName.IsNotNullOrWhiteSpace() )

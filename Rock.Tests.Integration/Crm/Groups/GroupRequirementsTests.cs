@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -19,11 +19,12 @@ using System.Linq;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Tests.Integration.TestData;
-using Rock.Tests.Shared;
-using Rock.Tests.Shared.TestFramework;
+using Rock.Tests.Integration.TestFramework.Database;
+using Rock.Tests.Shared.Constants;
 
 namespace Rock.Tests.Integration.Crm.Groups
 {
@@ -197,7 +198,7 @@ namespace Rock.Tests.Integration.Crm.Groups
         /// <param name="expectedRequirementStatus"></param>
         private void GroupRequirement_AssertPersonGroupRequirementStatus( string personIdentifier, string groupIdentifier, string groupRoleIdentifier, string groupRequirementTypeIdentifier, MeetsGroupRequirement expectedRequirementStatus )
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var group = TestDataHelper.Crm.GetEntityByIdentifierOrThrow<Group>( groupIdentifier, rockContext );
 
             int? roleId = null;

@@ -19,7 +19,7 @@ import { defineAsyncComponent } from "@Obsidian/Utility/component";
 import { FieldTypeBase } from "./fieldType";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
-export const enum ConfigurationValueKey {
+export const enum ConfigurationKey {
     RepeatColumns = "repeatColumns",
     Options = "options",
 }
@@ -39,7 +39,7 @@ const configurationComponent = defineAsyncComponent(async () => {
  */
 export class CommunicationPreferenceField extends FieldTypeBase {
     public override getTextValue(value: string, configurationValues: Record<string, string>): string {
-        const options = JSON.parse(configurationValues[ConfigurationValueKey.Options] ?? "[]") as ListItemBag[];
+        const options = JSON.parse(configurationValues[ConfigurationKey.Options] ?? "[]") as ListItemBag[];
         const publicValue = options.find(x => x.value === value);
         return publicValue?.text ?? value ?? "";
     }

@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -21,15 +21,16 @@ using System.Data.Entity;
 using System.Linq;
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
+using Rock.Media;
 using Rock.Model;
 using Rock.Obsidian.UI;
 using Rock.Security;
+using Rock.Utility;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Cms.MediaElementList;
 using Rock.Web.Cache;
-using Rock.Media;
-using Rock.Utility;
 
 namespace Rock.Blocks.Cms
 {
@@ -82,7 +83,7 @@ namespace Rock.Blocks.Cms
             var builder = GetGridBuilder();
 
             box.IsAddEnabled = GetIsAddEnabled();
-            box.IsDeleteEnabled = true;
+            box.IsDeleteEnabled = IsBlockEditAuthorized();
             box.ExpectedRowCount = null;
             box.NavigationUrls = GetBoxNavigationUrls();
             box.Options = GetBoxOptions();
@@ -111,15 +112,25 @@ namespace Rock.Blocks.Cms
 
         /// <summary>
         /// Determines if the add button should be enabled in the grid.
-        /// <summary>
+        /// </summary>
         /// <returns>A boolean value that indicates if the add button should be enabled.</returns>
         private bool GetIsAddEnabled()
         {
-            var entity = new MediaElement();
             var mediaAccountComponent = GetMediaAccountComponent();
 
-            bool canAddEditDelete = entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson );
-            return canAddEditDelete && mediaAccountComponent != null && mediaAccountComponent.AllowsManualEntry;
+            // Match the WebForms behavior: adding requires block-level Edit rights and a
+            // component that allows manual entry.
+            return IsBlockEditAuthorized() && mediaAccountComponent != null && mediaAccountComponent.AllowsManualEntry;
+        }
+
+        /// <summary>
+        /// Determines whether the current person has block-level Edit rights, which gates the
+        /// add and delete actions ( matching the original WebForms block behavior ).
+        /// </summary>
+        /// <returns><c>true</c> if the current person is authorized to edit at the block level; otherwise, <c>false</c>.</returns>
+        private bool IsBlockEditAuthorized()
+        {
+            return BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson );
         }
 
         /// <summary>
@@ -198,12 +209,15 @@ namespace Rock.Blocks.Cms
             var mediaElementService = new MediaElementService( rockContext );
             var mediaFolderId = GetMediaFolderId();
 
-            var qry = mediaElementService.Queryable().AsNoTracking();
-
-            if ( mediaFolderId.HasValue )
+            // Mirror the legacy block: when no media folder is in context the grid was hidden, so do
+            // not expose any media elements.
+            if ( !mediaFolderId.HasValue )
             {
-                qry = qry.Where( a => a.MediaFolderId == mediaFolderId.Value );
+                return Enumerable.Empty<MediaElement>().AsQueryable();
             }
+
+            var qry = mediaElementService.Queryable().AsNoTracking()
+                .Where( a => a.MediaFolderId == mediaFolderId.Value );
 
             // Get interaction channel for media events
             var interactionChannelId = InteractionChannelCache.GetId( Rock.SystemGuid.InteractionChannel.MEDIA_EVENTS.AsGuid() );
@@ -255,7 +269,7 @@ namespace Rock.Blocks.Cms
         private int GetWatchCount( MediaElement mediaElement )
         {
             var interactionChannelId = InteractionChannelCache.GetId( Rock.SystemGuid.InteractionChannel.MEDIA_EVENTS.AsGuid() );
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
 
             var watchCount = new InteractionService( rockContext )
                 .Queryable()
@@ -292,7 +306,7 @@ namespace Rock.Blocks.Cms
                 return ActionBadRequest( $"{MediaElement.FriendlyTypeName} not found." );
             }
 
-            if ( !entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
+            if ( !IsBlockEditAuthorized() )
             {
                 return ActionBadRequest( $"Not authorized to delete {MediaElement.FriendlyTypeName}." );
             }

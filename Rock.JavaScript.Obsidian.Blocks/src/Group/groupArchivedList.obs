@@ -50,7 +50,6 @@
                       field="archivedBy"
                       :hideAvatar="true"
                       :filter="pickExistingValueFilter"
-                      :filterValue="archivedByFilterValue"
                       visiblePriority="md" />
 
         <AttributeColumns :attributes="config.gridDefinition?.attributeFields ?? []" />
@@ -82,7 +81,6 @@
     import { GroupArchivedListOptionsBag } from "@Obsidian/ViewModels/Blocks/Group/GroupArchivedList/groupArchivedListOptionsBag";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
     import { computed, reactive, ref, watch } from "vue";
-    import { PersonFieldBag } from "@Obsidian/ViewModels/Core/Grid/personFieldBag";
     import { parseSlidingDateRangeString, slidingDateRangeToString } from "@Obsidian/Utility/slidingDateRange";
     import { GridSettingsOptions, PreferenceKey } from "./GroupArchivedList/types.partial";
     import GridSettingsModal from "./GroupArchivedList/gridSettingsModal.partial.obs";
@@ -126,11 +124,6 @@
         else {
             throw new Error(result.errorMessage ?? "Unknown error while trying to load grid data.");
         }
-    }
-
-    function archivedByFilterValue(row: Record<string, unknown>): string {
-        const person = row["archivedBy"] as PersonFieldBag;
-        return !person ? "" : `${person.nickName} ${person.lastName}`;
     }
 
     /**

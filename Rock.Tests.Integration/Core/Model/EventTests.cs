@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -23,11 +23,14 @@ using Ical.Net;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Tests.Integration.TestData;
-using Rock.Tests.Shared;
-using Rock.Tests.Shared.TestFramework;
+using Rock.Tests.Integration.TestFramework.Database;
+using Rock.Tests.Shared.Constants;
+using Rock.Tests.Shared.Core.Schedules;
+using Rock.Tests.Shared.Utility;
 using Rock.Web.Cache;
 
 using TimeZoneConverter;
@@ -65,7 +68,7 @@ namespace Rock.Tests.Integration.Core.Model
         [TestMethod]
         public void EventItemService_GetActiveEventsDefault_ReturnsOnlyEventsHavingOccurrencesAfterCurrentDate()
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var eventItemService = new EventItemService( rockContext );
             var events = eventItemService.GetActiveItems();
 
@@ -91,7 +94,7 @@ namespace Rock.Tests.Integration.Core.Model
             var effectiveDate = EventsDataManager.Instance.GetDefaultEffectiveDate();
 
             // Get an instance of Event "Warrior Youth Event", which has a single occurrence scheduled for the current month.
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var eventItemService = new EventItemService( rockContext );
 
             var warriorEvent = eventItemService.Queryable().FirstOrDefault( x => x.Name == "Warrior Youth Event" );
@@ -138,7 +141,7 @@ namespace Rock.Tests.Integration.Core.Model
         [TestMethod]
         public void EventItemService_GetActiveEventsByCalendar_ReturnsOnlyEventsInSpecifiedCalendar()
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var calendarService = new EventCalendarService( rockContext );
 
             var publicCalendar = calendarService.Queryable()
@@ -178,7 +181,7 @@ namespace Rock.Tests.Integration.Core.Model
         [TestMethod]
         public void EventItemOccurrence_NewWithFutureActiveSchedule_HasCorrectNextDate()
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var financeEvent1 = EventItemOccurrenceAddOrUpdateInstance( rockContext, ScheduleSat1630Guid.AsGuid(), deleteExistingInstance: true );
 
             rockContext.SaveChanges();
@@ -197,7 +200,7 @@ namespace Rock.Tests.Integration.Core.Model
         [TestMethod]
         public void EventItemOccurrence_ModifiedWithActiveSchedule_HasUpdatedNextDate()
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var financeEvent1 = EventItemOccurrenceAddOrUpdateInstance( rockContext, ScheduleSat1630Guid.AsGuid(), deleteExistingInstance: true );
 
             rockContext.SaveChanges();
@@ -227,7 +230,7 @@ namespace Rock.Tests.Integration.Core.Model
         [TestMethod]
         public void EventItemOccurrence_ModifiedWithInactiveSchedule_HasNullNextDate()
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
 
             // Get existing schedules.
             var scheduleService = new ScheduleService( rockContext );
@@ -255,7 +258,7 @@ namespace Rock.Tests.Integration.Core.Model
         [TestMethod]
         public void EventItemOccurrence_UpdatedWithInactiveEvent_HasNullNextDate()
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
 
             // Get Event "Rock Solid Finances".
             var eventItemService = new EventItemService( rockContext );
@@ -332,7 +335,7 @@ namespace Rock.Tests.Integration.Core.Model
         [TestMethod]
         public void EventCalendarFeed_WithRockTimezoneDifferentFromSystemTimezone_ReturnsEventsWithRockTimezone()
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var calendarService = new EventCalendarService( rockContext );
 
             // Set RockDateTime to the local timezone, assuming that this corresponds to the timezone of the event data in the current database.
@@ -368,7 +371,7 @@ namespace Rock.Tests.Integration.Core.Model
         [TestMethod]
         public void EventCalendarFeed_FilteredByCampus_ReturnsEventsForSpecifiedCampusOnly()
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var calendarService = new EventCalendarService( rockContext );
 
             // Make sure our test campus exists.
@@ -389,7 +392,7 @@ namespace Rock.Tests.Integration.Core.Model
         [TestMethod]
         public void EventCalendarFeed_FilteredByAudience_ReturnsEventsForSpecifiedAudienceOnly()
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var calendarService = new EventCalendarService( rockContext );
 
             var dtAudienceType = DefinedTypeCache.Get( SystemGuid.DefinedType.CONTENT_CHANNEL_AUDIENCE_TYPE.AsGuid(), rockContext );
@@ -414,7 +417,7 @@ namespace Rock.Tests.Integration.Core.Model
         [TestMethod]
         public void EventCalendarFeed_FilteredByEvent_ReturnsSpecifiedEventsOnly()
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var calendarService = new EventCalendarService( rockContext );
 
             var args = GetCalendarEventFeedArgumentsForTest( calendarName: "Public",
@@ -438,7 +441,7 @@ namespace Rock.Tests.Integration.Core.Model
         public void EventCalendarFeed_GoogleCalendarAsImportTarget_HasCorrectFormat()
         {
             const string eventName = "Rock Solid Finances Class";
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var calendarService = new EventCalendarService( rockContext );
 
             // Verify that the events returned in the feed are scheduled in local server time, within the period in which DST applies.
@@ -462,7 +465,7 @@ namespace Rock.Tests.Integration.Core.Model
 
         private static GetCalendarEventFeedArgs GetCalendarEventFeedArgumentsForTest( string calendarName = null, string campusName = null, DateTime? startDate = null, DateTime? endDate = null, string eventIdentifier = null )
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var calendarService = new EventCalendarService( rockContext );
 
             var args = new GetCalendarEventFeedArgs();
@@ -542,7 +545,7 @@ namespace Rock.Tests.Integration.Core.Model
             args.StartDate = day1Date;
             args.EndDate = day1Date.AddMonths( 3 );
 
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var calendarService = new EventCalendarService( rockContext );
             var calendarString = calendarService.CreateICalendar( args );
 
@@ -563,7 +566,7 @@ namespace Rock.Tests.Integration.Core.Model
         private EventCalendar GetOrAddEventCalendar( string calendarGuid, string calendarName )
         {
             // Add a test calendar
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var calendarService = new EventCalendarService( rockContext );
 
             var calendar = calendarService.GetByIdentifier( calendarGuid );
@@ -618,7 +621,7 @@ namespace Rock.Tests.Integration.Core.Model
             args.StartDate = day1Date;
             args.EndDate = day1Date.AddMonths( 3 );
 
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var calendarService = new EventCalendarService( rockContext );
             var calendarString = calendarService.CreateICalendar( args );
 
@@ -638,7 +641,7 @@ namespace Rock.Tests.Integration.Core.Model
 
         private Schedule EventCalendarFeed_CreateScheduleForSpecificDates( string scheduleGuid, string name, List<DateTime> specificDates, TimeSpan? eventStartTime = null, TimeSpan? eventDuration = null )
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var scheduleService = new ScheduleService( rockContext );
 
             var scheduleDays = scheduleService.Get( scheduleGuid );
@@ -662,7 +665,7 @@ namespace Rock.Tests.Integration.Core.Model
 
         private EventItem EventCalendarFeed_CreateEventForSpecificDates( string eventGuid, string eventName, int calendarId, int scheduleId )
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
 
             // Create a test Rock Event associated with the schedule.
             var eventItemService = new EventItemService( rockContext );
@@ -712,7 +715,7 @@ namespace Rock.Tests.Integration.Core.Model
 
             AddOrUpdateScheduleForConsecutiveSpecifiedDays( testScheduleUid, startDate, 2 );
 
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
 
             // Create a test Rock Event associated with the schedule.
             var eventItemArgs = new EventsDataManager.CreateEventItemActionArgs
@@ -793,7 +796,7 @@ namespace Rock.Tests.Integration.Core.Model
 
             AddOrUpdateScheduleForConsecutiveSpecifiedDays( testScheduleUid1, startDate1, 2 );
 
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
 
             // Create a test Rock Event associated with the schedule.
             var eventItemArgs = new EventsDataManager.CreateEventItemActionArgs
@@ -885,7 +888,7 @@ namespace Rock.Tests.Integration.Core.Model
 
             AddOrUpdateScheduleForConsecutiveSpecifiedDays( testScheduleUid1, startDate1, 2 );
 
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
 
             // Create a test Rock Event associated with the schedule.
             var eventItemArgs = new EventsDataManager.CreateEventItemActionArgs
@@ -952,7 +955,7 @@ namespace Rock.Tests.Integration.Core.Model
 
         private Schedule AddOrUpdateScheduleForConsecutiveSpecifiedDays( string testScheduleGuid, DateTime firstDate, int repeatCount )
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var scheduleService = new ScheduleService( rockContext );
             var scheduleName = $"Test Schedule {testScheduleGuid.AsGuid()}";
 

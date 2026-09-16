@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -559,7 +559,19 @@ namespace Rock.Web.Cache
             LinkUrlLavaTemplate = entityType.LinkUrlLavaTemplate;
             IsRelatedToInteractionTrackedOnCreate = entityType.IsRelatedToInteractionTrackedOnCreate;
 
-            IndexModelType = entityType.IndexModelType;
+            // This uses reflection to attempt to get the Type. If it thorws an
+            // exception we just want to set the IndexModelType to null and
+            // continue on. Otherwise the entire EntityTypeCache object will
+            // fail to initialize.
+            try
+            {
+                IndexModelType = entityType.IndexModelType;
+            }
+            catch ( Exception ex )
+            {
+                ExceptionLogService.LogException( ex );
+                IndexModelType = null;
+            }
 
             // Detect support for content collection.
             var contentIndexableAttribute = GetEntityType()?.GetCustomAttribute<ContentCollectionIndexableAttribute>();

@@ -21,6 +21,7 @@
 // </copyright>
 //
 
+using Rock.Configuration;
 using Rock.Model;
 using Rock.SystemGuid;
 
@@ -35,6 +36,6 @@ namespace Rock.Rest.Controllers
         /// <summary>
         /// Initializes a new instance of the <see cref="SmsActionsController"/> class.
         /// </summary>
-        public SmsActionsController() : base( new Rock.Model.SmsActionService( new Rock.Data.RockContext() ) ) { } 
+        public SmsActionsController() : base( new Rock.Model.SmsActionService( RockApp.Current.CreateRockContext() ) ) { } 
     }
 }

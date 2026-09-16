@@ -37,8 +37,11 @@ namespace Rock.Workflow.Action
     [Export( typeof( ActionComponent ) )]
     [ExportMetadata( "ComponentName", "Attribute Set to Initiator" )]
 
-    [WorkflowAttribute( "Person Attribute", "The attribute to set to the initiator.", true, "", "", 0, null,
-        new string[] { "Rock.Field.Types.TextFieldType", "Rock.Field.Types.PersonFieldType" } )]
+    [WorkflowAttribute( "Person Attribute",
+        Description = "The attribute to set to the initiator.",
+        IsRequired = true,
+        Order = 0,
+        FieldTypeClassNames = new string[] { "Rock.Field.Types.TextFieldType", "Rock.Field.Types.PersonFieldType" } )]
     [Rock.SystemGuid.EntityTypeGuid( "4EEAC6FA-B838-410B-A8DD-21A364029F5D")]
     public class SetAttributeToInitiator : ActionComponent
     {

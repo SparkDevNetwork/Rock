@@ -21,6 +21,7 @@
 // </copyright>
 //
 
+using Rock.Configuration;
 using Rock.Model;
 using Rock.SystemGuid;
 
@@ -35,6 +36,6 @@ namespace Rock.Rest.Controllers
         /// <summary>
         /// Initializes a new instance of the <see cref="SystemCommunicationsController"/> class.
         /// </summary>
-        public SystemCommunicationsController() : base( new Rock.Model.SystemCommunicationService( new Rock.Data.RockContext() ) ) { } 
+        public SystemCommunicationsController() : base( new Rock.Model.SystemCommunicationService( RockApp.Current.CreateRockContext() ) ) { } 
     }
 }

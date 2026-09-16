@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -17,10 +17,12 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+
 using Rock.Attribute;
-using Rock.Web.Cache;
+using Rock.Configuration;
 using Rock.Model;
 using Rock.ViewModels.Utility;
+using Rock.Web.Cache;
 
 namespace Rock.Field.Types
 {
@@ -72,6 +74,23 @@ namespace Rock.Field.Types
 
         #region Methods
 
+        #region Value Hinting
+
+        /// <inheritdoc/>
+        internal override FieldTypeHints GetFieldHints( Dictionary<string, string> privateConfigurationValues )
+        {
+            // No Values. These are rows in a table that a caller can look up, and
+            // reading them here would cost a query for every attribute described.
+            return new FieldTypeHints
+            {
+                IsCompleteList = false,
+                ValueFormat = "One or more guids identifying rows in the ReminderType table, separated by commas. The choices are limited to the reminder types belonging to the entity type this field is configured against, so a reminder type for a different entity cannot be chosen.",
+                Instructions = "To find the correct values, read the reminder types for that entity type and take the guid of each one you want."
+            };
+        }
+
+        #endregion
+
         /// <summary>
         /// Gets the list source.
         /// </summary>
@@ -80,7 +99,7 @@ namespace Rock.Field.Types
         /// </value>
         internal override Dictionary<string, string> GetListSource( Dictionary<string, ConfigurationValue> configurationValues )
         {
-            var reminderTypesQuery = new ReminderTypeService( new Data.RockContext() ).Queryable();
+            var reminderTypesQuery = new ReminderTypeService( RockApp.Current.CreateRockContext() ).Queryable();
 
             int? entityTypeId = null;
             if ( configurationValues != null && configurationValues.TryGetValue( ReminderTypesFieldAttribute.ENTITY_TYPE_KEY, out var entityTypeIdValue ) )

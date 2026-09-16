@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -26,10 +26,10 @@ using System.Web.UI.WebControls;
 using Rock.Data;
 using Rock.Model;
 using Rock.Net;
+using Rock.ViewModels.Controls;
+using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
-using Rock.ViewModels.Utility;
-using Rock.ViewModels.Controls;
 
 namespace Rock.Reporting.DataFilter.Person
 {
@@ -88,6 +88,12 @@ namespace Rock.Reporting.DataFilter.Person
             }
 
             var config = SelectionConfig.Parse( selection );
+
+            if ( config == null )
+            {
+                return new Dictionary<string, string>();
+            }
+
             var dict = new Dictionary<string, string>
             {
                 { "amount",  config.Amount.ToString() },
@@ -200,6 +206,11 @@ function() {
         {
             string result = "Giving Amount";
             var selectionConfig = SelectionConfig.Parse( selection );
+
+            if ( selectionConfig == null )
+            {
+                return null;
+            }
 
             ComparisonType comparisonType = selectionConfig.ComparisonType;
             decimal amount = selectionConfig.Amount ?? 0.00M;

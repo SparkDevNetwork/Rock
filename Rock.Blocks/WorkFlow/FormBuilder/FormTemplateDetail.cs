@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -23,6 +23,7 @@ using System.Linq;
 using Rock.Attribute;
 using Rock.Blocks.WorkFlow.FormBuilder;
 using Rock.ClientService.Core.DefinedValue;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
@@ -78,9 +79,12 @@ namespace Rock.Blocks.Workflow.FormBuilder
         /// <inheritdoc/>
         public override object GetObsidianBlockInitialization()
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
-                var templateId = RequestContext.GetPageParameter( PageParameterKey.FormTemplateId ).AsIntegerOrNull();
+                // The list block links here with an IdKey (and the Add button
+                // uses "0"), so resolve the key as an IdKey/Guid/Id rather than
+                // an integer to avoid falling through to "create new" mode.
+                var templateKey = RequestContext.GetPageParameter( PageParameterKey.FormTemplateId );
 
                 // Build the basic view model information required to edit a
                 // form template.
@@ -90,29 +94,32 @@ namespace Rock.Blocks.Workflow.FormBuilder
                     ParentUrl = this.GetParentPageUrl()
                 };
 
-                // If we have a template specified in the query string then
-                // load the information from it to populate the form.
-                if ( templateId.HasValue && templateId.Value != 0 )
-                {
-                    var template = new WorkflowFormBuilderTemplateService( rockContext ).Get( templateId.Value );
-
-                    if ( template != null && template.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson ) )
-                    {
-                        viewModel.TemplateGuid = template.Guid;
-                        viewModel.Template = GetTemplateDetailViewModel( template, rockContext );
-                        viewModel.IsEditable = template.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson );
-                    }
-                    else
-                    {
-                        // null means "not found or some other error prevented viewing".
-                        viewModel.TemplateGuid = null;
-                    }
-                }
-                else
+                // A blank key or "0" (the list block's Add button) means we are
+                // creating a new template rather than viewing an existing one.
+                if ( templateKey.IsNullOrWhiteSpace() || templateKey == "0" )
                 {
                     // Guid.Empty means "create a new template".
                     viewModel.TemplateGuid = Guid.Empty;
                     viewModel.IsEditable = true;
+
+                    return viewModel;
+                }
+
+                // Load the information from the specified template to populate
+                // the form.
+                var template = new WorkflowFormBuilderTemplateService( rockContext )
+                    .Get( templateKey, !PageCache.Layout.Site.DisablePredictableIds );
+
+                if ( template != null && template.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson ) )
+                {
+                    viewModel.TemplateGuid = template.Guid;
+                    viewModel.Template = GetTemplateDetailViewModel( template, rockContext );
+                    viewModel.IsEditable = template.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson );
+                }
+                else
+                {
+                    // null means "not found or some other error prevented viewing".
+                    viewModel.TemplateGuid = null;
                 }
 
                 return viewModel;
@@ -223,7 +230,7 @@ namespace Rock.Blocks.Workflow.FormBuilder
         [BlockAction]
         public BlockActionResult StartEdit( Guid guid )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var template = new WorkflowFormBuilderTemplateService( rockContext ).Get( guid );
 
@@ -248,7 +255,7 @@ namespace Rock.Blocks.Workflow.FormBuilder
         [BlockAction]
         public BlockActionResult SaveTemplate( Guid guid, TemplateEditDetailViewModel template )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var isNew = false;
                 var templateService = new WorkflowFormBuilderTemplateService( rockContext );
@@ -311,9 +318,11 @@ namespace Rock.Blocks.Workflow.FormBuilder
 
                 if ( isNew )
                 {
+                    // Redirect using the IdKey so the page reload resolves the
+                    // template even when predictable IDs are disabled.
                     return ActionContent( System.Net.HttpStatusCode.Created, this.GetCurrentPageUrl( new Dictionary<string, string>
                     {
-                        ["FormTemplateId"] = formTemplate.Id.ToString()
+                        ["FormTemplateId"] = formTemplate.IdKey
                     } ) );
                 }
 

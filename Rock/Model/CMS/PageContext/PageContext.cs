@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -18,9 +18,13 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
+
 using Newtonsoft.Json;
+
 using Rock.Data;
+using Rock.Enums.Security;
 using Rock.Lava;
+using Rock.Security;
 using Rock.Web.Cache;
 
 namespace Rock.Model
@@ -76,6 +80,7 @@ namespace Rock.Model
 #if REVIEW_WEBFORMS
         [Index( "IX_PageIdEntityIdParameter", 1, IsUnique = true )]
 #endif
+        [StringValidation( StringValidationProfile.Name )]
         public string Entity { get; set; }
 
         /// <summary>
@@ -90,6 +95,7 @@ namespace Rock.Model
 #if REVIEW_WEBFORMS
         [Index( "IX_PageIdEntityIdParameter", 2, IsUnique = true )]
 #endif
+        [StringValidation( StringValidationProfile.PlainText )]
         public string IdParameter { get; set; }
 
         #endregion Entity Properties

@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -14,6 +14,8 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
+
 namespace Rock.Lava
 {
     /// <summary>
@@ -56,6 +58,42 @@ namespace Rock.Lava
             }
 
             return Rock.Security.Encryption.DecryptString( input );
+        }
+
+        /// <summary>
+        /// Converts the input text to Markdown. The <paramref name="sourceType"/> parameter
+        /// controls how the input is interpreted; "html" is currently the only supported value
+        /// and is the default. The parameter is included so that additional source formats can
+        /// be supported in the future without changing the filter's signature.
+        /// </summary>
+        /// <param name="input">The input to convert.</param>
+        /// <param name="sourceType">The format of the input. Defaults to "html".</param>
+        /// <returns>A Markdown representation of the input, or an empty string when the input is null or empty.</returns>
+        public static string ToMarkdown( object input, string sourceType = "html" )
+        {
+            if ( input == null )
+            {
+                return string.Empty;
+            }
+
+            var inputString = input.ToString();
+
+            if ( string.IsNullOrEmpty( inputString ) )
+            {
+                return string.Empty;
+            }
+
+            var format = ( sourceType ?? "html" ).Trim();
+
+            if ( string.Equals( format, "html", StringComparison.OrdinalIgnoreCase ) )
+            {
+                var converter = new ReverseMarkdown.Converter();
+                return converter.Convert( inputString );
+            }
+
+            // Unsupported source types are returned unchanged so that existing templates
+            // do not fail if a future source type name is passed to an older version of Rock.
+            return inputString;
         }
     }
 }

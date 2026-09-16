@@ -45,7 +45,7 @@
     const attributes = ref(props.modelValue?.attributes ?? {});
     const attributeValues = ref(props.modelValue?.attributeValues ?? {});
 
-    // #endregion
+    // #endregion Values
 
     // #region Computed Values
 
@@ -102,13 +102,5 @@
         return valueBuilder.build();
     });
 
-                // #endregion
-
-                // #region Functions
-
-                // #endregion
-
-                // #region Event Handlers
-
-                // #endregion
+    // #endregion Computed Values
 </script>

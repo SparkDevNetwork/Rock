@@ -48,6 +48,9 @@ export type PageShortLinkBag = {
     /** Gets or sets the value indicating if the Short Link is Pinned. */
     isPinned: boolean;
 
+    /** String value of QR code svg */
+    qrCodeSVG?: string | null;
+
     /**
      * Gets or sets the list of scheduled redirects that have been
      * configured for this short link.

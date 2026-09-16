@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -24,9 +24,11 @@ using System.Linq.Expressions;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Net;
+using Rock.Obsidian.UI.GridField;
 using Rock.ViewModels.Controls;
 using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
@@ -139,7 +141,7 @@ namespace Rock.Reporting.DataSelect.GroupMember
 
             // Add empty selection as first item.
             ddlProperty.Items.Add( new ListItem() );
-            var groupAttributeEntityFields = GetGroupAttributeEntityFields( new RockContext() );
+            var groupAttributeEntityFields = GetGroupAttributeEntityFields( RockApp.Current.CreateRockContext() );
             foreach ( var entityField in groupAttributeEntityFields )
             {
                 // Add the field to the dropdown of available fields
@@ -193,7 +195,7 @@ namespace Rock.Reporting.DataSelect.GroupMember
         {
             var attributeGuid = selection.AsGuid();
 
-            var groupAttributeEntityFields = GetGroupAttributeEntityFields( new RockContext() );
+            var groupAttributeEntityFields = GetGroupAttributeEntityFields( RockApp.Current.CreateRockContext() );
 
             var entityField = groupAttributeEntityFields.FirstOrDefault( f => f.AttributeGuid == attributeGuid );
             if ( entityField != null )
@@ -227,7 +229,7 @@ namespace Rock.Reporting.DataSelect.GroupMember
 
             var attributeGuid = selection.AsGuid();
 
-            var groupAttributeEntityFields = GetGroupAttributeEntityFields( new RockContext() );
+            var groupAttributeEntityFields = GetGroupAttributeEntityFields( RockApp.Current.CreateRockContext() );
 
             var entityField = groupAttributeEntityFields.FirstOrDefault( f => f.AttributeGuid == attributeGuid );
             if ( entityField != null )
@@ -269,6 +271,135 @@ namespace Rock.Reporting.DataSelect.GroupMember
             return null;
         }
 #endif
+
+        /// <inheritdoc/>
+        public override ObsidianGridField GetObsidianGridField( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
+        {
+            var attributeGuid = selection.AsGuid();
+            var groupAttributeEntityFields = GetGroupAttributeEntityFields( rockContext );
+            var entityField = groupAttributeEntityFields.FirstOrDefault( f => f.AttributeGuid == attributeGuid );
+
+            return AttributeFieldTypeToObsidianGridField( entityField?.FieldType?.Guid );
+        }
+
+        /// <summary>
+        /// Maps a resolved attribute field-type Guid to the appropriate
+        /// <see cref="ObsidianGridField"/>. Shared by both GroupAttribute and
+        /// GroupMemberAttribute selects; the WebForms path uses the same
+        /// dispatch logic.
+        /// </summary>
+        internal static ObsidianGridField AttributeFieldTypeToObsidianGridField( Guid? fieldTypeGuid )
+        {
+            if ( fieldTypeGuid == null )
+            {
+                return new TextObsidianGridField();
+            }
+
+            var ft = fieldTypeGuid.Value;
+
+            if ( ft == Rock.SystemGuid.FieldType.BOOLEAN.AsGuid() )
+            {
+                return new BooleanObsidianGridField();
+            }
+
+            if ( ft == Rock.SystemGuid.FieldType.DATE.AsGuid() )
+            {
+                return new DateObsidianGridField();
+            }
+
+            if ( ft == Rock.SystemGuid.FieldType.DATE_TIME.AsGuid() )
+            {
+                return new DateTimeObsidianGridField();
+            }
+
+            if ( ft == Rock.SystemGuid.FieldType.DEFINED_VALUE.AsGuid() )
+            {
+                // WebForms DefinedValueField.FormatDataValue resolves Guid/Int
+                // storage values to the DefinedValue's display text and returns
+                // it as plain text (no label markup); this subclass mirrors that.
+                return new DefinedValueTextField();
+            }
+
+            if ( ft == Rock.SystemGuid.FieldType.INTEGER.AsGuid() )
+            {
+                return new NumberObsidianGridField();
+            }
+
+            return new TextObsidianGridField();
+        }
+
+        /// <summary>
+        /// Value-shaping subclass that resolves a DefinedValue storage value
+        /// (single Guid, single Id, or comma-delimited list of either) to the
+        /// display text of the referenced <see cref="DefinedValueCache"/>
+        /// entries, joined by ", " for lists. Mirrors WebForms
+        /// <c>DefinedValueField.FormatDataValue</c>.
+        /// </summary>
+        internal class DefinedValueTextField : TextObsidianGridField
+        {
+            /*
+                2026-08-12 - DH
+
+                Cache the (Guid|Id) → display-text mapping per report render so we
+                do one DefinedValueCache lookup per DISTINCT value rather than per
+                row. DefinedValueCache.Get is fast but not free (string
+                allocations, dictionary walk); memoization was measured ~10x
+                cheaper on Check-in v2's tight loops that established this
+                pattern.
+
+                Reason: Standard per-render cache pattern for lookup fields.
+            */
+            private class ResolutionCache
+            {
+                public Dictionary<Guid, string> ByGuid { get; } = new Dictionary<Guid, string>();
+                public Dictionary<int, string> ById { get; } = new Dictionary<int, string>();
+            }
+
+            public override object TransformValue( object rawValue, ObsidianGridFieldContext context )
+            {
+                if ( rawValue == null )
+                {
+                    return string.Empty;
+                }
+
+                var raw = rawValue.ToString();
+                if ( raw.IsNullOrWhiteSpace() )
+                {
+                    return string.Empty;
+                }
+
+                var cache = context.GetCache<ResolutionCache>();
+                var parts = raw.Split( ',' ).Select( s => s.Trim() ).Where( s => !s.IsNullOrWhiteSpace() );
+                var resolved = parts.Select( part => ResolveOne( part, cache ) ).Where( v => !v.IsNullOrWhiteSpace() );
+
+                return string.Join( ", ", resolved );
+            }
+
+            private static string ResolveOne( string part, ResolutionCache cache )
+            {
+                if ( Guid.TryParse( part, out var guid ) )
+                {
+                    if ( !cache.ByGuid.TryGetValue( guid, out var text ) )
+                    {
+                        text = DefinedValueCache.Get( guid )?.Value ?? part;
+                        cache.ByGuid[guid] = text;
+                    }
+                    return text;
+                }
+
+                if ( int.TryParse( part, out var id ) )
+                {
+                    if ( !cache.ById.TryGetValue( id, out var text ) )
+                    {
+                        text = DefinedValueCache.Get( id )?.Value ?? part;
+                        cache.ById[id] = text;
+                    }
+                    return text;
+                }
+
+                return part;
+            }
+        }
 
         #endregion
 

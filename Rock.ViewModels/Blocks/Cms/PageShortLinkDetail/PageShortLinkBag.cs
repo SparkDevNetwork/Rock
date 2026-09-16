@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -73,5 +73,10 @@ namespace Rock.ViewModels.Blocks.Cms.PageShortLinkDetail
         /// configured for this short link.
         /// </summary>
         public List<ScheduledRedirectBag> ScheduledRedirects { get; set; }
+
+        /// <summary>
+        /// String value of QR code svg
+        /// </summary>
+        public string QRCodeSVG { get; set; }
     }
 }

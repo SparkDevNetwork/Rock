@@ -1,0 +1,306 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <NotificationBox v-if="blockError" :alertType="AlertType.Warning">
+        {{ blockError }}
+    </NotificationBox>
+
+    <Panel type="block"
+           title="My Workflows"
+           titleIconCssClass="ti ti-settings-cog"
+           class="list-as-blocks">
+        <template #headerActions>
+            <div class="d-flex align-items-center gap-spacing-md">
+                <Toggle v-model="isInitiatedByMe"
+                        trueText="Initiated By Me"
+                        falseText="Assigned To Me"
+                        onButtonActiveCssClass="btn-info"
+                        offButtonActiveCssClass="btn-info"
+                        btnSize="xs"
+                        @update:modelValue="onRoleToggleChanged" />
+
+                <Toggle v-model="isActiveTypesOnly"
+                        trueText="Active Types"
+                        falseText="All Types"
+                        onButtonActiveCssClass="btn-success"
+                        offButtonActiveCssClass="btn-success"
+                        btnSize="xs"
+                        @update:modelValue="onDisplayToggleChanged" />
+
+                <div class="d-flex">
+                    <QuickFilter v-model="searchText"
+                                 quickFilterClass="grid-actions"
+                                 quickFilterButtonClass="btn-grid-action" />
+                </div>
+            </div>
+        </template>
+
+        <ul>
+            <li v-for="(workflowType, index) in filteredWorkflowTypes"
+                :key="workflowType.guid ?? index"
+                :class="{ active: workflowType.guid === selectedWorkflowTypeGuid }">
+                <a href="#" @click.prevent="onWorkflowTypeClick(workflowType)">
+                    <i :class="workflowType.iconCssClass ?? 'ti ti-settings-cog'"></i>
+                    <h3>{{ workflowType.name }}</h3>
+                    <div v-if="(workflowType.count ?? 0) > 0" class="notification">
+                        <span class="label label-danger">{{ formatNumber(workflowType.count ?? 0) }}</span>
+                    </div>
+                </a>
+            </li>
+        </ul>
+    </Panel>
+
+    <div ref="gridContainer">
+        <Grid v-if="selectedWorkflowTypeGuid && gridDefinition"
+              :definition="gridDefinition"
+              :data="gridDataSource"
+              keyField="idKey"
+              :entityTypeGuid="EntityType.Workflow"
+              :title="gridTitle"
+              itemTerm="Workflow"
+              stickyHeader
+              liveUpdates
+              @selectItem="onSelectItem">
+
+            <TextColumn name="name"
+                        title="Name"
+                        field="name"
+                        :filter="textValueFilter"
+                        visiblePriority="xs" />
+
+            <TextColumn name="status"
+                        title="Status"
+                        field="status"
+                        :filter="textValueFilter"
+                        visiblePriority="xs" />
+
+            <Column name="activeActivities"
+                    title="Active Activities"
+                    field="activeActivities"
+                    :filterValue="getActiveActivitiesFilterValue"
+                    :quickFilterValue="getActiveActivitiesFilterValue"
+                    :filter="pickExistingValueFilter"
+                    visiblePriority="md">
+                <template #format="{ row }">
+                    <div v-for="(activity, index) in (row.activeActivities as string[] | null) ?? []" :key="index">
+                        {{ activity }}
+                    </div>
+                </template>
+
+                <template #skeleton>
+                    <div class="skeleton skeleton-text skeleton-rounded" />
+                </template>
+            </Column>
+
+            <AttributeColumns :attributes="gridDefinition?.attributeFields ?? []"
+                              visiblePriority="md" />
+        </Grid>
+    </div>
+</template>
+
+<script setup lang="ts">
+    import { computed, nextTick, reactive, ref } from "vue";
+    import { NavigationUrlKey, PreferenceKey } from "./MyWorkflows/types.partial";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import Panel from "@Obsidian/Controls/panel.obs";
+    import QuickFilter from "@Obsidian/Controls/Internal/quickFilter.obs";
+    import Toggle from "@Obsidian/Controls/toggle.obs";
+    import Grid, { AttributeColumns, Column, TextColumn, pickExistingValueFilter, textValueFilter } from "@Obsidian/Controls/grid";
+    import { useConfigurationValues, useInvokeBlockAction, useReloadBlock, onConfigurationValuesChanged, usePersonPreferences } from "@Obsidian/Utility/block";
+    import { asTrueOrFalseString } from "@Obsidian/Utility/booleanUtils";
+    import { appendQueryParam } from "@Obsidian/Utility/url";
+    import { CustomBlockBox } from "@Obsidian/ViewModels/Blocks/customBlockBox";
+    import { AlertType } from "@Obsidian/Enums/Controls/alertType";
+    import { EntityType } from "@Obsidian/SystemGuids/entityType";
+    import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
+    import { GridDefinitionBag } from "@Obsidian/ViewModels/Core/Grid/gridDefinitionBag";
+    import { MyWorkflowsBag } from "@Obsidian/ViewModels/Blocks/Workflow/MyWorkflows/myWorkflowsBag";
+    import { MyWorkflowsOptionsBag } from "@Obsidian/ViewModels/Blocks/Workflow/MyWorkflows/myWorkflowsOptionsBag";
+    import { MyWorkflowsWorkflowTypeBag } from "@Obsidian/ViewModels/Blocks/Workflow/MyWorkflows/myWorkflowsWorkflowTypeBag";
+    import { MyWorkflowsGetGridDataResponseBag } from "@Obsidian/ViewModels/Blocks/Workflow/MyWorkflows/myWorkflowsGetGridDataResponseBag";
+
+    const config = useConfigurationValues<CustomBlockBox<MyWorkflowsBag, MyWorkflowsOptionsBag>>();
+    const invokeBlockAction = useInvokeBlockAction();
+    const preferences = usePersonPreferences().blockPreferences;
+
+    onConfigurationValuesChanged(useReloadBlock());
+
+    // #region Values
+
+    const isInitiatedByMe = ref(config.bag?.isInitiatedByMe ?? false);
+    const isActiveTypesOnly = ref(config.bag?.isActiveTypesOnly ?? false);
+
+    const workflowTypes = ref<MyWorkflowsWorkflowTypeBag[]>([]);
+    const searchText = ref<string>("");
+    const selectedWorkflowTypeGuid = ref<string | null>(null);
+    const workflowTypeName = ref("");
+    const workflowTypeIdKey = ref("");
+
+    const gridDefinition = ref<GridDefinitionBag | null>(null);
+    const gridDataSource = ref<Promise<GridDataBag>>();
+    let gridData: GridDataBag | undefined;
+    const gridContainer = ref<HTMLElement | null>(null);
+
+    const blockError = ref("");
+
+    // #endregion
+
+    // #region Computed Values
+
+    /** The title shown above the workflows grid. */
+    const gridTitle = computed((): string => {
+        return `${workflowTypeName.value} Workflows`;
+    });
+
+    /** The workflow type tiles filtered by the quick filter search text. */
+    const filteredWorkflowTypes = computed((): MyWorkflowsWorkflowTypeBag[] => {
+        const search = searchText.value.toLowerCase().replace(/\s+/g, "");
+
+        if (!search) {
+            return workflowTypes.value;
+        }
+
+        return workflowTypes.value.filter(workflowType => (workflowType.name ?? "").toLowerCase().replace(/\s+/g, "").includes(search));
+    });
+
+    // #endregion
+
+    // #region Functions
+
+    /** Formats a number with locale-appropriate separators. */
+    function formatNumber(value: number): string {
+        return value.toLocaleString();
+    }
+
+    /** Returns the searchable text for the active activities column. */
+    function getActiveActivitiesFilterValue(row: Record<string, unknown>): string {
+        const activities = (row["activeActivities"] as string[]) ?? [];
+        return activities.join(" ");
+    }
+
+    /** Loads the workflow type tiles for the current filters from the server. */
+    async function refreshWorkflowTypes(): Promise<void> {
+        const result = await invokeBlockAction<MyWorkflowsWorkflowTypeBag[]>("GetWorkflowTypes", {
+            isInitiatedByMe: isInitiatedByMe.value,
+            isActiveTypesOnly: isActiveTypesOnly.value
+        });
+
+        if (result.isSuccess && result.data) {
+            blockError.value = "";
+            workflowTypes.value = result.data;
+
+            // Hide the grid if the selected type is no longer in the filtered list.
+            if (selectedWorkflowTypeGuid.value && !workflowTypes.value.some(t => t.guid === selectedWorkflowTypeGuid.value)) {
+                selectedWorkflowTypeGuid.value = null;
+                gridDefinition.value = null;
+                gridData = undefined;
+            }
+        }
+        else {
+            blockError.value = result.errorMessage ?? "Failed to load workflow types.";
+        }
+    }
+
+    /** Loads the workflows grid data for the selected type and role filter. */
+    async function loadGridData(): Promise<GridDataBag> {
+        if (!selectedWorkflowTypeGuid.value) {
+            throw new Error("No workflow type selected.");
+        }
+
+        const result = await invokeBlockAction<MyWorkflowsGetGridDataResponseBag>("GetGridData", {
+            request: {
+                workflowTypeGuid: selectedWorkflowTypeGuid.value,
+                isInitiatedByMe: isInitiatedByMe.value
+            }
+        });
+
+        if (result.isSuccess && result.data) {
+            blockError.value = "";
+            gridDefinition.value = result.data.gridDefinition ?? null;
+            workflowTypeName.value = result.data.workflowTypeName ?? "";
+            workflowTypeIdKey.value = result.data.workflowTypeIdKey ?? "";
+
+            if (result.data.gridData) {
+                gridData = reactive(result.data.gridData);
+                return gridData;
+            }
+        }
+
+        blockError.value = result.errorMessage ?? "Failed to load grid data.";
+        throw new Error(blockError.value);
+    }
+
+    // #endregion
+
+    // #region Event Handlers
+
+    /** Called when a workflow type tile is clicked. Selects it and loads its grid. */
+    async function onWorkflowTypeClick(workflowType: MyWorkflowsWorkflowTypeBag): Promise<void> {
+        selectedWorkflowTypeGuid.value = workflowType.guid ?? null;
+
+        if (!workflowType.guid) {
+            return;
+        }
+
+        gridDataSource.value = loadGridData();
+        await gridDataSource.value.catch(() => { });
+
+        // Bring the grid into view, mirroring the legacy scroll-to-grid behavior.
+        await nextTick();
+        gridContainer.value?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    }
+
+    /** Called when the role toggle changes. Persists it, refreshes tiles, and reloads the grid. */
+    async function onRoleToggleChanged(): Promise<void> {
+        preferences.setValue(PreferenceKey.RoleToggle, asTrueOrFalseString(isInitiatedByMe.value));
+        await preferences.save();
+
+        await refreshWorkflowTypes();
+
+        // The role changes which workflows the grid represents, so reload it.
+        if (selectedWorkflowTypeGuid.value) {
+            gridDataSource.value = loadGridData();
+        }
+    }
+
+    /** Called when the display toggle changes. Persists it and refreshes the tiles. */
+    async function onDisplayToggleChanged(): Promise<void> {
+        preferences.setValue(PreferenceKey.DisplayToggle, asTrueOrFalseString(isActiveTypesOnly.value));
+        await preferences.save();
+
+        await refreshWorkflowTypes();
+    }
+
+    /** Called when a grid row is clicked. Navigates to the detail or entry page based on the role. */
+    function onSelectItem(key: string): void {
+        const row = gridData?.rows?.find(r => r["idKey"] === key);
+
+        if (!row) {
+            return;
+        }
+
+        if (isInitiatedByMe.value) {
+            const detailUrl = config.navigationUrls?.[NavigationUrlKey.DetailPage];
+            if (detailUrl) {
+                window.location.href = detailUrl.replace("((Key))", key);
+            }
+        }
+        else {
+            const entryUrl = config.navigationUrls?.[NavigationUrlKey.EntryPage];
+            if (entryUrl) {
+                const basePath = entryUrl.replace("((workflowTypeKey))", workflowTypeIdKey.value ?? "");
+                window.location.href = appendQueryParam(basePath, "WorkflowGuid", (row["guid"] as string) ?? "");
+            }
+        }
+    }
+
+    // #endregion
+
+    (async (): Promise<void> => {
+        try {
+            await refreshWorkflowTypes();
+        }
+        catch (error) {
+            blockError.value = error instanceof Error ? error.message : "Failed to initialize block.";
+        }
+    })();
+</script>

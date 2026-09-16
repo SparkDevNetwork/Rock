@@ -21,6 +21,7 @@
 // </copyright>
 //
 
+using Rock.Configuration;
 using Rock.Model;
 using Rock.SystemGuid;
 
@@ -35,6 +36,6 @@ namespace Rock.Rest.Controllers
         /// <summary>
         /// Initializes a new instance of the <see cref="WorkflowFormBuilderTemplatesController"/> class.
         /// </summary>
-        public WorkflowFormBuilderTemplatesController() : base( new Rock.Model.WorkflowFormBuilderTemplateService( new Rock.Data.RockContext() ) ) { } 
+        public WorkflowFormBuilderTemplatesController() : base( new Rock.Model.WorkflowFormBuilderTemplateService( RockApp.Current.CreateRockContext() ) ) { } 
     }
 }

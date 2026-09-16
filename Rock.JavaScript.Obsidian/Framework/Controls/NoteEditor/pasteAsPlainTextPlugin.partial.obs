@@ -60,7 +60,7 @@
      * (/script)
      */
     import { ref, watch } from "vue";
-    import { getToolbarButton, usePluginHelper } from "./utils.partial";
+    import { getToolbarButton, usePluginHelper } from "../Internal/NoteEditor/utils";
     import TextBox from "@Obsidian/Controls/textBox.obs";
     import Modal from "@Obsidian/Controls/modal.obs";
     import { Editor, Ui } from "@Obsidian/Libs/tinymce";

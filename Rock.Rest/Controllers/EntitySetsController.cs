@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -14,15 +14,17 @@
 // limitations under the License.
 // </copyright>
 //
-using System.Collections.Generic;
 using System;
+using System.Collections.Generic;
+using System.Data.Entity;
+using System.Linq;
 using System.Web.Http;
+
+using Rock.Configuration;
 using Rock.Data;
+using Rock.Model;
 using Rock.Rest.Filters;
 using Rock.Web.Cache;
-using System.Linq;
-using System.Data.Entity;
-using Rock.Model;
 
 namespace Rock.Rest.Controllers
 {
@@ -44,7 +46,7 @@ namespace Rock.Rest.Controllers
         [Rock.SystemGuid.RestActionGuid( "50B248D7-C52A-4698-B4AF-C9DE305394EC" )]
         public IHttpActionResult PostEntitySetFromGuid( [FromBody] List<Guid> entityItemGuids, Guid entityTypeGuid, int timeToExpire = 15 )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var entitySetGuid = EntitySetService.CreateEntitySetFromItems( entityItemGuids, entityTypeGuid, timeToExpire, rockContext );
                 if ( !entitySetGuid.HasValue )
@@ -69,7 +71,7 @@ namespace Rock.Rest.Controllers
         [Rock.SystemGuid.RestActionGuid( "32374DFE-6478-41A5-AE7D-43DD58DC6176" )]
         public IHttpActionResult PostEntitySetFromInt( [FromBody] List<int> entityItemIds, int entityTypeId, int timeToExpire = 15 )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var entitySetId = EntitySetService.CreateEntitySetFromItems( entityItemIds, entityTypeId, timeToExpire, rockContext );
                 if ( !entitySetId.HasValue )

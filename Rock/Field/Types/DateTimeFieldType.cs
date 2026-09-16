@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -20,6 +20,7 @@ using System.Linq;
 #if WEBFORMS
 using System.Web.UI;
 using System.Web.UI.WebControls;
+
 #endif
 using Rock.Attribute;
 using Rock.Model;
@@ -198,6 +199,25 @@ namespace Rock.Field.Types
             }
 
             return value;
+        }
+
+        #endregion
+
+        #region Value Hinting
+
+        /// <inheritdoc/>
+        /// <remarks>
+        /// The offset is in minutes here where the inherited date only version counts
+        /// days, so the same CURRENT:30 means something different on each. Overridden
+        /// rather than inherited for exactly that reason.
+        /// </remarks>
+        internal override FieldTypeHints GetFieldHints( Dictionary<string, string> privateConfigurationValues )
+        {
+            return new FieldTypeHints
+            {
+                IsCompleteList = false,
+                ValueFormat = "Either a date and time, or the word CURRENT followed by a colon and a number of minutes, as in CURRENT:60 for an hour from now or CURRENT:-60 for an hour ago. CURRENT:0 means now. Note the offset is minutes, not days. Anything else is read as a plain date and time, so use ISO 8601 such as 2026-01-31T14:30:00 rather than a culture specific format."
+            };
         }
 
         #endregion

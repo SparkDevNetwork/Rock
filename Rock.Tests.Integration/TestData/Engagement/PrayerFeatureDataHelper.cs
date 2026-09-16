@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -20,10 +20,12 @@ using System.Diagnostics;
 using System.Linq;
 
 using Rock;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Tests.Integration.TestData.Core;
-using Rock.Tests.Shared;
+using Rock.Tests.Shared.Constants;
+using Rock.Tests.Shared.Utility;
 using Rock.Web.Cache;
 
 namespace Rock.Tests.Integration.TestData.Engagement
@@ -76,7 +78,7 @@ namespace Rock.Tests.Integration.TestData.Engagement
 
         private void Initialize()
         {
-            var dataContext = new RockContext();
+            var dataContext = RockApp.Current.CreateRockContext();
 
             var noteTypeService = new NoteTypeService( dataContext );
 
@@ -91,7 +93,7 @@ namespace Rock.Tests.Integration.TestData.Engagement
 
         public void RemovePrayerRequestTestData()
         {
-            var dataContext = new RockContext();
+            var dataContext = RockApp.Current.CreateRockContext();
 
             // Delete Prayer Requests
             var requestService = new PrayerRequestService( dataContext );
@@ -149,7 +151,7 @@ namespace Rock.Tests.Integration.TestData.Engagement
 
         internal void AddPrayerRequestCommentsEmailTemplate()
         {
-            var dataContext = new RockContext();
+            var dataContext = RockApp.Current.CreateRockContext();
             var systemEmailService = new SystemCommunicationService( dataContext );
 
             // Add Email Template
@@ -210,7 +212,7 @@ namespace Rock.Tests.Integration.TestData.Engagement
         {
             var helper = new CoreModuleDataFactory( RecordTag.PrayerRequestFeature );
 
-            var dataContext = new RockContext();
+            var dataContext = RockApp.Current.CreateRockContext();
 
             var prayerRequestEntityTypeId = EntityTypeCache.GetId( typeof( Rock.Model.PrayerRequest ) ).GetValueOrDefault();
 
@@ -288,7 +290,7 @@ namespace Rock.Tests.Integration.TestData.Engagement
         {
             Debug.Print( $"Adding Prayer Request: Jobs and Finances (All Church)..." );
 
-            var dataContext = new RockContext();
+            var dataContext = RockApp.Current.CreateRockContext();
 
             var noteService = new NoteService( dataContext );
             var prayerRequestService = new PrayerRequestService( dataContext );
@@ -359,7 +361,7 @@ namespace Rock.Tests.Integration.TestData.Engagement
         {
             Debug.Print( $"Adding Prayer Request: Ted Decker (Job)..." );
 
-            var dataContext = new RockContext();
+            var dataContext = RockApp.Current.CreateRockContext();
 
             var noteService = new NoteService( dataContext );
             var prayerRequestService = new PrayerRequestService( dataContext );
@@ -437,7 +439,7 @@ namespace Rock.Tests.Integration.TestData.Engagement
         {
             Debug.Print( $"Adding Prayer Request: Mariah Jackson..." );
 
-            var dataContext = new RockContext();
+            var dataContext = RockApp.Current.CreateRockContext();
 
             var noteService = new NoteService( dataContext );
             var prayerRequestService = new PrayerRequestService( dataContext );
@@ -504,7 +506,7 @@ namespace Rock.Tests.Integration.TestData.Engagement
         {
             Debug.Print( $"Adding Prayer Request: Ben Jones..." );
 
-            var dataContext = new RockContext();
+            var dataContext = RockApp.Current.CreateRockContext();
 
             var noteService = new NoteService( dataContext );
             var prayerRequestService = new PrayerRequestService( dataContext );
@@ -562,7 +564,7 @@ namespace Rock.Tests.Integration.TestData.Engagement
         {
             Debug.Print( $"Adding Prayer Request: Sarah Simmons..." );
 
-            var dataContext = new RockContext();
+            var dataContext = RockApp.Current.CreateRockContext();
 
             var noteService = new NoteService( dataContext );
             var prayerRequestService = new PrayerRequestService( dataContext );
@@ -605,7 +607,7 @@ namespace Rock.Tests.Integration.TestData.Engagement
         /// </summary>
         public void AddPrayerRequestBulkTestData()
         {
-            var dataContext = new RockContext();
+            var dataContext = RockApp.Current.CreateRockContext();
 
             var noteTypeService = new NoteTypeService( dataContext );
 

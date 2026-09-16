@@ -1,0 +1,210 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="block-palette">
+        <div class="block-palette-header p-3">
+            <Toggle v-model="isByCategory"
+                    btnSize="xs"
+                    falseText="See All"
+                    trueText="By Category" />
+
+            <DropDownList v-if="isByCategory"
+                          v-model="selectedCategory"
+                          :items="categoryItems"
+                          :showBlankItem="false" />
+
+            <TextBox v-else
+                     v-model="searchText"
+                     placeholder="Block Name..."
+                     size="small">
+                <template #inputGroupPrepend>
+                    <span class="input-group-addon bg-interface-softer">
+                        <i class="ti ti-search"></i>
+                    </span>
+                </template>
+            </TextBox>
+        </div>
+
+        <div class="block-palette-body p-3">
+
+            <div v-if="isByCategory" class="block-palette-grid" v-drag-source="paletteDragSourceOptions">
+                <BlockTypeCard v-for="blockType in categoryBlockTypes"
+                               :key="blockType.idKey ?? blockType.name ?? ''"
+                               :blockType="blockType" />
+            </div>
+
+            <template v-else>
+                <div v-for="group in groupedBlockTypes" :key="group.category" class="block-palette-group">
+                    <p class="text-semibold">{{ group.category }}</p>
+                    <div class="block-palette-grid" v-drag-source="paletteDragSourceOptions">
+                        <BlockTypeCard v-for="blockType in group.blockTypes"
+                                       :key="blockType.idKey ?? blockType.name ?? ''"
+                                       :blockType="blockType" />
+                    </div>
+                </div>
+            </template>
+
+            <div v-if="isEmpty" class="block-palette-empty text-muted">
+                {{ isByCategory ? "No blocks in this category." : "No blocks match your search." }}
+            </div>
+        </div>
+    </div>
+</template>
+
+<style scoped>
+.block-palette {
+    border-radius: 0 0 0 var(--rounded-medium);
+    min-height: 250px;
+    max-height: 684px;
+    overflow-y: auto;
+}
+
+.block-palette-header {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-small);
+    margin-bottom: var(--spacing-small);
+}
+
+.block-palette-title {
+    margin: 0;
+    font-weight: var(--font-weight-semibold);
+}
+
+.block-palette-body {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-medium);
+    background-color: var(--color-interface-softest);
+    border-radius: 0 0 0 var(--rounded-medium);
+    height: 100%;
+}
+
+.block-palette-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--spacing-xsmall);
+}
+
+.block-palette-empty {
+    padding: var(--spacing-small) 0;
+    font-size: var(--font-size-xsmall);
+}
+</style>
+
+<script setup lang="ts">
+    // #region Types
+
+    import { computed, PropType, ref, watch } from "vue";
+    import { DragSource as vDragSource, IDragSourceOptions } from "@Obsidian/Directives/dragDrop";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import Toggle from "@Obsidian/Controls/toggle.obs";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { MobilePageBlockTypeBag } from "@Obsidian/ViewModels/Blocks/Mobile/MobilePageDetail/mobilePageBlockTypeBag";
+    import BlockTypeCard from "./blockTypeCard.partial.obs";
+
+    /** A set of block types that share a category, used for the "By Category" view. */
+    type BlockTypeGroup = {
+        category: string;
+        blockTypes: MobilePageBlockTypeBag[];
+    };
+
+    const props = defineProps({
+        blockTypes: {
+            type: Array as PropType<MobilePageBlockTypeBag[]>,
+            default: () => []
+        },
+
+        paletteDragSourceOptions: {
+            type: Object as PropType<IDragSourceOptions>,
+            required: true
+        }
+    });
+
+    // #endregion Types
+
+    // #region Values
+
+    const searchText = ref("");
+
+    const selectedCategory = ref("");
+
+    const isByCategory = ref(false);
+
+    const uncategorizedHeading = "Other";
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    /** The block types matching the current search text, sorted by name. */
+    const filteredBlockTypes = computed((): MobilePageBlockTypeBag[] => {
+        const search = searchText.value.trim().toLowerCase();
+
+        const matches = search
+            ? props.blockTypes.filter(bt => (bt.name ?? "").toLowerCase().includes(search))
+            : [...props.blockTypes];
+
+        return matches.sort((a, b) => (a.name ?? "").localeCompare(b.name ?? ""));
+    });
+
+    /** The filtered block types grouped by category, with categories sorted alphabetically. */
+    const groupedBlockTypes = computed((): BlockTypeGroup[] => {
+        const groups = new Map<string, MobilePageBlockTypeBag[]>();
+
+        for (const blockType of filteredBlockTypes.value) {
+            const category = blockType.category?.trim() || uncategorizedHeading;
+
+            if (!groups.has(category)) {
+                groups.set(category, []);
+            }
+
+            groups.get(category)?.push(blockType);
+        }
+
+        return [...groups.entries()]
+            .map(([category, blockTypes]) => ({ category, blockTypes }))
+            .sort((a, b) => a.category.localeCompare(b.category));
+    });
+
+    /** The distinct categories across all block types, sorted alphabetically. */
+    const categories = computed((): string[] => {
+        const set = new Set<string>();
+
+        for (const blockType of props.blockTypes) {
+            set.add(blockType.category?.trim() || uncategorizedHeading);
+        }
+
+        return [...set].sort((a, b) => a.localeCompare(b));
+    });
+
+    /** The category dropdown items for "By Category" mode. */
+    const categoryItems = computed((): ListItemBag[] => {
+        return categories.value.map(category => ({ value: category, text: category }));
+    });
+
+    /** The block types in the selected category, sorted by name. */
+    const categoryBlockTypes = computed((): MobilePageBlockTypeBag[] => {
+        return props.blockTypes
+            .filter(bt => (bt.category?.trim() || uncategorizedHeading) === selectedCategory.value)
+            .sort((a, b) => (a.name ?? "").localeCompare(b.name ?? ""));
+    });
+
+    const isEmpty = computed((): boolean => {
+        return isByCategory.value
+            ? categoryBlockTypes.value.length === 0
+            : filteredBlockTypes.value.length === 0;
+    });
+
+    // #endregion Computed Values
+
+    // #region Watchers
+
+    watch(isByCategory, (value) => {
+        if (value && !selectedCategory.value) {
+            selectedCategory.value = categories.value[0] ?? "";
+        }
+    });
+
+    // #endregion Watchers
+</script>

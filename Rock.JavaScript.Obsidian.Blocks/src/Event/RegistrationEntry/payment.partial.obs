@@ -48,7 +48,7 @@
                 <Captcha ref="captchaElement" />
             </div>
 
-            <NotificationBox v-if="submitErrorMessage" alertType="danger">{{ submitErrorMessage }}</NotificationBox>
+            <NotificationBox v-if="submitErrorMessage" alertType="danger"><span v-html="submitErrorMessage"></span></NotificationBox>
 
             <div v-if="isCaptchaComplete || disableCaptchaSupport" class="actions text-right">
                 <RockButton class="pull-left" btnType="default" @click="onPrevious" :isLoading="loading" autoDisable>
@@ -64,7 +64,7 @@
 </template>
 <script setup lang="ts">
     import { computed, ref, onMounted } from "vue";
-    import { CurrentRegistrationEntryState, GetPersistSessionArgs, use } from "./utils.partial";
+    import { CurrentRegistrationEntryState, GetPersistSessionArgs, use, validateFullPaymentOrPaymentPlan } from "./utils.partial";
     import Captcha from "@Obsidian/Controls/captcha.obs";
     import GatewayControl from "@Obsidian/Controls/gatewayControl.obs";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
@@ -187,6 +187,16 @@
     /** User clicked the "finish" button */
     async function onNext(): Promise<void> {
         loading.value = true;
+        submitErrorMessage.value = "";
+
+        // Pre-validate the "Require Full Payment or Payment Plan" rule before tokenizing a card.
+        // The server still revalidates on SubmitRegistration.
+        const fullPaymentValidationError = await validateFullPaymentOrPaymentPlan(viewModel.value, getRegistrationEntryBlockArgs(), invokeBlockAction);
+        if (fullPaymentValidationError) {
+            submitErrorMessage.value = fullPaymentValidationError;
+            loading.value = false;
+            return;
+        }
 
         // If there is a cost, then the gateway will need to be used to pay
         if (registrationEntryState.amountToPayToday || registrationEntryState.paymentPlan?.amountPerPayment) {

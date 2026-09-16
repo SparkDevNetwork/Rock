@@ -1,0 +1,402 @@
+:root {
+  // ========================= COLOR =========================
+
+  // #region BASE VARIABLE (These are not meant to be used as reference variables)
+
+  --logo-image: url("../../../Assets/Images/rock-logo-circle-white.svg");
+
+  --base-interface-strongest: #0a0a0a;
+  --base-interface-stronger:  #0D1117;
+  --base-interface-strong:    #3D444D ;
+  --base-interface-medium:    #8B8BA7;
+  --base-interface-soft:      #D9D9E3;
+  --base-interface-softer:    #F8F8FC;
+  --base-interface-softest:   #fdfdfd;
+
+  --base-critical:    #ee7725;
+  --base-danger:      #D70015;
+  --base-info:        #005DD7;
+  --base-success:     #01A11E;
+
+  --base-primary:     #FF791D;
+  --base-warning:     #E58600;
+  --base-link:        #006DCC;
+  --base-secondary:   #83758F;
+
+  --base-gender-male:   #1A8AE5;
+  --base-gender-female: #DE69C3;
+
+  // #endregion
+
+  // INTERFACE COLORS
+  --color-interface-strongest: var(--base-interface-strongest);
+  --color-interface-stronger:  var(--base-interface-stronger);
+  --color-interface-strong:    var(--base-interface-strong);
+  --color-interface-medium:    var(--base-interface-medium);
+  --color-interface-soft:      var(--base-interface-soft);
+  --color-interface-softer:    var(--base-interface-softer);
+  --color-interface-softest:   var(--base-interface-softest);
+
+  // APPLICATION COLORS
+  --color-critical-soft:    var(--base-critical);
+  --color-critical-strong:  var(--base-critical);
+  --color-critical-tint:    var(--base-critical);
+  --color-critical-shade:   var(--base-critical);
+
+  --color-danger-soft:      var(--base-danger);
+  --color-danger-strong:    var(--base-danger);
+  --color-danger-tint:      var(--base-danger);
+  --color-danger-shade:     var(--base-danger);
+
+  --color-info-soft:        var(--base-info);
+  --color-info-strong:      var(--base-info);
+  --color-info-tint:        var(--base-info);
+  --color-info-shade:       var(--base-info);
+
+  --color-success-soft:     var(--base-success);
+  --color-success-strong:   var(--base-success);
+  --color-success-tint:     var(--base-success);
+  --color-success-shade:    var(--base-success);
+
+  --color-warning-soft:     var(--base-warning);
+  --color-warning-strong:   var(--base-warning);
+  --color-warning-tint:     var(--base-warning);
+  --color-warning-shade:    var(--base-warning);
+
+  --color-gender-male-soft:   var(--base-gender-male);
+  --color-gender-male-strong: var(--base-gender-male);
+  --color-gender-male-tint:   var(--base-gender-male);
+  --color-gender-male-shade:  var(--base-gender-male);
+
+  --color-gender-female-soft:   var(--base-gender-female);
+  --color-gender-female-strong: var(--base-gender-female);
+  --color-gender-female-tint:   var(--base-gender-female);
+  --color-gender-female-shade:  var(--base-gender-female);
+
+  /* System colors */
+  --color-primary-soft:     var(--base-primary);
+  --color-primary:          var(--base-primary);
+  --color-primary-tint:     var(--base-primary);
+  --color-primary-shade:    var(--base-primary);
+
+  --color-link:             var(--base-link);
+  --color-link-tint:        var(--base-link);
+  --color-link-shade:       var(--base-link);
+
+  --color-secondary:        var(--base-secondary);
+  --color-secondary-soft:   var(--base-secondary);
+  --color-secondary-tint:   var(--base-secondary);
+  --color-secondary-shade:  var(--base-secondary);
+
+  @supports (color: color-mix(in srgb, red 50%, white 50%)) {
+    --tint-white-percentage: 50%;
+    --shade-black-percentage: 15%;
+
+    --color-critical-tint:  color-mix(in srgb, var(--base-critical) 50%, var(--color-interface-softest));
+    --color-critical-soft:  color-mix(in srgb, var(--base-critical) 20%, var(--color-interface-softest));
+    --color-critical-shade: color-mix(in srgb, var(--base-critical) 100%, #000 var(--shade-black-percentage));
+
+    --color-danger-tint:    color-mix(in srgb, var(--base-danger) 50%, var(--color-interface-softest));
+    --color-danger-soft:    color-mix(in srgb, var(--base-danger) 20%, var(--color-interface-softest));
+    --color-danger-shade:   color-mix(in srgb, var(--base-danger) 100%, #000 var(--shade-black-percentage));
+
+    --color-info-tint:      color-mix(in srgb, var(--base-info) 50%, var(--color-interface-softest));
+    --color-info-soft:      color-mix(in srgb, var(--base-info) 20%, var(--color-interface-softest));
+    --color-info-shade:     color-mix(in srgb, var(--base-info) 100%, #000 var(--shade-black-percentage));
+
+    --color-success-tint:   color-mix(in srgb, var(--base-success) 50%, var(--color-interface-softest));
+    --color-success-soft:   color-mix(in srgb, var(--base-success) 20%, var(--color-interface-softest));
+    --color-success-shade:  color-mix(in srgb, var(--base-success) 100%, #000 var(--shade-black-percentage));
+
+    --color-warning-tint:   color-mix(in srgb, var(--base-warning) 50%, var(--color-interface-softest));
+    --color-warning-soft:   color-mix(in srgb, var(--base-warning) 20%, var(--color-interface-softest));
+    --color-warning-shade:  color-mix(in srgb, var(--base-warning) 100%, #000 var(--shade-black-percentage));
+
+    --color-primary-tint:   color-mix(in srgb, var(--base-primary) 50%, var(--color-interface-softest));
+    --color-primary-soft:   color-mix(in srgb, var(--base-primary) 20%, var(--color-interface-softest));
+    --color-primary-shade:  color-mix(in srgb, var(--base-primary) 100%, #000 var(--shade-black-percentage));
+
+    --color-link-tint:      color-mix(in srgb, var(--base-link) 50%, var(--color-interface-softest));
+    --color-link-shade:     color-mix(in srgb, var(--base-link) 100%, #000 var(--shade-black-percentage));
+
+    --color-secondary-tint:  color-mix(in srgb, var(--base-secondary) 50%, var(--color-interface-softest));
+    --color-secondary-soft:  color-mix(in srgb, var(--base-secondary) 20%, var(--color-interface-softest));
+    --color-secondary-shade: color-mix(in srgb, var(--base-secondary) 100%, #000 var(--shade-black-percentage));
+
+    // GENDER COLORS
+    --color-gender-male-tint:   color-mix(in srgb, var(--base-gender-male) 50%, var(--color-interface-softest));
+    --color-gender-male-soft:   color-mix(in srgb, var(--base-gender-male) 20%, var(--color-interface-softest));
+    --color-gender-male-shade:  color-mix(in srgb, var(--base-gender-male) 100%, #000 var(--shade-black-percentage));
+
+    --color-gender-female-tint:   color-mix(in srgb, var(--base-gender-female) 50%, var(--color-interface-softest));
+    --color-gender-female-soft:   color-mix(in srgb, var(--base-gender-female) 20%, var(--color-interface-softest));
+    --color-gender-female-shade:  color-mix(in srgb, var(--base-gender-female) 100%, #000 var(--shade-black-percentage));
+  }
+
+
+  // COLORS FOR CHARTS / ANALYTICS
+  // ===============================
+  // Categorical, Diverging, and Metric colors below are sourced from Tailwind's color palette.
+
+  // CATEGORICAL COLORS
+  --color-categorical-1: var(--color-metric-primary); // Tailwind indigo-500
+  --color-categorical-2: #a855f7; // Tailwind purple-500
+  --color-categorical-3: #14b8a6; // Tailwind teal-500
+  --color-categorical-4: #f43f5e; // Tailwind rose-500
+  --color-categorical-5: #f97316; // Tailwind orange-500
+  --color-categorical-6: #06b6d4; // Tailwind cyan-500
+  --color-categorical-7: #f59e0b; // Tailwind yellow-500
+  --color-categorical-8: #6b7280; // Tailwind gray-500
+
+  // DIVERGING COLORS
+  --color-diverging-1:  #312e81; // Tailwind indigo-900
+  --color-diverging-2:  #4338ca; // Tailwind indigo-700
+  --color-diverging-3:  #6366f1; // Tailwind indigo-500
+  --color-diverging-4:  #a5b4fc; // Tailwind indigo-300
+  --color-diverging-5:  #e0e7ff; // Tailwind indigo-100
+  --color-diverging-6:  #eef2ff; // Tailwind indigo-50
+  --color-diverging-7:  #d1fae5; // Tailwind emerald-100
+  --color-diverging-8:  #6ee7b7; // Tailwind emerald-300
+  --color-diverging-9:  #10b981; // Tailwind emerald-500
+  --color-diverging-10: #047857; // Tailwind emerald-700
+  --color-diverging-11: #064e3b; // Tailwind emerald-900
+
+  // POSITIVE COLORS
+  --color-positive-primary: var(--color-positive-5);
+
+  --color-positive-1:  #ecfdf5; // Tailwind green-50
+  --color-positive-2:  #d1fae5; // Tailwind green-100
+  --color-positive-3:  #a7f3d0; // Tailwind green-200
+  --color-positive-4:  #6ee7b7; // Tailwind green-300
+  --color-positive-5:  #34d399; // Tailwind green-400
+  --color-positive-6:  #10b981; // Tailwind green-500
+  --color-positive-7:  #059669; // Tailwind green-600
+  --color-positive-8:  #047857; // Tailwind green-700
+  --color-positive-9:  #065f46; // Tailwind green-800
+  --color-positive-10: #064e3b; // Tailwind green-900
+  --color-positive-11: #022c22; // Tailwind green-950
+
+  // CAUTION COLORS
+  --color-caution-primary: var(--color-caution-5);
+
+  --color-caution-1:  #fff7ed; // Tailwind orange-50
+  --color-caution-2:  #ffedd5; // Tailwind orange-100
+  --color-caution-3:  #fed7aa; // Tailwind orange-200
+  --color-caution-4:  #fdba74; // Tailwind orange-300
+  --color-caution-5:  #fb923c; // Tailwind orange-400
+  --color-caution-6:  #f97316; // Tailwind orange-500
+  --color-caution-7:  #ea580c; // Tailwind orange-600
+  --color-caution-8:  #c2410c; // Tailwind orange-700
+  --color-caution-9:  #9a3412; // Tailwind orange-800
+  --color-caution-10: #7c2d12; // Tailwind orange-900
+  --color-caution-11: #431407; // Tailwind orange-950
+
+  // NEGATIVE COLORS
+  --color-negative-primary: var(--color-negative-6);
+
+  --color-negative-1:  #fef2f2; // Tailwind red-50
+  --color-negative-2:  #fee2e2; // Tailwind red-100
+  --color-negative-3:  #fecaca; // Tailwind red-200
+  --color-negative-4:  #fca5a5; // Tailwind red-300
+  --color-negative-5:  #f87171; // Tailwind red-400
+  --color-negative-6:  #ef4444; // Tailwind red-500
+  --color-negative-7:  #dc2626; // Tailwind red-600
+  --color-negative-8:  #b91c1c; // Tailwind red-700
+  --color-negative-9:  #991b1b; // Tailwind red-800
+  --color-negative-10: #7f1d1d; // Tailwind red-900
+  --color-negative-11: #450a0a; // Tailwind red-950
+
+  // NEUTRAL COLORS
+  --color-neutral-primary: var(--color-neutral-4);
+
+  --color-neutral-1:  #f9fafb; // Tailwind gray-50
+  --color-neutral-2:  #f3f4f6; // Tailwind gray-100
+  --color-neutral-3:  #e5e7eb; // Tailwind gray-200
+  --color-neutral-4:  #d1d5db; // Tailwind gray-300
+  --color-neutral-5:  #9ca3af; // Tailwind gray-400
+  --color-neutral-6:  #6b7280; // Tailwind gray-500
+  --color-neutral-7:  #4b5563; // Tailwind gray-600
+  --color-neutral-8:  #374151; // Tailwind gray-700
+  --color-neutral-9:  #1f2937; // Tailwind gray-800
+  --color-neutral-10: #111827; // Tailwind gray-900
+  --color-neutral-11: #030712; // Tailwind gray-950
+
+  // METRIC COLORS
+  --color-metric-primary: var(--color-metric-6);
+
+  --color-metric-1:  #eef2ff; // Tailwind indigo-50
+  --color-metric-2:  #e0e7ff; // Tailwind indigo-100
+  --color-metric-3:  #c7d2fe; // Tailwind indigo-200
+  --color-metric-4:  #a5b4fc; // Tailwind indigo-300
+  --color-metric-5:  #818cf8; // Tailwind indigo-400
+  --color-metric-6:  #6366f1; // Tailwind indigo-500
+  --color-metric-7:  #4f46e5; // Tailwind indigo-600
+  --color-metric-8:  #4338ca; // Tailwind indigo-700
+  --color-metric-9:  #3730a3; // Tailwind indigo-800
+  --color-metric-10: #312e81; // Tailwind indigo-900
+  --color-metric-11: #1e1b4b; // Tailwind indigo-950
+
+
+
+  // ========================= END COLOR ==========================
+
+
+
+  // ========================= TYPOGRAPHY =========================
+
+  // FONT SIZES
+  --font-size-xsmall:     12px;
+  --font-size-small:      14px;
+  --font-size-regular:    16px;
+  --font-size-h1:         44px;
+  --font-size-h2:         36px;
+  --font-size-h3:         28px;
+  --font-size-h4:         22px;
+  --font-size-h5:         18px;
+  --font-size-h6:         16px;
+
+  // FONT WEIGHTS
+  --font-weight-light:    300;
+  --font-weight-regular:  400;
+  --font-weight-medium:   500;
+  --font-weight-semibold: 600;
+  --font-weight-bold:     700;
+  --font-weight-black:    900;
+
+  // LINE HEIGHTS
+  --line-height-xloose:  2.0;
+  --line-height-loose:   1.75;
+  --line-height-normal:  1.5;
+  --line-height-tight:   1.1;
+  --line-height-compact: 1.055;
+
+  // FONT FAMILY
+  --font-family-title:        var(--font-family-sans);
+  --font-family-body:         var(--font-family-sans);
+  --font-family-segoe:        "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  --font-family-sans:         -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif,"Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol";
+  --font-family-serif:        Iowan Old Style, Apple Garamond, Baskerville, Times New Roman, Droid Serif, Times, Source Serif Pro, serif, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol;
+  --font-family-monospace:    Menlo, Monaco, Consolas, "Courier New", monospace;
+
+  // ========================= END TYPOGRAPHY =========================
+
+
+  // ============================ SPACING =============================
+
+  // SPACING
+  --spacing-tiny:       4px;
+  --spacing-xsmall:     8px;
+  --spacing-small:     12px;
+  --spacing-medium:    16px;
+  --spacing-large:     24px;
+  --spacing-xlarge:    48px;
+  --spacing-huge:      80px;
+
+  // ========================== END SPACING ===========================
+
+
+  // ========================== VISUAL APPEARANCES ===========================
+
+  --adminbar-bg:              #45474c;
+  --modal-backdrop:           rgba(94, 94, 94, 0.6);
+
+  --box-shadow:               rgba(145, 158, 171, 0.2) 0px 0px 2px 0px,rgba(145, 158, 171, 0.12) 0px 12px 24px -4px;
+  --box-shadow-strong:        rgba(145, 158, 171, 0.2) 0px 20px 25px -5px,rgba(145, 158, 171, 0.12) 0px 10px 10px -5px;
+  --popup-box-shadow:         0 1rem 3rem rgba(0,0,0,.175);
+  --popup-box-shadow:         0 1rem 3rem rgba(0,0,0,.175);
+  --dropdown-box-shadow:      0 4px 8px 0 rgba(145, 158, 171,.12);
+  --input-box-shadow:         0 1px 1px rgba(24, 36, 51, 0.06);
+  --input-focus-box-shadow:   0 0 0 2px var(--color-primary-tint);
+  --input-after-box-shadow:   0 .125rem .375rem 0 rgba(var(--color-primary), 0.3);
+
+  // BORDER RADIUS
+  --rounded-tiny:       2px;
+  --rounded-xsmall:     4px;
+  --rounded-small:      6px;
+  --rounded-medium:     8px;
+  --rounded-large:     12px;
+  --rounded-xlarge:    16px;
+  --rounded-huge:      24px;
+  --rounded-full:    9999px;
+
+  // ========================== END VISUAL APPEARANCES ===========================
+
+  --focus-state-border: 1px solid var(--color-primary); // it is used by the "Write a note" in someone profile.
+  --focus-state-shadow: var(--input-focus-box-shadow); // it is used by the "Write a note" in someone profile.
+  --input-border: var(--color-interface-soft); // it used by CheckinAreas.css. The style is use in page Check-in Configuration in settings.
+
+  // it is used by the range slider (obisidian control gallery "Range Slider").
+  --slider-height: 8px;
+  --slider-bg: var(--color-interface-soft);
+  --slider-progress-bg: var(--color-primary);
+  --slider-handle-offset: 29px;
+  --slider-handle-bg: var(--color-interface-softest);
+  --slider-handle-height: 16px;
+  --slider-handle-bg--hover: var(--color-interface-softest);
+  --slider-handle-border-color: var(--color-interface-soft);
+  --slider-handle-border-color--hover: var(--color-interface-soft);
+}
+
+// Applies only when no theme is set or when "System" theme is selected.
+:root:not([theme]),
+[theme="system"] {
+  // Follow the system color.
+  @media (prefers-color-scheme: dark) {
+    --color-interface-strongest: var(--base-interface-softest);
+    --color-interface-stronger:  var(--base-interface-softer);
+    --color-interface-strong:    var(--base-interface-soft);
+    --color-interface-medium:    var(--base-interface-medium);
+    --color-interface-soft:      var(--base-interface-strong);
+    --color-interface-softer:    var(--base-interface-strongest);
+    --color-interface-softest:   var(--base-interface-stronger);
+
+    --color-info-strong:  color-mix(in srgb, var(--base-info) 50%, #fff var(--tint-white-percentage));
+    --color-danger-strong:  color-mix(in srgb, var(--base-danger) 50%, #fff var(--tint-white-percentage));
+    --color-success-strong:  color-mix(in srgb, var(--base-success) 50%, #fff var(--tint-white-percentage));
+    --color-warning-strong:  color-mix(in srgb, var(--base-warning) 50%, #fff var(--tint-white-percentage));
+    --color-critical-strong:  color-mix(in srgb, var(--base-critical) 50%, #fff var(--tint-white-percentage));
+
+    --box-shadow:               rgba(145, 158, 171, 0.3) 0px 0px 2px 0px,rgba(145, 158, 171, .04) 0px 12px 24px -4px;
+    --popup-box-shadow:         0 1rem 3rem rgba(255, 255, 255,.04);
+  }
+}
+
+[theme = "light"] {
+  --color-interface-strongest: var(--base-interface-strongest);
+  --color-interface-stronger:  var(--base-interface-stronger);
+  --color-interface-strong:    var(--base-interface-strong);
+  --color-interface-medium:    var(--base-interface-medium);
+  --color-interface-soft:      var(--base-interface-soft);
+  --color-interface-softer:    var(--base-interface-softer);
+  --color-interface-softest:   var(--base-interface-softest);
+
+  --color-info-strong: var(--base-info);
+  --color-danger-strong: var(--base-danger);
+  --color-success-strong: var(--base-success);
+  --color-warning-strong: var(--base-warning);
+  --color-critical-strong: var(--base-critical);
+
+  --box-shadow:               rgba(145, 158, 171, 0.2) 0px 0px 2px 0px,rgba(145, 158, 171, 0.12) 0px 12px 24px -4px;
+  --popup-box-shadow:         0 1rem 3rem rgba(0,0,0,.175);
+}
+
+[theme = "dark"] {
+  --color-interface-strongest: var(--base-interface-softest);
+  --color-interface-stronger:  var(--base-interface-softer);
+  --color-interface-strong:    var(--base-interface-soft);
+  --color-interface-medium:    var(--base-interface-medium);
+  --color-interface-soft:      var(--base-interface-strong);
+  --color-interface-softer:    var(--base-interface-strongest); // Flipped to strongest to maintain consistency with mobile app dark mode. Stronger is too light.
+  --color-interface-softest:   var(--base-interface-stronger); // Flipped to stronger to maintain consistency with mobile app dark mode.
+
+  --color-info-strong:  color-mix(in srgb, var(--base-info) 50%, #fff var(--tint-white-percentage));
+  --color-danger-strong:  color-mix(in srgb, var(--base-danger) 50%, #fff var(--tint-white-percentage));
+  --color-success-strong:  color-mix(in srgb, var(--base-success) 50%, #fff var(--tint-white-percentage));
+  --color-warning-strong:  color-mix(in srgb, var(--base-warning) 50%, #fff var(--tint-white-percentage));
+  --color-critical-strong:  color-mix(in srgb, var(--base-critical) 50%, #fff var(--tint-white-percentage));
+
+  --box-shadow:               rgba(145, 158, 171, 0.3) 0px 0px 2px 0px,rgba(145, 158, 171, .04) 0px 12px 24px -4px;
+  --box-shadow-strong:        rgba(255, 255, 255, 0.06) 0px 20px 25px -5px,rgba(255, 255, 255, 0.03) 0px 10px 10px -5px;
+
+  --popup-box-shadow:         0 1rem 3rem rgba(255, 255, 255,.04);
+}

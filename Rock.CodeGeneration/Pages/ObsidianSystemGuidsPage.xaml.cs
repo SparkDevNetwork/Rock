@@ -1,6 +1,3 @@
-﻿using Rock.CodeGeneration.FileGenerators;
-using Rock.CodeGeneration.Utility;
-
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -10,6 +7,9 @@ using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+
+using Rock.CodeGeneration.FileGenerators;
+using Rock.CodeGeneration.Utility;
 
 namespace Rock.CodeGeneration.Pages
 {

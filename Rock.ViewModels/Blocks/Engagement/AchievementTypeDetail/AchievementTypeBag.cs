@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -70,11 +70,6 @@ namespace Rock.ViewModels.Blocks.Engagement.AchievementTypeDetail
         /// Gets or sets the alternate image binary file.
         /// </summary>
         public ListItemBag AlternateImageBinaryFile { get; set; }
-
-        /// <summary>
-        /// Gets or sets the attempts.
-        /// </summary>
-        public List<ListItemBag> Attempts { get; set; }
 
         /// <summary>
         /// Gets or sets the available prerequisites.

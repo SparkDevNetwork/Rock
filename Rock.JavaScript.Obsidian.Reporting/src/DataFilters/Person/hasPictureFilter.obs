@@ -1,5 +1,5 @@
 <template>
-    <RadioButtonList v-model="hasPicture" :items="hasPictureOptions" horizontal />
+    <RadioButtonList v-model="hasPicture" :items="hasPictureOptions" horizontal disableLabel />
 </template>
 
 <script setup lang="ts">

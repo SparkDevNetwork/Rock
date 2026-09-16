@@ -272,6 +272,12 @@
                 return communicationTemplate.isSmsSupported;
             });
         }
+        else if (props.communicationType === CommunicationType.PushNotification
+            || (props.communicationType === CommunicationType.RecipientPreference && props.allowedMediums.includes(CommunicationType.PushNotification))) {
+            templates = templates.filter(communicationTemplate => {
+                return communicationTemplate.isPushSupported;
+            });
+        }
 
         return templates;
     });
@@ -358,6 +364,26 @@
             moveNext();
         }
     }
+
+    // #endregion
+
+    // #region Watchers
+
+    // Clear the selected template if no longer offered in the filtered list.
+    watch(filteredCommunicationTemplates, () => {
+        const selectedGuid = internalCommunicationTemplateGuid.value;
+
+        if (!selectedGuid) {
+            return;
+        }
+
+        const isSelectedTemplateOffered = filteredCommunicationTemplates.value
+            .some(communicationTemplate => areEqual(communicationTemplate.guid, selectedGuid));
+
+        if (!isSelectedTemplateOffered) {
+            internalCommunicationTemplateGuid.value = null;
+        }
+    }, { immediate: true });
 
     // #endregion
 </script>

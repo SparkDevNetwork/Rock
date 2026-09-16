@@ -1,0 +1,149 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Panel v-if="config.isVisible"
+           title="Bookmarked Attributes">
+        <template #headerActions>
+            <span class="key-attribute-actions">
+                <a v-if="hasBookmarkedAttributes"
+                   href="#"
+                   class="key-attribute-action"
+                   title="Order Attributes"
+                   @click.prevent="onOrderClick">
+                    <i class="ti ti-menu-2"></i>
+                </a>
+                <a v-if="hasBookmarkedAttributes"
+                   href="#"
+                   class="key-attribute-action"
+                   title="Edit Attributes"
+                   @click.prevent="onEditClick">
+                    <i class="ti ti-pencil"></i>
+                </a>
+                <a href="#"
+                   class="key-attribute-action"
+                   title="Select Attributes"
+                   @click.prevent="onConfigureClick">
+                    <i class="ti ti-settings"></i>
+                </a>
+            </span>
+        </template>
+
+        <ViewPanel v-if="isViewMode"
+                   :attributes="view.attributes ?? {}"
+                   :attributeValues="view.attributeValues ?? {}" />
+
+        <EditPanel v-else-if="mode === ViewMode.Edit && editData"
+                   :editBag="editData"
+                   @saved="onSaved"
+                   @cancel="onCancel" />
+
+        <OrderPanel v-else-if="mode === ViewMode.Order"
+                    :attributes="view.attributes ?? {}"
+                    @saved="onSaved"
+                    @cancel="onCancel" />
+
+        <ConfigureModal v-model="isConfigureModalOpen" @saved="onSaved" />
+    </Panel>
+</template>
+
+<style scoped>
+.key-attribute-actions {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-xsmall);
+    opacity: 0;
+    transition: opacity 0.2s ease-out;
+}
+
+.panel-header:hover .key-attribute-actions {
+    opacity: 1;
+}
+
+/* Devices that cannot hover (e.g. touch) should keep the actions visible. */
+@media (hover: none) {
+    .key-attribute-actions {
+        opacity: 1;
+    }
+}
+
+.key-attribute-action {
+    color: var(--color-interface-strong);
+    font-size: var(--font-size-regular);
+    line-height: 1;
+}
+
+.key-attribute-action:hover {
+    color: var(--color-interface-stronger);
+}
+</style>
+
+<script setup lang="ts">
+    import { computed, ref } from "vue";
+    import Panel from "@Obsidian/Controls/panel.obs";
+    import ViewPanel from "./KeyAttributes/viewPanel.partial.obs";
+    import EditPanel from "./KeyAttributes/editPanel.partial.obs";
+    import OrderPanel from "./KeyAttributes/orderPanel.partial.obs";
+    import ConfigureModal from "./KeyAttributes/configureModal.partial.obs";
+    import { ViewMode } from "./KeyAttributes/types.partial";
+    import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
+    import { alert } from "@Obsidian/Utility/dialogs";
+    import { KeyAttributesInitializationBox } from "@Obsidian/ViewModels/Blocks/Crm/PersonDetail/KeyAttributes/keyAttributesInitializationBox";
+    import { KeyAttributesViewBag } from "@Obsidian/ViewModels/Blocks/Crm/PersonDetail/KeyAttributes/keyAttributesViewBag";
+    import { KeyAttributesEditBag } from "@Obsidian/ViewModels/Blocks/Crm/PersonDetail/KeyAttributes/keyAttributesEditBag";
+
+    const config = useConfigurationValues<KeyAttributesInitializationBox>();
+    const invokeBlockAction = useInvokeBlockAction();
+
+    // #region Values
+
+    const mode = ref<ViewMode>(ViewMode.View);
+    const view = ref<KeyAttributesViewBag>(config.view ?? { hasBookmarkedAttributes: false, attributes: {}, attributeValues: {} });
+    const editData = ref<KeyAttributesEditBag | null>(null);
+    const isConfigureModalOpen = ref(false);
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    const isViewMode = computed((): boolean => mode.value === ViewMode.View);
+    const hasBookmarkedAttributes = computed((): boolean => view.value.hasBookmarkedAttributes ?? false);
+
+    // #endregion Computed Values
+
+    // #region Event Handlers
+
+    async function onEditClick(): Promise<void> {
+        const result = await invokeBlockAction<KeyAttributesEditBag>("GetEditAttributes");
+
+        if (result.isSuccess && result.data) {
+            editData.value = result.data;
+            mode.value = ViewMode.Edit;
+        }
+        else {
+            await alert(result.errorMessage || "Unable to load the attributes for editing.");
+        }
+    }
+
+    function onOrderClick(): void {
+        mode.value = ViewMode.Order;
+    }
+
+    function onConfigureClick(): void {
+        isConfigureModalOpen.value = true;
+    }
+
+    function onSaved(updatedView: KeyAttributesViewBag): void {
+        view.value = updatedView;
+        editData.value = null;
+        mode.value = ViewMode.View;
+        isConfigureModalOpen.value = false;
+    }
+
+    function onCancel(): void {
+        editData.value = null;
+        mode.value = ViewMode.View;
+    }
+
+    // #endregion Event Handlers
+
+    onConfigurationValuesChanged(useReloadBlock());
+</script>

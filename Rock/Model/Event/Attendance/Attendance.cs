@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -22,7 +22,9 @@ using System.Runtime.Serialization;
 
 using Rock.Data;
 using Rock.Enums.Event;
+using Rock.Enums.Security;
 using Rock.Lava;
+using Rock.Security;
 
 #if REVIEW_NET5_0_OR_GREATER
 using DbEntityEntry = Microsoft.EntityFrameworkCore.ChangeTracking.EntityEntry;
@@ -103,6 +105,7 @@ namespace Rock.Model
         /// The search value entered.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.PlainText )]
         public string SearchValue { get; set; }
 
         /// <summary>
@@ -207,6 +210,7 @@ namespace Rock.Model
         /// A <see cref="System.String"/> representing the note.
         /// </value>
         [DataMember]
+        [StringValidation( StringValidationProfile.BasicHtml )]
         public string Note { get; set; }
 
         /// <summary>

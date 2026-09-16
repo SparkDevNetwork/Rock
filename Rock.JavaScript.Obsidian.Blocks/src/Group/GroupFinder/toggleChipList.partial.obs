@@ -1,0 +1,72 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="groupfinder-chip-list">
+        <button v-for="item in items"
+                :key="item.value ?? ''"
+                type="button"
+                class="groupfinder-chip"
+                :class="{ 'is-selected': isSelected(item) }"
+                :aria-pressed="isSelected(item)"
+                :disabled="disabled"
+                @click="toggle(item)">
+            <slot name="chip" :item="item" :isSelected="isSelected(item)">
+                {{ item.text }}
+            </slot>
+        </button>
+    </div>
+</template>
+
+<script setup lang="ts">
+    import { PropType } from "vue";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+
+    // #region Values
+
+    const props = defineProps({
+        /** The full set of options rendered as chips. */
+        items: {
+            type: Array as PropType<ListItemBag[]>,
+            default: () => []
+        },
+
+        /** The selected items. Treated as immutable - toggling a chip emits a new array. */
+        modelValue: {
+            type: Array as PropType<ListItemBag[]>,
+            default: () => []
+        },
+
+        /** Whether the chips are non-interactive. */
+        disabled: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: ListItemBag[]): void;
+    }>();
+
+    // #endregion Values
+
+    // #region Event Handlers
+
+    function isSelected(item: ListItemBag): boolean {
+        return props.modelValue.some(selected => selected.value === item.value);
+    }
+
+    // Build and emit a brand-new array rather than mutating modelValue, so the parent's binding updates
+    // cleanly and callers can treat the bound value as immutable.
+    function toggle(item: ListItemBag): void {
+        if (props.disabled) {
+            return;
+        }
+
+        const next = isSelected(item)
+            ? props.modelValue.filter(selected => selected.value !== item.value)
+            : [...props.modelValue, item];
+
+        emit("update:modelValue", next);
+    }
+
+    // #endregion Event Handlers
+</script>

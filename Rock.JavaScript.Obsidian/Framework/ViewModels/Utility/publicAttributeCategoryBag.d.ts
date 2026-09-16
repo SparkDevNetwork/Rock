@@ -25,6 +25,9 @@ import { Guid } from "@Obsidian/Types";
 
 /** Provides the details about a category that an attribute belongs to. */
 export type PublicAttributeCategoryBag = {
+    /** Gets or sets the description of the category. */
+    description?: string | null;
+
     /** Gets or sets the unique identifier of the category. */
     guid: Guid;
 

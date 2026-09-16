@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -16,8 +16,10 @@
 //
 using System;
 using System.Collections.Generic;
+using System.IdentityModel.Metadata;
 using System.Threading.Tasks;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -77,33 +79,74 @@ namespace Rock.Core.Automation.Events
 
             Task.Run( () =>
             {
-                using ( var rockContext = new RockContext() )
+                try
                 {
-                    using ( var activity = Observability.ObservabilityHelper.StartActivity( $"WT:" ) )
+                    ExecuteWorkflow( entityTypeId, entityId, name );
+                }
+                catch ( Exception ex )
+                {
+                    ExceptionLogService.LogException( ex, null );
+                }
+            } );
+        }
+
+        /// <summary>
+        /// Executes the workflow for the specified entity type and entity ID,
+        /// using the provided name.
+        /// </summary>
+        /// <param name="entityTypeId">The ID of the entity type.</param>
+        /// <param name="entityId">The ID of the entity.</param>
+        /// <param name="name">The name of the workflow.</param>
+        private void ExecuteWorkflow( int? entityTypeId, int? entityId, string name )
+        {
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
+            {
+                using ( var activity = Observability.ObservabilityHelper.StartActivity( "WT:" ) )
+                {
+                    var workflowType = WorkflowTypeCache.Get( _workflowTypeGuid, rockContext );
+                    IEntity loadedEntity = null;
+
+                    if ( workflowType == null )
+                    {
+                        return;
+                    }
+
+                    // If we are dealing with an entity, we need to re-load it
+                    // since EF is not thread safe and we are on a different
+                    // thread now.
+                    if ( entityId.HasValue )
                     {
                         var entityTypeCache = entityTypeId.HasValue
                             ? EntityTypeCache.Get( entityTypeId.Value, rockContext )
                             : null;
+                        var entityClrType = entityTypeCache.GetEntityType();
 
-                        if ( entityTypeCache != null && activity != null )
-                        {
-                            activity.DisplayName = $"WT: {entityTypeCache?.FriendlyName}";
-                        }
-
-                        var workflowType = WorkflowTypeCache.Get( _workflowTypeGuid, rockContext );
-
-                        if ( workflowType == null )
+                        if ( entityTypeCache == null || entityClrType == null )
                         {
                             return;
                         }
 
-                        var workflow = Model.Workflow.Activate( workflowType, name );
-                        var workflowService = new WorkflowService( rockContext );
+                        if ( activity != null )
+                        {
+                            activity.DisplayName = $"WT: {entityTypeCache.FriendlyName}";
+                        }
 
-                        workflowService.Process( workflow, entity, out _ );
+                        loadedEntity = Reflection.GetIEntityForEntityType( entityClrType, entityId.Value );
+
+                        // If the entity could not be loaded, then abort the
+                        // workflow run.
+                        if ( loadedEntity == null )
+                        {
+                            return;
+                        }
                     }
+
+                    var workflow = Model.Workflow.Activate( workflowType, name );
+                    var workflowService = new WorkflowService( rockContext );
+
+                    workflowService.Process( workflow, loadedEntity, out _ );
                 }
-            } );
+            }
         }
 
         #endregion

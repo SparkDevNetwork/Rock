@@ -1,0 +1,108 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="block-zone">
+        <h5 class="block-zone-title">{{ zone.name }}</h5>
+
+        <div class="block-zone-drop">
+            <div class="block-zone-list"
+                 v-drag-reorder="props.reorderDragOptions"
+                 v-drag-target="paletteDragOptions.id"
+                 :data-zone-name="zone.name ?? ''">
+                <BlockInstanceRow v-for="block in blocks"
+                                  :key="block.idKey ?? block.guid"
+                                  :block="block"
+                                  :isPending="pendingBlockGuids.has(block.guid)"
+                                  @delete="$emit('delete', block)"
+                                  @customAction="action => $emit('customAction', block, action)"
+                                  @refresh="$emit('refresh')" />
+            </div>
+            <div v-if="blocks.length === 0" class="block-zone-empty text-muted">
+                Zone is empty. Drag a block here to get started.
+            </div>
+        </div>
+    </div>
+</template>
+
+<style scoped>
+.block-zone-title {
+    margin: 0 0 var(--spacing-small);
+    font-weight: var(--font-weight-semibold);
+}
+
+.block-zone-drop {
+    position: relative;
+}
+
+.block-zone-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-small);
+    min-height: 96px;
+}
+
+.block-zone-empty {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--spacing-large);
+    text-align: center;
+    border: 1px dashed var(--color-interface-soft);
+    border-radius: var(--rounded-small);
+    pointer-events: none;
+}
+
+.block-zone.drag-over .block-zone-empty {
+    display: none;
+}
+</style>
+
+<script setup lang="ts">
+    // #region Types
+
+    import { computed, PropType } from "vue";
+    import { DragReorder as vDragReorder, DragTarget as vDragTarget, IDragSourceOptions } from "@Obsidian/Directives/dragDrop";
+    import { MobilePageBlockBag } from "@Obsidian/ViewModels/Blocks/Mobile/MobilePageDetail/mobilePageBlockBag";
+    import { MobilePageBlockActionBag } from "@Obsidian/ViewModels/Blocks/Mobile/MobilePageDetail/mobilePageBlockActionBag";
+    import { MobilePageZoneBag } from "@Obsidian/ViewModels/Blocks/Mobile/MobilePageDetail/mobilePageZoneBag";
+    import BlockInstanceRow from "./blockInstanceRow.partial.obs";
+
+    const props = defineProps({
+        zone: {
+            type: Object as PropType<MobilePageZoneBag>,
+            required: true
+        },
+
+        paletteDragOptions: {
+            type: Object as PropType<IDragSourceOptions>,
+            required: true
+        },
+
+        reorderDragOptions: {
+            type: Object as PropType<IDragSourceOptions>,
+            required: true
+        },
+
+        pendingBlockGuids: {
+            type: Object as PropType<Set<string>>,
+            required: true
+        }
+    });
+
+    defineEmits<{
+        (e: "delete", block: MobilePageBlockBag): void;
+        (e: "customAction", block: MobilePageBlockBag, action: MobilePageBlockActionBag): void;
+        (e: "refresh"): void;
+    }>();
+
+    // #endregion Types
+
+    // #region Computed Values
+
+    const blocks = computed((): MobilePageBlockBag[] => {
+        return [...(props.zone.blocks ?? [])].sort((a, b) => a.order - b.order);
+    });
+
+    // #endregion Computed Values
+</script>

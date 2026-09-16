@@ -31,9 +31,6 @@ describe("Issue 5547", () => {
             GetDefaultAttributeFieldValues: getDefaultAttributeFieldValues
         });
 
-        // Silence console errors about scrollTo() not being implemented in jsdom.
-        global.scrollTo = jest.fn();
-
         const instance = mountBlock(RegistrationEntry, getConfigurationValues(), blockActions);
 
         // Move to the first registrant.
@@ -56,9 +53,6 @@ describe("Issue 5547", () => {
         const blockActions = mockBlockActions({
             GetDefaultAttributeFieldValues: getDefaultAttributeFieldValues
         });
-
-        // Silence console errors about scrollTo() not being implemented in jsdom.
-        global.scrollTo = jest.fn();
 
         const instance = mountBlock(RegistrationEntry, getConfigurationValues(), blockActions);
 
@@ -97,9 +91,6 @@ describe("Issue 5547", () => {
         const blockActions = mockBlockActions({
             GetDefaultAttributeFieldValues: getDefaultAttributeFieldValues
         });
-
-        // Silence console errors about scrollTo() not being implemented in jsdom.
-        global.scrollTo = jest.fn();
 
         const instance = mountBlock(RegistrationEntry, getConfigurationValues(), blockActions);
 

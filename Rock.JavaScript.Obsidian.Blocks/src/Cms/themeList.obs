@@ -1,0 +1,271 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <NotificationBox v-if="notificationMessage" :alertType="notificationAlertType" class="alert-grid">
+        {{ notificationMessage }}
+        <pre v-if="notificationDetails">{{ notificationDetails }}</pre>
+    </NotificationBox>
+
+    <Grid :definition="config.gridDefinition ?? undefined"
+          :data="gridDataSource"
+          keyField="idKey"
+          itemTerm="Theme"
+          title="Themes"
+          :entityTypeGuid="EntityType.Theme"
+          :expectedRowCount="config.expectedRowCount ?? undefined"
+          stickyHeader
+          liveUpdates
+          @selectItem="onSelectItem">
+
+        <HighlightDetailColumn name="name"
+                               title="Name"
+                               field="name"
+                               detailField="description"
+                               :filter="textValueFilter"
+                               visiblePriority="xs" />
+
+        <TextColumn name="purpose"
+                    title="Purpose"
+                    field="purpose"
+                    :filter="pickExistingValueFilter"
+                    visiblePriority="sm" />
+
+        <BooleanColumn name="isActive"
+                       title="Active"
+                       field="isActive"
+                       :filter="booleanValueFilter"
+                       visiblePriority="xs" />
+
+        <BooleanColumn name="isSystem"
+                       title="System"
+                       field="isSystem"
+                       :filter="booleanValueFilter"
+                       visiblePriority="xs" />
+
+        <ButtonColumn name="compile"
+                      title="Compile"
+                      iconClass="ti ti-refresh"
+                      :visible="row => !!row.allowsCompile"
+                      :excludeFromExport="true"
+                      @click="onCompileClick" />
+
+        <ButtonColumn name="copy"
+                      title="Copy"
+                      iconClass="ti ti-copy"
+                      :excludeFromExport="true"
+                      @click="onCopyClick" />
+
+        <DeleteColumn v-if="config.isDeleteEnabled"
+                      :rowDisabled="row => !!row.isSystem"
+                      @click="onDeleteClick" />
+    </Grid>
+
+    <Modal v-model="isCloneModalOpen"
+           title="Clone Theme"
+           saveText="Clone"
+           saveAutoDisable
+           saveAutoLoading
+           @save="onCloneSave">
+        <TextBox v-model="newThemeName"
+                 label="New Theme Name"
+                 rules="required" />
+        <small>Note: Spaces and special characters will be removed.</small>
+    </Modal>
+</template>
+
+<script setup lang="ts">
+    import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
+    import { EntityType } from "@Obsidian/SystemGuids/entityType";
+    import Grid, { BooleanColumn, ButtonColumn, DeleteColumn, HighlightDetailColumn, TextColumn, booleanValueFilter, pickExistingValueFilter, textValueFilter } from "@Obsidian/Controls/grid";
+    import { alert } from "@Obsidian/Utility/dialogs";
+    import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
+    import { ThemeListOptionsBag } from "@Obsidian/ViewModels/Blocks/Cms/ThemeList/themeListOptionsBag";
+    import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
+    import { NavigationUrlKey } from "./ThemeList/types.partial";
+    import { reactive, ref } from "vue";
+    import { AlertType } from "@Obsidian/Enums/Controls/alertType";
+    import Modal from "@Obsidian/Controls/modal.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+
+    const config = useConfigurationValues<ListBlockBox<ThemeListOptionsBag>>();
+    const invokeBlockAction = useInvokeBlockAction();
+
+    onConfigurationValuesChanged(useReloadBlock());
+
+    // #region Values
+
+    const gridDataSource = ref<Promise<GridDataBag>>();
+    let gridData: GridDataBag | undefined;
+
+    const notificationMessage = ref("");
+    const notificationDetails = ref("");
+    const notificationAlertType = ref<AlertType>(AlertType.Success);
+
+    const isCloneModalOpen = ref(false);
+    const cloneSourceKey = ref("");
+    const cloneSourceName = ref("");
+    const newThemeName = ref("");
+
+    // #endregion Values
+
+    // #region Functions
+
+    /**
+     * Called when the grid is requesting the row data be loaded.
+     */
+    async function loadGridData(): Promise<GridDataBag> {
+        const result = await invokeBlockAction<GridDataBag>("GetGridData");
+
+        if (result.isSuccess && result.data) {
+            gridData = reactive(result.data);
+            return gridData;
+        }
+        else {
+            throw new Error(result.errorMessage ?? "Unknown error while trying to load grid data.");
+        }
+    }
+
+    /**
+     * Gets the grid row for the specified key.
+     *
+     * @param key The row key.
+     */
+    function getRow(key: string): Record<string, unknown> | undefined {
+        return gridData?.rows?.find(r => r["idKey"] === key);
+    }
+
+    /**
+     * Clears any notification currently shown above the grid.
+     */
+    function clearNotification(): void {
+        notificationMessage.value = "";
+        notificationDetails.value = "";
+    }
+
+    // #endregion Functions
+
+    // #region Event Handlers
+
+    /**
+     * Called when a row has been selected. Legacy themes open the styler; next-gen themes open the detail page.
+     *
+     * @param key The key of the row that was selected.
+     */
+    function onSelectItem(key: string): void {
+        const row = getRow(key);
+
+        if (!row) {
+            return;
+        }
+
+        if (row.allowsCompile) {
+            const url = config.navigationUrls?.[NavigationUrlKey.ThemeStylerPage];
+
+            if (url) {
+                window.location.href = url.replace("((Key))", String(row.name ?? ""));
+            }
+        }
+        else {
+            const url = config.navigationUrls?.[NavigationUrlKey.DetailPage];
+
+            if (url) {
+                window.location.href = url.replace("((Key))", key);
+            }
+        }
+    }
+
+    /**
+     * Called when a row's compile button has been clicked.
+     *
+     * @param key The key of the row to compile.
+     */
+    async function onCompileClick(key: string): Promise<void> {
+        const row = getRow(key);
+        const name = String(row?.name ?? "theme");
+        const result = await invokeBlockAction("Compile", {
+            key
+        });
+
+        if (result.isSuccess) {
+            clearNotification();
+            await alert("Theme was successfully compiled.");
+        }
+        else {
+            notificationAlertType.value = AlertType.Danger;
+            notificationMessage.value = `An error occurred while compiling the ${name} theme.`;
+            notificationDetails.value = result.errorMessage ?? "";
+        }
+    }
+
+    /**
+     * Called when a row's copy button has been clicked. Opens the clone modal.
+     *
+     * @param key The key of the row to clone.
+     */
+    function onCopyClick(key: string): void {
+        const row = getRow(key);
+
+        cloneSourceKey.value = key;
+        cloneSourceName.value = String(row?.name ?? "");
+        newThemeName.value = "";
+        isCloneModalOpen.value = true;
+    }
+
+    /**
+     * Called when the clone modal save button has been clicked.
+     */
+    async function onCloneSave(): Promise<void> {
+        const result = await invokeBlockAction<string>("Clone", {
+            key: cloneSourceKey.value,
+            newThemeName: newThemeName.value
+        });
+
+        isCloneModalOpen.value = false;
+        notificationDetails.value = "";
+
+        if (result.isSuccess) {
+            notificationAlertType.value = AlertType.Success;
+            notificationMessage.value = `The ${cloneSourceName.value} theme has been successfully cloned to ${result.data}.`;
+            gridDataSource.value = loadGridData();
+        }
+        else {
+            notificationAlertType.value = AlertType.Danger;
+            notificationMessage.value = result.errorMessage ?? "Unknown error while trying to clone the theme.";
+        }
+    }
+
+    /**
+     * Called when a row's delete button has been clicked by the individual. This
+     * happens only if they have confirmed the delete action.
+     *
+     * @param key The key of the row to delete.
+     */
+    async function onDeleteClick(key: string): Promise<void> {
+        const row = getRow(key);
+        const name = String(row?.name ?? "theme");
+        const result = await invokeBlockAction("Delete", {
+            key
+        });
+
+        if (result.isSuccess) {
+            if (gridData && gridData.rows) {
+                const index = gridData.rows.findIndex(r => r["idKey"] === key);
+
+                if (index !== -1) {
+                    gridData.rows.splice(index, 1);
+                }
+            }
+
+            notificationAlertType.value = AlertType.Success;
+            notificationMessage.value = `The ${name} theme has been successfully deleted.`;
+            notificationDetails.value = "";
+        }
+        else {
+            await alert(result.errorMessage ?? "Unknown error while trying to delete the theme.");
+        }
+    }
+
+    // #endregion Event Handlers
+
+    gridDataSource.value = loadGridData();
+</script>

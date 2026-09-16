@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -15,16 +15,19 @@
 // </copyright>
 //
 
-using Rock.Attribute;
-using Rock.Data;
-using Rock.Model;
-using Rock.Web.Cache;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 #if WEBFORMS
 using System.Web.UI;
 #endif
+
+using Rock.Attribute;
+using Rock.Configuration;
+using Rock.Data;
+using Rock.Model;
+using Rock.Web.Cache;
+
 namespace Rock.Field.Types
 {
     /// <summary>
@@ -45,7 +48,7 @@ namespace Rock.Field.Types
 
             GroupMemberRequirement groupMemberRequirement = null;
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 Guid? guid = privateValue.AsGuidOrNull();
                 if ( guid.HasValue )
@@ -100,7 +103,7 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public IEntity GetEntity( string value, RockContext rockContext )
         {
-            rockContext = rockContext ?? new RockContext();
+            rockContext = rockContext ?? RockApp.Current.CreateRockContext();
             Guid? guid = value.AsGuidOrNull();
             if ( guid.HasValue )
             {
@@ -124,7 +127,7 @@ namespace Rock.Field.Types
                 return null;
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 // This is a complex reference. See below in the GetReferencedProperties()
                 // method for a more detailed description of the paths we need. This query
@@ -215,6 +218,21 @@ namespace Rock.Field.Types
 
         #endregion
 
+        #region Value Hinting
+
+        /// <inheritdoc/>
+        internal override FieldTypeHints GetFieldHints( Dictionary<string, string> privateConfigurationValues )
+        {
+            return new FieldTypeHints
+            {
+                IsCompleteList = false,
+                ValueFormat = "The guid of a single row in the GroupMemberRequirement table, not its id or idKey and not its name. Only one value is stored, so a comma separated list is not valid here.",
+                Instructions = "To find the correct value, read the group member requirements and take the guid of the one you want."
+            };
+        }
+
+        #endregion
+
         #region WebForms
 #if WEBFORMS
 
@@ -242,7 +260,7 @@ namespace Rock.Field.Types
         public int? GetEditValueAsEntityId( System.Web.UI.Control control, Dictionary<string, ConfigurationValue> configurationValues )
         {
             Guid guid = GetEditValue( control, configurationValues ).AsGuid();
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 return new GroupMemberRequirementService( rockContext ).GetId( guid );
             }
@@ -256,7 +274,7 @@ namespace Rock.Field.Types
         /// <param name="id">The identifier.</param>
         public void SetEditValueFromEntityId( System.Web.UI.Control control, Dictionary<string, ConfigurationValue> configurationValues, int? id )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var itemGuid = new GroupMemberRequirementService( rockContext ).GetGuid( id ?? 0 );
                 string guidValue = itemGuid.HasValue ? itemGuid.ToString() : string.Empty;

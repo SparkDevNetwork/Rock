@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -19,10 +19,13 @@ using System.Linq;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Tests.Integration.Reporting.DataFilter;
-using Rock.Tests.Shared;
+using Rock.Tests.Shared.Constants;
+using Rock.Tests.Shared.TestFramework;
+using Rock.Tests.Shared.Utility;
 
 namespace Rock.Tests.Integration.TestData
 {
@@ -56,7 +59,7 @@ namespace Rock.Tests.Integration.TestData
                 // Add the sample data.
                 TestHelper.Log( $"Creating sample data for Group Requirements feature..." );
 
-                var rockContext = new RockContext();
+                var rockContext = RockApp.Current.CreateRockContext();
 
                 AddSampleDataViews();
 
@@ -170,7 +173,7 @@ namespace Rock.Tests.Integration.TestData
                     FilterSettings = ageFilterFactory.GetSettingsString( ageFilterSettings )
                 };
 
-                var rockContext = new RockContext();
+                var rockContext = RockApp.Current.CreateRockContext();
 
                 TestDataHelper.Reporting.AddDataViewComponentFilter( filterArgs, rockContext );
                 rockContext.SaveChanges();
@@ -207,7 +210,7 @@ namespace Rock.Tests.Integration.TestData
 
                 // Create a Group Type with a "Child/Member/Attender" requirement.
                 // Members in groups of this type must be a Member or Attender if they are classifed as an Adult.
-                var rockContext = new RockContext();
+                var rockContext = RockApp.Current.CreateRockContext();
                 var groupTypeService = new GroupTypeService( rockContext );
                 var groupType = groupTypeService.Get( Guids.GroupTypeChildOrMemberOrAttenderOnlyGuid.AsGuid() );
 
@@ -251,7 +254,7 @@ namespace Rock.Tests.Integration.TestData
 
             private static void CreateTestGroup( string name, string guid, string groupTypeIdentifier, List<string> personIdList )
             {
-                var rockContext = new RockContext();
+                var rockContext = RockApp.Current.CreateRockContext();
 
                 // Create a new Group.
                 var addGroupArgs = new TestDataHelper.Crm.AddGroupArgs
@@ -297,7 +300,7 @@ namespace Rock.Tests.Integration.TestData
                     AppliesToAgeClassification = ageClassification
                 };
 
-                var rockContext = new RockContext();
+                var rockContext = RockApp.Current.CreateRockContext();
                 var requirement = TestDataHelper.Crm.AddGroupRequirement( rockContext, addGroupRequirementArgs );
                 rockContext.SaveChanges( disablePrePostProcessing: true );
 

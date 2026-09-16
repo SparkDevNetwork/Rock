@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -18,19 +18,20 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Entity;
-using System.Linq;
 using System.IO;
+using System.Linq;
 
+using Rock;
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Obsidian.UI;
 using Rock.Security;
+using Rock.SystemGuid;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Cms.LayoutList;
 using Rock.Web.Cache;
-using Rock;
-using Rock.SystemGuid;
 
 namespace Rock.Blocks.Cms
 {
@@ -41,12 +42,13 @@ namespace Rock.Blocks.Cms
     [Category( "CMS" )]
     [Description( "Displays a list of layouts." )]
     [IconCssClass( "ti ti-list" )]
-    // [SupportedSiteTypes(Model.SiteType.Web)]
+    [SupportedSiteTypes(Model.SiteType.Web)]
     [LinkedPage( "Detail Page", Description = "The page that will show the layout details.", Key = AttributeKey.DetailPage )]
 
     [Rock.Cms.DefaultBlockRole( Rock.Enums.Cms.BlockRole.Secondary )]
     [Rock.SystemGuid.EntityTypeGuid( "6e1d987d-de38-4440-b54f-717c102795fe" )]
-    [Rock.SystemGuid.BlockTypeGuid( "6a10a280-65b8-4988-96b2-974fcd80604b" )]
+    [Rock.SystemGuid.BlockTypeGuid( "5996BF81-F2E2-4702-B401-B0B1B6667DAE" )]
+    // was [Rock.SystemGuid.BlockTypeGuid( "6a10a280-65b8-4988-96b2-974fcd80604b" )]
     [CustomizedGrid]
     public class LayoutList : RockEntityListBlockType<Rock.Model.Layout>
     {
@@ -223,7 +225,7 @@ namespace Rock.Blocks.Cms
         [BlockAction]
         public BlockActionResult Delete( string key )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var entityService = new LayoutService( rockContext );
                 var entity = entityService.Get( key, !PageCache.Layout.Site.DisablePredictableIds );

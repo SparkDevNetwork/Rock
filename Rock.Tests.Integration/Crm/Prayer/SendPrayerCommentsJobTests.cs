@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -20,11 +20,12 @@ using System.Linq;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Jobs;
 using Rock.Tests.Integration.TestData;
-using Rock.Tests.Shared;
-using Rock.Tests.Shared.TestFramework;
+using Rock.Tests.Integration.TestFramework.Database;
+using Rock.Tests.Shared.Constants;
 using Rock.Web.Cache;
 
 namespace Rock.Tests.Integration.Crm.Prayer
@@ -111,7 +112,7 @@ namespace Rock.Tests.Integration.Crm.Prayer
         [TestMethod]
         public void SendPrayerComments_DateFilterForWeek1_ReturnsCommentsInWeek1Only()
         {
-            var dataContext = new RockContext();
+            var dataContext = RockApp.Current.CreateRockContext();
 
             var job = GetJobWithDefaultConfiguration();
 
@@ -137,7 +138,7 @@ namespace Rock.Tests.Integration.Crm.Prayer
         [TestMethod]
         public void SendPrayerComments_DateFilterForWeek2_ReturnsWeek1PrayerRequestWithWeek2Comments()
         {
-            var dataContext = new RockContext();
+            var dataContext = RockApp.Current.CreateRockContext();
 
             var job = GetJobWithDefaultConfiguration();
 
@@ -169,7 +170,7 @@ namespace Rock.Tests.Integration.Crm.Prayer
         [TestMethod]
         public void SendPrayerComments_PrivateComments_AreExcluded()
         {
-            var dataContext = new RockContext();
+            var dataContext = RockApp.Current.CreateRockContext();
 
             var job = GetJobWithDefaultConfiguration();
 
@@ -203,7 +204,7 @@ namespace Rock.Tests.Integration.Crm.Prayer
         [TestMethod]
         public void SendPrayerComments_FilterWithChildCategoriesExcluded_ReturnsRequestsInParentCategoryOnly()
         {
-            var dataContext = new RockContext();
+            var dataContext = RockApp.Current.CreateRockContext();
 
             var job = GetJobWithDefaultConfiguration();
 
@@ -228,7 +229,7 @@ namespace Rock.Tests.Integration.Crm.Prayer
         [TestMethod]
         public void SendPrayerComments_ChildCategoriesIncluded_ReturnsRequestsInParentAndChildCategories()
         {
-            var dataContext = new RockContext();
+            var dataContext = RockApp.Current.CreateRockContext();
 
             var job = GetJobWithDefaultConfiguration();
 
@@ -472,7 +473,7 @@ namespace Rock.Tests.Integration.Crm.Prayer
 
             job.SystemEmailTemplateGuid = TestGuids.SystemEmailGuid.PrayerCommentsNotification.AsGuid();
             job.CategoryGuidList = null;
-            job.SystemSettingsId = Rock.Tests.Shared.RecordTag.PrayerRequestFeature;
+            job.SystemSettingsId = RecordTag.PrayerRequestFeature;
             job.CreateCommunicationRecord = true;
 
             // Disable sending the actual email because we may not have a transport mechanism set up in the test environment.

@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -49,6 +49,13 @@ namespace Rock.ViewModels.Blocks.Core.InteractionChannelDetail
         /// Gets or sets the component list template.
         /// </summary>
         public string ComponentListTemplate { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether the Rock Cleanup job should populate
+        /// per-component daily aggregate rows in <c>InteractionComponentDailyCount</c>
+        /// for components belonging to this channel.
+        /// </summary>
+        public bool EnableComponentDailyCounts { get; set; }
 
         /// <summary>
         /// Gets or sets the engagement strength.

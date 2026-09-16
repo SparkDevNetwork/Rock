@@ -1,0 +1,157 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Grid :definition="config.gridDefinition ?? undefined"
+          :data="gridDataSource"
+          :title="title"
+          keyField="idKey"
+          itemTerm="Page View"
+          :entityTypeGuid="EntityType.Interaction"
+          stickyHeader
+          :showLaunchWorkflow="false"
+          :showMergeTemplate="false"
+          gridSettings
+          :gridSettingsActive="hasSettingsFilters"
+          @gridSettingsClick="isGridSettingsVisible = true">
+
+        <DateTimeColumn name="interactionDateTime"
+                        title="View Date Time"
+                        field="interactionDateTime"
+                        :filter="dateValueFilter" />
+
+        <NumberColumn name="timeToServe"
+                      title="Time To Serve"
+                      field="timeToServe"
+                      :filter="numberValueFilter">
+            <template #format="{ row }">
+                {{ formatTimeToServe((row as Row).timeToServe) }}
+            </template>
+        </NumberColumn>
+
+        <PersonColumn name="loggedInUser"
+                      title="Logged In User"
+                      field="loggedInUser"
+                      :hideAvatar="true"
+                      :showAsLink="true"
+                      width="25%" />
+
+        <TextColumn name="url"
+                    title="URL"
+                    field="url"
+                    :filter="textValueFilter"
+                    width="40%" />
+
+    </Grid>
+
+    <GridSettingsModal v-model="gridSettings"
+                       v-model:visible="isGridSettingsVisible"
+                       :defaultSlidingDateRange="defaultSlidingDateRange" />
+</template>
+
+<script setup lang="ts">
+    import { computed, reactive, ref, watch } from "vue";
+    import GridSettingsModal from "./PageViews/gridSettingsModal.partial.obs";
+    import { GridSettingsOptions, PreferenceKey, Row } from "./PageViews/types.partial";
+    import Grid, { DateTimeColumn, NumberColumn, PersonColumn, TextColumn, dateValueFilter, numberValueFilter, textValueFilter } from "@Obsidian/Controls/grid";
+    import { EntityType } from "@Obsidian/SystemGuids/entityType";
+    import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, usePersonPreferences, useReloadBlock } from "@Obsidian/Utility/block";
+    import { parseSlidingDateRangeString, RangeType, SlidingDateRange, slidingDateRangeToString, TimeUnit } from "@Obsidian/Utility/slidingDateRange";
+    import { PageViewsOptionsBag } from "@Obsidian/ViewModels/Blocks/Administration/PageViews/pageViewsOptionsBag";
+    import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
+    import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
+
+    const config = useConfigurationValues<ListBlockBox<PageViewsOptionsBag>>();
+    const invokeBlockAction = useInvokeBlockAction();
+    const preferences = usePersonPreferences().blockPreferences;
+
+    onConfigurationValuesChanged(useReloadBlock());
+
+    // Default to the last 90 days when the individual has no saved date range, as a
+    // single page can accumulate a very large number of interactions.
+    const defaultSlidingDateRange: SlidingDateRange = {
+        rangeType: RangeType.Last,
+        timeUnit: TimeUnit.Day,
+        timeValue: 90
+    };
+
+    // Filter preferences are prefixed per-page so each page remembers its own selections.
+    const keyPrefix = config.options?.preferenceKeyPrefix ?? "";
+
+    // #region Values
+
+    const gridDataSource = ref<Promise<GridDataBag>>();
+    let gridData: GridDataBag | undefined;
+
+    const isGridSettingsVisible = ref(false);
+    const gridSettings = ref<GridSettingsOptions>({
+        dateRange: parseSlidingDateRangeString(preferences.getValue(keyPrefix + PreferenceKey.FilterDateRange)) ?? defaultSlidingDateRange,
+        loginStatus: preferences.getValue(keyPrefix + PreferenceKey.FilterLoginStatus),
+        urlContains: preferences.getValue(keyPrefix + PreferenceKey.FilterUrlContains)
+    });
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    /** The title displayed above the grid. */
+    const title = computed((): string => {
+        return config.options?.title ?? "Page Views";
+    });
+
+    /** `true` if any settings filter is actively narrowing the results. */
+    const hasSettingsFilters = computed((): boolean => {
+        return !!gridSettings.value.dateRange
+            || !!gridSettings.value.loginStatus
+            || !!gridSettings.value.urlContains;
+    });
+
+    // #endregion Computed Values
+
+    // #region Functions
+
+    /**
+     * Called when the grid is requesting the row data be loaded.
+     */
+    async function loadGridData(): Promise<GridDataBag> {
+        const result = await invokeBlockAction<GridDataBag>("GetGridData");
+
+        if (result.isSuccess && result.data) {
+            gridData = reactive(result.data);
+            return gridData;
+        }
+        else {
+            throw new Error(result.errorMessage ?? "Unknown error while trying to load grid data.");
+        }
+    }
+
+    /**
+     * Formats the time to serve as a number of seconds (for example, "1.23s").
+     *
+     * @param timeToServe The number of seconds the server took to serve the page, if known.
+     */
+    function formatTimeToServe(timeToServe: number | null | undefined): string {
+        return timeToServe != null ? `${timeToServe.toFixed(2)}s` : "";
+    }
+
+    // #endregion Functions
+
+    // #region Watchers
+
+    watch(gridSettings, async () => {
+        const dateRangeString = gridSettings.value.dateRange
+            ? slidingDateRangeToString(gridSettings.value.dateRange)
+            : "";
+
+        preferences.setValue(keyPrefix + PreferenceKey.FilterDateRange, dateRangeString);
+        preferences.setValue(keyPrefix + PreferenceKey.FilterLoginStatus, gridSettings.value.loginStatus);
+        preferences.setValue(keyPrefix + PreferenceKey.FilterUrlContains, gridSettings.value.urlContains);
+
+        await preferences.save();
+
+        // Reload the grid so the new server-side filters are applied.
+        gridDataSource.value = loadGridData();
+    });
+
+    // #endregion Watchers
+
+    gridDataSource.value = loadGridData();
+</script>

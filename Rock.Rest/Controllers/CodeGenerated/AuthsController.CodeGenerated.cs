@@ -21,6 +21,7 @@
 // </copyright>
 //
 
+using Rock.Configuration;
 using Rock.Model;
 using Rock.SystemGuid;
 
@@ -35,6 +36,6 @@ namespace Rock.Rest.Controllers
         /// <summary>
         /// Initializes a new instance of the <see cref="AuthsController"/> class.
         /// </summary>
-        public AuthsController() : base( new Rock.Model.AuthService( new Rock.Data.RockContext() ) ) { } 
+        public AuthsController() : base( new Rock.Model.AuthService( RockApp.Current.CreateRockContext() ) ) { } 
     }
 }

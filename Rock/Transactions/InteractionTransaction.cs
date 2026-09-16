@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -21,7 +21,10 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Web;
 
+using Microsoft.Extensions.DependencyInjection;
+
 using Rock;
+using Rock.Configuration;
 using Rock.Core;
 using Rock.Data;
 using Rock.Model;
@@ -212,7 +215,8 @@ namespace Rock.Transactions
             }
 
             // Get the distinct list of user agent strings within the interactions to be logged.
-            var userAgentsLookup = interactionTransactionInfos.Where( a => a.UserAgent.IsNotNullOrWhiteSpace() ).Select( a => a.UserAgent ).Distinct().ToList().ToDictionary( a => a, v => InteractionDeviceType.GetClientType( v ) );
+            var userAgentParser = RockApp.Current.GetRequiredService<IUserAgentParser>();
+            var userAgentsLookup = interactionTransactionInfos.Where( a => a.UserAgent.IsNotNullOrWhiteSpace() ).Select( a => a.UserAgent ).Distinct().ToList().ToDictionary( a => a, v => userAgentParser.Parse( v ).ClientType );
 
             // Include/exclude crawlers based on caller input.
             interactionTransactionInfos = interactionTransactionInfos.Where( a => a.LogCrawlers || a.UserAgent.IsNullOrWhiteSpace() || userAgentsLookup.GetValueOrNull( a.UserAgent ) != "Crawler" ).ToList();
@@ -223,7 +227,7 @@ namespace Rock.Transactions
                 return;
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 LogInteractions( interactionTransactionInfos, rockContext );
             }
@@ -277,7 +281,7 @@ namespace Rock.Transactions
 
             // Cross checking to verify that Guids aren't present in the interaction table.
             var interactionGuidsToInsert = interactionsToInsert.Select( i => i.Guid ).ToList();
-            var duplicateInteractionGuidsFromDatabase = new InteractionService( new RockContext() ).Queryable()
+            var duplicateInteractionGuidsFromDatabase = new InteractionService( RockApp.Current.CreateRockContext() ).Queryable()
                                     .Where( i => interactionGuidsToInsert.Contains( i.Guid ) )
                                     .Select( i => i.Guid )
                                     .ToList();
@@ -296,7 +300,7 @@ namespace Rock.Transactions
                 // Ids do not exit for the interactions in the collection since they were bulk imported.
                 // Read their ids from their guids and append the id.
                 var insertedGuids = interactionsToInsert.Select( i => i.Guid ).ToList();
-                var interactionIds = new InteractionService( new RockContext() ).Queryable()
+                var interactionIds = new InteractionService( RockApp.Current.CreateRockContext() ).Queryable()
                                         .Where( i => insertedGuids.Contains( i.Guid ) )
                                         .Select( i => new { i.Id, i.Guid } )
                                         .ToList();

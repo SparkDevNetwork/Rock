@@ -1,4 +1,4 @@
-﻿<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
     <div>
         <NotificationBox v-if="showRegistrationFullNotification" class="text-left" alertType="warning">
@@ -16,12 +16,11 @@
             <p>{{ allRegistrantsWaitListedMessage }}</p>
         </NotificationBox>
         <div v-html="messageHtml"></div>
-        <SaveFinancialAccountForm v-if="gatewayGuid && transactionCode && gatewayPersonIdentifier && enableSaveAccount"
+        <SaveFinancialAccountForm v-if="gatewayGuid && transactionCode && gatewayPersonIdentifier && enableSaveAccount && isSaveAccountSupported"
                                   :gatewayGuid="gatewayGuid"
                                   :transactionCode="transactionCode"
                                   :gatewayPersonIdentifier="gatewayPersonIdentifier"
-                                  saveAccountCheckBoxLabel="Save account information for future payments"
-                                  class="well">
+                                  saveAccountCheckBoxLabel="Save account information for future payments">
             <template #header>
                 <h3>Make Payments Even Easier</h3>
             </template>
@@ -37,9 +36,11 @@
     import { Guid } from "@Obsidian/Types";
     import { toGuidOrNull } from "@Obsidian/Utility/guid";
     import { pluralConditional } from "@Obsidian/Utility/stringUtils";
+    import { useStore } from "@Obsidian/PageState";
 
     const registrationEntryState = use(CurrentRegistrationEntryState);
     const registrationEntryTerms = use(RegistrationEntryTerms);
+    const store = useStore();
 
     // #region Computed Values
 
@@ -119,6 +120,11 @@
 
     const enableSaveAccount = computed<boolean>(() => {
         return registrationEntryState.viewModel.enableSaveAccount && registrationEntryState.savedAccountGuid === null;
+    });
+
+    /** Whether the saved-account option can be offered without forcing an unusable login: the saver is logged in, or Database authentication is enabled. */
+    const isSaveAccountSupported = computed<boolean>(() => {
+        return store.state.currentPerson !== null || registrationEntryState.viewModel.isDatabaseAuthEnabled;
     });
 
     // #endregion

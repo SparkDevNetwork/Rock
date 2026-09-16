@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -25,6 +25,7 @@ using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Net;
+using Rock.Obsidian.UI.GridField;
 using Rock.ViewModels.Controls;
 
 namespace Rock.Reporting.DataSelect.Group
@@ -36,7 +37,8 @@ namespace Rock.Reporting.DataSelect.Group
     [Export( typeof( DataSelectComponent ) )]
     [ExportMetadata( "ComponentName", "Select Group Parent" )]
 
-    [BooleanField( "Show As Link", "", true )]
+    [BooleanField( "Show As Link",
+        DefaultBooleanValue = true )]
     [Rock.SystemGuid.EntityTypeGuid( "0F99D3D5-E198-4E54-95CB-16B9EB23E718" )]
     public class ParentGroupSelect : DataSelectComponent
     {
@@ -138,6 +140,12 @@ namespace Rock.Reporting.DataSelect.Group
             return result;
         }
 #endif
+
+        /// <inheritdoc/>
+        public override ObsidianGridField GetObsidianGridField( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
+        {
+            return new HtmlObsidianGridField();
+        }
 
         /// <summary>
         /// Comma-delimited list of the Entity properties that should be used for Sorting. Normally, you should leave this as null which will make it sort on the returned field

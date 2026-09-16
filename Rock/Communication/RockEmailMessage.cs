@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net.Mail;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -53,6 +54,16 @@ namespace Rock.Communication
         /// From person identifier.
         /// </value>
         public int? FromPersonId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the communication topic <see cref="DefinedValue"/> identifier
+        /// to assign to the <see cref="Communication"/> record that is created when
+        /// <see cref="RockMessage.CreateCommunicationRecord"/> is <c>true</c>.
+        /// </summary>
+        /// <value>
+        /// The communication topic defined value identifier.
+        /// </value>
+        public int? CommunicationTopicValueId { get; set; }
 
         /// <summary>
         /// Gets or sets from name.
@@ -200,7 +211,7 @@ namespace Rock.Communication
         /// <param name="systemGuid">The system communication unique identifier.</param>
         public RockEmailMessage( Guid systemGuid ) : this()
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var systemCommunication = new SystemCommunicationService( rockContext ).Get( systemGuid );
 

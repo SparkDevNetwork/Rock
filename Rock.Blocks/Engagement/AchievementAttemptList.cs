@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -23,12 +23,15 @@ using System.Linq;
 
 using Rock.Achievement;
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
+using Rock.Enums.Controls;
 using Rock.Model;
 using Rock.Obsidian.UI;
 using Rock.Security;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Engagement.AchievementAttemptList;
+using Rock.ViewModels.Controls;
 using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 
@@ -78,6 +81,7 @@ namespace Rock.Blocks.Engagement
             public const string FilterAttemptStartDateRangeTo = "filter-attempt-start-date-range-to";
             public const string FilterStatus = "filter-status";
             public const string FilterAchievementType = "filter-achievement-type";
+            public const string FilterCreatedDateRange = "filter-created-date-range";
         }
 
         #endregion Keys
@@ -131,6 +135,15 @@ namespace Rock.Blocks.Engagement
         protected Guid? FilterAchievementType => GetBlockPersonPreferences()
             .GetValue( MakeKeyUniqueToAchievementType( PreferenceKey.FilterAchievementType ) )
             .FromJsonOrNull<ListItemBag>()?.Value?.AsGuidOrNull();
+
+        /// <summary>
+        /// Gets the sliding date range used to filter attempts by their created date. When no range is
+        /// saved, the query defaults to the last 6 months so the initial result set stays bounded on
+        /// achievement types with large numbers of attempts.
+        /// </summary>
+        protected SlidingDateRangeBag FilterCreatedDateRange => GetBlockPersonPreferences()
+            .GetValue( MakeKeyUniqueToAchievementType( PreferenceKey.FilterCreatedDateRange ) )
+            .ToSlidingDateRangeBagOrNull();
 
         #endregion Properties
 
@@ -230,6 +243,24 @@ namespace Rock.Blocks.Engagement
                 ? subQueries.Aggregate( ( a, b ) => a.Union( b ) )
                 : new List<AchieverAttemptItem>().AsQueryable().Include( a => a.AchievementAttempt.AchievementType );
 
+            // Filter by created date. When no range is saved, default to the last 6 months so the
+            // initial result set stays bounded on achievement types with large numbers of attempts.
+            var defaultSlidingDateRange = new SlidingDateRangeBag
+            {
+                RangeType = SlidingDateRangeType.Last,
+                TimeUnit = TimeUnitType.Month,
+                TimeValue = 6
+            };
+
+            var createdDateRange = FilterCreatedDateRange.Validate( defaultSlidingDateRange ).ActualDateRange;
+            var createdDateStart = createdDateRange.Start;
+            var createdDateEnd = createdDateRange.End;
+
+            // Fall back to the start date when an attempt has no created date so a row is never dropped.
+            queryable = queryable.Where( aa =>
+                ( aa.AchievementAttempt.CreatedDateTime ?? aa.AchievementAttempt.AchievementAttemptStartDateTime ) >= createdDateStart &&
+                ( aa.AchievementAttempt.CreatedDateTime ?? aa.AchievementAttempt.AchievementAttemptStartDateTime ) <= createdDateEnd );
+
             // Filter by Achiever Name
             if ( !FilterAchieverName.IsNullOrWhiteSpace() )
             {
@@ -296,7 +327,7 @@ namespace Rock.Blocks.Engagement
                 .WithBlock( this )
                 .AddTextField( "idKey", a => a.AchievementAttempt.IdKey )
                 .AddTextField( "achiever", a => a.AchieverName )
-                .AddTextField( "achievement", a => a.AchievementAttempt.AchievementType.Name )
+                .AddTextField( "achievement", a => AchievementTypeCache.Get( a.AchievementAttempt.AchievementTypeId )?.Name )
                 .AddTextField( "personId", a => GetPersonId( a.Achiever ) )
                 .AddDateTimeField( "startDate", a => a.AchievementAttempt.AchievementAttemptStartDateTime )
                 .AddDateTimeField( "endDate", a => a.AchievementAttempt.AchievementAttemptEndDateTime )
@@ -328,14 +359,8 @@ namespace Rock.Blocks.Engagement
         private AchievementTypeCache GetAchievementTypeCache()
         {
             var key = PageParameter( PageParameterKey.AchievementTypeId );
-            var achievementTypeId = Rock.Utility.IdHasher.Instance.GetId( key ) ?? key.AsIntegerOrNull();
 
-            if ( achievementTypeId.HasValue )
-            {
-                return AchievementTypeCache.Get( achievementTypeId.Value );
-            }
-
-            return default;
+            return AchievementTypeCache.Get( key, !PageCache.Layout.Site.DisablePredictableIds );
         }
 
         /// <summary>
@@ -361,7 +386,7 @@ namespace Rock.Blocks.Engagement
         [BlockAction]
         public BlockActionResult Delete( string key )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var entityService = new AchievementAttemptService( rockContext );
                 var entity = entityService.Get( key, !PageCache.Layout.Site.DisablePredictableIds );

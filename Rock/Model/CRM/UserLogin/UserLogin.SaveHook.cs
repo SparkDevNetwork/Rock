@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -17,6 +17,7 @@
 using System;
 using System.Linq;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Web.Cache;
 
@@ -37,6 +38,15 @@ namespace Rock.Model
             /// </summary>
             protected override void PreSave()
             {
+                // Set the API Key purpose to "General" if this is an API Key UserLogin and if a purpose is not specified.
+                if ( Entity.ApiKey.IsNotNullOrWhiteSpace() && !Entity.ApiKeyPurpose.HasValue )
+                {
+                    if ( State == EntityContextState.Added || State == EntityContextState.Modified )
+                    {
+                        Entity.ApiKeyPurpose = Enums.Security.ApiKeyPurpose.General;
+                    }
+                }
+
                 HistoryChanges = new History.HistoryChangeList();
 
                 switch ( State )
@@ -100,7 +110,7 @@ namespace Rock.Model
                         {
                             // By this point EF has stripped out some of the data we need to save history
                             // Reload the data using a new context.
-                            RockContext newRockContext = new RockContext();
+                            RockContext newRockContext = RockApp.Current.CreateRockContext();
                             var userLogin = new UserLoginService( newRockContext ).Get( Entity.Id );
                             if ( userLogin != null && userLogin.PersonId != null )
                             {

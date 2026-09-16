@@ -1,0 +1,129 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="experience-action experience-action-type-cf277990-bb98-4ec9-9609-f2b352e5a1a1" :class="additionalActionClasses">
+        <div class="question">
+            {{ questionText }}
+        </div>
+
+        <div class="answer">
+            <div class="form-group">
+                <textarea v-model="answerText"
+                          class="form-control"
+                          rows="3"
+                          :disabled="isAnswerDisabled">
+                </textarea>
+            </div>
+        </div>
+
+        <NotificationBox v-if="errorMessage" alertType="warning">
+            {{ errorMessage }}
+        </NotificationBox>
+
+        <div class="submit">
+            <RockButton :btnType="BtnType.Primary"
+                        :disabled="isButtonDisabled"
+                        @click="onSubmitClick">
+                Submit
+            </RockButton>
+        </div>
+    </div>
+</template>
+
+<!-- Cannot use scoped here otherwise it becomes very difficult to override by custom CSS. -->
+<style>
+.experience-action-type-cf277990-bb98-4ec9-9609-f2b352e5a1a1 .question::before,
+.experience-action-type-cf277990-bb98-4ec9-9609-f2b352e5a1a1 .answer::before {
+    display: block;
+    margin-bottom: 4px;
+    font-size: 3em;
+    font-weight: 700;
+    line-height: 1.2;
+    content: 'Q:';
+}
+
+.experience-action-type-cf277990-bb98-4ec9-9609-f2b352e5a1a1 .answer::before {
+    content: 'A:';
+}
+
+.experience-action-type-cf277990-bb98-4ec9-9609-f2b352e5a1a1 .answer,
+.experience-action-type-cf277990-bb98-4ec9-9609-f2b352e5a1a1 .submit {
+    margin-top: 18px;
+}
+</style>
+
+<script setup lang="ts">
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import { BtnType } from "@Obsidian/Enums/Controls/btnType";
+    import { computed, ref, watch } from "vue";
+    import { actionProps } from "./util.partial";
+
+    const props = defineProps(actionProps);
+
+    // #region Values
+
+    const answerText = ref("");
+    const isAnswerSubmitted = ref(false);
+    const errorMessage = ref("");
+
+    // #endregion
+
+    // #region Computed Values
+
+    const additionalActionClasses = computed((): string => {
+        return `experience-action-${props.renderConfiguration.actionId}`;
+    });
+
+    const questionText = computed((): string => {
+        return props.renderConfiguration.configurationValues?.["question"] ?? "";
+    });
+
+    const isButtonDisabled = computed((): boolean => {
+        return !answerText.value;
+    });
+
+    const isAnswerDisabled = computed((): boolean => {
+        return isAnswerSubmitted.value && !props.renderConfiguration.isMultipleSubmissionAllowed;
+    });
+
+    // #endregion
+
+    // #region Functions
+
+    // #endregion
+
+    // #region Event Handlers
+
+    async function onSubmitClick(): Promise<void> {
+        let result: number;
+
+        try {
+            result = await props.realTimeTopic.server.postResponse(props.eventId, props.actionId, answerText.value);
+        }
+        catch (error) {
+            result = 400;
+            console.error(error);
+        }
+
+        if (result === 200) {
+            answerText.value = "";
+            errorMessage.value = "";
+            isAnswerSubmitted.value = true;
+        }
+        else if (result === 409) {
+            answerText.value = "";
+            errorMessage.value = "Multiple answers are not allowed and you have previously submitted an answer.";
+            isAnswerSubmitted.value = true;
+        }
+        else {
+            errorMessage.value = "Unable to submit your answer.";
+        }
+    }
+
+    // #endregion
+
+    watch(() => props.actionId, () => {
+        isAnswerSubmitted.value = false;
+        errorMessage.value = "";
+    });
+</script>

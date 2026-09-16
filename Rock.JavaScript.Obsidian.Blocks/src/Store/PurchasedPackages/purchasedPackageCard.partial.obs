@@ -1,0 +1,274 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="purchasedpackage-card" :class="{ 'is-expanded': isExpanded }">
+        <div class="purchasedpackage-card-media col-sm-5 col-md-3">
+            <img v-if="storePackage.iconUrl" :src="storePackage.iconUrl" />
+        </div>
+
+        <div class="purchasedpackage-card-body col-sm-7 col-md-9">
+            <div class="purchasedpackage-card-header">
+                <div>
+                    <h3 class="purchasedpackage-card-title">{{ storePackage.name }}</h3>
+                    <div>
+                        <span v-if="storePackage.purchaser" class="text-sm text-muted">
+                            Purchased by <strong>{{ storePackage.purchaser }}</strong> on {{ purchasedDateText }}
+                        </span>
+                    </div>
+                </div>
+
+                <div v-if="versionLabel" class="purchasedpackage-card-version">
+                    <span class="text-xs text-uppercase text-muted d-block">Version</span>
+                    <span class="text-bold text-primary">{{ versionLabel }}</span>
+                </div>
+            </div>
+            <transition name="purchasedpackage-description" mode="out-in">
+                <div :key="isExpanded ? 'full' : 'short'" class="purchasedpackage-card-description text-muted" v-html="descriptionHtml"></div>
+            </transition>
+
+            <RockButton v-if="storePackage.shortDescription"
+                        class="purchasedpackage-card-showmore"
+                        @click.prevent="onExpandToggle">
+                {{ isExpanded ? 'Show less' : 'Show more' }}
+                <i :class="isExpanded ? 'ti ti-chevron-up' : 'ti ti-chevron-down'"></i>
+            </RockButton>
+
+            <div class="purchasedpackage-card-actions">
+                <RockButton :btnType="BtnType.Link" class="p-0" @click="onSelectDetails">
+                    Package Details <i class="ti ti-arrow-right"></i>
+                </RockButton>
+
+                <div class="d-flex align-items-center gap-3">
+                    <span class="text-xs text-muted" v-if="storePackage.installState === PurchasedPackageInstallState.Update">
+                        Current Version: <strong>{{ storePackage.installedVersionLabel }}</strong>
+                    </span>
+                    <RockButton :btnType="isInstallEnabled ? BtnType.Primary : BtnType.Default"
+                                :disabled="!isInstallEnabled"
+                                @click="onSelectInstall">
+                        <i class="ti ti-download"></i> {{ installButtonText }}
+                    </RockButton>
+                </div>
+            </div>
+        </div>
+    </div>
+</template>
+
+<style scoped>
+.purchasedpackage-card {
+    display: flex;
+    flex-flow: row nowrap;
+    overflow: clip;
+    background-color: var(--color-interface-softest);
+    border: 1px solid var(--color-interface-soft);
+    border-radius: var(--rounded-medium);
+}
+
+.purchasedpackage-card-media {
+    justify-content: center;
+    padding: var(--spacing-medium);
+}
+
+.purchasedpackage-card-media img {
+    display: block;
+    height: auto;
+    max-width: 100%;
+}
+
+.purchasedpackage-card-body {
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    padding: var(--spacing-medium);
+}
+
+.purchasedpackage-card-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: var(--spacing-xsmall);
+}
+
+.purchasedpackage-card-title {
+    margin: 0;
+    font-weight: var(--font-weight-semibold);
+}
+
+.purchasedpackage-card-version {
+    flex-shrink: 0;
+    margin-left: var(--spacing-medium);
+    text-align: right;
+}
+
+.purchasedpackage-card-meta {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-small);
+    margin-bottom: var(--spacing-small);
+}
+
+.purchasedpackage-card-description {
+    margin-bottom: var(--spacing-xsmall);
+}
+
+/* Fade + slide the description when toggling, matching the Package Detail
+   block's "Additional Versions" transition. */
+.purchasedpackage-description-enter-active,
+.purchasedpackage-description-leave-active {
+    transition: opacity 220ms ease, transform 220ms ease;
+}
+
+.purchasedpackage-description-enter-from,
+.purchasedpackage-description-leave-to {
+    opacity: 0;
+    transform: translateY(-6px);
+}
+
+.purchasedpackage-description-enter-to,
+.purchasedpackage-description-leave-from {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.purchasedpackage-card-showmore {
+    padding: 0;
+    margin-bottom: var(--spacing-small);
+    font-size: 12px;
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-primary);
+    background: none;
+    border: none;
+    cursor: pointer;
+    align-self: flex-start;
+}
+
+.purchasedpackage-card-actions {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: auto;
+}
+
+@media (max-width: 767px) {
+    .purchasedpackage-card {
+        flex-direction: column;
+    }
+
+    .purchasedpackage-card-media {
+        flex: none;
+        width: 100%;
+        max-width: none;
+    }
+
+    .purchasedpackage-card-media img {
+        max-height: 200px;
+        margin: 0 auto;
+    }
+}
+</style>
+
+<script setup lang="ts">
+    import { computed, ref } from "vue";
+    import { PurchasedPackageBag } from "@Obsidian/ViewModels/Blocks/Store/PurchasedPackages/purchasedPackageBag";
+    import { PurchasedPackageInstallState } from "./types.partial";
+    import { BtnType } from "@Obsidian/Enums/Controls/btnType";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
+
+    const props = defineProps<{
+        storePackage: PurchasedPackageBag;
+    }>();
+
+    // #region Values
+
+    const isExpanded = ref(false);
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    /**
+     * The description HTML to display: the full description when expanded,
+     * otherwise the truncated short description (falling back to the full
+     * description when no short version was provided).
+     */
+    const descriptionHtml = computed((): string => {
+        if (isExpanded.value) {
+            return props.storePackage.description ?? "";
+        }
+
+        return props.storePackage.shortDescription ?? props.storePackage.description ?? "";
+    });
+
+    /**
+     * The purchased date formatted for display (M/d/yyyy), or an empty string
+     * when no purchased date is available.
+     */
+    const purchasedDateText = computed((): string => {
+        if (!props.storePackage.purchasedDate) {
+            return "";
+        }
+
+        return RockDateTime.parseISO(props.storePackage.purchasedDate)?.toASPString("M/d/yyyy") ?? "";
+    });
+
+    /**
+     * The version label to display. Prefers the latest available version,
+     * falling back to the installed version.
+     */
+    const versionLabel = computed((): string => {
+        return props.storePackage.latestVersionLabel ?? props.storePackage.installedVersionLabel ?? "";
+    });
+
+    /**
+     * Whether the install button is actionable. Only the Install and Update
+     * states navigate to the install page.
+     */
+    const isInstallEnabled = computed((): boolean => {
+        return props.storePackage.installState === PurchasedPackageInstallState.Install
+            || props.storePackage.installState === PurchasedPackageInstallState.Update;
+    });
+
+    /**
+     * The install button label for the package's install state.
+     */
+    const installButtonText = computed((): string => {
+        switch (props.storePackage.installState) {
+            case PurchasedPackageInstallState.Install:
+                return "Install";
+            case PurchasedPackageInstallState.Update:
+                return "Update";
+            case PurchasedPackageInstallState.Installed:
+                return "Installed";
+            default:
+                return "Not available";
+        }
+    });
+
+    // #endregion Computed Values
+
+    // #region Event Handlers
+
+    /**
+     * Navigates to the package detail page when one is configured.
+     */
+    function onSelectDetails(): void {
+        if (props.storePackage.detailPageUrl) {
+            window.location.href = props.storePackage.detailPageUrl;
+        }
+    }
+
+    /**
+     * Navigates to the install / update page, but only when the package is in
+     * an actionable install state and an install page is configured.
+     */
+    function onSelectInstall(): void {
+        if (isInstallEnabled.value && props.storePackage.installPageUrl) {
+            window.location.href = props.storePackage.installPageUrl;
+        }
+    }
+
+    function onExpandToggle(): void {
+        isExpanded.value = !isExpanded.value;
+    }
+
+    // #endregion Event Handlers
+</script>

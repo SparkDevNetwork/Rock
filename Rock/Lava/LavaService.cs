@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -85,15 +85,17 @@ namespace Rock.Lava
         {
             lock ( _initializationLock )
             {
-                // Release the current instance.
-                _engine = null;
-
                 if ( lavaEngineType != null )
                 {
                     var engine = NewEngineInstance( lavaEngineType, options );
 
                     // Assign the current instance.
                     _engine = engine;
+                }
+                else
+                {
+                    // Release the current instance.
+                    _engine = null;
                 }
             }
         }
@@ -481,6 +483,8 @@ namespace Rock.Lava
 
             if ( page != null )
             {
+                parameters = parameters.Clone();
+
                 string cacheKey;
 
                 if ( string.IsNullOrEmpty( parameters.CacheKey ) )

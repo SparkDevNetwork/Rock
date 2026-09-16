@@ -37,8 +37,6 @@ export const SystemCommunication = {
     ConfigExceptionNotification: "75CB0A4A-B1C5-4958-ADEB-8621BD231520",
     /** Gets the template guid for the Job Notification communication */
     ConfigJobNotification: "691FEA1B-E5C4-4BF8-A7CD-C588F5C63CA8",
-    /** Gets the template guid for digital signature invite */
-    DigitalSignatureInvite: "791F2DE4-5A59-60AE-4F2F-FDC3EBC4FFA9",
     /** Gets the template guid for  */
     FinanceExpiringCreditCard: "C07ACD2E-7B9D-400A-810F-BC0EBB9A60DD",
     /** Gets the template guid for  */
@@ -74,6 +72,8 @@ export const SystemCommunication = {
     KioskInfoUpdate: "BC490DD4-ABBB-7DBA-4A9E-74F07F4B5881",
     /** Gets the template guid for the Learning Activity Notifications system communication. */
     LearningActivityNotifications: "d40a9c32-f179-4e5e-9b0d-ce208c5d1870",
+    /** Gets the template guid for the Learning Activity Retake Required system communication. */
+    LearningActivityRetakeRequired: "9E2B7C14-5A3D-4F86-B0E1-7C4A2D9F6B38",
     /** Gets the template guid for the Learning Class Announcements Notifications system communication. */
     LearningAnnouncementNotifications: "8824EE58-CB4C-47E8-BB86-1944C64C6C95",
     /** Gets the template guid for a Login Confirmation Alert. */

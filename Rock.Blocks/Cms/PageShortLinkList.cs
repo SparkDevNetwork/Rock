@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -313,6 +313,7 @@ namespace Rock.Blocks.Cms
                 .WithBlock( this, blockOptions )
                 .AddTextField( "idKey", a => a.PageShortLink.IdKey )
                 .AddTextField( "url", a => a.PageShortLink.Url )
+                .AddDateTimeField( "createdDateTime", a => a.PageShortLink.CreatedDateTime )
                 .AddTextField( "site", a => a.PageShortLink.Site?.Name )
                 .AddTextField( "token", a => a.PageShortLink.Token )
                 .AddTextField( "category", a => a.CategoryName )
