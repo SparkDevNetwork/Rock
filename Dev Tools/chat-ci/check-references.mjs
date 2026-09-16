@@ -28,6 +28,7 @@ export const CHAT_PATHS = [
   'Rock/Communication/Chat/Platform/',
   // Shared with upstream, and named here because this work wrote a chat comment into it.
   'Rock/Rock.csproj',
+  'Rock/Plugin/HotFixes/323_AddChatPeopleGroup.cs',
   'Rock/Jobs/ChatPlatform',
   'Rock.JavaScript.Obsidian.Blocks/tests/Communication/Chat/',
   'Rock.Tests/Communication/Chat/',

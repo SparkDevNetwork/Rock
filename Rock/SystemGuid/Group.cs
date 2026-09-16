@@ -122,6 +122,14 @@ namespace Rock.SystemGuid
         public const string GROUP_CHAT_BAN_LIST = "C9E3A59F-3B5E-43B1-9D97-191EF82D73C4";
 
         /// <summary>
+        /// Hidden marker group for people who have, or could have, a durable
+        /// stamp in the chat platform. Membership is sticky: a first open of
+        /// chat writes one row, and the row is never removed. Not a security
+        /// role. Group history is off.
+        /// </summary>
+        public const string GROUP_CHAT_PEOPLE = "CE5899DE-ECEE-4E20-82A7-CEDB45A1C9C5";
+
+        /// <summary>
         /// The parent group for all shared chat channels.
         /// </summary>
         public const string GROUP_CHAT_SHARED_CHANNELS = "FE7ED8BF-CA24-471B-A509-E595A17E1B0E";
