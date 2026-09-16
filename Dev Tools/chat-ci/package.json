@@ -1,0 +1,18 @@
+{
+  "name": "rock-chat-ci",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Gates for the chat platform code on this branch: the reference check and the workflow shape.",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "test": "node --test",
+    "check:references": "node check-references.mjs",
+    "ci": "node ci.mjs"
+  },
+  "devDependencies": {
+    "yaml": "^2.9.1"
+  }
+}
