@@ -757,20 +757,22 @@ namespace RockWeb.Blocks.Cms
         }
 
         /// <summary>
-        /// Verifies whether the current person is in the given group (Family).
+        /// Verifies whether the given group is one of the current person's families. This is the same set of groups
+        /// the view offers, so a group reaching the save that the view would not have shown is rejected.
         /// </summary>
         /// <param name="group">The group.</param>
+        /// <param name="rockContext">The rock context.</param>
         /// <returns>
-        ///   <c>true</c> if the current person is in the group; otherwise, <c>false</c>.
+        ///   <c>true</c> if the group is one of the current person's families; otherwise, <c>false</c>.
         /// </returns>
-        private bool IsCurrentPersonInGroup( Group group )
+        private bool IsFamilyGroupForCurrentPerson( Group group, RockContext rockContext )
         {
             if ( group == null )
             {
                 return false;
             }
 
-            return group.Members.Where( gm => gm.PersonId == CurrentPersonId ).Any();
+            return CurrentPerson.GetFamilies( rockContext ).Any( g => g.Id == group.Id );
         }
 
         /// <summary>
@@ -919,7 +921,7 @@ namespace RockWeb.Blocks.Cms
             }
 
             // invalid situation; return and report nothing.
-            if ( !IsCurrentPersonInGroup( group ) )
+            if ( !IsFamilyGroupForCurrentPerson( group, rockContext ) )
             {
                 return;
             }
