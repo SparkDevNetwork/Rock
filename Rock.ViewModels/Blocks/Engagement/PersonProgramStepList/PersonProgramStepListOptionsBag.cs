@@ -56,12 +56,6 @@ namespace Rock.ViewModels.Blocks.Engagement.PersonProgramStepList
         public bool IsStartDateColumnVisible { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether the current person can
-        /// edit the block. Controls the unmet prerequisite list on cards.
-        /// </summary>
-        public bool IsBlockEditable { get; set; }
-
-        /// <summary>
         /// Gets or sets the grid column definition for the grid view.
         /// </summary>
         public GridDefinitionBag GridDefinition { get; set; }

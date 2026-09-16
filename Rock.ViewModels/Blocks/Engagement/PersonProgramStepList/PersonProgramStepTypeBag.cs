@@ -57,6 +57,13 @@ namespace Rock.ViewModels.Blocks.Engagement.PersonProgramStepList
         public bool IsAddEnabled { get; set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether the current person has
+        /// EDIT or MANAGE_STEPS on this step type. Controls the unmet
+        /// prerequisite list on the card.
+        /// </summary>
+        public bool CanEdit { get; set; }
+
+        /// <summary>
         /// Gets or sets a value indicating whether the person has completed
         /// every prerequisite step type.
         /// </summary>

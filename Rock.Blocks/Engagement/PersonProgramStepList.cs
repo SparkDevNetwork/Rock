@@ -222,7 +222,8 @@ namespace Rock.Blocks.Engagement
                     var prerequisites = GetPrerequisiteStepTypes( stepType );
                     var hasMetPrerequisites = HasMetPrerequisites( prerequisites, personSteps );
                     var isComplete = steps.Any( s => s.IsComplete );
-                    var isAddEnabled = CanAddStep( stepType, steps, hasMetPrerequisites );
+                    var canEdit = CanEditStepType( stepType );
+                    var isAddEnabled = CanAddStep( stepType, steps, hasMetPrerequisites, canEdit );
 
                     return new PersonProgramStepTypeBag
                     {
@@ -235,6 +236,7 @@ namespace Rock.Blocks.Engagement
                         IsComplete = isComplete,
                         HasMetPrerequisites = hasMetPrerequisites,
                         IsAddEnabled = isAddEnabled,
+                        CanEdit = canEdit,
                         Prerequisites = prerequisites
                             .Select( p => new PersonProgramPrerequisiteBag
                             {
@@ -298,6 +300,19 @@ namespace Rock.Blocks.Engagement
         }
 
         /// <summary>
+        /// Determines whether the current person can manage steps of the
+        /// given type, which requires EDIT or MANAGE_STEPS on the step type.
+        /// </summary>
+        /// <param name="stepType">The step type.</param>
+        /// <returns>True when steps of this type can be managed.</returns>
+        private bool CanEditStepType( StepType stepType )
+        {
+            var currentPerson = RequestContext.CurrentPerson;
+
+            return stepType.IsAuthorized( Authorization.EDIT, currentPerson ) || stepType.IsAuthorized( Authorization.MANAGE_STEPS, currentPerson );
+        }
+
+        /// <summary>
         /// Determines whether a step of the given type can be added for the
         /// person. Requires manual editing, EDIT or MANAGE_STEPS on the step
         /// type, met prerequisites, and either allow multiple or no existing step.
@@ -305,18 +320,11 @@ namespace Rock.Blocks.Engagement
         /// <param name="stepType">The step type.</param>
         /// <param name="steps">The person's existing steps of this type.</param>
         /// <param name="hasMetPrerequisites">Whether the prerequisites are met.</param>
+        /// <param name="canEdit">Whether the current person has EDIT or MANAGE_STEPS on the step type.</param>
         /// <returns>True when a step can be added.</returns>
-        private bool CanAddStep( StepType stepType, List<Step> steps, bool hasMetPrerequisites )
+        private bool CanAddStep( StepType stepType, List<Step> steps, bool hasMetPrerequisites, bool canEdit )
         {
-            if ( !stepType.AllowManualEditing || !stepType.IsActive || !hasMetPrerequisites )
-            {
-                return false;
-            }
-
-            var currentPerson = RequestContext.CurrentPerson;
-            var canEdit = stepType.IsAuthorized( Authorization.EDIT, currentPerson ) || stepType.IsAuthorized( Authorization.MANAGE_STEPS, currentPerson );
-
-            if ( !canEdit )
+            if ( !stepType.AllowManualEditing || !stepType.IsActive || !hasMetPrerequisites || !canEdit )
             {
                 return false;
             }
@@ -426,7 +434,6 @@ namespace Rock.Blocks.Engagement
                 StepsPerRowMobile = GetAttributeValue( AttributeKey.StepsPerRowMobile ).AsIntegerOrNull() ?? AttributeDefault.StepsPerRowMobile,
                 IsCampusColumnVisible = GetIsCampusVisible(),
                 IsStartDateColumnVisible = GetAttributeValue( AttributeKey.ShowStartedDateColumn ).AsBoolean(),
-                IsBlockEditable = BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ),
                 GridDefinition = GetGridBuilder().BuildDefinition(),
                 StepEntryUrlTemplate = GetStepEntryUrlTemplate( person )
             };

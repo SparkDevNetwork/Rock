@@ -27,6 +27,13 @@ import { PersonProgramStepBag } from "@Obsidian/ViewModels/Blocks/Engagement/Per
 /** One step type of the program as shown on a card and as an add button. */
 export type PersonProgramStepTypeBag = {
     /**
+     * Gets or sets a value indicating whether the current person has
+     * EDIT or MANAGE_STEPS on this step type. Controls the unmet
+     * prerequisite list on the card.
+     */
+    canEdit: boolean;
+
+    /**
      * Gets or sets a value indicating whether the person has completed
      * every prerequisite step type.
      */

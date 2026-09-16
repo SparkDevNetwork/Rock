@@ -32,6 +32,6 @@ export function getStatusLabelStyle(color: string | null | undefined): Record<st
 
     return {
         backgroundColor: color,
-        color: rockColor.isLight ? "var(--color-interface-strong)" : "#fff"
+        color: rockColor.isLight ? "var(--base-interface-strong)" : "var(--base-interface-softest)"
     };
 }

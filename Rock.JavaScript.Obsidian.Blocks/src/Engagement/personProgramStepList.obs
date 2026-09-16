@@ -64,7 +64,6 @@
     const preferences = usePersonPreferences().blockPreferences;
 
     const options: PersonProgramStepListOptionsBag = config.options ?? {
-        isBlockEditable: false,
         isCampusColumnVisible: false,
         isStartDateColumnVisible: false,
         stepsPerRow: 5,

@@ -29,12 +29,6 @@ export type PersonProgramStepListOptionsBag = {
     gridDefinition?: GridDefinitionBag | null;
 
     /**
-     * Gets or sets a value indicating whether the current person can
-     * edit the block. Controls the unmet prerequisite list on cards.
-     */
-    isBlockEditable: boolean;
-
-    /**
      * Gets or sets a value indicating whether the campus column is
      * visible. False when the setting is off or only one campus exists.
      */

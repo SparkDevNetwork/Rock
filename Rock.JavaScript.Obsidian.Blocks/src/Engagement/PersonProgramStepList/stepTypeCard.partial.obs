@@ -106,8 +106,8 @@
 /* Hidden until hover; pointer events stay off so the invisible buttons cannot be clicked. */
 .step-type-card-actions {
     position: absolute;
-    left: var(--spacing-large);
-    right: var(--spacing-large);
+    left: var(--spacing-small);
+    right: var(--spacing-small);
     bottom: var(--spacing-large);
     /* Caps the block at the card's midline; the record list shrinks and scrolls to fit. */
     max-height: calc(50% - var(--spacing-large));
@@ -149,7 +149,7 @@
     display: flex;
     align-items: center;
     gap: var(--spacing-xsmall);
-    padding: var(--spacing-xsmall) 0;
+    padding: var(--spacing-small);
     border-radius: var(--rounded-small);
 }
 
@@ -172,7 +172,7 @@
 }
 
 .step-record-action {
-    padding: var(--spacing-xsmall) 0;
+    padding: var(--spacing-xsmall) 0 var(--spacing-xsmall) var(--spacing-xsmall);
     color: var(--color-interface-strong);
 }
 
@@ -218,11 +218,6 @@
         stepStatusColors: {
             type: Object as PropType<Record<string, string>>,
             default: () => ({})
-        },
-
-        isBlockEditable: {
-            type: Boolean as PropType<boolean>,
-            default: false
         }
     });
 
@@ -250,7 +245,8 @@
         return props.stepType.highlightColor ? { "--step-type-color": props.stepType.highlightColor } : undefined;
     });
 
-    const isPrerequisiteListShown = computed((): boolean => props.isBlockEditable && !props.stepType.hasMetPrerequisites);
+    /** Shown to people who manage this step type so they can see why add is blocked. */
+    const isPrerequisiteListShown = computed((): boolean => props.stepType.canEdit && !props.stepType.hasMetPrerequisites);
 
     const isActionsShown = computed((): boolean => steps.value.length > 0 || props.stepType.isAddEnabled || isPrerequisiteListShown.value);
 
