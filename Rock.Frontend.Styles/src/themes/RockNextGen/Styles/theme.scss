@@ -249,7 +249,7 @@ body.navbar-side-open {
     height: $navbar-top-height;
 
     .navbar-brand-corner {
-      border-radius:  var(--rounded-large) var(--rounded-large) 0 0;
+      border-radius:  var(--rounded-huge) var(--rounded-huge) 0 0;
       margin-top:     var(--spacing-xsmall);
       margin-left:    var(--spacing-xsmall);
     }
@@ -618,7 +618,7 @@ a.rock-bookmark {
   display: none;
   width: 100%;
   height: 100%;
-  color: #FFF; /* Hard coded because in dark mode it looks weird with dark color. */
+  color: var(--base-interface-softest); /* Hard coded because in dark mode it looks weird with dark color. */
   background-color: var(--color-primary);
 
   .zone-navigation {
@@ -882,7 +882,7 @@ a.rock-bookmark {
     top: $navbar-top-height;
     margin-left:    var(--spacing-xsmall);
     height:         calc(100% - 88px) !important;
-    border-radius: 0 0 12px 12px;
+    border-radius: 0 0 var(--rounded-huge) var(--rounded-huge);
 
     & .navbar-side {
       margin-top: 32px;
