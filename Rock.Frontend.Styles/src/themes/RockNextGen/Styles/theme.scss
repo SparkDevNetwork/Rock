@@ -890,8 +890,6 @@ a.rock-bookmark {
 
     .nav-open & {
       z-index: 2000;
-      // Glass Nav keeps the rail's bottom-right corner rounded when a flyout is open.
-      border-radius: var(--nav-glass-rail-radius, 0 0 0 var(--rounded-large));
     }
 
     .navbar-side:first-child {
@@ -1129,8 +1127,6 @@ $hamburger-spacing: 4px;
   .nav-open {
     & .rock-top-header .navbar-brand-corner {
       background-color: var(--color-primary);
-      // Glass Nav keeps the brand corner's top-right rounded since the detached flyout no longer meets it.
-      border-radius: var(--nav-glass-brand-radius, var(--rounded-large) 0 0 0);
     }
   }
 }
