@@ -29,6 +29,7 @@
 
 <script setup lang="ts">
     import { PropType, ref } from "vue";
+    import { confirm } from "@Obsidian/Utility/dialogs";
     import { PrayerRequestCardBag } from "@Obsidian/ViewModels/Blocks/Prayer/PrayerCardView/prayerRequestCardBag";
 
     const props = defineProps({
@@ -75,10 +76,17 @@
     }
 
     /**
-     * Marks the card as flagged and notifies the parent.
+     * Confirms with the person, then marks the card as flagged and notifies
+     * the parent.
      */
-    function onFlagClick(): void {
+    async function onFlagClick(): Promise<void> {
         if (isFlagged.value || !props.request.idKey) {
+            return;
+        }
+
+        const isConfirmed = await confirm("Flag this prayer request as inappropriate for administrator review?");
+
+        if (!isConfirmed) {
             return;
         }
 

@@ -543,6 +543,38 @@ namespace Rock.Blocks.Prayer
         [BlockAction]
         public BlockActionResult FlagPrayerRequest( string idKey )
         {
+            if ( !GetAttributeValue( AttributeKey.EnablePrayerTeamFlagging ).AsBoolean() )
+            {
+                return ActionBadRequest( "Flagging is not enabled." );
+            }
+
+            var prayerRequest = new PrayerRequestService( RockContext ).Get( idKey, !PageCache.Layout.Site.DisablePredictableIds );
+            if ( prayerRequest == null )
+            {
+                return ActionNotFound( "Prayer request not found." );
+            }
+
+            // Out-of-scope requests are ignored quietly; the card has already shown its flagged state.
+            if ( !IsRequestInScope( prayerRequest.Id ) )
+            {
+                return ActionOk();
+            }
+
+            var flagLimit = GetAttributeValue( AttributeKey.FlagLimit ).AsIntegerOrNull() ?? 1;
+            prayerRequest.FlagCount = ( prayerRequest.FlagCount ?? 0 ) + 1;
+            if ( prayerRequest.FlagCount >= flagLimit )
+            {
+                prayerRequest.IsApproved = false;
+            }
+
+            RockContext.SaveChanges();
+
+            var flaggedWorkflowGuid = GetAttributeValue( AttributeKey.FlaggedWorkflow ).AsGuidOrNull();
+            if ( flaggedWorkflowGuid.HasValue )
+            {
+                PrayerRequestService.LaunchFlaggedWorkflow( prayerRequest, flaggedWorkflowGuid.Value, RequestContext.CurrentPerson );
+            }
+
             return ActionOk();
         }
 
