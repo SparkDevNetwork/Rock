@@ -33,16 +33,16 @@
                         to moderate is where they already work.
                     </p>
 
-                    <p>When you approve, Spark sets your organization up on the chat platform and sends Rock what it needs to connect:</p>
+                    <p>Approving sets your organization up on the chat platform and sends Rock what it needs to connect:</p>
 
                     <ul>
-                        <li>A signing key for your organization, which Rock stores encrypted and uses to vouch for the people who sign in here.</li>
-                        <li>The chat project your organization talks to, and the public key a browser presents to it.</li>
+                        <li>The chat project your organization talks to.</li>
+                        <li>A credential only your Rock server holds, which it keeps encrypted and uses to vouch for the people who sign in here.</li>
                     </ul>
 
                     <p>
-                        Nothing is turned on for your congregation yet. Chat settings, including who may chat and what they
-                        may see, are yours to set afterwards on the Chat Configuration page.
+                        Approving does not turn chat on for your congregation. Who may chat, and what they may see, are
+                        yours to set afterwards on the Chat Configuration page.
                     </p>
 
                     <div class="service-actions">
