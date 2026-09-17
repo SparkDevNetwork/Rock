@@ -273,21 +273,8 @@ namespace Rock.Blocks.Prayer
         /// <returns>The prayer requests to display.</returns>
         private List<PrayerRequest> GetPrayerRequests( List<Guid> campusGuids )
         {
-            var categoryGuid = GetCategoryGuid();
-            var groupGuid = PageParameter( PageParameterKey.GroupGuid ).AsGuidOrNull();
-
-            var qry = new PrayerRequestService( RockContext ).GetPrayerRequests( new PrayerRequestQueryOptions
-            {
-                IncludeEmptyCampus = true,
-                IncludeNonPublic = !GetAttributeValue( AttributeKey.PublicOnly ).AsBoolean(),
-                Campuses = campusGuids,
-                Categories = categoryGuid.HasValue ? new List<Guid> { categoryGuid.Value } : null,
-                GroupGuids = groupGuid.HasValue ? new List<Guid> { groupGuid.Value } : null,
-                IncludeGroupRequests = !groupGuid.HasValue
-            } );
-
             var order = GetAttributeValue( AttributeKey.Order ).ConvertToEnum<PrayerRequestOrder>( PrayerRequestOrder.LeastPrayedFor );
-            var orderedQry = qry.OrderBy( order );
+            var orderedQry = GetScopedRequestQuery( campusGuids ).OrderBy( order );
 
             var maxResults = GetAttributeValue( AttributeKey.MaxResults ).AsIntegerOrNull();
             if ( maxResults.HasValue && maxResults.Value > 0 )
@@ -296,6 +283,46 @@ namespace Rock.Blocks.Prayer
             }
 
             return orderedQry.ToList();
+        }
+
+        /// <summary>
+        /// Builds the query of prayer requests that fall within this block's
+        /// configured scope: active, approved, unexpired, public when required,
+        /// and matching the category, group and campus filters. Shared by the
+        /// card query and the action guards so both apply identical rules.
+        /// </summary>
+        /// <param name="campusGuids">The campuses to filter by, or <c>null</c> for no campus filter.</param>
+        /// <returns>The scoped prayer request query.</returns>
+        private IQueryable<PrayerRequest> GetScopedRequestQuery( List<Guid> campusGuids )
+        {
+            var categoryGuid = GetCategoryGuid();
+            var groupGuid = PageParameter( PageParameterKey.GroupGuid ).AsGuidOrNull();
+
+            return new PrayerRequestService( RockContext ).GetPrayerRequests( new PrayerRequestQueryOptions
+            {
+                IncludeEmptyCampus = true,
+                IncludeNonPublic = !GetAttributeValue( AttributeKey.PublicOnly ).AsBoolean(),
+                Campuses = campusGuids,
+                Categories = categoryGuid.HasValue ? new List<Guid> { categoryGuid.Value } : null,
+                GroupGuids = groupGuid.HasValue ? new List<Guid> { groupGuid.Value } : null,
+                IncludeGroupRequests = !groupGuid.HasValue
+            } );
+        }
+
+        /// <summary>
+        /// Determines whether a prayer request is one this block would currently
+        /// display, so a crafted identifier cannot reach a request outside the
+        /// block's scope.
+        /// </summary>
+        /// <param name="prayerRequestId">The identifier of the prayer request to check.</param>
+        /// <returns><c>true</c> if the request is within scope; otherwise <c>false</c>.</returns>
+        private bool IsRequestInScope( int prayerRequestId )
+        {
+            var eligibleCampuses = GetEligibleCampuses();
+            var selectedCampus = GetSavedCampus( eligibleCampuses );
+            var campusGuids = GetCampusFilterGuids( selectedCampus, eligibleCampuses );
+
+            return GetScopedRequestQuery( campusGuids ).Any( r => r.Id == prayerRequestId );
         }
 
         /// <summary>
@@ -464,13 +491,47 @@ namespace Rock.Blocks.Prayer
         #region Block Actions
 
         /// <summary>
-        /// Records that the current person prayed for the specified request.
+        /// Records that the current person prayed for the specified request:
+        /// increments the prayer count, launches the optional Prayed workflow
+        /// and records an interaction when enabled.
         /// </summary>
         /// <param name="idKey">The identifier of the prayer request that was prayed for.</param>
         /// <returns>An empty 200-OK response.</returns>
         [BlockAction]
         public BlockActionResult PrayRequest( string idKey )
         {
+            var prayerRequest = new PrayerRequestService( RockContext ).Get( idKey, !PageCache.Layout.Site.DisablePredictableIds );
+            if ( prayerRequest == null )
+            {
+                return ActionNotFound( "Prayer request not found." );
+            }
+
+            // Out-of-scope requests are ignored quietly; the card has already shown its prayed state.
+            if ( !IsRequestInScope( prayerRequest.Id ) )
+            {
+                return ActionOk();
+            }
+
+            prayerRequest.PrayerCount = ( prayerRequest.PrayerCount ?? 0 ) + 1;
+            RockContext.SaveChanges();
+
+            var prayedWorkflowGuid = GetAttributeValue( AttributeKey.PrayedWorkflow ).AsGuidOrNull();
+            if ( prayedWorkflowGuid.HasValue )
+            {
+                PrayerRequestService.LaunchPrayedForWorkflow( prayerRequest, prayedWorkflowGuid.Value, RequestContext.CurrentPerson );
+            }
+
+            if ( GetAttributeValue( AttributeKey.CreateInteractionsForPrayers ).AsBoolean() )
+            {
+                PrayerRequestService.EnqueuePrayerInteraction(
+                    prayerRequest,
+                    RequestContext.CurrentPerson,
+                    PageCache?.Layout?.Site?.Name,
+                    RequestContext.ClientInformation?.UserAgent,
+                    RequestContext.ClientInformation?.IpAddress,
+                    RequestContext.SessionGuid );
+            }
+
             return ActionOk();
         }
 
