@@ -7,10 +7,10 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <title>Rock Installer</title>
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/css/bootstrap.min.css" integrity="sha256-bZLfwXAP04zRMK2BjiO8iu9pf4FbLqX6zitd+tIvLhE=" crossorigin="anonymous" />
     <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.3.1/css/all.css" integrity="sha384-mzrmE5qonljUremFsqc01SB46JvROS7bZs3IO2EmfFsd15uHvIt+Y8vEf7N7fWAU" crossorigin="anonymous">
 
-    <script src="//code.jquery.com/jquery-1.9.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/1.12.4/jquery.min.js" integrity="sha256-ZosEbRLbNQzLpnKIkEdrPv7lOy9C27hHQ+Xp8a4MxAQ=" crossorigin="anonymous"></script>
 
     <script src="<%=String.Format("{0}Scripts/jquery.signalR.min.js", storageUrl) %>"></script>
     <script src="<%=String.Format("{0}Scripts/rock-install.js", storageUrl) %>"></script>
@@ -23,7 +23,7 @@
 
         $(document).ready(function () {
 
-            var baseVersion = '<%=baseVersion %>';
+            var baseVersion = '<%=installerVersion %>';
             var isDebug = <%=isDebug.ToString().ToLower() %>;
             var queryString = '<%=Request.Url.PathAndQuery %>';
 
@@ -208,7 +208,7 @@
 
 
                             <div class="btn-list clearfix">
-						        <a href="http://www.rockrms.com/Learn/Install" target="_blank" class="btn btn-default pull-left"><i class="fas fa-desktop"></i> Install Video</a>
+						        <a href="https://www.rockrms.com/Learn/Install" target="_blank" rel="noopener noreferrer" class="btn btn-default pull-left"><i class="fas fa-desktop"></i> Install Video</a>
                                 <a id="btnWelcomeNext" class="btn btn-primary pull-right">Get Started <i class="fas fa-chevron-right"></i></a>
 					        </div>
                         </div>
@@ -559,6 +559,7 @@
     const string baseVersion = "2_9_5";
 
     string storageUrl = string.Empty;
+    string installerVersion = baseVersion;   // effective version: ?Version= override, else the const default
     bool isDebug = false;
 
     void Page_Init( object sender, EventArgs e )
@@ -566,14 +567,14 @@
         // toggle the SSL warning
         lSslWarning.Visible = !Request.IsSecureConnection;
 
+        // Honor a ?Version= override so BOTH the installer scripts (storageUrl)
+        // and the Rock payload download (installVersion, below) use the same folder.
         if ( Request["Version"] != null )
         {
-            storageUrl = String.Format( "{0}{1}/", baseStorageUrl, Request["Version"] );
+            installerVersion = Request["Version"];
         }
-        else
-        {
-            storageUrl = String.Format( "{0}{1}/", baseStorageUrl, baseVersion );
-        }
+
+        storageUrl = String.Format( "{0}{1}/", baseStorageUrl, installerVersion );
 
         if ( Request["Debug"] != null )
         {

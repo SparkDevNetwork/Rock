@@ -328,7 +328,7 @@
 
                     <h1>Before We Get Started...</h1>
                     <p>Before we can get started we have some work to do. Your system's environment does not meet all of the
-                        specs for Rock. Read through our <a href='http://www.rockrms.com/Rock/Learn' target="_blank"> install guides</a> for details on preparing your server for install.
+                        specs for Rock. Read through our <a href='https://www.rockrms.com/Rock/Learn' target="_blank" rel="noopener noreferrer"> install guides</a> for details on preparing your server for install.
                     </p>
                 </asp:Label>
 
