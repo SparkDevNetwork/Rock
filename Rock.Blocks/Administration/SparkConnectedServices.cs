@@ -201,22 +201,7 @@ namespace Rock.Blocks.Administration
         /// <returns>The chat card's state.</returns>
         private static ChatConfigurationBag GetChatConfiguration()
         {
-            var configuration = ChatPlatformConfigurationService.Read();
-
-            // Whether the organization was set up, not whether Rock can chat. An
-            // installation that cannot read the signing key still has the organization
-            // live on the platform, and the card must not offer to set it up again.
-            if ( !configuration.HasBeenEnabled )
-            {
-                return new ChatConfigurationBag { IsEnabled = false };
-            }
-
-            return new ChatConfigurationBag
-            {
-                IsEnabled = true,
-                TenantId = configuration.TenantId?.ToString(),
-                ProjectUrl = configuration.ProjectUrl
-            };
+            return ChatCardPolicy.ToBag( ChatPlatformConfigurationService.Read() );
         }
 
         #region Block Actions
@@ -234,7 +219,7 @@ namespace Rock.Blocks.Administration
         {
             var provider = RockApp.Current.GetRequiredService<ConnectedServicesProvider>();
 
-            if ( ChatPlatformConfigurationService.Read().HasBeenEnabled )
+            if ( !ChatCardPolicy.MayEnable( ChatPlatformConfigurationService.Read() ) )
             {
                 return ActionBadRequest( "Chat is already enabled for this organization." );
             }
