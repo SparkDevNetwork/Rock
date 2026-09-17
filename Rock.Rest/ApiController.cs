@@ -954,12 +954,54 @@ namespace Rock.Rest
                     // parent authorities, those properties can be lazy-loaded and checked for authorization
                     SetProxyCreation( true );
                     ISecured reloadedModel = ( ISecured ) Service.Get( securedModel.Id );
-                    if ( reloadedModel != null && !reloadedModel.IsAuthorized( Rock.Security.Authorization.EDIT, person ) )
+                    if ( reloadedModel != null )
                     {
+                        if ( !reloadedModel.IsAuthorized( Rock.Security.Authorization.EDIT, person ) )
+                        {
+                            throw new HttpResponseException( HttpStatusCode.Unauthorized );
+                        }
+                    }
+                    else if ( !IsAuthorizedForNewModel( securedModel, person ) )
+                    {
+                        // The model has no matching record in the database (e.g. an insert where the
+                        // Id is 0), so the reload above returns null. Authorize the posted values so
+                        // that inserts are held to the same EDIT standard as updates.
                         throw new HttpResponseException( HttpStatusCode.Unauthorized );
                     }
                 }
             }
+        }
+
+        /// <summary>
+        /// Determines whether the person is authorized to EDIT a model that does not yet exist in
+        /// the database (such as an insert via POST). The posted model is not a dynamic proxy, so its
+        /// parent-authority navigation properties cannot be lazy-loaded and evaluated directly. A
+        /// proxy copy is created in a separate context and populated from the posted values so that
+        /// any parent authorities resolve from the posted foreign keys and the authorization check
+        /// evaluates correctly. That context is never saved, so the model being inserted by the
+        /// caller is left completely unaffected.
+        /// </summary>
+        /// <param name="securedModel">The posted model to authorize.</param>
+        /// <param name="person">The person to check authorization for.</param>
+        /// <returns><c>true</c> if the person is authorized to EDIT the model; otherwise <c>false</c>.</returns>
+        private bool IsAuthorizedForNewModel( ISecured securedModel, Person person )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var service = ( Service<T> ) Activator.CreateInstance( Service.GetType(), rockContext );
+                var proxyModel = rockContext.Set<T>().Create();
+
+                service.Add( proxyModel );
+                service.SetValues( ( T ) securedModel, proxyModel );
+
+                if ( proxyModel is ISecured securedProxy )
+                {
+                    return securedProxy.IsAuthorized( Rock.Security.Authorization.EDIT, person );
+                }
+            }
+
+            // Not an ISecured model, so there is nothing to authorize.
+            return true;
         }
 
         /// <summary>

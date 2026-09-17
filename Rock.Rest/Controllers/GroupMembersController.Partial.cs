@@ -52,6 +52,52 @@ namespace Rock.Rest.Controllers
         }
 
         /// <summary>
+        /// POST endpoint. Use this to INSERT a new GroupMember.
+        /// </summary>
+        /// <remarks>
+        /// This overrides the base method to authorize the insert against the target group. The
+        /// base <see cref="ApiController{T}.Post" /> authorizes by reloading the entity by its Id,
+        /// but a new record has an Id of 0 so nothing is found and the check is skipped. Because a
+        /// GroupMember's parent authority is its Group, that would let any caller who can reach the
+        /// endpoint add members to any group (including security roles) without holding EDIT on it.
+        /// <see cref="GroupMember.IsAuthorized(string, Person)" /> resolves the target group from
+        /// the GroupId and checks EDIT (or MANAGE_MEMBERS) on it, which is the correct check here.
+        /// As an additional safeguard, membership in security role groups cannot be managed through
+        /// this endpoint at all, so it cannot be used to grant elevated access.
+        /// </remarks>
+        /// <param name="value">The GroupMember to add.</param>
+        /// <returns></returns>
+        [Authenticate, Secured]
+        public override HttpResponseMessage Post( [FromBody] GroupMember value )
+        {
+            if ( value == null )
+            {
+                throw new HttpResponseException( HttpStatusCode.BadRequest );
+            }
+
+            // Force an authorized check against the target group. This will handle loading the
+            // group and group type for the check automatically.
+            if ( !value.IsAuthorized( Rock.Security.Authorization.EDIT, GetPerson() ) )
+            {
+                throw new HttpResponseException( HttpStatusCode.Unauthorized );
+            }
+
+            // Security role membership must not be managed through this generic endpoint. Loading
+            // the group directly (its navigation property is not populated on a posted entity) lets
+            // us reject any group that is a security role or uses the security role group type.
+            var group = new GroupService( new RockContext() ).Get( value.GroupId );
+            if ( group != null && group.IsSecurityRoleOrSecurityGroupType() )
+            {
+                var response = ControllerContext.Request.CreateErrorResponse(
+                    HttpStatusCode.Forbidden,
+                    "Security role membership cannot be managed through this endpoint." );
+                throw new HttpResponseException( response );
+            }
+
+            return base.Post( value );
+        }
+
+        /// <summary>
         /// Gets the group placement group members.
         /// </summary>
         /// <param name="options">The options.</param>
