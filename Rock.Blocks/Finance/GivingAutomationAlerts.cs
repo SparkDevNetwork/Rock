@@ -248,7 +248,7 @@ namespace Rock.Blocks.Finance
         /// <inheritdoc/>
         protected override IQueryable<FinancialTransactionAlert> GetListQueryable( RockContext rockContext )
         {
-            var qry = base.GetListQueryable( rockContext )
+            IQueryable<FinancialTransactionAlert> qry = base.GetListQueryable( rockContext )
                 .Include( a => a.PersonAlias.Person )
                 .Include( a => a.FinancialTransactionAlertType );
 

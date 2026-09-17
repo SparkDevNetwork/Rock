@@ -319,16 +319,28 @@ namespace Rock.Model
                     IsDueSoon =
                         cr.ConnectionState == ConnectionState.Active
                         && cr.DueSoonDate.HasValue
+#if REVIEW_WEBFORMS
                         && DbFunctions.TruncateTime(cr.DueSoonDate.Value) <= today
+#else
+                        && cr.DueSoonDate.Value.Date <= today
+#endif
                         && !(
                             cr.DueDate.HasValue
+#if REVIEW_WEBFORMS
                             && DbFunctions.TruncateTime(cr.DueDate.Value) < today
+#else
+                            && cr.DueDate.Value.Date < today
+#endif
                         ),
 
                     IsOverdue =
                         cr.ConnectionState == ConnectionState.Active
                         && cr.DueDate.HasValue
+#if REVIEW_WEBFORMS
                         && DbFunctions.TruncateTime(cr.DueDate.Value) < today,
+#else
+                        && cr.DueDate.Value.Date < today,
+#endif
 
                     IsUnassigned =
                         cr.ConnectionState == ConnectionState.Active
@@ -447,7 +459,11 @@ namespace Rock.Model
                 where cr.FollowupDate.HasValue
                       && cr.FollowupDate > today
                       && cr.FollowupDate <= maxFollowUpDate
+#if REVIEW_WEBFORMS
                 let dayOffset = DbFunctions.DiffDays( today, cr.FollowupDate.Value )
+#else
+                let dayOffset = EF.Functions.DateDiffDay( today, cr.FollowupDate.Value )
+#endif
                 let window =
                     dayOffset <= 3 ? new { Start = 0, End = 3 } :
                     dayOffset <= 7 ? new { Start = 3, End = 7 } :
@@ -555,7 +571,11 @@ namespace Rock.Model
                             x.cr.CreatedDateTime.HasValue
                             && x.firstActivityDate.HasValue
                         )
+#if REVIEW_WEBFORMS
                         .Select( x => ( decimal ) DbFunctions.DiffDays( x.cr.CreatedDateTime.Value, x.firstActivityDate.Value ) )
+#else
+                        .Select( x => ( decimal ) EF.Functions.DateDiffDay( x.cr.CreatedDateTime.Value, x.firstActivityDate.Value ) )
+#endif
                         .DefaultIfEmpty()
                         .Average(),
 
@@ -565,7 +585,11 @@ namespace Rock.Model
                             && x.cr.ConnectionState == ConnectionState.Connected
                             && x.cr.ConnectedDateTime.HasValue
                         )
-                        .Select( x => ( decimal )DbFunctions.DiffDays( x.cr.CreatedDateTime.Value, x.cr.ConnectedDateTime.Value ) )
+#if REVIEW_WEBFORMS
+                        .Select( x => ( decimal ) DbFunctions.DiffDays( x.cr.CreatedDateTime.Value, x.cr.ConnectedDateTime.Value ) )
+#else
+                        .Select( x => ( decimal ) EF.Functions.DateDiffDay( x.cr.CreatedDateTime.Value, x.cr.ConnectedDateTime.Value ) )
+#endif
                         .DefaultIfEmpty()
                         .Average()
                 };
@@ -740,7 +764,11 @@ namespace Rock.Model
                             x.cr.CreatedDateTime.HasValue
                             && x.firstActivityDate.HasValue
                         )
+#if REVIEW_WEBFORMS
                         .Select( x => ( decimal ) DbFunctions.DiffDays( x.cr.CreatedDateTime.Value, x.firstActivityDate.Value ) )
+#else
+                        .Select( x => ( decimal ) EF.Functions.DateDiffDay( x.cr.CreatedDateTime.Value, x.firstActivityDate.Value ) )
+#endif
                         .DefaultIfEmpty()
                         .Average(),
 
@@ -750,7 +778,11 @@ namespace Rock.Model
                             && x.cr.ConnectionState == ConnectionState.Connected
                             && x.cr.ConnectedDateTime.HasValue
                         )
-                        .Select( x => ( decimal )DbFunctions.DiffDays( x.cr.CreatedDateTime.Value, x.cr.ConnectedDateTime.Value ) )
+#if REVIEW_WEBFORMS
+                        .Select( x => ( decimal ) DbFunctions.DiffDays( x.cr.CreatedDateTime.Value, x.cr.ConnectedDateTime.Value ) )
+#else
+                        .Select( x => ( decimal ) EF.Functions.DateDiffDay( x.cr.CreatedDateTime.Value, x.cr.ConnectedDateTime.Value ) )
+#endif
                         .DefaultIfEmpty()
                         .Average()
                 };

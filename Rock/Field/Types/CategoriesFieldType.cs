@@ -22,9 +22,7 @@ using System.Linq;
 using System.Web.UI;
 #endif
 
-#if WEBFORMS
 using Newtonsoft.Json.Linq;
-#endif
 
 using Rock.Attribute;
 using Rock.Configuration;

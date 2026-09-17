@@ -677,10 +677,12 @@ namespace Rock.Blocks.Group
             occurrenceService.Delete( occurrence );
             RockContext.SaveChanges();
 
+#if REVIEW_WEBFORMS
             if ( locationId.HasValue )
             {
                 Rock.CheckIn.KioskLocationAttendance.Remove( locationId.Value );
             }
+#endif
 
             return ActionOk();
         }

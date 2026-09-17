@@ -31,7 +31,6 @@ using Rock.SystemGuid;
 using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
-using Rock.Configuration;
 
 namespace Rock.Field.Types
 {

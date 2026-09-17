@@ -19,8 +19,15 @@
     <Compile Remove="Plugin\**\*.cs" />
     <Compile Remove="RealTime\AspNet\**\*.cs" />
     <Compile Remove="Web\UI\**\*.cs" />
+    <Compile Include="CheckIn\CheckinConfigurationHelper.cs" />
+    <Compile Include="CheckIn\CheckinManagerHelper.cs" />
     <Compile Include="CheckIn\CheckInTemplateSettings.cs" />
+    <Compile Include="CheckIn\CheckInGroupLocationSchedule.cs" />
+    <Compile Include="CheckIn\RosterAttendee.cs" />
+    <Compile Include="CheckIn\RosterAttendeeAttendance.cs" />
     <Compile Include="Model\Core\PersonToken\PersonToken.WebForms.cs" />
+    <Compile Include="Model\Group\GroupMember\GroupMemberService.WebForms.cs" />
+    <Compile Include="Model\Reporting\Report\Report.WebForms.cs" />
     <Compile Include="Plugin\VersionAttribute.cs" />
     <Compile Include="Web\UI\ContextAttribute.cs" />
     <Compile Include="Web\UI\Controls\Chart\ChartStyle.cs" />
@@ -28,9 +35,12 @@
     <Compile Include="Web\UI\Controls\Pickers\TreeViewItem.cs" />
     <Compile Include="Web\UI\Controls\Workflow Controls\WorkflowFormEditor.cs" />
     <Compile Include="Web\UI\Controls\Captcha.cs" />
-    <Compile Include="Web\UI\Controls\ValueFilter.cs" />
+    <Compile Include="Web\UI\Controls\FilterExpression.cs" />
+    <Compile Include="Web\UI\Controls\ComparisonFilterExpression.cs" />
+    <Compile Include="Web\UI\Controls\CompoundFilterExpression.cs" />
     <Compile Include="Web\UI\ICustomGridColumns.cs" />
     <Compile Include="Web\UI\ICustomGridOptions.cs" />
+    <Compile Include="Web\UI\IDisallowReturnUrlBlock.cs" />
     <Compile Include="Web\UI\CustomColumnConfig.cs" />
     <Compile Include="Web\UI\RockTheme.cs" />
     <!-- Exclude all legacy check-in workflow actions. -->
@@ -138,7 +148,7 @@
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' != 'net472'">
-    <PackageReference Include="AngleSharp" Version="1.4.0" />
+    <PackageReference Include="AngleSharp" Version="1.5.2" />
     <PackageReference Include="AWSSDK.Core" Version="4.0.3.3" />
     <PackageReference Include="AWSSDK.S3" Version="4.0.13.1" />
     <PackageReference Include="Azure.AI.DocumentIntelligence" Version="1.0.0" />
@@ -147,6 +157,7 @@
     <PackageReference Include="CacheManager.SystemRuntimeCaching" Version="2.0.0" />
     <PackageReference Include="CS-Script" Version="4.9.7" />
     <PackageReference Include="CommonMark.NET" Version="0.15.1" />
+    <PackageReference Include="DistributedLock.SqlServer" Version="1.0.7" />
     <PackageReference Include="DocumentFormat.OpenXml" Version="3.3.0" />
     <PackageReference Include="Elasticsearch.Net" Version="7.17.5" />
     <PackageReference Include="FCM.Net.Core" Version="1.0.0.1" />
@@ -184,6 +195,7 @@
     <PackageReference Include="Quartz" Version="3.6.0" />
     <PackageReference Include="QRCoder" Version="1.7.0" />
     <PackageReference Include="RestSharp" Version="106.15.0" />
+    <PackageReference Include="ReverseMarkdown" Version="6.1.0" />
     <PackageReference Include="Serilog.Extensions.Logging" Version="10.0.0" />
     <PackageReference Include="Serilog.Formatting.Compact" Version="3.0.0" />
     <PackageReference Include="Serilog.Formatting.Compact.Reader" Version="4.0.0" />
@@ -191,7 +203,7 @@
     <PackageReference Include="SixLabors.ImageSharp" Version="2.1.12" />
     <PackageReference Include="SixLabors.ImageSharp.Drawing" Version="1.0.0" />
     <PackageReference Include="System.ComponentModel.Composition" Version="5.0.0" />
-    <PackageReference Include="System.Configuration.ConfigurationManager" Version="9.0.6" />
+    <PackageReference Include="System.Configuration.ConfigurationManager" Version="9.0.11" />
     <PackageReference Include="System.Data.SqlClient" Version="4.8.6" />
     <PackageReference Include="System.Diagnostics.PerformanceCounter" Version="9.0.6" />
     <PackageReference Include="System.IO.Hashing" Version="9.0.6" />

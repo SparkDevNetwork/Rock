@@ -441,7 +441,11 @@ namespace Rock.Blocks.Utility
                             IconCssClass = m.IconCssClass,
                             UnitsLabel = m.YAxisLabel,
                             LastRunDateTime = m.MetricValues.OrderByDescending( v => v.MetricValueDateTime ).Select( v => v.MetricValueDateTime ).FirstOrDefault(),
+#if REVIEW_WEBFORMS
                             LastValue = m.MetricValues.Where( v => DbFunctions.TruncateTime( v.MetricValueDateTime ) == lastRunDateTime.Value ).Sum( v => v.YValue )
+#else
+                            LastValue = m.MetricValues.Where( v => v.MetricValueDateTime.Value.Date == lastRunDateTime.Value ).Sum( v => v.YValue )
+#endif
                         } ).FirstOrDefault();
                 }
                 else

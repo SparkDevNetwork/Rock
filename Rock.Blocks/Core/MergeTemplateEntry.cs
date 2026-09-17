@@ -24,6 +24,8 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.Serialization;
 
+using Microsoft.EntityFrameworkCore;
+
 using Newtonsoft.Json.Linq;
 
 using Rock;
@@ -204,7 +206,7 @@ namespace Rock.Blocks.Core
             var timeoutSeconds = GetAttributeValue( AttributeKey.DatabaseTimeout ).AsIntegerOrNull();
             if ( timeoutSeconds.HasValue && timeoutSeconds.Value > 0 )
             {
-                RockContext.Database.CommandTimeout = timeoutSeconds.Value;
+                RockContext.Database.SetCommandTimeout( timeoutSeconds.Value );
             }
         }
 

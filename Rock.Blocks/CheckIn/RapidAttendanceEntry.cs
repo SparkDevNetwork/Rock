@@ -1514,8 +1514,10 @@ namespace Rock.Blocks.CheckIn
 
             if ( session != null )
             {
+#if REVIEW_WEBFORMS
                 // Kiosks read this cache for live location counts.
                 Rock.CheckIn.KioskLocationAttendance.Remove( location.Id );
+#endif
 
                 attendanceCount = GetAttendedPersonIds( group.Id, location.Id, schedule.Id, session.AttendanceDate ).Count;
             }

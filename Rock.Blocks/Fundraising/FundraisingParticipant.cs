@@ -868,7 +868,7 @@ namespace Rock.Blocks.Fundraising
             var bag = new FundraisingParticipantEditBag
             {
                 ProfileTitle = $"{person.FullName?.ToPossessive()} Profile for {group.GetAttributeValue( FundraisingAttributeKey.OpportunityTitle )}",
-                DateRange = DateRangePicker.CalculateDateRangeFromDelimitedValues( group.GetAttributeValue( FundraisingAttributeKey.OpportunityDateRange ) ).ToString( "MMMM d, yyyy" ),
+                DateRange = DateRange.FromDelimitedValues( group.GetAttributeValue( FundraisingAttributeKey.OpportunityDateRange ) ).ToString( "MMMM d, yyyy" ),
                 NoPictureUrl = Person.GetPersonNoPictureUrl( person, 200, 200 ),
                 PhotoBinaryFile = GetPhotoListItem( person ),
                 GroupMemberAttributes = groupMember.GetPublicAttributesForEdit( currentPerson, enforceSecurity: false, attributeFilter: isGroupMemberAttributeEditable ),

@@ -30,6 +30,7 @@ using System.Xml.Linq;
 
 using Rock;
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Lava;
 using Rock.Model;
@@ -345,11 +346,11 @@ namespace Rock.Blocks.Example
             string rockDllPath = rockDll.Location;
             string docuPath = Path.ChangeExtension( rockDllPath, ".XML" );
 
-            if ( !File.Exists( docuPath ) && HttpContext.Current != null )
+            if ( !File.Exists( docuPath ) )
             {
                 try
                 {
-                    docuPath = HttpContext.Current.Server.MapPath( "~/bin/Rock.XML" );
+                    docuPath = RockApp.Current.MapPath( "~/bin/Rock.XML" );
                 }
                 catch { }
             }

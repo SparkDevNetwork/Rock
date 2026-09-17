@@ -577,10 +577,12 @@ namespace Rock.Blocks.Rsvp
 
             RockContext.SaveChanges();
 
+#if REVIEW_WEBFORMS
             if ( occurrence.LocationId.HasValue )
             {
                 Rock.CheckIn.KioskLocationAttendance.Remove( occurrence.LocationId.Value );
             }
+#endif
 
             return ActionOk( BuildAttendeeCounts( occurrence.Id ) );
         }

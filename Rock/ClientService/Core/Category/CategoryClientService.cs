@@ -20,7 +20,9 @@ using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
 
+#if REVIEW_WEBFORMS
 using OfficeOpenXml.FormulaParsing.Excel.Functions.Text;
+#endif
 
 using Rock.ClientService.Core.Category.Options;
 using Rock.Configuration;

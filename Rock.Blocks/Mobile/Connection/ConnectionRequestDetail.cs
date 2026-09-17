@@ -15,6 +15,7 @@
 // </copyright>
 //
 
+#if REVIEW_WEBFORMS
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -3370,3 +3371,4 @@ WHERE re.[SourceEntityTypeId] = @SourceEntityTypeId
         #endregion
     }
 }
+#endif

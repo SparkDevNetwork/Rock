@@ -19,7 +19,9 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Entity;
+#if WEBFORMS
 using System.Data.Entity.Infrastructure;
+#endif
 using System.Linq;
 
 using Rock.Attribute;
@@ -116,7 +118,7 @@ namespace Rock.Blocks.Communication
             }
 
             var service = new SmsPipelineService( rockContext );
-            var query = service.Queryable().Include( p => p.SmsActions );
+            IQueryable<SmsPipeline> query = service.Queryable().Include( p => p.SmsActions );
 
             if ( !trackChanges )
             {

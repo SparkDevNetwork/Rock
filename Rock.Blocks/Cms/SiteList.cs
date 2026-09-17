@@ -167,7 +167,7 @@ namespace Rock.Blocks.Cms
         {
             var siteType = GetAttributeValue( AttributeKey.SiteType ).SplitDelimitedValues().Select( a => a.ConvertToEnumOrNull<SiteType>() ).ToList();
 
-            var queryable = base.GetListQueryable( rockContext ).Include( s => s.SiteDomains );
+            IQueryable<Site> queryable = base.GetListQueryable( rockContext ).Include( s => s.SiteDomains );
             if ( siteType.Count() > 0 )
             {
                 // Filter by block setting Site type

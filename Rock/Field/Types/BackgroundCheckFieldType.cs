@@ -29,7 +29,6 @@ using Rock.Model;
 using Rock.Web.UI.Controls;
 using Rock.Attribute;
 using Rock.ViewModels.Utility;
-using Rock.Configuration;
 
 namespace Rock.Field.Types
 {

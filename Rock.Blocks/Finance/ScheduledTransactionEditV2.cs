@@ -927,6 +927,7 @@ namespace Rock.Blocks.Finance
         /// <param name="bag">The bag to populate.</param>
         private void PopulateSchedule( FinancialScheduledTransaction scheduledTransaction, IObsidianHostedGatewayComponent hostedGatewayComponent, FinancialGateway financialGateway, ScheduledTransactionEditV2Bag bag )
         {
+#if REVIEW_WEBFORMS
             var scheduleGatewayComponent = hostedGatewayComponent as IHostedGatewayComponent;
             if ( scheduleGatewayComponent == null )
             {
@@ -956,6 +957,7 @@ namespace Rock.Blocks.Finance
             bag.NextPaymentDate = nextPaymentDate;
             bag.EarliestPaymentDate = earliestScheduledStartDate;
             bag.EndDate = scheduledTransaction.EndDate;
+#endif
         }
 
         /// <summary>
@@ -1189,6 +1191,7 @@ namespace Rock.Blocks.Finance
                 return false;
             }
 
+#if REVIEW_WEBFORMS
             var scheduleGatewayComponent = editContext.HostedGatewayComponent as IHostedGatewayComponent;
             if ( scheduleGatewayComponent != null )
             {
@@ -1199,6 +1202,7 @@ namespace Rock.Blocks.Finance
                     return false;
                 }
             }
+#endif
 
             if ( request.EndDate.HasValue && request.EndDate.Value.Date < request.NextPaymentDate.Value.Date )
             {
@@ -1221,6 +1225,7 @@ namespace Rock.Blocks.Finance
         /// <returns>The reference payment info, or <c>null</c> when it could not be resolved.</returns>
         private ReferencePaymentInfo BuildReferencePaymentInfo( UpdateScheduledTransactionRequestBag request, ScheduledTransactionEditContext editContext, out string errorMessage )
         {
+#if REVIEW_WEBFORMS
             errorMessage = null;
 
             var scheduledTransaction = editContext.ScheduledTransaction;
@@ -1282,6 +1287,10 @@ namespace Rock.Blocks.Finance
 
             errorMessage = "Unable to determine the payment method to use.";
             return null;
+#else
+            errorMessage = "This page is not configured to allow edits for the payment gateway associated with the selected transaction.";
+            return null;
+#endif
         }
 
         /// <summary>
@@ -1453,6 +1462,7 @@ namespace Rock.Blocks.Finance
             }
 
             var scheduledTransaction = editContext.ScheduledTransaction;
+#if REVIEW_WEBFORMS
             var gatewayComponent = editContext.HostedGatewayComponent as IHostedGatewayComponent;
 
             // Only set StartDate; NextPaymentDate is derived by the gateway/schedule, matching
@@ -1559,6 +1569,9 @@ namespace Rock.Blocks.Finance
                 IsSuccess = true,
                 SuccessHtml = successHtml
             } );
+#else
+            throw new NotSupportedException( "Hosted gateway updates are not supported in this build of Rock." );
+#endif
         }
 
         #endregion Block Actions

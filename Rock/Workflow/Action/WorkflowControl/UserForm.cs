@@ -869,7 +869,7 @@ namespace Rock.Workflow.Action
                         }
                         catch ( PropertyValidationException ex )
                         {
-                            if ( DbContext.EnableStringValidation )
+                            if ( Data.DbContext.EnableStringValidation )
                             {
                                 throw new AttributeValueValidationException( attribute, item.Id, ex.Reason, null );
                             }
@@ -881,7 +881,11 @@ namespace Rock.Workflow.Action
                                 var stack = new System.Diagnostics.StackTrace( true ).ToString();
                                 var ex2 = new AttributeValueValidationException( attribute, item.Id, ex.Reason, stack );
 
+#if REVIEW_WEBFORMS
                                 ExceptionLogService.LogException( ex2, System.Web.HttpContext.Current );
+#else
+                                ExceptionLogService.LogException( ex2 );
+#endif
                             }
                         }
                     }

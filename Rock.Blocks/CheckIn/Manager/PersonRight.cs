@@ -712,6 +712,7 @@ namespace Rock.Blocks.CheckIn.Manager
                 ? lastPrinterGuid.Value.ToString()
                 : null;
 
+#if WEBFORMS
             // Legacy labels take precedence when they exist. Only fall
             // back to next-gen labels when the legacy set is empty.
             var legacyLabels = ZebraPrint.GetLabelTypesForPerson( personId.Value, attendanceIds );
@@ -734,6 +735,7 @@ namespace Rock.Blocks.CheckIn.Manager
                     SelectedPrinterGuid = selectedPrinterGuid
                 } );
             }
+#endif
 
             var nextGenLabels = ZebraPrint.GetReprintNextGenLabelTypes( attendanceIds );
             if ( nextGenLabels == null || !nextGenLabels.Any() )
@@ -753,6 +755,7 @@ namespace Rock.Blocks.CheckIn.Manager
             } );
         }
 
+#if WEBFORMS
         /// <summary>
         /// Prints the selected legacy labels for the given attendance ids
         /// on the selected printer (server or local client). Persists the
@@ -836,6 +839,7 @@ namespace Rock.Blocks.CheckIn.Manager
                 ClientLabelsJson = clientLabelsJson
             } );
         }
+#endif
 
         /// <summary>
         /// Prints the selected next-gen labels for the given attendance ids

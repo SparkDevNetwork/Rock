@@ -22,7 +22,9 @@ using System.Data.Entity;
 using System.Linq;
 using System.Text;
 
+#if REVIEW_WEBFORMS
 using EntityFramework.Utilities;
+#endif
 
 using Rock.Attribute;
 using Rock.Configuration;

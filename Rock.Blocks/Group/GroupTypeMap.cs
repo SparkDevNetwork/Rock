@@ -301,8 +301,13 @@ namespace Rock.Blocks.Group
                         .Select( l => new
                         {
                             l.LocationId,
+#if REVIEW_WEBFORMS
                             Latitude = l.Location.GeoPoint.Latitude,
                             Longitude = l.Location.GeoPoint.Longitude
+#else
+                            Latitude = ( double? ) l.Location.GeoPoint.Coordinate.Y,
+                            Longitude = ( double? ) l.Location.GeoPoint.Coordinate.X
+#endif
                         } )
                         .FirstOrDefault()
                 } )
@@ -473,8 +478,13 @@ namespace Rock.Blocks.Group
                 { "City", groupLocation.Location.City },
                 { "State", groupLocation.Location.State },
                 { "PostalCode", groupLocation.Location.PostalCode },
+#if REVIEW_WEBFORMS
                 { "Latitude", groupLocation.Location.GeoPoint?.Latitude },
                 { "Longitude", groupLocation.Location.GeoPoint?.Longitude }
+#else
+                { "Latitude", groupLocation.Location.GeoPoint?.Coordinate.Y },
+                { "Longitude", groupLocation.Location.GeoPoint?.Coordinate.X }
+#endif
             };
         }
 

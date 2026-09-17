@@ -21,6 +21,8 @@ using System.Data.Entity;
 using System.Linq;
 using System.Web;
 
+using Microsoft.AspNetCore.Http;
+
 using Rock.Attribute;
 using Rock.Configuration;
 using Rock.Data;
@@ -32,7 +34,6 @@ using Rock.Web.UI.Controls;
 
 namespace Rock.CheckIn
 {
-#if REVIEW_WEBFORMS
     /// <summary>
     /// 
     /// </summary>
@@ -77,6 +78,7 @@ namespace Rock.CheckIn
             public const string CheckInAreaGuid = "CheckInAreaGuid";
         }
 
+#if REVIEW_WEBFORMS
         /// <summary>
         /// Gets the checkin area filter that the (Checkin Manager) block uses.
         /// Determined by 'Area' PageParameter, 'ShowAllAreas' block setting, Cookie or 'CheckInAreaGuid' block setting
@@ -127,6 +129,7 @@ namespace Rock.CheckIn
 
             return null;
         }
+#endif
 
         /// <summary>
         /// Gets the checkin area filter for callers that cannot pass a
@@ -176,6 +179,7 @@ namespace Rock.CheckIn
             return null;
         }
 
+#if REVIEW_WEBFORMS
         /// <summary>
         /// Sets the selected location.
         /// Note this will redirect to the current page to include a LocationId query parameter if a LocationId parameter in the URL is missing or doesn't match.
@@ -341,6 +345,7 @@ namespace Rock.CheckIn
 
             return scheduleId;
         }
+#endif
 
         /// <summary>
         /// Saves the campus location configuration to the response cookie
@@ -448,11 +453,20 @@ namespace Rock.CheckIn
         private static void SaveCheckinManagerConfigurationToCookie( CheckinManagerConfiguration checkinManagerConfiguration )
         {
             var checkinManagerConfigurationJson = checkinManagerConfiguration.ToJson( indentOutput: false );
+#if REVIEW_WEBFORMS
             Rock.Web.UI.RockPage.AddOrUpdateCookie( CheckInManagerCookieKey.CheckinManagerConfiguration, checkinManagerConfigurationJson, RockDateTime.Now.AddYears( 1 ) );
 
             // Also save the Configuration in the Request.Items so that we can grab the configuration from there instead
             // of the Cookie if the configuration changes from what is in the request cookie.
             HttpContext.Current.AddOrReplaceItem( CheckInManagerCookieKey.CheckinManagerConfiguration, checkinManagerConfigurationJson );
+#else
+            Net.RockRequestContextAccessor.Current.Response.AddCookie( new Net.BrowserCookie
+            {
+                Name = CheckInManagerCookieKey.CheckinManagerConfiguration,
+                Value = checkinManagerConfigurationJson,
+                Expires = RockDateTime.Now.AddYears( 1 ),
+            } );
+#endif
         }
 
         /// <summary>
@@ -465,18 +479,24 @@ namespace Rock.CheckIn
             CheckinManagerConfiguration checkinManagerConfiguration = null;
 
             // First check Request.Items in case we have changed the configuration during this request.
+#if REVIEW_WEBFORMS
             var currentlySavedCheckinManagerConfigurationJson = HttpContext.Current.Items[CheckInManagerCookieKey.CheckinManagerConfiguration] as string;
             if ( currentlySavedCheckinManagerConfigurationJson.IsNotNullOrWhiteSpace() )
             {
                 checkinManagerConfiguration = currentlySavedCheckinManagerConfigurationJson.FromJsonOrNull<CheckinManagerConfiguration>();
             }
             else
+#endif
             {
                 // If we haven't changed the configuration in this request yet, get it from the cookie.
-                var checkinManagerRosterConfigurationRequestCookie = HttpContext.Current.Request.Cookies[CheckInManagerCookieKey.CheckinManagerConfiguration];
+#if REVIEW_WEBFORMS
+                var checkinManagerRosterConfigurationRequestCookie = HttpContext.Current.Request.Cookies[CheckInManagerCookieKey.CheckinManagerConfiguration]?.Value;
+#else
+                var checkinManagerRosterConfigurationRequestCookie = Net.RockRequestContextAccessor.Current.GetCookieValue( CheckInManagerCookieKey.CheckinManagerConfiguration );
+#endif
                 if ( checkinManagerRosterConfigurationRequestCookie != null )
                 {
-                    checkinManagerConfiguration = checkinManagerRosterConfigurationRequestCookie.Value.FromJsonOrNull<CheckinManagerConfiguration>();
+                    checkinManagerConfiguration = checkinManagerRosterConfigurationRequestCookie.FromJsonOrNull<CheckinManagerConfiguration>();
                 }
             }
 
@@ -786,7 +806,6 @@ namespace Rock.CheckIn
             }
         }
     }
-#endif
 
     /// <summary>
     /// 

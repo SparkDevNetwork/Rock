@@ -494,15 +494,27 @@ namespace Rock.Blocks.Connection
                     ActiveRequestCount = g.Count(), // They're all active because of the filter above.
                     DueSoonRequestCount = g.Count( r =>
                         r.DueSoonDate.HasValue
+#if REVIEW_WEBFORMS
                         && DbFunctions.TruncateTime( r.DueSoonDate.Value ) <= today
+#else
+                        && r.DueSoonDate.Value.Date <= today
+#endif
                         && !(
                             r.DueDate.HasValue
+#if REVIEW_WEBFORMS
                             && DbFunctions.TruncateTime( r.DueDate.Value ) < today
+#else
+                            && r.DueDate.Value.Date < today
+#endif
                         )
                     ),
                     OverdueRequestCount = g.Count( r =>
                         r.DueDate.HasValue
+#if REVIEW_WEBFORMS
                         && DbFunctions.TruncateTime( r.DueDate.Value ) < today
+#else
+                        && r.DueDate.Value.Date < today
+#endif
                     ),
                     UnassignedRequestCount = g.Count( r => !r.ConnectorPersonAliasId.HasValue ),
                     AssignedToYouRequestCount = g.Count( r =>
@@ -643,7 +655,11 @@ namespace Rock.Blocks.Connection
                     cr.CreatedDateTime >= startDate
                     && cr.CreatedDateTime < endDate
                 )
+#if REVIEW_WEBFORMS
                 .GroupBy( cr => DbFunctions.TruncateTime( cr.CreatedDateTime ) )
+#else
+                .GroupBy( cr => ( System.DateTime? ) cr.CreatedDateTime.Value.Date )
+#endif
                 .Select( g => new
                 {
                     Date = g.Key.Value,
@@ -656,7 +672,11 @@ namespace Rock.Blocks.Connection
                     cr.ConnectedDateTime >= startDate
                     && cr.ConnectedDateTime < endDate
                 )
+#if REVIEW_WEBFORMS
                 .GroupBy( cr => DbFunctions.TruncateTime( cr.ConnectedDateTime ) )
+#else
+                .GroupBy( cr => ( System.DateTime? ) cr.ConnectedDateTime.Value.Date )
+#endif
                 .Select( g => new
                 {
                     Date = g.Key.Value,

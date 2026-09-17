@@ -426,7 +426,11 @@ namespace Rock.Blocks.Security
                         */
                         var isTwoFactorAuthenticated = IsTwoFactorAuthenticationRequired( person.AccountProtectionProfile );
 
+#if REVIEW_WEBFORMS
                         Authorization.SetAuthCookie( userLogin.UserName, isPersisted: false, isImpersonated: false, isTwoFactorAuthenticated );
+#else
+                        throw new NotImplementedException( "Not implemented in this environment." );
+#endif
 
                         new HistoryLogin
                         {
@@ -448,7 +452,11 @@ namespace Rock.Blocks.Security
                 {
                     if ( person.PrimaryAlias != null )
                     {
+#if REVIEW_WEBFORMS
                         Authorization.SetUnsecurePersonIdentifier( person.PrimaryAlias.Guid );
+#else
+                        throw new NotImplementedException( "Not implemented in this environment." );
+#endif
                     }
                 }
             }

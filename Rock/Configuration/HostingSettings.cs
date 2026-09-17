@@ -62,7 +62,9 @@ namespace Rock.Configuration
                 ?? "/";
 #endif
 
+#if REVIEW_WEBFORMS
             IsDevelopmentEnvironment = System.Web.Hosting.HostingEnvironment.IsDevelopmentEnvironment;
+#endif
 
             NodeName = initializationSettings.NodeName;
 
@@ -85,6 +87,7 @@ namespace Rock.Configuration
         /// <returns></returns>
         public static int GetDotNetReleaseNumber()
         {
+#if REVIEW_WEBFORMS
             const string subkey = @"SOFTWARE\Microsoft\NET Framework Setup\NDP\v4\Full\";
             using ( RegistryKey ndpKey = RegistryKey.OpenBaseKey( RegistryHive.LocalMachine, RegistryView.Registry32 ).OpenSubKey( subkey ) )
             {
@@ -97,6 +100,9 @@ namespace Rock.Configuration
                     return 0;
                 }
             }
+#else
+            return 0;
+#endif
         }
 
         /// <summary>
@@ -105,7 +111,11 @@ namespace Rock.Configuration
         /// <returns></returns>
         internal static string GetDotNetVersion()
         {
+#if NETFRAMEWORK
             return GetDotNetVersion( GetDotNetReleaseNumber() );
+#else
+            return Environment.Version.ToString();
+#endif
         }
 
         /// <summary>
@@ -115,6 +125,7 @@ namespace Rock.Configuration
         /// <returns></returns>
         internal static string GetDotNetVersion( int releaseNumber )
         {
+#if NETFRAMEWORK
             var dotNetReleaseNumberVersionMap = new Dictionary<int, string>
             {
                 { 528040, ".NET Framework 4.8" },
@@ -138,6 +149,9 @@ namespace Rock.Configuration
             }
 
             return "Unknown";
+#else
+            return Environment.Version.ToString();
+#endif
         }
 
         #endregion

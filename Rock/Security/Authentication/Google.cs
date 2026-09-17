@@ -22,6 +22,7 @@ using System.Net;
 using System.Web;
 #if REVIEW_WEBFORMS
 using System.Web.Security;
+#endif
 
 using Newtonsoft.Json;
 

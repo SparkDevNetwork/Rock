@@ -56,7 +56,9 @@ namespace Rock.Model
         /// </summary>
         public static void RefreshRouteTable()
         {
+#if REVIEW_WEBFORMS
             Rock.Web.RockRouteHandler.ReregisterRoutes();
+#endif
         }
     }
 }

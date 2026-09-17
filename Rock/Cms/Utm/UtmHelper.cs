@@ -53,6 +53,7 @@ namespace Rock.Cms.Utm
 
             return utmInfo;
         }
+#endif
 
         /// <summary>
         /// Retrieve UTM data for the current request from the associated cookie.
@@ -66,6 +67,7 @@ namespace Rock.Cms.Utm
             return utmCookieValue.FromJsonOrNull<UtmCookieData>();
         }
 
+#if REVIEW_WEBFORMS
         /// <summary>
         /// Store UTM data for the current request in a cookie.
         /// </summary>

@@ -1546,11 +1546,15 @@ namespace Rock.Blocks.Engagement
                 // ShouldRecalculateRequestDueAndDueSoonDates is [NotMapped], so EF won't
                 // detect it as a change. If it's the only thing that changed, the entity
                 // stays Unchanged and the save hook never fires — force it to Modified.
+#if REVIEW_WEBFORMS
                 if ( entity.ShouldRecalculateRequestDueAndDueSoonDates
                     && RockContext.Entry( entity ).State == System.Data.Entity.EntityState.Unchanged )
                 {
                     RockContext.Entry( entity ).State = System.Data.Entity.EntityState.Modified;
                 }
+#else
+                entity.ModifiedDateTime = RockDateTime.Now;
+#endif
 
                 // Save the connection type first to ensure it has an Id ( if it's a new connection type )
                 // before saving the related entities.

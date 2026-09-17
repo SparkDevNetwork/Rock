@@ -340,7 +340,11 @@ namespace Rock.Model
             }
 
             // Get the underlying SQL connection
+#if REVIEW_WEBFORMS
             var connection = ( SqlConnection ) rockContext.Database.Connection;
+#else
+            var connection = ( SqlConnection ) rockContext.Database.GetDbConnection();
+#endif
             var closeConnection = false;
 
             if ( connection.State != System.Data.ConnectionState.Open )

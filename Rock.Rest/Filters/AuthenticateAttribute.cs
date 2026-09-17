@@ -32,6 +32,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 #endif
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Net;

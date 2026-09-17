@@ -18,6 +18,8 @@ using System;
 using System.ComponentModel;
 using System.Linq;
 
+using Microsoft.EntityFrameworkCore;
+
 using Rock.Attribute;
 using Rock.Configuration;
 using Rock.Data;
@@ -168,7 +170,7 @@ namespace Rock.Jobs
         {
             var rockContext = RockApp.Current.CreateRockContext();
 
-            rockContext.Database.CommandTimeout = _commandTimeout;
+            rockContext.Database.SetCommandTimeout( _commandTimeout );
 
             return rockContext;
         }

@@ -27,10 +27,9 @@ using Rock.Model;
 using Rock.Rest.Filters;
 using Rock.Security;
 using Rock.ViewModels.Rest.Models;
-
-#if WEBFORMS
 using Rock.Web.Cache;
 
+#if WEBFORMS
 using FromBodyAttribute = System.Web.Http.FromBodyAttribute;
 using HttpGetAttribute = System.Web.Http.HttpGetAttribute;
 using HttpPostAttribute = System.Web.Http.HttpPostAttribute;
@@ -216,7 +215,11 @@ namespace Rock.Rest.v2.Models
             PersonService.SaveNewPerson( createdPerson, rockContext );
 
             var routePrefixAttribute = GetType().GetCustomAttribute<RoutePrefixAttribute>();
+#if REVIEW_WEBFORMS
             var locationUri = new Uri( $"{routePrefixAttribute.Prefix}/{createdPerson.Id}", UriKind.Relative );
+#else
+            var locationUri = new Uri( $"{routePrefixAttribute.Template}/{createdPerson.Id}", UriKind.Relative );
+#endif
 
             var rootUrlPath = RockRequestContext.RootUrlPath?.TrimEnd( '/' ) ?? string.Empty;
             var locationPath = locationUri.ToString().TrimStart( '/' );

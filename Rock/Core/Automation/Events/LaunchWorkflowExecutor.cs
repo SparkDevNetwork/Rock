@@ -16,7 +16,9 @@
 //
 using System;
 using System.Collections.Generic;
+#if REVIEW_WEBFORMS
 using System.IdentityModel.Metadata;
+#endif
 using System.Threading.Tasks;
 
 using Rock.Configuration;

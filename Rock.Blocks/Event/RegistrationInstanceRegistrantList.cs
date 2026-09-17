@@ -22,6 +22,8 @@ using System.Data.Entity;
 using System.Data.SqlClient;
 using System.Linq;
 
+using Microsoft.EntityFrameworkCore;
+
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
@@ -356,7 +358,7 @@ namespace Rock.Blocks.Event
 
             var requiredSignatureDocumentTemplateId = registrationInstance.RegistrationTemplate?.RequiredSignatureDocumentTemplateId;
 
-            var registrantQry = new RegistrationRegistrantService( rockContext ).Queryable()
+            IQueryable<RegistrationRegistrant> registrantQry = new RegistrationRegistrantService( rockContext ).Queryable()
                 .Include( r => r.PersonAlias.Person )
                 .Include( r => r.Fees.Select( f => f.RegistrationTemplateFee ) )
                 .Include( r => r.GroupMember.Group );
@@ -439,7 +441,7 @@ namespace Rock.Blocks.Event
         /// <inheritdoc/>
         protected override List<RegistrationRegistrant> GetListItems( IQueryable<RegistrationRegistrant> queryable, RockContext rockContext )
         {
-            rockContext.Database.CommandTimeout = 180;
+            rockContext.Database.SetCommandTimeout( 180 );
 
             var items = queryable.ToList();
 

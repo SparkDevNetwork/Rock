@@ -342,8 +342,12 @@ namespace Rock.Blocks.Cms
         [BlockAction]
         public BlockActionResult SetEnableStatistics( bool enabled )
         {
+#if REVIEW_WEBFORMS
             Rock.Web.SystemSettings.SetValueToWebConfig( Rock.SystemKey.SystemSetting.CACHE_MANAGER_ENABLE_STATISTICS, enabled.ToString() );
             return ActionOk();
+#else
+            throw new System.NotSupportedException( "Updating web.config is not supported in this environment." );
+#endif
         }
 
         #endregion

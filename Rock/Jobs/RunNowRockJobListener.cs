@@ -63,7 +63,7 @@ namespace Rock.Jobs
 
         /// <inheritdoc/>
 #if REVIEW_NET5_0_OR_GREATER
-        public override Task JobExecutionVetoed( IJobExecutionContext context, CancellationToken cancellationToken )
+        public override Task JobExecutionVetoed( IJobExecutionContext context, System.Threading.CancellationToken cancellationToken )
 #else
         public override void JobExecutionVetoed( IJobExecutionContext context )
 #endif
@@ -88,7 +88,7 @@ namespace Rock.Jobs
 
         /// <inheritdoc/>
 #if REVIEW_NET5_0_OR_GREATER
-        public override Task JobWasExecuted( IJobExecutionContext context, JobExecutionException jobException, CancellationToken cancellationToken )
+        public override Task JobWasExecuted( IJobExecutionContext context, JobExecutionException jobException, System.Threading.CancellationToken cancellationToken )
 #else
         public override void JobWasExecuted( IJobExecutionContext context, JobExecutionException jobException )
 #endif

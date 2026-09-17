@@ -21,7 +21,9 @@ using System.ComponentModel.Composition;
 using MassTransit;
 
 using Microsoft.Extensions.Logging;
+#if REVIEW_WEBFORMS
 using Microsoft.ServiceBus;
+#endif
 
 using Rock.Attribute;
 using Rock.Configuration;

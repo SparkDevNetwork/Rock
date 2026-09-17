@@ -1101,6 +1101,7 @@ namespace Rock.Blocks.Engagement.SignUp
                         return null;
                     }
 
+#if REVIEW_WEBFORMS
                     DbGeography point;
                     try
                     {
@@ -1112,6 +1113,19 @@ namespace Rock.Blocks.Engagement.SignUp
                         // empty or partial selection, which is treated as no location.
                         return null;
                     }
+#else
+                    NetTopologySuite.Geometries.Point point;
+                    try
+                    {
+                        point = new NetTopologySuite.IO.WKTReader().Read( wellKnownText ) as NetTopologySuite.Geometries.Point;
+                    }
+                    catch
+                    {
+                        // Intentionally ignored: the picker emits invalid text for an
+                        // empty or partial selection, which is treated as no location.
+                        return null;
+                    }
+#endif
 
                     return locationService.GetByGeoPoint( point );
                 }
@@ -1124,6 +1138,7 @@ namespace Rock.Blocks.Engagement.SignUp
                         return null;
                     }
 
+#if REVIEW_WEBFORMS
                     DbGeography fence;
                     try
                     {
@@ -1135,6 +1150,19 @@ namespace Rock.Blocks.Engagement.SignUp
                         // empty or partial selection, which is treated as no location.
                         return null;
                     }
+#else
+                    NetTopologySuite.Geometries.Polygon fence;
+                    try
+                    {
+                        fence = new NetTopologySuite.IO.WKTReader().Read( wellKnownText ) as NetTopologySuite.Geometries.Polygon;
+                    }
+                    catch
+                    {
+                        // Intentionally ignored: the picker emits invalid text for an
+                        // empty or partial selection, which is treated as no location.
+                        return null;
+                    }
+#endif
 
                     return locationService.GetByGeoFence( fence );
                 }

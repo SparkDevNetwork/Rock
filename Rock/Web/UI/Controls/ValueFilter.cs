@@ -24,7 +24,6 @@ using Humanizer;
 
 namespace Rock.Web.UI.Controls
 {
-#if REVIEW_WEBFORMS
     /// <summary>
     /// A <see cref="T:System.Web.UI.WebControls.ValueFilter"/> control for editing a simple filter
     /// </summary>
@@ -454,5 +453,4 @@ Rock.controls.valueFilter.initialize({{
 
         #endregion
     }
-#endif
 }

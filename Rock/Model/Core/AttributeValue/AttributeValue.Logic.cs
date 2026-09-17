@@ -495,7 +495,11 @@ namespace Rock.Model
                 Reason: Improve query performance by ensuring index usage and avoiding full table scans. (Fixes #6743)
             */
             var matrixGuidChecksumQuery = matrixGuidQuery
+#if REVIEW_WEBFORMS
                 .Select( g => SqlFunctions.Checksum( g ) );
+#else
+                .Select( g => EFSqlFunctions.Checksum( g ) );
+#endif
 
             var matrixFieldType = FieldTypeCache.Get( SystemGuid.FieldType.MATRIX );
             var attributeIdQuery = attributeService.Queryable().AsNoTracking().Where( a =>
@@ -504,7 +508,11 @@ namespace Rock.Model
 
             var attributeValue = attributeValueService.Queryable().AsNoTracking().FirstOrDefault( av =>
                  attributeIdQuery.Contains( av.AttributeId )
+#if REVIEW_WEBFORMS
                  && matrixGuidChecksumQuery.Contains( ( int? ) av.ValueChecksum )
+#else
+                 && matrixGuidChecksumQuery.Contains( av.ValueChecksum  )
+#endif
                  && matrixGuidQuery.Contains( av.Value ) );
 
             return attributeValue;

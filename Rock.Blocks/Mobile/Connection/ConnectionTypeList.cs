@@ -15,6 +15,7 @@
 // </copyright>
 //
 
+#if REVIEW_WEBFORMS
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -307,3 +308,4 @@ namespace Rock.Blocks.Mobile.Connection
         #endregion
     }
 }
+#endif

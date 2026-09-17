@@ -101,7 +101,11 @@ namespace Rock.Transactions
                         && r.PersonAliasId.HasValue
                         && personAliasIdsQry.Contains( r.PersonAliasId.Value )
                         && r.SendDateTime.HasValue
+#if REVIEW_WEBFORMS
                         && DbFunctions.TruncateTime( r.SendDateTime.Value ) >= sixtyDaysAgo
+#else
+                        && r.SendDateTime.Value.Date >= sixtyDaysAgo
+#endif
                     )
                     .OrderByDescending( r => r.SendDateTime )
                     .ThenByDescending( r => r.Id )

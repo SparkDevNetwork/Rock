@@ -1999,7 +1999,11 @@ namespace Rock.Blocks.Communication
                 foreach ( var staleRecipientId in staleRecipientIds )
                 {
                     var stub = new CommunicationRecipient { Id = staleRecipientId };
+#if REVIEW_WEBFORMS
                     rockContext.Entry( stub ).State = System.Data.Entity.EntityState.Deleted;
+#else
+                    rockContext.Entry( stub ).State = Microsoft.EntityFrameworkCore.EntityState.Deleted;
+#endif
                 }
             }
 

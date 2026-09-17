@@ -163,6 +163,8 @@ namespace Rock.Data
             }
 
             modelBuilder.HasDbFunction( typeof( Rock.StringExtensions ).GetMethod( "Left", BindingFlags.Static | BindingFlags.Public ) );
+            modelBuilder.HasDbFunction( typeof( Rock.EFSqlFunctions ).GetMethod( nameof( EFSqlFunctions.Checksum ) ) )
+                .HasName( "CHECKSUM" );
 
             ContextHelper.ModelBuilder = modelBuilder;
 #endif

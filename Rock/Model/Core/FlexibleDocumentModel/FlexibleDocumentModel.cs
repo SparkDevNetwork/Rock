@@ -70,7 +70,9 @@ namespace Rock.Model
         /// </value>
         [Required]
         [MaxLength( 100 )]
+#if REVIEW_WEBFORMS
         [Index( IsUnique = true )]
+#endif
         [DataMember( IsRequired = true )]
         [StringValidation( StringValidationProfile.PlainText )]
         public string Key { get; set; }

@@ -385,9 +385,13 @@ namespace Rock.Blocks.Finance
                 && transactionSchedule.FinancialGateway.Guid != transferToGatewayGuid.Value;
 
             // Whether the schedule's gateway supports a hosted edit page.
+#if REVIEW_WEBFORMS
             var hostedGatewayComponent = transactionSchedule.FinancialGateway?.GetGatewayComponent() as IHostedGatewayComponent;
             var useHostedGatewayEditPage = hostedGatewayComponent != null
                 && hostedGatewayComponent.GetSupportedHostedGatewayModes( transactionSchedule.FinancialGateway ).Contains( HostedGatewayMode.Hosted );
+#else
+            var useHostedGatewayEditPage = false;
+#endif
 
             // Event-registration schedules are read-only from this block.
             var isEventRegistration = eventRegistrationTransactionTypeValueId.HasValue

@@ -404,15 +404,19 @@ namespace Rock.Rest.v2
                     https://github.com/SparkDevNetwork/Rock/issues/6988
                 */
                 Rock.Web.PageReference pageReference = null;
+#if REVIEW_WEBFORMS
                 var referringUri = controller.Request?.Headers?.Referrer;
+#else
+                Uri.TryCreate( controller.Request?.Headers?.Referer.ToString(), UriKind.RelativeOrAbsolute, out var referringUri );
+#endif
                 if ( referringUri != null )
                 {
                     try
                     {
-#if WEBFORMS
+#if REVIEW_WEBFORMS
                         var applicationPath = System.Web.HttpContext.Current?.Request?.ApplicationPath;
 #else
-#error Not implemented yet.
+                        var applicationPath = "/";
 #endif
                         var referringReference = new Rock.Web.PageReference( referringUri, applicationPath );
 

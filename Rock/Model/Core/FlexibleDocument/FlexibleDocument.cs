@@ -127,7 +127,9 @@ namespace Rock.Model
         /// A <see cref="System.String"/> filter value, or <c>null</c> when the model does not use this slot.
         /// </value>
         [MaxLength( 100 )]
+#if REVIEW_WEBFORMS
         [Index]
+#endif
         [DataMember]
         [StringValidation( StringValidationProfile.PlainText )]
         public string IndexedText1 { get; set; }
@@ -144,7 +146,9 @@ namespace Rock.Model
         /// A <see cref="System.String"/> filter value, or <c>null</c> when the model does not use this slot.
         /// </value>
         [MaxLength( 100 )]
+#if REVIEW_WEBFORMS
         [Index]
+#endif
         [DataMember]
         [StringValidation( StringValidationProfile.PlainText )]
         public string IndexedText2 { get; set; }
@@ -157,7 +161,9 @@ namespace Rock.Model
         /// <value>
         /// A <see cref="System.Int32"/> filter value, or <c>null</c> when the model does not use this slot.
         /// </value>
+#if REVIEW_WEBFORMS
         [Index]
+#endif
         [DataMember]
         public int? IndexedInteger1 { get; set; }
 
@@ -168,7 +174,9 @@ namespace Rock.Model
         /// <value>
         /// A <see cref="System.Decimal"/> filter value, or <c>null</c> when the model does not use this slot.
         /// </value>
+#if REVIEW_WEBFORMS
         [Index]
+#endif
         [DataMember]
         [DecimalPrecision( 18, 4 )]
         public decimal? IndexedDecimal1 { get; set; }
@@ -180,7 +188,9 @@ namespace Rock.Model
         /// <value>
         /// A <see cref="System.DateTime"/> filter value, or <c>null</c> when the model does not use this slot.
         /// </value>
+#if REVIEW_WEBFORMS
         [Index]
+#endif
         [DataMember]
         public DateTime? IndexedDate1 { get; set; }
 

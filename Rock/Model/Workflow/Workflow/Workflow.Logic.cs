@@ -231,7 +231,9 @@ namespace Rock.Model
                     this.LoadAttributes( rockContext );
                 }
 
+#if REVIEW_WEBFORMS
                 SetInitiator();
+#endif
 
                 // Guard against a workflow that keeps re-activating an activity and might otherwise
                 // spin forever, pinning the thread and (on the in-memory bus) letting every queued task

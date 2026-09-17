@@ -158,7 +158,7 @@ namespace Rock.Blocks.Event.InteractiveExperiences
         /// <inheritdoc/>
         protected override IQueryable<InteractiveExperience> GetListQueryable( RockContext rockContext )
         {
-            var queryable = base.GetListQueryable( rockContext )
+            IQueryable<InteractiveExperience> queryable = base.GetListQueryable( rockContext )
                 .Include( ie => ie.InteractiveExperienceSchedules.Select( ies => ies.Schedule ) )
                 .Include( ie => ie.InteractiveExperienceSchedules.Select( ies => ies.InteractiveExperienceScheduleCampuses.Select( iesc => iesc.Campus ) ) )
                 .Include( ie => ie.InteractiveExperienceActions );

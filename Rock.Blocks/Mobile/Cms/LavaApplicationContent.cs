@@ -19,7 +19,9 @@ using System;
 using System.ComponentModel;
 
 using Rock.Attribute;
+#if REVIEW_WEBFORMS
 using Rock.Common.Mobile.Blocks.Content;
+#endif
 using Rock.Web.Cache;
 
 namespace Rock.Blocks.Mobile.Cms
@@ -99,7 +101,11 @@ namespace Rock.Blocks.Mobile.Cms
         {
             var application = LavaApplicationCache.Get( GetAttributeValue( AttributeKey.Application ).AsGuid() );
 
+#if REVIEW_WEBFORMS
             return new Rock.Common.Mobile.Blocks.Cms.LavaApplicationContent.Configuration
+#else
+            return new
+#endif
             {
                 ApplicationSlug = application?.Slug,
                 InitialEndpoint = GetAttributeValue( AttributeKey.InitialEndpoint ),
@@ -130,7 +136,11 @@ namespace Rock.Blocks.Mobile.Cms
             var content = GetAttributeValue( AttributeKey.InitialTemplate )
                 .ResolveMergeFields( mergeFields, null, GetAttributeValue( AttributeKey.EnabledLavaCommands ) );
 
+#if REVIEW_WEBFORMS
             return new CallbackResponse
+#else
+            return new
+#endif
             {
                 Content = content
             };

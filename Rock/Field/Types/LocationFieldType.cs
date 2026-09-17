@@ -172,7 +172,6 @@ namespace Rock.Field.Types
                 if ( publicValue.Contains( "POINT" ) || publicValue.Contains( "POLYGON" ) )
                 {
                     DbGeography geoPoint = DbGeography.FromText( publicValue.FromJsonOrNull<string>() );
-                    var location = new LocationService( RockApp.Current.CreateRockContext() ).GetByGeoPoint( geoPoint );
 #else
                 if ( publicValue.Contains( "POINT" ) )
                 {

@@ -2828,7 +2828,7 @@ namespace Rock.Blocks.Engagement
             // ConnectionOpportunity.ConnectionType is eager-loaded because the per-type auth
             // check below reads EnableRequestSecurity off the nav property. Callers that need
             // additional includes layer them on via queryModifier.
-            var query = new ConnectionRequestService( RockContext ).GetByIds( requestIds )
+            IQueryable<ConnectionRequest> query = new ConnectionRequestService( RockContext ).GetByIds( requestIds )
                 .Where( c => allowedConnectionTypeIds.Contains( c.ConnectionTypeId ) )
                 .Include( r => r.ConnectionOpportunity.ConnectionType );
 

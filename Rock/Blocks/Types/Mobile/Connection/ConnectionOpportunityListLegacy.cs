@@ -200,11 +200,20 @@ namespace Rock.Blocks.Types.Mobile.Connection
                         ConnectionOpportunityId = g.Key,
                         DueSoonCount = g.Count( r =>
                             r.DueSoonDate.HasValue
+#if REVIEW_WEBFORMS
                             && DbFunctions.TruncateTime( r.DueSoonDate.Value ) <= today
                             && !( r.DueDate.HasValue && DbFunctions.TruncateTime( r.DueDate.Value ) < today ) ),
+#else
+                            && r.DueSoonDate.Value.Date <= today
+                            && !( r.DueDate.HasValue && r.DueDate.Value.Date < today ) ),
+#endif
                         OverdueCount = g.Count( r =>
                             r.DueDate.HasValue
+#if REVIEW_WEBFORMS
                             && DbFunctions.TruncateTime( r.DueDate.Value ) < today )
+#else
+                            && r.DueDate.Value.Date < today )
+#endif
                     } )
                     .ToDictionary( x => x.ConnectionOpportunityId );
 

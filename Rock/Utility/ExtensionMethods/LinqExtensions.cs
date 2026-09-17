@@ -24,7 +24,9 @@ using System.Reflection;
 using System.Web;
 using System.Web.UI.WebControls;
 
+#if REVIEW_WEBFORMS
 using EF6.TagWith;
+#endif
 
 using Rock.Attribute;
 using Rock.Configuration;

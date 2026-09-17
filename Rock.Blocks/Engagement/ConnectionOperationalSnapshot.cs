@@ -546,7 +546,11 @@ namespace Rock.Blocks.Engagement
                         cr.ConnectionState != ConnectionState.Connected
                         && cr.ConnectionState != ConnectionState.Inactive
                         && cr.DueDate.HasValue
+#if REVIEW_WEBFORMS
                         && DbFunctions.TruncateTime( cr.DueDate.Value ) < today ),
+#else
+                        && cr.DueDate.Value.Date < today ),
+#endif
 
                     // The total number of Connection Requests for this connector
                     // that have been connected in the last 28 days.
@@ -562,7 +566,11 @@ namespace Rock.Blocks.Engagement
                             && cr.ConnectedDateTime.HasValue
                             && cr.CreatedDateTime.HasValue
                             && cr.CreatedDateTime.Value >= twentyEightDaysAgo )
+#if REVIEW_WEBFORMS
                         .Average( cr => ( decimal? ) DbFunctions.DiffDays(
+#else
+                        .Average( cr => ( decimal? ) EF.Functions.DateDiffDay(
+#endif
                             cr.CreatedDateTime.Value,
                             cr.ConnectedDateTime.Value ) )
                 } )

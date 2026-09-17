@@ -47,10 +47,12 @@ namespace Rock.Model
 
             if ( !currentPersonAliasId.HasValue )
             {
+#if REVIEW_WEBFORMS
                 if ( HttpContext.Current != null && HttpContext.Current.Items.Contains( "CurrentPerson" ) )
                 {
                     currentPersonAliasId = ( HttpContext.Current.Items["CurrentPerson"] as Person )?.PrimaryAliasId;
                 }
+#endif
             }
 
             groupMember.IsArchived = true;

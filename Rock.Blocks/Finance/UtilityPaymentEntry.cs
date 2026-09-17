@@ -1419,6 +1419,7 @@ namespace Rock.Blocks.Finance
                 return options;
             }
 
+#if REVIEW_WEBFORMS
             if ( !( financialGatewayComponent is IHostedGatewayComponent ) )
             {
                 options.ConfigurationWarningTitle = "Unsupported Gateway";
@@ -1447,6 +1448,9 @@ namespace Rock.Blocks.Finance
             SetConfirmationOptions( options );
 
             return options;
+#else
+            throw new NotSupportedException( "Hosted gateways are not supported." );
+#endif
         }
 
         /// <summary>
@@ -1483,6 +1487,7 @@ namespace Rock.Blocks.Finance
         /// <returns>The supported gateway components.</returns>
         private List<SupportedGatewayBag> GetSupportedGateways()
         {
+#if REVIEW_WEBFORMS
             var hostedGatewayComponents = GatewayContainer.Instance.Components
                 .Select( component => component.Value.Value )
                 .OfType<IHostedGatewayComponent>()
@@ -1521,6 +1526,9 @@ namespace Rock.Blocks.Finance
             }
 
             return supportedGateways;
+#else
+            return new List<SupportedGatewayBag>();
+#endif
         }
 
         /// <summary>
@@ -2272,7 +2280,11 @@ namespace Rock.Blocks.Finance
             options.DefaultFrequencyGuid = oneTimeFrequency.Guid;
             options.DefaultStartDate = RockDateTime.Today.ToString( DatePickerDateFormat );
 
+#if REVIEW_WEBFORMS
             var earliestScheduledStartDate = ( financialGatewayComponent as IHostedGatewayComponent )?.GetEarliestScheduledStartDate( financialGateway ) ?? RockDateTime.Today;
+#else
+            var earliestScheduledStartDate = RockDateTime.Now;
+#endif
             options.EarliestScheduledStartDate = earliestScheduledStartDate.ToString( DatePickerDateFormat );
 
             ApplyScheduleUrlOptions( options, frequencies );
@@ -3493,7 +3505,11 @@ namespace Rock.Blocks.Finance
                 // A recurring gift cannot start before the gateway's earliest scheduled date (it may already
                 // have run today's automated giving), so clamp the start forward to that date. Sending an
                 // earlier date makes a hosted gateway reject the subscription.
+#if REVIEW_WEBFORMS
                 var earliestStartDate = ( financialGatewayComponent as IHostedGatewayComponent )?.GetEarliestScheduledStartDate( financialGateway ) ?? RockDateTime.Today;
+#else
+                var earliestStartDate = RockDateTime.Now;
+#endif
                 scheduleStartDate = startDate.HasValue && startDate.Value > earliestStartDate ? startDate.Value : earliestStartDate;
             }
 

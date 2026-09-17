@@ -847,7 +847,11 @@ namespace Rock.Data
                             var stack = new System.Diagnostics.StackTrace( true ).ToString();
 
                             ex.SetStackTrace( stack );
+#if REVIEW_WEBFORMS
                             ExceptionLogService.LogException( ex, HttpContext.Current );
+#else
+                            ExceptionLogService.LogException( ex );
+#endif
                         }
                     }
                 }

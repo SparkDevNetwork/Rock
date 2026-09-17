@@ -108,7 +108,11 @@ namespace Rock.Rest.v2
 
                 var agent = _agentBuilder.Build( agentCache.Id );
 
+#if REVIEW_WEBFORMS
                 using ( var contentStream = await Request.Content.ReadAsStreamAsync() )
+#else
+                var contentStream = Request.Body;
+#endif
                 {
                     var mcpRequest = new McpRequest
                     {
@@ -119,9 +123,14 @@ namespace Rock.Rest.v2
 
                     if ( mcpResponse.Content == null )
                     {
+#if REVIEW_WEBFORMS
                         return StatusCode( HttpStatusCode.Accepted );
+#else
+                        return StatusCode( Microsoft.AspNetCore.Http.StatusCodes.Status202Accepted );
+#endif
                     }
 
+#if REVIEW_WEBFORMS
                     var result = new HttpResponseMessage( HttpStatusCode.OK )
                     {
                         Content = new StreamContent( mcpResponse.Content )
@@ -130,6 +139,9 @@ namespace Rock.Rest.v2
                     result.Content.Headers.ContentType = new MediaTypeHeaderValue( "application/json" );
 
                     return ResponseMessage( result );
+#else
+                    return File( mcpResponse.Content, "application/json" );
+#endif
                 }
             }
         }

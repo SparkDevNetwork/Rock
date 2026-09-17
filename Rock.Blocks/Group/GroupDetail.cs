@@ -1555,6 +1555,7 @@ namespace Rock.Blocks.Group
                 Reason: Scope KioskDevice invalidation to attendance-taking
                 group types.
             */
+#if REVIEW_WEBFORMS
             if ( checkinDataUpdated )
             {
                 var groupTypeCacheForKiosk = GetGroupTypeCache( entity );
@@ -1563,6 +1564,7 @@ namespace Rock.Blocks.Group
                     Rock.CheckIn.KioskDevice.Clear();
                 }
             }
+#endif
 
             var saveReturnUrl = PageParameter( PageParameterKey.ReturnUrl );
             if ( saveReturnUrl.IsNotNullOrWhiteSpace() && IsSafeReturnUrl( saveReturnUrl ) )
@@ -4180,11 +4182,19 @@ namespace Rock.Blocks.Group
                     {
                         return null;
                     }
+#if REVIEW_WEBFORMS
                     System.Data.Entity.Spatial.DbGeography point;
                     try
                     {
                         point = System.Data.Entity.Spatial.DbGeography.FromText( wkt );
                     }
+#else
+                        NetTopologySuite.Geometries.Point point;
+                        try
+                        {
+                            point = new NetTopologySuite.IO.WKTReader().Read( wkt ) as NetTopologySuite.Geometries.Point;
+                        }
+#endif
                     catch
                     {
                         // The picker emits invalid WKT for empty or partial
@@ -4202,11 +4212,19 @@ namespace Rock.Blocks.Group
                     {
                         return null;
                     }
+#if REVIEW_WEBFORMS
                     System.Data.Entity.Spatial.DbGeography fence;
                     try
                     {
                         fence = System.Data.Entity.Spatial.DbGeography.PolygonFromText( wkt, System.Data.Entity.Spatial.DbGeography.DefaultCoordinateSystemId );
                     }
+#else
+                    NetTopologySuite.Geometries.Polygon fence;
+                    try
+                    {
+                        fence = new NetTopologySuite.IO.WKTReader().Read( wkt ) as NetTopologySuite.Geometries.Polygon;
+                    }
+#endif
                     catch
                     {
                         return null;

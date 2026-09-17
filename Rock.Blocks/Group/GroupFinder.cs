@@ -619,10 +619,10 @@ namespace Rock.Blocks.Group
         /// <returns>The guessed latitude and longitude, or nulls when neither source resolves.</returns>
         private (double? Latitude, double? Longitude) GetVisitorLocationGuess()
         {
-            var homePoint = RequestContext.CurrentPerson?.GetHomeLocation( RockContext )?.GeoPoint;
-            if ( homePoint?.Latitude != null && homePoint.Longitude != null )
+            var homeLocation = RequestContext.CurrentPerson?.GetHomeLocation( RockContext );
+            if ( homeLocation?.Latitude != null && homeLocation.Longitude != null )
             {
-                return ( homePoint.Latitude, homePoint.Longitude );
+                return ( homeLocation.Latitude, homeLocation.Longitude );
             }
 
             var geolocation = RequestContext.ClientInformation?.Geolocation;
@@ -633,7 +633,7 @@ namespace Rock.Blocks.Group
 
             // Last resort, so the finder still estimates a location when nothing about the visitor is
             // known (no profile address, no IP geolocation): the organization's own location.
-            var organizationPoint = GetOrganizationPoint();
+            var organizationPoint = GetOrganizationLocation();
             if ( organizationPoint?.Latitude != null && organizationPoint.Longitude != null )
             {
                 return ( organizationPoint.Latitude, organizationPoint.Longitude );
@@ -646,7 +646,7 @@ namespace Rock.Blocks.Group
         /// Gets the organization's own geocoded location as a coarse location estimate: its configured address, then the first active campus with a mapped location.
         /// </summary>
         /// <returns>The organization's geography point, or null when neither the organization address nor any campus is geocoded.</returns>
-        private System.Data.Entity.Spatial.DbGeography GetOrganizationPoint()
+        private Location GetOrganizationLocation()
         {
             var locationService = new LocationService( RockContext );
 
@@ -654,10 +654,10 @@ namespace Rock.Blocks.Group
             var organizationLocationGuid = GlobalAttributesCache.Value( "OrganizationAddress" ).AsGuidOrNull();
             if ( organizationLocationGuid.HasValue )
             {
-                var organizationPoint = locationService.Get( organizationLocationGuid.Value )?.GeoPoint;
-                if ( organizationPoint != null )
+                var organizationLocation = locationService.Get( organizationLocationGuid.Value );
+                if ( organizationLocation?.GeoPoint != null )
                 {
-                    return organizationPoint;
+                    return organizationLocation;
                 }
             }
 
@@ -669,7 +669,6 @@ namespace Rock.Blocks.Group
 
             return locationService.Queryable()
                 .Where( l => campusLocationIds.Contains( l.Id ) && l.GeoPoint != null )
-                .Select( l => l.GeoPoint )
                 .FirstOrDefault();
         }
 
@@ -2005,10 +2004,17 @@ namespace Rock.Blocks.Group
                 var westBound = searchBounds.West - longitudeMargin;
                 var eastBound = searchBounds.East + longitudeMargin;
 
+#if REVIEW_WEBFORMS
                 groupQuery = groupQuery.Where( gl => gl.Location.GeoPoint.Latitude >= southBound
                     && gl.Location.GeoPoint.Latitude <= northBound
                     && gl.Location.GeoPoint.Longitude >= westBound
                     && gl.Location.GeoPoint.Longitude <= eastBound );
+#else
+                groupQuery = groupQuery.Where( gl => gl.Location.GeoPoint.Coordinate.Y >= southBound
+                    && gl.Location.GeoPoint.Coordinate.Y <= northBound
+                    && gl.Location.GeoPoint.Coordinate.X >= westBound
+                    && gl.Location.GeoPoint.Coordinate.X <= eastBound );
+#endif
             }
 
             // Collapse multiple locations per group to one row. When proximity is on, carry the min
@@ -2278,7 +2284,11 @@ namespace Rock.Blocks.Group
         /// <param name="originPoint">The origin geography point, or null when proximity is not in use.</param>
         /// <param name="representativePoints">The result page's representative points when the caller already resolved them (same group ids, origin, and hasOrigin), reused to avoid a second query; null resolves them here.</param>
         /// <returns>One marker per group that has a mappable location, with coordinates fuzzed for privacy.</returns>
+#if REVIEW_WEBFORMS
         private List<GroupFinderMapMarkerBag> GetMapMarkers( List<int> groupIds, bool hasOrigin, System.Data.Entity.Spatial.DbGeography originPoint, List<(int GroupId, Guid Guid, double Latitude, double Longitude)> representativePoints = null )
+#else
+        private List<GroupFinderMapMarkerBag> GetMapMarkers( List<int> groupIds, bool hasOrigin, NetTopologySuite.Geometries.Geometry originPoint, List<(int GroupId, Guid Guid, double Latitude, double Longitude)> representativePoints = null )
+#endif
         {
             if ( !GetAttributeValue( AttributeKey.ShowMap ).AsBoolean() || !groupIds.Any() )
             {
@@ -2309,7 +2319,11 @@ namespace Rock.Blocks.Group
         /// <param name="hasOrigin">Whether a proximity origin is in use (selects the closest location per group).</param>
         /// <param name="originPoint">The origin geography point, or null when proximity is not in use.</param>
         /// <returns>One tuple per group that has a mappable location, carrying its guid and true coordinates.</returns>
+#if REVIEW_WEBFORMS
         private List<(int GroupId, Guid Guid, double Latitude, double Longitude)> GetRepresentativePoints( List<int> groupIds, bool hasOrigin, System.Data.Entity.Spatial.DbGeography originPoint )
+#else
+        private List<(int GroupId, Guid Guid, double Latitude, double Longitude)> GetRepresentativePoints( List<int> groupIds, bool hasOrigin, NetTopologySuite.Geometries.Geometry originPoint )
+#endif
         {
             if ( !groupIds.Any() )
             {
@@ -2329,8 +2343,13 @@ namespace Rock.Blocks.Group
                 {
                     gl.GroupId,
                     gl.Group.Guid,
+#if REVIEW_WEBFORMS
                     gl.Location.GeoPoint.Latitude,
                     gl.Location.GeoPoint.Longitude
+#else
+                    Latitude = ( double? ) gl.Location.GeoPoint.Coordinate.Y,
+                    Longitude = ( double? ) gl.Location.GeoPoint.Coordinate.X
+#endif
                 } )
                 .ToList()
                 .Where( p => p.Latitude.HasValue && p.Longitude.HasValue )
@@ -2358,7 +2377,11 @@ namespace Rock.Blocks.Group
         /// <param name="bounds">The bounding box the fuzzed marker must fall within.</param>
         /// <param name="radiusCenter">When set (with a positive radius), also requires the fuzzed marker to be within <paramref name="radiusMiles"/> straight-line of this point, turning the box into a true circle. Null skips the circular test (e.g. an explicit map-box search).</param>
         /// <param name="radiusMiles">The straight-line radius, in miles, applied around <paramref name="radiusCenter"/>.</param>
+#if REVIEW_WEBFORMS
         private List<int> FilterToFuzzedViewport( List<int> candidateGroupIds, bool hasOrigin, System.Data.Entity.Spatial.DbGeography originPoint, GeographyBounds bounds, GeographyPoint radiusCenter = null, double radiusMiles = 0 )
+#else
+        private List<int> FilterToFuzzedViewport( List<int> candidateGroupIds, bool hasOrigin, NetTopologySuite.Geometries.Geometry originPoint, GeographyBounds bounds, GeographyPoint radiusCenter = null, double radiusMiles = 0 )
+#endif
         {
             var pointsByGroup = GetRepresentativePoints( candidateGroupIds, hasOrigin, originPoint )
                 .ToDictionary( p => p.GroupId );

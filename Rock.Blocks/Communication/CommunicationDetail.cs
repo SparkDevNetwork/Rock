@@ -1259,7 +1259,7 @@ namespace Rock.Blocks.Communication
 
                 Reason: Enforce No ID support for Loading Communications
             */
-            var qry = new CommunicationService( RockContext )
+            IQueryable<Model.Communication> qry = new CommunicationService( RockContext )
                 .GetQueryableByKey( communicationKey, false )
                 .Include( c => c.CommunicationTemplate )
                 .Include( c => c.SystemCommunication );

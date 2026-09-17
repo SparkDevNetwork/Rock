@@ -598,7 +598,11 @@ namespace Rock.Blocks.Core
             var dailyTypeCounts = qry
                 .Select( e => new
                 {
+#if REVIEW_WEBFORMS
                     DayOffset = DbFunctions.DiffDays( baseDate, e.CreatedDateTime ),
+#else
+                    DayOffset = EF.Functions.DateDiffDay( baseDate, e.CreatedDateTime ),
+#endif
                     e.ExceptionType
                 } )
                 .GroupBy( e => new { e.DayOffset, e.ExceptionType } )

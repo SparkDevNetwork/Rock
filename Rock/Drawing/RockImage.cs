@@ -20,7 +20,9 @@ using System.IO;
 using System.Threading;
 using System.Web;
 
+#if REVIEW_WEBFORMS
 using Microsoft.Ajax.Utilities;
+#endif
 
 using Rock.Configuration;
 using Rock.Data;

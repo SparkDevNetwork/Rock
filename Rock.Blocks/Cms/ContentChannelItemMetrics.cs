@@ -545,11 +545,19 @@ namespace Rock.Blocks.Cms
         private List<ViewsOverTimePointBag> GetViewsOverTime( IQueryable<Interaction> query, DateTime? startDateTime, DateTime? endDateTime )
         {
             var countsByDay = query
+#if REVIEW_WEBFORMS
                 .GroupBy( i => DbFunctions.TruncateTime( i.InteractionDateTime ) )
+#else
+                .GroupBy( i => i.InteractionDateTime.Date )
+#endif
                 .Select( g => new { Day = g.Key, Count = g.Count() } )
                 .ToList()
+#if REVIEW_WEBFORMS
                 .Where( x => x.Day.HasValue )
                 .ToDictionary( x => x.Day.Value, x => x.Count );
+#else
+                .ToDictionary( x => x.Day, x => x.Count );
+#endif
 
             var points = new List<ViewsOverTimePointBag>();
 
