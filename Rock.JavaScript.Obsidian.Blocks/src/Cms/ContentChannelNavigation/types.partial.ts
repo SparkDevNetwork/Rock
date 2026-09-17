@@ -22,6 +22,16 @@ export const enum NavigationUrlKey {
     DetailPage = "DetailPage"
 }
 
+/**
+ * Keys for page parameters. These match the PageParameterKey constants in
+ * the C# block so a URL written by the client is understood by the server.
+ */
+export const enum PageParameterKey {
+    ContentChannelId = "ContentChannelId",
+    ContentChannelGuid = "ContentChannelGuid",
+    CategoryGuid = "CategoryGuid"
+}
+
 export const enum PreferenceKey {
     StatusFilter = "status-filter",
     CategoryFilter = "category-filter",
