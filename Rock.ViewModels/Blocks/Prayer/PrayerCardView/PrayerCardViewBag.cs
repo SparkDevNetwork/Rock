@@ -15,33 +15,29 @@
 // </copyright>
 //
 
+using System.Collections.Generic;
+
 using Rock.ViewModels.Utility;
 
 namespace Rock.ViewModels.Blocks.Prayer.PrayerCardView
 {
     /// <summary>
     /// The bag that contains the data for the Prayer Card View block. It is
-    /// returned on initial load and again whenever the rendered cards change.
+    /// returned on initial load and again whenever the campus filter changes.
     /// </summary>
     public class PrayerCardViewBag
     {
         /// <summary>
-        /// Gets or sets the rendered Lava HTML content that displays the
-        /// prayer request cards.
+        /// Gets or sets the prayer requests to display as cards, already
+        /// ordered and limited according to the block settings. An empty list
+        /// means the block should show its empty state.
         /// </summary>
-        public string Content { get; set; }
+        public List<PrayerRequestCardBag> PrayerRequests { get; set; }
 
         /// <summary>
         /// Gets or sets the campus the person has saved as their filter
         /// selection, or <c>null</c> when no campus is selected.
         /// </summary>
         public ListItemBag SelectedCampus { get; set; }
-
-        /// <summary>
-        /// Gets or sets a value indicating whether any prayer requests matched
-        /// the current filters. When <c>false</c> the block shows an empty
-        /// state instead of the rendered content.
-        /// </summary>
-        public bool HasPrayerRequests { get; set; }
     }
 }

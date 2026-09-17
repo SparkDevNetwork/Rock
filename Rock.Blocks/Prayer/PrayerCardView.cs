@@ -18,13 +18,16 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
 
 using Rock.Attribute;
+using Rock.ClientService.Core.Campus;
+using Rock.ClientService.Core.Campus.Options;
 using Rock.Model;
 using Rock.Utility;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Prayer.PrayerCardView;
-using Rock.Web.UI.Controls;
+using Rock.Web.Cache;
 
 namespace Rock.Blocks.Prayer
 {
@@ -38,15 +41,6 @@ namespace Rock.Blocks.Prayer
     [SupportedSiteTypes( SiteType.Web )]
 
     #region Block Attributes
-
-    [CodeEditorField( "Display Lava Template",
-        Description = "The Lava template that lays out the view of the prayer requests. Pray and Flag buttons must carry data-action=\"pray\" or data-action=\"flag\" and data-key=\"{{ item.IdKey }}\"; script tags in the template are not executed.",
-        Key = AttributeKey.DisplayLavaTemplate,
-        EditorMode = CodeEditorMode.Lava,
-        EditorHeight = 400,
-        IsRequired = false,
-        DefaultValue = LavaTemplateDefaultValue,
-        Order = 0 )]
 
     [TextField( "Prayed Button Text",
         Description = "The text to display inside the Prayed button.",
@@ -159,8 +153,6 @@ namespace Rock.Blocks.Prayer
     #endregion Block Attributes
 
     [Rock.SystemGuid.EntityTypeGuid( "85FE88A7-0E8E-41E2-805E-1FA9E9BC2D73" )]
-    // Development GUID so this block can be tested next to the WebForms block.
-    // Swap to the original 1FEE129E-E46A-4805-AF5A-6F98E1DA7A16 at chop time.
     [Rock.SystemGuid.BlockTypeGuid( "2B0B4AED-0D65-42B0-B1E6-20E904966986" )]
     public class PrayerCardView : RockBlockType
     {
@@ -168,7 +160,6 @@ namespace Rock.Blocks.Prayer
 
         private static class AttributeKey
         {
-            public const string DisplayLavaTemplate = "DisplayLavaTemplate";
             public const string PrayedButtonText = "PrayedButtonText";
             public const string Category = "Category";
             public const string PublicOnly = "PublicOnly";
@@ -208,38 +199,6 @@ namespace Rock.Blocks.Prayer
 
         #endregion Keys
 
-        #region Attribute Default Values
-
-        /// <summary>
-        /// The default value for the Display Lava Template block attribute.
-        /// </summary>
-        private const string LavaTemplateDefaultValue = @"<div class=""row d-flex flex-wrap"">
-    {% for item in PrayerRequestItems %}
-        <div class=""col-md-4 col-sm-6 col-xs-12 mb-4"">
-            <div class=""card h-100"">
-                <div class=""card-body"">
-                    <h3 class=""card-title mt-0"">{{ item.FirstName }} {{ item.LastName }}</h3>
-                    {% if item.Category != null %}
-                    <p class=""card-subtitle mb-2""><span class=""label label-primary"">{{ item.Category.Name }}</span></p>
-                    {% endif %}
-                    <p class=""card-text"">
-                    {{ item.Text }}
-                    </p>
-                </div>
-
-                <div class=""card-footer bg-white border-0"">
-                    {% if EnablePrayerTeamFlagging %}
-                    <a href=""#"" class=""btn btn-link btn-sm pl-0 text-muted"" data-action=""flag"" data-key=""{{ item.IdKey }}""><i class=""ti ti-flag""></i> <span>Flag</span></a>
-                    {% endif %}
-                    <a href=""#"" class=""btn btn-primary btn-sm pull-right"" data-action=""pray"" data-key=""{{ item.IdKey }}"">Pray</a>
-                </div>
-            </div>
-        </div>
-    {% endfor -%}
-</div>";
-
-        #endregion Attribute Default Values
-
         #region Methods
 
         /// <inheritdoc/>
@@ -248,12 +207,7 @@ namespace Rock.Blocks.Prayer
             var box = new CustomBlockBox<PrayerCardViewBag, PrayerCardViewOptionsBag>
             {
                 Options = GetOptionsBag(),
-                Bag = new PrayerCardViewBag
-                {
-                    Content = string.Empty,
-                    SelectedCampus = null,
-                    HasPrayerRequests = false
-                }
+                Bag = GetContentBag()
             };
 
             return box;
@@ -267,12 +221,240 @@ namespace Rock.Blocks.Prayer
         {
             return new PrayerCardViewOptionsBag
             {
-                IsCampusFilterVisible = GetAttributeValue( AttributeKey.ShowCampusFilter ).AsBoolean(),
-                CampusTypeFilterGuids = GetAttributeValue( AttributeKey.CampusTypes ).SplitDelimitedValues().AsGuidList(),
-                CampusStatusFilterGuids = GetAttributeValue( AttributeKey.CampusStatuses ).SplitDelimitedValues().AsGuidList(),
+                IsCampusFilterVisible = IsCampusFilterEnabled(),
+                CampusTypeFilterGuids = GetCampusTypeGuids(),
+                CampusStatusFilterGuids = GetCampusStatusGuids(),
                 PrayedButtonText = GetAttributeValue( AttributeKey.PrayedButtonText ),
                 IsPrayerTeamFlaggingEnabled = GetAttributeValue( AttributeKey.EnablePrayerTeamFlagging ).AsBoolean()
             };
+        }
+
+        /// <summary>
+        /// Builds the bag that carries the prayer request cards and the person's
+        /// current campus selection. Used by the initial load and again after
+        /// the campus filter changes so both produce identical output.
+        /// </summary>
+        /// <returns>The populated content bag.</returns>
+        private PrayerCardViewBag GetContentBag()
+        {
+            var eligibleCampuses = GetEligibleCampuses();
+            var selectedCampus = GetSavedCampus( eligibleCampuses );
+            var campusGuids = GetCampusFilterGuids( selectedCampus, eligibleCampuses );
+            var prayerRequests = GetPrayerRequests( campusGuids );
+
+            return new PrayerCardViewBag
+            {
+                PrayerRequests = prayerRequests.Select( BuildCardBag ).ToList(),
+                SelectedCampus = selectedCampus?.ToListItemBag()
+            };
+        }
+
+        /// <summary>
+        /// Maps a prayer request to the display data a single card needs.
+        /// </summary>
+        /// <param name="prayerRequest">The prayer request to describe.</param>
+        /// <returns>The populated card bag.</returns>
+        private PrayerRequestCardBag BuildCardBag( PrayerRequest prayerRequest )
+        {
+            return new PrayerRequestCardBag
+            {
+                IdKey = prayerRequest.IdKey,
+                FirstName = prayerRequest.FirstName,
+                LastName = prayerRequest.LastName,
+                Text = prayerRequest.Text,
+                CategoryName = prayerRequest.CategoryId.HasValue ? CategoryCache.Get( prayerRequest.CategoryId.Value )?.Name : null
+            };
+        }
+
+        /// <summary>
+        /// Gets the prayer requests that match the block settings, page
+        /// parameters and the supplied campus filter, ordered and limited in
+        /// the database.
+        /// </summary>
+        /// <param name="campusGuids">The campuses to filter by, or <c>null</c> for no campus filter.</param>
+        /// <returns>The prayer requests to display.</returns>
+        private List<PrayerRequest> GetPrayerRequests( List<Guid> campusGuids )
+        {
+            var categoryGuid = GetCategoryGuid();
+            var groupGuid = PageParameter( PageParameterKey.GroupGuid ).AsGuidOrNull();
+
+            var qry = new PrayerRequestService( RockContext ).GetPrayerRequests( new PrayerRequestQueryOptions
+            {
+                IncludeEmptyCampus = true,
+                IncludeNonPublic = !GetAttributeValue( AttributeKey.PublicOnly ).AsBoolean(),
+                Campuses = campusGuids,
+                Categories = categoryGuid.HasValue ? new List<Guid> { categoryGuid.Value } : null,
+                GroupGuids = groupGuid.HasValue ? new List<Guid> { groupGuid.Value } : null,
+                IncludeGroupRequests = !groupGuid.HasValue
+            } );
+
+            var order = GetAttributeValue( AttributeKey.Order ).ConvertToEnum<PrayerRequestOrder>( PrayerRequestOrder.LeastPrayedFor );
+            var orderedQry = qry.OrderBy( order );
+
+            var maxResults = GetAttributeValue( AttributeKey.MaxResults ).AsIntegerOrNull();
+            if ( maxResults.HasValue && maxResults.Value > 0 )
+            {
+                return orderedQry.Take( maxResults.Value ).ToList();
+            }
+
+            return orderedQry.ToList();
+        }
+
+        /// <summary>
+        /// Gets the category to filter by: the configured block setting, or the
+        /// CategoryId page parameter when no category is configured.
+        /// </summary>
+        /// <returns>The category unique identifier, or <c>null</c> for no category filter.</returns>
+        private Guid? GetCategoryGuid()
+        {
+            var categoryGuid = GetAttributeValue( AttributeKey.Category ).AsGuidOrNull();
+            if ( categoryGuid.HasValue )
+            {
+                return categoryGuid;
+            }
+
+            var category = CategoryCache.Get( PageParameter( PageParameterKey.CategoryId ), !PageCache.Layout.Site.DisablePredictableIds );
+
+            return category?.Guid;
+        }
+
+        /// <summary>
+        /// Gets the campus supplied by the CampusId page parameter, if any.
+        /// When present it drives the filter and hides the campus picker.
+        /// </summary>
+        /// <returns>The campus, or <c>null</c> when the parameter is missing or invalid.</returns>
+        private CampusCache GetPageParameterCampus()
+        {
+            var campusId = PageParameter( PageParameterKey.CampusId ).AsIntegerOrNull();
+
+            return campusId.HasValue ? CampusCache.Get( campusId.Value ) : null;
+        }
+
+        /// <summary>
+        /// Determines whether the campus filter is enabled: the block setting is
+        /// on and no valid CampusId page parameter has already fixed the campus.
+        /// </summary>
+        /// <returns><c>true</c> if the campus filter should be used; otherwise <c>false</c>.</returns>
+        private bool IsCampusFilterEnabled()
+        {
+            return GetAttributeValue( AttributeKey.ShowCampusFilter ).AsBoolean() && GetPageParameterCampus() == null;
+        }
+
+        /// <summary>
+        /// Gets the campus type unique identifiers configured to limit the campus filter.
+        /// </summary>
+        /// <returns>The campus type unique identifiers.</returns>
+        private List<Guid> GetCampusTypeGuids()
+        {
+            return GetAttributeValue( AttributeKey.CampusTypes ).SplitDelimitedValues().AsGuidList();
+        }
+
+        /// <summary>
+        /// Gets the campus status unique identifiers configured to limit the campus filter.
+        /// </summary>
+        /// <returns>The campus status unique identifiers.</returns>
+        private List<Guid> GetCampusStatusGuids()
+        {
+            return GetAttributeValue( AttributeKey.CampusStatuses ).SplitDelimitedValues().AsGuidList();
+        }
+
+        /// <summary>
+        /// Gets the active campuses that pass the configured type and status
+        /// filters. This is the same list the client-side campus picker shows,
+        /// so filtering by "all campuses" uses exactly these campuses.
+        /// </summary>
+        /// <returns>The eligible campuses, or an empty list when the filter is not enabled.</returns>
+        private List<CampusCache> GetEligibleCampuses()
+        {
+            if ( !IsCampusFilterEnabled() )
+            {
+                return new List<CampusCache>();
+            }
+
+            // Security is bypassed because the administrator chose which campuses to offer.
+            var campusClientService = new CampusClientService( RockContext, RequestContext.CurrentPerson )
+            {
+                EnableSecurity = false
+            };
+
+            var campusItems = campusClientService.GetCampusesAsListItems( new CampusOptions
+            {
+                IncludeInactive = false,
+                LimitCampusTypes = GetCampusTypeGuids(),
+                LimitCampusStatuses = GetCampusStatusGuids()
+            } );
+
+            return campusItems
+                .Select( c => c.Value.AsGuidOrNull() )
+                .Where( g => g.HasValue )
+                .Select( g => CampusCache.Get( g.Value ) )
+                .Where( c => c != null )
+                .ToList();
+        }
+
+        /// <summary>
+        /// Gets the campus the person previously selected in the filter,
+        /// provided it is still one of the eligible campuses.
+        /// </summary>
+        /// <param name="eligibleCampuses">The campuses the filter offers.</param>
+        /// <returns>The saved campus, or <c>null</c> when none is saved or it is no longer eligible.</returns>
+        private CampusCache GetSavedCampus( List<CampusCache> eligibleCampuses )
+        {
+            if ( !IsCampusPickerVisible( eligibleCampuses ) )
+            {
+                return null;
+            }
+
+            var savedCampusId = GetBlockPersonPreferences().GetValue( PersonPreferenceKey.Campus ).AsIntegerOrNull();
+            if ( !savedCampusId.HasValue )
+            {
+                return null;
+            }
+
+            return eligibleCampuses.FirstOrDefault( c => c.Id == savedCampusId.Value );
+        }
+
+        /// <summary>
+        /// Determines whether the campus picker is actually shown. The picker
+        /// control hides itself unless more than one campus is available, so
+        /// the server applies the same rule before honoring a saved selection.
+        /// </summary>
+        /// <param name="eligibleCampuses">The campuses the filter offers.</param>
+        /// <returns><c>true</c> if the picker is shown; otherwise <c>false</c>.</returns>
+        private bool IsCampusPickerVisible( List<CampusCache> eligibleCampuses )
+        {
+            return IsCampusFilterEnabled() && eligibleCampuses.Count > 1;
+        }
+
+        /// <summary>
+        /// Determines which campuses the prayer request query should be limited
+        /// to. A CampusId page parameter wins; otherwise the saved selection is
+        /// used; otherwise every eligible campus is included so the type and
+        /// status filters still apply. Requests without a campus are always
+        /// included by the query options.
+        /// </summary>
+        /// <param name="selectedCampus">The person's saved campus, if any.</param>
+        /// <param name="eligibleCampuses">The campuses the filter offers.</param>
+        /// <returns>The campus unique identifiers to filter by, or <c>null</c> for no campus filter.</returns>
+        private List<Guid> GetCampusFilterGuids( CampusCache selectedCampus, List<CampusCache> eligibleCampuses )
+        {
+            var pageParameterCampus = GetPageParameterCampus();
+            if ( pageParameterCampus != null )
+            {
+                return new List<Guid> { pageParameterCampus.Guid };
+            }
+
+            if ( !IsCampusPickerVisible( eligibleCampuses ) )
+            {
+                return null;
+            }
+
+            if ( selectedCampus != null )
+            {
+                return new List<Guid> { selectedCampus.Guid };
+            }
+
+            return eligibleCampuses.Select( c => c.Guid ).ToList();
         }
 
         #endregion Methods
@@ -311,9 +493,8 @@ namespace Rock.Blocks.Prayer
         {
             return ActionOk( new PrayerCardViewBag
             {
-                Content = string.Empty,
-                SelectedCampus = null,
-                HasPrayerRequests = false
+                PrayerRequests = new List<PrayerRequestCardBag>(),
+                SelectedCampus = null
             } );
         }
 

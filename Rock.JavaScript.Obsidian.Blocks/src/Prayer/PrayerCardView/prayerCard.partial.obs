@@ -1,0 +1,90 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="card h-100">
+        <div class="card-body">
+            <h3 class="card-title mt-0">{{ request.firstName }} {{ request.lastName }}</h3>
+            <p v-if="request.categoryName" class="card-subtitle mb-2">
+                <span class="label label-primary">{{ request.categoryName }}</span>
+            </p>
+            <p class="card-text">{{ request.text }}</p>
+        </div>
+
+        <div class="card-footer bg-white border-0">
+            <a v-if="isFlaggingEnabled"
+               href="#"
+               class="btn btn-link btn-sm pl-0"
+               :class="isFlagged ? 'text-danger disabled' : 'text-muted'"
+               @click.prevent="onFlagClick">
+                <i class="ti ti-flag"></i> <span>{{ isFlagged ? "Flagged" : "Flag" }}</span>
+            </a>
+            <a href="#"
+               class="btn btn-sm pull-right"
+               :class="isPrayed ? 'btn-default disabled' : 'btn-primary'"
+               @click.prevent="onPrayClick">
+                {{ isPrayed ? prayedButtonText : "Pray" }}
+            </a>
+        </div>
+    </div>
+</template>
+
+<script setup lang="ts">
+    import { PropType, ref } from "vue";
+    import { PrayerRequestCardBag } from "@Obsidian/ViewModels/Blocks/Prayer/PrayerCardView/prayerRequestCardBag";
+
+    const props = defineProps({
+        request: {
+            type: Object as PropType<PrayerRequestCardBag>,
+            required: true
+        },
+
+        prayedButtonText: {
+            type: String as PropType<string>,
+            default: "I Prayed"
+        },
+
+        isFlaggingEnabled: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "pray", idKey: string): void;
+        (e: "flag", idKey: string): void;
+    }>();
+
+    // #region Values
+
+    const isPrayed = ref(false);
+    const isFlagged = ref(false);
+
+    // #endregion Values
+
+    // #region Event Handlers
+
+    /**
+     * Marks the card as prayed for and notifies the parent.
+     */
+    function onPrayClick(): void {
+        if (isPrayed.value || !props.request.idKey) {
+            return;
+        }
+
+        isPrayed.value = true;
+        emit("pray", props.request.idKey);
+    }
+
+    /**
+     * Marks the card as flagged and notifies the parent.
+     */
+    function onFlagClick(): void {
+        if (isFlagged.value || !props.request.idKey) {
+            return;
+        }
+
+        isFlagged.value = true;
+        emit("flag", props.request.idKey);
+    }
+
+    // #endregion Event Handlers
+</script>

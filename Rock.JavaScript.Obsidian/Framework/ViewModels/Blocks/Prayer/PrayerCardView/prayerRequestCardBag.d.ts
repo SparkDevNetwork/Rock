@@ -21,24 +21,29 @@
 // </copyright>
 //
 
-import { PrayerRequestCardBag } from "@Obsidian/ViewModels/Blocks/Prayer/PrayerCardView/prayerRequestCardBag";
-import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
-
 /**
- * The bag that contains the data for the Prayer Card View block. It is
- * returned on initial load and again whenever the campus filter changes.
+ * The display data for a single prayer request card in the Prayer Card
+ * View block.
  */
-export type PrayerCardViewBag = {
+export type PrayerRequestCardBag = {
     /**
-     * Gets or sets the prayer requests to display as cards, already
-     * ordered and limited according to the block settings. An empty list
-     * means the block should show its empty state.
+     * Gets or sets the name of the request's category, or null
+     * when the request has no category.
      */
-    prayerRequests?: PrayerRequestCardBag[] | null;
+    categoryName?: string | null;
+
+    /** Gets or sets the first name of the person the request is for. */
+    firstName?: string | null;
 
     /**
-     * Gets or sets the campus the person has saved as their filter
-     * selection, or null when no campus is selected.
+     * Gets or sets the hashed identifier of the prayer request. Used when
+     * praying for or flagging the request.
      */
-    selectedCampus?: ListItemBag | null;
+    idKey?: string | null;
+
+    /** Gets or sets the last name of the person the request is for. */
+    lastName?: string | null;
+
+    /** Gets or sets the text of the prayer request. */
+    text?: string | null;
 };
