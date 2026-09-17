@@ -288,6 +288,11 @@
     ],
     "pattern": "^(auth|authz|rpc|sync|rt|push|door)\\.[a-z][a-z0-9_]*$",
     "codes": [
+      "auth.invalid_token",
+      "auth.stale_token",
+      "authz.wrong_scope",
+      "authz.wrong_tenant",
+      "rpc.bad_request",
       "rpc.unknown_error_code"
     ]
   }

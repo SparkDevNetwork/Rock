@@ -63,6 +63,12 @@ namespace Rock.Communication.Chat.Platform.Session
         /// <returns>The gate outcome, with no token.</returns>
         public static ChatMintResult Evaluate( Person person, ChatSessionConfiguration config, RockContext rockContext )
         {
+            if ( rockContext == null )
+            {
+                throw new ArgumentNullException( nameof( rockContext ),
+                    "The record status and ban gates read the database, so a caller that passes no context would be granted a token that neither gate had looked at." );
+            }
+
             config = config ?? new ChatSessionConfiguration();
 
             if ( person == null || person.Id <= 0 )
@@ -80,12 +86,24 @@ namespace Rock.Communication.Chat.Platform.Session
                 return Fail( ChatMintGate.Deceased );
             }
 
-            if ( IsInactive( person, rockContext ) )
+            var isInactive = IsInactive( person, rockContext );
+            if ( !isInactive.HasValue )
+            {
+                return Fail( ChatMintGate.GateUnavailable );
+            }
+
+            if ( isInactive.Value )
             {
                 return Fail( ChatMintGate.Inactive );
             }
 
-            if ( IsOnBanList( person, rockContext ) )
+            var isOnBanList = IsOnBanList( person, rockContext );
+            if ( !isOnBanList.HasValue )
+            {
+                return Fail( ChatMintGate.GateUnavailable );
+            }
+
+            if ( isOnBanList.Value )
             {
                 return Fail( ChatMintGate.Banned );
             }
@@ -168,7 +186,7 @@ namespace Rock.Communication.Chat.Platform.Session
         public static ChatMintResult EnsureEnrollment( Person person, ChatSessionConfiguration config, RockContext rockContext )
         {
             var result = Evaluate( person, config, rockContext );
-            if ( result.Gate != ChatMintGate.Ok || rockContext == null )
+            if ( result.Gate != ChatMintGate.Ok )
             {
                 return result;
             }
@@ -214,11 +232,13 @@ namespace Rock.Communication.Chat.Platform.Session
         #region Private Methods
 
         /// <summary>
-        /// True when the person's record status is Inactive.
+        /// True when the person's record status is Inactive, false when it is not, and null
+        /// when the Inactive status is missing from this database so the question cannot be
+        /// answered at all. A gate with no answer is not a gate that passed.
         /// </summary>
-        private static bool IsInactive( Person person, RockContext rockContext )
+        private static bool? IsInactive( Person person, RockContext rockContext )
         {
-            if ( rockContext == null || !person.RecordStatusValueId.HasValue )
+            if ( !person.RecordStatusValueId.HasValue )
             {
                 return false;
             }
@@ -226,24 +246,26 @@ namespace Rock.Communication.Chat.Platform.Session
             var inactiveGuid = Guid.Parse( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE );
             var inactive = rockContext.Set<DefinedValue>()
                 .FirstOrDefault( v => v.Guid == inactiveGuid );
-            return inactive != null && person.RecordStatusValueId == inactive.Id;
+            if ( inactive == null )
+            {
+                return null;
+            }
+
+            return person.RecordStatusValueId == inactive.Id;
         }
 
         /// <summary>
-        /// True when the person has an Active, not-archived Chat Ban List membership.
+        /// True when the person has an Active, not-archived Chat Ban List membership, and null
+        /// when the Ban List group itself is absent. Reading an absent list as an empty one
+        /// would clear the ban gate for every person in that church at once.
         /// </summary>
-        private static bool IsOnBanList( Person person, RockContext rockContext )
+        private static bool? IsOnBanList( Person person, RockContext rockContext )
         {
-            if ( rockContext == null )
-            {
-                return false;
-            }
-
             var banGuid = Guid.Parse( Rock.SystemGuid.Group.GROUP_CHAT_BAN_LIST );
             var banGroup = rockContext.Set<Group>().FirstOrDefault( g => g.Guid == banGuid );
             if ( banGroup == null )
             {
-                return false;
+                return null;
             }
 
             return rockContext.Set<GroupMember>().Any( m =>
@@ -382,7 +404,8 @@ namespace Rock.Communication.Chat.Platform.Session
         AgeVerificationRequired,
         AgeRestricted,
         NoPrimaryAlias,
-        InvalidKey
+        InvalidKey,
+        GateUnavailable
     }
 
     /// <summary>

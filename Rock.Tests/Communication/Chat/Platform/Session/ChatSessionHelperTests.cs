@@ -51,24 +51,40 @@ namespace Rock.Tests.Communication.Chat.Platform.Session
         [TestInitialize]
         public void TestInitialize()
         {
+            _rockContext = BuildContext( withInactiveRecordStatus: true, withBanListGroup: true );
+        }
+
+        /// <summary>
+        /// A context seeded the way a healthy Rock is. The two flags leave out the rows the
+        /// record-status gate and the ban gate each read, which is how a database missing its
+        /// own seed data is reproduced.
+        /// </summary>
+        private static RockContext BuildContext( bool withInactiveRecordStatus, bool withBanListGroup )
+        {
             var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
-            _rockContext = rockContextMock.Object;
+            var rockContext = rockContextMock.Object;
 
-            _rockContext.Set<DefinedValue>().Add( new DefinedValue
+            if ( withInactiveRecordStatus )
             {
-                Id = InactiveRecordStatusValueId,
-                Guid = Guid.Parse( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE )
-            } );
+                rockContext.Set<DefinedValue>().Add( new DefinedValue
+                {
+                    Id = InactiveRecordStatusValueId,
+                    Guid = Guid.Parse( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE )
+                } );
+            }
 
-            _rockContext.Set<Group>().Add( new Group
+            if ( withBanListGroup )
             {
-                Id = BanListGroupId,
-                Guid = Guid.Parse( Rock.SystemGuid.Group.GROUP_CHAT_BAN_LIST ),
-                Name = "Chat Ban List",
-                GroupTypeId = 1
-            } );
+                rockContext.Set<Group>().Add( new Group
+                {
+                    Id = BanListGroupId,
+                    Guid = Guid.Parse( Rock.SystemGuid.Group.GROUP_CHAT_BAN_LIST ),
+                    Name = "Chat Ban List",
+                    GroupTypeId = 1
+                } );
+            }
 
-            _rockContext.Set<Group>().Add( new Group
+            rockContext.Set<Group>().Add( new Group
             {
                 Id = ChatPeopleGroupId,
                 Guid = Guid.Parse( Rock.SystemGuid.Group.GROUP_CHAT_PEOPLE ),
@@ -76,6 +92,8 @@ namespace Rock.Tests.Communication.Chat.Platform.Session
                 GroupTypeId = 1,
                 GroupType = new GroupType { Id = 1, DefaultGroupRoleId = ChatPeopleRoleId }
             } );
+
+            return rockContext;
         }
 
         #region Gates
@@ -245,6 +263,75 @@ namespace Rock.Tests.Communication.Chat.Platform.Session
 
             Assert.AreEqual( ChatMintGate.NoPrimaryAlias, result.Gate );
             Assert.IsNull( result.ChurchToken );
+        }
+
+        [TestMethod]
+        public void Evaluate_NullRockContext_ThrowsRatherThanSkippingTheGatesThatNeedIt()
+        {
+            Assert.ThrowsExactly<ArgumentNullException>( () =>
+                ChatSessionHelper.Evaluate( Adult(), ValidConfig(), null ) );
+        }
+
+        [TestMethod]
+        public void TryMintChurchToken_NullRockContext_ThrowsRatherThanSigningUngatedToken()
+        {
+            Assert.ThrowsExactly<ArgumentNullException>( () =>
+                ChatSessionHelper.TryMintChurchToken( Adult(), SigningConfig(), null ) );
+        }
+
+        [TestMethod]
+        public void EnsureEnrollment_NullRockContext_ThrowsRatherThanEnrollingUngated()
+        {
+            Assert.ThrowsExactly<ArgumentNullException>( () =>
+                ChatSessionHelper.EnsureEnrollment( Adult(), ValidConfig(), null ) );
+        }
+
+        [TestMethod]
+        public void Evaluate_MissingBanListGroup_IsGateUnavailable()
+        {
+            var context = BuildContext( withInactiveRecordStatus: true, withBanListGroup: false );
+
+            var result = ChatSessionHelper.Evaluate( Adult(), ValidConfig(), context );
+
+            Assert.AreEqual( ChatMintGate.GateUnavailable, result.Gate );
+            Assert.IsNull( result.ChurchToken );
+        }
+
+        [TestMethod]
+        public void Evaluate_MissingInactiveRecordStatusValue_IsGateUnavailable()
+        {
+            var context = BuildContext( withInactiveRecordStatus: false, withBanListGroup: true );
+
+            var result = ChatSessionHelper.Evaluate( Adult(), ValidConfig(), context );
+
+            Assert.AreEqual( ChatMintGate.GateUnavailable, result.Gate );
+            Assert.IsNull( result.ChurchToken );
+        }
+
+        [TestMethod]
+        public void Evaluate_PersonBannedBetweenMints_IsBannedOnTheSecond()
+        {
+            var person = Adult();
+
+            var first = ChatSessionHelper.Evaluate( person, ValidConfig(), _rockContext );
+            AddBanListMember( person.Id, GroupMemberStatus.Active, isArchived: false );
+            var second = ChatSessionHelper.Evaluate( person, ValidConfig(), _rockContext );
+
+            Assert.AreEqual( ChatMintGate.Ok, first.Gate );
+            Assert.AreEqual( ChatMintGate.Banned, second.Gate );
+        }
+
+        [TestMethod]
+        public void Evaluate_PersonInactivatedBetweenMints_IsInactiveOnTheSecond()
+        {
+            var person = Adult();
+
+            var first = ChatSessionHelper.Evaluate( person, ValidConfig(), _rockContext );
+            person.RecordStatusValueId = InactiveRecordStatusValueId;
+            var second = ChatSessionHelper.Evaluate( person, ValidConfig(), _rockContext );
+
+            Assert.AreEqual( ChatMintGate.Ok, first.Gate );
+            Assert.AreEqual( ChatMintGate.Inactive, second.Gate );
         }
 
         [TestMethod]
@@ -428,6 +515,17 @@ namespace Rock.Tests.Communication.Chat.Platform.Session
             ChatSessionHelper.EnsureEnrollment( person, ValidConfig(), _rockContext );
 
             Assert.AreEqual( 1, MarkerCount( person.Id ) );
+        }
+
+        [TestMethod]
+        public void TryMintChurchToken_CalledTwice_WritesNoMarkerRow()
+        {
+            var person = Adult();
+
+            ChatSessionHelper.TryMintChurchToken( person, SigningConfig(), _rockContext );
+            ChatSessionHelper.TryMintChurchToken( person, SigningConfig(), _rockContext );
+
+            Assert.AreEqual( 0, MarkerCount( person.Id ) );
         }
 
         [TestMethod]
