@@ -23,7 +23,7 @@
 
         $(document).ready(function () {
 
-            var baseVersion = '<%=baseVersion %>';
+            var baseVersion = '<%=installerVersion %>';
             var isDebug = <%=isDebug.ToString().ToLower() %>;
             var queryString = '<%=Request.Url.PathAndQuery %>';
 
@@ -559,6 +559,7 @@
     const string baseVersion = "2_9_5";
 
     string storageUrl = string.Empty;
+    string installerVersion = baseVersion;   // effective version: ?Version= override, else the const default
     bool isDebug = false;
 
     void Page_Init( object sender, EventArgs e )
@@ -566,14 +567,14 @@
         // toggle the SSL warning
         lSslWarning.Visible = !Request.IsSecureConnection;
 
+        // Honor a ?Version= override so BOTH the installer scripts (storageUrl)
+        // and the Rock payload download (installVersion, below) use the same folder.
         if ( Request["Version"] != null )
         {
-            storageUrl = String.Format( "{0}{1}/", baseStorageUrl, Request["Version"] );
+            installerVersion = Request["Version"];
         }
-        else
-        {
-            storageUrl = String.Format( "{0}{1}/", baseStorageUrl, baseVersion );
-        }
+
+        storageUrl = String.Format( "{0}{1}/", baseStorageUrl, installerVersion );
 
         if ( Request["Debug"] != null )
         {
