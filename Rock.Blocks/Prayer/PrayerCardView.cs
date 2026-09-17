@@ -21,8 +21,6 @@ using System.ComponentModel;
 using System.Linq;
 
 using Rock.Attribute;
-using Rock.ClientService.Core.Campus;
-using Rock.ClientService.Core.Campus.Options;
 using Rock.Model;
 using Rock.Utility;
 using Rock.ViewModels.Blocks;
@@ -371,24 +369,28 @@ namespace Rock.Blocks.Prayer
                 return new List<CampusCache>();
             }
 
-            // Security is bypassed because the administrator chose which campuses to offer.
-            var campusClientService = new CampusClientService( RockContext, RequestContext.CurrentPerson )
-            {
-                EnableSecurity = false
-            };
+            var campusTypeIds = GetDefinedValueIds( GetCampusTypeGuids() );
+            var campusStatusIds = GetDefinedValueIds( GetCampusStatusGuids() );
 
-            var campusItems = campusClientService.GetCampusesAsListItems( new CampusOptions
-            {
-                IncludeInactive = false,
-                LimitCampusTypes = GetCampusTypeGuids(),
-                LimitCampusStatuses = GetCampusStatusGuids()
-            } );
+            return CampusCache.All( false )
+                .Where( c => !campusTypeIds.Any() || ( c.CampusTypeValueId.HasValue && campusTypeIds.Contains( c.CampusTypeValueId.Value ) ) )
+                .Where( c => !campusStatusIds.Any() || ( c.CampusStatusValueId.HasValue && campusStatusIds.Contains( c.CampusStatusValueId.Value ) ) )
+                .OrderBy( c => c.Order )
+                .ToList();
+        }
 
-            return campusItems
-                .Select( c => c.Value.AsGuidOrNull() )
-                .Where( g => g.HasValue )
-                .Select( g => CampusCache.Get( g.Value ) )
-                .Where( c => c != null )
+        /// <summary>
+        /// Resolves defined value unique identifiers to their identifiers,
+        /// skipping any that no longer exist.
+        /// </summary>
+        /// <param name="definedValueGuids">The defined value unique identifiers.</param>
+        /// <returns>The matching defined value identifiers.</returns>
+        private static List<int> GetDefinedValueIds( List<Guid> definedValueGuids )
+        {
+            return definedValueGuids
+                .Select( g => DefinedValueCache.Get( g ) )
+                .Where( dv => dv != null )
+                .Select( dv => dv.Id )
                 .ToList();
         }
 
