@@ -20,23 +20,25 @@
 // limitations under the License.
 // </copyright>
 //
+import { ChatConfigurationBag } from "./chatConfigurationBag";
 
-import { ChatConfigurationBag } from "@Obsidian/ViewModels/Blocks/Communication/Chat/ChatConfiguration/chatConfigurationBag";
-
-/** The box that contains all the initialization information for the chat configuration block. */
+/** What the chat configuration screen is given when it opens. */
 export type ChatConfigurationInitializationBox = {
-    /** Gets or sets the chat configuration bag. */
-    chatConfigurationBag?: ChatConfigurationBag | null;
-
-    /**
-     * Gets or sets the error message. A non-empty value indicates that
-     * an error is preventing the block from being displayed.
-     */
+    /** Gets or sets any error the block wants shown instead of itself. */
     errorMessage?: string | null;
 
-    /** Gets or sets the navigation urls. */
+    /** Gets or sets the URLs the block navigates to. */
     navigationUrls?: Record<string, string> | null;
 
-    /** Gets or sets the security grant token. */
+    /** Gets or sets the security grant token for this block. */
     securityGrantToken?: string | null;
+
+    /** Gets or sets whether chat has everything it needs to run. */
+    isChatConfigured: boolean;
+
+    /** Gets or sets the settings, when there are any to show. */
+    configuration?: ChatConfigurationBag | null;
+
+    /** Gets or sets where an administrator goes to enable chat. */
+    connectedServicesUrl?: string | null;
 };

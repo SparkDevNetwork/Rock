@@ -14,7 +14,6 @@
 // limitations under the License.
 // </copyright>
 //
-
 using System.Collections.Generic;
 
 using Rock.ViewModels.Utility;
@@ -22,38 +21,63 @@ using Rock.ViewModels.Utility;
 namespace Rock.ViewModels.Blocks.Communication.Chat.ChatConfiguration
 {
     /// <summary>
-    /// A bag that contains the chat configuration settings.
+    /// The church's chat settings as the configuration screen sees them. The signing
+    /// key is not here in any form: the browser learns only that one is present, and
+    /// the platform-issued values below are shown but never taken back from here.
     /// </summary>
     public class ChatConfigurationBag
     {
         /// <summary>
-        /// Gets or sets the API key for Rock to use when interacting with the external chat application.
-        /// </summary>
-        public string ApiKey { get; set; }
-
-        /// <summary>
-        /// Gets or sets the API secret for Rock to use when interacting with the external chat application.
-        /// </summary>
-        public string ApiSecret { get; set; }
-
-        /// <summary>
-        /// Gets or sets the system default for whether individuals' profiles are visible in the external chat application.
+        /// Gets or sets whether profile details are visible by default.
         /// </summary>
         public bool AreChatProfilesVisible { get; set; }
 
         /// <summary>
-        /// Gets or sets the system default for whether individuals can receive direct messages from anybody in the system.
+        /// Gets or sets whether anyone may start a direct message by default.
         /// </summary>
         public bool IsOpenDirectMessagingAllowed { get; set; }
 
         /// <summary>
-        /// Gets or sets the list of data views that will be used to populate badges in the external chat application.
+        /// Gets or sets the youngest age that may use chat, or null for no limit.
+        /// </summary>
+        public int? MinimumAge { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Data View naming who may start a direct message.
+        /// </summary>
+        public ListItemBag DirectMessageAccessDataView { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Data Views whose members carry a badge.
         /// </summary>
         public List<ListItemBag> ChatBadgeDataViews { get; set; }
 
         /// <summary>
-        /// Gets or sets the data view that will be used to determine who has direct message access.
+        /// Gets or sets the chat project this church talks to. Issued when chat was
+        /// enabled and shown here read only.
         /// </summary>
-        public ListItemBag DirectMessageAccessDataView { get; set; }
+        public string ProjectUrl { get; set; }
+
+        /// <summary>
+        /// Gets or sets the key the browser presents to that project. Public by design,
+        /// issued when chat was enabled, shown here read only.
+        /// </summary>
+        public string PublishableKey { get; set; }
+
+        /// <summary>
+        /// Gets or sets this church's id on the chat platform. Read only.
+        /// </summary>
+        public string TenantId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the id of the key pair registered for this church. Read only.
+        /// </summary>
+        public string Kid { get; set; }
+
+        /// <summary>
+        /// Gets or sets whether a signing key is stored. The key itself never leaves
+        /// the server, so this is all the screen is told about it.
+        /// </summary>
+        public bool IsChurchKeyPresent { get; set; }
     }
 }

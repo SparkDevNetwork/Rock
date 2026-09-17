@@ -54,6 +54,9 @@ jobs:
       - name: Build the unit test project and what it depends on
         run: msbuild Rock.Tests\Rock.Tests.csproj /t:Restore,Build /p:Configuration=Debug /m /v:minimal /nologo
 
+      - name: Build the blocks project, which holds the chat blocks
+        run: msbuild Rock.Blocks\Rock.Blocks.csproj /t:Restore,Build /p:Configuration=Debug /m /v:minimal /nologo
+
       - name: Unit tests
         run: dotnet test Rock.Tests\Rock.Tests.csproj --no-build --filter "FullyQualifiedName~Communication.Chat.Platform" --logger "trx;LogFileName=unit.trx" --results-directory TestResults
 

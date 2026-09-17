@@ -13,6 +13,9 @@ const here = fileURLToPath(new URL('.', import.meta.url));
 const repoRoot = resolve(here, '../..');
 
 const testProject = 'Rock.Tests/Rock.Tests.csproj';
+// The unit test project does not reference the blocks project, so a chat block would
+// otherwise never be compiled by this run.
+const blocksProject = 'Rock.Blocks/Rock.Blocks.csproj';
 const chatTests = 'FullyQualifiedName~Communication.Chat.Platform';
 const clientProject = resolve(repoRoot, 'Rock.JavaScript.Obsidian.Blocks');
 
@@ -48,6 +51,20 @@ const gates = [
         name: 'build the unit test project and what it depends on (no msbuild on the path)',
         cmd: 'dotnet',
         args: ['build', testProject, '--configuration', 'Debug', '--verbosity', 'minimal'],
+        cwd: repoRoot,
+      },
+  msbuild
+    ? {
+        name: 'build the blocks project, which holds the chat blocks',
+        cmd: 'msbuild',
+        args: [blocksProject, '/t:Restore,Build', '/p:Configuration=Debug', '/m', '/v:minimal', '/nologo'],
+        cwd: repoRoot,
+        shell: true,
+      }
+    : {
+        name: 'build the blocks project, which holds the chat blocks (no msbuild on the path)',
+        cmd: 'dotnet',
+        args: ['build', blocksProject, '--configuration', 'Debug', '--verbosity', 'minimal'],
         cwd: repoRoot,
       },
   {

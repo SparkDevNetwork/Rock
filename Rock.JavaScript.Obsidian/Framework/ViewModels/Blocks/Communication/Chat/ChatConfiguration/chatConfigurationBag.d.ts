@@ -20,26 +20,37 @@
 // limitations under the License.
 // </copyright>
 //
-
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
-/** A bag that contains the chat configuration settings. */
+/** The church's chat settings as the configuration screen sees them. */
 export type ChatConfigurationBag = {
-    /** Gets or sets the API key for Rock to use when interacting with the external chat application. */
-    apiKey?: string | null;
-
-    /** Gets or sets the API secret for Rock to use when interacting with the external chat application. */
-    apiSecret?: string | null;
-
-    /** Gets or sets the system default for whether individuals' profiles are visible in the external chat application. */
+    /** Gets or sets whether profile details are visible by default. */
     areChatProfilesVisible: boolean;
 
-    /** Gets or sets the list of data views that will be used to populate badges in the external chat application. */
-    chatBadgeDataViews?: ListItemBag[] | null;
+    /** Gets or sets whether anyone may start a direct message by default. */
+    isOpenDirectMessagingAllowed: boolean;
 
-    /** Gets or sets the data view that will be used to determine who has direct message access. */
+    /** Gets or sets the youngest age that may use chat, or null for no limit. */
+    minimumAge?: number | null;
+
+    /** Gets or sets the Data View naming who may start a direct message. */
     directMessageAccessDataView?: ListItemBag | null;
 
-    /** Gets or sets the system default for whether individuals can receive direct messages from anybody in the system. */
-    isOpenDirectMessagingAllowed: boolean;
+    /** Gets or sets the Data Views whose members carry a badge. */
+    chatBadgeDataViews?: ListItemBag[] | null;
+
+    /** Gets or sets the chat project this church talks to. Read only. */
+    projectUrl?: string | null;
+
+    /** Gets or sets the key the browser presents to that project. Read only. */
+    publishableKey?: string | null;
+
+    /** Gets or sets this church's id on the chat platform. Read only. */
+    tenantId?: string | null;
+
+    /** Gets or sets the id of the key pair registered for this church. Read only. */
+    kid?: string | null;
+
+    /** Gets or sets whether a signing key is stored. The key itself never leaves the server. */
+    isChurchKeyPresent: boolean;
 };

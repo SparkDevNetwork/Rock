@@ -14,17 +14,29 @@
 // limitations under the License.
 // </copyright>
 //
+using Rock.ViewModels.Blocks;
 
 namespace Rock.ViewModels.Blocks.Communication.Chat.ChatConfiguration
 {
     /// <summary>
-    /// The box that contains all the initialization information for the chat configuration block.
+    /// What the chat configuration screen is given when it opens.
     /// </summary>
     public class ChatConfigurationInitializationBox : BlockBox
     {
         /// <summary>
-        /// Gets or sets the chat configuration bag.
+        /// Gets or sets whether chat has everything it needs to run. False means the
+        /// screen shows how to enable chat rather than settings for it.
         /// </summary>
-        public ChatConfigurationBag ChatConfigurationBag { get; set; }
+        public bool IsChatConfigured { get; set; }
+
+        /// <summary>
+        /// Gets or sets the settings, when there are any to show.
+        /// </summary>
+        public ChatConfigurationBag Configuration { get; set; }
+
+        /// <summary>
+        /// Gets or sets where an administrator goes to enable chat.
+        /// </summary>
+        public string ConnectedServicesUrl { get; set; }
     }
 }

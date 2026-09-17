@@ -14,30 +14,26 @@
 // limitations under the License.
 // </copyright>
 //
-
 using System;
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
-using System.Threading.Tasks;
 
-using Rock.Communication.Chat;
-using Rock.Configuration;
-using Rock.Data;
-using Rock.Model;
+using Rock.Communication.Chat.Platform.Configuration;
+using Rock.Security;
 using Rock.ViewModels.Blocks.Communication.Chat.ChatConfiguration;
-using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 
 namespace Rock.Blocks.Communication.Chat
 {
     /// <summary>
-    /// Used for making configuration changes to Rock's chat system.
+    /// The church's own settings for chat. Chat is switched on from Spark Connected
+    /// Services rather than here, so a church that has not done that sees how to,
+    /// and nothing else.
     /// </summary>
 
     [DisplayName( "Chat Configuration" )]
     [Category( "Communication > Chat" )]
-    [Description( "Used for making configuration changes to Rock's chat system." )]
+    [Description( "Settings for chat: who is visible to whom, who may be messaged, the youngest age that may take part, and the badges members carry." )]
     [SupportedSiteTypes( Model.SiteType.Web )]
 
     [Rock.SystemGuid.EntityTypeGuid( "4E1EF8E8-8984-47EA-A6FC-31125C3B6153" )]
@@ -51,6 +47,12 @@ namespace Rock.Blocks.Communication.Chat
             public const string ParentPage = "ParentPage";
         }
 
+        /// <summary>
+        /// Where chat is enabled. Not a page reference the administrator can repoint,
+        /// because there is exactly one place this can happen.
+        /// </summary>
+        private const string ConnectedServicesRoute = "~/admin/settings/spark-connected-services";
+
         #endregion Keys
 
         #region RockBlockType Implementation
@@ -58,59 +60,54 @@ namespace Rock.Blocks.Communication.Chat
         /// <inheritdoc/>
         public override object GetObsidianBlockInitialization()
         {
-            return new ChatConfigurationInitializationBox
+            var configuration = ChatPlatformConfigurationService.Read();
+
+            var box = new ChatConfigurationInitializationBox
             {
-                ChatConfigurationBag = GetCurrentChatConfigurationBag(),
-                NavigationUrls = GetBoxNavigationUrls()
+                IsChatConfigured = configuration.IsConfigured,
+                ConnectedServicesUrl = RequestContext.ResolveRockUrl( ConnectedServicesRoute ),
+                NavigationUrls = new System.Collections.Generic.Dictionary<string, string>
+                {
+                    [NavigationUrlKey.ParentPage] = this.GetParentPageUrl()
+                }
             };
+
+            if ( configuration.IsConfigured )
+            {
+                box.Configuration = WithDataViewNames( ChatConfigurationPolicy.ToBag( configuration ) );
+            }
+
+            return box;
         }
 
-        #endregion RockBlockType Impelementation
+        #endregion RockBlockType Implementation
 
         #region Block Actions
 
         /// <summary>
-        /// Saves the provided chat configuration.
+        /// Stores the church-owned settings. The half issued when chat was enabled, and
+        /// the signing key, are taken from what is already stored rather than from the
+        /// browser, which is never sent either of them.
         /// </summary>
-        /// <param name="bag">An object containing the chat configuration to save.</param>
-        /// <returns>A response that indicates if the save was successful or not.</returns>
+        /// <param name="bag">The settings as the screen has them.</param>
+        /// <returns>An empty success, or a refusal.</returns>
         [BlockAction]
-        public BlockActionResult SaveChatConfiguration( ChatConfigurationBag bag )
+        public BlockActionResult SaveConfiguration( ChatConfigurationBag bag )
         {
             if ( bag == null )
             {
-                return ActionBadRequest();
+                return ActionBadRequest( "No settings were supplied." );
             }
 
-            SaveChatConfigurationToSystemSettings( bag );
+            var isAuthorizedToEdit = BlockCache.IsAuthorized( Authorization.EDIT, GetCurrentPerson() );
+            var result = ChatConfigurationPolicy.Save( ChatPlatformConfigurationService.Read(), bag, isAuthorizedToEdit );
 
-            // Perform an app settings and group type sync to the external chat system in a background task, as it could
-            // take some time to complete.
-            Task.Run( async () =>
+            if ( !result.IsSaved )
             {
-                using ( var rockContext = RockApp.Current.CreateRockContext() )
-                using ( var chatHelper = new ChatHelper( rockContext ) )
-                {
-                    chatHelper.Reinitialize();
+                return ActionForbidden( "You are not authorized to change these settings." );
+            }
 
-                    var isSetUpResult = await chatHelper.EnsureChatProviderAppIsSetUpAsync();
-                    if ( isSetUpResult?.IsSetUp != true )
-                    {
-                        // There's no point in trying to sync the group types if initial setup failed.
-                        return;
-                    }
-
-                    // We'll only sync chat-enabled group types as a part of this configuration save, as there is no
-                    // good way to warn the individual of any previously-synced channel types that might become deleted
-                    // as a result of synching no-longer-chat-enabled group types here. We'll let the job clean those
-                    // up later.
-                    var chatEnabledGroupTypes = new GroupTypeService( rockContext )
-                        .GetChatEnabledGroupTypes()
-                        .ToList();
-
-                    await chatHelper.SyncGroupTypesToChatProviderAsync( chatEnabledGroupTypes );
-                }
-            } );
+            ChatPlatformConfigurationService.Save( result.Configuration );
 
             return ActionOk();
         }
@@ -120,102 +117,34 @@ namespace Rock.Blocks.Communication.Chat
         #region Private Methods
 
         /// <summary>
-        /// Gets the chat configuration bag for the current chat configuration.
+        /// Fills in the names of the Data Views the settings point at. The stored value
+        /// is the identifier alone, so the screen would otherwise show a picker with
+        /// something selected and no label on it.
         /// </summary>
-        /// <returns>A chat configuration bag instance that represents the current chat configuration.</returns>
-        private ChatConfigurationBag GetCurrentChatConfigurationBag()
+        /// <param name="bag">The settings, carrying Data View identifiers.</param>
+        /// <returns>The same settings, with names where a Data View still exists.</returns>
+        private static ChatConfigurationBag WithDataViewNames( ChatConfigurationBag bag )
         {
-            var chatConfiguration = ChatHelper.GetChatConfiguration();
-
-            List<ListItemBag> chatBadgeDataViews = null;
-            if ( chatConfiguration.ChatBadgeDataViewGuids?.Any() == true )
-            {
-                chatBadgeDataViews = new List<ListItemBag>();
-
-                foreach ( var dataViewGuid in chatConfiguration.ChatBadgeDataViewGuids )
-                {
-                    var dataViewCache = DataViewCache.Get( dataViewGuid );
-                    if ( dataViewCache != null )
-                    {
-                        chatBadgeDataViews.Add( dataViewCache.ToListItemBag() );
-                    }
-                }
-            }
-
-            var directMessageAccessDataView = chatConfiguration.DirectMessageAccessDataViewGuid.HasValue
-                ? DataViewCache.Get( chatConfiguration.DirectMessageAccessDataViewGuid.Value )?.ToListItemBag()
-                : null;
-
-            return new ChatConfigurationBag
-            {
-                ApiKey = chatConfiguration.ApiKey,
-                ApiSecret = chatConfiguration.ApiSecret,
-                AreChatProfilesVisible = chatConfiguration.AreChatProfilesVisible,
-                IsOpenDirectMessagingAllowed = chatConfiguration.IsOpenDirectMessagingAllowed,
-                ChatBadgeDataViews = chatBadgeDataViews,
-                DirectMessageAccessDataView = directMessageAccessDataView
-            };
-        }
-
-        /// <summary>
-        /// Gets the box navigation URLs required for the page to operate.
-        /// </summary>
-        /// <returns>A dictionary of key names and URL values.</returns>
-        private Dictionary<string, string> GetBoxNavigationUrls()
-        {
-            return new Dictionary<string, string>
-            {
-                [NavigationUrlKey.ParentPage] = this.GetParentPageUrl()
-            };
-        }
-
-        /// <summary>
-        /// Saves the provided chat configuration to system settings.
-        /// </summary>
-        /// <param name="bag">The chat configuration to save to system settings.</param>
-        private void SaveChatConfigurationToSystemSettings( ChatConfigurationBag bag )
-        {
-            List<Guid> chatBadgeDataViewGuids = null;
-            if ( bag.ChatBadgeDataViews?.Any() == true )
-            {
-                chatBadgeDataViewGuids = new List<Guid>();
-
-                foreach ( var dataView in bag.ChatBadgeDataViews )
-                {
-                    var dataViewCache = DataViewCache.Get( dataView.Value );
-                    if ( dataViewCache != null )
-                    {
-                        chatBadgeDataViewGuids.Add( dataViewCache.Guid );
-                    }
-                }
-            }
-
-            Guid? directMessageDataViewGuid = null;
             if ( bag.DirectMessageAccessDataView != null )
             {
-                var dataViewCache = DataViewCache.Get( bag.DirectMessageAccessDataView.Value );
-                if ( dataViewCache != null )
-                {
-                    directMessageDataViewGuid = dataViewCache.Guid;
-                }
+                bag.DirectMessageAccessDataView.Text = NameOf( bag.DirectMessageAccessDataView.Value );
             }
 
-            // Get the system user GUID from the current (pre-save) config so we always have the latest value, since
-            // this isn't managed by the UI.
-            var preSaveChatConfiguration = ChatHelper.GetChatConfiguration();
-
-            var chatConfiguration = new Rock.Communication.Chat.ChatConfiguration
+            foreach ( var badge in bag.ChatBadgeDataViews ?? Enumerable.Empty<Rock.ViewModels.Utility.ListItemBag>() )
             {
-                ApiKey = bag.ApiKey,
-                ApiSecret = bag.ApiSecret,
-                AreChatProfilesVisible = bag.AreChatProfilesVisible,
-                DirectMessageAccessDataViewGuid = directMessageDataViewGuid,
-                IsOpenDirectMessagingAllowed = bag.IsOpenDirectMessagingAllowed,
-                ChatBadgeDataViewGuids = chatBadgeDataViewGuids,
-                SystemUserGuid = preSaveChatConfiguration.SystemUserGuid
-            };
+                badge.Text = NameOf( badge.Value );
+            }
 
-            ChatHelper.SaveChatConfiguration( chatConfiguration );
+            return bag;
+        }
+
+        private static string NameOf( string dataViewGuid )
+        {
+            var guid = dataViewGuid.AsGuidOrNull();
+
+            return guid.HasValue
+                ? DataViewCache.Get( guid.Value )?.Name ?? string.Empty
+                : string.Empty;
         }
 
         #endregion Private Methods

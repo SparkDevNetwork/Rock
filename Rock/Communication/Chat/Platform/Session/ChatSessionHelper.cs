@@ -22,6 +22,7 @@ using System.Security.Claims;
 
 using Microsoft.IdentityModel.Tokens;
 
+using Rock.Communication.Chat.Platform.Configuration;
 using Rock.Data;
 using Rock.Model;
 
@@ -58,10 +59,10 @@ namespace Rock.Communication.Chat.Platform.Session
         /// Runs the session gates in order and fails closed. Does not mint.
         /// </summary>
         /// <param name="person">The Rock person opening chat, or null if unsigned in.</param>
-        /// <param name="config">Church connection and age / DM-access settings.</param>
+        /// <param name="context">The church settings, and the people the DM Access Data View resolved to.</param>
         /// <param name="rockContext">Used for Ban List and record-status lookups.</param>
         /// <returns>The gate outcome, with no token.</returns>
-        public static ChatMintResult Evaluate( Person person, ChatSessionConfiguration config, RockContext rockContext )
+        public static ChatMintResult Evaluate( Person person, ChatSessionContext context, RockContext rockContext )
         {
             if ( rockContext == null )
             {
@@ -69,14 +70,15 @@ namespace Rock.Communication.Chat.Platform.Session
                     "The record status and ban gates read the database, so a caller that passes no context would be granted a token that neither gate had looked at." );
             }
 
-            config = config ?? new ChatSessionConfiguration();
+            context = context ?? new ChatSessionContext();
+            var configuration = context.Configuration ?? new ChatPlatformConfiguration();
 
             if ( person == null || person.Id <= 0 )
             {
                 return Fail( ChatMintGate.SignInRequired );
             }
 
-            if ( !config.IsConfigured )
+            if ( !configuration.IsConfigured )
             {
                 return Fail( ChatMintGate.NotConfigured );
             }
@@ -108,14 +110,14 @@ namespace Rock.Communication.Chat.Platform.Session
                 return Fail( ChatMintGate.Banned );
             }
 
-            if ( config.MinimumAge.HasValue && config.MinimumAge.Value > 0 )
+            if ( configuration.MinimumAge.HasValue && configuration.MinimumAge.Value > 0 )
             {
                 if ( !person.Age.HasValue )
                 {
                     return Fail( ChatMintGate.AgeVerificationRequired );
                 }
 
-                if ( person.Age.Value < config.MinimumAge.Value )
+                if ( person.Age.Value < configuration.MinimumAge.Value )
                 {
                     return Fail( ChatMintGate.AgeRestricted );
                 }
@@ -130,8 +132,8 @@ namespace Rock.Communication.Chat.Platform.Session
             {
                 Gate = ChatMintGate.Ok,
                 PersonAliasGuid = person.PrimaryAliasGuid,
-                TenantId = config.TenantId,
-                CanStartDm = CanStartDirectMessage( person, config )
+                TenantId = configuration.TenantId,
+                CanStartDm = CanStartDirectMessage( person, context )
             };
         }
 
@@ -139,29 +141,29 @@ namespace Rock.Communication.Chat.Platform.Session
         /// Evaluates the gates and, if they pass, signs a person church token.
         /// </summary>
         /// <param name="person">The Rock person opening chat.</param>
-        /// <param name="config">Church connection settings, including the private JWK.</param>
+        /// <param name="context">The church settings, and the people the DM Access Data View resolved to.</param>
         /// <param name="rockContext">Used for Ban List and record-status lookups.</param>
         /// <returns>A signed token on success, or the failing gate with no token and no exception text.</returns>
-        public static ChatMintResult TryMintChurchToken( Person person, ChatSessionConfiguration config, RockContext rockContext )
+        public static ChatMintResult TryMintChurchToken( Person person, ChatSessionContext context, RockContext rockContext )
         {
-            var result = Evaluate( person, config, rockContext );
+            var result = Evaluate( person, context, rockContext );
             if ( result.Gate != ChatMintGate.Ok )
             {
                 return result;
             }
 
-            return Sign( result, config, PersonScope, person.PrimaryAliasGuid );
+            return Sign( result, context.Configuration, PersonScope, person.PrimaryAliasGuid );
         }
 
         /// <summary>
         /// Signs a sync-scope church token. No person gates.
         /// </summary>
-        /// <param name="config">Church connection settings, including the private JWK.</param>
+        /// <param name="context">The church settings, and the people the DM Access Data View resolved to.</param>
         /// <returns>A signed token on success, or NotConfigured / InvalidKey with no exception text.</returns>
-        public static ChatMintResult TryMintSyncToken( ChatSessionConfiguration config )
+        public static ChatMintResult TryMintSyncToken( ChatSessionContext context )
         {
-            config = config ?? new ChatSessionConfiguration();
-            if ( !config.IsConfigured )
+            var configuration = context?.Configuration ?? new ChatPlatformConfiguration();
+            if ( !configuration.IsConfigured )
             {
                 return Fail( ChatMintGate.NotConfigured );
             }
@@ -169,10 +171,10 @@ namespace Rock.Communication.Chat.Platform.Session
             var result = new ChatMintResult
             {
                 Gate = ChatMintGate.Ok,
-                TenantId = config.TenantId
+                TenantId = configuration.TenantId
             };
 
-            return Sign( result, config, SyncScope, null );
+            return Sign( result, configuration, SyncScope, null );
         }
 
         /// <summary>
@@ -180,12 +182,12 @@ namespace Rock.Communication.Chat.Platform.Session
         /// on first open. Later opens write none. A failed gate enrols nobody.
         /// </summary>
         /// <param name="person">The Rock person opening chat.</param>
-        /// <param name="config">Church connection and age / DM-access settings.</param>
+        /// <param name="context">The church settings, and the people the DM Access Data View resolved to.</param>
         /// <param name="rockContext">Used for gates and the marker write.</param>
         /// <returns>The gate outcome. Marker insert is a side effect on success.</returns>
-        public static ChatMintResult EnsureEnrollment( Person person, ChatSessionConfiguration config, RockContext rockContext )
+        public static ChatMintResult EnsureEnrollment( Person person, ChatSessionContext context, RockContext rockContext )
         {
-            var result = Evaluate( person, config, rockContext );
+            var result = Evaluate( person, context, rockContext );
             if ( result.Gate != ChatMintGate.Ok )
             {
                 return result;
@@ -279,21 +281,21 @@ namespace Rock.Communication.Chat.Platform.Session
         /// True when the DM Access Data View is blank or the person is in the
         /// already-resolved id set. Does not re-query the Data View.
         /// </summary>
-        private static bool CanStartDirectMessage( Person person, ChatSessionConfiguration config )
+        private static bool CanStartDirectMessage( Person person, ChatSessionContext context )
         {
-            if ( !config.DirectMessageAccessDataViewGuid.HasValue )
+            if ( !context.Configuration.DirectMessageAccessDataViewGuid.HasValue )
             {
                 return true;
             }
 
-            return config.DirectMessageAccessPersonIds != null
-                && config.DirectMessageAccessPersonIds.Contains( person.Id );
+            return context.DirectMessageAccessPersonIds != null
+                && context.DirectMessageAccessPersonIds.Contains( person.Id );
         }
 
         /// <summary>
         /// Signs an ES256 church token. On a bad key, returns InvalidKey with no exception text.
         /// </summary>
-        private static ChatMintResult Sign( ChatMintResult result, ChatSessionConfiguration config, string scope, Guid? subject )
+        private static ChatMintResult Sign( ChatMintResult result, ChatPlatformConfiguration config, string scope, Guid? subject )
         {
             try
             {
@@ -438,45 +440,6 @@ namespace Rock.Communication.Chat.Platform.Session
         /// an exception message that could leak key material.
         /// </summary>
         public string ErrorMessage { get; set; }
-    }
-
-    /// <summary>
-    /// Church-side values the session helper needs until the settings POCO
-    /// ships with Chat Configuration. Injected so tests do not go through
-    /// Enable Chat.
-    /// </summary>
-    internal sealed class ChatSessionConfiguration
-    {
-        public Guid? TenantId { get; set; }
-
-        /// <summary>
-        /// Private JWK JSON for ES256, including the private part. Never logged
-        /// and never placed on a view-model bag.
-        /// </summary>
-        public string PrivateKey { get; set; }
-
-        public string ProjectUrl { get; set; }
-
-        public string PublishableKey { get; set; }
-
-        public string Kid { get; set; }
-
-        public int? MinimumAge { get; set; }
-
-        public Guid? DirectMessageAccessDataViewGuid { get; set; }
-
-        /// <summary>
-        /// Person ids already resolved from the DM Access Data View. The helper
-        /// does not run the Data View; the caller evaluates it once at session
-        /// open. Null means the Data View is blank.
-        /// </summary>
-        public ISet<int> DirectMessageAccessPersonIds { get; set; }
-
-        public bool IsConfigured =>
-            TenantId.HasValue
-            && !string.IsNullOrWhiteSpace( PrivateKey )
-            && !string.IsNullOrWhiteSpace( ProjectUrl )
-            && !string.IsNullOrWhiteSpace( PublishableKey );
     }
 
     #endregion DTOs

@@ -427,6 +427,13 @@ namespace Rock.SystemKey
         public const string CHAT_CONFIGURATION = "core_ChatConfiguration";
 
         /// <summary>
+        /// The chat platform configuration: the church's settings for chat on Spark's
+        /// platform, including the signing key it holds encrypted. A different setting
+        /// from CHAT_CONFIGURATION, which belongs to the provider integration.
+        /// </summary>
+        public const string CHAT_PLATFORM_CONFIGURATION = "core_ChatPlatformConfiguration";
+
+        /// <summary>
         /// Job settings for <see cref="Rock.Jobs.ChatSync"/>
         /// </summary>
         public const string CHAT_SYNC_JOB_SETTINGS = "core_ChatSyncJobSettings";

@@ -26,6 +26,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
+using Rock.Communication.Chat.Platform.Configuration;
 using Rock.Communication.Chat.Platform.Session;
 using Rock.Data;
 using Rock.Enums.Crm;
@@ -123,7 +124,7 @@ namespace Rock.Tests.Communication.Chat.Platform.Session
         public void Evaluate_MissingTenant_IsNotConfigured()
         {
             var config = ValidConfig();
-            config.TenantId = null;
+            config.Configuration.TenantId = null;
 
             var result = ChatSessionHelper.Evaluate( Adult(), config, _rockContext );
 
@@ -134,7 +135,7 @@ namespace Rock.Tests.Communication.Chat.Platform.Session
         public void Evaluate_MissingPrivateKey_IsNotConfigured()
         {
             var config = ValidConfig();
-            config.PrivateKey = null;
+            config.Configuration.PrivateKey = null;
 
             var result = ChatSessionHelper.Evaluate( Adult(), config, _rockContext );
 
@@ -145,7 +146,7 @@ namespace Rock.Tests.Communication.Chat.Platform.Session
         public void Evaluate_MissingProjectUrl_IsNotConfigured()
         {
             var config = ValidConfig();
-            config.ProjectUrl = " ";
+            config.Configuration.ProjectUrl = " ";
 
             var result = ChatSessionHelper.Evaluate( Adult(), config, _rockContext );
 
@@ -156,7 +157,7 @@ namespace Rock.Tests.Communication.Chat.Platform.Session
         public void Evaluate_MissingPublishableKey_IsNotConfigured()
         {
             var config = ValidConfig();
-            config.PublishableKey = null;
+            config.Configuration.PublishableKey = null;
 
             var result = ChatSessionHelper.Evaluate( Adult(), config, _rockContext );
 
@@ -228,7 +229,7 @@ namespace Rock.Tests.Communication.Chat.Platform.Session
             person.BirthDay = null;
 
             var config = ValidConfig();
-            config.MinimumAge = 13;
+            config.Configuration.MinimumAge = 13;
 
             var result = ChatSessionHelper.Evaluate( person, config, _rockContext );
 
@@ -245,7 +246,7 @@ namespace Rock.Tests.Communication.Chat.Platform.Session
             person.BirthDay = 1;
 
             var config = ValidConfig();
-            config.MinimumAge = 13;
+            config.Configuration.MinimumAge = 13;
 
             var result = ChatSessionHelper.Evaluate( person, config, _rockContext );
 
@@ -344,7 +345,7 @@ namespace Rock.Tests.Communication.Chat.Platform.Session
 
             Assert.AreEqual( ChatMintGate.Ok, result.Gate );
             Assert.AreEqual( person.PrimaryAliasGuid, result.PersonAliasGuid );
-            Assert.AreEqual( config.TenantId, result.TenantId );
+            Assert.AreEqual( config.Configuration.TenantId, result.TenantId );
             Assert.IsNull( result.ChurchToken );
         }
 
@@ -352,7 +353,7 @@ namespace Rock.Tests.Communication.Chat.Platform.Session
         public void Evaluate_BlankDirectMessageAccessDataView_CanStartDm()
         {
             var config = ValidConfig();
-            config.DirectMessageAccessDataViewGuid = null;
+            config.Configuration.DirectMessageAccessDataViewGuid = null;
 
             var result = ChatSessionHelper.Evaluate( Adult(), config, _rockContext );
 
@@ -365,7 +366,7 @@ namespace Rock.Tests.Communication.Chat.Platform.Session
         {
             var person = Adult();
             var config = ValidConfig();
-            config.DirectMessageAccessDataViewGuid = Guid.Parse( "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb" );
+            config.Configuration.DirectMessageAccessDataViewGuid = Guid.Parse( "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb" );
             config.DirectMessageAccessPersonIds = new HashSet<int> { person.Id };
 
             var result = ChatSessionHelper.Evaluate( person, config, _rockContext );
@@ -379,7 +380,7 @@ namespace Rock.Tests.Communication.Chat.Platform.Session
         {
             var person = Adult();
             var config = ValidConfig();
-            config.DirectMessageAccessDataViewGuid = Guid.Parse( "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb" );
+            config.Configuration.DirectMessageAccessDataViewGuid = Guid.Parse( "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb" );
             config.DirectMessageAccessPersonIds = new HashSet<int> { person.Id + 1 };
 
             var result = ChatSessionHelper.Evaluate( person, config, _rockContext );
@@ -411,7 +412,7 @@ namespace Rock.Tests.Communication.Chat.Platform.Session
             Assert.AreEqual( "ES256", token.Header.Alg );
             Assert.AreEqual( Kid, token.Header.Kid );
             Assert.AreEqual( person.PrimaryAliasGuid.ToString(), token.Subject );
-            Assert.AreEqual( config.TenantId.ToString(), token.Payload["tid"].ToString() );
+            Assert.AreEqual( config.Configuration.TenantId.ToString(), token.Payload["tid"].ToString() );
             Assert.AreEqual( Kid, token.Payload["kid"].ToString() );
             Assert.AreEqual( "chat.session", token.Payload["scp"].ToString() );
             Assert.IsTrue( token.Payload.ContainsKey( "exp" ), "a church token always expires" );
@@ -437,7 +438,7 @@ namespace Rock.Tests.Communication.Chat.Platform.Session
         public void TryMintChurchToken_JwkMissingPrivatePart_IsInvalidKeyWithoutExceptionText()
         {
             var config = SigningConfig();
-            config.PrivateKey = StripJwkProperty( config.PrivateKey, "d" );
+            config.Configuration.PrivateKey = StripJwkProperty( config.Configuration.PrivateKey, "d" );
 
             var result = ChatSessionHelper.TryMintChurchToken( Adult(), config, _rockContext );
 
@@ -450,8 +451,8 @@ namespace Rock.Tests.Communication.Chat.Platform.Session
         public void TryMintChurchToken_JwkMissingKid_IsInvalidKeyWithoutExceptionText()
         {
             var config = SigningConfig();
-            config.PrivateKey = StripJwkProperty( config.PrivateKey, "kid" );
-            config.Kid = null;
+            config.Configuration.PrivateKey = StripJwkProperty( config.Configuration.PrivateKey, "kid" );
+            config.Configuration.Kid = null;
 
             var result = ChatSessionHelper.TryMintChurchToken( Adult(), config, _rockContext );
 
@@ -464,7 +465,7 @@ namespace Rock.Tests.Communication.Chat.Platform.Session
         public void TryMintChurchToken_JwkNotEcP256_IsInvalidKeyWithoutExceptionText()
         {
             var config = SigningConfig();
-            config.PrivateKey = SetJwkProperty( config.PrivateKey, "kty", "RSA" );
+            config.Configuration.PrivateKey = SetJwkProperty( config.Configuration.PrivateKey, "kty", "RSA" );
 
             var result = ChatSessionHelper.TryMintChurchToken( Adult(), config, _rockContext );
 
@@ -482,12 +483,12 @@ namespace Rock.Tests.Communication.Chat.Platform.Session
 
             Assert.AreEqual( ChatMintGate.Ok, result.Gate );
             Assert.IsFalse( string.IsNullOrWhiteSpace( result.ChurchToken ) );
-            Assert.AreEqual( config.TenantId, result.TenantId );
+            Assert.AreEqual( config.Configuration.TenantId, result.TenantId );
             Assert.AreEqual( Kid, result.Kid );
 
             var token = new JwtSecurityTokenHandler().ReadJwtToken( result.ChurchToken );
             Assert.AreEqual( "sync", token.Payload["scp"].ToString() );
-            Assert.AreEqual( config.TenantId.ToString(), token.Payload["tid"].ToString() );
+            Assert.AreEqual( config.Configuration.TenantId.ToString(), token.Payload["tid"].ToString() );
             Assert.AreEqual( Kid, token.Header.Kid );
             Assert.IsTrue( token.Payload.ContainsKey( "exp" ), "a church token always expires" );
         }
@@ -574,25 +575,28 @@ namespace Rock.Tests.Communication.Chat.Platform.Session
             };
         }
 
-        private static ChatSessionConfiguration ValidConfig()
+        private static ChatSessionContext ValidConfig()
         {
-            return new ChatSessionConfiguration
+            return new ChatSessionContext
             {
-                TenantId = Guid.Parse( "11111111-1111-4111-8111-111111111111" ),
-                PrivateKey = "{\"kty\":\"EC\"}",
-                ProjectUrl = "http://127.0.0.1:54321",
-                PublishableKey = "sb_publishable_test",
-                Kid = "kid-1",
-                MinimumAge = 13
+                Configuration = new ChatPlatformConfiguration
+                {
+                    TenantId = Guid.Parse( "11111111-1111-4111-8111-111111111111" ),
+                    PrivateKey = "{\"kty\":\"EC\"}",
+                    ProjectUrl = "http://127.0.0.1:54321",
+                    PublishableKey = "sb_publishable_test",
+                    Kid = "kid-1",
+                    MinimumAge = 13
+                }
             };
         }
 
-        private static ChatSessionConfiguration SigningConfig()
+        private static ChatSessionContext SigningConfig()
         {
-            var config = ValidConfig();
-            config.PrivateKey = CreatePrivateJwk( Kid );
-            config.Kid = Kid;
-            return config;
+            var context = ValidConfig();
+            context.Configuration.PrivateKey = CreatePrivateJwk( Kid );
+            context.Configuration.Kid = Kid;
+            return context;
         }
 
         private static string StripJwkProperty( string jwkJson, string name )

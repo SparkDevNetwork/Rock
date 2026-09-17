@@ -4,113 +4,132 @@
         {{ config.errorMessage }}
     </NotificationBox>
 
-    <Panel v-else
-           type="block"
-           title="Chat Configuration">
+    <Panel v-else type="block" title="Chat Configuration">
 
-        <NotificationBox v-if="blockActionMessage" :alertType="blockActionAlertType">
-            {{ blockActionMessage }}
-        </NotificationBox>
+        <div v-if="!config.isChatConfigured" class="chat-configuration-empty-state">
+            <p>
+                Chat is not turned on for this organization yet. It is enabled from Spark
+                Connected Services, which sets up the chat platform and hands Rock the keys
+                it needs. The settings on this page appear once that is done.
+            </p>
+            <a :href="connectedServicesUrl">Go to Spark Connected Services</a>
+        </div>
 
-        <RockForm @submit="onSave">
+        <template v-else>
+            <NotificationBox v-if="message" :alertType="messageAlertType">
+                {{ message }}
+            </NotificationBox>
 
-            <div class="row">
-                <div class="col-md-6">
-                    <TextBox v-model="apiKey"
-                             label="API Key"
-                             help="The API key for Rock to use when interacting with the external chat application."
-                             :rules="['noemojisorspecialfonts']"
-                             :disabled="isSaving" />
-                    <TextBox v-model="apiSecret"
-                             label="API Secret"
-                             help="The API secret for Rock to use when interacting with the external chat application."
-                             :rules="['noemojisorspecialfonts']"
-                             :disabled="isSaving" />
-                    <DataViewPicker v-model="chatBadgeDataViews"
-                                    label="Badge Persisted Data Views"
-                                    help="The Persisted Data Views that will be used to populate badges within the external chat application."
-                                    :entityTypeGuid="EntityType.Person"
-                                    :displayPersistedOnly="true"
-                                    :multiple="true"
-                                    :enhanceForLongLists="true"
-                                    :disabled="isSaving" />
+            <RockForm class="chat-configuration-settings" @submit="onSave">
+                <div class="row">
+                    <div class="col-md-6">
+                        <CheckBox v-model="form.areChatProfilesVisible"
+                                  label="Chat Profiles Are Visible"
+                                  help="Whether a person's profile details are visible to other people in chat. A person who has set this for themselves keeps their own answer."
+                                  :disabled="isSaving" />
 
-                    <DataViewPicker v-model="directMessageAccessDataView"
-                                    label="Direct Message Access Data View"
-                                    help="Optional Data View of people who are allowed to access Direct Message creation. If left blank, all individuals can start new Direct Message conversations."
-                                    :entityTypeGuid="EntityType.Person"
-                                    :displayPersistedOnly="true"
-                                    :multiple="false"
-                                    :enhanceForLongLists="true"
-                                    :disabled="isSaving" />
+                        <CheckBox v-model="form.isOpenDirectMessagingAllowed"
+                                  label="Open Direct Messaging Is Allowed"
+                                  help="Whether a person may be direct messaged by anyone. A person who has set this for themselves keeps their own answer. With this off, a person can still be messaged inside a private channel you both belong to."
+                                  :disabled="isSaving" />
+
+                        <div class="chat-configuration-minimum-age">
+                            <NumberBox v-model="form.minimumAge"
+                                       label="Minimum Age"
+                                       help="The youngest age that may use chat at all. Leave blank for no limit. Someone whose birthdate Rock does not know is asked for it once, and is kept out of chat until they give it."
+                                       :minimumValue="0"
+                                       :disabled="isSaving" />
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <DataViewPicker v-model="form.directMessageAccessDataView"
+                                        label="Direct Message Access Data View"
+                                        help="The people who may start a direct message. Leave blank and anyone may. This does not change who may reply."
+                                        :entityTypeGuid="EntityType.Person"
+                                        :displayPersistedOnly="true"
+                                        :multiple="false"
+                                        :enhanceForLongLists="true"
+                                        :disabled="isSaving" />
+
+                        <DataViewPicker v-model="form.chatBadgeDataViews"
+                                        label="Badge Persisted Data Views"
+                                        help="Members of these Data Views carry a badge beside their name in chat."
+                                        :entityTypeGuid="EntityType.Person"
+                                        :displayPersistedOnly="true"
+                                        :multiple="true"
+                                        :enhanceForLongLists="true"
+                                        :disabled="isSaving" />
+                    </div>
                 </div>
-                <div class="col-md-6">
-                    <CheckBox v-model="areChatProfilesVisible"
-                              label="Chat Profiles Are Visible"
-                              help="The system default for whether individuals' profiles are visible in the external chat application. This can be overridden per individual."
-                              :disabled="isSaving" />
-                    <CheckBox v-model="isOpenDirectMessagingAllowed"
-                              label="Open Direct Messaging Is Allowed"
-                              help="The system default for whether individuals can receive direct messages from anybody in the system. This can be overridden per individual."
-                              :disabled="isSaving" />
+
+                <div class="actions">
+                    <RockButton :btnType="BtnType.Primary" type="submit" :disabled="isSaving">Save</RockButton>
+                    <RockButton :btnType="BtnType.Link" :disabled="isSaving" @click="onCancel">Cancel</RockButton>
                 </div>
+            </RockForm>
+
+            <div class="chat-configuration-platform well">
+                <h5>Chat Platform</h5>
+                <p class="text-muted">
+                    Set up when chat was enabled on Spark Connected Services. Shown here so it
+                    can be checked against a support request.
+                </p>
+                <dl class="dl-horizontal">
+                    <dt>Project</dt>
+                    <dd>{{ config.configuration?.projectUrl }}</dd>
+                    <dt>Publishable Key</dt>
+                    <dd>{{ config.configuration?.publishableKey }}</dd>
+                    <dt>Organization Id</dt>
+                    <dd>{{ config.configuration?.tenantId }}</dd>
+                    <dt>Key Id</dt>
+                    <dd>{{ config.configuration?.kid }}</dd>
+                    <dt>Signing Key</dt>
+                    <dd>{{ config.configuration?.isChurchKeyPresent ? "Stored" : "Missing" }}</dd>
+                </dl>
+                <RockButton class="chat-configuration-sync-now" :btnType="BtnType.Default" disabled>Sync Now</RockButton>
+                <span class="text-muted">Available once the chat sync job is set up.</span>
             </div>
-
-            <div class="actions">
-                <RockButton :btnType="BtnType.Primary"
-                            type="submit"
-                            :disabled="isSaving">Save</RockButton>
-
-                <RockButton :btnType="BtnType.Link"
-                            :disabled="isSaving"
-                            @click="onCancel">Cancel</RockButton>
-            </div>
-
-        </RockForm>
+        </template>
     </Panel>
 </template>
 
 <script setup lang="ts">
     import { ref } from "vue";
-    import { NavigationUrlKey } from "./ChatConfiguration/types.partial";
+    import { toBag, toFormModel } from "./ChatConfiguration/viewModel.partial";
     import CheckBox from "@Obsidian/Controls/checkBox.obs";
     import DataViewPicker from "@Obsidian/Controls/dataViewPicker.obs";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import NumberBox from "@Obsidian/Controls/numberBox.obs";
     import Panel from "@Obsidian/Controls/panel.obs";
     import RockButton from "@Obsidian/Controls/rockButton.obs";
     import RockForm from "@Obsidian/Controls/rockForm.obs";
-    import TextBox from "@Obsidian/Controls/textBox.obs";
     import { AlertType } from "@Obsidian/Enums/Controls/alertType";
     import { BtnType } from "@Obsidian/Enums/Controls/btnType";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
     import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { makeUrlRedirectSafe } from "@Obsidian/Utility/url";
     import { ChatConfigurationInitializationBox } from "@Obsidian/ViewModels/Blocks/Communication/Chat/ChatConfiguration/chatConfigurationInitializationBox";
-    import { ChatConfigurationBag } from "@Obsidian/ViewModels/Blocks/Communication/Chat/ChatConfiguration/chatConfigurationBag";
-    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
     const config = useConfigurationValues<ChatConfigurationInitializationBox>();
     const invokeBlockAction = useInvokeBlockAction();
 
     // #region Values
 
-    const apiKey = ref(config.chatConfigurationBag?.apiKey ?? "");
-    const apiSecret = ref(config.chatConfigurationBag?.apiSecret ?? "");
-    const areChatProfilesVisible = ref(config.chatConfigurationBag?.areChatProfilesVisible ?? false);
-    const isOpenDirectMessagingAllowed = ref(config.chatConfigurationBag?.isOpenDirectMessagingAllowed ?? false);
-    const chatBadgeDataViews = ref<ListItemBag[] | null>(config.chatConfigurationBag?.chatBadgeDataViews ?? null);
-    const directMessageAccessDataView = ref<ListItemBag | null>(config.chatConfigurationBag?.directMessageAccessDataView ?? null);
+    const form = ref(toFormModel(config.configuration));
+    const connectedServicesUrl = ref(config.connectedServicesUrl ?? "");
 
     const isSaving = ref(false);
-    const blockActionMessage = ref("");
-    const blockActionAlertType = ref<string | undefined>(undefined);
+    const message = ref("");
+    const messageAlertType = ref<string | undefined>(undefined);
 
     // #endregion Values
 
     // #region Event Handlers
 
     /**
-     * Called when the save button is clicked.
+     * Stores the settings. Only the church's own settings are sent: the platform half
+     * is shown from the box and never travels back.
      */
     async function onSave(): Promise<void> {
         if (isSaving.value) {
@@ -119,26 +138,17 @@
 
         try {
             isSaving.value = true;
-            blockActionMessage.value = "";
+            message.value = "";
 
-            const bag: ChatConfigurationBag = {
-                apiKey: apiKey.value,
-                apiSecret: apiSecret.value,
-                areChatProfilesVisible: areChatProfilesVisible.value,
-                isOpenDirectMessagingAllowed: isOpenDirectMessagingAllowed.value,
-                chatBadgeDataViews: chatBadgeDataViews.value,
-                directMessageAccessDataView: directMessageAccessDataView.value
-            };
+            const result = await invokeBlockAction("SaveConfiguration", { bag: toBag(form.value) });
 
-            const result = await invokeBlockAction("SaveChatConfiguration", { bag });
-
-            if (!result.isSuccess) {
-                blockActionMessage.value = result.errorMessage || "Unknown error while trying to save chat configuration.";
-                blockActionAlertType.value = AlertType.Warning;
+            if (result.isSuccess) {
+                message.value = "Settings saved.";
+                messageAlertType.value = AlertType.Success;
             }
             else {
-                blockActionMessage.value = "Settings saved successfully.";
-                blockActionAlertType.value = AlertType.Success;
+                message.value = result.errorMessage || "The settings could not be saved.";
+                messageAlertType.value = AlertType.Warning;
             }
         }
         finally {
@@ -147,11 +157,13 @@
     }
 
     /**
-     * Called when the cancel button is clicked.
+     * Leaves without saving.
      */
     function onCancel(): void {
-        if (config.navigationUrls?.[NavigationUrlKey.ParentPage]) {
-            window.location.href = makeUrlRedirectSafe(config.navigationUrls[NavigationUrlKey.ParentPage]);
+        const parentPage = config.navigationUrls?.["ParentPage"];
+
+        if (parentPage) {
+            window.location.href = makeUrlRedirectSafe(parentPage);
         }
     }
 
