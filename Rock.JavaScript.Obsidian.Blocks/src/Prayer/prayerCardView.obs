@@ -1,0 +1,101 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="prayer-card-view">
+        <div v-if="config.options?.isCampusFilterVisible" class="block-header d-flex">
+            <div class="block-filter">
+                <CampusPicker v-model="selectedCampus"
+                              :includeInactive="false"
+                              :campusTypeFilter="config.options?.campusTypeFilterGuids ?? undefined"
+                              :campusStatusFilter="config.options?.campusStatusFilterGuids ?? undefined"
+                              class="input-width-lg"
+                              showBlankItem />
+            </div>
+        </div>
+
+        <NotificationBox v-if="!hasPrayerRequests" alertType="info">
+            There are no prayer requests to display at this time.
+        </NotificationBox>
+
+        <div v-else class="block-body" v-html="content" @click="onContentClick"></div>
+    </div>
+</template>
+
+<style scoped>
+.block-filter {
+    margin-left: auto;
+}
+</style>
+
+<script setup lang="ts">
+    import { ref, watch } from "vue";
+    import CampusPicker from "@Obsidian/Controls/campusPicker.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
+    import { CustomBlockBox } from "@Obsidian/ViewModels/Blocks/customBlockBox";
+    import { PrayerCardViewBag } from "@Obsidian/ViewModels/Blocks/Prayer/PrayerCardView/prayerCardViewBag";
+    import { PrayerCardViewOptionsBag } from "@Obsidian/ViewModels/Blocks/Prayer/PrayerCardView/prayerCardViewOptionsBag";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+
+    // #region Values
+
+    const config = useConfigurationValues<CustomBlockBox<PrayerCardViewBag, PrayerCardViewOptionsBag>>();
+    const invokeBlockAction = useInvokeBlockAction();
+
+    const content = ref(config.bag?.content ?? "");
+    const hasPrayerRequests = ref(config.bag?.hasPrayerRequests ?? false);
+    const selectedCampus = ref<ListItemBag | null>(config.bag?.selectedCampus ?? null);
+
+    // #endregion Values
+
+    // #region Event Handlers
+
+    /**
+     * Handles clicks inside the rendered Lava content and routes Pray and Flag
+     * buttons to their block actions.
+     */
+    async function onContentClick(event: Event): Promise<void> {
+        const target = (event.target as HTMLElement)?.closest("[data-action]") as HTMLElement | null;
+
+        if (!target) {
+            return;
+        }
+
+        event.preventDefault();
+
+        const action = target.dataset.action;
+        const key = target.dataset.key;
+
+        if (!key) {
+            return;
+        }
+
+        if (action === "pray") {
+            await invokeBlockAction("PrayRequest", { idKey: key });
+        }
+        else if (action === "flag") {
+            await invokeBlockAction("FlagPrayerRequest", { idKey: key });
+        }
+    }
+
+    /**
+     * Saves the selected campus and replaces the rendered cards.
+     */
+    async function onCampusChanged(): Promise<void> {
+        const result = await invokeBlockAction<PrayerCardViewBag>("SelectCampus", { campusGuid: selectedCampus.value?.value ?? "" });
+
+        if (result.isSuccess && result.data) {
+            content.value = result.data.content ?? "";
+            hasPrayerRequests.value = result.data.hasPrayerRequests ?? false;
+        }
+    }
+
+    // #endregion Event Handlers
+
+    // #region Watchers
+
+    watch(selectedCampus, onCampusChanged);
+
+    // #endregion Watchers
+
+    onConfigurationValuesChanged(useReloadBlock());
+</script>
