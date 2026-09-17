@@ -234,6 +234,18 @@ namespace Rock.Web.Cache
         [DataMember]
         public ChatNotificationMode? ChatPushNotificationModeOverride { get; private set; }
 
+        /// <inheritdoc cref="Group.ChatChannelFirstEnabledDateTime"/>
+        [DataMember]
+        public DateTime? ChatChannelFirstEnabledDateTime { get; private set; }
+
+        /// <inheritdoc cref="Group.CanViewMembersOverride"/>
+        [DataMember]
+        public bool? CanViewMembersOverride { get; private set; }
+
+        /// <inheritdoc cref="Group.IsChatSearchIndexedOverride"/>
+        [DataMember]
+        public bool? IsChatSearchIndexedOverride { get; private set; }
+
         /// <inheritdoc cref="Group.ChatChannelKey"/>
         [MaxLength( 100 )]
         [DataMember]
@@ -557,6 +569,9 @@ namespace Rock.Web.Cache
             IsChatChannelAlwaysShownOverride = group.IsChatChannelAlwaysShownOverride;
             ChatPushNotificationModeOverride = group.ChatPushNotificationModeOverride;
             ChatChannelKey = group.ChatChannelKey;
+            ChatChannelFirstEnabledDateTime = group.ChatChannelFirstEnabledDateTime;
+            CanViewMembersOverride = group.CanViewMembersOverride;
+            IsChatSearchIndexedOverride = group.IsChatSearchIndexedOverride;
             GroupMemberRecordSourceValueId = group.GroupMemberRecordSourceValueId;
         }
 

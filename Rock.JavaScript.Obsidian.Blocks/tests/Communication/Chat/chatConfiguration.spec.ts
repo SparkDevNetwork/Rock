@@ -20,6 +20,7 @@
 // repository fails to run today. What the form shows and what it sends back is this
 // module, and that is what is covered.
 import { toBag, toFormModel } from "../../../src/Communication/Chat/ChatConfiguration/viewModel.partial";
+import { ChatConfigurationInitializationBox } from "@Obsidian/ViewModels/Blocks/Communication/Chat/ChatConfiguration/chatConfigurationInitializationBox";
 
 function bag(): Record<string, unknown> {
     return {
@@ -80,6 +81,17 @@ describe("chatConfiguration view model", () => {
             "isOpenDirectMessagingAllowed",
             "minimumAge"
         ]);
+    });
+
+    it("offers sync now on the box, never on the form", () => {
+        const box: ChatConfigurationInitializationBox = {
+            isChatConfigured: true,
+            canRequestChatSync: true,
+            connectedServicesUrl: "/admin/settings/spark-connected-services"
+        };
+
+        expect(box.canRequestChatSync).toBe(true);
+        expect((toBag(toFormModel(bag())) as Record<string, unknown>).canRequestChatSync).toBeUndefined();
     });
 
     it("never carries a signing key in either direction", () => {

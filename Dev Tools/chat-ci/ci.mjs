@@ -43,6 +43,12 @@ const gates = [
     cwd: here,
   },
   {
+    name: 'chat view models have matching TypeScript members',
+    cmd: process.execPath,
+    args: ['check-chat-types.mjs'],
+    cwd: here,
+  },
+  {
     name: 'the gates keep the shape the pipeline assumes',
     cmd: process.execPath,
     args: ['--test'],

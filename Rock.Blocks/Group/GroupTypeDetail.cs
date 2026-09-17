@@ -24,6 +24,8 @@ using System.Linq;
 using Rock;
 using Rock.Attribute;
 using Rock.Communication.Chat;
+using Rock.Communication.Chat.Platform.Configuration;
+using Rock.Communication.Chat.Platform.Sync;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
@@ -119,6 +121,7 @@ namespace Rock.Blocks.Group
             {
                 EnableGroupViewLavaTemplate = GetAttributeValue( AttributeKey.EnableGroupViewLavaTemplate ).AsBoolean(),
                 IsChatEnabledSystem = ChatHelper.IsChatEnabled,
+                CanRequestChatSync = ChatSyncNow.CanRequest( RockContext, ChatPlatformConfigurationService.Read() ),
                 GroupRequirementTypeOptions = new GroupRequirementTypeService( RockContext ).Queryable()
                     .OrderBy( req => req.Name )
                     .Select( req => new GroupRequirementTypeBag
@@ -1828,6 +1831,21 @@ namespace Rock.Blocks.Group
                 .GetChatEnabledGroupCount( groupTypeId.Value );
 
             return ActionOk( count );
+        }
+
+        /// <summary>
+        /// Queues a restatement. Group type chat settings do not push on save.
+        /// </summary>
+        [BlockAction]
+        public BlockActionResult RequestChatSync()
+        {
+            string error;
+            if ( !ChatSyncNow.TryRequest( RockContext, out error ) )
+            {
+                return ActionBadRequest( error ?? "The restatement could not be started." );
+            }
+
+            return ActionOk();
         }
 
         /// <summary>

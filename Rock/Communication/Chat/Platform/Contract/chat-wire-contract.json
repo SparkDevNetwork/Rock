@@ -21,7 +21,24 @@
     {
       "name": "x-sync-counts",
       "required": true,
-      "carries": "An object with exactly the four table names as keys and the expected row count of each, so a truncated read cannot pass as a small payload."
+      "keys": [
+        "aliases",
+        "channels",
+        "members",
+        "badges"
+      ],
+      "carries": "An object with exactly the four keys listed above and the expected row count of each, so a truncated read cannot pass as a small payload. The keys are the short names of the four payload sections, the same four the payload itself is keyed by, and they are deliberately not the table names: build this header from the tables array below and every submission is refused. They carry no order, because neither this header nor the payload is a list."
+    },
+    {
+      "name": "x-sync-marks",
+      "required": true,
+      "keys": [
+        "person",
+        "person_alias",
+        "group",
+        "group_member"
+      ],
+      "carries": "The identity high-water value of the four Rock tables the projection reads, as an object with exactly the four keys listed above and a whole number each. It is the identity seed rather than the maximum id, because the maximum drops when the newest rows are deleted and the seed does not. The platform keeps the highest it has seen and refuses a submission whose marks moved backwards, which is what a restored database does and ordinary operation does not."
     },
     {
       "name": "x-sync-rock-version",
@@ -39,6 +56,16 @@
       "carries": "Set for a manual sync and for a failed immediate write that needs draining sooner. Never set for a first load. Absent means ordinary priority, which is why this is the one optional header."
     }
   ],
+  "payload": {
+    "shape": "object",
+    "sections": [
+      "aliases",
+      "channels",
+      "members",
+      "badges"
+    ],
+    "carries": "The body of a submission: one object with exactly these four keys, each holding an array of positional rows for the table of the same position in the tables array below. A row is an array of that table wire column values, in the order the column list gives and nothing else. Absent from an array means absent from the church, which is what makes a restatement a statement of existence rather than a set of changes."
+  },
   "tables": [
     {
       "schema": "public",
@@ -293,7 +320,24 @@
       "authz.wrong_scope",
       "authz.wrong_tenant",
       "rpc.bad_request",
-      "rpc.unknown_error_code"
+      "rpc.unknown_error_code",
+      "sync.bad_counts",
+      "sync.bad_header",
+      "sync.bad_marks",
+      "sync.bad_submission_id",
+      "sync.contract_mismatch",
+      "sync.duplicate_submission",
+      "sync.future_read",
+      "sync.kill_switch",
+      "sync.marks_regressed",
+      "sync.payload_too_large",
+      "sync.stale_read",
+      "sync.unknown_submission",
+      "sync.apply_failed",
+      "sync.bad_alias_row",
+      "sync.bad_payload",
+      "sync.bad_row_width",
+      "sync.count_mismatch"
     ]
   }
 }

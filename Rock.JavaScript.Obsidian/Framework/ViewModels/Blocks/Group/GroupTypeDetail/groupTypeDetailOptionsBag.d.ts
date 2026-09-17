@@ -41,6 +41,9 @@ export type GroupTypeDetailOptionsBag = {
     /** Gets or sets a value indicating whether the chat system is currently enabled. */
     isChatEnabledSystem: boolean;
 
+    /** Gets or sets whether Sync Now can be offered on the Chat section. */
+    canRequestChatSync: boolean;
+
     /** Gets or sets a value indicating whether the indexing option is available. */
     isIndexingOptionAvailable: boolean;
 

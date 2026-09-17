@@ -206,6 +206,30 @@ namespace Rock.Tests.Communication.Chat.Platform
         }
 
         [TestMethod]
+        public void CountsKeys_FromTheArtifact_AreTheFourSectionNames_NotTheTableNames()
+        {
+            var contract = ReadEmbeddedContract();
+            var countsHeader = contract["submit_headers"].First( h => h["name"].Value<string>() == "x-sync-counts" );
+            var keys = countsHeader["keys"].Select( k => k.Value<string>() ).ToArray();
+
+            CollectionAssert.AreEqual( new[] { "aliases", "channels", "members", "badges" }, keys );
+            CollectionAssert.AreEqual( keys, ChatWireContract.CountKeys.ToArray() );
+            CollectionAssert.AreEqual( keys, ChatWireContract.SectionKeys.ToArray() );
+            CollectionAssert.AreNotEqual( _expectedTables, keys, "the counts keys are the table names, so a producer built from them is refused on every cycle" );
+        }
+
+        [TestMethod]
+        public void MarksKeys_FromTheArtifact_AreTheFourIdentityTables()
+        {
+            var contract = ReadEmbeddedContract();
+            var marksHeader = contract["submit_headers"].First( h => h["name"].Value<string>() == "x-sync-marks" );
+            var keys = marksHeader["keys"].Select( k => k.Value<string>() ).ToArray();
+
+            CollectionAssert.AreEqual( new[] { "person", "person_alias", "group", "group_member" }, keys );
+            CollectionAssert.AreEqual( keys, ChatWireContract.MarksKeys.ToArray() );
+        }
+
+        [TestMethod]
         public void ErrorCodes_EveryPublishedCode_MatchesThePublishedPattern()
         {
             var contract = ReadEmbeddedContract();

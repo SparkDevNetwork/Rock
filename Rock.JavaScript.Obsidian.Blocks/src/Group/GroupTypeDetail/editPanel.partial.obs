@@ -549,8 +549,16 @@
                         icon="ti ti-message-dots"
                         :order="11">
             <NotificationBox :alertType="AlertType.Info">
-                You'll need to run the Chat Sync Job after saving for these changes to take effect in chat channels of this type.
+                These settings do not reach chat until a restatement runs. Use Sync Now after saving, or wait for the scheduled job.
             </NotificationBox>
+            <div v-if="isChatEnabledSystem" class="form-group">
+                <RockButton :btnType="BtnType.Default"
+                            :disabled="!canRequestChatSync || isSyncing"
+                            @click="onRequestChatSync">
+                    Sync Now
+                </RockButton>
+                <span class="text-muted">{{ canRequestChatSync ? "" : "Available once the chat restatement job is registered." }}</span>
+            </div>
 
             <NotificationBox v-if="chatChannelsDisabledMessage" :alertType="AlertType.Warning">
                 {{ chatChannelsDisabledMessage }}
@@ -670,6 +678,8 @@
     import { areEqual, emptyGuid, newGuid } from "@Obsidian/Utility/guid";
     import WorkflowTypePicker from "@Obsidian/Controls/workflowTypePicker.obs";
     import InlineSwitch from "@Obsidian/Controls/inlineSwitch.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import { BtnType } from "@Obsidian/Enums/Controls/btnType";
     import { ScheduleConfirmationLogic, ScheduleConfirmationLogicDescription } from "@Obsidian/Enums/Group/scheduleConfirmationLogic";
     import { ScheduleCoordinatorNotificationType, ScheduleCoordinatorNotificationTypeDescription } from "@Obsidian/Enums/Group/scheduleCoordinatorNotificationType";
     import { RelationshipStrength, RelationshipStrengthDescription } from "@Obsidian/Enums/Group/relationshipStrength";
@@ -714,8 +724,27 @@
     const store = useStore();
     const isSystem = ref(props.modelValue.bag?.isSystem ?? false);
     const isChatEnabledSystem = ref(props.options.isChatEnabledSystem ?? false);
+    const canRequestChatSync = ref(props.options.canRequestChatSync ?? false);
+    const isSyncing = ref(false);
     const errorMessage = ref<string | null>(null);
     const chatChannelsDisabledMessage = ref<string | null>(null);
+
+    async function onRequestChatSync(): Promise<void> {
+        if (!canRequestChatSync.value || isSyncing.value) {
+            return;
+        }
+
+        isSyncing.value = true;
+        try {
+            const result = await invokeBlockAction("RequestChatSync");
+            errorMessage.value = result.isSuccess
+                ? null
+                : (result.errorMessage || "Chat restatement could not be started.");
+        }
+        finally {
+            isSyncing.value = false;
+        }
+    }
 
     // GENERAL
     const name = propertyRef(props.modelValue.bag?.name ?? "", "Name");

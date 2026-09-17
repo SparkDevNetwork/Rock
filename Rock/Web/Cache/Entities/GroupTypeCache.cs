@@ -911,6 +911,14 @@ namespace Rock.Web.Cache
         [DataMember]
         public ChatNotificationMode ChatPushNotificationMode { get; private set; }
 
+        /// <inheritdoc cref="GroupType.CanViewMembers"/>
+        [DataMember]
+        public bool CanViewMembers { get; private set; }
+
+        /// <inheritdoc cref="GroupType.IsChatSearchIndexed"/>
+        [DataMember]
+        public bool IsChatSearchIndexed { get; private set; }
+
         /// <summary>
         /// Gets or sets the default Id of the Record Source Type <see cref="Rock.Model.DefinedValue"/>, representing
         /// the source of <see cref="GroupMember"/>s added to <see cref="Group"/>s of this type. This can be overridden
@@ -1299,6 +1307,8 @@ namespace Rock.Web.Cache
             IsChatChannelPublic = groupType.IsChatChannelPublic;
             IsChatChannelAlwaysShown = groupType.IsChatChannelAlwaysShown;
             ChatPushNotificationMode = groupType.ChatPushNotificationMode;
+            CanViewMembers = groupType.CanViewMembers;
+            IsChatSearchIndexed = groupType.IsChatSearchIndexed;
             GroupMemberRecordSourceValueId = groupType.GroupMemberRecordSourceValueId;
             AllowGroupSpecificRecordSource = groupType.AllowGroupSpecificRecordSource;
             AdditionalSettingsJson = groupType.AdditionalSettingsJson;

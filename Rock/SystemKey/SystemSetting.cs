@@ -434,6 +434,18 @@ namespace Rock.SystemKey
         public const string CHAT_PLATFORM_CONFIGURATION = "core_ChatPlatformConfiguration";
 
         /// <summary>
+        /// When true, the next chat restatement run is a manual one: it ignores
+        /// backpressure and is sent as urgent.
+        /// </summary>
+        public const string CHAT_PLATFORM_SYNC_URGENT = "core_ChatPlatformSyncUrgent";
+
+        /// <summary>
+        /// Earliest UTC time a scheduled restatement is useful, taken from the
+        /// platform's last acknowledgement. Manual runs ignore it.
+        /// </summary>
+        public const string CHAT_PLATFORM_SYNC_BACKOFF_UNTIL = "core_ChatPlatformSyncBackoffUntil";
+
+        /// <summary>
         /// Job settings for <see cref="Rock.Jobs.ChatSync"/>
         /// </summary>
         public const string CHAT_SYNC_JOB_SETTINGS = "core_ChatSyncJobSettings";

@@ -872,6 +872,20 @@ namespace Rock.Model
         public ChatNotificationMode ChatPushNotificationMode { get; set; }
 
         /// <summary>
+        /// Gets or sets whether members of channels of this type may see the roster.
+        /// Direct messages force this on regardless.
+        /// </summary>
+        [DataMember]
+        public bool CanViewMembers { get; set; }
+
+        /// <summary>
+        /// Gets or sets whether channels of this type are included in search.
+        /// Direct messages force this off regardless.
+        /// </summary>
+        [DataMember]
+        public bool IsChatSearchIndexed { get; set; }
+
+        /// <summary>
         /// Gets or sets the default Id of the Record Source Type <see cref="Rock.Model.DefinedValue"/>, representing
         /// the source of <see cref="GroupMember"/>s added to <see cref="Group"/>s of this type. This can be overridden
         /// by <see cref="Group.GroupMemberRecordSourceValueId"/>.

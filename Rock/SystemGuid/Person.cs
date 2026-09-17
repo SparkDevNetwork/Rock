@@ -36,5 +36,12 @@ namespace Rock.SystemGuid
         /// automated communications.
         /// </summary>
         public const string SYSTEM_SENDER = "817E7C25-6CB1-4ED0-B224-FF3C4DA0B716";
+
+        /// <summary>
+        /// The well-known alias of the system chat person. Not backed by a
+        /// Person row. Messages the platform sends as the system carry this
+        /// stamp, identical in every church.
+        /// </summary>
+        public const string CHAT_SYSTEM = "C0DE0001-0000-4000-8000-00000000C0DE";
     }
 }

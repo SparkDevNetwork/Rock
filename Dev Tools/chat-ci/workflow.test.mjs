@@ -71,6 +71,7 @@ test('the ordinary job builds and runs the unit suite and the client suite', () 
     'no step runs the client tests',
   );
   assert.match(text, /check:references/, 'the reference gate never runs');
+  assert.match(text, /check-chat-types/, 'the chat TypeScript member gate never runs');
   assert.ok(!integrationProject.test(text), 'the ordinary job reaches for the integration project');
 });
 

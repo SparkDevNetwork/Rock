@@ -262,6 +262,13 @@ namespace Rock.Model
         [DataMember]
         public bool IsChatBanned { get; set; }
 
+        /// <summary>
+        /// Gets or sets when a channel ban expires. Null means the ban does not
+        /// expire. An expired value is still stored; readers treat it as no ban.
+        /// </summary>
+        [DataMember]
+        public DateTime? ChatBannedUntil { get; set; }
+
         #endregion
 
         #region Constructors

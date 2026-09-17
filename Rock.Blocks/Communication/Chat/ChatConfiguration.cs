@@ -19,6 +19,7 @@ using System.ComponentModel;
 using System.Linq;
 
 using Rock.Communication.Chat.Platform.Configuration;
+using Rock.Communication.Chat.Platform.Sync;
 using Rock.Security;
 using Rock.ViewModels.Blocks.Communication.Chat.ChatConfiguration;
 using Rock.Web.Cache;
@@ -75,6 +76,7 @@ namespace Rock.Blocks.Communication.Chat
             if ( configuration.IsConfigured )
             {
                 box.Configuration = WithDataViewNames( ChatConfigurationPolicy.ToBag( configuration ) );
+                box.CanRequestChatSync = ChatSyncNow.CanRequest( RockContext, configuration );
             }
 
             return box;
@@ -108,6 +110,23 @@ namespace Rock.Blocks.Communication.Chat
             }
 
             ChatPlatformConfigurationService.SaveChurchSettings( result.Configuration );
+
+            return ActionOk();
+        }
+
+        /// <summary>
+        /// Queues a restatement now. Settings on this screen do not push on
+        /// save, so this is how an administrator applies them.
+        /// </summary>
+        /// <returns>An empty success, or a refusal.</returns>
+        [BlockAction]
+        public BlockActionResult RequestChatSync()
+        {
+            string error;
+            if ( !ChatSyncNow.TryRequest( RockContext, out error ) )
+            {
+                return ActionBadRequest( error ?? "The restatement could not be started." );
+            }
 
             return ActionOk();
         }

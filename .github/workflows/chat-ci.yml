@@ -47,6 +47,10 @@ jobs:
         run: npm run check:references
         working-directory: ./Dev Tools/chat-ci
 
+      - name: Chat view models have matching TypeScript members
+        run: node check-chat-types.mjs
+        working-directory: ./Dev Tools/chat-ci
+
       - name: The gates keep the shape these jobs assume
         run: npm test
         working-directory: ./Dev Tools/chat-ci

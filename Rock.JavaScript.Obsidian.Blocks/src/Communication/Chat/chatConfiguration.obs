@@ -87,8 +87,11 @@
                     <dt>Signing Key</dt>
                     <dd>{{ config.configuration?.isChurchKeyPresent ? "Stored" : "Missing" }}</dd>
                 </dl>
-                <RockButton class="chat-configuration-sync-now" :btnType="BtnType.Default" disabled>Sync Now</RockButton>
-                <span class="text-muted">Available once the chat sync job is set up.</span>
+                <RockButton class="chat-configuration-sync-now"
+                            :btnType="BtnType.Default"
+                            :disabled="isSaving || isSyncing || !config.canRequestChatSync"
+                            @click="onSyncNow">Sync Now</RockButton>
+                <span class="text-muted">{{ config.canRequestChatSync ? "Applies these settings to chat. The job also runs on its own schedule." : "Available once the chat restatement job is registered." }}</span>
             </div>
         </template>
     </Panel>
@@ -120,6 +123,7 @@
     const connectedServicesUrl = ref(config.connectedServicesUrl ?? "");
 
     const isSaving = ref(false);
+    const isSyncing = ref(false);
     const message = ref("");
     const messageAlertType = ref<string | undefined>(undefined);
 
@@ -153,6 +157,34 @@
         }
         finally {
             isSaving.value = false;
+        }
+    }
+
+    /**
+     * Queues a restatement. Settings on this screen do not push on save.
+     */
+    async function onSyncNow(): Promise<void> {
+        if (isSyncing.value || !config.canRequestChatSync) {
+            return;
+        }
+
+        try {
+            isSyncing.value = true;
+            message.value = "";
+
+            const result = await invokeBlockAction("RequestChatSync");
+
+            if (result.isSuccess) {
+                message.value = "Chat restatement queued.";
+                messageAlertType.value = AlertType.Success;
+            }
+            else {
+                message.value = result.errorMessage || "Chat restatement could not be started.";
+                messageAlertType.value = AlertType.Warning;
+            }
+        }
+        finally {
+            isSyncing.value = false;
         }
     }
 

@@ -29,6 +29,12 @@ namespace Rock.SystemGuid
         public const string JOB_PULSE = "CB24FF2A-5AD3-4976-883F-DAF4EFC1D7C7";
 
         /// <summary>
+        /// The job that restates this church's people, channels, memberships
+        /// and badges onto the chat platform.
+        /// </summary>
+        public const string CHAT_PLATFORM_SYNC = "B7E2A91C-4D3F-4E8A-9C16-2F0B5D8A7E31";
+
+        /// <summary>
         /// The Job to run Post v12 to update interaction indexes.
         /// </summary>
         public const string DATA_MIGRATIONS_120_UPDATE_INTERACTION_INDEXES = "090CB437-F74B-49B0-8B51-BF2A491DD36D";

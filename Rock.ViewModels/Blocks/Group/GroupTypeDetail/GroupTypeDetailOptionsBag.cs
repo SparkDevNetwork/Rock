@@ -37,6 +37,11 @@ namespace Rock.ViewModels.Blocks.Group.GroupTypeDetail
         public bool IsChatEnabledSystem { get; set; }
 
         /// <summary>
+        /// Gets or sets whether Sync Now can be offered on the Chat section.
+        /// </summary>
+        public bool CanRequestChatSync { get; set; }
+
+        /// <summary>
         /// Gets or sets the group requirement types.
         /// </summary>
         public List<GroupRequirementTypeBag> GroupRequirementTypeOptions { get; set; }

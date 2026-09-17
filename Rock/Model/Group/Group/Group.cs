@@ -668,6 +668,28 @@ namespace Rock.Model
         public string ChatChannelKey { get; set; }
 
         /// <summary>
+        /// Gets or sets when this group first projected as a chat channel. Stamped
+        /// once and never cleared, so turning chat off keeps the channel and its
+        /// history rather than deleting them.
+        /// </summary>
+        [DataMember]
+        public DateTime? ChatChannelFirstEnabledDateTime { get; set; }
+
+        /// <summary>
+        /// Gets or sets whether members of this channel may see the roster. Null
+        /// means use the group type.
+        /// </summary>
+        [DataMember]
+        public bool? CanViewMembersOverride { get; set; }
+
+        /// <summary>
+        /// Gets or sets whether this channel is included in search. Null means
+        /// use the group type. Direct messages force this off regardless.
+        /// </summary>
+        [DataMember]
+        public bool? IsChatSearchIndexedOverride { get; set; }
+
+        /// <summary>
         /// Gets or sets the default Id of the Record Source Type <see cref="Rock.Model.DefinedValue"/>, representing
         /// the source of <see cref="GroupMember"/>s added to this <see cref="Group"/>. If set to <see langword="null"/>
         /// (or if <see cref="GroupType.AllowGroupSpecificRecordSource"/> is not <see langword="true"/>), then the value

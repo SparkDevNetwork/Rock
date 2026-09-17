@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
@@ -78,6 +79,33 @@ namespace Rock.Communication.Chat.Platform.Contract
         /// </summary>
         private static readonly string _computedHash;
 
+        /// <summary>
+        /// The short names of the four payload sections, taken from the artifact.
+        /// These are the keys of the body and of the counts header, and they are
+        /// not the four table names.
+        /// </summary>
+        private static readonly string[] _sectionKeys;
+
+        /// <summary>
+        /// The counts-header keys, taken from the artifact's own keys array.
+        /// </summary>
+        private static readonly string[] _countKeys;
+
+        /// <summary>
+        /// The marks-header keys, taken from the artifact's own keys array.
+        /// </summary>
+        private static readonly string[] _marksKeys;
+
+        /// <summary>
+        /// Per synced table, the wire column names in positional order.
+        /// </summary>
+        private static readonly IReadOnlyDictionary<string, string[]> _columnsByTable;
+
+        /// <summary>
+        /// Per enum type name, the values the other side will accept.
+        /// </summary>
+        private static readonly IReadOnlyDictionary<string, string[]> _enumValues;
+
         #endregion
 
         #region Constructors
@@ -93,6 +121,17 @@ namespace Rock.Communication.Chat.Platform.Contract
 
             _publishedHash = contract["wire_hash"].Value<string>();
             _computedHash = HashColumnLists( contract );
+            _sectionKeys = ReadStringArray( contract["payload"]["sections"] );
+            _countKeys = HeaderKeys( contract, "x-sync-counts" );
+            _marksKeys = HeaderKeys( contract, "x-sync-marks" );
+            _columnsByTable = contract["tables"]
+                .ToDictionary(
+                    t => t["name"].Value<string>(),
+                    t => t["columns"].Select( c => c.Value<string>() ).ToArray() );
+            _enumValues = contract["enum_types"]
+                .ToDictionary(
+                    t => t["name"].Value<string>(),
+                    t => t["values"].Select( v => v.Value<string>() ).ToArray() );
         }
 
         #endregion
@@ -123,6 +162,65 @@ namespace Rock.Communication.Chat.Platform.Contract
         internal static string ComputedHash
         {
             get { return _computedHash; }
+        }
+
+        /// <summary>
+        /// The four payload section names, in the order the artifact lists them.
+        /// Order is not on the wire; ingest sorts both sides.
+        /// </summary>
+        internal static IReadOnlyList<string> SectionKeys
+        {
+            get { return _sectionKeys; }
+        }
+
+        /// <summary>
+        /// The keys of <c>x-sync-counts</c>, taken from the artifact. Not the table names.
+        /// </summary>
+        internal static IReadOnlyList<string> CountKeys
+        {
+            get { return _countKeys; }
+        }
+
+        /// <summary>
+        /// The keys of <c>x-sync-marks</c>, taken from the artifact.
+        /// </summary>
+        internal static IReadOnlyList<string> MarksKeys
+        {
+            get { return _marksKeys; }
+        }
+
+        /// <summary>
+        /// Wire column names for a synced table, in positional order.
+        /// </summary>
+        internal static IReadOnlyList<string> ColumnsOf( string tableName )
+        {
+            return _columnsByTable[tableName];
+        }
+
+        /// <summary>
+        /// Values the artifact lists for an enum type. A payload that emits anything
+        /// else is refused on the other side and fails the whole church.
+        /// </summary>
+        internal static IReadOnlyList<string> EnumValues( string typeName )
+        {
+            return _enumValues[typeName];
+        }
+
+        /// <summary>
+        /// The wire value for a Rock channel notification mode. Rock's names
+        /// (AllMessages, Mentions, Silent) are not the wire values (all, mentions, silent).
+        /// </summary>
+        internal static string NotifyModeWireValue( Rock.Enums.Communication.Chat.ChatNotificationMode mode )
+        {
+            switch ( mode )
+            {
+                case Rock.Enums.Communication.Chat.ChatNotificationMode.Mentions:
+                    return "mentions";
+                case Rock.Enums.Communication.Chat.ChatNotificationMode.Silent:
+                    return "silent";
+                default:
+                    return "all";
+            }
         }
 
         #endregion
@@ -181,6 +279,30 @@ namespace Rock.Communication.Chat.Platform.Contract
 
                 return BitConverter.ToString( digest ).Replace( "-", string.Empty ).ToLowerInvariant();
             }
+        }
+
+        /// <summary>
+        /// Reads the keys array off a named submit header. Missing keys are a
+        /// broken artifact, not a runtime condition: without them a producer
+        /// would have to type the eight strings, which is the defect this
+        /// surface exists to make loud.
+        /// </summary>
+        private static string[] HeaderKeys( JObject contract, string headerName )
+        {
+            var header = contract["submit_headers"]
+                .FirstOrDefault( h => string.Equals( h["name"].Value<string>(), headerName, StringComparison.Ordinal ) );
+
+            if ( header == null || header["keys"] == null )
+            {
+                throw new InvalidOperationException( string.Format( "The chat wire contract does not list keys for {0}.", headerName ) );
+            }
+
+            return ReadStringArray( header["keys"] );
+        }
+
+        private static string[] ReadStringArray( JToken token )
+        {
+            return token.Select( v => v.Value<string>() ).ToArray();
         }
 
         #endregion

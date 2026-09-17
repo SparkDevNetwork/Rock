@@ -41,4 +41,7 @@ export type ChatConfigurationInitializationBox = {
 
     /** Gets or sets where an administrator goes to enable chat. */
     connectedServicesUrl?: string | null;
+
+    /** Gets or sets whether Sync Now can be offered. */
+    canRequestChatSync: boolean;
 };

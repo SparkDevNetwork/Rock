@@ -38,5 +38,11 @@ namespace Rock.ViewModels.Blocks.Communication.Chat.ChatConfiguration
         /// Gets or sets where an administrator goes to enable chat.
         /// </summary>
         public string ConnectedServicesUrl { get; set; }
+
+        /// <summary>
+        /// Gets or sets whether the restatement job is registered and chat is
+        /// configured, so Sync Now can be offered.
+        /// </summary>
+        public bool CanRequestChatSync { get; set; }
     }
 }
