@@ -586,11 +586,24 @@ namespace Rock.Blocks.Prayer
         [BlockAction]
         public BlockActionResult SelectCampus( string campusGuid )
         {
-            return ActionOk( new PrayerCardViewBag
+            if ( !IsCampusFilterEnabled() )
             {
-                PrayerRequests = new List<PrayerRequestCardBag>(),
-                SelectedCampus = null
-            } );
+                return ActionBadRequest( "The campus filter is not enabled." );
+            }
+
+            // Only campuses the picker offers may be saved; anything else clears the selection.
+            var eligibleCampuses = GetEligibleCampuses();
+            var selectedGuid = campusGuid.AsGuidOrNull();
+            var selectedCampus = selectedGuid.HasValue
+                ? eligibleCampuses.FirstOrDefault( c => c.Guid == selectedGuid.Value )
+                : null;
+
+            // Persist the Id (not the Guid) so the value matches what the WebForms block saved.
+            var preferences = GetBlockPersonPreferences();
+            preferences.SetValue( PersonPreferenceKey.Campus, selectedCampus?.Id.ToString() ?? string.Empty );
+            preferences.Save();
+
+            return ActionOk( GetContentBag() );
         }
 
         #endregion Block Actions
