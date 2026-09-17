@@ -135,6 +135,15 @@ namespace Rock.Configuration
         string SparkApiUrl { get; }
 
         /// <summary>
+        /// Gets the base address of the connected services gateway. When this is
+        /// not set the shipped address is used, so an installation that has never
+        /// heard of this setting keeps working. It exists so a local stand-in can
+        /// answer during development.
+        /// </summary>
+        /// <value>A URL to the connected services gateway.</value>
+        string ConnectedServicesApiUrl { get; }
+
+        /// <summary>
         /// Gets the name of the node when running in a WebFarm environment.
         /// This must be unique for each node in the farm.
         /// </summary>

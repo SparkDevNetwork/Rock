@@ -93,6 +93,9 @@
 
             <RockIntelligence v-if="isRockIntelligenceVisible"
                               v-model:configuration="rockIntelligenceConfiguration" />
+
+            <Chat v-if="isChatVisible"
+                  v-model:configuration="chatConfiguration" />
         </template>
     </Panel>
 </template>
@@ -125,6 +128,7 @@
     import DisplayCard from "@Obsidian/Controls/displayCard.obs";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import Panel from "@Obsidian/Controls/panel.obs";
+    import Chat from "./SparkConnectedServices/chat.partial.obs";
     import RockIntelligence from "./SparkConnectedServices/rockIntelligence.partial.obs";
     import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { alert } from "@Obsidian/Utility/dialogs";
@@ -141,6 +145,7 @@
     // #region Values
 
     const rockIntelligenceConfiguration = ref(config.rockIntelligence ?? null);
+    const chatConfiguration = ref(config.chat ?? null);
     const linkOrganizationUrl = `/link-organization?returnUrl=${encodeURIComponent(window.location.href)}`;
     const manifestLastRefreshedDateTime = ref(config.manifestLastRefreshedDateTime ?? null);
     const isManifestRefreshing = ref(false);
@@ -221,6 +226,10 @@
 
     const isRockIntelligenceVisible = computed((): boolean => {
         return isCreditCardValid.value || !!rockIntelligenceConfiguration.value;
+    });
+
+    const isChatVisible = computed((): boolean => {
+        return isCreditCardValid.value || chatConfiguration.value?.isEnabled === true;
     });
 
     // #endregion

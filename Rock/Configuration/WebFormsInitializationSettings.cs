@@ -61,6 +61,7 @@ namespace Rock.Configuration
             AzureSignalREndpoint = GetValue( "AzureSignalREndpoint" )?.ToStringSafe();
             AzureSignalRAccessKey = GetValue( "AzureSignalRAccessKey" )?.ToStringSafe();
             SparkApiUrl = GetValue( "SparkApiUrl" )?.ToStringSafe();
+            ConnectedServicesApiUrl = GetValue( "ConnectedServicesApiUrl" )?.ToStringSafe();
             NodeName = GetValue( "NodeName" )?.ToStringSafe();
             DeploymentEnvironment = GetValue( "DeploymentEnvironment" )?.ConvertToEnumOrNull<DeploymentEnvironment>() ?? DeploymentEnvironment.Production;
 

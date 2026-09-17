@@ -62,6 +62,17 @@ namespace Rock.Configuration.ConnectedServices
         private const string RockIntelligenceServiceId = "rock-iq";
 
         /// <summary>
+        /// The service identifier for the chat service.
+        /// </summary>
+        private const string ChatServiceId = "chat";
+
+        /// <summary>
+        /// The gateway address used when nothing else is configured. Every
+        /// installation that has never set an address talks to this one.
+        /// </summary>
+        internal const string ShippedGatewayAddress = "https://apigateway.rockrms.com/";
+
+        /// <summary>
         /// The cache key used to store the connected services configuration in
         /// the system settings.
         /// </summary>
@@ -122,14 +133,15 @@ namespace Rock.Configuration.ConnectedServices
         /// <summary>
         /// Initializes a new instance of the <see cref="ConnectedServicesProvider"/> class.
         /// </summary>
-        [ExcludeFromCodeCoverage]
         public ConnectedServicesProvider( IInitializationSettings initializationSettings )
         {
             _deploymentEnvironment = initializationSettings.DeploymentEnvironment;
 
+            var configuredAddress = initializationSettings.ConnectedServicesApiUrl;
+
             _httpClient = new HttpClient
             {
-                BaseAddress = new Uri( "https://apigateway.rockrms.com/" )
+                BaseAddress = new Uri( configuredAddress.IsNullOrWhiteSpace() ? ShippedGatewayAddress : configuredAddress )
             };
         }
 
@@ -143,6 +155,16 @@ namespace Rock.Configuration.ConnectedServices
             _httpClient = httpClient ?? throw new ArgumentNullException( nameof( httpClient ) );
             _deploymentEnvironment = deploymentEnvironment;
         }
+
+        #endregion
+
+        #region Properties
+
+        /// <summary>
+        /// The gateway this provider talks to. Configured rather than fixed so a
+        /// local stand-in can answer during development.
+        /// </summary>
+        internal Uri GatewayAddress => _httpClient.BaseAddress;
 
         #endregion
 
@@ -1027,6 +1049,34 @@ namespace Rock.Configuration.ConnectedServices
         internal Task<GetServiceBundlesResponse> GetRockIntelligenceBundlesAsync( CancellationToken cancellationToken )
         {
             return GetServiceBundlesAsync( RockIntelligenceServiceId, cancellationToken );
+        }
+
+        #endregion
+
+        #region Chat
+
+        /// <summary>
+        /// Enables chat for this organization and hands back the entry the gateway
+        /// answered with, which carries the credentials the church needs.
+        /// </summary>
+        /// <remarks>
+        /// Unlike Rock Intelligence and Knowledge Base, nothing about chat is kept in
+        /// the connected services configuration. That value is stored whole and in the
+        /// clear, and the church's signing key rides on this entry, so the caller puts
+        /// it where it is encrypted at rest instead.
+        /// </remarks>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>A <see cref="ConfigurationResult"/> carrying the chat service entry.</returns>
+        internal async Task<ConfigurationResult<ServiceEntry>> EnableChatAsync( CancellationToken cancellationToken )
+        {
+            var result = await SetEnabled( ChatServiceId, true, cancellationToken );
+
+            return new ConfigurationResult<ServiceEntry>
+            {
+                IsSuccess = result.IsSuccess,
+                ErrorMessage = result.ErrorMessage,
+                Data = result.Data?.ServiceEntry
+            };
         }
 
         #endregion

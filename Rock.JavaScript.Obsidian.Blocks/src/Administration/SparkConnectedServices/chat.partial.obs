@@ -1,0 +1,138 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div style="border: 1px solid var(--color-interface-soft); border-radius: var(--rounded-xsmall)">
+        <DisplayCard iconCssClass="ti ti-message-circle"
+                     title="Chat"
+                     :description="description">
+            <template #rightMiddleSection>
+                <div class="service-code-details">
+                    <div v-if="state.isEnabled"
+                         style="display: flex; flex-direction: column; align-items: flex-end;">
+                        <span>Project: {{ state.projectUrl }}</span>
+                        <span>Organization Id: {{ state.tenantId }}</span>
+                    </div>
+
+                    <span v-if="state.isEnabled" class="badge badge-info">Enabled</span>
+
+                    <RockButton v-if="state.isEnableActionShown"
+                                btnType="link"
+                                autoDisable
+                                @click="onEnableClick">
+                        Enable
+                    </RockButton>
+                </div>
+            </template>
+        </DisplayCard>
+
+        <TransitionVerticalCollapse>
+            <div v-if="isPanelShown">
+                <div style="padding: var(--spacing-large);">
+                    <p>
+                        Chat gives your congregation a place to talk that lives inside Rock. Conversations follow the groups
+                        you already have, the people in them are the people in your database, and everything a leader needs
+                        to moderate is where they already work.
+                    </p>
+
+                    <p>When you approve, Spark sets your organization up on the chat platform and sends Rock what it needs to connect:</p>
+
+                    <ul>
+                        <li>A signing key for your organization, which Rock stores encrypted and uses to vouch for the people who sign in here.</li>
+                        <li>The chat project your organization talks to, and the public key a browser presents to it.</li>
+                    </ul>
+
+                    <p>
+                        Nothing is turned on for your congregation yet. Chat settings, including who may chat and what they
+                        may see, are yours to set afterwards on the Chat Configuration page.
+                    </p>
+
+                    <div class="service-actions">
+                        <div class="primary-actions">
+                            <RockButton btnType="primary"
+                                        autoDisable
+                                        autoLoading
+                                        @click="onApproveClick">
+                                Approve
+                            </RockButton>
+
+                            <RockButton type="button"
+                                        btnType="link"
+                                        @click="onCancelClick">
+                                Cancel
+                            </RockButton>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </TransitionVerticalCollapse>
+    </div>
+</template>
+
+<script setup lang="ts">
+    import DisplayCard from "@Obsidian/Controls/displayCard.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import TransitionVerticalCollapse from "@Obsidian/Controls/transitionVerticalCollapse.obs";
+    import { useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { alert } from "@Obsidian/Utility/dialogs";
+    import { computed, PropType, ref } from "vue";
+    import { ChatConfigurationBag } from "@Obsidian/ViewModels/Blocks/Administration/SparkConnectedServices/chatConfigurationBag";
+    import { toChatCardState } from "./chatViewModel.partial";
+
+    const props = defineProps({
+        configuration: {
+            type: Object as PropType<ChatConfigurationBag | null>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:configuration", value: ChatConfigurationBag | null): void;
+    }>();
+
+    const invokeBlockAction = useInvokeBlockAction();
+
+    // #region Values
+
+    const isPanelShown = ref(false);
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    const state = computed((): ReturnType<typeof toChatCardState> => {
+        return toChatCardState(props.configuration);
+    });
+
+    const description = computed((): string => {
+        if (state.value.isEnabled) {
+            return "Your congregation's conversations, inside Rock.";
+        }
+
+        return "Give your congregation a place to talk that lives inside Rock.";
+    });
+
+    // #endregion Computed Values
+
+    // #region Event Handlers
+
+    function onEnableClick(): void {
+        isPanelShown.value = true;
+    }
+
+    function onCancelClick(): void {
+        isPanelShown.value = false;
+    }
+
+    async function onApproveClick(): Promise<void> {
+        const result = await invokeBlockAction<ChatConfigurationBag>("EnableChat");
+
+        if (!result.isSuccess) {
+            await alert(result.errorMessage || "An unknown error occurred trying to enable chat.");
+            return;
+        }
+
+        emit("update:configuration", result.data ?? null);
+        isPanelShown.value = false;
+    }
+
+    // #endregion Event Handlers
+</script>

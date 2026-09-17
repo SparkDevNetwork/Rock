@@ -17,6 +17,15 @@ const testProject = 'Rock.Tests/Rock.Tests.csproj';
 // otherwise never be compiled by this run.
 const blocksProject = 'Rock.Blocks/Rock.Blocks.csproj';
 const chatTests = 'FullyQualifiedName~Communication.Chat.Platform';
+// The chat card enables itself through the connected services provider Rock IQ and Knowledge Base
+// also use, and their tests are what catches a change to it. None of them are in the chat
+// namespace, so they get a run of their own rather than a wider filter that would stop meaning
+// "chat".
+//
+// The full namespace, not a loose substring: "Configuration.ConnectedServices" on its own also
+// matches the chat entry tests the run above already counts, and a floor set with those included
+// would let real provider tests disappear unnoticed.
+const connectedServicesTests = 'FullyQualifiedName~Rock.Tests.Configuration.ConnectedServices';
 const clientProject = resolve(repoRoot, 'Rock.JavaScript.Obsidian.Blocks');
 
 function has(command) {
@@ -91,9 +100,32 @@ const gates = [
     cwd: repoRoot,
   },
   {
+    name: 'connected services tests, the shared-provider tripwire',
+    cmd: 'dotnet',
+    args: [
+      'test',
+      testProject,
+      '--no-build',
+      '--filter',
+      connectedServicesTests,
+      '--logger',
+      'trx;LogFileName=connected-services.trx',
+      '--results-directory',
+      'TestResults',
+    ],
+    cwd: repoRoot,
+  },
+  {
+    // 78 is what that namespace holds today, measured: 59 provider tests and 19 encoder tests.
+    name: 'the tripwire still has its tests',
+    cmd: process.execPath,
+    args: [resolve(here, 'assert-tests-ran.mjs'), 'TestResults/connected-services.trx', '--minimum', '78'],
+    cwd: repoRoot,
+  },
+  {
     name: 'client tests',
     cmd: 'npx',
-    args: ['jest', 'tests/Communication/Chat'],
+    args: ['jest', 'tests/Communication/Chat', 'tests/Administration/sparkConnectedServices'],
     cwd: clientProject,
     shell: true,
   },

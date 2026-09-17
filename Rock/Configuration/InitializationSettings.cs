@@ -65,6 +65,9 @@ namespace Rock.Configuration
         public string SparkApiUrl { get; set; }
 
         /// <inheritdoc/>
+        public string ConnectedServicesApiUrl { get; set; }
+
+        /// <inheritdoc/>
         public string NodeName { get; set; }
 
         /// <inheritdoc/>

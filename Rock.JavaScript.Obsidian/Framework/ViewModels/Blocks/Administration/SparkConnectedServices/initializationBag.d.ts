@@ -21,6 +21,7 @@
 // </copyright>
 //
 
+import { ChatConfigurationBag } from "@Obsidian/ViewModels/Blocks/Administration/SparkConnectedServices/chatConfigurationBag";
 import { CreditCardSummaryBag } from "@Obsidian/ViewModels/Blocks/Administration/SparkConnectedServices/creditCardSummaryBag";
 import { RockIntelligenceConfigurationBag } from "@Obsidian/ViewModels/Blocks/Administration/SparkConnectedServices/rockIntelligenceConfigurationBag";
 
@@ -29,6 +30,9 @@ import { RockIntelligenceConfigurationBag } from "@Obsidian/ViewModels/Blocks/Ad
  * Services block.
  */
 export type InitializationBag = {
+    /** Current configuration information for the chat service. */
+    chat?: ChatConfigurationBag | null;
+
     /** Summary information about the currently configured credit card. */
     creditCardSummary?: CreditCardSummaryBag | null;
 

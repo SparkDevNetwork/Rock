@@ -25,6 +25,25 @@ namespace Rock.Communication.Chat.Platform.Configuration
     /// system settings with the signing key encrypted inside it, so the key is at rest
     /// wherever that value is backed up, copied or read by hand.
     /// </summary>
+    /// <remarks>
+    ///     <para>
+    ///         Two things write here and they write different fields. An administrator
+    ///         at the settings screen owns the church half; enabling chat owns the
+    ///         credentials the platform issued and the signing key that came with them.
+    ///         Neither writes the whole value: each re-reads what is stored inside the
+    ///         lock and overwrites only the fields it owns, so a save made from a
+    ///         reading taken minutes ago cannot carry back a stale copy of the other
+    ///         half.
+    ///     </para>
+    ///     <para>
+    ///         The lock is this process only. Rock runs on web farms and system settings
+    ///         offer a whole-string write with no compare and set, so two nodes can still
+    ///         read one snapshot and have the later write carry the earlier one's stale
+    ///         copy. Enabling happens once per church and the settings screen has one
+    ///         editor at a time, so a collision needs both in the same instant on
+    ///         different nodes; closing it properly needs a version column or a row lock.
+    ///     </para>
+    /// </remarks>
     internal static class ChatPlatformConfigurationService
     {
         private static readonly object _saveLock = new object();
@@ -36,16 +55,14 @@ namespace Rock.Communication.Chat.Platform.Configuration
         /// </summary>
         public static ChatPlatformConfiguration Read()
         {
-            var json = SystemSettings.GetValue( SystemSetting.CHAT_PLATFORM_CONFIGURATION );
-            var configuration = json.FromJsonOrNull<ChatPlatformConfiguration>() ?? new ChatPlatformConfiguration();
+            var configuration = ReadStored();
 
             if ( configuration.PrivateKey.IsNotNullOrWhiteSpace() )
             {
                 // A value this installation cannot decrypt, because the database came from
                 // one with a different encryption key, decrypts to null. Reading it as absent
-                // is right, the church genuinely cannot sign anything, but the stored value is
-                // kept so a save made from this reading puts it back rather than over it.
-                configuration.StoredPrivateKey = configuration.PrivateKey;
+                // is right: the church genuinely cannot sign anything. Nothing is lost by
+                // saying so, because no writer here takes a key from what it was handed.
                 configuration.PrivateKey = Encryption.DecryptString( configuration.PrivateKey );
             }
 
@@ -53,78 +70,68 @@ namespace Rock.Communication.Chat.Platform.Configuration
         }
 
         /// <summary>
-        /// Stores the settings, encrypting the signing key on the way. The caller passes
-        /// the configuration it means to end up with; this writes it whole.
+        /// Stores the settings an administrator owns. Everything the platform issued,
+        /// the signing key included, is left exactly as it sits in storage, so a save
+        /// from a screen opened before chat was enabled cannot undo the enabling.
         /// </summary>
-        /// <param name="configuration">The settings to store. Null stores an empty configuration.</param>
-        public static void Save( ChatPlatformConfiguration configuration )
+        /// <param name="configuration">The settings to store. Only the church-owned fields are read from it; null stores the defaults.</param>
+        public static void SaveChurchSettings( ChatPlatformConfiguration configuration )
         {
+            var source = configuration ?? new ChatPlatformConfiguration();
+
             lock ( _saveLock )
             {
-                var stored = ToStoredForm( configuration );
+                var stored = ReadStored();
 
-                if ( stored.PrivateKey.IsNullOrWhiteSpace() )
-                {
-                    // Only asked for when the save carries no key, so an ordinary save costs
-                    // no extra read: a caller that built its configuration rather than reading
-                    // one has nothing to put back, and this is where it comes from.
-                    stored.PrivateKey = ReadStoredKey();
-                }
+                stored.AreChatProfilesVisible = source.AreChatProfilesVisible;
+                stored.IsOpenDirectMessagingAllowed = source.IsOpenDirectMessagingAllowed;
+                stored.MinimumAge = source.MinimumAge;
+                stored.DirectMessageAccessDataViewGuid = source.DirectMessageAccessDataViewGuid;
+                stored.ChatBadgeDataViewGuids = source.ChatBadgeDataViewGuids;
 
-                SystemSettings.SetValue( SystemSetting.CHAT_PLATFORM_CONFIGURATION, stored.ToJson() );
+                Write( stored );
             }
         }
 
         /// <summary>
-        /// The signing key exactly as storage holds it, still encrypted.
+        /// Stores what the platform issued when chat was enabled, encrypting the signing
+        /// key on the way. The church's own settings are left exactly as they are.
         /// </summary>
-        private static string ReadStoredKey()
+        /// <param name="entry">The credentials enabling chat returned.</param>
+        public static void SavePlatformCredentials( ConnectedServicesChatEntry entry )
+        {
+            if ( entry == null )
+            {
+                return;
+            }
+
+            lock ( _saveLock )
+            {
+                var stored = ReadStored();
+
+                stored.TenantId = entry.TenantId;
+                stored.ProjectUrl = entry.ProjectUrl;
+                stored.PublishableKey = entry.PublishableKey;
+                stored.Kid = entry.Kid;
+                stored.PrivateKey = Encryption.EncryptString( entry.PrivateKey );
+
+                Write( stored );
+            }
+        }
+
+        /// <summary>
+        /// The settings exactly as storage holds them, signing key still encrypted.
+        /// </summary>
+        private static ChatPlatformConfiguration ReadStored()
         {
             var json = SystemSettings.GetValue( SystemSetting.CHAT_PLATFORM_CONFIGURATION );
 
-            return json.FromJsonOrNull<ChatPlatformConfiguration>()?.PrivateKey;
+            return json.FromJsonOrNull<ChatPlatformConfiguration>() ?? new ChatPlatformConfiguration();
         }
 
-        /// <summary>
-        /// The configuration as it is written down: the signing key encrypted, or the
-        /// value already in storage when there is no readable key to encrypt.
-        /// </summary>
-        /// <param name="configuration">The settings to store. Null gives an empty configuration.</param>
-        /// <returns>What gets serialized.</returns>
-        public static ChatPlatformConfiguration ToStoredForm( ChatPlatformConfiguration configuration )
+        private static void Write( ChatPlatformConfiguration stored )
         {
-            return ToStoredForm( configuration, null );
-        }
-
-        /// <summary>
-        /// The configuration as it is written down, given what storage already holds.
-        /// Writing is whole-document, so a caller that builds a configuration rather than
-        /// reading one carries no key at all and would otherwise write nothing over the
-        /// church's. Nothing is designed to take a key away, so a save that does not
-        /// mention one leaves the one that is there.
-        /// </summary>
-        /// <param name="configuration">The settings to store. Null gives an empty configuration.</param>
-        /// <param name="existingStoredKey">The encrypted key storage already holds, if any.</param>
-        /// <returns>What gets serialized.</returns>
-        public static ChatPlatformConfiguration ToStoredForm( ChatPlatformConfiguration configuration, string existingStoredKey )
-        {
-            var toStore = configuration ?? new ChatPlatformConfiguration();
-
-            return new ChatPlatformConfiguration
-            {
-                AreChatProfilesVisible = toStore.AreChatProfilesVisible,
-                IsOpenDirectMessagingAllowed = toStore.IsOpenDirectMessagingAllowed,
-                MinimumAge = toStore.MinimumAge,
-                DirectMessageAccessDataViewGuid = toStore.DirectMessageAccessDataViewGuid,
-                ChatBadgeDataViewGuids = toStore.ChatBadgeDataViewGuids,
-                TenantId = toStore.TenantId,
-                ProjectUrl = toStore.ProjectUrl,
-                PublishableKey = toStore.PublishableKey,
-                Kid = toStore.Kid,
-                PrivateKey = toStore.PrivateKey.IsNotNullOrWhiteSpace()
-                    ? Encryption.EncryptString( toStore.PrivateKey )
-                    : toStore.StoredPrivateKey ?? existingStoredKey
-            };
+            SystemSettings.SetValue( SystemSetting.CHAT_PLATFORM_CONFIGURATION, stored.ToJson() );
         }
     }
 }

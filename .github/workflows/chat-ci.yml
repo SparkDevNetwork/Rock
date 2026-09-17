@@ -63,12 +63,26 @@ jobs:
       - name: The unit run ran something
         run: node "Dev Tools/chat-ci/assert-tests-ran.mjs" TestResults/unit.trx --minimum 1
 
+      # The chat card shares the connected services provider with Rock IQ and Knowledge Base, and
+      # their tests are what catches a change to it. None of them are in the chat namespace, so
+      # they get their own run rather than a wider filter that would stop meaning "chat".
+      #
+      # The filter is the full namespace and not a loose substring: "Configuration.ConnectedServices"
+      # on its own also matches the chat entry tests, which the run above already counts, and a
+      # floor set with those included would let real provider tests disappear unnoticed.
+      - name: Connected services tests, the shared-provider tripwire
+        run: dotnet test Rock.Tests\Rock.Tests.csproj --no-build --filter "FullyQualifiedName~Rock.Tests.Configuration.ConnectedServices" --logger "trx;LogFileName=connected-services.trx" --results-directory TestResults
+
+      # 78 is what that namespace holds today, measured: 59 provider tests and 19 encoder tests.
+      - name: The tripwire still has its tests
+        run: node "Dev Tools/chat-ci/assert-tests-ran.mjs" TestResults/connected-services.trx --minimum 78
+
       - name: Install the client dependencies
         run: npm ci
         working-directory: ./Rock.JavaScript.Obsidian.Blocks
 
       - name: Client tests
-        run: npx jest tests/Communication/Chat
+        run: npx jest tests/Communication/Chat tests/Administration/sparkConnectedServices
         working-directory: ./Rock.JavaScript.Obsidian.Blocks
 
   integration:

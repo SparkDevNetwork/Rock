@@ -300,7 +300,7 @@ namespace Rock.Communication.Chat.Platform.Session
             try
             {
                 var jwk = new JsonWebKey( config.PrivateKey );
-                if ( !IsUsablePrivateKey( jwk ) )
+                if ( !ChatSigningKey.IsUsable( jwk ) )
                 {
                     return Fail( ChatMintGate.InvalidKey );
                 }
@@ -349,34 +349,6 @@ namespace Rock.Communication.Chat.Platform.Session
             {
                 return Fail( ChatMintGate.InvalidKey );
             }
-        }
-
-        /// <summary>
-        /// True when the JWK is EC P-256 with a key id and a private part.
-        /// </summary>
-        private static bool IsUsablePrivateKey( JsonWebKey jwk )
-        {
-            if ( jwk == null )
-            {
-                return false;
-            }
-
-            if ( string.IsNullOrWhiteSpace( jwk.Kid ) || string.IsNullOrWhiteSpace( jwk.D ) )
-            {
-                return false;
-            }
-
-            if ( !string.Equals( jwk.Kty, "EC", StringComparison.Ordinal ) )
-            {
-                return false;
-            }
-
-            if ( !string.Equals( jwk.Crv, "P-256", StringComparison.Ordinal ) )
-            {
-                return false;
-            }
-
-            return true;
         }
 
         /// <summary>

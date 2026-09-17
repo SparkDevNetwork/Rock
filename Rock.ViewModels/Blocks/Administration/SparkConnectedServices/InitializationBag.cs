@@ -68,6 +68,11 @@ namespace Rock.ViewModels.Blocks.Administration.SparkConnectedServices
         public RockIntelligenceConfigurationBag RockIntelligence { get; set; }
 
         /// <summary>
+        /// Current configuration information for the chat service.
+        /// </summary>
+        public ChatConfigurationBag Chat { get; set; }
+
+        /// <summary>
         /// The date and time the manifest was last refreshed, as a
         /// DateTimeOffset in the Rock organization time zone.
         /// </summary>

@@ -77,8 +77,12 @@ namespace Rock.Tests.Communication.Chat.Platform.Blocks
         #region What the browser may send back
 
         [TestMethod]
-        public void Save_CarryingPlatformHalfValues_LeavesTheStoredPlatformHalfUnchanged()
+        public void Save_ReturnsTheChurchHalfOnly_SoTheScreenCannotWriteThePlatformHalfOrTheKey()
         {
+            // The screen owns the church half and nothing else. The platform half and the
+            // signing key belong to Enable Chat, which writes them by name, so what comes
+            // out of here carries neither: there is nothing to take away and nothing to
+            // overwrite, whatever a modified client sends back.
             var stored = Stored();
             var bag = ChatConfigurationPolicy.ToBag( stored );
             bag.ProjectUrl = "https://attacker.example";
@@ -86,46 +90,14 @@ namespace Rock.Tests.Communication.Chat.Platform.Blocks
             bag.TenantId = Guid.NewGuid().ToString();
             bag.Kid = "attacker-kid";
 
-            var result = ChatConfigurationPolicy.Save( stored, bag, isAuthorizedToEdit: true );
+            var result = ChatConfigurationPolicy.Save( bag, isAuthorizedToEdit: true );
 
             Assert.IsTrue( result.IsSaved );
-            Assert.AreEqual( stored.ProjectUrl, result.Configuration.ProjectUrl );
-            Assert.AreEqual( stored.PublishableKey, result.Configuration.PublishableKey );
-            Assert.AreEqual( stored.TenantId, result.Configuration.TenantId );
-            Assert.AreEqual( stored.Kid, result.Configuration.Kid );
-        }
-
-        [TestMethod]
-        public void Save_FromABagThatCannotCarryTheKey_LeavesTheStoredKeyIntact()
-        {
-            var stored = Stored();
-            var bag = ChatConfigurationPolicy.ToBag( stored );
-
-            var result = ChatConfigurationPolicy.Save( stored, bag, isAuthorizedToEdit: true );
-
-            Assert.IsTrue( result.IsSaved );
-            Assert.AreEqual( PrivateKey, result.Configuration.PrivateKey );
-        }
-
-        [TestMethod]
-        public void Save_WhenTheStoredKeyCouldNotBeRead_StillPutsItBack()
-        {
-            // What the block does: read the stored settings, hand them and the bag to the
-            // policy, store the result. On a database restored onto an installation with a
-            // different encryption key the read yields no readable key, and this whole path
-            // has to carry the stored one through rather than write nothing over it.
-            var stored = Stored();
-            stored.PrivateKey = null;
-            stored.StoredPrivateKey = "not-something-this-installation-can-decrypt";
-            var bag = ChatConfigurationPolicy.ToBag( stored );
-
-            var result = ChatConfigurationPolicy.Save( stored, bag, isAuthorizedToEdit: true );
-            var toStore = ChatPlatformConfigurationService.ToStoredForm( result.Configuration );
-
-            Assert.AreEqual(
-                "not-something-this-installation-can-decrypt",
-                toStore.PrivateKey,
-                "saving from the configuration screen destroyed the stored signing key" );
+            Assert.IsNull( result.Configuration.ProjectUrl );
+            Assert.IsNull( result.Configuration.PublishableKey );
+            Assert.IsNull( result.Configuration.TenantId );
+            Assert.IsNull( result.Configuration.Kid );
+            Assert.IsNull( result.Configuration.PrivateKey );
         }
 
         [TestMethod]
@@ -135,7 +107,7 @@ namespace Rock.Tests.Communication.Chat.Platform.Blocks
             var bag = ChatConfigurationPolicy.ToBag( stored );
             bag.ChatBadgeDataViews = new List<ListItemBag> { null };
 
-            var result = ChatConfigurationPolicy.Save( stored, bag, isAuthorizedToEdit: true );
+            var result = ChatConfigurationPolicy.Save( bag, isAuthorizedToEdit: true );
 
             Assert.AreEqual( 0, result.Configuration.ChatBadgeDataViewGuids.Count );
         }
@@ -152,7 +124,7 @@ namespace Rock.Tests.Communication.Chat.Platform.Blocks
             bag.DirectMessageAccessDataView = new ListItemBag { Value = newDataView.ToString(), Text = "Members" };
             bag.ChatBadgeDataViews = new List<ListItemBag>();
 
-            var result = ChatConfigurationPolicy.Save( stored, bag, isAuthorizedToEdit: true );
+            var result = ChatConfigurationPolicy.Save( bag, isAuthorizedToEdit: true );
 
             Assert.IsFalse( result.Configuration.AreChatProfilesVisible );
             Assert.IsFalse( result.Configuration.IsOpenDirectMessagingAllowed );
@@ -168,7 +140,7 @@ namespace Rock.Tests.Communication.Chat.Platform.Blocks
             var bag = ChatConfigurationPolicy.ToBag( stored );
             bag.MinimumAge = 99;
 
-            var result = ChatConfigurationPolicy.Save( stored, bag, isAuthorizedToEdit: false );
+            var result = ChatConfigurationPolicy.Save( bag, isAuthorizedToEdit: false );
 
             Assert.IsFalse( result.IsSaved );
             Assert.IsNull( result.Configuration );

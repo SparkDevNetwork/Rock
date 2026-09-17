@@ -60,24 +60,21 @@ namespace Rock.Communication.Chat.Platform.Configuration
         }
 
         /// <summary>
-        /// Applies the church-owned settings from a screen onto the stored ones. The
-        /// half the platform issued when chat was enabled, and the signing key, are
-        /// taken from what is stored and never from the bag: an administrator does not
-        /// type them, so a bag that carries them is either stale or hostile, and the
-        /// key is not on the bag at all so a save could otherwise erase it.
+        /// Reads the church-owned settings out of what a screen sent back. The half the
+        /// platform issued when chat was enabled, and the signing key, are not here at
+        /// all: an administrator does not type them, the writer that stores this reaches
+        /// only the fields below, and so a bag that carries them changes nothing.
         /// </summary>
-        /// <param name="stored">The settings as stored.</param>
         /// <param name="bag">What the screen sent back.</param>
         /// <param name="isAuthorizedToEdit">Whether the caller may change this block's settings.</param>
         /// <returns>The outcome, carrying the settings to store when the save is allowed.</returns>
-        public static ChatConfigurationSaveResult Save( ChatPlatformConfiguration stored, ChatConfigurationBag bag, bool isAuthorizedToEdit )
+        public static ChatConfigurationSaveResult Save( ChatConfigurationBag bag, bool isAuthorizedToEdit )
         {
             if ( !isAuthorizedToEdit )
             {
                 return new ChatConfigurationSaveResult { IsSaved = false };
             }
 
-            var configuration = stored ?? new ChatPlatformConfiguration();
             var sent = bag ?? new ChatConfigurationBag();
 
             return new ChatConfigurationSaveResult
@@ -93,19 +90,7 @@ namespace Rock.Communication.Chat.Platform.Configuration
                         .Select( item => item?.Value.AsGuidOrNull() )
                         .Where( guid => guid.HasValue )
                         .Select( guid => guid.Value )
-                        .ToList(),
-
-                    PrivateKey = configuration.PrivateKey,
-
-                    // Carried as well as the readable key, because on an installation that
-                    // cannot decrypt what is stored the readable one is null and this is all
-                    // that stands between a save and the church losing its signing key.
-                    StoredPrivateKey = configuration.StoredPrivateKey,
-
-                    TenantId = configuration.TenantId,
-                    ProjectUrl = configuration.ProjectUrl,
-                    PublishableKey = configuration.PublishableKey,
-                    Kid = configuration.Kid
+                        .ToList()
                 }
             };
         }

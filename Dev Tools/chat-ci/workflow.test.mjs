@@ -91,6 +91,28 @@ test('neither suite can report success without running anything', () => {
   }
 });
 
+test('the provider the chat card shares keeps its tripwire', () => {
+  // The chat card enables itself through the same connected services provider Rock IQ and
+  // Knowledge Base use, and their tests are what catches a change to it. None of them are in the
+  // chat namespace the unit filter names, so they need a run of their own.
+  const steps = stepsOf(unlabelled());
+
+  assert.ok(
+    // The full namespace: a loose substring also matches the chat entry tests the unit run
+    // already counts, and the floor below would then be met without the provider's own.
+    steps.some((step) => /dotnet test/.test(step) && /Rock\.Tests\.Configuration\.ConnectedServices/.test(step)),
+    'nothing runs the connected services tests under their own namespace',
+  );
+  assert.ok(
+    steps.some((step) => /assert-tests-ran/.test(step) && /connected-services\.trx/.test(step) && /--minimum \d+/.test(step)),
+    'the connected services run is not held to the number of tests it had',
+  );
+  assert.ok(
+    steps.some((step) => /\bjest\b/.test(step) && /Administration/.test(step)),
+    'the client run does not reach the card, which lives under Administration',
+  );
+});
+
 test('the integration suite runs only when the label asks for it', () => {
   const job = labelled();
   const condition = String(job.if);

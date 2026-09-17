@@ -25,6 +25,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 
 using Rock.Attribute;
+using Rock.Communication.Chat.Platform.Configuration;
 using Rock.Configuration;
 using Rock.Configuration.ConnectedServices;
 using Rock.Configuration.ConnectedServices.DataTransferObjects;
@@ -66,6 +67,7 @@ namespace Rock.Blocks.Administration
                 initializationBag.OrganizationIdentifier = provider.GetLegacyOrganizationIdentifier();
                 initializationBag.CreditCardSummary = await GetCreditCardSummaryBagAsync( provider );
                 initializationBag.RockIntelligence = await GetRockIntelligenceConfigurationAsync( provider );
+                initializationBag.Chat = GetChatConfiguration();
                 initializationBag.ManifestLastRefreshedDateTime = GetManifestLastRefreshedDateTime( provider );
             }
             catch ( Exception ex )
@@ -179,7 +181,106 @@ namespace Rock.Blocks.Administration
             return bag;
         }
 
+        /// <summary>
+        /// What to tell an administrator when chat was set up on the platform and Rock
+        /// could not keep what came back. Pressing Enable again would set the
+        /// organization up a second time and leave the first one stranded, which is
+        /// worse than waiting, so the message does not offer that.
+        /// </summary>
+        /// <param name="what">What went wrong, as a clause.</param>
+        /// <returns>The message to show.</returns>
+        private static string StrandedMessage( string what )
+        {
+            return $"Chat was enabled for this organization but {what}. Contact support rather than enabling again: enabling again sets this organization up a second time and strands the first.";
+        }
+
+        /// <summary>
+        /// Reads what the chat card shows out of the organization's chat settings.
+        /// The signing key that arrived with them is not on the bag.
+        /// </summary>
+        /// <returns>The chat card's state.</returns>
+        private static ChatConfigurationBag GetChatConfiguration()
+        {
+            var configuration = ChatPlatformConfigurationService.Read();
+
+            // Whether the organization was set up, not whether Rock can chat. An
+            // installation that cannot read the signing key still has the organization
+            // live on the platform, and the card must not offer to set it up again.
+            if ( !configuration.HasBeenEnabled )
+            {
+                return new ChatConfigurationBag { IsEnabled = false };
+            }
+
+            return new ChatConfigurationBag
+            {
+                IsEnabled = true,
+                TenantId = configuration.TenantId?.ToString(),
+                ProjectUrl = configuration.ProjectUrl
+            };
+        }
+
         #region Block Actions
+
+        /// <summary>
+        /// Enables chat for this organization and stores what comes back.
+        /// </summary>
+        /// <remarks>
+        /// Enabling again would mint a second signing key and orphan the first, and
+        /// nothing here can rotate one, so a church that already has chat is refused.
+        /// </remarks>
+        /// <returns>The chat card's state, or a refusal.</returns>
+        [BlockAction]
+        public async Task<BlockActionResult> EnableChat()
+        {
+            var provider = RockApp.Current.GetRequiredService<ConnectedServicesProvider>();
+
+            if ( ChatPlatformConfigurationService.Read().HasBeenEnabled )
+            {
+                return ActionBadRequest( "Chat is already enabled for this organization." );
+            }
+
+            ConfigurationResult<ServiceEntry> result;
+
+            try
+            {
+                result = await provider.EnableChatAsync( CancellationToken.None );
+            }
+            catch ( Exception ex )
+            {
+                if ( ex is HttpRequestException httpEx && httpEx.InnerException != null )
+                {
+                    ex = httpEx.InnerException;
+                }
+
+                return ActionBadRequest( $"There was an error enabling chat: {ex.Message}" );
+            }
+
+            if ( !result.IsSuccess )
+            {
+                return ActionBadRequest( result.ErrorMessage );
+            }
+
+            var entry = ConnectedServicesChatEntry.FromEntry( result.Data );
+
+            if ( entry == null )
+            {
+                return ActionBadRequest( StrandedMessage( "the credentials that came back could not be used, so nothing was stored" ) );
+            }
+
+            // Inside its own catch, because by now the organization is set up on the chat
+            // platform. An installation with no data encryption key throws here, and an
+            // unhandled error would tell an administrator nothing about what already happened.
+            try
+            {
+                ChatPlatformConfigurationService.SavePlatformCredentials( entry );
+            }
+            catch ( Exception ex )
+            {
+                return ActionBadRequest( StrandedMessage( $"its credentials could not be stored: {ex.Message}" ) );
+            }
+
+            return ActionOk( GetChatConfiguration() );
+        }
 
         [BlockAction]
         public async Task<BlockActionResult> GetRockIntelligenceConfigurationOptions()

@@ -86,8 +86,8 @@ namespace Rock.Blocks.Communication.Chat
 
         /// <summary>
         /// Stores the church-owned settings. The half issued when chat was enabled, and
-        /// the signing key, are taken from what is already stored rather than from the
-        /// browser, which is never sent either of them.
+        /// the signing key, are left where they are: this writes the fields an
+        /// administrator owns and cannot reach the rest, whatever the browser sends.
         /// </summary>
         /// <param name="bag">The settings as the screen has them.</param>
         /// <returns>An empty success, or a refusal.</returns>
@@ -100,14 +100,14 @@ namespace Rock.Blocks.Communication.Chat
             }
 
             var isAuthorizedToEdit = BlockCache.IsAuthorized( Authorization.EDIT, GetCurrentPerson() );
-            var result = ChatConfigurationPolicy.Save( ChatPlatformConfigurationService.Read(), bag, isAuthorizedToEdit );
+            var result = ChatConfigurationPolicy.Save( bag, isAuthorizedToEdit );
 
             if ( !result.IsSaved )
             {
                 return ActionForbidden( "You are not authorized to change these settings." );
             }
 
-            ChatPlatformConfigurationService.Save( result.Configuration );
+            ChatPlatformConfigurationService.SaveChurchSettings( result.Configuration );
 
             return ActionOk();
         }

@@ -57,22 +57,6 @@ namespace Rock.Communication.Chat.Platform.Configuration
         /// </summary>
         public List<Guid> ChatBadgeDataViewGuids { get; set; }
 
-        /// <summary>
-        /// The church's private signing key, as a JWK. Held encrypted at rest and
-        /// decrypted only in memory; it never reaches a view model or a log line.
-        /// </summary>
-        public string PrivateKey { get; set; }
-
-        /// <summary>
-        /// The key exactly as it sits in storage, still encrypted, kept beside the
-        /// decrypted one so a save can put it back untouched. A database restored onto an
-        /// installation with a different encryption key decrypts to nothing, and without
-        /// this the first save made from that reading would write the nothing over it.
-        /// Never stored itself.
-        /// </summary>
-        [Newtonsoft.Json.JsonIgnore]
-        public string StoredPrivateKey { get; set; }
-
         #endregion Church half
 
         #region Platform half
@@ -97,14 +81,40 @@ namespace Rock.Communication.Chat.Platform.Configuration
         /// </summary>
         public string Kid { get; set; }
 
+        /// <summary>
+        /// The church's private signing key, as a JWK. Delivered when chat was enabled,
+        /// held encrypted at rest and decrypted only in memory; it never reaches a view
+        /// model or a log line. It sits with the platform half because the same writer
+        /// owns both, which is what keeps the settings screen from ever touching it.
+        /// </summary>
+        public string PrivateKey { get; set; }
+
         #endregion Platform half
+
+        /// <summary>
+        /// True once this church has been set up on the chat platform, whether or not
+        /// Rock can use what it was given. Asked by the Enable path alone, and the only
+        /// question it may ask: a database restored onto an installation with a
+        /// different encryption key cannot read the signing key, so it cannot chat, but
+        /// the church is still live on the platform and setting it up a second time
+        /// would strand the first.
+        /// </summary>
+        [Newtonsoft.Json.JsonIgnore]
+        public bool HasBeenEnabled => TenantId.HasValue;
 
         /// <summary>
         /// True when chat has everything it needs to run: a church to be, somewhere to
         /// reach, a key the browser may use, and a key to sign with. One question with
-        /// one answer, because the configuration screen and the session gates both ask
-        /// it and a church that saw two different answers could not be told why.
+        /// one answer for everything that runs chat, because the configuration screen
+        /// and the session gates both ask it and a church that saw two different answers
+        /// could not be told why.
         /// </summary>
+        /// <remarks>
+        /// Not the question Enable asks. The two disagree on exactly one church, the one
+        /// whose stored key this installation cannot decrypt: it is set up and it cannot
+        /// chat. Both answers are true, and the alternative, a single answer, would offer
+        /// that church an Enable that strands the tenant it already has.
+        /// </remarks>
         [Newtonsoft.Json.JsonIgnore]
         public bool IsConfigured =>
             TenantId.HasValue
