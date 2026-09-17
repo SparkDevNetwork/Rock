@@ -83,67 +83,69 @@ namespace Rock.Blocks.Crm
             {
                 PersonPhotoList = new List<PersonPhotoBag>()
             };
-            var loggedInPerson = RequestContext.CurrentPerson;
 
-            if ( loggedInPerson != null )
+            foreach ( var candidate in GetPhotoUploadCandidates() )
             {
-                var isStaffMemberDisabled = false;
-                Rock.Model.Group staffGroup = null;
-
-                if ( !GetAttributeValue( AttributeKey.AllowStaff ).AsBoolean() )
-                {
-                    GroupService service = new GroupService( RockApp.Current.CreateRockContext() );
-                    staffGroup = service.GetByGuid( new Guid( Rock.SystemGuid.Group.GROUP_STAFF_MEMBERS ) );
-                }
-
-                if ( staffGroup != null && staffGroup.Members.Where( m => m.PersonId == loggedInPerson.Id ).Count() > 0 )
-                {
-                    isStaffMemberDisabled = true;
-                }
-
                 photoUploadInitializationBox.PersonPhotoList.Add( new PersonPhotoBag
                 {
-                    IdKey = loggedInPerson.IdKey,
-                    FullName = loggedInPerson.FullName,
-                    ProfilePhoto = loggedInPerson.Photo.ToListItemBag(),
-                    NoPhotoUrl = Rock.Model.Person.GetPersonNoPictureUrl( loggedInPerson ),
-                    IsStaffMemberDisabled = isStaffMemberDisabled,
+                    IdKey = candidate.Person.IdKey,
+                    FullName = candidate.Person.FullName,
+                    ProfilePhoto = candidate.Person.Photo.ToListItemBag(),
+                    NoPhotoUrl = Rock.Model.Person.GetPersonNoPictureUrl( candidate.Person ),
+                    IsStaffMemberDisabled = candidate.IsStaffMemberDisabled,
                 } );
-
-                if ( GetAttributeValue( AttributeKey.IncludeFamilyMembers ).AsBoolean() )
-                {
-                    foreach ( var member in loggedInPerson.GetFamilyMembers( includeSelf: false ).ToList() )
-                    {
-                        isStaffMemberDisabled = false;
-
-                        if ( staffGroup != null && staffGroup.Members.Where( m => m.PersonId == member.Person.Id ).Count() > 0 )
-                        {
-                            isStaffMemberDisabled = true;
-                        }
-
-                        photoUploadInitializationBox.PersonPhotoList.Add( new PersonPhotoBag
-                        {
-                            IdKey = member.Person.IdKey,
-                            FullName = member.Person.FullName,
-                            ProfilePhoto = member.Person.Photo.ToListItemBag(),
-                            NoPhotoUrl = Rock.Model.Person.GetPersonNoPictureUrl( member.Person ),
-                            IsStaffMemberDisabled = isStaffMemberDisabled,
-                        } );
-                    }
-                }
             }
 
             return photoUploadInitializationBox;
         }
 
         /// <summary>
+        /// Gets the people this block offers to the current person: themselves, plus their family members when Include
+        /// Family Members is enabled. A candidate flagged as a staff member is listed but may not be updated, so the
+        /// displayed list and the update action both read eligibility from here and cannot disagree.
+        /// </summary>
+        /// <returns>The candidate people, or an empty list when there is no authenticated person.</returns>
+        private List<(Rock.Model.Person Person, bool IsStaffMemberDisabled)> GetPhotoUploadCandidates()
+        {
+            var candidates = new List<(Rock.Model.Person Person, bool IsStaffMemberDisabled)>();
+            var currentPerson = RequestContext.CurrentPerson;
+
+            if ( currentPerson == null )
+            {
+                return candidates;
+            }
+
+            var people = new List<Rock.Model.Person> { currentPerson };
+
+            if ( GetAttributeValue( AttributeKey.IncludeFamilyMembers ).AsBoolean() )
+            {
+                people.AddRange( currentPerson.GetFamilyMembers( includeSelf: false, rockContext: RockContext )
+                    .Select( m => m.Person )
+                    .ToList() );
+            }
+
+            Rock.Model.Group staffGroup = null;
+
+            if ( !GetAttributeValue( AttributeKey.AllowStaff ).AsBoolean() )
+            {
+                staffGroup = new GroupService( RockContext ).GetByGuid( Rock.SystemGuid.Group.GROUP_STAFF_MEMBERS.AsGuid() );
+            }
+
+            foreach ( var person in people )
+            {
+                candidates.Add( (person, staffGroup != null && staffGroup.Members.Any( m => m.PersonId == person.Id )) );
+            }
+
+            return candidates;
+        }
+
+        /// <summary>
         /// Add the person (if not already existing) to the Photo Request group and set status to Pending.
         /// </summary>
         /// <param name="person">The person.</param>
-        /// <param name="rockContext">The rock context.</param>
-        private void AddOrUpdatePersonInPhotoRequestGroup( Rock.Model.Person person, RockContext rockContext )
+        private void AddOrUpdatePersonInPhotoRequestGroup( Rock.Model.Person person )
         {
-            GroupService service = new GroupService( rockContext );
+            GroupService service = new GroupService( RockContext );
             var photoRequestGroup = service.GetByGuid( Rock.SystemGuid.Group.GROUP_PHOTO_REQUEST.AsGuid() );
 
             var groupMember = photoRequestGroup.Members.Where( m => m.PersonId == person.Id ).FirstOrDefault();
@@ -174,28 +176,34 @@ namespace Rock.Blocks.Crm
         [BlockAction]
         public BlockActionResult UpdatePersonProfilePhoto( string personIdKey, Guid photoGuid )
         {
-            using ( var rockContext = RockApp.Current.CreateRockContext() )
+            if ( RequestContext.CurrentPerson == null )
             {
-                PersonService personService = new PersonService( rockContext );
-                var person = personService.Get( personIdKey );
-
-                if ( person == null )
-                {
-                    return ActionBadRequest( "Person not found." );
-                }
-
-                person.PhotoId = new BinaryFileService( rockContext ).GetId( photoGuid );
-
-                if ( person.PhotoId == null )
-                {
-                    return ActionBadRequest( "Profile photo not found." );
-                }
-
-                AddOrUpdatePersonInPhotoRequestGroup( person, rockContext );
-                rockContext.SaveChanges();
-
-                return ActionOk();
+                return ActionUnauthorized();
             }
+
+            PersonService personService = new PersonService( RockContext );
+            var person = personService.Get( personIdKey, !PageCache.Layout.Site.DisablePredictableIds );
+
+            var isPersonEditable = person != null
+                && GetPhotoUploadCandidates().Any( c => c.Person.Id == person.Id && !c.IsStaffMemberDisabled );
+
+            if ( !isPersonEditable )
+            {
+                // An ineligible person gets the same response as a missing one so a caller cannot learn which identifiers exist.
+                return ActionBadRequest( "Person not found." );
+            }
+
+            person.PhotoId = new BinaryFileService( RockContext ).GetId( photoGuid );
+
+            if ( person.PhotoId == null )
+            {
+                return ActionBadRequest( "Profile photo not found." );
+            }
+
+            AddOrUpdatePersonInPhotoRequestGroup( person );
+            RockContext.SaveChanges();
+
+            return ActionOk();
         }
 
         #endregion
