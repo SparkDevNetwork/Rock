@@ -131,11 +131,27 @@ internal sealed partial class WorkflowBuilderSkill
             return Error( "You do not have permission to view this workflow type." );
         }
 
+        // Run against the assembled tree rather than the database, so the check adds
+        // no queries. Set after Sanitize so a permission trim can never strip it.
+        var warnings = GetStructuralWarnings( result );
+
+        result.Warnings = warnings.Any() ? warnings : null;
+
         // The tree is far too large for chat history, so it is kept out of it
         // entirely and referenced by key instead.
-        return Success( result )
+        var toolResult = Success( result )
             .WithHistoryKey( $"workflow-type-{workflowType.IdKey}" )
             .WithoutHistoryContent();
+
+        // Said on the result rather than in the tool's description, because a clean
+        // workflow should not pay for the guidance a broken one needs.
+        if ( warnings.Any() )
+        {
+            toolResult = toolResult
+                .WithInstructions( $"This workflow has {warnings.Count} structural warning(s), listed in warnings. Each describes something Rock accepts and never reports at run time. Review them before telling the person the workflow is finished." );
+        }
+
+        return toolResult;
     }
 
     #endregion
