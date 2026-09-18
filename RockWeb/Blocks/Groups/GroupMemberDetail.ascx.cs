@@ -356,7 +356,7 @@ namespace RockWeb.Blocks.Groups
             int? groupMemberId = GetGroupMemberId( PageParameter( pageReference, PageParameterKey.GroupMemberId ) );
             if ( groupMemberId != null )
             {
-                GroupMember groupMember = new GroupMemberService( new RockContext() ).Get( groupMemberId.Value );
+                GroupMember groupMember = GetGroupMember( groupMemberId.Value, new RockContext() );
                 if ( groupMember != null )
                 {
                     // This should be replaced with a block setting when converted to Obsidian. -dsh
@@ -401,6 +401,32 @@ namespace RockWeb.Blocks.Groups
         #endregion
 
         #region Internal Methods
+
+        /// <summary>
+        /// Gets the group member with the specified identifier, including archived group members,
+        /// with the <see cref="GroupMember.Group"/> navigation property eagerly loaded.
+        /// </summary>
+        /// <param name="groupMemberId">The group member identifier.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns>The <see cref="GroupMember"/>, or <c>null</c> if it does not exist.</returns>
+        private GroupMember GetGroupMember( int groupMemberId, RockContext rockContext )
+        {
+            /*
+                9/18/26 - MSE
+
+                Archiving a group also archives its members. Rock's global query filters hide
+                archived groups from root queries, including EF lazy loads, so accessing the
+                Group of a member whose group was archived returned null and this block threw
+                a NullReferenceException. Eagerly loading the Group as part of the unfiltered
+                query avoids the lazy load, and reference navigation properties are not filtered.
+
+                Reason: Group Member Detail errored for members of archived groups. (Fixes #7047)
+            */
+            return new GroupMemberService( rockContext )
+                .AsNoFilter()
+                .Include( gm => gm.Group )
+                .FirstOrDefault( gm => gm.Id == groupMemberId );
+        }
 
         /// <summary>
         /// Resolves the GroupMemberId page parameter, which may be supplied as an IdKey,
@@ -551,7 +577,7 @@ namespace RockWeb.Blocks.Groups
 
             if ( !groupMemberId.Equals( 0 ) )
             {
-                groupMember = new GroupMemberService( rockContext ).Get( groupMemberId );
+                groupMember = GetGroupMember( groupMemberId, rockContext );
                 pdAuditDetails.SetEntity( groupMember, ResolveRockUrl( "~" ) );
             }
             else
@@ -1171,8 +1197,10 @@ namespace RockWeb.Blocks.Groups
                 // calculate them now and put them into view state for future postbacks.
                 if ( selectedGroupRoleId.HasValue && groupMemberId > 0 )
                 {
+                    // Use AsNoFilter so archived group members (including members of an archived group)
+                    // are found, matching the Get() calls used elsewhere in this block.
                     var groupMember = new GroupMemberService( rockContext )
-                        .Queryable()
+                        .AsNoFilter()
                         .AsNoTracking()
                         .Include( gm => gm.Group )
                         .Include( gm => gm.GroupMemberRequirements )
@@ -1182,7 +1210,7 @@ namespace RockWeb.Blocks.Groups
                     // If the member's existing role matches the currently-selected role, try to get their
                     // group requirement statuses from their existing group member requirements rather than
                     // recalculating them every time.
-                    if ( groupMember.GroupRoleId == selectedGroupRoleId.Value )
+                    if ( groupMember != null && groupMember.GroupRoleId == selectedGroupRoleId.Value )
                     {
                         requirementStatuses = groupMember.GetGroupRequirementsStatuses( rockContext );
                     }
@@ -2268,7 +2296,7 @@ namespace RockWeb.Blocks.Groups
         protected void btnShowMoveDialog_Click( object sender, EventArgs e )
         {
             var rockContext = new RockContext();
-            var groupMember = new GroupMemberService( rockContext ).Get( hfGroupMemberId.Value.AsInteger() );
+            var groupMember = GetGroupMember( hfGroupMemberId.Value.AsInteger(), rockContext );
             if ( groupMember != null )
             {
                 lCurrentGroup.Text = groupMember.Group.Name;
