@@ -2,13 +2,18 @@
 <template>
     <Panel title="Scheduled Payment Download" titleIconCssClass="ti ti-download" type="block">
         <RockForm @submit="onDownloadClick">
-            <FinancialGatewayPicker v-model="financialGateway"
-                                    label="Payment Gateway"
-                                    rules="required" />
+            <div class="row">
+                <div class="col-md-6 col-lg-4">
+                    <FinancialGatewayPicker v-model="financialGateway"
+                                            label="Payment Gateway"
+                                            rules="required" />
+                </div>
+            </div>
 
-            <DateRangePicker v-model="dateRange"
-                             label="Date Range"
-                             rules="required" />
+            <SlidingDateRangePicker v-model="dateRange"
+                                    label="Date Range"
+                                    :isRangeClearable="false"
+                                    :rules="['required', validateDateRange]" />
 
             <div class="actions">
                 <RockButton btnType="primary"
@@ -38,11 +43,12 @@
     import Panel from "@Obsidian/Controls/panel.obs";
     import RockForm from "@Obsidian/Controls/rockForm.obs";
     import FinancialGatewayPicker from "@Obsidian/Controls/financialGatewayPicker.obs";
-    import DateRangePicker from "@Obsidian/Controls/dateRangePicker.obs";
+    import SlidingDateRangePicker from "@Obsidian/Controls/slidingDateRangePicker.obs";
     import RockButton from "@Obsidian/Controls/rockButton.obs";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
-    import { DateRangeParts } from "@Obsidian/Types/Controls/dateRangePicker";
+    import { RangeType, SlidingDateRange } from "@Obsidian/Utility/slidingDateRange";
+    import { ValidationResult, ValidationRuleFunction } from "@Obsidian/Types/validationRules";
     import { DownloadTransactionsRequestBag } from "@Obsidian/ViewModels/Blocks/Finance/ScheduledPaymentDownload/downloadTransactionsRequestBag";
     import { DownloadTransactionsResultBag } from "@Obsidian/ViewModels/Blocks/Finance/ScheduledPaymentDownload/downloadTransactionsResultBag";
 
@@ -51,11 +57,30 @@
     // #region Values
 
     const financialGateway = ref<ListItemBag | undefined>();
-    const dateRange = ref<DateRangeParts | undefined>();
+    const dateRange = ref<SlidingDateRange | null>({ rangeType: RangeType.DateRange });
 
     const successMessage = ref("");
     const errorMessage = ref("");
     const isDownloading = ref(false);
+
+    /** When Date Range is selected, requires both dates with the end on or after the start. */
+    const validateDateRange: ValidationRuleFunction = (value: unknown): ValidationResult => {
+        const range = value as SlidingDateRange | null;
+
+        if (range?.rangeType !== RangeType.DateRange) {
+            return true;
+        }
+
+        if (!range.lowerDate || !range.upperDate) {
+            return "is required";
+        }
+
+        if (range.upperDate < range.lowerDate) {
+            return "must end on or after the start date";
+        }
+
+        return true;
+    };
 
     // #endregion Values
 
@@ -73,8 +98,7 @@
         try {
             const bag: DownloadTransactionsRequestBag = {
                 financialGatewayGuid: financialGateway.value?.value,
-                startDate: dateRange.value?.lowerValue,
-                endDate: dateRange.value?.upperValue
+                dateRange: dateRange.value
             };
 
             const response = await invokeBlockAction<DownloadTransactionsResultBag>("DownloadTransactions", { bag });

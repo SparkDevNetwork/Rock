@@ -16,6 +16,8 @@
 //
 using System;
 
+using Rock.ViewModels.Controls;
+
 namespace Rock.ViewModels.Blocks.Finance.ScheduledPaymentDownload
 {
     /// <summary>
@@ -29,13 +31,8 @@ namespace Rock.ViewModels.Blocks.Finance.ScheduledPaymentDownload
         public Guid? FinancialGatewayGuid { get; set; }
 
         /// <summary>
-        /// The first date of the range to download, in ISO 8601 format.
+        /// The sliding date range of payments to download.
         /// </summary>
-        public string StartDate { get; set; }
-
-        /// <summary>
-        /// The last date of the range to download, in ISO 8601 format.
-        /// </summary>
-        public string EndDate { get; set; }
+        public SlidingDateRangeBag DateRange { get; set; }
     }
 }

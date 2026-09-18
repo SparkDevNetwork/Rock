@@ -22,15 +22,13 @@
 //
 
 import { Guid } from "@Obsidian/Types";
+import { SlidingDateRangeBag } from "@Obsidian/ViewModels/Controls/slidingDateRangeBag";
 
 /** The gateway and date range selected for a scheduled payment download. */
 export type DownloadTransactionsRequestBag = {
-    /** The last date of the range to download, in ISO 8601 format. */
-    endDate?: string | null;
+    /** The sliding date range of payments to download. */
+    dateRange?: SlidingDateRangeBag | null;
 
     /** The unique identifier of the financial gateway to download payments from. */
     financialGatewayGuid?: Guid | null;
-
-    /** The first date of the range to download, in ISO 8601 format. */
-    startDate?: string | null;
 };
