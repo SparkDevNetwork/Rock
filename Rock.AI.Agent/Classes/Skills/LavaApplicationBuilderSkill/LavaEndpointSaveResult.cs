@@ -43,6 +43,18 @@ internal class LavaEndpointSaveResult
     public string Url { get; set; }
 
     /// <summary>
+    /// The IdKey of the saved endpoint, for the Core Administration skill's
+    /// authorization tools when the endpoint answers for itself.
+    /// </summary>
+    public string EndpointIdKey { get; set; }
+
+    /// <summary>
+    /// The IdKey of the Lava Endpoint entity type, paired with endpointIdKey
+    /// and the Execute action in those tools.
+    /// </summary>
+    public string EntityTypeIdKey { get; set; }
+
+    /// <summary>
     /// The result of test-executing the saved template, or the reason the
     /// test was skipped.
     /// </summary>

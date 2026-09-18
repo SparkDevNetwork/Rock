@@ -88,8 +88,9 @@ namespace Rock.AI.Agent
         /// </para>
         /// </remarks>
         /// <param name="agentRequestContext">The context that identifies the current request, including the person it is running as.</param>
+        /// <param name="reasoningEffort">How much reasoning effort the model should spend on this completion.</param>
         /// <returns>The execution settings for a general purpose chat request.</returns>
-        public abstract PromptExecutionSettings GetChatCompletionPromptExecutionSettings( AgentRequestContext agentRequestContext );
+        public abstract PromptExecutionSettings GetChatCompletionPromptExecutionSettings( AgentRequestContext agentRequestContext, ReasoningEffort reasoningEffort );
 
         /// <summary>
         /// Gets the dependency injection service key to use for the specified
