@@ -1,0 +1,692 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Modal v-model="isOpen" title="Registrant Form Field" saveText="Save" cancelText="Cancel" :onSave="onSave">
+        <NotificationBox v-if="errorMessage" alertType="validation">{{ errorMessage }}</NotificationBox>
+
+        <div class="row">
+            <div class="col-md-3">
+                <DropDownList v-if="isNewField"
+                              v-model="fieldSourceValue"
+                              label="Source"
+                              :items="fieldSourceItems"
+                              :showBlankItem="false" />
+
+                <StaticFormControl v-else :modelValue="fieldSourceName" label="Source" />
+
+                <template v-if="isPersonFieldSource">
+                    <StaticFormControl v-if="isProtected" :modelValue="personFieldName" label="Person Field" />
+
+                    <DropDownList v-else
+                                  v-model="personFieldTypeValue"
+                                  label="Person Field"
+                                  rules="required"
+                                  :items="personFieldItems"
+                                  :showBlankItem="false" />
+                </template>
+
+                <template v-if="isPersonAttributeSource">
+                    <NotificationBox v-if="personAttributesError" alertType="warning">
+                        {{ personAttributesError }}
+                    </NotificationBox>
+
+                    <DropDownList v-else-if="personAttributesReady"
+                                  v-model="personAttributeGuid"
+                                  label="Person Attribute"
+                                  rules="required"
+                                  :items="personAttributeItems"
+                                  enhanceForLongLists />
+                </template>
+
+                <template v-if="isGroupMemberAttributeSource">
+                    <NotificationBox v-if="groupMemberAttributesError" alertType="warning">
+                        {{ groupMemberAttributesError }}
+                    </NotificationBox>
+
+                    <DropDownList v-else
+                                  v-model="groupMemberAttributeGuid"
+                                  label="Group Member Attribute"
+                                  rules="required"
+                                  :items="groupMemberAttributeItems"
+                                  :loading="isLoadingGroupMemberAttributes"
+                                  enhanceForLongLists />
+                </template>
+            </div>
+
+            <div class="col-md-3">
+                <CheckBox v-model="isInternal"
+                          label="Internal Field"
+                          :disabled="isProtected"
+                          help="Should this field be hidden on the public registration page(s) and only visible internally?" />
+
+                <CheckBox v-if="!isRegistrantAttributeSource"
+                          v-model="isRequired"
+                          label="Required"
+                          :disabled="isProtected"
+                          help="Should a value for this attribute be required when registering?" />
+            </div>
+
+            <div class="col-md-3">
+                <CheckBox v-model="isSharedValue"
+                          label="Common Value"
+                          :disabled="isProtected"
+                          help="When multiple people are being registered, this option uses the value entered for the first person to automatically fill the same field for each additional registrant." />
+
+                <CheckBox v-if="!isRegistrantAttributeSource"
+                          v-model="isGridField"
+                          label="Show on Grid"
+                          :disabled="isProtected"
+                          help="Should this value be displayed on the list of registrants? Note: Some person fields cannot be shown in grids, and group member attributes are only shown in group member lists." />
+            </div>
+
+            <div class="col-md-3">
+                <CheckBox v-if="isPersonFieldSource || isPersonAttributeSource"
+                          v-model="showCurrentValue"
+                          label="Use Current Value"
+                          help="Should the person's current value for this field be displayed when they register?" />
+
+                <CheckBox v-if="waitListEnabled"
+                          v-model="showOnWaitlist"
+                          label="Show On Wait List"
+                          :disabled="isGroupMemberAttributeSource || isProtected"
+                          help="Should this field be shown for a person registering on the waitlist?" />
+
+                <CheckBox v-model="isLockedIfValuesExist"
+                          label="Lock Existing Value"
+                          help="When enabled, this option restricts editing the field when a value is already on the person's record." />
+            </div>
+        </div>
+
+        <AttributeEditor v-if="isRegistrantAttributeSource"
+                         :key="attributeEditorKey"
+                         v-model="registrantAttribute"
+                         :attributeEntityTypeGuid="EntityType.RegistrationTemplate"
+                         :reservedKeyNames="reservedKeyNames" />
+
+        <CodeEditor v-model="preText" label="Pre-HTML" mode="lava" :editorHeight="100" />
+        <CodeEditor v-model="postText" label="Post-HTML" mode="lava" :editorHeight="100" />
+    </Modal>
+</template>
+
+<script setup lang="ts">
+    import { computed, PropType, ref, watch } from "vue";
+    import AttributeEditor from "@Obsidian/Controls/attributeEditor.obs";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import CodeEditor from "@Obsidian/Controls/codeEditor.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import Modal from "@Obsidian/Controls/modal.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import StaticFormControl from "@Obsidian/Controls/staticFormControl.obs";
+    import { RegistrationFieldSource, RegistrationFieldSourceDescription } from "@Obsidian/Enums/Event/registrationFieldSource";
+    import { RegistrationPersonFieldType, RegistrationPersonFieldTypeDescription } from "@Obsidian/Enums/Event/registrationPersonFieldType";
+    import { EntityType } from "@Obsidian/SystemGuids/entityType";
+    import { FieldType } from "@Obsidian/SystemGuids/fieldType";
+    import { Guid } from "@Obsidian/Types";
+    import { useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { useVModelPassthrough } from "@Obsidian/Utility/component";
+    import { enumToListItemBag } from "@Obsidian/Utility/enumUtils";
+    import { areEqual, newGuid } from "@Obsidian/Utility/guid";
+    import { toNumber } from "@Obsidian/Utility/numberUtils";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { PublicEditableAttributeBag } from "@Obsidian/ViewModels/Utility/publicEditableAttributeBag";
+    import { RegistrationTemplateAttributeItemBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationTemplateDetail/registrationTemplateAttributeItemBag";
+    import { RegistrationTemplateDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationTemplateDetail/registrationTemplateDetailOptionsBag";
+    import { RegistrationTemplateFormBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationTemplateDetail/registrationTemplateFormBag";
+    import { RegistrationTemplateFormFieldBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationTemplateDetail/registrationTemplateFormFieldBag";
+    import { createEmptyVisibilityRules } from "./utils.partial";
+
+    const props = defineProps({
+        /** True when the modal is open. */
+        modelValue: {
+            type: Boolean as PropType<boolean>,
+            required: true
+        },
+
+        /** The field being edited, or null when a new field is being added. */
+        field: {
+            type: Object as PropType<RegistrationTemplateFormFieldBag | null>,
+            required: false
+        },
+
+        /** Every form of the template. Used to hide fields that are already collected. */
+        forms: {
+            type: Array as PropType<RegistrationTemplateFormBag[]>,
+            required: true
+        },
+
+        /** True when the field is a first or last name field of the default form and most settings are locked. */
+        isProtected: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        /** The unique identifier of the group type selected on the template. */
+        groupTypeGuid: {
+            type: String as PropType<Guid | null>,
+            default: null
+        },
+
+        /** True when the template has a wait list, which allows fields to be shown on it. */
+        waitListEnabled: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        options: {
+            type: Object as PropType<RegistrationTemplateDetailOptionsBag>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: boolean): void,
+        (e: "save", value: RegistrationTemplateFormFieldBag): void
+    }>();
+
+    const invokeBlockAction = useInvokeBlockAction();
+
+    // #region Values
+
+    const isOpen = useVModelPassthrough(props, "modelValue", emit);
+    const errorMessage = ref("");
+
+    const fieldSourceValue = ref<string>(RegistrationFieldSource.PersonAttribute.toString());
+    const personFieldTypeValue = ref<string>("");
+    const personAttributeGuid = ref<string>("");
+    const groupMemberAttributeGuid = ref<string>("");
+    const personAttributes = ref<RegistrationTemplateAttributeItemBag[]>([]);
+    const personAttributesReady = ref(false);
+    const groupMemberAttributes = ref<RegistrationTemplateAttributeItemBag[]>([]);
+    const isLoadingGroupMemberAttributes = ref(false);
+
+    const unableToLoadPersonAttributesMessage = "Unable to load the person attributes that can be collected.";
+    const unableToLoadGroupMemberAttributesMessage = "Unable to load the group member attributes that can be collected.";
+
+    /** Set when the attribute list could not be loaded. The picker is hidden while it has a value. */
+    const personAttributesError = ref("");
+    const groupMemberAttributesError = ref("");
+    const registrantAttribute = ref<PublicEditableAttributeBag | null>(null);
+    const attributeEditorKey = ref("");
+
+    const isInternal = ref(false);
+    const isSharedValue = ref(false);
+    const showCurrentValue = ref(false);
+    const isRequired = ref(false);
+    const isGridField = ref(false);
+    const showOnWaitlist = ref(true);
+    const isLockedIfValuesExist = ref(false);
+    const preText = ref("");
+    const postText = ref("");
+
+    const fieldSourceItems = enumToListItemBag(RegistrationFieldSourceDescription);
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    const isNewField = computed((): boolean => {
+        return !props.field;
+    });
+
+    const fieldSource = computed((): RegistrationFieldSource => {
+        return toNumber(fieldSourceValue.value) as RegistrationFieldSource;
+    });
+
+    const fieldSourceName = computed((): string => {
+        return RegistrationFieldSourceDescription[fieldSource.value] ?? "";
+    });
+
+    const isPersonFieldSource = computed((): boolean => {
+        return fieldSource.value === RegistrationFieldSource.PersonField;
+    });
+
+    const isPersonAttributeSource = computed((): boolean => {
+        return fieldSource.value === RegistrationFieldSource.PersonAttribute;
+    });
+
+    const isGroupMemberAttributeSource = computed((): boolean => {
+        return fieldSource.value === RegistrationFieldSource.GroupMemberAttribute;
+    });
+
+    const isRegistrantAttributeSource = computed((): boolean => {
+        return fieldSource.value === RegistrationFieldSource.RegistrantAttribute;
+    });
+
+    const personFieldName = computed((): string => {
+        return RegistrationPersonFieldTypeDescription[toNumber(personFieldTypeValue.value)] ?? "";
+    });
+
+    /** Every field of the template other than the one being edited. */
+    const otherFields = computed((): RegistrationTemplateFormFieldBag[] => {
+        return props.forms
+            .flatMap(form => form.fields ?? [])
+            .filter(field => !props.field || !areEqual(field.guid, props.field.guid));
+    });
+
+    /** Person fields sorted by name, excluding the ones already collected on any form. */
+    const personFieldItems = computed((): ListItemBag[] => {
+        const usedTypes = otherFields.value
+            .filter(field => field.fieldSource === RegistrationFieldSource.PersonField)
+            .map(field => field.personFieldType);
+
+        return Object.entries(RegistrationPersonFieldTypeDescription)
+            .map(([value, text]) => ({ value, text }))
+            .filter(item => !usedTypes.includes(toNumber(item.value) as RegistrationPersonFieldType))
+            .sort((a, b) => a.text.localeCompare(b.text));
+    });
+
+    /** Person attributes excluding the ones already collected on any form. */
+    const personAttributeItems = computed((): ListItemBag[] => {
+        const usedGuids = getUsedAttributeGuids(RegistrationFieldSource.PersonAttribute);
+
+        return personAttributes.value
+            .filter(attribute => !usedGuids.some(guid => areEqual(guid, attribute.guid)))
+            .map(attribute => ({ value: attribute.guid, text: attribute.name ?? "" }));
+    });
+
+    /** Group member attributes excluding the ones already collected on any form. */
+    const groupMemberAttributeItems = computed((): ListItemBag[] => {
+        const usedGuids = getUsedAttributeGuids(RegistrationFieldSource.GroupMemberAttribute);
+
+        return groupMemberAttributes.value
+            .filter(attribute => !usedGuids.some(guid => areEqual(guid, attribute.guid)))
+            .map(attribute => ({ value: attribute.guid, text: attribute.name ?? "" }));
+    });
+
+    /** The attribute keys already used by the other registrant attributes of the template. */
+    const reservedKeyNames = computed((): string[] => {
+        return otherFields.value
+            .filter(field => field.fieldSource === RegistrationFieldSource.RegistrantAttribute)
+            .map(field => field.registrantAttribute?.key ?? "")
+            .filter(key => key);
+    });
+
+    // #endregion Computed Values
+
+    // #region Event Handlers
+
+    /**
+     * Called when the modal Save button is clicked. Builds the field from the
+     * working values and hands it back to the owner of the form.
+     */
+    function onSave(): void {
+        errorMessage.value = "";
+
+        const existing = props.field;
+        let name = "";
+        let fieldTypeName = "";
+        let attribute: ListItemBag | null = null;
+        let registrantAttributeBag: PublicEditableAttributeBag | null = null;
+        let personFieldType = existing?.personFieldType ?? RegistrationPersonFieldType.FirstName;
+
+        switch (fieldSource.value) {
+            case RegistrationFieldSource.PersonField: {
+                personFieldType = toNumber(personFieldTypeValue.value) as RegistrationPersonFieldType;
+                name = RegistrationPersonFieldTypeDescription[personFieldType] ?? "";
+                break;
+            }
+
+            case RegistrationFieldSource.PersonAttribute: {
+                const selected = resolveSelectedAttribute(personAttributeGuid.value, personAttributes.value, existing, RegistrationFieldSource.PersonAttribute);
+
+                if (!selected) {
+                    errorMessage.value = personAttributesError.value || "Please select a person attribute.";
+
+                    return;
+                }
+
+                attribute = selected.attribute;
+                name = selected.name;
+                fieldTypeName = selected.fieldTypeName;
+                break;
+            }
+
+            case RegistrationFieldSource.GroupMemberAttribute: {
+                const selected = resolveSelectedAttribute(groupMemberAttributeGuid.value, groupMemberAttributes.value, existing, RegistrationFieldSource.GroupMemberAttribute);
+
+                if (!selected) {
+                    errorMessage.value = groupMemberAttributesError.value || "Please select a group member attribute.";
+
+                    return;
+                }
+
+                attribute = selected.attribute;
+                name = selected.name;
+                fieldTypeName = selected.fieldTypeName;
+                break;
+            }
+
+            case RegistrationFieldSource.RegistrantAttribute: {
+                if (!registrantAttribute.value) {
+                    errorMessage.value = "Please configure the registrant attribute.";
+
+                    return;
+                }
+
+                const key = registrantAttribute.value.key ?? "";
+
+                if (reservedKeyNames.value.some(reserved => reserved.toLowerCase() === key.toLowerCase())) {
+                    errorMessage.value = `The Attribute Key '${key}' is already being used by this Registration Template`;
+
+                    return;
+                }
+
+                registrantAttributeBag = {
+                    ...registrantAttribute.value,
+                    configurationValues: { ...(registrantAttribute.value.configurationValues ?? {}) },
+                    categories: (registrantAttribute.value.categories ?? []).map(c => ({ ...c }))
+                };
+                name = registrantAttributeBag.name ?? "";
+                fieldTypeName = getFieldTypeName(registrantAttributeBag);
+                break;
+            }
+        }
+
+        const isRegistrantAttribute = fieldSource.value === RegistrationFieldSource.RegistrantAttribute;
+        const isGroupMemberAttribute = fieldSource.value === RegistrationFieldSource.GroupMemberAttribute;
+        const canShowCurrentValue = fieldSource.value === RegistrationFieldSource.PersonField || fieldSource.value === RegistrationFieldSource.PersonAttribute;
+
+        const field: RegistrationTemplateFormFieldBag = {
+            guid: existing?.guid ?? newGuid(),
+            order: existing?.order ?? 0,
+            fieldSource: fieldSource.value,
+            personFieldType: personFieldType,
+            attribute: attribute,
+            registrantAttribute: registrantAttributeBag,
+            name: name,
+            fieldTypeName: fieldTypeName,
+            isInternal: isInternal.value,
+            isSharedValue: isSharedValue.value,
+            showCurrentValue: canShowCurrentValue && showCurrentValue.value,
+            isRequired: isRegistrantAttribute ? (registrantAttributeBag?.isRequired ?? false) : isRequired.value,
+            isGridField: isRegistrantAttribute ? (registrantAttributeBag?.isShowInGrid ?? false) : isGridField.value,
+            showOnWaitlist: isGroupMemberAttribute ? false : (props.isProtected || showOnWaitlist.value),
+            isLockedIfValuesExist: isLockedIfValuesExist.value,
+            preText: preText.value,
+            postText: postText.value,
+            visibilityRules: existing?.visibilityRules ?? createEmptyVisibilityRules()
+        };
+
+        emit("save", field);
+        isOpen.value = false;
+    }
+
+    // #endregion Event Handlers
+
+    // #region Functions
+
+    let personAttributesRequestId = 0;
+    let groupMemberAttributesRequestId = 0;
+    let loadedGroupMemberAttributeGroupTypeGuid: string | null = null;
+
+    /**
+     * Populates the working values from the field being edited, or with the
+     * defaults for a new field.
+     */
+    function initialize(): void {
+        const field = props.field;
+
+        errorMessage.value = "";
+        fieldSourceValue.value = (field?.fieldSource ?? RegistrationFieldSource.PersonAttribute).toString();
+        personFieldTypeValue.value = field?.fieldSource === RegistrationFieldSource.PersonField ? field.personFieldType.toString() : "";
+        personAttributeGuid.value = field?.fieldSource === RegistrationFieldSource.PersonAttribute ? (field.attribute?.value ?? "") : "";
+        groupMemberAttributeGuid.value = field?.fieldSource === RegistrationFieldSource.GroupMemberAttribute ? (field.attribute?.value ?? "") : "";
+        registrantAttribute.value = field?.registrantAttribute
+            ? {
+                ...field.registrantAttribute,
+                configurationValues: { ...(field.registrantAttribute.configurationValues ?? {}) },
+                categories: (field.registrantAttribute.categories ?? []).map(c => ({ ...c }))
+            }
+            : createNewAttribute();
+        attributeEditorKey.value = `attribute-editor-${newGuid()}`;
+
+        isInternal.value = field?.isInternal ?? false;
+        isSharedValue.value = field?.isSharedValue ?? false;
+        showCurrentValue.value = field?.showCurrentValue ?? false;
+        isRequired.value = field?.isRequired ?? false;
+        isGridField.value = field?.isGridField ?? false;
+        isLockedIfValuesExist.value = field?.isLockedIfValuesExist ?? false;
+        preText.value = field?.preText ?? "";
+        postText.value = field?.postText ?? "";
+
+        // New fields default to being shown on the wait list, group member
+        // attributes can never be, and the protected name fields always are.
+        if (!field) {
+            showOnWaitlist.value = true;
+        }
+        else if (props.isProtected) {
+            showOnWaitlist.value = true;
+        }
+        else {
+            showOnWaitlist.value = field.fieldSource !== RegistrationFieldSource.GroupMemberAttribute && field.showOnWaitlist;
+        }
+
+        loadPersonAttributes();
+        loadGroupMemberAttributes();
+    }
+
+    /**
+     * Resolves the selected person or group-member attribute from the loaded
+     * list, or from the field being edited when the list has not returned yet.
+     */
+    function resolveSelectedAttribute(
+        selectedGuid: string,
+        items: RegistrationTemplateAttributeItemBag[],
+        existing: RegistrationTemplateFormFieldBag | null | undefined,
+        expectedSource: RegistrationFieldSource
+    ): { attribute: ListItemBag; name: string; fieldTypeName: string } | null {
+        const item = items.find(attributeItem => areEqual(attributeItem.guid, selectedGuid));
+
+        if (item) {
+            return {
+                attribute: { value: item.guid, text: item.name },
+                name: item.name ?? "",
+                fieldTypeName: item.fieldTypeName ?? ""
+            };
+        }
+
+        if (existing?.fieldSource === expectedSource
+            && existing.attribute
+            && areEqual(existing.attribute.value, selectedGuid)) {
+            return {
+                attribute: existing.attribute,
+                name: existing.name ?? existing.attribute.text ?? "",
+                fieldTypeName: existing.fieldTypeName ?? ""
+            };
+        }
+
+        return null;
+    }
+
+    /**
+     * Loads the person attributes that can be collected as form fields.
+     */
+    async function loadPersonAttributes(): Promise<void> {
+        const requestId = ++personAttributesRequestId;
+
+        personAttributesError.value = "";
+
+        if (!personAttributes.value.length) {
+            personAttributesReady.value = false;
+        }
+
+        let loaded: RegistrationTemplateAttributeItemBag[] = [];
+        let failureMessage = "";
+
+        try {
+            const result = await invokeBlockAction<RegistrationTemplateAttributeItemBag[]>("GetPersonAttributes");
+
+            if (result.isSuccess && result.data) {
+                loaded = result.data;
+            }
+            else {
+                failureMessage = result.errorMessage || unableToLoadPersonAttributesMessage;
+            }
+        }
+        catch {
+            failureMessage = unableToLoadPersonAttributesMessage;
+        }
+
+        if (requestId !== personAttributesRequestId) {
+            return;
+        }
+
+        if (failureMessage) {
+            personAttributesError.value = personAttributes.value.length ? "" : failureMessage;
+
+            return;
+        }
+
+        personAttributes.value = loaded;
+        personAttributesReady.value = true;
+    }
+
+    /**
+     * Loads the group member attributes available for the template's group type.
+     */
+    async function loadGroupMemberAttributes(): Promise<void> {
+        const requestId = ++groupMemberAttributesRequestId;
+        const requestedGroupTypeGuid = props.groupTypeGuid || null;
+
+        groupMemberAttributesError.value = "";
+
+        if (!areEqual(loadedGroupMemberAttributeGroupTypeGuid, requestedGroupTypeGuid)) {
+            groupMemberAttributes.value = [];
+        }
+
+        isLoadingGroupMemberAttributes.value = true;
+
+        let loaded: RegistrationTemplateAttributeItemBag[] = [];
+        let failureMessage = "";
+
+        try {
+            const result = await invokeBlockAction<RegistrationTemplateAttributeItemBag[]>("GetGroupMemberAttributes", {
+                groupTypeGuid: requestedGroupTypeGuid
+            });
+
+            if (result.isSuccess && result.data) {
+                loaded = result.data;
+            }
+            else {
+                failureMessage = result.errorMessage || unableToLoadGroupMemberAttributesMessage;
+            }
+        }
+        catch {
+            failureMessage = unableToLoadGroupMemberAttributesMessage;
+        }
+
+        if (requestId !== groupMemberAttributesRequestId) {
+            return;
+        }
+
+        isLoadingGroupMemberAttributes.value = false;
+
+        if (failureMessage) {
+            groupMemberAttributesError.value = groupMemberAttributes.value.length ? "" : failureMessage;
+
+            return;
+        }
+
+        groupMemberAttributes.value = loaded;
+        loadedGroupMemberAttributeGroupTypeGuid = requestedGroupTypeGuid;
+    }
+
+    /**
+     * Gets the unique identifiers of the attributes already collected by other
+     * fields with the specified source.
+     *
+     * @param source The field source to look for.
+     *
+     * @returns The attribute unique identifiers.
+     */
+    function getUsedAttributeGuids(source: RegistrationFieldSource): string[] {
+        return otherFields.value
+            .filter(field => field.fieldSource === source)
+            .map(field => field.attribute?.value ?? "")
+            .filter(guid => guid);
+    }
+
+    /**
+     * Gets the name of the field type used by a registrant attribute.
+     *
+     * @param attribute The registrant attribute.
+     *
+     * @returns The field type name, or an empty string when it is not known.
+     */
+    function getFieldTypeName(attribute: PublicEditableAttributeBag): string {
+        const fieldTypeGuid = attribute.realFieldTypeGuid ?? attribute.fieldTypeGuid;
+
+        return (props.options.fieldTypes ?? []).find(f => areEqual(f.value, fieldTypeGuid))?.text ?? "";
+    }
+
+    /**
+     * Creates a new registrant attribute with default values. The guid stays
+     * null until the template is saved and the server creates the attribute.
+     *
+     * @returns A new attribute.
+     */
+    function createNewAttribute(): PublicEditableAttributeBag {
+        return {
+            guid: null,
+            name: "",
+            description: "",
+            isActive: true,
+            isPublic: false,
+            isRequired: false,
+            isShowOnBulk: false,
+            isShowInGrid: false,
+            isAnalytic: false,
+            isAnalyticHistory: false,
+            isAllowSearch: false,
+            isEnableHistory: false,
+            isIndexEnabled: false,
+            isSystem: false,
+            fieldTypeGuid: FieldType.Text,
+            configurationValues: {},
+            categories: [],
+            key: "",
+            abbreviatedName: "",
+            preHtml: "",
+            postHtml: "",
+            defaultValue: "",
+            isSuppressHistoryLogging: false,
+            attributeColor: "",
+            iconCssClass: ""
+        };
+    }
+
+    // #endregion Functions
+
+    // #region Watchers
+
+    watch(isOpen, () => {
+        if (isOpen.value) {
+            initialize();
+        }
+    });
+
+    // Changing the source of a new field resets the wait list option because
+    // group member attributes can never be collected on the wait list.
+    watch(fieldSourceValue, () => {
+        if (!isNewField.value) {
+            return;
+        }
+
+        showOnWaitlist.value = fieldSource.value !== RegistrationFieldSource.GroupMemberAttribute;
+    });
+
+    // The person field list has no blank option, so make sure a person field is
+    // selected as soon as the list is shown.
+    watch([isPersonFieldSource, personFieldItems], () => {
+        if (!isPersonFieldSource.value || props.isProtected) {
+            return;
+        }
+
+        const isSelectionAvailable = personFieldItems.value.some(item => item.value === personFieldTypeValue.value);
+
+        if (!isSelectionAvailable) {
+            personFieldTypeValue.value = personFieldItems.value[0]?.value ?? "";
+        }
+    }, { immediate: true });
+
+    // #endregion Watchers
+</script>

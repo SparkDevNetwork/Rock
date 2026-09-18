@@ -13,40 +13,36 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // </copyright>
+//
 
 using System;
+using System.Collections.Generic;
 
-namespace Rock.Model
+namespace Rock.ViewModels.Blocks.Event.RegistrationTemplateDetail
 {
     /// <summary>
-    /// Flag indicating who should be notified on a new registration
+    /// A registrant form of a registration template and the fields it collects.
     /// </summary>
-    [Flags]
-    public enum RegistrationNotify
+    public class RegistrationTemplateFormBag
     {
         /// <summary>
-        /// The none
+        /// Gets or sets the unique identifier of the form.
         /// </summary>
-        None = 0,
+        public Guid Guid { get; set; }
 
         /// <summary>
-        /// The registration contact
+        /// Gets or sets the display order of the form.
         /// </summary>
-        RegistrationContact = 1,
+        public int Order { get; set; }
 
         /// <summary>
-        /// The group followers
+        /// Gets or sets the name of the form.
         /// </summary>
-        GroupFollowers = 2,
+        public string Name { get; set; }
 
         /// <summary>
-        /// The group leaders
+        /// Gets or sets the fields collected by the form, in display order.
         /// </summary>
-        GroupLeaders = 4,
-
-        /// <summary>
-        /// All
-        /// </summary>
-        All = RegistrationContact | GroupFollowers | GroupLeaders
+        public List<RegistrationTemplateFormFieldBag> Fields { get; set; }
     }
 }

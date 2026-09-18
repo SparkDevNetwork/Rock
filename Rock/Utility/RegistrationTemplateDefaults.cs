@@ -328,5 +328,53 @@ namespace Rock.Utility
 </p>
 
 {{ 'Global' | Attribute:'EmailFooter' }}";
+
+        /// <summary>
+        /// The default Lava template for wait list transition emails.
+        /// </summary>
+        public const string WaitListTransitionEmail = @"{{ 'Global' | Attribute:'EmailHeader' }}
+{% capture externalSite %}{{ 'Global' | Attribute:'PublicApplicationRoot' }}{% endcapture %}
+
+<h1>{{ RegistrationInstance.Name }} Wait List Update</h1>
+
+<p>
+    {{ Registration.FirstName }}, the following individuals have been moved from the {{ RegistrationInstance.Name }} wait list to a full
+    {{ RegistrationInstance.RegistrationTemplate.RegistrantTerm | Downcase }}.
+</p>
+
+<ul>
+    {% for registrant in TransitionedRegistrants %}
+        <li>{{ registrant.PersonAlias.Person.FullName }}</li>
+    {% endfor %}
+</ul>
+
+{% if AdditionalFieldsNeeded %}
+    <p>
+        <strong>Additional information is needed in order to process this registration. Please visit the
+        <a href='{{ externalSite }}Registration?RegistrationId={{ Registration.Id }}&rckipid={{ Registration.PersonAlias.Person | PersonTokenCreate }}&StartAtBeginning=True'>
+        online registration page</a> to complete the registration.</strong>
+    </p>
+{% endif %}
+
+{% if Registration.BalanceDue > 0 %}
+    <p>
+        A balance of {{ Registration.BalanceDue | FormatAsCurrency }} remains on this registration. You can complete the payment for this {{ RegistrationInstance.RegistrationTemplate.RegistrationTerm | Downcase }}
+        using our <a href='{{ externalSite }}Registration?RegistrationId={{ Registration.Id }}&rckipid={{ Registration.PersonAlias.Person | PersonTokenCreate }}'>
+        online registration page</a>.
+    </p>
+{% endif %}
+
+//- 16.4 fix
+{% if AdditionalFieldsNeeded == false and Registration.BalanceDue <= 0 %}
+    <p>
+        {{ RegistrationInstance.AdditionalConfirmationDetails }}
+    </p>
+{% endif %}
+
+<p>
+    If you have any questions please contact {{ RegistrationInstance.ContactPersonAlias.Person.FullName }} at {{ RegistrationInstance.ContactEmail }}.
+</p>
+
+{{ 'Global' | Attribute:'EmailFooter' }}";
     }
 }

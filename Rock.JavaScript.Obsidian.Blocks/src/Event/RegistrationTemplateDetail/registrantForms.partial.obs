@@ -1,0 +1,441 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="registrant-forms">
+        <RegistrantForm v-if="defaultForm"
+                        :form="defaultForm"
+                        isDefaultForm
+                        :isExpanded="isFormExpanded(defaultForm.guid)"
+                        @update:isExpanded="onFormExpandedChanged(defaultForm.guid, $event)"
+                        @update:form="onFormChanged"
+                        @addField="onAddField(defaultForm.guid)"
+                        @editField="onEditField(defaultForm.guid, $event)"
+                        @filterField="onFilterField(defaultForm.guid, $event)"
+                        @deleteField="onDeleteField(defaultForm.guid, $event)"
+                        @reorderFields="onReorderFields(defaultForm.guid, $event)" />
+
+        <div class="optional-forms" v-dragSource="dragOptions" v-dragTarget="dragOptions">
+            <div v-for="form in optionalForms" :key="form.guid">
+                <RegistrantForm :form="form"
+                                :isExpanded="isFormExpanded(form.guid)"
+                                @update:isExpanded="onFormExpandedChanged(form.guid, $event)"
+                                @update:form="onFormChanged"
+                                @delete="onDeleteForm(form.guid)"
+                                @addField="onAddField(form.guid)"
+                                @editField="onEditField(form.guid, $event)"
+                                @filterField="onFilterField(form.guid, $event)"
+                                @deleteField="onDeleteField(form.guid, $event)"
+                                @reorderFields="onReorderFields(form.guid, $event)" />
+            </div>
+        </div>
+
+        <div class="text-right">
+            <RockButton btnType="default" btnSize="xs" @click="onAddForm">
+                <i class="ti ti-plus"></i> Add Form
+            </RockButton>
+        </div>
+
+        <FormFieldModal v-model="isFieldModalOpen"
+                        :field="editingField"
+                        :forms="forms"
+                        :isProtected="isEditingProtectedField"
+                        :groupTypeGuid="groupType?.value ?? null"
+                        :waitListEnabled="waitListEnabled"
+                        :options="options"
+                        @save="onFieldSaved" />
+
+        <FieldVisibilityModal v-model="isFilterModalOpen"
+                              :field="filteringField"
+                              :otherFields="filteringOtherFields"
+                              @save="onVisibilityRulesSaved" />
+    </div>
+</template>
+
+<style scoped>
+.optional-forms {
+    display: flex;
+    flex-direction: column;
+}
+</style>
+
+<script setup lang="ts">
+    import { computed, PropType, ref, watch } from "vue";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import { DragSource as vDragSource, DragTarget as vDragTarget, IDragSourceOptions, useDragReorder } from "@Obsidian/Directives/dragDrop";
+    import { newGuid } from "@Obsidian/Utility/guid";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { FieldFilterGroupBag } from "@Obsidian/ViewModels/Reporting/fieldFilterGroupBag";
+    import { RegistrationTemplateDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationTemplateDetail/registrationTemplateDetailOptionsBag";
+    import { RegistrationTemplateFormBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationTemplateDetail/registrationTemplateFormBag";
+    import { RegistrationTemplateFormFieldBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationTemplateDetail/registrationTemplateFormFieldBag";
+    import FieldVisibilityModal from "./fieldVisibilityModal.partial.obs";
+    import FormFieldModal from "./formFieldModal.partial.obs";
+    import RegistrantForm from "./registrantForm.partial.obs";
+    import { FieldReorder } from "./types.partial";
+    import { getNextOrder, isProtectedField, moveItem, renumberOrder } from "./utils.partial";
+
+    const props = defineProps({
+        /** The registrant forms of the template. */
+        forms: {
+            type: Array as PropType<RegistrationTemplateFormBag[]>,
+            required: true
+        },
+
+        /** The group type selected on the template, used to offer group member attributes. */
+        groupType: {
+            type: Object as PropType<ListItemBag | null>,
+            required: false
+        },
+
+        /** True when the template has a wait list. */
+        waitListEnabled: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        options: {
+            type: Object as PropType<RegistrationTemplateDetailOptionsBag>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:forms", value: RegistrationTemplateFormBag[]): void
+    }>();
+
+    // #region Values
+
+    /** The unique identifiers of the forms that are currently expanded. */
+    const expandedFormGuids = ref<string[]>([]);
+
+    /** True once the default form has been expanded for the first time. */
+    let hasExpandedDefaultForm = false;
+
+    /**
+     * The forms other than the default form. The drag directive reorders this
+     * array in place, so it is kept as local state and synchronized with the
+     * forms property.
+     */
+    const optionalForms = ref<RegistrationTemplateFormBag[]>([]);
+
+    const baseDragOptions = useDragReorder(optionalForms, onFormsReordered);
+
+    // Every form holds a grid whose rows carry the same handle class that
+    // useDragReorder looks for, and those grids sit inside the container that
+    // reorders the forms. Only the grip in a form's own header may start a form
+    // drag, otherwise dragging a field row would drag its form along with it.
+    const dragOptions: IDragSourceOptions = {
+        ...baseDragOptions,
+        startDrag(operation, handle) {
+            if (!handle.closest(".registrant-form-reorder")) {
+                return false;
+            }
+
+            return baseDragOptions.startDrag?.(operation, handle) ?? true;
+        }
+    };
+
+    const isFieldModalOpen = ref(false);
+    const editingFormGuid = ref<string | null>(null);
+    const editingField = ref<RegistrationTemplateFormFieldBag | null>(null);
+
+    const isFilterModalOpen = ref(false);
+    const filteringFormGuid = ref<string | null>(null);
+    const filteringField = ref<RegistrationTemplateFormFieldBag | null>(null);
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    const forms = computed({
+        get(): RegistrationTemplateFormBag[] {
+            return [...(props.forms ?? [])].sort((a, b) => a.order - b.order);
+        },
+        set(value: RegistrationTemplateFormBag[]) {
+            emit("update:forms", renumberOrder(value));
+        }
+    });
+
+    /** The default form is always the first form and cannot be removed. */
+    const defaultForm = computed((): RegistrationTemplateFormBag | undefined => {
+        return forms.value[0];
+    });
+
+    const isEditingProtectedField = computed((): boolean => {
+        if (!editingField.value || !defaultForm.value) {
+            return false;
+        }
+
+        return isProtectedField(editingField.value, editingFormGuid.value === defaultForm.value.guid);
+    });
+
+    /** The other fields of the form that owns the field whose filter is being edited. */
+    const filteringOtherFields = computed((): RegistrationTemplateFormFieldBag[] => {
+        const form = forms.value.find(f => f.guid === filteringFormGuid.value);
+
+        return (form?.fields ?? []).filter(field => field.guid !== filteringField.value?.guid);
+    });
+
+    // #endregion Computed Values
+
+    // #region Event Handlers
+
+    /**
+     * Called when the Add Form button is clicked. The new form starts expanded.
+     */
+    function onAddForm(): void {
+        const form: RegistrationTemplateFormBag = {
+            guid: newGuid(),
+            order: getNextOrder(forms.value),
+            name: "",
+            fields: []
+        };
+
+        expandedFormGuids.value = [...expandedFormGuids.value, form.guid];
+        forms.value = [...forms.value, form];
+    }
+
+    /**
+     * Called when the delete button of a form is clicked.
+     *
+     * @param formGuid The unique identifier of the form.
+     */
+    function onDeleteForm(formGuid: string): void {
+        expandedFormGuids.value = expandedFormGuids.value.filter(guid => guid !== formGuid);
+        forms.value = forms.value.filter(form => form.guid !== formGuid);
+    }
+
+    /**
+     * Called when a form has been changed, such as when it is renamed.
+     *
+     * @param form The updated form.
+     */
+    function onFormChanged(form: RegistrationTemplateFormBag): void {
+        forms.value = forms.value.map(f => f.guid === form.guid ? form : f);
+    }
+
+    /**
+     * Called when a form is expanded or collapsed.
+     *
+     * @param formGuid The unique identifier of the form.
+     * @param isExpanded True when the form is now expanded.
+     */
+    function onFormExpandedChanged(formGuid: string, isExpanded: boolean): void {
+        const others = expandedFormGuids.value.filter(guid => guid !== formGuid);
+
+        expandedFormGuids.value = isExpanded ? [...others, formGuid] : others;
+    }
+
+    /**
+     * Called after the optional forms have been dragged into a new order.
+     */
+    function onFormsReordered(): void {
+        const reorderedForms = defaultForm.value
+            ? [defaultForm.value, ...optionalForms.value]
+            : [...optionalForms.value];
+
+        forms.value = reorderedForms;
+    }
+
+    /**
+     * Called when the Add button on a form's field grid is clicked.
+     *
+     * @param formGuid The unique identifier of the form.
+     */
+    function onAddField(formGuid: string): void {
+        editingFormGuid.value = formGuid;
+        editingField.value = null;
+        isFieldModalOpen.value = true;
+    }
+
+    /**
+     * Called when the Edit button of a field is clicked.
+     *
+     * @param formGuid The unique identifier of the form.
+     * @param fieldGuid The unique identifier of the field.
+     */
+    function onEditField(formGuid: string, fieldGuid: string): void {
+        const field = findField(formGuid, fieldGuid);
+
+        if (!field) {
+            return;
+        }
+
+        editingFormGuid.value = formGuid;
+        editingField.value = field;
+        isFieldModalOpen.value = true;
+    }
+
+    /**
+     * Called when the filter button of a field is clicked.
+     *
+     * @param formGuid The unique identifier of the form.
+     * @param fieldGuid The unique identifier of the field.
+     */
+    function onFilterField(formGuid: string, fieldGuid: string): void {
+        const field = findField(formGuid, fieldGuid);
+
+        if (!field) {
+            return;
+        }
+
+        filteringFormGuid.value = formGuid;
+        filteringField.value = field;
+        isFilterModalOpen.value = true;
+    }
+
+    /**
+     * Called when the Delete button of a field is clicked. Rules on other
+     * fields of the same form that compared against the deleted field are
+     * removed with it.
+     *
+     * @param formGuid The unique identifier of the form.
+     * @param fieldGuid The unique identifier of the field.
+     */
+    function onDeleteField(formGuid: string, fieldGuid: string): void {
+        updateFormFields(formGuid, fields => {
+            return renumberOrder(fields
+                .filter(field => field.guid !== fieldGuid)
+                .map(field => removeRulesForField(field, fieldGuid)));
+        });
+    }
+
+    /**
+     * Called when a field is dragged into a new position in its form.
+     *
+     * @param formGuid The unique identifier of the form.
+     * @param reorder The field that moved and the field it was placed before.
+     */
+    function onReorderFields(formGuid: string, reorder: FieldReorder): void {
+        updateFormFields(formGuid, fields => moveItem(fields, reorder.fieldGuid, reorder.beforeFieldGuid, field => field.guid));
+    }
+
+    /**
+     * Called when the field modal is saved. Replaces the edited field or
+     * appends the new field to the end of its form.
+     *
+     * @param field The saved field.
+     */
+    function onFieldSaved(field: RegistrationTemplateFormFieldBag): void {
+        const formGuid = editingFormGuid.value;
+
+        if (!formGuid) {
+            return;
+        }
+
+        updateFormFields(formGuid, fields => {
+            const index = fields.findIndex(f => f.guid === field.guid);
+
+            if (index >= 0) {
+                const updatedFields = [...fields];
+
+                updatedFields.splice(index, 1, field);
+
+                return updatedFields;
+            }
+
+            return [...fields, { ...field, order: getNextOrder(fields) }];
+        });
+    }
+
+    /**
+     * Called when the visibility rules modal is saved.
+     *
+     * @param rules The saved rules.
+     */
+    function onVisibilityRulesSaved(rules: FieldFilterGroupBag): void {
+        const formGuid = filteringFormGuid.value;
+        const fieldGuid = filteringField.value?.guid;
+
+        if (!formGuid || !fieldGuid) {
+            return;
+        }
+
+        updateFormFields(formGuid, fields => fields.map(field => field.guid === fieldGuid ? { ...field, visibilityRules: rules } : field));
+    }
+
+    // #endregion Event Handlers
+
+    // #region Functions
+
+    /**
+     * Determines if a form is currently expanded.
+     *
+     * @param formGuid The unique identifier of the form.
+     *
+     * @returns True when the form is expanded.
+     */
+    function isFormExpanded(formGuid: string): boolean {
+        return expandedFormGuids.value.includes(formGuid);
+    }
+
+    /**
+     * Finds a field on a form.
+     *
+     * @param formGuid The unique identifier of the form.
+     * @param fieldGuid The unique identifier of the field.
+     *
+     * @returns The field, or undefined when it does not exist.
+     */
+    function findField(formGuid: string, fieldGuid: string): RegistrationTemplateFormFieldBag | undefined {
+        return forms.value.find(f => f.guid === formGuid)?.fields?.find(field => field.guid === fieldGuid);
+    }
+
+    /**
+     * Replaces the fields of a form with the result of the update function.
+     *
+     * @param formGuid The unique identifier of the form.
+     * @param update The function that produces the new list of fields.
+     */
+    function updateFormFields(formGuid: string, update: (fields: RegistrationTemplateFormFieldBag[]) => RegistrationTemplateFormFieldBag[]): void {
+        forms.value = forms.value.map(form => {
+            if (form.guid !== formGuid) {
+                return form;
+            }
+
+            const currentFields = [...(form.fields ?? [])].sort((a, b) => a.order - b.order);
+
+            return { ...form, fields: update(currentFields) };
+        });
+    }
+
+    /**
+     * Removes the visibility rules of a field that compare against another field.
+     *
+     * @param field The field whose rules are checked.
+     * @param comparedToFieldGuid The unique identifier of the field being removed.
+     *
+     * @returns The field without the rules that referenced the removed field.
+     */
+    function removeRulesForField(field: RegistrationTemplateFormFieldBag, comparedToFieldGuid: string): RegistrationTemplateFormFieldBag {
+        const rules = field.visibilityRules?.rules ?? [];
+        const hasRulesForField = rules.some(rule => rule.attributeGuid === comparedToFieldGuid);
+
+        if (!field.visibilityRules || !hasRulesForField) {
+            return field;
+        }
+
+        return {
+            ...field,
+            visibilityRules: {
+                ...field.visibilityRules,
+                rules: rules.filter(rule => rule.attributeGuid !== comparedToFieldGuid)
+            }
+        };
+    }
+
+    // #endregion Functions
+
+    // #region Watchers
+
+    watch(() => props.forms, () => {
+        optionalForms.value = forms.value.slice(1);
+
+        // The default form starts expanded so its fields are visible right away.
+        if (defaultForm.value && !hasExpandedDefaultForm) {
+            hasExpandedDefaultForm = true;
+            expandedFormGuids.value = [defaultForm.value.guid];
+        }
+    }, { immediate: true, deep: true });
+
+    // #endregion Watchers
+</script>
