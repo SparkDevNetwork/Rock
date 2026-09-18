@@ -136,7 +136,7 @@ namespace Rock.Blocks.Prayer
         Order = 12 )]
 
     [BooleanField( "Load Last Prayed Collection",
-        Description = "If enabled, each card shows who most recently prayed for the request and when. Requires interactions to be recorded.",
+        Description = "If enabled, each card shows when the request was last prayed for. Requires interactions to be recorded.",
         Key = AttributeKey.LoadLastPrayedCollection,
         DefaultBooleanValue = false,
         Order = 13 )]
@@ -266,7 +266,8 @@ namespace Rock.Blocks.Prayer
 
             return new PrayerRequestService( RockContext )
                 .GetLastPrayedDetails( prayerRequests.Select( r => r.Id ) )
-                .ToDictionary( d => d.RequestId );
+                .GroupBy( d => d.RequestId )
+                .ToDictionary( g => g.Key, g => g.OrderByDescending( d => d.PrayerDateTime ).First() );
         }
 
         /// <summary>
@@ -282,13 +283,12 @@ namespace Rock.Blocks.Prayer
                 IdKey = prayerRequest.IdKey,
                 FirstName = prayerRequest.FirstName,
                 LastName = prayerRequest.LastName,
-                Text = prayerRequest.Text.ConvertCrLfToHtmlBr(),
+                Text = prayerRequest.Text.ScrubHtmlAndConvertCrLfToBr(),
                 CategoryName = prayerRequest.CategoryId.HasValue ? CategoryCache.Get( prayerRequest.CategoryId.Value )?.Name : null
             };
 
             if ( lastPrayedLookup.TryGetValue( prayerRequest.Id, out var lastPrayed ) )
             {
-                bag.LastPrayedByName = $"{lastPrayed.FirstName} {lastPrayed.LastName}".Trim();
                 bag.LastPrayedDateTime = lastPrayed.PrayerDateTime.ToRockDateTimeOffset();
             }
 

@@ -47,8 +47,8 @@ export type PrayerCardViewOptionsBag = {
     isCampusFilterVisible: boolean;
 
     /**
-     * Gets or sets a value indicating whether each card shows who most
-     * recently prayed for the request and when.
+     * Gets or sets a value indicating whether each card shows when the
+     * request was last prayed for.
      */
     isLastPrayedShown: boolean;
 

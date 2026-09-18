@@ -2,10 +2,12 @@
 <template>
     <div ref="cardElement" class="card">
         <div class="card-body">
-            <h3 class="card-title mt-0">{{ request.firstName }} {{ request.lastName }}</h3>
-            <p v-if="request.categoryName" class="card-subtitle mb-2">
-                <span class="label label-primary">{{ request.categoryName }}</span>
-            </p>
+            <div class="d-flex gap-3 align-items-center">
+                <h3 class="card-title mt-0">{{ request.firstName }} {{ request.lastName }}</h3>
+                <p v-if="request.categoryName" class="card-subtitle mb-2">
+                    <span class="label label-primary">{{ request.categoryName }}</span>
+                </p>
+            </div>
             <div ref="textWrapperElement" class="prayer-card-text-wrapper">
                 <p ref="textElement" class="card-text" :class="{ 'line-clamp-4': !isExpanded }" v-html="request.text"></p>
             </div>
@@ -107,9 +109,7 @@
             return "";
         }
 
-        const byName = props.request.lastPrayedByName ? ` by ${props.request.lastPrayedByName}` : "";
-
-        return `Last prayed for${byName} ${lastPrayed.toElapsedString().toLowerCase()}`;
+        return `Last prayed for ${lastPrayed.toElapsedString().toLowerCase()}`;
     });
 
     // #endregion Computed Values

@@ -45,13 +45,6 @@ export type PrayerRequestCardBag = {
     lastName?: string | null;
 
     /**
-     * Gets or sets the name of the person who most recently prayed for
-     * the request. Only populated when the block is configured to show
-     * last prayed details and a prayer has been recorded.
-     */
-    lastPrayedByName?: string | null;
-
-    /**
      * Gets or sets when the request was most recently prayed for. Only
      * populated when the block is configured to show last prayed details
      * and a prayer has been recorded.

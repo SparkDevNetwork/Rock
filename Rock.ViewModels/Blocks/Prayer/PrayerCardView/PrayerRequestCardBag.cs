@@ -54,13 +54,6 @@ namespace Rock.ViewModels.Blocks.Prayer.PrayerCardView
         public string CategoryName { get; set; }
 
         /// <summary>
-        /// Gets or sets the name of the person who most recently prayed for
-        /// the request. Only populated when the block is configured to show
-        /// last prayed details and a prayer has been recorded.
-        /// </summary>
-        public string LastPrayedByName { get; set; }
-
-        /// <summary>
         /// Gets or sets when the request was most recently prayed for. Only
         /// populated when the block is configured to show last prayed details
         /// and a prayer has been recorded.

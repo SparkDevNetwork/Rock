@@ -57,8 +57,8 @@ namespace Rock.ViewModels.Blocks.Prayer.PrayerCardView
         public bool IsPrayerTeamFlaggingEnabled { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether each card shows who most
-        /// recently prayed for the request and when.
+        /// Gets or sets a value indicating whether each card shows when the
+        /// request was last prayed for.
         /// </summary>
         public bool IsLastPrayedShown { get; set; }
     }
