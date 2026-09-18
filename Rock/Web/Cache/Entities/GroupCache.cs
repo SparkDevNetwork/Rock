@@ -17,12 +17,15 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.Data.Entity;
+using System.Linq;
 using System.Runtime.Serialization;
 
 using Rock.CheckIn.v2;
 using Rock.Data;
 using Rock.Enums.Group;
 using Rock.Model;
+using Rock.Security;
 using Rock.Utility.Enums;
 
 namespace Rock.Web.Cache
@@ -337,6 +340,124 @@ namespace Rock.Web.Cache
         public DefinedValueCache InactiveReasonValue => InactiveReasonValueId.HasValue ? DefinedValueCache.Get( InactiveReasonValueId.Value ) : null;
 
         #endregion Properties
+
+        #region ISecured
+
+        /// <inheritdoc cref="Rock.Model.Group.ParentAuthority" />
+        public override Security.ISecured ParentAuthority
+        {
+            get
+            {
+                return ParentGroup ?? base.ParentAuthority;
+            }
+        }
+
+        /// <inheritdoc cref="Rock.Model.Group.ParentAuthorityPre" />
+        public override Security.ISecured ParentAuthorityPre
+        {
+            get
+            {
+                if ( GroupTypeId > 0 )
+                {
+                    return GroupTypeCache.Get( GroupTypeId );
+                }
+
+                return base.ParentAuthorityPre;
+            }
+        }
+
+        /// <summary>
+        /// Determines whether the specified action is authorized.
+        /// </summary>
+        /// <param name="action">The action.</param>
+        /// <param name="person">The person.</param>
+        /// <returns>
+        ///   <c>true</c> if the specified action is authorized; otherwise, <c>false</c>.
+        /// </returns>
+        public override bool IsAuthorized( string action, Person person )
+        {
+            // Check to see if the person is authorized using the normal authorization rules.
+            bool authorized = base.IsAuthorized( action, person );
+
+            if ( authorized || person == null )
+            {
+                return authorized;
+            }
+
+            var groupType = GroupTypeCache.Get( GroupTypeId );
+
+            if ( groupType == null )
+            {
+                return authorized;
+            }
+
+            // If the person isn't authorized through normal security roles, check if the person has a group role that authorizes them.
+            // First, check if there are any roles that could authorized them. If not, we can avoid a database lookup.
+            var checkMemberRoleIds = new List<int>();
+            if ( action == Authorization.VIEW )
+            {
+                checkMemberRoleIds.AddRange( groupType.Roles.Where( a => a.CanView || a.CanTakeAttendance ).Select( a => a.Id ) );
+            }
+            else if ( action == Authorization.MANAGE_MEMBERS )
+            {
+                checkMemberRoleIds.AddRange( groupType.Roles.Where( a => a.CanEdit || a.CanManageMembers ).Select( a => a.Id ) );
+            }
+            else if ( action == Authorization.EDIT )
+            {
+                checkMemberRoleIds.AddRange( groupType.Roles.Where( a => a.CanEdit ).Select( a => a.Id ) );
+            }
+            else if ( action == Authorization.TAKE_ATTENDANCE )
+            {
+                checkMemberRoleIds.AddRange( groupType.Roles.Where( a => a.CanEdit || a.CanTakeAttendance ).Select( a => a.Id ) );
+            }
+
+            if ( !checkMemberRoleIds.Any() )
+            {
+                return authorized;
+            }
+
+            // For each occurrence of this person in this group for the roles that might grant them auth,
+            // check to see if their role is valid for the group type and if the role grants them authorization.
+            using ( var rockContext = new RockContext() )
+            {
+                foreach ( int roleId in new GroupMemberService( rockContext )
+                    .Queryable().AsNoTracking()
+                    .Where( m =>
+                        m.PersonId == person.Id &&
+                        m.GroupId == Id &&
+                        m.GroupMemberStatus == GroupMemberStatus.Active )
+                    .Select( m => m.GroupRoleId ) )
+                {
+                    var role = groupType.Roles.FirstOrDefault( r => r.Id == roleId );
+                    if ( role != null )
+                    {
+                        if ( action == Authorization.VIEW && ( role.CanView || role.CanTakeAttendance ) )
+                        {
+                            return true;
+                        }
+
+                        if ( action == Authorization.MANAGE_MEMBERS && ( role.CanEdit || role.CanManageMembers ) )
+                        {
+                            return true;
+                        }
+
+                        if ( action == Authorization.EDIT && role.CanEdit )
+                        {
+                            return true;
+                        }
+
+                        if ( action == Authorization.TAKE_ATTENDANCE && ( role.CanEdit || role.CanTakeAttendance ) )
+                        {
+                            return true;
+                        }
+                    }
+                }
+            }
+
+            return authorized;
+        }
+
+        #endregion ISecured
 
         #region Public Methods
 
