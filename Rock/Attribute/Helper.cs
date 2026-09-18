@@ -2468,6 +2468,194 @@ WHERE [AV].[AttributeId] = @AttributeId
         }
 
         /// <summary>
+        /// Updates both the computed columns (ValueAs...) and the persisted
+        /// values of all attribute values belonging to the specified attribute
+        /// identifier that match the given value, in a single database command.
+        /// </summary>
+        /// <remarks>
+        ///     <para>
+        ///         This method immediately updates the database, no SaveChanges()
+        ///         call is required.
+        ///     </para>
+        ///     <para>
+        ///         This is the combined equivalent of calling
+        ///         <see cref="BulkUpdateAttributeValueComputedColumns(int, string, RockContext)"/>
+        ///         followed by
+        ///         <see cref="BulkUpdateAttributeValuePersistedValues(int, string, Field.PersistedValues, RockContext)"/>.
+        ///         Both of those statements filter on the identical
+        ///         <c>AttributeId</c>/<c>ValueChecksum</c>/<c>Value</c> predicate, so
+        ///         folding them into one UPDATE performs the checksum comparison and
+        ///         row match once instead of twice.
+        ///     </para>
+        /// </remarks>
+        /// <param name="attributeId">The attribute identifier of the values to be updated.</param>
+        /// <param name="value">The current value of those attribute values.</param>
+        /// <param name="persistedValues">The persisted values to use during the update.</param>
+        /// <param name="rockContext">The database context to use when performing the update.</param>
+        /// <returns>The number of rows that were updated.</returns>
+        internal static int BulkUpdateAttributeValueComputedAndPersistedValues( int attributeId, string value, Rock.Field.PersistedValues persistedValues, RockContext rockContext )
+        {
+            var attributeValue = new AttributeValue
+            {
+                AttributeId = attributeId,
+                Value = value
+            };
+
+            attributeValue.UpdateValueAsProperties( rockContext );
+
+            var valueAsBooleanParameter = new SqlParameter( "@ValueAsBoolean", ( object ) attributeValue.ValueAsBoolean ?? DBNull.Value );
+            var valueAsDateTimeParameter = new SqlParameter( "@ValueAsDateTime", ( object ) attributeValue.ValueAsDateTime ?? DBNull.Value );
+            var valueAsNumericParameter = new SqlParameter( "@ValueAsNumeric", ( object ) attributeValue.ValueAsNumeric ?? DBNull.Value );
+            var valueAsPersonIdParameter = new SqlParameter( "@ValueAsPersonId", ( object ) attributeValue.ValueAsPersonId ?? DBNull.Value );
+            var textValueParameter = new SqlParameter( "@TextValue", ( object ) persistedValues.TextValue ?? DBNull.Value );
+            var htmlValueParameter = new SqlParameter( "@HtmlValue", ( object ) persistedValues.HtmlValue ?? DBNull.Value );
+            var condensedTextValueParameter = new SqlParameter( "@CondensedTextValue", ( object ) persistedValues.CondensedTextValue ?? DBNull.Value );
+            var condensedHtmlValueParameter = new SqlParameter( "@CondensedHtmlValue", ( object ) persistedValues.CondensedHtmlValue ?? DBNull.Value );
+            var attributeIdParameter = new SqlParameter( "@AttributeId", attributeId );
+
+            /*
+                9/18/26 - CLAUDE
+
+                Declare @Value as NVARCHAR(MAX) explicitly instead of letting the
+                length be inferred from the string. Inferring the length produced a
+                distinctly-sized parameter (e.g. NVARCHAR(1) for "Y") for every
+                value length, and each size compiled its own query plan, bloating
+                the plan cache. A fixed NVARCHAR(MAX) also matches the type of the
+                [Value] column that feeds CHECKSUM([Value]), so the checksum
+                comparison remains correct.
+
+                Reason: Reuse one query plan instead of one plan per value length.
+            */
+            var valueParameter = new SqlParameter( "@Value", SqlDbType.NVarChar, -1 )
+            {
+                Value = ( object ) value ?? DBNull.Value
+            };
+
+            return rockContext.Database.ExecuteSqlCommand( @"
+UPDATE [AttributeValue]
+SET [ValueAsBoolean] = @ValueAsBoolean,
+    [ValueAsDateTime] = @ValueAsDateTime,
+    [ValueAsNumeric] = @ValueAsNumeric,
+    [ValueAsPersonId] = @ValueAsPersonId,
+    [PersistedTextValue] = @TextValue,
+    [PersistedHtmlValue] = @HtmlValue,
+    [PersistedCondensedTextValue] = @CondensedTextValue,
+    [PersistedCondensedHtmlValue] = @CondensedHtmlValue,
+    [IsPersistedValueDirty] = 0
+WHERE [AttributeId] = @AttributeId
+  AND [ValueChecksum] = CHECKSUM(@Value)
+  AND [Value] = @Value",
+                valueAsBooleanParameter,
+                valueAsDateTimeParameter,
+                valueAsNumericParameter,
+                valueAsPersonIdParameter,
+                textValueParameter,
+                htmlValueParameter,
+                condensedTextValueParameter,
+                condensedHtmlValueParameter,
+                attributeIdParameter,
+                valueParameter );
+        }
+
+        /// <summary>
+        /// Updates both the computed columns (ValueAs...) and the persisted
+        /// values of all attribute values that match the specified
+        /// <paramref name="valueIds"/>, in a single database command.
+        /// </summary>
+        /// <remarks>
+        ///     <para>
+        ///         This method immediately updates the database, no SaveChanges()
+        ///         call is required.
+        ///     </para>
+        ///     <para>
+        ///         This is the combined equivalent of calling
+        ///         <see cref="BulkUpdateAttributeValueComputedColumns(int, IEnumerable{int}, string, RockContext)"/>
+        ///         followed by
+        ///         <see cref="BulkUpdateAttributeValuePersistedValues(int, IEnumerable{int}, Field.PersistedValues, bool, RockContext)"/>,
+        ///         folded into one UPDATE so the row set is built from the table-valued
+        ///         parameter once instead of twice.
+        ///     </para>
+        ///     <para>
+        ///         Note that <paramref name="onlyDirty"/> now gates the computed
+        ///         columns as well as the persisted values (the separate computed-column
+        ///         method had no such filter). Callers that pass <c>true</c> supply a
+        ///         value set that was already selected on <c>IsPersistedValueDirty</c>,
+        ///         so any row skipped here is one that was cleaned concurrently and whose
+        ///         computed columns were already set when it was cleaned.
+        ///     </para>
+        /// </remarks>
+        /// <param name="attributeId">The attribute identifier.</param>
+        /// <param name="valueIds">The value identifiers that should be updated.</param>
+        /// <param name="value">The current value of those attribute values.</param>
+        /// <param name="persistedValues">The persisted values to use during the update.</param>
+        /// <param name="onlyDirty">Only update the <see cref="AttributeValue"/> objects if they are marked dirty.</param>
+        /// <param name="rockContext">The database context to use when updating.</param>
+        /// <returns>The number of attribute value rows that were updated.</returns>
+        internal static int BulkUpdateAttributeValueComputedAndPersistedValues( int attributeId, IEnumerable<int> valueIds, string value, Rock.Field.PersistedValues persistedValues, bool onlyDirty, RockContext rockContext )
+        {
+            var attributeValue = new AttributeValue
+            {
+                AttributeId = attributeId,
+                Value = value
+            };
+
+            attributeValue.UpdateValueAsProperties( rockContext );
+
+            var valueAsBooleanParameter = new SqlParameter( "@ValueAsBoolean", ( object ) attributeValue.ValueAsBoolean ?? DBNull.Value );
+            var valueAsDateTimeParameter = new SqlParameter( "@ValueAsDateTime", ( object ) attributeValue.ValueAsDateTime ?? DBNull.Value );
+            var valueAsNumericParameter = new SqlParameter( "@ValueAsNumeric", ( object ) attributeValue.ValueAsNumeric ?? DBNull.Value );
+            var valueAsPersonIdParameter = new SqlParameter( "@ValueAsPersonId", ( object ) attributeValue.ValueAsPersonId ?? DBNull.Value );
+            var textValueParameter = new SqlParameter( "@TextValue", ( object ) persistedValues.TextValue ?? DBNull.Value );
+            var htmlValueParameter = new SqlParameter( "@HtmlValue", ( object ) persistedValues.HtmlValue ?? DBNull.Value );
+            var condensedTextValueParameter = new SqlParameter( "@CondensedTextValue", ( object ) persistedValues.CondensedTextValue ?? DBNull.Value );
+            var condensedHtmlValueParameter = new SqlParameter( "@CondensedHtmlValue", ( object ) persistedValues.CondensedHtmlValue ?? DBNull.Value );
+            var attributeIdParameter = new SqlParameter( "@AttributeId", attributeId );
+            var onlyDirtyParameter = new SqlParameter( "@OnlyDirty", onlyDirty );
+
+            // Initialize the ValueId SQL parameter.
+            var attributeIdsTable = new DataTable();
+            attributeIdsTable.Columns.Add( "Id", typeof( int ) );
+
+            foreach ( var valueId in valueIds.Distinct() )
+            {
+                attributeIdsTable.Rows.Add( valueId );
+            }
+
+            var valueIdParameter = new SqlParameter( "@ValueId", SqlDbType.Structured )
+            {
+                TypeName = "dbo.IdList",
+                Value = attributeIdsTable
+            };
+
+            return rockContext.Database.ExecuteSqlCommand( @"
+UPDATE AV
+SET [AV].[ValueAsBoolean] = @ValueAsBoolean,
+    [AV].[ValueAsDateTime] = @ValueAsDateTime,
+    [AV].[ValueAsNumeric] = @ValueAsNumeric,
+    [AV].[ValueAsPersonId] = @ValueAsPersonId,
+    [AV].[PersistedTextValue] = @TextValue,
+    [AV].[PersistedHtmlValue] = @HtmlValue,
+    [AV].[PersistedCondensedTextValue] = @CondensedTextValue,
+    [AV].[PersistedCondensedHtmlValue] = @CondensedHtmlValue,
+    [AV].[IsPersistedValueDirty] = 0
+FROM [AttributeValue] AS [AV]
+INNER JOIN @ValueId AS [valueId] ON  [valueId].[Id] = [AV].[Id]
+WHERE [AV].[AttributeId] = @AttributeId
+  AND (@OnlyDirty = 0 OR [AV].[IsPersistedValueDirty] = 1)",
+                valueAsBooleanParameter,
+                valueAsDateTimeParameter,
+                valueAsNumericParameter,
+                valueAsPersonIdParameter,
+                textValueParameter,
+                htmlValueParameter,
+                condensedTextValueParameter,
+                condensedHtmlValueParameter,
+                attributeIdParameter,
+                onlyDirtyParameter,
+                valueIdParameter );
+        }
+
+        /// <summary>
         /// Updates all entity references for the given attribute value.
         /// </summary>
         /// <param name="attributeValue">The attribute value that needs its references updated.</param>
@@ -2635,17 +2823,29 @@ INSERT INTO [AttributeValueReferencedEntity] ([AttributeValueId], [EntityTypeId]
         [RockInternal( "1.14", true )]
         public static void UpdateAttributeEntityReferences( Rock.Model.Attribute attribute, RockContext rockContext )
         {
+            /*
+                9/18/26 - CLAUDE
+
+                Check the field type before querying the existing referenced
+                entities. Only entity-reference field types can have references,
+                so for every other field type the previous query was wasted work
+                whose result was discarded by this early return. On jobs that walk
+                every attribute (Update Persisted Attribute Values) this removed
+                one database round trip per non-reference attribute.
+
+                Reason: Skip the referenced-entity query for non-reference field types.
+            */
+            if ( !( FieldTypeCache.Get( attribute.FieldTypeId ).Field is Rock.Field.IEntityReferenceFieldType field ) )
+            {
+                return;
+            }
+
             var referencedEntitySet = rockContext.Set<AttributeReferencedEntity>();
 
             // Get all the existing referenced entities for those modified attribute values.
             var previousReferencedEntities = referencedEntitySet
                 .Where( re => re.AttributeId == attribute.Id )
                 .ToList();
-
-            if ( !( FieldTypeCache.Get( attribute.FieldTypeId ).Field is Rock.Field.IEntityReferenceFieldType field ) )
-            {
-                return;
-            }
 
             // Get the configuration values from the attribute instead of
             // cache because it might not be saved yet.

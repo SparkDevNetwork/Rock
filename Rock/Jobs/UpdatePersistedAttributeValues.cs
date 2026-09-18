@@ -84,6 +84,18 @@ namespace Rock.Jobs
 
         #endregion
 
+        #region Fields
+
+        /// <summary>
+        /// The number of attributes to load and rebuild per database context during
+        /// the force and volatile phases. Batching amortizes the per-attribute load
+        /// over one query; a smaller batch keeps the blast radius small if a batch
+        /// has to fall back to isolated per-attribute processing.
+        /// </summary>
+        private const int RebuildBatchSize = 100;
+
+        #endregion
+
         /// <summary> 
         /// Empty constructor for job initialization
         /// <para>
@@ -181,29 +193,26 @@ namespace Rock.Jobs
         /// <returns>The number of attributes and values that were updated.</returns>
         private int ForceRebuildAttributesAndValues( int rebuildPercentage, int commandTimeout, ThrottleLogger statusMessage, out List<string> errorMessages )
         {
-            int? lastAttributeId = null;
             var updatedCount = 0;
 
             var attributeIds = GetAttributeIdsToForceRebuild( rebuildPercentage, commandTimeout );
 
             errorMessages = new List<string>();
 
-            for ( var attributeIndex = 0; attributeIndex < attributeIds.Count; attributeIndex++ )
+            for ( var batchStart = 0; batchStart < attributeIds.Count; batchStart += RebuildBatchSize )
             {
-                var attributeId = attributeIds[attributeIndex];
+                var batchIds = attributeIds.Skip( batchStart ).Take( RebuildBatchSize ).ToList();
+                var batchEnd = Math.Min( batchStart + RebuildBatchSize, attributeIds.Count );
 
-                try
-                {
-                    statusMessage.Write( $"Rebuilding attribute {attributeIndex + 1:N0} of {attributeIds.Count:N0}." );
-                    updatedCount += ForceRebuildAttributeAndValues( attributeId, commandTimeout );
-                    lastAttributeId = attributeId;
-                }
-                catch ( Exception ex )
-                {
-                    errorMessages.Add( $"Error updating attribute #{attributeId}: {ex.Message}" );
-                    ExceptionLogService.LogException( ex );
-                }
+                statusMessage.Write( $"Rebuilding attributes {batchStart + 1:N0}-{batchEnd:N0} of {attributeIds.Count:N0}." );
+
+                updatedCount += ProcessForceRebuildBatch( batchIds, commandTimeout, errorMessages );
             }
+
+            // The attributes are processed in descending Id order, so the last entry
+            // is the lowest Id we reached this run. Remember it so the next run
+            // continues below it (see GetAttributeIdsToForceRebuild).
+            var lastAttributeId = attributeIds.Any() ? ( int? ) attributeIds.Last() : null;
 
             Rock.Web.SystemSettings.SetValue( SystemSettingKey.LastProcessedAttributeId, lastAttributeId.ToStringSafe() );
 
@@ -211,23 +220,20 @@ namespace Rock.Jobs
         }
 
         /// <summary>
-        /// Forcefully rebuild a single attribute and all its values.
+        /// Forcefully rebuild a single attribute and all its values in its own
+        /// database context. This is the isolated fallback used by
+        /// <see cref="ProcessForceRebuildBatch"/> when a batch cannot be processed
+        /// as a unit.
         /// </summary>
         /// <param name="attributeId">The attribute identifier to be updated.</param>
         /// <param name="commandTimeout">The timeout to use for a single command against the database.</param>
         /// <returns>The number of attribute values that were updated, plus one for the attribute.</returns>
         private int ForceRebuildAttributeAndValues( int attributeId, int commandTimeout )
         {
-            int updatedCount = 0;
-            var configurationValues = new Dictionary<string, string>();
-            Rock.Field.IFieldType field;
-            var sw = System.Diagnostics.Stopwatch.StartNew();
-
             using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 rockContext.Database.SetCommandTimeout( commandTimeout );
 
-                // First rebuild the attribute's default value.
                 var attribute = new AttributeService( rockContext ).Queryable()
                     .Include( a => a.AttributeQualifiers )
                     .Single( a => a.Id == attributeId );
@@ -237,62 +243,184 @@ namespace Rock.Jobs
                     return 0;
                 }
 
-                field = FieldTypeCache.Get( attribute.FieldTypeId ).Field;
+                var field = FieldTypeCache.Get( attribute.FieldTypeId )?.Field;
 
                 if ( field == null )
                 {
                     return 0;
                 }
 
-                Helper.UpdateAttributeDefaultPersistedValues( attribute );
-                Helper.UpdateAttributeEntityReferences( attribute, rockContext );
+                var updatedCount = ForceRebuildLoadedAttributeAndValues( attribute, field, rockContext, commandTimeout );
 
                 rockContext.SaveChanges();
 
-                updatedCount++;
+                return updatedCount;
+            }
+        }
 
-                // Now we need to tackle all the attribute values. Get the configuration
-                // of the attribute in the database.
-                foreach ( var qualifier in attribute.AttributeQualifiers )
+        /// <summary>
+        /// Processes a batch of attributes in a single database context, loading them
+        /// with one query and saving all their default-value and reference changes in
+        /// one call. If the batch cannot be processed or saved as a unit, it is retried
+        /// one attribute at a time in isolated contexts so a single failing attribute
+        /// cannot discard the work for the rest of the batch.
+        /// </summary>
+        /// <param name="attributeIds">The identifiers of the attributes in this batch.</param>
+        /// <param name="commandTimeout">The timeout to use for a single command against the database.</param>
+        /// <param name="errorMessages">On return, appended with any per-attribute errors from the fallback path.</param>
+        /// <returns>The number of attributes and values that were updated.</returns>
+        private int ProcessForceRebuildBatch( List<int> attributeIds, int commandTimeout, List<string> errorMessages )
+        {
+            try
+            {
+                var updatedCount = 0;
+
+                using ( var rockContext = new RockContext() )
                 {
-                    configurationValues.AddOrReplace( qualifier.Key, qualifier.Value );
+                    rockContext.Database.SetCommandTimeout( commandTimeout );
+
+                    // Load the whole batch (with qualifiers) in a single query rather
+                    // than one query per attribute.
+                    var attributes = new AttributeService( rockContext ).Queryable()
+                        .Include( a => a.AttributeQualifiers )
+                        .Where( a => attributeIds.Contains( a.Id ) )
+                        .ToList()
+                        .ToDictionary( a => a.Id );
+
+                    // Process in the original (descending Id) order.
+                    foreach ( var attributeId in attributeIds )
+                    {
+                        if ( !attributes.TryGetValue( attributeId, out var attribute ) )
+                        {
+                            continue;
+                        }
+
+                        var field = FieldTypeCache.Get( attribute.FieldTypeId )?.Field;
+
+                        if ( field == null )
+                        {
+                            continue;
+                        }
+
+                        updatedCount += ForceRebuildLoadedAttributeAndValues( attribute, field, rockContext, commandTimeout );
+                    }
+
+                    // Persist every attribute's default-value and reference changes
+                    // for the batch in a single round trip.
+                    rockContext.SaveChanges();
                 }
 
-                // Get all the distinctvalues and then process them in batches.
-                var distinctValues = new AttributeValueService( rockContext )
-                    .Queryable()
-                    .Where( av => av.AttributeId == attribute.Id )
-                    .Select( av => av.Value )
-                    .Distinct()
-                    .ToList();
+                return updatedCount;
+            }
+            catch ( Exception ex )
+            {
+                /*
+                    9/18/26 - CLAUDE
 
-                if ( field.IsPersistedValueSupported( configurationValues ) )
+                    A batch shares one context, so a single bad attribute (or a
+                    failed batch SaveChanges) would otherwise lose the work for the
+                    entire batch. Fall back to processing each attribute in its own
+                    context so the failure is isolated and logged per attribute. The
+                    attribute-value updates run via immediate SQL, so any that already
+                    ran during the failed batch attempt are simply re-run here; they
+                    are idempotent.
+
+                    Reason: Keep per-attribute failure isolation while batching the load.
+                */
+                ExceptionLogService.LogException( ex );
+
+                return ProcessForceRebuildIndividually( attributeIds, commandTimeout, errorMessages );
+            }
+        }
+
+        /// <summary>
+        /// Processes each attribute in its own database context, collecting errors per
+        /// attribute. This is the isolated fallback for <see cref="ProcessForceRebuildBatch"/>.
+        /// </summary>
+        /// <param name="attributeIds">The identifiers of the attributes to process.</param>
+        /// <param name="commandTimeout">The timeout to use for a single command against the database.</param>
+        /// <param name="errorMessages">On return, appended with any per-attribute errors.</param>
+        /// <returns>The number of attributes and values that were updated.</returns>
+        private int ProcessForceRebuildIndividually( List<int> attributeIds, int commandTimeout, List<string> errorMessages )
+        {
+            var updatedCount = 0;
+
+            foreach ( var attributeId in attributeIds )
+            {
+                try
                 {
-                    var cache = new Dictionary<string, object>();
-
-                    foreach ( var value in distinctValues )
-                    {
-                        var persistedValues = Helper.GetPersistedValuesOrPlaceholder( field, value, configurationValues, cache );
-
-                        Helper.BulkUpdateAttributeValueComputedColumns( attribute.Id, value, rockContext );
-
-                        updatedCount += Helper.BulkUpdateAttributeValuePersistedValues( attribute.Id, value, persistedValues, rockContext );
-                    }
+                    updatedCount += ForceRebuildAttributeAndValues( attributeId, commandTimeout );
                 }
-                else
+                catch ( Exception ex )
                 {
-                    var placeholderValues = Helper.GetPersistedValuePlaceholderOrDefault( field, configurationValues );
-
-                    foreach ( var value in distinctValues )
-                    {
-                        Helper.BulkUpdateAttributeValueComputedColumns( attribute.Id, value, rockContext );
-
-                        updatedCount += Helper.BulkUpdateAttributeValuePersistedValues( attribute.Id, value, placeholderValues, rockContext );
-                    }
+                    errorMessages.Add( $"Error updating attribute #{attributeId}: {ex.Message}" );
+                    ExceptionLogService.LogException( ex );
                 }
             }
 
-            LogTimedMessage( $"Force rebuild of attribute #{attributeId}.", sw.Elapsed.TotalMilliseconds );
+            return updatedCount;
+        }
+
+        /// <summary>
+        /// Rebuilds the default value, entity references, and all attribute values for a
+        /// single already-loaded attribute. The caller is responsible for calling
+        /// <see cref="Rock.Data.DbContext.SaveChanges()"/> on <paramref name="rockContext"/>
+        /// so that a batch of attributes can be saved together in one round trip.
+        /// </summary>
+        /// <param name="attribute">The attribute to rebuild; must be tracked by <paramref name="rockContext"/> with its qualifiers loaded.</param>
+        /// <param name="field">The field type for the attribute.</param>
+        /// <param name="rockContext">The database context that <paramref name="attribute"/> is tracked by.</param>
+        /// <param name="commandTimeout">The timeout to use for a single command against the database.</param>
+        /// <returns>The number of attribute values that were updated, plus one for the attribute.</returns>
+        private int ForceRebuildLoadedAttributeAndValues( Rock.Model.Attribute attribute, Rock.Field.IFieldType field, RockContext rockContext, int commandTimeout )
+        {
+            var updatedCount = 0;
+            var configurationValues = new Dictionary<string, string>();
+            var sw = System.Diagnostics.Stopwatch.StartNew();
+
+            // Rebuild the attribute's default value and references. These changes stay
+            // tracked (unsaved) so the caller can save the whole batch at once.
+            Helper.UpdateAttributeDefaultPersistedValues( attribute );
+            Helper.UpdateAttributeEntityReferences( attribute, rockContext );
+
+            updatedCount++;
+
+            // Get the configuration of the attribute from its qualifiers.
+            foreach ( var qualifier in attribute.AttributeQualifiers )
+            {
+                configurationValues.AddOrReplace( qualifier.Key, qualifier.Value );
+            }
+
+            // Get all the distinct values and then process them.
+            var distinctValues = new AttributeValueService( rockContext )
+                .Queryable()
+                .Where( av => av.AttributeId == attribute.Id )
+                .Select( av => av.Value )
+                .Distinct()
+                .ToList();
+
+            if ( field.IsPersistedValueSupported( configurationValues ) )
+            {
+                var cache = new Dictionary<string, object>();
+
+                foreach ( var value in distinctValues )
+                {
+                    var persistedValues = Helper.GetPersistedValuesOrPlaceholder( field, value, configurationValues, cache );
+
+                    updatedCount += Helper.BulkUpdateAttributeValueComputedAndPersistedValues( attribute.Id, value, persistedValues, rockContext );
+                }
+            }
+            else
+            {
+                var placeholderValues = Helper.GetPersistedValuePlaceholderOrDefault( field, configurationValues );
+
+                foreach ( var value in distinctValues )
+                {
+                    updatedCount += Helper.BulkUpdateAttributeValueComputedAndPersistedValues( attribute.Id, value, placeholderValues, rockContext );
+                }
+            }
+
+            LogTimedMessage( $"Force rebuild of attribute #{attribute.Id}.", sw.Elapsed.TotalMilliseconds );
 
             // Check if this field type references other entities.
             if ( !( field is Rock.Field.IEntityReferenceFieldType referencedField ) )
@@ -305,13 +433,13 @@ namespace Rock.Jobs
 
             // Get a list of all the attribute value identifiers that we
             // need to update the references for.
-            using ( var rockContext = RockApp.Current.CreateRockContext() )
+            using ( var referenceContext = RockApp.Current.CreateRockContext() )
             {
-                rockContext.Database.SetCommandTimeout( commandTimeout );
+                referenceContext.Database.SetCommandTimeout( commandTimeout );
 
-                attributeValueList = new AttributeValueService( rockContext )
+                attributeValueList = new AttributeValueService( referenceContext )
                     .Queryable()
-                    .Where( av => av.AttributeId == attributeId )
+                    .Where( av => av.AttributeId == attribute.Id )
                     .Select( av => new
                     {
                         av.Id,
@@ -339,16 +467,16 @@ namespace Rock.Jobs
 
                     var referenceDictionary = valueIds.ToDictionary( valueId => valueId, valueId => referencedEntities );
 
-                    using ( var rockContext = RockApp.Current.CreateRockContext() )
+                    using ( var referenceContext = RockApp.Current.CreateRockContext() )
                     {
-                        rockContext.Database.SetCommandTimeout( commandTimeout );
+                        referenceContext.Database.SetCommandTimeout( commandTimeout );
 
-                        Helper.BulkUpdateAttributeValueEntityReferences( referenceDictionary, rockContext );
+                        Helper.BulkUpdateAttributeValueEntityReferences( referenceDictionary, referenceContext );
                     }
                 }
             }
 
-            LogTimedMessage( $"Rebuild of entity references for attribute #{attributeId}.", sw.Elapsed.TotalMilliseconds );
+            LogTimedMessage( $"Rebuild of entity references for attribute #{attribute.Id}.", sw.Elapsed.TotalMilliseconds );
 
             return updatedCount;
         }
@@ -429,20 +557,14 @@ namespace Rock.Jobs
 
             errorMessages = new List<string>();
 
-            for ( var attributeIndex = 0; attributeIndex < attributeIds.Count; attributeIndex++ )
+            for ( var batchStart = 0; batchStart < attributeIds.Count; batchStart += RebuildBatchSize )
             {
-                var attributeId = attributeIds[attributeIndex];
+                var batchIds = attributeIds.Skip( batchStart ).Take( RebuildBatchSize ).ToList();
+                var batchEnd = Math.Min( batchStart + RebuildBatchSize, attributeIds.Count );
 
-                try
-                {
-                    statusMessage.Write( $"Rebuilding volatile attribute {attributeIndex + 1:N0} of {attributeIds.Count:N0}." );
-                    updatedCount += ForceRebuildAttributeAndValues( attributeId, commandTimeout );
-                }
-                catch ( Exception ex )
-                {
-                    errorMessages.Add( $"Error updating attribute #{attributeId}: {ex.Message}" );
-                    ExceptionLogService.LogException( ex );
-                }
+                statusMessage.Write( $"Rebuilding volatile attributes {batchStart + 1:N0}-{batchEnd:N0} of {attributeIds.Count:N0}." );
+
+                updatedCount += ProcessForceRebuildBatch( batchIds, commandTimeout, errorMessages );
             }
 
             return updatedCount;
@@ -574,9 +696,7 @@ namespace Rock.Jobs
                             {
                                 rockContext.Database.SetCommandTimeout( commandTimeout );
 
-                                Helper.BulkUpdateAttributeValueComputedColumns( attributeId, attributeValueIds, value, rockContext );
-
-                                updatedCount += Helper.BulkUpdateAttributeValuePersistedValues( attributeId, attributeValueIds, persistedValues, true, rockContext );
+                                updatedCount += Helper.BulkUpdateAttributeValueComputedAndPersistedValues( attributeId, attributeValueIds, value, persistedValues, true, rockContext );
 
                                 LogTimedMessage( $"Rebuild of {attributeValueIds.Count:N0} dirty values for attribute #{attributeId}.", sw.Elapsed.TotalMilliseconds );
 
