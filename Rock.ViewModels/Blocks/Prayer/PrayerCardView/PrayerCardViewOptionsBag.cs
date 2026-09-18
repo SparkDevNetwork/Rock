@@ -55,5 +55,11 @@ namespace Rock.ViewModels.Blocks.Prayer.PrayerCardView
         /// flag a request for administrator review.
         /// </summary>
         public bool IsPrayerTeamFlaggingEnabled { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether each card shows who most
+        /// recently prayed for the request and when.
+        /// </summary>
+        public bool IsLastPrayedShown { get; set; }
     }
 }

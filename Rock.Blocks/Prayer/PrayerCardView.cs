@@ -136,7 +136,7 @@ namespace Rock.Blocks.Prayer
         Order = 12 )]
 
     [BooleanField( "Load Last Prayed Collection",
-        Description = "Loads an optional collection of last prayed times for the requests. This is available as a separate merge field in Lava.",
+        Description = "If enabled, each card shows who most recently prayed for the request and when. Requires interactions to be recorded.",
         Key = AttributeKey.LoadLastPrayedCollection,
         DefaultBooleanValue = false,
         Order = 13 )]
@@ -223,7 +223,8 @@ namespace Rock.Blocks.Prayer
                 CampusTypeFilterGuids = GetCampusTypeGuids(),
                 CampusStatusFilterGuids = GetCampusStatusGuids(),
                 PrayedButtonText = GetAttributeValue( AttributeKey.PrayedButtonText ),
-                IsPrayerTeamFlaggingEnabled = GetAttributeValue( AttributeKey.EnablePrayerTeamFlagging ).AsBoolean()
+                IsPrayerTeamFlaggingEnabled = GetAttributeValue( AttributeKey.EnablePrayerTeamFlagging ).AsBoolean(),
+                IsLastPrayedShown = GetAttributeValue( AttributeKey.LoadLastPrayedCollection ).AsBoolean()
             };
         }
 
@@ -239,22 +240,43 @@ namespace Rock.Blocks.Prayer
             var selectedCampus = GetSavedCampus( eligibleCampuses );
             var campusGuids = GetCampusFilterGuids( selectedCampus, eligibleCampuses );
             var prayerRequests = GetPrayerRequests( campusGuids );
+            var lastPrayedLookup = GetLastPrayedLookup( prayerRequests );
 
             return new PrayerCardViewBag
             {
-                PrayerRequests = prayerRequests.Select( BuildCardBag ).ToList(),
+                PrayerRequests = prayerRequests.Select( r => BuildCardBag( r, lastPrayedLookup ) ).ToList(),
                 SelectedCampus = selectedCampus?.ToListItemBag()
             };
+        }
+
+        /// <summary>
+        /// Gets the most recent prayer interaction for each request, keyed by
+        /// request Id, when the block is configured to show last prayed details.
+        /// One query covers every card.
+        /// </summary>
+        /// <param name="prayerRequests">The prayer requests being displayed.</param>
+        /// <returns>The lookup, or an empty dictionary when the feature is off.</returns>
+        private Dictionary<int, PrayerRequestLastPrayedDetail> GetLastPrayedLookup( List<PrayerRequest> prayerRequests )
+        {
+            if ( !GetAttributeValue( AttributeKey.LoadLastPrayedCollection ).AsBoolean() || !prayerRequests.Any() )
+            {
+                return new Dictionary<int, PrayerRequestLastPrayedDetail>();
+            }
+
+            return new PrayerRequestService( RockContext )
+                .GetLastPrayedDetails( prayerRequests.Select( r => r.Id ) )
+                .ToDictionary( d => d.RequestId );
         }
 
         /// <summary>
         /// Maps a prayer request to the display data a single card needs.
         /// </summary>
         /// <param name="prayerRequest">The prayer request to describe.</param>
+        /// <param name="lastPrayedLookup">The most recent prayer per request Id, when enabled.</param>
         /// <returns>The populated card bag.</returns>
-        private PrayerRequestCardBag BuildCardBag( PrayerRequest prayerRequest )
+        private PrayerRequestCardBag BuildCardBag( PrayerRequest prayerRequest, Dictionary<int, PrayerRequestLastPrayedDetail> lastPrayedLookup )
         {
-            return new PrayerRequestCardBag
+            var bag = new PrayerRequestCardBag
             {
                 IdKey = prayerRequest.IdKey,
                 FirstName = prayerRequest.FirstName,
@@ -262,6 +284,14 @@ namespace Rock.Blocks.Prayer
                 Text = prayerRequest.Text,
                 CategoryName = prayerRequest.CategoryId.HasValue ? CategoryCache.Get( prayerRequest.CategoryId.Value )?.Name : null
             };
+
+            if ( lastPrayedLookup.TryGetValue( prayerRequest.Id, out var lastPrayed ) )
+            {
+                bag.LastPrayedByName = $"{lastPrayed.FirstName} {lastPrayed.LastName}".Trim();
+                bag.LastPrayedDateTime = lastPrayed.PrayerDateTime.ToRockDateTimeOffset();
+            }
+
+            return bag;
         }
 
         /// <summary>

@@ -16,14 +16,15 @@
             There are no prayer requests to display at this time.
         </NotificationBox>
 
-        <div v-else class="block-body row d-flex flex-wrap">
-            <div v-for="request in prayerRequests" :key="request.idKey ?? ''" class="col-md-4 col-sm-6 col-xs-12 mb-4">
-                <PrayerCard :request="request"
-                            :prayedButtonText="config.options?.prayedButtonText ?? 'I Prayed'"
-                            :isFlaggingEnabled="config.options?.isPrayerTeamFlaggingEnabled ?? false"
-                            @pray="onPray"
-                            @flag="onFlag" />
-            </div>
+        <div v-else class="block-body prayer-card-grid">
+            <PrayerCard v-for="request in prayerRequests"
+                        :key="request.idKey ?? ''"
+                        :request="request"
+                        :prayedButtonText="config.options?.prayedButtonText ?? 'I Prayed'"
+                        :isFlaggingEnabled="config.options?.isPrayerTeamFlaggingEnabled ?? false"
+                        :isLastPrayedShown="config.options?.isLastPrayedShown ?? false"
+                        @pray="onPray"
+                        @flag="onFlag" />
         </div>
     </div>
 </template>
@@ -31,6 +32,13 @@
 <style scoped>
 .block-filter {
     margin-left: auto;
+}
+
+.prayer-card-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--spacing-large, 24px);
+    align-items: stretch;
 }
 </style>
 
