@@ -49,12 +49,20 @@ internal class LavaApplicationDetailResult : EntityResultBase
     public bool IsActive { get; set; }
 
     /// <summary>
-    /// Who may execute the application's ApplicationView endpoints, from its
-    /// ExecuteView allow rules. Empty when no read audience has been set, in
-    /// which case only Rock Administrators and Lava Application Developers
-    /// can call them.
+    /// The IdKey of the Lava Application entity type. Pair it with this
+    /// result's IdKey as the entityIdKey in the Core Administration skill's
+    /// authorization tools to read or change who may execute the
+    /// application's endpoints (the ExecuteView, ExecuteEdit, and
+    /// ExecuteAdministrate actions).
     /// </summary>
-    public List<string> ReadAudiences { get; set; }
+    public string EntityTypeIdKey { get; set; }
+
+    /// <summary>
+    /// The IdKey of the Lava Endpoint entity type, for securing an endpoint
+    /// that answers for itself (EndpointExecute mode) with the same tools,
+    /// paired with the endpoint's endpointIdKey and the Execute action.
+    /// </summary>
+    public string EndpointEntityTypeIdKey { get; set; }
 
     /// <summary>
     /// The endpoints the application contains, summarized. Read one in full

@@ -251,6 +251,7 @@ namespace Rock.Blocks.AI
                     : mcpSettings.IsExcludingSystemSkills,
                 IsSystem = entity.IsSystem,
                 Role = chatSettings.Role,
+                ReasoningEffort = chatSettings.ReasoningEffort ?? ReasoningEffort.Low,
                 CurrentPersonTemplate = chatSettings.CurrentPersonTemplate,
                 Slug = mcpSettings.Slug,
             };
@@ -376,6 +377,9 @@ namespace Rock.Blocks.AI
 
                 box.IfValidProperty( nameof( box.Bag.Role ),
                     () => chatSettings.Role = box.Bag.Role );
+
+                box.IfValidProperty( nameof( box.Bag.ReasoningEffort ),
+                    () => chatSettings.ReasoningEffort = box.Bag.ReasoningEffort );
 
                 box.IfValidProperty( nameof( box.Bag.CurrentPersonTemplate ),
                     () => chatSettings.CurrentPersonTemplate = box.Bag.CurrentPersonTemplate );

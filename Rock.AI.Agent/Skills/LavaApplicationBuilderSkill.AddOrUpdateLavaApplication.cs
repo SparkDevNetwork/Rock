@@ -13,8 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // </copyright>
-
-using System.Collections.Generic;
+//
 using System.ComponentModel;
 using System.Linq;
 
@@ -24,6 +23,7 @@ using Rock.AI.Agent.Classes.Skills.LavaApplicationBuilderSkill;
 using Rock.Configuration;
 using Rock.Model;
 using Rock.SystemGuid;
+using Rock.Web.Cache;
 
 namespace Rock.AI.Agent.Skills;
 
@@ -43,31 +43,26 @@ internal sealed partial class LavaApplicationBuilderSkill
     #region Tool(s)
 
     /*
-        8/18/2026 - CLAUDE
+        9/15/2026 - CLAUDE
 
-        This tool is the skill's only create path for applications. The
-        endpoint upsert used to create the containing application implicitly,
-        which made applicationName a parameter whose meaning depended on
-        hidden state and turned a misspelled applicationSlug into a silently
-        created phantom application. The established parent-child shape
-        (AddOrUpdateContentChannelItem) requires the parent to exist, so
-        application creation moved here and AddOrUpdateLavaEndpoint now
-        errors when the application is missing.
+        This tool no longer takes an audiences parameter or writes Auth rows.
+        Who may execute an application's endpoints is authored with the Core
+        Administration skill's authorization tools (AddOrUpdateAuthorizationForEntity
+        on the application for ExecuteView, and on an EndpointExecute endpoint
+        for Execute), which both Code Composer agents carry. The result names
+        the identifiers those tools take and states plainly that a new
+        application answers 401 to every real visitor until the rules exist,
+        which is the failure the earlier audience parameter was added to
+        prevent.
 
-        Updates are keyed by IdKey rather than slug so a typo cannot upsert a
-        second application, and the slug itself is not updatable: it is the
-        application's address, baked into every component's useLavaApp
-        binding, so renaming it silently breaks pages.
-
-        Reason: One create path for applications, keyed updates, no implicit
-        creation side effects.
+        Reason: One authorization surface for every authoring skill.
     */
-    [Description( "Adds a new Lava application or updates an existing one the current person can administrate. Applications group a block's endpoints and must exist before endpoints can be added." )]
+
+    [Description( "Adds a new Lava application or updates an existing one the current person can administrate. Applications group a block's endpoints and must exist before endpoints can be added. Who may call the endpoints is configured separately with the authorization tools." )]
     [AgentToolPreamble( "Saving the Lava application." )]
-    [AgentUsage( "Create one application per block, named after the feature, then pass its slug to every AddOrUpdateLavaEndpoint call so security is rigged once for the whole block." )]
+    [AgentUsage( "Create one application per block, named after the feature, then pass its slug to every AddOrUpdateLavaEndpoint call so security is configured once for the whole block." )]
     [AgentUsage( "The slug cannot be changed after creation; it is the address every component's useLavaApp binding uses. To rename what the user sees, update the name." )]
-    [AgentUsage( "audiences decides who may call the application's endpoints and is required when adding. Ask the user who the page is for, then pass one or more values: 'Public' for anonymous visitors, 'AllAuthenticatedPeople' for anyone who is logged in, or security role names for restricted data. Several roles can be granted at once, for example ['RSR - Staff Workers', 'Worship Team Leaders']. When the user describes people rather than naming a role, call ResolveAudience first to map the description onto exact values. If a value does not match, the error lists the roles to choose from." )]
-    [AgentUsage( "Never choose 'Public' on the user's behalf. It exposes the application's read endpoints to anonymous visitors and must come from the user." )]
+    [AgentUsage( "A new application has no authorization rules, so its endpoints work for Rock Administrators and Lava Application Developers and return 401 to everyone else. Secure it immediately with the Core Administration skill: call AddOrUpdateAuthorizationForEntity with the returned entityTypeIdKey and idKey for action ExecuteView, allowing each intended role (groupIdKey, from ResolveAudience) in order and then denying specialRole AllUsers. Allow specialRole AllUsers only when the user explicitly wants anonymous visitors to read the data." )]
     [AgentToolGuid( "26C5F1A8-3D94-4E67-90B2-7A45D8E1C6F3" )]
     public AgentToolResult AddOrUpdateLavaApplication(
         [Description( "Required when editing an existing Lava application. Do not provide when adding a new one." )]
@@ -82,9 +77,6 @@ internal sealed partial class LavaApplicationBuilderSkill
         [Description( "What the application is for." )]
         SetOrClear<string> description = null,
 
-        [Description( "Who may call the application's read endpoints, as one or more values: 'Public' (everyone, including anonymous visitors), 'AllAuthenticatedPeople' (anyone who is logged in), or the exact names of security roles. Every value is granted, so ['Staff', 'Volunteers'] opens the endpoints to members of either role. Required when adding. On an update, omit it to leave the current ExecuteView rules alone; providing it replaces every existing ExecuteView rule, including any an administrator added by hand." )]
-        List<string> audiences = null,
-
         [Description( "Whether the application and its endpoints can be called." )]
         bool? isActive = null )
     {
@@ -92,7 +84,6 @@ internal sealed partial class LavaApplicationBuilderSkill
         var helper = new AgentToolHelper( rockContext, AgentRequestContext, _logger );
 
         var isAdd = lavaApplicationIdKey.IsNullOrWhiteSpace();
-        var hasAudiences = audiences?.Any( a => a.IsNotNullOrWhiteSpace() ) == true;
         var applicationService = new LavaApplicationService( rockContext );
         LavaApplication application = null;
 
@@ -116,16 +107,6 @@ internal sealed partial class LavaApplicationBuilderSkill
             {
                 helper.AddError( "A name is required when adding a Lava application." );
             }
-
-            // Requiring the audience up front is the whole point of the
-            // parameter: creation is the one moment the intended audience is
-            // reliably known, and an application with no execute-view rules
-            // works for the administrator building it (the cache's role
-            // override) while returning 401 to every real visitor.
-            if ( !hasAudiences )
-            {
-                helper.AddError( $"At least one audience is required when adding a Lava application, so its endpoints are callable by the people the page is for. Pass '{PublicAudienceKeyword}', '{AllAuthenticatedAudienceKeyword}', or one or more security role names. Call {nameof( ResolveAudience )} to map a description of the people the page is for onto those values." );
-            }
         }
         else
         {
@@ -135,13 +116,6 @@ internal sealed partial class LavaApplicationBuilderSkill
             {
                 helper.AddError( $"The slug of a Lava application cannot be changed; it is the address every component's useLavaApp binding uses. Update the name instead, or create a new application." );
             }
-        }
-
-        List<AudienceGrant> audienceGrants = null;
-
-        if ( hasAudiences && !TryResolveAudiences( rockContext, audiences, out audienceGrants, out var audienceError ) )
-        {
-            helper.AddError( audienceError );
         }
 
         if ( helper.HasErrors )
@@ -208,15 +182,9 @@ internal sealed partial class LavaApplicationBuilderSkill
             return helper.ErrorResult;
         }
 
-        // The application has to be saved before it can be rigged, because
-        // the Auth rows reference its Id. Failures above mean no rigging,
-        // and rigging failures surface as the tool call's own exception.
-        if ( audienceGrants != null )
-        {
-            SetAudienceRules( rockContext, application.TypeId, application.Id, LavaApplication.EXECUTE_VIEW, audienceGrants );
-        }
+        var detail = CreateApplicationDetailResult( rockContext, application );
 
-        var result = Success( CreateApplicationDetailResult( rockContext, application ) )
+        var result = Success( detail )
             .WithHistoryContent( new LavaApplicationReferenceResult
             {
                 Id = application.Id,
@@ -225,16 +193,10 @@ internal sealed partial class LavaApplicationBuilderSkill
             }, "lava-application" )
             .WithInstructions( $"The '{application.Slug}' Lava application has been {( isAdd ? "created" : "updated" )}." );
 
-        // Spell out what was and was not granted, because the read and
-        // write boundaries differ: the audience covers ApplicationView
-        // endpoints only, and the two override roles always pass.
-        if ( audienceGrants != null )
-        {
-            result.WithInstructions( $"The application's read endpoints (security mode ApplicationView) can be executed by {DescribeAudienceGrants( audienceGrants )}. Rock Administrators and Lava Application Developers can always execute them, so verify the page as a person outside those roles. Write access was not granted: an endpoint using the ApplicationEdit security mode is callable only by those two roles until an administrator grants ExecuteEdit rights through the Lava Applications admin pages. To change the audience later, call this tool again with a new audiences list; it replaces the current one." );
-        }
-
         if ( isAdd )
         {
+            result.WithInstructions( $"Secure the application now, before writing endpoints. It has no authorization rules, so its endpoints work for Rock Administrators and Lava Application Developers and return 401 to every other visitor. Using the Core Administration skill, call AddOrUpdateAuthorizationForEntity with entityTypeIdKey '{detail.EntityTypeIdKey}', entityIdKey '{detail.IdKey}', and action ExecuteView: allow each role the page is for (groupIdKey, from ResolveAudience) in order, then deny specialRole AllUsers. Allow specialRole AllUsers only when the user explicitly wants anonymous visitors to read the data. ExecuteView governs endpoints in ApplicationView mode; do not grant ExecuteEdit or ExecuteAdministrate unless the user asks for write endpoints to be callable beyond those two roles. Confirm with ListAuthorizationForEntity." );
+
             /*
                 8/28/2026 - CLAUDE
 
@@ -249,6 +211,10 @@ internal sealed partial class LavaApplicationBuilderSkill
                 survives instruction drift.
             */
             result.WithInstructions( "Before writing an endpoint template for this application, follow the coding guide route the Community Knowledge Base skill's GetKnowledgeBaseOverview result points you to, and retrieve every article and source lookup it assigns for the endpoint outcome. SearchKnowledge is not authoritative evidence for exact entity property names. Never construct or guess a topic or article key." );
+        }
+        else
+        {
+            result.WithInstructions( $"Authorization rules were not changed. Read them with the Core Administration skill's ListAuthorizationForEntity (entityTypeIdKey '{detail.EntityTypeIdKey}', entityIdKey '{detail.IdKey}') and change them with AddOrUpdateAuthorizationForEntity only when the user asked for a security change." );
         }
 
         return result;

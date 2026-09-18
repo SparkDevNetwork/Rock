@@ -69,6 +69,12 @@ namespace Rock.AI.Agent
         /// </summary>
         public ModelServiceRole Role { get; }
 
+        /// <summary>
+        /// Gets the reasoning effort the agent asks the language model to spend
+        /// when responding to a chat message.
+        /// </summary>
+        public ReasoningEffort ReasoningEffort { get; }
+
         /// <inheritdoc cref="ChatAgentSettings.CurrentPersonTemplate"/>
         public string CurrentPersonTemplate { get; set; }
 
@@ -102,6 +108,7 @@ namespace Rock.AI.Agent
             var settings = agent.GetAdditionalSettings<ChatAgentSettings>();
             AutoSummarizeThreshold = settings.AutoSummarizeThreshold ?? 60_000;
             Role = settings.Role;
+            ReasoningEffort = settings.ReasoningEffort ?? ReasoningEffort.Low;
             CurrentPersonTemplate = settings.CurrentPersonTemplate;
         }
 
@@ -137,6 +144,7 @@ namespace Rock.AI.Agent
             Provider = provider;
             Instructions = instructions ?? string.Empty;
             Role = settings.Role;
+            ReasoningEffort = settings.ReasoningEffort ?? ReasoningEffort.Low;
             Skills = skills ?? new List<SkillConfiguration>();
         }
     }
