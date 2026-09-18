@@ -58,6 +58,9 @@ export type PrayerRequestCardBag = {
      */
     lastPrayedDateTime?: string | null;
 
-    /** Gets or sets the text of the prayer request. */
+    /**
+     * Gets or sets the text of the prayer request as HTML, with line
+     * breaks already converted to break tags.
+     */
     text?: string | null;
 };

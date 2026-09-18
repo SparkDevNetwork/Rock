@@ -151,7 +151,8 @@ namespace Rock.Blocks.Prayer
     #endregion Block Attributes
 
     [Rock.SystemGuid.EntityTypeGuid( "85FE88A7-0E8E-41E2-805E-1FA9E9BC2D73" )]
-    [Rock.SystemGuid.BlockTypeGuid( "2B0B4AED-0D65-42B0-B1E6-20E904966986" )]
+    // WAS [Rock.SystemGuid.BlockTypeGuid( "2B0B4AED-0D65-42B0-B1E6-20E904966986" )]
+    [Rock.SystemGuid.BlockTypeGuid( "1FEE129E-E46A-4805-AF5A-6F98E1DA7A16" )]
     public class PrayerCardView : RockBlockType
     {
         #region Keys
@@ -281,7 +282,7 @@ namespace Rock.Blocks.Prayer
                 IdKey = prayerRequest.IdKey,
                 FirstName = prayerRequest.FirstName,
                 LastName = prayerRequest.LastName,
-                Text = prayerRequest.Text,
+                Text = prayerRequest.Text.ConvertCrLfToHtmlBr(),
                 CategoryName = prayerRequest.CategoryId.HasValue ? CategoryCache.Get( prayerRequest.CategoryId.Value )?.Name : null
             };
 

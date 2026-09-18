@@ -7,7 +7,7 @@
                 <span class="label label-primary">{{ request.categoryName }}</span>
             </p>
             <div ref="textWrapperElement" class="prayer-card-text-wrapper">
-                <p ref="textElement" class="card-text" :class="{ 'line-clamp-4': !isExpanded }">{{ request.text }}</p>
+                <p ref="textElement" class="card-text" :class="{ 'line-clamp-4': !isExpanded }" v-html="request.text"></p>
             </div>
             <RockButton v-if="isTextOverflowing || isExpanded"
                         :btnType="BtnType.Link"

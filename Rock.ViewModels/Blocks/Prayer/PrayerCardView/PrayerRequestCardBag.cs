@@ -42,7 +42,8 @@ namespace Rock.ViewModels.Blocks.Prayer.PrayerCardView
         public string LastName { get; set; }
 
         /// <summary>
-        /// Gets or sets the text of the prayer request.
+        /// Gets or sets the text of the prayer request as HTML, with line
+        /// breaks already converted to break tags.
         /// </summary>
         public string Text { get; set; }
 
