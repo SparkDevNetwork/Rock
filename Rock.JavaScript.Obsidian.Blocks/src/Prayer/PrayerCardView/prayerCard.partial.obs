@@ -1,0 +1,225 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div ref="cardElement" class="card">
+        <div class="card-body d-flex flex-column">
+            <div class="d-flex gap-3 align-items-center">
+                <h3 class="card-title mt-0">{{ request.firstName }} {{ request.lastName }}</h3>
+                <p v-if="request.categoryName" class="card-subtitle mb-2">
+                    <span class="label label-primary">{{ request.categoryName }}</span>
+                </p>
+            </div>
+            <div ref="textWrapperElement" class="prayer-card-text-wrapper">
+                <p ref="textElement" class="card-text" :class="{ 'line-clamp-4': !isExpanded }" v-html="request.text"></p>
+            </div>
+            <RockButton v-if="isTextOverflowing || isExpanded"
+                        :btnType="BtnType.Link"
+                        :btnSize="BtnSize.ExtraSmall"
+                        class="pl-0 align-self-start"
+                        @click="onToggleExpandClick">
+                {{ isExpanded ? "Show less" : "Show more" }}
+                <i :class="isExpanded ? 'ti ti-chevron-up' : 'ti ti-chevron-down'"></i>
+            </RockButton>
+            <p v-if="lastPrayedText" class="text-muted small mb-0 mt-auto pt-3">{{ lastPrayedText }}</p>
+
+            <div class="d-flex align-items-center justify-content-between" :class="{ 'mt-auto': !lastPrayedText }">
+                <RockButton v-if="isFlaggingEnabled"
+                            :btnType="BtnType.Link"
+                            :btnSize="BtnSize.Small"
+                            class="pl-0"
+                            :class="isFlagged ? 'text-danger' : 'text-muted'"
+                            :disabled="isFlagged"
+                            @click="onFlagClick">
+                    <i class="ti ti-flag"></i> <span>{{ isFlagged ? "Flagged" : "Flag" }}</span>
+                </RockButton>
+                <RockButton :btnType="isPrayed ? BtnType.Default : BtnType.Primary"
+                            :btnSize="BtnSize.Small"
+                            class="ml-auto"
+                            :disabled="isPrayed"
+                            @click="onPrayClick">
+                    {{ isPrayed ? prayedButtonText : "Pray" }}
+                </RockButton>
+            </div>
+        </div>
+    </div>
+</template>
+
+<style scoped>
+.prayer-card-text-wrapper {
+    overflow: hidden;
+    transition: height 220ms ease;
+}
+</style>
+
+<script setup lang="ts">
+    import { computed, nextTick, onMounted, onUnmounted, PropType, ref } from "vue";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
+    import { BtnType } from "@Obsidian/Enums/Controls/btnType";
+    import { confirm } from "@Obsidian/Utility/dialogs";
+    import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
+    import { PrayerRequestCardBag } from "@Obsidian/ViewModels/Blocks/Prayer/PrayerCardView/prayerRequestCardBag";
+
+    const props = defineProps({
+        request: {
+            type: Object as PropType<PrayerRequestCardBag>,
+            required: true
+        },
+
+        prayedButtonText: {
+            type: String as PropType<string>,
+            default: "I Prayed"
+        },
+
+        isFlaggingEnabled: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        isLastPrayedShown: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "pray", idKey: string): void;
+        (e: "flag", idKey: string): void;
+    }>();
+
+    // #region Values
+
+    const isPrayed = ref(false);
+    const isFlagged = ref(false);
+    const isExpanded = ref(false);
+    const isTextOverflowing = ref(false);
+    const cardElement = ref<HTMLElement | null>(null);
+    const textWrapperElement = ref<HTMLElement | null>(null);
+    const textElement = ref<HTMLElement | null>(null);
+
+    let resizeObserver: ResizeObserver | null = null;
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    const lastPrayedText = computed((): string => {
+        if (!props.isLastPrayedShown || !props.request.lastPrayedDateTime) {
+            return "";
+        }
+
+        const lastPrayed = RockDateTime.parseISO(props.request.lastPrayedDateTime);
+        if (!lastPrayed) {
+            return "";
+        }
+
+        return `Last prayed for ${lastPrayed.toElapsedString().toLowerCase()}`;
+    });
+
+    // #endregion Computed Values
+
+    // #region Event Handlers
+
+    /**
+     * Marks the card as prayed for and notifies the parent.
+     */
+    function onPrayClick(): void {
+        if (isPrayed.value || !props.request.idKey) {
+            return;
+        }
+
+        isPrayed.value = true;
+        emit("pray", props.request.idKey);
+    }
+
+    /**
+     * Confirms with the person, then marks the card as flagged and notifies
+     * the parent.
+     */
+    async function onFlagClick(): Promise<void> {
+        if (isFlagged.value || !props.request.idKey) {
+            return;
+        }
+
+        const isConfirmed = await confirm("Flag this prayer request as inappropriate for administrator review?");
+
+        if (!isConfirmed) {
+            return;
+        }
+
+        isFlagged.value = true;
+        emit("flag", props.request.idKey);
+    }
+
+    /**
+     * Toggles between the clamped and full request text, animating the
+     * wrapper height from its current size to the new size.
+     */
+    async function onToggleExpandClick(): Promise<void> {
+        const wrapper = textWrapperElement.value;
+
+        if (!wrapper) {
+            isExpanded.value = !isExpanded.value;
+            return;
+        }
+
+        const startHeight = wrapper.offsetHeight;
+
+        isExpanded.value = !isExpanded.value;
+        await nextTick();
+
+        // Measure the natural height of the new state, then pin back to the
+        // starting height and force a reflow so the transition has a start point.
+        wrapper.style.height = "";
+        const endHeight = wrapper.offsetHeight;
+
+        if (endHeight === startHeight) {
+            return;
+        }
+
+        wrapper.style.height = `${startHeight}px`;
+        void wrapper.offsetHeight;
+
+        wrapper.style.height = `${endHeight}px`;
+        wrapper.addEventListener("transitionend", () => {
+            wrapper.style.height = "";
+        }, { once: true });
+    }
+
+    // #endregion Event Handlers
+
+    // #region Functions
+
+    /**
+     * Checks whether the clamped text is taller than its visible box so the
+     * Show more link only appears when there is hidden text.
+     */
+    function updateTextOverflow(): void {
+        if (isExpanded.value || !textElement.value) {
+            return;
+        }
+
+        isTextOverflowing.value = textElement.value.scrollHeight > textElement.value.clientHeight;
+    }
+
+    // #endregion Functions
+
+    // #region Lifecycle Hooks
+
+    onMounted(() => {
+        updateTextOverflow();
+
+        // Observe the card rather than the text so the observer survives the
+        // transition swapping the text element in and out.
+        if (cardElement.value) {
+            resizeObserver = new ResizeObserver(updateTextOverflow);
+            resizeObserver.observe(cardElement.value);
+        }
+    });
+
+    onUnmounted(() => {
+        resizeObserver?.disconnect();
+        resizeObserver = null;
+    });
+
+    // #endregion Lifecycle Hooks
+</script>

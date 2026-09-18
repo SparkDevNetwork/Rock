@@ -1,0 +1,128 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="prayer-card-view">
+        <div v-if="config.options?.isCampusFilterVisible" v-show="isCampusPickerVisible" class="d-flex mb-4">
+            <div class="block-filter">
+                <CampusPicker v-model="selectedCampus"
+                              label="Campus"
+                              @isVisible="onCampusPickerVisibilityChanged"
+                              :includeInactive="false"
+                              :campusTypeFilter="config.options?.campusTypeFilterGuids ?? undefined"
+                              :campusStatusFilter="config.options?.campusStatusFilterGuids ?? undefined"
+                              class="input-width-lg"
+                              showBlankItem />
+            </div>
+        </div>
+
+        <NotificationBox v-if="prayerRequests.length === 0" alertType="info">
+            There are no prayer requests to display at this time.
+        </NotificationBox>
+
+        <div v-else class="prayer-card-grid">
+            <PrayerCard v-for="request in prayerRequests"
+                        :key="request.idKey ?? ''"
+                        :request="request"
+                        :prayedButtonText="config.options?.prayedButtonText ?? 'I Prayed'"
+                        :isFlaggingEnabled="config.options?.isPrayerTeamFlaggingEnabled ?? false"
+                        :isLastPrayedShown="config.options?.isLastPrayedShown ?? false"
+                        @pray="onPray"
+                        @flag="onFlag" />
+        </div>
+    </div>
+</template>
+
+<style scoped>
+.block-filter {
+    margin-left: auto;
+}
+
+.prayer-card-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--spacing-large, 24px);
+    align-items: stretch;
+}
+
+/* Rock's md breakpoint: two columns on tablets. */
+@media (max-width: 991px) {
+    .prayer-card-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+/* Rock's sm breakpoint: one column on phones. */
+@media (max-width: 767px) {
+    .prayer-card-grid {
+        grid-template-columns: 1fr;
+    }
+}
+</style>
+
+<script setup lang="ts">
+    import { ref, watch } from "vue";
+    import PrayerCard from "./PrayerCardView/prayerCard.partial.obs";
+    import CampusPicker from "@Obsidian/Controls/campusPicker.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
+    import { CustomBlockBox } from "@Obsidian/ViewModels/Blocks/customBlockBox";
+    import { PrayerCardViewBag } from "@Obsidian/ViewModels/Blocks/Prayer/PrayerCardView/prayerCardViewBag";
+    import { PrayerCardViewOptionsBag } from "@Obsidian/ViewModels/Blocks/Prayer/PrayerCardView/prayerCardViewOptionsBag";
+    import { PrayerRequestCardBag } from "@Obsidian/ViewModels/Blocks/Prayer/PrayerCardView/prayerRequestCardBag";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+
+    // #region Values
+
+    const config = useConfigurationValues<CustomBlockBox<PrayerCardViewBag, PrayerCardViewOptionsBag>>();
+    const invokeBlockAction = useInvokeBlockAction();
+
+    const prayerRequests = ref<PrayerRequestCardBag[]>(config.bag?.prayerRequests ?? []);
+    const selectedCampus = ref<ListItemBag | null>(config.bag?.selectedCampus ?? null);
+    const isCampusPickerVisible = ref(false);
+
+    // #endregion Values
+
+    // #region Event Handlers
+
+    /**
+     * Tracks whether the campus picker chose to render itself so the wrapper
+     * and its spacing hide along with it.
+     */
+    function onCampusPickerVisibilityChanged(isVisible: boolean): void {
+        isCampusPickerVisible.value = isVisible;
+    }
+
+    /**
+     * Records that the person prayed for the request.
+     */
+    async function onPray(idKey: string): Promise<void> {
+        await invokeBlockAction("PrayRequest", { idKey });
+    }
+
+    /**
+     * Flags the request for administrator review.
+     */
+    async function onFlag(idKey: string): Promise<void> {
+        await invokeBlockAction("FlagPrayerRequest", { idKey });
+    }
+
+    /**
+     * Saves the selected campus and replaces the displayed cards.
+     */
+    async function onCampusChanged(): Promise<void> {
+        const result = await invokeBlockAction<PrayerCardViewBag>("SelectCampus", { campusGuid: selectedCampus.value?.value ?? "" });
+
+        if (result.isSuccess && result.data) {
+            prayerRequests.value = result.data.prayerRequests ?? [];
+        }
+    }
+
+    // #endregion Event Handlers
+
+    // #region Watchers
+
+    watch(selectedCampus, onCampusChanged);
+
+    // #endregion Watchers
+
+    onConfigurationValuesChanged(useReloadBlock());
+</script>
