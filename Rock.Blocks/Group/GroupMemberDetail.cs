@@ -178,6 +178,11 @@ namespace Rock.Blocks.Group
 
         #region Fields
 
+        /// <summary>
+        /// The message shown in place of a group member whose group has been archived.
+        /// </summary>
+        private static readonly string GroupArchivedMessage = "This group member belongs to a group that has been archived.";
+
         private const string NoLocationPreference = "No Location Preference";
 
         /// <summary>
@@ -265,6 +270,28 @@ namespace Rock.Blocks.Group
                 box.ErrorMessage = isLookupAttempt
                     ? "Group Member not found. Group Member may have been moved to another group or deleted."
                     : "An incorrect querystring parameter was used. A valid GroupMemberId or GroupId parameter is required.";
+
+                PrepareDetailBox( box, entity );
+
+                return box;
+            }
+
+            if ( IsGroupArchived( entity ) )
+            {
+                /*
+                    9/18/26 - MSE
+
+                    Archiving a group also archives its members, but records such as event
+                    registrants still link to the group member. Rather than displaying and
+                    allowing edits to a member of an archived group, show a warning in the
+                    same way the Group Detail block does for an archived group.
+
+                    Reason: Group Member Detail shows a warning for members of archived groups. (Fixes #7047)
+                */
+                var box = new DetailBlockBox<GroupMemberBag, GroupMemberDetailOptionsBag>
+                {
+                    ErrorMessage = GroupArchivedMessage
+                };
 
                 PrepareDetailBox( box, entity );
 
@@ -390,10 +417,23 @@ namespace Rock.Blocks.Group
                 archived groups from root queries, including EF lazy loads. So the Group of a
                 member whose group was archived lazy loads as null and the block would throw a
                 NullReferenceException. Get() bypasses the filter, so load the group explicitly.
+                The loaded group is also what lets the block detect an archived group and show
+                a warning instead of the member.
 
                 Reason: Group Member Detail errored for members of archived groups. (Fixes #7047)
             */
             entity.Group = new GroupService( RockContext ).Get( entity.GroupId );
+        }
+
+        /// <summary>
+        /// Determines whether the group that the group member belongs to has been archived.
+        /// Call <see cref="EnsureGroupIsLoaded(GroupMember)"/> first so the group is populated.
+        /// </summary>
+        /// <param name="entity">The group member, which may be <c>null</c>.</param>
+        /// <returns><c>true</c> if the member's group is archived; otherwise, <c>false</c>.</returns>
+        private static bool IsGroupArchived( GroupMember entity )
+        {
+            return entity?.Group != null && entity.Group.IsArchived;
         }
 
         /// <summary>
@@ -1822,6 +1862,13 @@ namespace Rock.Blocks.Group
                 return false;
             }
 
+            // The block presents a member of an archived group as unavailable, so do not allow edits either.
+            if ( IsGroupArchived( entity ) )
+            {
+                error = ActionBadRequest( GroupArchivedMessage );
+                return false;
+            }
+
             // System members are read-only, so no action may edit them.
             if ( entity.IsSystem || !IsAuthorizedToEdit( entity.Group ) )
             {
@@ -2067,6 +2114,11 @@ namespace Rock.Blocks.Group
             if ( groupMember == null )
             {
                 return ActionBadRequest( $"{GroupMember.FriendlyTypeName} not found." );
+            }
+
+            if ( IsGroupArchived( groupMember ) )
+            {
+                return ActionBadRequest( GroupArchivedMessage );
             }
 
             if ( !IsAuthorizedToEdit( groupMember.Group ) )
@@ -2400,6 +2452,11 @@ namespace Rock.Blocks.Group
             if ( entity == null )
             {
                 return ActionBadRequest( $"{GroupMember.FriendlyTypeName} not found." );
+            }
+
+            if ( IsGroupArchived( entity ) )
+            {
+                return ActionBadRequest( GroupArchivedMessage );
             }
 
             if ( !IsAuthorizedToEdit( entity.Group ) )
@@ -3069,6 +3126,12 @@ namespace Rock.Blocks.Group
             {
                 var groupMember = new GroupMemberService( RockContext ).Get( groupMemberIdKey, !PageCache.Layout.Site.DisablePredictableIds );
                 EnsureGroupIsLoaded( groupMember );
+
+                if ( IsGroupArchived( groupMember ) )
+                {
+                    return ActionBadRequest( GroupArchivedMessage );
+                }
+
                 group = groupMember?.Group;
             }
             else
