@@ -1,10 +1,11 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
     <div class="prayer-card-view">
-        <div v-if="config.options?.isCampusFilterVisible" class="d-flex mb-4">
+        <div v-if="config.options?.isCampusFilterVisible" v-show="isCampusPickerVisible" class="d-flex mb-4">
             <div class="block-filter">
                 <CampusPicker v-model="selectedCampus"
                               label="Campus"
+                              @isVisible="onCampusPickerVisibilityChanged"
                               :includeInactive="false"
                               :campusTypeFilter="config.options?.campusTypeFilterGuids ?? undefined"
                               :campusStatusFilter="config.options?.campusStatusFilterGuids ?? undefined"
@@ -76,10 +77,19 @@
 
     const prayerRequests = ref<PrayerRequestCardBag[]>(config.bag?.prayerRequests ?? []);
     const selectedCampus = ref<ListItemBag | null>(config.bag?.selectedCampus ?? null);
+    const isCampusPickerVisible = ref(false);
 
     // #endregion Values
 
     // #region Event Handlers
+
+    /**
+     * Tracks whether the campus picker chose to render itself so the wrapper
+     * and its spacing hide along with it.
+     */
+    function onCampusPickerVisibilityChanged(isVisible: boolean): void {
+        isCampusPickerVisible.value = isVisible;
+    }
 
     /**
      * Records that the person prayed for the request.

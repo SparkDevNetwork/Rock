@@ -1,7 +1,7 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
     <div ref="cardElement" class="card">
-        <div class="card-body">
+        <div class="card-body d-flex flex-column">
             <div class="d-flex gap-3 align-items-center">
                 <h3 class="card-title mt-0">{{ request.firstName }} {{ request.lastName }}</h3>
                 <p v-if="request.categoryName" class="card-subtitle mb-2">
@@ -14,28 +14,28 @@
             <RockButton v-if="isTextOverflowing || isExpanded"
                         :btnType="BtnType.Link"
                         :btnSize="BtnSize.ExtraSmall"
-                        class="pl-0"
+                        class="pl-0 align-self-start"
                         @click="onToggleExpandClick">
                 {{ isExpanded ? "Show less" : "Show more" }}
                 <i :class="isExpanded ? 'ti ti-chevron-up' : 'ti ti-chevron-down'"></i>
             </RockButton>
-            <p v-if="lastPrayedText" class="text-muted small mb-0">{{ lastPrayedText }}</p>
-        </div>
+            <p v-if="lastPrayedText" class="text-muted small mb-0 mt-auto pt-3">{{ lastPrayedText }}</p>
 
-        <div class="card-footer bg-white border-0">
-            <a v-if="isFlaggingEnabled"
-               href="#"
-               class="btn btn-link btn-sm pl-0"
-               :class="isFlagged ? 'text-danger disabled' : 'text-muted'"
-               @click.prevent="onFlagClick">
-                <i class="ti ti-flag"></i> <span>{{ isFlagged ? "Flagged" : "Flag" }}</span>
-            </a>
-            <a href="#"
-               class="btn btn-sm pull-right"
-               :class="isPrayed ? 'btn-default disabled' : 'btn-primary'"
-               @click.prevent="onPrayClick">
-                {{ isPrayed ? prayedButtonText : "Pray" }}
-            </a>
+            <div class="d-flex align-items-center justify-content-between" :class="{ 'mt-auto': !lastPrayedText }">
+                <a v-if="isFlaggingEnabled"
+                   href="#"
+                   class="btn btn-link btn-sm pl-0"
+                   :class="isFlagged ? 'text-danger disabled' : 'text-muted'"
+                   @click.prevent="onFlagClick">
+                    <i class="ti ti-flag"></i> <span>{{ isFlagged ? "Flagged" : "Flag" }}</span>
+                </a>
+                <a href="#"
+                   class="btn btn-sm ml-auto"
+                   :class="isPrayed ? 'btn-default disabled' : 'btn-primary'"
+                   @click.prevent="onPrayClick">
+                    {{ isPrayed ? prayedButtonText : "Pray" }}
+                </a>
+            </div>
         </div>
     </div>
 </template>
