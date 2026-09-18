@@ -22,19 +22,22 @@
             <p v-if="lastPrayedText" class="text-muted small mb-0 mt-auto pt-3">{{ lastPrayedText }}</p>
 
             <div class="d-flex align-items-center justify-content-between" :class="{ 'mt-auto': !lastPrayedText }">
-                <a v-if="isFlaggingEnabled"
-                   href="#"
-                   class="btn btn-link btn-sm pl-0"
-                   :class="isFlagged ? 'text-danger disabled' : 'text-muted'"
-                   @click.prevent="onFlagClick">
+                <RockButton v-if="isFlaggingEnabled"
+                            :btnType="BtnType.Link"
+                            :btnSize="BtnSize.Small"
+                            class="pl-0"
+                            :class="isFlagged ? 'text-danger' : 'text-muted'"
+                            :disabled="isFlagged"
+                            @click="onFlagClick">
                     <i class="ti ti-flag"></i> <span>{{ isFlagged ? "Flagged" : "Flag" }}</span>
-                </a>
-                <a href="#"
-                   class="btn btn-sm ml-auto"
-                   :class="isPrayed ? 'btn-default disabled' : 'btn-primary'"
-                   @click.prevent="onPrayClick">
+                </RockButton>
+                <RockButton :btnType="isPrayed ? BtnType.Default : BtnType.Primary"
+                            :btnSize="BtnSize.Small"
+                            class="ml-auto"
+                            :disabled="isPrayed"
+                            @click="onPrayClick">
                     {{ isPrayed ? prayedButtonText : "Pray" }}
-                </a>
+                </RockButton>
             </div>
         </div>
     </div>
