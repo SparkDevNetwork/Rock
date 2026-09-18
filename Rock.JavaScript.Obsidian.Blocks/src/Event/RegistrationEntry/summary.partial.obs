@@ -5,7 +5,7 @@
 
             <Registrar />
 
-            <div v-if="hasPaymentCost && hasRegistrantNotOnWaitList">
+            <div v-if="isCostSummaryShown">
                 <h4>Payment Summary</h4>
                 <DiscountCodeForm />
                 <CostSummary />
@@ -39,7 +39,7 @@
                 <RockButton v-if="viewModel.allowRegistrationUpdates" class="pull-left" btnType="default" @click="onPrevious" :isLoading="loading" autoDisable>
                     Previous
                 </RockButton>
-                <RockButton btnType="primary" type="submit" :isLoading="loading" autoDisable>
+                <RockButton btnType="primary" type="submit" :isLoading="loading" :disabled="!isCostDataReady" autoDisable>
                     {{ finishButtonText }}
                 </RockButton>
             </div>
@@ -56,6 +56,7 @@
         CurrentRegistrationEntryState,
         GetPersistSessionArgs,
         PersistSession,
+        RegistrationCostSummary,
         RegistrationEntryTerms,
         getRegistrantBasicInfo,
         use,
@@ -79,6 +80,7 @@
     const isCaptchaComplete = ref(false);
     const persistSession = use(PersistSession);
     const registrationEntryTerms = use(RegistrationEntryTerms);
+    const { readonlyRegistrationCostSummary } = use(RegistrationCostSummary);
 
     const emit = defineEmits<{
         (e: "next"): void,
@@ -92,6 +94,9 @@
 
     /** An error message received from a bad submission */
     const submitErrorMessage = ref<string>("");
+
+    /** The error shown when the registrant tries to submit before the cost line items have loaded. */
+    const costDataNotReadyErrorMessage = "The registration cost has not been calculated yet. Please wait for it to load and try again.";
 
     // #endregion
 
@@ -191,6 +196,21 @@
         return registrantInfos.value.some(r => !r.isOnWaitList);
     });
 
+    /** Is the payment summary with the cost line items shown? This is the same condition that renders the CostSummary. */
+    const isCostSummaryShown = computed<boolean>(() => {
+        return hasPaymentCost.value && hasRegistrantNotOnWaitList.value;
+    });
+
+    /**
+     * Is the cost data ready so the registration can be submitted? When the
+     * payment summary is shown, its line items must have been successfully
+     * retrieved from the server first; otherwise a failed request would look
+     * like a $0 registration and skip the payment step (see issue #7048).
+     */
+    const isCostDataReady = computed<boolean>(() => {
+        return !isCostSummaryShown.value || readonlyRegistrationCostSummary.value.isLoaded;
+    });
+
     // #endregion
 
     // #region Functions
@@ -205,6 +225,16 @@
         try {
             loading.value = true;
             submitErrorMessage.value = "";
+
+            // The cost line items are still loading or could not be retrieved.
+            // Submitting now would post a $0 registration with no payment method,
+            // so refuse until the cost has been calculated. The submit button is
+            // also disabled in this state; this guards implicit form submission.
+            if (!isCostDataReady.value) {
+                submitErrorMessage.value = costDataNotReadyErrorMessage;
+                loading.value = false;
+                return;
+            }
 
             // Pre-validate the "Require Full Payment or Payment Plan" rule before persisting the session,
             // tokenizing a card, or handing the registrant off to a redirect gateway.
