@@ -53,7 +53,7 @@ namespace Rock.Model
         {
             get
             {
-                return this.ParentGroup != null ? this.ParentGroup : base.ParentAuthority;
+                return ParentGroup ?? base.ParentAuthority;
             }
         }
 
@@ -65,15 +65,12 @@ namespace Rock.Model
         {
             get
             {
-                if ( this.GroupTypeId > 0 )
+                if ( GroupTypeId > 0 )
                 {
-                    GroupTypeCache groupType = GroupTypeCache.Get( this.GroupTypeId );
-                    return groupType;
+                    return GroupTypeCache.Get( GroupTypeId );
                 }
-                else
-                {
-                    return base.ParentAuthorityPre;
-                }
+
+                return base.ParentAuthorityPre;
             }
         }
 
@@ -431,7 +428,7 @@ namespace Rock.Model
         /// </returns>
         public override bool IsAuthorized( string action, Person person )
         {
-            // Check to see if user is authorized using normal authorization rules
+            // Check to see if the person is authorized using the normal authorization rules.
             bool authorized = base.IsAuthorized( action, person );
 
             if ( authorized || person == null )
@@ -439,16 +436,16 @@ namespace Rock.Model
                 return authorized;
             }
 
-            var groupType = GroupTypeCache.Get( this.GroupTypeId );
+            var groupType = GroupTypeCache.Get( GroupTypeId );
 
             if ( groupType == null )
             {
                 return authorized;
             }
 
-            // if the person isn't authorized through normal security roles, check if the person has a group role that authorizes them
+            // If the person isn't authorized through normal security roles, check if the person has a group role that authorizes them.
             // First, check if there are any roles that could authorized them. If not, we can avoid a database lookup.
-            List<int> checkMemberRoleIds = new List<int>();
+            var checkMemberRoleIds = new List<int>();
             if ( action == Authorization.VIEW )
             {
                 checkMemberRoleIds.AddRange( groupType.Roles.Where( a => a.CanView || a.CanTakeAttendance ).Select( a => a.Id ) );
@@ -472,14 +469,14 @@ namespace Rock.Model
             }
 
             // For each occurrence of this person in this group for the roles that might grant them auth,
-            // check to see if their role is valid for the group type and if the role grants them authorization
+            // check to see if their role is valid for the group type and if the role grants them authorization.
             using ( var rockContext = new RockContext() )
             {
                 foreach ( int roleId in new GroupMemberService( rockContext )
                     .Queryable().AsNoTracking()
                     .Where( m =>
                         m.PersonId == person.Id &&
-                        m.GroupId == this.Id &&
+                        m.GroupId == Id &&
                         m.GroupMemberStatus == GroupMemberStatus.Active )
                     .Select( m => m.GroupRoleId ) )
                 {
