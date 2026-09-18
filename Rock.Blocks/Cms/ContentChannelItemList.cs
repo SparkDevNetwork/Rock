@@ -170,6 +170,13 @@ namespace Rock.Blocks.Cms
 
         private ContentChannel SelectedContentChannel { get; set; }
 
+        /// <summary>
+        /// The identifiers of items in the current channel that have at least one event occurrence.
+        /// Populated in <see cref="GetListItems"/> so the grid can check existence
+        /// without lazy-loading <see cref="ContentChannelItem.EventItemOccurrences"/> per row.
+        /// </summary>
+        private HashSet<int> _itemIdsWithEventOccurrences = new HashSet<int>();
+
         #region Keys
 
         private static class AttributeKey
@@ -369,7 +376,29 @@ namespace Rock.Blocks.Cms
                 return Enumerable.Empty<ContentChannelItem>().AsQueryable();
             }
 
-            var query = base.GetListQueryable( rockContext ).Where( i => i.ContentChannelId == contentChannel.Id );
+            /*
+                9/16/26 - CLAUDE
+
+                GetGridDataBag materializes this query with AsNoTracking().
+                ContentChannelItem.IsAuthorized walks ParentAuthority through
+                ContentChannel then ContentChannelType, and itemUrl reads
+                ContentChannelItemSlugs via PrimarySlug. Without eager loading,
+                EF lazy-loads those navigations once per row. All items share
+                the same channel, so Include the 1-to-1 parents (and slugs when
+                ItemUrl will be resolved). Event occurrence existence is batched
+                in GetListItems instead of Included, to avoid loading unused
+                occurrence rows and a cartesian product with slugs.
+
+                Reason: Eliminate N+1 queries in Content Channel Item List. (Fixes #7044)
+            */
+            var query = base.GetListQueryable( rockContext )
+                .Include( i => i.ContentChannel.ContentChannelType )
+                .Where( i => i.ContentChannelId == contentChannel.Id );
+
+            if ( contentChannel.ItemUrl.IsNotNullOrWhiteSpace() )
+            {
+                query = query.Include( i => i.ContentChannelItemSlugs );
+            }
 
             // Filter by person who created content if context entity is a person
             var contextEntity = GetContextEntity();
@@ -428,7 +457,35 @@ namespace Rock.Blocks.Cms
         protected override List<ContentChannelItem> GetListItems( IQueryable<ContentChannelItem> queryable, RockContext rockContext )
         {
             var items = queryable.ToList();
-            return items.Where( cci => cci.IsAuthorized( Authorization.VIEW, GetCurrentPerson() ) ).ToList();
+            var authorizedItems = items.Where( cci => cci.IsAuthorized( Authorization.VIEW, GetCurrentPerson() ) ).ToList();
+
+            LoadItemIdsWithEventOccurrences( rockContext );
+
+            return authorizedItems;
+        }
+
+        /// <summary>
+        /// Loads the identifiers of items in the current channel that have at least
+        /// one event item occurrence. One query for the whole channel, used by the
+        /// occurrences grid column instead of per-row lazy loads.
+        /// </summary>
+        /// <param name="rockContext">The context used to query event item occurrences.</param>
+        private void LoadItemIdsWithEventOccurrences( RockContext rockContext )
+        {
+            var contentChannel = GetContentChannel();
+            if ( contentChannel == null )
+            {
+                _itemIdsWithEventOccurrences = new HashSet<int>();
+                return;
+            }
+
+            _itemIdsWithEventOccurrences = new HashSet<int>(
+                new EventItemOccurrenceChannelItemService( rockContext )
+                    .Queryable()
+                    .AsNoTracking()
+                    .Where( o => o.ContentChannelItem.ContentChannelId == contentChannel.Id )
+                    .Select( o => o.ContentChannelItemId )
+                    .Distinct() );
         }
 
         /// <inheritdoc/>
@@ -450,7 +507,7 @@ namespace Rock.Blocks.Cms
                 .AddDateTimeField( "startDateTime", a => a.StartDateTime )
                 .AddDateTimeField( "expireDateTime", a => a.ExpireDateTime )
                 .AddField( "isScheduled", a => a.StartDateTime > RockDateTime.Now )
-                .AddField( "occurrences", a => a.EventItemOccurrences.Any() )
+                .AddField( "occurrences", a => _itemIdsWithEventOccurrences.Contains( a.Id ) )
                 .AddField( "status", a => a.Status )
                 .AddField( "priority", a => a.Priority )
                 .AddField( "isContentLibraryOwner", a => a.IsContentLibraryOwner )

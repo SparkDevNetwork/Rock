@@ -16,7 +16,7 @@
             </div>
 
             <teleport to="body" v-if="showPopup">
-                <div class="backdrop" @keydown.esc.stop="onCancel">
+                <div class="backdrop person-picker-popup" @keydown.esc.stop="onCancel">
                     <div class="absolute-panel picker">
                         <div class="action-header d-flex align-items-center justify-content-between">
                             <h4>Person Search</h4>

@@ -46,6 +46,7 @@
     import { AIAgentBag } from "@Obsidian/ViewModels/Blocks/AI/AIAgentDetail/aiAgentBag";
     import { AIAgentDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/AI/AIAgentDetail/aiAgentDetailOptionsBag";
     import { ModelServiceRoleDescription } from "@Obsidian/Enums/AI/Agent/modelServiceRole";
+    import { ReasoningEffortDescription } from "@Obsidian/Enums/AI/Agent/reasoningEffort";
     import { AgentSkillBag } from "@Obsidian/ViewModels/Blocks/AI/AIAgentDetail/agentSkillBag";
     import { AgentType, AgentTypeDescription } from "@Obsidian/Enums/AI/Agent/agentType";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
@@ -127,6 +128,7 @@
 
         if (props.modelValue.agentType === AgentType.Chat) {
             valueBuilder.addTextValue("Role", ModelServiceRoleDescription[props.modelValue.role]);
+            valueBuilder.addTextValue("Reasoning Effort", ReasoningEffortDescription[props.modelValue.reasoningEffort]);
         }
         else if (props.modelValue.agentType === AgentType.Mcp) {
             if (props.modelValue.slug) {

@@ -44,19 +44,38 @@ internal class JsonRpcRequest
     /// <summary>
     /// The version of the JSON-RPC protocol used in this request.
     /// </summary>
-    public string Version => _rootElement.GetProperty( "jsonrpc" ).GetString();
+    public string Version => TryGetRootProperty( "jsonrpc", out var versionProperty ) ? versionProperty.GetString() : null;
 
     /// <summary>
     /// The unique identifier for the request. Will be <c>null</c> for
-    /// notification messages that do not require a response.
+    /// notification messages that do not require a response. JSON-RPC 2.0
+    /// allows this to be either a string or a number, so the raw element is
+    /// kept and echoed back in the response exactly as it was received.
     /// </summary>
-    public long? Id => _rootElement.TryGetProperty( "id", out var idProperty ) ? idProperty.GetInt64() : ( long? ) null;
+    public JsonElement? Id => TryGetRootProperty( "id", out var idProperty ) ? idProperty : ( JsonElement? ) null;
+
+    /// <summary>
+    /// Determines if the identifier of this request is one that JSON-RPC 2.0
+    /// permits. Only a string or a number is valid, an explicit <c>null</c>
+    /// or any other JSON type is not.
+    /// </summary>
+    public bool IsIdValid => Id.HasValue
+        && ( Id.Value.ValueKind == JsonValueKind.String || Id.Value.ValueKind == JsonValueKind.Number );
+
+    /// <summary>
+    /// Determines if the payload was a JSON object, which is the only shape
+    /// a single JSON-RPC request may take. Anything else, such as the array
+    /// used by a batch request, is not supported.
+    /// </summary>
+    public bool IsRequestObject => _rootElement.ValueKind == JsonValueKind.Object;
 
     /// <summary>
     /// The method name of the request, which indicates the action to be
-    /// performed.
+    /// performed. Will be <c>null</c> if the request did not specify one.
     /// </summary>
-    public string Method => _rootElement.GetProperty( "method" ).GetString();
+    public string Method => TryGetRootProperty( "method", out var methodProperty ) && methodProperty.ValueKind == JsonValueKind.String
+        ? methodProperty.GetString()
+        : null;
 
     #endregion
 
@@ -80,6 +99,25 @@ internal class JsonRpcRequest
     #region Methods
 
     /// <summary>
+    /// Gets a property from the root element of the request. This tolerates a
+    /// payload that is not a JSON object, which would otherwise throw.
+    /// </summary>
+    /// <param name="propertyName">The name of the property to look for.</param>
+    /// <param name="value">On return, contains the property if it was found.</param>
+    /// <returns><c>true</c> if the property was found; otherwise <c>false</c>.</returns>
+    private bool TryGetRootProperty( string propertyName, out JsonElement value )
+    {
+        if ( _rootElement.ValueKind != JsonValueKind.Object )
+        {
+            value = default;
+
+            return false;
+        }
+
+        return _rootElement.TryGetProperty( propertyName, out value );
+    }
+
+    /// <summary>
     /// Gets the parameters of the request as a strongly typed object.
     /// </summary>
     /// <typeparam name="T">The type of object to decode the parameters into.</typeparam>
@@ -87,7 +125,7 @@ internal class JsonRpcRequest
     public T GetParameters<T>()
         where T : new()
     {
-        if ( _rootElement.TryGetProperty( "params", out var parameters ) )
+        if ( TryGetRootProperty( "params", out var parameters ) )
         {
             try
             {
