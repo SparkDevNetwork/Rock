@@ -349,7 +349,7 @@ END" );
         /// </summary>
         private void AddCodeComposerPageUp()
         {
-            RockMigrationHelper.AddPage( true, AIAgentsPageGuid, FullWidthLayoutGuid, "Code Composer", "", CodeComposerPageGuid, "ti ti-code" );
+            RockMigrationHelper.AddPage( true, AIAgentsPageGuid, FullWidthLayoutGuid, "Code Composer (Experimental)", "", CodeComposerPageGuid, "ti ti-code" );
 
             RockMigrationHelper.AddBlock( true, CodeComposerPageGuid.AsGuid(), null, SystemGuid.Site.SITE_ROCK_INTERNAL.AsGuid(), ChatBotBlockTypeGuid.AsGuid(), "Chat Bot", "Main", @"", @"", 0, CodeComposerChatBotBlockGuid );
 

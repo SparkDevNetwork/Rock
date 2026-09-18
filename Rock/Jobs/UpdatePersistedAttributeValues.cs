@@ -144,7 +144,28 @@ namespace Rock.Jobs
         {
             var migrationHelper = new MigrationHelper( new JobMigration( commandTimeout ) );
 
-            migrationHelper.CreateIndexIfNotExists( "AttributeValue", new[] { nameof( AttributeValue.ValueChecksum ) }, Array.Empty<string>() );
+            /*
+                9/17/26 - CLAUDE
+
+                The persisted-value UPDATE queries filter on both ValueChecksum
+                and AttributeId. With a single-column index on ValueChecksum the
+                optimizer kept flip-flopping between an index seek and a full
+                clustered scan (CHECKSUM collides, so rows-per-checksum varies
+                wildly), which produced unstable query plans. Widening the index
+                to key on ValueChecksum + AttributeId gives a stable, selective
+                seek. We drop the old single-column index and create the wider
+                one under its convention-correct name (IX_ValueChecksum_AttributeId)
+                rather than modifying the existing index in place, so the index
+                name continues to reflect the columns it covers.
+
+                Reason: Stabilize the plan for persisted attribute value updates.
+            */
+            migrationHelper.DropIndexIfExists( "AttributeValue", "IX_ValueChecksum" );
+
+            migrationHelper.CreateIndexIfNotExists(
+                "AttributeValue",
+                new[] { nameof( AttributeValue.ValueChecksum ), nameof( AttributeValue.AttributeId ) },
+                new[] { nameof( AttributeValue.IsPersistedValueDirty ) } );
         }
 
         /// <summary>
@@ -500,7 +521,7 @@ namespace Rock.Jobs
             // Safety loop counter to quit after 1,000 iterations.  GetDirtyAttributeValues() can return up to 100,000
             // attribute values per iteration, so 1,000 iterations will be up to 100,000,000 total attribute value records.
             int loopCount = 0;
-            while ( dirtyDictionary.Count > 0 || loopCount <= 1000 )
+            while ( dirtyDictionary.Count > 0 && loopCount <= 1000 )
             {
                 loopCount++;
 
@@ -599,7 +620,7 @@ namespace Rock.Jobs
                 var valueIds = attributeValueIds.Take( 1_000 ).ToList();
                 attributeValueIds = attributeValueIds.Skip( 1_000 ).ToList();
 
-                var referenceDictionary = attributeValueIds.ToDictionary( vid => vid, _ => referencedEntities );
+                var referenceDictionary = valueIds.ToDictionary( vid => vid, _ => referencedEntities );
 
                 Helper.BulkUpdateAttributeValueEntityReferences( referenceDictionary, rockContext );
             }
