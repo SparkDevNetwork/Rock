@@ -243,10 +243,20 @@ namespace RockWeb.Blocks.Communication
 
             using ( var rockContext = new RockContext() )
             {
-                var personId = GetPerson( rockContext )?.Id;
+                var person = GetPerson( rockContext );
+                var personId = person?.Id;
                 int groupId = hfGroupId.Value.AsInteger();
                 var groupMemberService = new GroupMemberService( rockContext );
                 var group = new GroupService( rockContext ).Get( groupId );
+
+                if ( person == null || !IsAuthorizedCommunicationList( group, person, rockContext ) )
+                {
+                    nbGroupNotification.Text = "Communication list not found.";
+                    nbGroupNotification.NotificationBoxType = NotificationBoxType.Danger;
+                    nbGroupNotification.Visible = true;
+                    return;
+                }
+
                 var groupMemberRecordsForPerson = groupMemberService.Queryable().Where( a => a.GroupId == groupId && a.PersonId == personId ).ToList();
                 if ( groupMemberRecordsForPerson.Any() )
                 {
@@ -361,32 +371,14 @@ namespace RockWeb.Blocks.Communication
                .IsActive()
                .ToList();
 
-            var categoryGuids = this.GetAttributeValue( AttributeKey.CommunicationListCategories ).SplitDelimitedValues().AsGuidList();
             var viewableCommunicationLists = new List<Group>();
 
             foreach ( var communicationList in communicationLists )
             {
                 communicationList.LoadAttributes( rockContext );
-                if ( !categoryGuids.Any() )
+                if ( IsAuthorizedCommunicationList( communicationList, currentPerson, rockContext ) )
                 {
-                    // if no categories where specified, only show lists that the person has VIEW auth
-                    if ( communicationList.IsAuthorized( Rock.Security.Authorization.VIEW, currentPerson ) )
-                    {
-                        viewableCommunicationLists.Add( communicationList );
-                    }
-                }
-                else
-                {
-                    Guid? categoryGuid = communicationList.GetAttributeValue( "Category" ).AsGuidOrNull();
-                    if ( categoryGuid.HasValue && categoryGuids.Contains( categoryGuid.Value ) )
-                    {
-                        var category = CategoryCache.Get( categoryGuid.Value );
-                        if ( !category.IsAuthorized( Rock.Security.Authorization.VIEW, currentPerson ) )
-                        {
-                            continue;
-                        }
-                        viewableCommunicationLists.Add( communicationList );
-                    }
+                    viewableCommunicationLists.Add( communicationList );
                 }
             }
 
@@ -441,6 +433,47 @@ namespace RockWeb.Blocks.Communication
         private bool ContainsActivePersonRecord( ICollection<GroupMember> groupMembers, int personId )
         {
             return ( groupMembers?.Any( m => m.PersonId == personId && m.GroupMemberStatus == GroupMemberStatus.Active ) ) ?? false;
+        }
+
+        /// <summary>
+        /// Determines whether the person may subscribe to or manage their existing subscription to the communication
+        /// list. Returns <c>false</c> for any group that is not a communication list the person is authorized to view.
+        /// </summary>
+        /// <param name="group">The group to check.</param>
+        /// <param name="person">The person whose subscription is being managed.</param>
+        /// <param name="rockContext">The context used to load the group's attributes when they are not already loaded.</param>
+        /// <returns><c>true</c> if the person may manage their subscription to the list; otherwise, <c>false</c>.</returns>
+        private bool IsAuthorizedCommunicationList( Group group, Person person, RockContext rockContext )
+        {
+            int communicationListGroupTypeId = GroupTypeCache.Get( Rock.SystemGuid.GroupType.GROUPTYPE_COMMUNICATIONLIST.AsGuid() ).Id;
+
+            if ( group == null
+                || group.GroupTypeId != communicationListGroupTypeId
+                || !group.IsActive
+                || group.IsArchived )
+            {
+                return false;
+            }
+
+            var categoryGuids = this.GetAttributeValue( AttributeKey.CommunicationListCategories ).SplitDelimitedValues().AsGuidList();
+            if ( !categoryGuids.Any() )
+            {
+                return group.IsAuthorized( Rock.Security.Authorization.VIEW, person );
+            }
+
+            if ( group.Attributes == null )
+            {
+                group.LoadAttributes( rockContext );
+            }
+
+            var categoryGuid = group.GetAttributeValue( "Category" ).AsGuidOrNull();
+            if ( !categoryGuid.HasValue || !categoryGuids.Contains( categoryGuid.Value ) )
+            {
+                return false;
+            }
+
+            var category = CategoryCache.Get( categoryGuid.Value );
+            return category != null && category.IsAuthorized( Rock.Security.Authorization.VIEW, person );
         }
 
         /// <summary>
