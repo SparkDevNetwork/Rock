@@ -2080,7 +2080,24 @@ INNER JOIN @AttributeId attributeId ON attributeId.[Id] = AV.[AttributeId]",
             var valueAsNumericParameter = new SqlParameter( "@ValueAsNumeric", ( object ) attributeValue.ValueAsNumeric ?? DBNull.Value );
             var valueAsPersonIdParameter = new SqlParameter( "@ValueAsPersonId", ( object ) attributeValue.ValueAsPersonId ?? DBNull.Value );
             var attributeIdParameter = new SqlParameter( "@AttributeId", attributeId );
-            var valueParameter = new SqlParameter( "@Value", ( object ) value ?? DBNull.Value );
+
+            /*
+                9/17/26 - CLAUDE
+
+                Declare @Value as NVARCHAR(MAX) explicitly instead of letting the
+                length be inferred from the string. Inferring the length produced a
+                distinctly-sized parameter (e.g. NVARCHAR(1) for "Y") for every
+                value length, and each size compiled its own query plan, bloating
+                the plan cache. A fixed NVARCHAR(MAX) also matches the type of the
+                [Value] column that feeds CHECKSUM([Value]), so the checksum
+                comparison remains correct.
+
+                Reason: Reuse one query plan instead of one plan per value length.
+            */
+            var valueParameter = new SqlParameter( "@Value", SqlDbType.NVarChar, -1 )
+            {
+                Value = ( object ) value ?? DBNull.Value
+            };
 
             return rockContext.Database.ExecuteSqlCommand( @"
 UPDATE [AttributeValue]
@@ -2354,7 +2371,24 @@ INNER JOIN @ValueId AS [valueId] ON  [valueId].[Id] = [AV].[Id]",
             var condensedTextValueParameter = new SqlParameter( "@CondensedTextValue", ( object ) persistedValues.CondensedTextValue ?? DBNull.Value );
             var condensedHtmlValueParameter = new SqlParameter( "@CondensedHtmlValue", ( object ) persistedValues.CondensedHtmlValue ?? DBNull.Value );
             var attributeIdParameter = new SqlParameter( "@AttributeId", attributeId );
-            var valueParameter = new SqlParameter( "@Value", ( object ) value ?? DBNull.Value );
+
+            /*
+                9/17/26 - CLAUDE
+
+                Declare @Value as NVARCHAR(MAX) explicitly instead of letting the
+                length be inferred from the string. Inferring the length produced a
+                distinctly-sized parameter (e.g. NVARCHAR(1) for "Y") for every
+                value length, and each size compiled its own query plan, bloating
+                the plan cache. A fixed NVARCHAR(MAX) also matches the type of the
+                [Value] column that feeds CHECKSUM([Value]), so the checksum
+                comparison remains correct.
+
+                Reason: Reuse one query plan instead of one plan per value length.
+            */
+            var valueParameter = new SqlParameter( "@Value", SqlDbType.NVarChar, -1 )
+            {
+                Value = ( object ) value ?? DBNull.Value
+            };
 
             return rockContext.Database.ExecuteSqlCommand( @"
 UPDATE [AttributeValue]
