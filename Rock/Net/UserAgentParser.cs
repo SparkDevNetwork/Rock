@@ -58,6 +58,19 @@ internal sealed class UserAgentParser : IUserAgentParser
     /// <inheritdoc/>
     public UserAgentInfo Parse( string userAgent )
     {
+        // A request with no User-Agent header yields a null string here. A null
+        // key throws in ConcurrentDictionary.GetOrAdd, so coalesce to empty;
+        // the parser treats empty as "Other"/"None", matching prior behavior.
+        userAgent = userAgent ?? string.Empty;
+
+        // Keep the common cache-hit path as cheap as possible.
+        if ( _cache.TryGetValue( userAgent, out var cached ) )
+        {
+            return cached;
+        }
+
+        // Only misses can grow the cache, so only misses need to check its size...
+        //
         // A botnet or fuzzed UA header could blow up the working set; bound
         // it by clearing the cache when it exceeds the cap. Cache misses
         // fall back to the parser, so a clear is correct, just slower.

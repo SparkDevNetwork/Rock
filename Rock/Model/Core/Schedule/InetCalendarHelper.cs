@@ -42,6 +42,12 @@ namespace Rock.Model
         // only keep in memory if unused for 10 minutes. This reduces the chances of this getting too big.
         private static CacheItemPolicy cacheItemPolicy10Minutes = new CacheItemPolicy { SlidingExpiration = TimeSpan.FromMinutes( 10 ) };
 
+        // The maximum number of years past a schedule's start date that we will evaluate occurrences for
+        // when the schedule's recurrence has no end condition (no UNTIL and no COUNT). An unbounded
+        // recurrence is effectively infinite, so we cap the evaluation window to keep iCal.Net from
+        // walking the recurrence toward DateTime.MaxValue, which overflows DateTime arithmetic and throws.
+        private const int MaxUnboundedRecurrenceYears = 100;
+
         /// <summary>
         /// Creates the calendar event.
         /// </summary>
@@ -175,12 +181,49 @@ namespace Rock.Model
 
             if ( endDateTime.HasValue )
             {
-                return iCalEvent.GetOccurrences( startDateTime, endDateTime.Value ).ToArray();
+                var safeEndDateTime = GetSafeOccurrenceEndDateTime( iCalEvent, endDateTime.Value );
+                return iCalEvent.GetOccurrences( startDateTime, safeEndDateTime ).ToArray();
             }
             else
             {
+                // The single-argument overload is day-scoped (it only evaluates occurrences on the start
+                // date), so it cannot overflow the way an unbounded ranged query can. It is left as-is.
                 return iCalEvent.GetOccurrences( startDateTime ).ToArray();
             }
+        }
+
+        /// <summary>
+        /// Gets a safe end date/time for occurrence evaluation. iCal.Net throws an
+        /// <see cref="ArgumentOutOfRangeException"/> when asked to evaluate an unbounded recurrence up to
+        /// (or near) <see cref="DateTime.MaxValue"/>, because advancing the recurrence overflows DateTime
+        /// arithmetic before the end-of-range check can stop it. When the event has a recurrence rule with
+        /// no end date and no occurrence count, this caps the requested end date to a bounded window past
+        /// the event's start date. Bounded schedules (those with an UNTIL or COUNT) are returned unchanged,
+        /// since they stop on their own well before <see cref="DateTime.MaxValue"/>.
+        /// </summary>
+        /// <param name="iCalEvent">The calendar event whose occurrences are being evaluated.</param>
+        /// <param name="requestedEndDateTime">The end date/time requested by the caller.</param>
+        /// <returns>The requested end date/time, or a bounded end date/time for an unbounded recurrence.</returns>
+        private static DateTime GetSafeOccurrenceEndDateTime( CalendarEvent iCalEvent, DateTime requestedEndDateTime )
+        {
+            // A recurrence rule with no occurrence count and no until date represents "Continue Until: No end".
+            var hasUnboundedRecurrenceRule = iCalEvent.RecurrenceRules?.Any( rule => rule.Count <= 0 && RockDateTime.IsMinDate( rule.Until ) ) == true;
+            if ( !hasUnboundedRecurrenceRule )
+            {
+                return requestedEndDateTime;
+            }
+
+            var referenceDate = iCalEvent.DtStart?.Value ?? RockDateTime.Now;
+
+            // Guard against overflowing when computing the cap for an unusually far-future start date.
+            if ( referenceDate.Year > DateTime.MaxValue.Year - MaxUnboundedRecurrenceYears )
+            {
+                return requestedEndDateTime;
+            }
+
+            var maxEndDateTime = referenceDate.AddYears( MaxUnboundedRecurrenceYears );
+
+            return requestedEndDateTime > maxEndDateTime ? maxEndDateTime : requestedEndDateTime;
         }
 
         /// <summary>
@@ -274,9 +317,16 @@ namespace Rock.Model
                 rulesWithCounts.ForEach( rr => rr.Count++ );
             }
 
+            // Cap the requested end date for unbounded recurrences so that evaluating occurrences up to
+            // (or near) DateTime.MaxValue does not overflow iCal.Net. The recurring component copied below
+            // shares this event's rules and start date, so the same safe end date applies to both sets.
+            var safeEndDateTime = endDateTime.HasValue
+                ? ( DateTime? ) GetSafeOccurrenceEndDateTime( iCalEvent, endDateTime.Value )
+                : null;
+
             // Get the original set of occurrences (which might incorrectly include the `DtStart` date/time value).
-            var occurrenceSet = endDateTime.HasValue
-                ? iCalEvent.GetOccurrences( startDateTime, endDateTime.Value )
+            var occurrenceSet = safeEndDateTime.HasValue
+                ? iCalEvent.GetOccurrences( startDateTime, safeEndDateTime.Value )
                 : iCalEvent.GetOccurrences( startDateTime );
 
             if ( iCalEvent.RecurrenceRules?.Any() == true || iCalEvent.RecurrenceDates?.Any() == true )
@@ -294,8 +344,8 @@ namespace Rock.Model
                 }
 
                 // Get the 2nd set of occurrences (which will not incorrectly include the `DtStart` date/time value).
-                var recurringOccurrences = endDateTime.HasValue
-                    ? recurringComponent.GetOccurrences( startDateTime, endDateTime.Value )
+                var recurringOccurrences = safeEndDateTime.HasValue
+                    ? recurringComponent.GetOccurrences( startDateTime, safeEndDateTime.Value )
                     : recurringComponent.GetOccurrences( startDateTime );
 
                 // Refine the final set of occurrences to only those that appear in both sets.

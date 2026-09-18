@@ -57,7 +57,6 @@ internal partial class SystemUtilitySkill
     [AgentGuardrail( "This decodes the key arithmetically. It does not confirm that a record with that Id exists, and it applies no security check, so a successful result is not evidence that the record is real or readable." )]
     [AgentToolGuid( "0C6D9E4A-7B31-42F8-9E05-3A17C4B8D260" )]
     public AgentToolResult ConvertIdKeyToId(
-        [Description( "The IdKey to decode." )]
         string idKey )
     {
         if ( idKey.IsNullOrWhiteSpace() )

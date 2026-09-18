@@ -1952,6 +1952,13 @@ namespace Rock.Model
             targetGroup.ModifiedByPersonAliasId = copyGroupOptions.CreatedByPersonAliasId;
             targetGroup.IsSystem = false;
 
+            // Clear the chat channel key so the copy doesn't share the source group's external chat channel. Each
+            // group must have its own unique key; leaving the source's value here would cause both groups to resolve
+            // to the same channel, incorrectly-populating a group. If enabled, the next ChatSync will assign this
+            // copy its own key.
+            // See https://github.com/SparkDevNetwork/Rock/issues/7007
+            targetGroup.ChatChannelKey = null;
+
             groupGuidDictionary.Add( sourceGroup.Guid, targetGroup.Guid );
 
             if ( parentGroupId == null )

@@ -1,6 +1,6 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <div class="filter-where-content">
+    <div class="groupfinder-where-filter">
         <div v-if="config.isMeetingStyleFilterShown" class="form-group">
             <RockLabel>Meeting Style</RockLabel>
             <div class="control-wrapper">
@@ -16,22 +16,22 @@
         <div v-if="config.isProximityEnabled" class="form-group">
             <RockLabel>Search by Location</RockLabel>
             <div class="control-wrapper">
-                <div class="filter-proximity">
-                    <div v-if="isCurrentLocation" class="group-finder-current-location">
-                        <span class="group-finder-current-location-label">
+                <div class="groupfinder-proximity">
+                    <div v-if="isCurrentLocation" class="groupfinder-current-location">
+                        <span class="groupfinder-current-location-label">
                             <i class="ti ti-current-location"></i> Current Location
                         </span>
                         <RockButton btnType="link" @click="onClearLocation">Change</RockButton>
                     </div>
-                    <div v-else-if="isMapAreaLocation" class="group-finder-current-location">
-                        <span class="group-finder-current-location-label">
+                    <div v-else-if="isMapAreaLocation" class="groupfinder-current-location">
+                        <span class="groupfinder-current-location-label">
                             <i class="ti ti-search"></i> Search this area
                         </span>
                         <RockButton btnType="link" @click="onClearLocation">Change</RockButton>
                     </div>
                     <template v-else>
                         <AddressTypeAhead v-if="config.isLocationSearchAvailable" v-model="origin" />
-                        <RockButton btnType="link" class="filter-use-location" @click="useCurrentLocation">
+                        <RockButton btnType="link" class="groupfinder-use-location" @click="useCurrentLocation">
                             <i class="ti ti-current-location"></i> Use Current Location
                         </RockButton>
                     </template>
@@ -40,37 +40,6 @@
         </div>
     </div>
 </template>
-
-<style scoped>
-.filter-proximity {
-    display: flex;
-    flex-direction: column;
-    gap: var(--spacing-xsmall);
-}
-
-/* The address field spans the full dropdown width; the current-location link centers beneath it. */
-.filter-proximity :deep(.group-finder-address) {
-    width: 100%;
-}
-
-.filter-use-location {
-    align-self: center;
-}
-
-.group-finder-current-location {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: var(--spacing-small);
-}
-
-.group-finder-current-location-label {
-    display: inline-flex;
-    align-items: center;
-    gap: var(--spacing-xsmall);
-    font-weight: 600;
-}
-</style>
 
 <script setup lang="ts">
     import { computed } from "vue";

@@ -29,6 +29,9 @@ export type ExceptionCountsPerDayBag = {
     /** Gets or sets the list of total exception counts for each day in Rock.ViewModels.Blocks.Core.ExceptionList.ExceptionCountsPerDayBag.DateLabels. */
     totalExceptionCounts?: number[] | null;
 
-    /** Gets or sets the list of unique exception counts for each day in Rock.ViewModels.Blocks.Core.ExceptionList.ExceptionCountsPerDayBag.DateLabels. */
-    uniqueExceptionCounts?: number[] | null;
+    /**
+     * Gets or sets the list of distinct exception type counts for each day in Rock.ViewModels.Blocks.Core.ExceptionList.ExceptionCountsPerDayBag.DateLabels.
+     * This counts exception types, not the exception groups (type and description) the grid shows a row for.
+     */
+    uniqueExceptionTypeCounts?: number[] | null;
 };

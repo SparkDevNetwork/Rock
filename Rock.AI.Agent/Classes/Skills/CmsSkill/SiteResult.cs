@@ -14,12 +14,15 @@
 // limitations under the License.
 // </copyright>
 
+using Rock.AI.Agent.Classes.Common;
 using Rock.AI.Agent.Classes.Entity;
 
 namespace Rock.AI.Agent.Classes.Skills.CmsSkill;
 
 /// <summary>
-/// Lightweight result model for a Rock RMS Site (website, mobile app, or TV app).
+/// Result model for a Rock RMS Site (website, mobile app, or TV app).
+/// LookupSites fills the summary properties; GetSite fills the detail
+/// properties as well.
 /// </summary>
 internal class SiteResult : EntityResultBase
 {
@@ -42,4 +45,24 @@ internal class SiteResult : EntityResultBase
     /// Optional external URL for the site, if applicable (e.g., public website).
     /// </summary>
     public string ExternalUrl { get; set; }
+
+    /// <summary>
+    /// Whether the site is active. Detail only.
+    /// </summary>
+    public bool? IsActive { get; set; }
+
+    /// <summary>
+    /// The theme the site renders with. Detail only.
+    /// </summary>
+    public string Theme { get; set; }
+
+    /// <summary>
+    /// The default (home) page of the site. Detail only.
+    /// </summary>
+    public KeyNameResult DefaultPage { get; set; }
+
+    /// <summary>
+    /// The login page of the site, when one is configured. Detail only.
+    /// </summary>
+    public KeyNameResult LoginPage { get; set; }
 }

@@ -764,10 +764,6 @@ namespace Rock.DownhillCss
     background-color: transparent;
 }
 
-^Page {
-    -rock-status-bar-text: light;
-}
-
 ^ContentPage {
     background-color: ?color-interface-softer;
 }
@@ -1402,10 +1398,6 @@ Resets
 
 ^radiobutton {
     background-color: transparent;
-}
-
-^Page {
-    -rock-status-bar-text: light;
 }
 
 ^contentpage {

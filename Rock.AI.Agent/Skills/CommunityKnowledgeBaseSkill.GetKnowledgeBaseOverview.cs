@@ -81,7 +81,8 @@ internal sealed partial class CommunityKnowledgeBaseSkill
         // would be wasteful, while accumulating copies of it would be worse.
         return Success( response.Data.ToPlainObject() )
             .WithMetadata( response.Meta.ToPlainMetadata() )
-            .WithHistoryKey( "kb-overview" );
+            .WithHistoryKey( "kb-overview" )
+            .WithInstructions( "When asked to author Rock UI or Lava endpoints, open the coding guide topic listed in this overview: pass its topic key unchanged to GetTopic, open the root article it lists, and follow that article's routing for the requested outcome. Retrieve only what the route assigns. Never construct or guess a topic or article key." );
     }
 
     #endregion

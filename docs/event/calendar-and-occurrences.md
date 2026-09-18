@@ -1,6 +1,6 @@
 ---
 title: Calendar and Occurrences
-last_updated: 2026-05-01
+last_updated: 2026-08-28
 related_files:
   - Rock/Model/Event/EventCalendar/EventCalendar.cs
   - Rock/Model/Event/EventItem/EventItem.cs
@@ -59,6 +59,8 @@ A calendar lists items (joined via `EventCalendarItem`). Each item has occurrenc
 **Calendar feeds export ICS.** The EventCalendar exposes feed URLs for ICS export; users subscribe in their calendar apps. Feed URLs respect audience filters.
 
 **Lava blocks for calendar rendering.** `{% calendarevents %}` and `{% eventscheduledinstance %}` blocks are the primary rendering primitives for custom calendar UIs. See [docs/lava/lava-overview.md](../lava/lava-overview.md).
+
+**Personalization filtering is opt-in.** An EventItem can be tagged with personalization Audience Segments and Request Filters. `{% calendarevents %}` honors those tags when passed `filterbysegments:'true'` or `filterbyrequestfilters:'true'`, and the Calendar Lava block has the equivalent "Filter by Personalization Segments" and "Filter by Request Filters" block attributes. All four default to off, and each personalization type is controlled independently. An event with no tags of an enabled type is always visible, so tagging only ever narrows an event's audience. `{% eventscheduledinstance %}` deliberately does not accept the parameters, because a template that names a specific event must always get that event back. Both surfaces depend on `Site.EnablePersonalization`; with it off, the matched id lists are empty and every tagged event is hidden. This controls visibility in a listing only and is not a security setting.
 
 **Group Attendance List Date Range filter end-date issue.** Pre-fix `3b6ddea7ba` (Fixes #6749, 2026-03-25), occurrences on the selected end date did not appear. Custom date-range queries should verify they include the end date.
 

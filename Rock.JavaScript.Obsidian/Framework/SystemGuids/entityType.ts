@@ -345,6 +345,10 @@ export const EntityType = {
     FinancialTransactionImage: "78DCA7EE-C5FE-49AE-9995-0E254CC8E2A2",
     /** The EntityType Guid for Rock.Model.FinancialTransactionRefund  */
     FinancialTransactionRefund: "7616E2AF-CEF2-44A5-B27F-3E70EC8B70FA",
+    /** The EntityType Guid for Rock.Model.FlexibleDocument */
+    FlexibleDocument: "962D0C52-FA32-4863-977F-D6A4B2DF0C09",
+    /** The EntityType Guid for Rock.Model.FlexibleDocumentModel */
+    FlexibleDocumentModel: "28A1D38E-333C-46C5-A896-7500DFFEAB74",
     /** The EntityType Guid for Rock.Model.Following  */
     Following: "D9AD7A30-92F2-467B-A3F9-37CA246F90BD",
     /** The EntityType Guid for Rock.Model.FollowingEventNotification  */
@@ -357,6 +361,8 @@ export const EntityType = {
     FollowingSuggested: "EC14B80A-3776-4134-884D-031A89C0EF03",
     /** The EntityType Guid for Rock.Model.FollowingSuggestionType  */
     FollowingSuggestionType: "CC7DF118-86A1-4F90-82D8-0DAE9CD37343",
+    /** The EntityType Guid for Rock.Model.ForgeContent */
+    ForgeContent: "38F182A7-9FE4-4D7B-B483-59F615BDE41C",
     /** The guid for the Rock.Model.Group entity. */
     Group: "9BBFDA11-0D22-40D5-902F-60ADFBC88987",
     /** The EntityType Guid for Rock.Model.GroupDemographicType  */

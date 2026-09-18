@@ -248,7 +248,9 @@ namespace Rock.Blocks.AI
                 IsExcludingSystemSkills = entity.AgentType == AgentType.Chat
                     ? chatSettings.IsExcludingSystemSkills
                     : mcpSettings.IsExcludingSystemSkills,
+                IsSystem = entity.IsSystem,
                 Role = chatSettings.Role,
+                ReasoningEffort = chatSettings.ReasoningEffort ?? ReasoningEffort.Low,
                 CurrentPersonTemplate = chatSettings.CurrentPersonTemplate,
                 Slug = mcpSettings.Slug,
             };
@@ -353,8 +355,14 @@ namespace Rock.Blocks.AI
             box.IfValidProperty( nameof( box.Bag.Name ),
                 () => entity.Name = box.Bag.Name );
 
-            box.IfValidProperty( nameof( box.Bag.Instructions ),
-                () => entity.Instructions = box.Bag.Instructions );
+            // The instructions of a system agent are owned by Rock and must
+            // not be changed through the UI, so silently ignore any value sent
+            // from the client for those agents.
+            if ( !entity.IsSystem )
+            {
+                box.IfValidProperty( nameof( box.Bag.Instructions ),
+                    () => entity.Instructions = box.Bag.Instructions );
+            }
 
             if ( entity.AgentType == AgentType.Chat )
             {
@@ -368,6 +376,9 @@ namespace Rock.Blocks.AI
 
                 box.IfValidProperty( nameof( box.Bag.Role ),
                     () => chatSettings.Role = box.Bag.Role );
+
+                box.IfValidProperty( nameof( box.Bag.ReasoningEffort ),
+                    () => chatSettings.ReasoningEffort = box.Bag.ReasoningEffort );
 
                 box.IfValidProperty( nameof( box.Bag.CurrentPersonTemplate ),
                     () => chatSettings.CurrentPersonTemplate = box.Bag.CurrentPersonTemplate );
@@ -537,6 +548,11 @@ namespace Rock.Blocks.AI
             if ( !TryGetEntityForEditAction( key, out var entity, out var actionError ) )
             {
                 return actionError;
+            }
+
+            if ( entity.IsSystem )
+            {
+                return ActionBadRequest( $"This {AIAgent.FriendlyTypeName} is a system agent and cannot be deleted." );
             }
 
             if ( !entityService.CanDelete( entity, out var errorMessage ) )

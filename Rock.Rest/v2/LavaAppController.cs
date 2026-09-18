@@ -58,6 +58,16 @@ namespace Rock.Rest.v2
 
         #endregion
 
+        #region Constants
+
+        /// <summary>
+        /// The content type used when the endpoint does not specify one. This matches
+        /// the value that was hardcoded before the content type became configurable.
+        /// </summary>
+        private const string DefaultContentType = "text/html";
+
+        #endregion
+
         #region REST Methods
 
         /// <summary>
@@ -154,7 +164,16 @@ namespace Rock.Rest.v2
             HttpResponseMessage responseMessage = new HttpResponseMessage( context.EndpointResponse.ResponseStatus );
             if ( context.EndpointResponse.Content != null )
             {
-                responseMessage.Content = new StringContent( context.EndpointResponse.Content, Encoding.UTF8, "text/html" );
+                // The endpoint is not always resolved (a 404 short-circuits before it is
+                // known), so fall back to the historical default in that case.
+                var contentType = context.LavaEndpoint?.ContentType;
+
+                if ( contentType.IsNullOrWhiteSpace() )
+                {
+                    contentType = DefaultContentType;
+                }
+
+                responseMessage.Content = new StringContent( context.EndpointResponse.Content, Encoding.UTF8, contentType );
             }
 
             // Add caching headers
@@ -298,11 +317,28 @@ namespace Rock.Rest.v2
             }
             catch ( Exception ) { }
 
-            // Check for a HTTP status code in the Lava
-            if ( HttpContext.Current?.Response.StatusCode != 200 )
+            /*
+                8/3/2026 - CLAUDE
+
+                A non-200 status set by the template used to replace the rendered body with
+                a generic sentence. That makes a structured error impossible: an endpoint
+                returning application/json needs to pair a 404 or 422 with a JSON body the
+                caller can read. The status is still honored; the body the template produced
+                now survives it. The generic message is only used when the template emitted
+                nothing at all, so a caller never gets an empty body with no explanation.
+
+                Reason: A JSON endpoint must be able to return an error body with a non-200 status.
+            */
+            var statusCode = HttpContext.Current?.Response.StatusCode;
+
+            if ( statusCode != null && statusCode != 200 )
             {
-                content = $"Endpoint returned status of {HttpContext.Current?.Response.StatusCode}.";
-                context.EndpointResponse.ResponseStatus = ( HttpStatusCode ) HttpContext.Current?.Response.StatusCode;
+                context.EndpointResponse.ResponseStatus = ( HttpStatusCode ) statusCode;
+
+                if ( content.IsNullOrWhiteSpace() )
+                {
+                    content = $"Endpoint returned status of {statusCode}.";
+                }
             }
 
             context.EndpointResponse.Content = content;

@@ -1,6 +1,6 @@
 ---
 title: Connection Workflows and Triggers
-last_updated: 2026-05-01
+last_updated: 2026-08-28
 related_files:
   - Rock/Model/Connection/ConnectionWorkflow/ConnectionWorkflow.cs
   - Rock/Model/Connection/ConnectionWorkflow/ConnectionWorkflow.SaveHook.cs
@@ -68,7 +68,7 @@ Three levels of configuration; common firing path. Filters narrow which requests
 
 **"Run a background check when a request becomes Active for adults."** ConnectionWorkflow on the Status (Active) with `TriggerType = StatusChanged`, AgeClassification filter = Adult. WorkflowType: launches a background-check request.
 
-**"Manual escalation button."** ConnectionWorkflow with `TriggerType = Manual`. The button appears on Connection Request Detail; connectors click it to launch.
+**"Manual escalation button."** ConnectionWorkflow with `TriggerType = Manual`. The button appears in the Connections Hub (`Rock.Blocks/Engagement/ConnectionsHub.cs:811`) and on the legacy Connection Request Detail page; connectors click it to launch.
 
 **"Survey when request connects."** ConnectionWorkflow on the Type with `TriggerType = Connected`. WorkflowType: queues a survey communication.
 
@@ -138,7 +138,7 @@ Rejected. Workflows are async; the connection action returns immediately while t
 ### Affected Blocks
 
 - **Configuration:** Connection Type Detail / Connection Opportunity Detail (workflow tabs).
-- **Operational:** Connection Request Detail (manual buttons; auto-launched workflow audit).
+- **Operational:** Connections Hub (manual buttons; auto-launched workflow audit). The legacy Connection Request Detail page carries the same buttons but no core link targets it.
 
 ### Related Docs
 

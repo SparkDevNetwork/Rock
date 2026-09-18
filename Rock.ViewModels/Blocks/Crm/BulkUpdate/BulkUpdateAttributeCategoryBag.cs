@@ -51,5 +51,13 @@ namespace Rock.ViewModels.Blocks.Crm.BulkUpdate
         /// Gets or sets the valid attributes configured for bulk updating within this category.
         /// </summary>
         public List<PublicAttributeBag> Attributes { get; set; }
+
+        /// <summary>
+        /// Gets or sets the starting value for each Matrix attribute in this category, keyed by
+        /// attribute key. The Matrix editor reads its column definitions out of the value, so it
+        /// cannot start from an empty string. No other field type belongs here; every one of them
+        /// starts blank.
+        /// </summary>
+        public Dictionary<string, string> MatrixAttributeValues { get; set; }
     }
 }

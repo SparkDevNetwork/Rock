@@ -12,7 +12,7 @@
                 <i class="ti ti-plus"></i>
             </DropDownMenu>
         </template>
-        <div class="pagemap-treeview-scroll">
+        <div class="rock-tree-view-tree">
             <TreeList v-if="isTreeListDataInitialized"
                       v-model="treeListSelectedItems"
                       :items="treeListItems"
@@ -25,18 +25,6 @@
         </div>
     </Panel>
 </template>
-
-<style scoped>
-/* Allow the page tree to scroll horizontally when deeply nested pages exceed the panel width, matching the legacy WebForms behavior. */
-.pagemap-treeview-scroll {
-    overflow-x: auto;
-}
-
-/* Override the TreeList root element's inline overflow clipping so its content can drive the wrapper's scrollbar. */
-.pagemap-treeview-scroll > :deep(div) {
-    overflow-x: visible !important;
-}
-</style>
 
 <script setup lang="ts">
     import { ref, computed, onBeforeMount } from "vue";

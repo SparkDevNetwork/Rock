@@ -110,6 +110,16 @@ namespace Rock.Blocks.Crm
 
         #endregion Keys
 
+        #region Fields
+
+        /// <summary>
+        /// The Matrix field type, the only field type whose editor needs a starting value
+        /// rather than a blank one.
+        /// </summary>
+        private static readonly Guid _matrixFieldTypeGuid = Rock.SystemGuid.FieldType.MATRIX.AsGuid();
+
+        #endregion Fields
+
         #region Properties
 
         /// <summary>
@@ -649,7 +659,7 @@ namespace Rock.Blocks.Crm
                     .ThenBy( a => a.Name )
                     .ToList()
                     .Where( a => a.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
-                    .Select( a => PublicAttributeHelper.GetPublicAttributeForEdit( AttributeCache.Get( a.Id ) ) )
+                    .Select( a => AttributeCache.Get( a.Id ) )
                     .ToList();
 
                 categories.Add( new BulkUpdateAttributeCategoryBag
@@ -658,7 +668,8 @@ namespace Rock.Blocks.Crm
                     Description = category.Description,
                     Guid = category.Guid,
                     IconCssClass = category.IconCssClass,
-                    Attributes = attributesOfCategory
+                    Attributes = attributesOfCategory.Select( a => PublicAttributeHelper.GetPublicAttributeForEdit( a ) ).ToList(),
+                    MatrixAttributeValues = GetMatrixAttributeValues( attributesOfCategory )
                 } );
             }
 
@@ -687,8 +698,12 @@ namespace Rock.Blocks.Crm
                     if ( seenAttributeGuids.Add( attribute.AttributeGuid ) )
                     {
                         keptAttributes.Add( attribute );
+                        continue;
                     }
-                    else if ( !duplicateNames.Contains( attribute.Name ) )
+
+                    category.MatrixAttributeValues.Remove( attribute.Key );
+
+                    if ( !duplicateNames.Contains( attribute.Name ) )
                     {
                         duplicateNames.Add( attribute.Name );
                     }
@@ -699,6 +714,42 @@ namespace Rock.Blocks.Crm
 
             duplicateAttributeNames = duplicateNames;
             return result;
+        }
+
+        /// <summary>
+        /// Builds the starting value for each Matrix attribute, keyed by attribute key. Every other
+        /// field type is left out so its editor starts blank.
+        /// </summary>
+        /// <param name="attributes">The attributes available for bulk updating.</param>
+        /// <returns>The starting values keyed by attribute key; empty when no Matrix attribute is present.</returns>
+        private static Dictionary<string, string> GetMatrixAttributeValues( IEnumerable<AttributeCache> attributes )
+        {
+            /*
+                9/8/26 - JPH
+
+                The Matrix editor reads its column definitions out of the attribute value instead of the
+                attribute configuration, so a blank value leaves it with no columns and no way to enter an
+                item. Converting a blank stored value yields a value that carries those definitions.
+
+                Only Matrix is included here on purpose. Other field types also return something non-blank
+                from this conversion, Phone Number and Value Filter among them, and submitting those would
+                change what gets written for an attribute nobody touched.
+
+                Reason: Matrix attributes could not be given a value, and other field types must be left alone.
+            */
+            var attributeValues = new Dictionary<string, string>();
+
+            foreach ( var attribute in attributes )
+            {
+                if ( attribute.FieldType?.Guid != _matrixFieldTypeGuid )
+                {
+                    continue;
+                }
+
+                attributeValues[attribute.Key] = PublicAttributeHelper.GetPublicValueForEdit( attribute, string.Empty );
+            }
+
+            return attributeValues;
         }
 
         /// <summary>
@@ -935,10 +986,10 @@ namespace Rock.Blocks.Crm
 
         /// <summary>
         /// Gets the group roles available for the specified group, ordered by role
-        /// order then name.
+        /// order then name, along with the group type's default role.
         /// </summary>
         /// <param name="groupGuid">The unique identifier of the group.</param>
-        /// <returns>A block action result containing the group type guid and a list of role options.</returns>
+        /// <returns>A block action result containing the group type guid, the default role guid and a list of role options.</returns>
         [BlockAction]
         public BlockActionResult GetGroupRoles( Guid groupGuid )
         {
@@ -976,9 +1027,14 @@ namespace Rock.Blocks.Crm
                 } )
                 .ToList();
 
+            var defaultGroupRoleGuid = groupType.Roles
+                .FirstOrDefault( r => r.Id == groupType.DefaultGroupRoleId )
+                ?.Guid;
+
             return ActionOk( new GroupRolesResponseBag
             {
                 GroupTypeGuid = groupType.Guid.ToString(),
+                DefaultGroupRoleGuid = defaultGroupRoleGuid,
                 Roles = roles
             } );
         }
@@ -1195,7 +1251,7 @@ namespace Rock.Blocks.Crm
         /// Gets the group member attributes for the specified group.
         /// </summary>
         /// <param name="groupGuid">The unique identifier of the group.</param>
-        /// <returns>A block action result containing a list of attribute options.</returns>
+        /// <returns>A block action result containing the attributes and the values that seed their editors.</returns>
         [BlockAction]
         public BlockActionResult GetGroupMemberAttributes( Guid groupGuid )
         {
@@ -1219,17 +1275,20 @@ namespace Rock.Blocks.Crm
             var attributes = GetBulkGroupMemberAttributes( group )
                 .OrderBy( a => a.Order )
                 .ThenBy( a => a.Name )
-                .Select( a => PublicAttributeHelper.GetPublicAttributeForEdit( a ) )
                 .ToList();
 
-            return ActionOk( attributes );
+            return ActionOk( new BulkUpdateAttributesBag
+            {
+                Attributes = attributes.Select( a => PublicAttributeHelper.GetPublicAttributeForEdit( a ) ).ToList(),
+                MatrixAttributeValues = GetMatrixAttributeValues( attributes )
+            } );
         }
 
         /// <summary>
         /// Gets the step attributes for the specified step type.
         /// </summary>
         /// <param name="stepTypeGuid">The unique identifier of the step type.</param>
-        /// <returns>A block action result containing a list of attribute options.</returns>
+        /// <returns>A block action result containing the attributes and the values that seed their editors.</returns>
         [BlockAction]
         public BlockActionResult GetStepAttributes( Guid stepTypeGuid )
         {
@@ -1253,10 +1312,13 @@ namespace Rock.Blocks.Crm
             var attributes = GetBulkStepAttributes( stepType.Id )
                 .OrderBy( a => a.Order )
                 .ThenBy( a => a.Name )
-                .Select( a => PublicAttributeHelper.GetPublicAttributeForEdit( a ) )
                 .ToList();
 
-            return ActionOk( attributes );
+            return ActionOk( new BulkUpdateAttributesBag
+            {
+                Attributes = attributes.Select( a => PublicAttributeHelper.GetPublicAttributeForEdit( a ) ).ToList(),
+                MatrixAttributeValues = GetMatrixAttributeValues( attributes )
+            } );
         }
 
         #endregion Block Actions

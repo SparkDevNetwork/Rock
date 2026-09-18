@@ -1,6 +1,9 @@
 ---
 title: Connection Request Board
-last_updated: 2026-05-01
+last_updated: 2026-08-28
+related_specs:
+  - specs/completed/connection/260825-connections-hub-add-entry-point.md
+  - specs/completed/connection/260827-connection-request-link-redirection.md
 related_files:
   - Rock.Blocks/Engagement/ConnectionsHub.cs
   - Rock/Model/Connection/ConnectionRequest/ConnectionRequest.cs
@@ -14,7 +17,7 @@ related_files:
 
 ## Overview
 
-The Connection Request Board is the kanban-style admin surface for working a queue of `ConnectionRequest` rows. Connectors see their assignments, drag requests between status columns, log activities, and trigger workflows. The Board lives in the Connections Hub block (`Rock.Blocks/Engagement/ConnectionsHub.cs`), one of Rock's larger blocks. It supersedes the legacy Connection Request Detail block as the primary operational surface.
+The Connection Request Board is the kanban-style admin surface for working a queue of `ConnectionRequest` rows. Connectors see their assignments, drag requests between status columns, log activities, and trigger workflows. The Board lives in the Connections Hub block (`Rock.Blocks/Engagement/ConnectionsHub.cs`), one of Rock's larger blocks. It has fully replaced the legacy Connection Request Detail block as the operational surface: as of 2026-08, every core link that used to target that page points at the Hub, and the Hub is also where new requests get created.
 
 The 2025-07-30 enhancements (commit `90cae56911`) added campus filtering, connector preferences, conditional workflow application via Age Classification and DataView filters, and drag-and-drop workflow reordering. The 2026-02-27 perf fix (commit `f74c699b96`, Fixes #6643) addressed concurrent-creation contention that produced timeouts under load.
 
@@ -42,6 +45,10 @@ flowchart LR
 Filters narrow the visible queue; columns visualize statuses; drag operations transition requests with optional workflow firing. Health Snapshot DTOs aggregate metrics for the connector dashboard.
 
 ## What You Need to Know
+
+**The Hub is reachable by deep link, and the query string names are its own.** `Request={IdKey}` opens a request's docked panel on load; `Request=0` opens the Add Connection Request modal instead. Either needs a `ConnectionType` or `ConnectionOpportunity` alongside it, because the Hub errors without a type context outside My Connections mode (`Rock.Blocks/Engagement/ConnectionsHub.cs:452`). Note the names: the Hub reads `Request` and `ConnectionOpportunity`, not the `ConnectionRequestId` and `ConnectionOpportunityId` the legacy detail page used. The legacy page now accepts both, so one link shape serves either target.
+
+**A supplied `ConnectionOpportunity` writes the person's saved filter.** The Hub persists that parameter as the individual's opportunity filter preference (`Rock.Blocks/Engagement/ConnectionsHub.cs:342`), so following a link changes what their grid shows on the next visit. Deliberate for navigation blocks that seed a filter; a side effect worth knowing when you build a deep link.
 
 **Concurrent creation contention is fixed.** Pre-fix `f74c699b96` (Fixes #6643, 2026-02-27), simultaneous `ConnectionRequest` creation (peaks after a service or event) caused database blocking and timeouts. The fix reduces contention. Sites running older builds may still see this.
 
@@ -147,5 +154,12 @@ Rejected. Multi-campus operational reality requires it.
 
 ## Recent Impactful Changes
 
+- **2026-08-28** ([commit `9e9964ab4a`](https://github.com/SparkDevNetwork/Rock/commit/9e9964ab4a)). Redirected the core Connection Request links to the Connections Hub, and taught the legacy Connection Request Detail page to accept the Hub's page parameter names.
+- **2026-08-28** ([commit `f9acac2205`](https://github.com/SparkDevNetwork/Rock/commit/f9acac2205)). Added support for linking to the Connections Hub with the Add Connection Request modal already open, preselected by Connection Type or Opportunity.
 - **2026-02-27** ([commit `f74c699b96`](https://github.com/SparkDevNetwork/Rock/commit/f74c699b96)). Reduced DB blocking and improved stability under heavy concurrent ConnectionRequest creation (Fixes #6643).
 - **2025-07-30** ([commit `90cae56911`](https://github.com/SparkDevNetwork/Rock/commit/90cae56911)). Connection Request Board updates: campus filtering, connector preferences, drag-and-drop workflow ordering, conditional workflow application via Age Classification and DataView filters, default state/status block settings.
+
+## Related Specs
+
+- [Connection Request Link Redirection (Phase 3 of Connection Page/Block Cleanup)](../../specs/completed/connection/260827-connection-request-link-redirection.md) — 2026-08-27 (Jason Hendee)
+- [Connections Hub Add Entry Point (Phase 2 of Connection Page/Block Cleanup)](../../specs/completed/connection/260825-connections-hub-add-entry-point.md) — 2026-08-25 (Jason Hendee)

@@ -70,12 +70,8 @@ internal sealed partial class CoreAdministrationSkill
             Description = definedValue.Description,
             Order = definedValue.Order,
             IsActive = definedValue.IsActive,
-            DefinedType = definedType != null
-                ? new KeyNameResult { Id = definedType.Id, Guid = definedType.Guid, Name = definedType.Name }
-                : null,
-            Category = category != null
-                ? new KeyNameResult { Id = category.Id, Guid = category.Guid, Name = category.Name }
-                : null,
+            DefinedType = KeyNameResult.FromCache( definedType ),
+            Category = KeyNameResult.FromCache( category ),
             AttributeValues = definedValue.GetAttributeValueResults( AgentRequestContext ).ToList()
         };
 

@@ -82,11 +82,7 @@
                                              label="Boost Amount"
                                              help="This is a one-time charge to boost your account balance."
                                              rules="required"
-                                             :minimumValue="1">
-                                    <template #inputGroupAppend>
-                                        <span class="input-group-addon">/mo</span>
-                                    </template>
-                                </CurrencyBox>
+                                             :minimumValue="1" />
                             </div>
 
                             <p>

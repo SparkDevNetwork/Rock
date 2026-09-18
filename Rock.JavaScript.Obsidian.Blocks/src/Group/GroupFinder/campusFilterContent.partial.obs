@@ -1,61 +1,19 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
     <ContentStack>
-        <div class="filter-campus-content">
+        <div class="groupfinder-campus-filter">
             <button v-for="campus in campusRows"
                     :key="campus.value"
                     type="button"
-                    class="campus-row"
+                    class="groupfinder-campus-row groupfinder-option-row"
                     :class="{ 'is-selected': isSelected(campus.value) }"
                     @click="toggle(campus.value)">
-                <span class="campus-name">{{ campus.name }}</span>
-                <i v-if="isSelected(campus.value)" class="ti ti-check campus-check"></i>
+                <span class="groupfinder-campus-name">{{ campus.name }}</span>
+                <i v-if="isSelected(campus.value)" class="ti ti-check groupfinder-campus-check"></i>
             </button>
         </div>
     </ContentStack>
 </template>
-
-<style scoped>
-.filter-campus-content {
-    display: flex;
-    flex-direction: column;
-    gap: var(--spacing-medium);
-}
-
-.campus-row {
-    display: flex;
-    align-items: center;
-    gap: var(--spacing-medium);
-    width: 100%;
-    padding: var(--spacing-tiny);
-    border: 0;
-    border-radius: var(--rounded-small, 6px);
-    background: transparent;
-    text-align: left;
-    cursor: pointer;
-}
-
-.campus-row:hover {
-    background: var(--color-interface-softer);
-}
-
-/* Matches how Rock's DropDownList marks a selected option: the info-soft (bluish) fill. */
-.campus-row.is-selected {
-    background: var(--color-info-soft);
-    color: var(--color-interface-strong);
-}
-
-.campus-name {
-    font-size: var(--font-size-h6, 16px);
-    font-weight: var(--font-weight-semibold, 600);
-    color: var(--color-interface-strongest);
-}
-
-.campus-check {
-    margin-left: auto;
-    color: var(--color-info-strong);
-}
-</style>
 
 <script setup lang="ts">
     import { computed } from "vue";

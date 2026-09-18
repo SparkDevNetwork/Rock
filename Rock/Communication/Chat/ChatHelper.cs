@@ -1313,6 +1313,22 @@ namespace Rock.Communication.Chat
                             continue;
                         }
 
+                        // Defensively guard against multiple Rock groups resolving to the same Chat Channel key.
+                        // A Chat Channel key must map to exactly one group; a duplicate indicates corrupt data 
+                        // (for example, groups incorrectly created via direct SQL, etc.). Without this guard,
+                        // the Dictionary.Add below would throw "An item with the same key has already been added"
+                        // and abort the entire sync for every group. Instead, record the collision to the
+                        // Exception Log so an admin can correct the offending group, then skip this duplicate and keep
+                        // syncing the remaining groups.
+                        if ( groupIdByQueryableKeys.TryGetValue( channel.QueryableKey, out var existingGroupId ) )
+                        {
+                            var duplicateChatChannelKeyException = new Exception( $"Skipped syncing Group '{rockChatGroup.Name}' (Id: {rockChatGroup.GroupId}) to the external chat system because its Chat Channel key '{channel.QueryableKey}' is already used by Group Id: {existingGroupId}. A Chat Channel key must be unique to a single group; clear the ChatChannelKey on the duplicate group so it can receive its own channel." );
+
+                            ExceptionLogService.LogException( duplicateChatChannelKeyException );
+
+                            continue;
+                        }
+
                         groupIdByQueryableKeys.Add( channel.QueryableKey, rockChatGroup.GroupId );
 
                         // Does it already exist in the external chat system?

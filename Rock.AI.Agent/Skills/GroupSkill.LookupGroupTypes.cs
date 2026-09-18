@@ -56,7 +56,7 @@ internal partial class GroupSkill
                 IsNotAvailable = !availableGroupTypeIds.Contains( gt.Id ),
                 Name = gt.Name,
                 Roles = gt.Roles
-                    .Select( r => new KeyNameResult( r.Id, r.Name ) )
+                    .Select( r => KeyNameResult.FromCache( r ) )
                     .ToList(),
             } )
             .ToList();

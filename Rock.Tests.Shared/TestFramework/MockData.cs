@@ -70,6 +70,10 @@ namespace Rock.Tests.Shared.TestFramework
 
             person.Aliases = new List<PersonAlias> { personAlias };
 
+            // Wire the primary alias so code that resolves the person's acting alias
+            // (for example the authorization self-lockout guard) has one to read.
+            person.PrimaryAliasId = personAlias.Id;
+
             return person;
         }
 
@@ -102,6 +106,64 @@ namespace Rock.Tests.Shared.TestFramework
             rockContext.Set<DefinedValue>().Add( definedValue );
 
             return definedValue;
+        }
+
+        /// <summary>
+        /// Creates a <see cref="FieldType"/> and adds it to the context so that
+        /// <see cref="Rock.Web.Cache.FieldTypeCache"/> can resolve it (report and
+        /// attribute code resolves a field's type through that cache).
+        /// </summary>
+        /// <param name="rockContext">The mocked context to seed.</param>
+        /// <param name="guid">The field type's unique identifier (typically a <see cref="Rock.SystemGuid.FieldType"/> value).</param>
+        /// <param name="name">The field type's name.</param>
+        /// <param name="className">The fully qualified field type class name (for example <c>Rock.Field.Types.TextFieldType</c>).</param>
+        /// <param name="assembly">The assembly the field type class lives in. Defaults to <c>Rock</c>.</param>
+        /// <returns>The created <see cref="FieldType"/>.</returns>
+        public static FieldType CreateFieldType( RockContext rockContext, Guid guid, string name, string className, string assembly = "Rock" )
+        {
+            var fieldType = new FieldType
+            {
+                Id = GetNextId<FieldType>( rockContext ),
+                Guid = guid,
+                Name = name,
+                Class = className,
+                Assembly = assembly
+            };
+
+            rockContext.Set<FieldType>().Add( fieldType );
+
+            return fieldType;
+        }
+
+        /// <summary>
+        /// Creates a <see cref="Rock.Model.Attribute"/> and adds it to the context so
+        /// that <see cref="Rock.Web.Cache.AttributeCache"/> can resolve it.
+        /// </summary>
+        /// <param name="rockContext">The mocked context to seed.</param>
+        /// <param name="key">The attribute key.</param>
+        /// <param name="name">The attribute name.</param>
+        /// <param name="fieldTypeId">The field type id, or <c>0</c> when no field type is needed.</param>
+        /// <param name="entityTypeId">The owning entity type id, or <c>null</c> for a global attribute.</param>
+        /// <param name="defaultValue">The attribute's default value, if any.</param>
+        /// <param name="isActive">Whether the attribute is active.</param>
+        /// <returns>The created <see cref="Rock.Model.Attribute"/>.</returns>
+        public static Rock.Model.Attribute CreateAttribute( RockContext rockContext, string key, string name, int fieldTypeId = 0, int? entityTypeId = null, string defaultValue = null, bool isActive = true )
+        {
+            var attribute = new Rock.Model.Attribute
+            {
+                Id = GetNextId<Rock.Model.Attribute>( rockContext ),
+                Guid = Guid.NewGuid(),
+                Key = key,
+                Name = name,
+                FieldTypeId = fieldTypeId,
+                EntityTypeId = entityTypeId,
+                DefaultValue = defaultValue,
+                IsActive = isActive
+            };
+
+            rockContext.Set<Rock.Model.Attribute>().Add( attribute );
+
+            return attribute;
         }
 
         /// <summary>

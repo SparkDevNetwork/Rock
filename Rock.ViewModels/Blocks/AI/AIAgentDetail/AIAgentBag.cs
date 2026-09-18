@@ -72,6 +72,13 @@ namespace Rock.ViewModels.Blocks.AI.AIAgentDetail
         public bool IsExcludingSystemSkills { get; set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether this agent is part of the
+        /// Rock core system. System agents cannot be deleted and their
+        /// instructions cannot be modified.
+        /// </summary>
+        public bool IsSystem { get; set; }
+
+        /// <summary>
         /// The friendly name of the agent that will be used to identify it in the UI.
         /// </summary>
         public string Name { get; set; }
@@ -80,6 +87,12 @@ namespace Rock.ViewModels.Blocks.AI.AIAgentDetail
         /// The role that this agent uses when determining which AI model to use.
         /// </summary>
         public ModelServiceRole Role { get; set; }
+
+        /// <summary>
+        /// How much reasoning effort the language model should spend when
+        /// this agent responds to a chat message.
+        /// </summary>
+        public ReasoningEffort ReasoningEffort { get; set; }
 
         /// <summary>
         /// The Lava template that will be used to generate the current person

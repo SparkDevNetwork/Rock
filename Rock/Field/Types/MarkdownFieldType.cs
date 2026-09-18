@@ -121,8 +121,8 @@ namespace Rock.Field.Types
         /// <inheritdoc/>
         public override StringValidationRule GetValidationRules( Dictionary<string, string> privateConfigurationValues )
         {
-            return StringValueValidator.GetEffectiveRules( StringValidationProfile.PlainText,
-                excludedRules: StringValidationRule.LavaFormatting | StringValidationRule.LavaCommands );
+            // It is valid for Markdown to contain basic HTML tags.
+            return StringValueValidator.GetEffectiveRules( StringValidationProfile.LavaAndBasicHtml );
         }
 
         #endregion

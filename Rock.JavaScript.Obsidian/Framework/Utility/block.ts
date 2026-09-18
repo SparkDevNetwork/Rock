@@ -232,7 +232,10 @@ export function provideConfigurationValuesChanged(): { invoke: () => void, reset
  * @param callback The function to be called when the configuration values have changed.
  */
 export function onConfigurationValuesChanged(callback: () => void): void {
-    const callbacks = inject<(() => void)[]>(configurationValuesChangedSymbol);
+    // Provide an explicit undefined default so Vue does not emit an
+    // "injection not found" warning when a block is mounted without the
+    // configuration-changed provider (e.g. inside a unit test).
+    const callbacks = inject<(() => void)[] | undefined>(configurationValuesChangedSymbol, undefined);
 
     if (callbacks !== undefined) {
         callbacks.push(callback);
@@ -588,7 +591,10 @@ export function provideSecurityGrant(grant: SecurityGrant): void {
  * @returns A string reference that contains the security grant token.
  */
 export function useSecurityGrantToken(): Ref<string | null> {
-    const grant = inject<SecurityGrant>(securityGrantSymbol);
+    // Provide an explicit undefined default so Vue does not emit an
+    // "injection not found" warning when no parent has supplied a security
+    // grant (e.g. a control mounted on its own or inside a unit test).
+    const grant = inject<SecurityGrant | undefined>(securityGrantSymbol, undefined);
 
     return grant ? grant.token : ref(null);
 }

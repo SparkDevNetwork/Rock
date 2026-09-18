@@ -1718,6 +1718,36 @@ namespace Rock.Model
                 return false;
             }
 
+            if ( new Service<FlexibleDocument>( Context ).Queryable().Any( a => a.CreatedByPersonAliasId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, FlexibleDocument.FriendlyTypeName );
+                return false;
+            }
+
+            if ( new Service<FlexibleDocument>( Context ).Queryable().Any( a => a.ModifiedByPersonAliasId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, FlexibleDocument.FriendlyTypeName );
+                return false;
+            }
+
+            if ( new Service<FlexibleDocument>( Context ).Queryable().Any( a => a.OwnerPersonAliasId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, FlexibleDocument.FriendlyTypeName );
+                return false;
+            }
+
+            if ( new Service<FlexibleDocumentModel>( Context ).Queryable().Any( a => a.CreatedByPersonAliasId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, FlexibleDocumentModel.FriendlyTypeName );
+                return false;
+            }
+
+            if ( new Service<FlexibleDocumentModel>( Context ).Queryable().Any( a => a.ModifiedByPersonAliasId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, FlexibleDocumentModel.FriendlyTypeName );
+                return false;
+            }
+
             if ( new Service<Following>( Context ).Queryable().Any( a => a.CreatedByPersonAliasId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, Following.FriendlyTypeName );
@@ -1787,6 +1817,18 @@ namespace Rock.Model
             if ( new Service<FollowingSuggestionType>( Context ).Queryable().Any( a => a.ModifiedByPersonAliasId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, FollowingSuggestionType.FriendlyTypeName );
+                return false;
+            }
+
+            if ( new Service<ForgeContent>( Context ).Queryable().Any( a => a.CreatedByPersonAliasId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, ForgeContent.FriendlyTypeName );
+                return false;
+            }
+
+            if ( new Service<ForgeContent>( Context ).Queryable().Any( a => a.ModifiedByPersonAliasId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, ForgeContent.FriendlyTypeName );
                 return false;
             }
 

@@ -69,12 +69,7 @@ internal sealed partial class CoreAdministrationSkill
             Name = definedType.Name,
             Description = definedType.Description,
             HelpText = definedType.HelpText,
-            Category = category != null
-                ? new KeyNameResult { Id = category.Id, Guid = category.Guid, Name = category.Name }
-                : null,
-            FieldTypeClass = definedType.FieldTypeId.HasValue
-                ? FieldTypeCache.Get( definedType.FieldTypeId.Value, AgentRequestContext.RockContext )?.Class
-                : null,
+            Category = KeyNameResult.FromCache( category ),
             IsSystem = definedType.IsSystem,
             IsActive = definedType.IsActive,
             CategorizedValuesEnabled = definedType.CategorizedValuesEnabled ?? false,

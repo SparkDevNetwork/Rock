@@ -1,10 +1,10 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <div class="toggle-chip-list">
+    <div class="groupfinder-chip-list">
         <button v-for="item in items"
                 :key="item.value ?? ''"
                 type="button"
-                class="toggle-chip"
+                class="groupfinder-chip"
                 :class="{ 'is-selected': isSelected(item) }"
                 :aria-pressed="isSelected(item)"
                 :disabled="disabled"
@@ -15,51 +15,6 @@
         </button>
     </div>
 </template>
-
-<style scoped>
-.toggle-chip-list {
-    display: flex;
-    flex-wrap: wrap;
-    gap: var(--spacing-xsmall);
-}
-
-.toggle-chip {
-    display: inline-flex;
-    align-items: center;
-    gap: var(--spacing-xsmall);
-    padding: var(--spacing-tiny) var(--spacing-small);
-    border: 1px solid transparent;
-    border-radius: 500px;
-    background: var(--color-interface-softer);
-    color: var(--color-interface-strong);
-    font-size: var(--font-size-small);
-    line-height: 1.5;
-    white-space: nowrap;
-    cursor: pointer;
-    transition: background-color 0.12s ease, border-color 0.12s ease, color 0.12s ease;
-}
-
-.toggle-chip:hover {
-    background: var(--color-interface-soft);
-}
-
-.toggle-chip.is-selected {
-    background: var(--color-primary);
-    border-color: var(--color-primary);
-    color: var(--color-interface-softest);
-}
-
-.toggle-chip:disabled {
-    cursor: default;
-    opacity: 0.6;
-}
-
-/* Size any leading icon a caller slots into a chip. */
-.toggle-chip :slotted(i) {
-    font-size: 1rem;
-    line-height: 1;
-}
-</style>
 
 <script setup lang="ts">
     import { PropType } from "vue";

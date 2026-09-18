@@ -41,7 +41,7 @@ namespace RockWeb.Blocks.Connection
         "Detail Page",
         Description = "Page used to view details of a request.",
         IsRequired = false,
-        DefaultValue = Rock.SystemGuid.Page.CONNECTION_REQUEST_DETAIL,
+        DefaultValue = Rock.SystemGuid.Page.CONNECTIONS_HUB,
         Order = 1,
         Key = AttributeKey.DetailPage )]
 

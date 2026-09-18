@@ -27,6 +27,17 @@ namespace Rock.AI.Agent.Mcp;
 /// </summary>
 internal class JsonRpcResult
 {
+    #region Fields
+
+    /// <summary>
+    /// An identifier of JSON <c>null</c>. JSON-RPC 2.0 requires a response to
+    /// use this when the request could not be read well enough to know what
+    /// its identifier was.
+    /// </summary>
+    private static readonly JsonElement NullId = JsonSerializer.Deserialize<JsonElement>( "null" );
+
+    #endregion
+
     #region Properties
 
     /// <summary>
@@ -36,9 +47,11 @@ internal class JsonRpcResult
     public string Version { get; } = "2.0";
 
     /// <summary>
-    /// The identifier of the request this result corresponds to.
+    /// The identifier of the request this result corresponds to. This holds
+    /// the raw element from the request so that both the value and its JSON
+    /// type are echoed back unchanged, as JSON-RPC 2.0 requires.
     /// </summary>
-    public long Id { get; }
+    public JsonElement Id { get; }
 
     /// <summary>
     /// The result of the request, if successful.
@@ -60,7 +73,7 @@ internal class JsonRpcResult
     /// </summary>
     /// <param name="id">The identifier of the JSON-RPC request this result corresponds to.</param>
     /// <param name="result">The result value of the JSON-RPC operation.</param>
-    internal JsonRpcResult( long id, object result )
+    internal JsonRpcResult( JsonElement id, object result )
     {
         Id = id;
         Result = result;
@@ -72,7 +85,7 @@ internal class JsonRpcResult
     /// <param name="id">The identifier of the JSON-RPC request this result corresponds to.</param>
     /// <param name="errorCode">The code that identifies what type of error happened.</param>
     /// <param name="errorMessage">A concise description of the error.</param>
-    internal JsonRpcResult( long id, int errorCode, string errorMessage )
+    internal JsonRpcResult( JsonElement id, int errorCode, string errorMessage )
     {
         Id = id;
         Error = new JsonRpcError
@@ -85,6 +98,19 @@ internal class JsonRpcResult
     #endregion
 
     #region Methods
+
+    /// <summary>
+    /// Creates an error result for a request whose identifier could not be
+    /// determined, such as one that was not valid JSON. The identifier of the
+    /// response is <c>null</c> in this case.
+    /// </summary>
+    /// <param name="errorCode">The code that identifies what type of error happened.</param>
+    /// <param name="errorMessage">A concise description of the error.</param>
+    /// <returns>A new instance of <see cref="JsonRpcResult"/> that represents the error.</returns>
+    internal static JsonRpcResult CreateErrorResult( int errorCode, string errorMessage )
+    {
+        return new JsonRpcResult( NullId, errorCode, errorMessage );
+    }
 
     /// <summary>
     /// Writes the JSON-RPC result to a stream in JSON format.

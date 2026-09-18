@@ -150,6 +150,7 @@ namespace RockWeb
                         }
 
                         context.Response.AddHeader( "content-disposition", string.Format( "inline;filename={0}", Path.GetFileName( trustedPhysicalFilePath ) ) );
+                        AddResponseSecurityHeaders( context );
                         context.Response.ContentType = mimeType;
 
                         // If extra query string params are passed in and it isn't an SVG file, assume resize is needed
@@ -310,6 +311,14 @@ namespace RockWeb
             }
 
             // Security checks pass so send the file
+
+            // Reject non-image files so this image handler never serves an executable type such as text/html.
+            if ( binaryFileMetaData.MimeType?.StartsWith( "image/" ) != true )
+            {
+                SendNotFound( context );
+                return;
+            }
+
             Stream fileContent = null;
             try
             {
@@ -449,6 +458,7 @@ namespace RockWeb
                 using ( var responseStream = fileContent )
                 {
                     context.Response.AddHeader( "content-disposition", "inline;filename=" + binaryFileMetaData.FileName.MakeValidFileName().UrlEncode() );
+                    AddResponseSecurityHeaders( context );
                     if ( responseStream.CanSeek )
                     {
                         responseStream.Seek( 0, SeekOrigin.Begin );
@@ -706,6 +716,26 @@ namespace RockWeb
             context.Response.StatusCode = System.Net.HttpStatusCode.NotFound.ConvertToInt();
             context.Response.StatusDescription = "The requested image could not be found.";
             context.ApplicationInstance.CompleteRequest();
+        }
+
+        /// <summary>
+        /// Adds the security headers that prevent an uploaded file from executing script in the
+        /// context of the Rock domain. Uploaded files are stored and served with a client-supplied
+        /// mime type, so a text file can be served as text/html or image/svg+xml and would then
+        /// execute its script as an active document on the Rock domain. The sandbox directive places
+        /// the response in an opaque origin with scripting disabled (even on direct top-level
+        /// navigation), so script inside an uploaded file cannot run, read the Rock auth cookie, or
+        /// call Rock's API as the viewing user. default-src 'none' additionally blocks the file from
+        /// making any outbound request, preventing data exfiltration and hardening the response if the
+        /// sandbox is ever relaxed. nosniff is included so a file with a benign declared type cannot be
+        /// sniffed into a dangerous one.
+        /// </summary>
+        /// <param name="context">The context.</param>
+        private void AddResponseSecurityHeaders( HttpContext context )
+        {
+            // No allow-downloads token since this handler only serves inline images.
+            context.Response.AddHeader( "Content-Security-Policy", "default-src 'none'; sandbox" );
+            context.Response.AddHeader( "X-Content-Type-Options", "nosniff" );
         }
 
         /// <summary>

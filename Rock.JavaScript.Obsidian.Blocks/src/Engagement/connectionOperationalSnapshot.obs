@@ -181,8 +181,8 @@
                                 width="180px">
                             <template #format="{ row }">
                                 <div class="performance-column-data">
-                                    <div v-ellipsis-tooltip><i class="ti ti-circle-check"></i> Completed: {{ (row as ConnectorBag).completedRequestCount }}</div>
-                                    <div v-ellipsis-tooltip><i class="ti ti-calendar-check"></i> Avg Time: {{ (row as ConnectorBag).averageCompletionDays.toLocaleString(undefined, { maximumFractionDigits: 1 }) }}d</div>
+                                    <div v-tooltip.overflow="`Completed: ${(row as ConnectorBag).completedRequestCount}`"><i class="ti ti-circle-check"></i> Completed: {{ (row as ConnectorBag).completedRequestCount }}</div>
+                                    <div v-tooltip.overflow="`Avg Time: ${(row as ConnectorBag).averageCompletionDays.toLocaleString(undefined, { maximumFractionDigits: 1 })}d`"><i class="ti ti-calendar-check"></i> Avg Time: {{ (row as ConnectorBag).averageCompletionDays.toLocaleString(undefined, { maximumFractionDigits: 1 }) }}d</div>
                                 </div>
                             </template>
                         </Column>
@@ -346,13 +346,20 @@
     font-size: var(--font-size-small);
     color: var(--color-interface-strong);
 }
+
+/* Each stat clips to a single line; the overflow tooltip reveals the full text. */
+.performance-column-data > div {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
 </style>
 
 <script setup lang="ts">
     import { computed, ref, watch } from "vue";
     import BreakpointObserver from "./ConnectionOperationalSnapshot/breakpointObserver.partial.obs";
     import ChartPanel from "./ConnectionOperationalSnapshot/chartPanel.partial.obs";
-    import { vEllipsisTooltip } from "@Obsidian/Directives/ellipsisTooltip";
+    import { vTooltip } from "@Obsidian/Directives/tooltip";
     import KpiTile from "@Obsidian/Controls/kpiTile.obs";
     import { BreakpointHelper } from "./ConnectionOperationalSnapshot/types.partial";
     import BarChart from "@Obsidian/Controls/barChart.obs";

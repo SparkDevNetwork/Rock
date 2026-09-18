@@ -23,7 +23,7 @@
 
 /** Represents the scored result for a single Conflict Profile mode or theme. */
 export type ConflictProfileScoreBag = {
-    /** Gets or sets the hex color used for this item in the results chart. */
+    /** Gets or sets the CSS custom property (e.g. "--color-metric-primary") used for this item in the results chart. */
     chartColor?: string | null;
 
     /** Gets or sets the descriptive copy explaining what the mode or theme means. */

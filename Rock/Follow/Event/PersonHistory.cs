@@ -71,6 +71,7 @@ namespace Rock.Follow.Event
         IsRequired = false,
         Category = "Changed By",
         Order = 1 )]
+    [Rock.SystemGuid.BlockTypeGuid( "854C7AE2-6FA4-4D1A-BBB5-012484EA436E" )]
     [Rock.SystemGuid.EntityTypeGuid( "21737773-F15A-4338-9020-13EB0FF00E80")]
     public class PersonHistory : EventComponent
     {

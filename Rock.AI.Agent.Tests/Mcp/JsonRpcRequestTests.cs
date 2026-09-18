@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Text.Json;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -25,23 +26,84 @@ public class JsonRpcRequestTests
     }
 
     [TestMethod]
-    public void Constructor_WithIdValue_DecodesCorrectly()
+    public void Constructor_WithNumberIdValue_DecodesCorrectly()
     {
         var ms = ToStream( "{\"id\":123}" );
 
         var request = new JsonRpcRequest( ms, AgentSerializerOptions.GetOptions( AgentType.Mcp, AudienceType.Public ) );
 
-        Assert.AreEqual( 123, request.Id );
+        Assert.IsTrue( request.Id.HasValue );
+        Assert.AreEqual( JsonValueKind.Number, request.Id.Value.ValueKind );
+        Assert.AreEqual( 123, request.Id.Value.GetInt64() );
+        Assert.IsTrue( request.IsIdValid );
     }
 
     [TestMethod]
-    public void Constructor_WithNullIdValue_DecodesAsNull()
+    public void Constructor_WithStringIdValue_DecodesCorrectly()
+    {
+        var ms = ToStream( "{\"id\":\"req_abc123\"}" );
+
+        var request = new JsonRpcRequest( ms, AgentSerializerOptions.GetOptions( AgentType.Mcp, AudienceType.Public ) );
+
+        Assert.IsTrue( request.Id.HasValue );
+        Assert.AreEqual( JsonValueKind.String, request.Id.Value.ValueKind );
+        Assert.AreEqual( "req_abc123", request.Id.Value.GetString() );
+        Assert.IsTrue( request.IsIdValid );
+    }
+
+    [TestMethod]
+    public void Constructor_WithExplicitNullIdValue_DecodesAsInvalidId()
+    {
+        var ms = ToStream( "{\"id\":null}" );
+
+        var request = new JsonRpcRequest( ms, AgentSerializerOptions.GetOptions( AgentType.Mcp, AudienceType.Public ) );
+
+        Assert.IsTrue( request.Id.HasValue );
+        Assert.AreEqual( JsonValueKind.Null, request.Id.Value.ValueKind );
+        Assert.IsFalse( request.IsIdValid );
+    }
+
+    [TestMethod]
+    public void Constructor_WithObjectIdValue_DecodesAsInvalidId()
+    {
+        var ms = ToStream( "{\"id\":{}}" );
+
+        var request = new JsonRpcRequest( ms, AgentSerializerOptions.GetOptions( AgentType.Mcp, AudienceType.Public ) );
+
+        Assert.IsFalse( request.IsIdValid );
+    }
+
+    [TestMethod]
+    public void Constructor_WithMissingIdValue_DecodesAsNull()
     {
         var ms = ToStream( "{}" );
 
         var request = new JsonRpcRequest( ms, AgentSerializerOptions.GetOptions( AgentType.Mcp, AudienceType.Public ) );
 
         Assert.IsNull( request.Id );
+        Assert.IsFalse( request.IsIdValid );
+    }
+
+    [TestMethod]
+    public void Constructor_WithMissingMethod_DecodesAsNull()
+    {
+        var ms = ToStream( "{\"id\":123}" );
+
+        var request = new JsonRpcRequest( ms, AgentSerializerOptions.GetOptions( AgentType.Mcp, AudienceType.Public ) );
+
+        Assert.IsNull( request.Method );
+    }
+
+    [TestMethod]
+    public void Constructor_WithArrayPayload_DecodesWithoutThrowing()
+    {
+        var ms = ToStream( "[{\"id\":123}]" );
+
+        var request = new JsonRpcRequest( ms, AgentSerializerOptions.GetOptions( AgentType.Mcp, AudienceType.Public ) );
+
+        Assert.IsFalse( request.IsRequestObject );
+        Assert.IsNull( request.Id );
+        Assert.IsNull( request.Method );
     }
 
     [TestMethod]

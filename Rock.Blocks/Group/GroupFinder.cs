@@ -297,55 +297,55 @@ namespace Rock.Blocks.Group
       Attributes           - the ""show on card"" attributes, each with Label, Value, and IconCssClass
       RegisterUrl          - the register page URL for this group, or empty when no register page is set
 -/
-<div class=""group-finder-card-content"">
+<div class=""groupfinder-card-content"">
     {% if ShowImage %}
     {% if ImageUrl and ImageUrl != '' %}
-    <div class=""group-finder-card-media"">
-        <img class=""group-finder-card-image"" src=""{{ ImageUrl }}"" alt=""{{ Group.Name | Escape }}"" />
-        {% if GroupTypeName and GroupTypeName != '' %}<span class=""group-finder-card-badge"">{{ GroupTypeName | Escape }}</span>{% endif %}
+    <div class=""groupfinder-card-media"">
+        <img class=""groupfinder-card-image"" src=""{{ ImageUrl }}"" alt=""{{ Group.Name | Escape }}"" />
+        {% if GroupTypeName and GroupTypeName != '' %}<span class=""groupfinder-card-badge"">{{ GroupTypeName | Escape }}</span>{% endif %}
     </div>
     {% else %}
-    <div class=""group-finder-card-media is-fallback"" style=""--group-finder-fallback-color: {{ GroupTypeColor | Default:'#4fd1c5' }}"">
-        {% if GroupTypeName and GroupTypeName != '' %}<span class=""group-finder-card-badge"">{{ GroupTypeName | Escape }}</span>{% endif %}
+    <div class=""groupfinder-card-media is-fallback"" style=""--groupfinder-fallback-color: {{ GroupTypeColor | Default:'#4fd1c5' }}"">
+        {% if GroupTypeName and GroupTypeName != '' %}<span class=""groupfinder-card-badge"">{{ GroupTypeName | Escape }}</span>{% endif %}
     </div>
     {% endif %}
     {% endif %}
 
-    <div class=""group-finder-card-body"">
+    <div class=""groupfinder-card-body"">
         {% if DrivingDistance or StraightLineDistance or AverageAge %}
-        <div class=""group-finder-card-meta"">
+        <div class=""groupfinder-card-meta"">
             {% if DriveTime and DriveTime != '' %}
-            <span class=""group-finder-card-distance""><strong>Drive Time:</strong> {{ DriveTime }}{% if DrivingDistance %} ({{ DrivingDistance | Format:'0.0' }} mi){% endif %}</span>
+            <span class=""groupfinder-card-distance""><strong>Drive Time:</strong> {{ DriveTime }}{% if DrivingDistance %} ({{ DrivingDistance | Format:'0.0' }} mi){% endif %}</span>
             {% elsif StraightLineDistance %}
-            <span class=""group-finder-card-distance""><strong>Distance:</strong> ~{{ StraightLineDistance | Format:'0.0' }} mile{% if StraightLineDistance != 1 %}s{% endif %}</span>
+            <span class=""groupfinder-card-distance""><strong>Distance:</strong> ~{{ StraightLineDistance | Format:'0.0' }} mile{% if StraightLineDistance != 1 %}s{% endif %}</span>
             {% endif %}
             {% if AverageAge %}
-            <span class=""group-finder-card-average-age""><strong>Avg Age:</strong> {{ AverageAge }} yrs</span>
+            <span class=""groupfinder-card-average-age""><strong>Avg Age:</strong> {{ AverageAge }} yrs</span>
             {% endif %}
         </div>
-        <hr class=""group-finder-card-divider"" />
+        <hr class=""groupfinder-card-divider"" />
         {% endif %}
 
-        <h3 class=""group-finder-card-title"">{{ Group.Name | Escape }}</h3>
+        <h3 class=""groupfinder-card-title"">{{ Group.Name | Escape }}</h3>
 
         {% if ScheduleText and ScheduleText != '' %}
-        <div class=""group-finder-card-schedule"">{{ ScheduleText | Escape }}</div>
+        <div class=""groupfinder-card-schedule"">{{ ScheduleText | Escape }}</div>
         {% endif %}
 
         {% if Group.Description and Group.Description != '' %}
-        <p class=""group-finder-card-description"">{{ Group.Description | Escape }}</p>
+        <p class=""groupfinder-card-description"">{{ Group.Description | Escape }}</p>
         {% endif %}
 
         {% assign attributeCount = Attributes | Size %}
         {% assign hasCampus = false %}
         {% if CampusName and CampusName != '' %}{% assign hasCampus = true %}{% endif %}
         {% if hasCampus or attributeCount > 0 %}
-        <ul class=""group-finder-card-attributes"">
+        <ul class=""groupfinder-card-attribute-list"">
             {% if CampusName and CampusName != '' %}
-            <li class=""group-finder-card-attribute""><i class=""ti ti-map-pin""></i><span>{{ CampusName | Escape }}</span></li>
+            <li class=""groupfinder-card-attribute""><i class=""ti ti-map-pin""></i><span>{{ CampusName | Escape }}</span></li>
             {% endif %}
             {% for attribute in Attributes %}
-            <li class=""group-finder-card-attribute"">
+            <li class=""groupfinder-card-attribute"">
                 {% if attribute.IconCssClass and attribute.IconCssClass != '' %}<i class=""{{ attribute.IconCssClass }}""></i>{% endif %}
                 <span>{{ attribute.Value | Escape }}</span>
             </li>
@@ -354,8 +354,8 @@ namespace Rock.Blocks.Group
         {% endif %}
 
         {% if RegisterUrl and RegisterUrl != '' %}
-        <div class=""group-finder-card-footer"">
-            <a class=""group-finder-card-action btn btn-primary"" href=""{{ RegisterUrl }}"">Register</a>
+        <div class=""groupfinder-card-footer"">
+            <a class=""groupfinder-card-action btn btn-primary"" href=""{{ RegisterUrl }}"">Register</a>
         </div>
         {% endif %}
     </div>

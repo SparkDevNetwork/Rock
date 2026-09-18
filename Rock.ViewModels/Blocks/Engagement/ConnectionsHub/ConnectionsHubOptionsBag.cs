@@ -50,6 +50,12 @@ namespace Rock.ViewModels.Blocks.Engagement.ConnectionsHub
         public string ConnectionRequestIdKey { get; set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether the block should open the Add Connection Request
+        /// modal on load.
+        /// </summary>
+        public bool IsAddConnectionRequestRequested { get; set; }
+
+        /// <summary>
         /// Gets or sets the GUID of the Connection Opportunity supplied via a page parameter, used to pre-filter the view.
         /// </summary>
         public Guid? ConnectionOpportunityGuidFromPageParameter { get; set; }
@@ -114,6 +120,20 @@ namespace Rock.ViewModels.Blocks.Engagement.ConnectionsHub
         /// Gets or sets a value indicating whether the current view is the "My Connections" view.
         /// </summary>
         public bool IsMyConnectionsView { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether the context slicer's Connection Type filter
+        /// should be hidden in the "My Connections" view because the block is pinned to a single
+        /// Connection Type by its block setting.
+        /// </summary>
+        public bool IsConnectionTypeFilterHidden { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether the block is limited to requests assigned to
+        /// the current person. When true the context slicer's connector filter is rendered
+        /// disabled and locked to "My Requests".
+        /// </summary>
+        public bool IsLimitedToAssignedConnections { get; set; }
 
         /// <summary>
         /// Gets or sets the list of connection types for the context slicer filter in the "My Connections" view.

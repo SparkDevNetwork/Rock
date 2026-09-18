@@ -917,16 +917,55 @@ namespace Rock.Data
         }
 
         /// <summary>
-        /// Deletes the Page
+        /// Deletes the Page. Before the page is deleted, any child pages are re-parented to the
+        /// Orphaned Pages system page (<see cref="SystemGuid.Page.ORPHANED_PAGES" />) so the delete
+        /// does not fail on the ParentPageId foreign key. The Orphaned Pages page is created if it
+        /// does not already exist.
         /// </summary>
         /// <param name="guid">The GUID.</param>
         public void DeletePage( string guid )
         {
+            DeletePage( guid, Rock.SystemGuid.Page.ORPHANED_PAGES );
+        }
+
+        /// <summary>
+        /// Deletes the Page. Before the page is deleted, any child pages are re-parented to the
+        /// page identified by <paramref name="orphanParentPageGuid" /> so the delete does not fail
+        /// on the ParentPageId foreign key. If that parent page does not exist, the child pages are
+        /// left in place and the delete will fail loudly. If the page being deleted has no child
+        /// pages, no re-parenting occurs and behavior is unchanged.
+        /// </summary>
+        /// <param name="guid">The GUID of the page to delete.</param>
+        /// <param name="orphanParentPageGuid">
+        /// The GUID of the page that any child pages should be re-parented to before the page is
+        /// deleted. Defaults to the Orphaned Pages system page when called via the single-parameter
+        /// overload. When this is the Orphaned Pages system page, it is created automatically if it
+        /// does not already exist.
+        /// </param>
+        public void DeletePage( string guid, string orphanParentPageGuid )
+        {
+            // When re-parenting to the default Orphaned Pages system page, make sure it exists first
+            // so the re-parent below has a valid target. A caller that supplies a different parent
+            // page is responsible for that page's existence.
+            if ( orphanParentPageGuid == Rock.SystemGuid.Page.ORPHANED_PAGES )
+            {
+                EnsureOrphanedPagesSystemPageExists();
+            }
+
             Migration.Sql( string.Format( @"
 
                 DECLARE @PageId int = ( SELECT TOP 1 [Id] FROM [Page] WHERE [Guid] = '{0}' )
                 IF @PageId IS NOT NULL
                 BEGIN
+
+                    -- Re-parent any child pages to the orphan parent page so the delete below does not
+                    -- fail on the ParentPageId foreign key. If the orphan parent page does not exist,
+                    -- the children are left in place and the delete will fail loudly.
+                    DECLARE @OrphanParentPageId int = ( SELECT TOP 1 [Id] FROM [Page] WHERE [Guid] = '{1}' )
+                    IF @OrphanParentPageId IS NOT NULL AND @OrphanParentPageId <> @PageId
+                    BEGIN
+                        UPDATE [Page] SET [ParentPageId] = @OrphanParentPageId WHERE [ParentPageId] = @PageId
+                    END
 
                     IF OBJECT_ID(N'[dbo].[PageView]', 'U') IS NOT NULL
                     BEGIN
@@ -936,8 +975,31 @@ namespace Rock.Data
                     DELETE [Page] WHERE [Id] = @PageId
                 END
 ",
-                    guid
+                    guid,
+                    orphanParentPageGuid
                     ) );
+        }
+
+        /// <summary>
+        /// Ensures the hidden "Orphaned Pages" system page (<see cref="SystemGuid.Page.ORPHANED_PAGES" />)
+        /// exists so that <see cref="DeletePage(string, string)" /> has a valid page to re-parent
+        /// orphaned child pages to. The page is added under the CMS settings page and is a no-op when
+        /// it already exists.
+        /// </summary>
+        /// <remarks>
+        /// This intentionally does not set [DisplayInNavWhen]; the page is left at the AddPage default
+        /// so it stays out of the way until a later EF migration configures its navigation display.
+        /// </remarks>
+        private void EnsureOrphanedPagesSystemPageExists()
+        {
+            AddPage(
+                true,
+                Rock.SystemGuid.Page.CMS_CONFIGURATION,
+                Rock.SystemGuid.Layout.FULL_WIDTH_INTERNAL_SITE,
+                "Orphaned Pages",
+                "A holding place for pages whose parent page was deleted by a migration.",
+                Rock.SystemGuid.Page.ORPHANED_PAGES,
+                "fa fa-unlink" );
         }
 
         /// <summary>

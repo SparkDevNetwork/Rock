@@ -1,6 +1,10 @@
 ---
 title: Connection Domain Overview
-last_updated: 2026-05-01
+last_updated: 2026-08-28
+related_specs:
+  - specs/completed/connection/260825-connection-page-tree-cleanup.md
+  - specs/completed/connection/260825-connections-hub-add-entry-point.md
+  - specs/completed/connection/260827-connection-request-link-redirection.md
 related_files:
   - Rock/Model/Connection/ConnectionType/ConnectionType.cs
   - Rock/Model/Connection/ConnectionOpportunity/ConnectionOpportunity.cs
@@ -70,7 +74,7 @@ Optional Group integration: an opportunity can be tied to a Group (the team they
 
 ## Common Scenarios
 
-**"Track new volunteer signups."** Create a ConnectionType "Volunteer" and an Opportunity per role ("Greeter", "Children's Worker"). Configure connectors. The Connection Request Detail block (or a public Connect block) creates ConnectionRequests; connectors work them through the Board.
+**"Track new volunteer signups."** Create a ConnectionType "Volunteer" and an Opportunity per role ("Greeter", "Children's Worker"). Configure connectors. The Connections Hub (or the public Connection Request Entry block) creates ConnectionRequests; connectors work them through the Board.
 
 **"Auto-transition stagnant requests."** ConnectionStatusAutomation rule that flips Active -> Inactive after 60 days with no activity. Evaluated on the schedule.
 
@@ -138,7 +142,7 @@ Rejected. The two roles are operationally distinct; a connector for the Greeter 
 ### Affected Blocks and UI Surfaces
 
 - **Admin:** Connection Type Detail/List, Connection Opportunity Detail/List, Connection Type Source.
-- **Operational:** Connection Request Detail (legacy), Connections Hub (new aggregated view), Connection Request Board, Connection Operational Snapshot.
+- **Operational:** Connections Hub (the single surface for viewing and creating requests), Connection Request Board, Connection Operational Snapshot. Connection Request Detail is legacy and partner-only: no core link targets it, and it survives for the per-type override on `ConnectionType` and for links an organization built themselves.
 - **Mobile:** Connection Request Detail, Connection Request List (heavy fix coverage in `0bd3ec3ad9`, `f52bd2c35b`, `aa49aff6a6`, `4e1e45ff22`).
 - **Public:** Connect Detail, Connect List blocks for self-service signup.
 
@@ -155,5 +159,14 @@ Rejected. The two roles are operationally distinct; a connector for the Greeter 
 
 ## Recent Impactful Changes
 
+- **2026-08-28** ([commit `9e9964ab4a`](https://github.com/SparkDevNetwork/Rock/commit/9e9964ab4a)). Redirected the core Connection Request links to the Connections Hub, and taught the legacy Connection Request Detail page to accept the Hub's page parameter names.
+- **2026-08-28** ([commit `f9acac2205`](https://github.com/SparkDevNetwork/Rock/commit/f9acac2205)). Added support for linking to the Connections Hub with the Add Connection Request modal already open, preselected by Connection Type or Opportunity.
+- **2026-08-25** ([commit `7d5c5bd4e9`](https://github.com/SparkDevNetwork/Rock/commit/7d5c5bd4e9)). Improved the internal Connections page structure and removed the legacy Add Campaign Requests and Connection Requests Bulk Update blocks.
 - **2026-02-27** ([commit `f74c699b96`](https://github.com/SparkDevNetwork/Rock/commit/f74c699b96)). Reduced DB blocking and improved stability under heavy concurrent ConnectionRequest creation (Fixes #6643).
 - **2025-07-30** ([commit `90cae56911`](https://github.com/SparkDevNetwork/Rock/commit/90cae56911)). Connection Request Board: drag-and-drop workflow ordering, default Connection State / Status filter block settings, workflow conditional application by Age Classification and dataview filters.
+
+## Related Specs
+
+- [Connection Request Link Redirection (Phase 3 of Connection Page/Block Cleanup)](../../specs/completed/connection/260827-connection-request-link-redirection.md) — 2026-08-27 (Jason Hendee)
+- [Connections Hub Add Entry Point (Phase 2 of Connection Page/Block Cleanup)](../../specs/completed/connection/260825-connections-hub-add-entry-point.md) — 2026-08-25 (Jason Hendee)
+- [Connection Page Tree Cleanup (Phase 1 of Connection Page/Block Cleanup)](../../specs/completed/connection/260825-connection-page-tree-cleanup.md) — 2026-08-25 (Jason Hendee)

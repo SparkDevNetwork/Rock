@@ -123,7 +123,7 @@ internal sealed partial class CoreAdministrationSkill
             .ToList() );
 
         var historyPage = page.WithItems( page.Items
-            .Select( dv => new KeyNameResult { Id = dv.Id, Guid = dv.Guid, Name = dv.Value } ) );
+            .Select( dv => KeyNameResult.FromCache( dv ) ) );
 
         return helper.GetPaginatedResult( resultPage, historyPage );
     }

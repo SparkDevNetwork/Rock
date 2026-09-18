@@ -4,7 +4,7 @@
         <template v-for="item in internalAttributeItems" :key="item.attribute.attributeGuid">
             <div class="form-group">
                 <OptionalControl v-model="item.isActive" :label="item.attribute.name!" :help="item.attribute.description ?? ''">
-                    <RockField :attribute="{ ...item.attribute, description: '' }" v-model="item.value" isEditMode :showLabel="false" />
+                    <RockField :attribute="{ ...item.attribute, description: '', isRequired: isRequiredEnforced && item.attribute.isRequired }" v-model="item.value" isEditMode :showLabel="false" />
                 </OptionalControl>
             </div>
         </template>
@@ -25,6 +25,17 @@
         modelValue: {
             type: Array as PropType<AttributeUpdateItem[]>,
             required: true
+        },
+
+        /**
+         * Applies each attribute's own required setting to its editor. Off for Person
+         * attributes, which the WebForms block always built as not required so that a
+         * value could be cleared. On for Group Member and Step attributes, which the
+         * WebForms block built with the attribute's real setting.
+         */
+        isRequiredEnforced: {
+            type: Boolean as PropType<boolean>,
+            default: false
         }
     });
 

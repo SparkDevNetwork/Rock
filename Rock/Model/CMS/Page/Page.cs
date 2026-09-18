@@ -654,6 +654,25 @@ namespace Rock.Model
             return PageTitle;
         }
 
+        /// <summary>
+        /// Sets the <see cref="SiteId"/> so that site qualified Page attributes
+        /// resolve correctly when <see cref="Rock.Attribute.IHasAttributes"/>
+        /// attributes are loaded on an unsaved Page.
+        /// </summary>
+        /// <remarks>
+        /// <see cref="SiteId"/> is normally derived from the Page's Layout by the
+        /// save hook, so a transient Page has no site until it is saved. This lets
+        /// callers that need the qualified attribute set before saving (such as
+        /// previewing the attributes of a page about to be created) supply the site
+        /// the page will belong to. It does not affect what is persisted, the save
+        /// hook always re-derives <see cref="SiteId"/> from the Layout.
+        /// </remarks>
+        /// <param name="siteId">The identifier of the site the page will belong to.</param>
+        internal void SetSiteIdForLoadingAttributes( int siteId )
+        {
+            SiteId = siteId;
+        }
+
         #endregion Methods
     }
 

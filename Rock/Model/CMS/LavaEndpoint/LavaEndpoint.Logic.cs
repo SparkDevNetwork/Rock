@@ -79,9 +79,11 @@ namespace Rock.Model
                 }
             }
 
-            // If it's not EXECUTE then allow if they are in the override roles.
-            var isInOverrideRole = RoleCache.Get( Rock.SystemGuid.Group.GROUP_ADMINISTRATORS.AsGuid() ).IsPersonInRole( person.Guid )
-                                || RoleCache.Get( SystemGuid.Group.GROUP_LAVA_APPLICATION_DEVELOPERS.AsGuid() ).IsPersonInRole( person.Guid );
+            // If it's not EXECUTE then allow if they are in the override roles. The RoleCache.Get()
+            // calls can return null when a role is inactive or missing, so the results must be
+            // null-checked before testing role membership.
+            var isInOverrideRole = RoleCache.Get( Rock.SystemGuid.Group.GROUP_ADMINISTRATORS.AsGuid() )?.IsPersonInRole( person.Guid ) == true
+                                || RoleCache.Get( SystemGuid.Group.GROUP_LAVA_APPLICATION_DEVELOPERS.AsGuid() )?.IsPersonInRole( person.Guid ) == true;
 
             if ( isInOverrideRole )
             {

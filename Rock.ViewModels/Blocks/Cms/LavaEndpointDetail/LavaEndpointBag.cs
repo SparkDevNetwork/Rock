@@ -112,5 +112,13 @@ namespace Rock.ViewModels.Blocks.Cms.LavaEndpointDetail
         /// If cross-site forgery protection is enabled or not.
         /// </value>
         public bool EnableCrossSiteForgeryProtection { get; set; }
+
+        /// <summary>
+        /// Gets or sets the content type the endpoint's response is returned as.
+        /// </summary>
+        /// <value>
+        /// The content type of the endpoint's response, such as <c>text/html</c> or <c>application/json</c>.
+        /// </value>
+        public string ContentType { get; set; }
     }
 }

@@ -151,7 +151,12 @@
     /** Retrieve the country code data, validation data, and formatting data from the server */
     async function loadConfiguration(): Promise<void> {
         try {
-            const result = (showSmsOptIn && !props.hideSms)
+            // Gate only on hideSms, not on the showSmsOptIn computed. showSmsOptIn
+            // is derived from configuration.smsOptInText, but configuration is still
+            // null when this first (and only) load runs, so showSmsOptIn.value would
+            // always be false here. Gating on it would call the non-SMS endpoint,
+            // leaving smsOptInText empty and hiding the opt-in checkbox permanently.
+            const result = !props.hideSms
                 ? await getPhoneNumberAndSmsConfiguration()
                 : await getPhoneNumberConfiguration();
 

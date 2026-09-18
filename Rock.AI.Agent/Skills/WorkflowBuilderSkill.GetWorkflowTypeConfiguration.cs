@@ -82,9 +82,7 @@ internal sealed partial class WorkflowBuilderSkill
             Guid = workflowType.Guid,
             Name = workflowType.Name,
             Description = workflowType.Description,
-            Category = workflowType.CategoryId.HasValue
-                ? GetCategoryKeyName( workflowType.CategoryId.Value, rockContext )
-                : null,
+            Category = GetCategoryKeyName( workflowType.CategoryId, rockContext ),
             IsActive = workflowType.IsActive ?? true,
             IsPersisted = workflowType.IsPersisted,
             IsFormBuilder = workflowType.IsFormBuilder,

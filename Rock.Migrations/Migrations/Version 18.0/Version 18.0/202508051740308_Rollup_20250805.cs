@@ -389,6 +389,7 @@ END;
             RockMigrationHelper.RenamePage( Rock.SystemGuid.Page.NEW_COMMUNICATION_OBSIDIAN, "New Communication" );
 
             // Step 8, Re-order the pages
+#pragma warning disable CS0618 // Type or member is obsolete
             Sql( $@"
                 DECLARE @orderOldBlock int
                 DECLARE @orderNewBlock int
@@ -398,6 +399,7 @@ END;
                 UPDATE [Page] SET [Order] = @orderOldBlock WHERE [Guid] = '{Rock.SystemGuid.Page.NEW_COMMUNICATION_OBSIDIAN}'
                 UPDATE [Page] SET [Order] = @orderNewBlock WHERE [Guid] = '{Rock.SystemGuid.Page.NEW_COMMUNICATION}'
             " );
+#pragma warning restore CS0618 // Type or member is obsolete
 
         }
 

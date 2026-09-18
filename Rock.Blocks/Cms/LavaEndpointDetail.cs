@@ -69,6 +69,17 @@ namespace Rock.Blocks.Cms
 
         #endregion Keys
 
+        #region Constants
+
+        /// <summary>
+        /// The content type used when an endpoint does not specify one. This matches the
+        /// default on <see cref="LavaEndpointAdditionalSettings"/> so an existing endpoint
+        /// keeps behaving the way it did before the setting existed.
+        /// </summary>
+        private const string DefaultContentType = "text/html";
+
+        #endregion Constants
+
         #region Methods
 
         /// <inheritdoc/>
@@ -184,6 +195,8 @@ namespace Rock.Blocks.Cms
                 return null;
             }
 
+            var additionalSettings = entity.GetAdditionalSettings<LavaEndpointAdditionalSettings>();
+
             var bag = new LavaEndpointBag
             {
                 IdKey = entity.IdKey,
@@ -198,7 +211,8 @@ namespace Rock.Blocks.Cms
                 RateLimitPeriodDurationSeconds = entity.RateLimitPeriodDurationSeconds,
                 SecurityMode = entity.SecurityMode,
                 CacheControlHeaderSettings = entity.CacheControlHeaderSettings.FromJsonOrNull<RockCacheability>()?.ToCacheabilityBag(),
-                EnableCrossSiteForgeryProtection = entity.GetAdditionalSettings<LavaEndpointAdditionalSettings>()?.EnableCrossSiteForgeryProtection ?? true
+                EnableCrossSiteForgeryProtection = additionalSettings?.EnableCrossSiteForgeryProtection ?? true,
+                ContentType = additionalSettings?.ContentType ?? DefaultContentType
             };
 
             return bag;
@@ -306,8 +320,20 @@ namespace Rock.Blocks.Cms
                     entity.SetPublicAttributeValues( box.Entity.AttributeValues, RequestContext.CurrentPerson, true, IsAttributeIncluded );
                 } );
 
-            // Set additional settings
-            entity.SetAdditionalSettings( new LavaEndpointAdditionalSettings { EnableCrossSiteForgeryProtection = box.Entity.EnableCrossSiteForgeryProtection } );
+            /*
+                8/3/2026 - CLAUDE
+
+                Every setting in LavaEndpointAdditionalSettings has to be assigned here.
+                This constructs a fresh settings object rather than mutating the stored
+                one, so anything left out is silently discarded on save.
+
+                Reason: Prevent additional settings from being dropped on save.
+            */
+            entity.SetAdditionalSettings( new LavaEndpointAdditionalSettings
+            {
+                EnableCrossSiteForgeryProtection = box.Entity.EnableCrossSiteForgeryProtection,
+                ContentType = box.Entity.ContentType.IsNotNullOrWhiteSpace() ? box.Entity.ContentType : DefaultContentType
+            } );
 
             return true;
         }

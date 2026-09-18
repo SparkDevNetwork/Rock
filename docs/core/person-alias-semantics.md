@@ -1,6 +1,8 @@
 ---
 title: PersonAlias Semantics
-last_updated: 2026-05-01
+last_updated: 2026-08-27
+related_specs:
+  - specs/completed/core/260824-page-view-interaction-bot-filtering.md
 related_files:
   - Rock/Model/CRM/PersonAlias/PersonAlias.cs
   - Rock/Model/CRM/PersonAlias/PersonAlias.SaveHook.cs
@@ -234,4 +236,9 @@ var primaryAliasId = person.PrimaryAliasId; // denormalized
 
 ## Recent Impactful Changes
 
+- **2026-08-24** ([commit `69f42ed3b3`](https://github.com/SparkDevNetwork/Rock/commit/69f42ed3b3)). Bot traffic no longer creates Anonymous Visitor aliases or page view interactions. The crawler check now runs before alias creation, crawler detection uses a maintained pattern list, and a post-update job removes the existing orphaned-alias backlog.
 - **2026-01-27** ([commit `4483145a96`](https://github.com/SparkDevNetwork/Rock/commit/4483145a96)). Person Merge enhancements: merge-completed email notification, automatic retention of non-selected last names as Previous Last Names, last-modified date/person visibility for fields and attributes during merge.
+
+## Related Specs
+
+- [Page View Interaction Bot Filtering](../../specs/completed/core/260824-page-view-interaction-bot-filtering.md) (2026-08-24, Jon Edmiston)

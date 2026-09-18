@@ -37,13 +37,13 @@ internal sealed partial class CommunityKnowledgeBaseSkill
     /// Searches documentation, guides, and community content.
     /// </summary>
     /// <remarks>
-    /// The right default for almost every question. Results are chunk level, so one
-    /// document can return several passages, and every one carries the citation it
-    /// came from.
+    /// The default for general documentation and community questions. Results are
+    /// chunk level, so one document can return several passages, and every one
+    /// carries the citation it came from.
     /// </remarks>
-    [Description( "Searches Rock documentation, guides, and community content using combined keyword and meaning-based matching. This is the right first move for almost every question about Rock." )]
+    [Description( "Searches Rock documentation, guides, and community content using combined keyword and meaning-based matching. Use a versioned data-model topic instead when exact entity fields, nullability, enums, or relationships are required." )]
     [AgentPurpose( "Answers questions about how Rock works, with a citation for every result." )]
-    [AgentUsage( "Prefer this over the code tools. Use the code tools only when the question is about implementation detail, or when this tool has already failed to answer it." )]
+    [AgentUsage( "Prefer this over the code tools for general documentation and community guidance. Do not treat search results as authoritative evidence for exact entity property names. Use the version-matching data-model topic and target entity article for schema questions." )]
     [AgentUsage( "Carry the citation from each result into any answer built from it. Present it as a reference rather than as a link, because for uploaded documents it is not always a resolvable URL." )]
     [AgentToolPrerequisite( "Call GetKnowledgeBaseOverview first. It reports the exact values the category, domain, and source filters accept, with document counts. A value that is not in that list returns no results rather than an error." )]
     [AgentToolReturnDescription( "Matching passages exactly as the knowledge service returns them. Each carries name, summary, chunk_text, categories, tags, rock_domain, source_name, published_at, original_location, and score. Use original_location as the citation and chunk_text as the passage. One document may return several passages, distinguished by chunk_sequence." )]

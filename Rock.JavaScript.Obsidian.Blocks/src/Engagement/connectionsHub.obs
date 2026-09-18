@@ -15,9 +15,10 @@
                 <DropDownList v-if="!isMyConnectionsView"
                               v-model="selectedConnector"
                               :items="staticConnectionTypeOptions?.connectorKeyItems ?? []"
+                              :disabled="isLimitedToAssignedConnections"
                               blankValue="All Requests"
                               enhanceForLongLists />
-                <DropDownList v-else-if="!selectedOpportunity"
+                <DropDownList v-else-if="!isConnectionTypeFilterHidden && !selectedOpportunity"
                               v-model="selectedType"
                               :items="box.options?.connectionTypeItems ?? []"
                               blankValue="All Types" />
@@ -971,6 +972,7 @@
     import { UpdateConnectionRequestStatesBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/updateConnectionRequestStatesBag";
     import { ActivityBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/activityBag";
     import { ActivityEntryBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/activityEntryBag";
+    import { ConnectionRequestWorkflowBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/connectionRequestWorkflowBag";
     import { LaunchWorkflowBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/launchWorkflowBag";
     import { LaunchWorkflowResultBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/launchWorkflowResultBag";
     import ModalAlert from "@Obsidian/Controls/modalAlert.obs";
@@ -1078,6 +1080,12 @@
 
     const isMyConnectionsView = ref<boolean>(box.options?.isMyConnectionsView ?? false);
 
+    // Block setting flags. When the block is pinned to a single Connection Type the slicer's
+    // type filter is hidden in My Connections view; when limited to assigned connections the
+    // connector filter is locked to the current person.
+    const isConnectionTypeFilterHidden = ref<boolean>(box.options?.isConnectionTypeFilterHidden ?? false);
+    const isLimitedToAssignedConnections = ref<boolean>(box.options?.isLimitedToAssignedConnections ?? false);
+
     const myConnectionsPageUrl = ref(box.navigationUrls?.[NavigationUrlKey.MyConnectionsPage]);
 
     function onMyConnectionsClick(): void {
@@ -1124,7 +1132,7 @@
 
     // Context Slicer configuration
     const selectedCampus = ref<ListItemBag | null>(null);
-    const selectedConnector = ref<string>(isNullOrWhiteSpace(preferences.getValue(PreferenceKey.SelectedConnector)) ? (store.state.currentPerson?.idKey ?? "") : preferences.getValue(PreferenceKey.SelectedConnector));
+    const selectedConnector = ref<string>(isLimitedToAssignedConnections.value || isNullOrWhiteSpace(preferences.getValue(PreferenceKey.SelectedConnector)) ? (store.state.currentPerson?.idKey ?? "") : preferences.getValue(PreferenceKey.SelectedConnector));
     const internalSelectedType = ref(preferences.getValue(PreferenceKey.FilterConnectionType));
     const internalSelectedOpportunity = ref(box.options?.connectionOpportunityGuidFromPageParameter ?? preferences.getValue(getConnectionFilterKey(PreferenceKey.ConnectionmOpportunityFilterConnectionTypeIdKey)));
 
@@ -2061,8 +2069,13 @@
             }
         }
 
-        // Connector filter
-        if (!isNullOrWhiteSpace(selectedConnector.value) && selectedConnector.value !== "All Requests") {
+        // Connector filter. When limited to assigned connections the block setting pins the
+        // filter to the current person regardless of the saved selection.
+        const connectorFilterValue = isLimitedToAssignedConnections.value
+            ? (store.state.currentPerson?.idKey ?? "")
+            : selectedConnector.value;
+
+        if (!isNullOrWhiteSpace(connectorFilterValue) && connectorFilterValue !== "All Requests") {
             const connectorValue = row["connectorDetails"] as ListItemBag | undefined;
 
             if (!connectorValue || typeof connectorValue !== "object") {
@@ -2070,7 +2083,7 @@
             }
 
             // Check against the selected connector filter.
-            return connectorValue?.value === selectedConnector.value;
+            return connectorValue?.value === connectorFilterValue;
         }
 
         // Campus Filter
@@ -2142,7 +2155,26 @@
         // When a new request is selected from the list we need to clear breadcrumbs.
         connectionRequestBreadcrumbs.value = [];
 
-        selectedRequestKeyForDockedPanel.value = key;
+        /*
+            9/11/26 - KBH
+
+            Details normally load from the watcher on selectedRequestKeyForDockedPanel.
+            Drilling into an Additional Request swaps the details without changing that
+            key, so re-selecting the same row after closing the panel is a same-value
+            write and the watcher never fires, leaving the drilled-into request on screen
+            with no breadcrumb back. Fetch explicitly in that case.
+
+            Reason: Vue watchers do not fire on same-value writes. (Fixes #7035)
+        */
+        const isSameRequestSelected = selectedRequestKeyForDockedPanel.value === key;
+
+        if (isSameRequestSelected) {
+            getConnectionRequestDetails(key);
+        }
+        else {
+            selectedRequestKeyForDockedPanel.value = key;
+        }
+
         isFlyoutOpen.value = false;
         isDockedPanelVisible.value = true;
     }
@@ -3945,6 +3977,12 @@
 
                 isLaunchWorkflowModalVisible.value = false;
 
+                // A launch from the docked panel persists its ConnectionRequestWorkflow row
+                // synchronously, so refresh the panel's Workflows list to show it right away.
+                if (isDockedPanelVisible.value) {
+                    refreshConnectionRequestWorkflows(dockedPanelDetailsBox.value?.entity?.connectionRequestIdKey);
+                }
+
                 return;
             }
 
@@ -4510,6 +4548,24 @@
         }
     }
 
+    async function refreshConnectionRequestWorkflows(requestIdKey: string | null | undefined): Promise<void> {
+        // We only need to refresh workflows if the docked panel is open and has data.
+        if (!isDockedPanelVisible.value || !dockedPanelDetailsBox.value?.entity || !requestIdKey) {
+            return;
+        }
+
+        const result = await invokeBlockAction<ConnectionRequestWorkflowBag[]>("GetConnectionRequestWorkflows", {
+            connectionRequestIdKey: requestIdKey
+        });
+
+        if (result.isSuccess && result.data) {
+            dockedPanelDetailsBox.value.entity.workflows = result.data;
+        }
+        else {
+            connectionRequestDockedPanelRef.value?.setErrorMessage("view", result.errorMessage ?? "An error occurred while getting the Connection Request workflows.");
+        }
+    }
+
     async function reorderConnectionRequest(idKey: string, beforeIdKey: string | null, statusGroupKey: string): Promise<void> {
         const result = await invokeBlockAction<number>("ReorderConnectionRequest", {
             connectionRequestIdKey: idKey,
@@ -4758,6 +4814,9 @@
 
     if (!isNullOrWhiteSpace(box.options?.connectionRequestIdKey)) {
         onSelectItem(box.options!.connectionRequestIdKey!);
+    }
+    else if (box.options?.isAddConnectionRequestRequested && canEditConnectionRequests.value) {
+        onAddItem();
     }
 
     onConfigurationValuesChanged(useReloadBlock());

@@ -189,7 +189,7 @@
                                         <DropDownList v-model="groupRole"
                                                       label="Group Role"
                                                       :items="groupRoleOptions"
-                                                      :showBlankItem="true" />
+                                                      :showBlankItem="false" />
 
                                         <RadioButtonList v-model="groupMemberStatus"
                                                          :items="groupMemberStatusOptions"
@@ -202,7 +202,7 @@
                                         <OptionalControl v-model="isUpdatingGroup.role" label="Group Role">
                                             <DropDownList v-model="groupRole"
                                                           :items="groupRoleOptions"
-                                                          :showBlankItem="true" />
+                                                          :showBlankItem="false" />
                                         </OptionalControl>
 
                                         <OptionalControl v-model="isUpdatingGroup.memberStatus" label="Group Member Status">
@@ -210,7 +210,7 @@
                                                              :items="groupMemberStatusOptions" />
                                         </OptionalControl>
 
-                                        <AttributeValueControls v-model="groupMemberAttributeUpdateItems" />
+                                        <AttributeValueControls v-model="groupMemberAttributeUpdateItems" isRequiredEnforced />
                                     </template>
                                 </template>
                             </ContentStack>
@@ -283,7 +283,7 @@
                                                 <TextBox v-model="stepNote" textMode="multiline" />
                                             </OptionalControl>
 
-                                            <AttributeValueControls v-model="stepAttributeUpdateItems" />
+                                            <AttributeValueControls v-model="stepAttributeUpdateItems" isRequiredEnforced />
                                         </template>
                                     </template>
                                 </template>
@@ -302,7 +302,8 @@
                         <ul>
                             <li v-for="(change, index) in changeSummary" :key="index">
                                 <template v-for="(segment, segmentIndex) in change" :key="segmentIndex">
-                                    <span v-if="segment.isChip" class="bulk-change-chip">{{ segment.text }}</span>
+                                    <MatrixChangeTable v-if="segment.matrix" :columns="segment.matrix.columns" :rows="segment.matrix.rows" />
+                                    <span v-else-if="segment.isChip" class="bulk-change-chip">{{ segment.text }}</span>
                                     <template v-else>{{ segment.text }}</template>
                                 </template>
                             </li>
@@ -437,10 +438,11 @@
     import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
     import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
     import AttributeValueControls from "./BulkUpdate/attributeValueControls.partial.obs";
+    import MatrixChangeTable from "./BulkUpdate/matrixChangeTable.partial.obs";
     import { AttributeUpdateItem, ChangeLine, UpdatedFields } from "./BulkUpdate/types.partial";
     import { BulkUpdatePersonResultBag } from "@Obsidian/ViewModels/Blocks/Crm/BulkUpdate/bulkUpdatePersonResultBag";
     import { BulkUpdateResultBag } from "@Obsidian/ViewModels/Blocks/Crm/BulkUpdate/bulkUpdateResultBag";
-    import { changeChip, changeText, collectActiveAttributeValues, formatAttributeValue, scrollNotificationIntoView, summarizeActiveAttributes, useInvokeBulkUpdateBlockAction } from "./BulkUpdate/utils.partial";
+    import { attributeChangeLine, changeChip, changeText, collectActiveAttributeValues, createAttributeUpdateItems, scrollNotificationIntoView, summarizeActiveAttributes, useInvokeBulkUpdateBlockAction } from "./BulkUpdate/utils.partial";
     import { ValidationResult, ValidationRuleFunction } from "@Obsidian/ValidationRules";
     import { useConfigurationValues } from "@Obsidian/Utility/block";
     import { BulkUpdateBag } from "@Obsidian/ViewModels/Blocks/Crm/BulkUpdate/bulkUpdateBag";
@@ -463,6 +465,7 @@
     import { BulkUpdateNoteBag } from "@Obsidian/ViewModels/Blocks/Crm/BulkUpdate/bulkUpdateNoteBag";
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
     import { Guid } from "@Obsidian/Types";
+    import { areEqual } from "@Obsidian/Utility/guid";
     import { BtnType } from "@Obsidian/Enums/Controls/btnType";
     import { confirm } from "@Obsidian/Utility/dialogs";
     import { AlertType } from "@Obsidian/Enums/Controls/alertType";
@@ -581,7 +584,8 @@
         guid: cat.guid,
         name: cat.name,
         description: cat.description,
-        attributes: cat.attributes ?? []
+        attributes: cat.attributes ?? [],
+        matrixAttributeValues: cat.matrixAttributeValues ?? {}
     }));
 
     /**
@@ -592,7 +596,7 @@
         Object.fromEntries(
             attributeCategories.map(cat => [
                 cat.guid,
-                cat.attributes.map(a => ({ attribute: a, isActive: false, value: "" }))
+                createAttributeUpdateItems(cat.attributes, cat.matrixAttributeValues)
             ])
         )
     );
@@ -634,6 +638,13 @@
      * action when groupUpdate.group changes.
      */
     const groupRoleOptions = ref<ListItemBag[]>([]);
+
+    /**
+     * The role pre-selected in the role dropdown whenever the role is reset:
+     * the selected group type's default role, or its first role when the type
+     * has no default.
+     */
+    const initialGroupRole = ref<ListItemBag | null>(null);
 
     /**
      * Options for the Group Member Status radio button list (Active, Inactive, Pending).
@@ -1333,7 +1344,7 @@
         for (const categoryGuid of Object.keys(attributeValuesByCategory.value)) {
             for (const item of attributeValuesByCategory.value[categoryGuid]) {
                 if (item.isActive) {
-                    changes.push(fieldChange(item.attribute.name ?? "Attribute", formatAttributeValue(item.attribute, item.value)));
+                    changes.push(attributeChangeLine(item.attribute, item.value, ""));
                 }
             }
         }
@@ -1699,11 +1710,12 @@
 
     /**
      * When the selected group changes, ask the server for the group's roles
-     * (via GetGroupRoles) and its member attributes. Also clears any previously
-     * selected role and stale attribute state.
+     * (via GetGroupRoles) and its member attributes. Also resets the role to the
+     * initial role and clears stale attribute state.
      */
     watch(() => groupUpdate.group, async (group) => {
         groupRoleOptions.value = [];
+        initialGroupRole.value = null;
         groupUpdate.groupRole = null;
         groupMemberAttributes.value = {};
         groupMemberAttributeValues.value = {};
@@ -1724,6 +1736,12 @@
 
         if (rolesResult.isSuccess && rolesResult.data) {
             groupRoleOptions.value = rolesResult.data.roles ?? [];
+
+            const defaultRoleGuid = rolesResult.data.defaultGroupRoleGuid;
+            initialGroupRole.value = groupRoleOptions.value.find(r => areEqual(r.value, defaultRoleGuid))
+                ?? groupRoleOptions.value[0]
+                ?? null;
+            groupUpdate.groupRole = initialGroupRole.value;
         }
         else if (rolesResult.statusCode === 403) {
             groupNotAuthorizedMessage.value = "You are not authorized to update members for the selected group.";
@@ -1739,29 +1757,27 @@
         }
 
         if (attrResult.isSuccess && attrResult.data) {
+            const attributes = attrResult.data.attributes ?? [];
+            const matrixAttributeValues = attrResult.data.matrixAttributeValues ?? {};
             const attrDict: Record<string, PublicAttributeBag> = {};
-            attrResult.data.forEach(a => {
+            attributes.forEach(a => {
                 if (a.key) {
                     attrDict[a.key] = a;
                 }
             });
 
             groupMemberAttributes.value = attrDict;
-            groupMemberAttributeValues.value = {};
-            groupMemberAttributeUpdateItems.value = attrResult.data.map(a => ({
-                attribute: a,
-                isActive: false,
-                value: ""
-            }));
+            groupMemberAttributeValues.value = { ...matrixAttributeValues };
+            groupMemberAttributeUpdateItems.value = createAttributeUpdateItems(attributes, matrixAttributeValues);
         }
     });
 
     /**
-     * Clear group sub-fields when the group action changes, preventing stale
-     * data or optional toggles from carrying over between actions.
+     * Reset group sub-fields to their defaults when the group action changes,
+     * preventing stale data or optional toggles from carrying over between actions.
      */
     watch(() => groupUpdate.action, () => {
-        groupUpdate.groupRole = null;
+        groupUpdate.groupRole = initialGroupRole.value;
         groupUpdate.memberStatus = GroupMemberStatus.Active;
         isUpdatingGroup.role = false;
         isUpdatingGroup.memberStatus = false;
@@ -1825,18 +1841,17 @@
         }
 
         if (result.isSuccess && result.data) {
+            const attributes = result.data.attributes ?? [];
+            const matrixAttributeValues = result.data.matrixAttributeValues ?? {};
             const attrDict: Record<string, PublicAttributeBag> = {};
-            result.data.forEach(a => {
+            attributes.forEach(a => {
                 if (a.key) {
                     attrDict[a.key] = a;
                 }
             });
             stepAttributes.value = attrDict;
-            stepAttributeUpdateItems.value = result.data.map(a => ({
-                attribute: a,
-                isActive: false,
-                value: ""
-            }));
+            stepAttributeValues.value = { ...matrixAttributeValues };
+            stepAttributeUpdateItems.value = createAttributeUpdateItems(attributes, matrixAttributeValues);
         }
         else if (result.statusCode === 403) {
             stepNotAuthorizedMessage.value = "You are not authorized to update steps for the selected step type.";

@@ -211,6 +211,8 @@ export const ServiceJob = {
     DataMigrations190SwapObsidianBlocks: "C05C0C81-12B2-4C35-9405-C3CE09E3CE75",
     /** The job to run Post v20.0 Data Migrations to add an Exception Log index to improve performance of the Exception List block. */
     DataMigrations200AddExceptionListIndex: "A0824D0E-0E7C-4448-85FA-7C36C4AF29E6",
+    /** The job to run Post v20.0 Data Migrations to remove Anonymous Visitor PersonAlias records that were created for bot traffic whose page view interaction was subsequently discarded as a crawler. */
+    DataMigrations200RemoveOrphanedAnonymousVisitorAliases: "900876CC-F6E1-4FBE-A7BB-F8DF5124BA43",
     /**
      * The Post Update Data Migration Job to chop the Schedule Detail, Asset Storage Provider Detail, Page Short Link Detail, Streak Type Detail,
      * Following Event Type Detail, Financial Batch Detail

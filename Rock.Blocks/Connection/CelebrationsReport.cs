@@ -48,7 +48,7 @@ namespace Rock.Blocks.Connection
     [LinkedPage( "Connection Request Detail Page",
         Description = "The page that will show the connection request details.",
         Key = AttributeKey.ConnectionRequestDetailPage,
-        DefaultValue = Rock.SystemGuid.Page.CONNECTION_REQUEST_DETAIL,
+        DefaultValue = Rock.SystemGuid.Page.CONNECTIONS_HUB,
         IsRequired = false )]
 
     [CustomizedGrid]
@@ -198,9 +198,12 @@ namespace Rock.Blocks.Connection
         {
             return new Dictionary<string, string>
             {
+                // The Connections Hub needs a Connection Type context alongside the request, so the
+                // opportunity is carried in a second placeholder the client fills from the row.
                 [NavigationUrlKey.ConnectionRequestDetailPage] = this.GetLinkedPageUrl( AttributeKey.ConnectionRequestDetailPage, new Dictionary<string, string>
                 {
-                    ["ConnectionRequestId"] = "((Key))"
+                    ["Request"] = "((Key))",
+                    ["ConnectionOpportunity"] = "((OpportunityKey))"
                 } )
             };
         }
@@ -294,6 +297,7 @@ namespace Rock.Blocks.Connection
                 .AddTextField( "storyAuthorName", n => n.CreatedByPersonAlias?.Person?.FullName )
                 .AddTextField( "storyAuthorPersonAliasGuid", n => n.CreatedByPersonAlias?.Guid.ToString() )
                 .AddTextField( "connectionRequestIdKey", n => GetConnectionRequest( n )?.IdKey )
+                .AddTextField( "connectionOpportunityIdKey", n => GetConnectionRequest( n )?.ConnectionOpportunity?.IdKey )
                 .AddField( "canEdit", n => GetConnectionRequest( n )?.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) ?? false );
         }
 

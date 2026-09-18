@@ -49,6 +49,7 @@ namespace Rock.Migrations
         {
             // Copy "Approve" security from the Web Forms Communication Entry Wizard block to the Obsidian Communication Entry Wizard block
             // to allow the same individuals to approve communications in the Obsidian block.
+#pragma warning disable CS0618 // Type or member is obsolete
             Sql( $@"DECLARE @ObsidianCommunicationPageId AS INT = (SELECT TOP 1 [Id] FROM [Page] WHERE [Guid] = '{SystemGuid.Page.NEW_COMMUNICATION_OBSIDIAN}');
 DECLARE @ObsidianCommunicationEntryWizardBlockTypeId AS INT = (SELECT TOP 1 [Id] FROM [BlockType] WHERE [Guid] = '9FFC7A4F-2061-4F30-AF79-D68C85EE9F27');
 DECLARE @ObsidianCommunicationEntryWizardBlockId AS INT = (SELECT TOP 1 [Id] FROM [Block] B WHERE B.[BlockTypeId] = @ObsidianCommunicationEntryWizardBlockTypeId AND B.[PageId] = @ObsidianCommunicationPageId);
@@ -97,6 +98,7 @@ IF (@SourceEntityId <> @DestinationEntityId AND @SourceEntityId > 0 AND @Destina
                 AND ISNULL(a2.[GroupId], -1) = ISNULL(a1.[GroupId], -1)
                 AND ISNULL(a2.[PersonAliasId], -1) = ISNULL(a1.[PersonAliasId], -1))
 END" );
+#pragma warning restore CS0618 // Type or member is obsolete
         }
 
         #endregion

@@ -181,6 +181,14 @@ namespace Rock.Tests.Shared.TestFramework
             dbSetMock.Setup( m => m.AsNoTracking() ).Returns( () => dbSetMock.Object );
             dbSetMock.Setup( m => m.Include( It.IsAny<string>() ) ).Returns( () => dbSetMock.Object );
 
+            // Hand back a plain instance for Create(), which some implementation
+            // code calls to make a new entity. Real EF returns a change tracking
+            // proxy that resolves auto-navigation properties (setting CampusId, for
+            // example, makes the Campus navigation property load lazily). This plain
+            // instance does no such wiring, so a test relying on a navigation
+            // property resolving from its foreign key id must set it explicitly.
+            dbSetMock.Setup( m => m.Create() ).Returns( () => Activator.CreateInstance<T>() );
+
             return dbSetMock;
         }
 

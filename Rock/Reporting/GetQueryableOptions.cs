@@ -55,6 +55,19 @@ namespace Rock.Reporting
         /// The database timeout seconds.
         /// </value>
         public int? DatabaseTimeoutSeconds { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether query tagging should be
+        /// disabled. When <c>false</c> (the default) the data view id is added
+        /// to the query as a SQL comment via <c>TagWith</c>. This exists so the
+        /// tagging can be turned off in environments where it is not supported,
+        /// such as a mocked context under unit tests where the tagging
+        /// interceptor is not wired up and would drop all results.
+        /// </summary>
+        /// <value>
+        /// <c>true</c> to skip query tagging; otherwise <c>false</c>.
+        /// </value>
+        internal bool IsQueryTaggingDisabled { get; set; }
     }
 
 }
