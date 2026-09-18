@@ -26,6 +26,7 @@ using System.Text;
 
 using Rock.Attribute;
 using Rock.Communication.Chat;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Enums.Communication.Chat;
 using Rock.Enums.Group;
@@ -265,7 +266,7 @@ namespace Rock.Model
 
             // For each occurrence of this person in this group for the roles that might grant them auth,
             // check to see if their role is valid for the group type and if the role grants them authorization
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 foreach ( int roleId in new GroupMemberService( rockContext )
                     .Queryable().AsNoTracking()
