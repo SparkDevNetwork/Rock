@@ -47,17 +47,8 @@ internal class LavaEndpointDefinition
     /// keeps the stored mode, so a template-only edit cannot quietly change
     /// who is allowed to run the endpoint.
     /// </summary>
-    [Description( "How the endpoint authorizes execution: EndpointExecute, ApplicationView, ApplicationEdit or ApplicationAdministrate. Defaults to ApplicationView on create so the application's security governs. Omit when updating to leave the stored mode unchanged. Setting audiences switches the endpoint to EndpointExecute automatically." )]
+    [Description( "How the endpoint authorizes execution: EndpointExecute, ApplicationView, ApplicationEdit or ApplicationAdministrate. Defaults to ApplicationView on create so the application's security governs. Omit when updating to leave the stored mode unchanged. An EndpointExecute endpoint has no callers until Execute rules are added to it with the Core Administration skill's AddOrUpdateAuthorizationForEntity." )]
     public string SecurityMode { get; set; }
-
-    /// <summary>
-    /// Who may execute this specific endpoint, independent of the
-    /// application's audience. Setting it puts the endpoint in
-    /// EndpointExecute mode and writes Execute rules on the endpoint itself.
-    /// Leaving it unset on an update keeps whatever rules exist.
-    /// </summary>
-    [Description( "Who may execute this endpoint specifically, as one or more values: 'Public', 'AllAuthenticatedPeople', or exact security role names (use ResolveAudience to map a description). Only set this when the endpoint's audience must differ from the application's, for example a write endpoint that only leaders may call inside an application everyone on staff can read. Setting it switches securityMode to EndpointExecute and writes Execute rules on the endpoint. Omit to leave the endpoint's security unchanged; on an update, a new list replaces the previous one." )]
-    public List<string> Audiences { get; set; }
 
     /// <summary>
     /// The comma-delimited list of Lava commands the template is allowed to
