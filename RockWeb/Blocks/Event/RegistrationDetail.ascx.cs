@@ -2821,7 +2821,18 @@ namespace RockWeb.Blocks.Event
                 Registration.Group != null &&
                 Registration.Group.GroupTypeId == this.RegistrationTemplate.GroupTypeId.Value )
             {
-                if ( Registration != null && Registration.Group != null )
+                /*
+                    9/18/26 - MSE
+
+                    When the group a registrant was placed in has been archived, do not show
+                    the group on the registrant at all. The Group Member Detail block no longer
+                    displays members of archived groups, so linking to one is not useful.
+
+                    Reason: Registrant's group is hidden once the group has been archived. (Fixes #7047)
+                */
+                var isRegistrantGroupHidden = registrant.GroupMemberId.HasValue && registrant.IsGroupArchived;
+
+                if ( Registration != null && Registration.Group != null && !isRegistrantGroupHidden )
                 {
                     var rcwGroupMember = new RockControlWrapper();
                     rcwGroupMember.ID = string.Format( "rcwGroupMember_{0}", registrant.Id );
@@ -2843,6 +2854,8 @@ namespace RockWeb.Blocks.Event
                         pGroupMember.Controls.Add( aProfileLink );
                         aProfileLink.Controls.Add( new LiteralControl( string.IsNullOrWhiteSpace( registrant.GroupName ) ? "Group" : registrant.GroupName ) );
 
+                        // The group itself is not archived at this point, so this label only
+                        // appears when the group member record was archived directly.
                         if ( registrant.IsGroupMemberArchived )
                         {
                             pGroupMember.Controls.Add( new LiteralControl( " <span class='label label-danger'>Archived</span>" ) );

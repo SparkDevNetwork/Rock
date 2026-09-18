@@ -87,6 +87,15 @@ namespace Rock.Model
         public bool IsGroupMemberArchived { get; set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether the group that the registrant's group member
+        /// record belongs to has been archived.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if the group is archived; otherwise, <c>false</c>.
+        /// </value>
+        public bool IsGroupArchived { get; set; }
+
+        /// <summary>
         /// Gets or sets the person alias unique identifier.
         /// </summary>
         /// <value>
@@ -281,6 +290,7 @@ namespace Rock.Model
             GroupMemberId = null;
             GroupName = string.Empty;
             IsGroupMemberArchived = false;
+            IsGroupArchived = false;
             FamilyGuid = Guid.Empty;
             FieldValues = new Dictionary<int, FieldValueObject>();
             FeeValues = new Dictionary<int, List<FeeInfo>>();
@@ -348,7 +358,8 @@ namespace Rock.Model
                         filters hide archived groups and group members from lazy loaded
                         navigation properties. The registrant still references the archived
                         group member, so query without the filters to get the group name and
-                        whether the membership has been archived.
+                        whether the member or its group has been archived. The Registration
+                        Detail block hides the group entirely when the group itself is archived.
 
                         Reason: Registrant's group link showed a blank name once the group was archived. (Fixes #7047)
                     */
@@ -358,12 +369,14 @@ namespace Rock.Model
                         .Select( gm => new
                         {
                             GroupName = gm.Group.Name,
-                            IsArchived = gm.IsArchived || gm.Group.IsArchived
+                            IsGroupMemberArchived = gm.IsArchived,
+                            IsGroupArchived = gm.Group.IsArchived
                         } )
                         .FirstOrDefault();
 
                     GroupName = groupMemberInfo?.GroupName ?? string.Empty;
-                    IsGroupMemberArchived = groupMemberInfo?.IsArchived ?? false;
+                    IsGroupMemberArchived = groupMemberInfo?.IsGroupMemberArchived ?? false;
+                    IsGroupArchived = groupMemberInfo?.IsGroupArchived ?? false;
                 }
 
                 RegistrationId = registrant.RegistrationId;

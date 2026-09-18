@@ -28,6 +28,7 @@
                 <asp:ValidationSummary ID="ValidationSummary1" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" />
                 <asp:CustomValidator ID="cvGroupMember" runat="server" Display="None" />
                 <Rock:NotificationBox ID="nbErrorMessage" runat="server" NotificationBoxType="Danger" />
+                <Rock:NotificationBox ID="nbGroupArchived" runat="server" NotificationBoxType="Warning" Visible="false" Text="This group member belongs to a group that has been archived." />
 
                 <asp:Panel ID="pnlRequiredSignatureDocument" runat="server" CssClass="alert alert-warning" Visible="false" >
 

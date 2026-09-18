@@ -299,6 +299,11 @@ namespace Rock.Blocks.Group
         #region Fields
 
         /// <summary>
+        /// The message shown in place of the group when it does not exist or has been archived.
+        /// </summary>
+        private static readonly string GroupNotFoundOrArchivedMessage = "That group does not exist or it has been archived.";
+
+        /// <summary>
         /// Per-request memo for the active <see cref="GroupTypeCache"/>.
         /// </summary>
         private GroupTypeCache _cachedGroupType;
@@ -430,6 +435,22 @@ namespace Rock.Blocks.Group
             if ( entity == null )
             {
                 box.ErrorMessage = $"The {Model.Group.FriendlyTypeName} was not found.";
+                return;
+            }
+
+            if ( entity.IsArchived )
+            {
+                /*
+                    9/18/26 - MSE
+
+                    The base GetInitialEntity() uses an unfiltered lookup, so an archived group
+                    loads and would render with an Archived label and allow edits. The WebForms
+                    block queried with the archived filter applied, which treated an archived
+                    group the same as a missing one and showed a warning instead. Match that.
+
+                    Reason: Group Detail shows a warning rather than an archived group. (Fixes #7047)
+                */
+                box.ErrorMessage = GroupNotFoundOrArchivedMessage;
                 return;
             }
 
@@ -810,6 +831,13 @@ namespace Rock.Blocks.Group
             if ( entity == null )
             {
                 error = ActionBadRequest( $"{Model.Group.FriendlyTypeName} not found." );
+                return false;
+            }
+
+            // The block presents an archived group as not found, so do not allow it to be edited either.
+            if ( entity.IsArchived )
+            {
+                error = ActionBadRequest( GroupNotFoundOrArchivedMessage );
                 return false;
             }
 

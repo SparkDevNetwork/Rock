@@ -616,6 +616,24 @@ namespace RockWeb.Blocks.Groups
                 return;
             }
 
+            if ( groupMember.Group != null && groupMember.Group.IsArchived )
+            {
+                /*
+                    9/18/26 - MSE
+
+                    Archiving a group also archives its members, but records such as event
+                    registrants still link to the group member. Rather than displaying and
+                    allowing edits to a member of an archived group, show a warning in the
+                    same way the Group Detail block does for an archived group.
+
+                    Reason: Group Member Detail shows a warning for members of archived groups. (Fixes #7047)
+                */
+                nbGroupArchived.Visible = true;
+                pdAuditDetails.Visible = false;
+                pnlEditDetails.Visible = false;
+                return;
+            }
+
             pnlEditDetails.Visible = true;
 
             hfGroupId.Value = groupMember.GroupId.ToString();
