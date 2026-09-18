@@ -161,7 +161,8 @@
     const registrationCostSummary = ref<RegistrationCostSummaryInfo>({
         paidAmount: 0,
         remainingAmount: 0,
-        minimumRemainingAmount: 0
+        minimumRemainingAmount: 0,
+        isLoaded: false
     });
     const wipPaymentPlanConfiguration = ref<PaymentPlanConfiguration | null | undefined>();
     const finalPaymentPlanConfiguration = ref<PaymentPlanConfiguration | null | undefined>();

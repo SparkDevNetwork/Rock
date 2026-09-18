@@ -721,6 +721,11 @@ namespace Rock.Blocks.Event
                     return ActionBadRequest( fullPaymentRequiredMessage );
                 }
 
+                if ( !ValidatePaymentMethodProvided( args, out var paymentMethodErrorMessage ) )
+                {
+                    return ActionBadRequest( paymentMethodErrorMessage );
+                }
+
                 var result = SubmitRegistration( rockContext, context, args, out errorMessage );
 
                 if ( result == SubmitRegistrationResult.CapacityFullFailure )
@@ -1457,6 +1462,59 @@ namespace Rock.Blocks.Event
             }
 
             return true;
+        }
+
+        /// <summary>
+        /// Validates that a payment method was provided when the submitted registration
+        /// requires a payment to be processed. A payment method is either a gateway token
+        /// for a newly entered payment method or a saved account owned by the current person.
+        /// </summary>
+        /// <remarks>
+        /// This must run after <see cref="GetContext(RockContext, RegistrationEntryArgsBag, out string)"/>,
+        /// which raises <see cref="RegistrationEntryArgsBag.AmountToPayNow"/> to the minimum initial
+        /// payment for a new registration, and before anything is persisted so that a failure does
+        /// not leave behind an unpaid registration.
+        /// </remarks>
+        /// <param name="args">The submitted registration arguments.</param>
+        /// <param name="errorMessage">When validation fails, contains the message to show the registrant; otherwise <see langword="null"/>.</param>
+        /// <returns><see langword="true"/> if no payment is needed or a payment method was provided; otherwise, <see langword="false"/>.</returns>
+        private bool ValidatePaymentMethodProvided( RegistrationEntryArgsBag args, out string errorMessage )
+        {
+            /*
+                9/18/26 - MSE
+
+                A client that lost its CalculateCost response used to submit a paid
+                registration with an AmountToPayNow of 0 and no gateway token. GetContext
+                then raised the amount back up to the full amount due and the gateway was
+                charged with an empty token, which surfaced as an opaque gateway
+                authentication error and left the registrant stuck until they reloaded.
+                Reject the submission before any gateway or database work instead.
+
+                Reason: Never call a gateway with no payment method.
+                https://github.com/SparkDevNetwork/Rock/issues/7048
+            */
+            errorMessage = null;
+
+            var isPaymentNeededNow = args.AmountToPayNow > 0m;
+            var isPaymentPlanRequested = args.PaymentPlan != null;
+
+            if ( !isPaymentNeededNow && !isPaymentPlanRequested )
+            {
+                return true;
+            }
+
+            // Mirror GetPaymentInfo: a saved account is only usable by the person who owns it.
+            var hasSavedAccount = args.SavedAccountGuid.HasValue && RequestContext.CurrentPerson != null;
+            var hasGatewayToken = args.GatewayToken.IsNotNullOrWhiteSpace();
+
+            if ( hasSavedAccount || hasGatewayToken )
+            {
+                return true;
+            }
+
+            errorMessage = "A payment is required to complete this registration, but no payment method was provided. Please refresh the page and try again.";
+
+            return false;
         }
 
         /// <inheritdoc/>

@@ -337,6 +337,8 @@ namespace Rock.Blocks.Group
                 entity = ApplyNewGroupMemberDefaultValues( entity );
             }
 
+            EnsureGroupIsLoaded( entity );
+
             return entity;
         }
 
@@ -366,6 +368,32 @@ namespace Rock.Blocks.Group
             entity.DateTimeAdded = RockDateTime.Now;
 
             return entity;
+        }
+
+        /// <summary>
+        /// Ensures the <see cref="GroupMember.Group"/> navigation property of an
+        /// existing group member is populated, even when the group has been archived.
+        /// </summary>
+        /// <param name="entity">The group member, which may be <c>null</c>.</param>
+        private void EnsureGroupIsLoaded( GroupMember entity )
+        {
+            if ( entity == null || entity.Id == 0 || entity.Group != null )
+            {
+                return;
+            }
+
+            /*
+                9/18/26 - MSE
+
+                Archiving a group also archives its members. The group member lookups in this
+                block bypass the archived filter, but Rock's global query filter still hides
+                archived groups from root queries, including EF lazy loads. So the Group of a
+                member whose group was archived lazy loads as null and the block would throw a
+                NullReferenceException. Get() bypasses the filter, so load the group explicitly.
+
+                Reason: Group Member Detail errored for members of archived groups. (Fixes #7047)
+            */
+            entity.Group = new GroupService( RockContext ).Get( entity.GroupId );
         }
 
         /// <summary>
@@ -1775,6 +1803,7 @@ namespace Rock.Blocks.Group
             if ( idKey.IsNotNullOrWhiteSpace() )
             {
                 entity = entityService.Get( idKey, !PageCache.Layout.Site.DisablePredictableIds );
+                EnsureGroupIsLoaded( entity );
             }
             else
             {
@@ -2033,6 +2062,7 @@ namespace Rock.Blocks.Group
 
             var groupMemberService = new GroupMemberService( RockContext );
             var groupMember = groupMemberService.Get( bag.GroupMemberIdKey, !PageCache.Layout.Site.DisablePredictableIds );
+            EnsureGroupIsLoaded( groupMember );
 
             if ( groupMember == null )
             {
@@ -2365,6 +2395,7 @@ namespace Rock.Blocks.Group
         public BlockActionResult GetMoveGroupMemberOptions( string groupMemberIdKey, string destinationGroupIdKey )
         {
             var entity = new GroupMemberService( RockContext ).Get( groupMemberIdKey, !PageCache.Layout.Site.DisablePredictableIds );
+            EnsureGroupIsLoaded( entity );
 
             if ( entity == null )
             {
@@ -3032,9 +3063,18 @@ namespace Rock.Blocks.Group
         [BlockAction]
         public BlockActionResult GetScheduleAssignmentOptions( string groupMemberIdKey, int? selectedScheduleId )
         {
-            var group = groupMemberIdKey.IsNotNullOrWhiteSpace()
-                ? new GroupMemberService( RockContext ).Get( groupMemberIdKey, !PageCache.Layout.Site.DisablePredictableIds )?.Group
-                : GetGroupFromPageParameter();
+            Model.Group group;
+
+            if ( groupMemberIdKey.IsNotNullOrWhiteSpace() )
+            {
+                var groupMember = new GroupMemberService( RockContext ).Get( groupMemberIdKey, !PageCache.Layout.Site.DisablePredictableIds );
+                EnsureGroupIsLoaded( groupMember );
+                group = groupMember?.Group;
+            }
+            else
+            {
+                group = GetGroupFromPageParameter();
+            }
 
             if ( group == null )
             {

@@ -2845,6 +2845,11 @@ namespace RockWeb.Blocks.Event
                         aProfileLink.HRef = LinkedPageUrl( "GroupMemberPage", qryParams );
                         pGroupMember.Controls.Add( aProfileLink );
                         aProfileLink.Controls.Add( new LiteralControl( string.IsNullOrWhiteSpace( registrant.GroupName ) ? "Group" : registrant.GroupName ) );
+
+                        if ( registrant.IsGroupMemberArchived )
+                        {
+                            pGroupMember.Controls.Add( new LiteralControl( " <span class='label label-danger'>Archived</span>" ) );
+                        }
                     }
                     else
                     {
