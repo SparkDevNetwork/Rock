@@ -568,7 +568,6 @@ namespace Rock.Web.Cache
 
         #endregion Public Methods
 
-
         #region ISecured
 
         /*
