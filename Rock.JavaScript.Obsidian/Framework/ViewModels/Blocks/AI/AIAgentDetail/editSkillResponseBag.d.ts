@@ -38,4 +38,11 @@ export type EditSkillResponseBag = {
 
     /** Represents the current values for the skill being edited. */
     skill?: AgentSkillBag | null;
+
+    /**
+     * The description of each available tool, keyed by the tool's unique
+     * identifier. The keys match the values in AvailableTools
+     * so the UI can display each tool's purpose alongside its checkbox.
+     */
+    toolDescriptions?: Record<string, string> | null;
 };

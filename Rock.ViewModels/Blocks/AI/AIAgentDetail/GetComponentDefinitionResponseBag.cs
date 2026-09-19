@@ -35,6 +35,13 @@ namespace Rock.ViewModels.Blocks.AI.AIAgentDetail
         public List<ListItemBag> AvailableTools { get; set; }
 
         /// <summary>
+        /// The description of each available tool, keyed by the tool's unique
+        /// identifier. The keys match the values in <see cref="AvailableTools"/>
+        /// so the UI can display each tool's purpose alongside its checkbox.
+        /// </summary>
+        public Dictionary<string, string> ToolDescriptions { get; set; }
+
+        /// <summary>
         /// The current configuration values for the skill.
         /// </summary>
         public Dictionary<string, string> ConfigurationValues { get; set; }
