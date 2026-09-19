@@ -107,125 +107,6 @@
     </div>
 </template>
 
-<style scoped>
-/* The card is a vertical wrapper: the heading/content/actions row lives in
-   .displaycard-main and the accordion region spans the full width beneath it.
-   Padding moves to .displaycard-main so the expanded band runs edge to edge. */
-.displaycard {
-    display: flex;
-    flex-direction: column;
-    align-items: stretch;
-    gap: 0;
-    padding: 0;
-}
-
-.displaycard-main {
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    gap: var(--spacing-large);
-    padding: var(--spacing-large);
-}
-
-/* Opt-in (iconStyle="tile") icon tile: a soft, rounded square holding the icon
-   glyph, tinted by iconLabelType. The per-type classes set the tile's fg/bg via
-   custom properties; an unmapped type falls back to neutral interface colors. */
-.displaycard-heading-icon-tile {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    flex: 0 0 auto;
-    width: 2.25rem;
-    height: 2.25rem;
-    border-radius: var(--rounded-small);
-    background-color: var(--icon-tile-bg, var(--color-interface-softer));
-    color: var(--icon-tile-fg, var(--color-interface-strong));
-}
-
-.displaycard-heading-icon-tile i {
-    font-size: var(--font-size-h5);
-    line-height: 1;
-}
-
-.displaycard-heading-icon-tile-primary {
-    --icon-tile-bg: var(--color-primary-soft);
-    --icon-tile-fg: var(--color-primary);
-}
-
-.displaycard-heading-icon-tile-info {
-    --icon-tile-bg: var(--color-info-soft);
-    --icon-tile-fg: var(--color-info-strong);
-}
-
-.displaycard-heading-icon-tile-success {
-    --icon-tile-bg: var(--color-success-soft);
-    --icon-tile-fg: var(--color-success-strong);
-}
-
-.displaycard-heading-icon-tile-warning {
-    --icon-tile-bg: var(--color-warning-soft);
-    --icon-tile-fg: var(--color-warning-strong);
-}
-
-.displaycard-heading-icon-tile-danger {
-    --icon-tile-bg: var(--color-danger-soft);
-    --icon-tile-fg: var(--color-danger-strong);
-}
-
-/* A selected card holds the soft-info tint persistently, the same treatment the
-   clickable hover state applies, so a chosen card stays visually distinct. The
-   expanded band keeps its own surface below, so the tint reads as a highlighted
-   header above white content. */
-.displaycard.is-selected {
-    background-color: var(--color-info-soft);
-}
-
-.displaycard-selection {
-    flex: 0 0 auto;
-    width: 20px;
-    height: 20px;
-    border-radius: 50%;
-    border: 2px solid var(--color-interface-soft);
-}
-
-.displaycard-selection.is-checked {
-    border-color: var(--color-primary);
-    background-image: radial-gradient(circle, var(--color-primary) 0 35%, transparent 36% 100%);
-}
-
-/* A disabled card ignores clicks and dims to signal it is not interactive. Slot
-   content is disabled by the consumer, so only the card chrome is dimmed here. */
-.displaycard.is-disabled {
-    cursor: not-allowed;
-    opacity: 0.6;
-}
-
-/* An opaque surface keeps the band distinct from the selected/hover header tint.
-   Spacing is left to the slot content so the expanded region is not opinionated. */
-.displaycard-expanded {
-    background-color: var(--color-interface-softer);
-    border-bottom-left-radius: var(--rounded-xsmall);
-    border-bottom-right-radius: var(--rounded-xsmall);
-}
-
-/* Bootstrap's xs tier (below the small breakpoint) stacks the row and tightens
-   its spacing; the active breakpoint comes from useBreakpointHelper. */
-.displaycard.is-compact .displaycard-main {
-    flex-direction: column;
-    height: auto;
-    padding: var(--spacing-medium);
-    gap: var(--spacing-medium);
-}
-
-.displaycard-reorder {
-    cursor: grab;
-}
-
-.displaycard-reorder:active {
-    cursor: grabbing;
-}
-</style>
-
 <script setup lang="ts">
     import { computed, PropType, ref } from "vue";
     import Badge from "./badge.obs";
@@ -283,6 +164,10 @@
             default: "label" as const
         },
 
+        /**
+         * Currently has no effect. See the engineering note above
+         * <c>minWidth</c>.
+         */
         iconTitleAndDescMinWidth: {
             type: String as PropType<string>,
             required: false,
@@ -350,6 +235,22 @@
             default: false
         },
 
+        /*
+            9/18/26 - CLAUDE
+
+            This prop and iconTitleAndDescMinWidth are accepted but currently
+            have no effect. They were consumed by `min-width: v-bind(...)`
+            declarations that had been moved out of this component's scoped
+            <style> block and into _display-card.scss. v-bind() is a Vue SFC
+            compile step, so in a plain stylesheet it emits the literal text
+            `v-bind(minWidth)`, which browsers drop as an invalid value. The
+            cards have therefore rendered without either min-width for some
+            time. Both props are kept so consumers do not break, and the dead
+            declarations were not carried back into the scoped block, because
+            reviving them would change the layout of every existing card.
+
+            Reason: Inert props; reactivating them is a deliberate design call.
+        */
         minWidth: {
             type: String as PropType<string>,
             required: false,
