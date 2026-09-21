@@ -27,8 +27,9 @@
 
             <NotificationBox v-if="successMessage"
                              alertType="success"
-                             heading="Transaction Download Summary:"
-                             v-html="successMessage" />
+                             heading="Transaction Download Summary:">
+                <div class="download-summary" v-html="successMessage"></div>
+            </NotificationBox>
 
             <NotificationBox v-if="errorMessage"
                              alertType="danger"
@@ -36,6 +37,13 @@
         </RockForm>
     </Panel>
 </template>
+
+<style scoped>
+.download-summary :deep(a) {
+    color: var(--color-link);
+    text-decoration: underline;
+}
+</style>
 
 <script setup lang="ts">
     import { ref } from "vue";

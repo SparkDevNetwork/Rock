@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 
 using Rock.Attribute;
@@ -106,6 +107,39 @@ namespace Rock.Blocks.Finance
             return bag;
         }
 
+        /// <summary>
+        /// Gets the financial gateway for the unique identifier with its attributes loaded.
+        /// </summary>
+        /// <param name="financialGatewayGuid">The unique identifier of the financial gateway.</param>
+        /// <returns>The financial gateway, or <c>null</c> if not found.</returns>
+        private FinancialGateway GetSelectedGateway( Guid? financialGatewayGuid )
+        {
+            if ( !financialGatewayGuid.HasValue )
+            {
+                return null;
+            }
+
+            var financialGateway = new FinancialGatewayService( RockContext ).Get( financialGatewayGuid.Value );
+
+            financialGateway?.LoadAttributes( RockContext );
+
+            return financialGateway;
+        }
+
+        /// <summary>
+        /// Gets the batch detail page URL as a format string with a {0} placeholder for the batch identifier.
+        /// </summary>
+        /// <returns>The batch detail page URL format string.</returns>
+        private string GetBatchUrlFormat()
+        {
+            var queryParams = new Dictionary<string, string>
+            {
+                [PageParameterKey.BatchId] = "((Key))"
+            };
+
+            return this.GetLinkedPageUrl( AttributeKey.BatchDetailPage, queryParams ).Replace( "((Key))", "{0}" );
+        }
+
         #endregion Methods
 
         #region Block Actions
@@ -118,15 +152,47 @@ namespace Rock.Blocks.Finance
         [BlockAction]
         public BlockActionResult DownloadTransactions( DownloadTransactionsRequestBag bag )
         {
-            if ( bag == null )
+            // The helper already makes End exclusive, so no extra day is added here.
+            var dateRange = bag?.DateRange?.ToActualDateRange();
+
+            if ( dateRange?.Start == null || dateRange.End == null || dateRange.End.Value < dateRange.Start.Value )
+            {
+                return ActionBadRequest( "Please select a valid Date Range!" );
+            }
+
+            var financialGateway = GetSelectedGateway( bag.FinancialGatewayGuid );
+
+            if ( financialGateway == null )
             {
                 return ActionBadRequest( "Please select a valid Payment Gateway!" );
             }
 
-            // TODO: Port btnDownload_Click from the WebForms block.
+            var gatewayComponent = financialGateway.GetGatewayComponent();
+
+            if ( gatewayComponent == null )
+            {
+                return ActionBadRequest( "Selected Payment Gateway does not have a valid payment processor!" );
+            }
+
+            var payments = gatewayComponent.GetPayments( financialGateway, dateRange.Start.Value, dateRange.End.Value, out var errorMessage );
+
+            if ( errorMessage.IsNotNullOrWhiteSpace() )
+            {
+                return ActionBadRequest( errorMessage );
+            }
+
+            var batchNamePrefix = GetAttributeValue( AttributeKey.BatchNamePrefix );
+            var receiptEmail = GetAttributeValue( AttributeKey.ReceiptEmail ).AsGuidOrNull();
+            var failedPaymentEmail = GetAttributeValue( AttributeKey.FailedPaymentEmail ).AsGuidOrNull();
+            var failedPaymentWorkflowType = GetAttributeValue( AttributeKey.FailedPaymentWorkflow ).AsGuidOrNull();
+
+            var resultSummary = FinancialScheduledTransactionService.ProcessPayments( financialGateway, batchNamePrefix, payments, GetBatchUrlFormat(), receiptEmail, failedPaymentEmail, failedPaymentWorkflowType );
+
             return ActionOk( new DownloadTransactionsResultBag
             {
-                SummaryHtml = string.Empty
+                SummaryHtml = resultSummary.IsNotNullOrWhiteSpace()
+                    ? $"<ul>{resultSummary}</ul>"
+                    : "There were not any transactions downloaded."
             } );
         }
 
