@@ -71,7 +71,12 @@ namespace Rock.Jobs
             }
 
             var isManualRun = IsManualRun();
-            var plan = ChatSyncRunGate.Plan( ServiceJob, isManualRun, configuration.SyncBackoffUntil, RockDateTime.Now );
+
+            // The instant, not the organisation's wall clock. The backoff the gate compares against
+            // is an instant the platform named with its offset, and a wall-clock reading handed to
+            // the gate would be stamped with this server's offset, which on a hosted server is not
+            // the organisation's, and be wrong by the difference.
+            var plan = ChatSyncRunGate.Plan( ServiceJob, isManualRun, configuration.SyncBackoffUntil, DateTimeOffset.UtcNow );
 
             if ( !plan.ShouldSubmit )
             {
