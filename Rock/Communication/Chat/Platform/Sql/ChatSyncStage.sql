@@ -14,6 +14,11 @@
 
 SET NOCOUNT ON;
 
+-- Pinned rather than inherited. The badge keys are gathered with an XML method, and that needs this
+-- setting on: without it the staging fails outright rather than returning something wrong. Most
+-- callers have it on already, so this is here for the one that does not.
+SET QUOTED_IDENTIFIER ON;
+
 -- Every group that is, or ever was, a chat channel. The marker half is what makes turning chat off
 -- archive a conversation instead of losing it, so it is deliberately not filtered by the group's
 -- own state: an archived or deactivated channel still belongs here and its row still ships.
