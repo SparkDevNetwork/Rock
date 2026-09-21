@@ -45,9 +45,10 @@ namespace Rock.Migrations
         /// Adds the scheduled job that sends this church's chat picture to the chat platform.
         /// </summary>
         /// <remarks>
-        /// Hourly by default, and the church may change it. The picture is sent whole every time
-        /// rather than as a list of changes, so a missed run costs nothing the next one does not put
-        /// right, which is what lets the cadence be the church's own decision.
+        /// Hourly by default, and the church may change it. Hourly is a starting point rather than a
+        /// measured cadence. The picture is sent whole every time rather than as a list of changes,
+        /// so a missed run costs nothing the next one does not put right, which is what lets the
+        /// cadence be the church's own decision.
         /// </remarks>
         private void SeedChatPlatformSyncJob()
         {

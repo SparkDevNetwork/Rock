@@ -44,15 +44,17 @@ namespace Rock.Communication.Chat.Platform.Sync
         #region Constants
 
         /// <summary>
-        /// The longest quiet stretch a schedule may leave before this is worth saying.
+        /// The longest quiet stretch a schedule may leave before this is worth saying. A design
+        /// bound on how stale the platform's picture of a church may get, not a measurement, and
+        /// provisional until the platform is measured at full scale.
         /// </summary>
         public static readonly TimeSpan Maximum = TimeSpan.FromHours( 24 );
 
         /// <summary>
         /// How many fire times to look at. Enough to walk a weekly pattern round to its own repeat,
         /// which is the longest shape that hides its gap; anything slower than weekly shows its gap
-        /// on the first step. A bounded sample rather than a proof, and cheap enough to take on
-        /// every run.
+        /// on the first step. A bounded sample chosen by that reasoning rather than a proof, and
+        /// cheap enough to take on every run.
         /// </summary>
         private const int SampleSize = 14;
 

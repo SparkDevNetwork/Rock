@@ -36,9 +36,9 @@ namespace Rock.Tests.Integration.Communication.Chat.Platform.Sync
     ///     </para>
     ///     <para>
     ///         This is why the qualifying set is staged once and every section reads that set rather
-    ///         than the tables it came from. The sections run as separate statements seconds apart,
-    ///         and a group that starts qualifying, or a person who joins and leaves, in between is
-    ///         exactly the row nothing else would catch. The second cell below changes the database
+    ///         than the tables it came from. Read straight from the tables, the sections would be
+    ///         four moments rather than one, and a group that starts qualifying, or a person who
+    ///         joins and leaves, in between is exactly the row nothing else would catch. The second cell below changes the database
     ///         while the projection is reading. It cannot guarantee it lands in the window, so it is
     ///         a probe rather than a proof, and the assertion it makes is true of any payload.
     ///     </para>

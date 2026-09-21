@@ -52,7 +52,9 @@ namespace Rock.Communication.Chat.Platform.Sync
         public TimeSpan Duration { get; }
 
         /// <summary>
-        /// The budget for a sync someone pressed a button for.
+        /// The budget for a sync someone pressed a button for. Longer than the scheduled one,
+        /// because a person is waiting and there is nothing to fall back on. Every figure here is
+        /// an estimate, revisited when the platform is measured at full scale.
         /// </summary>
         public static ChatSyncPollBudget Manual
         {
@@ -60,7 +62,9 @@ namespace Rock.Communication.Chat.Platform.Sync
         }
 
         /// <summary>
-        /// The budget for a sync the schedule started.
+        /// The budget for a sync the schedule started. Shorter, because nobody is watching and the
+        /// acknowledgement's previous outcome is there to fall back on. Every figure here is an
+        /// estimate, revisited when the platform is measured at full scale.
         /// </summary>
         public static ChatSyncPollBudget Scheduled
         {

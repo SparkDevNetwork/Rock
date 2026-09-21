@@ -2,15 +2,16 @@
 --
 -- The question "is this group a chat channel" is asked here, once, and its answer is written into
 -- #ChatGroups. Nothing else in this projection asks it again. That is not only about having one
--- definition of the rule: the four queries run as separate statements seconds apart, and a group
--- that starts qualifying, or a person who joins a group, between two of them would otherwise put a
--- membership in the payload whose channel or whose person is in no other section of it. The far
+-- definition of the rule: read straight from the tables, the four sections would be four moments,
+-- and a group that starts qualifying, or a person who joins a group, between two of them would put
+-- a membership in the payload whose channel or whose person is in no other section of it. The far
 -- side keys a membership to both, so a row like that fails the whole submission rather than one
--- table, and every retry reproduces it.
+-- table, and every retry reproduces it. This query and the four sections go to the server as one
+-- batch, and the sections read the sets this one made.
 --
 -- Freezing the sets here does not freeze the column values, which are still read live by each
--- query. A group renamed between two statements ships a slightly stale name and the next cycle
--- corrects it. That is a difference in a value, not a row that cannot be stored.
+-- section. A group renamed while the sections are read ships a slightly stale name and the next
+-- cycle corrects it. That is a difference in a value, not a row that cannot be stored.
 
 SET NOCOUNT ON;
 

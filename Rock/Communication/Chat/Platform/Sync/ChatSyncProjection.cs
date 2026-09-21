@@ -29,9 +29,9 @@ namespace Rock.Communication.Chat.Platform.Sync
     /// </summary>
     /// <remarks>
     /// <para>
-    /// There is one staging query and one query per payload section, and they run in that order on
-    /// one connection, because the staging query leaves its results in temporary tables that the
-    /// other four read.
+    /// There is one staging query and one query per payload section, and they go to the server as
+    /// one batch in that order, because the staging query leaves its results in temporary tables
+    /// that the other four read and that live only as long as the batch that made them.
     /// </para>
     /// <para>
     /// Splitting it that way is not only tidiness. The question "is this group a chat channel" is
@@ -40,12 +40,12 @@ namespace Rock.Communication.Chat.Platform.Sync
     /// rows exist at all.
     /// </para>
     /// <para>
-    /// It also closes a failure the four queries would otherwise share. They are separate
-    /// statements seconds apart, and the far side keys a membership to both its channel and its
-    /// person. A group that starts qualifying, or a person who joins a group, between two of those
-    /// statements puts a membership in the payload whose channel or whose person is in no other
-    /// section of it, which fails the whole submission rather than that one row, on every retry.
-    /// Reading the frozen sets makes the containment hold by construction.
+    /// It also closes a failure the four queries would otherwise share. Read straight from the
+    /// tables they would be four moments rather than one, and the far side keys a membership to
+    /// both its channel and its person. A group that starts qualifying, or a person who joins a
+    /// group, between two of those moments puts a membership in the payload whose channel or whose
+    /// person is in no other section of it, which fails the whole submission rather than that one
+    /// row, on every retry. Reading the frozen sets makes the containment hold by construction.
     /// </para>
     /// </remarks>
     internal static class ChatSyncProjection
