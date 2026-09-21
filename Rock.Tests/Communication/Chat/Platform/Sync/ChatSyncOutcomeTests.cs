@@ -118,6 +118,43 @@ namespace Rock.Tests.Communication.Chat.Platform.Sync
             Assert.IsTrue( ack.IsTransportFailure );
         }
 
+        /// <summary>
+        /// The platform's own answer carries backoff advice whether or not it names a backoff: an
+        /// acceptance naming none is the platform saying there is none, and that is advice too.
+        /// </summary>
+        [TestMethod]
+        public void ThePlatformsOwnAnswer_CarriesBackoffAdvice_WhetherOrNotItNamesABackoff()
+        {
+            var refusedWithBackoff = Ack( ChatSyncSubmissionStatus.Refused, 422 );
+            refusedWithBackoff.SyncBackoffUntil = new DateTimeOffset( 2026, 9, 21, 11, 30, 0, TimeSpan.Zero );
+
+            var acceptedWithout = Ack( ChatSyncSubmissionStatus.Accepted, 200 );
+
+            Assert.IsTrue( refusedWithBackoff.CarriesBackoffAdvice, "a refusal that names a backoff is the platform asking for quiet, and the run has to record it" );
+            Assert.IsTrue( acceptedWithout.CarriesBackoffAdvice, "an acceptance naming no backoff is the platform saying there is none, and a backoff already stored has to be cleared by it" );
+        }
+
+        /// <summary>
+        /// An answer that is not the platform's carries no advice. Recording its silence as "no
+        /// backoff" would clear advice the platform had given, so a run that never reached the
+        /// platform, or was answered by a gateway in its own words, leaves the stored backoff alone.
+        /// </summary>
+        [TestMethod]
+        public void AnAnswerThatIsNotThePlatforms_CarriesNoBackoffAdvice()
+        {
+            var unreachable = ChatSyncAcknowledgement.Unreachable( Guid.NewGuid(), "the host could not be resolved" );
+
+            var unreadable = new ChatSyncAcknowledgement
+            {
+                SubmissionId = Guid.NewGuid(),
+                HttpStatusCode = 502,
+                TransportDetail = "the chat platform answered with something that is not an acknowledgement"
+            };
+
+            Assert.IsFalse( unreachable.CarriesBackoffAdvice, "a run that never reached the platform would clear the backoff the platform had asked for" );
+            Assert.IsFalse( unreadable.CarriesBackoffAdvice, "a gateway answering in its own words is not the platform lifting its backoff" );
+        }
+
         #endregion Through an acknowledgement
 
         #region Support

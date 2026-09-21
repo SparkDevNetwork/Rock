@@ -40,11 +40,11 @@ namespace Rock.Communication.Chat.Platform.Sync
     /// </summary>
     /// <remarks>
     ///     <para>
-    ///         Every section of the payload is read on one open connection, because the staging
-    ///         query leaves its sets in temporary tables and those belong to the session that made
-    ///         them. That is not an implementation convenience: it is the whole of what stops a
-    ///         membership arriving in the same payload as neither the channel nor the person it
-    ///         names.
+    ///         The staging query and every section go to the server as one batch on one open
+    ///         connection, because the staging query leaves its sets in temporary tables and those
+    ///         live exactly as long as the batch that made them. That is not an implementation
+    ///         convenience: it is the whole of what stops a membership arriving in the same payload
+    ///         as neither the channel nor the person it names.
     ///     </para>
     ///     <para>
     ///         The marking runs first and on its own. A mark rolled back alongside a failed
@@ -59,9 +59,21 @@ namespace Rock.Communication.Chat.Platform.Sync
         /// <summary>
         /// How long the projection may take. Generous, because it reads the whole of a large
         /// church's group membership and runs on that church's own server, and because the cost of
-        /// being wrong here is a cycle lost rather than a cycle wrong.
+        /// being wrong here is a cycle lost rather than a cycle wrong. An estimate, revisited when
+        /// the projection is measured at full scale.
         /// </summary>
         private const int ProjectionTimeoutSeconds = 300;
+
+        /// <summary>
+        /// How the body is encoded: the platform reads the body as UTF-8 text, and a byte order
+        /// marker at the front of it would be the first thing its parser saw.
+        /// </summary>
+        private static readonly Encoding BodyEncoding = new UTF8Encoding( false );
+
+        /// <summary>
+        /// How many characters the text writer gathers before encoding them into the body.
+        /// </summary>
+        private const int BodyWriterBufferSize = 64 * 1024;
 
         #endregion Constants
 
@@ -131,15 +143,30 @@ namespace Rock.Communication.Chat.Platform.Sync
             var submissionId = Guid.NewGuid();
             var projection = Project( rockContext );
             var rowCounts = projection.RowCounts;
-            var headers = BuildHeaders( projection.ReadAtUtc, projection.Marks, rowCounts );
+
+            // Built after the payload rather than before it, because the counts have to be the rows
+            // that were actually written. Counts taken from what the projection was expected to
+            // return would agree with a truncated payload and the platform's own check would pass
+            // over it.
+            var headers = new ChatSyncHeaderBuilder().BuildSubmissionHeaders(
+                projection.ReadAtUtc,
+                projection.Marks,
+                rowCounts,
+                Rock.VersionInfo.VersionInfo.GetRockSemanticVersionNumber(),
+                _isManualRun );
 
             using ( var client = BuildClient() )
             {
                 var acknowledgement = client.Submit( submissionId, projection.Payload, headers );
 
-                // Written whatever the outcome was: advice about the platform's load is no less
-                // true because this submission was turned away.
-                ChatPlatformConfigurationService.SaveSyncBackoff( acknowledgement.SyncBackoffUntil );
+                if ( acknowledgement.CarriesBackoffAdvice )
+                {
+                    // Written for a refusal as for an acceptance: advice about the platform's load
+                    // is no less true because this submission was turned away. Not written for a
+                    // run that never got the platform's own answer, whose silence would otherwise
+                    // clear advice the platform had given.
+                    ChatPlatformConfigurationService.SaveSyncBackoff( acknowledgement.SyncBackoffUntil );
+                }
 
                 ChatSyncOutcome polled = null;
                 if ( acknowledgement.Status == ChatSyncSubmissionStatus.Accepted )
@@ -169,10 +196,10 @@ namespace Rock.Communication.Chat.Platform.Sync
         /// <param name="rockContext">The context the projection reads through.</param>
         /// <returns>The reading.</returns>
         /// <remarks>
-        /// The clock, the identity seeds and every section are taken on one open connection. The
-        /// staging query leaves its sets in temporary tables and those belong to the session that
-        /// made them, which is what stops a membership arriving in the same payload as neither the
-        /// channel nor the person it names.
+        /// The clock, the identity seeds and every section are taken on one open connection, and
+        /// the staging query and the sections go as one batch. The staging query leaves its sets in
+        /// temporary tables that live as long as that batch, which is what stops a membership
+        /// arriving in the same payload as neither the channel nor the person it names.
         /// </remarks>
         public ChatSyncProjectionResult Project( RockContext rockContext )
         {
@@ -289,12 +316,11 @@ namespace Rock.Communication.Chat.Platform.Sync
         /// existed. Keeping them in one batch is also what makes the staging and the reading of it
         /// provably the same moment rather than two that happen to agree.
         /// </remarks>
-        private string BuildPayload( DbConnection connection, out IDictionary<string, int> rowCounts )
+        private ArraySegment<byte> BuildPayload( DbConnection connection, out IDictionary<string, int> rowCounts )
         {
             var contract = JObject.Parse( ChatWireContract.Json );
             var sections = new ChatSyncHeaderBuilder( contract ).GetPayloadSections();
             var mapper = new ChatSyncRowMapper( contract, RockDateTime.OrgTimeZoneInfo );
-            var text = new StringBuilder();
 
             var sql = new StringBuilder();
             sql.AppendLine( ChatSyncProjection.GetStagingSql() );
@@ -304,7 +330,14 @@ namespace Rock.Communication.Chat.Platform.Sync
                 sql.AppendLine( ChatSyncProjection.GetSectionSql( section ) );
             }
 
-            using ( var jsonWriter = new JsonTextWriter( new StringWriter( text, CultureInfo.InvariantCulture ) ) )
+            // The body is encoded as it is written and handed on as the one buffer it was written
+            // into. Held as text and then encoded for the transport it would be two copies of the
+            // same bytes, and at the largest church measured that is tens of megabytes on the large
+            // object heap for nothing.
+            var body = new MemoryStream();
+
+            using ( var text = new StreamWriter( body, BodyEncoding, BodyWriterBufferSize, true ) )
+            using ( var jsonWriter = new JsonTextWriter( text ) { CloseOutput = false } )
             using ( var payloadWriter = new ChatSyncPayloadWriter( contract, jsonWriter ) )
             {
                 using ( var command = CreateCommand( connection, sql.ToString() ) )
@@ -322,7 +355,14 @@ namespace Rock.Communication.Chat.Platform.Sync
                 rowCounts = payloadWriter.RowCounts;
             }
 
-            return text.ToString();
+            ArraySegment<byte> buffer;
+
+            if ( !body.TryGetBuffer( out buffer ) )
+            {
+                throw new InvalidOperationException( "the submission body was written into a buffer that cannot be handed on to the transport" );
+            }
+
+            return buffer;
         }
 
         /// <summary>
@@ -389,45 +429,10 @@ namespace Rock.Communication.Chat.Platform.Sync
                 { "@ActiveRecordStatusValueId", activeStatus == null ? ( object ) DBNull.Value : activeStatus.Id },
                 { "@ProfilesVisibleByDefault", _configuration.AreChatProfilesVisible },
                 { "@OpenDirectMessagesByDefault", _configuration.IsOpenDirectMessagingAllowed },
-                { "@PublicApplicationRoot", GlobalAttributesCache.Get().GetValue( "PublicApplicationRoot" ) ?? string.Empty }
+                // The icon address is built from this, so the slash between root and path is
+                // supplied here rather than trusted to however the administrator typed the root.
+                { "@PublicApplicationRoot", ( GlobalAttributesCache.Get().GetValue( "PublicApplicationRoot" ) ?? string.Empty ).EnsureTrailingForwardslash() }
             };
-        }
-
-        /// <summary>
-        /// The metadata this submission carries beside its body.
-        /// </summary>
-        /// <remarks>
-        /// Built after the payload rather than before it, because the counts have to be the rows
-        /// that were actually written. Counts taken from what the projection was expected to return
-        /// would agree with a truncated payload and the platform's own check would pass over it.
-        /// </remarks>
-        private IDictionary<string, string> BuildHeaders( DateTime readAtUtc, ChatSyncIdentityMarks marks, IDictionary<string, int> rowCounts )
-        {
-            if ( ChatWireContract.ComputedHash != ChatWireContract.PublishedHash )
-            {
-                throw new InvalidOperationException(
-                    "the wire contract this build of Rock ships does not hash to the value written inside it, so nothing here can say what column order the payload is in" );
-            }
-
-            var builder = new ChatSyncHeaderBuilder();
-
-            var headers = new Dictionary<string, string>
-            {
-                { "x-sync-read-at", ChatSyncHeaderBuilder.FormatReadTime( readAtUtc ) },
-                { "x-sync-counts", builder.BuildRowCounts( rowCounts ) },
-                { "x-sync-marks", builder.BuildIdentityMarks( marks ) },
-                { "x-sync-rock-version", Rock.VersionInfo.VersionInfo.GetRockSemanticVersionNumber() },
-                { "x-sync-contract", ChatWireContract.PublishedHash }
-            };
-
-            if ( _isManualRun )
-            {
-                // The one optional header. Its absence is ordinary priority, so a scheduled run
-                // sets nothing rather than setting it to a false-looking value.
-                headers.Add( "x-sync-urgent", "1" );
-            }
-
-            return headers;
         }
 
         private ChatSyncSubmitClient BuildClient()

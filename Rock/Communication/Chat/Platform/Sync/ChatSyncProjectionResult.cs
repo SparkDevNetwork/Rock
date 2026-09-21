@@ -25,9 +25,11 @@ namespace Rock.Communication.Chat.Platform.Sync
     internal sealed class ChatSyncProjectionResult
     {
         /// <summary>
-        /// The whole restatement, as the wire carries it.
+        /// The whole restatement, as the wire carries it: UTF-8 text in the one buffer it was
+        /// written into. It is handed to the transport as it is rather than decoded and encoded
+        /// again, because a second copy of a large church's body is tens of megabytes for nothing.
         /// </summary>
-        public string Payload { get; set; }
+        public ArraySegment<byte> Payload { get; set; }
 
         /// <summary>
         /// How many rows each section actually carries, counted as they were written.

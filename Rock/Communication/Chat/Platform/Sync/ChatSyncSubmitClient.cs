@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Text;
 using System.Threading;
 
@@ -154,10 +155,10 @@ namespace Rock.Communication.Chat.Platform.Sync
         /// Submits one restatement and reads the acknowledgement, whatever status it arrives with.
         /// </summary>
         /// <param name="submissionId">The idempotency key for this submission, used for every attempt.</param>
-        /// <param name="payload">The body, already shaped.</param>
+        /// <param name="payload">The body, already shaped, as the UTF-8 bytes it was written as.</param>
         /// <param name="headers">The submission headers, built elsewhere.</param>
         /// <returns>The acknowledgement. Never null, and never an exception.</returns>
-        public ChatSyncAcknowledgement Submit( Guid submissionId, string payload, IDictionary<string, string> headers )
+        public ChatSyncAcknowledgement Submit( Guid submissionId, ArraySegment<byte> payload, IDictionary<string, string> headers )
         {
             var attempts = Math.Max( 1, TransportAttempts );
             string lastFailure = null;
@@ -295,11 +296,16 @@ namespace Rock.Communication.Chat.Platform.Sync
         /// Builds one submission request. Called once per attempt, because a request message cannot
         /// be sent twice.
         /// </summary>
-        private HttpRequestMessage BuildSubmitRequest( Guid submissionId, string payload, IDictionary<string, string> headers )
+        private HttpRequestMessage BuildSubmitRequest( Guid submissionId, ArraySegment<byte> payload, IDictionary<string, string> headers )
         {
+            // Wrapped rather than copied. Every attempt sends the buffer the body was written into;
+            // only the wrapper is new, because a request message cannot be sent twice.
+            var content = new ByteArrayContent( payload.Array ?? new byte[0], payload.Offset, payload.Count );
+            content.Headers.ContentType = new MediaTypeHeaderValue( "text/plain" ) { CharSet = "utf-8" };
+
             var request = new HttpRequestMessage( HttpMethod.Post, Url( SubmitPath ) )
             {
-                Content = new StringContent( payload ?? string.Empty, Encoding.UTF8, "text/plain" )
+                Content = content
             };
 
             if ( headers != null )

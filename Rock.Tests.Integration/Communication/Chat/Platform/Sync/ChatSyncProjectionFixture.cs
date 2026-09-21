@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text;
 
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -425,8 +426,13 @@ namespace Rock.Tests.Integration.Communication.Chat.Platform.Sync
 
             // Dates are deliberately not parsed. A reader that recognised them would hand back a
             // local DateTime, and the whole question about a time on this wire is what was written,
-            // not what a reader could make of it.
-            using ( var reader = new JsonTextReader( new StringReader( result.Payload ) ) { DateParseHandling = DateParseHandling.None } )
+            // not what a reader could make of it. The body is read as the UTF-8 bytes the runner
+            // hands to the transport, which is the form the platform receives.
+            var body = result.Payload;
+
+            using ( var stream = new MemoryStream( body.Array ?? new byte[0], body.Offset, body.Count, false ) )
+            using ( var text = new StreamReader( stream, new UTF8Encoding( false ) ) )
+            using ( var reader = new JsonTextReader( text ) { DateParseHandling = DateParseHandling.None } )
             {
                 _payload = JObject.Load( reader );
             }

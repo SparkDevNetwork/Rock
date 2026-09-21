@@ -70,6 +70,17 @@ namespace Rock.Communication.Chat.Platform.Sync
         public bool IsTransportFailure => !HttpStatusCode.HasValue;
 
         /// <summary>
+        /// Whether what came back is the platform's own word, and so whether the backoff it
+        /// carries, or the absence of one, is worth recording.
+        /// </summary>
+        /// <remarks>
+        /// A submission that never arrived, or that was answered by something other than the
+        /// platform, says nothing about the platform's load. Recording its silence as "no backoff"
+        /// would lift advice the platform had given.
+        /// </remarks>
+        public bool CarriesBackoffAdvice => !IsTransportFailure && Status.HasValue;
+
+        /// <summary>
         /// Whether the run that made this submission worked.
         /// </summary>
         public bool IsJobSuccess => Status.HasValue && ChatSyncOutcomeMapper.IsJobSuccess( Status.Value );

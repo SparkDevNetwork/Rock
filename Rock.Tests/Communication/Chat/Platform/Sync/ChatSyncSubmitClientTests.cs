@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -80,7 +81,7 @@ namespace Rock.Tests.Communication.Chat.Platform.Sync
 
             using ( var client = Client( handler ) )
             {
-                var ack = client.Submit( submissionId, "{}", Headers() );
+                var ack = client.Submit( submissionId, Body( "{}" ), Headers() );
 
                 Assert.AreEqual( submissionId, ack.SubmissionId );
                 Assert.AreEqual( ChatSyncSubmissionStatus.Refused, ack.Status );
@@ -109,7 +110,7 @@ namespace Rock.Tests.Communication.Chat.Platform.Sync
 
             using ( var client = Client( handler ) )
             {
-                var ack = client.Submit( submissionId, "{}", Headers() );
+                var ack = client.Submit( submissionId, Body( "{}" ), Headers() );
 
                 Assert.AreEqual( ChatSyncSubmissionStatus.Accepted, ack.Status );
                 Assert.IsNull( ack.ErrorCode );
@@ -136,7 +137,7 @@ namespace Rock.Tests.Communication.Chat.Platform.Sync
 
             using ( var client = Client( handler ) )
             {
-                client.Submit( submissionId, "{\"channels\":[]}", Headers() );
+                client.Submit( submissionId, Body( "{\"channels\":[]}" ), Headers() );
             }
 
             var request = handler.Requests.Single();
@@ -168,7 +169,7 @@ namespace Rock.Tests.Communication.Chat.Platform.Sync
 
             using ( var client = NoWaitClient( handler ) )
             {
-                var ack = client.Submit( submissionId, "{}", Headers() );
+                var ack = client.Submit( submissionId, Body( "{}" ), Headers() );
 
                 Assert.AreEqual( ChatSyncSubmissionStatus.Accepted, ack.Status );
             }
@@ -192,7 +193,7 @@ namespace Rock.Tests.Communication.Chat.Platform.Sync
 
             using ( var client = NoWaitClient( handler ) )
             {
-                var ack = client.Submit( submissionId, "{}", Headers() );
+                var ack = client.Submit( submissionId, Body( "{}" ), Headers() );
 
                 Assert.IsTrue( ack.IsTransportFailure );
                 Assert.IsNull( ack.Status );
@@ -341,6 +342,14 @@ namespace Rock.Tests.Communication.Chat.Platform.Sync
                 ["x-sync-contract"] = "de1f06d0",
                 ["x-sync-rock-version"] = "20.0.0"
             };
+        }
+
+        /// <summary>
+        /// A body in the form the runner hands the client: the UTF-8 bytes it was written as.
+        /// </summary>
+        private static ArraySegment<byte> Body( string json )
+        {
+            return new ArraySegment<byte>( Encoding.UTF8.GetBytes( json ) );
         }
 
         private static string Accepted( Guid submissionId )
