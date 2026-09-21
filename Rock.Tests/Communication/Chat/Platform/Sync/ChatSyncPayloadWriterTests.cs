@@ -252,6 +252,83 @@ namespace Rock.Tests.Communication.Chat.Platform.Sync
             }
         }
 
+        /// <summary>
+        /// A row the writer failed to put down is not counted.
+        /// </summary>
+        /// <remarks>
+        /// This is what separates a tally of rows written from a tally of rows asked for. On every
+        /// complete body the two agree, so the cell above cannot tell them apart; they disagree
+        /// only when a write fails part way, which is the one moment the count has to be honest
+        /// about. A count that ran ahead of the writer would agree with a body cut short.
+        /// </remarks>
+        [TestMethod]
+        public void RowCounts_DoNotCountARowTheWriterFailedToWrite()
+        {
+            var contract = ShippedContract();
+            var text = new FailingWriter();
+
+            using ( var json = new JsonTextWriter( text ) )
+            {
+                var writer = new ChatSyncPayloadWriter( contract, json );
+                writer.BeginSection( "members" );
+
+                for ( var i = 0; i < 3; i++ )
+                {
+                    writer.WriteRow( EmptyRow( writer, "members" ) );
+                }
+
+                text.FailFromNow = true;
+
+                Assert.ThrowsExactly<IOException>(
+                    () => writer.WriteRow( EmptyRow( writer, "members" ) ),
+                    "the fourth write did not fail, so this cell separates nothing" );
+
+                Assert.AreEqual( 3, writer.RowCounts["members"], "the tally counted a row that was never written, so a body cut short would agree with its own count" );
+
+                // Let the writer close its containers on the way out.
+                text.FailFromNow = false;
+            }
+        }
+
+        #endregion
+
+        #region Support
+
+        /// <summary>
+        /// A writer that can be told to refuse every write from a given moment on, which is the
+        /// only way to make a row fail to be written without changing the writer under test.
+        /// </summary>
+        private sealed class FailingWriter : StringWriter
+        {
+            public bool FailFromNow { get; set; }
+
+            public override void Write( char value )
+            {
+                Refuse();
+                base.Write( value );
+            }
+
+            public override void Write( string value )
+            {
+                Refuse();
+                base.Write( value );
+            }
+
+            public override void Write( char[] buffer, int index, int count )
+            {
+                Refuse();
+                base.Write( buffer, index, count );
+            }
+
+            private void Refuse()
+            {
+                if ( FailFromNow )
+                {
+                    throw new IOException( "the stub writer refused the write" );
+                }
+            }
+        }
+
         #endregion
 
         #region Values
