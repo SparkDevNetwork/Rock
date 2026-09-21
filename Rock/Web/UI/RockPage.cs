@@ -3427,6 +3427,14 @@ Sys.Application.add_load(function () {
 
                     var decodedItem = HttpUtility.UrlDecode( encryptedItem );
                     var decryptedItem = Rock.Security.Encryption.DecryptString( decodedItem );
+                    if ( decryptedItem.IsNullOrWhiteSpace() )
+                    {
+                        // DecryptString returns null when the value can't be decrypted (e.g. a stale
+                        // cookie encrypted with a prior data-encryption key). Skip it rather than
+                        // letting the null Split() throw and abort the remaining valid items.
+                        continue;
+                    }
+
                     var itemParts = decryptedItem.Split( '|' );
                     if ( itemParts.Length != 2 )
                     {
