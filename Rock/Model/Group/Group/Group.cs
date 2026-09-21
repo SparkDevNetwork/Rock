@@ -642,6 +642,36 @@ namespace Rock.Model
         public bool? IsChatChannelAlwaysShownOverride { get; set; }
 
         /// <summary>
+        /// Gets or sets whether the members of this chat channel may see who else belongs to it. When this is
+        /// <see langword="false"/>, only the channel's leaders may open the roster. If set to <see langword="null"/>,
+        /// then the value of <see cref="GroupType.CanViewMembers"/> will be used. Direct messages ignore both and
+        /// always allow it, since a direct message has no roster to hide.
+        /// </summary>
+        [DataMember]
+        public bool? CanViewMembersOverride { get; set; }
+
+        /// <summary>
+        /// Gets or sets whether the messages in this chat channel are indexed for search. A channel that is not
+        /// indexed can still be read by its members; its messages simply do not appear in search results. If set to
+        /// <see langword="null"/>, then the value of <see cref="GroupType.IsChatSearchIndexed"/> will be used.
+        /// </summary>
+        [DataMember]
+        public bool? IsChatSearchIndexedOverride { get; set; }
+
+        /// <summary>
+        /// Gets or sets when this group first qualified as a chat channel. It is stamped once and never cleared, not
+        /// even when chat is turned off, the group is archived or the group is deactivated.
+        /// </summary>
+        /// <remarks>
+        /// This is what makes "is, or ever was, a chat channel" answerable, which is what lets turning chat off archive
+        /// the conversation rather than destroy it. Without the stamp the answer would be "qualifies right now", and
+        /// the first group type whose chat setting changed would take every one of its channels and their messages
+        /// with it.
+        /// </remarks>
+        [DataMember]
+        public DateTime? ChatChannelFirstEnabledDateTime { get; set; }
+
+        /// <summary>
         /// Gets or sets the chat channel avatar binary file identifier. This is the image that will be shown in the
         /// external chat application for this channel.
         /// </summary>

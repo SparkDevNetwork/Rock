@@ -262,6 +262,17 @@ namespace Rock.Model
         [DataMember]
         public bool IsChatBanned { get; set; }
 
+        /// <summary>
+        /// Gets or sets when this person's ban from the chat channel ends, or <see langword="null"/> when the ban does
+        /// not expire on its own.
+        /// </summary>
+        /// <remarks>
+        /// A ban that has passed this time is no ban, decided every time the value is read rather than by a job that
+        /// clears it, so a job that does not run cannot leave someone banned indefinitely.
+        /// </remarks>
+        [DataMember]
+        public DateTime? ChatBannedUntil { get; set; }
+
         #endregion
 
         #region Constructors

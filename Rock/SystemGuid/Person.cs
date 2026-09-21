@@ -36,5 +36,21 @@ namespace Rock.SystemGuid
         /// automated communications.
         /// </summary>
         public const string SYSTEM_SENDER = "817E7C25-6CB1-4ED0-B224-FF3C4DA0B716";
+
+        /// <summary>
+        /// The Guid that stands for chat itself as the author of a message, shown as 'Rock Chat'.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// No Person row backs this. It is the sender of the messages a conversation generates about itself, such as
+        /// someone joining or a channel being renamed, and it needs an identity only because every message names one.
+        /// </para>
+        /// <para>
+        /// It is the same value in every installation on purpose. A per-installation value would make each church's
+        /// system author a different person to every client, so no client could recognise one without being told, and
+        /// nothing could be styled or filtered by it.
+        /// </para>
+        /// </remarks>
+        public const string CHAT_SYSTEM_AUTHOR = "A7C0DE00-0000-4000-8000-000000000001";
     }
 }

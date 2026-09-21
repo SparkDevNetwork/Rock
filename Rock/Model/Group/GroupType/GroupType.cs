@@ -862,6 +862,28 @@ namespace Rock.Model
         public bool IsChatChannelAlwaysShown { get; set; }
 
         /// <summary>
+        /// Gets or sets whether the members of chat channels of this type may see who else belongs to the channel.
+        /// When this is <see langword="false"/>, only the channel's leaders may open the roster. This can be overridden
+        /// by the value of <see cref="Group.CanViewMembersOverride"/>.
+        /// </summary>
+        /// <value>
+        /// Whether the members of chat channels of this type may see the channel's roster.
+        /// </value>
+        [DataMember]
+        public bool CanViewMembers { get; set; }
+
+        /// <summary>
+        /// Gets or sets whether the messages in chat channels of this type are indexed for search. A channel that is
+        /// not indexed can still be read by its members; its messages simply do not appear in search results. This can
+        /// be overridden by the value of <see cref="Group.IsChatSearchIndexedOverride"/>.
+        /// </summary>
+        /// <value>
+        /// Whether the messages in chat channels of this type are indexed for search.
+        /// </value>
+        [DataMember]
+        public bool IsChatSearchIndexed { get; set; }
+
+        /// <summary>
         /// Gets or sets the <see cref="ChatNotificationMode"/> to control how push notifications are sent for chat
         /// channels of this type. This can be overridden by the value of <see cref="Group.ChatPushNotificationModeOverride"/>.
         /// </summary>
