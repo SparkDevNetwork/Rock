@@ -389,24 +389,25 @@ namespace RockWeb.Blocks.Reporting
                             {
                                 filterControl.SetSelection( selection );
 
-                                // if the selection is the same as what is stored in the database for that DataViewFilter,
-                                // Do a GetSelection to get the selection in the current format for that filter
-                                // This will prevent this dynamic report from thinking the selection has changed from the orig filter
-                                if ( selection == filter.Selection )
-                                {
-                                    var normalizedSelection = filterControl.GetSelection();
-                                    if ( normalizedSelection != filter.Selection )
-                                    {
-                                        // if the format of the filter.Selection has changed, update the dataViewFilter's Selection to match the current format
-                                        filter.Selection = normalizedSelection;
-                                        using ( var updateSelectionContext = new RockContext() )
-                                        {
-                                            var dataViewFilter = new DataViewFilterService( updateSelectionContext ).Get( filter.Id );
-                                            dataViewFilter.Selection = normalizedSelection;
-                                            updateSelectionContext.SaveChanges();
-                                        }
-                                    }
-                                }
+                                /*
+                                    9/21/2026 - NA
+
+                                    Removed the logic that re-normalized the filter's Selection (via a SetSelection
+                                    followed by GetSelection) and then saved that "normalized" value back to the
+                                    DataViewFilter. It was originally added to keep the persisted-data-view fast path
+                                    working across selection format drift, but it assumed GetSelection() is a lossless
+                                    reformat. For a WebForms SimpleFilter (which is how visible/configurable filters
+                                    render here), GetSelection() intentionally collapses the comparison to "Contains"
+                                    (see TextFieldType.GetFilterCompareValue). Persisting that round-trip rewrote the
+                                    shared DataView's stored comparison (e.g. "Starts With" became "Contains"),
+                                    corrupting the DataView simply by viewing the report.
+
+                                    A Dynamic Report must never mutate the DataView it is reporting on, so the write-back
+                                    is gone. The report still applies the filter as before at run time; only the
+                                    destructive persistence is removed.
+
+                                    Reason: Dynamic Report was silently changing a DataView filter's comparison type.
+                                */
                             }
                             catch ( Exception ex )
                             {
