@@ -199,6 +199,7 @@
       payload built from a contract it does not recognise.
     -->
     <EmbeddedResource Include="Communication\Chat\Platform\Contract\chat-wire-contract.json" />
+    <EmbeddedResource Include="Communication\Chat\Platform\Sql\*.sql" />
   </ItemGroup>
 
   <Import Project="..\Applications\RockCloudPrint\Rock.CloudPrint.Shared.Common\Rock.CloudPrint.Shared.Common.projitems" Label="Shared" />
