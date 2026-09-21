@@ -129,40 +129,13 @@ namespace Rock.Communication.Chat.Platform.Sync
             StampChannels( rockContext );
 
             var submissionId = Guid.NewGuid();
-            DateTime readAtUtc;
-            ChatSyncIdentityMarks marks;
-            string payload;
-            IDictionary<string, int> rowCounts;
-
-            // The context owns this connection, so it is closed here only if it was opened here.
-            // Disposing it would leave the caller holding a context that cannot read anything.
-            var connection = rockContext.Database.Connection;
-            var wasClosed = connection.State != ConnectionState.Open;
-
-            try
-            {
-                if ( wasClosed )
-                {
-                    connection.Open();
-                }
-
-                readAtUtc = ReadClock( connection );
-                marks = ReadIdentityMarks( connection );
-                payload = BuildPayload( connection, out rowCounts );
-            }
-            finally
-            {
-                if ( wasClosed && connection.State == ConnectionState.Open )
-                {
-                    connection.Close();
-                }
-            }
-
-            var headers = BuildHeaders( readAtUtc, marks, rowCounts );
+            var projection = Project( rockContext );
+            var rowCounts = projection.RowCounts;
+            var headers = BuildHeaders( projection.ReadAtUtc, projection.Marks, rowCounts );
 
             using ( var client = BuildClient() )
             {
-                var acknowledgement = client.Submit( submissionId, payload, headers );
+                var acknowledgement = client.Submit( submissionId, projection.Payload, headers );
 
                 // Written whatever the outcome was: advice about the platform's load is no less
                 // true because this submission was turned away.
@@ -190,21 +163,73 @@ namespace Rock.Communication.Chat.Platform.Sync
             }
         }
 
-        #endregion Methods
+        /// <summary>
+        /// Reads the church once, without sending anything.
+        /// </summary>
+        /// <param name="rockContext">The context the projection reads through.</param>
+        /// <returns>The reading.</returns>
+        /// <remarks>
+        /// The clock, the identity seeds and every section are taken on one open connection. The
+        /// staging query leaves its sets in temporary tables and those belong to the session that
+        /// made them, which is what stops a membership arriving in the same payload as neither the
+        /// channel nor the person it names.
+        /// </remarks>
+        public ChatSyncProjectionResult Project( RockContext rockContext )
+        {
+            if ( rockContext == null )
+            {
+                throw new ArgumentNullException( nameof( rockContext ) );
+            }
 
-        #region Private Methods
+            // The context owns this connection, so it is closed here only if it was opened here.
+            // Disposing it would leave the caller holding a context that cannot read anything.
+            var connection = rockContext.Database.Connection;
+            var wasClosed = connection.State != ConnectionState.Open;
+
+            try
+            {
+                if ( wasClosed )
+                {
+                    connection.Open();
+                }
+
+                var result = new ChatSyncProjectionResult
+                {
+                    ReadAtUtc = ReadClock( connection ),
+                    Marks = ReadIdentityMarks( connection )
+                };
+
+                IDictionary<string, int> rowCounts;
+                result.Payload = BuildPayload( connection, out rowCounts );
+                result.RowCounts = rowCounts;
+
+                return result;
+            }
+            finally
+            {
+                if ( wasClosed && connection.State == ConnectionState.Open )
+                {
+                    connection.Close();
+                }
+            }
+        }
 
         /// <summary>
         /// Marks the groups that are chat channels right now, in its own transaction and before the
-        /// clock below is read, so the projection sees one settled set of marks.
+        /// clock is read, so the projection sees one settled set of marks.
         /// </summary>
-        private void StampChannels( RockContext rockContext )
+        /// <param name="rockContext">The context to mark through.</param>
+        public void StampChannels( RockContext rockContext )
         {
             rockContext.Database.CommandTimeout = ProjectionTimeoutSeconds;
             rockContext.Database.ExecuteSqlCommand(
                 ChatSyncProjection.GetStampSql(),
                 new System.Data.SqlClient.SqlParameter( "@StampedAt", RockDateTime.Now ) );
         }
+
+        #endregion Methods
+
+        #region Private Methods
 
         /// <summary>
         /// The moment this restatement describes, taken from the database rather than from this
@@ -256,23 +281,41 @@ namespace Rock.Communication.Chat.Platform.Sync
         /// <summary>
         /// Stages the sets once and reads every section from them.
         /// </summary>
+        /// <remarks>
+        /// The staging and the four section queries go as one command, and the sections come back
+        /// as its four result sets. That is not a round trip saved: a command carrying parameters
+        /// is sent as a nested batch, and a temporary table made inside one of those is dropped the
+        /// moment it ends. Split across commands, every section would ask for sets that no longer
+        /// existed. Keeping them in one batch is also what makes the staging and the reading of it
+        /// provably the same moment rather than two that happen to agree.
+        /// </remarks>
         private string BuildPayload( DbConnection connection, out IDictionary<string, int> rowCounts )
         {
-            using ( var command = CreateCommand( connection, ChatSyncProjection.GetStagingSql() ) )
-            {
-                command.ExecuteNonQuery();
-            }
-
             var contract = JObject.Parse( ChatWireContract.Json );
+            var sections = new ChatSyncHeaderBuilder( contract ).GetPayloadSections();
             var mapper = new ChatSyncRowMapper( contract, RockDateTime.OrgTimeZoneInfo );
             var text = new StringBuilder();
+
+            var sql = new StringBuilder();
+            sql.AppendLine( ChatSyncProjection.GetStagingSql() );
+
+            foreach ( var section in sections )
+            {
+                sql.AppendLine( ChatSyncProjection.GetSectionSql( section ) );
+            }
 
             using ( var jsonWriter = new JsonTextWriter( new StringWriter( text, CultureInfo.InvariantCulture ) ) )
             using ( var payloadWriter = new ChatSyncPayloadWriter( contract, jsonWriter ) )
             {
-                foreach ( var section in new ChatSyncHeaderBuilder( contract ).GetPayloadSections() )
+                using ( var command = CreateCommand( connection, sql.ToString() ) )
+                using ( var reader = command.ExecuteReader() )
                 {
-                    WriteSection( connection, payloadWriter, mapper, section );
+                    foreach ( var section in sections )
+                    {
+                        WriteSection( reader, payloadWriter, mapper, section );
+
+                        reader.NextResult();
+                    }
                 }
 
                 payloadWriter.Complete();
@@ -282,22 +325,21 @@ namespace Rock.Communication.Chat.Platform.Sync
             return text.ToString();
         }
 
-        private void WriteSection( DbConnection connection, ChatSyncPayloadWriter payloadWriter, ChatSyncRowMapper mapper, string section )
+        /// <summary>
+        /// Writes one section from the result set the reader is currently on.
+        /// </summary>
+        private void WriteSection( DbDataReader reader, ChatSyncPayloadWriter payloadWriter, ChatSyncRowMapper mapper, string section )
         {
             payloadWriter.BeginSection( section );
 
-            using ( var command = CreateCommand( connection, ChatSyncProjection.GetSectionSql( section ) ) )
-            using ( var reader = command.ExecuteReader() )
+            var columns = Enumerable.Range( 0, reader.FieldCount ).Select( reader.GetName ).ToList();
+
+            while ( reader.Read() )
             {
-                var columns = Enumerable.Range( 0, reader.FieldCount ).Select( reader.GetName ).ToList();
+                var values = new object[reader.FieldCount];
+                reader.GetValues( values );
 
-                while ( reader.Read() )
-                {
-                    var values = new object[reader.FieldCount];
-                    reader.GetValues( values );
-
-                    payloadWriter.WriteRow( mapper.Map( section, columns, values ) );
-                }
+                payloadWriter.WriteRow( mapper.Map( section, columns, values ) );
             }
 
             payloadWriter.EndSection();
