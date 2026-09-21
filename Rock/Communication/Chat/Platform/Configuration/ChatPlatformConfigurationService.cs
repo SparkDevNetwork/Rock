@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -14,6 +14,8 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
+
 using Rock.Security;
 using Rock.SystemKey;
 using Rock.Web;
@@ -88,6 +90,7 @@ namespace Rock.Communication.Chat.Platform.Configuration
                 stored.MinimumAge = source.MinimumAge;
                 stored.DirectMessageAccessDataViewGuid = source.DirectMessageAccessDataViewGuid;
                 stored.ChatBadgeDataViewGuids = source.ChatBadgeDataViewGuids;
+                stored.SyncBackoffUntil = source.SyncBackoffUntil;
 
                 Write( stored );
             }
@@ -114,6 +117,22 @@ namespace Rock.Communication.Chat.Platform.Configuration
                 stored.PublishableKey = entry.PublishableKey;
                 stored.Kid = entry.Kid;
                 stored.PrivateKey = Encryption.EncryptString( entry.PrivateKey );
+
+                Write( stored );
+            }
+        }
+
+        /// <summary>
+        /// Stores the backoff the chat platform last advised.
+        /// </summary>
+        /// <param name="until">The time it would rather not hear from this church before, or null to clear it.</param>
+        public static void SaveSyncBackoff( DateTimeOffset? until )
+        {
+            lock ( _saveLock )
+            {
+                var stored = ReadStored();
+
+                stored.SyncBackoffUntil = until;
 
                 Write( stored );
             }

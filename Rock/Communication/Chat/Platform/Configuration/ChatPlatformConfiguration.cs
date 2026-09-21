@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -88,6 +88,12 @@ namespace Rock.Communication.Chat.Platform.Configuration
         /// owns both, which is what keeps the settings screen from ever touching it.
         /// </summary>
         public string PrivateKey { get; set; }
+
+        /// <summary>
+        /// The time the chat platform would rather not hear from this church before, as it last
+        /// advised. Null where it has not asked for one.
+        /// </summary>
+        public DateTimeOffset? SyncBackoffUntil { get; set; }
 
         #endregion Platform half
 
