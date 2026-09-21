@@ -18,7 +18,7 @@ using System;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-using Rock.Communication.Chat.Platform.Sync;
+using Rock.Jobs;
 using Rock.Model;
 
 namespace Rock.Tests.Communication.Chat.Platform.Sync
@@ -62,33 +62,26 @@ namespace Rock.Tests.Communication.Chat.Platform.Sync
             // Two in the morning, every second day.
             var job = new ServiceJob { CronExpression = "0 0 2 1/2 * ? *" };
 
-            var plan = ChatSyncRunGate.Plan( job, false, null, Monday );
+            var warning = ChatPlatformSync.CadenceWarning( job.CronExpression, Monday );
 
-            Assert.IsNotNull( plan.CadenceWarning, "a schedule leaving two days between runs said nothing about it" );
-            StringAssert.Contains( plan.CadenceWarning, "24 hours" );
+            Assert.IsNotNull( warning, "a schedule leaving two days between runs said nothing about it" );
+            StringAssert.Contains( warning, "24 hours" );
             Assert.AreEqual( "0 0 2 1/2 * ? *", job.CronExpression, "the job rewrote a schedule its administrator set" );
-            Assert.IsTrue( plan.ShouldSubmit, "a slow schedule is a remark, not a reason to skip the run" );
+            Assert.IsNull( ChatPlatformSync.BackoffSkipMessage( false, null, Monday ),
+                "a slow schedule is a remark, not a reason to skip the run" );
         }
 
         [TestMethod]
         public void ACadenceAtTheMaximum_SaysNothing()
         {
             // Two in the morning, every day: twenty four hours exactly, and the boundary is not over it.
-            var job = new ServiceJob { CronExpression = "0 0 2 1/1 * ? *" };
-
-            var plan = ChatSyncRunGate.Plan( job, false, null, Monday );
-
-            Assert.IsNull( plan.CadenceWarning );
+            Assert.IsNull( ChatPlatformSync.CadenceWarning( "0 0 2 1/1 * ? *", Monday ) );
         }
 
         [TestMethod]
         public void ACadenceWellUnderTheMaximum_SaysNothing()
         {
-            var job = new ServiceJob { CronExpression = "0 0/15 * 1/1 * ? *" };
-
-            var plan = ChatSyncRunGate.Plan( job, false, null, Monday );
-
-            Assert.IsNull( plan.CadenceWarning );
+            Assert.IsNull( ChatPlatformSync.CadenceWarning( "0 0/15 * 1/1 * ? *", Monday ) );
         }
 
         /// <summary>
@@ -98,23 +91,16 @@ namespace Rock.Tests.Communication.Chat.Platform.Sync
         [TestMethod]
         public void AWeekdayOnlySchedule_IsCaughtByTheWeekendItLeaves()
         {
-            var job = new ServiceJob { CronExpression = "0 0 2 ? * MON-FRI *" };
-
-            var plan = ChatSyncRunGate.Plan( job, false, null, Monday );
-
-            Assert.IsNotNull( plan.CadenceWarning,
+            Assert.IsNotNull( ChatPlatformSync.CadenceWarning( "0 0 2 ? * MON-FRI *", Monday ),
                 "Friday to Monday is seventy two hours, and only the first gap of this schedule is twenty four" );
         }
 
         [TestMethod]
         public void AnExpressionThatWillNotParse_IsNotAWarningAboutCadence()
         {
-            var job = new ServiceJob { CronExpression = "not a cron expression" };
-
-            var plan = ChatSyncRunGate.Plan( job, false, null, Monday );
-
-            Assert.IsNull( plan.CadenceWarning, "a schedule this job cannot read is the scheduler's problem to report, not this job's" );
-            Assert.IsTrue( plan.ShouldSubmit );
+            Assert.IsNull( ChatPlatformSync.CadenceWarning( "not a cron expression", Monday ),
+                "a schedule this job cannot read is the scheduler's problem to report, not this job's" );
+            Assert.IsNull( ChatPlatformSync.BackoffSkipMessage( false, null, Monday ) );
         }
 
         #endregion The cadence warning
@@ -124,59 +110,61 @@ namespace Rock.Tests.Communication.Chat.Platform.Sync
         [TestMethod]
         public void ABackoffInTheFuture_StopsTheNextScheduledRun()
         {
-            var job = new ServiceJob { CronExpression = "0 0/15 * 1/1 * ? *" };
+            var skipMessage = ChatPlatformSync.BackoffSkipMessage( false, Monday.AddMinutes( 10 ), Monday );
 
-            var plan = ChatSyncRunGate.Plan( job, false, Monday.AddMinutes( 10 ), Monday );
-
-            Assert.IsFalse( plan.ShouldSubmit );
-            Assert.IsNotNull( plan.SkipMessage, "a run that did nothing still owes its administrator a reason" );
-            StringAssert.Contains( plan.SkipMessage, "backoff" );
+            Assert.IsNotNull( skipMessage, "a run that did nothing still owes its administrator a reason" );
+            StringAssert.Contains( skipMessage, "backoff" );
         }
 
         [TestMethod]
         public void ABackoffInTheFuture_DoesNotStopAManualRun()
         {
-            var job = new ServiceJob { CronExpression = "0 0/15 * 1/1 * ? *" };
-
-            var plan = ChatSyncRunGate.Plan( job, true, Monday.AddMinutes( 10 ), Monday );
-
-            Assert.IsTrue( plan.ShouldSubmit, "someone pressed a button and is waiting for an answer" );
-            Assert.IsNull( plan.SkipMessage );
+            Assert.IsNull( ChatPlatformSync.BackoffSkipMessage( true, Monday.AddMinutes( 10 ), Monday ),
+                "someone pressed a button and is waiting for an answer" );
         }
 
         [TestMethod]
         public void ABackoffThatHasPassed_StopsNothing()
         {
-            var job = new ServiceJob { CronExpression = "0 0/15 * 1/1 * ? *" };
-
-            var plan = ChatSyncRunGate.Plan( job, false, Monday.AddMinutes( -1 ), Monday );
-
-            Assert.IsTrue( plan.ShouldSubmit );
+            Assert.IsNull( ChatPlatformSync.BackoffSkipMessage( false, Monday.AddMinutes( -1 ), Monday ) );
         }
 
         [TestMethod]
         public void NoBackoffAtAll_StopsNothing()
         {
-            var job = new ServiceJob { CronExpression = "0 0/15 * 1/1 * ? *" };
-
-            Assert.IsTrue( ChatSyncRunGate.Plan( job, false, null, Monday ).ShouldSubmit );
-            Assert.IsTrue( ChatSyncRunGate.Plan( job, true, null, Monday ).ShouldSubmit );
+            Assert.IsNull( ChatPlatformSync.BackoffSkipMessage( false, null, Monday ) );
+            Assert.IsNull( ChatPlatformSync.BackoffSkipMessage( true, null, Monday ) );
         }
 
         /// <summary>
         /// A skipped run still says what the schedule looks like, because a church whose cadence is
         /// too slow and whose platform is asking for quiet has two things wrong and should be told
-        /// both.
+        /// both. The two answers are separate, so this asserts the line the job actually prints
+        /// rather than that both answers exist.
         /// </summary>
         [TestMethod]
         public void ASkippedRunStillCarriesTheCadenceWarning()
         {
-            var job = new ServiceJob { CronExpression = "0 0 2 1/2 * ? *" };
+            var skipMessage = ChatPlatformSync.BackoffSkipMessage( false, Monday.AddMinutes( 10 ), Monday );
+            var warning = ChatPlatformSync.CadenceWarning( "0 0 2 1/2 * ? *", Monday );
 
-            var plan = ChatSyncRunGate.Plan( job, false, Monday.AddMinutes( 10 ), Monday );
+            Assert.IsNotNull( skipMessage );
+            Assert.IsNotNull( warning );
 
-            Assert.IsFalse( plan.ShouldSubmit );
-            Assert.IsNotNull( plan.CadenceWarning );
+            var line = ChatPlatformSync.Join( skipMessage, warning );
+
+            StringAssert.Contains( line, "backoff", "the reason the run did nothing was dropped from its result line" );
+            StringAssert.Contains( line, "24 hours", "the remark about the schedule was dropped from its result line" );
+        }
+
+        /// <summary>
+        /// The other half of the same join: a run that went ahead says its own sentence, and says
+        /// nothing about the schedule when there is nothing to say.
+        /// </summary>
+        [TestMethod]
+        public void AHealthyScheduleAddsNothingToTheResultLine()
+        {
+            Assert.AreEqual( "12 channels were sent.", ChatPlatformSync.Join( "12 channels were sent.", null ) );
         }
 
         #endregion The backoff

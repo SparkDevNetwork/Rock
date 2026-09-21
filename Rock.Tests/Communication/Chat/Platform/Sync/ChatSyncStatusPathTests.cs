@@ -19,6 +19,7 @@ using System;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using Rock.Communication.Chat.Platform.Sync;
+using Rock.Jobs;
 
 namespace Rock.Tests.Communication.Chat.Platform.Sync
 {
@@ -49,7 +50,7 @@ namespace Rock.Tests.Communication.Chat.Platform.Sync
         public void WhenThePollResolves_ThatOutcomeIsWhatTheJobReports()
         {
             var submissionId = Guid.NewGuid();
-            var result = ChatSyncStatusPath.Resolve(
+            var result = ChatPlatformSync.Resolve(
                 AcceptedAck( submissionId, PreviousOutcome( ChatSyncSubmissionStatus.Failed ) ),
                 Outcome( submissionId, ChatSyncSubmissionStatus.Applied ) );
 
@@ -64,7 +65,7 @@ namespace Rock.Tests.Communication.Chat.Platform.Sync
             var outcome = Outcome( submissionId, ChatSyncSubmissionStatus.Failed );
             outcome.ErrorCode = "sync.apply_failed";
 
-            var result = ChatSyncStatusPath.Resolve( AcceptedAck( submissionId, null ), outcome );
+            var result = ChatPlatformSync.Resolve( AcceptedAck( submissionId, null ), outcome );
 
             Assert.IsTrue( result.IsFailure );
             StringAssert.Contains( result.Message, "sync.apply_failed" );
@@ -80,7 +81,7 @@ namespace Rock.Tests.Communication.Chat.Platform.Sync
             var submissionId = Guid.NewGuid();
             var previous = PreviousOutcome( ChatSyncSubmissionStatus.Applied );
 
-            var result = ChatSyncStatusPath.Resolve(
+            var result = ChatPlatformSync.Resolve(
                 AcceptedAck( submissionId, previous ),
                 Outcome( submissionId, ChatSyncSubmissionStatus.Accepted ) );
 
@@ -96,7 +97,7 @@ namespace Rock.Tests.Communication.Chat.Platform.Sync
             var previous = PreviousOutcome( ChatSyncSubmissionStatus.Failed );
             previous.ErrorCode = "sync.apply_failed";
 
-            var result = ChatSyncStatusPath.Resolve(
+            var result = ChatPlatformSync.Resolve(
                 AcceptedAck( submissionId, previous ),
                 Outcome( submissionId, ChatSyncSubmissionStatus.Accepted ) );
 
@@ -111,7 +112,7 @@ namespace Rock.Tests.Communication.Chat.Platform.Sync
         {
             var submissionId = Guid.NewGuid();
 
-            var result = ChatSyncStatusPath.Resolve(
+            var result = ChatPlatformSync.Resolve(
                 AcceptedAck( submissionId, null ),
                 Outcome( submissionId, ChatSyncSubmissionStatus.Accepted ) );
 
@@ -128,7 +129,7 @@ namespace Rock.Tests.Communication.Chat.Platform.Sync
         {
             var submissionId = Guid.NewGuid();
 
-            var result = ChatSyncStatusPath.Resolve( AcceptedAck( submissionId, null ), null );
+            var result = ChatPlatformSync.Resolve( AcceptedAck( submissionId, null ), null );
 
             Assert.IsFalse( result.IsFailure );
             Assert.IsNotNull( result.Message, "a run with nothing to report still owes its administrator a sentence" );
@@ -151,7 +152,7 @@ namespace Rock.Tests.Communication.Chat.Platform.Sync
                 HttpStatusCode = 422
             };
 
-            var result = ChatSyncStatusPath.Resolve( ack, null );
+            var result = ChatPlatformSync.Resolve( ack, null );
 
             Assert.IsTrue( result.IsFailure );
             StringAssert.Contains( result.Message, "sync.marks_regressed" );
@@ -162,7 +163,7 @@ namespace Rock.Tests.Communication.Chat.Platform.Sync
         {
             var ack = ChatSyncAcknowledgement.Unreachable( Guid.NewGuid(), "the host could not be resolved" );
 
-            var result = ChatSyncStatusPath.Resolve( ack, null );
+            var result = ChatPlatformSync.Resolve( ack, null );
 
             Assert.IsTrue( result.IsFailure );
             Assert.IsNotNull( result.Message, "a run that never reached the platform still owes its administrator a sentence" );

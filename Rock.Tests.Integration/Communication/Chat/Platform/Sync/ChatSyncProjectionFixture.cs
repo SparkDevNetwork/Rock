@@ -28,6 +28,7 @@ using Rock.Communication.Chat.Platform.Contract;
 using Rock.Communication.Chat.Platform.Sync;
 using Rock.Configuration;
 using Rock.Data;
+using Rock.Jobs;
 using Rock.Model;
 
 namespace Rock.Tests.Integration.Communication.Chat.Platform.Sync
@@ -257,7 +258,7 @@ namespace Rock.Tests.Integration.Communication.Chat.Platform.Sync
         {
             using ( var rockContext = new RockContext() )
             {
-                var result = new ChatSyncRunner( Configuration(), false ).Project( rockContext );
+                var result = ChatPlatformSync.Project( rockContext, Configuration() );
 
                 return new ProjectedPayload( result );
             }
@@ -270,7 +271,7 @@ namespace Rock.Tests.Integration.Communication.Chat.Platform.Sync
         {
             using ( var rockContext = new RockContext() )
             {
-                new ChatSyncRunner( Configuration(), false ).StampChannels( rockContext );
+                ChatPlatformSync.StampChannels( rockContext );
             }
         }
 
