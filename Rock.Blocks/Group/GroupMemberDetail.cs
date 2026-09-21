@@ -205,6 +205,11 @@ namespace Rock.Blocks.Group
         /// </summary>
         private int? _cachedGroupRequirementsGroupId;
 
+        /// <summary>
+        /// The validated sign-up mode result, resolved once per request.
+        /// </summary>
+        private bool? _isSignUpMode;
+
         #endregion Fields
 
         #region Properties
@@ -227,14 +232,70 @@ namespace Rock.Blocks.Group
             ?? Rock.Utility.IdHasher.Instance.GetId( PageParameter( PageParameterKey.ScheduleId ) );
 
         /// <summary>
-        /// Sign-up mode is active when both a location and a schedule are
-        /// supplied, as when reached from a Sign-Up project's attendee list.
+        /// Sign-up mode is active when the supplied location and schedule are
+        /// one of the group's configured pairs, as when reached from a Sign-Up
+        /// project's attendee list. Unrelated ids do not qualify, because
+        /// sign-up mode extends edit rights to the SCHEDULE action.
         /// </summary>
-        private bool IsSignUpMode => LocationId.ToIntSafe() > 0 && ScheduleId.ToIntSafe() > 0;
+        private bool IsSignUpMode
+        {
+            get
+            {
+                if ( !_isSignUpMode.HasValue )
+                {
+                    _isSignUpMode = GetIsSignUpMode();
+                }
+
+                return _isSignUpMode.Value;
+            }
+        }
 
         #endregion Properties
 
         #region Methods
+
+        /// <summary>
+        /// Determines whether the location and schedule page parameters name a
+        /// pair configured on the group being viewed. The group comes from the
+        /// member when one is identified, otherwise from the GroupId parameter.
+        /// </summary>
+        /// <returns><c>true</c> when the request targets a genuine sign-up occurrence.</returns>
+        private bool GetIsSignUpMode()
+        {
+            var locationId = LocationId ?? 0;
+            var scheduleId = ScheduleId ?? 0;
+
+            if ( locationId <= 0 || scheduleId <= 0 )
+            {
+                return false;
+            }
+
+            var allowIntegerIds = !PageCache.Layout.Site.DisablePredictableIds;
+            var groupMemberKey = PageParameter( PageParameterKey.GroupMemberId );
+            var groupId = groupMemberKey.IsNotNullOrWhiteSpace()
+                ? new GroupMemberService( RockContext ).GetSelect( groupMemberKey, m => ( int? ) m.GroupId, allowIntegerIds )
+                : null;
+
+            // Adding a member has no member yet, so the group parameter identifies the group.
+            if ( !groupId.HasValue )
+            {
+                var groupKey = PageParameter( PageParameterKey.GroupId );
+                groupId = groupKey.IsNotNullOrWhiteSpace()
+                    ? new GroupService( RockContext ).GetSelect( groupKey, g => ( int? ) g.Id, allowIntegerIds )
+                    : null;
+            }
+
+            if ( !groupId.HasValue )
+            {
+                return false;
+            }
+
+            return new GroupLocationService( RockContext )
+                .Queryable()
+                .Any( gl => gl.GroupId == groupId.Value
+                    && gl.LocationId == locationId
+                    && gl.Schedules.Any( s => s.Id == scheduleId ) );
+        }
 
         /// <summary>
         /// Returns the group's requirements, querying the database once per request and reusing the
@@ -291,6 +352,21 @@ namespace Rock.Blocks.Group
                 var box = new DetailBlockBox<GroupMemberBag, GroupMemberDetailOptionsBag>
                 {
                     ErrorMessage = GroupArchivedMessage
+                };
+
+                PrepareDetailBox( box, entity );
+
+                return box;
+            }
+
+            // Group VIEW gates the load as it does every block action and the Group Detail block; block security alone is not enough.
+            var isViewable = entity.Group.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson ) || IsAuthorizedToEdit( entity.Group );
+
+            if ( !isViewable )
+            {
+                var box = new DetailBlockBox<GroupMemberBag, GroupMemberDetailOptionsBag>
+                {
+                    ErrorMessage = EditModeMessage.NotAuthorizedToView( GroupMember.FriendlyTypeName )
                 };
 
                 PrepareDetailBox( box, entity );
@@ -2178,6 +2254,11 @@ namespace Rock.Blocks.Group
                 return ActionBadRequest( "Invalid request." );
             }
 
+            if ( !GetAttributeValue( AttributeKey.ShowMoveToOtherGroup ).AsBoolean( true ) )
+            {
+                return ActionBadRequest( "Moving group members is not enabled." );
+            }
+
             var groupMemberService = new GroupMemberService( RockContext );
             var groupMember = groupMemberService.Get( bag.GroupMemberIdKey, !PageCache.Layout.Site.DisablePredictableIds );
             EnsureGroupIsLoaded( groupMember );
@@ -2531,6 +2612,11 @@ namespace Rock.Blocks.Group
         [BlockAction]
         public BlockActionResult GetMoveGroupMemberOptions( string groupMemberIdKey, string destinationGroupIdKey )
         {
+            if ( !GetAttributeValue( AttributeKey.ShowMoveToOtherGroup ).AsBoolean( true ) )
+            {
+                return ActionBadRequest( "Moving group members is not enabled." );
+            }
+
             var entity = new GroupMemberService( RockContext ).Get( groupMemberIdKey, !PageCache.Layout.Site.DisablePredictableIds );
             EnsureGroupIsLoaded( entity );
 
@@ -2861,6 +2947,11 @@ namespace Rock.Blocks.Group
             if ( !IsAuthorizedToCommunicate( entity.Group ) )
             {
                 return ActionBadRequest( "Not authorized to communicate with this group member." );
+            }
+
+            if ( bag.IsSms && !GetAttributeValue( AttributeKey.EnableSMS ).AsBoolean( true ) )
+            {
+                return ActionBadRequest( "SMS communications are not enabled." );
             }
 
             return bag.IsSms
