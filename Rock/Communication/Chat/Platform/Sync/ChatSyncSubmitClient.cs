@@ -187,7 +187,7 @@ namespace Rock.Communication.Chat.Platform.Sync
                     return null;
                 }
 
-                var status = ChatSyncOutcomeMapper.ParseStatus( ( string ) body["status"] );
+                var status = ParseStatus( ( string ) body["status"] );
                 if ( !status.HasValue )
                 {
                     return null;
@@ -197,8 +197,7 @@ namespace Rock.Communication.Chat.Platform.Sync
                 {
                     SubmissionId = ReadGuid( body["submission_id"] ) ?? submissionId,
                     Status = status,
-                    ErrorCode = ( string ) body["error_code"],
-                    DrainedAt = ReadTime( body["drained_at"] )
+                    ErrorCode = ( string ) body["error_code"]
                 };
             }
         }
@@ -302,7 +301,7 @@ namespace Rock.Communication.Chat.Platform.Sync
             return new ChatSyncAcknowledgement
             {
                 SubmissionId = ReadGuid( body["submission_id"] ) ?? submissionId,
-                Status = ChatSyncOutcomeMapper.ParseStatus( ( string ) body["status"] ),
+                Status = ParseStatus( ( string ) body["status"] ),
                 ErrorCode = ReadErrorCode( body ),
                 HttpStatusCode = statusCode,
                 PreviousOutcome = ReadOutcome( body["previous_outcome"] as JObject ),
@@ -333,9 +332,8 @@ namespace Rock.Communication.Chat.Platform.Sync
             return new ChatSyncOutcome
             {
                 SubmissionId = ReadGuid( outcome["submission_id"] ) ?? Guid.Empty,
-                Status = ChatSyncOutcomeMapper.ParseStatus( ( string ) outcome["status"] ),
-                ErrorCode = ( string ) outcome["error_code"],
-                DrainedAt = ReadTime( outcome["drained_at"] )
+                Status = ParseStatus( ( string ) outcome["status"] ),
+                ErrorCode = ( string ) outcome["error_code"]
             };
         }
 
@@ -413,5 +411,119 @@ namespace Rock.Communication.Chat.Platform.Sync
         }
 
         #endregion Private Methods
+
+        #region What the platform said
+
+        internal enum ChatSyncSubmissionStatus
+        {
+            Accepted,
+
+            Refused,
+
+            Applied,
+
+            Failed
+        }
+
+        internal sealed class ChatSyncOutcome
+        {
+            public Guid SubmissionId { get; set; }
+
+            public ChatSyncSubmissionStatus? Status { get; set; }
+
+            public string ErrorCode { get; set; }
+        }
+
+        internal sealed class ChatSyncAcknowledgement
+        {
+            public Guid SubmissionId { get; set; }
+
+            public ChatSyncSubmissionStatus? Status { get; set; }
+
+            public string ErrorCode { get; set; }
+
+            public int? HttpStatusCode { get; set; }
+
+            public ChatSyncOutcome PreviousOutcome { get; set; }
+
+            public DateTimeOffset? SyncBackoffUntil { get; set; }
+
+            public string TransportDetail { get; set; }
+
+            public bool IsTransportFailure => !HttpStatusCode.HasValue;
+
+            public bool CarriesBackoffAdvice => !IsTransportFailure && Status.HasValue;
+
+            public static ChatSyncAcknowledgement Unreachable( Guid submissionId, string detail )
+            {
+                return new ChatSyncAcknowledgement
+                {
+                    SubmissionId = submissionId,
+                    TransportDetail = detail
+                };
+            }
+        }
+
+        internal sealed class ChatSyncPollBudget
+        {
+            public ChatSyncPollBudget( TimeSpan interval, int maxAttempts, TimeSpan duration )
+            {
+                Interval = interval;
+                MaxAttempts = maxAttempts;
+                Duration = duration;
+            }
+
+            public TimeSpan Interval { get; }
+
+            public int MaxAttempts { get; }
+
+            public TimeSpan Duration { get; }
+
+            public static ChatSyncPollBudget Manual
+            {
+                get { return new ChatSyncPollBudget( TimeSpan.FromSeconds( 3 ), 20, TimeSpan.FromSeconds( 60 ) ); }
+            }
+
+            public static ChatSyncPollBudget Scheduled
+            {
+                get { return new ChatSyncPollBudget( TimeSpan.FromSeconds( 5 ), 6, TimeSpan.FromSeconds( 30 ) ); }
+            }
+        }
+
+        public static bool IsJobSuccess( ChatSyncSubmissionStatus status )
+        {
+            switch ( status )
+            {
+                case ChatSyncSubmissionStatus.Accepted:
+                case ChatSyncSubmissionStatus.Applied:
+                    return true;
+                case ChatSyncSubmissionStatus.Refused:
+                case ChatSyncSubmissionStatus.Failed:
+                    return false;
+                default:
+                    throw new ArgumentOutOfRangeException( nameof( status ), status, "no run outcome is mapped for this recorded status" );
+            }
+        }
+        public static string WireValueFor( ChatSyncSubmissionStatus status )
+        {
+            return status.ToString().ToLowerInvariant();
+        }
+        public static ChatSyncSubmissionStatus? ParseStatus( string value )
+        {
+            if ( value.IsNullOrWhiteSpace() )
+            {
+                return null;
+            }
+            ChatSyncSubmissionStatus parsed;
+            if ( !Enum.TryParse( value, true, out parsed ) || !Enum.IsDefined( typeof( ChatSyncSubmissionStatus ), parsed ) )
+            {
+                return null;
+            }
+            // Enum.TryParse takes a number as well as a name, and a number is not a label the wire
+            // could ever have carried.
+            return WireValueFor( parsed ) == value.ToLowerInvariant() ? parsed : ( ChatSyncSubmissionStatus? ) null;
+        }
+
+        #endregion What the platform said
     }
 }

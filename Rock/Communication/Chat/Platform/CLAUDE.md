@@ -18,14 +18,18 @@ integration. It is not touched and not referenced from here.
 | Folder | Holds |
 |---|---|
 | `Session/` | Gating, enrolment and token minting for a person opening chat |
-| `Sync/` and `Sql/` | The projection, payload shaping, the submit client and its outcome |
+| `Sync/` and `Sql/` | The projection queries, payload shaping, the submit client and its outcome |
 | `LaneA/` | The immediate lane: save hooks record keys, a flush pushes them |
 | `Doors/` | Block action handlers that change Rock truth, such as creating a direct message or joining a channel |
 | `Configuration/` | The settings model, its cached parsed form, and secret handling |
 | `Contract/` | The vendored wire contract and its hash |
 
-Folders appear when a file needs them. The job classes live in `Rock/Jobs` with every other job,
-the blocks in `Rock.Blocks/Communication/Chat`, the bags in
+Folders appear when a file needs them. The job classes live in `Rock/Jobs` with every other job, and
+the scheduled sync keeps its whole run there rather than spread across this folder: whether the run
+happens, which queries it loads, reading the church, submitting, polling and what it reports. What
+stays here is what more than the job uses, or will.
+
+The blocks live in `Rock.Blocks/Communication/Chat`, the bags in
 `Rock.ViewModels/Blocks/Communication/Chat`, and the client in
 `Rock.JavaScript.Obsidian.Blocks/src/Communication/Chat`, each following the convention the root
 file already states.

@@ -24,6 +24,10 @@ using Newtonsoft.Json.Linq;
 
 using Rock.Communication.Chat.Platform.Contract;
 using Rock.Communication.Chat.Platform.Sync;
+using ChatSyncAcknowledgement = Rock.Communication.Chat.Platform.Sync.ChatSyncSubmitClient.ChatSyncAcknowledgement;
+using ChatSyncOutcome = Rock.Communication.Chat.Platform.Sync.ChatSyncSubmitClient.ChatSyncOutcome;
+using ChatSyncPollBudget = Rock.Communication.Chat.Platform.Sync.ChatSyncSubmitClient.ChatSyncPollBudget;
+using ChatSyncSubmissionStatus = Rock.Communication.Chat.Platform.Sync.ChatSyncSubmitClient.ChatSyncSubmissionStatus;
 
 namespace Rock.Tests.Communication.Chat.Platform.Sync
 {
@@ -31,11 +35,10 @@ namespace Rock.Tests.Communication.Chat.Platform.Sync
     /// What a recorded submission status means to the job that submitted it.
     /// </summary>
     /// <remarks>
-    /// Four statuses and two HTTP codes, paired by the platform rather than by Rock: accepted and
-    /// applied return 200, refused and failed return 422. The pairing is asserted here in full
-    /// because it is the whole of what a job run reports, and because a mapping written from the
-    /// two that are easy to remember leaves applied or failed falling through to whichever answer
-    /// the default arm gives.
+    /// Four statuses, two of which a job run reports as success. All four are asserted rather than
+    /// the two that are easy to remember, because a mapping written from those leaves applied or
+    /// failed falling through to whichever answer the default arm gives. The four are also held
+    /// against the platform's own published list, so neither side can add a fifth alone.
     /// </remarks>
     [TestClass]
     public class ChatSyncOutcomeTests
@@ -43,21 +46,12 @@ namespace Rock.Tests.Communication.Chat.Platform.Sync
         #region The four statuses
 
         [TestMethod]
-        public void HttpStatus_FollowsTheRecordedStatusAcrossAllFour()
-        {
-            Assert.AreEqual( 200, ChatSyncOutcomeMapper.HttpStatusFor( ChatSyncSubmissionStatus.Accepted ) );
-            Assert.AreEqual( 200, ChatSyncOutcomeMapper.HttpStatusFor( ChatSyncSubmissionStatus.Applied ) );
-            Assert.AreEqual( 422, ChatSyncOutcomeMapper.HttpStatusFor( ChatSyncSubmissionStatus.Refused ) );
-            Assert.AreEqual( 422, ChatSyncOutcomeMapper.HttpStatusFor( ChatSyncSubmissionStatus.Failed ) );
-        }
-
-        [TestMethod]
         public void JobSuccess_IsTheTwoStatusesThatReturnTwoHundred()
         {
-            Assert.IsTrue( ChatSyncOutcomeMapper.IsJobSuccess( ChatSyncSubmissionStatus.Accepted ) );
-            Assert.IsTrue( ChatSyncOutcomeMapper.IsJobSuccess( ChatSyncSubmissionStatus.Applied ) );
-            Assert.IsFalse( ChatSyncOutcomeMapper.IsJobSuccess( ChatSyncSubmissionStatus.Refused ) );
-            Assert.IsFalse( ChatSyncOutcomeMapper.IsJobSuccess( ChatSyncSubmissionStatus.Failed ) );
+            Assert.IsTrue( ChatSyncSubmitClient.IsJobSuccess( ChatSyncSubmissionStatus.Accepted ) );
+            Assert.IsTrue( ChatSyncSubmitClient.IsJobSuccess( ChatSyncSubmissionStatus.Applied ) );
+            Assert.IsFalse( ChatSyncSubmitClient.IsJobSuccess( ChatSyncSubmissionStatus.Refused ) );
+            Assert.IsFalse( ChatSyncSubmitClient.IsJobSuccess( ChatSyncSubmissionStatus.Failed ) );
         }
 
         /// <summary>
@@ -78,7 +72,7 @@ namespace Rock.Tests.Communication.Chat.Platform.Sync
 
             var mirrored = Enum.GetValues( typeof( ChatSyncSubmissionStatus ) )
                 .Cast<ChatSyncSubmissionStatus>()
-                .Select( ChatSyncOutcomeMapper.WireValueFor )
+                .Select( ChatSyncSubmitClient.WireValueFor )
                 .OrderBy( v => v )
                 .ToList();
 
@@ -89,9 +83,9 @@ namespace Rock.Tests.Communication.Chat.Platform.Sync
         [TestMethod]
         public void ParsingAStatusRockDoesNotKnow_ReportsNothingRatherThanGuessing()
         {
-            Assert.IsNull( ChatSyncOutcomeMapper.ParseStatus( "quarantined" ) );
-            Assert.IsNull( ChatSyncOutcomeMapper.ParseStatus( null ) );
-            Assert.AreEqual( ChatSyncSubmissionStatus.Applied, ChatSyncOutcomeMapper.ParseStatus( "applied" ) );
+            Assert.IsNull( ChatSyncSubmitClient.ParseStatus( "quarantined" ) );
+            Assert.IsNull( ChatSyncSubmitClient.ParseStatus( null ) );
+            Assert.AreEqual( ChatSyncSubmissionStatus.Applied, ChatSyncSubmitClient.ParseStatus( "applied" ) );
         }
 
         #endregion The four statuses
@@ -101,8 +95,8 @@ namespace Rock.Tests.Communication.Chat.Platform.Sync
         [TestMethod]
         public void AnAcknowledgementReportsSuccessFromItsStatus()
         {
-            Assert.IsTrue( Ack( ChatSyncSubmissionStatus.Accepted, 200 ).IsJobSuccess );
-            Assert.IsFalse( Ack( ChatSyncSubmissionStatus.Refused, 422 ).IsJobSuccess );
+            Assert.IsTrue( ChatSyncSubmitClient.IsJobSuccess( Ack( ChatSyncSubmissionStatus.Accepted, 200 ).Status.Value ) );
+            Assert.IsFalse( ChatSyncSubmitClient.IsJobSuccess( Ack( ChatSyncSubmissionStatus.Refused, 422 ).Status.Value ) );
         }
 
         /// <summary>
@@ -114,7 +108,7 @@ namespace Rock.Tests.Communication.Chat.Platform.Sync
         {
             var ack = ChatSyncAcknowledgement.Unreachable( Guid.NewGuid(), "the host could not be resolved" );
 
-            Assert.IsFalse( ack.IsJobSuccess );
+            Assert.IsFalse( ack.Status.HasValue, "an answer that never arrived cannot carry a status to succeed on" );
             Assert.IsTrue( ack.IsTransportFailure );
         }
 

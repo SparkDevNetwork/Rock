@@ -27,6 +27,10 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using Rock.Communication.Chat.Platform.Configuration;
 using Rock.Communication.Chat.Platform.Sync;
+using ChatSyncAcknowledgement = Rock.Communication.Chat.Platform.Sync.ChatSyncSubmitClient.ChatSyncAcknowledgement;
+using ChatSyncOutcome = Rock.Communication.Chat.Platform.Sync.ChatSyncSubmitClient.ChatSyncOutcome;
+using ChatSyncPollBudget = Rock.Communication.Chat.Platform.Sync.ChatSyncSubmitClient.ChatSyncPollBudget;
+using ChatSyncSubmissionStatus = Rock.Communication.Chat.Platform.Sync.ChatSyncSubmitClient.ChatSyncSubmissionStatus;
 
 namespace Rock.Tests.Communication.Chat.Platform.Sync
 {

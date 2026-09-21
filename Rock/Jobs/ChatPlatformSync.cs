@@ -34,6 +34,11 @@ using Rock.Communication.Chat.Platform.Sync;
 using Rock.Data;
 using Rock.Web.Cache;
 
+using ChatSyncAcknowledgement = Rock.Communication.Chat.Platform.Sync.ChatSyncSubmitClient.ChatSyncAcknowledgement;
+using ChatSyncOutcome = Rock.Communication.Chat.Platform.Sync.ChatSyncSubmitClient.ChatSyncOutcome;
+using ChatSyncPollBudget = Rock.Communication.Chat.Platform.Sync.ChatSyncSubmitClient.ChatSyncPollBudget;
+using ChatSyncSubmissionStatus = Rock.Communication.Chat.Platform.Sync.ChatSyncSubmitClient.ChatSyncSubmissionStatus;
+
 namespace Rock.Jobs
 {
     [DisplayName( "Chat Platform Sync" )]
@@ -51,12 +56,12 @@ namespace Rock.Jobs
         // The longest quiet stretch a schedule may leave before it is worth saying so. A design
         // bound on how stale the platform's picture of a church may get, not a measurement, and
         // provisional until the platform is measured at full scale.
-        private static readonly TimeSpan CadenceMaximum = TimeSpan.FromHours( 24 );
+        private static readonly TimeSpan MaximumScheduleGap = TimeSpan.FromHours( 24 );
 
         // How many fire times to look at. Enough to walk a weekly pattern round to its own repeat,
         // which is the longest shape that hides its gap; anything slower than weekly shows its gap
         // on the first step.
-        private const int CadenceSampleSize = 14;
+        private const int ScheduleSampleSize = 14;
 
         // How long the projection may take. Generous, because it reads the whole of a large
         // church's group membership and runs on that church's own server, and because the cost of
@@ -93,14 +98,14 @@ namespace Rock.Jobs
             // the difference.
             var now = DateTimeOffset.UtcNow;
 
-            // Carried whether or not the run goes ahead. A church whose cadence is too slow and
+            // Carried whether or not the run goes ahead. A church whose schedule is too slow and
             // whose platform is asking for quiet has two things wrong and should be told both.
-            var cadenceWarning = CadenceWarning( ServiceJob?.CronExpression, now );
+            var scheduleWarning = ScheduleWarning( ServiceJob?.CronExpression, now );
 
-            var skipMessage = BackoffSkipMessage( isManualRun, configuration.SyncBackoffUntil, now );
-            if ( skipMessage != null )
+            var skipReason = SkipReason( isManualRun, configuration.SyncBackoffUntil, now );
+            if ( skipReason != null )
             {
-                Result = Join( skipMessage, cadenceWarning );
+                Result = Join( skipReason, scheduleWarning );
                 return;
             }
 
@@ -110,7 +115,7 @@ namespace Rock.Jobs
                 outcome = Run( rockContext, configuration, isManualRun );
             }
 
-            Result = Join( outcome.Message, cadenceWarning );
+            Result = Join( outcome.Message, scheduleWarning );
 
             if ( outcome.IsFailure )
             {
@@ -137,7 +142,7 @@ namespace Rock.Jobs
         // advice about its own load, and it binds the schedule but not a person: someone who
         // pressed Sync Now is at a screen waiting for an answer, and the cost of letting them
         // through is one submission the platform would rather have had later.
-        internal static string BackoffSkipMessage( bool isManualRun, DateTimeOffset? backoffUntil, DateTimeOffset now )
+        internal static string SkipReason( bool isManualRun, DateTimeOffset? backoffUntil, DateTimeOffset now )
         {
             if ( isManualRun || !backoffUntil.HasValue || backoffUntil.Value <= now )
             {
@@ -156,18 +161,18 @@ namespace Rock.Jobs
         // compared against a moment wrong by the difference: honoured hours past its expiry, or
         // released hours early.
         [Obsolete( "Pass an instant, such as DateTimeOffset.UtcNow. A DateTime is converted with this server's offset, which is not the organisation's, and the backoff is then compared against the wrong moment.", true )]
-        internal static string BackoffSkipMessage( bool isManualRun, DateTimeOffset? backoffUntil, DateTime now )
+        internal static string SkipReason( bool isManualRun, DateTimeOffset? backoffUntil, DateTime now )
         {
             throw new NotSupportedException( "a backoff cannot be judged against a wall-clock reading" );
         }
 
-        // What is worth saying about this schedule, or null where there is nothing. The cadence is
+        // What is worth saying about this schedule, or null where there is nothing. The schedule is
         // the church's own setting and is remarked on rather than corrected: nothing here writes to
         // the job.
-        internal static string CadenceWarning( string cronExpression, DateTimeOffset after )
+        internal static string ScheduleWarning( string cronExpression, DateTimeOffset after )
         {
             var longest = LongestGap( cronExpression, after );
-            if ( !longest.HasValue || longest.Value <= CadenceMaximum )
+            if ( !longest.HasValue || longest.Value <= MaximumScheduleGap )
             {
                 return null;
             }
@@ -212,7 +217,7 @@ namespace Rock.Jobs
             var previous = after;
             TimeSpan? longest = null;
 
-            for ( var step = 0; step < CadenceSampleSize; step++ )
+            for ( var step = 0; step < ScheduleSampleSize; step++ )
             {
                 var next = expression.GetNextValidTimeAfter( previous );
                 if ( !next.HasValue )
@@ -672,8 +677,8 @@ namespace Rock.Jobs
             {
                 return new RunResult
                 {
-                    IsFailure = !ChatSyncOutcomeMapper.IsJobSuccess( polled.Status.Value ),
-                    Message = "this restatement was " + ChatSyncOutcomeMapper.WireValueFor( polled.Status.Value )
+                    IsFailure = !ChatSyncSubmitClient.IsJobSuccess( polled.Status.Value ),
+                    Message = "this restatement was " + ChatSyncSubmitClient.WireValueFor( polled.Status.Value )
                         + Reason( polled.ErrorCode )
                 };
             }
@@ -683,10 +688,10 @@ namespace Rock.Jobs
             {
                 return new RunResult
                 {
-                    IsFailure = !ChatSyncOutcomeMapper.IsJobSuccess( previous.Status.Value ),
+                    IsFailure = !ChatSyncSubmitClient.IsJobSuccess( previous.Status.Value ),
                     Message = "this restatement was submitted, not yet applied. The previous submission, "
                         + previous.SubmissionId + ", was "
-                        + ChatSyncOutcomeMapper.WireValueFor( previous.Status.Value )
+                        + ChatSyncSubmitClient.WireValueFor( previous.Status.Value )
                         + Reason( previous.ErrorCode )
                 };
             }
@@ -706,14 +711,14 @@ namespace Rock.Jobs
 
         // The run's own sentence and the remark about its schedule, in that order, skipping
         // whichever is absent.
-        internal static string Join( string outcome, string cadenceWarning )
+        internal static string Join( string outcome, string scheduleWarning )
         {
-            if ( cadenceWarning.IsNullOrWhiteSpace() )
+            if ( scheduleWarning.IsNullOrWhiteSpace() )
             {
                 return outcome;
             }
 
-            return outcome.IsNullOrWhiteSpace() ? cadenceWarning : outcome + " " + cadenceWarning;
+            return outcome.IsNullOrWhiteSpace() ? scheduleWarning : outcome + " " + scheduleWarning;
         }
 
         internal sealed class RunResult
