@@ -16,7 +16,10 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Globalization;
+using System.Linq;
 
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
 namespace Rock.Communication.Chat.Platform.Sync
@@ -48,6 +51,22 @@ namespace Rock.Communication.Chat.Platform.Sync
     internal sealed class ChatSyncHeaderBuilder
     {
         #region Fields
+
+        /// <summary>
+        /// The contract entry naming the expected row count of each payload section.
+        /// </summary>
+        private const string RowCountsHeader = "x-sync-counts";
+
+        /// <summary>
+        /// The contract entry naming the identity high-water value of each table read.
+        /// </summary>
+        private const string IdentityMarksHeader = "x-sync-marks";
+
+        /// <summary>
+        /// A hundred nanoseconds is the smallest interval a tick counts and a microsecond is the
+        /// smallest the platform stores, so this is what has to be removed from a read time.
+        /// </summary>
+        private const long TicksPerMicrosecond = 10L;
 
         /// <summary>
         /// The parsed wire contract this builder reads its key sets from.
@@ -96,7 +115,47 @@ namespace Rock.Communication.Chat.Platform.Sync
         /// <returns>The section names.</returns>
         public IList<string> GetPayloadSections()
         {
-            throw new NotImplementedException();
+            var sections = _contract["payload"] == null ? null : _contract["payload"]["sections"];
+
+            if ( sections == null )
+            {
+                throw new InvalidOperationException( "the chat wire contract does not name the payload sections, so nothing here can key a submission" );
+            }
+
+            return sections.Select( s => s.Value<string>() ).ToList();
+        }
+
+        /// <summary>
+        /// Reads one header entry's key set out of the contract.
+        /// </summary>
+        /// <param name="headerName">The header the contract lists.</param>
+        /// <returns>The keys, in the order the contract happens to list them.</returns>
+        /// <remarks>
+        /// The order is incidental. Both sides of the platform's comparison sort, so it cannot
+        /// break a submission, and nothing here should come to depend on it.
+        /// </remarks>
+        private IList<string> GetHeaderKeys( string headerName )
+        {
+            var headers = _contract["submit_headers"];
+
+            if ( headers == null )
+            {
+                throw new InvalidOperationException( "the chat wire contract describes no submit headers" );
+            }
+
+            var header = headers.Children<JObject>().FirstOrDefault( h => h["name"] != null && h["name"].Value<string>() == headerName );
+
+            if ( header == null )
+            {
+                throw new InvalidOperationException( string.Format( "the chat wire contract describes no {0} header", headerName ) );
+            }
+
+            if ( header["keys"] == null )
+            {
+                throw new InvalidOperationException( string.Format( "the chat wire contract does not carry the key set of {0} as data, so this header could only be built from prose about it", headerName ) );
+            }
+
+            return header["keys"].Select( k => k.Value<string>() ).ToList();
         }
 
         /// <summary>
@@ -106,7 +165,44 @@ namespace Rock.Communication.Chat.Platform.Sync
         /// <returns>The header value.</returns>
         public string BuildRowCounts( IDictionary<string, int> rowCountsBySection )
         {
-            throw new NotImplementedException();
+            if ( rowCountsBySection == null )
+            {
+                throw new ArgumentNullException( "rowCountsBySection" );
+            }
+
+            var sections = GetPayloadSections();
+            var keys = GetHeaderKeys( RowCountsHeader );
+
+            // The platform builds these two lists from one constant, so a copy of the contract
+            // where they differ is a defect in the copy. Preferring either one would send a header
+            // built from a guess and leave the disagreement to be found as a refusal.
+            var disagreements = keys.Except( sections ).Concat( sections.Except( keys ) ).ToList();
+
+            if ( disagreements.Any() )
+            {
+                throw new InvalidOperationException( string.Format(
+                    "the chat wire contract's row-count keys and payload sections disagree about {0}",
+                    string.Join( ", ", disagreements ) ) );
+            }
+
+            var header = new JObject();
+
+            foreach ( var key in keys )
+            {
+                int rowCount;
+
+                // A section with no count is a projection that did not run. Sending it as zero
+                // would be indistinguishable from a church that genuinely has none of that row,
+                // and the platform would apply the emptiness as truth.
+                if ( !rowCountsBySection.TryGetValue( key, out rowCount ) )
+                {
+                    throw new InvalidOperationException( string.Format( "no row count was taken for the {0} section", key ) );
+                }
+
+                header[key] = rowCount;
+            }
+
+            return header.ToString( Formatting.None );
         }
 
         /// <summary>
@@ -116,7 +212,52 @@ namespace Rock.Communication.Chat.Platform.Sync
         /// <returns>The header value.</returns>
         public string BuildIdentityMarks( ChatSyncIdentityMarks marks )
         {
-            throw new NotImplementedException();
+            if ( marks == null )
+            {
+                throw new ArgumentNullException( "marks" );
+            }
+
+            var keys = GetHeaderKeys( IdentityMarksHeader );
+
+            // Which table each key names is the one part of this that has to live here, because
+            // the contract describes a wire and never names a table in Rock. What the contract
+            // decides is which keys have to be present, and the two checks below are what turn a
+            // contract this assembly has fallen behind into a build failure rather than a refusal
+            // at the platform on every cycle under a code that points at no file.
+            var valuesByKey = new Dictionary<string, long>
+            {
+                { "person", marks.Person },
+                { "person_alias", marks.PersonAlias },
+                { "group", marks.Group },
+                { "group_member", marks.GroupMember }
+            };
+
+            var unsupplied = keys.Except( valuesByKey.Keys ).ToList();
+
+            if ( unsupplied.Any() )
+            {
+                throw new InvalidOperationException( string.Format(
+                    "the chat wire contract asks for the identity mark {0}, which nothing here reads",
+                    string.Join( ", ", unsupplied ) ) );
+            }
+
+            var unlisted = valuesByKey.Keys.Except( keys ).ToList();
+
+            if ( unlisted.Any() )
+            {
+                throw new InvalidOperationException( string.Format(
+                    "the chat wire contract no longer lists the identity mark {0}, which this assembly still reads",
+                    string.Join( ", ", unlisted ) ) );
+            }
+
+            var header = new JObject();
+
+            foreach ( var key in keys )
+            {
+                header[key] = valuesByKey[key];
+            }
+
+            return header.ToString( Formatting.None );
         }
 
         /// <summary>
@@ -126,7 +267,20 @@ namespace Rock.Communication.Chat.Platform.Sync
         /// <returns>The header value.</returns>
         public static string FormatReadTime( DateTime readAtUtc )
         {
-            throw new NotImplementedException();
+            if ( readAtUtc.Kind != DateTimeKind.Utc )
+            {
+                throw new ArgumentException( "the read time a payload is judged by has to be taken in UTC, because it is compared against times the platform holds in UTC", "readAtUtc" );
+            }
+
+            // Truncated rather than rounded, and towards the past. The guard this value feeds
+            // refuses a row whose stored time is not strictly older, so a value rounded up by the
+            // fraction of a microsecond the platform cannot hold would let a stale write win a
+            // comparison built to fail closed.
+            var truncated = new DateTime( readAtUtc.Ticks - ( readAtUtc.Ticks % TicksPerMicrosecond ), DateTimeKind.Utc );
+
+            // The offset is explicit because a time without one is read in the receiving session's
+            // own zone rather than in the zone it was taken in.
+            return truncated.ToString( "yyyy-MM-ddTHH:mm:ss.ffffff'Z'", CultureInfo.InvariantCulture );
         }
 
         #endregion
