@@ -226,12 +226,31 @@ namespace Rock.Blocks.Event
             var entityTypeId = EntityTypeCache.Get<EventItemOccurrence>( false )?.Id;
             var eventItem = GetEventItem();
 
-            if ( entityTypeId.HasValue && eventItem != null )
+            if ( !entityTypeId.HasValue || eventItem == null )
             {
-                return AttributeCache.GetOrderedGridAttributes( entityTypeId, "EventItemId", eventItem.Id.ToString() );
+                return new List<AttributeCache>();
             }
 
-            return new List<AttributeCache>();
+            /*
+                9/21/26 - MSE
+
+                Show both unqualified Event Item Occurrence attributes and attributes
+                qualified to this event. The list used to request only the EventItemId
+                qualifier, so global "Show in Grid" columns never made it into the grid.
+                Columns are de-duplicated by key because the grid field name is attr_{Key}.
+
+                Reason: Restore unqualified occurrence attribute columns. (Fixes #7053)
+            */
+            var attributes = AttributeCache.GetOrderedGridAttributes( entityTypeId, string.Empty, string.Empty );
+            attributes.AddRange( AttributeCache.GetOrderedGridAttributes( entityTypeId, "EventItemId", eventItem.Id.ToString() ) );
+
+            return attributes
+                .OrderBy( a => a.Order )
+                .ThenBy( a => a.Name )
+                .ThenBy( a => a.Id )
+                .GroupBy( a => a.Key )
+                .Select( group => group.First() )
+                .ToList();
         }
 
         /// <summary>
