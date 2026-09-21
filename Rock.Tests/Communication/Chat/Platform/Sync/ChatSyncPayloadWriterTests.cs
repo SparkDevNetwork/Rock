@@ -310,7 +310,9 @@ namespace Rock.Tests.Communication.Chat.Platform.Sync
                 writer.EndSection();
             }
 
-            var written = JObject.Parse( text.ToString() + "}" ).Value<JArray>( "aliases" );
+            // The writer closes the containers it opened when it is disposed, so the text is
+            // already a whole object by the time it is read back here.
+            var written = JObject.Parse( text.ToString() ).Value<JArray>( "aliases" );
             var element = written[0][6];
 
             Assert.AreEqual( JTokenType.Array, element.Type, "the badge keys were not written as an array, so every person arrives with none and nothing reports it" );
