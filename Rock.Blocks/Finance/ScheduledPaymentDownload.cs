@@ -75,8 +75,8 @@ namespace Rock.Blocks.Finance
     #endregion Block Attributes
 
     [Rock.SystemGuid.EntityTypeGuid( "0F725C1F-B32D-4FBE-8011-892415FCBAF4" )]
-    // WAS [Rock.SystemGuid.BlockTypeGuid( "71FF09C3-3E50-4E97-9329-3CD57AACCA53" )]
-    [Rock.SystemGuid.BlockTypeGuid( "EF56215C-111B-4B12-BD13-213C06ED3B75" )]
+    // WAS [Rock.SystemGuid.BlockTypeGuid( "EF56215C-111B-4B12-BD13-213C06ED3B75" )]
+    [Rock.SystemGuid.BlockTypeGuid( "71FF09C3-3E50-4E97-9329-3CD57AACCA53" )]
     public class ScheduledPaymentDownload : RockBlockType
     {
         #region Keys
