@@ -162,14 +162,14 @@ namespace Rock.Blocks.Finance
 
             var financialGateway = GetSelectedGateway( bag.FinancialGatewayGuid );
 
-            if ( financialGateway == null )
+            if ( financialGateway == null || !financialGateway.IsActive )
             {
                 return ActionBadRequest( "Please select a valid Payment Gateway!" );
             }
 
             var gatewayComponent = financialGateway.GetGatewayComponent();
 
-            if ( gatewayComponent == null )
+            if ( gatewayComponent == null || !gatewayComponent.IsActive )
             {
                 return ActionBadRequest( "Selected Payment Gateway does not have a valid payment processor!" );
             }
@@ -188,10 +188,11 @@ namespace Rock.Blocks.Finance
 
             var resultSummary = FinancialScheduledTransactionService.ProcessPayments( financialGateway, batchNamePrefix, payments, GetBatchUrlFormat(), receiptEmail, failedPaymentEmail, failedPaymentWorkflowType );
 
+            // The summary embeds gateway-supplied ids, so strip any script content before it is rendered as HTML.
             return ActionOk( new DownloadTransactionsResultBag
             {
                 SummaryHtml = resultSummary.IsNotNullOrWhiteSpace()
-                    ? $"<ul>{resultSummary}</ul>"
+                    ? $"<ul>{resultSummary}</ul>".SanitizeHtml( strict: false )
                     : "There were not any transactions downloaded."
             } );
         }

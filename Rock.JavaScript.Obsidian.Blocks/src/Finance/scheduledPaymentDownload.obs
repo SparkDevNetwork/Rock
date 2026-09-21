@@ -31,9 +31,9 @@
                 <div class="download-summary" v-html="successMessage"></div>
             </NotificationBox>
 
-            <NotificationBox v-if="errorMessage"
-                             alertType="danger"
-                             v-html="errorMessage" />
+            <NotificationBox v-if="errorMessage" alertType="danger">
+                {{ errorMessage }}
+            </NotificationBox>
         </RockForm>
     </Panel>
 </template>
