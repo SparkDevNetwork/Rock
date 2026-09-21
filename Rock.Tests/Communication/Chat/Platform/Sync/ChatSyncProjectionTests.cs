@@ -152,7 +152,12 @@ namespace Rock.Tests.Communication.Chat.Platform.Sync
 
             for ( var i = 0; i < sections.Length; i++ )
             {
-                var expected = contract["tables"][i]["columns"].Select( c => c.Value<string>() ).ToArray();
+                var expected = contract["tables"][i]["columns"]
+                    .Select( c => c.Value<string>() )
+                    .SelectMany( DerivedFrom )
+                    .Distinct()
+                    .ToArray();
+
                 var actual = ChatSyncProjection.GetSectionColumns( sections[i] ).ToArray();
 
                 CollectionAssert.AreEqual(
@@ -160,6 +165,30 @@ namespace Rock.Tests.Communication.Chat.Platform.Sync
                     actual,
                     string.Format( "the {0} section does not return the columns of {1} in the contract's order", sections[i], contract["tables"][i]["name"].Value<string>() ) );
             }
+        }
+
+        /// <summary>
+        /// What a query has to return in order for a wire column to be built from it.
+        /// </summary>
+        /// <param name="wireColumn">The column the wire carries.</param>
+        /// <returns>The column the query returns in its place.</returns>
+        /// <remarks>
+        /// Exactly one wire column is not read straight out of Rock. The wire carries a background
+        /// and a foreground colour for a badge and Rock holds a single highlight, so the query
+        /// returns the highlight and the pair is worked out from it before it is sent, which is what
+        /// keeps that decision in one place rather than in every client that renders a badge.
+        ///
+        /// It is written here as a mapping rather than as an exemption so that a second derivation
+        /// added later has to be declared, instead of the order check quietly having a hole in it.
+        /// </remarks>
+        private static string[] DerivedFrom( string wireColumn )
+        {
+            if ( wireColumn == "bg_color" || wireColumn == "fg_color" )
+            {
+                return new[] { "highlight_color" };
+            }
+
+            return new[] { wireColumn };
         }
 
         /// <summary>
