@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -103,6 +103,15 @@ namespace Rock.Communication.Chat.Platform.Sync
         public static string GetStagingSql()
         {
             return ReadSql( "ChatSyncStage.sql" );
+        }
+
+        /// <summary>
+        /// The statement that marks the groups that are chat channels right now.
+        /// </summary>
+        /// <returns>The statement text.</returns>
+        public static string GetStampSql()
+        {
+            return ReadSql( "ChatSyncStampChannels.sql" );
         }
 
         /// <summary>

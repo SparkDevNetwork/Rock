@@ -57,6 +57,51 @@ namespace Rock.Tests.Communication.Chat.Platform.Sync
         #region One definition of a chat channel
 
         /// <summary>
+        /// The half of the rule that says a group is a chat channel right now is written once and
+        /// used twice: the staging query adds the groups that ever were, and the stamp marks the
+        /// ones that are. The two would drift silently, because a group missing its stamp is still
+        /// projected by the live half of the staging predicate and nothing looks wrong until chat is
+        /// turned off and the conversation is not archived.
+        /// </summary>
+        /// <remarks>
+        /// Written out here rather than extracted from one of the files, so that changing either
+        /// file turns this red and changing both means saying so in a third place.
+        /// </remarks>
+        [TestMethod]
+        public void TheStampAndTheStagingQueryAgreeOnWhatQualifiesRightNow()
+        {
+            const string liveQualification =
+                "[GT].[IsChatAllowed] = 1 AND COALESCE( [G].[IsChatEnabledOverride], [GT].[IsChatEnabledForAllGroups] ) = 1";
+
+            StringAssert.Contains( Flatten( ChatSyncProjection.GetStagingSql() ), liveQualification,
+                "the staging query no longer reads the rule this stamp is written against" );
+            StringAssert.Contains( Flatten( ChatSyncProjection.GetStampSql() ), liveQualification,
+                "the stamp marks a different set of groups than the projection reads" );
+        }
+
+        /// <summary>
+        /// The stamp writes the marker rather than reading it: a stamp filtered by the marker
+        /// being absent is right, and one that qualified on the marker being present would only
+        /// ever re-stamp groups that already had one.
+        /// </summary>
+        [TestMethod]
+        public void TheStampWritesTheMarkerAndOnlyWhereThereIsNotOneAlready()
+        {
+            var sql = Flatten( ChatSyncProjection.GetStampSql() );
+
+            StringAssert.Contains( sql, "UPDATE" );
+            StringAssert.Contains( sql, "[ChatChannelFirstEnabledDateTime] IS NULL" );
+        }
+
+        /// <summary>
+        /// Collapses whitespace so the two files may be laid out as their own readability wants.
+        /// </summary>
+        private static string Flatten( string sql )
+        {
+            return System.Text.RegularExpressions.Regex.Replace( sql, @"\s+", " " );
+        }
+
+        /// <summary>
         /// Every query the projection needs is present and not empty.
         /// </summary>
         [TestMethod]
