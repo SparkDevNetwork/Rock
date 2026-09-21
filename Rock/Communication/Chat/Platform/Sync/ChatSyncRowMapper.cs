@@ -23,58 +23,18 @@ using Newtonsoft.Json.Linq;
 
 namespace Rock.Communication.Chat.Platform.Sync
 {
-    /// <summary>
-    /// Turns a row as Rock returns it into a row as the wire carries it.
-    /// </summary>
-    /// <remarks>
-    /// <para>
-    /// Most columns cross unchanged. Three do not, and each of them is a place where sending the
-    /// value as Rock holds it would be accepted by the far side and be wrong.
-    /// </para>
-    /// <para>
-    /// The badge keys come back joined into one string, because a query cannot return a list in a
-    /// single column, and the column they land in holds a list. A string arriving there is read as
-    /// no badges at all, on a submission that is otherwise accepted, with nothing reporting it.
-    /// </para>
-    /// <para>
-    /// The ban expiry comes back in the organisation's own time zone, as Rock stores every time.
-    /// The far side reads a time with no zone as UTC, so sending it unchanged makes it wrong by
-    /// this church's offset, and for a church behind UTC that lifts the ban early.
-    /// </para>
-    /// <para>
-    /// The badge colours are a pair on the wire and one value in Rock. Deciding which foreground
-    /// reads against which background is done once here rather than in each client, so the same
-    /// badge does not come out differently on the web and on a phone.
-    /// </para>
-    /// <para>
-    /// Nothing here is addressed by position. The values are matched by the name the query gave
-    /// them and emitted in the order the contract lists, so neither this file nor the queries carry
-    /// a column index that the other one has to agree with.
-    /// </para>
-    /// </remarks>
     internal sealed class ChatSyncRowMapper
     {
         #region Fields
 
-        /// <summary>
-        /// The parsed wire contract, which decides the order values are emitted in.
-        /// </summary>
         private readonly JObject _contract;
 
-        /// <summary>
-        /// The zone Rock's stored times are in.
-        /// </summary>
         private readonly TimeZoneInfo _organizationTimeZone;
 
         #endregion
 
         #region Constructors
 
-        /// <summary>
-        /// Maps rows for one church.
-        /// </summary>
-        /// <param name="contract">The parsed wire contract.</param>
-        /// <param name="organizationTimeZone">The zone Rock's stored times are in.</param>
         public ChatSyncRowMapper( JObject contract, TimeZoneInfo organizationTimeZone )
         {
             if ( contract == null )
@@ -95,13 +55,6 @@ namespace Rock.Communication.Chat.Platform.Sync
 
         #region Methods
 
-        /// <summary>
-        /// Maps one row of a section.
-        /// </summary>
-        /// <param name="section">The payload section, as the contract names it.</param>
-        /// <param name="queryColumns">The names the query gave its columns, in the order it returned them.</param>
-        /// <param name="rawValues">The values the query returned, in the same order.</param>
-        /// <returns>The values the wire carries, in the order the contract lists them.</returns>
         public IList<object> Map( string section, IList<string> queryColumns, IList<object> rawValues )
         {
             if ( queryColumns == null )
@@ -133,13 +86,6 @@ namespace Rock.Communication.Chat.Platform.Sync
             return GetWireColumns( section ).Select( c => ReadWireColumn( section, c, byName ) ).ToList();
         }
 
-        /// <summary>
-        /// The one value a wire column carries.
-        /// </summary>
-        /// <param name="section">The payload section, for the failure message.</param>
-        /// <param name="wireColumn">The wire column.</param>
-        /// <param name="byName">What the query returned, keyed by the name it gave each column.</param>
-        /// <returns>The value.</returns>
         private object ReadWireColumn( string section, string wireColumn, IDictionary<string, object> byName )
         {
             if ( wireColumn == "badge_keys" )
@@ -165,19 +111,6 @@ namespace Rock.Communication.Chat.Platform.Sync
             return Require( section, wireColumn, wireColumn, byName );
         }
 
-        /// <summary>
-        /// Reads the query column a wire column is built from, refusing to invent one.
-        /// </summary>
-        /// <param name="section">The payload section.</param>
-        /// <param name="wireColumn">The wire column being built.</param>
-        /// <param name="queryColumn">The query column it is built from.</param>
-        /// <param name="byName">What the query returned.</param>
-        /// <returns>The value.</returns>
-        /// <remarks>
-        /// Filling a missing column with null would keep the row the right width and leave every
-        /// other value in its correct place, so the payload would be accepted and that one column
-        /// would be empty for every row of every church, with nothing anywhere reporting it.
-        /// </remarks>
         private static object Require( string section, string wireColumn, string queryColumn, IDictionary<string, object> byName )
         {
             object value;
@@ -194,11 +127,6 @@ namespace Rock.Communication.Chat.Platform.Sync
             return value;
         }
 
-        /// <summary>
-        /// The wire columns of a section, in the order the contract lists them.
-        /// </summary>
-        /// <param name="section">The payload section.</param>
-        /// <returns>The column names.</returns>
         private IList<string> GetWireColumns( string section )
         {
             var sections = _contract["payload"]["sections"].Select( s => s.Value<string>() ).ToList();
@@ -212,21 +140,11 @@ namespace Rock.Communication.Chat.Platform.Sync
             return _contract["tables"][position]["columns"].Select( c => c.Value<string>() ).ToList();
         }
 
-        /// <summary>
-        /// Turns the absence a data reader reports into the absence the rest of this understands.
-        /// </summary>
-        /// <param name="value">The value as it was read.</param>
-        /// <returns>The value, or null.</returns>
         private static object Normalize( object value )
         {
             return value == DBNull.Value ? null : value;
         }
 
-        /// <summary>
-        /// Moves a stored time onto the clock the far side reads it with.
-        /// </summary>
-        /// <param name="value">The time as Rock stores it.</param>
-        /// <returns>The same instant, in UTC.</returns>
         private object ReadTime( object value )
         {
             if ( value == null )
@@ -249,11 +167,6 @@ namespace Rock.Communication.Chat.Platform.Sync
             return TimeZoneInfo.ConvertTimeToUtc( unspecified, _organizationTimeZone );
         }
 
-        /// <summary>
-        /// Splits the joined badge keys into the list the wire carries.
-        /// </summary>
-        /// <param name="joined">The keys as the query returned them.</param>
-        /// <returns>The keys.</returns>
         public static IList<Guid> ReadBadgeKeys( object joined )
         {
             var text = Normalize( joined ) as string;
@@ -291,11 +204,6 @@ namespace Rock.Communication.Chat.Platform.Sync
             return keys;
         }
 
-        /// <summary>
-        /// Works out the colour pair a badge is drawn with.
-        /// </summary>
-        /// <param name="highlightColor">The colour the church configured, in whatever form.</param>
-        /// <returns>The background and the foreground, both null when the colour cannot be read.</returns>
         public static Tuple<string, string> ReadBadgeColors( object highlightColor )
         {
             var text = ( Normalize( highlightColor ) as string ?? string.Empty ).Trim();
@@ -339,28 +247,11 @@ namespace Rock.Communication.Chat.Platform.Sync
             return Tuple.Create( "#" + digits.ToLowerInvariant(), foreground );
         }
 
-        /// <summary>
-        /// How bright a colour is to the eye, on the scale the accessibility contrast ratio uses.
-        /// </summary>
-        /// <param name="red">The red channel, 0 to 255.</param>
-        /// <param name="green">The green channel, 0 to 255.</param>
-        /// <param name="blue">The blue channel, 0 to 255.</param>
-        /// <returns>The relative luminance, 0 for black and 1 for white.</returns>
-        /// <remarks>
-        /// The channels are straightened out of the curve a display applies before they are weighed,
-        /// and green counts for far more than blue, which is why a saturated blue reads as dark and
-        /// a saturated yellow reads as light even though both are equally far from grey.
-        /// </remarks>
         private static double RelativeLuminance( int red, int green, int blue )
         {
             return ( 0.2126 * Straighten( red ) ) + ( 0.7152 * Straighten( green ) ) + ( 0.0722 * Straighten( blue ) );
         }
 
-        /// <summary>
-        /// Takes one channel out of the curve a display applies to it.
-        /// </summary>
-        /// <param name="channel">The channel, 0 to 255.</param>
-        /// <returns>The straightened value, 0 to 1.</returns>
         private static double Straighten( int channel )
         {
             var value = channel / 255.0;

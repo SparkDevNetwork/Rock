@@ -25,62 +25,22 @@ using Newtonsoft.Json.Linq;
 
 namespace Rock.Communication.Chat.Platform.Sync
 {
-    /// <summary>
-    /// Writes the body of a submission: one object keyed by the payload's section names, each
-    /// holding that section's rows as positional arrays.
-    /// </summary>
-    /// <remarks>
-    /// <para>
-    /// Rows go over the wire as arrays of values rather than as named fields, which halves the
-    /// bytes and makes the column order something both sides have to agree about. This writer does
-    /// not choose the order: the projection selects its columns in the order the contract lists
-    /// them and this writes them out in the order it is handed them. What it does enforce is the
-    /// width, because a row one value short shifts every later value one place and the only other
-    /// thing that could notice is a type mismatch that may never happen.
-    /// </para>
-    /// <para>
-    /// It writes as it goes rather than building a document and serializing it at the end. The
-    /// largest church measured restates in about ten megabytes and the platform's bound is
-    /// thirty-two, so holding the whole body as objects and then again as text is tens of megabytes
-    /// of large-object heap for nothing. Streaming is also what makes the row counts honest: they
-    /// are a tally of what was actually written, so a read that stopped early is short in both the
-    /// body and the count, and a body truncated after this point disagrees with a count that was
-    /// already taken.
-    /// </para>
-    /// </remarks>
     internal sealed class ChatSyncPayloadWriter : IDisposable
     {
         #region Fields
 
-        /// <summary>
-        /// The parsed wire contract, which decides the section names and each section's width.
-        /// </summary>
         private readonly JObject _contract;
 
-        /// <summary>
-        /// The writer the body is streamed to.
-        /// </summary>
         private readonly JsonWriter _writer;
 
-        /// <summary>
-        /// How many rows have been written to each section.
-        /// </summary>
         private readonly Dictionary<string, int> _rowCounts = new Dictionary<string, int>();
 
-        /// <summary>
-        /// The section currently open, or null between sections.
-        /// </summary>
         private string _openSection;
 
         #endregion
 
         #region Constructors
 
-        /// <summary>
-        /// Writes a body to the supplied writer.
-        /// </summary>
-        /// <param name="contract">The parsed wire contract.</param>
-        /// <param name="writer">Where the body is written.</param>
         public ChatSyncPayloadWriter( JObject contract, JsonWriter writer )
         {
             if ( contract == null )
@@ -103,9 +63,6 @@ namespace Rock.Communication.Chat.Platform.Sync
 
         #region Properties
 
-        /// <summary>
-        /// How many rows were written to each section, which is what the row-count header carries.
-        /// </summary>
         public IDictionary<string, int> RowCounts
         {
             get { return _rowCounts; }
@@ -115,11 +72,6 @@ namespace Rock.Communication.Chat.Platform.Sync
 
         #region Methods
 
-        /// <summary>
-        /// How many values a row of a section carries.
-        /// </summary>
-        /// <param name="section">The payload section.</param>
-        /// <returns>The column count.</returns>
         public int GetRowWidth( string section )
         {
             var sections = GetSections();
@@ -142,10 +94,6 @@ namespace Rock.Communication.Chat.Platform.Sync
             return tables[position]["columns"].Count();
         }
 
-        /// <summary>
-        /// The payload's section names, in the order the contract lists them.
-        /// </summary>
-        /// <returns>The section names.</returns>
         private IList<string> GetSections()
         {
             var sections = _contract["payload"] == null ? null : _contract["payload"]["sections"];
@@ -158,10 +106,6 @@ namespace Rock.Communication.Chat.Platform.Sync
             return sections.Select( s => s.Value<string>() ).ToList();
         }
 
-        /// <summary>
-        /// Opens a section and begins its row array.
-        /// </summary>
-        /// <param name="section">The payload section.</param>
         public void BeginSection( string section )
         {
             if ( _openSection != null )
@@ -185,10 +129,6 @@ namespace Rock.Communication.Chat.Platform.Sync
             _writer.WriteStartArray();
         }
 
-        /// <summary>
-        /// Writes one row of the open section.
-        /// </summary>
-        /// <param name="values">The row's values, in the contract's column order.</param>
         public void WriteRow( IList<object> values )
         {
             if ( _openSection == null )
@@ -227,10 +167,6 @@ namespace Rock.Communication.Chat.Platform.Sync
             _rowCounts[_openSection] = _rowCounts[_openSection] + 1;
         }
 
-        /// <summary>
-        /// Writes one value in the form the platform parses it from.
-        /// </summary>
-        /// <param name="value">The value.</param>
         private void WriteValue( object value )
         {
             if ( value == null )
@@ -286,17 +222,6 @@ namespace Rock.Communication.Chat.Platform.Sync
                 value.GetType().Name ) );
         }
 
-        /// <summary>
-        /// Writes a time, refusing one whose zone is not known to be UTC.
-        /// </summary>
-        /// <param name="value">The time.</param>
-        /// <remarks>
-        /// Rock keeps times in the organisation's zone and the platform reads a time with no offset
-        /// in its own, which is UTC, so a value sent as stored is wrong by that church's offset. For
-        /// a church behind UTC a ban expiry sent that way lifts the ban early. Converting silently
-        /// here would hide which values were already right, so the caller converts and this refuses
-        /// what it cannot vouch for.
-        /// </remarks>
         private void WriteTime( DateTime value )
         {
             if ( value.Kind != DateTimeKind.Utc )
@@ -309,9 +234,6 @@ namespace Rock.Communication.Chat.Platform.Sync
             _writer.WriteValue( value.ToString( "yyyy-MM-ddTHH:mm:ss.ffffff'Z'", CultureInfo.InvariantCulture ) );
         }
 
-        /// <summary>
-        /// Closes the open section.
-        /// </summary>
         public void EndSection()
         {
             if ( _openSection == null )
@@ -323,10 +245,6 @@ namespace Rock.Communication.Chat.Platform.Sync
             _openSection = null;
         }
 
-        /// <summary>
-        /// Closes the body, which is only valid once every section the contract names has been
-        /// written.
-        /// </summary>
         public void Complete()
         {
             if ( _openSection != null )
@@ -348,9 +266,6 @@ namespace Rock.Communication.Chat.Platform.Sync
             _writer.WriteEndObject();
         }
 
-        /// <summary>
-        /// Releases the writer.
-        /// </summary>
         public void Dispose()
         {
             _writer.Close();

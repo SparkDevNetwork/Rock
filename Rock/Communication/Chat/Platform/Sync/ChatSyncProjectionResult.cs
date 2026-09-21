@@ -19,31 +19,14 @@ using System.Collections.Generic;
 
 namespace Rock.Communication.Chat.Platform.Sync
 {
-    /// <summary>
-    /// One reading of a church, ready to send.
-    /// </summary>
     internal sealed class ChatSyncProjectionResult
     {
-        /// <summary>
-        /// The whole restatement, as the wire carries it: UTF-8 text in the one buffer it was
-        /// written into. It is handed to the transport as it is rather than decoded and encoded
-        /// again, because a second copy of a large church's body is tens of megabytes for nothing.
-        /// </summary>
         public ArraySegment<byte> Payload { get; set; }
 
-        /// <summary>
-        /// How many rows each section actually carries, counted as they were written.
-        /// </summary>
         public IDictionary<string, int> RowCounts { get; set; }
 
-        /// <summary>
-        /// The moment this reading describes, taken before it began.
-        /// </summary>
         public DateTime ReadAtUtc { get; set; }
 
-        /// <summary>
-        /// The identity seeds of the tables it read.
-        /// </summary>
         public ChatSyncIdentityMarks Marks { get; set; }
     }
 }

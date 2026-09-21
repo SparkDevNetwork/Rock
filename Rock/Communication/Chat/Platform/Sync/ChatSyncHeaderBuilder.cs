@@ -24,104 +24,37 @@ using Newtonsoft.Json.Linq;
 
 namespace Rock.Communication.Chat.Platform.Sync
 {
-    /// <summary>
-    /// Builds the metadata a submission carries beside its body.
-    /// </summary>
-    /// <remarks>
-    /// <para>
-    /// Two of these values are dictionaries whose key sets the platform checks exactly, and those
-    /// key sets are read out of the wire contract rather than written here. They are the one part
-    /// of a submission that cannot be derived from the rest of the contract, and a copy of them
-    /// typed into this file would compile, pass every test that only reads it back, and be refused
-    /// at the platform on every cycle with nothing in this repository saying why.
-    /// </para>
-    /// <para>
-    /// The row-count keys are the short names of the payload's own sections, deliberately not the
-    /// four table names, which is why they are taken from the contract's header entry and checked
-    /// against the contract's section list rather than assumed to be either.
-    /// </para>
-    /// <para>
-    /// The mark keys name tables in Rock, and that correspondence has to live somewhere in this
-    /// assembly because the contract does not name Rock tables. What the contract decides is which
-    /// keys must be present: a key it lists and this builder cannot supply, or a key this builder
-    /// holds and the contract does not list, stops the submission here rather than being refused
-    /// later for a reason nobody can see. Key order is not part of either set and is not relied on.
-    /// </para>
-    /// </remarks>
     internal sealed class ChatSyncHeaderBuilder
     {
         #region Fields
 
-        /// <summary>
-        /// The contract entry naming the expected row count of each payload section.
-        /// </summary>
         private const string RowCountsHeader = "x-sync-counts";
 
-        /// <summary>
-        /// The contract entry naming the identity high-water value of each table read.
-        /// </summary>
         private const string IdentityMarksHeader = "x-sync-marks";
 
-        /// <summary>
-        /// The contract entry naming the moment every row of the payload is judged by.
-        /// </summary>
         private const string ReadTimeHeader = "x-sync-read-at";
 
-        /// <summary>
-        /// The contract entry naming the version of Rock that produced the payload.
-        /// </summary>
         private const string RockVersionHeader = "x-sync-rock-version";
 
-        /// <summary>
-        /// The contract entry carrying the hash of the column order the payload is in.
-        /// </summary>
         private const string ContractHeader = "x-sync-contract";
 
-        /// <summary>
-        /// The one optional entry, set for a run a person started and is waiting on.
-        /// </summary>
         private const string UrgentHeader = "x-sync-urgent";
 
-        /// <summary>
-        /// The idempotency key. The contract lists it as required, and it is the one header this
-        /// builder leaves to the transport, which sets it on every attempt of a submission so that a
-        /// retry cannot carry a different one.
-        /// </summary>
         private const string SubmissionIdHeader = "x-sync-submission-id";
 
-        /// <summary>
-        /// A hundred nanoseconds is the smallest interval a tick counts and a microsecond is the
-        /// smallest the platform stores, so this is what has to be removed from a read time.
-        /// </summary>
         private const long TicksPerMicrosecond = 10L;
 
-        /// <summary>
-        /// The parsed wire contract this builder reads its key sets from.
-        /// </summary>
         private readonly JObject _contract;
 
         #endregion
 
         #region Constructors
 
-        /// <summary>
-        /// Builds headers from the contract that ships in this assembly.
-        /// </summary>
         public ChatSyncHeaderBuilder()
             : this( JObject.Parse( Contract.ChatWireContract.Json ) )
         {
         }
 
-        /// <summary>
-        /// Builds headers from a supplied contract.
-        /// </summary>
-        /// <param name="contract">The parsed wire contract.</param>
-        /// <remarks>
-        /// Taking the contract rather than always reading the embedded one is what lets a test hand
-        /// this a contract whose key sets differ and require the headers to differ with them, which
-        /// is the only way to tell a builder that reads the contract from one that agrees with
-        /// itself.
-        /// </remarks>
         public ChatSyncHeaderBuilder( JObject contract )
         {
             if ( contract == null )
@@ -136,10 +69,6 @@ namespace Rock.Communication.Chat.Platform.Sync
 
         #region Methods
 
-        /// <summary>
-        /// The payload's section names, in the order the contract lists them.
-        /// </summary>
-        /// <returns>The section names.</returns>
         public IList<string> GetPayloadSections()
         {
             var sections = _contract["payload"] == null ? null : _contract["payload"]["sections"];
@@ -152,15 +81,6 @@ namespace Rock.Communication.Chat.Platform.Sync
             return sections.Select( s => s.Value<string>() ).ToList();
         }
 
-        /// <summary>
-        /// Reads one header entry's key set out of the contract.
-        /// </summary>
-        /// <param name="headerName">The header the contract lists.</param>
-        /// <returns>The keys, in the order the contract happens to list them.</returns>
-        /// <remarks>
-        /// The order is incidental. Both sides of the platform's comparison sort, so it cannot
-        /// break a submission, and nothing here should come to depend on it.
-        /// </remarks>
         private IList<string> GetHeaderKeys( string headerName )
         {
             var headers = _contract["submit_headers"];
@@ -185,11 +105,6 @@ namespace Rock.Communication.Chat.Platform.Sync
             return header["keys"].Select( k => k.Value<string>() ).ToList();
         }
 
-        /// <summary>
-        /// Builds the expected row count header.
-        /// </summary>
-        /// <param name="rowCountsBySection">How many rows each payload section carries.</param>
-        /// <returns>The header value.</returns>
         public string BuildRowCounts( IDictionary<string, int> rowCountsBySection )
         {
             if ( rowCountsBySection == null )
@@ -232,11 +147,6 @@ namespace Rock.Communication.Chat.Platform.Sync
             return header.ToString( Formatting.None );
         }
 
-        /// <summary>
-        /// Builds the identity high-water header.
-        /// </summary>
-        /// <param name="marks">The values read from Rock.</param>
-        /// <returns>The header value.</returns>
         public string BuildIdentityMarks( ChatSyncIdentityMarks marks )
         {
             if ( marks == null )
@@ -287,30 +197,6 @@ namespace Rock.Communication.Chat.Platform.Sync
             return header.ToString( Formatting.None );
         }
 
-        /// <summary>
-        /// Builds every header one submission carries beside its body, save the submission id.
-        /// </summary>
-        /// <param name="readAtUtc">The UTC time taken before the projection read.</param>
-        /// <param name="marks">The identity seeds read from Rock.</param>
-        /// <param name="rowCountsBySection">How many rows each payload section carries, tallied as they were written.</param>
-        /// <param name="rockVersion">The version of Rock producing the payload.</param>
-        /// <param name="isUrgent">Whether a person started this run and is waiting on it.</param>
-        /// <returns>The headers, keyed by name.</returns>
-        /// <remarks>
-        /// <para>
-        /// The contract hash goes out as the hash of the column lists this contract actually
-        /// carries, and the submission stops here when that differs from the hash the contract
-        /// publishes for itself. An artifact edited after it was generated is one whose column
-        /// order nobody agreed to, and the platform's compare would refuse it on every cycle under
-        /// a code that points at no file.
-        /// </para>
-        /// <para>
-        /// The set is then held against the contract's own header list: every header the contract
-        /// requires is present, other than the submission id which the transport sets, and nothing
-        /// is sent that the contract does not list. The urgent header is absent rather than false
-        /// on a scheduled run, because its absence is what ordinary priority looks like.
-        /// </para>
-        /// </remarks>
         public IDictionary<string, string> BuildSubmissionHeaders( DateTime readAtUtc, ChatSyncIdentityMarks marks, IDictionary<string, int> rowCountsBySection, string rockVersion, bool isUrgent )
         {
             if ( rockVersion.IsNullOrWhiteSpace() )
@@ -346,10 +232,6 @@ namespace Rock.Communication.Chat.Platform.Sync
             return headers;
         }
 
-        /// <summary>
-        /// Holds a built header set against the contract's own list of submit headers.
-        /// </summary>
-        /// <param name="headers">The headers as built.</param>
         private void RequireTheContractsHeaderSet( IDictionary<string, string> headers )
         {
             var listed = _contract["submit_headers"];
@@ -387,11 +269,6 @@ namespace Rock.Communication.Chat.Platform.Sync
             }
         }
 
-        /// <summary>
-        /// Formats the read time the whole payload is judged by.
-        /// </summary>
-        /// <param name="readAtUtc">The UTC time taken before the projection read.</param>
-        /// <returns>The header value.</returns>
         public static string FormatReadTime( DateTime readAtUtc )
         {
             if ( readAtUtc.Kind != DateTimeKind.Utc )

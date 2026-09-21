@@ -30,59 +30,22 @@ using Rock.Communication.Chat.Platform.Configuration;
 
 namespace Rock.Communication.Chat.Platform.Sync
 {
-    /// <summary>
-    /// Carries a restatement to the chat platform and brings back what happened to it.
-    /// </summary>
-    /// <remarks>
-    ///     <para>
-    ///         Nothing here throws at its caller over an answer. The platform records a refusal on
-    ///         its own history row and then sets the response status to say so, because the call
-    ///         runs in one transaction and raising would take the record back with it. A client
-    ///         that treated that status as an error would throw away the named reason sitting in
-    ///         the body and leave the church with a run that failed for nothing it can read.
-    ///     </para>
-    ///     <para>
-    ///         The submission id belongs to the caller and is used for every attempt. A request
-    ///         that times out may or may not have arrived, and the platform answers a repeated id
-    ///         with the outcome it already recorded; a fresh id would submit the same restatement
-    ///         twice and write two history rows for one cycle.
-    ///     </para>
-    /// </remarks>
     internal sealed class ChatSyncSubmitClient : IDisposable
     {
         #region Constants
 
-        /// <summary>
-        /// The submission surface. It takes the whole request body as one raw text value, which is
-        /// why the body is sent as text rather than as JSON: a JSON content type is parsed on the
-        /// way in and the function is never reached.
-        /// </summary>
         public const string SubmitPath = "/rest/v1/rpc/sync_submit";
 
-        /// <summary>
-        /// The surface a run reads its own outcome from.
-        /// </summary>
         public const string StatusPath = "/rest/v1/rpc/sync_status";
 
-        /// <summary>
-        /// How many times one submission is attempted before the run gives up on the transport.
-        /// An estimate, revisited when the platform is measured at full scale.
-        /// </summary>
         private const int DefaultTransportAttempts = 3;
 
-        /// <summary>
-        /// How long to wait between transport attempts. An estimate, as above.
-        /// </summary>
         private static readonly TimeSpan DefaultTransportRetryDelay = TimeSpan.FromSeconds( 2 );
 
         #endregion Constants
 
         #region Fields
 
-        /// <summary>
-        /// The idempotency key header. Set by this client rather than taken from a caller's
-        /// dictionary, so a retry cannot quietly carry a different one.
-        /// </summary>
         private const string SubmissionIdHeader = "x-sync-submission-id";
 
         private readonly ChatPlatformConfiguration _configuration;
@@ -95,12 +58,6 @@ namespace Rock.Communication.Chat.Platform.Sync
 
         #region Constructors
 
-        /// <summary>
-        /// Creates a client for one church.
-        /// </summary>
-        /// <param name="configuration">The church's chat settings.</param>
-        /// <param name="tokenFactory">Mints a sync-scope church token. Asked once per request rather than once per client, because a church token is short lived and a run can outlast one.</param>
-        /// <param name="handler">The transport, or null for the ordinary one.</param>
         public ChatSyncSubmitClient( ChatPlatformConfiguration configuration, Func<string> tokenFactory, HttpMessageHandler handler = null )
         {
             if ( configuration == null )
@@ -127,37 +84,18 @@ namespace Rock.Communication.Chat.Platform.Sync
 
         #region Properties
 
-        /// <summary>
-        /// How many times one submission is attempted before the run gives up on the transport.
-        /// </summary>
         public int TransportAttempts { get; set; }
 
-        /// <summary>
-        /// How long to wait between transport attempts.
-        /// </summary>
         public TimeSpan TransportRetryDelay { get; set; }
 
-        /// <summary>
-        /// How the client waits. Replaced where a caller does not want a real wait.
-        /// </summary>
         public Action<TimeSpan> Wait { get; set; }
 
-        /// <summary>
-        /// Where the client reads the time, for the elapsed half of a poll budget.
-        /// </summary>
         public Func<DateTime> Clock { get; set; }
 
         #endregion Properties
 
         #region Methods
 
-        /// <summary>
-        /// Submits one restatement and reads the acknowledgement, whatever status it arrives with.
-        /// </summary>
-        /// <param name="submissionId">The idempotency key for this submission, used for every attempt.</param>
-        /// <param name="payload">The body, already shaped, as the UTF-8 bytes it was written as.</param>
-        /// <param name="headers">The submission headers, built elsewhere.</param>
-        /// <returns>The acknowledgement. Never null, and never an exception.</returns>
         public ChatSyncAcknowledgement Submit( Guid submissionId, ArraySegment<byte> payload, IDictionary<string, string> headers )
         {
             var attempts = Math.Max( 1, TransportAttempts );
@@ -190,18 +128,6 @@ namespace Rock.Communication.Chat.Platform.Sync
             return ChatSyncAcknowledgement.Unreachable( submissionId, lastFailure );
         }
 
-        /// <summary>
-        /// Reads what became of a submission, waiting inside the budget for the queue to reach it.
-        /// </summary>
-        /// <param name="submissionId">The submission to read.</param>
-        /// <param name="budget">How long to keep asking.</param>
-        /// <returns>The outcome, or null where nothing readable came back at all.</returns>
-        /// <remarks>
-        /// An early read never errors: the platform commits the history row as accepted before the
-        /// queue ever sees the submission, so there is always something to read. Two bounds rather
-        /// than one, because a slow read would otherwise let a fixed number of tries run far past
-        /// the time the caller was willing to spend.
-        /// </remarks>
         public ChatSyncOutcome Poll( Guid submissionId, ChatSyncPollBudget budget )
         {
             var start = Clock();
@@ -239,11 +165,6 @@ namespace Rock.Communication.Chat.Platform.Sync
             }
         }
 
-        /// <summary>
-        /// Reads what became of a submission, once.
-        /// </summary>
-        /// <param name="submissionId">The submission to read.</param>
-        /// <returns>The outcome, or null where nothing readable came back.</returns>
         public ChatSyncOutcome ReadStatus( Guid submissionId )
         {
             HttpResponseMessage response;
@@ -282,7 +203,6 @@ namespace Rock.Communication.Chat.Platform.Sync
             }
         }
 
-        /// <inheritdoc />
         public void Dispose()
         {
             _httpClient.Dispose();
@@ -292,10 +212,6 @@ namespace Rock.Communication.Chat.Platform.Sync
 
         #region Private Methods
 
-        /// <summary>
-        /// Builds one submission request. Called once per attempt, because a request message cannot
-        /// be sent twice.
-        /// </summary>
         private HttpRequestMessage BuildSubmitRequest( Guid submissionId, ArraySegment<byte> payload, IDictionary<string, string> headers )
         {
             // Wrapped rather than copied. Every attempt sends the buffer the body was written into;
@@ -343,10 +259,6 @@ namespace Rock.Communication.Chat.Platform.Sync
             return request;
         }
 
-        /// <summary>
-        /// The two things every call to the project carries: the key the project is addressed with,
-        /// and the church token the call is made under.
-        /// </summary>
         private void AddCredentials( HttpRequestMessage request )
         {
             request.Headers.TryAddWithoutValidation( "apikey", _configuration.PublishableKey );
@@ -372,9 +284,6 @@ namespace Rock.Communication.Chat.Platform.Sync
             }
         }
 
-        /// <summary>
-        /// Reads the acknowledgement out of a response, for a refusal exactly as for an acceptance.
-        /// </summary>
         private ChatSyncAcknowledgement ReadAcknowledgement( Guid submissionId, HttpResponseMessage response )
         {
             var statusCode = ( int ) response.StatusCode;
@@ -401,11 +310,6 @@ namespace Rock.Communication.Chat.Platform.Sync
             };
         }
 
-        /// <summary>
-        /// The named reason, from either shape the project can answer with: the acknowledgement's
-        /// own field, or the error shape used by the four submissions that cannot own a history row
-        /// and therefore raise instead of returning.
-        /// </summary>
         private static string ReadErrorCode( JObject body )
         {
             var code = ( string ) body["error_code"];
@@ -435,14 +339,6 @@ namespace Rock.Communication.Chat.Platform.Sync
             };
         }
 
-        /// <summary>
-        /// Parses a response body, leaving every value as it was written.
-        /// </summary>
-        /// <remarks>
-        /// Dates are deliberately not parsed on the way in. The reader's own date handling would
-        /// turn a moment carrying an offset into a local time, which is the whole of what these
-        /// values are for.
-        /// </remarks>
         private static JObject ReadBody( HttpResponseMessage response )
         {
             string text;
@@ -500,9 +396,6 @@ namespace Rock.Communication.Chat.Platform.Sync
             return parsed;
         }
 
-        /// <summary>
-        /// Whether the queue has finished with this submission, one way or the other.
-        /// </summary>
         private static bool IsResolved( ChatSyncOutcome outcome )
         {
             return outcome.Status.HasValue && outcome.Status.Value != ChatSyncSubmissionStatus.Accepted;
