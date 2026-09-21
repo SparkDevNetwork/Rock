@@ -24,6 +24,7 @@ using Newtonsoft.Json.Linq;
 
 using Rock.Communication.Chat.Platform.Contract;
 using Rock.Communication.Chat.Platform.Sync;
+using Rock.Jobs;
 
 namespace Rock.Tests.Communication.Chat.Platform.Sync
 {
@@ -67,7 +68,7 @@ namespace Rock.Tests.Communication.Chat.Platform.Sync
         /// <returns>The column names and the values.</returns>
         private static Tuple<IList<string>, IList<object>> Row( string section, IDictionary<string, object> overrides )
         {
-            var columns = ChatSyncProjection.GetSectionColumns( section );
+            var columns = ChatSyncSqlText.SectionColumns( section );
             var values = columns
                 .Select( c => overrides != null && overrides.ContainsKey( c ) ? overrides[c] : null )
                 .ToList();

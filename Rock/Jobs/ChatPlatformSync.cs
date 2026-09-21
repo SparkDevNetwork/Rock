@@ -245,6 +245,55 @@ namespace Rock.Jobs
 
         #endregion Whether the run happens
 
+        #region The projection queries
+
+        internal static string GetStagingSql()
+        {
+            return ReadSql( "ChatSyncStage.sql" );
+        }
+
+        internal static string GetStampSql()
+        {
+            return ReadSql( "ChatSyncStampChannels.sql" );
+        }
+
+        internal static string GetSectionSql( string section )
+        {
+            switch ( section )
+            {
+                case "aliases":
+                    return ReadSql( "ChatSyncAliases.sql" );
+                case "channels":
+                    return ReadSql( "ChatSyncChannels.sql" );
+                case "members":
+                    return ReadSql( "ChatSyncMembers.sql" );
+                case "badges":
+                    return ReadSql( "ChatSyncBadges.sql" );
+                default:
+                    throw new InvalidOperationException( string.Format( "no chat projection query ships for the {0} section", section ?? "(none)" ) );
+            }
+        }
+
+        private static string ReadSql( string fileName )
+        {
+            var assembly = typeof( ChatPlatformSync ).Assembly;
+            var resourceName = assembly.GetManifestResourceNames()
+                .FirstOrDefault( n => n.EndsWith( "." + fileName, StringComparison.OrdinalIgnoreCase ) );
+
+            if ( resourceName == null )
+            {
+                throw new InvalidOperationException( string.Format( "the chat projection query {0} is not embedded in this assembly", fileName ) );
+            }
+
+            using ( var stream = assembly.GetManifestResourceStream( resourceName ) )
+            using ( var reader = new StreamReader( stream, Encoding.UTF8 ) )
+            {
+                return reader.ReadToEnd();
+            }
+        }
+
+        #endregion The projection queries
+
         #region The run
 
         // One whole restatement: mark the channels, read the church, send it, and find out what
@@ -331,7 +380,7 @@ namespace Rock.Jobs
         // batch. The staging query leaves its sets in temporary tables that live as long as that
         // batch, which is what stops a membership arriving in the same payload as neither the
         // channel nor the person it names.
-        internal static ChatSyncProjectionResult Project( RockContext rockContext, ChatPlatformConfiguration configuration )
+        internal static ProjectionResult Project( RockContext rockContext, ChatPlatformConfiguration configuration )
         {
             if ( rockContext == null )
             {
@@ -355,7 +404,7 @@ namespace Rock.Jobs
                     connection.Open();
                 }
 
-                var result = new ChatSyncProjectionResult
+                var result = new ProjectionResult
                 {
                     ReadAtUtc = ReadClock( connection, configuration ),
                     Marks = ReadIdentityMarks( connection, configuration )
@@ -382,7 +431,7 @@ namespace Rock.Jobs
         {
             rockContext.Database.CommandTimeout = ProjectionTimeoutSeconds;
             rockContext.Database.ExecuteSqlCommand(
-                ChatSyncProjection.GetStampSql(),
+                GetStampSql(),
                 new System.Data.SqlClient.SqlParameter( "@StampedAt", RockDateTime.Now ) );
         }
 
@@ -439,11 +488,11 @@ namespace Rock.Jobs
             var mapper = new ChatSyncRowMapper( contract, RockDateTime.OrgTimeZoneInfo );
 
             var sql = new StringBuilder();
-            sql.AppendLine( ChatSyncProjection.GetStagingSql() );
+            sql.AppendLine( GetStagingSql() );
 
             foreach ( var section in sections )
             {
-                sql.AppendLine( ChatSyncProjection.GetSectionSql( section ) );
+                sql.AppendLine( GetSectionSql( section ) );
             }
 
             // The body is encoded as it is written and handed on as the one buffer it was written
@@ -672,6 +721,19 @@ namespace Rock.Jobs
             public bool IsFailure { get; set; }
 
             public string Message { get; set; }
+        }
+
+        // One reading of the church: the bytes, what was counted into them, the moment they
+        // describe and the identity seeds taken at that moment.
+        internal sealed class ProjectionResult
+        {
+            public ArraySegment<byte> Payload { get; set; }
+
+            public IDictionary<string, int> RowCounts { get; set; }
+
+            public DateTime ReadAtUtc { get; set; }
+
+            public ChatSyncIdentityMarks Marks { get; set; }
         }
 
         #endregion What the run reports

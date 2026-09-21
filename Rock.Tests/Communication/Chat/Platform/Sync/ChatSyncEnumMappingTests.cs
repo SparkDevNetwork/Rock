@@ -25,6 +25,7 @@ using Newtonsoft.Json.Linq;
 
 using Rock.Communication.Chat.Platform.Contract;
 using Rock.Communication.Chat.Platform.Sync;
+using Rock.Jobs;
 using Rock.Enums.Communication.Chat;
 
 namespace Rock.Tests.Communication.Chat.Platform.Sync
@@ -59,7 +60,7 @@ namespace Rock.Tests.Communication.Chat.Platform.Sync
         /// <returns>The text between CASE and END.</returns>
         private static string CaseFor( string wireColumn )
         {
-            var sql = ChatSyncProjection.GetSectionSql( "channels" );
+            var sql = ChatPlatformSync.GetSectionSql( "channels" );
 
             var match = Regex.Match(
                 sql,

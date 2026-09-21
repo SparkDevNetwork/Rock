@@ -421,7 +421,7 @@ namespace Rock.Tests.Integration.Communication.Chat.Platform.Sync
 
         #region Constructors
 
-        public ProjectedPayload( ChatSyncProjectionResult result )
+        public ProjectedPayload( ChatPlatformSync.ProjectionResult result )
         {
             Result = result;
 
@@ -448,7 +448,7 @@ namespace Rock.Tests.Integration.Communication.Chat.Platform.Sync
         /// <summary>
         /// The reading this was parsed from.
         /// </summary>
-        public ChatSyncProjectionResult Result { get; }
+        public ChatPlatformSync.ProjectionResult Result { get; }
 
         #endregion Properties
 

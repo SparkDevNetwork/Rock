@@ -23,6 +23,7 @@ using Newtonsoft.Json.Linq;
 
 using Rock.Communication.Chat.Platform.Contract;
 using Rock.Communication.Chat.Platform.Sync;
+using Rock.Jobs;
 
 namespace Rock.Tests.Communication.Chat.Platform.Sync
 {
@@ -73,9 +74,9 @@ namespace Rock.Tests.Communication.Chat.Platform.Sync
             const string liveQualification =
                 "[GT].[IsChatAllowed] = 1 AND COALESCE( [G].[IsChatEnabledOverride], [GT].[IsChatEnabledForAllGroups] ) = 1";
 
-            StringAssert.Contains( Flatten( ChatSyncProjection.GetStagingSql() ), liveQualification,
+            StringAssert.Contains( Flatten( ChatPlatformSync.GetStagingSql() ), liveQualification,
                 "the staging query no longer reads the rule this stamp is written against" );
-            StringAssert.Contains( Flatten( ChatSyncProjection.GetStampSql() ), liveQualification,
+            StringAssert.Contains( Flatten( ChatPlatformSync.GetStampSql() ), liveQualification,
                 "the stamp marks a different set of groups than the projection reads" );
         }
 
@@ -87,7 +88,7 @@ namespace Rock.Tests.Communication.Chat.Platform.Sync
         [TestMethod]
         public void TheStampWritesTheMarkerAndOnlyWhereThereIsNotOneAlready()
         {
-            var sql = Flatten( ChatSyncProjection.GetStampSql() );
+            var sql = Flatten( ChatPlatformSync.GetStampSql() );
 
             StringAssert.Contains( sql, "UPDATE" );
             StringAssert.Contains( sql, "[ChatChannelFirstEnabledDateTime] IS NULL" );
@@ -107,11 +108,11 @@ namespace Rock.Tests.Communication.Chat.Platform.Sync
         [TestMethod]
         public void Projection_ShipsAQueryForStagingAndForEverySection()
         {
-            Assert.IsFalse( string.IsNullOrWhiteSpace( ChatSyncProjection.GetStagingSql() ), "the staging query is missing, so nothing stages the sets the sections read" );
+            Assert.IsFalse( string.IsNullOrWhiteSpace( ChatPlatformSync.GetStagingSql() ), "the staging query is missing, so nothing stages the sets the sections read" );
 
             foreach ( var section in Sections() )
             {
-                Assert.IsFalse( string.IsNullOrWhiteSpace( ChatSyncProjection.GetSectionSql( section ) ), string.Format( "the {0} section has no query", section ) );
+                Assert.IsFalse( string.IsNullOrWhiteSpace( ChatPlatformSync.GetSectionSql( section ) ), string.Format( "the {0} section has no query", section ) );
             }
         }
 
@@ -128,9 +129,9 @@ namespace Rock.Tests.Communication.Chat.Platform.Sync
         {
             foreach ( var section in Sections() )
             {
-                var sql = ChatSyncProjection.GetSectionSql( section );
+                var sql = ChatPlatformSync.GetSectionSql( section );
 
-                foreach ( var column in ChatSyncProjection.QualificationColumns )
+                foreach ( var column in ChatSyncSqlText.QualificationColumns )
                 {
                     Assert.IsFalse(
                         sql.IndexOf( column, StringComparison.OrdinalIgnoreCase ) >= 0,
@@ -146,9 +147,9 @@ namespace Rock.Tests.Communication.Chat.Platform.Sync
         [TestMethod]
         public void StagingQuery_HoldsTheRuleThatDecidesWhetherAGroupIsAChatChannel()
         {
-            var sql = ChatSyncProjection.GetStagingSql();
+            var sql = ChatPlatformSync.GetStagingSql();
 
-            foreach ( var column in ChatSyncProjection.QualificationColumns )
+            foreach ( var column in ChatSyncSqlText.QualificationColumns )
             {
                 Assert.IsTrue(
                     sql.IndexOf( column, StringComparison.OrdinalIgnoreCase ) >= 0,
@@ -169,7 +170,7 @@ namespace Rock.Tests.Communication.Chat.Platform.Sync
         [TestMethod]
         public void MembershipSection_ReadsTheStagedSetRatherThanTheMembershipTable()
         {
-            var sql = ChatSyncProjection.GetSectionSql( "members" );
+            var sql = ChatPlatformSync.GetSectionSql( "members" );
 
             Assert.IsTrue( sql.IndexOf( "#MemberRows", StringComparison.OrdinalIgnoreCase ) >= 0, "the membership section does not read the staged set" );
             Assert.IsFalse(
@@ -203,7 +204,7 @@ namespace Rock.Tests.Communication.Chat.Platform.Sync
                     .Distinct()
                     .ToArray();
 
-                var actual = ChatSyncProjection.GetSectionColumns( sections[i] ).ToArray();
+                var actual = ChatSyncSqlText.SectionColumns( sections[i] ).ToArray();
 
                 CollectionAssert.AreEqual(
                     expected,
@@ -248,7 +249,7 @@ namespace Rock.Tests.Communication.Chat.Platform.Sync
         [TestMethod]
         public void BadgeSection_ReturnsTheHighlightColourRatherThanThePairTheWireCarries()
         {
-            var sql = ChatSyncProjection.GetSectionSql( "badges" );
+            var sql = ChatPlatformSync.GetSectionSql( "badges" );
 
             Assert.IsTrue( sql.IndexOf( "highlight_color", StringComparison.OrdinalIgnoreCase ) >= 0, "the badge section does not return the highlight colour the pair is derived from" );
         }
@@ -264,7 +265,7 @@ namespace Rock.Tests.Communication.Chat.Platform.Sync
         public void UnknownSection_HasNoQuery()
         {
             var thrown = Assert.ThrowsExactly<InvalidOperationException>(
-                () => ChatSyncProjection.GetSectionSql( "sermons" ),
+                () => ChatPlatformSync.GetSectionSql( "sermons" ),
                 "a section nothing ships a query for returned one anyway" );
 
             StringAssert.Contains( thrown.Message, "sermons", "the failure does not name the section that was asked for" );
