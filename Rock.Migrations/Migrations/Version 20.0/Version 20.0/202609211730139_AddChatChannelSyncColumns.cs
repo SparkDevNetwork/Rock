@@ -37,6 +37,54 @@ namespace Rock.Migrations
             AddColumn("dbo.GroupType", "CanViewMembers", c => c.Boolean(nullable: false, defaultValue: true));
             AddColumn("dbo.GroupType", "IsChatSearchIndexed", c => c.Boolean(nullable: false));
             AddColumn("dbo.GroupMember", "ChatBannedUntil", c => c.DateTime());
+
+            SeedChatPlatformSyncJob();
+        }
+
+        /// <summary>
+        /// Adds the scheduled job that sends this church's chat picture to the chat platform.
+        /// </summary>
+        /// <remarks>
+        /// Hourly by default, and the church may change it. The picture is sent whole every time
+        /// rather than as a list of changes, so a missed run costs nothing the next one does not put
+        /// right, which is what lets the cadence be the church's own decision.
+        /// </remarks>
+        private void SeedChatPlatformSyncJob()
+        {
+            Sql( $@"
+DECLARE @Now DATETIME = ( SELECT GETDATE() );
+
+IF NOT EXISTS ( SELECT [Id] FROM [ServiceJob] WHERE [Guid] = '{Rock.SystemGuid.ServiceJob.CHAT_PLATFORM_SYNC_JOB}' )
+BEGIN
+    INSERT INTO [ServiceJob]
+    (
+        [IsSystem]
+        , [IsActive]
+        , [Name]
+        , [Description]
+        , [Class]
+        , [CronExpression]
+        , [NotificationStatus]
+        , [Guid]
+        , [CreatedDateTime]
+        , [ModifiedDateTime]
+        , [HistoryCount]
+    )
+    VALUES
+    (
+        0
+        , 1
+        , 'Chat Platform Sync'
+        , 'Sends this church''s people, channels, memberships and badges to the chat platform, as a whole picture each time.'
+        , 'Rock.Jobs.ChatPlatformSync'
+        , '0 0 0/1 1/1 * ? *'
+        , 1
+        , '{Rock.SystemGuid.ServiceJob.CHAT_PLATFORM_SYNC_JOB}'
+        , @Now
+        , @Now
+        , 500
+    );
+END" );
         }
         
         /// <summary>
@@ -44,6 +92,8 @@ namespace Rock.Migrations
         /// </summary>
         public override void Down()
         {
+            Sql( $"DELETE FROM [ServiceJob] WHERE [Guid] = '{Rock.SystemGuid.ServiceJob.CHAT_PLATFORM_SYNC_JOB}';" );
+
             DropColumn("dbo.GroupMember", "ChatBannedUntil");
             DropColumn("dbo.GroupType", "IsChatSearchIndexed");
             DropColumn("dbo.GroupType", "CanViewMembers");

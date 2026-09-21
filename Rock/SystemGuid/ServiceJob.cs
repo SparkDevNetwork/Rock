@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -469,6 +469,11 @@ namespace Rock.SystemGuid
         /// The job for performing synchronization tasks between Rock and the external chat system.
         /// </summary>
         public const string CHAT_SYNC_JOB = "80202290-66DF-4289-8938-4FA6B84E3EE2";
+
+        /// <summary>
+        /// The job that sends this church's people, channels, memberships and badges to the chat platform.
+        /// </summary>
+        public const string CHAT_PLATFORM_SYNC_JOB = "C1F5B0B4-6C2E-4E84-9A34-1E0E2C9B7A55";
 
         /// <summary>
         /// The job to run Post v17.1 Data Migrations to migrate login history from the History table to the HistoryLogin table.
