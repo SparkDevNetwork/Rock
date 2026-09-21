@@ -90,7 +90,6 @@ namespace Rock.Communication.Chat.Platform.Configuration
                 stored.MinimumAge = source.MinimumAge;
                 stored.DirectMessageAccessDataViewGuid = source.DirectMessageAccessDataViewGuid;
                 stored.ChatBadgeDataViewGuids = source.ChatBadgeDataViewGuids;
-                stored.SyncBackoffUntil = source.SyncBackoffUntil;
 
                 Write( stored );
             }
@@ -123,7 +122,9 @@ namespace Rock.Communication.Chat.Platform.Configuration
         }
 
         /// <summary>
-        /// Stores the backoff the chat platform last advised.
+        /// Stores the backoff the chat platform last advised. Everything else is left exactly as it
+        /// sits in storage, so a run finishing while an administrator saves the settings screen
+        /// cannot carry back the settings as they were when the run started.
         /// </summary>
         /// <param name="until">The time it would rather not hear from this church before, or null to clear it.</param>
         public static void SaveSyncBackoff( DateTimeOffset? until )
