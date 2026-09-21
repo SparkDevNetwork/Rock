@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -223,6 +223,136 @@ namespace Rock.Tests.Communication.Chat.Platform
             Assert.IsFalse( pattern.IsMatch( "nope.unknown_error_code" ), "the pattern accepts a family that is not one of the published families" );
         }
 
+
+        /// <summary>
+        /// The body is one object keyed by four section names, and the contract has to say so as
+        /// data rather than in prose.
+        /// </summary>
+        /// <remarks>
+        /// The rows of two of these tables are the same width, so two sections transposed inside an
+        /// array pass a row-width check and are caught only if their declared counts happen to
+        /// differ. Naming the sections is what makes the shape unambiguous, and naming them here is
+        /// what lets a producer be built from the artifact instead of from a sentence about it.
+        /// </remarks>
+        [TestMethod]
+        public void EmbeddedContract_NamesTheFourPayloadSections()
+        {
+            var contract = ReadEmbeddedContract();
+
+            Assert.IsNotNull( contract["payload"], "the contract does not describe the payload, so nothing here can be built from it" );
+
+            var sections = contract["payload"]["sections"];
+
+            Assert.IsNotNull( sections, "the contract does not name the payload sections as data" );
+
+            CollectionAssert.AreEquivalent(
+                new[] { "aliases", "channels", "members", "badges" },
+                sections.Select( s => s.Value<string>() ).ToArray(),
+                "the payload sections the contract names are not the four the platform reads" );
+        }
+
+        /// <summary>
+        /// Every header the platform requires is described, including the identity marks, which are
+        /// how a restored database is told apart from a live one.
+        /// </summary>
+        [TestMethod]
+        public void EmbeddedContract_DescribesEveryRequiredSubmitHeader()
+        {
+            var contract = ReadEmbeddedContract();
+            var names = contract["submit_headers"].Select( h => h["name"].Value<string>() ).ToList();
+
+            foreach ( var required in new[]
+            {
+                "x-sync-submission-id",
+                "x-sync-read-at",
+                "x-sync-counts",
+                "x-sync-marks",
+                "x-sync-rock-version",
+                "x-sync-contract"
+            } )
+            {
+                Assert.IsTrue( names.Contains( required ), string.Format( "the contract does not describe the {0} header, which every submission has to carry", required ) );
+            }
+        }
+
+        /// <summary>
+        /// The two dictionary headers carry their key sets as data, because a key set is the one
+        /// part of a submission a producer cannot derive from the rest of the contract.
+        /// </summary>
+        /// <remarks>
+        /// The counts keys are the short payload section names and deliberately not the four table
+        /// names. A producer built from the table list is refused at ingest on every cycle, with
+        /// nothing in this repository saying why, so the assertion below is written as the
+        /// difference rather than as a list: it fails against an artifact that says table names,
+        /// which is what the copy that shipped here before said.
+        /// </remarks>
+        [TestMethod]
+        public void EmbeddedContract_CarriesTheKeySetsOfTheTwoDictionaryHeadersAsData()
+        {
+            var contract = ReadEmbeddedContract();
+
+            var counts = contract["submit_headers"].FirstOrDefault( h => h["name"].Value<string>() == "x-sync-counts" );
+            var marks = contract["submit_headers"].FirstOrDefault( h => h["name"].Value<string>() == "x-sync-marks" );
+
+            Assert.IsNotNull( counts, "the contract describes no x-sync-counts header at all" );
+            Assert.IsNotNull( marks, "the contract describes no x-sync-marks header at all" );
+
+            Assert.IsNotNull( counts["keys"], "the counts header does not carry its key set as data, so a producer can only be built from prose about it" );
+            Assert.IsNotNull( marks["keys"], "the marks header does not carry its key set as data" );
+
+            var countsKeys = counts["keys"].Select( k => k.Value<string>() ).ToArray();
+            var marksKeys = marks["keys"].Select( k => k.Value<string>() ).ToArray();
+
+            CollectionAssert.AreEquivalent(
+                contract["payload"]["sections"].Select( s => s.Value<string>() ).ToArray(),
+                countsKeys,
+                "the counts keys are not the payload section names" );
+
+            CollectionAssert.AreEquivalent(
+                new[] { "person", "person_alias", "group", "group_member" },
+                marksKeys,
+                "the marks keys are not the four Rock tables the platform compares" );
+
+            CollectionAssert.AreNotEquivalent(
+                _expectedTables,
+                countsKeys,
+                "the counts keys are the four table names, which is the header the platform refuses on every cycle" );
+        }
+
+        /// <summary>
+        /// The copy shipping here is the copy the platform generated, whole. The hash covers the
+        /// column lists alone by design, so everything else in the file can drift without moving
+        /// it, and this is what notices.
+        /// </summary>
+        /// <remarks>
+        /// Compared as a set rather than as a count, because a count agrees by accident as soon as
+        /// one code is added on one side and one removed on the other.
+        /// </remarks>
+        [TestMethod]
+        public void EmbeddedContract_CarriesEverySyncErrorCodeTheIngestFunctionCanReturn()
+        {
+            var contract = ReadEmbeddedContract();
+            var codes = contract["error_codes"]["codes"].Select( c => c.Value<string>() ).ToList();
+
+            foreach ( var code in new[]
+            {
+                "sync.bad_counts",
+                "sync.bad_header",
+                "sync.bad_marks",
+                "sync.bad_submission_id",
+                "sync.contract_mismatch",
+                "sync.duplicate_submission",
+                "sync.future_read",
+                "sync.kill_switch",
+                "sync.marks_regressed",
+                "sync.payload_too_large",
+                "sync.stale_read",
+                "sync.unknown_submission"
+            } )
+            {
+                Assert.IsTrue( codes.Contains( code ), string.Format( "the contract does not carry {0}, so nothing here can branch on a refusal that names it", code ) );
+            }
+        }
         #endregion
     }
 }
