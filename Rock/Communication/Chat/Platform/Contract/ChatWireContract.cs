@@ -163,7 +163,11 @@ namespace Rock.Communication.Chat.Platform.Contract
         /// </summary>
         /// <param name="contract">The parsed contract.</param>
         /// <returns>The hash, lowercase hex.</returns>
-        private static string HashColumnLists( JObject contract )
+        /// <remarks>
+        /// Shared with the header builder, which hashes the contract it was actually handed rather
+        /// than trusting the value that contract publishes for itself.
+        /// </remarks>
+        internal static string HashColumnLists( JObject contract )
         {
             var builder = new StringBuilder();
 

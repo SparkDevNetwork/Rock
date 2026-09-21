@@ -306,5 +306,136 @@ namespace Rock.Tests.Communication.Chat.Platform.Sync
         }
 
         #endregion
+
+        #region The whole set
+
+        /// <summary>
+        /// A read time for the cells that build the whole set.
+        /// </summary>
+        private static readonly DateTime ReadAt = new DateTime( 2026, 9, 21, 18, 0, 0, DateTimeKind.Utc );
+
+        /// <summary>
+        /// Marks for the cells that build the whole set.
+        /// </summary>
+        private static ChatSyncIdentityMarks Marks()
+        {
+            return new ChatSyncIdentityMarks { Person = 11, PersonAlias = 22, Group = 33, GroupMember = 44 };
+        }
+
+        /// <summary>
+        /// Builds the whole header set from a contract.
+        /// </summary>
+        private static IDictionary<string, string> Build( JObject contract, bool isUrgent )
+        {
+            var sections = contract["payload"]["sections"].Select( s => s.Value<string>() );
+
+            return new ChatSyncHeaderBuilder( contract ).BuildSubmissionHeaders( ReadAt, Marks(), CountsFor( sections ), "20.0.0", isUrgent );
+        }
+
+        /// <summary>
+        /// The contract header is the hash of the column lists this assembly actually builds
+        /// payloads from, which for the shipped artifact is also the hash it publishes.
+        /// </summary>
+        [TestMethod]
+        public void ContractHeader_IsTheHashOfTheColumnListsThisAssemblyBuildsFrom()
+        {
+            var headers = Build( ShippedContract(), false );
+
+            Assert.AreEqual( ChatWireContract.ComputedHash, headers["x-sync-contract"], "the contract header is not the hash of the column lists the payload is built in, so the platform's compare cannot see a reorder here" );
+            Assert.AreEqual( ChatWireContract.PublishedHash, headers["x-sync-contract"], "the shipped artifact publishes a hash other than the one its column lists give, so it has been edited since it was generated" );
+        }
+
+        /// <summary>
+        /// An artifact whose published and computed hashes disagree has been edited since it was
+        /// generated, and nothing can say what column order its payload would be in.
+        /// </summary>
+        [TestMethod]
+        public void ContractWhosePublishedAndComputedHashesDisagree_StopsTheSubmissionHere()
+        {
+            var contract = ShippedContract();
+
+            // Two columns of the first table swapped: the same width, a different wire, and the
+            // published hash left as it was.
+            var columns = contract["tables"][0]["columns"].Select( c => c.Value<string>() ).ToArray();
+            var first = columns[0];
+            columns[0] = columns[1];
+            columns[1] = first;
+            contract["tables"][0]["columns"] = new JArray( columns );
+
+            var thrown = Assert.ThrowsExactly<InvalidOperationException>(
+                () => Build( contract, false ),
+                "a contract edited since it was generated built headers anyway, so a payload in an order nobody agreed to would be sent under the agreed hash" );
+
+            StringAssert.Contains( thrown.Message, "hash", "the failure does not say that the hashes disagree" );
+        }
+
+        /// <summary>
+        /// The urgent header is set for a run a person started and absent, not false, for one the
+        /// schedule started. The manual poll budget assumes urgent jumps the queue.
+        /// </summary>
+        [TestMethod]
+        public void UrgentHeader_IsSetForAManualRunAndAbsentForAScheduledOne()
+        {
+            var manual = Build( ShippedContract(), true );
+            var scheduled = Build( ShippedContract(), false );
+
+            Assert.IsTrue( manual.ContainsKey( "x-sync-urgent" ), "a manual run did not mark itself urgent, so the person waiting on it waits behind the queue" );
+            Assert.IsFalse( scheduled.ContainsKey( "x-sync-urgent" ), "a scheduled run marked itself urgent, so every scheduled restatement jumps the queue" );
+        }
+
+        /// <summary>
+        /// The set is exactly what the contract lists: every required header but the submission id,
+        /// which the transport sets, and nothing the contract does not name.
+        /// </summary>
+        [TestMethod]
+        public void TheSet_IsExactlyWhatTheContractLists()
+        {
+            var contract = ShippedContract();
+            var listed = contract["submit_headers"].Children<JObject>().ToList();
+
+            var required = listed
+                .Where( h => h["required"].Value<bool>() )
+                .Select( h => h["name"].Value<string>() )
+                .Where( name => name != "x-sync-submission-id" )
+                .ToArray();
+            var names = listed.Select( h => h["name"].Value<string>() ).ToArray();
+
+            var headers = Build( contract, true );
+
+            foreach ( var name in required )
+            {
+                Assert.IsTrue( headers.ContainsKey( name ), string.Format( "the contract requires {0} and the builder did not set it", name ) );
+            }
+
+            foreach ( var name in headers.Keys )
+            {
+                CollectionAssert.Contains( names, name, string.Format( "the builder set {0}, which the contract does not list", name ) );
+            }
+        }
+
+        /// <summary>
+        /// A contract that requires a header this assembly does not build stops the submission
+        /// here, which is what makes the check above more than a list read back against itself.
+        /// </summary>
+        [TestMethod]
+        public void ContractThatRequiresAHeaderNothingHereBuilds_StopsTheSubmissionHere()
+        {
+            var contract = ShippedContract();
+
+            ( ( JArray ) contract["submit_headers"] ).Add( new JObject
+            {
+                ["name"] = "x-sync-weather",
+                ["required"] = true,
+                ["carries"] = "A header this assembly has never heard of."
+            } );
+
+            var thrown = Assert.ThrowsExactly<InvalidOperationException>(
+                () => Build( contract, false ),
+                "a contract requiring a header nothing here builds was accepted, so the platform would refuse every cycle for a reason nothing in this repository can see" );
+
+            StringAssert.Contains( thrown.Message, "x-sync-weather", "the failure does not name the header the contract requires" );
+        }
+
+        #endregion
     }
 }

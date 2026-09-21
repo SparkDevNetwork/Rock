@@ -63,6 +63,33 @@ namespace Rock.Communication.Chat.Platform.Sync
         private const string IdentityMarksHeader = "x-sync-marks";
 
         /// <summary>
+        /// The contract entry naming the moment every row of the payload is judged by.
+        /// </summary>
+        private const string ReadTimeHeader = "x-sync-read-at";
+
+        /// <summary>
+        /// The contract entry naming the version of Rock that produced the payload.
+        /// </summary>
+        private const string RockVersionHeader = "x-sync-rock-version";
+
+        /// <summary>
+        /// The contract entry carrying the hash of the column order the payload is in.
+        /// </summary>
+        private const string ContractHeader = "x-sync-contract";
+
+        /// <summary>
+        /// The one optional entry, set for a run a person started and is waiting on.
+        /// </summary>
+        private const string UrgentHeader = "x-sync-urgent";
+
+        /// <summary>
+        /// The idempotency key. The contract lists it as required, and it is the one header this
+        /// builder leaves to the transport, which sets it on every attempt of a submission so that a
+        /// retry cannot carry a different one.
+        /// </summary>
+        private const string SubmissionIdHeader = "x-sync-submission-id";
+
+        /// <summary>
         /// A hundred nanoseconds is the smallest interval a tick counts and a microsecond is the
         /// smallest the platform stores, so this is what has to be removed from a read time.
         /// </summary>
@@ -258,6 +285,106 @@ namespace Rock.Communication.Chat.Platform.Sync
             }
 
             return header.ToString( Formatting.None );
+        }
+
+        /// <summary>
+        /// Builds every header one submission carries beside its body, save the submission id.
+        /// </summary>
+        /// <param name="readAtUtc">The UTC time taken before the projection read.</param>
+        /// <param name="marks">The identity seeds read from Rock.</param>
+        /// <param name="rowCountsBySection">How many rows each payload section carries, tallied as they were written.</param>
+        /// <param name="rockVersion">The version of Rock producing the payload.</param>
+        /// <param name="isUrgent">Whether a person started this run and is waiting on it.</param>
+        /// <returns>The headers, keyed by name.</returns>
+        /// <remarks>
+        /// <para>
+        /// The contract hash goes out as the hash of the column lists this contract actually
+        /// carries, and the submission stops here when that differs from the hash the contract
+        /// publishes for itself. An artifact edited after it was generated is one whose column
+        /// order nobody agreed to, and the platform's compare would refuse it on every cycle under
+        /// a code that points at no file.
+        /// </para>
+        /// <para>
+        /// The set is then held against the contract's own header list: every header the contract
+        /// requires is present, other than the submission id which the transport sets, and nothing
+        /// is sent that the contract does not list. The urgent header is absent rather than false
+        /// on a scheduled run, because its absence is what ordinary priority looks like.
+        /// </para>
+        /// </remarks>
+        public IDictionary<string, string> BuildSubmissionHeaders( DateTime readAtUtc, ChatSyncIdentityMarks marks, IDictionary<string, int> rowCountsBySection, string rockVersion, bool isUrgent )
+        {
+            if ( rockVersion.IsNullOrWhiteSpace() )
+            {
+                throw new ArgumentException( "the version of Rock producing a payload is recorded with the submission and cannot be blank", "rockVersion" );
+            }
+
+            var publishedHash = _contract["wire_hash"] == null ? null : _contract["wire_hash"].Value<string>();
+            var computedHash = Contract.ChatWireContract.HashColumnLists( _contract );
+
+            if ( publishedHash != computedHash )
+            {
+                throw new InvalidOperationException(
+                    "the wire contract this submission would be built from does not hash to the value written inside it, so nothing here can say what column order the payload is in" );
+            }
+
+            var headers = new Dictionary<string, string>( StringComparer.OrdinalIgnoreCase )
+            {
+                { ReadTimeHeader, FormatReadTime( readAtUtc ) },
+                { RowCountsHeader, BuildRowCounts( rowCountsBySection ) },
+                { IdentityMarksHeader, BuildIdentityMarks( marks ) },
+                { RockVersionHeader, rockVersion },
+                { ContractHeader, computedHash }
+            };
+
+            if ( isUrgent )
+            {
+                headers.Add( UrgentHeader, "1" );
+            }
+
+            RequireTheContractsHeaderSet( headers );
+
+            return headers;
+        }
+
+        /// <summary>
+        /// Holds a built header set against the contract's own list of submit headers.
+        /// </summary>
+        /// <param name="headers">The headers as built.</param>
+        private void RequireTheContractsHeaderSet( IDictionary<string, string> headers )
+        {
+            var listed = _contract["submit_headers"];
+
+            if ( listed == null )
+            {
+                throw new InvalidOperationException( "the chat wire contract describes no submit headers" );
+            }
+
+            var entries = listed.Children<JObject>().ToList();
+
+            var required = entries
+                .Where( h => h["required"] != null && h["required"].Value<bool>() )
+                .Select( h => h["name"].Value<string>() )
+                .Where( name => !string.Equals( name, SubmissionIdHeader, StringComparison.OrdinalIgnoreCase ) )
+                .ToList();
+
+            var missing = required.Where( name => !headers.ContainsKey( name ) ).ToList();
+
+            if ( missing.Any() )
+            {
+                throw new InvalidOperationException( string.Format(
+                    "the chat wire contract requires the {0} header, which nothing here builds",
+                    string.Join( ", ", missing ) ) );
+            }
+
+            var names = entries.Select( h => h["name"].Value<string>() ).ToList();
+            var unlisted = headers.Keys.Where( name => !names.Contains( name, StringComparer.OrdinalIgnoreCase ) ).ToList();
+
+            if ( unlisted.Any() )
+            {
+                throw new InvalidOperationException( string.Format(
+                    "the {0} header is not one the chat wire contract lists",
+                    string.Join( ", ", unlisted ) ) );
+            }
         }
 
         /// <summary>
