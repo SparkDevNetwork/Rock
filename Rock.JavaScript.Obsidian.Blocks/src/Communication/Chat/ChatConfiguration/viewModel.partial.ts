@@ -41,6 +41,19 @@ export function toFormModel(bag: Partial<ChatConfigurationBag> | null | undefine
     };
 }
 
+/**
+ * Whether the form holds edits that have not been saved. Sync Now sends what is stored, so while
+ * this is true a press would send settings other than the ones on the screen.
+ *
+ * @param form The form as it stands.
+ * @param saved The form as it was when last saved or loaded.
+ *
+ * @returns True when the two differ in any setting the form edits.
+ */
+export function hasUnsavedChanges(form: ChatConfigurationFormModel, saved: ChatConfigurationFormModel): boolean {
+    throw new Error("not implemented");
+}
+
 /** Builds what the save action is sent: the settings the church owns, and nothing else. */
 export function toBag(form: ChatConfigurationFormModel): Partial<ChatConfigurationBag> {
     return {

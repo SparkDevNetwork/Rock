@@ -19,7 +19,7 @@
 // project that no build or pipeline step installs, so every mounting spec in this
 // repository fails to run today. What the form shows and what it sends back is this
 // module, and that is what is covered.
-import { toBag, toFormModel } from "../../../src/Communication/Chat/ChatConfiguration/viewModel.partial";
+import { hasUnsavedChanges, toBag, toFormModel } from "../../../src/Communication/Chat/ChatConfiguration/viewModel.partial";
 
 function bag(): Record<string, unknown> {
     return {
@@ -90,5 +90,49 @@ describe("chatConfiguration view model", () => {
             expect(shape).not.toContain("privateKey");
             expect(shape).not.toContain("\"d\"");
         }
+    });
+});
+
+describe("chatConfiguration unsaved edits", () => {
+    it("reads as saved when the form matches what was loaded", () => {
+        expect(hasUnsavedChanges(toFormModel(bag()), toFormModel(bag()))).toBe(false);
+    });
+
+    it("reads as unsaved after an edit to any setting the form owns", () => {
+        const saved = toFormModel(bag());
+        const edits: Array<(form: ReturnType<typeof toFormModel>) => void> = [
+            form => { form.areChatProfilesVisible = false; },
+            form => { form.isOpenDirectMessagingAllowed = true; },
+            form => { form.minimumAge = 16; },
+            form => { form.minimumAge = null; },
+            form => { form.directMessageAccessDataView = null; },
+            form => { form.directMessageAccessDataView = { value: "dddddddd-dddd-4ddd-8ddd-dddddddddddd", text: "Leaders" }; },
+            form => { form.chatBadgeDataViews = []; },
+            form => { form.chatBadgeDataViews = [...form.chatBadgeDataViews, { value: "eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee", text: "Elders" }]; }
+        ];
+
+        for (const edit of edits) {
+            const form = toFormModel(bag());
+            edit(form);
+
+            expect(hasUnsavedChanges(form, saved)).toBe(true);
+        }
+    });
+
+    it("reads as saved again once the edited form is what was saved", () => {
+        const form = toFormModel(bag());
+        form.minimumAge = 16;
+        form.chatBadgeDataViews = [];
+
+        const saved = toFormModel(toBag(form));
+
+        expect(hasUnsavedChanges(form, saved)).toBe(false);
+    });
+
+    it("does not count a picker's label as an edit, since only the identifier is stored", () => {
+        const form = toFormModel(bag());
+        form.directMessageAccessDataView = { value: "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb", text: "" };
+
+        expect(hasUnsavedChanges(form, toFormModel(bag()))).toBe(false);
     });
 });
