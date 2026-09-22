@@ -873,6 +873,169 @@ namespace Rock.Model
         #region Group Requirement Queries
 
         /// <summary>
+        /// Gets the requirement statuses of several group members at once, following the same rules as
+        /// <see cref="GroupMember.GetGroupRequirementsStatuses"/> without that method's per-member queries. A
+        /// requirement that applies to a member with no stored <see cref="GroupMemberRequirement"/> result is
+        /// reported as <see cref="MeetsGroupRequirement.NotMet"/>, or as
+        /// <see cref="MeetsGroupRequirement.MeetsWithWarning"/> while it is not yet due.
+        /// </summary>
+        /// <param name="groupMembers">
+        /// The members to report on, all of one group. Only <see cref="GroupMember.Id"/>,
+        /// <see cref="GroupMember.GroupId"/>, <see cref="GroupMember.GroupTypeId"/>,
+        /// <see cref="GroupMember.PersonId"/>, <see cref="GroupMember.GroupRoleId"/>, and
+        /// <see cref="GroupMember.DateTimeAdded"/> are read, so a projection carrying those is enough and no
+        /// navigation property has to be loaded.
+        /// </param>
+        /// <returns>
+        /// The statuses of each member keyed by group member identifier, including requirement types the caller
+        /// may not be authorized to view. Members with no applicable requirement are absent.
+        /// </returns>
+        [RockInternal( "21.0" )]
+        public Dictionary<int, List<GroupRequirementStatus>> GetGroupRequirementStatuses( IEnumerable<GroupMember> groupMembers )
+        {
+            var results = new Dictionary<int, List<GroupRequirementStatus>>();
+            var firstGroupMember = groupMembers.FirstOrDefault();
+
+            if ( firstGroupMember == null )
+            {
+                return results;
+            }
+
+            var rockContext = this.Context as RockContext;
+            var groupId = firstGroupMember.GroupId;
+
+            // A member's reference to the group type (ensured within its save hook) can lag the group's own.
+            var groupTypeId = GroupCache.Get( groupId )?.GroupTypeId ?? firstGroupMember.GroupTypeId;
+
+            var requirements = new GroupRequirementService( rockContext )
+                .Queryable()
+                .AsNoTracking()
+                .Include( r => r.GroupRequirementType )
+                .Where( r =>
+                    (
+                        r.GroupId.HasValue
+                        && r.GroupId.Value == groupId
+                    )
+                    || (
+                        r.GroupTypeId.HasValue
+                        && r.GroupTypeId.Value == groupTypeId
+                    )
+                )
+                .OrderBy( r => r.GroupRequirementType.Name )
+                .ToList();
+
+            if ( !requirements.Any() )
+            {
+                return results;
+            }
+
+            var storedStates = new GroupMemberRequirementService( rockContext )
+                .Queryable()
+                .Where( gmr => gmr.GroupMember.GroupId == groupId )
+                .Select( gmr => new
+                {
+                    gmr.Id,
+                    gmr.GroupMemberId,
+                    gmr.GroupRequirementId,
+                    gmr.GroupMemberRequirementState,
+                    gmr.RequirementWarningDateTime,
+                    gmr.LastRequirementCheckDateTime
+                } )
+                .ToList()
+                .ToLookup( gmr => $"{gmr.GroupMemberId}|{gmr.GroupRequirementId}" );
+
+            // Each of these answers the same question for every member, so each is read once for the whole
+            // list, and only when some requirement is scoped that way.
+            var ageClassifications = requirements.Any( r => r.AppliesToAgeClassification != AppliesToAgeClassification.All )
+                ? new GroupMemberService( rockContext )
+                    .Queryable( true, true )
+                    .Where( gm => gm.GroupId == groupId )
+                    .Select( gm => new { gm.PersonId, gm.Person.AgeClassification } )
+                    .Distinct()
+                    .ToDictionary( p => p.PersonId, p => p.AgeClassification )
+                : new Dictionary<int, AgeClassification>();
+
+            var appliesToPersonIds = requirements
+                .Where( r => r.AppliesToDataViewId.HasValue )
+                .ToDictionary(
+                    r => r.Id,
+                    r => DataViewCache.Get( r.AppliesToDataViewId.Value )
+                        ?.GetEntityIds( new Reporting.GetQueryableOptions { DbContext = rockContext } )
+                        .ToHashSet() ?? new HashSet<int>() );
+
+            var dueDateAttributeIds = requirements
+                .Where( r => r.DueDateAttributeId.HasValue )
+                .Select( r => r.DueDateAttributeId.Value )
+                .Distinct()
+                .ToList();
+
+            var dueDateValuesByAttributeId = dueDateAttributeIds.Any()
+                ? new AttributeValueService( rockContext )
+                    .Queryable()
+                    .Where( av => dueDateAttributeIds.Contains( av.AttributeId ) && av.EntityId == groupId )
+                    .Select( av => new { av.AttributeId, av.Value } )
+                    .ToList()
+                    .GroupBy( av => av.AttributeId )
+                    .ToDictionary( av => av.Key, av => av.First().Value.AsDateTime() )
+                : new Dictionary<int, DateTime?>();
+
+            var groupAttributeDueDates = requirements
+                .Where( r => r.DueDateAttributeId.HasValue )
+                .ToDictionary(
+                    r => r.Id,
+                    r => dueDateValuesByAttributeId.GetValueOrNull( r.DueDateAttributeId.Value ) );
+
+            foreach ( var groupMember in groupMembers )
+            {
+                var statuses = new List<GroupRequirementStatus>();
+
+                foreach ( var requirement in requirements )
+                {
+                    var isRoleMatch = !requirement.GroupRoleId.HasValue || requirement.GroupRoleId == groupMember.GroupRoleId;
+                    var isAgeClassificationMatch = requirement.AppliesToAgeClassification == AppliesToAgeClassification.All
+                        || ( int ) requirement.AppliesToAgeClassification == ( int ) ageClassifications.GetValueOrNull( groupMember.PersonId );
+                    var isDataViewMatch = !requirement.AppliesToDataViewId.HasValue
+                        || appliesToPersonIds[requirement.Id].Contains( groupMember.PersonId );
+
+                    if ( !isRoleMatch || !isAgeClassificationMatch || !isDataViewMatch )
+                    {
+                        continue;
+                    }
+
+                    var storedState = storedStates[$"{groupMember.Id}|{requirement.Id}"].FirstOrDefault();
+                    var dueDate = requirement.CalculateGroupMemberRequirementDueDate(
+                        requirement.GroupRequirementType.DueDateType,
+                        requirement.GroupRequirementType.DueDateOffsetInDays,
+                        requirement.DueDateStaticDate,
+                        groupAttributeDueDates.GetValueOrNull( requirement.Id ),
+                        groupMember.DateTimeAdded );
+
+                    // Nothing stored means the requirement has not been met, unless it is not yet due.
+                    var fallbackState = dueDate.HasValue && dueDate.Value >= RockDateTime.Now
+                        ? MeetsGroupRequirement.MeetsWithWarning
+                        : MeetsGroupRequirement.NotMet;
+
+                    statuses.Add( new GroupRequirementStatus
+                    {
+                        GroupRequirement = requirement,
+                        RequirementDueDate = dueDate,
+                        MeetsGroupRequirement = storedState?.GroupMemberRequirementState ?? fallbackState,
+                        RequirementWarningDateTime = storedState?.RequirementWarningDateTime,
+                        LastRequirementCheckDateTime = storedState?.LastRequirementCheckDateTime,
+                        GroupMemberRequirementId = storedState?.Id
+                    } );
+                }
+
+                if ( statuses.Any() )
+                {
+                    results.AddOrReplace( groupMember.Id, statuses );
+                }
+            }
+
+            return results;
+        }
+
+        /// <summary>
         /// Groups the members not meeting requirements.
         /// </summary>
         /// <param name="group">The group.</param>

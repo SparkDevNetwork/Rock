@@ -82,7 +82,7 @@ One legacy defect is not carried: the Requirements tab re-assigned its Add butto
 
 **Requirements**
 
-- When the group or group type has requirements, show a Requirements column with one label per applicable requirement type the viewer can VIEW: success for Meets, danger for Not Met, warning for Meets With Warning, info otherwise. Statuses follow the rules of [GroupMember.GetGroupRequirementsStatuses](Rock/Model/Group/GroupMember/GroupMember.Logic.cs:476) (role match, age classification, applies-to data view, due-date fallback), computed for the whole list at once (Part 3).
+- When the group or group type has requirements, show a Requirements column with one label per applicable requirement type the viewer can VIEW: success for Meets, danger for Not Met, warning for Meets With Warning, info otherwise. A requirement that applies to a member with no stored result reads as Not Met, or as Meets With Warning while it is not yet due, as legacy did. Statuses are computed for the whole list at once (Part 3).
 
 **Row actions**
 
@@ -111,7 +111,7 @@ One legacy defect is not carried: the Requirements tab re-assigned its Add butto
 
 - No query may run per member at any group size, including attribute loading.
 - Every lookup runs once per page load and only when its feature applies (see the [query budget](#query-budget)). A group with zero members and default settings MUST load with at most three SQL queries from this block.
-- Requirement statuses are computed by a new set-based helper in the model layer, not by calling the per-member method in a loop.
+- Requirement statuses take two queries for the whole list, not one or more per member.
 - The inactive-recipient check and the multiple-roles check use the rows already loaded; neither queries the database.
 
 ### Accepted differences from legacy
@@ -125,6 +125,7 @@ One legacy defect is not carried: the Requirements tab re-assigned its Add butto
 - The export no longer carries the raw `GroupMember` entity columns. Legacy's `ExcelExportSource.DataSource` mode reflects over the bound type and appends every non-virtual property ([Grid.cs:2583](Rock/Web/UI/Controls/Grid/Grid.cs:2583)), so the file ended with roughly 28 extra columns: `IsSystem`, `GroupId`, `GroupTypeId`, `PersonId`, `GroupRoleId`, the archive and schedule fields, the audit fields, and `Id`, `IdKey`, `Guid` and the `Foreign*` set. The Obsidian grid exports declared columns only. Nothing in the block requested those columns and none are user-facing, but a church scripting against the export file would see them vanish.
 - An attribute key defined at two levels of the group type chain produces one column instead of two. Legacy added a column per attribute but every one of them resolved through `dataItem.Attributes[DataField]` ([AttributeField.cs:86](Rock/Web/UI/Controls/Grid/AttributeField.cs:86)), which holds a single entry per key, so the extra columns rendered the same value under a different header. Confirmed on a test group. The surviving column is the group-qualified attribute, per [settled decision 8](#settled-decisions).
 - There are now two ways to filter by registration, where legacy had one of each and they disagreed. The modal's Registration filter keeps legacy's meaning: it lists the instances the group is linked to and keeps members whose **person** registered for the chosen instance, whether or not their membership came from that registration ([GroupMemberList.ascx.cs:1920](RockWeb/Blocks/Groups/GroupMemberList.ascx.cs:1920)). The Registration column's filter reads the column, which shows only the registration a member was added through (`RegistrationRegistrant.GroupMemberId`, as legacy's column did at [GroupMemberList.ascx.cs:2067](RockWeb/Blocks/Groups/GroupMemberList.ascx.cs:2067)). So the modal filter can keep a row whose Registration cell is empty and the column filter cannot, which is why the modal filter carries help text saying so.
+- A requirement scoped to a persisted applies-to data view reads that data view's persisted ids rather than evaluating it live. Legacy evaluated it on every page load, once per member. `DataViewCache` answers from the persisted set when one exists, which is what the calculation job itself does, so the list now agrees with the job rather than with the old per-member method. A stale persisted set can therefore include or exclude someone the live evaluation would not.
 - An inactive group-qualified grid attribute no longer produces a column. Legacy passed `includeInactive: true` to `GetByEntityTypeQualifier` for group-qualified attributes while filtering `IsActive` on the inherited ones, so the two paths disagreed. Both are active-only now.
 
 ## Proposed Approach
@@ -135,16 +136,15 @@ One legacy defect is not carried: the Requirements tab re-assigned its Add butto
 - We'll then re-add new `Rock.Blocks/Group/GroupMemberList.cs` and related files + new migration helper invocations as needed. It will ultimately look like editing in place; just spelling out the details here.
 - `Rock.ViewModels/Blocks/Group/GroupMemberList/`: `GroupMemberListOptionsBag`, `GroupMemberListSyncBag`, `GroupMemberListPlaceElsewhereTriggerBag`, `GroupMemberListPlaceElsewhereRequestBag`.
 - `Rock.JavaScript.Obsidian.Blocks/src/Group/groupMemberList.obs`, with partials under `src/Group/GroupMemberList/`: `personNameCell.partial.obs`, `gridSettingsModal.partial.obs`, `deleteOrArchiveCell.partial.obs` (pattern: [GroupList/deleteOrArchiveCell.partial.obs](Rock.JavaScript.Obsidian.Blocks/src/Group/GroupList/deleteOrArchiveCell.partial.obs)), `placeElsewhereModal.partial.obs`, `types.partial.ts`.
-- A new set-based requirement status helper in the model layer next to [GroupService.GroupMembersNotMeetingRequirements](Rock/Model/Group/Group/GroupService.cs:882).
 
 ### Server shape
 
 - `GetObsidianBlockInitialization` resolves the group once (group syncs with data view and role, requirements, member workflow triggers), builds the options bag (title, column flags, sync entries, Place Elsewhere triggers, filter lists, navigation URLs, `IsAddEnabled`, `IsDeleteEnabled`), and returns the grid definition.
 - `GetListQueryable` starts from `GroupMemberService.Queryable( true )` filtered by `GroupId`, applies the family campus and gender modal filters, family campus as a subquery, and projects each member into a `GroupMemberRow`: the `GroupMember` entity, its role name and order, and a `PersonProjection` carrying only the person columns the grid uses (names and suffix, photo id, age, birth date, email, gender, record type and status, connection and marital status ids, age classification, top signal, deceased flag).
 - `GetOrderedListQueryable` orders by role order, then last name, then first name.
-- `GetListItems` materializes once, loads grid attribute values with `GridAttributeLoader.LoadFor( rows, r => r.GroupMember, GetGridAttributes(), rockContext )`, computes each person's IdKey, full name, reversed full name, and photo URL with the static `Person` helpers, then hydrates lookups keyed by member or person id, one query each: registrations, requirement statuses (bulk helper), members with history (when `EnableGroupHistory`), signed person ids (when a template is required), first and last attendance (when enabled), phone numbers and home addresses (the unexecuted person-id queryable as the `Contains` source, as in [SignUpOpportunityAttendeeList.cs:640](Rock.Blocks/Engagement/SignUp/SignUpOpportunityAttendeeList.cs:640)), and the multiple-roles person set from the rows themselves.
+- `GetListItems` materializes once, loads grid attribute values with `GridAttributeLoader.LoadFor( rows, r => r.GroupMember, GetGridAttributes(), rockContext )`, computes each person's IdKey, full name, reversed full name, and photo URL with the static `Person` helpers, then hydrates lookups keyed by member or person id, one query each: registrations, requirement statuses, members with history (when `EnableGroupHistory`), signed person ids (when a template is required), first and last attendance (when enabled), phone numbers and home addresses (the unexecuted person-id queryable as the `Contains` source, as in [SignUpOpportunityAttendeeList.cs:640](Rock.Blocks/Engagement/SignUp/SignUpOpportunityAttendeeList.cs:640)), and the multiple-roles person set from the rows themselves.
 - `GetGridAttributes` returns GroupMember attributes that are IsGridColumn, active, VIEW-authorized, and either qualified to this group or inherited through the group type chain, deduplicated by key, matching the legacy `BindAttributes` and the Sign-Up attendee list's `EnsureGridAttributes`.
-- `GetGridBuilder` emits: `idKey`, `person` (a `PersonFieldBag` built from the projection, with the connection status only when the group type shows it), `personIdKey`, `role`, `status`, `dateAdded`, `note`, `maritalStatus`, `registrations`, `firstAttended`, `lastAttended`, `gender`, `requirements` (name plus state per applicable type), the indicator flags (`hasRequirementNotMet`, `hasRequirementWarning`, `hasMultipleRoles`, `isUnsigned`, `signalIconCssClass`, `signalColor`, `isInactive`, `isPersonInactive`, `isDeceased`, `isSyncManaged`, `needsArchive`, `canDelete`, `hasRegistration`), the export-only fields, and attribute fields through `AddAttributeFieldsFrom( r => r.GroupMember, GetGridAttributes() )`.
+- `GetGridBuilder` emits: `idKey`, `person` (a `PersonFieldBag` built from the projection, with the connection status only when the group type shows it), `personIdKey`, `role`, `status`, `dateAdded`, `note`, `maritalStatus`, `registrations`, `firstAttended`, `lastAttended`, `gender`, `requirements` (name plus state per applicable type), the indicator flags (`hasUnmetRequirement`, `hasRequirementWarning`, `hasMultipleRoles`, `isUnsigned`, `signalIconCssClass`, `signalColor`, `isInactive`, `isPersonInactive`, `isDeceased`, `isSyncManaged`, `needsArchive`, `canDelete`, `hasRegistration`), the export-only fields, and attribute fields through `AddAttributeFieldsFrom( r => r.GroupMember, GetGridAttributes() )`.
 - Block actions: `Delete( key )` (refuses without `canEdit`, for a member outside the resolved group, or for a sync-managed role; archives when history requires it; returns the `CanDelete` message on refusal), `PlaceElsewhere( bag )` (refuses without `canEdit`, for a member outside the resolved group, or for a trigger that is not the group's), and `SyncGroup()` (open to every viewer that passes the group gate). `CreateGridCommunication` is overridden to drop recipient keys that are not members of the group and to stamp the GroupMember entity merge field on each recipient, following [SignUpOpportunityAttendeeList.cs:1054](Rock.Blocks/Engagement/SignUp/SignUpOpportunityAttendeeList.cs:1054).
 
 ### Query budget
@@ -154,7 +154,7 @@ One legacy defect is not carried: the Requirements tab re-assigned its Add butto
 | Group, type, roles, syncs, requirements, triggers | 1 plus lazy loads, plus `_group.Members` (every member entity) | 1 plus cache | always |
 | Members with role and person columns | 1, every `Person` column | 1, the projection's columns only | always |
 | Attribute values | per row | 1 | members exist and grid attributes exist |
-| Requirement statuses | 1 or more per member | 2, plus 1 per data-view-scoped requirement | group or type has requirements |
+| Requirement statuses | 1 or more per member | 1 when the group has no requirements, 2 when it has, plus 1 when some requirement is age-scoped and 1 per data-view-scoped requirement whose data view is not persisted | members exist |
 | Registrations | 1 | 1 | members exist |
 | Members with history | 1, always | 1 | `EnableGroupHistory` |
 | Signed documents | 1 | 1 | required template set |
@@ -178,7 +178,7 @@ Zero members with default settings: the group and the members queries only.
 1. **Start fresh, not in place.** The stub's block type, block, auth, entity type, and attribute records are removed by migration (the `DeleteLegacyBlockTypeAndAllInstances` pattern in [RestructureConnectionsPages.cs:83](Rock.Migrations/Migrations/Version 20.0/Version 20.0/202608251721086_RestructureConnectionsPages.cs:83)), and the new block declares new guids, so the chop swaps one block type for another with nothing left behind.
 2. **Projected rows, not the entity list base.** `RockListBlockType<GroupMemberRow>` selects the person columns the grid uses instead of materializing every `Person` column per member, and `GridAttributeLoader.LoadFor` gives projected rows the same bulk attribute load the entity base provides. The two closest siblings, the Sign-Up attendee list and the Step Participant List, project the same way.
 3. **Two tabs over one data load.** The legacy Members and Requirements tabs are kept, so the block mimics what people use today. The tab selects which grid renders; both read the same `GetListItems` result, so the second tab costs no extra query. The tab bar goes in the grid's own `#gridHeaderPrepend` slot and writes `?tab=` to the URL, following [semesterGrid.partial.obs:33](Rock.JavaScript.Obsidian.Blocks/src/Lms/LearningProgramSecondaryLists/semesterGrid.partial.obs:33). Note that every Obsidian tabbed grid today switches between different entity types; ours is the first to tab between two column sets over the same rows.
-4. **Bulk requirement statuses live in the model layer and are the single source.** The rules stay in one place next to the per-member method, a test compares both outputs on the same group, and the name-cell flags and the Requirements column read the same statuses so they cannot disagree.
+4. **Requirement statuses keep legacy's rules, drop legacy's loop, and live in the model layer.** Legacy read the group's requirements and left-joined each member's stored `[GroupMemberRequirement]` rows, so a requirement with no stored row read as Not Met, which is the state an administrator most needs to see. Reading the stored rows alone would be one query instead of two, but it would show nothing in the three cases where the Calculate Group Requirements job has not written a row: a requirement added since the job last ran, an inactive member whose failing rows the procedure deletes, and any member of an inactive group, which the job skips ([CalculateGroupRequirements.cs:110](Rock/Jobs/CalculateGroupRequirements.cs:110)). So the join stays. What goes is [GetGroupRequirementsStatuses](Rock/Model/Group/GroupMember/GroupMember.Logic.cs:476)'s per-member shape, not its rules: the rules are cheap and the queries wrapped around them are the problem. `GroupService.GetGroupRequirementStatuses( groupMembers )`, `[RockInternal]` and next to `GroupMembersNotMeetingRequirements`, applies the same rules once over a whole list. It takes loaded group members of one group and reads only their own columns, no navigation property, so a projection satisfies it; the group and group type come off the members themselves. Role comes off the member. An age classification lookup runs only when some requirement is age-scoped, an applies-to data view resolves once per requirement that has one through `DataViewCache`, which usually answers from persisted ids, and the group attribute values behind due dates are read in one query rather than one per requirement. `GroupCache` carries those values already, but reading them from it is not equivalent: the cache falls back to an attribute's default value where the raw row query returns nothing, and it is keyed by attribute key, which collides where two attributes share one. The block keeps only what is its own: dropping requirement types the current person cannot view, which the model method deliberately does not do.
 5. **Inactive prompt is client-only.** The rows already carry `isInactive`, so no server round trip decides whether to prompt.
 6. **The modal is only for filters that have to narrow the query.** A filter a row can answer is a column filter, so the grid's own filter row handles it. Registration is in both places because legacy's filter and its column never read the same data, and dropping either one would lose a behavior somebody uses; the modal one carries help text so the difference is visible where the choice is made.
 7. **Preference keys are per group.** `MakeKeyUniqueToGroup` prefixes each preference key with the group's IdKey, and `makeKeyUniqueToGroup` mirrors it on the client off `GroupIdKey` in the options bag, following [GroupAttendanceList](Rock.Blocks/Group/GroupAttendanceList.cs:622), which scopes the same entity under the same method name. Twelve blocks scope preferences this way and the IdKey prefix is the majority of them. The same IdKey is passed as the grid's `preferencePrefix` so the column filters are scoped too, which only one other block does but which legacy required: `rFilter.PreferenceKeyPrefix` was set to the group id ([GroupMemberList.ascx.cs:267](RockWeb/Blocks/Groups/GroupMemberList.ascx.cs:267)) and covered the fields that are column filters now. Without it the Registration filter is the one that visibly breaks, since its values only exist on one group, but every filter would carry from group to group.
@@ -196,7 +196,9 @@ Each row is a discrete implementation slice. **Implemented** means the code is w
 | 2c | Attribute columns | [T3](#t3-columns-and-settings) | ✅ | ✅ |
 | 3 | Name indicators and row classes | [T4](#t4-name-indicators-and-row-styling) | ✅ | ✅ |
 | 4 | Filters: column filters and the filter modal | [T5](#t5-filters) | ✅ | ✅ |
-| 5 | Requirements tab: tab bar, Requirements grid, bulk status helper, requirement filters, name-cell requirement triangle | [T6](#t6-requirements) | | |
+| 5a | Requirement status lookup and the name-cell requirement triangle | [T6](#t6-requirements) | ✅ | |
+| 5b | Requirements tab: tab bar, `?tab=` round trip, the Requirements grid over the same data load | [T6](#t6-requirements) | | |
+| 5c | Requirements column with its labels, and the Requirement Type and Requirement State filters | [T6](#t6-requirements) | | |
 | 6 | Row actions: delete or archive, profile button, Place Elsewhere modal | [T7](#t7-row-actions), [T12](#t12-authorization) | | |
 | 7 | Grid actions: Add visibility, Communicate with inactive prompt and merge field, standard actions | [T8](#t8-grid-actions-and-communication), [T12](#t12-authorization) | | |
 | 8 | Group sync label, popover, Sync Now | [T9](#t9-group-sync), [T12](#t12-authorization) | | |
@@ -208,7 +210,7 @@ Each row is a discrete implementation slice. **Implemented** means the code is w
 
 Per-slice checklists backing the **Tested** column. A row is Tested only when every item in its linked sections passes.
 
-**Environment setup.** One group per feature is enough: a small group with an inactive member, a member whose person record is inactive, and a deceased member; a group type with requirements (one role-specific, one with a warning state) and history enabled, with one member edited so a history snapshot exists; a group sync (any data view to a role); a required signature document template on the group; an event registration instance linked to the group with a registrant placed in it; a scheduling-enabled type with one person in two active roles; a MemberPlacedElsewhere trigger on the group type with Show Note on; a campus whose Team Group is set (Campus Detail); a group type with no roles.
+**Environment setup.** One group per feature is enough: a small group with an inactive member, a member whose person record is inactive, and a deceased member; a group type with requirements (one role-specific, one with a warning state, one scoped to an age classification, one scoped to a persisted applies-to data view, and one whose due date comes from a group attribute) and history enabled, with one member edited so a history snapshot exists; a group sync (any data view to a role); a required signature document template on the group; an event registration instance linked to the group with a registrant placed in it; a scheduling-enabled type with one person in two active roles; a MemberPlacedElsewhere trigger on the group type with Show Note on; a campus whose Team Group is set (Campus Detail); a group type with no roles.
 
 ### T1. Block load and group resolution
 
@@ -263,7 +265,7 @@ Per-slice checklists backing the **Tested** column. A row is Tested only when ev
 
 ### T4. Name indicators and row styling
 
-The requirement triangle is a name indicator too, but it reads the bulk status helper that slice 5 builds, so it is checked in [T6](#t6-requirements) rather than here.
+The requirement triangle is a name indicator too, but it reads the requirement statuses that slice 5a loads, so it is checked in [T6](#t6-requirements) rather than here.
 
 - [x] Multiple-roles warning appears only on a scheduling-enabled type and only for the person holding two active roles.
 - [x] Note icon with tooltip when Show Note Column is off; no icon when it is on.
@@ -323,13 +325,32 @@ The requirement triangle is a name indicator too, but it reads the bulk status h
 
 ### T6. Requirements
 
+**Slice 5a**
+
+- [ ] Requirement triangle in the name cell: danger for Not Met, warning for Meets With Warning, none when all requirements are met, with the legacy tooltips.
+- [ ] A member who is both Not Met and Meets With Warning shows the danger triangle only.
+- [ ] A requirement type the person cannot VIEW does not raise the triangle.
+- [ ] Triangles match what the legacy block shows on the same group, with the recalculation job freshly run.
+- [ ] Add a requirement to the group and confirm the triangle appears immediately, before the job runs, since no stored row means Not Met.
+- [ ] A role-specific requirement raises no triangle on members in other roles; an adult-only requirement raises none on a child; a requirement scoped to an applies-to data view raises none on someone outside it.
+- [ ] A requirement with a future due date and no stored row shows the warning triangle rather than the danger one.
+- [ ] A requirement whose due date comes from a group attribute agrees with legacy, including when the group has no value stored for that attribute and the attribute carries a default.
+- [ ] A requirement scoped to a persisted applies-to data view matches that data view's persisted ids, which is the accepted difference from legacy's live evaluation. Change someone's data so the live result and the persisted set disagree, then confirm the triangle follows the persisted set until the data view is re-persisted.
+- [ ] Two members in the same group with different roles, one of whom holds a role-specific requirement, get their own statuses rather than sharing one, since the whole list is now computed in a single pass.
+
+**Slice 5b**
+
 - [ ] The tab bar and the Requirements tab appear only when the group or group type has requirements; with none, the Members grid renders alone with no tab bar.
 - [ ] Switching tabs issues no second `GetGridData` call; reloading on `?tab=Requirements` lands on that tab.
-- [ ] Requirements column and its filters appear only when the group or group type has requirements.
-- [ ] Labels: one per applicable type with the right color; a role-specific requirement shows only for that role; a type the person cannot VIEW is absent.
+- [ ] The Requirements tab's name cell carries the same indicators as the Members tab's.
+
+**Slice 5c**
+
+- [ ] The Requirements column appears only when the group or group type has requirements.
+- [ ] Labels: one per applicable requirement with the right color; a type the person cannot VIEW is absent.
+- [ ] The Requirement Type and Requirement State filters appear only when the group or group type has requirements.
 - [ ] Requirement Type and Requirement State filters narrow the list alone and combined.
-- [ ] Bulk helper matches `GetGroupRequirementsStatuses` per member on the test group (states, warning dates, due-date fallback), including a data-view-scoped and an age-classification-scoped requirement.
-- [ ] Requirement triangle in the name cell: danger for Not Met, warning for Meets With Warning, none when all requirements are met, with the legacy tooltips.
+- [ ] A requirement type the person cannot VIEW is absent from the Requirement Type filter's options.
 - [ ] Name-cell flags and the Requirements column agree for every member.
 
 ### T7. Row actions

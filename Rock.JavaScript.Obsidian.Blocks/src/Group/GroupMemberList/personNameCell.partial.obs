@@ -15,6 +15,9 @@
 
                 <i v-if="signalColor" :class="signalIconCssClass || 'ti ti-flag'" :style="{ color: signalColor }"></i>
 
+                <i v-if="hasUnmetRequirement" class="ti ti-alert-triangle text-danger" title="does not meet requirements"></i>
+                <i v-else-if="hasRequirementWarning" class="ti ti-alert-triangle text-warning" title="has requirement warnings"></i>
+
                 <span v-if="hasMultipleRoles"
                       :ref="(el) => addTooltip(el as Element)"
                       data-toggle="tooltip"
@@ -81,6 +84,14 @@
 
     const signalIconCssClass = computed((): string => {
         return (props.row.signalIconCssClass as string | null) ?? "";
+    });
+
+    const hasUnmetRequirement = computed((): boolean => {
+        return props.row.hasUnmetRequirement === true;
+    });
+
+    const hasRequirementWarning = computed((): boolean => {
+        return props.row.hasRequirementWarning === true;
     });
 
     const hasMultipleRoles = computed((): boolean => {

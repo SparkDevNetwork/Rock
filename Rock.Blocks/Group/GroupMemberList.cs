@@ -210,6 +210,16 @@ namespace Rock.Blocks.Group
         private HashSet<int> _multipleRolePersonIds = new HashSet<int>();
 
         /// <summary>
+        /// The identifiers of the listed members who do not meet a requirement that applies to them.
+        /// </summary>
+        private HashSet<int> _unmetRequirementGroupMemberIds = new HashSet<int>();
+
+        /// <summary>
+        /// The identifiers of the listed members who meet a requirement that applies to them with a warning.
+        /// </summary>
+        private HashSet<int> _requirementWarningGroupMemberIds = new HashSet<int>();
+
+        /// <summary>
         /// The group member attributes shown as grid columns. Access via <see cref="GetGridAttributes"/>.
         /// </summary>
         private List<AttributeCache> _gridAttributes;
@@ -372,7 +382,7 @@ namespace Rock.Blocks.Group
                 Options = GetBoxOptions(),
                 IsAddEnabled = IsAddEnabled(),
                 NavigationUrls = GetBoxNavigationUrls(),
-				ExpectedRowCount = 10
+                ExpectedRowCount = 10
             };
         }
 
@@ -559,6 +569,8 @@ namespace Rock.Blocks.Group
                 .AddTextField( "status", r => r.GroupMember.GroupMemberStatus.ConvertToString() )
                 .AddTextField( "signalColor", r => r.Person.TopSignalColor )
                 .AddTextField( "signalIconCssClass", r => r.Person.TopSignalIconCssClass )
+                .AddField( "hasUnmetRequirement", r => _unmetRequirementGroupMemberIds.Contains( r.GroupMember.Id ) )
+                .AddField( "hasRequirementWarning", r => _requirementWarningGroupMemberIds.Contains( r.GroupMember.Id ) )
                 .AddField( "hasMultipleRoles", r => _multipleRolePersonIds.Contains( r.Person.Id ) )
                 .AddField( "isUnsigned", r => IsUnsignedShown && !_signedPersonIds.Contains( r.Person.Id ) )
                 .AddField( "isInactive", r => r.GroupMember.GroupMemberStatus == GroupMemberStatus.Inactive )
@@ -818,9 +830,10 @@ namespace Rock.Blocks.Group
         }
 
         /// <summary>
-        /// Builds the lookups the member query cannot project: registrations, first and last attendance, signed
-        /// documents, the people holding multiple active roles, phone numbers, and home addresses. Each takes a
-        /// single query covering the whole list, never one per member, and the multiple-role set takes none.
+        /// Builds the lookups the member query cannot project: registrations, requirement statuses, first and last
+        /// attendance, signed documents, the people holding multiple active roles, phone numbers, and home
+        /// addresses. Each takes a single query covering the whole list, never one per member, and the
+        /// multiple-role set takes none.
         /// </summary>
         /// <param name="rows">The materialized group member rows.</param>
         /// <param name="rockContext">The database context.</param>
@@ -861,6 +874,8 @@ namespace Rock.Blocks.Group
                         Value = IdHasher.Instance.GetHash( r.RegistrationId ),
                         Text = r.RegistrationName
                     } ).ToList() );
+
+            BuildRequirementStatuses( rows, rockContext );
 
             if ( IsAttendanceShown )
             {
@@ -947,6 +962,50 @@ namespace Rock.Blocks.Group
                 .ToList()
                 .GroupBy( x => x.PersonId )
                 .ToDictionary( g => g.Key, g => g.OrderBy( x => x.GroupOrder ).Select( x => x.HomeLocation ).FirstOrDefault() );
+        }
+
+        /// <summary>
+        /// Flags the listed members who do not meet a requirement, or meet one with a warning, from the statuses
+        /// of the whole list. Requirement types the current person cannot view are dropped here rather than in
+        /// the model layer, which reports every type.
+        /// </summary>
+        /// <param name="rows">The materialized group member rows.</param>
+        /// <param name="rockContext">The database context.</param>
+        private void BuildRequirementStatuses( List<GroupMemberRow> rows, RockContext rockContext )
+        {
+            var currentPerson = GetCurrentPerson();
+
+            var statusesByGroupMemberId = new GroupService( rockContext )
+                .GetGroupRequirementStatuses( rows.Select( r => r.GroupMember ) );
+
+            // Authorization is per requirement type, so it is settled once for the types in play rather than once per member.
+            var viewableRequirementTypeIds = statusesByGroupMemberId.Values
+                .SelectMany( statuses => statuses )
+                .Select( status => status.GroupRequirement.GroupRequirementType )
+                .GroupBy( requirementType => requirementType.Id )
+                .Where( requirementTypes => requirementTypes.First().IsAuthorized( Authorization.VIEW, currentPerson ) )
+                .Select( requirementTypes => requirementTypes.Key )
+                .ToHashSet();
+
+            _unmetRequirementGroupMemberIds = statusesByGroupMemberId
+                .Where( memberStatuses =>
+                    memberStatuses.Value.Any( status =>
+                        status.MeetsGroupRequirement == MeetsGroupRequirement.NotMet
+                        && viewableRequirementTypeIds.Contains( status.GroupRequirement.GroupRequirementTypeId )
+                    )
+                )
+                .Select( memberStatuses => memberStatuses.Key )
+                .ToHashSet();
+
+            _requirementWarningGroupMemberIds = statusesByGroupMemberId
+                .Where( memberStatuses =>
+                    memberStatuses.Value.Any( status =>
+                        status.MeetsGroupRequirement == MeetsGroupRequirement.MeetsWithWarning
+                        && viewableRequirementTypeIds.Contains( status.GroupRequirement.GroupRequirementTypeId )
+                    )
+                )
+                .Select( memberStatuses => memberStatuses.Key )
+                .ToHashSet();
         }
 
         #endregion Private Methods
