@@ -5,7 +5,7 @@
                            @clearButtonClicked="onClear"
                            :iconCssClass="pickerIconClass"
                            :showClear="showClear"
-                           :modelValue="internalValues"
+                           :modelValue="validationValue"
                            :fullWidth="fullWidth"
                            :hideMainActionButtons="hideMainActionButtons"
                            v-model:showPopup="internalShowPopup">
@@ -177,6 +177,16 @@
      * the select button.
      */
     const internalValues = ref(forceToArray(props.modelValue, props.multiple).map(v => v.value ?? ""));
+
+    /**
+     * The value passed to RockFormField for validation. An unselected picker
+     * seeds internalValues with a single empty string (from an empty ListItemBag),
+     * which is a non-empty array and would defeat the "required" rule. Stripping
+     * the empty entries yields a truly empty array when nothing is selected.
+     */
+    const validationValue = computed((): string[] => {
+        return internalValues.value.filter(v => v !== "");
+    });
 
     /**
      * A flat array of items from the tree. This is used to quickly filter

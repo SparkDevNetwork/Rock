@@ -1,6 +1,6 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <RockFormField :modelValue="internalValue" :formGroupClasses="'person-picker ' + formGroupClasses" name="personpicker">
+    <RockFormField :modelValue="internalValue?.value" :formGroupClasses="'person-picker ' + formGroupClasses" name="personpicker">
         <template #default>
             <div v-if="!isInputHidden" class="control-wrapper">
                 <div class="picker picker-select person-picker">
