@@ -688,10 +688,13 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets the next check in start time.
+        /// Gets the time that check-in opens for the next occurrence on or after
+        /// the specified date and time. This is the occurrence's start time shifted
+        /// earlier by <see cref="CheckInStartOffsetMinutes" />, not the schedule's
+        /// start time.
         /// </summary>
         /// <param name="begindateTime">The begindate time.</param>
-        /// <returns></returns>
+        /// <returns>The <see cref="DateTime"/> that check-in opens for the next occurrence today, or <c>null</c> if there is none.</returns>
         public virtual DateTime? GetNextCheckInStartTime( DateTime begindateTime )
         {
             var checkInTimes = GetCheckInTimes( begindateTime );
