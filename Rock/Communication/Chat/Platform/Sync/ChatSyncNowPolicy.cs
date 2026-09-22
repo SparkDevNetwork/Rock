@@ -73,12 +73,10 @@ namespace Rock.Communication.Chat.Platform.Sync
         /// <returns>A refusal, or where the press has got to.</returns>
         /// <remarks>
         /// Authority is asked first, so a caller who may not press the button learns nothing about the
-        /// state of chat from pressing it.
+        /// state of chat from pressing it, and the job is read last, only for a press that may go ahead.
         /// </remarks>
         public static Result Request( ChatPlatformConfiguration configuration, bool isAuthorized, Func<JobSnapshot> readJob, Action<int> queueRunNow )
         {
-            var job = readJob();
-
             if ( !isAuthorized )
             {
                 return new Result { RefusalMessage = ForbiddenMessage, IsForbidden = true };
@@ -90,6 +88,10 @@ namespace Rock.Communication.Chat.Platform.Sync
                 return new Result { RefusalMessage = stored.HasBeenEnabled ? UnreadableKeyMessage : NeverEnabledMessage };
             }
 
+            // Read only now. Reading the job probes its lock, and a probe on the instant the schedule
+            // fires takes the lock first and costs the church that run, which a press about to be
+            // refused has no business doing.
+            var job = readJob();
             if ( job == null )
             {
                 return new Result { RefusalMessage = MissingJobMessage };
@@ -120,12 +122,12 @@ namespace Rock.Communication.Chat.Platform.Sync
         /// <returns>A refusal, or where the press has got to.</returns>
         public static Result Status( bool isAuthorized, int runMarker, Func<RunSnapshot> readRun )
         {
-            var run = readRun();
-
             if ( !isAuthorized )
             {
                 return new Result { RefusalMessage = ForbiddenMessage, IsForbidden = true };
             }
+
+            var run = readRun();
 
             // Checked here as well as by whoever read the run, because the one thing this must never do
             // is report a run that ended before the press as the press's own result.
