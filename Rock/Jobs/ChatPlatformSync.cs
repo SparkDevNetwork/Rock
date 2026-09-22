@@ -75,10 +75,16 @@ namespace Rock.Jobs
         // provisional until the platform is measured at full scale.
         private static readonly TimeSpan MaximumScheduleGap = TimeSpan.FromHours( 24 );
 
-        // How many fire times to look at. Enough to walk a weekly pattern round to its own repeat,
-        // which is the longest shape that hides its gap; anything slower than weekly shows its gap
-        // on the first step.
-        private const int ScheduleSampleSize = 14;
+        // How far ahead a schedule is read. A fixed handful of fires is not enough: an hourly
+        // weekday schedule spends its first fourteen on the hour and the overnight, and the
+        // weekend, which is the gap over a day, sits further along. Eight days covers a weekly
+        // pattern whichever day the reading starts on.
+        private static readonly TimeSpan ScheduleSampleWindow = TimeSpan.FromDays( 8 );
+
+        // Where the walk stops if it never reaches that window. Eight days of a fire every second
+        // is 691200 steps, and the cap sits above that so a schedule that dense is still judged
+        // across the whole window rather than cut off inside it.
+        private const int ScheduleSampleCap = 700000;
 
         // How long the projection may take. Generous, because it reads the whole of a large
         // church's group membership and runs on that church's own server, and because the cost of
@@ -233,6 +239,9 @@ namespace Rock.Jobs
         /// The longest gap and not the next one, because the schedules that go wrong quietly are the ones
         /// that look frequent. A weekday morning schedule fires five times a week and leaves seventy two
         /// hours over every weekend, and the gap after any given Monday run is a reassuring twenty four.
+        /// The same is true of a schedule that fires every hour through a weekday: the first handful of
+        /// gaps are an hour or the overnight, and the weekend is only visible once the walk has covered
+        /// a week.
         /// </remarks>
         private static TimeSpan? LongestGap( string cronExpression, DateTimeOffset after )
         {
@@ -260,9 +269,10 @@ namespace Rock.Jobs
             expression.TimeZone = TimeZoneInfo.Utc;
 
             var previous = after;
+            var windowEnd = after + ScheduleSampleWindow;
             TimeSpan? longest = null;
 
-            for ( var step = 0; step < ScheduleSampleSize; step++ )
+            for ( var step = 0; step < ScheduleSampleCap && previous < windowEnd; step++ )
             {
                 var next = expression.GetNextValidTimeAfter( previous );
                 if ( !next.HasValue )

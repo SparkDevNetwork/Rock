@@ -95,6 +95,28 @@ namespace Rock.Tests.Communication.Chat.Platform.Sync
                 "Friday to Monday is seventy two hours, and only the first gap of this schedule is twenty four" );
         }
 
+        /// <summary>
+        /// The cell that separates a walk across a week from one that stops after a handful of
+        /// fires. The first fourteen gaps here are an hour, or the fourteen hours overnight, and
+        /// Friday evening to Monday morning sits past all of them.
+        /// </summary>
+        [TestMethod]
+        public void AnHourlyWeekdaySchedule_IsCaughtByTheWeekendItLeaves()
+        {
+            Assert.IsNotNull( ChatPlatformSync.ScheduleWarning( "0 0 8-18 ? * MON-FRI *", Monday ),
+                "Friday evening to Monday morning is more than a day, and the first fourteen fires of this schedule never reach it" );
+        }
+
+        /// <summary>
+        /// The same hours on every day leave an overnight, which is under a day, so saying so would
+        /// be the warning firing on a schedule that meets the bound.
+        /// </summary>
+        [TestMethod]
+        public void AnHourlyScheduleEveryDay_SaysNothing()
+        {
+            Assert.IsNull( ChatPlatformSync.ScheduleWarning( "0 0 8-18 * * ? *", Monday ) );
+        }
+
         [TestMethod]
         public void AnExpressionThatWillNotParse_IsNotAWarningAboutTheSchedule()
         {
