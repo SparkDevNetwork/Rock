@@ -295,7 +295,7 @@ namespace Rock.CheckIn.v2.Labels
                 TextSubType = TextFieldSubType.CheckInInfo,
                 Category = "Common",
                 Formatter = DateTimeDataFormatter.Instance,
-                ValuesFunc = ( source, field, printRequest ) => source.PersonAttendance.Select( a => a.Schedule.GetNextCheckInStartTime( a.StartDateTime ) )
+                ValuesFunc = ( source, field, printRequest ) => source.PersonAttendance.Select( a => a.Schedule.GetNextCheckInOccurrenceStartTime( a.StartDateTime ) )
             } );
 
             dataSources.Add( new SingleValueFieldDataSource<PersonLabelData>
@@ -553,7 +553,7 @@ namespace Rock.CheckIn.v2.Labels
                 TextSubType = TextFieldSubType.CheckInInfo,
                 Category = "Common",
                 Formatter = DateTimeDataFormatter.Instance,
-                ValueFunc = ( source, field, printRequest ) => source.Attendance.Schedule?.GetNextCheckInStartTime( source.Attendance.StartDateTime )
+                ValueFunc = ( source, field, printRequest ) => source.Attendance.Schedule?.GetNextCheckInOccurrenceStartTime( source.Attendance.StartDateTime )
             } );
 
             dataSources.Add( new SingleValueFieldDataSource<ILabelDataHasAttendance>
@@ -1193,7 +1193,7 @@ namespace Rock.CheckIn.v2.Labels
                 TextSubType = TextFieldSubType.CheckInInfo,
                 Category = "Common",
                 Formatter = DateTimeDataFormatter.Instance,
-                ValuesFunc = ( source, field, printRequest ) => source.PersonAttendance.Select( a => a.Schedule.GetNextCheckInStartTime( a.StartDateTime ) )
+                ValuesFunc = ( source, field, printRequest ) => source.PersonAttendance.Select( a => a.Schedule.GetNextCheckInOccurrenceStartTime( a.StartDateTime ) )
             } );
 
             dataSources.Add( new SingleValueFieldDataSource<PersonLocationLabelData>
