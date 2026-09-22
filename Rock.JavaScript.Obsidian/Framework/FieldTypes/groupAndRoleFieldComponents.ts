@@ -67,10 +67,20 @@ export const EditComponent = defineComponent({
         };
     },
 
+    /*
+        9/22/26 - NA
+
+        The GroupAndRolePicker must be the single root element (no wrapping
+        <div>). Attributes passed down from rockField.obs - notably "rules"
+        (required), plus label/help - are fall-through attributes and Vue only
+        applies them to a component's single root element. A wrapping <div>
+        swallowed them, so "required" never reached the picker's RockFormField
+        and required validation was silently skipped.
+
+        Reason: keep the picker as the root so "rules" reaches it and required is enforced.
+    */
     template: `
-    <div>
-        <GroupAndRolePicker v-model="groupRoleValue" :groupLabel="groupLabel" v-model:groupType="groupType" v-model:group="group" />
-    </div>
+    <GroupAndRolePicker v-model="groupRoleValue" :groupLabel="groupLabel" v-model:groupType="groupType" v-model:group="group" />
 `
 });
 
