@@ -34,6 +34,26 @@ namespace Rock.Communication.Chat.Platform.Sync
     /// </remarks>
     internal static class ChatSyncNowPolicy
     {
+        #region Messages
+
+        private const string NeverEnabledMessage = "Chat is not set up for this church, so there is nothing to sync.";
+
+        private const string UnreadableKeyMessage = "Chat is set up for this church, but this installation cannot read the signing key it was given, so it cannot sync.";
+
+        private const string ForbiddenMessage = "You are not authorized to sync chat from here.";
+
+        private const string MissingJobMessage = "The Chat Platform Sync job is missing, so there is nothing to run.";
+
+        private const string WaitingMessage = "Waiting for the sync to start.";
+
+        private const string RunningMessage = "The sync is running.";
+
+        // What Rock records for a run that ended well. Anything else it records for an ended run, a
+        // warning, an exception or a job that could not be loaded, is a run that did not.
+        private const string SuccessStatus = "Success";
+
+        #endregion Messages
+
         /// <summary>
         /// Answers a press.
         /// </summary>
@@ -42,9 +62,42 @@ namespace Rock.Communication.Chat.Platform.Sync
         /// <param name="job">What the job tables say about the sync job, or null when its row is missing.</param>
         /// <param name="queueRunNow">Asks Rock to run the job with the given id now.</param>
         /// <returns>A refusal, or where the press has got to.</returns>
+        /// <remarks>
+        /// Authority is asked first, so a caller who may not press the button learns nothing about the
+        /// state of chat from pressing it.
+        /// </remarks>
         public static Result Request( ChatPlatformConfiguration configuration, bool isAuthorized, JobSnapshot job, Action<int> queueRunNow )
         {
-            throw new NotImplementedException();
+            if ( !isAuthorized )
+            {
+                return new Result { RefusalMessage = ForbiddenMessage, IsForbidden = true };
+            }
+
+            var stored = configuration ?? new ChatPlatformConfiguration();
+            if ( !stored.IsConfigured )
+            {
+                return new Result { RefusalMessage = stored.HasBeenEnabled ? UnreadableKeyMessage : NeverEnabledMessage };
+            }
+
+            if ( job == null )
+            {
+                return new Result { RefusalMessage = MissingJobMessage };
+            }
+
+            if ( job.IsRunning )
+            {
+                // Rock would refuse a second run while this one holds the lock, and refuse it without a
+                // word, so the press follows the run already going instead. Where the newest record is
+                // still open it is that run; where it has ended, the run holding the lock has not been
+                // recorded yet and will be the next record.
+                var isInFlightRunRecorded = job.LatestRunId.HasValue && !job.IsLatestRunEnded;
+
+                return Waiting( isInFlightRunRecorded ? job.LatestRunId.Value - 1 : job.LatestRunId ?? 0 );
+            }
+
+            queueRunNow( job.JobId );
+
+            return Waiting( job.LatestRunId ?? 0 );
         }
 
         /// <summary>
@@ -56,7 +109,36 @@ namespace Rock.Communication.Chat.Platform.Sync
         /// <returns>A refusal, or where the press has got to.</returns>
         public static Result Status( bool isAuthorized, int runMarker, RunSnapshot run )
         {
-            throw new NotImplementedException();
+            if ( !isAuthorized )
+            {
+                return new Result { RefusalMessage = ForbiddenMessage, IsForbidden = true };
+            }
+
+            // Checked here as well as by whoever read the run, because the one thing this must never do
+            // is report a run that ended before the press as the press's own result.
+            if ( run == null || run.Id <= runMarker )
+            {
+                return Waiting( runMarker );
+            }
+
+            if ( !run.HasEnded )
+            {
+                return new Result
+                {
+                    Status = new ChatSyncNowStatusBag { RunMarker = runMarker, Message = RunningMessage }
+                };
+            }
+
+            return new Result
+            {
+                Status = new ChatSyncNowStatusBag
+                {
+                    RunMarker = runMarker,
+                    IsFinished = true,
+                    IsFailure = !string.Equals( run.Status, SuccessStatus, StringComparison.OrdinalIgnoreCase ),
+                    Message = run.StatusMessage
+                }
+            };
         }
 
         /// <summary>
@@ -67,7 +149,7 @@ namespace Rock.Communication.Chat.Platform.Sync
         /// <returns>True when either provider is configured.</returns>
         public static bool IsChatSectionShown( bool isPreviousProviderEnabled, ChatPlatformConfiguration configuration )
         {
-            throw new NotImplementedException();
+            return isPreviousProviderEnabled || IsChatPlatformConfigured( configuration );
         }
 
         /// <summary>
@@ -77,7 +159,20 @@ namespace Rock.Communication.Chat.Platform.Sync
         /// <returns>True when this platform is configured.</returns>
         public static bool IsChatPlatformConfigured( ChatPlatformConfiguration configuration )
         {
-            throw new NotImplementedException();
+            return configuration != null && configuration.IsConfigured;
+        }
+
+        /// <summary>
+        /// A press that has not yet reached a run that ended.
+        /// </summary>
+        /// <param name="runMarker">The marker the press is reported from.</param>
+        /// <returns>The answer.</returns>
+        private static Result Waiting( int runMarker )
+        {
+            return new Result
+            {
+                Status = new ChatSyncNowStatusBag { RunMarker = runMarker, Message = WaitingMessage }
+            };
         }
 
         /// <summary>
