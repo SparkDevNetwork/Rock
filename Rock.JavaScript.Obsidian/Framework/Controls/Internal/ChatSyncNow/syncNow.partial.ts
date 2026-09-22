@@ -76,8 +76,14 @@ export const syncNowBudgetMilliseconds = 120000;
 /** Said when the budget is spent and the run has not ended. */
 const stillRunningMessage = "The sync is still running. Its result will appear on the Chat Platform Sync job in Jobs Administration.";
 
-/** Said when a refusal carries no reason of its own. */
+/** Said when the press is refused and gives no reason of its own. */
 const unexplainedRefusalMessage = "Sync Now could not be started.";
+
+/**
+ * Said when a check fails and gives no reason of its own. The sync was asked for before any check,
+ * so it goes ahead, and saying it could not be started would invite a second press.
+ */
+const unexplainedCheckFailureMessage = "Could not check on the sync. Its result will appear on the Chat Platform Sync job in Jobs Administration.";
 
 /**
  * Builds a Sync Now button's behaviour.
@@ -93,14 +99,15 @@ export function createSyncNow(dependencies: SyncNowDependencies): SyncNow {
      * Turns a refused block action into what the press came to.
      *
      * @param result The refused action.
+     * @param fallbackMessage What to say when the refusal gives no reason.
      *
      * @returns The outcome.
      */
-    function refused(result: SyncNowActionResult): SyncNowOutcome {
+    function refused(result: SyncNowActionResult, fallbackMessage: string): SyncNowOutcome {
         return {
             isFinished: false,
             isFailure: true,
-            message: result.errorMessage || unexplainedRefusalMessage
+            message: result.errorMessage || fallbackMessage
         };
     }
 
@@ -113,7 +120,7 @@ export function createSyncNow(dependencies: SyncNowDependencies): SyncNow {
         const requested = await dependencies.request();
 
         if (!requested.isSuccess || !requested.data) {
-            return refused(requested);
+            return refused(requested, unexplainedRefusalMessage);
         }
 
         let status = requested.data;
@@ -131,7 +138,7 @@ export function createSyncNow(dependencies: SyncNowDependencies): SyncNow {
             const checked = await dependencies.check(status.runMarker);
 
             if (!checked.isSuccess || !checked.data) {
-                return refused(checked);
+                return refused(checked, unexplainedCheckFailureMessage);
             }
 
             status = checked.data;
