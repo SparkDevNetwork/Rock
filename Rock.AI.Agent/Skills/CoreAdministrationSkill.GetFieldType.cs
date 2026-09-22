@@ -81,6 +81,40 @@ internal sealed partial class CoreAdministrationSkill
                 .ToList()
         };
 
+        /*
+            9/17/26 - CLAUDE
+
+            Computed with an empty configuration because this tool describes a field
+            type rather than a configured attribute. Field types whose hints depend on
+            configuration, a defined value or single select, describe their shape here
+            but do not enumerate their values; the configured values come back on the
+            attribute itself. Field types whose format is fixed, Person being the one
+            that matters most, are fully described either way.
+
+            Wrapped in try/catch to match AgentToolHelper: a config-dependent field type
+            can run a SQL query in GetFieldHints, and a failure there should cost the
+            hint, not the whole tool result.
+
+            Reason: The storage format is the one thing a caller cannot infer from the
+            field type's name, and getting it wrong produces no error, only a reference
+            that silently never resolves.
+        */
+        if ( fieldTypeCache?.Field is Rock.Field.FieldType field )
+        {
+            try
+            {
+                var hints = field.GetFieldHints( new Dictionary<string, string>() );
+
+                result.ValueFormat = hints?.ValueFormat.ToStringOrDefault( null );
+                result.ValueInstructions = hints?.Instructions.ToStringOrDefault( null );
+            }
+            catch
+            {
+                // Intentionally swallowed: the hint is a supplement, and a field type
+                // that cannot produce one is left described by its qualifiers alone.
+            }
+        }
+
         if ( !result.Sanitize( AgentRequestContext ) )
         {
             return Error( "You do not have permission to view this field type." );

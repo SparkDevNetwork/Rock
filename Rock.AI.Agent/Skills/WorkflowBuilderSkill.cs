@@ -1014,6 +1014,39 @@ internal sealed partial class WorkflowBuilderSkill : AgentSkillComponent
             };
         }
 
+        /*
+            9/17/26 - CLAUDE
+
+            Resolved from the attribute's own configuration, so a select lists its
+            actual options and a Person attribute states that it stores a person alias
+            guid, not the person's own guid. This is the value an action's Lava has to
+            produce when it writes into the attribute, and getting it wrong produces no
+            error, only a reference that never resolves.
+
+            Wrapped in try/catch to match AgentToolHelper: a config-dependent field type
+            can run a SQL query in GetFieldHints, and a failure there should cost the
+            hint, not the whole attribute.
+
+            Reason: The stored value's format is the one thing the caller cannot infer
+            from the field type's name.
+        */
+        if ( attribute.FieldType?.Field is Rock.Field.FieldType field )
+        {
+            try
+            {
+                var hints = field.GetFieldHints( attribute.ConfigurationValues );
+
+                result.ValueFormat = hints?.ValueFormat.ToStringOrDefault( null );
+                result.ValueInstructions = hints?.Instructions.ToStringOrDefault( null );
+            }
+            catch
+            {
+                // Intentionally swallowed: the hint is a supplement, and an attribute
+                // whose field type cannot produce one is left described by its
+                // configuration values alone.
+            }
+        }
+
         return result;
     }
 
