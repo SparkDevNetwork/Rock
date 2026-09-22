@@ -44,6 +44,7 @@
         <ButtonColumn name="compile"
                       title="Compile"
                       iconClass="ti ti-refresh"
+                      width="72px"
                       :visible="row => !!row.allowsCompile"
                       :excludeFromExport="true"
                       @click="onCompileClick" />
