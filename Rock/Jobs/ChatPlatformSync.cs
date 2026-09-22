@@ -44,6 +44,22 @@ namespace Rock.Jobs
 {
     [DisplayName( "Chat Platform Sync" )]
     [Description( "Sends this church's people, channels, memberships and badges to the chat platform, as a whole picture each time." )]
+    /// <summary>
+    /// Sends this church's people, channels, memberships and badges to the chat platform.
+    /// </summary>
+    /// <remarks>
+    ///     <para>
+    ///         Every run sends the whole picture rather than what changed, so a run that does not
+    ///         happen costs nothing the next one cannot put right, and a run that happens twice
+    ///         writes the same thing twice. That is what lets this job give up early, skip itself
+    ///         when the platform asks for quiet, and be pressed by hand as often as anyone likes.
+    ///     </para>
+    ///     <para>
+    ///         Named apart from the Chat Sync job, which belongs to the other chat provider. The two
+    ///         appear side by side on the Jobs Administration page and do entirely different things,
+    ///         so they must not be read as one job under two names.
+    ///     </para>
+    /// </remarks>
     public class ChatPlatformSync : RockJob
     {
         #region Constants
@@ -73,6 +89,7 @@ namespace Rock.Jobs
 
         #region Execute
 
+        /// <inheritdoc />
         public override void Execute()
         {
             var configuration = ChatPlatformConfigurationService.Read();
@@ -121,6 +138,9 @@ namespace Rock.Jobs
             }
         }
 
+        /// <summary>
+        /// Whether a person started this run.
+        /// </summary>
         private bool IsManualRun()
         {
             var schedulerName = Scheduler?.SchedulerName;
@@ -133,10 +153,18 @@ namespace Rock.Jobs
 
         #region Whether the run happens
 
-        // Why this run did nothing, or null where it goes ahead. The backoff is the platform's
-        // advice about its own load, and it binds the schedule but not a person: someone who
-        // pressed Sync Now is at a screen waiting for an answer, and the cost of letting them
-        // through is one submission the platform would rather have had later.
+        /// <summary>
+        /// Why this run did nothing, or null where it goes ahead.
+        /// </summary>
+        /// <param name="isManualRun">Whether a person started this run rather than the schedule.</param>
+        /// <param name="backoffUntil">The time the chat platform last asked not to be called before.</param>
+        /// <param name="now">The current instant.</param>
+        /// <returns>The reason, or null where the run may go ahead.</returns>
+        /// <remarks>
+        /// The backoff is the platform's advice about its own load, and it binds the schedule but not a
+        /// person: someone who pressed Sync Now is at a screen waiting for an answer, and the cost of
+        /// letting them through is one submission the platform would rather have had later.
+        /// </remarks>
         internal static string SkipReason( bool isManualRun, DateTimeOffset? backoffUntil, DateTimeOffset now )
         {
             if ( isManualRun || !backoffUntil.HasValue || backoffUntil.Value <= now )
@@ -150,20 +178,35 @@ namespace Rock.Jobs
                 backoffUntil.Value.ToUniversalTime().ToString( "yyyy-MM-dd HH:mm:ss'Z'", CultureInfo.InvariantCulture ) );
         }
 
-        // Refused at compile time. A DateTime handed to the overload above would be converted to an
-        // instant with this server's offset. Rock's own clock returns the organisation's wall
-        // clock, which on a hosted server is not in this server's zone, so the backoff would be
-        // compared against a moment wrong by the difference: honoured hours past its expiry, or
-        // released hours early.
+        /// <summary>
+        /// Refused at compile time.
+        /// </summary>
+        /// <param name="isManualRun">Whether a person started this run rather than the schedule.</param>
+        /// <param name="backoffUntil">The time the chat platform last asked not to be called before.</param>
+        /// <param name="now">A wall-clock reading, which is the mistake this exists to stop.</param>
+        /// <returns>Nothing; calling it does not compile.</returns>
+        /// <remarks>
+        /// A <see cref="DateTime"/> handed to the overload above would be converted to an instant with
+        /// this server's offset. Rock's own clock returns the organisation's wall clock, which on a
+        /// hosted server is not in this server's zone, so the backoff would be compared against a moment
+        /// wrong by the difference: honoured hours past its expiry, or released hours early.
+        /// </remarks>
         [Obsolete( "Pass an instant, such as DateTimeOffset.UtcNow. A DateTime is converted with this server's offset, which is not the organisation's, and the backoff is then compared against the wrong moment.", true )]
         internal static string SkipReason( bool isManualRun, DateTimeOffset? backoffUntil, DateTime now )
         {
             throw new NotSupportedException( "a backoff cannot be judged against a wall-clock reading" );
         }
 
-        // What is worth saying about this schedule, or null where there is nothing. The schedule is
-        // the church's own setting and is remarked on rather than corrected: nothing here writes to
-        // the job.
+        /// <summary>
+        /// What is worth saying about this schedule, or null where there is nothing.
+        /// </summary>
+        /// <param name="cronExpression">The schedule.</param>
+        /// <param name="after">The moment to look forward from.</param>
+        /// <returns>The warning, or null.</returns>
+        /// <remarks>
+        /// The schedule is the church's own setting and is remarked on rather than corrected: nothing
+        /// here writes to the job.
+        /// </remarks>
         internal static string ScheduleWarning( string cronExpression, DateTimeOffset after )
         {
             var longest = LongestGap( cronExpression, after );
@@ -180,10 +223,17 @@ namespace Rock.Jobs
                 DescribeGap( longest.Value ) );
         }
 
-        // The longest gap between consecutive runs, not the next one, because the schedules that go
-        // wrong quietly are the ones that look frequent. A weekday morning schedule fires five
-        // times a week and leaves seventy two hours over every weekend, and the gap after any given
-        // Monday run is a reassuring twenty four hours.
+        /// <summary>
+        /// The longest gap between consecutive runs of this schedule, looking forward from a moment.
+        /// </summary>
+        /// <param name="cronExpression">The schedule.</param>
+        /// <param name="after">The moment to look forward from.</param>
+        /// <returns>The longest gap, or null where the schedule cannot be read or has no future runs.</returns>
+        /// <remarks>
+        /// The longest gap and not the next one, because the schedules that go wrong quietly are the ones
+        /// that look frequent. A weekday morning schedule fires five times a week and leaves seventy two
+        /// hours over every weekend, and the gap after any given Monday run is a reassuring twenty four.
+        /// </remarks>
         private static TimeSpan? LongestGap( string cronExpression, DateTimeOffset after )
         {
             if ( cronExpression.IsNullOrWhiteSpace() )
@@ -232,7 +282,11 @@ namespace Rock.Jobs
             return longest;
         }
 
-        // A gap in the roundest words it fits, because a church reads this on a job page.
+        /// <summary>
+        /// A gap in the roundest words it fits, because a church reads this on a job page.
+        /// </summary>
+        /// <param name="gap">The gap.</param>
+        /// <returns>The words.</returns>
         private static string DescribeGap( TimeSpan gap )
         {
             if ( gap.TotalDays >= 2 )
@@ -247,16 +301,29 @@ namespace Rock.Jobs
 
         #region The projection queries
 
+        /// <summary>
+        /// The query that stages the sets the section queries read.
+        /// </summary>
+        /// <returns>The query text.</returns>
         internal static string GetStagingSql()
         {
             return ReadSql( "ChatSyncStage.sql" );
         }
 
+        /// <summary>
+        /// The statement that marks the groups that are chat channels right now.
+        /// </summary>
+        /// <returns>The statement text.</returns>
         internal static string GetStampSql()
         {
             return ReadSql( "ChatSyncStampChannels.sql" );
         }
 
+        /// <summary>
+        /// The query that reads one payload section.
+        /// </summary>
+        /// <param name="section">The payload section, as the wire contract names it.</param>
+        /// <returns>The query text.</returns>
         internal static string GetSectionSql( string section )
         {
             switch ( section )
@@ -274,6 +341,16 @@ namespace Rock.Jobs
             }
         }
 
+        /// <summary>
+        /// Reads one query out of this assembly's manifest.
+        /// </summary>
+        /// <param name="fileName">The query's file name.</param>
+        /// <returns>The query text.</returns>
+        /// <exception cref="InvalidOperationException">
+        /// Thrown when the query is not packaged into the assembly, which is a build failure rather
+        /// than a runtime condition: without it this church cannot restate at all, so it says so
+        /// here rather than sending a payload missing a section.
+        /// </exception>
         private static string ReadSql( string fileName )
         {
             var assembly = typeof( ChatPlatformSync ).Assembly;
@@ -296,8 +373,14 @@ namespace Rock.Jobs
 
         #region The run
 
-        // One whole restatement: mark the channels, read the church, send it, and find out what
-        // happened to it.
+        /// <summary>
+        /// One whole restatement: mark the channels, read the church, send it, and find out what happened
+        /// to it.
+        /// </summary>
+        /// <param name="rockContext">The context the projection reads through.</param>
+        /// <param name="configuration">The church's chat settings.</param>
+        /// <param name="isManualRun">Whether a person started this run rather than the schedule.</param>
+        /// <returns>What the run has to say for itself.</returns>
         internal static RunResult Run( RockContext rockContext, ChatPlatformConfiguration configuration, bool isManualRun )
         {
             if ( rockContext == null )
@@ -375,11 +458,18 @@ namespace Rock.Jobs
             }
         }
 
-        // Reads the church once, without sending anything. The clock, the identity seeds and every
-        // section are taken on one open connection, and the staging query and the sections go as one
-        // batch. The staging query leaves its sets in temporary tables that live as long as that
-        // batch, which is what stops a membership arriving in the same payload as neither the
-        // channel nor the person it names.
+        /// <summary>
+        /// Reads the church once, without sending anything.
+        /// </summary>
+        /// <param name="rockContext">The context the projection reads through.</param>
+        /// <param name="configuration">The church's chat settings.</param>
+        /// <returns>The reading.</returns>
+        /// <remarks>
+        /// The clock, the identity seeds and every section are taken on one open connection, and the
+        /// staging query and the sections go as one batch. The staging query leaves its sets in temporary
+        /// tables that live as long as that batch, which is what stops a membership arriving in the same
+        /// payload as neither the channel nor the person it names.
+        /// </remarks>
         internal static ProjectionResult Project( RockContext rockContext, ChatPlatformConfiguration configuration )
         {
             if ( rockContext == null )
@@ -425,8 +515,11 @@ namespace Rock.Jobs
             }
         }
 
-        // Marks the groups that are chat channels right now, in its own transaction and before the
-        // clock is read, so the projection sees one settled set of marks.
+        /// <summary>
+        /// Marks the groups that are chat channels right now, in its own transaction and before the clock
+        /// is read, so the projection sees one settled set of marks.
+        /// </summary>
+        /// <param name="rockContext">The context to mark through.</param>
         internal static void StampChannels( RockContext rockContext )
         {
             rockContext.Database.CommandTimeout = ProjectionTimeoutSeconds;
@@ -435,8 +528,13 @@ namespace Rock.Jobs
                 new System.Data.SqlClient.SqlParameter( "@StampedAt", RockDateTime.Now ) );
         }
 
-        // The moment this restatement describes, taken from the database rather than from this
-        // process, and in UTC because it is compared against the platform's own clock.
+        /// <summary>
+        /// The moment this restatement describes, taken from the database rather than from this process,
+        /// and in UTC because it is compared against the platform's own clock.
+        /// </summary>
+        /// <param name="connection">The open connection.</param>
+        /// <param name="configuration">The church's chat settings.</param>
+        /// <returns>The moment.</returns>
         private static DateTime ReadClock( DbConnection connection, ChatPlatformConfiguration configuration )
         {
             using ( var command = CreateCommand( connection, "SELECT SYSUTCDATETIME();", configuration ) )
@@ -445,11 +543,18 @@ namespace Rock.Jobs
             }
         }
 
-        // The identity seed of each table the projection reads, and not the largest id in the
-        // table. Deleting the newest rows lowers the largest id and leaves the seed where it was,
-        // and a database restored from a backup is the case these exist to catch: its seeds go
-        // backwards and the platform refuses the submission rather than quietly writing a church's
-        // older picture over its newer one.
+        /// <summary>
+        /// The identity seed of each table the projection reads.
+        /// </summary>
+        /// <param name="connection">The open connection.</param>
+        /// <param name="configuration">The church's chat settings.</param>
+        /// <returns>The marks.</returns>
+        /// <remarks>
+        /// The seed and not the largest id in the table. Deleting the newest rows lowers the largest id
+        /// and leaves the seed where it was, and a database restored from a backup is the case these
+        /// exist to catch: its seeds go backwards and the platform refuses the submission rather than
+        /// quietly writing a church's older picture over its newer one.
+        /// </remarks>
         private static ChatSyncIdentityMarks ReadIdentityMarks( DbConnection connection, ChatPlatformConfiguration configuration )
         {
             const string sql =
@@ -476,11 +581,19 @@ namespace Rock.Jobs
             }
         }
 
-        // The staging and the four section queries go as one command, and the sections come back as
-        // its four result sets. That is not a round trip saved: a command carrying parameters is
-        // sent as a nested batch, and a temporary table made inside one of those is dropped the
-        // moment it ends. Split across commands, every section would ask for sets that no longer
-        // existed.
+        /// <summary>
+        /// Stages the sets once and writes every section from them into one buffer.
+        /// </summary>
+        /// <param name="connection">The open connection.</param>
+        /// <param name="configuration">The church's chat settings.</param>
+        /// <param name="rowCounts">The rows actually written, by section.</param>
+        /// <returns>The body, as the one buffer it was written into.</returns>
+        /// <remarks>
+        /// The staging and the four section queries go as one command, and the sections come back as its
+        /// four result sets. That is not a round trip saved: a command carrying parameters is sent as a
+        /// nested batch, and a temporary table made inside one of those is dropped the moment it ends.
+        /// Split across commands, every section would ask for sets that no longer existed.
+        /// </remarks>
         private static ArraySegment<byte> BuildPayload( DbConnection connection, ChatPlatformConfiguration configuration, out IDictionary<string, int> rowCounts )
         {
             var contract = JObject.Parse( ChatWireContract.Json );
@@ -534,6 +647,9 @@ namespace Rock.Jobs
             return buffer;
         }
 
+        /// <summary>
+        /// Writes one section from the result set the reader is currently on.
+        /// </summary>
         private static void WriteSection( DbDataReader reader, ChatSyncPayloadWriter payloadWriter, ChatSyncRowMapper mapper, string section )
         {
             payloadWriter.BeginSection( section );
@@ -551,7 +667,13 @@ namespace Rock.Jobs
             payloadWriter.EndSection();
         }
 
-        // One command, with only the parameters the text it runs actually names.
+        /// <summary>
+        /// One command, with only the parameters the text it runs actually names.
+        /// </summary>
+        /// <param name="connection">The open connection.</param>
+        /// <param name="sql">The text to run.</param>
+        /// <param name="configuration">The church's chat settings.</param>
+        /// <returns>The command.</returns>
         private static DbCommand CreateCommand( DbConnection connection, string sql, ChatPlatformConfiguration configuration )
         {
             var command = connection.CreateCommand();
@@ -574,7 +696,11 @@ namespace Rock.Jobs
             return command;
         }
 
-        // Everything the projection texts ask to be told rather than look up for themselves.
+        /// <summary>
+        /// Everything the projection texts ask to be told rather than look up for themselves.
+        /// </summary>
+        /// <param name="configuration">The church's chat settings.</param>
+        /// <returns>The parameters, by name.</returns>
         private static IDictionary<string, object> ProjectionParameters( ChatPlatformConfiguration configuration )
         {
             var badgeGuids = configuration.ChatBadgeDataViewGuids ?? new List<Guid>();
@@ -597,9 +723,16 @@ namespace Rock.Jobs
             };
         }
 
-        // A fresh church token per request. A church token lasts minutes and a run that read a
-        // large church and then waited out its poll budget can outlast one, so minting it once at
-        // the top would expire mid-run on exactly the churches this matters most for.
+        /// <summary>
+        /// A fresh church token per request.
+        /// </summary>
+        /// <param name="configuration">The church's chat settings.</param>
+        /// <returns>The token, or null where one could not be minted.</returns>
+        /// <remarks>
+        /// A church token lasts minutes and a run that read a large church and then waited out its poll
+        /// budget can outlast one, so minting it once at the top would expire mid-run on exactly the
+        /// churches this matters most for.
+        /// </remarks>
         private static string MintToken( ChatPlatformConfiguration configuration )
         {
             var minted = ChatSessionHelper.TryMintSyncToken( new ChatSessionContext { Configuration = configuration } );
@@ -607,6 +740,12 @@ namespace Rock.Jobs
             return minted.Success ? minted.ChurchToken : null;
         }
 
+        /// <summary>
+        /// How many rows a section carried, or zero where the section is not in the tally at all.
+        /// </summary>
+        /// <param name="rowCounts">The tally the payload writer kept.</param>
+        /// <param name="section">The section name.</param>
+        /// <returns>The count.</returns>
         private static int Count( IDictionary<string, int> rowCounts, string section )
         {
             int count;
@@ -617,17 +756,32 @@ namespace Rock.Jobs
 
         #region What the run reports
 
-        // Three answers, in order of how much they are worth. What became of this submission, where
-        // the queue reached it while the run was still waiting. What became of the previous one,
-        // where it did not, which the acknowledgement carries for exactly this reason. And, where
-        // there is neither, a plain statement that the restatement is stored and queued.
-        //
-        // That last answer is not a failure. The queue runs on its own schedule and very often has
-        // not reached a submission by the time the run that made it finishes, so a run that failed
-        // over it would be red on most cycles at a healthy church and would teach its administrator
-        // to stop reading the job. The fallback names the submission it is talking about, because
-        // reporting the previous cycle's result as though it were this one's would read as a
-        // success on the run after a failure, and as a failure on the run after a fix.
+        /// <summary>
+        /// Works out what a sync run has to say for itself.
+        /// </summary>
+        /// <param name="acknowledgement">What came back from the submission.</param>
+        /// <param name="polled">What a status read found, or null where none could be made.</param>
+        /// <returns>The result. Never null, and always carrying a sentence.</returns>
+        /// <remarks>
+        ///     <para>
+        ///         Three answers, in order of how much they are worth. What became of this submission,
+        ///         where the queue reached it while the run was still waiting. What became of the
+        ///         previous one, where it did not, which the acknowledgement carries for exactly this
+        ///         reason. And, where there is neither, a plain statement that the restatement is stored
+        ///         and queued.
+        ///     </para>
+        ///     <para>
+        ///         That last answer is not a failure. The queue runs on its own schedule and very often
+        ///         has not reached a submission by the time the run that made it finishes, so a run that
+        ///         failed over it would be red on most cycles at a healthy church and would teach its
+        ///         administrator to stop reading the job.
+        ///     </para>
+        ///     <para>
+        ///         The fallback names the submission it is talking about. Reporting the previous cycle's
+        ///         result as though it were this one's would read as a success on the run after a
+        ///         failure, and as a failure on the run after a fix.
+        ///     </para>
+        /// </remarks>
         internal static RunResult Resolve( ChatSyncAcknowledgement acknowledgement, ChatSyncOutcome polled )
         {
             if ( acknowledgement == null )
@@ -702,14 +856,23 @@ namespace Rock.Jobs
             };
         }
 
-        // The named reason, where there is one, as a clause rather than a bare code.
+        /// <summary>
+        /// The named reason, where there is one, as a clause rather than a bare code.
+        /// </summary>
+        /// <param name="errorCode">The code, or null.</param>
+        /// <returns>The clause, or an empty string.</returns>
         private static string Reason( string errorCode )
         {
             return errorCode.IsNullOrWhiteSpace() ? string.Empty : ": " + errorCode;
         }
 
-        // The run's own sentence and the remark about its schedule, in that order, skipping
-        // whichever is absent.
+        /// <summary>
+        /// The run's own sentence and the remark about its schedule, in that order, skipping whichever is
+        /// absent.
+        /// </summary>
+        /// <param name="outcome">What the run has to say for itself.</param>
+        /// <param name="scheduleWarning">What is worth saying about the schedule, or null.</param>
+        /// <returns>The result line.</returns>
         internal static string Join( string outcome, string scheduleWarning )
         {
             if ( scheduleWarning.IsNullOrWhiteSpace() )
@@ -720,23 +883,48 @@ namespace Rock.Jobs
             return outcome.IsNullOrWhiteSpace() ? scheduleWarning : outcome + " " + scheduleWarning;
         }
 
+        /// <summary>
+        /// What one sync run has to say for itself.
+        /// </summary>
         internal sealed class RunResult
         {
+            /// <summary>
+            /// Whether the run should be recorded as a failure.
+            /// </summary>
             public bool IsFailure { get; set; }
 
+            /// <summary>
+            /// What the run puts on its own result line, in words an administrator can act on.
+            /// </summary>
             public string Message { get; set; }
         }
 
-        // One reading of the church: the bytes, what was counted into them, the moment they
-        // describe and the identity seeds taken at that moment.
+        /// <summary>
+        /// One reading of the church: the bytes, what was counted into them, the moment they describe and
+        /// the identity seeds taken at that moment.
+        /// </summary>
         internal sealed class ProjectionResult
         {
+            /// <summary>
+            /// The whole restatement, as the wire carries it: UTF-8 text in the one buffer it was
+            /// written into. It is handed to the transport as it is rather than decoded and encoded
+            /// again, because a second copy of a large church's body is tens of megabytes for nothing.
+            /// </summary>
             public ArraySegment<byte> Payload { get; set; }
 
+            /// <summary>
+            /// How many rows each section actually carries, counted as they were written.
+            /// </summary>
             public IDictionary<string, int> RowCounts { get; set; }
 
+            /// <summary>
+            /// The moment this reading describes, taken before it began.
+            /// </summary>
             public DateTime ReadAtUtc { get; set; }
 
+            /// <summary>
+            /// The identity seeds of the tables it read.
+            /// </summary>
             public ChatSyncIdentityMarks Marks { get; set; }
         }
 
@@ -744,37 +932,103 @@ namespace Rock.Jobs
 
         #region Building the submission
 
+        /// <summary>
+        /// Builds the metadata a submission carries beside its body.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// Two of these values are dictionaries whose key sets the platform checks exactly, and those
+        /// key sets are read out of the wire contract rather than written here. They are the one part
+        /// of a submission that cannot be derived from the rest of the contract, and a copy of them
+        /// typed into this file would compile, pass every test that only reads it back, and be refused
+        /// at the platform on every cycle with nothing in this repository saying why.
+        /// </para>
+        /// <para>
+        /// The row-count keys are the short names of the payload's own sections, deliberately not the
+        /// four table names, which is why they are taken from the contract's header entry and checked
+        /// against the contract's section list rather than assumed to be either.
+        /// </para>
+        /// <para>
+        /// The mark keys name tables in Rock, and that correspondence has to live somewhere in this
+        /// assembly because the contract does not name Rock tables. What the contract decides is which
+        /// keys must be present: a key it lists and this builder cannot supply, or a key this builder
+        /// holds and the contract does not list, stops the submission here rather than being refused
+        /// later for a reason nobody can see. Key order is not part of either set and is not relied on.
+        /// </para>
+        /// </remarks>
         internal sealed class ChatSyncHeaderBuilder
         {
             #region Fields
 
+            /// <summary>
+            /// The contract entry naming the expected row count of each payload section.
+            /// </summary>
             private const string RowCountsHeader = "x-sync-counts";
 
+            /// <summary>
+            /// The contract entry naming the identity high-water value of each table read.
+            /// </summary>
             private const string IdentityMarksHeader = "x-sync-marks";
 
+            /// <summary>
+            /// The contract entry naming the moment every row of the payload is judged by.
+            /// </summary>
             private const string ReadTimeHeader = "x-sync-read-at";
 
+            /// <summary>
+            /// The contract entry naming the version of Rock that produced the payload.
+            /// </summary>
             private const string RockVersionHeader = "x-sync-rock-version";
 
+            /// <summary>
+            /// The contract entry carrying the hash of the column order the payload is in.
+            /// </summary>
             private const string ContractHeader = "x-sync-contract";
 
+            /// <summary>
+            /// The one optional entry, set for a run a person started and is waiting on.
+            /// </summary>
             private const string UrgentHeader = "x-sync-urgent";
 
+            /// <summary>
+            /// The idempotency key header. Set by this client rather than taken from a caller's
+            /// dictionary, so a retry cannot quietly carry a different one.
+            /// </summary>
             private const string SubmissionIdHeader = "x-sync-submission-id";
 
+            /// <summary>
+            /// A hundred nanoseconds is the smallest interval a tick counts and a microsecond is the
+            /// smallest the platform stores, so this is what has to be removed from a read time.
+            /// </summary>
             private const long TicksPerMicrosecond = 10L;
 
+            /// <summary>
+            /// The parsed wire contract, which decides the order values are emitted in.
+            /// </summary>
             private readonly JObject _contract;
 
             #endregion
 
             #region Constructors
 
+            /// <summary>
+            /// Builds headers from the contract that ships in this assembly.
+            /// </summary>
             public ChatSyncHeaderBuilder()
                 : this( JObject.Parse( ChatWireContract.Json ) )
             {
             }
 
+            /// <summary>
+            /// Builds headers from a supplied contract.
+            /// </summary>
+            /// <param name="contract">The parsed wire contract.</param>
+            /// <remarks>
+            /// Taking the contract rather than always reading the embedded one is what lets a test hand
+            /// this a contract whose key sets differ and require the headers to differ with them, which
+            /// is the only way to tell a builder that reads the contract from one that agrees with
+            /// itself.
+            /// </remarks>
             public ChatSyncHeaderBuilder( JObject contract )
             {
                 if ( contract == null )
@@ -789,6 +1043,10 @@ namespace Rock.Jobs
 
             #region Methods
 
+            /// <summary>
+            /// The payload's section names, in the order the contract lists them.
+            /// </summary>
+            /// <returns>The section names.</returns>
             public IList<string> GetPayloadSections()
             {
                 var sections = _contract["payload"] == null ? null : _contract["payload"]["sections"];
@@ -801,6 +1059,15 @@ namespace Rock.Jobs
                 return sections.Select( s => s.Value<string>() ).ToList();
             }
 
+            /// <summary>
+            /// Reads one header entry's key set out of the contract.
+            /// </summary>
+            /// <param name="headerName">The header the contract lists.</param>
+            /// <returns>The keys, in the order the contract happens to list them.</returns>
+            /// <remarks>
+            /// The order is incidental. Both sides of the platform's comparison sort, so it cannot
+            /// break a submission, and nothing here should come to depend on it.
+            /// </remarks>
             private IList<string> GetHeaderKeys( string headerName )
             {
                 var headers = _contract["submit_headers"];
@@ -825,6 +1092,11 @@ namespace Rock.Jobs
                 return header["keys"].Select( k => k.Value<string>() ).ToList();
             }
 
+            /// <summary>
+            /// Builds the expected row count header.
+            /// </summary>
+            /// <param name="rowCountsBySection">How many rows each payload section carries.</param>
+            /// <returns>The header value.</returns>
             public string BuildRowCounts( IDictionary<string, int> rowCountsBySection )
             {
                 if ( rowCountsBySection == null )
@@ -867,6 +1139,11 @@ namespace Rock.Jobs
                 return header.ToString( Formatting.None );
             }
 
+            /// <summary>
+            /// Builds the identity high-water header.
+            /// </summary>
+            /// <param name="marks">The values read from Rock.</param>
+            /// <returns>The header value.</returns>
             public string BuildIdentityMarks( ChatSyncIdentityMarks marks )
             {
                 if ( marks == null )
@@ -917,6 +1194,30 @@ namespace Rock.Jobs
                 return header.ToString( Formatting.None );
             }
 
+            /// <summary>
+            /// Builds every header one submission carries beside its body, save the submission id.
+            /// </summary>
+            /// <param name="readAtUtc">The UTC time taken before the projection read.</param>
+            /// <param name="marks">The identity seeds read from Rock.</param>
+            /// <param name="rowCountsBySection">How many rows each payload section carries, tallied as they were written.</param>
+            /// <param name="rockVersion">The version of Rock producing the payload.</param>
+            /// <param name="isUrgent">Whether a person started this run and is waiting on it.</param>
+            /// <returns>The headers, keyed by name.</returns>
+            /// <remarks>
+            /// <para>
+            /// The contract hash goes out as the hash of the column lists this contract actually
+            /// carries, and the submission stops here when that differs from the hash the contract
+            /// publishes for itself. An artifact edited after it was generated is one whose column
+            /// order nobody agreed to, and the platform's compare would refuse it on every cycle under
+            /// a code that points at no file.
+            /// </para>
+            /// <para>
+            /// The set is then held against the contract's own header list: every header the contract
+            /// requires is present, other than the submission id which the transport sets, and nothing
+            /// is sent that the contract does not list. The urgent header is absent rather than false
+            /// on a scheduled run, because its absence is what ordinary priority looks like.
+            /// </para>
+            /// </remarks>
             public IDictionary<string, string> BuildSubmissionHeaders( DateTime readAtUtc, ChatSyncIdentityMarks marks, IDictionary<string, int> rowCountsBySection, string rockVersion, bool isUrgent )
             {
                 if ( rockVersion.IsNullOrWhiteSpace() )
@@ -952,6 +1253,10 @@ namespace Rock.Jobs
                 return headers;
             }
 
+            /// <summary>
+            /// Holds a built header set against the contract's own list of submit headers.
+            /// </summary>
+            /// <param name="headers">The headers as built.</param>
             private void RequireTheContractsHeaderSet( IDictionary<string, string> headers )
             {
                 var listed = _contract["submit_headers"];
@@ -989,6 +1294,11 @@ namespace Rock.Jobs
                 }
             }
 
+            /// <summary>
+            /// Formats the read time the whole payload is judged by.
+            /// </summary>
+            /// <param name="readAtUtc">The UTC time taken before the projection read.</param>
+            /// <returns>The header value.</returns>
             public static string FormatReadTime( DateTime readAtUtc )
             {
                 if ( readAtUtc.Kind != DateTimeKind.Utc )
@@ -1010,18 +1320,58 @@ namespace Rock.Jobs
             #endregion
         }
 
+        /// <summary>
+        /// Turns a row as Rock returns it into a row as the wire carries it.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// Most columns cross unchanged. Three do not, and each of them is a place where sending the
+        /// value as Rock holds it would be accepted by the far side and be wrong.
+        /// </para>
+        /// <para>
+        /// The badge keys come back joined into one string, because a query cannot return a list in a
+        /// single column, and the column they land in holds a list. A string arriving there is read as
+        /// no badges at all, on a submission that is otherwise accepted, with nothing reporting it.
+        /// </para>
+        /// <para>
+        /// The ban expiry comes back in the organisation's own time zone, as Rock stores every time.
+        /// The far side reads a time with no zone as UTC, so sending it unchanged makes it wrong by
+        /// this church's offset, and for a church behind UTC that lifts the ban early.
+        /// </para>
+        /// <para>
+        /// The badge colours are a pair on the wire and one value in Rock. Deciding which foreground
+        /// reads against which background is done once here rather than in each client, so the same
+        /// badge does not come out differently on the web and on a phone.
+        /// </para>
+        /// <para>
+        /// Nothing here is addressed by position. The values are matched by the name the query gave
+        /// them and emitted in the order the contract lists, so neither this file nor the queries carry
+        /// a column index that the other one has to agree with.
+        /// </para>
+        /// </remarks>
         internal sealed class ChatSyncRowMapper
         {
             #region Fields
 
+            /// <summary>
+            /// The parsed wire contract, which decides the order values are emitted in.
+            /// </summary>
             private readonly JObject _contract;
 
+            /// <summary>
+            /// The zone Rock's stored times are in.
+            /// </summary>
             private readonly TimeZoneInfo _organizationTimeZone;
 
             #endregion
 
             #region Constructors
 
+            /// <summary>
+            /// Maps rows for one church.
+            /// </summary>
+            /// <param name="contract">The parsed wire contract.</param>
+            /// <param name="organizationTimeZone">The zone Rock's stored times are in.</param>
             public ChatSyncRowMapper( JObject contract, TimeZoneInfo organizationTimeZone )
             {
                 if ( contract == null )
@@ -1042,6 +1392,13 @@ namespace Rock.Jobs
 
             #region Methods
 
+            /// <summary>
+            /// Maps one row of a section.
+            /// </summary>
+            /// <param name="section">The payload section, as the contract names it.</param>
+            /// <param name="queryColumns">The names the query gave its columns, in the order it returned them.</param>
+            /// <param name="rawValues">The values the query returned, in the same order.</param>
+            /// <returns>The values the wire carries, in the order the contract lists them.</returns>
             public IList<object> Map( string section, IList<string> queryColumns, IList<object> rawValues )
             {
                 if ( queryColumns == null )
@@ -1073,6 +1430,13 @@ namespace Rock.Jobs
                 return GetWireColumns( section ).Select( c => ReadWireColumn( section, c, byName ) ).ToList();
             }
 
+            /// <summary>
+            /// The one value a wire column carries.
+            /// </summary>
+            /// <param name="section">The payload section, for the failure message.</param>
+            /// <param name="wireColumn">The wire column.</param>
+            /// <param name="byName">What the query returned, keyed by the name it gave each column.</param>
+            /// <returns>The value.</returns>
             private object ReadWireColumn( string section, string wireColumn, IDictionary<string, object> byName )
             {
                 if ( wireColumn == "badge_keys" )
@@ -1098,6 +1462,19 @@ namespace Rock.Jobs
                 return Require( section, wireColumn, wireColumn, byName );
             }
 
+            /// <summary>
+            /// Reads the query column a wire column is built from, refusing to invent one.
+            /// </summary>
+            /// <param name="section">The payload section.</param>
+            /// <param name="wireColumn">The wire column being built.</param>
+            /// <param name="queryColumn">The query column it is built from.</param>
+            /// <param name="byName">What the query returned.</param>
+            /// <returns>The value.</returns>
+            /// <remarks>
+            /// Filling a missing column with null would keep the row the right width and leave every
+            /// other value in its correct place, so the payload would be accepted and that one column
+            /// would be empty for every row of every church, with nothing anywhere reporting it.
+            /// </remarks>
             private static object Require( string section, string wireColumn, string queryColumn, IDictionary<string, object> byName )
             {
                 object value;
@@ -1114,6 +1491,11 @@ namespace Rock.Jobs
                 return value;
             }
 
+            /// <summary>
+            /// The wire columns of a section, in the order the contract lists them.
+            /// </summary>
+            /// <param name="section">The payload section.</param>
+            /// <returns>The column names.</returns>
             private IList<string> GetWireColumns( string section )
             {
                 var sections = _contract["payload"]["sections"].Select( s => s.Value<string>() ).ToList();
@@ -1127,11 +1509,21 @@ namespace Rock.Jobs
                 return _contract["tables"][position]["columns"].Select( c => c.Value<string>() ).ToList();
             }
 
+            /// <summary>
+            /// Turns the absence a data reader reports into the absence the rest of this understands.
+            /// </summary>
+            /// <param name="value">The value as it was read.</param>
+            /// <returns>The value, or null.</returns>
             private static object Normalize( object value )
             {
                 return value == DBNull.Value ? null : value;
             }
 
+            /// <summary>
+            /// Moves a stored time onto the clock the far side reads it with.
+            /// </summary>
+            /// <param name="value">The time as Rock stores it.</param>
+            /// <returns>The same instant, in UTC.</returns>
             private object ReadTime( object value )
             {
                 if ( value == null )
@@ -1154,6 +1546,11 @@ namespace Rock.Jobs
                 return TimeZoneInfo.ConvertTimeToUtc( unspecified, _organizationTimeZone );
             }
 
+            /// <summary>
+            /// Splits the joined badge keys into the list the wire carries.
+            /// </summary>
+            /// <param name="joined">The keys as the query returned them.</param>
+            /// <returns>The keys.</returns>
             public static IList<Guid> ReadBadgeKeys( object joined )
             {
                 var text = Normalize( joined ) as string;
@@ -1191,6 +1588,11 @@ namespace Rock.Jobs
                 return keys;
             }
 
+            /// <summary>
+            /// Works out the colour pair a badge is drawn with.
+            /// </summary>
+            /// <param name="highlightColor">The colour the church configured, in whatever form.</param>
+            /// <returns>The background and the foreground, both null when the colour cannot be read.</returns>
             public static Tuple<string, string> ReadBadgeColors( object highlightColor )
             {
                 var text = ( Normalize( highlightColor ) as string ?? string.Empty ).Trim();
@@ -1234,11 +1636,28 @@ namespace Rock.Jobs
                 return Tuple.Create( "#" + digits.ToLowerInvariant(), foreground );
             }
 
+            /// <summary>
+            /// How bright a colour is to the eye, on the scale the accessibility contrast ratio uses.
+            /// </summary>
+            /// <param name="red">The red channel, 0 to 255.</param>
+            /// <param name="green">The green channel, 0 to 255.</param>
+            /// <param name="blue">The blue channel, 0 to 255.</param>
+            /// <returns>The relative luminance, 0 for black and 1 for white.</returns>
+            /// <remarks>
+            /// The channels are straightened out of the curve a display applies before they are weighed,
+            /// and green counts for far more than blue, which is why a saturated blue reads as dark and
+            /// a saturated yellow reads as light even though both are equally far from grey.
+            /// </remarks>
             private static double RelativeLuminance( int red, int green, int blue )
             {
                 return ( 0.2126 * Straighten( red ) ) + ( 0.7152 * Straighten( green ) ) + ( 0.0722 * Straighten( blue ) );
             }
 
+            /// <summary>
+            /// Takes one channel out of the curve a display applies to it.
+            /// </summary>
+            /// <param name="channel">The channel, 0 to 255.</param>
+            /// <returns>The straightened value, 0 to 1.</returns>
             private static double Straighten( int channel )
             {
                 var value = channel / 255.0;
@@ -1249,22 +1668,62 @@ namespace Rock.Jobs
             #endregion
         }
 
+        /// <summary>
+        /// Writes the body of a submission: one object keyed by the payload's section names, each
+        /// holding that section's rows as positional arrays.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// Rows go over the wire as arrays of values rather than as named fields, which halves the
+        /// bytes and makes the column order something both sides have to agree about. This writer does
+        /// not choose the order: the projection selects its columns in the order the contract lists
+        /// them and this writes them out in the order it is handed them. What it does enforce is the
+        /// width, because a row one value short shifts every later value one place and the only other
+        /// thing that could notice is a type mismatch that may never happen.
+        /// </para>
+        /// <para>
+        /// It writes as it goes rather than building a document and serializing it at the end. The
+        /// largest church measured restates in about ten megabytes and the platform's bound is
+        /// thirty-two, so holding the whole body as objects and then again as text is tens of megabytes
+        /// of large-object heap for nothing. Streaming is also what makes the row counts honest: they
+        /// are a tally of what was actually written, so a read that stopped early is short in both the
+        /// body and the count, and a body truncated after this point disagrees with a count that was
+        /// already taken.
+        /// </para>
+        /// </remarks>
         internal sealed class ChatSyncPayloadWriter : IDisposable
         {
             #region Fields
 
+            /// <summary>
+            /// The parsed wire contract, which decides the order values are emitted in.
+            /// </summary>
             private readonly JObject _contract;
 
+            /// <summary>
+            /// The writer the body is streamed to.
+            /// </summary>
             private readonly JsonWriter _writer;
 
+            /// <summary>
+            /// How many rows have been written to each section.
+            /// </summary>
             private readonly Dictionary<string, int> _rowCounts = new Dictionary<string, int>();
 
+            /// <summary>
+            /// The section currently open, or null between sections.
+            /// </summary>
             private string _openSection;
 
             #endregion
 
             #region Constructors
 
+            /// <summary>
+            /// Writes a body to the supplied writer.
+            /// </summary>
+            /// <param name="contract">The parsed wire contract.</param>
+            /// <param name="writer">Where the body is written.</param>
             public ChatSyncPayloadWriter( JObject contract, JsonWriter writer )
             {
                 if ( contract == null )
@@ -1287,6 +1746,9 @@ namespace Rock.Jobs
 
             #region Properties
 
+            /// <summary>
+            /// How many rows were written to each section, which is what the row-count header carries.
+            /// </summary>
             public IDictionary<string, int> RowCounts
             {
                 get { return _rowCounts; }
@@ -1296,6 +1758,11 @@ namespace Rock.Jobs
 
             #region Methods
 
+            /// <summary>
+            /// How many values a row of a section carries.
+            /// </summary>
+            /// <param name="section">The payload section.</param>
+            /// <returns>The column count.</returns>
             public int GetRowWidth( string section )
             {
                 var sections = GetSections();
@@ -1318,6 +1785,10 @@ namespace Rock.Jobs
                 return tables[position]["columns"].Count();
             }
 
+            /// <summary>
+            /// The payload's section names, in the order the contract lists them.
+            /// </summary>
+            /// <returns>The section names.</returns>
             private IList<string> GetSections()
             {
                 var sections = _contract["payload"] == null ? null : _contract["payload"]["sections"];
@@ -1330,6 +1801,10 @@ namespace Rock.Jobs
                 return sections.Select( s => s.Value<string>() ).ToList();
             }
 
+            /// <summary>
+            /// Opens a section and begins its row array.
+            /// </summary>
+            /// <param name="section">The payload section.</param>
             public void BeginSection( string section )
             {
                 if ( _openSection != null )
@@ -1353,6 +1828,10 @@ namespace Rock.Jobs
                 _writer.WriteStartArray();
             }
 
+            /// <summary>
+            /// Writes one row of the open section.
+            /// </summary>
+            /// <param name="values">The row's values, in the contract's column order.</param>
             public void WriteRow( IList<object> values )
             {
                 if ( _openSection == null )
@@ -1391,6 +1870,10 @@ namespace Rock.Jobs
                 _rowCounts[_openSection] = _rowCounts[_openSection] + 1;
             }
 
+            /// <summary>
+            /// Writes one value in the form the platform parses it from.
+            /// </summary>
+            /// <param name="value">The value.</param>
             private void WriteValue( object value )
             {
                 if ( value == null )
@@ -1446,6 +1929,17 @@ namespace Rock.Jobs
                     value.GetType().Name ) );
             }
 
+            /// <summary>
+            /// Writes a time, refusing one whose zone is not known to be UTC.
+            /// </summary>
+            /// <param name="value">The time.</param>
+            /// <remarks>
+            /// Rock keeps times in the organisation's zone and the platform reads a time with no offset
+            /// in its own, which is UTC, so a value sent as stored is wrong by that church's offset. For
+            /// a church behind UTC a ban expiry sent that way lifts the ban early. Converting silently
+            /// here would hide which values were already right, so the caller converts and this refuses
+            /// what it cannot vouch for.
+            /// </remarks>
             private void WriteTime( DateTime value )
             {
                 if ( value.Kind != DateTimeKind.Utc )
@@ -1458,6 +1952,9 @@ namespace Rock.Jobs
                 _writer.WriteValue( value.ToString( "yyyy-MM-ddTHH:mm:ss.ffffff'Z'", CultureInfo.InvariantCulture ) );
             }
 
+            /// <summary>
+            /// Closes the open section.
+            /// </summary>
             public void EndSection()
             {
                 if ( _openSection == null )
@@ -1469,6 +1966,10 @@ namespace Rock.Jobs
                 _openSection = null;
             }
 
+            /// <summary>
+            /// Closes the body, which is only valid once every section the contract names has been
+            /// written.
+            /// </summary>
             public void Complete()
             {
                 if ( _openSection != null )
@@ -1490,6 +1991,7 @@ namespace Rock.Jobs
                 _writer.WriteEndObject();
             }
 
+            /// <inheritdoc />
             public void Dispose()
             {
                 _writer.Close();
@@ -1498,16 +2000,47 @@ namespace Rock.Jobs
             #endregion
         }
 
+        /// <summary>
+        /// The identity high-water value of each table the projection reads, sent with every
+        /// submission so the platform can tell a restored database from a live one.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// These are identity seeds, not maximum ids. The maximum drops when the newest rows are
+        /// deleted and the seed does not, so a church that deletes the person it just created would
+        /// otherwise look like a database restored from an older backup and be refused on every cycle
+        /// until someone intervened. A restore does carry the seed backwards with the table metadata,
+        /// which is the case this exists to catch.
+        /// </para>
+        /// <para>
+        /// It does not catch a live clone. A staging copy starts with values equal to production's, and
+        /// equal is not backwards; worse, staging advances its own as people test on it, so production
+        /// is the one that ends up refused. Staging installations are kept off chat or pointed at a
+        /// staging project instead.
+        /// </para>
+        /// </remarks>
         internal sealed class ChatSyncIdentityMarks
         {
             #region Properties
 
+            /// <summary>
+            /// The identity high-water value of the person table.
+            /// </summary>
             public long Person { get; set; }
 
+            /// <summary>
+            /// The identity high-water value of the person alias table.
+            /// </summary>
             public long PersonAlias { get; set; }
 
+            /// <summary>
+            /// The identity high-water value of the group table.
+            /// </summary>
             public long Group { get; set; }
 
+            /// <summary>
+            /// The identity high-water value of the group member table.
+            /// </summary>
             public long GroupMember { get; set; }
 
             #endregion
