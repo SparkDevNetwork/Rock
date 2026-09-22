@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -175,6 +176,25 @@ namespace Rock.Tests.Communication.Chat.Platform.Sync
         }
 
         #endregion A submission that never got that far
+
+        #region What the result names
+
+        [TestMethod]
+        public void TheResultBeginsWithTheSubmissionItSent()
+        {
+            // The id is how the job page, the chat blocks' Sync Now and a support request all find the
+            // platform's own record of this run, and a Sync Now press never sees the id any other way.
+            var submissionId = Guid.NewGuid();
+            var rowCounts = new Dictionary<string, int> { { "channels", 3 }, { "aliases", 5 }, { "members", 8 }, { "badges", 1 } };
+
+            var message = ChatPlatformSync.Describe( submissionId, rowCounts, "this restatement was applied" );
+
+            Assert.IsTrue( message.StartsWith( "Submission " + submissionId + ":", StringComparison.Ordinal ), message );
+            StringAssert.Contains( message, "3 channels, 5 people, 8 memberships and 1 badges were sent." );
+            StringAssert.EndsWith( message, "this restatement was applied" );
+        }
+
+        #endregion What the result names
 
         #region Support
 
