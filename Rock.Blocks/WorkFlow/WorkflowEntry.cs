@@ -921,6 +921,31 @@ namespace Rock.Blocks.Workflow
         /// <returns>The data that describes the workflow UI to display.</returns>
         private InteractiveActionBag GetEndOfWorkflowBag( Model.Workflow workflow, Guid? lastActionTypeGuid, InteractiveActionResult lastActionResult, InteractiveMessageBag errorMessage, bool hasNoRemainingActions )
         {
+            /*
+                9/21/26 - NA
+
+                A workflow processing error must take precedence over everything
+                else, including a successful lastActionResult carried over from a
+                prior interactive action (such as an entry form's "submitted
+                successfully" response). Without this early return, an error that
+                occurs in a later action (for example a Send Email action failing
+                on a bad SMTP server) was masked by the earlier form's success
+                message, so the person saw a success message instead of the error.
+
+                Reason: Error was hidden behind the entry form's success message.
+                        See https://app.asana.com/1/20866866924293/project/1208321217019996/task/1218710536727125?focus=true
+            */
+            if ( errorMessage != null )
+            {
+                return CreateInteractiveActionBag( workflow, null, new InteractiveActionResult
+                {
+                    ActionData = new InteractiveActionDataBag
+                    {
+                        Message = errorMessage
+                    }
+                } );
+            }
+
             // If the block is specifically configured to show the summary
             // view after the workflow has finished processing then ignore
             // what the workflow might have provided.
