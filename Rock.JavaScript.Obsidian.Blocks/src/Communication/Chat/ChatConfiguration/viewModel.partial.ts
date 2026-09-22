@@ -51,7 +51,17 @@ export function toFormModel(bag: Partial<ChatConfigurationBag> | null | undefine
  * @returns True when the two differ in any setting the form edits.
  */
 export function hasUnsavedChanges(form: ChatConfigurationFormModel, saved: ChatConfigurationFormModel): boolean {
-    throw new Error("not implemented");
+    // A picker's label is display only; the stored setting is the identifier, so that is all that
+    // is compared.
+    const stored = (value: ChatConfigurationFormModel): string => JSON.stringify({
+        areChatProfilesVisible: value.areChatProfilesVisible,
+        isOpenDirectMessagingAllowed: value.isOpenDirectMessagingAllowed,
+        minimumAge: value.minimumAge ?? null,
+        directMessageAccessDataView: value.directMessageAccessDataView?.value ?? null,
+        chatBadgeDataViews: value.chatBadgeDataViews.map(item => item.value ?? null)
+    });
+
+    return stored(form) !== stored(saved);
 }
 
 /** Builds what the save action is sent: the settings the church owns, and nothing else. */

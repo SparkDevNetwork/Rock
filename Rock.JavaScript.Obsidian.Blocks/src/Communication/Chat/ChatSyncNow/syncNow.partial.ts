@@ -60,8 +60,18 @@ export type SyncNow = {
 /** How often a press is checked on. */
 export const syncNowCheckIntervalMilliseconds = 3000;
 
-/** How long a press is followed before the screen stops waiting for it. */
+/**
+ * How long a press is followed before the screen stops waiting for it. Long enough to cover the
+ * job's own wait for the chat platform's answer, which is a minute for a person's run, plus reading
+ * the church and sending it; an estimate, since how long that takes depends on the church.
+ */
 export const syncNowBudgetMilliseconds = 120000;
+
+/** Said when the budget is spent and the run has not ended. */
+const stillRunningMessage = "The sync is still running. Its result will appear on the Chat Platform Sync job in Jobs Administration.";
+
+/** Said when a refusal carries no reason of its own. */
+const unexplainedRefusalMessage = "Sync Now could not be started.";
 
 /**
  * Builds a Sync Now button's behaviour.
@@ -71,5 +81,82 @@ export const syncNowBudgetMilliseconds = 120000;
  * @returns The behaviour.
  */
 export function createSyncNow(dependencies: SyncNowDependencies): SyncNow {
-    throw new Error("not implemented");
+    let isInFlight = false;
+
+    /**
+     * Turns a refused block action into what the press came to.
+     *
+     * @param result The refused action.
+     *
+     * @returns The outcome.
+     */
+    function refused(result: SyncNowActionResult): SyncNowOutcome {
+        return {
+            isFinished: false,
+            isFailure: true,
+            message: result.errorMessage || unexplainedRefusalMessage
+        };
+    }
+
+    /**
+     * Starts a sync and checks on it until it ends or the budget is spent.
+     *
+     * @returns What the press came to.
+     */
+    async function follow(): Promise<SyncNowOutcome> {
+        const requested = await dependencies.request();
+
+        if (!requested.isSuccess || !requested.data) {
+            return refused(requested);
+        }
+
+        let status = requested.data;
+        dependencies.onProgress?.(status.message ?? "");
+
+        const started = dependencies.now();
+
+        while (!status.isFinished) {
+            if (dependencies.now() - started >= syncNowBudgetMilliseconds) {
+                return { isFinished: false, isFailure: false, message: stillRunningMessage };
+            }
+
+            await dependencies.wait(syncNowCheckIntervalMilliseconds);
+
+            const checked = await dependencies.check(status.runMarker);
+
+            if (!checked.isSuccess || !checked.data) {
+                return refused(checked);
+            }
+
+            status = checked.data;
+            dependencies.onProgress?.(status.message ?? "");
+        }
+
+        return {
+            isFinished: true,
+            isFailure: status.isFailure,
+            message: status.message ?? ""
+        };
+    }
+
+    return {
+        press: async (): Promise<SyncNowOutcome | null> => {
+            // One press at a time. The job would refuse a second run anyway, but a second request
+            // would start a second poll reporting the same run twice.
+            if (isInFlight) {
+                return null;
+            }
+
+            isInFlight = true;
+
+            try {
+                return await follow();
+            }
+            finally {
+                isInFlight = false;
+            }
+        },
+
+        isInFlight: (): boolean => isInFlight
+    };
 }
