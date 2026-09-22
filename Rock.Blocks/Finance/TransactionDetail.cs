@@ -431,7 +431,7 @@ namespace Rock.Blocks.Finance
                 && entity.IsAuthorized( Authorization.REFUND, RequestContext.CurrentPerson );
 
             entity.LoadAttributes( RockContext );
-            bag.LoadAttributesAndValuesForPublicView( entity, RequestContext.CurrentPerson, enforceSecurity: false );
+            bag.LoadAttributesAndValuesForPublicView( entity, RequestContext.CurrentPerson, enforceSecurity: true );
 
             if ( entity.FinancialPaymentDetail != null && bag.PaymentDetail != null )
             {
@@ -481,13 +481,13 @@ namespace Rock.Blocks.Finance
                 if ( entity.FinancialPaymentDetail != null && bag.PaymentDetail != null )
                 {
                     entity.FinancialPaymentDetail.LoadAttributes( RockContext );
-                    bag.PaymentDetail.Attributes = entity.FinancialPaymentDetail.GetPublicAttributesForEdit( RequestContext.CurrentPerson, enforceSecurity: false );
-                    bag.PaymentDetail.AttributeValues = entity.FinancialPaymentDetail.GetPublicAttributeValuesForEdit( RequestContext.CurrentPerson, enforceSecurity: false );
+                    bag.PaymentDetail.Attributes = entity.FinancialPaymentDetail.GetPublicAttributesForEdit( RequestContext.CurrentPerson, enforceSecurity: true );
+                    bag.PaymentDetail.AttributeValues = entity.FinancialPaymentDetail.GetPublicAttributeValuesForEdit( RequestContext.CurrentPerson, enforceSecurity: true );
                 }
             }
 
             entity.LoadAttributes( RockContext );
-            bag.LoadAttributesAndValuesForPublicEdit( entity, RequestContext.CurrentPerson, enforceSecurity: false );
+            bag.LoadAttributesAndValuesForPublicEdit( entity, RequestContext.CurrentPerson, enforceSecurity: true );
 
             return bag;
         }
@@ -670,7 +670,9 @@ namespace Rock.Blocks.Finance
             };
             tempDetail.LoadAttributes( RockContext );
 
-            var attributeCaches = tempDetail.Attributes.Values.Where( a => a.IsGridColumn ).ToList();
+            var attributeCaches = tempDetail.Attributes.Values
+                .Where( a => a.IsGridColumn && a.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson ) )
+                .ToList();
             var attributeFields = GetLineItemAttributeFields( attributeCaches );
 
             var detailList = ( transactionDetails ?? Enumerable.Empty<FinancialTransactionDetail>() ).ToList();
@@ -700,7 +702,7 @@ namespace Rock.Blocks.Finance
                         CanEdit = true,
                         CanDelete = !d.EntityTypeId.HasValue,
                         IsTotalRow = false,
-                        AttributeValues = d.GetPublicAttributeValuesForEdit( RequestContext.CurrentPerson, enforceSecurity: false ),
+                        AttributeValues = d.GetPublicAttributeValuesForEdit( RequestContext.CurrentPerson, enforceSecurity: true ),
                         AttributeDisplayValues = GetLineItemAttributeDisplayValues( d, attributeCaches )
                     } )
                 .ToList();
@@ -1211,7 +1213,7 @@ namespace Rock.Blocks.Finance
                     if ( paymentBag.AttributeValues != null )
                     {
                         entity.FinancialPaymentDetail.LoadAttributes( RockContext );
-                        entity.FinancialPaymentDetail.SetPublicAttributeValues( paymentBag.AttributeValues, RequestContext.CurrentPerson, enforceSecurity: false );
+                        entity.FinancialPaymentDetail.SetPublicAttributeValues( paymentBag.AttributeValues, RequestContext.CurrentPerson, enforceSecurity: true );
                     }
                 } );
 
@@ -1228,7 +1230,7 @@ namespace Rock.Blocks.Finance
                 () =>
                 {
                     entity.LoadAttributes( RockContext );
-                    entity.SetPublicAttributeValues( box.Bag.AttributeValues, RequestContext.CurrentPerson, enforceSecurity: false );
+                    entity.SetPublicAttributeValues( box.Bag.AttributeValues, RequestContext.CurrentPerson, enforceSecurity: true );
                 } );
 
             box.IfValidProperty( nameof( box.Bag.TransactionDetails ),
@@ -1311,7 +1313,7 @@ namespace Rock.Blocks.Finance
                 if(row?.AttributeValues != null)
                 {
                     detail.LoadAttributes( RockContext );
-                    detail.SetPublicAttributeValues( row.AttributeValues, RequestContext.CurrentPerson, enforceSecurity: false );
+                    detail.SetPublicAttributeValues( row.AttributeValues, RequestContext.CurrentPerson, enforceSecurity: true );
                 }
             }
         }
@@ -1581,14 +1583,27 @@ namespace Rock.Blocks.Finance
             }
 
             // For a new transaction the target batch is only known after the bag has been applied.
-            // Reject adding into a closed or automated batch (mirrors WebForms hiding the Add button).
-            if ( entity.Id == 0 && entity.BatchId.HasValue )
+            // The batch must exist, be open, and be one the current person is allowed to edit.
+            if ( entity.Id == 0 )
             {
-                var targetBatch = new FinancialBatchService( RockContext ).Get( entity.BatchId.Value );
+                var targetBatch = entity.BatchId.HasValue
+                    ? new FinancialBatchService( RockContext ).Get( entity.BatchId.Value )
+                    : null;
 
-                if ( targetBatch != null && ( targetBatch.Status == BatchStatus.Closed || targetBatch.IsAutomated ) )
+                if ( targetBatch == null )
+                {
+                    return ActionBadRequest( "New transactions can only be added to an existing batch." );
+                }
+
+                if ( targetBatch.Status == BatchStatus.Closed || targetBatch.IsAutomated )
                 {
                     return ActionBadRequest( "A transaction cannot be added to a closed or automated batch." );
+                }
+
+                // The batch id is posted by the client, so enforce the batch's own Edit security rather than trusting it.
+                if ( !targetBatch.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
+                {
+                    return ActionBadRequest( "Not authorized to add transactions to this batch." );
                 }
             }
 
@@ -1670,7 +1685,7 @@ namespace Rock.Blocks.Finance
 
             var bag = new TransactionDetailsBag();
 
-            bag.LoadAttributesAndValuesForPublicEdit( detailEntity, RequestContext.CurrentPerson, enforceSecurity: false );
+            bag.LoadAttributesAndValuesForPublicEdit( detailEntity, RequestContext.CurrentPerson, enforceSecurity: true );
 
             return ActionOk( bag );
         }
@@ -1699,10 +1714,12 @@ namespace Rock.Blocks.Finance
 
             if ( attributeValues?.Count > 0 )
             {
-                tempDetail.SetPublicAttributeValues( attributeValues, RequestContext.CurrentPerson, enforceSecurity: false );
+                tempDetail.SetPublicAttributeValues( attributeValues, RequestContext.CurrentPerson, enforceSecurity: true );
             }
 
-            var attributeCaches = tempDetail.Attributes.Values.Where( a => a.IsGridColumn ).ToList();
+            var attributeCaches = tempDetail.Attributes.Values
+                .Where( a => a.IsGridColumn && a.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson ) )
+                .ToList();
             return ActionOk( GetLineItemAttributeDisplayValues( tempDetail, attributeCaches ) );
         }
 
