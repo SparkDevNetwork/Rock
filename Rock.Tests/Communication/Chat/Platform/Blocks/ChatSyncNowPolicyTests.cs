@@ -46,7 +46,7 @@ namespace Rock.Tests.Communication.Chat.Platform.Blocks
         {
             var queued = new List<int>();
 
-            var result = ChatSyncNowPolicy.Request( new ChatPlatformConfiguration(), true, IdleJob( 900 ), queued.Add );
+            var result = ChatSyncNowPolicy.Request( new ChatPlatformConfiguration(), true, () => IdleJob( 900 ), queued.Add );
 
             Assert.IsTrue( result.IsRefused );
             Assert.IsFalse( result.IsForbidden );
@@ -61,8 +61,8 @@ namespace Rock.Tests.Communication.Chat.Platform.Blocks
             var unreadable = Configured();
             unreadable.PrivateKey = null;
 
-            var result = ChatSyncNowPolicy.Request( unreadable, true, IdleJob( 900 ), queued.Add );
-            var neverEnabled = ChatSyncNowPolicy.Request( new ChatPlatformConfiguration(), true, IdleJob( 900 ), queued.Add );
+            var result = ChatSyncNowPolicy.Request( unreadable, true, () => IdleJob( 900 ), queued.Add );
+            var neverEnabled = ChatSyncNowPolicy.Request( new ChatPlatformConfiguration(), true, () => IdleJob( 900 ), queued.Add );
 
             Assert.IsTrue( result.IsRefused );
             StringAssert.Contains( result.RefusalMessage, "signing key" );
@@ -75,7 +75,7 @@ namespace Rock.Tests.Communication.Chat.Platform.Blocks
         {
             var queued = new List<int>();
 
-            var result = ChatSyncNowPolicy.Request( Configured(), false, IdleJob( 900 ), queued.Add );
+            var result = ChatSyncNowPolicy.Request( Configured(), false, () => IdleJob( 900 ), queued.Add );
 
             Assert.IsTrue( result.IsRefused );
             Assert.IsTrue( result.IsForbidden );
@@ -88,7 +88,7 @@ namespace Rock.Tests.Communication.Chat.Platform.Blocks
         {
             var queued = new List<int>();
 
-            var result = ChatSyncNowPolicy.Request( Configured(), true, null, queued.Add );
+            var result = ChatSyncNowPolicy.Request( Configured(), true, () => null, queued.Add );
 
             Assert.IsTrue( result.IsRefused );
             Assert.IsFalse( result.IsForbidden );
@@ -101,7 +101,7 @@ namespace Rock.Tests.Communication.Chat.Platform.Blocks
         {
             var queued = new List<int>();
 
-            var result = ChatSyncNowPolicy.Request( Configured(), true, IdleJob( 900 ), queued.Add );
+            var result = ChatSyncNowPolicy.Request( Configured(), true, () => IdleJob( 900 ), queued.Add );
 
             Assert.IsFalse( result.IsRefused );
             CollectionAssert.AreEqual( new[] { JobId }, queued );
@@ -116,7 +116,7 @@ namespace Rock.Tests.Communication.Chat.Platform.Blocks
             var job = IdleJob( 900 );
             job.LatestRunId = null;
 
-            var result = ChatSyncNowPolicy.Request( Configured(), true, job, queued.Add );
+            var result = ChatSyncNowPolicy.Request( Configured(), true, () => job, queued.Add );
 
             CollectionAssert.AreEqual( new[] { JobId }, queued );
             Assert.AreEqual( 0, result.Status.RunMarker );
@@ -128,7 +128,7 @@ namespace Rock.Tests.Communication.Chat.Platform.Blocks
             var queued = new List<int>();
             var job = new ChatSyncNowPolicy.JobSnapshot { JobId = JobId, IsRunning = true, LatestRunId = 900, IsLatestRunEnded = false };
 
-            var result = ChatSyncNowPolicy.Request( Configured(), true, job, queued.Add );
+            var result = ChatSyncNowPolicy.Request( Configured(), true, () => job, queued.Add );
 
             Assert.IsFalse( result.IsRefused );
             Assert.AreEqual( 0, queued.Count, "a second run was asked for while one held the lock, and the lock would refuse it without a word" );
@@ -141,7 +141,7 @@ namespace Rock.Tests.Communication.Chat.Platform.Blocks
             var queued = new List<int>();
             var job = new ChatSyncNowPolicy.JobSnapshot { JobId = JobId, IsRunning = true, LatestRunId = 900, IsLatestRunEnded = true };
 
-            var result = ChatSyncNowPolicy.Request( Configured(), true, job, queued.Add );
+            var result = ChatSyncNowPolicy.Request( Configured(), true, () => job, queued.Add );
 
             Assert.AreEqual( 0, queued.Count );
             Assert.AreEqual( 900, result.Status.RunMarker, "the newest record has ended, so it is not the run holding the lock" );
@@ -154,7 +154,7 @@ namespace Rock.Tests.Communication.Chat.Platform.Blocks
         [TestMethod]
         public void Status_WithNoRunRecordedAfterTheMarker_IsNotFinished()
         {
-            var result = ChatSyncNowPolicy.Status( true, 900, null );
+            var result = ChatSyncNowPolicy.Status( true, 900, () => null );
 
             Assert.IsFalse( result.IsRefused );
             Assert.IsFalse( result.Status.IsFinished );
@@ -166,7 +166,7 @@ namespace Rock.Tests.Communication.Chat.Platform.Blocks
         {
             var run = new ChatSyncNowPolicy.RunSnapshot { Id = 901, HasEnded = false, Status = "Running" };
 
-            var result = ChatSyncNowPolicy.Status( true, 900, run );
+            var result = ChatSyncNowPolicy.Status( true, 900, () => run );
 
             Assert.IsFalse( result.Status.IsFinished );
         }
@@ -176,7 +176,7 @@ namespace Rock.Tests.Communication.Chat.Platform.Blocks
         {
             var run = Ended( 901, "Success", "Submission 1: 3 channels were sent. this restatement was applied" );
 
-            var result = ChatSyncNowPolicy.Status( true, 900, run );
+            var result = ChatSyncNowPolicy.Status( true, 900, () => run );
 
             Assert.IsTrue( result.Status.IsFinished );
             Assert.IsFalse( result.Status.IsFailure );
@@ -188,7 +188,7 @@ namespace Rock.Tests.Communication.Chat.Platform.Blocks
         {
             foreach ( var status in new[] { "Warning", "Exception" } )
             {
-                var result = ChatSyncNowPolicy.Status( true, 900, Ended( 901, status, "the chat platform refused this restatement" ) );
+                var result = ChatSyncNowPolicy.Status( true, 900, () => Ended( 901, status, "the chat platform refused this restatement" ) );
 
                 Assert.IsTrue( result.Status.IsFinished, status );
                 Assert.IsTrue( result.Status.IsFailure, status );
@@ -199,7 +199,7 @@ namespace Rock.Tests.Communication.Chat.Platform.Blocks
         [TestMethod]
         public void Status_NeverReportsARunRecordedAtOrBeforeTheMarker()
         {
-            var result = ChatSyncNowPolicy.Status( true, 900, Ended( 900, "Success", "an earlier run" ) );
+            var result = ChatSyncNowPolicy.Status( true, 900, () => Ended( 900, "Success", "an earlier run" ) );
 
             Assert.IsFalse( result.Status.IsFinished, "a run that ended before the press was reported as its result" );
             Assert.AreNotEqual( "an earlier run", result.Status.Message );
@@ -208,13 +208,56 @@ namespace Rock.Tests.Communication.Chat.Platform.Blocks
         [TestMethod]
         public void Status_ForACallerWhoMayNotSave_IsForbidden()
         {
-            var result = ChatSyncNowPolicy.Status( false, 900, Ended( 901, "Success", "done" ) );
+            var result = ChatSyncNowPolicy.Status( false, 900, () => Ended( 901, "Success", "done" ) );
 
             Assert.IsTrue( result.IsForbidden );
             Assert.IsNull( result.Status );
         }
 
+        [TestMethod]
+        public void Status_ForACallerWhoMayNotSave_NeverReadsTheJobsHistory()
+        {
+            var reads = 0;
+
+            ChatSyncNowPolicy.Status( false, 900, () =>
+            {
+                reads++;
+                return null;
+            } );
+
+            Assert.AreEqual( 0, reads, "a caller who may not press the button had the job's history read for them" );
+        }
+
         #endregion A check
+
+        #region What a refused press touches
+
+        [TestMethod]
+        public void Request_RefusedForAuthorityOrSetup_NeverReadsTheJobOrProbesItsLock()
+        {
+            // Reading the job includes probing its lock, and a probe that lands on the instant the
+            // schedule fires takes the lock first and costs the church that scheduled run. A press that
+            // is going to be refused has no business doing either.
+            var reads = 0;
+            var queued = new List<int>();
+            Func<ChatSyncNowPolicy.JobSnapshot> readJob = () =>
+            {
+                reads++;
+                return IdleJob( 900 );
+            };
+
+            ChatSyncNowPolicy.Request( Configured(), false, readJob, queued.Add );
+            ChatSyncNowPolicy.Request( new ChatPlatformConfiguration(), true, readJob, queued.Add );
+
+            var unreadable = Configured();
+            unreadable.PrivateKey = null;
+            ChatSyncNowPolicy.Request( unreadable, true, readJob, queued.Add );
+
+            Assert.AreEqual( 0, reads );
+            Assert.AreEqual( 0, queued.Count );
+        }
+
+        #endregion What a refused press touches
 
         #region Group Type Detail
 

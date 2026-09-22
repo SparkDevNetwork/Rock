@@ -1895,7 +1895,7 @@ namespace Rock.Blocks.Group
             var result = ChatSyncNowPolicy.Request(
                 ChatPlatformConfigurationService.Read(),
                 IsAuthorizedToSyncChat(),
-                ChatSyncNowPolicy.ReadJob( RockContext ),
+                () => ChatSyncNowPolicy.ReadJob( RockContext ),
                 ChatSyncNowPolicy.QueueRunNow );
 
             return ToSyncNowActionResult( result );
@@ -1912,7 +1912,7 @@ namespace Rock.Blocks.Group
             var result = ChatSyncNowPolicy.Status(
                 IsAuthorizedToSyncChat(),
                 runMarker,
-                ChatSyncNowPolicy.ReadRunAfter( RockContext, runMarker ) );
+                () => ChatSyncNowPolicy.ReadRunAfter( RockContext, runMarker ) );
 
             return ToSyncNowActionResult( result );
         }

@@ -68,15 +68,17 @@ namespace Rock.Communication.Chat.Platform.Sync
         /// </summary>
         /// <param name="configuration">The church's chat settings as stored.</param>
         /// <param name="isAuthorized">Whether the caller may save on the block the button sits on.</param>
-        /// <param name="job">What the job tables say about the sync job, or null when its row is missing.</param>
+        /// <param name="readJob">Reads what the job tables say about the sync job, or null when its row is missing.</param>
         /// <param name="queueRunNow">Asks Rock to run the job with the given id now.</param>
         /// <returns>A refusal, or where the press has got to.</returns>
         /// <remarks>
         /// Authority is asked first, so a caller who may not press the button learns nothing about the
         /// state of chat from pressing it.
         /// </remarks>
-        public static Result Request( ChatPlatformConfiguration configuration, bool isAuthorized, JobSnapshot job, Action<int> queueRunNow )
+        public static Result Request( ChatPlatformConfiguration configuration, bool isAuthorized, Func<JobSnapshot> readJob, Action<int> queueRunNow )
         {
+            var job = readJob();
+
             if ( !isAuthorized )
             {
                 return new Result { RefusalMessage = ForbiddenMessage, IsForbidden = true };
@@ -114,10 +116,12 @@ namespace Rock.Communication.Chat.Platform.Sync
         /// </summary>
         /// <param name="isAuthorized">Whether the caller may save on the block the button sits on.</param>
         /// <param name="runMarker">The marker the press returned.</param>
-        /// <param name="run">The first run of the sync job recorded after that marker, or null when there is none yet.</param>
+        /// <param name="readRun">Reads the first run of the sync job recorded after that marker, or null when there is none yet.</param>
         /// <returns>A refusal, or where the press has got to.</returns>
-        public static Result Status( bool isAuthorized, int runMarker, RunSnapshot run )
+        public static Result Status( bool isAuthorized, int runMarker, Func<RunSnapshot> readRun )
         {
+            var run = readRun();
+
             if ( !isAuthorized )
             {
                 return new Result { RefusalMessage = ForbiddenMessage, IsForbidden = true };

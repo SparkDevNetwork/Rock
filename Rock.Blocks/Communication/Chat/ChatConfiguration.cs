@@ -125,7 +125,7 @@ namespace Rock.Blocks.Communication.Chat
             var result = ChatSyncNowPolicy.Request(
                 ChatPlatformConfigurationService.Read(),
                 BlockCache.IsAuthorized( Authorization.EDIT, GetCurrentPerson() ),
-                ChatSyncNowPolicy.ReadJob( RockContext ),
+                () => ChatSyncNowPolicy.ReadJob( RockContext ),
                 ChatSyncNowPolicy.QueueRunNow );
 
             return ToSyncNowActionResult( result );
@@ -142,7 +142,7 @@ namespace Rock.Blocks.Communication.Chat
             var result = ChatSyncNowPolicy.Status(
                 BlockCache.IsAuthorized( Authorization.EDIT, GetCurrentPerson() ),
                 runMarker,
-                ChatSyncNowPolicy.ReadRunAfter( RockContext, runMarker ) );
+                () => ChatSyncNowPolicy.ReadRunAfter( RockContext, runMarker ) );
 
             return ToSyncNowActionResult( result );
         }
