@@ -45,7 +45,7 @@ namespace Rock.Workflow.Action
         Order = 1,
         FieldTypeClassNames = new string[] { "Rock.Field.Types.PersonFieldType" } )]
     [WorkflowAttribute( "Amount",
-        Description = "Workflow attribute that contains the amount to charge.",
+        Description = "Workflow attribute that contains the amount to charge. The attribute must be a Currency field type.",
         IsRequired = true,
         Order = 2,
         FieldTypeClassNames = new string[] { "Rock.Field.Types.CurrencyFieldType" } )]
