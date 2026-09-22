@@ -870,18 +870,24 @@ namespace Rock.Jobs
         }
 
         /// <summary>
-        /// The whole sentence a run that reached the platform leaves on the job: what was sent, then what
-        /// became of it.
+        /// The whole sentence a run that reached the platform leaves on the job: which submission it was,
+        /// what was sent, then what became of it.
         /// </summary>
         /// <param name="submissionId">The id the restatement was submitted under.</param>
         /// <param name="rowCounts">The rows written, by section.</param>
         /// <param name="outcome">What became of the submission.</param>
         /// <returns>The result line.</returns>
+        /// <remarks>
+        /// The id leads because it is the one thing that finds the platform's own record of this run, for
+        /// whoever reads the job page, for Sync Now on a chat block, which learns nothing about the run
+        /// but what the job leaves here, and for a support request.
+        /// </remarks>
         internal static string Describe( Guid submissionId, IDictionary<string, int> rowCounts, string outcome )
         {
             return string.Format(
                 CultureInfo.InvariantCulture,
-                "{0} channels, {1} people, {2} memberships and {3} badges were sent. {4}",
+                "Submission {0}: {1} channels, {2} people, {3} memberships and {4} badges were sent. {5}",
+                submissionId,
                 Count( rowCounts, "channels" ),
                 Count( rowCounts, "aliases" ),
                 Count( rowCounts, "members" ),
