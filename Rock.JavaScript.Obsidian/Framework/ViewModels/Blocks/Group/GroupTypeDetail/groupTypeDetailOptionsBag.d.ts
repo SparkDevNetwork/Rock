@@ -41,6 +41,12 @@ export type GroupTypeDetailOptionsBag = {
     /** Gets or sets a value indicating whether the chat system is currently enabled. */
     isChatEnabledSystem: boolean;
 
+    /**
+     * Gets or sets whether chat runs on Spark's chat platform here, which is when the chat
+     * settings offer Sync Now to send a saved change to chat straight away.
+     */
+    isChatPlatformConfigured: boolean;
+
     /** Gets or sets a value indicating whether the indexing option is available. */
     isIndexingOptionAvailable: boolean;
 

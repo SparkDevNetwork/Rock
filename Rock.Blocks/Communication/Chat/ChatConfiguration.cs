@@ -19,6 +19,7 @@ using System.ComponentModel;
 using System.Linq;
 
 using Rock.Communication.Chat.Platform.Configuration;
+using Rock.Communication.Chat.Platform.Sync;
 using Rock.Security;
 using Rock.ViewModels.Blocks.Communication.Chat.ChatConfiguration;
 using Rock.Web.Cache;
@@ -112,9 +113,63 @@ namespace Rock.Blocks.Communication.Chat
             return ActionOk();
         }
 
+        /// <summary>
+        /// Asks Rock to run the chat platform sync now, so saved settings reach chat without waiting
+        /// for the schedule. Returns at once; the screen then checks on the run with
+        /// <see cref="GetSyncNowStatus(int)"/>.
+        /// </summary>
+        /// <returns>Where the press has got to, or a refusal.</returns>
+        [BlockAction]
+        public BlockActionResult RequestSyncNow()
+        {
+            var result = ChatSyncNowPolicy.Request(
+                ChatPlatformConfigurationService.Read(),
+                BlockCache.IsAuthorized( Authorization.EDIT, GetCurrentPerson() ),
+                ChatSyncNowPolicy.ReadJob( RockContext ),
+                ChatSyncNowPolicy.QueueRunNow );
+
+            return ToSyncNowActionResult( result );
+        }
+
+        /// <summary>
+        /// Reports where a Sync Now press has got to.
+        /// </summary>
+        /// <param name="runMarker">The marker the press returned.</param>
+        /// <returns>Where the press has got to, or a refusal.</returns>
+        [BlockAction]
+        public BlockActionResult GetSyncNowStatus( int runMarker )
+        {
+            var result = ChatSyncNowPolicy.Status(
+                BlockCache.IsAuthorized( Authorization.EDIT, GetCurrentPerson() ),
+                runMarker,
+                ChatSyncNowPolicy.ReadRunAfter( RockContext, runMarker ) );
+
+            return ToSyncNowActionResult( result );
+        }
+
         #endregion Block Actions
 
         #region Private Methods
+
+        /// <summary>
+        /// Turns what the Sync Now policy decided into the block's answer.
+        /// </summary>
+        /// <param name="result">The decision.</param>
+        /// <returns>A refusal, or the status.</returns>
+        private BlockActionResult ToSyncNowActionResult( ChatSyncNowPolicy.Result result )
+        {
+            if ( result.IsForbidden )
+            {
+                return ActionForbidden( result.RefusalMessage );
+            }
+
+            if ( result.IsRefused )
+            {
+                return ActionBadRequest( result.RefusalMessage );
+            }
+
+            return ActionOk( result.Status );
+        }
 
         /// <summary>
         /// Fills in the names of the Data Views the settings point at. The stored value

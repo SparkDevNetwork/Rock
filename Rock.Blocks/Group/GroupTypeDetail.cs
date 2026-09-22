@@ -24,6 +24,8 @@ using System.Linq;
 using Rock;
 using Rock.Attribute;
 using Rock.Communication.Chat;
+using Rock.Communication.Chat.Platform.Configuration;
+using Rock.Communication.Chat.Platform.Sync;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
@@ -114,11 +116,13 @@ namespace Rock.Blocks.Group
         private GroupTypeDetailOptionsBag GetBoxOptions()
         {
             var systemCommunicationOptions = GetSystemCommunicationOptions( out var rsvpSystemCommunicationOptions );
+            var chatPlatformConfiguration = ChatPlatformConfigurationService.Read();
 
             var options = new GroupTypeDetailOptionsBag()
             {
                 EnableGroupViewLavaTemplate = GetAttributeValue( AttributeKey.EnableGroupViewLavaTemplate ).AsBoolean(),
-                IsChatEnabledSystem = ChatHelper.IsChatEnabled,
+                IsChatEnabledSystem = IsChatSettingsEnabled( chatPlatformConfiguration ),
+                IsChatPlatformConfigured = ChatSyncNowPolicy.IsChatPlatformConfigured( chatPlatformConfiguration ),
                 GroupRequirementTypeOptions = new GroupRequirementTypeService( RockContext ).Queryable()
                     .OrderBy( req => req.Name )
                     .Select( req => new GroupRequirementTypeBag
@@ -145,6 +149,54 @@ namespace Rock.Blocks.Group
             }
 
             return options;
+        }
+
+        /// <summary>
+        /// Whether a group type's chat settings are shown and saved.
+        /// </summary>
+        /// <param name="chatPlatformConfiguration">The church's settings for Spark's chat platform.</param>
+        /// <returns>True when either chat provider is configured.</returns>
+        /// <remarks>
+        /// Asked in two places that must agree, when the screen is built and when it is saved: a
+        /// section shown but not saved would accept an administrator's changes and drop them.
+        /// </remarks>
+        private static bool IsChatSettingsEnabled( ChatPlatformConfiguration chatPlatformConfiguration )
+        {
+            return ChatSyncNowPolicy.IsChatSectionShown( ChatHelper.IsChatEnabled, chatPlatformConfiguration );
+        }
+
+        /// <summary>
+        /// Whether the current person may press Sync Now for the group type on this page, which is
+        /// whether they may edit it.
+        /// </summary>
+        /// <returns>True when they may.</returns>
+        private bool IsAuthorizedToSyncChat()
+        {
+            var entity = GetInitialEntity();
+
+            return entity != null
+                && entity.Id != 0
+                && entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson );
+        }
+
+        /// <summary>
+        /// Turns what the Sync Now policy decided into the block's answer.
+        /// </summary>
+        /// <param name="result">The decision.</param>
+        /// <returns>A refusal, or the status.</returns>
+        private BlockActionResult ToSyncNowActionResult( ChatSyncNowPolicy.Result result )
+        {
+            if ( result.IsForbidden )
+            {
+                return ActionForbidden( result.RefusalMessage );
+            }
+
+            if ( result.IsRefused )
+            {
+                return ActionBadRequest( result.RefusalMessage );
+            }
+
+            return ActionOk( result.Status );
         }
 
         /// <summary>
@@ -656,7 +708,7 @@ namespace Rock.Blocks.Group
                     entity.SetPublicAttributeValues( box.Bag.AttributeValues, RequestContext.CurrentPerson, enforceSecurity: true );
                 } );
 
-            if ( ChatHelper.IsChatEnabled )
+            if ( IsChatSettingsEnabled( ChatPlatformConfigurationService.Read() ) )
             {
                 box.IfValidProperty( nameof( box.Bag.IsChatAllowed ),
                 () => entity.IsChatAllowed = box.Bag.IsChatAllowed );
@@ -1828,6 +1880,41 @@ namespace Rock.Blocks.Group
                 .GetChatEnabledGroupCount( groupTypeId.Value );
 
             return ActionOk( count );
+        }
+
+        /// <summary>
+        /// Asks Rock to run the chat platform sync now, so a saved change to this group type's chat
+        /// settings reaches chat without waiting for the schedule. The sync restates the whole church,
+        /// not this group type alone. Returns at once; the screen then checks on the run with
+        /// <see cref="GetSyncNowStatus(int)"/>.
+        /// </summary>
+        /// <returns>Where the press has got to, or a refusal.</returns>
+        [BlockAction]
+        public BlockActionResult RequestSyncNow()
+        {
+            var result = ChatSyncNowPolicy.Request(
+                ChatPlatformConfigurationService.Read(),
+                IsAuthorizedToSyncChat(),
+                ChatSyncNowPolicy.ReadJob( RockContext ),
+                ChatSyncNowPolicy.QueueRunNow );
+
+            return ToSyncNowActionResult( result );
+        }
+
+        /// <summary>
+        /// Reports where a Sync Now press has got to.
+        /// </summary>
+        /// <param name="runMarker">The marker the press returned.</param>
+        /// <returns>Where the press has got to, or a refusal.</returns>
+        [BlockAction]
+        public BlockActionResult GetSyncNowStatus( int runMarker )
+        {
+            var result = ChatSyncNowPolicy.Status(
+                IsAuthorizedToSyncChat(),
+                runMarker,
+                ChatSyncNowPolicy.ReadRunAfter( RockContext, runMarker ) );
+
+            return ToSyncNowActionResult( result );
         }
 
         /// <summary>

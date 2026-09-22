@@ -15,8 +15,17 @@
 // </copyright>
 //
 using System;
+using System.Linq;
 
+using Microsoft.Extensions.DependencyInjection;
+
+using Rock.Bus.Locking;
 using Rock.Communication.Chat.Platform.Configuration;
+using Rock.Configuration;
+using Rock.Data;
+using Rock.Jobs;
+using Rock.Model;
+using Rock.Tasks;
 using Rock.ViewModels.Blocks.Communication.Chat.ChatSyncNow;
 
 namespace Rock.Communication.Chat.Platform.Sync
@@ -36,17 +45,17 @@ namespace Rock.Communication.Chat.Platform.Sync
     {
         #region Messages
 
-        private const string NeverEnabledMessage = "Chat is not set up for this church, so there is nothing to sync.";
+        private static readonly string NeverEnabledMessage = "Chat is not set up for this church, so there is nothing to sync.";
 
-        private const string UnreadableKeyMessage = "Chat is set up for this church, but this installation cannot read the signing key it was given, so it cannot sync.";
+        private static readonly string UnreadableKeyMessage = "Chat is set up for this church, but this installation cannot read the signing key it was given, so it cannot sync.";
 
-        private const string ForbiddenMessage = "You are not authorized to sync chat from here.";
+        private static readonly string ForbiddenMessage = "You are not authorized to sync chat from here.";
 
-        private const string MissingJobMessage = "The Chat Platform Sync job is missing, so there is nothing to run.";
+        private static readonly string MissingJobMessage = "The Chat Platform Sync job is missing, so there is nothing to run.";
 
-        private const string WaitingMessage = "Waiting for the sync to start.";
+        private static readonly string WaitingMessage = "Waiting for the sync to start.";
 
-        private const string RunningMessage = "The sync is running.";
+        private static readonly string RunningMessage = "The sync is running.";
 
         // What Rock records for a run that ended well. Anything else it records for an ended run, a
         // warning, an exception or a job that could not be loaded, is a run that did not.
@@ -161,6 +170,115 @@ namespace Rock.Communication.Chat.Platform.Sync
         {
             return configuration != null && configuration.IsConfigured;
         }
+
+        #region Reading Rock's job tables
+
+        /// <summary>
+        /// Reads what a press needs to know about the sync job.
+        /// </summary>
+        /// <param name="rockContext">The context to read through.</param>
+        /// <returns>The job as it stands, or null when its row is missing.</returns>
+        public static JobSnapshot ReadJob( RockContext rockContext )
+        {
+            var jobId = ReadJobId( rockContext );
+            if ( !jobId.HasValue )
+            {
+                return null;
+            }
+
+            var latest = new ServiceJobHistoryService( rockContext ).Queryable()
+                .Where( history => history.ServiceJobId == jobId.Value )
+                .OrderByDescending( history => history.Id )
+                .Select( history => new { history.Id, history.StopDateTime } )
+                .FirstOrDefault();
+
+            return new JobSnapshot
+            {
+                JobId = jobId.Value,
+                IsRunning = IsJobLocked( jobId.Value ),
+                LatestRunId = latest?.Id,
+                IsLatestRunEnded = latest == null || latest.StopDateTime.HasValue
+            };
+        }
+
+        /// <summary>
+        /// Reads the first run of the sync job recorded after the given marker.
+        /// </summary>
+        /// <param name="rockContext">The context to read through.</param>
+        /// <param name="runMarker">The marker a press returned.</param>
+        /// <returns>The run, or null when none has been recorded since, or the job's row is missing.</returns>
+        public static RunSnapshot ReadRunAfter( RockContext rockContext, int runMarker )
+        {
+            var jobId = ReadJobId( rockContext );
+            if ( !jobId.HasValue )
+            {
+                return null;
+            }
+
+            return new ServiceJobHistoryService( rockContext ).Queryable()
+                .Where( history => history.ServiceJobId == jobId.Value && history.Id > runMarker )
+                .OrderBy( history => history.Id )
+                .Select( history => new RunSnapshot
+                {
+                    Id = history.Id,
+                    HasEnded = history.StopDateTime.HasValue,
+                    Status = history.Status,
+                    StatusMessage = history.StatusMessage
+                } )
+                .FirstOrDefault();
+        }
+
+        /// <summary>
+        /// Asks Rock to run the job now, exactly as the Jobs Administration page does.
+        /// </summary>
+        /// <param name="jobId">The job's id.</param>
+        /// <remarks>
+        /// That page's request is what gives the run its own scheduler, and the sync job reads the
+        /// scheduler's name to know a person is waiting on it, so it marks the submission urgent and
+        /// does not hold it back for the platform's backoff. Running the job any other way would lose both.
+        /// </remarks>
+        public static void QueueRunNow( int jobId )
+        {
+            new ProcessRunJobNow.Message { JobId = jobId }.Send();
+        }
+
+        /// <summary>
+        /// The sync job's id, or null when its row is missing.
+        /// </summary>
+        /// <param name="rockContext">The context to read through.</param>
+        /// <returns>The id.</returns>
+        private static int? ReadJobId( RockContext rockContext )
+        {
+            var jobGuid = Rock.SystemGuid.ServiceJob.CHAT_PLATFORM_SYNC_JOB.AsGuid();
+
+            return new ServiceJobService( rockContext ).Queryable()
+                .Where( job => job.Guid == jobGuid )
+                .Select( job => ( int? ) job.Id )
+                .FirstOrDefault();
+        }
+
+        /// <summary>
+        /// Whether a run of the job holds its lock right now, on any server.
+        /// </summary>
+        /// <param name="jobId">The job's id.</param>
+        /// <returns>True when a run holds it.</returns>
+        /// <remarks>
+        /// The lock rather than the history record, because a run cut off by a restart leaves its record
+        /// open forever, and a press that trusted the record would follow that dead run and never start
+        /// another. This is the same probe Rock's own Run Now makes before it starts a job, held for no
+        /// longer than it takes to ask.
+        /// </remarks>
+        private static bool IsJobLocked( int jobId )
+        {
+            var lockProvider = RockApp.Current.GetRequiredService<IDistributedLockProvider>();
+
+            using ( var probe = lockProvider.TryAcquire( typeof( RockTriggerListener ), jobId.ToString(), TimeSpan.Zero ) )
+            {
+                return !probe.IsAcquired;
+            }
+        }
+
+        #endregion Reading Rock's job tables
 
         /// <summary>
         /// A press that has not yet reached a run that ended.

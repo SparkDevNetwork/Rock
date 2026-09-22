@@ -37,6 +37,12 @@ namespace Rock.ViewModels.Blocks.Group.GroupTypeDetail
         public bool IsChatEnabledSystem { get; set; }
 
         /// <summary>
+        /// Gets or sets whether chat runs on Spark's chat platform here, which is when the chat
+        /// settings offer Sync Now to send a saved change to chat straight away.
+        /// </summary>
+        public bool IsChatPlatformConfigured { get; set; }
+
+        /// <summary>
         /// Gets or sets the group requirement types.
         /// </summary>
         public List<GroupRequirementTypeBag> GroupRequirementTypeOptions { get; set; }
