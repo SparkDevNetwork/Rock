@@ -119,6 +119,20 @@ describe("Sync Now", () => {
         expect(outcome?.message).toBe("You are not authorized to sync chat from here.");
     });
 
+    it("says it could not check, not that it could not start, when a check fails with no reason", async () => {
+        // By the time a check fails the run has been asked for and goes ahead, so "could not be
+        // started" would be untrue and would invite a second press that is then refused.
+        const h = harness(
+            () => Promise.resolve(status(900, false, false, "Waiting for the sync to start.")),
+            () => Promise.resolve({ isSuccess: false, errorMessage: null }));
+
+        const outcome = await createSyncNow(h.dependencies).press();
+
+        expect(outcome?.isFailure).toBe(true);
+        expect(outcome?.message).not.toContain("could not be started");
+        expect(outcome?.message).toContain("Chat Platform Sync");
+    });
+
     it("stops waiting once its budget is spent and says the run is still going and where its result will appear", async () => {
         const h = harness(
             () => Promise.resolve(status(900, false, false, "Waiting for the sync to start.")),
