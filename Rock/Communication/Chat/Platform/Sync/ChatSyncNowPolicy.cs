@@ -193,6 +193,12 @@ namespace Rock.Communication.Chat.Platform.Sync
                 return null;
             }
 
+            // The history is read before the lock is probed, and the order is what makes the marker
+            // safe. Rock records a run only after that run has taken the lock, so a free lock after
+            // this read means any record newer than it belongs to a run that started after the press
+            // and so read the church after it. Probed first, a run starting in between would be
+            // missed by the probe and then taken as the marker itself, and the press would wait out
+            // its budget on a record that already exists.
             var latestRunId = new ServiceJobHistoryService( rockContext ).Queryable()
                 .Where( history => history.ServiceJobId == jobId.Value )
                 .OrderByDescending( history => history.Id )
