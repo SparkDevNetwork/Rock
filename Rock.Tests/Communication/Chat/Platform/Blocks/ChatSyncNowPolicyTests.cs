@@ -123,28 +123,25 @@ namespace Rock.Tests.Communication.Chat.Platform.Blocks
         }
 
         [TestMethod]
-        public void Request_WhileARunIsInFlight_QueuesNothingAndFollowsThatRun()
+        public void Request_WhileTheJobHoldsItsLock_QueuesNothingAndSaysToPressAgain()
         {
-            var queued = new List<int>();
-            var job = new ChatSyncNowPolicy.JobSnapshot { JobId = JobId, IsRunning = true, LatestRunId = 900, IsLatestRunEnded = false };
+            // Whatever holds the lock read the church before this press, so its result is not an
+            // answer to the press, and the lock is also held after a run's record has ended, while Rock
+            // sends the job's notification. Both are refused the same way.
+            foreach ( var isLatestRunEnded in new[] { false, true } )
+            {
+                var queued = new List<int>();
+                var job = new ChatSyncNowPolicy.JobSnapshot { JobId = JobId, IsRunning = true, LatestRunId = 900, IsLatestRunEnded = isLatestRunEnded };
 
-            var result = ChatSyncNowPolicy.Request( Configured(), true, () => job, queued.Add );
+                var result = ChatSyncNowPolicy.Request( Configured(), true, () => job, queued.Add );
 
-            Assert.IsFalse( result.IsRefused );
-            Assert.AreEqual( 0, queued.Count, "a second run was asked for while one held the lock, and the lock would refuse it without a word" );
-            Assert.AreEqual( 899, result.Status.RunMarker, "the press must report the run already in flight" );
-        }
-
-        [TestMethod]
-        public void Request_WhileARunHoldsTheLockButIsNotRecordedYet_WaitsForTheNextRecord()
-        {
-            var queued = new List<int>();
-            var job = new ChatSyncNowPolicy.JobSnapshot { JobId = JobId, IsRunning = true, LatestRunId = 900, IsLatestRunEnded = true };
-
-            var result = ChatSyncNowPolicy.Request( Configured(), true, () => job, queued.Add );
-
-            Assert.AreEqual( 0, queued.Count );
-            Assert.AreEqual( 900, result.Status.RunMarker, "the newest record has ended, so it is not the run holding the lock" );
+                Assert.IsTrue( result.IsRefused, "the newest record ended: " + isLatestRunEnded );
+                Assert.IsFalse( result.IsForbidden );
+                Assert.IsNull( result.Status, "a refused press was given a run to follow" );
+                StringAssert.Contains( result.RefusalMessage, "already running" );
+                StringAssert.Contains( result.RefusalMessage, "again" );
+                Assert.AreEqual( 0, queued.Count, "a second run was asked for while one held the lock, and the lock would refuse it without a word" );
+            }
         }
 
         #endregion A press
