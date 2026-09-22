@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -67,12 +68,6 @@ namespace Rock.Jobs
         // church's group membership and runs on that church's own server, and because the cost of
         // being wrong here is a cycle lost rather than a cycle wrong. An estimate.
         private const int ProjectionTimeoutSeconds = 300;
-
-        // The platform reads the body as UTF-8 text, and a byte order marker at the front of it
-        // would be the first thing its parser saw.
-        private static readonly Encoding BodyEncoding = new UTF8Encoding( false );
-
-        private const int BodyWriterBufferSize = 64 * 1024;
 
         #endregion Constants
 
@@ -506,7 +501,11 @@ namespace Rock.Jobs
             // object heap for nothing.
             var body = new MemoryStream();
 
-            using ( var text = new StreamWriter( body, BodyEncoding, BodyWriterBufferSize, true ) )
+            // No byte order mark: the platform reads this body as UTF-8 text, and those three bytes
+            // would be the first thing its parser saw. The buffer size is here only because this is
+            // the overload that leaves the stream open, which the buffer handed to the transport
+            // below depends on; 64 KB rather than the 1 KB default is a choice, not a measurement.
+            using ( var text = new StreamWriter( body, new UTF8Encoding( false ), 64 * 1024, true ) )
             using ( var jsonWriter = new JsonTextWriter( text ) { CloseOutput = false } )
             using ( var payloadWriter = new ChatSyncPayloadWriter( contract, jsonWriter ) )
             {
@@ -742,5 +741,778 @@ namespace Rock.Jobs
         }
 
         #endregion What the run reports
+
+        #region Building the submission
+
+        internal sealed class ChatSyncHeaderBuilder
+        {
+            #region Fields
+
+            private const string RowCountsHeader = "x-sync-counts";
+
+            private const string IdentityMarksHeader = "x-sync-marks";
+
+            private const string ReadTimeHeader = "x-sync-read-at";
+
+            private const string RockVersionHeader = "x-sync-rock-version";
+
+            private const string ContractHeader = "x-sync-contract";
+
+            private const string UrgentHeader = "x-sync-urgent";
+
+            private const string SubmissionIdHeader = "x-sync-submission-id";
+
+            private const long TicksPerMicrosecond = 10L;
+
+            private readonly JObject _contract;
+
+            #endregion
+
+            #region Constructors
+
+            public ChatSyncHeaderBuilder()
+                : this( JObject.Parse( ChatWireContract.Json ) )
+            {
+            }
+
+            public ChatSyncHeaderBuilder( JObject contract )
+            {
+                if ( contract == null )
+                {
+                    throw new ArgumentNullException( "contract" );
+                }
+
+                _contract = contract;
+            }
+
+            #endregion
+
+            #region Methods
+
+            public IList<string> GetPayloadSections()
+            {
+                var sections = _contract["payload"] == null ? null : _contract["payload"]["sections"];
+
+                if ( sections == null )
+                {
+                    throw new InvalidOperationException( "the chat wire contract does not name the payload sections, so nothing here can key a submission" );
+                }
+
+                return sections.Select( s => s.Value<string>() ).ToList();
+            }
+
+            private IList<string> GetHeaderKeys( string headerName )
+            {
+                var headers = _contract["submit_headers"];
+
+                if ( headers == null )
+                {
+                    throw new InvalidOperationException( "the chat wire contract describes no submit headers" );
+                }
+
+                var header = headers.Children<JObject>().FirstOrDefault( h => h["name"] != null && h["name"].Value<string>() == headerName );
+
+                if ( header == null )
+                {
+                    throw new InvalidOperationException( string.Format( "the chat wire contract describes no {0} header", headerName ) );
+                }
+
+                if ( header["keys"] == null )
+                {
+                    throw new InvalidOperationException( string.Format( "the chat wire contract does not carry the key set of {0} as data, so this header could only be built from prose about it", headerName ) );
+                }
+
+                return header["keys"].Select( k => k.Value<string>() ).ToList();
+            }
+
+            public string BuildRowCounts( IDictionary<string, int> rowCountsBySection )
+            {
+                if ( rowCountsBySection == null )
+                {
+                    throw new ArgumentNullException( "rowCountsBySection" );
+                }
+
+                var sections = GetPayloadSections();
+                var keys = GetHeaderKeys( RowCountsHeader );
+
+                // The platform builds these two lists from one constant, so a copy of the contract
+                // where they differ is a defect in the copy. Preferring either one would send a header
+                // built from a guess and leave the disagreement to be found as a refusal.
+                var disagreements = keys.Except( sections ).Concat( sections.Except( keys ) ).ToList();
+
+                if ( disagreements.Any() )
+                {
+                    throw new InvalidOperationException( string.Format(
+                        "the chat wire contract's row-count keys and payload sections disagree about {0}",
+                        string.Join( ", ", disagreements ) ) );
+                }
+
+                var header = new JObject();
+
+                foreach ( var key in keys )
+                {
+                    int rowCount;
+
+                    // A section with no count is a projection that did not run. Sending it as zero
+                    // would be indistinguishable from a church that genuinely has none of that row,
+                    // and the platform would apply the emptiness as truth.
+                    if ( !rowCountsBySection.TryGetValue( key, out rowCount ) )
+                    {
+                        throw new InvalidOperationException( string.Format( "no row count was taken for the {0} section", key ) );
+                    }
+
+                    header[key] = rowCount;
+                }
+
+                return header.ToString( Formatting.None );
+            }
+
+            public string BuildIdentityMarks( ChatSyncIdentityMarks marks )
+            {
+                if ( marks == null )
+                {
+                    throw new ArgumentNullException( "marks" );
+                }
+
+                var keys = GetHeaderKeys( IdentityMarksHeader );
+
+                // Which table each key names is the one part of this that has to live here, because
+                // the contract describes a wire and never names a table in Rock. What the contract
+                // decides is which keys have to be present, and the two checks below are what turn a
+                // contract this assembly has fallen behind into a build failure rather than a refusal
+                // at the platform on every cycle under a code that points at no file.
+                var valuesByKey = new Dictionary<string, long>
+                {
+                    { "person", marks.Person },
+                    { "person_alias", marks.PersonAlias },
+                    { "group", marks.Group },
+                    { "group_member", marks.GroupMember }
+                };
+
+                var unsupplied = keys.Except( valuesByKey.Keys ).ToList();
+
+                if ( unsupplied.Any() )
+                {
+                    throw new InvalidOperationException( string.Format(
+                        "the chat wire contract asks for the identity mark {0}, which nothing here reads",
+                        string.Join( ", ", unsupplied ) ) );
+                }
+
+                var unlisted = valuesByKey.Keys.Except( keys ).ToList();
+
+                if ( unlisted.Any() )
+                {
+                    throw new InvalidOperationException( string.Format(
+                        "the chat wire contract no longer lists the identity mark {0}, which this assembly still reads",
+                        string.Join( ", ", unlisted ) ) );
+                }
+
+                var header = new JObject();
+
+                foreach ( var key in keys )
+                {
+                    header[key] = valuesByKey[key];
+                }
+
+                return header.ToString( Formatting.None );
+            }
+
+            public IDictionary<string, string> BuildSubmissionHeaders( DateTime readAtUtc, ChatSyncIdentityMarks marks, IDictionary<string, int> rowCountsBySection, string rockVersion, bool isUrgent )
+            {
+                if ( rockVersion.IsNullOrWhiteSpace() )
+                {
+                    throw new ArgumentException( "the version of Rock producing a payload is recorded with the submission and cannot be blank", "rockVersion" );
+                }
+
+                var publishedHash = _contract["wire_hash"] == null ? null : _contract["wire_hash"].Value<string>();
+                var computedHash = ChatWireContract.HashColumnLists( _contract );
+
+                if ( publishedHash != computedHash )
+                {
+                    throw new InvalidOperationException(
+                        "the wire contract this submission would be built from does not hash to the value written inside it, so nothing here can say what column order the payload is in" );
+                }
+
+                var headers = new Dictionary<string, string>( StringComparer.OrdinalIgnoreCase )
+                {
+                    { ReadTimeHeader, FormatReadTime( readAtUtc ) },
+                    { RowCountsHeader, BuildRowCounts( rowCountsBySection ) },
+                    { IdentityMarksHeader, BuildIdentityMarks( marks ) },
+                    { RockVersionHeader, rockVersion },
+                    { ContractHeader, computedHash }
+                };
+
+                if ( isUrgent )
+                {
+                    headers.Add( UrgentHeader, "1" );
+                }
+
+                RequireTheContractsHeaderSet( headers );
+
+                return headers;
+            }
+
+            private void RequireTheContractsHeaderSet( IDictionary<string, string> headers )
+            {
+                var listed = _contract["submit_headers"];
+
+                if ( listed == null )
+                {
+                    throw new InvalidOperationException( "the chat wire contract describes no submit headers" );
+                }
+
+                var entries = listed.Children<JObject>().ToList();
+
+                var required = entries
+                    .Where( h => h["required"] != null && h["required"].Value<bool>() )
+                    .Select( h => h["name"].Value<string>() )
+                    .Where( name => !string.Equals( name, SubmissionIdHeader, StringComparison.OrdinalIgnoreCase ) )
+                    .ToList();
+
+                var missing = required.Where( name => !headers.ContainsKey( name ) ).ToList();
+
+                if ( missing.Any() )
+                {
+                    throw new InvalidOperationException( string.Format(
+                        "the chat wire contract requires the {0} header, which nothing here builds",
+                        string.Join( ", ", missing ) ) );
+                }
+
+                var names = entries.Select( h => h["name"].Value<string>() ).ToList();
+                var unlisted = headers.Keys.Where( name => !names.Contains( name, StringComparer.OrdinalIgnoreCase ) ).ToList();
+
+                if ( unlisted.Any() )
+                {
+                    throw new InvalidOperationException( string.Format(
+                        "the {0} header is not one the chat wire contract lists",
+                        string.Join( ", ", unlisted ) ) );
+                }
+            }
+
+            public static string FormatReadTime( DateTime readAtUtc )
+            {
+                if ( readAtUtc.Kind != DateTimeKind.Utc )
+                {
+                    throw new ArgumentException( "the read time a payload is judged by has to be taken in UTC, because it is compared against times the platform holds in UTC", "readAtUtc" );
+                }
+
+                // Truncated rather than rounded, and towards the past. The guard this value feeds
+                // refuses a row whose stored time is not strictly older, so a value rounded up by the
+                // fraction of a microsecond the platform cannot hold would let a stale write win a
+                // comparison built to fail closed.
+                var truncated = new DateTime( readAtUtc.Ticks - ( readAtUtc.Ticks % TicksPerMicrosecond ), DateTimeKind.Utc );
+
+                // The offset is explicit because a time without one is read in the receiving session's
+                // own zone rather than in the zone it was taken in.
+                return truncated.ToString( "yyyy-MM-ddTHH:mm:ss.ffffff'Z'", CultureInfo.InvariantCulture );
+            }
+
+            #endregion
+        }
+
+        internal sealed class ChatSyncRowMapper
+        {
+            #region Fields
+
+            private readonly JObject _contract;
+
+            private readonly TimeZoneInfo _organizationTimeZone;
+
+            #endregion
+
+            #region Constructors
+
+            public ChatSyncRowMapper( JObject contract, TimeZoneInfo organizationTimeZone )
+            {
+                if ( contract == null )
+                {
+                    throw new ArgumentNullException( "contract" );
+                }
+
+                if ( organizationTimeZone == null )
+                {
+                    throw new ArgumentNullException( "organizationTimeZone" );
+                }
+
+                _contract = contract;
+                _organizationTimeZone = organizationTimeZone;
+            }
+
+            #endregion
+
+            #region Methods
+
+            public IList<object> Map( string section, IList<string> queryColumns, IList<object> rawValues )
+            {
+                if ( queryColumns == null )
+                {
+                    throw new ArgumentNullException( "queryColumns" );
+                }
+
+                if ( rawValues == null )
+                {
+                    throw new ArgumentNullException( "rawValues" );
+                }
+
+                if ( queryColumns.Count != rawValues.Count )
+                {
+                    throw new InvalidOperationException( string.Format(
+                        "the {0} query returned {1} values for {2} columns",
+                        section,
+                        rawValues.Count,
+                        queryColumns.Count ) );
+                }
+
+                var byName = new Dictionary<string, object>( StringComparer.OrdinalIgnoreCase );
+
+                for ( var i = 0; i < queryColumns.Count; i++ )
+                {
+                    byName[queryColumns[i]] = Normalize( rawValues[i] );
+                }
+
+                return GetWireColumns( section ).Select( c => ReadWireColumn( section, c, byName ) ).ToList();
+            }
+
+            private object ReadWireColumn( string section, string wireColumn, IDictionary<string, object> byName )
+            {
+                if ( wireColumn == "badge_keys" )
+                {
+                    return ReadBadgeKeys( Require( section, wireColumn, "badge_keys", byName ) );
+                }
+
+                if ( wireColumn == "ban_expires_at" )
+                {
+                    return ReadTime( Require( section, wireColumn, "ban_expires_at", byName ) );
+                }
+
+                if ( wireColumn == "bg_color" )
+                {
+                    return ReadBadgeColors( Require( section, wireColumn, "highlight_color", byName ) ).Item1;
+                }
+
+                if ( wireColumn == "fg_color" )
+                {
+                    return ReadBadgeColors( Require( section, wireColumn, "highlight_color", byName ) ).Item2;
+                }
+
+                return Require( section, wireColumn, wireColumn, byName );
+            }
+
+            private static object Require( string section, string wireColumn, string queryColumn, IDictionary<string, object> byName )
+            {
+                object value;
+
+                if ( !byName.TryGetValue( queryColumn, out value ) )
+                {
+                    throw new InvalidOperationException( string.Format(
+                        "the {0} query returns no {1}, which the {2} column on the wire is built from",
+                        section,
+                        queryColumn,
+                        wireColumn ) );
+                }
+
+                return value;
+            }
+
+            private IList<string> GetWireColumns( string section )
+            {
+                var sections = _contract["payload"]["sections"].Select( s => s.Value<string>() ).ToList();
+                var position = sections.IndexOf( section );
+
+                if ( position < 0 )
+                {
+                    throw new InvalidOperationException( string.Format( "the chat wire contract names no payload section called {0}", section ) );
+                }
+
+                return _contract["tables"][position]["columns"].Select( c => c.Value<string>() ).ToList();
+            }
+
+            private static object Normalize( object value )
+            {
+                return value == DBNull.Value ? null : value;
+            }
+
+            private object ReadTime( object value )
+            {
+                if ( value == null )
+                {
+                    return null;
+                }
+
+                var stored = (DateTime) value;
+
+                if ( stored.Kind == DateTimeKind.Utc )
+                {
+                    return stored;
+                }
+
+                // A time out of the database carries no zone, and it is in the organisation's, because
+                // that is the only clock Rock writes by. Treating it as already UTC would make it wrong
+                // by this church's offset, and for a church behind UTC a ban would lift early.
+                var unspecified = DateTime.SpecifyKind( stored, DateTimeKind.Unspecified );
+
+                return TimeZoneInfo.ConvertTimeToUtc( unspecified, _organizationTimeZone );
+            }
+
+            public static IList<Guid> ReadBadgeKeys( object joined )
+            {
+                var text = Normalize( joined ) as string;
+
+                if ( string.IsNullOrWhiteSpace( text ) )
+                {
+                    // Empty rather than absent: the column on the far side cannot hold nothing, and a
+                    // person holding no badge is not the same as a row that did not say.
+                    return new List<Guid>();
+                }
+
+                var keys = new List<Guid>();
+
+                foreach ( var part in text.Split( ',' ) )
+                {
+                    var trimmed = part.Trim();
+
+                    if ( trimmed.Length == 0 )
+                    {
+                        continue;
+                    }
+
+                    Guid key;
+
+                    // Dropped rather than refused, this would hand the church a badge that quietly
+                    // stops appearing on a submission the far side accepts, with nothing to look at.
+                    if ( !Guid.TryParse( trimmed, out key ) )
+                    {
+                        throw new InvalidOperationException( string.Format( "the badge key {0} is not an identifier", trimmed ) );
+                    }
+
+                    keys.Add( key );
+                }
+
+                return keys;
+            }
+
+            public static Tuple<string, string> ReadBadgeColors( object highlightColor )
+            {
+                var text = ( Normalize( highlightColor ) as string ?? string.Empty ).Trim();
+
+                // The field is free text in Rock, so a church can put a colour name, a function or
+                // anything else in it. A badge with no colour still renders; a submission refused over
+                // one badge takes that church down for the whole cycle.
+                if ( text.Length == 0 || text[0] != '#' )
+                {
+                    return Tuple.Create( (string) null, (string) null );
+                }
+
+                var digits = text.Substring( 1 );
+
+                if ( digits.Length == 3 )
+                {
+                    // The short form is not accepted on the far side, and doubling each digit is what
+                    // it means everywhere it is written.
+                    digits = new string( new[] { digits[0], digits[0], digits[1], digits[1], digits[2], digits[2] } );
+                }
+
+                if ( digits.Length != 6 || !digits.All( Uri.IsHexDigit ) )
+                {
+                    return Tuple.Create( (string) null, (string) null );
+                }
+
+                var red = int.Parse( digits.Substring( 0, 2 ), NumberStyles.HexNumber, CultureInfo.InvariantCulture );
+                var green = int.Parse( digits.Substring( 2, 2 ), NumberStyles.HexNumber, CultureInfo.InvariantCulture );
+                var blue = int.Parse( digits.Substring( 4, 2 ), NumberStyles.HexNumber, CultureInfo.InvariantCulture );
+
+                var luminance = RelativeLuminance( red, green, blue );
+
+                // Whichever of black and white the eye separates further from this background, by the
+                // accessibility contrast ratio rather than by a brightness rule of thumb, so a colour
+                // near the boundary gets the answer a checker would give.
+                var contrastWithWhite = 1.05 / ( luminance + 0.05 );
+                var contrastWithBlack = ( luminance + 0.05 ) / 0.05;
+
+                var foreground = contrastWithWhite >= contrastWithBlack ? "#ffffff" : "#000000";
+
+                return Tuple.Create( "#" + digits.ToLowerInvariant(), foreground );
+            }
+
+            private static double RelativeLuminance( int red, int green, int blue )
+            {
+                return ( 0.2126 * Straighten( red ) ) + ( 0.7152 * Straighten( green ) ) + ( 0.0722 * Straighten( blue ) );
+            }
+
+            private static double Straighten( int channel )
+            {
+                var value = channel / 255.0;
+
+                return value <= 0.03928 ? value / 12.92 : Math.Pow( ( value + 0.055 ) / 1.055, 2.4 );
+            }
+
+            #endregion
+        }
+
+        internal sealed class ChatSyncPayloadWriter : IDisposable
+        {
+            #region Fields
+
+            private readonly JObject _contract;
+
+            private readonly JsonWriter _writer;
+
+            private readonly Dictionary<string, int> _rowCounts = new Dictionary<string, int>();
+
+            private string _openSection;
+
+            #endregion
+
+            #region Constructors
+
+            public ChatSyncPayloadWriter( JObject contract, JsonWriter writer )
+            {
+                if ( contract == null )
+                {
+                    throw new ArgumentNullException( "contract" );
+                }
+
+                if ( writer == null )
+                {
+                    throw new ArgumentNullException( "writer" );
+                }
+
+                _contract = contract;
+                _writer = writer;
+
+                _writer.WriteStartObject();
+            }
+
+            #endregion
+
+            #region Properties
+
+            public IDictionary<string, int> RowCounts
+            {
+                get { return _rowCounts; }
+            }
+
+            #endregion
+
+            #region Methods
+
+            public int GetRowWidth( string section )
+            {
+                var sections = GetSections();
+                var position = sections.IndexOf( section );
+
+                if ( position < 0 )
+                {
+                    throw new InvalidOperationException( string.Format( "the chat wire contract names no payload section called {0}", section ) );
+                }
+
+                var tables = _contract["tables"];
+
+                // The contract states that a section holds the rows of the table in the same position
+                // in its table list, which is the only thing that ties a section to a width.
+                if ( tables == null || tables.Count() != sections.Count )
+                {
+                    throw new InvalidOperationException( "the chat wire contract names a different number of payload sections than tables, so no section can be matched to a width" );
+                }
+
+                return tables[position]["columns"].Count();
+            }
+
+            private IList<string> GetSections()
+            {
+                var sections = _contract["payload"] == null ? null : _contract["payload"]["sections"];
+
+                if ( sections == null )
+                {
+                    throw new InvalidOperationException( "the chat wire contract does not name the payload sections, so nothing here can key a body" );
+                }
+
+                return sections.Select( s => s.Value<string>() ).ToList();
+            }
+
+            public void BeginSection( string section )
+            {
+                if ( _openSection != null )
+                {
+                    throw new InvalidOperationException( string.Format( "the {0} section is still open", _openSection ) );
+                }
+
+                if ( _rowCounts.ContainsKey( section ) )
+                {
+                    throw new InvalidOperationException( string.Format( "the {0} section has already been written", section ) );
+                }
+
+                // Asks the contract for the width now rather than at the first row, so a section name
+                // the contract does not know fails where it was named.
+                GetRowWidth( section );
+
+                _openSection = section;
+                _rowCounts[section] = 0;
+
+                _writer.WritePropertyName( section );
+                _writer.WriteStartArray();
+            }
+
+            public void WriteRow( IList<object> values )
+            {
+                if ( _openSection == null )
+                {
+                    throw new InvalidOperationException( "no payload section is open" );
+                }
+
+                if ( values == null )
+                {
+                    throw new ArgumentNullException( "values" );
+                }
+
+                var width = GetRowWidth( _openSection );
+
+                // A row of the wrong width shifts every value after the gap one place. Nothing further
+                // down can see that once the types on either side of the gap happen to agree, so it is
+                // refused here rather than sent.
+                if ( values.Count != width )
+                {
+                    throw new InvalidOperationException( string.Format(
+                        "a {0} row carries {1} values where the contract gives that table {2} columns",
+                        _openSection,
+                        values.Count,
+                        width ) );
+                }
+
+                _writer.WriteStartArray();
+
+                foreach ( var value in values )
+                {
+                    WriteValue( value );
+                }
+
+                _writer.WriteEndArray();
+
+                _rowCounts[_openSection] = _rowCounts[_openSection] + 1;
+            }
+
+            private void WriteValue( object value )
+            {
+                if ( value == null )
+                {
+                    _writer.WriteNull();
+                    return;
+                }
+
+                if ( value is Guid )
+                {
+                    // Lowercase and hyphenated is the one form that parses as a uuid on the far side
+                    // and compares equal to the same value already stored there. SQL Server renders
+                    // them uppercase by default and orders their bytes differently again.
+                    _writer.WriteValue( ( (Guid)value ).ToString( "D" ).ToLowerInvariant() );
+                    return;
+                }
+
+                if ( value is DateTime )
+                {
+                    WriteTime( (DateTime)value );
+                    return;
+                }
+
+                var guids = value as IEnumerable<Guid>;
+
+                if ( guids != null )
+                {
+                    // The column behind this is a uuid array, and the drain reads anything that is not
+                    // a JSON array as an empty one, so a joined string would give a person no badges
+                    // on a submission the platform accepts with nothing reported anywhere.
+                    _writer.WriteStartArray();
+
+                    foreach ( var guid in guids )
+                    {
+                        _writer.WriteValue( guid.ToString( "D" ).ToLowerInvariant() );
+                    }
+
+                    _writer.WriteEndArray();
+                    return;
+                }
+
+                if ( value is string || value is bool || value is int || value is long || value is short || value is byte || value is decimal || value is double )
+                {
+                    _writer.WriteValue( value );
+                    return;
+                }
+
+                // Anything else would be serialized by whatever Json.NET decides, which is how a value
+                // reaches the wire in a shape nobody chose.
+                throw new InvalidOperationException( string.Format(
+                    "a {0} row carries a {1}, which has no agreed form on the wire",
+                    _openSection,
+                    value.GetType().Name ) );
+            }
+
+            private void WriteTime( DateTime value )
+            {
+                if ( value.Kind != DateTimeKind.Utc )
+                {
+                    throw new InvalidOperationException( string.Format(
+                        "a {0} row carries a time that is not UTC, so the platform would read it in its own zone and the value would be wrong by this church's offset",
+                        _openSection ) );
+                }
+
+                _writer.WriteValue( value.ToString( "yyyy-MM-ddTHH:mm:ss.ffffff'Z'", CultureInfo.InvariantCulture ) );
+            }
+
+            public void EndSection()
+            {
+                if ( _openSection == null )
+                {
+                    throw new InvalidOperationException( "no payload section is open" );
+                }
+
+                _writer.WriteEndArray();
+                _openSection = null;
+            }
+
+            public void Complete()
+            {
+                if ( _openSection != null )
+                {
+                    throw new InvalidOperationException( string.Format( "the {0} section is still open", _openSection ) );
+                }
+
+                // A section left out is not a church with none of that row, it is a projection that did
+                // not run, and the platform applies a restatement as truth.
+                var missing = GetSections().Except( _rowCounts.Keys ).ToList();
+
+                if ( missing.Any() )
+                {
+                    throw new InvalidOperationException( string.Format(
+                        "the body was completed without the {0} section, which the platform would apply as an empty church",
+                        string.Join( ", ", missing ) ) );
+                }
+
+                _writer.WriteEndObject();
+            }
+
+            public void Dispose()
+            {
+                _writer.Close();
+            }
+
+            #endregion
+        }
+
+        internal sealed class ChatSyncIdentityMarks
+        {
+            #region Properties
+
+            public long Person { get; set; }
+
+            public long PersonAlias { get; set; }
+
+            public long Group { get; set; }
+
+            public long GroupMember { get; set; }
+
+            #endregion
+        }
+
+        #endregion Building the submission
     }
 }

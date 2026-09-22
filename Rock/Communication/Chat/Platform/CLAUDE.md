@@ -18,7 +18,7 @@ integration. It is not touched and not referenced from here.
 | Folder | Holds |
 |---|---|
 | `Session/` | Gating, enrolment and token minting for a person opening chat |
-| `Sync/` and `Sql/` | The projection queries, payload shaping, the submit client and its outcome |
+| `Sync/` and `Sql/` | The projection queries, and the client that carries a submission to the platform |
 | `LaneA/` | The immediate lane: save hooks record keys, a flush pushes them |
 | `Doors/` | Block action handlers that change Rock truth, such as creating a direct message or joining a channel |
 | `Configuration/` | The settings model, its cached parsed form, and secret handling |
@@ -26,8 +26,9 @@ integration. It is not touched and not referenced from here.
 
 Folders appear when a file needs them. The job classes live in `Rock/Jobs` with every other job, and
 the scheduled sync keeps its whole run there rather than spread across this folder: whether the run
-happens, which queries it loads, reading the church, submitting, polling and what it reports. What
-stays here is what more than the job uses, or will.
+happens, which queries it loads, reading the church, shaping the payload, building the headers,
+submitting, polling and what it reports. What stays here is the transport, which owns an HttpClient
+and its lifetime and is the one piece that is not about this church's data.
 
 The blocks live in `Rock.Blocks/Communication/Chat`, the bags in
 `Rock.ViewModels/Blocks/Communication/Chat`, and the client in

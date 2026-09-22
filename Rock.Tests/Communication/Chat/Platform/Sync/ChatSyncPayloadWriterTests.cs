@@ -26,6 +26,10 @@ using Newtonsoft.Json.Linq;
 
 using Rock.Communication.Chat.Platform.Contract;
 using Rock.Communication.Chat.Platform.Sync;
+using ChatSyncHeaderBuilder = Rock.Jobs.ChatPlatformSync.ChatSyncHeaderBuilder;
+using ChatSyncIdentityMarks = Rock.Jobs.ChatPlatformSync.ChatSyncIdentityMarks;
+using ChatSyncPayloadWriter = Rock.Jobs.ChatPlatformSync.ChatSyncPayloadWriter;
+using ChatSyncRowMapper = Rock.Jobs.ChatPlatformSync.ChatSyncRowMapper;
 
 namespace Rock.Tests.Communication.Chat.Platform.Sync
 {
