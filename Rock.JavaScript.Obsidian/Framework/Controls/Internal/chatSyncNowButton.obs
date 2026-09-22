@@ -1,0 +1,120 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="chat-sync-now">
+        <RockButton class="chat-sync-now-button"
+                    :btnType="BtnType.Default"
+                    :disabled="disabled || isInFlight"
+                    :isLoading="isInFlight"
+                    loadingText="Syncing..."
+                    @click="onSyncNow">
+            Sync Now
+        </RockButton>
+
+        <span v-if="disabled && disabledReason" class="chat-sync-now-reason text-muted">{{ disabledReason }}</span>
+
+        <NotificationBox v-if="message" class="chat-sync-now-message" :alertType="alertType">
+            {{ message }}
+        </NotificationBox>
+    </div>
+</template>
+
+<script setup lang="ts">
+    import { ref } from "vue";
+    import { createSyncNow, SyncNowActionResult, SyncNowOutcome } from "./ChatSyncNow/syncNow.partial";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import { AlertType } from "@Obsidian/Enums/Controls/alertType";
+    import { BtnType } from "@Obsidian/Enums/Controls/btnType";
+    import { useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { ChatSyncNowStatusBag } from "@Obsidian/ViewModels/Blocks/Communication/Chat/ChatSyncNow/chatSyncNowStatusBag";
+
+    /*
+        Sync Now for the chat blocks that offer it. The block it sits in must have two actions,
+        RequestSyncNow and GetSyncNowStatus; a press asks Rock to run the chat platform sync job now
+        and follows that run until it ends.
+    */
+    const props = defineProps({
+        /** Whether pressing is not allowed right now, such as while the settings beside it have unsaved edits. */
+        disabled: {
+            type: Boolean,
+            default: false
+        },
+
+        /** Why pressing is not allowed, shown beside the button while it is disabled. */
+        disabledReason: {
+            type: String,
+            default: ""
+        }
+    });
+
+    const invokeBlockAction = useInvokeBlockAction();
+
+    // #region Values
+
+    const isInFlight = ref(false);
+    const message = ref("");
+    const alertType = ref<string>(AlertType.Info);
+
+    const syncNow = createSyncNow({
+        request: (): Promise<SyncNowActionResult> => invokeBlockAction<ChatSyncNowStatusBag>("RequestSyncNow"),
+        check: (runMarker: number): Promise<SyncNowActionResult> => invokeBlockAction<ChatSyncNowStatusBag>("GetSyncNowStatus", { runMarker }),
+        wait: (milliseconds: number): Promise<void> => new Promise(resolve => setTimeout(resolve, milliseconds)),
+        now: (): number => Date.now(),
+        onProgress: (progress: string): void => {
+            message.value = progress;
+            alertType.value = AlertType.Info;
+        }
+    });
+
+    // #endregion Values
+
+    // #region Event Handlers
+
+    /**
+     * Starts a sync and shows what it came to.
+     */
+    async function onSyncNow(): Promise<void> {
+        if (props.disabled) {
+            return;
+        }
+
+        isInFlight.value = true;
+
+        try {
+            const outcome = await syncNow.press();
+
+            if (outcome) {
+                show(outcome);
+            }
+        }
+        finally {
+            isInFlight.value = syncNow.isInFlight();
+        }
+    }
+
+    // #endregion Event Handlers
+
+    // #region Functions
+
+    /**
+     * Shows what a press came to: a success, a failure, or a run still going when the screen stopped
+     * waiting for it.
+     *
+     * @param outcome What the press came to.
+     */
+    function show(outcome: SyncNowOutcome): void {
+        message.value = outcome.message;
+
+        if (!outcome.isFinished && !outcome.isFailure) {
+            alertType.value = AlertType.Info;
+        }
+        else if (outcome.isFailure) {
+            alertType.value = AlertType.Warning;
+        }
+        else {
+            alertType.value = AlertType.Success;
+        }
+    }
+
+    // #endregion Functions
+</script>

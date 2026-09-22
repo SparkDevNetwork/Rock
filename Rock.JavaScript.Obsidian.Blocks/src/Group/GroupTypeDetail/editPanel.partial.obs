@@ -548,7 +548,10 @@
         <ContentSection v-if="store.state.trailblazerMode && isChatEnabledSystem" title="Chat"
                         icon="ti ti-message-dots"
                         :order="11">
-            <NotificationBox :alertType="AlertType.Info">
+            <NotificationBox v-if="isChatPlatformConfigured" :alertType="AlertType.Info">
+                These changes reach chat at the next scheduled Chat Platform Sync. To send them now, save, then press Sync Now on this group type.
+            </NotificationBox>
+            <NotificationBox v-else :alertType="AlertType.Info">
                 You'll need to run the Chat Sync Job after saving for these changes to take effect in chat channels of this type.
             </NotificationBox>
 
@@ -714,6 +717,7 @@
     const store = useStore();
     const isSystem = ref(props.modelValue.bag?.isSystem ?? false);
     const isChatEnabledSystem = ref(props.options.isChatEnabledSystem ?? false);
+    const isChatPlatformConfigured = ref(props.options.isChatPlatformConfigured ?? false);
     const errorMessage = ref<string | null>(null);
     const chatChannelsDisabledMessage = ref<string | null>(null);
 

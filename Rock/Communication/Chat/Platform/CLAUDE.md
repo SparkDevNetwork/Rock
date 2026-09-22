@@ -18,7 +18,7 @@ integration. It is not touched and not referenced from here.
 | Folder | Holds |
 |---|---|
 | `Session/` | Gating, enrolment and token minting for a person opening chat |
-| `Sync/` and `Sql/` | The projection queries, and the client that carries a submission to the platform |
+| `Sync/` and `Sql/` | The projection queries, the client that carries a submission to the platform, and what Sync Now on a chat block may start and report |
 | `LaneA/` | The immediate lane: save hooks record keys, a flush pushes them |
 | `Doors/` | Block action handlers that change Rock truth, such as creating a direct message or joining a channel |
 | `Configuration/` | The settings model, its cached parsed form, and secret handling |
@@ -34,6 +34,13 @@ The blocks live in `Rock.Blocks/Communication/Chat`, the bags in
 `Rock.ViewModels/Blocks/Communication/Chat`, and the client in
 `Rock.JavaScript.Obsidian.Blocks/src/Communication/Chat`, each following the convention the root
 file already states.
+
+Sync Now is the exception on the client. It is one button shared by the Chat Configuration block and
+upstream's Group Type Detail block, and each block folder is its own TypeScript project that may not
+import from another, so the button and its behaviour live with the framework's internal controls in
+`Rock.JavaScript.Obsidian/Framework/Controls/Internal`. A press asks Rock to run the Chat Platform
+Sync job now, exactly as the Jobs Administration page does, and follows that run in the job's own
+history; it never runs the sync itself.
 
 ## The vendored contract
 

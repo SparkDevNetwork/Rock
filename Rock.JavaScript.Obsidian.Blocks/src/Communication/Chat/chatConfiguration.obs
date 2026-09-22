@@ -87,17 +87,23 @@
                     <dt>Signing Key</dt>
                     <dd>{{ config.configuration?.isChurchKeyPresent ? "Stored" : "Missing" }}</dd>
                 </dl>
-                <RockButton class="chat-configuration-sync-now" :btnType="BtnType.Default" disabled>Sync Now</RockButton>
-                <span class="text-muted">Available once the chat sync job is set up.</span>
+                <p class="text-muted">
+                    Saved settings reach chat at the next scheduled Chat Platform Sync. Sync Now sends
+                    them straight away.
+                </p>
+                <ChatSyncNowButton class="chat-configuration-sync-now"
+                                   :disabled="hasUnsavedEdits || isSaving"
+                                   :disabledReason="hasUnsavedEdits ? 'Save your changes first. Sync Now sends what is saved.' : ''" />
             </div>
         </template>
     </Panel>
 </template>
 
 <script setup lang="ts">
-    import { ref } from "vue";
-    import { toBag, toFormModel } from "./ChatConfiguration/viewModel.partial";
+    import { computed, ref } from "vue";
+    import { hasUnsavedChanges, toBag, toFormModel } from "./ChatConfiguration/viewModel.partial";
     import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import ChatSyncNowButton from "@Obsidian/Controls/Internal/chatSyncNowButton.obs";
     import DataViewPicker from "@Obsidian/Controls/dataViewPicker.obs";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import NumberBox from "@Obsidian/Controls/numberBox.obs";
@@ -117,6 +123,9 @@
     // #region Values
 
     const form = ref(toFormModel(config.configuration));
+
+    // The form as last saved or loaded, which is what Sync Now would send.
+    const savedForm = ref(toFormModel(config.configuration));
     const connectedServicesUrl = ref(config.connectedServicesUrl ?? "");
 
     const isSaving = ref(false);
@@ -124,6 +133,13 @@
     const messageAlertType = ref<string | undefined>(undefined);
 
     // #endregion Values
+
+    // #region Computed Values
+
+    /** Whether the form holds edits a Sync Now press would not send. */
+    const hasUnsavedEdits = computed((): boolean => hasUnsavedChanges(form.value, savedForm.value));
+
+    // #endregion Computed Values
 
     // #region Event Handlers
 
@@ -143,6 +159,7 @@
             const result = await invokeBlockAction("SaveConfiguration", { bag: toBag(form.value) });
 
             if (result.isSuccess) {
+                savedForm.value = toFormModel(toBag(form.value));
                 message.value = "Settings saved.";
                 messageAlertType.value = AlertType.Success;
             }

@@ -38,6 +38,18 @@ export const CHAT_PATHS = [
   'Rock.JavaScript.Obsidian.Blocks/src/Communication/Chat/ChatConfiguration/',
   'Rock.JavaScript.Obsidian/Framework/ViewModels/Blocks/Communication/Chat/ChatConfiguration/',
   'Rock/Jobs/ChatPlatform',
+  // Sync Now, which both chat blocks share. The button and its behaviour sit with the framework's
+  // internal controls because the two blocks are in separate TypeScript projects.
+  'Rock.ViewModels/Blocks/Communication/Chat/ChatSyncNow/',
+  'Rock.JavaScript.Obsidian/Framework/ViewModels/Blocks/Communication/Chat/ChatSyncNow/',
+  'Rock.JavaScript.Obsidian/Framework/Controls/Internal/chatSyncNowButton.obs',
+  'Rock.JavaScript.Obsidian/Framework/Controls/Internal/ChatSyncNow/',
+  // Group Type Detail is upstream's block; these are the files this work wrote chat comments into.
+  'Rock.Blocks/Group/GroupTypeDetail.cs',
+  'Rock.ViewModels/Blocks/Group/GroupTypeDetail/GroupTypeDetailOptionsBag.cs',
+  'Rock.JavaScript.Obsidian/Framework/ViewModels/Blocks/Group/GroupTypeDetail/groupTypeDetailOptionsBag.d.ts',
+  'Rock.JavaScript.Obsidian.Blocks/src/Group/GroupTypeDetail/viewPanel.partial.obs',
+  'Rock.JavaScript.Obsidian.Blocks/src/Group/GroupTypeDetail/editPanel.partial.obs',
   // Enabling chat goes through the connected services provider Rock already had, so these are
   // upstream files this work wrote chat comments into, plus the chat card beside Rock IQ's.
   'Rock/Configuration/IInitializationSettings.cs',

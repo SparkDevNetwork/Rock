@@ -19,12 +19,21 @@
 
         <AttributeValuesContainer :modelValue="attributeValues" :attributes="attributes" :numberOfColumns="2" />
 
+        <div v-if="options.isChatPlatformConfigured" class="group-type-chat-sync-now">
+            <p class="text-muted">
+                Saved chat settings reach chat at the next scheduled Chat Platform Sync. Sync Now sends
+                them straight away, along with every other group's.
+            </p>
+            <ChatSyncNowButton />
+        </div>
+
     </fieldset>
 </template>
 
 <script setup lang="ts">
     import { computed, PropType, ref } from "vue";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import ChatSyncNowButton from "@Obsidian/Controls/Internal/chatSyncNowButton.obs";
     import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
     import ValueDetailList from "@Obsidian/Controls/valueDetailList.obs";
     import { ValueDetailListItemBuilder } from "@Obsidian/Core/Controls/valueDetailListItemBuilder";
