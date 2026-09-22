@@ -193,18 +193,17 @@ namespace Rock.Communication.Chat.Platform.Sync
                 return null;
             }
 
-            var latest = new ServiceJobHistoryService( rockContext ).Queryable()
+            var latestRunId = new ServiceJobHistoryService( rockContext ).Queryable()
                 .Where( history => history.ServiceJobId == jobId.Value )
                 .OrderByDescending( history => history.Id )
-                .Select( history => new { history.Id, history.StopDateTime } )
+                .Select( history => ( int? ) history.Id )
                 .FirstOrDefault();
 
             return new JobSnapshot
             {
                 JobId = jobId.Value,
                 IsRunning = IsJobLocked( jobId.Value ),
-                LatestRunId = latest?.Id,
-                IsLatestRunEnded = latest == null || latest.StopDateTime.HasValue
+                LatestRunId = latestRunId
             };
         }
 
@@ -345,11 +344,6 @@ namespace Rock.Communication.Chat.Platform.Sync
             /// Gets or sets the id of the newest run recorded in the job's history, or null when it has never run.
             /// </summary>
             public int? LatestRunId { get; set; }
-
-            /// <summary>
-            /// Gets or sets whether that newest run has ended.
-            /// </summary>
-            public bool IsLatestRunEnded { get; set; }
         }
 
         /// <summary>
