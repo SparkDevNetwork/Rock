@@ -455,14 +455,7 @@ namespace Rock.Jobs
 
                 var result = Resolve( acknowledgement, polled );
 
-                result.Message = string.Format(
-                    CultureInfo.InvariantCulture,
-                    "{0} channels, {1} people, {2} memberships and {3} badges were sent. {4}",
-                    Count( rowCounts, "channels" ),
-                    Count( rowCounts, "aliases" ),
-                    Count( rowCounts, "members" ),
-                    Count( rowCounts, "badges" ),
-                    result.Message );
+                result.Message = Describe( submissionId, rowCounts, result.Message );
 
                 return result;
             }
@@ -874,6 +867,26 @@ namespace Rock.Jobs
         private static string Reason( string errorCode )
         {
             return errorCode.IsNullOrWhiteSpace() ? string.Empty : ": " + errorCode;
+        }
+
+        /// <summary>
+        /// The whole sentence a run that reached the platform leaves on the job: what was sent, then what
+        /// became of it.
+        /// </summary>
+        /// <param name="submissionId">The id the restatement was submitted under.</param>
+        /// <param name="rowCounts">The rows written, by section.</param>
+        /// <param name="outcome">What became of the submission.</param>
+        /// <returns>The result line.</returns>
+        internal static string Describe( Guid submissionId, IDictionary<string, int> rowCounts, string outcome )
+        {
+            return string.Format(
+                CultureInfo.InvariantCulture,
+                "{0} channels, {1} people, {2} memberships and {3} badges were sent. {4}",
+                Count( rowCounts, "channels" ),
+                Count( rowCounts, "aliases" ),
+                Count( rowCounts, "members" ),
+                Count( rowCounts, "badges" ),
+                outcome );
         }
 
         /// <summary>
