@@ -14,9 +14,11 @@
 // limitations under the License.
 // </copyright>
 //
-// The buttons themselves are not mounted here, for the reason chatConfiguration.spec.ts gives:
-// mounting any component in this project pulls packages no build step installs. What a press does
-// is this module, which both the Chat Configuration and Group Type Detail buttons are built on.
+// The button itself is not mounted here, for the reason chatConfiguration.spec.ts gives: mounting
+// any component in this project pulls packages no build step installs. What a press does is this
+// module, which the one button the Chat Configuration and Group Type Detail blocks share is built on.
+// It sits with the framework's internal controls because the two blocks are in different folders and
+// each folder is its own TypeScript project, which may not import from another.
 import { ChatSyncNowStatusBag } from "@Obsidian/ViewModels/Blocks/Communication/Chat/ChatSyncNow/chatSyncNowStatusBag";
 import {
     createSyncNow,
@@ -24,7 +26,7 @@ import {
     syncNowCheckIntervalMilliseconds,
     SyncNowActionResult,
     SyncNowDependencies
-} from "../../../src/Communication/Chat/ChatSyncNow/syncNow.partial";
+} from "@Obsidian/Controls/Internal/ChatSyncNow/syncNow.partial";
 
 function status(runMarker: number, isFinished: boolean, isFailure: boolean, message: string): SyncNowActionResult {
     const data: ChatSyncNowStatusBag = { runMarker, isFinished, isFailure, message };
