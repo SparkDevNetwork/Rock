@@ -53,6 +53,8 @@ namespace Rock.Communication.Chat.Platform.Sync
 
         private static readonly string MissingJobMessage = "The Chat Platform Sync job is missing, so there is nothing to run.";
 
+        private static readonly string AlreadyRunningMessage = "A sync is already running. Press Sync Now again when it has finished.";
+
         private static readonly string WaitingMessage = "Waiting for the sync to start.";
 
         private static readonly string RunningMessage = "The sync is running.";
@@ -99,13 +101,12 @@ namespace Rock.Communication.Chat.Platform.Sync
 
             if ( job.IsRunning )
             {
-                // Rock would refuse a second run while this one holds the lock, and refuse it without a
-                // word, so the press follows the run already going instead. Where the newest record is
-                // still open it is that run; where it has ended, the run holding the lock has not been
-                // recorded yet and will be the next record.
-                var isInFlightRunRecorded = job.LatestRunId.HasValue && !job.IsLatestRunEnded;
-
-                return Waiting( isInFlightRunRecorded ? job.LatestRunId.Value - 1 : job.LatestRunId ?? 0 );
+                // Refused rather than followed. Rock would drop a second run without a word while this
+                // one holds the lock, and whatever holds it read the church before this press, so its
+                // result would answer an older question: often one asked before the Save this press
+                // exists to send. The lock is also held after a run's record has ended, while Rock
+                // sends the job's notification, so following "the next record" could wait on nothing.
+                return new Result { RefusalMessage = AlreadyRunningMessage };
             }
 
             queueRunNow( job.JobId );
