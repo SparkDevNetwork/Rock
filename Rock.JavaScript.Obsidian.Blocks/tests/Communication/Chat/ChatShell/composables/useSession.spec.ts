@@ -205,6 +205,83 @@ describe("createSession", () => {
         expect(f.timers[f.timers.length - 1].milliseconds).toBe(300_000 * 0.05);
     });
 
+    test("a refresh the platform refuses outright ends the session rather than asking again", async () => {
+        let exchanges = 0;
+        const f = fakes({
+            exchange: async (churchToken: string): Promise<ExchangeResult> => {
+                exchanges++;
+                return exchanges === 2
+                    ? { ok: false, status: 401, code: "auth.invalid_token" }
+                    : { ok: true, accessToken: `platform-for-${churchToken}`, expiresInSeconds: 300 };
+            }
+        });
+        const session = createSession(f.dependencies);
+        await session.start();
+
+        expect(await session.refresh()).toBe(false);
+
+        expect(session.currentToken()).toBeNull();
+        expect(f.timers.every(t => t.cleared)).toBe(true);
+    });
+
+    test("a refresh the platform could not serve is asked again", async () => {
+        let exchanges = 0;
+        const f = fakes({
+            exchange: async (churchToken: string): Promise<ExchangeResult> => {
+                exchanges++;
+                return exchanges === 2
+                    ? { ok: false, status: 503, code: "auth.invalid_token" }
+                    : { ok: true, accessToken: `platform-for-${churchToken}`, expiresInSeconds: 300 };
+            }
+        });
+        const session = createSession(f.dependencies);
+        await session.start();
+
+        expect(await session.refresh()).toBe(false);
+
+        expect(session.currentToken()).toBe("platform-for-church-1");
+        expect(f.timers[f.timers.length - 1].cleared).toBe(false);
+    });
+
+    test("once the held token has expired, a failing refresh ends the session", async () => {
+        let clock = 0;
+        let exchanges = 0;
+        const f = fakes({
+            now: () => clock,
+            exchange: async (churchToken: string): Promise<ExchangeResult> => {
+                exchanges++;
+                return exchanges === 1
+                    ? { ok: true, accessToken: `platform-for-${churchToken}`, expiresInSeconds: 300 }
+                    : { ok: false, status: 0, code: "rpc.transport" };
+            }
+        });
+        const session = createSession(f.dependencies);
+        await session.start();
+
+        clock = 250_000;
+        expect(await session.refresh()).toBe(false);
+        expect(session.currentToken()).toBe("platform-for-church-1");
+
+        clock = 300_000;
+        f.timers[f.timers.length - 1].callback();
+        await settle();
+
+        expect(session.currentToken()).toBeNull();
+        expect(f.timers.filter(t => !t.cleared)).toHaveLength(0);
+    });
+
+    test("refreshes asked for together share one mint and exchange", async () => {
+        const f = fakes();
+        const session = createSession(f.dependencies);
+        await session.start();
+
+        const results = await Promise.all([session.refresh(), session.refresh(), session.refresh()]);
+
+        expect(results).toEqual([true, true, true]);
+        expect(f.mints).toBe(2);
+        expect(f.pushes).toBe(1);
+    });
+
     test("a church token the platform calls stale is minted again once", async () => {
         let exchanges = 0;
         const f = fakes({

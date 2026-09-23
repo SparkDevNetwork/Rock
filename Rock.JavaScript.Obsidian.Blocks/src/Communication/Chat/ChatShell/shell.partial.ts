@@ -163,6 +163,17 @@ export function gateMessage(gate: string | null): string {
 }
 
 /**
+ * What the Rock token action's answer means to the session.
+ *
+ * @param result What the action answered.
+ *
+ * @returns The church token, or the reason there is none.
+ */
+export function churchTokenFromAction(_result: MintActionResult): ChurchTokenResult {
+    throw new Error("not implemented");
+}
+
+/**
  * Creates the shell.
  *
  * @param options Everything the shell reaches outside itself.

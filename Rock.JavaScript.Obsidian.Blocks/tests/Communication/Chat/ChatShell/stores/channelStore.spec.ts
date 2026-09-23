@@ -118,6 +118,16 @@ describe("createChannelStore", () => {
         expect(saved?.last_message_id).toBe(11);
     });
 
+    test("a save that comes back while its channel is on screen again does not bold it", () => {
+        const { store: s } = store();
+        s.setActive(one);
+
+        s.applyMarkRead(one, { read_cursor: 10, last_message_id: 11 });
+
+        expect(s.rows.find(r => r.channel_id === one)?.is_unread).toBe(false);
+        expect(s.rows.find(r => r.channel_id === one)?.read_cursor).toBe(10);
+    });
+
     test("a save that caught up clears the bold", () => {
         const { store: s } = store();
         s.applyPersonalEvent("channel.unread", { channel_id: two, message_id: 11 });

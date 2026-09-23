@@ -18,7 +18,7 @@
 // channels faster than the platform answers: the channel chosen last is the one on screen, its
 // topic is the one joined, it is the one remembered, and what is seen in it is saved against it,
 // however the earlier opens and saves settle.
-import { createChatShell, PlatformClientLike, RpcResult } from "../../../../src/Communication/Chat/ChatShell/shell.partial";
+import { churchTokenFromAction, createChatShell, PlatformClientLike, RpcResult } from "../../../../src/Communication/Chat/ChatShell/shell.partial";
 import { channelTopic } from "../../../../src/Communication/Chat/ChatShell/composables/useRealtimeHub.partial";
 import { HistoryPage } from "../../../../src/Communication/Chat/ChatShell/types.partial";
 
@@ -132,6 +132,24 @@ function answerHistory(h: ReturnType<typeof build>, channelId: string, id: numbe
     }
     pending.resolve({ data: page(id), error: null, status: 200 });
 }
+
+describe("churchTokenFromAction", () => {
+    test("an ended Rock sign-in is a refusal", () => {
+        expect(churchTokenFromAction({ isSuccess: false, statusCode: 401 })).toEqual({ gate: "sign_in_required", churchToken: null });
+    });
+
+    test("a Rock that refused the action is a refusal, not an outage", () => {
+        expect(churchTokenFromAction({ isSuccess: false, statusCode: 403 })).toEqual({ gate: "gate_unavailable", churchToken: null });
+    });
+
+    test.each([0, 429, 500, 503])("a Rock that could not answer (%p) is only unreachable", status => {
+        expect(churchTokenFromAction({ isSuccess: false, statusCode: status })).toEqual({ gate: "gate_unavailable", churchToken: null, isUnreachable: true });
+    });
+
+    test("a token Rock signed passes through", () => {
+        expect(churchTokenFromAction({ isSuccess: true, statusCode: 200, data: { gate: "ok", churchToken: "t" } })).toEqual({ gate: "ok", churchToken: "t" });
+    });
+});
 
 describe("createChatShell", () => {
     test("the channel chosen last stays open, however the earlier opens and saves settle", async () => {

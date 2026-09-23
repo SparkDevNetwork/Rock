@@ -57,6 +57,9 @@ export type SessionDependencies = {
 
     /** Stops a timer. */
     clearTimer: (handle: unknown) => void;
+
+    /** The time now in milliseconds; the browser's clock unless a test stands in. */
+    now?: () => number;
 };
 
 /** Why the session is not running, when it is not. */
