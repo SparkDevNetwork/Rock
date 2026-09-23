@@ -72,6 +72,7 @@
     "@floating-ui/vue": "^1.1.9",
     "@googlemaps/markerclusterer": "^2.6.2",
     "@server-sent-stream/web": "^1.0.3",
+    "@supabase/supabase-js": "^2.116.0",
     "@types/pdfobject": "^2.2.5",
     "ant-design-vue": "^3.2.20",
     "axios": "^1.13.2",
