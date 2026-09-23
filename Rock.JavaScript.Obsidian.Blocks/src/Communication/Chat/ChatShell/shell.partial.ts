@@ -163,6 +163,18 @@ export function gateMessage(gate: string | null): string {
 }
 
 /**
+ * The sentence shown when chat does not open.
+ *
+ * @param phase Where the shell stopped.
+ * @param gate The gate that refused, when one did.
+ *
+ * @returns The sentence.
+ */
+export function refusalMessage(_phase: ShellState["phase"], _gate: string | null): string {
+    throw new Error("not implemented");
+}
+
+/**
  * What the Rock token action's answer means to the session.
  *
  * @param result What the action answered.

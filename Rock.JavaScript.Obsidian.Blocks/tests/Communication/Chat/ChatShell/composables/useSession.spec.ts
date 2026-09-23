@@ -224,6 +224,27 @@ describe("createSession", () => {
         expect(f.timers.every(t => t.cleared)).toBe(true);
     });
 
+    test.each([
+        [0, true], [429, true], [500, true], [503, true],
+        [400, false], [401, false], [403, false], [499, false]
+    ])("an exchange answering %p at refresh is asked again: %p", async (status, isKept) => {
+        let exchanges = 0;
+        const f = fakes({
+            exchange: async (churchToken: string): Promise<ExchangeResult> => {
+                exchanges++;
+                return exchanges === 2
+                    ? { ok: false, status, code: "auth.invalid_token" }
+                    : { ok: true, accessToken: `platform-for-${churchToken}`, expiresInSeconds: 300 };
+            }
+        });
+        const session = createSession(f.dependencies);
+        await session.start();
+
+        await session.refresh();
+
+        expect(session.currentToken() !== null).toBe(isKept);
+    });
+
     test("a refresh the platform could not serve is asked again", async () => {
         let exchanges = 0;
         const f = fakes({
@@ -260,6 +281,13 @@ describe("createSession", () => {
 
         clock = 250_000;
         expect(await session.refresh()).toBe(false);
+        expect(session.currentToken()).toBe("platform-for-church-1");
+
+        // A second failure while the token is alive still keeps it, so the rule is the expiry
+        // and not a count of failures.
+        clock = 275_000;
+        f.timers[f.timers.length - 1].callback();
+        await settle();
         expect(session.currentToken()).toBe("platform-for-church-1");
 
         clock = 300_000;

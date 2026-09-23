@@ -18,7 +18,7 @@
 // channels faster than the platform answers: the channel chosen last is the one on screen, its
 // topic is the one joined, it is the one remembered, and what is seen in it is saved against it,
 // however the earlier opens and saves settle.
-import { churchTokenFromAction, createChatShell, PlatformClientLike, RpcResult } from "../../../../src/Communication/Chat/ChatShell/shell.partial";
+import { churchTokenFromAction, createChatShell, PlatformClientLike, refusalMessage, RpcResult } from "../../../../src/Communication/Chat/ChatShell/shell.partial";
 import { channelTopic } from "../../../../src/Communication/Chat/ChatShell/composables/useRealtimeHub.partial";
 import { HistoryPage } from "../../../../src/Communication/Chat/ChatShell/types.partial";
 
@@ -148,6 +148,16 @@ describe("churchTokenFromAction", () => {
 
     test("a token Rock signed passes through", () => {
         expect(churchTokenFromAction({ isSuccess: true, statusCode: 200, data: { gate: "ok", churchToken: "t" } })).toEqual({ gate: "ok", churchToken: "t" });
+    });
+});
+
+describe("refusalMessage", () => {
+    test("a platform that could not start chat is not blamed on the person's account", () => {
+        expect(refusalMessage("failed", "ok")).toBe(refusalMessage("refused", "gate_unavailable"));
+    });
+
+    test("a refused gate is told by its gate", () => {
+        expect(refusalMessage("refused", "age_restricted")).toBe("Chat is not available at your age.");
     });
 });
 
