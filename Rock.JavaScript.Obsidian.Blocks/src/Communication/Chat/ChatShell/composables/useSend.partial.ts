@@ -19,6 +19,7 @@
 // the person can send it again; nothing typed is lost to a failure. The platform does not
 // deduplicate a retried send, so a retry after a lost confirmation can post twice, and the
 // person deletes the copy; the live echo of a confirmed send is matched by its id.
+import { reactive } from "vue";
 import { ChatError, PendingMessage } from "../types.partial";
 import { Timelines } from "./useHistory.partial";
 
@@ -64,6 +65,71 @@ export type Sender = {
  *
  * @returns The sender.
  */
-export function createSender(_dependencies: SenderDependencies): Sender {
-    throw new Error("not implemented");
+export function createSender(dependencies: SenderDependencies): Sender {
+    const rows = reactive<PendingMessage[]>([]) as PendingMessage[];
+
+    /** Sends a row's text and settles the row by the answer. */
+    async function deliver(row: PendingMessage): Promise<boolean> {
+        row.status = "sending";
+        row.errorCode = null;
+
+        const result = await dependencies.send(row.channelId, row.body);
+
+        if (!result.ok) {
+            row.status = "failed";
+            row.errorCode = result.error.code;
+            return false;
+        }
+
+        // The confirmed message goes in before the row comes out, so the person never sees
+        // their message disappear between the two.
+        dependencies.timelines.upsert(row.channelId, {
+            id: result.id,
+            person_alias_guid: dependencies.personAliasGuid,
+            sender_listed: true,
+            message_type: "text",
+            body: row.body,
+            created_at: result.createdAt
+        });
+
+        const index = rows.indexOf(row);
+        if (index >= 0) {
+            rows.splice(index, 1);
+        }
+
+        return true;
+    }
+
+    return {
+        pending: (channelId: string): PendingMessage[] => rows.filter(row => row.channelId === channelId),
+
+        send: async (channelId: string, body: string): Promise<boolean> => {
+            if (body.trim() === "") {
+                return false;
+            }
+
+            rows.push({ localId: dependencies.newLocalId(), channelId, body, status: "sending", errorCode: null });
+
+            // The row read back from the list is the reactive one, so the status the person
+            // sees follows every change made to it.
+            return deliver(rows[rows.length - 1]);
+        },
+
+        retry: async (localId: string): Promise<boolean> => {
+            const row = rows.find(r => r.localId === localId);
+
+            if (!row || row.status !== "failed") {
+                return false;
+            }
+
+            return deliver(row);
+        },
+
+        discard: (localId: string): void => {
+            const index = rows.findIndex(r => r.localId === localId && r.status === "failed");
+            if (index >= 0) {
+                rows.splice(index, 1);
+            }
+        }
+    };
 }
