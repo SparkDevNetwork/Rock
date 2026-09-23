@@ -372,7 +372,8 @@ namespace Rock.Model
 
         /// <summary>
         /// Creates a <see cref="Communication"/> record to represent an automated response and adds it to the Rock
-        /// message bus for sending.
+        /// message bus for sending. If <see cref="SmsMessage.IsWebhookReply"/> is <c>true</c>, the record is instead
+        /// saved as already sent and is not queued, since the caller returns the response in the webhook reply.
         /// </summary>
         /// <param name="smsMessage">
         /// The <see cref="SmsMessage"/> that contains the message body and any attachments to send.
@@ -417,6 +418,11 @@ namespace Rock.Model
 
             var responseCode = Sms.GenerateResponseCode( rockContext );
 
+            if ( smsMessage.IsWebhookReply )
+            {
+                return CreateWebhookReplyCommunication( smsMessage, toPersonAliasId, systemPhoneNumber, responseCode, rockContext );
+            }
+
             var responseCommunication = Sms.CreateCommunicationMobile(
                 SystemSenderPerson,
                 toPersonAliasId,
@@ -428,6 +434,76 @@ namespace Rock.Model
             );
 
             return responseCommunication?.Id;
+        }
+
+        /// <summary>
+        /// Saves a <see cref="Communication"/> record, already marked as sent, for an automated response that the
+        /// caller returns in the incoming message's webhook reply. The record is not queued, so it is saved even when
+        /// the recipient's number can no longer receive queued messages (e.g. the opt-out confirmation).
+        /// </summary>
+        /// <param name="smsMessage">The <see cref="SmsMessage"/> that contains the message body and any attachments.</param>
+        /// <param name="toPersonAliasId">The <see cref="PersonAlias"/> identifier of the response's recipient.</param>
+        /// <param name="systemPhoneNumber">The <see cref="SystemPhoneNumber"/> the response is sent from.</param>
+        /// <param name="responseCode">The response code to assign to the recipient.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns>The identifier of the saved <see cref="Communication"/>.</returns>
+        private static int CreateWebhookReplyCommunication( SmsMessage smsMessage, int toPersonAliasId, SystemPhoneNumberCache systemPhoneNumber, string responseCode, RockContext rockContext )
+        {
+            var responseCommunication = new CommunicationService( rockContext ).CreateSMSCommunication( new CommunicationService.CreateSMSCommunicationArgs
+            {
+                FromPerson = SystemSenderPerson,
+                ToPersonAliasId = toPersonAliasId,
+                Message = smsMessage.Message,
+                FromSystemPhoneNumber = systemPhoneNumber,
+                CommunicationName = $"From: {SystemSenderPerson.FullName}",
+                ResponseCode = responseCode,
+                SentDateTime = RockDateTime.Now
+            } );
+
+            if ( smsMessage.Attachments != null )
+            {
+                foreach ( var attachment in smsMessage.Attachments )
+                {
+                    responseCommunication.AddAttachment( new CommunicationAttachment { BinaryFileId = attachment.Id }, CommunicationType.SMS );
+                }
+            }
+
+            rockContext.SaveChanges();
+
+            try
+            {
+                var toPersonId = new PersonAliasService( rockContext ).GetPersonId( toPersonAliasId );
+                if ( toPersonId.HasValue )
+                {
+                    new HistoryService( rockContext ).Add( new History
+                    {
+                        CreatedByPersonAliasId = responseCommunication.SenderPersonAliasId,
+                        EntityTypeId = EntityTypeCache.Get<Person>().Id,
+                        CategoryId = CategoryCache.Get( SystemGuid.Category.HISTORY_PERSON_COMMUNICATIONS.AsGuid(), rockContext ).Id,
+                        EntityId = toPersonId.Value,
+                        Verb = History.HistoryVerb.Sent.ConvertToString().ToUpper(),
+                        ChangeType = History.HistoryChangeType.Record.ToString(),
+                        ValueName = "SMS message",
+                        Caption = smsMessage.Message.Truncate( 200 ),
+                        RelatedEntityTypeId = EntityTypeCache.Get<Communication>().Id,
+                        RelatedEntityId = responseCommunication.Id
+                    } );
+
+                    rockContext.SaveChanges();
+                }
+            }
+            catch ( Exception ex )
+            {
+                ExceptionLogService.LogException( ex );
+            }
+
+            var recipientId = responseCommunication.Recipients.FirstOrDefault()?.Id;
+            if ( recipientId.HasValue )
+            {
+                CommunicationService.SendOutboundSmsRealTimeNotificationsInBackground( recipientId.Value );
+            }
+
+            return responseCommunication.Id;
         }
 
         /// <summary>
@@ -608,7 +684,8 @@ namespace Rock.Model
                         ToNumber = PhoneNumber.CleanNumber( fromNumber ),
                         FromNumber = message.ToNumber,
                         Message = optedOutMessage,
-                        SaveAsResponse = true
+                        SaveAsResponse = true,
+                        IsWebhookReply = true
                     }
                 };
             }

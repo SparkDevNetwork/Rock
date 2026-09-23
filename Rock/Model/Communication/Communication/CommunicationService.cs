@@ -431,6 +431,14 @@ namespace Rock.Model
             /// Gets or sets the communication template identifier.
             /// </summary>
             public int? CommunicationTemplateId { get; set; }
+
+            /// <summary>
+            /// Gets or sets the date and time the communication was already sent outside of Rock's send queue. When set,
+            /// the communication and its recipients are created as sent and delivered, so the communication will not be
+            /// queued for sending. When <c>null</c>, the recipients are created as pending.
+            /// </summary>
+            [RockInternal( "20.1" )]
+            public DateTime? SentDateTime { get; set; }
         }
 
         /// <summary>
@@ -451,6 +459,7 @@ namespace Rock.Model
             var toPersonAliasId = createSMSCommunicationArgs.ToPersonAliasId;
             var toPersonAliasIds = createSMSCommunicationArgs.ToPrimaryPersonAliasIds;
             var futureSendDateTime = createSMSCommunicationArgs.FutureSendDateTime;
+            var sentDateTime = createSMSCommunicationArgs.SentDateTime;
 
             if ( toPersonAliasIds == null )
             {
@@ -482,7 +491,8 @@ namespace Rock.Model
                 SMSMessage = message,
                 SmsFromSystemPhoneNumberId = fromPhone.Id,
                 SystemCommunicationId = systemCommunicationId,
-                FutureSendDateTime = futureSendDateTime
+                FutureSendDateTime = futureSendDateTime,
+                SendDateTime = sentDateTime
             };
 
             if ( toPersonAliasIds.Any() )
@@ -491,7 +501,9 @@ namespace Rock.Model
                 {
                     var recipient = new CommunicationRecipient
                     {
-                        Status = CommunicationRecipientStatus.Pending,
+                        Status = sentDateTime.HasValue ? CommunicationRecipientStatus.Delivered : CommunicationRecipientStatus.Pending,
+                        SendDateTime = sentDateTime,
+                        DeliveredDateTime = sentDateTime,
                         PersonAliasId = personAliasId,
                         ResponseCode = responseCode,
                         MediumEntityTypeId = EntityTypeCache.Get( "Rock.Communication.Medium.Sms" ).Id,
