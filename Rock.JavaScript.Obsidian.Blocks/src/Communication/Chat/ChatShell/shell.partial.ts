@@ -194,8 +194,15 @@ export function createChatShell(options: ShellOptions): ChatShell {
 
             if (!result.isSuccess || !result.data) {
                 const failure = classifyActionFailure(result.statusCode);
-                report(failure);
-                return { gate: failure.code === "door.sign_in_required" ? "sign_in_required" : "gate_unavailable", churchToken: null };
+
+                // A Rock sign-in that has ended is a refusal; any other failure only means Rock
+                // could not be asked this time.
+                if (failure.code === "door.sign_in_required") {
+                    report(failure);
+                    return { gate: "sign_in_required", churchToken: null };
+                }
+
+                return { gate: "gate_unavailable", churchToken: null, isUnreachable: true };
             }
 
             return { gate: result.data.gate ?? "gate_unavailable", churchToken: result.data.churchToken ?? null };

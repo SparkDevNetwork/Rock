@@ -96,6 +96,13 @@ export const refreshWindowStart = 0.5;
 export const refreshWindowEnd = 0.9;
 
 /**
+ * How long after a failed refresh the next is tried, as a share of the token's life: fifteen
+ * seconds of a five-minute token, an estimate, so a refresh at the latest point still has room
+ * for a second try before the token expires.
+ */
+export const refreshRetryFraction = 0.05;
+
+/**
  * Creates the session.
  *
  * @param dependencies What the session reaches outside itself.
@@ -106,36 +113,70 @@ export function createSession(dependencies: SessionDependencies): ChatSession {
     const state: SessionState = { gate: null, errorCode: null };
     let token: string | null = null;
     let timer: unknown = null;
+    let lifeSeconds = 0;
 
-    /** Mints and exchanges, reminting once when the platform calls the church token stale. */
-    async function acquire(): Promise<boolean> {
+    /**
+     * Mints and exchanges, reminting once when the platform calls the church token stale. A gate
+     * that refused is final; a Rock that could not be asked or an exchange that did not complete
+     * is not, and says nothing about the token already held.
+     */
+    async function acquire(): Promise<"ok" | "refused" | "unavailable"> {
         for (let attempt = 0; attempt < 2; attempt++) {
             const minted = await dependencies.mintChurchToken();
-            state.gate = minted.gate;
 
+            if (minted.isUnreachable) {
+                // Only a session with nothing yet shows it; one that holds a token carries on.
+                if (token === null) {
+                    state.gate = minted.gate;
+                }
+                return "unavailable";
+            }
+
+            state.gate = minted.gate;
             if (minted.gate !== "ok" || !minted.churchToken) {
-                token = null;
-                return false;
+                return "refused";
             }
 
             const exchanged = await dependencies.exchange(minted.churchToken);
             if (exchanged.ok) {
                 token = exchanged.accessToken;
+                lifeSeconds = exchanged.expiresInSeconds;
                 state.errorCode = null;
                 schedule(exchanged.expiresInSeconds);
-                return true;
+                return "ok";
             }
 
             state.errorCode = exchanged.code;
 
             // A stale church token only means Rock signed it too long ago; a fresh one is
-            // worth one more try, and anything else is not.
+            // worth one more try at once, and anything else waits for the next attempt.
             if (exchanged.code !== "auth.stale_token") {
                 break;
             }
         }
 
-        token = null;
+        return "unavailable";
+    }
+
+    /**
+     * Mints and exchanges, and settles what the session holds by the outcome: a refused gate
+     * ends the session; a failure that is not a refusal keeps a token that is still held and
+     * asks again soon, since the token has at least a tenth of its life left when a refresh runs.
+     */
+    async function renew(): Promise<boolean> {
+        const outcome = await acquire();
+
+        if (outcome === "ok") {
+            return true;
+        }
+
+        if (outcome === "refused" || token === null) {
+            token = null;
+            clear();
+            return false;
+        }
+
+        retryLater();
         return false;
     }
 
@@ -152,6 +193,15 @@ export function createSession(dependencies: SessionDependencies): ChatSession {
         }, expiresInSeconds * 1000 * fraction);
     }
 
+    /** Schedules another refresh after a failed one, a twentieth of the token's life later. */
+    function retryLater(): void {
+        clear();
+        timer = dependencies.setTimer(() => {
+            timer = null;
+            void refresh();
+        }, lifeSeconds * 1000 * refreshRetryFraction);
+    }
+
     /** Stops the pending refresh, if there is one. */
     function clear(): void {
         if (timer !== null) {
@@ -162,8 +212,7 @@ export function createSession(dependencies: SessionDependencies): ChatSession {
 
     /** Mints and exchanges again and hands the new token to the open connection. */
     async function refresh(): Promise<boolean> {
-        if (!await acquire()) {
-            clear();
+        if (!await renew()) {
             return false;
         }
 
@@ -172,7 +221,7 @@ export function createSession(dependencies: SessionDependencies): ChatSession {
     }
 
     return {
-        start: acquire,
+        start: renew,
         currentToken: () => token,
         refresh,
         withFreshToken: async <T>(call: () => Promise<T>, isExpired: (result: T) => boolean): Promise<T> => {
