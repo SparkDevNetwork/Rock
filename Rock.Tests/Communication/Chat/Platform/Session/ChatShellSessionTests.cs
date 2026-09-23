@@ -122,7 +122,9 @@ namespace Rock.Tests.Communication.Chat.Platform.Session
         [TestMethod]
         public void Open_PersonOutsideTheDirectMessageDataView_MayNotStartOne()
         {
+            // A church that names a Direct Message Access data view which resolved to someone else.
             var config = SigningConfig();
+            config.Configuration.DirectMessageAccessDataViewGuid = Guid.Parse( "dddddddd-dddd-4ddd-8ddd-dddddddddddd" );
             config.DirectMessageAccessPersonIds = new System.Collections.Generic.HashSet<int> { 999 };
 
             var bag = ChatShellSession.Open( Adult(), config, _rockContext );
