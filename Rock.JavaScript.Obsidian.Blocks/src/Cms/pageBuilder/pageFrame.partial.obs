@@ -97,6 +97,7 @@
         (e: "moduleDropped", value: ModuleDrop): void;
         (e: "moduleSelected", blockId: number | null): void;
         (e: "moduleEditRequested", blockId: number): void;
+        (e: "moduleDeleteRequested", blockId: number): void;
     }>();
 
     // #region Values
@@ -171,6 +172,11 @@
 
         if (target.closest(".pagebuilder-selection-edit")) {
             emit("moduleEditRequested", blockId);
+            return;
+        }
+
+        if (target.closest(".pagebuilder-selection-delete")) {
+            emit("moduleDeleteRequested", blockId);
             return;
         }
 

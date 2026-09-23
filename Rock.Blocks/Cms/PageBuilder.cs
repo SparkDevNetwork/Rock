@@ -225,6 +225,86 @@ namespace Rock.Blocks.Cms
             return ActionOk( block.Id );
         }
 
+        /// <summary>
+        /// Deletes a Canvas block from the target page, along with its module instance unless that instance is shareable or displayed elsewhere.
+        /// </summary>
+        /// <param name="blockId">The identifier of the Canvas block to delete.</param>
+        /// <returns>An empty successful result, or an error.</returns>
+        [BlockAction]
+        public BlockActionResult DeleteModule( int blockId )
+        {
+            var targetPage = GetTargetPage();
+
+            if ( targetPage == null )
+            {
+                return ActionNotFound( "The target page could not be found." );
+            }
+
+            if ( !targetPage.IsAuthorized( Authorization.ADMINISTRATE, RequestContext.CurrentPerson ) )
+            {
+                return ActionUnauthorized( "You are not authorized to delete blocks from this page." );
+            }
+
+            var blockService = new BlockService( RockContext );
+            var block = blockService.Get( blockId );
+            var canvasBlockType = GetCanvasBlockType();
+
+            // Only a Canvas block on the page being composed can be deleted from here.
+            if ( block == null || block.PageId != targetPage.Id || canvasBlockType == null || block.BlockTypeId != canvasBlockType.Id )
+            {
+                return ActionNotFound( "The module could not be found." );
+            }
+
+            block.LoadAttributes( RockContext );
+
+            var moduleInstanceGuid = block.GetAttributeValue( Canvas.AttributeKey.ModuleInstance ).AsGuidOrNull();
+            var moduleInstanceService = new ModuleInstanceService( RockContext );
+            var moduleInstance = moduleInstanceGuid.HasValue ? moduleInstanceService.Get( moduleInstanceGuid.Value ) : null;
+
+            /*
+                09/23/26 - JMH
+
+                A Canvas references its module instance from a block attribute value rather than owning it,
+                so the instance is only deleted when nothing else can be using it: it must not be shareable,
+                and no other Canvas block may reference it. Deleting a block leaves its attribute values
+                behind until the Rock Cleanup job removes them, so only values of blocks that still exist
+                count as references.
+
+                Reason: Deleting a Canvas must not remove a module instance another Canvas still displays.
+            */
+            var isModuleInstanceDeleted = moduleInstance != null && !moduleInstance.IsShareable;
+
+            if ( isModuleInstanceDeleted )
+            {
+                var moduleInstanceAttributeId = block.Attributes[Canvas.AttributeKey.ModuleInstance].Id;
+                var moduleInstanceValue = moduleInstance.Guid.ToString();
+                var blockIdQuery = blockService.Queryable().Select( b => b.Id );
+
+                isModuleInstanceDeleted = !new AttributeValueService( RockContext )
+                    .Queryable()
+                    .Any( av => av.AttributeId == moduleInstanceAttributeId
+                        && av.EntityId != block.Id
+                        && av.Value == moduleInstanceValue
+                        && blockIdQuery.Contains( av.EntityId.Value ) );
+            }
+
+            RockContext.WrapTransaction( () =>
+            {
+                blockService.Delete( block );
+
+                if ( isModuleInstanceDeleted )
+                {
+                    moduleInstanceService.Delete( moduleInstance );
+                }
+
+                RockContext.SaveChanges();
+            } );
+
+            PageCache.Remove( targetPage.Id );
+
+            return ActionOk();
+        }
+
         #endregion Block Actions
     }
 }

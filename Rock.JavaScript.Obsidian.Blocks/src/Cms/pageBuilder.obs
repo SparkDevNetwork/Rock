@@ -31,14 +31,15 @@
                            :reloadRequest="reloadRequest"
                            :selectRequest="selectRequest"
                            @moduleDropped="onModuleDropped"
-                           @moduleSelected="selectedBlockId = $event" />
+                           @moduleSelected="selectedBlockId = $event"
+                           @moduleDeleteRequested="onModuleDeleteRequested" />
 
-                <NotificationBox v-if="addModuleErrorMessage"
+                <NotificationBox v-if="blockActionErrorMessage"
                                  class="page-builder-alert"
                                  alertType="danger"
                                  dismissible
-                                 @dismiss="addModuleErrorMessage = ''">
-                    {{ addModuleErrorMessage }}
+                                 @dismiss="blockActionErrorMessage = ''">
+                    {{ blockActionErrorMessage }}
                 </NotificationBox>
 
                 <Overlay :isVisible="isOverlayShown"
@@ -174,6 +175,7 @@
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import Overlay from "@Obsidian/Controls/Internal/overlay.obs";
     import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
+    import { confirmDelete } from "@Obsidian/Utility/dialogs";
     import { PageBuilderAddModuleBag } from "@Obsidian/ViewModels/Blocks/Cms/PageBuilder/pageBuilderAddModuleBag";
     import { PageBuilderInitializationBox } from "@Obsidian/ViewModels/Blocks/Cms/PageBuilder/pageBuilderInitializationBox";
     import { PageBuilderModuleTypeBag } from "@Obsidian/ViewModels/Blocks/Cms/PageBuilder/pageBuilderModuleTypeBag";
@@ -200,7 +202,7 @@
 
     const frameContainerElement = ref<HTMLElement | undefined>();
     const isOverlayShown = ref(false);
-    const addModuleErrorMessage = ref("");
+    const blockActionErrorMessage = ref("");
     const dragStartRequest = ref<ModuleTypeDragStartRequest | null>(null);
     const dragOverRequest = ref<ModuleTypeDragOverRequest | null>(null);
     const dropRequest = ref<ModuleTypeDropRequest | null>(null);
@@ -312,7 +314,7 @@
      * the frame so Rock renders the new block itself, and selects it.
      */
     async function onModuleDropped(drop: ModuleDrop): Promise<void> {
-        addModuleErrorMessage.value = "";
+        blockActionErrorMessage.value = "";
 
         const bag: PageBuilderAddModuleBag = {
             zoneName: drop.zoneName,
@@ -323,11 +325,32 @@
         const result = await invokeBlockAction<number>("AddModule", { bag });
 
         if (!result.isSuccess || !result.data) {
-            addModuleErrorMessage.value = result.errorMessage || `The ${drop.moduleType.name} module could not be added.`;
+            blockActionErrorMessage.value = result.errorMessage || `The ${drop.moduleType.name} module could not be added.`;
             return;
         }
 
         selectRequest.value = { blockId: result.data };
+        reloadRequest.value = { type: "PAGE_FRAME_RELOAD_REQUEST" };
+    }
+
+    /**
+     * Deletes a Canvas block and its module after confirming, then reloads
+     * the frame so the page shows without it.
+     */
+    async function onModuleDeleteRequested(blockId: number): Promise<void> {
+        if (!await confirmDelete("module")) {
+            return;
+        }
+
+        blockActionErrorMessage.value = "";
+
+        const result = await invokeBlockAction("DeleteModule", { blockId });
+
+        if (!result.isSuccess) {
+            blockActionErrorMessage.value = result.errorMessage || "The module could not be deleted.";
+            return;
+        }
+
         reloadRequest.value = { type: "PAGE_FRAME_RELOAD_REQUEST" };
     }
 
