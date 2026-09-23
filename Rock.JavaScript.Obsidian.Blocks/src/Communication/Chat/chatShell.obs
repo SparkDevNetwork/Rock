@@ -80,7 +80,7 @@
     import Composer from "./ChatShell/components/composer.partial.obs";
     import ErrorToast from "./ChatShell/components/errorToast.partial.obs";
     import MessageFeed from "./ChatShell/components/messageFeed.partial.obs";
-    import { createChatShell, gateMessage, PlatformClientLike } from "./ChatShell/shell.partial";
+    import { createChatShell, PlatformClientLike, refusalMessage } from "./ChatShell/shell.partial";
 
     const config = useConfigurationValues<ChatShellInitializationBox>();
     const invokeBlockAction = useInvokeBlockAction();
@@ -118,7 +118,7 @@
 
     const isRefused = computed((): boolean => shell.state.phase === "refused" || shell.state.phase === "failed");
 
-    const refusal = computed((): string => gateMessage(shell.state.gate));
+    const refusal = computed((): string => refusalMessage(shell.state.phase, shell.state.gate));
 
     const activeTitle = computed((): string => {
         const row = shell.channels.rows.find(r => r.channel_id === shell.state.activeChannelId);

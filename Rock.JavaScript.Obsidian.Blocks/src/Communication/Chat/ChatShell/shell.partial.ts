@@ -170,8 +170,10 @@ export function gateMessage(gate: string | null): string {
  *
  * @returns The sentence.
  */
-export function refusalMessage(_phase: ShellState["phase"], _gate: string | null): string {
-    throw new Error("not implemented");
+export function refusalMessage(phase: ShellState["phase"], gate: string | null): string {
+    // Failed means Rock's gates passed and the platform did not finish signing in, so the
+    // sentence is about chat not starting rather than about the person.
+    return gateMessage(phase === "failed" ? "gate_unavailable" : gate);
 }
 
 /**
