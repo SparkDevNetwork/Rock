@@ -22,13 +22,16 @@
         <div class="page-builder-stage">
             <div ref="frameContainerElement" class="page-builder-frame-container">
                 <PageFrame :src="targetPageUrl"
+                           :moduleTypes="moduleTypes"
                            :dragStartRequest="dragStartRequest"
                            :dragOverRequest="dragOverRequest"
                            :dropRequest="dropRequest"
                            :dragLeaveRequest="dragLeaveRequest"
                            :dragEndRequest="dragEndRequest"
                            :reloadRequest="reloadRequest"
-                           @moduleDropped="onModuleDropped" />
+                           :selectRequest="selectRequest"
+                           @moduleDropped="onModuleDropped"
+                           @moduleSelected="selectedBlockId = $event" />
 
                 <NotificationBox v-if="addModuleErrorMessage"
                                  class="page-builder-alert"
@@ -177,6 +180,7 @@
     import PageFrame from "./pageBuilder/pageFrame.partial.obs";
     import {
         ModuleDrop,
+        ModuleSelectRequest,
         ModuleTypeDragEndRequest,
         ModuleTypeDragLeaveRequest,
         ModuleTypeDragOverRequest,
@@ -203,6 +207,8 @@
     const dragLeaveRequest = ref<ModuleTypeDragLeaveRequest | null>(null);
     const dragEndRequest = ref<ModuleTypeDragEndRequest | null>(null);
     const reloadRequest = ref<PageFrameReloadRequest | null>(null);
+    const selectRequest = ref<ModuleSelectRequest | null>(null);
+    const selectedBlockId = ref<number | null>(null);
 
     // #endregion Values
 
@@ -303,7 +309,7 @@
 
     /**
      * Adds a dropped module to the page in a new Canvas block, then reloads
-     * the frame so Rock renders the new block itself.
+     * the frame so Rock renders the new block itself, and selects it.
      */
     async function onModuleDropped(drop: ModuleDrop): Promise<void> {
         addModuleErrorMessage.value = "";
@@ -316,11 +322,12 @@
 
         const result = await invokeBlockAction<number>("AddModule", { bag });
 
-        if (!result.isSuccess) {
+        if (!result.isSuccess || !result.data) {
             addModuleErrorMessage.value = result.errorMessage || `The ${drop.moduleType.name} module could not be added.`;
             return;
         }
 
+        selectRequest.value = { blockId: result.data };
         reloadRequest.value = { type: "PAGE_FRAME_RELOAD_REQUEST" };
     }
 

@@ -22,6 +22,7 @@
     import { builderStyles, builderStyleVariableNames } from "./frameStyles.partial";
     import {
         ModuleDrop,
+        ModuleSelectRequest,
         ModuleTypeDragEndRequest,
         ModuleTypeDragLeaveRequest,
         ModuleTypeDragOverRequest,
@@ -47,6 +48,12 @@
         /** The URL of the page to compose. */
         src: {
             type: String as PropType<string>,
+            required: true
+        },
+
+        /** The module types that can be on the page, used to name a selected module. */
+        moduleTypes: {
+            type: Array as PropType<PageBuilderModuleTypeBag[]>,
             required: true
         },
 
@@ -78,11 +85,18 @@
         reloadRequest: {
             type: Object as PropType<PageFrameReloadRequest | null | undefined>,
             required: true
+        },
+
+        selectRequest: {
+            type: Object as PropType<ModuleSelectRequest | null | undefined>,
+            required: true
         }
     });
 
     const emit = defineEmits<{
         (e: "moduleDropped", value: ModuleDrop): void;
+        (e: "moduleSelected", blockId: number | null): void;
+        (e: "moduleEditRequested", blockId: number): void;
     }>();
 
     // #region Values
@@ -96,6 +110,8 @@
     const placeholderElement = ref<HTMLElement | null>(null);
     const lastClientX = ref<number | null>(null);
     const lastClientY = ref<number | null>(null);
+    const selectedBlockElement = ref<HTMLElement | null>(null);
+    const pendingSelectBlockId = ref<number | null>(null);
 
     // #endregion Values
 
@@ -114,6 +130,53 @@
 
         addBuilderStyles(frameDocument);
         decorateZones(frameDocument);
+
+        // Capture so a click inside a module selects it before the module's own content, such as a link, can act on it.
+        frameDocument.addEventListener("click", onFrameClick, true);
+
+        // A reload replaces the document, so any previous selection is gone.
+        if (selectedBlockElement.value) {
+            selectedBlockElement.value = null;
+            emit("moduleSelected", null);
+        }
+
+        if (pendingSelectBlockId.value !== null) {
+            selectCanvasBlock(pendingSelectBlockId.value);
+        }
+    }
+
+    /**
+     * Selects the Canvas block that was clicked and handles the selected
+     * block's controls. Clicking anything else clears the selection.
+     */
+    function onFrameClick(event: MouseEvent): void {
+        const target = event.target as Element | null;
+
+        // Rock's own block configuration bar keeps working as it does on any block.
+        if (!target || typeof target.closest !== "function" || target.closest(".block-configuration")) {
+            return;
+        }
+
+        const blockElement = target.closest<HTMLElement>(".block-instance");
+        const blockId = getBlockId(blockElement);
+        const isCanvasBlock = !!blockElement?.querySelector(".canvas-module");
+
+        if (!blockElement || blockId === null || !isCanvasBlock) {
+            clearSelection();
+            return;
+        }
+
+        event.preventDefault();
+        event.stopPropagation();
+
+        if (target.closest(".pagebuilder-selection-edit")) {
+            emit("moduleEditRequested", blockId);
+            return;
+        }
+
+        if (blockElement !== selectedBlockElement.value) {
+            selectBlockElement(blockElement);
+        }
     }
 
     /**
@@ -333,6 +396,94 @@
     }
 
     /**
+     * Selects the Canvas block with the given identifier, or remembers it to
+     * select once the frame shows it.
+     */
+    function selectCanvasBlock(blockId: number): void {
+        const blockElement = getFrameDocument()?.getElementById(`bid_${blockId}`);
+
+        if (!blockElement?.querySelector(".canvas-module")) {
+            pendingSelectBlockId.value = blockId;
+            return;
+        }
+
+        pendingSelectBlockId.value = null;
+        selectBlockElement(blockElement);
+        blockElement.scrollIntoView({ block: "nearest" });
+    }
+
+    /**
+     * Marks a Canvas block as selected and adds the selection chip and
+     * controls to it, clearing any previous selection.
+     */
+    function selectBlockElement(blockElement: HTMLElement): void {
+        const frameDocument = blockElement.ownerDocument;
+        const moduleTypeKey = blockElement.querySelector(".canvas-module")?.getAttribute("data-module-type");
+        const moduleType = props.moduleTypes.find(type => type.key === moduleTypeKey);
+
+        clearSelection();
+
+        const chipIconElement = frameDocument.createElement("i");
+        chipIconElement.className = "pagebuilder-selection-chip-icon ti ti-hexagons";
+
+        const chipNameElement = frameDocument.createElement("span");
+        chipNameElement.textContent = moduleType?.name ?? "Module";
+
+        const chipElement = frameDocument.createElement("div");
+        chipElement.classList.add("pagebuilder-selection-chip");
+        chipElement.append(chipIconElement, chipNameElement);
+
+        const actionsElement = frameDocument.createElement("div");
+        actionsElement.classList.add("pagebuilder-selection-actions");
+        actionsElement.append(
+            createSelectionControl(frameDocument, "pagebuilder-selection-edit", "Edit", "ti ti-edit"),
+            createSelectionControl(frameDocument, "pagebuilder-selection-delete", "Delete", "ti ti-x"));
+
+        const controlsElement = frameDocument.createElement("div");
+        controlsElement.classList.add("pagebuilder-selection-controls");
+        controlsElement.append(
+            createSelectionControl(frameDocument, "pagebuilder-selection-drag", "Move", "ti ti-grip-vertical"),
+            actionsElement);
+
+        blockElement.classList.add("pagebuilder-selected");
+        blockElement.prepend(chipElement, controlsElement);
+        selectedBlockElement.value = blockElement;
+
+        emit("moduleSelected", getBlockId(blockElement));
+    }
+
+    /**
+     * Removes the selection chrome from the selected Canvas block, if any.
+     */
+    function clearSelection(): void {
+        const blockElement = selectedBlockElement.value;
+
+        if (!blockElement) {
+            return;
+        }
+
+        blockElement.classList.remove("pagebuilder-selected");
+        blockElement.querySelectorAll(":scope > .pagebuilder-selection-chip, :scope > .pagebuilder-selection-controls")
+            .forEach(element => element.remove());
+        selectedBlockElement.value = null;
+
+        emit("moduleSelected", null);
+    }
+
+    function createSelectionControl(frameDocument: Document, cssClass: string, title: string, iconCssClass: string): HTMLElement {
+        const iconElement = frameDocument.createElement("i");
+        iconElement.className = iconCssClass;
+
+        const controlElement = frameDocument.createElement("button");
+        controlElement.type = "button";
+        controlElement.className = `pagebuilder-selection-control ${cssClass}`;
+        controlElement.title = title;
+        controlElement.appendChild(iconElement);
+
+        return controlElement;
+    }
+
+    /**
      * Gets the identifier of the block an element is the wrapper for, or null
      * when it is not a block wrapper.
      */
@@ -464,6 +615,12 @@
     watch(() => props.reloadRequest, request => {
         if (request) {
             frameElement.value?.contentWindow?.location.reload();
+        }
+    });
+
+    watch(() => props.selectRequest, request => {
+        if (request) {
+            selectCanvasBlock(request.blockId);
         }
     });
 

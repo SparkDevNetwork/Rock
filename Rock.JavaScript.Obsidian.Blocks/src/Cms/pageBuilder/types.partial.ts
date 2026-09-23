@@ -49,6 +49,11 @@ export type PageFrameReloadRequest = {
     type: "PAGE_FRAME_RELOAD_REQUEST";
 };
 
+/** Tells the page frame to select a Canvas block, as soon as it is on the page. */
+export type ModuleSelectRequest = {
+    blockId: number;
+};
+
 /** Where a module type was dropped, as reported by the page frame. */
 export type ModuleDrop = {
     /** The module type that was dropped. */
