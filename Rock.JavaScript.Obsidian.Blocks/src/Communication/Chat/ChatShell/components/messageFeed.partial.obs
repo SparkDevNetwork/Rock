@@ -1,0 +1,228 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div ref="feed" class="chat-feed" data-testid="message-feed" :data-loaded="timeline.isLoaded ? 'true' : 'false'">
+        <button v-if="timeline.hasMore" type="button" class="btn btn-link btn-xs chat-feed-older" @click="emit('loadOlder')">
+            Show older messages
+        </button>
+
+        <template v-for="message in timeline.messages" :key="message.id">
+            <div v-if="message.id === firstUnreadId" class="chat-feed-divider" data-testid="unread-divider">
+                <span>{{ unreadLabel }}</span>
+            </div>
+            <MessageRow :message="message"
+                        :isOwn="message.person_alias_guid === personAliasGuid"
+                        :data-message-id="message.id" />
+        </template>
+
+        <div v-for="row in pending"
+             :key="row.localId"
+             class="chat-feed-pending"
+             :class="{ 'is-failed': row.status === 'failed' }"
+             data-testid="pending-row"
+             :data-status="row.status">
+            <div class="chat-feed-pending-body">{{ row.body }}</div>
+            <div v-if="row.status === 'failed'" class="chat-feed-pending-actions">
+                <span class="text-danger">Not sent.</span>
+                <button type="button" class="btn btn-link btn-xs" data-testid="retry-send" @click="emit('retry', row.localId)">Try again</button>
+                <button type="button" class="btn btn-link btn-xs" @click="emit('discard', row.localId)">Discard</button>
+            </div>
+            <div v-else class="chat-feed-pending-actions text-muted">Sending…</div>
+        </div>
+    </div>
+</template>
+
+<style scoped>
+.chat-feed {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    gap: 4px;
+    padding: 12px;
+    overflow-y: auto;
+}
+
+.chat-feed-older {
+    align-self: center;
+}
+
+.chat-feed-divider {
+    display: flex;
+    align-items: center;
+    margin: 8px 0;
+    font-size: 12px;
+    color: var(--color-danger-strong, #c0392b);
+}
+
+.chat-feed-divider::before,
+.chat-feed-divider::after {
+    flex: 1;
+    content: "";
+    border-top: 1px solid currentColor;
+}
+
+.chat-feed-divider span {
+    padding: 0 8px;
+}
+
+.chat-feed-pending {
+    align-self: flex-end;
+    max-width: 70%;
+    padding: 6px 10px;
+    border-radius: 8px;
+    opacity: 0.7;
+    background: var(--color-interface-softer, #f4f5f6);
+}
+
+.chat-feed-pending.is-failed {
+    opacity: 1;
+    border: 1px solid var(--color-danger-soft, #f5c6cb);
+}
+
+.chat-feed-pending-body {
+    white-space: pre-wrap;
+}
+
+.chat-feed-pending-actions {
+    font-size: 12px;
+}
+</style>
+
+<script setup lang="ts">
+    import { computed, nextTick, onBeforeUnmount, onMounted, PropType, ref, watch } from "vue";
+    import MessageRow from "./messageRow.partial.obs";
+    import { TimelineState } from "../composables/useHistory.partial";
+    import { PendingMessage } from "../types.partial";
+
+    const props = defineProps({
+        timeline: {
+            type: Object as PropType<TimelineState>,
+            required: true
+        },
+
+        pending: {
+            type: Array as PropType<PendingMessage[]>,
+            required: true
+        },
+
+        personAliasGuid: {
+            type: String,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "seen", messageId: number): void,
+        (e: "firstShown"): void,
+        (e: "retry", localId: string): void,
+        (e: "discard", localId: string): void,
+        (e: "loadOlder"): void
+    }>();
+
+    // #region Values
+
+    const feed = ref<HTMLElement | null>(null);
+    let observer: IntersectionObserver | null = null;
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    /** The first message above the read position when the channel opened, for the divider. */
+    const firstUnreadId = computed((): number | null => {
+        if (props.timeline.readCursor === null || props.timeline.unreadCount === 0) {
+            return null;
+        }
+
+        const cursor = props.timeline.readCursor;
+        const first = props.timeline.messages.find(m => m.id > cursor && m.message_type !== "system");
+        return first?.id ?? null;
+    });
+
+    const unreadLabel = computed((): string => {
+        const count = props.timeline.unreadCount;
+        const shown = count >= 100 ? "99+" : String(count);
+        return count === 1 ? "1 new message" : `${shown} new messages`;
+    });
+
+    // #endregion Computed Values
+
+    // #region Functions
+
+    /** Whether the person is at, or near, the bottom of the feed. */
+    function isNearBottom(): boolean {
+        const element = feed.value;
+        return !element || element.scrollHeight - element.scrollTop - element.clientHeight < 80;
+    }
+
+    /** Scrolls to the newest message. */
+    function scrollToBottom(): void {
+        if (feed.value) {
+            feed.value.scrollTop = feed.value.scrollHeight;
+        }
+    }
+
+    /**
+     * Watches every message row that is not watched yet. A row counts as seen once any of it
+     * is on screen, which is what the read position is saved from.
+     */
+    function observeRows(): void {
+        if (!feed.value || !observer) {
+            return;
+        }
+
+        feed.value.querySelectorAll<HTMLElement>("[data-message-id]:not([data-observed])").forEach(element => {
+            element.dataset.observed = "true";
+            observer?.observe(element);
+        });
+    }
+
+    // #endregion Functions
+
+    // #region Watchers
+
+    watch(() => props.timeline.messages.length, async (length, previous) => {
+        const shouldFollow = previous === 0 || isNearBottom();
+        await nextTick();
+        observeRows();
+
+        if (shouldFollow) {
+            scrollToBottom();
+        }
+
+        if (length > 0) {
+            emit("firstShown");
+        }
+    });
+
+    watch(() => props.pending.length, async () => {
+        await nextTick();
+        scrollToBottom();
+    });
+
+    // #endregion Watchers
+
+    // #region Lifecycle Hooks
+
+    onMounted(() => {
+        observer = new IntersectionObserver(entries => {
+            for (const entry of entries) {
+                if (entry.isIntersecting && document.visibilityState === "visible") {
+                    emit("seen", Number((entry.target as HTMLElement).dataset.messageId));
+                }
+            }
+        }, { root: feed.value });
+
+        observeRows();
+        if (props.timeline.messages.length > 0) {
+            scrollToBottom();
+            emit("firstShown");
+        }
+    });
+
+    onBeforeUnmount(() => {
+        observer?.disconnect();
+        observer = null;
+    });
+
+    // #endregion Lifecycle Hooks
+</script>

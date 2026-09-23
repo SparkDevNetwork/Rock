@@ -1,0 +1,170 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="chat-shell" data-testid="chat-shell" :data-phase="shell.state.phase">
+        <NotificationBox v-if="isRefused" :alertType="AlertType.Warning">
+            {{ refusal }}
+        </NotificationBox>
+
+        <div v-else class="chat-shell-layout">
+            <ChannelSidebar :rows="shell.channels.rows"
+                            :activeChannelId="shell.state.activeChannelId"
+                            @select="onSelect" />
+
+            <div class="chat-shell-main">
+                <ChatHeader :title="activeTitle" :connection="shell.state.connection" />
+
+                <MessageFeed v-if="activeChannelId"
+                             :key="activeChannelId"
+                             :timeline="shell.timelines.state(activeChannelId)"
+                             :pending="shell.sender.pending(activeChannelId)"
+                             :personAliasGuid="personAliasGuid"
+                             @seen="shell.seen"
+                             @firstShown="shell.firstMessageShown"
+                             @retry="onRetry"
+                             @discard="shell.sender.discard"
+                             @loadOlder="shell.loadOlder" />
+                <div v-else class="chat-shell-empty">
+                    {{ shell.state.phase === "starting" ? "Opening chat…" : "Choose a channel." }}
+                </div>
+
+                <Composer :isDisabled="!activeChannelId" @send="shell.send" />
+            </div>
+        </div>
+
+        <ErrorToast :errors="shell.state.errors" @dismiss="shell.dismissError" />
+    </div>
+</template>
+
+<style scoped>
+.chat-shell {
+    display: flex;
+    flex-direction: column;
+    min-height: 480px;
+}
+
+.chat-shell-layout {
+    display: flex;
+    flex: 1;
+    min-height: 480px;
+    border: 1px solid var(--color-interface-soft, #dfe0e1);
+    border-radius: var(--rounded-small, 4px);
+    overflow: hidden;
+}
+
+.chat-shell-main {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    min-width: 0;
+}
+
+.chat-shell-empty {
+    display: flex;
+    flex: 1;
+    align-items: center;
+    justify-content: center;
+    color: var(--color-interface-medium, #6c757d);
+}
+</style>
+
+<script setup lang="ts">
+    import { computed, onBeforeUnmount, onMounted } from "vue";
+    import { createClient } from "@Obsidian/Libs/supabase";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import { AlertType } from "@Obsidian/Enums/Controls/alertType";
+    import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { ChatChurchTokenBag } from "@Obsidian/ViewModels/Blocks/Communication/Chat/ChatShell/chatChurchTokenBag";
+    import { ChatShellInitializationBox } from "@Obsidian/ViewModels/Blocks/Communication/Chat/ChatShell/chatShellInitializationBox";
+    import ChannelSidebar from "./ChatShell/components/channelSidebar.partial.obs";
+    import ChatHeader from "./ChatShell/components/chatHeader.partial.obs";
+    import Composer from "./ChatShell/components/composer.partial.obs";
+    import ErrorToast from "./ChatShell/components/errorToast.partial.obs";
+    import MessageFeed from "./ChatShell/components/messageFeed.partial.obs";
+    import { createChatShell, gateMessage, PlatformClientLike } from "./ChatShell/shell.partial";
+
+    const config = useConfigurationValues<ChatShellInitializationBox>();
+    const invokeBlockAction = useInvokeBlockAction();
+
+    // #region Values
+
+    const personAliasGuid = config.session?.personAliasGuid ?? "";
+
+    const shell = createChatShell({
+        session: config.session ?? {},
+        linkedChannelId: config.channelGuid ?? null,
+        mintChurchToken: async () => {
+            const result = await invokeBlockAction<ChatChurchTokenBag>("MintChurchToken");
+            return { isSuccess: result.isSuccess, statusCode: result.statusCode, data: result.data };
+        },
+        createPlatformClient: (url, key, accessToken) => createClient(url, key, { accessToken }) as unknown as PlatformClientLike,
+        fetch: (url, init) => window.fetch(url, init),
+        storage: safeLocalStorage(),
+        pageTargets: { document, window },
+        mark: name => {
+            try {
+                performance.mark(name);
+            }
+            catch {
+                // Intentionally ignored: timing marks are for measurement only.
+            }
+        }
+    });
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    const activeChannelId = computed((): string | null => shell.state.activeChannelId);
+
+    const isRefused = computed((): boolean => shell.state.phase === "refused" || shell.state.phase === "failed");
+
+    const refusal = computed((): string => gateMessage(shell.state.gate));
+
+    const activeTitle = computed((): string => {
+        const row = shell.channels.rows.find(r => r.channel_id === shell.state.activeChannelId);
+        if (!row) {
+            return "";
+        }
+        return row.name || (row.dm_names ?? []).join(", ");
+    });
+
+    // #endregion Computed Values
+
+    // #region Event Handlers
+
+    function onSelect(channelId: string): void {
+        void shell.selectChannel(channelId);
+    }
+
+    function onRetry(localId: string): void {
+        void shell.sender.retry(localId);
+    }
+
+    // #endregion Event Handlers
+
+    // #region Functions
+
+    /** The browser's local storage, or null where the browser blocks it. */
+    function safeLocalStorage(): Storage | null {
+        try {
+            return window.localStorage;
+        }
+        catch {
+            return null;
+        }
+    }
+
+    // #endregion Functions
+
+    // #region Lifecycle Hooks
+
+    onMounted(() => {
+        void shell.start();
+    });
+
+    onBeforeUnmount(() => {
+        void shell.stop();
+    });
+
+    // #endregion Lifecycle Hooks
+</script>

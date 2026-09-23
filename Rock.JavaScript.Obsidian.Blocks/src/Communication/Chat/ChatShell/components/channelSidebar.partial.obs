@@ -1,0 +1,87 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <nav class="chat-sidebar" data-testid="channel-sidebar">
+        <button v-for="row in rows"
+                :key="row.channel_id"
+                type="button"
+                class="chat-sidebar-row"
+                :class="{ 'is-active': row.channel_id === activeChannelId, 'is-unread': row.is_unread }"
+                data-testid="channel-row"
+                :data-channel-id="row.channel_id"
+                :data-unread="row.is_unread ? 'true' : 'false'"
+                @click="emit('select', row.channel_id)">
+            <span class="chat-sidebar-name">{{ nameOf(row) }}</span>
+            <span v-if="row.mention_count > 0" class="badge badge-danger chat-sidebar-mentions">@{{ row.mention_count }}</span>
+        </button>
+        <div v-if="rows.length === 0" class="chat-sidebar-empty">No channels yet.</div>
+    </nav>
+</template>
+
+<style scoped>
+.chat-sidebar {
+    display: flex;
+    flex: 0 0 240px;
+    flex-direction: column;
+    overflow-y: auto;
+    border-right: 1px solid var(--color-interface-soft, #dfe0e1);
+}
+
+.chat-sidebar-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 12px;
+    text-align: left;
+    background: none;
+    border: 0;
+}
+
+.chat-sidebar-row.is-active {
+    background: var(--color-interface-softer, #f4f5f6);
+}
+
+.chat-sidebar-row.is-unread .chat-sidebar-name {
+    font-weight: 700;
+}
+
+.chat-sidebar-empty {
+    padding: 12px;
+    color: var(--color-interface-medium, #6c757d);
+}
+</style>
+
+<script setup lang="ts">
+    import { PropType } from "vue";
+    import { SidebarRow } from "../types.partial";
+
+    defineProps({
+        rows: {
+            type: Array as PropType<SidebarRow[]>,
+            required: true
+        },
+
+        activeChannelId: {
+            type: String as PropType<string | null>,
+            default: null
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "select", channelId: string): void
+    }>();
+
+    // #region Functions
+
+    /** A channel's name, or for an unnamed direct message the people in it. */
+    function nameOf(row: SidebarRow): string {
+        if (row.name) {
+            return row.name;
+        }
+
+        const names = (row.dm_names ?? []).join(", ");
+        const others = row.dm_other_count ?? 0;
+        return others > 0 ? `${names} and ${others} more` : names;
+    }
+
+    // #endregion Functions
+</script>

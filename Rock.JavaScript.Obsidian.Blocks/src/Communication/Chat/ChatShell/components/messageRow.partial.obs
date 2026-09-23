@@ -1,0 +1,93 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="chat-message"
+         :class="{ 'is-own': isOwn, 'is-system': message.message_type === 'system', 'is-deleted': !!message.deleted_at }"
+         data-testid="message-row">
+        <div v-if="message.message_type !== 'system'" class="chat-message-meta">
+            <span class="chat-message-sender">{{ senderName }}</span>
+            <span class="chat-message-time">{{ time }}</span>
+            <span v-if="message.edited_at && !message.deleted_at" class="chat-message-edited">(edited)</span>
+        </div>
+        <div class="chat-message-body">
+            <template v-if="message.deleted_at">This message was deleted.</template>
+            <template v-else>{{ message.body }}</template>
+        </div>
+    </div>
+</template>
+
+<style scoped>
+.chat-message {
+    max-width: 70%;
+    padding: 6px 10px;
+    border-radius: 8px;
+    background: var(--color-interface-softer, #f4f5f6);
+}
+
+.chat-message.is-own {
+    align-self: flex-end;
+    background: var(--color-primary-soft, #dbeafe);
+}
+
+.chat-message.is-system {
+    align-self: center;
+    font-size: 12px;
+    background: none;
+    color: var(--color-interface-medium, #6c757d);
+}
+
+.chat-message.is-deleted .chat-message-body {
+    font-style: italic;
+    color: var(--color-interface-medium, #6c757d);
+}
+
+.chat-message-meta {
+    display: flex;
+    gap: 6px;
+    font-size: 12px;
+    color: var(--color-interface-medium, #6c757d);
+}
+
+.chat-message-sender {
+    font-weight: 600;
+}
+
+.chat-message-body {
+    white-space: pre-wrap;
+    word-break: break-word;
+}
+</style>
+
+<script setup lang="ts">
+    import { computed, PropType } from "vue";
+    import { TimelineMessage } from "../types.partial";
+
+    const props = defineProps({
+        message: {
+            type: Object as PropType<TimelineMessage>,
+            required: true
+        },
+
+        isOwn: {
+            type: Boolean,
+            default: false
+        }
+    });
+
+    // #region Computed Values
+
+    const senderName = computed((): string => {
+        if (props.isOwn) {
+            return "You";
+        }
+
+        const name = [props.message.sender_nick_name, props.message.sender_last_name].filter(Boolean).join(" ");
+        return name || "Someone";
+    });
+
+    const time = computed((): string => {
+        const at = new Date(props.message.created_at);
+        return isNaN(at.getTime()) ? "" : at.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
+    });
+
+    // #endregion Computed Values
+</script>

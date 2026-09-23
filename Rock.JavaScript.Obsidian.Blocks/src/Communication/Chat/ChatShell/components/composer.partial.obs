@@ -1,0 +1,79 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <form class="chat-composer" @submit.prevent="onSubmit">
+        <textarea v-model="text"
+                  class="form-control chat-composer-input"
+                  rows="2"
+                  placeholder="Write a message"
+                  data-testid="composer-input"
+                  :disabled="isDisabled"
+                  @keydown="onKeydown"></textarea>
+        <button type="submit"
+                class="btn btn-primary"
+                data-testid="composer-send"
+                :disabled="isDisabled || text.trim() === ''">
+            Send
+        </button>
+    </form>
+</template>
+
+<style scoped>
+.chat-composer {
+    display: flex;
+    gap: 8px;
+    align-items: flex-end;
+    padding: 8px 12px;
+    border-top: 1px solid var(--color-interface-soft, #dfe0e1);
+}
+
+.chat-composer-input {
+    flex: 1;
+    resize: none;
+}
+</style>
+
+<script setup lang="ts">
+    import { ref } from "vue";
+
+    defineProps({
+        isDisabled: {
+            type: Boolean,
+            default: false
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "send", body: string): void
+    }>();
+
+    // #region Values
+
+    const text = ref("");
+
+    // #endregion Values
+
+    // #region Event Handlers
+
+    /**
+     * Hands the text to the shell and clears the box. A send that fails keeps its text on
+     * its own row in the feed with a retry, so clearing here loses nothing.
+     */
+    function onSubmit(): void {
+        if (text.value.trim() === "") {
+            return;
+        }
+
+        emit("send", text.value);
+        text.value = "";
+    }
+
+    /** Enter sends; Shift and Enter starts a new line. */
+    function onKeydown(event: KeyboardEvent): void {
+        if (event.key === "Enter" && !event.shiftKey && !event.isComposing) {
+            event.preventDefault();
+            onSubmit();
+        }
+    }
+
+    // #endregion Event Handlers
+</script>

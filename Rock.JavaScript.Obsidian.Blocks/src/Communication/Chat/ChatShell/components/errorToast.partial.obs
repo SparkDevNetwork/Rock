@@ -1,0 +1,60 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div v-if="shown.length > 0" class="chat-error-toast" data-testid="error-toast">
+        <div v-for="error in shown" :key="error.code" class="alert alert-warning chat-error-toast-item" :data-code="error.code">
+            <span>{{ messageFor(error) }}</span>
+            <button type="button" class="close" aria-label="Dismiss" @click="emit('dismiss', error.code)">&times;</button>
+        </div>
+    </div>
+</template>
+
+<style scoped>
+.chat-error-toast {
+    margin-top: 8px;
+}
+
+.chat-error-toast-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+</style>
+
+<script setup lang="ts">
+    import { computed, PropType } from "vue";
+    import { ChatError } from "../types.partial";
+
+    const props = defineProps({
+        errors: {
+            type: Array as PropType<ChatError[]>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "dismiss", code: string): void
+    }>();
+
+    // #region Computed Values
+
+    /** The live connection's trouble is shown on the header badge, not here. */
+    const shown = computed((): ChatError[] => props.errors.filter(e => e.severity !== "degraded"));
+
+    // #endregion Computed Values
+
+    // #region Functions
+
+    /** What the person is told for a failure, by how bad it is. */
+    function messageFor(error: ChatError): string {
+        switch (error.severity) {
+            case "session":
+                return "Your chat session has ended. Refresh the page to continue.";
+            case "permission":
+                return "You do not have access to that.";
+            default:
+                return "Something went wrong in chat. Try again in a moment.";
+        }
+    }
+
+    // #endregion Functions
+</script>

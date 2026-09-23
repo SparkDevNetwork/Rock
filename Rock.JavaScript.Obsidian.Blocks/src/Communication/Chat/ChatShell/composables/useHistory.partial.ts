@@ -79,7 +79,7 @@ export type Timelines = {
  * Whether a message belongs on the channel's timeline: a root, or a reply also shown in the
  * channel. A reply shown only in its thread is the thread panel's.
  */
-function isTimelineMessage(message: { parent_id?: number | null, shown_in_channel?: boolean }): boolean {
+function isTimelineMessage(message: Pick<TimelineMessage, "parent_id" | "shown_in_channel">): boolean {
     return message.parent_id === null || message.parent_id === undefined || message.shown_in_channel === true;
 }
 

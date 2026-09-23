@@ -23,7 +23,7 @@
 // the signal carries no name to draw a row with.
 import { reactive } from "vue";
 import { isUnreadAfterSave } from "../composables/useMarkRead.partial";
-import { MarkReadResult, SidebarRow } from "../types.partial";
+import { ChannelUnreadEvent, MarkReadResult, SidebarRow } from "../types.partial";
 
 /** What the store reaches outside itself. */
 export type ChannelStoreDependencies = {
@@ -72,7 +72,7 @@ export function createChannelStore(dependencies: ChannelStoreDependencies): Chan
 
     /** A signal that a channel has something the person has not read. */
     function applyUnread(payload: unknown): void {
-        const signal = payload as { channel_id?: unknown, message_id?: unknown } | null;
+        const signal = payload as Partial<Record<keyof ChannelUnreadEvent, unknown>> | null;
         if (!signal || typeof signal.channel_id !== "string") {
             return;
         }

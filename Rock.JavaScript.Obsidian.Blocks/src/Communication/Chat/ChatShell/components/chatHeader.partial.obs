@@ -1,0 +1,40 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <header class="chat-header">
+        <span class="chat-header-title">{{ title }}</span>
+        <span v-if="connection" class="label label-warning" data-testid="connection-badge">Reconnecting…</span>
+    </header>
+</template>
+
+<style scoped>
+.chat-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    min-height: 44px;
+    padding: 8px 12px;
+    border-bottom: 1px solid var(--color-interface-soft, #dfe0e1);
+}
+
+.chat-header-title {
+    font-weight: 600;
+}
+</style>
+
+<script setup lang="ts">
+    import { PropType } from "vue";
+    import { ChatError } from "../types.partial";
+
+    defineProps({
+        title: {
+            type: String,
+            default: ""
+        },
+
+        /** The live connection's trouble, or null when it is healthy. */
+        connection: {
+            type: Object as PropType<ChatError | null>,
+            default: null
+        }
+    });
+</script>

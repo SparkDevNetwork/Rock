@@ -15,7 +15,9 @@
 // </copyright>
 //
 // The shapes the chat platform sends back, as its calls and live events define them. Property
-// names are the platform's own snake_case, because these are read straight off its JSON.
+// names are the platform's own snake_case, because these are read straight off its JSON; mapping
+// every message to camelCase on arrival would cost a copy of each for no reader's benefit.
+/* eslint-disable @typescript-eslint/naming-convention */
 
 /** One row of the sidebar, as chat_get_bootstrap returns it. */
 export type SidebarRow = {
@@ -106,6 +108,19 @@ export type MessageDeletedEvent = {
     id: number;
     channel_id: string;
     deleted_at: string;
+};
+
+/** The person's own "something new here" signal, on their personal topic. */
+export type ChannelUnreadEvent = {
+    channel_id: string;
+    message_id: number;
+};
+
+/** What the platform's token exchange answers. */
+export type TokenExchangeResponse = {
+    access_token?: string;
+    expires_in?: number;
+    error?: { code?: string };
 };
 
 /** Any event a channel topic carries, by its event name. */
