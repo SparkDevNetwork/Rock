@@ -38,6 +38,7 @@ namespace Rock.Blocks.Cms
         "Module Instance",
         Description = "The unique identifier of the module instance this Canvas displays.",
         IsRequired = false,
+        Category = AttributeCategory.CustomSetting,
         Order = 0,
         Key = AttributeKey.ModuleInstance )]
 
@@ -55,6 +56,14 @@ namespace Rock.Blocks.Cms
         internal static class AttributeKey
         {
             public const string ModuleInstance = "ModuleInstance";
+        }
+
+        private static class AttributeCategory
+        {
+            /// <summary>
+            /// Attributes hidden from Block Properties because the Page Builder sets them.
+            /// </summary>
+            public const string CustomSetting = "CustomSetting";
         }
 
         #endregion Keys
