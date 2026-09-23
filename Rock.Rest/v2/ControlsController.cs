@@ -3654,7 +3654,8 @@ namespace Rock.Rest.v2
                         Value = connectionType.Guid.ToString(),
                         Text = connectionType.Name,
                         HasChildren = connectionType.ConnectionOpportunities.Any(),
-                        IconCssClass = connectionType.IconCssClass
+                        IconCssClass = connectionType.IconCssClass,
+                        IsFolder = true
                     };
 
                     connectionTreeItems.Add( connectionTypeTreeItem );
@@ -3698,7 +3699,8 @@ namespace Rock.Rest.v2
                                 cr.ConnectionState == ConnectionState.Active
                                 || cr.ConnectionState == ConnectionState.FutureFollowUp
                             ),
-                        IconCssClass = opportunity.IconCssClass
+                        IconCssClass = opportunity.IconCssClass,
+                        IsFolder = true
                     };
 
                     connectionTreeItems.Add( connectionOpportunityTreeItem );
