@@ -43,7 +43,7 @@
 <script setup lang="ts">
     import { PropType, ref, watch } from "vue";
     import EmailIFrame from "./emailIFrame.partial.obs";
-    import Overlay from "./overlay.obs";
+    import Overlay from "@Obsidian/Controls/Internal/overlay.obs";
     import {
         CloneComponentRequest,
         CompleteComponentRequest,
