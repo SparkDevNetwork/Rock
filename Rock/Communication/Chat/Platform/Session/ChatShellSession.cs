@@ -14,7 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
-using System;
+using System.Text.RegularExpressions;
 
 using Rock.Data;
 using Rock.Model;
@@ -39,7 +39,24 @@ namespace Rock.Communication.Chat.Platform.Session
         /// <returns>The gate outcome and, when it passed, the public platform settings.</returns>
         public static ChatShellSessionBag Open( Person person, ChatSessionContext context, RockContext rockContext )
         {
-            throw new NotImplementedException();
+            var result = ChatSessionHelper.EnsureEnrollment( person, context, rockContext );
+
+            if ( result.Gate != ChatMintGate.Ok )
+            {
+                return new ChatShellSessionBag { Gate = ToGateCode( result.Gate ) };
+            }
+
+            var configuration = context.Configuration;
+
+            return new ChatShellSessionBag
+            {
+                Gate = ToGateCode( result.Gate ),
+                ProjectUrl = configuration.ProjectUrl,
+                PublishableKey = configuration.PublishableKey,
+                TenantId = result.TenantId,
+                PersonAliasGuid = result.PersonAliasGuid,
+                CanStartDm = result.CanStartDm
+            };
         }
 
         /// <summary>
@@ -51,7 +68,19 @@ namespace Rock.Communication.Chat.Platform.Session
         /// <returns>The token and its expiry, or the gate that refused it.</returns>
         public static ChatChurchTokenBag MintToken( Person person, ChatSessionContext context, RockContext rockContext )
         {
-            throw new NotImplementedException();
+            var result = ChatSessionHelper.TryMintChurchToken( person, context, rockContext );
+
+            if ( result.Gate != ChatMintGate.Ok )
+            {
+                return new ChatChurchTokenBag { Gate = ToGateCode( result.Gate ) };
+            }
+
+            return new ChatChurchTokenBag
+            {
+                Gate = ToGateCode( result.Gate ),
+                ChurchToken = result.ChurchToken,
+                ExpiresAt = result.ExpiresAtUtc
+            };
         }
 
         /// <summary>
@@ -61,7 +90,9 @@ namespace Rock.Communication.Chat.Platform.Session
         /// <returns>The code.</returns>
         public static string ToGateCode( ChatMintGate gate )
         {
-            throw new NotImplementedException();
+            // The enum's own names, in the snake_case every code outside Rock uses, so a new
+            // gate has a code the moment it exists and two gates can never share one.
+            return Regex.Replace( gate.ToString(), "(?<=[a-z0-9])([A-Z])", "_$1" ).ToLowerInvariant();
         }
     }
 }
