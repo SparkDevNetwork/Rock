@@ -21,6 +21,8 @@
 // not read, and never again until they read it. A signal for a channel the sidebar does not
 // hold, a hidden channel coming back or one they were just added to, reloads the sidebar, since
 // the signal carries no name to draw a row with.
+import { reactive } from "vue";
+import { isUnreadAfterSave } from "../composables/useMarkRead.partial";
 import { MarkReadResult, SidebarRow } from "../types.partial";
 
 /** What the store reaches outside itself. */
@@ -57,6 +59,70 @@ export type ChannelStore = {
  *
  * @returns The store.
  */
-export function createChannelStore(_dependencies: ChannelStoreDependencies): ChannelStore {
-    throw new Error("not implemented");
+export function createChannelStore(dependencies: ChannelStoreDependencies): ChannelStore {
+    const store = reactive({
+        rows: [] as SidebarRow[],
+        activeChannelId: null as string | null
+    });
+
+    /** The row of a channel, if the sidebar holds it. */
+    function find(channelId: string): SidebarRow | undefined {
+        return store.rows.find(row => row.channel_id === channelId);
+    }
+
+    /** A signal that a channel has something the person has not read. */
+    function applyUnread(payload: unknown): void {
+        const signal = payload as { channel_id?: unknown, message_id?: unknown } | null;
+        if (!signal || typeof signal.channel_id !== "string") {
+            return;
+        }
+
+        // The person is looking at it; their save when they leave settles it.
+        if (signal.channel_id === store.activeChannelId) {
+            return;
+        }
+
+        const row = find(signal.channel_id);
+        if (!row) {
+            dependencies.reloadSidebar();
+            return;
+        }
+
+        row.is_unread = true;
+        if (typeof signal.message_id === "number" && (row.last_message_id === null || signal.message_id > row.last_message_id)) {
+            row.last_message_id = signal.message_id;
+        }
+    }
+
+    return Object.assign(store, {
+        setSidebar: (rows: SidebarRow[]): void => {
+            store.rows = rows;
+        },
+
+        setActive: (channelId: string | null): void => {
+            store.activeChannelId = channelId;
+        },
+
+        applyPersonalEvent: (event: string, payload: unknown): void => {
+            if (event === "channel.unread") {
+                applyUnread(payload);
+            }
+            else if (event === "membership.changed") {
+                dependencies.reloadSidebar();
+            }
+        },
+
+        applyMarkRead: (channelId: string, result: MarkReadResult): void => {
+            const row = find(channelId);
+            if (!row) {
+                return;
+            }
+
+            row.read_cursor = result.read_cursor;
+            if (result.last_message_id !== null) {
+                row.last_message_id = result.last_message_id;
+            }
+            row.is_unread = isUnreadAfterSave(result);
+        }
+    });
 }
