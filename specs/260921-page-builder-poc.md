@@ -4,8 +4,8 @@ date_created: 2026-09-21
 summary: >-
   Proof of concept for the Rock Page Builder. Drag module types from a sidebar into
   page-builder-enabled zones on a live page rendered in an iframe. Each drop saves a
-  real Canvas block that stores its module in block attributes and renders the module's
-  Lava, with a reusable Obsidian Sheet control for editing a placed module.
+  module instance, whose settings are attribute values, and a Canvas block that displays
+  it, with a reusable Obsidian Sheet control for editing a placed module.
 contributors: []
 ---
 
@@ -20,13 +20,15 @@ or freeform elements), runs against an internal Page Builder page, and exists to
 two things are buildable inside Rock before the full feature is scoped: drag and drop
 across an iframe boundary, and a general purpose Sheet control.
 
-**The POC saves Canvas blocks but adds no tables.** Dropping a module calls a block action
-that creates a real Canvas block at the drop position and reloads the frame, so the result
-behaves like any other block on the page and survives a refresh. The Canvas keeps its
-module's type and settings in block attributes, which is a POC shortcut. Module types are a
-hard coded list on the server, so their Lava can be resolved there. The only migration seeds
-the builder's layouts, pages, and blocks. The entities under `MVP Design` below are recorded
-for the follow-on work and are not built here.
+**The POC saves what it places.** Dropping a module calls a block action that creates a
+module instance and a real Canvas block at the drop position, then reloads the frame, so the
+result behaves like any other block on the page and survives a refresh. The POC builds the
+`ModuleType` and `ModuleInstance` entities with their full columns. A module type's settings
+are `ModuleInstance` attributes, so each instance's settings are its attribute values, and the
+Canvas references its instance from a block attribute value. The migration seeds five sample
+module types along with the builder's layouts, pages, and block. Module instance items and
+personalization under `MVP Design` below are recorded for the follow-on work and are not
+built here.
 
 ## Motivation
 
@@ -92,15 +94,17 @@ The budget is 40 goal hours, 50 approved.
   specific logic, so other blocks can adopt it.
 - Within the builder, the Sheet MUST present three sections (Module Settings, Module
   Items, Display Settings) and a footer with Save and Save and Close.
-- Module Settings MUST render the fields declared by the module type. Save writes them to
-  the Canvas block's Module Settings attribute and re-renders the block in the frame.
+- Module Settings MUST render the module instance's attributes with their field types'
+  editors. Save writes the instance's attribute values and re-renders the block in the frame.
 
 ### Block behavior
 
 - The Page Builder block MUST call `onConfigurationValuesChanged(useReloadBlock())` so it
   reloads when its settings change.
-- Adding a module MUST require Administrate permission on the target page, the same
-  permission Rock requires to configure a page's blocks.
+- Adding or deleting a module MUST require Administrate permission on the target page, the
+  same permission Rock requires to configure a page's blocks.
+- Deleting a module from the builder MUST delete its module instance too, unless the instance
+  is shareable or another Canvas block references it.
 - The Canvas block MUST render its module's Lava on the server, so the output is in the page
   HTML rather than built in the browser.
 
@@ -120,13 +124,19 @@ new **Page Builder** layout with one builder-enabled zone (Builder) and one ordi
 `Rock.Frontend.Styles/src/themes/RockNextGen/Layouts/` and copied into `RockWeb/Themes` by
 the build. The Page Builder block's Target Page setting defaults to the sample page.
 
-### Module types
+### Module types and instances
 
-Module types are a hard coded list on the server for the POC. Each supplies a key, a display
-name, an icon, a web Lava template, and the fields the Sheet renders under Module Settings.
-The list lives on the server rather than in the builder's TypeScript because the Canvas block
-resolves the Lava there, and the Page Builder block passes the list to its sidebar. There are
-no `ModuleType` rows and no way to create or edit a type.
+`ModuleType` and `ModuleInstance` are built with the full columns listed under
+`MVP Design`. The migration seeds five sample module types (Accordion, Billboard, Card,
+Content, Video), each with a web Lava template, and the sidebar lists the `ModuleType` rows.
+There is no way to create or edit a type in the POC.
+
+A module type's settings are attributes of `ModuleInstance` qualified by `ModuleTypeId`, the
+same pattern Rock uses for group member attributes by group type. `LoadAttributes()` resolves
+the qualifier from the instance's own `ModuleTypeId`, so every instance of a type has that
+type's settings with no extra code, and an instance's settings are its attribute values. The
+seeded types use Text attributes for titles and button text and Memo attributes for body text,
+so the Sheet can render each with its field type's editor through `AttributeValuesContainer`.
 
 ### Canvas block
 
@@ -135,21 +145,16 @@ The Canvas is a real Obsidian block type (`Rock.Blocks.Cms.Canvas`) registered w
 its output from `GetInitialHtmlContent()`, so the module renders on the server and appears in
 the page HTML.
 
-Each Canvas holds exactly one module in two block attributes:
+A Canvas references the module instance it displays from its Module Instance block attribute,
+which holds the instance's Guid. Pointing from the block to the instance lets the same
+shareable instance be displayed by more than one Canvas. Custom block settings will later keep
+the reference from being edited by hand.
 
-| Attribute | Holds |
-|---|---|
-| Module Type | The key of the module type from the server-side list |
-| Module Settings | The module's settings as JSON |
-
-The Canvas resolves its module type's Lava with the common merge fields plus the module's
-settings. The template stays with the type rather than being copied into the block, so
-changing a type's template changes every Canvas that uses it, the way a `ModuleType` row
-eventually will.
-
-Keeping module data in block attributes is a POC shortcut and is replaced by the tables under
-`MVP Design`. It works here only because each Canvas holds one module. The reasoning against
-an attribute for an ordered list of modules still stands for the MVP.
+The Canvas renders its instance's module type Lava with the common merge fields plus the
+instance as `ModuleInstance`, and templates read settings with
+`{{ ModuleInstance | Attribute:'Title' }}`. A setting that has not been saved falls back to
+its attribute's default value. The template stays with the type, so changing a type's template
+changes every module of that type.
 
 ### Adding a module
 
@@ -158,10 +163,13 @@ key, and the id of the block the new one goes in front of (or none for the end o
 It:
 
 1. Checks that the current person has Administrate permission on the target page.
-2. Creates a Canvas `Block` on the target page in that zone.
-3. Renumbers `Order` across the zone's page blocks with the new block in position.
-4. Sets the Module Type attribute and default Module Settings.
-5. Returns the new block's id.
+2. Creates a `ModuleInstance` of the dropped type, which starts with the type's defaults.
+3. Creates a Canvas `Block` on the target page in that zone, inheriting the page's security.
+4. Renumbers `Order` across the zone's page blocks with the new block in position.
+5. Sets the Canvas block's Module Instance attribute to the new instance.
+6. Returns the new block's id.
+
+Steps 2 through 5 run in one transaction.
 
 Block order is `Block.Order`, scoped to a zone. Rock renders a zone's site blocks first, then
 its layout blocks, then its page blocks, each sorted by `Order`, so a page block can only be
@@ -172,6 +180,21 @@ which keeps every drop position one the server can honor.
 On success the builder reloads the frame so Rock renders the new block itself, then selects
 it by its `bid_{id}` wrapper. A reload is simpler than injecting the returned markup and keeps
 the frame identical to what a visitor sees.
+
+`AddModule` first makes sure the Canvas block type's attributes are registered. Rock otherwise
+creates them the first time a page renders a block of that type, and until then the new block
+has no Module Instance attribute to hold its reference.
+
+### Deleting a module
+
+The delete control on a selected module confirms, then calls a `DeleteModule` block action
+with the Canvas block's id. It checks Administrate permission on the target page and deletes
+the Canvas block. It also deletes the module instance, unless the instance is shareable or
+another Canvas block still references it. Both deletes run in one transaction, and the
+builder reloads the frame.
+
+Deleting a block leaves its attribute values in the database until the Rock Cleanup job
+removes them, so only values of blocks that still exist count as references.
 
 ### Drag and drop across the iframe
 
@@ -284,9 +307,9 @@ Email Builder; the coordinate translation is ten lines and belongs to each consu
 
 ## MVP Design
 
-The POC builds the Canvas block type but none of the entities below. It keeps each Canvas's
-module in block attributes instead, and the follow-on work needs these decisions made rather
-than rediscovered when that data moves into tables.
+The POC builds the Canvas block type and the `ModuleType` and `ModuleInstance` entities below.
+Module instance items, their campus filters, and personalization are not built, and the
+follow-on work needs these decisions made rather than rediscovered.
 
 ### Entities
 
@@ -322,15 +345,16 @@ The Canvas block type from the POC carries forward, registered through
 `DELETE FROM [BlockType] WHERE [Path] = ...` and entity based block types have an empty
 path, so the wrong helper can wipe every entity based block type in the database.
 
-In the MVP a Canvas holds more than one module and its module data moves out of block
-attributes. How a Canvas references its module instances is unresolved. A placement join entity
-(`BlockId`, `ModuleInstanceId`, `Order`) models `IsShareable` correctly and puts order on
-the placement where it belongs. A nullable `BlockId` and `Order` directly on
-`ModuleInstance` mirrors `ForgeContent` one for one but means an instance can only live in
-one Canvas, which makes `IsShareable` meaningless for placement. Storing an ordered JSON
-array in a block attribute value was rejected: attribute values are for configuration, and
-Rock's two precedents for block owned content (`HtmlContent`, `ForgeContent`) both chose a
-table.
+In the POC a Canvas references its single module instance from a block attribute value, which
+lets one shareable instance be displayed by several blocks. A nullable `BlockId` on
+`ModuleInstance`, the `ForgeContent` pattern, was ruled out because it limits an instance to
+one Canvas and makes `IsShareable` meaningless.
+
+In the MVP a Canvas can hold more than one module, and how it references an ordered list of
+instances is unresolved. A placement join entity (`BlockId`, `ModuleInstanceId`, `Order`) puts
+order on the placement where it belongs. Extending the block attribute to an ordered list keeps
+the POC's shape but stores content in an attribute value, which Rock's two precedents for block
+owned content (`HtmlContent`, `ForgeContent`) avoided by choosing a table.
 
 ### Modules and elements
 
@@ -349,10 +373,10 @@ elements at all, or elements get their own block type, is open.
    type?** Open with the technical lead. Modules and elements do not intermix within one
    Canvas either way, so this is about whether one block type serves both in separate
    instances or two block types exist. It does not affect the POC.
-2. **How does a Canvas reference its module instances once they move into tables?** Options
-   and reasoning are under `MVP Design` above. It does not affect the POC, which keeps one
-   module per Canvas in block attributes, but it should be settled before the MVP schema is
-   written.
+2. **How does a Canvas reference more than one module instance?** Options and reasoning are
+   under `MVP Design` above. It does not affect the POC, where a Canvas references its single
+   instance from a block attribute value, but it should be settled before the MVP adds
+   multiple modules per Canvas.
 3. **Is the stock zone configuration chrome acceptable in builder mode?** Rock's own zone
    bars render inside the frame whenever the viewer can administrate the page, so they sit
    alongside the builder's zone outline and Builder chip. During a drag the parent overlay
@@ -400,10 +424,16 @@ proved the drag across the iframe, but not how a placed module behaves as a bloc
 among other blocks, Rock's block configuration bar, server rendered Lava, and surviving a
 refresh. Those are the parts the follow-on work most needs to see.
 
-### Add the module tables in the POC
-Rejected for the POC. Adding `ModuleType` and `ModuleInstance` now would force open question 2
-before anything exercises it, and put tables in a migration that are likely to change. With
-one module per Canvas, block attributes hold everything the POC needs.
+### Keep module settings as JSON in a Canvas block attribute
+Rejected. An intermediate version stored each module's type key and settings JSON in Canvas
+block attributes against a hard coded list of module types. Settings stored as attribute
+values of a `ModuleInstance` instead get field types, so the Sheet can render every setting
+with Rock's own editors, and new settings become data rather than code.
+
+### Put a BlockId on ModuleInstance
+Rejected. Hanging the instance off its block, as `ForgeContent` does, would take the instance
+with the block when it is deleted, but it limits an instance to one Canvas. Module instances
+may be shared, so the Canvas references the instance instead.
 
 ### Emit the accepts value instead of a boolean
 Rejected for the POC. `data-pagebuilder-accepts="modules"`, with absence meaning disabled,
@@ -413,15 +443,19 @@ boolean extends to it cleanly when that time comes.
 
 ## Out of Scope
 
-- **New entities and tables.** Module data lives in Canvas block attributes. See `MVP Design`.
+- **Module instance items, their campus filters, and personalization.** See `MVP Design`.
 - **More than one module per Canvas.**
-- Moving or deleting a placed module from the builder. Rock's own block configuration bar
-  still works on a saved Canvas block.
+- Sharing a module instance between Canvas blocks. The schema allows it; the builder does not
+  offer it yet.
+- Moving a placed module from the builder. Rock's own block configuration bar still works on
+  a saved Canvas block.
+- Deleting the module instance when its Canvas is deleted from Rock's block configuration bar.
+  Only the builder's delete removes the instance.
 - Standard / Block mode and Elements mode.
 - The admin footer toolbar replacement and the drawer that replaces it on every page.
 - Module Presets. Pulled in only if the budget allows once the two named deliverables land.
 - Content Channel as an item source for Module Items.
-- Creating or editing Module Types. Module types are a hard coded server-side list in the POC.
+- Creating or editing Module Types. The POC's module types are seeded by its migration.
 - Enforcing `pagebuilderaccepts="(modules|blocks|both)"`. `EnablePageBuilder` is
   implemented because hit testing depends on it; the accepts value is not.
 - The caching and personalization strategy flagged in the design notes.
