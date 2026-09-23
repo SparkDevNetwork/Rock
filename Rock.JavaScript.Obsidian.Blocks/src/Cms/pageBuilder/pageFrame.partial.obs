@@ -1,0 +1,426 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <iframe ref="frameElement"
+            class="page-frame"
+            :src="src"
+            title="Page preview"
+            @load="onFrameLoad"></iframe>
+</template>
+
+<style scoped>
+.page-frame {
+    display: block;
+    width: 100%;
+    height: 100%;
+    border: 0;
+}
+</style>
+
+<script setup lang="ts">
+    import { PropType, ref, watch } from "vue";
+    import { builderStyles, builderThemeVariables } from "./frameStyles.partial";
+    import { ModuleType } from "./moduleTypes.partial";
+    import {
+        ModuleTypeDragEndRequest,
+        ModuleTypeDragLeaveRequest,
+        ModuleTypeDragOverRequest,
+        ModuleTypeDragStartRequest,
+        ModuleTypeDropRequest
+    } from "./types.partial";
+
+    // #region Types
+
+    /** Where a dropped module will be placed. */
+    type DropTarget = {
+        /** The zone content element that will receive the module. */
+        containerElement: HTMLElement;
+
+        /** The existing child the module is placed before, or null to place it last. */
+        beforeElement: Element | null;
+    };
+
+    // #endregion Types
+
+    const props = defineProps({
+        /** The URL of the page to compose. */
+        src: {
+            type: String as PropType<string>,
+            required: true
+        },
+
+        dragStartRequest: {
+            type: Object as PropType<ModuleTypeDragStartRequest | null | undefined>,
+            required: true
+        },
+
+        dragOverRequest: {
+            type: Object as PropType<ModuleTypeDragOverRequest | null | undefined>,
+            required: true
+        },
+
+        dropRequest: {
+            type: Object as PropType<ModuleTypeDropRequest | null | undefined>,
+            required: true
+        },
+
+        dragLeaveRequest: {
+            type: Object as PropType<ModuleTypeDragLeaveRequest | null | undefined>,
+            required: true
+        },
+
+        dragEndRequest: {
+            type: Object as PropType<ModuleTypeDragEndRequest | null | undefined>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "moduleAdded", value: { moduleType: ModuleType; moduleElement: HTMLElement; }): void;
+    }>();
+
+    // #region Values
+
+    const zoneSelector = "[data-pagebuilder=\"true\"]";
+    const scrollTriggerDistance = 40;
+
+    const frameElement = ref<HTMLIFrameElement | undefined>();
+    const draggingModuleType = ref<ModuleType | null>(null);
+    const dropTarget = ref<DropTarget | null>(null);
+    const placeholderElement = ref<HTMLElement | null>(null);
+    const lastClientX = ref<number | null>(null);
+    const lastClientY = ref<number | null>(null);
+
+    // #endregion Values
+
+    // #region Event Handlers
+
+    /**
+     * Prepares the framed page for composing each time it loads, including after
+     * navigating within the frame.
+     */
+    function onFrameLoad(): void {
+        const frameDocument = getFrameDocument();
+
+        if (!frameDocument) {
+            return;
+        }
+
+        addBuilderStyles(frameDocument);
+        decorateZones(frameDocument);
+    }
+
+    function onDragStart(request: ModuleTypeDragStartRequest): void {
+        draggingModuleType.value = request.moduleType;
+        lastClientX.value = null;
+        lastClientY.value = null;
+    }
+
+    /**
+     * Moves the drop placeholder to follow the pointer.
+     *
+     * The parent fires this repeatedly even while the pointer is still, so
+     * unchanged coordinates are ignored unless the frame needs to scroll.
+     */
+    function onDragOver(request: ModuleTypeDragOverRequest): void {
+        const frameDocument = getFrameDocument();
+
+        if (!frameDocument || !frameElement.value || !draggingModuleType.value) {
+            return;
+        }
+
+        const frameHeight = frameElement.value.getBoundingClientRect().height;
+
+        if (request.clientY < scrollTriggerDistance) {
+            frameElement.value.contentWindow?.scrollBy({ top: -scrollTriggerDistance, behavior: "smooth" });
+        }
+        else if (request.clientY > frameHeight - scrollTriggerDistance) {
+            frameElement.value.contentWindow?.scrollBy({ top: scrollTriggerDistance, behavior: "smooth" });
+        }
+        else if (request.clientX === lastClientX.value && request.clientY === lastClientY.value) {
+            return;
+        }
+
+        lastClientX.value = request.clientX;
+        lastClientY.value = request.clientY;
+
+        const target = findDropTarget(frameDocument, request.clientX, request.clientY);
+
+        if (target) {
+            showDropTarget(frameDocument, target);
+        }
+        else {
+            clearDropTarget();
+        }
+    }
+
+    /**
+     * Places the module where it was released. The target is resolved again
+     * from the release point, because a fast drag can release somewhere the
+     * last move never reported.
+     */
+    function onDrop(request: ModuleTypeDropRequest): void {
+        const frameDocument = getFrameDocument();
+        const moduleType = draggingModuleType.value;
+
+        clearDropTarget();
+
+        if (!frameDocument || !moduleType) {
+            return;
+        }
+
+        const target = findDropTarget(frameDocument, request.clientX, request.clientY);
+
+        if (!target) {
+            return;
+        }
+
+        const canvasElement = createCanvasElement(frameDocument, moduleType);
+
+        target.containerElement.insertBefore(canvasElement, target.beforeElement);
+        updateEmptyState(frameDocument, target.containerElement);
+
+        const moduleElement = canvasElement.querySelector<HTMLElement>(".pagebuilder-module");
+
+        if (moduleElement) {
+            emit("moduleAdded", { moduleType, moduleElement });
+        }
+    }
+
+    function onDragEnd(): void {
+        clearDropTarget();
+        draggingModuleType.value = null;
+    }
+
+    // #endregion Event Handlers
+
+    // #region Functions
+
+    /**
+     * Gets the framed page's document, or null when it has not loaded or
+     * belongs to another origin.
+     */
+    function getFrameDocument(): Document | null {
+        try {
+            return frameElement.value?.contentDocument ?? null;
+        }
+        catch {
+            return null;
+        }
+    }
+
+    function addBuilderStyles(frameDocument: Document): void {
+        const builderStyle = getComputedStyle(frameElement.value ?? document.documentElement);
+        const variableDeclarations = Object.entries(builderThemeVariables)
+            .map(([builderVariable, rockVariable]) => `${builderVariable}: ${builderStyle.getPropertyValue(rockVariable)};`)
+            .join(" ");
+
+        const styleElement = frameDocument.createElement("style");
+        styleElement.textContent = `:root { ${variableDeclarations} }${builderStyles}`;
+        frameDocument.head.appendChild(styleElement);
+    }
+
+    /**
+     * Outlines and labels each builder-enabled zone and shows the empty state
+     * in any that have no content yet.
+     */
+    function decorateZones(frameDocument: Document): void {
+        frameDocument.querySelectorAll<HTMLElement>(zoneSelector).forEach(zoneElement => {
+            zoneElement.classList.add("pagebuilder-zone");
+
+            const chipElement = frameDocument.createElement("div");
+            chipElement.classList.add("pagebuilder-zone-chip");
+            chipElement.textContent = getZoneName(zoneElement);
+            zoneElement.prepend(chipElement);
+
+            const containerElement = getZoneContentElement(zoneElement);
+
+            if (containerElement) {
+                updateEmptyState(frameDocument, containerElement);
+            }
+        });
+    }
+
+    /**
+     * Gets the zone's display name. Rock only renders the name for viewers who
+     * can configure the page, so the zone's id is the fallback.
+     */
+    function getZoneName(zoneElement: HTMLElement): string {
+        const configuredName = zoneElement.querySelector(":scope > .zone-configuration .zone-configuration-bar > span")?.textContent?.trim();
+
+        if (configuredName) {
+            return configuredName;
+        }
+
+        const key = zoneElement.id.replace(/^zone-/, "");
+
+        return key.charAt(0).toUpperCase() + key.slice(1);
+    }
+
+    function getZoneContentElement(zoneElement: Element): HTMLElement | null {
+        return zoneElement.querySelector<HTMLElement>(":scope > .zone-content");
+    }
+
+    /**
+     * Gets the children of a zone's content that represent page content,
+     * leaving out the elements the builder adds.
+     */
+    function getContentChildren(containerElement: HTMLElement): Element[] {
+        return Array.from(containerElement.children)
+            .filter(child => !child.classList.contains("pagebuilder-placeholder") && !child.classList.contains("pagebuilder-zone-empty"));
+    }
+
+    /**
+     * Finds the zone and position a module would land in if dropped at the
+     * given point.
+     */
+    function findDropTarget(frameDocument: Document, clientX: number, clientY: number): DropTarget | null {
+        const zoneElement = frameDocument.elementFromPoint(clientX, clientY)?.closest(zoneSelector);
+        const containerElement = zoneElement ? getZoneContentElement(zoneElement) : null;
+
+        if (!containerElement) {
+            return null;
+        }
+
+        const beforeElement = getContentChildren(containerElement).find(child => {
+            const rect = child.getBoundingClientRect();
+
+            return clientY < rect.top + (rect.height / 2);
+        }) ?? null;
+
+        return { containerElement, beforeElement };
+    }
+
+    /**
+     * Shows where the module will land. An empty zone is highlighted as a whole,
+     * because inserting a placeholder would collapse its empty state and move
+     * the zone out from under the pointer.
+     */
+    function showDropTarget(frameDocument: Document, target: DropTarget): void {
+        clearDropTarget();
+        dropTarget.value = target;
+
+        if (getContentChildren(target.containerElement).length === 0) {
+            target.containerElement.parentElement?.classList.add("pagebuilder-zone-over");
+            return;
+        }
+
+        if (!placeholderElement.value || placeholderElement.value.ownerDocument !== frameDocument) {
+            placeholderElement.value = createPlaceholderElement(frameDocument);
+        }
+
+        target.containerElement.insertBefore(placeholderElement.value, target.beforeElement);
+    }
+
+    function clearDropTarget(): void {
+        placeholderElement.value?.remove();
+        dropTarget.value?.containerElement.parentElement?.classList.remove("pagebuilder-zone-over");
+        dropTarget.value = null;
+    }
+
+    /**
+     * Shows the empty state in a zone with no content, or removes it once the
+     * zone has some.
+     */
+    function updateEmptyState(frameDocument: Document, containerElement: HTMLElement): void {
+        const emptyStateElement = containerElement.querySelector(":scope > .pagebuilder-zone-empty");
+        const hasContent = getContentChildren(containerElement).length > 0;
+
+        if (hasContent) {
+            emptyStateElement?.remove();
+        }
+        else if (!emptyStateElement) {
+            containerElement.appendChild(createEmptyStateElement(frameDocument));
+        }
+    }
+
+    function createEmptyStateElement(frameDocument: Document): HTMLElement {
+        const emptyStateElement = frameDocument.createElement("div");
+        emptyStateElement.classList.add("pagebuilder-zone-empty");
+
+        const iconElement = frameDocument.createElement("div");
+        iconElement.classList.add("pagebuilder-zone-empty-icon");
+        iconElement.textContent = "+";
+
+        const titleElement = frameDocument.createElement("div");
+        titleElement.classList.add("pagebuilder-zone-empty-title");
+        titleElement.textContent = "Drop a Module to Begin";
+
+        const textElement = frameDocument.createElement("div");
+        textElement.classList.add("pagebuilder-zone-empty-text");
+        textElement.textContent = "Drag and drop modules from the left sidebar to begin.";
+
+        emptyStateElement.append(iconElement, titleElement, textElement);
+
+        return emptyStateElement;
+    }
+
+    function createPlaceholderElement(frameDocument: Document): HTMLElement {
+        const placeholder = frameDocument.createElement("div");
+        placeholder.classList.add("pagebuilder-placeholder");
+
+        const lineElement = frameDocument.createElement("div");
+        lineElement.classList.add("pagebuilder-placeholder-line");
+
+        const pillElement = frameDocument.createElement("div");
+        pillElement.classList.add("pagebuilder-placeholder-pill");
+        pillElement.textContent = "Drop it here";
+
+        placeholder.append(lineElement, pillElement, lineElement.cloneNode());
+
+        return placeholder;
+    }
+
+    /**
+     * Creates the markup a Canvas renders around a single module.
+     */
+    function createCanvasElement(frameDocument: Document, moduleType: ModuleType): HTMLElement {
+        const canvasElement = frameDocument.createElement("div");
+        canvasElement.classList.add("pagebuilder-canvas");
+        canvasElement.setAttribute("data-pagebuilder-canvas", "true");
+
+        const moduleElement = frameDocument.createElement("div");
+        moduleElement.classList.add("pagebuilder-module");
+        moduleElement.setAttribute("data-pagebuilder-module-type", moduleType.key);
+        moduleElement.innerHTML = moduleType.html;
+
+        canvasElement.appendChild(moduleElement);
+
+        return canvasElement;
+    }
+
+    // #endregion Functions
+
+    // #region Watchers
+
+    watch(() => props.dragStartRequest, request => {
+        if (request) {
+            onDragStart(request);
+        }
+    });
+
+    watch(() => props.dragOverRequest, request => {
+        if (request) {
+            onDragOver(request);
+        }
+    });
+
+    watch(() => props.dropRequest, request => {
+        if (request) {
+            onDrop(request);
+        }
+    });
+
+    watch(() => props.dragLeaveRequest, request => {
+        if (request) {
+            clearDropTarget();
+        }
+    });
+
+    watch(() => props.dragEndRequest, request => {
+        if (request) {
+            onDragEnd();
+        }
+    });
+
+    // #endregion Watchers
+</script>

@@ -11,7 +11,8 @@
             <div class="page-builder-module-types">
                 <div v-for="moduleType in moduleTypes"
                      :key="moduleType.key"
-                     class="page-builder-module-type">
+                     class="page-builder-module-type"
+                     @pointerdown="onModuleTypeDragStart($event, moduleType)">
                     <i :class="moduleType.iconCssClass"></i>
                     <span>{{ moduleType.name }}</span>
                 </div>
@@ -19,9 +20,18 @@
         </aside>
 
         <div class="page-builder-stage">
-            <iframe class="page-builder-frame"
-                    :src="targetPageUrl"
-                    title="Page preview"></iframe>
+            <div ref="frameContainerElement" class="page-builder-frame-container">
+                <PageFrame :src="targetPageUrl"
+                           :dragStartRequest="dragStartRequest"
+                           :dragOverRequest="dragOverRequest"
+                           :dropRequest="dropRequest"
+                           :dragLeaveRequest="dragLeaveRequest"
+                           :dragEndRequest="dragEndRequest" />
+
+                <Overlay :isVisible="isOverlayShown"
+                         backgroundColor="transparent"
+                         targetSelector=".page-builder-frame-container" />
+            </div>
         </div>
     </div>
 </template>
@@ -60,6 +70,8 @@
     text-align: center;
     cursor: grab;
     user-select: none;
+    /* A vertical swipe scrolls the sidebar, so a drag toward the page can start from any other direction. */
+    touch-action: pan-y;
     border: 1px solid var(--color-interface-soft);
     border-radius: var(--border-radius-base);
 }
@@ -68,25 +80,90 @@
     font-size: 20px;
 }
 
+.page-builder-module-type:active {
+    cursor: grabbing;
+    border-color: var(--color-primary);
+}
+
+.page-builder-drag-mirror {
+    position: absolute;
+    z-index: 1060;
+    pointer-events: none;
+    cursor: grabbing;
+    background-color: var(--color-interface-softest);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.25), 0 30px 40px rgba(0, 0, 0, 0.1);
+    transform: translate(-50%, -50%);
+    transition: transform 0.1s ease-in-out;
+}
+
+.page-builder-drag-mirror.is-lifted {
+    transform: translate(-50%, -50%) rotate(5deg);
+}
+
 .page-builder-stage {
     flex: 1 1 auto;
+    min-width: 0;
+    min-height: 0;
     padding: var(--spacing-large);
     background-color: var(--color-interface-softer);
 }
 
-.page-builder-frame {
-    display: block;
-    width: 100%;
+.page-builder-frame-container {
+    /* Relatively position so the overlay can cover the frame exactly. */
+    position: relative;
     height: 100%;
-    border: 0;
+}
+
+@media (max-width: 767px) {
+    .page-builder {
+        flex-direction: column;
+    }
+
+    .page-builder-sidebar {
+        flex: 0 0 auto;
+        padding: var(--spacing-small);
+        overflow-x: auto;
+        overflow-y: hidden;
+        border-right: 0;
+        border-bottom: 1px solid var(--color-interface-soft);
+    }
+
+    .page-builder-sidebar-title {
+        margin-bottom: var(--spacing-xsmall);
+    }
+
+    .page-builder-module-types {
+        grid-template-columns: none;
+        grid-auto-flow: column;
+        grid-auto-columns: 72px;
+    }
+
+    .page-builder-module-type {
+        /* The strip scrolls sideways, so a drag down into the page starts from a vertical pull. */
+        touch-action: pan-x;
+    }
+
+    .page-builder-stage {
+        padding: var(--spacing-small);
+    }
 }
 </style>
 
 <script setup lang="ts">
+    import { nextTick, ref } from "vue";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import Overlay from "@Obsidian/Controls/Internal/overlay.obs";
     import { onConfigurationValuesChanged, useConfigurationValues, useReloadBlock } from "@Obsidian/Utility/block";
     import { PageBuilderInitializationBox } from "@Obsidian/ViewModels/Blocks/Cms/PageBuilder/pageBuilderInitializationBox";
-    import { moduleTypes } from "./pageBuilder/moduleTypes.partial";
+    import PageFrame from "./pageBuilder/pageFrame.partial.obs";
+    import { ModuleType, moduleTypes } from "./pageBuilder/moduleTypes.partial";
+    import {
+        ModuleTypeDragEndRequest,
+        ModuleTypeDragLeaveRequest,
+        ModuleTypeDragOverRequest,
+        ModuleTypeDragStartRequest,
+        ModuleTypeDropRequest
+    } from "./pageBuilder/types.partial";
 
     const config = useConfigurationValues<PageBuilderInitializationBox>();
 
@@ -95,7 +172,163 @@
     const errorMessage = config.errorMessage ?? "";
     const targetPageUrl = config.targetPageUrl ?? "";
 
+    const frameContainerElement = ref<HTMLElement | undefined>();
+    const isOverlayShown = ref(false);
+    const dragStartRequest = ref<ModuleTypeDragStartRequest | null>(null);
+    const dragOverRequest = ref<ModuleTypeDragOverRequest | null>(null);
+    const dropRequest = ref<ModuleTypeDropRequest | null>(null);
+    const dragLeaveRequest = ref<ModuleTypeDragLeaveRequest | null>(null);
+    const dragEndRequest = ref<ModuleTypeDragEndRequest | null>(null);
+
     // #endregion Values
+
+    // #region Event Handlers
+
+    /*
+        09/23/26 - JMH
+
+        Pointer events do not cross into the iframe, so the page frame never sees the drag directly.
+        Instead the pointer is captured by the tile being dragged, the parent page translates each
+        move into frame coordinates, and each step is handed to the frame as a request. The frame
+        resolves the drop target from its own DOM. A transparent overlay also covers the frame for
+        the duration so the framed page cannot react to the pointer.
+
+        Pointer events are used rather than native drag and drop for two reasons. The browser's
+        native drag image cannot be styled, so it cannot show the tilted copy of the tile. And a
+        touch drag keeps sending its events to the element where it started, so hit testing has to
+        run from the captured pointer rather than from events on the overlay.
+
+        Reason: A drag in the parent page cannot target elements inside an iframe, with a mouse or with touch.
+    */
+    function onModuleTypeDragStart(event: PointerEvent, moduleType: ModuleType): void {
+        // Only the primary button of the first pointer starts a drag.
+        if (!event.isPrimary || event.button !== 0) {
+            return;
+        }
+
+        event.preventDefault();
+
+        const tileElement = event.currentTarget as HTMLElement;
+        const pointerId = event.pointerId;
+        const dragMirrorElement = createDragMirror(tileElement, event);
+        const previousCursor = document.body.style.cursor;
+        let isOverFrame = false;
+
+        try {
+            tileElement.setPointerCapture(pointerId);
+        }
+        catch {
+            // Intentionally ignored: capture fails if the pointer is already gone, and the
+            // overlay still keeps mouse events out of the frame without it.
+        }
+
+        document.body.style.cursor = "grabbing";
+
+        function onPointerMove(moveEvent: PointerEvent): void {
+            if (moveEvent.pointerId !== pointerId) {
+                return;
+            }
+
+            dragMirrorElement.style.left = `${moveEvent.pageX}px`;
+            dragMirrorElement.style.top = `${moveEvent.pageY}px`;
+
+            const framePoint = getFramePoint(moveEvent);
+
+            if (framePoint) {
+                isOverFrame = true;
+                dragOverRequest.value = framePoint;
+            }
+            else if (isOverFrame) {
+                isOverFrame = false;
+                dragLeaveRequest.value = { type: "MODULE_TYPE_DRAG_LEAVE_REQUEST" };
+            }
+        }
+
+        async function onPointerUp(upEvent: PointerEvent): Promise<void> {
+            if (upEvent.pointerId !== pointerId) {
+                return;
+            }
+
+            window.removeEventListener("pointermove", onPointerMove);
+            window.removeEventListener("pointerup", onPointerUp);
+            window.removeEventListener("pointercancel", onPointerUp);
+
+            dragMirrorElement.remove();
+            document.body.style.cursor = previousCursor;
+            isOverlayShown.value = false;
+
+            // A cancelled pointer, such as a touch the browser turned into a scroll, never drops.
+            const dropPoint = upEvent.type === "pointerup" ? getFramePoint(upEvent) : null;
+
+            if (dropPoint) {
+                dropRequest.value = dropPoint;
+            }
+
+            // Waiting a tick guarantees the frame handles the drop before this ends the drag.
+            await nextTick();
+            dragEndRequest.value = { type: "MODULE_TYPE_DRAG_END_REQUEST" };
+        }
+
+        window.addEventListener("pointermove", onPointerMove);
+        window.addEventListener("pointerup", onPointerUp);
+        window.addEventListener("pointercancel", onPointerUp);
+
+        isOverlayShown.value = true;
+        dragStartRequest.value = { moduleType };
+    }
+
+    // #endregion Event Handlers
+
+    // #region Functions
+
+    /**
+     * Creates the copy of a module type tile that follows the pointer while
+     * dragging, centered on the pointer.
+     */
+    function createDragMirror(tileElement: HTMLElement, event: PointerEvent): HTMLElement {
+        const tileRect = tileElement.getBoundingClientRect();
+        const dragMirrorElement = tileElement.cloneNode(true) as HTMLElement;
+
+        dragMirrorElement.classList.add("page-builder-drag-mirror");
+        dragMirrorElement.style.width = `${tileRect.width}px`;
+        dragMirrorElement.style.height = `${tileRect.height}px`;
+        dragMirrorElement.style.left = `${event.pageX}px`;
+        dragMirrorElement.style.top = `${event.pageY}px`;
+
+        document.body.appendChild(dragMirrorElement);
+
+        // Applied after the copy is in the page so the tilt animates.
+        setTimeout(() => dragMirrorElement.classList.add("is-lifted"), 0);
+
+        return dragMirrorElement;
+    }
+
+    /**
+     * Converts a pointer position to coordinates relative to the page frame,
+     * or returns null when the pointer is outside it.
+     */
+    function getFramePoint(event: PointerEvent): ModuleTypeDragOverRequest | null {
+        if (!frameContainerElement.value) {
+            return null;
+        }
+
+        const frameRect = frameContainerElement.value.getBoundingClientRect();
+        const isInsideFrame = event.clientX >= frameRect.left
+            && event.clientX <= frameRect.right
+            && event.clientY >= frameRect.top
+            && event.clientY <= frameRect.bottom;
+
+        if (!isInsideFrame) {
+            return null;
+        }
+
+        return {
+            clientX: event.clientX - frameRect.left,
+            clientY: event.clientY - frameRect.top
+        };
+    }
+
+    // #endregion Functions
 
     onConfigurationValuesChanged(useReloadBlock());
 </script>
