@@ -169,8 +169,22 @@ export function gateMessage(gate: string | null): string {
  *
  * @returns The church token, or the reason there is none.
  */
-export function churchTokenFromAction(_result: MintActionResult): ChurchTokenResult {
-    throw new Error("not implemented");
+export function churchTokenFromAction(result: MintActionResult): ChurchTokenResult {
+    if (result.isSuccess && result.data) {
+        return { gate: result.data.gate ?? "gate_unavailable", churchToken: result.data.churchToken ?? null };
+    }
+
+    // Rock answers 401 when the person's Rock sign-in has ended.
+    if (result.statusCode === 401) {
+        return { gate: "sign_in_required", churchToken: null };
+    }
+
+    // No answer, too many requests, or a server fault may pass; anything else is Rock refusing.
+    const isPassing = result.statusCode === 0 || result.statusCode === 429 || result.statusCode >= 500;
+
+    return isPassing
+        ? { gate: "gate_unavailable", churchToken: null, isUnreachable: true }
+        : { gate: "gate_unavailable", churchToken: null };
 }
 
 /**
@@ -204,20 +218,11 @@ export function createChatShell(options: ShellOptions): ChatShell {
             const result = await options.mintChurchToken();
             options.mark("chat:mint");
 
-            if (!result.isSuccess || !result.data) {
-                const failure = classifyActionFailure(result.statusCode);
-
-                // A Rock sign-in that has ended is a refusal; any other failure only means Rock
-                // could not be asked this time.
-                if (failure.code === "door.sign_in_required") {
-                    report(failure);
-                    return { gate: "sign_in_required", churchToken: null };
-                }
-
-                return { gate: "gate_unavailable", churchToken: null, isUnreachable: true };
+            if (!result.isSuccess && !churchTokenFromAction(result).isUnreachable) {
+                report(classifyActionFailure(result.statusCode));
             }
 
-            return { gate: result.data.gate ?? "gate_unavailable", churchToken: result.data.churchToken ?? null };
+            return churchTokenFromAction(result);
         },
         exchange: (churchToken: string) => exchange(churchToken),
         pushTokenToConnection: async (): Promise<void> => {

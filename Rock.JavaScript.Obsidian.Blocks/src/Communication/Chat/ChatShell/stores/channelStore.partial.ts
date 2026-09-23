@@ -122,7 +122,9 @@ export function createChannelStore(dependencies: ChannelStoreDependencies): Chan
             if (result.last_message_id !== null) {
                 row.last_message_id = result.last_message_id;
             }
-            row.is_unread = isUnreadAfterSave(result);
+            // A save that comes back after the person has returned to the channel leaves it read:
+            // they are looking at it, and their next save settles it.
+            row.is_unread = channelId !== store.activeChannelId && isUnreadAfterSave(result);
         }
     });
 }

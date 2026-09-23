@@ -117,11 +117,14 @@ export function createSession(dependencies: SessionDependencies): ChatSession {
     let token: string | null = null;
     let timer: unknown = null;
     let lifeSeconds = 0;
+    let expiresAt = 0;
+    let refreshing: Promise<boolean> | null = null;
+    const now = dependencies.now ?? ((): number => Date.now());
 
     /**
      * Mints and exchanges, reminting once when the platform calls the church token stale. A gate
-     * that refused is final; a Rock that could not be asked or an exchange that did not complete
-     * is not, and says nothing about the token already held.
+     * that refused, or a platform that refused the church token, is final; a Rock or a platform
+     * that could not answer this time is not, and says nothing about the token already held.
      */
     async function acquire(): Promise<"ok" | "refused" | "unavailable"> {
         for (let attempt = 0; attempt < 2; attempt++) {
@@ -144,6 +147,7 @@ export function createSession(dependencies: SessionDependencies): ChatSession {
             if (exchanged.ok) {
                 token = exchanged.accessToken;
                 lifeSeconds = exchanged.expiresInSeconds;
+                expiresAt = now() + exchanged.expiresInSeconds * 1000;
                 state.errorCode = null;
                 schedule(exchanged.expiresInSeconds);
                 return "ok";
@@ -152,19 +156,25 @@ export function createSession(dependencies: SessionDependencies): ChatSession {
             state.errorCode = exchanged.code;
 
             // A stale church token only means Rock signed it too long ago; a fresh one is
-            // worth one more try at once, and anything else waits for the next attempt.
-            if (exchanged.code !== "auth.stale_token") {
-                break;
+            // worth one more try at once.
+            if (exchanged.code === "auth.stale_token") {
+                continue;
             }
+
+            // No answer, too many requests, or a server fault may pass; any other refusal is
+            // the platform saying no to this church token, and asking again would only repeat it.
+            const isPassing = exchanged.status === 0 || exchanged.status === 429 || exchanged.status >= 500;
+            return isPassing ? "unavailable" : "refused";
         }
 
         return "unavailable";
     }
 
     /**
-     * Mints and exchanges, and settles what the session holds by the outcome: a refused gate
-     * ends the session; a failure that is not a refusal keeps a token that is still held and
-     * asks again soon, since the token has at least a tenth of its life left when a refresh runs.
+     * Mints and exchanges, and settles what the session holds by the outcome: a refusal ends the
+     * session; a failure that may pass keeps a token that is still alive and asks again soon,
+     * since the token has at least a tenth of its life left when a refresh runs. Once the token
+     * has expired there is nothing left to keep.
      */
     async function renew(): Promise<boolean> {
         const outcome = await acquire();
@@ -173,7 +183,7 @@ export function createSession(dependencies: SessionDependencies): ChatSession {
             return true;
         }
 
-        if (outcome === "refused" || token === null) {
+        if (outcome === "refused" || token === null || now() >= expiresAt) {
             token = null;
             clear();
             return false;
@@ -190,19 +200,13 @@ export function createSession(dependencies: SessionDependencies): ChatSession {
     function schedule(expiresInSeconds: number): void {
         clear();
         const fraction = refreshWindowStart + (refreshWindowEnd - refreshWindowStart) * dependencies.random();
-        timer = dependencies.setTimer(() => {
-            timer = null;
-            void refresh();
-        }, expiresInSeconds * 1000 * fraction);
+        timer = dependencies.setTimer(() => void refresh(), expiresInSeconds * 1000 * fraction);
     }
 
     /** Schedules another refresh after a failed one, a twentieth of the token's life later. */
     function retryLater(): void {
         clear();
-        timer = dependencies.setTimer(() => {
-            timer = null;
-            void refresh();
-        }, lifeSeconds * 1000 * refreshRetryFraction);
+        timer = dependencies.setTimer(() => void refresh(), lifeSeconds * 1000 * refreshRetryFraction);
     }
 
     /** Stops the pending refresh, if there is one. */
@@ -213,14 +217,22 @@ export function createSession(dependencies: SessionDependencies): ChatSession {
         }
     }
 
-    /** Mints and exchanges again and hands the new token to the open connection. */
-    async function refresh(): Promise<boolean> {
-        if (!await renew()) {
-            return false;
-        }
+    /**
+     * Mints and exchanges again and hands the new token to the open connection. A refresh asked
+     * for while one is running shares it, so the timer and an expired call never race each other
+     * to decide what the session holds.
+     */
+    function refresh(): Promise<boolean> {
+        refreshing ??= (async (): Promise<boolean> => {
+            if (!await renew()) {
+                return false;
+            }
 
-        await dependencies.pushTokenToConnection();
-        return true;
+            await dependencies.pushTokenToConnection();
+            return true;
+        })().finally(() => refreshing = null);
+
+        return refreshing;
     }
 
     return {
