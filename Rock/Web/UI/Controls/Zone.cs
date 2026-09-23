@@ -68,6 +68,24 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets whether the Page Builder may place content in this zone.
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if the zone opts in to the Page Builder; otherwise <c>false</c>. The default is <c>false</c>.
+        /// </value>
+        public bool EnablePageBuilder
+        {
+            get
+            {
+                return ViewState["EnablePageBuilder"] as bool? ?? false;
+            }
+            set
+            {
+                ViewState["EnablePageBuilder"] = value;
+            }
+        }
+
+        /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init"/> event.
         /// </summary>
         /// <param name="e">An <see cref="T:System.EventArgs"/> object that contains the event data.</param>

@@ -3655,6 +3655,21 @@ Sys.Application.add_load(function () {
                 zoneWrapper.ClientIDMode = System.Web.UI.ClientIDMode.Static;
                 zoneWrapper.Attributes.Add( "class", ( "zone-instance" + ( canConfigPage ? " can-configure " : " " ) + control.CssClass ).Trim() );
 
+                /*
+                    09/22/26 - JMH
+
+                    The Page Builder renders the page it is editing inside an iframe. Native drag events do not
+                    cross into a nested browsing context, so the parent window hit-tests the frame's DOM directly
+                    to resolve drop targets. That only works if an opted-in zone is identifiable from the markup,
+                    which is what this attribute provides.
+
+                    Reason: Lets the Page Builder find its drop targets without a round trip to the server.
+                */
+                if ( control.EnablePageBuilder )
+                {
+                    zoneWrapper.Attributes.Add( "data-pagebuilder", "true" );
+                }
+
                 if ( canConfigPage )
                 {
                     // Zone content configuration widget
