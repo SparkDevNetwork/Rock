@@ -185,6 +185,11 @@ describe("createReadTracker", () => {
         const t = createReadTracker({
             save: (channelId, messageId) => {
                 saves.push(`${channelId}:${messageId}`);
+
+                // Only the save made on leaving is held in flight; later ones answer at once.
+                if (saves.length > 1) {
+                    return Promise.resolve({ read_cursor: messageId, last_message_id: messageId });
+                }
                 return new Promise(resolve => finish = () => resolve({ read_cursor: messageId, last_message_id: messageId }));
             },
             onSaved: () => undefined
