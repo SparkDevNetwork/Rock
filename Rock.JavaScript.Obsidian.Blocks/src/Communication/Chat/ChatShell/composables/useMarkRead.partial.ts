@@ -119,10 +119,24 @@ export function createReadTracker(dependencies: ReadTrackerDependencies): ReadTr
         flush,
 
         leave: async (): Promise<void> => {
-            await flush();
+            const channelId = activeChannelId;
+            const messageId = newestSeen;
+            const saved = lastSaved;
+
+            // Let go at once, so a channel opened while this save is in flight is tracked from
+            // its own position and nothing seen in it is taken for the channel left.
             activeChannelId = null;
             newestSeen = null;
             lastSaved = null;
+
+            if (channelId === null || messageId === null || (saved !== null && messageId <= saved)) {
+                return;
+            }
+
+            const result = await dependencies.save(channelId, messageId);
+            if (result) {
+                dependencies.onSaved(channelId, result);
+            }
         },
 
         attach: (targets: PageEventTargets): (() => void) => {

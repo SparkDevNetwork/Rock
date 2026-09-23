@@ -160,7 +160,9 @@ export async function startPageLoad(dependencies: PageLoadDependencies): Promise
             return known;
         }
 
-        if (outcome === "failed") {
+        // A failure is shown where it happened; a channel the person has already moved away
+        // from means they chose one themselves, and the page load has nothing more to open.
+        if (outcome !== "refused") {
             return null;
         }
     }
@@ -186,7 +188,7 @@ export async function startPageLoad(dependencies: PageLoadDependencies): Promise
             return row.channel_id;
         }
 
-        if (outcome === "failed") {
+        if (outcome !== "refused") {
             return null;
         }
     }

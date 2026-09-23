@@ -30,6 +30,7 @@ import { createSender, Sender } from "./composables/useSend.partial";
 import { ChatSession, ChurchTokenResult, createSession, ExchangeResult } from "./composables/useSession.partial";
 import {
     openChannel,
+    OpenOutcome,
     readRememberedChannel,
     rememberedChannelKey,
     startPageLoad,
@@ -298,10 +299,21 @@ export function createChatShell(options: ShellOptions): ChatShell {
 
     const storageKey = rememberedChannelKey(tenantId, personAliasGuid);
 
-    /** Opens a channel: saves the one being left, then joins and fetches together. */
-    async function open(channelId: string): Promise<"opened" | "refused" | "failed"> {
+    /** Counts opens, so an open that a later one has replaced stops touching anything. */
+    let openCount = 0;
+
+    /**
+     * Opens a channel: lets go of the one being left and saves its position without waiting,
+     * then joins and fetches together. A person can open channels faster than the platform
+     * answers; whatever an earlier open was waiting on, the channel chosen last is the one on
+     * screen, joined, tracked and remembered.
+     */
+    async function open(channelId: string): Promise<OpenOutcome> {
+        const thisOpen = ++openCount;
+        const isCurrent = (): boolean => thisOpen === openCount;
+
         if (state.activeChannelId && state.activeChannelId !== channelId) {
-            await tracker.leave();
+            void tracker.leave();
         }
 
         state.activeChannelId = channelId;
@@ -311,14 +323,24 @@ export function createChatShell(options: ShellOptions): ChatShell {
             join: id => hub?.openChannel(id),
             loadNewest: async id => {
                 await timelines.loadNewest(id);
-                options.mark("chat:history");
-                tracker.open(id, timelines.state(id).readCursor);
+                if (isCurrent()) {
+                    options.mark("chat:history");
+                    tracker.open(id, timelines.state(id).readCursor);
+                }
             },
             isRefusal: error => classifyPlatformError(error).severity === "permission",
-            remember: id => writeRememberedChannel(options.storage, storageKey, id)
+            remember: id => {
+                if (isCurrent()) {
+                    writeRememberedChannel(options.storage, storageKey, id);
+                }
+            }
         }, channelId);
 
-        if (outcome !== "opened" && state.activeChannelId === channelId) {
+        if (!isCurrent()) {
+            return "superseded";
+        }
+
+        if (outcome !== "opened") {
             state.activeChannelId = null;
             channels.setActive(null);
         }
