@@ -164,6 +164,9 @@ namespace Rock.Blocks.Cms
                 return ActionBadRequest( "The Canvas block type has not been registered." );
             }
 
+            // Block type attributes are otherwise created when a page first renders a block of that type, and the new block needs its Module Instance attribute now.
+            BlockTypeService.VerifyBlockTypeInstanceProperties( new[] { canvasBlockType.Id } );
+
             var blockService = new BlockService( RockContext );
             var block = new Block
             {
