@@ -24,11 +24,7 @@
         </Panel>
     </div>
 </template>
-<style scoped>
-.tithing-overview :deep(.panel-heading) {
-    background-color: var(--theme-white)
-}
-</style>
+
 <script setup lang="ts">
     import { computed, onMounted, ref, shallowRef } from "vue";
     import { useInvokeBlockAction } from "@Obsidian/Utility/block";
