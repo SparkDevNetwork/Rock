@@ -96,6 +96,88 @@ export const refreshWindowEnd = 0.9;
  *
  * @returns The session.
  */
-export function createSession(_dependencies: SessionDependencies): ChatSession {
-    throw new Error("not implemented");
+export function createSession(dependencies: SessionDependencies): ChatSession {
+    const state: SessionState = { gate: null, errorCode: null };
+    let token: string | null = null;
+    let timer: unknown = null;
+
+    /** Mints and exchanges, reminting once when the platform calls the church token stale. */
+    async function acquire(): Promise<boolean> {
+        for (let attempt = 0; attempt < 2; attempt++) {
+            const minted = await dependencies.mintChurchToken();
+            state.gate = minted.gate;
+
+            if (minted.gate !== "ok" || !minted.churchToken) {
+                token = null;
+                return false;
+            }
+
+            const exchanged = await dependencies.exchange(minted.churchToken);
+            if (exchanged.ok) {
+                token = exchanged.accessToken;
+                state.errorCode = null;
+                schedule(exchanged.expiresInSeconds);
+                return true;
+            }
+
+            state.errorCode = exchanged.code;
+
+            // A stale church token only means Rock signed it too long ago; a fresh one is
+            // worth one more try, and anything else is not.
+            if (exchanged.code !== "auth.stale_token") {
+                break;
+            }
+        }
+
+        token = null;
+        return false;
+    }
+
+    /**
+     * Schedules the next refresh at a random point in the permitted window of the token's
+     * life, so that everyone who opened chat at the same moment does not refresh together.
+     */
+    function schedule(expiresInSeconds: number): void {
+        clear();
+        const fraction = refreshWindowStart + (refreshWindowEnd - refreshWindowStart) * dependencies.random();
+        timer = dependencies.setTimer(() => {
+            timer = null;
+            void refresh();
+        }, expiresInSeconds * 1000 * fraction);
+    }
+
+    /** Stops the pending refresh, if there is one. */
+    function clear(): void {
+        if (timer !== null) {
+            dependencies.clearTimer(timer);
+            timer = null;
+        }
+    }
+
+    /** Mints and exchanges again and hands the new token to the open connection. */
+    async function refresh(): Promise<boolean> {
+        if (!await acquire()) {
+            clear();
+            return false;
+        }
+
+        await dependencies.pushTokenToConnection();
+        return true;
+    }
+
+    return {
+        start: acquire,
+        currentToken: () => token,
+        refresh,
+        withFreshToken: async <T>(call: () => Promise<T>, isExpired: (result: T) => boolean): Promise<T> => {
+            const result = await call();
+            if (!isExpired(result) || !await refresh()) {
+                return result;
+            }
+
+            return call();
+        },
+        stop: clear,
+        state
+    };
 }
