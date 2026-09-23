@@ -885,6 +885,8 @@ namespace Rock.Blocks.Finance
                     // Referenced (not constructed) so it is materialized for GridAttributeLoader.
                     // Only its scalars/attributes are read later — never its navigations.
                     TransactionDetail = d,
+                    // Materialized so custom column Lava can read transaction scalars without a lazy load.
+                    Transaction = d.Transaction,
                     Id = d.Id,
                     TransactionId = d.TransactionId,
                     Person = d.Transaction.AuthorizedPersonAlias.Person,
@@ -1147,8 +1149,53 @@ namespace Rock.Blocks.Finance
         /// <inheritdoc/>
         protected override GridBuilder<TransactionListRow> GetGridBuilder()
         {
+            // Custom column Lava can only read anonymous types, entities, or LavaDataObjects, so project the row's scalars for the Row merge field.
+            var blockOptions = new GridBuilderGridOptions<TransactionListRow>
+            {
+                LavaObject = row => new
+                {
+                    row.Id,
+                    row.TransactionId,
+                    row.AuthorizedPersonAliasId,
+                    AuthorizedPersonNickName = row.Person?.NickName ?? string.Empty,
+                    AuthorizedPersonLastName = row.Person?.LastName ?? string.Empty,
+                    row.BatchId,
+                    row.Transaction.ScheduledTransactionId,
+                    row.TransactionDateTime,
+                    row.FutureProcessingDateTime,
+                    row.DaysSinceLastTransaction,
+                    row.TotalAmount,
+                    row.CurrencyTypeValueId,
+                    row.CreditCardTypeValueId,
+                    row.ForeignCurrencyCodeValueId,
+                    row.SourceTypeValueId,
+                    row.TransactionTypeValueId,
+                    row.TransactionCode,
+                    row.ForeignKey,
+                    Summary = GetSummaryText( row ),
+                    row.Status,
+                    row.Transaction.StatusMessage,
+                    row.SettledDate,
+                    row.SettledGroupId,
+                    row.Transaction.FinancialGatewayId,
+                    row.Transaction.IsReconciled,
+                    row.Transaction.IsSettled,
+                    row.Transaction.NonCashAssetTypeValueId,
+                    row.Transaction.ProcessedDateTime,
+                    row.Transaction.ShowAsAnonymous,
+                    FinancialPaymentDetail = row.Transaction.FinancialPaymentDetailId.HasValue
+                        ? new
+                        {
+                            Id = row.Transaction.FinancialPaymentDetailId.Value,
+                            row.CurrencyTypeValueId,
+                            row.CreditCardTypeValueId
+                        }
+                        : null
+                }
+            };
+
             var gridBuilder = new GridBuilder<TransactionListRow>()
-                .WithBlock( this )
+                .WithBlock( this, blockOptions )
                 .AddTextField( "idKey", a => IdHasher.Instance.GetHash( a.Id ) )
                 .AddTextField( "transactionIdKey", a => IdHasher.Instance.GetHash( a.TransactionId ) )
                 .AddPersonField( "person", a => a.Person )
@@ -1697,8 +1744,9 @@ namespace Rock.Blocks.Finance
         public class TransactionListRow
         {
             /// <summary>
-            /// The financial transaction, carried only so its attributes can be loaded
-            /// (Transactions view mode). Do not read its navigation properties in memory.
+            /// The financial transaction, carried so its attributes can be loaded (Transactions
+            /// view mode) and so custom column Lava can read its scalars (both view modes).
+            /// Do not read its navigation properties in memory.
             /// </summary>
             public FinancialTransaction Transaction { get; set; }
 
