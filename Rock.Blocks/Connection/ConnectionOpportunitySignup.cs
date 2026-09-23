@@ -171,8 +171,6 @@ namespace Rock.Blocks.Connection
 
         private static class PageParameterKey
         {
-            public const string PersonId = "PersonId";
-            public const string PersonGuid = "PersonGuid";
             public const string OpportunityId = "OpportunityId";
         }
 
@@ -203,7 +201,7 @@ namespace Rock.Blocks.Connection
                 return box;
             }
 
-            Person person = GetPerson();
+            Person person = GetCurrentPerson();
 
             if ( person != null )
             {
@@ -355,27 +353,6 @@ namespace Rock.Blocks.Connection
         }
 
         /// <summary>
-        /// Gets the person.
-        /// </summary>
-        /// <returns>The matching Person or null.</returns>
-        private Person GetPerson()
-        {
-            var personGuid = PageParameter( PageParameterKey.PersonGuid ).AsGuidOrNull();
-            if ( personGuid.HasValue )
-            {
-                return new PersonService( this.RockContext ).Get( personGuid.Value );
-            }
-
-            var personId = PageParameter( PageParameterKey.PersonId );
-            if ( !personId.IsNullOrWhiteSpace() )
-            {
-                return new PersonService( this.RockContext ).Get( personId, !PageCache.Layout.Site.DisablePredictableIds );
-            }
-
-            return GetCurrentPerson();
-        }
-
-        /// <summary>
         /// Gets the connection opportunity based on block attribute or page parameter.
         /// </summary>
         /// <returns>The matching ConnectionOpportunity or null.</returns>
@@ -503,18 +480,30 @@ namespace Rock.Blocks.Connection
 
                 int? campusId = bag.CampusId;
 
-                var person = GetPerson();
+                Person person;
                 var currentPerson = GetCurrentPerson();
 
-                if ( person == null ||
-                    !bag.LastName.Equals( person.LastName, StringComparison.OrdinalIgnoreCase ) ||
-                    !( bag.FirstName.Equals( person.NickName, StringComparison.OrdinalIgnoreCase ) || bag.FirstName.Equals( person.FirstName, StringComparison.OrdinalIgnoreCase ) ) ||
-                    !bag.Email.Equals( person.Email, StringComparison.OrdinalIgnoreCase ) )
+                var shouldUseCurrentPerson = currentPerson != null
+                    && bag.LastName.Equals( currentPerson.LastName, StringComparison.OrdinalIgnoreCase )
+                    && (
+                        bag.FirstName.Equals( currentPerson.NickName, StringComparison.OrdinalIgnoreCase )
+                        || bag.FirstName.Equals( currentPerson.FirstName, StringComparison.OrdinalIgnoreCase )
+                    )
+                    && bag.Email.Equals( currentPerson.Email, StringComparison.OrdinalIgnoreCase );
+
+                if ( shouldUseCurrentPerson )
                 {
+                    // Load on the block's context so any phone number changes are saved.
+                    person = new PersonService( this.RockContext ).GetInclude( currentPerson.Id, p => p.PhoneNumbers );
+                }
+                else
+                {
+                    // Try to find matching person.
                     var personQuery = new PersonService.PersonMatchQuery( bag.FirstName, bag.LastName, bag.Email, bag.MobilePhone?.Number );
                     person = new PersonService( this.RockContext ).FindPerson( personQuery, true );
                 }
 
+                // If person was not found, create a new one.
                 if ( person == null || !person.PrimaryAliasId.HasValue )
                 {
                     var connectionStatus = DefinedValueCache.Get( GetAttributeValue( AttributeKey.ConnectionStatus ).AsGuid() );
