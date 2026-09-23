@@ -15,57 +15,56 @@
 // </copyright>
 //
 
-/*
-    09/23/26 - JMH
-
-    The framed page can belong to any site and any theme, so it cannot be relied on to define Rock's
-    admin CSS variables. The builder copies the values it needs from its own document into
-    builder-specific variables on the framed page, which keeps the builder chrome looking like
-    Rock rather than like the site being edited.
-
-    Reason: Keeps builder chrome consistent regardless of the framed page's theme.
-*/
-
-/** Maps each builder variable set on the framed page to the Rock variable it copies from the builder's document. */
-export const builderThemeVariables: Record<string, string> = {
-    "--pagebuilder-accent": "--color-info-strong",
-    "--pagebuilder-zone": "--color-interface-medium",
-    "--pagebuilder-muted-text": "--color-interface-strong",
-    "--pagebuilder-surface": "--color-interface-softest",
-    "--pagebuilder-surface-soft": "--color-interface-softer",
-    "--pagebuilder-font-family": "--font-family-sans"
-};
-
-/** The styles added to the framed page for zone chrome, the empty state, and the drop placeholder. */
+/**
+ * The styles added to the framed page for zone chrome, the empty state, and
+ * the drop placeholder, written against Rock's CSS variables.
+ */
 export const builderStyles = `
 .pagebuilder-zone {
     position: relative;
-    min-height: 64px;
-    outline: 1px dashed var(--pagebuilder-zone);
+    border-radius: var(--rounded-large);
+}
+
+.pagebuilder-dragging .pagebuilder-zone,
+.pagebuilder-zone.pagebuilder-zone-is-empty {
+    outline: 1px solid var(--color-primary);
     outline-offset: -1px;
 }
 
-.pagebuilder-zone > .zone-content {
-    padding-top: 20px;
+.pagebuilder-zone.pagebuilder-zone-is-empty {
+    background-color: var(--color-interface-softest);
 }
 
 .pagebuilder-zone.pagebuilder-zone-over {
-    outline: 2px solid var(--pagebuilder-accent);
-    outline-offset: -2px;
+    background-color: var(--color-primary-soft);
 }
 
 .pagebuilder-zone-chip {
+    display: none;
     position: absolute;
     top: 0;
     left: 0;
     z-index: 1;
-    padding: 2px 8px;
-    font-family: var(--pagebuilder-font-family);
-    font-size: 11px;
-    line-height: 1.4;
-    color: var(--pagebuilder-surface);
-    background-color: var(--pagebuilder-zone);
+    align-items: center;
+    gap: var(--spacing-tiny);
+    padding: var(--spacing-tiny) 6px;
+    font-family: var(--font-family-sans);
+    font-size: var(--font-size-xsmall);
+    font-weight: var(--font-weight-bold);
+    line-height: normal;
+    color: var(--color-interface-softest);
+    background-color: var(--color-primary);
+    border-radius: var(--rounded-medium) 0 var(--rounded-medium) 0;
     pointer-events: none;
+}
+
+.pagebuilder-dragging .pagebuilder-zone-chip,
+.pagebuilder-zone-is-empty > .pagebuilder-zone-chip {
+    display: flex;
+}
+
+.pagebuilder-zone-chip-icon {
+    font-size: var(--font-size-regular);
 }
 
 .pagebuilder-zone-empty {
@@ -73,9 +72,8 @@ export const builderStyles = `
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 8px;
-    padding: 48px 16px;
-    font-family: var(--pagebuilder-font-family);
+    padding: var(--spacing-xlarge) var(--spacing-medium);
+    font-family: var(--font-family-sans);
     text-align: center;
     pointer-events: none;
 }
@@ -87,46 +85,56 @@ export const builderStyles = `
     width: 64px;
     height: 64px;
     font-size: 32px;
-    line-height: 1;
-    color: var(--pagebuilder-muted-text);
-    background-color: var(--pagebuilder-surface-soft);
-    border-radius: 50%;
+    color: var(--color-interface-medium);
+    background-color: var(--color-interface-softer);
+    border-radius: var(--rounded-full);
 }
 
 .pagebuilder-zone-empty-title {
-    font-size: 16px;
+    margin-top: var(--spacing-medium);
+    font-size: var(--font-size-h5);
+    font-weight: var(--font-weight-medium);
+    line-height: var(--line-height-normal);
+    color: var(--color-interface-stronger);
 }
 
 .pagebuilder-zone-empty-text {
-    font-size: 14px;
-    color: var(--pagebuilder-muted-text);
+    margin-top: var(--spacing-xsmall);
+    font-size: var(--font-size-regular);
+    line-height: var(--line-height-normal);
+    color: var(--color-interface-medium);
 }
 
 .pagebuilder-placeholder {
     display: flex;
     align-items: center;
-    margin: 2px 0;
+    margin: var(--spacing-tiny) 0;
     pointer-events: none;
 }
 
 .pagebuilder-placeholder-line {
     flex-grow: 1;
     height: 3px;
-    background-color: var(--pagebuilder-accent);
+    background-color: var(--color-primary);
 }
 
 .pagebuilder-placeholder-pill {
-    padding: 4px 18px;
-    font-family: var(--pagebuilder-font-family);
-    font-size: 10px;
+    padding: var(--spacing-tiny) var(--spacing-medium);
+    font-family: var(--font-family-sans);
+    font-size: var(--font-size-xsmall);
     line-height: 1;
-    color: var(--pagebuilder-surface);
-    background-color: var(--pagebuilder-accent);
-    border-radius: 9999px;
+    color: var(--color-interface-softest);
+    background-color: var(--color-primary);
+    border-radius: var(--rounded-full);
 }
 
-.pagebuilder-canvas {
+.canvas-module {
     display: flow-root;
     position: relative;
 }
 `;
+
+/** The names of the Rock CSS variables the builder styles depend on. */
+export const builderStyleVariableNames: string[] = Array.from(new Set(
+    (builderStyles.match(/var\(--[a-z0-9-]+\)/g) ?? []).map(reference => reference.slice("var(".length, -1))
+));
