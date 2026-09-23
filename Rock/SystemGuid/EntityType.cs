@@ -835,6 +835,16 @@ namespace Rock.SystemGuid
         public const string MOBILE_FINANCE_TRANSACTION_LIST_BLOCK_TYPE = "4196280F-0204-4268-A19F-773336B8BEA2";
 
         /// <summary>
+        /// The GUID for the entity <see cref="Rock.Model.ModuleInstance"/>.
+        /// </summary>
+        public const string MODULE_INSTANCE = "4999E4FF-0DE9-498B-9BF4-F27957AA4EE6";
+
+        /// <summary>
+        /// The GUID for the entity <see cref="Rock.Model.ModuleType"/>.
+        /// </summary>
+        public const string MODULE_TYPE = "79A1DE57-B71B-40B3-88C4-02856EA5B9DE";
+
+        /// <summary>
         /// The obsidian event registration entry
         /// </summary>
         public const string OBSIDIAN_EVENT_REGISTRATION_ENTRY = "06AAC065-BF89-483D-B671-80F0F72779A6";
