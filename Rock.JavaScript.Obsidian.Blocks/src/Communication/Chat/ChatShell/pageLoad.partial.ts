@@ -36,8 +36,8 @@ export type StorageLike = {
  *
  * @returns The key.
  */
-export function rememberedChannelKey(_tenantId: string, _personAliasGuid: string): string {
-    throw new Error("not implemented");
+export function rememberedChannelKey(tenantId: string, personAliasGuid: string): string {
+    return `rock-chat:last-channel:${tenantId.toLowerCase()}:${personAliasGuid.toLowerCase()}`;
 }
 
 /**
@@ -48,8 +48,14 @@ export function rememberedChannelKey(_tenantId: string, _personAliasGuid: string
  *
  * @returns The channel, or null.
  */
-export function readRememberedChannel(_storage: StorageLike | null, _key: string): string | null {
-    throw new Error("not implemented");
+export function readRememberedChannel(storage: StorageLike | null, key: string): string | null {
+    try {
+        return storage?.getItem(key) || null;
+    }
+    catch {
+        // Intentionally ignored: storage blocked by the browser only loses the memory.
+        return null;
+    }
 }
 
 /**
@@ -59,8 +65,13 @@ export function readRememberedChannel(_storage: StorageLike | null, _key: string
  * @param key The key.
  * @param channelId The channel.
  */
-export function writeRememberedChannel(_storage: StorageLike | null, _key: string, _channelId: string): void {
-    throw new Error("not implemented");
+export function writeRememberedChannel(storage: StorageLike | null, key: string, channelId: string): void {
+    try {
+        storage?.setItem(key, channelId);
+    }
+    catch {
+        // Intentionally ignored: storage blocked or full only loses the memory.
+    }
 }
 
 /** How opening a channel went. */
@@ -89,8 +100,19 @@ export type ChannelOpenerDependencies = {
  *
  * @returns How it went.
  */
-export function openChannel(_dependencies: ChannelOpenerDependencies, _channelId: string): Promise<OpenOutcome> {
-    throw new Error("not implemented");
+export async function openChannel(dependencies: ChannelOpenerDependencies, channelId: string): Promise<OpenOutcome> {
+    dependencies.join(channelId);
+    const history = dependencies.loadNewest(channelId);
+
+    try {
+        await history;
+    }
+    catch (error) {
+        return dependencies.isRefusal(error) ? "refused" : "failed";
+    }
+
+    dependencies.remember(channelId);
+    return "opened";
 }
 
 /** What the page load reaches. */
@@ -116,6 +138,58 @@ export type PageLoadDependencies = {
  *
  * @returns The channel that opened, or null when none could.
  */
-export function startPageLoad(_dependencies: PageLoadDependencies): Promise<string | null> {
-    throw new Error("not implemented");
+export async function startPageLoad(dependencies: PageLoadDependencies): Promise<string | null> {
+    const known = dependencies.linkedChannelId ?? dependencies.rememberedChannelId;
+    const tried = new Set<string>();
+
+    // Both start before either is awaited: the first message on screen waits on history
+    // alone, never on the sidebar.
+    const sidebar = dependencies.loadSidebar();
+
+    // When the channel opens without the sidebar, nothing here waits on it, and its failure is
+    // the sidebar's own to show; this keeps it from surfacing as an unhandled rejection.
+    sidebar.catch(() => undefined);
+
+    const opening = known ? dependencies.open(known) : null;
+
+    if (known && opening) {
+        tried.add(known);
+        const outcome = await opening;
+
+        if (outcome === "opened") {
+            return known;
+        }
+
+        if (outcome === "failed") {
+            return null;
+        }
+    }
+
+    // Only a first visit, or a channel the person can no longer read, waits for the sidebar.
+    let rows: SidebarRow[];
+    try {
+        rows = await sidebar;
+    }
+    catch {
+        return null;
+    }
+
+    for (const row of rows) {
+        if (tried.has(row.channel_id)) {
+            continue;
+        }
+
+        tried.add(row.channel_id);
+        const outcome = await dependencies.open(row.channel_id);
+
+        if (outcome === "opened") {
+            return row.channel_id;
+        }
+
+        if (outcome === "failed") {
+            return null;
+        }
+    }
+
+    return null;
 }
