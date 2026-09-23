@@ -158,6 +158,53 @@ describe("createSession", () => {
         expect(f.timers).toHaveLength(1);
     });
 
+    test("a refresh the exchange cannot complete keeps the token it has and tries again soon", async () => {
+        let exchanges = 0;
+        const f = fakes({
+            exchange: async (churchToken: string): Promise<ExchangeResult> => {
+                exchanges++;
+                return exchanges === 2
+                    ? { ok: false, status: 0, code: "rpc.transport" }
+                    : { ok: true, accessToken: `platform-for-${churchToken}`, expiresInSeconds: 300 };
+            }
+        });
+        const session = createSession(f.dependencies);
+        await session.start();
+
+        expect(await session.refresh()).toBe(false);
+
+        // The token still has life left; throwing it away would silence every save until expiry.
+        expect(session.currentToken()).toBe("platform-for-church-1");
+        const retry = f.timers[f.timers.length - 1];
+        expect(retry.cleared).toBe(false);
+        expect(retry.milliseconds).toBe(300_000 * 0.05);
+
+        retry.callback();
+        await settle();
+
+        expect(session.currentToken()).toBe("platform-for-church-3");
+    });
+
+    test("a refresh that cannot reach Rock keeps the token it has and tries again soon", async () => {
+        let mints = 0;
+        const f = fakes({
+            mintChurchToken: async (): Promise<ChurchTokenResult> => {
+                mints++;
+                return mints === 2
+                    ? { gate: "gate_unavailable", churchToken: null, isUnreachable: true }
+                    : { gate: "ok", churchToken: `church-${mints}` };
+            }
+        });
+        const session = createSession(f.dependencies);
+        await session.start();
+
+        expect(await session.refresh()).toBe(false);
+
+        expect(session.currentToken()).toBe("platform-for-church-1");
+        expect(f.timers[f.timers.length - 1].cleared).toBe(false);
+        expect(f.timers[f.timers.length - 1].milliseconds).toBe(300_000 * 0.05);
+    });
+
     test("a church token the platform calls stale is minted again once", async () => {
         let exchanges = 0;
         const f = fakes({

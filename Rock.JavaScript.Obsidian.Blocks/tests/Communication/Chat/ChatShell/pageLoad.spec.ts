@@ -207,6 +207,16 @@ describe("startPageLoad", () => {
         expect(await loading).toBe(second);
     });
 
+    test("a channel the person has already moved away from stops the page load", async () => {
+        const h = harness({ linked, outcomes: { [linked]: "superseded" } });
+
+        const loading = h.run();
+        h.sidebar.resolve(rows(first, second));
+
+        expect(await loading).toBeNull();
+        expect(h.log).not.toContain(`open ${first}`);
+    });
+
     test("an empty sidebar on a first visit opens nothing", async () => {
         const h = harness({});
 

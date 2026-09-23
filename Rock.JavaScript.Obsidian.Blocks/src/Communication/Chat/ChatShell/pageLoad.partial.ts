@@ -74,8 +74,8 @@ export function writeRememberedChannel(storage: StorageLike | null, key: string,
     }
 }
 
-/** How opening a channel went. */
-export type OpenOutcome = "opened" | "refused" | "failed";
+/** How opening a channel went. Superseded: the person opened another before this one finished. */
+export type OpenOutcome = "opened" | "refused" | "failed" | "superseded";
 
 /** What opening a channel reaches. */
 export type ChannelOpenerDependencies = {

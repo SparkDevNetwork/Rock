@@ -179,6 +179,29 @@ describe("createReadTracker", () => {
         expect(saves).toEqual([`${channel}:2`]);
     });
 
+    test("leaving lets go of the channel at once, so one opened while the save is in flight keeps its own position", async () => {
+        const saves: string[] = [];
+        let finish!: () => void;
+        const t = createReadTracker({
+            save: (channelId, messageId) => {
+                saves.push(`${channelId}:${messageId}`);
+                return new Promise(resolve => finish = () => resolve({ read_cursor: messageId, last_message_id: messageId }));
+            },
+            onSaved: () => undefined
+        });
+        t.open(channel, 1);
+        t.seen(2);
+
+        const leaving = t.leave();
+        t.open(other, 10);
+        t.seen(11);
+        finish();
+        await leaving;
+        await t.flush();
+
+        expect(saves).toEqual([`${channel}:2`, `${other}:11`]);
+    });
+
     test("the listeners come off", () => {
         const { tracker: t } = tracker();
         const p = page();

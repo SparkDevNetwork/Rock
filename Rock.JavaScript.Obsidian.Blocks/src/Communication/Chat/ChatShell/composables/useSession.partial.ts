@@ -22,6 +22,12 @@
 export type ChurchTokenResult = {
     gate: string;
     churchToken: string | null;
+
+    /**
+     * True when Rock could not be asked at all, so the gate is unknown rather than refused. A
+     * session that still holds a token keeps it and asks again.
+     */
+    isUnreachable?: boolean;
 };
 
 /** What the platform's token exchange answers. */
