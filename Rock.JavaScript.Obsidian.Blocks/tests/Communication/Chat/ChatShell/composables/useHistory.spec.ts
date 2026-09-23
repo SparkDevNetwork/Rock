@@ -199,6 +199,33 @@ describe("createTimelines", () => {
         expect(ids(timelines.state(channel).messages)).toEqual([1, 2]);
     });
 
+    test("a live message takes its sender's name and photo from that person's earlier messages", async () => {
+        const timelines = createTimelines({
+            fetchPage: async () => ({
+                messages: [{ ...message(1), sender_last_name: "Lovelace", sender_avatar_url: "/ada.png", sender_listed: true }],
+                read_cursor: null, unread_count: 0, has_more: false
+            })
+        });
+        await timelines.loadNewest(channel);
+
+        // The live copy carries no name: the channel topic sends only what the message row holds.
+        timelines.applyEvent(channel, "message.created", {
+            id: 2, channel_id: channel, parent_id: null, shown_in_channel: false,
+            person_alias_guid: "a0000001-0000-4000-8000-000000000000", message_type: "text", body: "hi", created_at: "2026-09-23T10:01:00Z"
+        });
+        timelines.applyEvent(channel, "message.created", {
+            id: 3, channel_id: channel, parent_id: null, shown_in_channel: false,
+            person_alias_guid: "a0000009-0000-4000-8000-000000000000", message_type: "text", body: "new here", created_at: "2026-09-23T10:02:00Z"
+        });
+
+        const [, second, third] = timelines.state(channel).messages;
+        expect(second.sender_nick_name).toBe("Ada");
+        expect(second.sender_last_name).toBe("Lovelace");
+        expect(second.sender_avatar_url).toBe("/ada.png");
+        expect(second.sender_listed).toBe(true);
+        expect(third.sender_nick_name).toBeUndefined();
+    });
+
     test("a thread-only reply on the channel topic is not a timeline message", async () => {
         const timelines = createTimelines({ fetchPage: async () => page([1]) });
         await timelines.loadNewest(channel);
