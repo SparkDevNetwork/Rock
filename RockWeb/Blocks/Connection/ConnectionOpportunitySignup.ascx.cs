@@ -157,7 +157,6 @@ namespace RockWeb.Blocks.Connection
         /// </summary>
         private static class PageParameterKey
         {
-            public const string PersonGuid = "PersonGuid";
             public const string OpportunityId = "OpportunityId";
         }
 
@@ -261,28 +260,22 @@ namespace RockWeb.Blocks.Connection
                     string mobilePhoneNumber = pnMobile.Text.Trim();
                     int? campusId = cpCampus.SelectedCampusId;
 
-                    // if a person guid was passed in from the query string use that
-                    if ( RockPage.PageParameter( PageParameterKey.PersonGuid ) != null && !string.IsNullOrWhiteSpace( RockPage.PageParameter( PageParameterKey.PersonGuid ) ) )
-                    {
-                        Guid? personGuid = RockPage.PageParameter( PageParameterKey.PersonGuid ).AsGuidOrNull();
+                    var shouldUseCurrentPerson = CurrentPerson != null
+                        && lastName.Equals( CurrentPerson.LastName, StringComparison.OrdinalIgnoreCase )
+                        && (
+                            firstName.Equals( CurrentPerson.NickName, StringComparison.OrdinalIgnoreCase )
+                            || firstName.Equals( CurrentPerson.FirstName, StringComparison.OrdinalIgnoreCase )
+                        )
+                        && email.Equals( CurrentPerson.Email, StringComparison.OrdinalIgnoreCase );
 
-                        if ( personGuid.HasValue )
-                        {
-                            person = personService.Get( personGuid.Value );
-                        }
-                    }
-                    else if ( CurrentPerson != null &&
-                      lastName.Equals( CurrentPerson.LastName, StringComparison.OrdinalIgnoreCase ) &&
-                      ( firstName.Equals( CurrentPerson.NickName, StringComparison.OrdinalIgnoreCase ) || firstName.Equals( CurrentPerson.FirstName, StringComparison.OrdinalIgnoreCase ) ) &&
-                      email.Equals( CurrentPerson.Email, StringComparison.OrdinalIgnoreCase ) )
+                    if ( shouldUseCurrentPerson )
                     {
-                        // If the name and email entered are the same as current person (wasn't changed), use the current person
-                        person = personService.Get( CurrentPerson.Id );
+                        // Load on the block's context so any phone number changes are saved.
+                        person = personService.GetInclude( CurrentPerson.Id, p => p.PhoneNumbers );
                     }
-
                     else
                     {
-                        // Try to find matching person
+                        // Try to find matching person.
                         var personQuery = new PersonService.PersonMatchQuery( firstName, lastName, email, mobilePhoneNumber );
                         person = personService.FindPerson( personQuery, true );
                     }
@@ -436,22 +429,7 @@ namespace RockWeb.Blocks.Connection
                 pnlMobilePhone.Visible = GetAttributeValue( AttributeKey.DisplayMobilePhone ).AsBoolean(); // hide column
                 pnMobile.Visible = GetAttributeValue( AttributeKey.DisplayMobilePhone ).AsBoolean(); // hide control
 
-                Person registrant = null;
-
-                if ( RockPage.PageParameter( PageParameterKey.PersonGuid ) != null )
-                {
-                    Guid? personGuid = RockPage.PageParameter( PageParameterKey.PersonGuid ).AsGuidOrNull();
-
-                    if ( personGuid.HasValue )
-                    {
-                        registrant = new PersonService( rockContext ).Get( personGuid.Value );
-                    }
-                }
-
-                if ( registrant == null && CurrentPerson != null )
-                {
-                    registrant = CurrentPerson;
-                }
+                var registrant = CurrentPerson;
 
                 if ( registrant != null )
                 {
