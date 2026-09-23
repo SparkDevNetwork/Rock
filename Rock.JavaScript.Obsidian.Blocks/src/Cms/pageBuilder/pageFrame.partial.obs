@@ -18,15 +18,16 @@
 
 <script setup lang="ts">
     import { PropType, ref, watch } from "vue";
-    import { newGuid } from "@Obsidian/Utility/guid";
+    import { PageBuilderModuleTypeBag } from "@Obsidian/ViewModels/Blocks/Cms/PageBuilder/pageBuilderModuleTypeBag";
     import { builderStyles, builderStyleVariableNames } from "./frameStyles.partial";
-    import { ModuleType } from "./moduleTypes.partial";
     import {
+        ModuleDrop,
         ModuleTypeDragEndRequest,
         ModuleTypeDragLeaveRequest,
         ModuleTypeDragOverRequest,
         ModuleTypeDragStartRequest,
-        ModuleTypeDropRequest
+        ModuleTypeDropRequest,
+        PageFrameReloadRequest
     } from "./types.partial";
 
     // #region Types
@@ -72,26 +73,29 @@
         dragEndRequest: {
             type: Object as PropType<ModuleTypeDragEndRequest | null | undefined>,
             required: true
+        },
+
+        reloadRequest: {
+            type: Object as PropType<PageFrameReloadRequest | null | undefined>,
+            required: true
         }
     });
 
     const emit = defineEmits<{
-        (e: "moduleAdded", value: { moduleType: ModuleType; moduleElement: HTMLElement; }): void;
+        (e: "moduleDropped", value: ModuleDrop): void;
     }>();
 
     // #region Values
 
     const zoneSelector = "[data-pagebuilder=\"true\"]";
-    const canvasBlockTypeName = "Canvas";
     const scrollTriggerDistance = 40;
 
     const frameElement = ref<HTMLIFrameElement | undefined>();
-    const draggingModuleType = ref<ModuleType | null>(null);
+    const draggingModuleType = ref<PageBuilderModuleTypeBag | null>(null);
     const dropTarget = ref<DropTarget | null>(null);
     const placeholderElement = ref<HTMLElement | null>(null);
     const lastClientX = ref<number | null>(null);
     const lastClientY = ref<number | null>(null);
-    const canvasBlockCount = ref(0);
 
     // #endregion Values
 
@@ -163,9 +167,9 @@
     }
 
     /**
-     * Places the module where it was released. The target is resolved again
-     * from the release point, because a fast drag can release somewhere the
-     * last move never reported.
+     * Reports where the module was released so it can be added to the page.
+     * The target is resolved again from the release point, because a fast
+     * drag can release somewhere the last move never reported.
      */
     function onDrop(request: ModuleTypeDropRequest): void {
         const frameDocument = getFrameDocument();
@@ -178,21 +182,17 @@
         }
 
         const target = findDropTarget(frameDocument, request.clientX, request.clientY);
+        const zoneName = target?.containerElement.parentElement?.getAttribute("data-pagebuilder-zone");
 
-        if (!target) {
+        if (!target || !zoneName) {
             return;
         }
 
-        const canvasBlockElement = createCanvasBlockElement(frameDocument, moduleType);
-
-        target.containerElement.insertBefore(canvasBlockElement, target.beforeElement);
-        updateEmptyState(frameDocument, target.containerElement);
-
-        const moduleElement = canvasBlockElement.querySelector<HTMLElement>(".canvas-module");
-
-        if (moduleElement) {
-            emit("moduleAdded", { moduleType, moduleElement });
-        }
+        emit("moduleDropped", {
+            moduleType,
+            zoneName,
+            beforeBlockId: getBlockId(target.beforeElement)
+        });
     }
 
     function onDragEnd(): void {
@@ -310,13 +310,36 @@
             return null;
         }
 
-        const beforeElement = getContentChildren(containerElement).find(child => {
+        // Rock renders a zone's site and layout blocks ahead of its page blocks whatever their order,
+        // so a new block can only be placed after the last of them.
+        const contentChildren = getContentChildren(containerElement);
+        let firstPositionIndex = 0;
+
+        contentChildren.forEach((child, index) => {
+            const zoneLocation = child.getAttribute("data-zone-location");
+
+            if (zoneLocation === "Site" || zoneLocation === "Layout") {
+                firstPositionIndex = index + 1;
+            }
+        });
+
+        const beforeElement = contentChildren.slice(firstPositionIndex).find(child => {
             const rect = child.getBoundingClientRect();
 
             return clientY < rect.top + (rect.height / 2);
         }) ?? null;
 
         return { containerElement, beforeElement };
+    }
+
+    /**
+     * Gets the identifier of the block an element is the wrapper for, or null
+     * when it is not a block wrapper.
+     */
+    function getBlockId(element: Element | null): number | null {
+        const match = element ? /^bid_(\d+)$/.exec(element.id) : null;
+
+        return match ? parseInt(match[1]) : null;
     }
 
     /**
@@ -404,139 +427,6 @@
         return placeholder;
     }
 
-    /*
-        09/23/26 - JMH
-
-        Each dropped module gets its own Canvas block. Nothing is saved, so there is no real block
-        behind it, but the markup matches what Rock renders for a mounted Obsidian block in a zone:
-        the wrapper from RockBlockWrapper, the root and wrapper elements from RockBlockType, and the
-        container the Obsidian block template mounts into. Rock's block styling and its block
-        configuration bar then apply to it the same as any other block.
-
-        The block id is negative so it keeps the bid_{id} shape without ever matching a real block.
-
-        Reason: Shows a dropped module the way it will appear once Canvas blocks are saved.
-    */
-    function createCanvasBlockElement(frameDocument: Document, moduleType: ModuleType): HTMLElement {
-        canvasBlockCount.value++;
-
-        const blockElement = frameDocument.createElement("div");
-        blockElement.id = `bid_-${canvasBlockCount.value}`;
-        blockElement.className = `block-instance js-block-instance ${getBlockTypeCssClass(canvasBlockTypeName)} block-role-content can-configure block-role-action-aware`;
-        blockElement.setAttribute("data-zone-location", "Page");
-
-        const blockContentElement = frameDocument.createElement("div");
-        blockContentElement.classList.add("block-content");
-
-        const obsidianRootElement = frameDocument.createElement("div");
-        obsidianRootElement.id = `obsidian-${newGuid()}`;
-        obsidianRootElement.style.setProperty("--initial-block-height", "400px");
-
-        const obsidianWrapperElement = frameDocument.createElement("div");
-        obsidianWrapperElement.classList.add("obsidian-block-wrapper");
-
-        const obsidianBlockElement = frameDocument.createElement("div");
-        obsidianBlockElement.classList.add("obsidian-block");
-
-        const moduleElement = frameDocument.createElement("div");
-        moduleElement.classList.add("canvas-module");
-        moduleElement.setAttribute("data-module-type", moduleType.key);
-        moduleElement.innerHTML = moduleType.html;
-
-        obsidianBlockElement.appendChild(moduleElement);
-        obsidianWrapperElement.appendChild(obsidianBlockElement);
-        obsidianRootElement.appendChild(obsidianWrapperElement);
-        blockContentElement.append(createBlockConfigurationElement(frameDocument, moduleType.name), obsidianRootElement);
-        blockElement.appendChild(blockContentElement);
-
-        // Rock only reveals configuration bars that exist when block configuration is turned on,
-        // so a block added while it is on has to match that state itself.
-        if (frameDocument.body.classList.contains("block-highlight")) {
-            blockElement.classList.add("outline");
-            blockElement.querySelector<HTMLElement>(".block-configuration")?.style.setProperty("display", "block");
-        }
-
-        return blockElement;
-    }
-
-    /**
-     * Gets the CSS class Rock adds to a block's wrapper to identify its block
-     * type, following the same rule as RockBlockWrapper.
-     */
-    function getBlockTypeCssClass(blockTypeName: string): string {
-        const nameParts = blockTypeName.replace(/\(Legacy\)/i, "").trim().split(">");
-
-        return nameParts[nameParts.length - 1].trim().replace(/ /g, "-").toLowerCase();
-    }
-
-    /**
-     * Creates a block configuration bar matching the one Rock renders for a
-     * block. Its actions are placeholders because the block is not saved, so
-     * clicks on it are ignored.
-     */
-    function createBlockConfigurationElement(frameDocument: Document, blockName: string): HTMLElement {
-        function createIconElement(iconCssClass: string): HTMLElement {
-            const iconElement = frameDocument.createElement("i");
-            iconElement.className = iconCssClass;
-
-            return iconElement;
-        }
-
-        function createActionElement(tagName: string, cssClass: string, title: string, iconCssClass: string): HTMLElement {
-            const actionElement = frameDocument.createElement(tagName);
-
-            if (cssClass) {
-                actionElement.className = cssClass;
-            }
-
-            if (tagName === "a") {
-                actionElement.setAttribute("href", "#");
-            }
-
-            if (title) {
-                actionElement.title = title;
-            }
-
-            actionElement.appendChild(createIconElement(iconCssClass));
-
-            return actionElement;
-        }
-
-        const nameElement = frameDocument.createElement("span");
-        nameElement.textContent = blockName;
-
-        // The move and delete actions leave off the classes Rock's page admin script binds to,
-        // so they can never act on a real block.
-        const barElement = frameDocument.createElement("div");
-        barElement.classList.add("block-configuration-bar");
-        barElement.append(
-            nameElement,
-            createActionElement("a", "properties", "Block Properties", "ti ti-settings"),
-            createActionElement("a", "security", "Block Security", "ti ti-lock"),
-            createActionElement("a", "", "Move Block", "ti ti-external-link"),
-            createActionElement("div", "delete disabled js-disabled", "Unsaved blocks cannot be deleted", "ti ti-circle-x"));
-
-        const configurationElement = frameDocument.createElement("div");
-        configurationElement.className = "block-configuration config-bar";
-        configurationElement.append(createActionElement("a", "", "", "ti ti-circle-arrow-right"), barElement);
-        configurationElement.addEventListener("click", event => {
-            event.preventDefault();
-            event.stopPropagation();
-        });
-
-        // Rock widens a bar on hover with a script bound when block configuration is turned on,
-        // which misses bars added afterward, so these widen themselves the same way.
-        configurationElement.addEventListener("mouseenter", () => {
-            configurationElement.style.width = `${barElement.offsetWidth + 30}px`;
-        });
-
-        configurationElement.addEventListener("mouseleave", () => {
-            configurationElement.style.removeProperty("width");
-        });
-
-        return configurationElement;
-    }
-
     // #endregion Functions
 
     // #region Watchers
@@ -568,6 +458,12 @@
     watch(() => props.dragEndRequest, request => {
         if (request) {
             onDragEnd();
+        }
+    });
+
+    watch(() => props.reloadRequest, request => {
+        if (request) {
+            frameElement.value?.contentWindow?.location.reload();
         }
     });
 

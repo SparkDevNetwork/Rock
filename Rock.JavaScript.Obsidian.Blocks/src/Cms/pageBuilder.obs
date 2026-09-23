@@ -26,7 +26,17 @@
                            :dragOverRequest="dragOverRequest"
                            :dropRequest="dropRequest"
                            :dragLeaveRequest="dragLeaveRequest"
-                           :dragEndRequest="dragEndRequest" />
+                           :dragEndRequest="dragEndRequest"
+                           :reloadRequest="reloadRequest"
+                           @moduleDropped="onModuleDropped" />
+
+                <NotificationBox v-if="addModuleErrorMessage"
+                                 class="page-builder-alert"
+                                 alertType="danger"
+                                 dismissible
+                                 @dismiss="addModuleErrorMessage = ''">
+                    {{ addModuleErrorMessage }}
+                </NotificationBox>
 
                 <Overlay :isVisible="isOverlayShown"
                          backgroundColor="transparent"
@@ -114,6 +124,13 @@
     height: 100%;
 }
 
+.page-builder-alert {
+    position: absolute;
+    top: var(--spacing-medium);
+    right: var(--spacing-medium);
+    left: var(--spacing-medium);
+}
+
 @media (max-width: 767px) {
     .page-builder {
         flex-direction: column;
@@ -153,32 +170,39 @@
     import { nextTick, ref } from "vue";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import Overlay from "@Obsidian/Controls/Internal/overlay.obs";
-    import { onConfigurationValuesChanged, useConfigurationValues, useReloadBlock } from "@Obsidian/Utility/block";
+    import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
+    import { PageBuilderAddModuleBag } from "@Obsidian/ViewModels/Blocks/Cms/PageBuilder/pageBuilderAddModuleBag";
     import { PageBuilderInitializationBox } from "@Obsidian/ViewModels/Blocks/Cms/PageBuilder/pageBuilderInitializationBox";
+    import { PageBuilderModuleTypeBag } from "@Obsidian/ViewModels/Blocks/Cms/PageBuilder/pageBuilderModuleTypeBag";
     import PageFrame from "./pageBuilder/pageFrame.partial.obs";
-    import { ModuleType, moduleTypes } from "./pageBuilder/moduleTypes.partial";
     import {
+        ModuleDrop,
         ModuleTypeDragEndRequest,
         ModuleTypeDragLeaveRequest,
         ModuleTypeDragOverRequest,
         ModuleTypeDragStartRequest,
-        ModuleTypeDropRequest
+        ModuleTypeDropRequest,
+        PageFrameReloadRequest
     } from "./pageBuilder/types.partial";
 
     const config = useConfigurationValues<PageBuilderInitializationBox>();
+    const invokeBlockAction = useInvokeBlockAction();
 
     // #region Values
 
     const errorMessage = config.errorMessage ?? "";
     const targetPageUrl = config.targetPageUrl ?? "";
+    const moduleTypes = config.moduleTypes ?? [];
 
     const frameContainerElement = ref<HTMLElement | undefined>();
     const isOverlayShown = ref(false);
+    const addModuleErrorMessage = ref("");
     const dragStartRequest = ref<ModuleTypeDragStartRequest | null>(null);
     const dragOverRequest = ref<ModuleTypeDragOverRequest | null>(null);
     const dropRequest = ref<ModuleTypeDropRequest | null>(null);
     const dragLeaveRequest = ref<ModuleTypeDragLeaveRequest | null>(null);
     const dragEndRequest = ref<ModuleTypeDragEndRequest | null>(null);
+    const reloadRequest = ref<PageFrameReloadRequest | null>(null);
 
     // #endregion Values
 
@@ -200,7 +224,7 @@
 
         Reason: A drag in the parent page cannot target elements inside an iframe, with a mouse or with touch.
     */
-    function onModuleTypeDragStart(event: PointerEvent, moduleType: ModuleType): void {
+    function onModuleTypeDragStart(event: PointerEvent, moduleType: PageBuilderModuleTypeBag): void {
         // Only the primary button of the first pointer starts a drag.
         if (!event.isPrimary || event.button !== 0) {
             return;
@@ -275,6 +299,29 @@
 
         isOverlayShown.value = true;
         dragStartRequest.value = { moduleType };
+    }
+
+    /**
+     * Adds a dropped module to the page in a new Canvas block, then reloads
+     * the frame so Rock renders the new block itself.
+     */
+    async function onModuleDropped(drop: ModuleDrop): Promise<void> {
+        addModuleErrorMessage.value = "";
+
+        const bag: PageBuilderAddModuleBag = {
+            zoneName: drop.zoneName,
+            moduleTypeKey: drop.moduleType.key,
+            beforeBlockId: drop.beforeBlockId
+        };
+
+        const result = await invokeBlockAction<number>("AddModule", { bag });
+
+        if (!result.isSuccess) {
+            addModuleErrorMessage.value = result.errorMessage || `The ${drop.moduleType.name} module could not be added.`;
+            return;
+        }
+
+        reloadRequest.value = { type: "PAGE_FRAME_RELOAD_REQUEST" };
     }
 
     // #endregion Event Handlers

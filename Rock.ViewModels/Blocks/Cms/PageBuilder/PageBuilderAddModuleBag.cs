@@ -15,28 +15,27 @@
 // </copyright>
 //
 
-using System.Collections.Generic;
-
 namespace Rock.ViewModels.Blocks.Cms.PageBuilder
 {
     /// <summary>
-    /// The top-level initialization object returned by the Page Builder block.
+    /// Describes a module dropped onto the target page, for the Page Builder to add in a new Canvas block.
     /// </summary>
-    public class PageBuilderInitializationBox
+    public class PageBuilderAddModuleBag
     {
         /// <summary>
-        /// Gets or sets the URL of the page the builder frames for composing.
+        /// Gets or sets the key of the zone the module was dropped in.
         /// </summary>
-        public string TargetPageUrl { get; set; }
+        public string ZoneName { get; set; }
 
         /// <summary>
-        /// Gets or sets the message to display instead of the builder when it cannot run.
+        /// Gets or sets the key of the module type that was dropped.
         /// </summary>
-        public string ErrorMessage { get; set; }
+        public string ModuleTypeKey { get; set; }
 
         /// <summary>
-        /// Gets or sets the module types listed in the sidebar, in display order.
+        /// Gets or sets the identifier of the block the new Canvas block is placed in front of,
+        /// or <c>null</c> to place it last in the zone.
         /// </summary>
-        public List<PageBuilderModuleTypeBag> ModuleTypes { get; set; }
+        public int? BeforeBlockId { get; set; }
     }
 }

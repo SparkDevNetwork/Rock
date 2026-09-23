@@ -21,16 +21,14 @@
 // </copyright>
 //
 
-import { PageBuilderModuleTypeBag } from "@Obsidian/ViewModels/Blocks/Cms/PageBuilder/pageBuilderModuleTypeBag";
+/** A module type listed in the Page Builder's sidebar. */
+export type PageBuilderModuleTypeBag = {
+    /** Gets or sets the icon shown on the module type's tile. */
+    iconCssClass?: string | null;
 
-/** The top-level initialization object returned by the Page Builder block. */
-export type PageBuilderInitializationBox = {
-    /** Gets or sets the message to display instead of the builder when it cannot run. */
-    errorMessage?: string | null;
+    /** Gets or sets the value that uniquely identifies the module type. */
+    key?: string | null;
 
-    /** Gets or sets the module types listed in the sidebar, in display order. */
-    moduleTypes?: PageBuilderModuleTypeBag[] | null;
-
-    /** Gets or sets the URL of the page the builder frames for composing. */
-    targetPageUrl?: string | null;
+    /** Gets or sets the name shown on the module type's tile. */
+    name?: string | null;
 };

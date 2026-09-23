@@ -21,16 +21,17 @@
 // </copyright>
 //
 
-import { PageBuilderModuleTypeBag } from "@Obsidian/ViewModels/Blocks/Cms/PageBuilder/pageBuilderModuleTypeBag";
+/** Describes a module dropped onto the target page, for the Page Builder to add in a new Canvas block. */
+export type PageBuilderAddModuleBag = {
+    /**
+     * Gets or sets the identifier of the block the new Canvas block is placed in front of,
+     * or `null` to place it last in the zone.
+     */
+    beforeBlockId?: number | null;
 
-/** The top-level initialization object returned by the Page Builder block. */
-export type PageBuilderInitializationBox = {
-    /** Gets or sets the message to display instead of the builder when it cannot run. */
-    errorMessage?: string | null;
+    /** Gets or sets the key of the module type that was dropped. */
+    moduleTypeKey?: string | null;
 
-    /** Gets or sets the module types listed in the sidebar, in display order. */
-    moduleTypes?: PageBuilderModuleTypeBag[] | null;
-
-    /** Gets or sets the URL of the page the builder frames for composing. */
-    targetPageUrl?: string | null;
+    /** Gets or sets the key of the zone the module was dropped in. */
+    zoneName?: string | null;
 };

@@ -15,11 +15,11 @@
 // </copyright>
 //
 
-import { ModuleType } from "./moduleTypes.partial";
+import { PageBuilderModuleTypeBag } from "@Obsidian/ViewModels/Blocks/Cms/PageBuilder/pageBuilderModuleTypeBag";
 
 /** Tells the page frame that a module type has started dragging from the sidebar. */
 export type ModuleTypeDragStartRequest = {
-    moduleType: ModuleType;
+    moduleType: PageBuilderModuleTypeBag;
 };
 
 /** Tells the page frame where the pointer is, in coordinates relative to the frame. */
@@ -42,4 +42,21 @@ export type ModuleTypeDragLeaveRequest = {
 /** Tells the page frame that the drag has finished, whether or not it was dropped. */
 export type ModuleTypeDragEndRequest = {
     type: "MODULE_TYPE_DRAG_END_REQUEST";
+};
+
+/** Tells the page frame to reload the page it is showing. */
+export type PageFrameReloadRequest = {
+    type: "PAGE_FRAME_RELOAD_REQUEST";
+};
+
+/** Where a module type was dropped, as reported by the page frame. */
+export type ModuleDrop = {
+    /** The module type that was dropped. */
+    moduleType: PageBuilderModuleTypeBag;
+
+    /** The key of the zone it was dropped in. */
+    zoneName: string;
+
+    /** The identifier of the block it was dropped in front of, or null to place it last in the zone. */
+    beforeBlockId: number | null;
 };

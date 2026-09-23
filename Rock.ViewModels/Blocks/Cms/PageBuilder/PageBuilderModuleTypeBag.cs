@@ -15,28 +15,26 @@
 // </copyright>
 //
 
-using System.Collections.Generic;
-
 namespace Rock.ViewModels.Blocks.Cms.PageBuilder
 {
     /// <summary>
-    /// The top-level initialization object returned by the Page Builder block.
+    /// A module type listed in the Page Builder's sidebar.
     /// </summary>
-    public class PageBuilderInitializationBox
+    public class PageBuilderModuleTypeBag
     {
         /// <summary>
-        /// Gets or sets the URL of the page the builder frames for composing.
+        /// Gets or sets the value that uniquely identifies the module type.
         /// </summary>
-        public string TargetPageUrl { get; set; }
+        public string Key { get; set; }
 
         /// <summary>
-        /// Gets or sets the message to display instead of the builder when it cannot run.
+        /// Gets or sets the name shown on the module type's tile.
         /// </summary>
-        public string ErrorMessage { get; set; }
+        public string Name { get; set; }
 
         /// <summary>
-        /// Gets or sets the module types listed in the sidebar, in display order.
+        /// Gets or sets the icon shown on the module type's tile.
         /// </summary>
-        public List<PageBuilderModuleTypeBag> ModuleTypes { get; set; }
+        public string IconCssClass { get; set; }
     }
 }
