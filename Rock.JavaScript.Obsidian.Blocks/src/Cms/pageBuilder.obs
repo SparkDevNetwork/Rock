@@ -1,0 +1,101 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <NotificationBox v-if="errorMessage" alertType="warning">
+        {{ errorMessage }}
+    </NotificationBox>
+
+    <div v-else class="page-builder">
+        <aside class="page-builder-sidebar">
+            <h5 class="page-builder-sidebar-title">Modules</h5>
+
+            <div class="page-builder-module-types">
+                <div v-for="moduleType in moduleTypes"
+                     :key="moduleType.key"
+                     class="page-builder-module-type">
+                    <i :class="moduleType.iconCssClass"></i>
+                    <span>{{ moduleType.name }}</span>
+                </div>
+            </div>
+        </aside>
+
+        <div class="page-builder-stage">
+            <iframe class="page-builder-frame"
+                    :src="targetPageUrl"
+                    title="Page preview"></iframe>
+        </div>
+    </div>
+</template>
+
+<style scoped>
+.page-builder {
+    display: flex;
+    height: 100vh;
+}
+
+.page-builder-sidebar {
+    flex: 0 0 200px;
+    padding: var(--spacing-medium);
+    overflow-y: auto;
+    border-right: 1px solid var(--color-interface-soft);
+}
+
+.page-builder-sidebar-title {
+    margin-top: 0;
+}
+
+.page-builder-module-types {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--spacing-small);
+}
+
+.page-builder-module-type {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: var(--spacing-tiny);
+    aspect-ratio: 1;
+    font-size: var(--font-size-small);
+    text-align: center;
+    cursor: grab;
+    user-select: none;
+    border: 1px solid var(--color-interface-soft);
+    border-radius: var(--border-radius-base);
+}
+
+.page-builder-module-type i {
+    font-size: 20px;
+}
+
+.page-builder-stage {
+    flex: 1 1 auto;
+    padding: var(--spacing-large);
+    background-color: var(--color-interface-softer);
+}
+
+.page-builder-frame {
+    display: block;
+    width: 100%;
+    height: 100%;
+    border: 0;
+}
+</style>
+
+<script setup lang="ts">
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import { onConfigurationValuesChanged, useConfigurationValues, useReloadBlock } from "@Obsidian/Utility/block";
+    import { PageBuilderInitializationBox } from "@Obsidian/ViewModels/Blocks/Cms/PageBuilder/pageBuilderInitializationBox";
+    import { moduleTypes } from "./pageBuilder/moduleTypes.partial";
+
+    const config = useConfigurationValues<PageBuilderInitializationBox>();
+
+    // #region Values
+
+    const errorMessage = config.errorMessage ?? "";
+    const targetPageUrl = config.targetPageUrl ?? "";
+
+    // #endregion Values
+
+    onConfigurationValuesChanged(useReloadBlock());
+</script>
