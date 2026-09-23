@@ -85,9 +85,12 @@ namespace Rock.Blocks.Communication.Chat
         [BlockAction]
         public BlockActionResult MintChurchToken()
         {
-            var person = GetCurrentPerson();
+            // Whether the person may start a direct message is not in the token, so the data
+            // view is left out: every open person asks for a token every few minutes, and a data
+            // view that fails must not stop chat for everyone.
+            var context = new ChatSessionContext { Configuration = ChatPlatformConfigurationService.Read() };
 
-            return ActionOk( ChatShellSession.MintToken( person, BuildSessionContext( person, RockContext ), RockContext ) );
+            return ActionOk( ChatShellSession.MintToken( GetCurrentPerson(), context, RockContext ) );
         }
 
         #endregion Block Actions
