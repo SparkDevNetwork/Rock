@@ -2,7 +2,7 @@
 <template>
     <NotificationBox v-if="!config.isCollectingData" :alertType="AlertType.Warning">
         <strong>No view data is being collected for this content.</strong>
-        <p class="mb-0 mt-1">Metrics appear here once interaction tracking is turned on. Enable Log Interactions on the Content Channel Item View block that displays this item, then check back after it receives traffic.</p>
+        <p>Metrics appear here once interaction tracking is turned on. Enable Log Interactions on the Content Channel Item View block that displays this item, then check back after it receives traffic.</p>
     </NotificationBox>
 
     <ContextSlicer v-else :title="itemName">
@@ -60,79 +60,83 @@
             </template>
         </div>
 
-        <div class="row">
-            <div class="col-md-12">
-                <Panel title="Views Over Time" panelHeaderCssClass="border-bottom-0">
-                    <div v-if="isLoading" class="skeleton metric-skeleton"></div>
-                    <NothingToShow v-else-if="!hasViewsOverTimeData" />
-                    <LineChart v-else
-                               :labels="viewsOverTimeLabels"
-                               :series="viewsOverTimeSeries"
-                               :tooltip="formatViewsTooltip"
-                               hideLegend
-                               labelDateFormat="auto"
-                               :linear="true"
-                               :showPoints="isViewsOverTimePointsShown"
-                               :valueHideGridLines="true"
-                               :valueHideAxisLine="true"
-                               :categoryHideAxisLine="true"
-                               :valuePrecision="0"
-                               height="300px" />
-                </Panel>
-            </div>
-        </div>
+        <ContentSectionContainer :sidebar="false" class="metrics">
 
-        <div class="row">
-            <div class="col-md-6">
-                <Panel title="Device Breakdown" panelHeaderCssClass="border-bottom-0">
-                    <div v-if="isLoading" class="skeleton metric-skeleton"></div>
-                    <NothingToShow v-else-if="deviceBreakdownLabels.length === 0" />
-                    <BarChart v-else
-                              :labels="deviceBreakdownLabels"
-                              :series="deviceBreakdownSeries"
-                              :tooltip="formatViewsTooltip"
-                              hideLegend
-                              :valueHideGridLines="true"
-                              :valueHideAxisLine="true"
-                              :categoryHideAxisLine="true"
-                              :valuePrecision="0"
-                              height="300px" />
-                </Panel>
+            <div class="row">
+                <div class="col-md-12">
+                    <ContentSection title="Views Over Time" class="metric-section" light disableCollapse>
+                        <div v-if="isLoading" class="skeleton metric-skeleton"></div>
+                        <NothingToShow v-else-if="!hasViewsOverTimeData" />
+                        <LineChart v-else
+                                   :labels="viewsOverTimeLabels"
+                                   :series="viewsOverTimeSeries"
+                                   :tooltip="formatViewsTooltip"
+                                   hideLegend
+                                   labelDateFormat="auto"
+                                   :linear="true"
+                                   :showPoints="isViewsOverTimePointsShown"
+                                   :valueHideGridLines="true"
+                                   :valueHideAxisLine="true"
+                                   :categoryHideAxisLine="true"
+                                   :valuePrecision="0"
+                                   height="300px" />
+                    </ContentSection>
+                </div>
             </div>
 
-            <div class="col-md-6">
-                <Panel title="Connection Status Breakdown" panelHeaderCssClass="border-bottom-0">
-                    <template #title>
-                        Connection Status Breakdown
-                    </template>
-                    <template #headerActions>
-                        <small class="text-muted">(Of Known People)</small>
-                    </template>
-                    <div v-if="isLoading" class="skeleton metric-skeleton"></div>
-                    <NothingToShow v-else-if="connectionStatusLabels.length === 0" />
-                    <BarChart v-else
-                              :labels="connectionStatusLabels"
-                              :series="connectionStatusSeries"
-                              :tooltip="formatPeopleTooltip"
-                              hideLegend
-                              :valueHideGridLines="true"
-                              :valueHideAxisLine="true"
-                              :categoryHideAxisLine="true"
-                              :valuePrecision="0"
-                              height="300px" />
-                </Panel>
+            <div class="row">
+                <div class="col-md-6">
+                    <ContentSection title="Device Breakdown" class="metric-section" light disableCollapse>
+                        <div v-if="isLoading" class="skeleton metric-skeleton"></div>
+                        <NothingToShow v-else-if="deviceBreakdownLabels.length === 0" />
+                        <BarChart v-else
+                                  :labels="deviceBreakdownLabels"
+                                  :series="deviceBreakdownSeries"
+                                  :tooltip="formatViewsTooltip"
+                                  hideLegend
+                                  :valueHideGridLines="true"
+                                  :valueHideAxisLine="true"
+                                  :categoryHideAxisLine="true"
+                                  :valuePrecision="0"
+                                  height="300px" />
+                    </ContentSection>
+                </div>
+
+                <div class="col-md-6">
+                    <ContentSection title="Connection Status Breakdown" class="metric-section" light disableCollapse>
+                        <template #headerActions>
+                            <small class="text-muted">(Of Known People)</small>
+                        </template>
+                        <div v-if="isLoading" class="skeleton metric-skeleton"></div>
+                        <NothingToShow v-else-if="connectionStatusLabels.length === 0" />
+                        <BarChart v-else
+                                  :labels="connectionStatusLabels"
+                                  :series="connectionStatusSeries"
+                                  :tooltip="formatPeopleTooltip"
+                                  hideLegend
+                                  :valueHideGridLines="true"
+                                  :valueHideAxisLine="true"
+                                  :categoryHideAxisLine="true"
+                                  :valuePrecision="0"
+                                  height="300px" />
+                    </ContentSection>
+                </div>
+
+                <div class="col-md-12">
+                    <RankedListBarChart title="Top Known Referrers" :items="topReferrers">
+                        <template v-if="isLoading" #empty>
+                            <div class="skeleton metric-skeleton"></div>
+                        </template>
+                    </RankedListBarChart>
+                </div>
+
+                <div class="col-md-12">
+                    <UtmMetricsCard :breakdowns="utmBreakdowns" :isLoading="isLoading" />
+                </div>
             </div>
-        </div>
+        </ContentSectionContainer>
 
-        <div style="margin-bottom: var(--spacing-large);">
-            <RankedListBarChart title="Top Known Referrers" :items="topReferrers">
-                <template v-if="isLoading" #empty>
-                    <div class="skeleton metric-skeleton"></div>
-                </template>
-            </RankedListBarChart>
-        </div>
 
-        <UtmMetricsCard :breakdowns="utmBreakdowns" :isLoading="isLoading" />
     </Panel>
 
     <Grid v-else-if="config.isCollectingData"
@@ -198,9 +202,13 @@
 </template>
 
 <style scoped>
-/* Match the KPI row's bottom gap to the panels below, whose margin-bottom is --spacing-large.
+/*
+    TODO NOTE: The following KPI styles are temporary until the new KPI Card component is implemented. Once implemented, remove these scoped styles.
+*/
+
+/* Match the KPI row's bottom gap to the chart sections below, whose margin-bottom is --spacing-large.
    The mb-* utilities are rem-based (root font-size is 14px), so none of them equal 24px. */
-.kpi-row {
+.kpi-row .kpi-tile {
     margin-bottom: var(--spacing-large);
 }
 
@@ -225,6 +233,8 @@
     import UtmMetricsCard from "./ContentChannelItemMetrics/utmMetricsCard.partial.obs";
     import GridSettingsModal from "./ContentChannelItemMetrics/gridSettingsModal.partial.obs";
     import BarChart from "@Obsidian/Controls/barChart.obs";
+    import ContentSectionContainer from "@Obsidian/Controls/contentSectionContainer.obs";
+    import ContentSection from "@Obsidian/Controls/contentSection.obs";
     import ButtonGroup from "@Obsidian/Controls/buttonGroup.obs";
     import ContextSlicer from "@Obsidian/Controls/contextSlicer.obs";
     import Grid, { PersonColumn, TextColumn, NumberColumn, DateTimeColumn, textValueFilter, pickExistingValueFilter, numberValueFilter, dateValueFilter, SelectColumn } from "@Obsidian/Controls/grid";

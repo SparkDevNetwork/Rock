@@ -16,6 +16,7 @@
 //  + Active Users - Used for displaying active users on internal homepage
 //  + Library Viewer
 //  + Lava Shortcode List
+//  + Content Channel Item Metrics
 // =============================================================
 
 
@@ -1191,3 +1192,34 @@ ul.activeusers {
 }
 
 // ===================== END LAVA SHORTCODE LIST =====================
+
+// ==================== CONTENT CHANNEL ITEM METRICS =====================
+// From ContentChannelItemMetrics/nothingToShow.partial.obs
+.content-channel-item-metrics-empty-state {
+  min-height: 300px;
+}
+
+
+.content-channel-item-metrics {
+
+  /* The inner Ant Select sizes to its content, so pin its width here; otherwise the picker grows
+    and shrinks with the selected dimension's label. :deep pierces into the DropDownList control. */
+  .utm-dimension-picker .ant-select {
+      min-width: $dropdown-min-width;
+  }
+
+  /* No label on the picker, so drop the control's default bottom spacing. */
+  .utm-dimension-picker {
+      margin-bottom: 0;
+  }
+
+  /* Loading placeholder sized to the ranked list it stands in for. The base .skeleton class supplies
+    the shimmer animation. */
+  .utm-skeleton {
+      height: 220px;
+      border-radius: var(--rounded-small);
+  }
+
+}
+
+// ================== END CONTENT CHANNEL ITEM METRICS ===================
