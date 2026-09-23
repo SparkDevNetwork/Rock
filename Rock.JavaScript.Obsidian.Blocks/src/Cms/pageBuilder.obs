@@ -29,7 +29,7 @@
 <style scoped>
 .page-builder {
     display: flex;
-    height: 100vh;
+    height: 100%;
 }
 
 .page-builder-sidebar {

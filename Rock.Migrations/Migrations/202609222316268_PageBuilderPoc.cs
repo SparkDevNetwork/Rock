@@ -24,7 +24,7 @@ namespace Rock.Migrations
     /// </summary>
     public partial class PageBuilderPoc : Rock.Migrations.RockMigration
     {
-        private const string BlankLayoutGuid = "2E169330-D7D7-4ECA-B417-72C64BE150F0";
+        private const string FullScreenLayoutGuid = "96B64C3E-D5CD-4853-8686-C5481AF45CA3";
         private const string PageBuilderLayoutGuid = "680D62E2-8018-4187-838F-7593CFB3F7CA";
         private const string PageBuilderPageGuid = "2540C899-5B4E-452B-865A-1E43A8BEAC2B";
         private const string PageBuilderPageRouteGuid = "B59DEF98-8C20-47EB-8E93-96300909ABE2";
@@ -56,19 +56,21 @@ namespace Rock.Migrations
         #region Private Methods
 
         /// <summary>
-        /// Adds the internal site layout whose zone opts in to the Page Builder.
+        /// Adds the internal site layouts for the builder's full screen worksurface and for the page it edits.
         /// </summary>
         private void AddPageBuilderLayout_Up()
         {
+            RockMigrationHelper.AddLayout( SystemGuid.Site.SITE_ROCK_INTERNAL, "FullScreen", "Full Screen", "Fills the browser window with the Main zone and no site navigation.", FullScreenLayoutGuid );
             RockMigrationHelper.AddLayout( SystemGuid.Site.SITE_ROCK_INTERNAL, "PageBuilder", "Page Builder", "", PageBuilderLayoutGuid );
         }
 
         /// <summary>
-        /// Removes the Page Builder layout.
+        /// Removes the Page Builder and Full Screen layouts.
         /// </summary>
         private void AddPageBuilderLayout_Down()
         {
             RockMigrationHelper.DeleteLayout( PageBuilderLayoutGuid );
+            RockMigrationHelper.DeleteLayout( FullScreenLayoutGuid );
         }
 
         /// <summary>
@@ -76,8 +78,7 @@ namespace Rock.Migrations
         /// </summary>
         private void AddPageBuilderPages_Up()
         {
-            // The builder is a full screen worksurface, so its page uses the Blank layout to drop the site navigation.
-            RockMigrationHelper.AddPage( true, SystemGuid.Page.CMS_CONFIGURATION, BlankLayoutGuid, "Page Builder", "", PageBuilderPageGuid, "ti ti-layout" );
+            RockMigrationHelper.AddPage( true, SystemGuid.Page.CMS_CONFIGURATION, FullScreenLayoutGuid, "Page Builder", "", PageBuilderPageGuid, "ti ti-layout" );
             RockMigrationHelper.AddOrUpdatePageRoute( PageBuilderPageGuid, "admin/cms/page-builder", PageBuilderPageRouteGuid );
 
             RockMigrationHelper.AddPage( true, PageBuilderPageGuid, PageBuilderLayoutGuid, "Page Builder Sample", "", PageBuilderSamplePageGuid );
