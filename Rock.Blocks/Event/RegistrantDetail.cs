@@ -290,18 +290,27 @@ namespace Rock.Blocks.Event
             // Only expose attributes that are registrant-attribute-sourced fields from the
             // registration template forms. Person and GroupMember attributes are edited on
             // their own detail blocks.
-            var allowedAttributeKeys = GetRegistrantAttributeKeys( entity );
+            var registrantAttributeFields = GetRegistrantAttributeFieldsByKey( entity );
             bag.LoadAttributesAndValuesForPublicEdit( entity, RequestContext.CurrentPerson, enforceSecurity: false );
 
-            if ( allowedAttributeKeys.Count > 0 )
+            if ( registrantAttributeFields.Count > 0 )
             {
                 bag.Attributes = bag.Attributes?
-                    .Where( kvp => allowedAttributeKeys.Contains( kvp.Key ) )
+                    .Where( kvp => registrantAttributeFields.ContainsKey( kvp.Key ) )
                     .ToDictionary( kvp => kvp.Key, kvp => kvp.Value );
 
                 bag.AttributeValues = bag.AttributeValues?
-                    .Where( kvp => allowedAttributeKeys.Contains( kvp.Key ) )
+                    .Where( kvp => registrantAttributeFields.ContainsKey( kvp.Key ) )
                     .ToDictionary( kvp => kvp.Key, kvp => kvp.Value );
+
+                // The form field, not the attribute, decides whether a registrant attribute is required.
+                if ( bag.Attributes != null )
+                {
+                    foreach ( var kvp in bag.Attributes )
+                    {
+                        kvp.Value.IsRequired = registrantAttributeFields[kvp.Key].IsRequired;
+                    }
+                }
             }
             else
             {
@@ -526,19 +535,38 @@ namespace Rock.Blocks.Event
         /// </summary>
         private HashSet<string> GetRegistrantAttributeKeys( RegistrationRegistrant entity )
         {
+            return GetRegistrantAttributeFieldsByKey( entity ).Keys.ToHashSet();
+        }
+
+        /// <summary>
+        /// Returns the <see cref="RegistrationFieldSource.RegistrantAttribute"/> form fields defined
+        /// on the registration template forms, keyed by the attribute key each field edits.
+        /// </summary>
+        private Dictionary<string, RegistrationTemplateFormField> GetRegistrantAttributeFieldsByKey( RegistrationRegistrant entity )
+        {
             var template = GetRegistration( entity )?.RegistrationInstance?.RegistrationTemplate;
+            var fieldsByKey = new Dictionary<string, RegistrationTemplateFormField>();
 
             if ( template?.Forms == null )
             {
-                return new HashSet<string>();
+                return fieldsByKey;
             }
 
-            return template.Forms
+            var registrantAttributeFields = template.Forms
                 .SelectMany( f => f.Fields )
-                .Where( f => f.FieldSource == RegistrationFieldSource.RegistrantAttribute && f.AttributeId.HasValue )
-                .Select( f => AttributeCache.Get( f.AttributeId.Value )?.Key )
-                .Where( k => k != null )
-                .ToHashSet();
+                .Where( f => f.FieldSource == RegistrationFieldSource.RegistrantAttribute && f.AttributeId.HasValue );
+
+            foreach ( var field in registrantAttributeFields )
+            {
+                var key = AttributeCache.Get( field.AttributeId.Value )?.Key;
+
+                if ( key != null && !fieldsByKey.ContainsKey( key ) )
+                {
+                    fieldsByKey[key] = field;
+                }
+            }
+
+            return fieldsByKey;
         }
 
         /// <summary>
