@@ -15,10 +15,10 @@
 // </copyright>
 //
 
-using System.Collections.Generic;
 using System.ComponentModel;
 
 using Rock.Attribute;
+using Rock.Model;
 
 namespace Rock.Blocks.Cms
 {
@@ -35,19 +35,11 @@ namespace Rock.Blocks.Cms
     #region Block Attributes
 
     [TextField(
-        "Module Type",
-        Description = "The key of the module type this Canvas displays.",
+        "Module Instance",
+        Description = "The unique identifier of the module instance this Canvas displays.",
         IsRequired = false,
         Order = 0,
-        Key = AttributeKey.ModuleType )]
-
-    [CodeEditorField(
-        "Module Settings",
-        Description = "The module's settings as JSON.",
-        EditorMode = Rock.Web.UI.Controls.CodeEditorMode.JavaScript,
-        IsRequired = false,
-        Order = 1,
-        Key = AttributeKey.ModuleSettings )]
+        Key = AttributeKey.ModuleInstance )]
 
     #endregion Block Attributes
 
@@ -62,8 +54,7 @@ namespace Rock.Blocks.Cms
         /// </summary>
         internal static class AttributeKey
         {
-            public const string ModuleType = "ModuleType";
-            public const string ModuleSettings = "ModuleSettings";
+            public const string ModuleInstance = "ModuleInstance";
         }
 
         #endregion Keys
@@ -76,40 +67,27 @@ namespace Rock.Blocks.Cms
         /// <inheritdoc/>
         protected override string GetInitialHtmlContent()
         {
-            var moduleType = PageBuilderModuleTypes.Get( GetAttributeValue( AttributeKey.ModuleType ) );
+            var moduleInstanceGuid = GetAttributeValue( AttributeKey.ModuleInstance ).AsGuidOrNull();
+            var moduleInstance = moduleInstanceGuid.HasValue
+                ? new ModuleInstanceService( RockContext ).Get( moduleInstanceGuid.Value )
+                : null;
 
-            if ( moduleType == null )
+            if ( moduleInstance?.ModuleType == null )
             {
                 return BlockCache.IsAuthorized( Rock.Security.Authorization.ADMINISTRATE, RequestContext.CurrentPerson )
-                    ? "<div class='alert alert-warning'>This Canvas has no module type.</div>"
+                    ? "<div class='alert alert-warning'>This Canvas has no module.</div>"
                     : string.Empty;
             }
 
+            // The module's settings are its attribute values, which its type's Lava reads through the Attribute filter.
+            moduleInstance.LoadAttributes( RockContext );
+
             var mergeFields = RequestContext.GetCommonMergeFields();
-            mergeFields.Add( "Settings", GetModuleSettings( moduleType ) );
+            mergeFields.Add( "ModuleInstance", moduleInstance );
 
-            var moduleHtml = moduleType.WebLavaTemplate.ResolveMergeFields( mergeFields );
+            var moduleHtml = moduleInstance.ModuleType.WebLavaTemplate.ResolveMergeFields( mergeFields );
 
-            return $"<div class=\"canvas-module\" data-module-type=\"{moduleType.Key.EncodeHtml()}\">{moduleHtml}</div>";
-        }
-
-        /// <summary>
-        /// Gets the module's saved settings, using the module type's default for any setting that has not been saved.
-        /// </summary>
-        /// <param name="moduleType">The module type this Canvas displays.</param>
-        /// <returns>The module's settings, keyed by setting key.</returns>
-        private Dictionary<string, object> GetModuleSettings( PageBuilderModuleType moduleType )
-        {
-            var savedSettings = GetAttributeValue( AttributeKey.ModuleSettings ).FromJsonOrNull<Dictionary<string, string>>()
-                ?? new Dictionary<string, string>();
-            var settings = new Dictionary<string, object>();
-
-            foreach ( var setting in moduleType.Settings )
-            {
-                settings[setting.Key] = savedSettings.TryGetValue( setting.Key, out var value ) ? value : setting.DefaultValue;
-            }
-
-            return settings;
+            return $"<div class=\"canvas-module\" data-module-type=\"{moduleInstance.ModuleType.IdKey}\">{moduleHtml}</div>";
         }
 
         #endregion Methods

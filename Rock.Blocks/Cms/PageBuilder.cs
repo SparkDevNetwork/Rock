@@ -16,6 +16,7 @@
 //
 
 using System.ComponentModel;
+using System.Data.Entity;
 using System.Linq;
 using System.Reflection;
 
@@ -78,13 +79,19 @@ namespace Rock.Blocks.Cms
                 };
             }
 
+            var moduleTypes = new ModuleTypeService( RockContext )
+                .Queryable()
+                .AsNoTracking()
+                .OrderBy( moduleType => moduleType.Name )
+                .ToList();
+
             return new PageBuilderInitializationBox
             {
                 TargetPageUrl = targetPageUrl,
-                ModuleTypes = PageBuilderModuleTypes.All
+                ModuleTypes = moduleTypes
                     .Select( moduleType => new PageBuilderModuleTypeBag
                     {
-                        Key = moduleType.Key,
+                        Key = moduleType.IdKey,
                         Name = moduleType.Name,
                         IconCssClass = moduleType.IconCssClass
                     } )
@@ -119,7 +126,7 @@ namespace Rock.Blocks.Cms
         #region Block Actions
 
         /// <summary>
-        /// Adds a dropped module to the target page in a new Canvas block, at the position it was dropped.
+        /// Adds a new module of the dropped type to the target page in a new Canvas block, at the position it was dropped.
         /// </summary>
         /// <param name="bag">Where the module was dropped and which module type it is.</param>
         /// <returns>The identifier of the new Canvas block, or an error.</returns>
@@ -143,7 +150,7 @@ namespace Rock.Blocks.Cms
                 return ActionUnauthorized( "You are not authorized to add blocks to this page." );
             }
 
-            var moduleType = PageBuilderModuleTypes.Get( bag.ModuleTypeKey );
+            var moduleType = new ModuleTypeService( RockContext ).Get( bag.ModuleTypeKey, !PageCache.Layout.Site.DisablePredictableIds );
 
             if ( moduleType == null )
             {
@@ -166,38 +173,48 @@ namespace Rock.Blocks.Cms
                 Name = moduleType.Name
             };
 
-            blockService.Add( block );
-            block.Order = blockService.GetMaxOrder( block );
-
-            RockContext.SaveChanges();
-
-            // New blocks inherit the page's authorization rules.
-            Authorization.CopyAuthorization( targetPage, block, RockContext );
-
-            /*
-                09/23/26 - JMH
-
-                Order only positions a block among the page blocks in its zone, because Rock renders a
-                zone's site and layout blocks ahead of its page blocks regardless of Order. The builder
-                only offers drop positions below those, so the block it was dropped in front of is always
-                a page block in this zone and the reorder can stay within them.
-
-                Reason: A drop position maps directly onto Order among the zone's page blocks.
-            */
-            if ( bag.BeforeBlockId.HasValue )
+            // A new module starts with its type's default settings, since its attribute values fall back to their defaults.
+            var moduleInstance = new ModuleInstance
             {
-                var zoneBlocks = blockService.GetByPageAndZone( targetPage.Id, bag.ZoneName ).ToList();
+                Name = moduleType.Name,
+                ModuleTypeId = moduleType.Id
+            };
 
-                if ( zoneBlocks.ReorderEntity( block.Id.ToString(), bag.BeforeBlockId.Value.ToString() ) )
+            RockContext.WrapTransaction( () =>
+            {
+                new ModuleInstanceService( RockContext ).Add( moduleInstance );
+                blockService.Add( block );
+                block.Order = blockService.GetMaxOrder( block );
+
+                RockContext.SaveChanges();
+
+                // New blocks inherit the page's authorization rules.
+                Authorization.CopyAuthorization( targetPage, block, RockContext );
+
+                /*
+                    09/23/26 - JMH
+
+                    Order only positions a block among the page blocks in its zone, because Rock renders a
+                    zone's site and layout blocks ahead of its page blocks regardless of Order. The builder
+                    only offers drop positions below those, so the block it was dropped in front of is always
+                    a page block in this zone and the reorder can stay within them.
+
+                    Reason: A drop position maps directly onto Order among the zone's page blocks.
+                */
+                if ( bag.BeforeBlockId.HasValue )
                 {
-                    RockContext.SaveChanges();
-                }
-            }
+                    var zoneBlocks = blockService.GetByPageAndZone( targetPage.Id, bag.ZoneName ).ToList();
 
-            block.LoadAttributes( RockContext );
-            block.SetAttributeValue( Canvas.AttributeKey.ModuleType, moduleType.Key );
-            block.SetAttributeValue( Canvas.AttributeKey.ModuleSettings, moduleType.GetDefaultSettings().ToJson() );
-            block.SaveAttributeValues( RockContext );
+                    if ( zoneBlocks.ReorderEntity( block.Id.ToString(), bag.BeforeBlockId.Value.ToString() ) )
+                    {
+                        RockContext.SaveChanges();
+                    }
+                }
+
+                block.LoadAttributes( RockContext );
+                block.SetAttributeValue( Canvas.AttributeKey.ModuleInstance, moduleInstance.Guid.ToString() );
+                block.SaveAttributeValues( RockContext );
+            } );
 
             // Saving a new page block does not refresh its page's cached block list.
             PageCache.Remove( targetPage.Id );
