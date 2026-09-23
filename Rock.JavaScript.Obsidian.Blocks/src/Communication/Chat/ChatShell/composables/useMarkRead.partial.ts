@@ -71,8 +71,81 @@ export type ReadTracker = {
  *
  * @returns The tracker.
  */
-export function createReadTracker(_dependencies: ReadTrackerDependencies): ReadTracker {
-    throw new Error("not implemented");
+export function createReadTracker(dependencies: ReadTrackerDependencies): ReadTracker {
+    let activeChannelId: string | null = null;
+    let newestSeen: number | null = null;
+    let lastSaved: number | null = null;
+
+    /** Saves the open channel's position if something newer than the last save was seen. */
+    async function flush(): Promise<void> {
+        const channelId = activeChannelId;
+        const messageId = newestSeen;
+
+        if (channelId === null || messageId === null || (lastSaved !== null && messageId <= lastSaved)) {
+            return;
+        }
+
+        // Taken as saved before the answer, so a second event while this save is in flight,
+        // a close right after losing focus for one, sends nothing more.
+        const previous = lastSaved;
+        lastSaved = messageId;
+
+        const result = await dependencies.save(channelId, messageId);
+
+        if (!result) {
+            // The next event tries again, unless the person has moved on since.
+            if (activeChannelId === channelId && lastSaved === messageId) {
+                lastSaved = previous;
+            }
+            return;
+        }
+
+        dependencies.onSaved(channelId, result);
+    }
+
+    return {
+        open: (channelId: string, storedCursor: number | null): void => {
+            activeChannelId = channelId;
+            lastSaved = storedCursor;
+            newestSeen = storedCursor;
+        },
+
+        seen: (messageId: number): void => {
+            if (activeChannelId !== null && (newestSeen === null || messageId > newestSeen)) {
+                newestSeen = messageId;
+            }
+        },
+
+        flush,
+
+        leave: async (): Promise<void> => {
+            await flush();
+            activeChannelId = null;
+            newestSeen = null;
+            lastSaved = null;
+        },
+
+        attach: (targets: PageEventTargets): (() => void) => {
+            const onVisibility = (): void => {
+                if (targets.document.visibilityState === "hidden") {
+                    void flush();
+                }
+            };
+            const onLeave = (): void => {
+                void flush();
+            };
+
+            targets.document.addEventListener("visibilitychange", onVisibility);
+            targets.window.addEventListener("blur", onLeave);
+            targets.window.addEventListener("pagehide", onLeave);
+
+            return () => {
+                targets.document.removeEventListener("visibilitychange", onVisibility);
+                targets.window.removeEventListener("blur", onLeave);
+                targets.window.removeEventListener("pagehide", onLeave);
+            };
+        }
+    };
 }
 
 /** What the keepalive save needs. */
@@ -92,8 +165,39 @@ export type KeepaliveSaveOptions = {
  *
  * @returns The save.
  */
-export function createKeepaliveSave(_options: KeepaliveSaveOptions): ReadTrackerDependencies["save"] {
-    throw new Error("not implemented");
+export function createKeepaliveSave(options: KeepaliveSaveOptions): ReadTrackerDependencies["save"] {
+    const url = `${options.projectUrl.replace(/\/+$/, "")}/rest/v1/rpc/chat_mark_read`;
+
+    return async (channelId: string, messageId: number): Promise<MarkReadResult | null> => {
+        const token = options.currentToken();
+        if (!token) {
+            return null;
+        }
+
+        try {
+            const response = await options.fetch(url, {
+                method: "POST",
+                keepalive: true,
+                headers: {
+                    "Authorization": `Bearer ${token}`,
+                    "apikey": options.publishableKey,
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({ p_channel_id: channelId, p_message_id: messageId })
+            });
+
+            if (!response.ok) {
+                return null;
+            }
+
+            const body = await response.json() as Partial<MarkReadResult>;
+            return { read_cursor: body.read_cursor ?? null, last_message_id: body.last_message_id ?? null };
+        }
+        catch {
+            // A save that never arrived is tried again by the next event; nothing to show.
+            return null;
+        }
+    };
 }
 
 /**
@@ -105,6 +209,10 @@ export function createKeepaliveSave(_options: KeepaliveSaveOptions): ReadTracker
  *
  * @returns True when the channel should show as unread.
  */
-export function isUnreadAfterSave(_result: MarkReadResult): boolean {
-    throw new Error("not implemented");
+export function isUnreadAfterSave(result: MarkReadResult): boolean {
+    if (result.last_message_id === null) {
+        return false;
+    }
+
+    return result.read_cursor === null || result.last_message_id > result.read_cursor;
 }
