@@ -3658,16 +3658,20 @@ Sys.Application.add_load(function () {
                 /*
                     09/22/26 - JMH
 
-                    The Page Builder renders the page it is editing inside an iframe. Native drag events do not
+                    The Page Builder renders the page it is editing inside an iframe. Pointer events do not
                     cross into a nested browsing context, so the parent window hit-tests the frame's DOM directly
                     to resolve drop targets. That only works if an opted-in zone is identifiable from the markup,
-                    which is what this attribute provides.
+                    which is what these attributes provide.
 
-                    Reason: Lets the Page Builder find its drop targets without a round trip to the server.
+                    The zone key is emitted because a block's Zone must match it exactly, and the wrapper's id
+                    only carries a lowercased copy.
+
+                    Reason: Lets the Page Builder find its drop targets and name their zone without a round trip.
                 */
                 if ( control.EnablePageBuilder )
                 {
                     zoneWrapper.Attributes.Add( "data-pagebuilder", "true" );
+                    zoneWrapper.Attributes.Add( "data-pagebuilder-zone", zoneControl.Key );
                 }
 
                 if ( canConfigPage )
