@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Generic;
 
+using Rock.Attribute;
 using Rock.Lava;
 using Rock.Model;
 
@@ -100,6 +101,18 @@ namespace Rock.Communication.SmsActions
         /// a <see cref="Model.Communication"/> record in order to track automated responses.
         /// </summary>
         public bool SaveAsResponse { get; set; }
+
+        /// <summary>
+        /// Gets or sets whether this response should be returned in the incoming message's webhook reply rather than
+        /// queued for sending. If <see cref="SaveAsResponse"/> is also <c>true</c>, the saved <see cref="Model.Communication"/>
+        /// record is marked as already sent.
+        /// </summary>
+        /// <remarks>
+        /// The opt-out confirmation uses this, since the sender's number is opted out before a queued response could
+        /// be sent to it.
+        /// </remarks>
+        [RockInternal( "20.1" )]
+        public bool IsWebhookReply { get; set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SmsMessage"/> class.
