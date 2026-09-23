@@ -1,43 +1,49 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
     <fieldset>
-        <ValueDetailList :modelValue="topValues" />
+        <ContentSectionContainer :sidebar="false">
 
-        <div class="row">
-            <div class="col-md-6">
-                <ValueDetailList :modelValue="leftSideValues" />
-            </div>
+            <ContentSection title="Details"
+                            icon="ti ti-info-circle">
+                <div>
+                    <div class="row">
+                        <div class="col-md-12">
+                            <ValueDetailList :modelValue="topValues" />
+                        </div>
+                    </div>
 
-            <div class="col-md-6">
-                <ValueDetailList :modelValue="rightSideValues" />
-            </div>
-        </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <ValueDetailList :modelValue="leftSideValues" />
+                        </div>
 
-        <EditSkillList v-if="props.modelValue?.idKey"
-                       v-model="skills"
-                       :agentKey="props.modelValue.idKey"
-                       :availableSkills="props.options?.availableSkills ?? []"
-                       :systemSkills="systemSkills" />
+                        <div class="col-md-6">
+                            <ValueDetailList :modelValue="rightSideValues" />
+                        </div>
+                    </div>
+                </div>
+            </ContentSection>
+
+            <EditSkillList v-if="props.modelValue?.idKey"
+                           v-model="skills"
+                           :agentKey="props.modelValue.idKey"
+                           :availableSkills="props.options?.availableSkills ?? []"
+                           :systemSkills="systemSkills" />
+        </ContentSectionContainer>
+
     </fieldset>
 
     <Modal v-model="isInstructionsVisible"
            title="Instructions"
            cancelText="Close">
-        <pre class="instructions">{{ props.modelValue?.instructions }}</pre>
+        <pre class="ai-instructions">{{ props.modelValue?.instructions }}</pre>
     </Modal>
 </template>
 
-<style scopes>
-.instructions {
-    white-space: pre-wrap;
-    word-break: break-word;
-    overflow-wrap: break-word;
-    text-wrap: wrap;
-}
-</style>
-
 <script setup lang="ts">
     import EditSkillList from "./editSkillList.partial.obs";
+    import ContentSectionContainer from "@Obsidian/Controls/contentSectionContainer.obs";
+    import ContentSection from "@Obsidian/Controls/contentSection.obs";
     import Modal from "@Obsidian/Controls/modal.obs";
     import ValueDetailList from "@Obsidian/Controls/valueDetailList.obs";
     import { computed, PropType, ref, watch } from "vue";
@@ -127,7 +133,7 @@
         }
 
         if (props.modelValue.agentType === AgentType.Chat) {
-            valueBuilder.addTextValue("Role", ModelServiceRoleDescription[props.modelValue.role]);
+            valueBuilder.addTextValue("Model", ModelServiceRoleDescription[props.modelValue.role]);
             valueBuilder.addTextValue("Reasoning Effort", ReasoningEffortDescription[props.modelValue.reasoningEffort]);
         }
         else if (props.modelValue.agentType === AgentType.Mcp) {

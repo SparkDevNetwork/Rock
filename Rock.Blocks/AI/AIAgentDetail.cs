@@ -455,6 +455,28 @@ namespace Rock.Blocks.AI
             return true;
         }
 
+        /// <summary>
+        /// Builds the lookup of tool descriptions used by the UI to explain what
+        /// each tool lets the agent do. The keys are the tool Guids, which is what
+        /// ToListItemBagList() puts in each item's Value, so the UI can pair a
+        /// description with its tool without a second lookup.
+        /// Tools with no description are omitted rather than mapped to an empty
+        /// string, which would render an empty help icon.
+        /// </summary>
+        /// <param name="tools">The tools defined on the skill.</param>
+        /// <returns>A dictionary of tool descriptions keyed by the tool's Guid.</returns>
+        private static Dictionary<string, string> GetToolDescriptions( IEnumerable<AISkillTool> tools )
+        {
+            if ( tools == null )
+            {
+                return new Dictionary<string, string>();
+            }
+
+            return tools
+                .Where( t => t != null && t.Description.IsNotNullOrWhiteSpace() )
+                .ToDictionary( t => t.Guid.ToString(), t => t.Description );
+        }
+
         #endregion
 
         #region Block Actions
@@ -595,6 +617,7 @@ namespace Rock.Blocks.AI
             response.Skill = GetSkillBag( agentSkill, true );
             response.AvailableTools = agentSkill.AISkill.AISkillTools
                 .ToListItemBagList();
+            response.ToolDescriptions = GetToolDescriptions( agentSkill.AISkill.AISkillTools );
 
             return ActionOk( response );
         }
@@ -702,6 +725,7 @@ namespace Rock.Blocks.AI
 
             response.AvailableTools = skill.AISkillTools
                 .ToListItemBagList();
+            response.ToolDescriptions = GetToolDescriptions( skill.AISkillTools );
 
             return ActionOk( response );
         }

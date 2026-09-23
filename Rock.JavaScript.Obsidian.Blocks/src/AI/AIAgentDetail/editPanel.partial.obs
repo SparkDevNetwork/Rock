@@ -1,128 +1,155 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <fieldset>
-        <div class="row">
-            <div class="col-md-6">
-                <TextBox v-model="name"
-                         label="Name"
-                         rules="required" />
-            </div>
-        </div>
-
-        <div class="row">
-            <div class="col-md-6">
-                <DropDownList v-model="agentType"
-                              label="Type"
-                              :items="agentTypeItems"
-                              :showBlankItem="false"
-                              :disabled="!!props.modelValue.bag?.idKey"
-                              rules="required" />
-            </div>
-
-            <div class="col-md-6">
-                <DropDownList v-model="audienceType"
-                              label="Audience"
-                              :items="audienceTypeItems"
-                              :showBlankItem="false"
-                              rules="required" />
-            </div>
-        </div>
-
-        <TextBox v-model="description"
-                 label="Description"
-                 textMode="multiline" />
-
-        <NotificationBox v-if="isSystem" alertType="info">
-            <strong>Note</strong> Because this agent is used by Rock, the instructions cannot be edited.
-        </NotificationBox>
-
-        <TextBox v-model="instructions"
-                 label="Instructions"
-                 textMode="multiline"
-                 :rows="8"
-                 :disabled="isSystem"
-                 allowHtml />
-
-        <template v-if="agentType === AgentType.Chat.toString()">
-            <div class="row">
-                <div class="col-md-6">
-                    <ImageUploader v-model="avatarBinaryFile"
-                                   label="Avatar" />
-                </div>
-
-                <div class="col-md-6">
-                    <DropDownList v-model="role"
-                                  label="Model"
-                                  help="The language model to use when this agent handles requests."
-                                  :items="roleItems"
-                                  :showBlankItem="false"
-                                  rules="required" />
-
-                    <RadioButtonList v-model="reasoningEffort"
-                                     label="Reasoning Effort"
-                                     help="How much reasoning the language model should spend before answering. Higher values give more thorough answers but take longer and use more tokens."
-                                     :items="reasoningEffortItems"
-                                     horizontal
-                                     rules="required" />
-                </div>
-            </div>
-
-            <Panel title="Advanced Settings" hasCollapse>
+    <ContentSectionContainer :sidebar="false">
+        <ContentSection light>
+            <div class="basicfields">
                 <div class="row">
                     <div class="col-md-6">
+                        <TextBox v-model="name"
+                                 label="Name"
+                                 rules="required" />
+                    </div>
+                </div>
+
+                <TextBox v-model="description"
+                         label="Description"
+                         textMode="multiline" />
+
+                <div class="row">
+                    <div class="col-md-3">
+                        <RadioButtonList v-model="audienceType"
+                                         label="Audience"
+                                         help="Who the agent serves. Skills and tools limit the data and functionality they expose based on this."
+                                         :items="audienceTypeItems" />
+                    </div>
+                </div>
+            </div>
+
+        </ContentSection>
+
+        <ContentSection title="Configuration"
+                        icon="ti ti-settings">
+            <div class="contentstack-body">
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="form-group">
+                            <RockLabel help="Whether this agent is used by Rock's AI chat or outside AI tools.">Agent Type</RockLabel>
+                            <DisplayCardContainer role="radiogroup" aria-label="Agent Type">
+                                <DisplayCard v-for="agentTypeItem in agentTypeItems"
+                                             :key="agentTypeItem.value ?? ''"
+                                             :title="agentTypeItem.text"
+                                             :description="agentTypeDetails[agentTypeItem.value ?? '']?.description"
+                                             :iconCssClass="agentTypeDetails[agentTypeItem.value ?? '']?.iconCssClass"
+                                             iconStyle="tile"
+                                             isRadioSelectable
+                                             :isSelected="agentType === agentTypeItem.value"
+                                             :disabled="!!props.modelValue.bag?.idKey"
+                                             :onClick="() => onAgentTypeClick(agentTypeItem.value)" />
+                            </DisplayCardContainer>
+                        </div>
+                    </div>
+                </div>
+
+                <ConditionalWell v-if="agentType === AgentType.Chat.toString()">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <ButtonGroup v-model="role"
+                                         label="Model"
+                                         formGroupClasses="d-flex flex-column align-items-start"
+                                         help="The role of the language model to use when this agent handles requests. This determines the agent's capabilities and performance."
+                                         :items="roleItems"
+                                         :btnSize="BtnSize.Small" />
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+
+                            <ButtonGroup v-model="reasoningEffort"
+                                         label="Reasoning Effort"
+                                         formGroupClasses="d-flex flex-column align-items-start"
+                                         help="How much reasoning the model does before answering. Higher settings handle complex requests better but are slower and cost more tokens."
+                                         :items="reasoningEffortItems"
+                                         :btnSize="BtnSize.Small" />
+                        </div>
+                    </div>
+
+                    <ImageUploader v-model="avatarBinaryFile"
+                                   label="Avatar"
+                                   help="The image that represents this agent." />
+                </ConditionalWell>
+
+                <ConditionalWell v-if="agentType === AgentType.Mcp.toString()">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <TextBox v-model="slug"
+                                     label="Slug"
+                                     help="The identifier used in the URL that MCP clients connect to."
+                                     :rules="['required', validateSlug]" />
+                        </div>
+                    </div>
+                </ConditionalWell>
+
+                <NotificationBox v-if="isSystem" alertType="info">
+                    <strong>Note:</strong> Because this agent is used by Rock, the instructions cannot be edited.
+                </NotificationBox>
+
+                <TextBox v-model="instructions"
+                         label="Instructions"
+                         :help="instructionsHelp"
+                         textMode="multiline"
+                         :rows="8"
+                         :disabled="isSystem"
+                         allowHtml />
+            </div>
+
+        </ContentSection>
+
+        <ContentSection title="Advanced Settings"
+                        icon="ti ti-adjustments"
+                        :isCollapsed="true">
+            <div class="contentstack-body">
+                <div v-if="agentType === AgentType.Chat.toString()" class="row">
+                    <div class="col-md-3">
                         <NumberBox v-model="autoSummarizeThreshold"
                                    label="Auto Summarize Threshold"
-                                   help="The number of tokens that will trigger an auto summarization of the conversion when the agent is processing a message. If blank a suitable default will be used." />
-
-                    </div>
-
-                    <div class="col-md-6">
-                        <CheckBox v-model="isExcludingSystemSkills"
-                                  label="Exclude System Skills"
-                                  help="By default, a set of system skills and tools will be included in the agent. These provide critical functionality and should only be removed if you are sure you need to remove them." />
+                                   help="The number of tokens that triggers summarization of the conversation. When blank, a default threshold is used." />
                     </div>
                 </div>
 
-                <CodeEditor v-model="currentPersonTemplate"
-                            label="Current Person Template"
-                            help="The Lava template to use when rendering the details about the current person for the agent. The merge field 'CurrentPerson' is available. If blank a default template will be used."
-                            editor="monaco"
-                            mode="lava" />
-            </Panel>
-        </template>
-
-        <template v-if="agentType === AgentType.Mcp.toString()">
-            <div class="row">
-                <div class="col-md-6">
-                    <TextBox v-model="slug"
-                             label="Slug"
-                             help="The URL slug that identifies this agent to the MCP service."
-                             :rules="['required', validateSlug]" />
-                </div>
-            </div>
-
-            <Panel title="Advanced Settings" hasCollapse>
                 <div class="row">
                     <div class="col-md-6">
                         <CheckBox v-model="isExcludingSystemSkills"
                                   label="Exclude System Skills"
-                                  help="By default, a set of system skills and tools will be included in the agent. These provide critical functionality and should only be removed if you are sure you need to remove them." />
+                                  help="Whether to omit the standard skills and tools included with every agent. These provide critical functionality and are rarely safe to remove." />
                     </div>
                 </div>
-            </Panel>
-        </template>
-    </fieldset>
+
+                <CodeEditor v-if="agentType === AgentType.Chat.toString()"
+                            v-model="currentPersonTemplate"
+                            label="Current Person Template"
+                            help="The details about the logged-in person that are added to the agent's system prompt. The 'CurrentPerson' merge field is available. When blank, a default template is used."
+                            editor="monaco"
+                            mode="lava" />
+            </div>
+
+        </ContentSection>
+    </ContentSectionContainer>
 </template>
 
 <script setup lang="ts">
+    import ButtonGroup from "@Obsidian/Controls/buttonGroup.obs";
     import CheckBox from "@Obsidian/Controls/checkBox.obs";
     import CodeEditor from "@Obsidian/Controls/codeEditor.obs";
-    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import ConditionalWell from "@Obsidian/Controls/conditionalWell.obs";
+    import ContentSection from "@Obsidian/Controls/contentSection.obs";
+    import ContentSectionContainer from "@Obsidian/Controls/contentSectionContainer.obs";
+    import DisplayCard from "@Obsidian/Controls/displayCard.obs";
+    import DisplayCardContainer from "@Obsidian/Controls/displayCardContainer.obs";
     import ImageUploader from "@Obsidian/Controls/imageUploader.obs";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import NumberBox from "@Obsidian/Controls/numberBox.obs";
-    import Panel from "@Obsidian/Controls/panel.obs";
     import RadioButtonList from "@Obsidian/Controls/radioButtonList.obs";
+    import RockLabel from "@Obsidian/Controls/rockLabel.obs";
     import TextBox from "@Obsidian/Controls/textBox.obs";
     import { computed, PropType, ref, watch } from "vue";
     import { setPropertiesBoxValue } from "@Obsidian/Utility/block";
@@ -130,12 +157,27 @@
     import { AIAgentBag } from "@Obsidian/ViewModels/Blocks/AI/AIAgentDetail/aiAgentBag";
     import { AIAgentDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/AI/AIAgentDetail/aiAgentDetailOptionsBag";
     import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
     import { ModelServiceRole, ModelServiceRoleDescription } from "@Obsidian/Enums/AI/Agent/modelServiceRole";
     import { ReasoningEffort, ReasoningEffortDescription } from "@Obsidian/Enums/AI/Agent/reasoningEffort";
     import { enumToListItemBag } from "@Obsidian/Utility/enumUtils";
     import { toNumber } from "@Obsidian/Utility/numberUtils";
     import { AgentType, AgentTypeDescription } from "@Obsidian/Enums/AI/Agent/agentType";
     import { AudienceType, AudienceTypeDescription } from "@Obsidian/Enums/AI/Agent/audienceType";
+
+    // #region Types
+
+    /** The presentation details for a single agent type option card. */
+    type AgentTypeDetail = {
+        /** The short explanation of what the agent type does. */
+        description: string;
+
+        /** The icon shown on the option card. */
+        iconCssClass: string;
+    };
+
+    // #endregion Types
 
     const props = defineProps({
         modelValue: {
@@ -172,10 +214,33 @@
     // objects returned by propertyRef().
     const propRefs = [agentType, audienceType, description, name, instructions];
 
-    const roleItems = enumToListItemBag(ModelServiceRoleDescription);
-    const reasoningEffortItems = enumToListItemBag(ReasoningEffortDescription);
+    const roleItems = toButtonGroupItems(enumToListItemBag(ModelServiceRoleDescription));
+    const reasoningEffortItems = toButtonGroupItems(enumToListItemBag(ReasoningEffortDescription));
+
     const agentTypeItems = enumToListItemBag(AgentTypeDescription);
     const audienceTypeItems = enumToListItemBag(AudienceTypeDescription);
+
+    /*
+        9/17/26 - CLAUDE
+
+        The icon and explanatory copy for each agent type live here rather than
+        on the enum so the enum stays the source of truth for the option list
+        and its labels. Keyed by the enum's numeric value as a string, which is
+        what enumToListItemBag() produces for ListItemBag.value.
+
+        Reason: the agent type picker renders as descriptive cards, which need
+        more than the enum description provides.
+    */
+    const agentTypeDetails: Record<string, AgentTypeDetail> = {
+        [AgentType.Chat]: {
+            description: "Chats with people in Rock using the skills you enable.",
+            iconCssClass: "ti ti-message-dots"
+        },
+        [AgentType.Mcp]: {
+            description: "Exposes the skills you enable for outside AI tools to call.",
+            iconCssClass: "ti ti-robot"
+        }
+    };
 
     // #endregion
 
@@ -184,9 +249,45 @@
     /** Determines if this agent is a system agent whose instructions are locked. */
     const isSystem = computed((): boolean => props.modelValue.bag?.isSystem ?? false);
 
+    /*
+        9/17/26 - CLAUDE
+
+        Instructions are stored in one column but mean two different things.
+        For a Chat agent they shape how it speaks to people; for an MCP agent
+        they are handed to a client when it connects, describing the toolset.
+        The help text follows the selected type so it never describes the
+        wrong one.
+
+        Reason: a single generic sentence would be misleading for whichever
+        agent type the person is not configuring.
+    */
+    const instructionsHelp = computed((): string => {
+        if (agentType.value === AgentType.Mcp.toString()) {
+            return "Sent to MCP clients when they connect. Describes what this agent's tools are for and how a client should use them.";
+        }
+
+        return "Describes how the agent should behave and respond, including tone, style, and any rules it should follow when interacting with people.";
+    });
+
     // #endregion
 
     // #region Functions
+
+    /*
+        9/18/26 - CLAUDE
+
+        ButtonGroup narrows its item type so text and value are both
+        non-nullable, while enumToListItemBag() returns the standard bag
+        where both are optional. The empty-string fallbacks can never fire,
+        since every enum entry has a description and a numeric value; they
+        exist only to satisfy the narrower type.
+
+        Reason: passing a raw enum list straight to ButtonGroup is a
+        TypeScript error.
+    */
+    function toButtonGroupItems(items: ListItemBag[]): { text: string; value: string }[] {
+        return items.map(item => ({ text: item.text ?? "", value: item.value ?? "" }));
+    }
 
     function validateSlug(value: unknown): true | string {
         if (typeof value !== "string" || value.trim() === "") {
@@ -199,6 +300,15 @@
     // #endregion
 
     // #region Event Handlers
+
+    /**
+     * Selects the agent type represented by the clicked card.
+     *
+     * @param value The enum value of the card that was clicked.
+     */
+    function onAgentTypeClick(value: string | null | undefined): void {
+        agentType.value = value ?? AgentType.Chat.toString();
+    }
 
     // #endregion
 
