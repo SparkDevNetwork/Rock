@@ -112,7 +112,8 @@ namespace Rock.Communication.Chat.Platform.Doors
         /// <returns>The date, or null when the parts do not make one chat may record.</returns>
         private static DateTime? ToDate( int year, int month, int day )
         {
-            if ( year < 1 || year > 9999 || month < 1 || month > 12 )
+            // Rock stores year 1 as "no year", so a date in it would be saved without one.
+            if ( year <= DateTime.MinValue.Year || year > 9999 || month < 1 || month > 12 )
             {
                 return null;
             }
