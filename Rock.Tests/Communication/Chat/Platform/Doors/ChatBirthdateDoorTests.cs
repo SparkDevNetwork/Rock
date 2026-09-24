@@ -19,6 +19,8 @@ using System.Linq;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
+using Moq;
+
 using Rock.Communication.Chat.Platform.Configuration;
 using Rock.Communication.Chat.Platform.Doors;
 using Rock.Communication.Chat.Platform.Session;
@@ -42,12 +44,14 @@ namespace Rock.Tests.Communication.Chat.Platform.Doors
         private const int ChatPeopleGroupId = 50;
         private const int ChatPeopleRoleId = 7;
 
+        private RockMock<RockContext> _rockContextMock;
         private RockContext _rockContext;
 
         [TestInitialize]
         public void TestInitialize()
         {
-            var rockContext = MockDatabaseHelper.CreateRockContextMock().Object;
+            _rockContextMock = MockDatabaseHelper.CreateRockContextMock();
+            var rockContext = _rockContextMock.Object;
 
             rockContext.Set<DefinedValue>().Add( new DefinedValue
             {
@@ -111,6 +115,10 @@ namespace Rock.Tests.Communication.Chat.Platform.Doors
             Assert.IsNull( result.Session.ProjectUrl, "a person under age was told where the platform is" );
             Assert.IsNull( result.Session.PersonAliasGuid );
             Assert.AreEqual( 0, MarkerCount(), "a person under age was enrolled" );
+
+            // Nothing else saves for a person the gate refuses, so without this the date is
+            // lost and the next open asks again, when a different date could be tried.
+            _rockContextMock.Verify( m => m.SaveChanges(), Times.AtLeastOnce(), "the birthdate was never saved" );
         }
 
         [TestMethod]
@@ -161,6 +169,7 @@ namespace Rock.Tests.Communication.Chat.Platform.Doors
 
             Assert.AreEqual( ChatBirthdateDoor.BirthdateRecorded, result.Code );
             AssertUnchanged( person, null, 4, 12 );
+            AssertNothingSaved();
             Assert.AreEqual( "age_verification_required", result.Session.Gate );
         }
 
@@ -192,6 +201,7 @@ namespace Rock.Tests.Communication.Chat.Platform.Doors
             Assert.AreEqual( ChatBirthdateDoor.NotAsked, bannedResult.Code, "a banned person" );
             Assert.AreEqual( "banned", bannedResult.Session.Gate );
             AssertUnchanged( banned, null, null, null );
+            AssertNothingSaved();
         }
 
         [TestMethod]
@@ -205,6 +215,7 @@ namespace Rock.Tests.Communication.Chat.Platform.Doors
                 (Year: RockDateTime.Now.Year - 30, Month: 4, Day: 0, Name: "no day"),
                 (Year: RockDateTime.Now.Year - 30, Month: 2, Day: 30, Name: "30 February"),
                 (Year: RockDateTime.Now.Year - 30, Month: 13, Day: 1, Name: "a thirteenth month"),
+                (Year: 1, Month: 4, Day: 12, Name: "the year Rock stores as no year"),
                 (Year: tomorrow.Year, Month: tomorrow.Month, Day: tomorrow.Day, Name: "tomorrow")
             };
 
@@ -217,6 +228,7 @@ namespace Rock.Tests.Communication.Chat.Platform.Doors
 
                 Assert.AreEqual( ChatBirthdateDoor.InvalidDate, result.Code, c.Name );
                 AssertUnchanged( person, null, null, null );
+                AssertNothingSaved();
                 Assert.AreEqual( "age_verification_required", result.Session.Gate, c.Name );
             }
         }
@@ -257,6 +269,12 @@ namespace Rock.Tests.Communication.Chat.Platform.Doors
             Assert.AreEqual( year, person.BirthYear, "the birth year changed" );
             Assert.AreEqual( month, person.BirthMonth, "the birth month changed" );
             Assert.AreEqual( day, person.BirthDay, "the birth day changed" );
+        }
+
+        private void AssertNothingSaved()
+        {
+            _rockContextMock.Verify( m => m.SaveChanges(), Times.Never(), "a refusal saved" );
+            _rockContextMock.Verify( m => m.SaveChanges( It.IsAny<bool>() ), Times.Never(), "a refusal saved" );
         }
 
         private int MarkerCount()
