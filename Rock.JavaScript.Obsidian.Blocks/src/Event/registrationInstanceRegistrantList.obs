@@ -293,6 +293,10 @@
 :deep(.placement-list .btn-placement-status) {
     margin-right: 4px;
 }
+
+:deep(.placement-list .registrant-is-placed-inactive) {
+    opacity: 0.5;
+}
 </style>
 
 <script setup lang="ts">
@@ -526,24 +530,47 @@
     }
 
     /**
-     * Gets the button CSS classes for a placement, varying by whether the
-     * registrant has been placed in at least one group.
+     * Gets the button CSS classes for a placement. Green when the registrant
+     * is an active member of at least one group, muted green when their only
+     * memberships are Inactive, and default when they are not placed.
      */
     function getPlacementButtonCssClass(row: Record<string, unknown>, placement: RegistrantPlacementConfigBag): string {
-        const groupCount = getRowPlacement(row, placement.id)?.groupCount ?? 0;
+        const rowPlacement = getRowPlacement(row, placement.id);
 
-        return groupCount > 0
-            ? "btn btn-success btn-xs btn-placement-status registrant-is-placed"
-            : "btn btn-default btn-xs btn-placement-status registrant-not-placed";
+        if ((rowPlacement?.groupCount ?? 0) > 0) {
+            return "btn btn-success btn-xs btn-placement-status registrant-is-placed";
+        }
+
+        if ((rowPlacement?.inactiveGroupNames ?? []).length > 0) {
+            return "btn btn-success btn-xs btn-placement-status registrant-is-placed-inactive";
+        }
+
+        return "btn btn-default btn-xs btn-placement-status registrant-not-placed";
     }
 
     /**
      * Gets the tooltip for a placement button: the names of the groups the
-     * registrant is placed in, e.g. "Bus 1, Bus 2 and Bus 3".
+     * registrant is placed in, e.g. "Bus 1, Bus 2 and Bus 3". When the
+     * registrant has only Inactive memberships, each name is suffixed with
+     * "(Inactive)" so the muted state is explained.
      */
     function getPlacementTooltip(row: Record<string, unknown>, placement: RegistrantPlacementConfigBag): string {
-        const groupNames = getRowPlacement(row, placement.id)?.groupNames ?? [];
+        const rowPlacement = getRowPlacement(row, placement.id);
+        const groupNames = rowPlacement?.groupNames ?? [];
 
+        if (groupNames.length > 0) {
+            return formatGroupNames(groupNames);
+        }
+
+        const inactiveGroupNames = (rowPlacement?.inactiveGroupNames ?? []).map(name => `${name} (Inactive)`);
+
+        return formatGroupNames(inactiveGroupNames);
+    }
+
+    /**
+     * Joins group names for display, e.g. "Bus 1, Bus 2 and Bus 3".
+     */
+    function formatGroupNames(groupNames: string[]): string {
         if (groupNames.length <= 1) {
             return groupNames[0] ?? "";
         }
