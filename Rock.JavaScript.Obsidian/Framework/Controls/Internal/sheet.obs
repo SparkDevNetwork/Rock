@@ -1,0 +1,518 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <teleport to="body">
+        <div v-show="internalValue"
+             class="sheet styled-scroll"
+             :class="{ 'is-compact': isCompact }"
+             :style="sheetStyle"
+             role="dialog"
+             :aria-labelledby="titleId">
+            <div class="sheet-header" @pointerdown="onHeaderPointerDown">
+                <h3 :id="titleId" class="sheet-title">{{ title }}</h3>
+
+                <div class="sheet-header-actions">
+                    <button type="button"
+                            class="sheet-close"
+                            aria-label="Close"
+                            @pointerdown.stop
+                            @click="onCloseClick">
+                        <i class="ti ti-x"></i>
+                    </button>
+
+                    <i v-if="!isCompact" class="ti ti-grip-vertical" aria-hidden="true"></i>
+                </div>
+            </div>
+
+            <div class="sheet-body">
+                <slot></slot>
+            </div>
+
+            <div v-if="$slots.footer" class="sheet-footer">
+                <slot name="footer"></slot>
+            </div>
+
+            <template v-if="!isCompact">
+                <div v-for="edge in resizeEdges"
+                     :key="edge"
+                     :class="['sheet-resize-handle', `sheet-resize-handle-${edge}`]"
+                     @pointerdown="onResizeHandlePointerDown($event, edge)"></div>
+            </template>
+        </div>
+
+        <div v-if="gestureCursor" class="sheet-gesture-shield" :style="{ cursor: gestureCursor }"></div>
+    </teleport>
+</template>
+
+<style scoped>
+.sheet {
+    position: fixed;
+    /* The floating panel layer, shared with the docked panel, so popups opened from inside the sheet appear above it. */
+    z-index: 1050;
+    display: flex;
+    flex-direction: column;
+    background-color: var(--color-interface-softest);
+    border: 1px solid var(--color-interface-soft);
+    border-radius: var(--rounded-large);
+    box-shadow: var(--popup-box-shadow);
+}
+
+.sheet-header {
+    display: flex;
+    flex: 0 0 auto;
+    gap: var(--spacing-small);
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--spacing-small) var(--spacing-medium);
+    color: var(--base-interface-softest);
+    cursor: move;
+    user-select: none;
+    touch-action: none;
+    background-color: var(--color-primary);
+    border-radius: calc(var(--rounded-large) - 1px) calc(var(--rounded-large) - 1px) 0 0;
+}
+
+.sheet-title {
+    margin: 0;
+    overflow: hidden;
+    font-size: var(--font-size-regular);
+    font-weight: var(--font-weight-semibold);
+    line-height: var(--line-height-normal);
+    color: inherit;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.sheet-header-actions {
+    display: flex;
+    flex: 0 0 auto;
+    gap: var(--spacing-xsmall);
+    align-items: center;
+}
+
+.sheet-close {
+    padding: 0;
+    line-height: 1;
+    color: inherit;
+    cursor: pointer;
+    background: none;
+    border: 0;
+}
+
+.sheet-body {
+    flex: 1 1 auto;
+    min-height: 0;
+    padding: var(--spacing-medium);
+    overflow-y: auto;
+}
+
+.sheet-footer {
+    display: flex;
+    flex: 0 0 auto;
+    gap: var(--spacing-xsmall);
+    justify-content: flex-end;
+    padding: var(--spacing-medium);
+    background-color: var(--color-interface-softer);
+    border-top: 1px solid var(--color-interface-soft);
+    border-radius: 0 0 calc(var(--rounded-large) - 1px) calc(var(--rounded-large) - 1px);
+}
+
+/* Each handle straddles its edge, so it stays easy to grab without covering much of the body's scrollbar. */
+.sheet-resize-handle {
+    position: absolute;
+    touch-action: none;
+}
+
+.sheet-resize-handle-n,
+.sheet-resize-handle-s {
+    right: var(--spacing-small);
+    left: var(--spacing-small);
+    height: var(--spacing-xsmall);
+    cursor: ns-resize;
+}
+
+.sheet-resize-handle-e,
+.sheet-resize-handle-w {
+    top: var(--spacing-small);
+    bottom: var(--spacing-small);
+    width: var(--spacing-xsmall);
+    cursor: ew-resize;
+}
+
+.sheet-resize-handle-ne,
+.sheet-resize-handle-se,
+.sheet-resize-handle-sw,
+.sheet-resize-handle-nw {
+    width: var(--spacing-small);
+    height: var(--spacing-small);
+}
+
+.sheet-resize-handle-n {
+    top: calc(var(--spacing-tiny) * -1);
+}
+
+.sheet-resize-handle-s {
+    bottom: calc(var(--spacing-tiny) * -1);
+}
+
+.sheet-resize-handle-e {
+    right: calc(var(--spacing-tiny) * -1);
+}
+
+.sheet-resize-handle-w {
+    left: calc(var(--spacing-tiny) * -1);
+}
+
+.sheet-resize-handle-ne {
+    top: calc(var(--spacing-tiny) * -1);
+    right: calc(var(--spacing-tiny) * -1);
+    cursor: nesw-resize;
+}
+
+.sheet-resize-handle-se {
+    right: calc(var(--spacing-tiny) * -1);
+    bottom: calc(var(--spacing-tiny) * -1);
+    cursor: nwse-resize;
+}
+
+.sheet-resize-handle-sw {
+    bottom: calc(var(--spacing-tiny) * -1);
+    left: calc(var(--spacing-tiny) * -1);
+    cursor: nesw-resize;
+}
+
+.sheet-resize-handle-nw {
+    top: calc(var(--spacing-tiny) * -1);
+    left: calc(var(--spacing-tiny) * -1);
+    cursor: nwse-resize;
+}
+
+.sheet-gesture-shield {
+    position: fixed;
+    inset: 0;
+    z-index: 1051;
+}
+
+.sheet.is-compact {
+    top: auto;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    max-height: 85vh;
+    border-radius: var(--rounded-large) var(--rounded-large) 0 0;
+}
+
+.sheet.is-compact .sheet-header {
+    cursor: auto;
+}
+
+.sheet.is-compact .sheet-footer {
+    border-radius: 0;
+}
+</style>
+
+<script setup lang="ts">
+    import { computed, onBeforeUnmount, onMounted, PropType, ref, watch } from "vue";
+    import { useVModelPassthrough } from "@Obsidian/Utility/component";
+    import { newGuid } from "@Obsidian/Utility/guid";
+
+    // #region Types
+
+    /** The position and size of the sheet within the window, in pixels. */
+    type SheetRect = {
+        left: number;
+        top: number;
+        width: number;
+        height: number;
+    };
+
+    /** An edge or corner of the sheet that can be dragged to resize it, named by compass direction. */
+    type ResizeEdge = "n" | "e" | "s" | "w" | "ne" | "se" | "sw" | "nw";
+
+    // #endregion Types
+
+    const props = defineProps({
+        /** Whether the sheet is shown. Closing it keeps its position and size for the next time it opens. */
+        modelValue: {
+            type: Boolean as PropType<boolean>,
+            required: true
+        },
+
+        /** The text shown in the sheet's header. */
+        title: {
+            type: String as PropType<string>,
+            default: ""
+        },
+
+        /** The width in pixels the sheet has when it first opens against the right edge of the window. */
+        initialWidth: {
+            type: Number as PropType<number>,
+            default: 480
+        },
+
+        /**
+         * Async guard called before the close button closes the sheet. A
+         * `false` result keeps it open, which is useful for asking about
+         * unsaved changes first. Closing it through v-model bypasses the guard.
+         */
+        beforeClose: {
+            type: Function as PropType<() => boolean | Promise<boolean>>,
+            default: undefined
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: boolean): void;
+    }>();
+
+    /** The gap between the sheet and the window edges when it first opens. */
+    const windowMargin = 16;
+
+    /** The smallest width the sheet can be resized to. */
+    const minimumWidth = 280;
+
+    /** The smallest height the sheet can be resized to. */
+    const minimumHeight = 200;
+
+    /** Windows narrower than this dock the sheet to the bottom instead of floating it. */
+    const compactBreakpoint = 768;
+
+    const resizeEdges: ResizeEdge[] = ["n", "e", "s", "w", "ne", "se", "sw", "nw"];
+
+    const resizeCursors: Record<ResizeEdge, string> = {
+        n: "ns-resize",
+        s: "ns-resize",
+        e: "ew-resize",
+        w: "ew-resize",
+        ne: "nesw-resize",
+        sw: "nesw-resize",
+        nw: "nwse-resize",
+        se: "nwse-resize"
+    };
+
+    // #region Values
+
+    const internalValue = useVModelPassthrough(props, "modelValue", emit);
+    const titleId = `sheet-title-${newGuid()}`;
+    const rect = ref<SheetRect | null>(null);
+    const isCompact = ref(window.innerWidth < compactBreakpoint);
+    const gestureCursor = ref("");
+
+    let endActiveGesture: (() => void) | null = null;
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    const sheetStyle = computed((): Record<string, string> => {
+        if (isCompact.value || !rect.value) {
+            return {};
+        }
+
+        return {
+            left: `${rect.value.left}px`,
+            top: `${rect.value.top}px`,
+            width: `${rect.value.width}px`,
+            height: `${rect.value.height}px`
+        };
+    });
+
+    // #endregion Computed Values
+
+    // #region Event Handlers
+
+    /**
+     * Closes the sheet, unless the before close guard keeps it open.
+     */
+    async function onCloseClick(): Promise<void> {
+        if (props.beforeClose && !await props.beforeClose()) {
+            return;
+        }
+
+        internalValue.value = false;
+    }
+
+    /**
+     * Starts moving the sheet when its header is dragged.
+     */
+    function onHeaderPointerDown(event: PointerEvent): void {
+        startGesture(event, "move", (startRect, deltaX, deltaY) => moveRect(startRect, deltaX, deltaY));
+    }
+
+    /**
+     * Starts resizing the sheet when one of its edges or corners is dragged.
+     */
+    function onResizeHandlePointerDown(event: PointerEvent, edge: ResizeEdge): void {
+        startGesture(event, resizeCursors[edge], (startRect, deltaX, deltaY) => resizeRect(startRect, edge, deltaX, deltaY));
+    }
+
+    /**
+     * Keeps the sheet inside the window, and switches between floating and
+     * docked as the window crosses the compact width.
+     */
+    function onWindowResize(): void {
+        isCompact.value = window.innerWidth < compactBreakpoint;
+
+        if (rect.value) {
+            rect.value = fitRectToWindow(rect.value);
+        }
+    }
+
+    // #endregion Event Handlers
+
+    // #region Functions
+
+    /*
+        09/23/26 - JMH
+
+        A move or resize follows the pointer on the window rather than on the handle, and a
+        transparent shield covers the whole window until it ends. Pointer events over an iframe
+        go to the framed document instead of this one, so without the shield, dragging the sheet
+        across an iframe would stop following the pointer.
+
+        Reason: Moving or resizing the sheet over an iframe keeps up with the pointer.
+    */
+    function startGesture(event: PointerEvent, cursor: string, getRect: (startRect: SheetRect, deltaX: number, deltaY: number) => SheetRect): void {
+        // Only the primary button of the first pointer moves or resizes the sheet.
+        if (isCompact.value || !rect.value || !event.isPrimary || event.button !== 0) {
+            return;
+        }
+
+        event.preventDefault();
+
+        const pointerId = event.pointerId;
+        const startRect = rect.value;
+        const startX = event.clientX;
+        const startY = event.clientY;
+
+        function onPointerMove(moveEvent: PointerEvent): void {
+            if (moveEvent.pointerId === pointerId) {
+                rect.value = getRect(startRect, moveEvent.clientX - startX, moveEvent.clientY - startY);
+            }
+        }
+
+        function onPointerUp(upEvent: PointerEvent): void {
+            if (upEvent.pointerId === pointerId) {
+                endGesture();
+            }
+        }
+
+        function endGesture(): void {
+            window.removeEventListener("pointermove", onPointerMove);
+            window.removeEventListener("pointerup", onPointerUp);
+            window.removeEventListener("pointercancel", onPointerUp);
+            gestureCursor.value = "";
+            endActiveGesture = null;
+        }
+
+        window.addEventListener("pointermove", onPointerMove);
+        window.addEventListener("pointerup", onPointerUp);
+        window.addEventListener("pointercancel", onPointerUp);
+        gestureCursor.value = cursor;
+        endActiveGesture = endGesture;
+    }
+
+    /**
+     * Moves a rect by the distance the pointer has travelled, keeping it inside the window.
+     */
+    function moveRect(startRect: SheetRect, deltaX: number, deltaY: number): SheetRect {
+        return {
+            ...startRect,
+            left: clamp(startRect.left + deltaX, 0, window.innerWidth - startRect.width),
+            top: clamp(startRect.top + deltaY, 0, window.innerHeight - startRect.height)
+        };
+    }
+
+    /**
+     * Resizes a rect by dragging one of its edges or corners, keeping it inside
+     * the window and no smaller than the minimum size.
+     */
+    function resizeRect(startRect: SheetRect, edge: ResizeEdge, deltaX: number, deltaY: number): SheetRect {
+        let left = startRect.left;
+        let top = startRect.top;
+        let right = startRect.left + startRect.width;
+        let bottom = startRect.top + startRect.height;
+
+        if (edge.includes("w")) {
+            left = clamp(left + deltaX, 0, right - minimumWidth);
+        }
+        else if (edge.includes("e")) {
+            right = clamp(right + deltaX, left + minimumWidth, window.innerWidth);
+        }
+
+        if (edge.includes("n")) {
+            top = clamp(top + deltaY, 0, bottom - minimumHeight);
+        }
+        else if (edge.includes("s")) {
+            bottom = clamp(bottom + deltaY, top + minimumHeight, window.innerHeight);
+        }
+
+        return {
+            left,
+            top,
+            width: right - left,
+            height: bottom - top
+        };
+    }
+
+    /**
+     * Shrinks and moves a rect only as much as it takes to fit inside the window.
+     */
+    function fitRectToWindow(value: SheetRect): SheetRect {
+        const width = Math.min(value.width, window.innerWidth);
+        const height = Math.min(value.height, window.innerHeight);
+
+        return {
+            left: clamp(value.left, 0, window.innerWidth - width),
+            top: clamp(value.top, 0, window.innerHeight - height),
+            width,
+            height
+        };
+    }
+
+    /**
+     * Gets where the sheet opens the first time: against the right edge of the window, at its full height.
+     */
+    function getInitialRect(): SheetRect {
+        const width = Math.min(props.initialWidth, window.innerWidth - windowMargin * 2);
+
+        return {
+            left: window.innerWidth - width - windowMargin,
+            top: windowMargin,
+            width,
+            height: window.innerHeight - windowMargin * 2
+        };
+    }
+
+    /**
+     * Limits a value to a range. When the range is empty the minimum wins,
+     * which keeps the header of an oversized sheet on screen.
+     */
+    function clamp(value: number, minimum: number, maximum: number): number {
+        return Math.max(minimum, Math.min(value, maximum));
+    }
+
+    // #endregion Functions
+
+    // #region Watchers
+
+    watch(internalValue, isShown => {
+        if (isShown && !rect.value) {
+            rect.value = getInitialRect();
+        }
+    }, { immediate: true });
+
+    // #endregion Watchers
+
+    // #region Lifecycle Hooks
+
+    onMounted(() => {
+        window.addEventListener("resize", onWindowResize);
+    });
+
+    onBeforeUnmount(() => {
+        window.removeEventListener("resize", onWindowResize);
+        endActiveGesture?.();
+    });
+
+    // #endregion Lifecycle Hooks
+</script>
