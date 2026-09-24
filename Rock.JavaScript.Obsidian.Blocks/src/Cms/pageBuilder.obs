@@ -32,6 +32,7 @@
                            :selectRequest="selectRequest"
                            @moduleDropped="onModuleDropped"
                            @moduleSelected="selectedBlockId = $event"
+                           @moduleEditRequested="openModuleSheet"
                            @moduleDeleteRequested="onModuleDeleteRequested" />
 
                 <NotificationBox v-if="blockActionErrorMessage"
@@ -47,6 +48,68 @@
                          targetSelector=".page-builder-frame-container" />
             </div>
         </div>
+
+        <Sheet v-model="isModuleSheetShown" title="Edit Module">
+            <NotificationBox v-if="moduleSheetErrorMessage" alertType="danger">
+                {{ moduleSheetErrorMessage }}
+            </NotificationBox>
+
+            <LoadingIndicator v-if="isModuleSettingsLoading" />
+
+            <template v-else-if="isModuleSettingsLoaded">
+                <Panel v-model="isModuleSettingsExpanded" hasCollapse>
+                    <template #title>
+                        <span class="page-builder-section-icon"><i class="ti ti-binary-tree"></i></span>
+                        Module Settings
+                    </template>
+
+                    <RockForm v-model:submit="submitModuleSettings" @submit="onModuleSettingsSubmit">
+                        <AttributeValuesContainer v-if="hasModuleAttributes"
+                                                  v-model="moduleAttributeValues"
+                                                  :attributes="moduleAttributes"
+                                                  isEditMode
+                                                  :showCategoryLabel="false"
+                                                  :numberOfColumns="1" />
+
+                        <p v-else class="text-muted mb-0">This module has no settings.</p>
+                    </RockForm>
+                </Panel>
+
+                <Panel v-model="isModuleItemsExpanded" hasCollapse>
+                    <template #title>
+                        <span class="page-builder-section-icon"><i class="ti ti-file-text"></i></span>
+                        Module Items
+                    </template>
+
+                    <p class="text-muted mb-0">No item settings are available for this module.</p>
+                </Panel>
+
+                <Panel v-model="isDisplaySettingsExpanded" hasCollapse>
+                    <template #title>
+                        <span class="page-builder-section-icon"><i class="ti ti-settings"></i></span>
+                        Display Settings
+                    </template>
+
+                    <p class="text-muted mb-0">No display settings are available for this module.</p>
+                </Panel>
+            </template>
+
+            <template #footer>
+                <RockButton :btnType="BtnType.Default"
+                            :disabled="!isModuleSettingsLoaded || isModuleSaving"
+                            :isLoading="isModuleSaving && !isClosingAfterSave"
+                            @click="onModuleSaveClick(false)">
+                    Save
+                </RockButton>
+
+                <RockButton :btnType="BtnType.Primary"
+                            :disabled="!isModuleSettingsLoaded || isModuleSaving"
+                            :isLoading="isModuleSaving && isClosingAfterSave"
+                            @click="onModuleSaveClick(true)">
+                    Save and Close
+                </RockButton>
+            </template>
+        </Sheet>
     </div>
 </template>
 
@@ -135,6 +198,18 @@
     left: var(--spacing-medium);
 }
 
+.page-builder-section-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2em;
+    height: 2em;
+    margin-right: var(--spacing-xsmall);
+    color: var(--color-primary);
+    background-color: var(--color-primary-soft);
+    border-radius: var(--rounded-small);
+}
+
 @media (max-width: 767px) {
     .page-builder {
         flex-direction: column;
@@ -171,14 +246,23 @@
 </style>
 
 <script setup lang="ts">
-    import { nextTick, ref } from "vue";
+    import { computed, nextTick, ref } from "vue";
+    import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
+    import LoadingIndicator from "@Obsidian/Controls/loadingIndicator.obs";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import Panel from "@Obsidian/Controls/panel.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import RockForm from "@Obsidian/Controls/rockForm.obs";
     import Overlay from "@Obsidian/Controls/Internal/overlay.obs";
+    import Sheet from "@Obsidian/Controls/Internal/sheet.obs";
+    import { BtnType } from "@Obsidian/Enums/Controls/btnType";
     import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
     import { confirmDelete } from "@Obsidian/Utility/dialogs";
     import { PageBuilderAddModuleBag } from "@Obsidian/ViewModels/Blocks/Cms/PageBuilder/pageBuilderAddModuleBag";
     import { PageBuilderInitializationBox } from "@Obsidian/ViewModels/Blocks/Cms/PageBuilder/pageBuilderInitializationBox";
+    import { PageBuilderModuleSettingsBag } from "@Obsidian/ViewModels/Blocks/Cms/PageBuilder/pageBuilderModuleSettingsBag";
     import { PageBuilderModuleTypeBag } from "@Obsidian/ViewModels/Blocks/Cms/PageBuilder/pageBuilderModuleTypeBag";
+    import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
     import PageFrame from "./pageBuilder/pageFrame.partial.obs";
     import {
         ModuleDrop,
@@ -212,7 +296,27 @@
     const selectRequest = ref<ModuleSelectRequest | null>(null);
     const selectedBlockId = ref<number | null>(null);
 
+    const isModuleSheetShown = ref(false);
+    const editingBlockId = ref<number | null>(null);
+    const moduleAttributes = ref<Record<string, PublicAttributeBag>>({});
+    const moduleAttributeValues = ref<Record<string, string>>({});
+    const isModuleSettingsLoading = ref(false);
+    const isModuleSettingsLoaded = ref(false);
+    const isModuleSaving = ref(false);
+    const isClosingAfterSave = ref(false);
+    const moduleSheetErrorMessage = ref("");
+    const submitModuleSettings = ref(false);
+    const isModuleSettingsExpanded = ref(true);
+    const isModuleItemsExpanded = ref(true);
+    const isDisplaySettingsExpanded = ref(true);
+
     // #endregion Values
+
+    // #region Computed Values
+
+    const hasModuleAttributes = computed((): boolean => Object.keys(moduleAttributes.value).length > 0);
+
+    // #endregion Computed Values
 
     // #region Event Handlers
 
@@ -311,7 +415,8 @@
 
     /**
      * Adds a dropped module to the page in a new Canvas block, then reloads
-     * the frame so Rock renders the new block itself, and selects it.
+     * the frame so Rock renders the new block itself, selects it, and opens
+     * the sheet on it.
      */
     async function onModuleDropped(drop: ModuleDrop): Promise<void> {
         blockActionErrorMessage.value = "";
@@ -331,6 +436,8 @@
 
         selectRequest.value = { blockId: result.data };
         reloadRequest.value = { type: "PAGE_FRAME_RELOAD_REQUEST" };
+
+        await openModuleSheet(result.data);
     }
 
     /**
@@ -351,12 +458,92 @@
             return;
         }
 
+        if (editingBlockId.value === blockId) {
+            isModuleSheetShown.value = false;
+            editingBlockId.value = null;
+            isModuleSettingsLoaded.value = false;
+        }
+
+        reloadRequest.value = { type: "PAGE_FRAME_RELOAD_REQUEST" };
+    }
+
+    /**
+     * Validates and saves the module's settings, then closes the sheet when
+     * asked to.
+     */
+    function onModuleSaveClick(isClosing: boolean): void {
+        isClosingAfterSave.value = isClosing;
+        submitModuleSettings.value = true;
+    }
+
+    /**
+     * Saves the module's settings once they pass validation, then reloads the
+     * frame so the module renders with them, keeping it selected.
+     */
+    async function onModuleSettingsSubmit(): Promise<void> {
+        const blockId = editingBlockId.value;
+
+        if (blockId === null) {
+            return;
+        }
+
+        moduleSheetErrorMessage.value = "";
+        isModuleSaving.value = true;
+
+        const bag: PageBuilderModuleSettingsBag = {
+            blockId,
+            attributeValues: moduleAttributeValues.value
+        };
+
+        const result = await invokeBlockAction("SaveModuleSettings", { bag });
+
+        isModuleSaving.value = false;
+
+        if (!result.isSuccess) {
+            moduleSheetErrorMessage.value = result.errorMessage || "The module's settings could not be saved.";
+            return;
+        }
+
+        if (isClosingAfterSave.value) {
+            isModuleSheetShown.value = false;
+        }
+
+        selectRequest.value = { blockId };
         reloadRequest.value = { type: "PAGE_FRAME_RELOAD_REQUEST" };
     }
 
     // #endregion Event Handlers
 
     // #region Functions
+
+    /**
+     * Opens the sheet on a module and loads its settings into it.
+     */
+    async function openModuleSheet(blockId: number): Promise<void> {
+        editingBlockId.value = blockId;
+        moduleSheetErrorMessage.value = "";
+        isModuleSettingsLoaded.value = false;
+        isModuleSettingsLoading.value = true;
+        isModuleSheetShown.value = true;
+
+        const result = await invokeBlockAction<PageBuilderModuleSettingsBag>("GetModuleSettings", { blockId });
+
+        // The sheet may have moved on to another module while these settings loaded.
+        if (editingBlockId.value !== blockId) {
+            return;
+        }
+
+        isModuleSettingsLoading.value = false;
+
+        if (!result.isSuccess || !result.data) {
+            moduleSheetErrorMessage.value = result.errorMessage || "The module's settings could not be loaded.";
+            return;
+        }
+
+        moduleAttributes.value = result.data.attributes ?? {};
+        moduleAttributeValues.value = result.data.attributeValues ?? {};
+        isModuleSettingsLoaded.value = true;
+    }
 
     /**
      * Creates the copy of a module type tile that follows the pointer while

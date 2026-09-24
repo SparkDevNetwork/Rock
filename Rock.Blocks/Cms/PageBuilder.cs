@@ -121,6 +121,62 @@ namespace Rock.Blocks.Cms
             return blockTypeGuid.HasValue ? BlockTypeCache.Get( blockTypeGuid.Value ) : null;
         }
 
+        /// <summary>
+        /// Gets a Canvas block on the target page, provided the current person may administrate that page.
+        /// </summary>
+        /// <param name="blockId">The identifier of the Canvas block.</param>
+        /// <param name="blockService">The service that loads the block, so the caller can go on to change it.</param>
+        /// <param name="block">The Canvas block, or <c>null</c> when it cannot be changed from here.</param>
+        /// <param name="error">The result for the block action to return when the block cannot be changed from here.</param>
+        /// <returns><c>true</c> if the block was found and may be changed; otherwise <c>false</c>.</returns>
+        private bool TryGetCanvasBlock( int blockId, BlockService blockService, out Block block, out BlockActionResult error )
+        {
+            block = null;
+            error = null;
+
+            var targetPage = GetTargetPage();
+
+            if ( targetPage == null )
+            {
+                error = ActionNotFound( "The target page could not be found." );
+                return false;
+            }
+
+            if ( !targetPage.IsAuthorized( Authorization.ADMINISTRATE, RequestContext.CurrentPerson ) )
+            {
+                error = ActionUnauthorized( "You are not authorized to edit the modules on this page." );
+                return false;
+            }
+
+            var canvasBlockType = GetCanvasBlockType();
+            var candidateBlock = blockService.Get( blockId );
+
+            // Only a Canvas block on the page being composed can be changed from here.
+            if ( candidateBlock == null || candidateBlock.PageId != targetPage.Id || canvasBlockType == null || candidateBlock.BlockTypeId != canvasBlockType.Id )
+            {
+                error = ActionNotFound( "The module could not be found." );
+                return false;
+            }
+
+            block = candidateBlock;
+
+            return true;
+        }
+
+        /// <summary>
+        /// Gets the module instance a Canvas block displays.
+        /// </summary>
+        /// <param name="block">The Canvas block.</param>
+        /// <returns>The module instance, or <c>null</c> if the block does not reference one that exists.</returns>
+        private ModuleInstance GetModuleInstance( Block block )
+        {
+            block.LoadAttributes( RockContext );
+
+            var moduleInstanceGuid = block.GetAttributeValue( Canvas.AttributeKey.ModuleInstance ).AsGuidOrNull();
+
+            return moduleInstanceGuid.HasValue ? new ModuleInstanceService( RockContext ).Get( moduleInstanceGuid.Value ) : null;
+        }
+
         #endregion Methods
 
         #region Block Actions
@@ -226,6 +282,68 @@ namespace Rock.Blocks.Cms
         }
 
         /// <summary>
+        /// Gets the settings of the module a Canvas block displays, for editing.
+        /// </summary>
+        /// <param name="blockId">The identifier of the Canvas block.</param>
+        /// <returns>The module's settings and their values, or an error.</returns>
+        [BlockAction]
+        public BlockActionResult GetModuleSettings( int blockId )
+        {
+            if ( !TryGetCanvasBlock( blockId, new BlockService( RockContext ), out var block, out var error ) )
+            {
+                return error;
+            }
+
+            var moduleInstance = GetModuleInstance( block );
+
+            if ( moduleInstance == null )
+            {
+                return ActionNotFound( "This Canvas has no module." );
+            }
+
+            moduleInstance.LoadAttributes( RockContext );
+
+            return ActionOk( new PageBuilderModuleSettingsBag
+            {
+                BlockId = block.Id,
+                Attributes = moduleInstance.GetPublicAttributesForEdit( RequestContext.CurrentPerson ),
+                AttributeValues = moduleInstance.GetPublicAttributeValuesForEdit( RequestContext.CurrentPerson )
+            } );
+        }
+
+        /// <summary>
+        /// Saves new values for the settings of the module a Canvas block displays.
+        /// </summary>
+        /// <param name="bag">The Canvas block and the new values of its module's settings.</param>
+        /// <returns>An empty successful result, or an error.</returns>
+        [BlockAction]
+        public BlockActionResult SaveModuleSettings( PageBuilderModuleSettingsBag bag )
+        {
+            if ( bag?.AttributeValues == null )
+            {
+                return ActionBadRequest( "No module settings were provided." );
+            }
+
+            if ( !TryGetCanvasBlock( bag.BlockId, new BlockService( RockContext ), out var block, out var error ) )
+            {
+                return error;
+            }
+
+            var moduleInstance = GetModuleInstance( block );
+
+            if ( moduleInstance == null )
+            {
+                return ActionNotFound( "This Canvas has no module." );
+            }
+
+            moduleInstance.LoadAttributes( RockContext );
+            moduleInstance.SetPublicAttributeValues( bag.AttributeValues, RequestContext.CurrentPerson );
+            moduleInstance.SaveAttributeValues( RockContext );
+
+            return ActionOk();
+        }
+
+        /// <summary>
         /// Deletes a Canvas block from the target page, along with its module instance unless that instance is shareable or displayed elsewhere.
         /// </summary>
         /// <param name="blockId">The identifier of the Canvas block to delete.</param>
@@ -233,33 +351,15 @@ namespace Rock.Blocks.Cms
         [BlockAction]
         public BlockActionResult DeleteModule( int blockId )
         {
-            var targetPage = GetTargetPage();
-
-            if ( targetPage == null )
-            {
-                return ActionNotFound( "The target page could not be found." );
-            }
-
-            if ( !targetPage.IsAuthorized( Authorization.ADMINISTRATE, RequestContext.CurrentPerson ) )
-            {
-                return ActionUnauthorized( "You are not authorized to delete blocks from this page." );
-            }
-
             var blockService = new BlockService( RockContext );
-            var block = blockService.Get( blockId );
-            var canvasBlockType = GetCanvasBlockType();
 
-            // Only a Canvas block on the page being composed can be deleted from here.
-            if ( block == null || block.PageId != targetPage.Id || canvasBlockType == null || block.BlockTypeId != canvasBlockType.Id )
+            if ( !TryGetCanvasBlock( blockId, blockService, out var block, out var error ) )
             {
-                return ActionNotFound( "The module could not be found." );
+                return error;
             }
 
-            block.LoadAttributes( RockContext );
-
-            var moduleInstanceGuid = block.GetAttributeValue( Canvas.AttributeKey.ModuleInstance ).AsGuidOrNull();
-            var moduleInstanceService = new ModuleInstanceService( RockContext );
-            var moduleInstance = moduleInstanceGuid.HasValue ? moduleInstanceService.Get( moduleInstanceGuid.Value ) : null;
+            var pageId = block.PageId.Value;
+            var moduleInstance = GetModuleInstance( block );
 
             /*
                 09/23/26 - JMH
@@ -294,13 +394,13 @@ namespace Rock.Blocks.Cms
 
                 if ( isModuleInstanceDeleted )
                 {
-                    moduleInstanceService.Delete( moduleInstance );
+                    new ModuleInstanceService( RockContext ).Delete( moduleInstance );
                 }
 
                 RockContext.SaveChanges();
             } );
 
-            PageCache.Remove( targetPage.Id );
+            PageCache.Remove( pageId );
 
             return ActionOk();
         }
