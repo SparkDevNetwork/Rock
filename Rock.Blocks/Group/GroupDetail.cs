@@ -696,7 +696,7 @@ namespace Rock.Blocks.Group
                 Administrator = BuildAdministratorRef( entity.GroupAdministratorPersonAlias, groupType ),
                 AdministratorLabel = BuildAdministratorLabel( groupType ),
                 ParentGroup = BuildParentGroupRef( entity.ParentGroup ),
-                ScheduleFriendlyText = entity.Schedule?.FriendlyScheduleText,
+                ScheduleFriendlyText = entity.Schedule?.FriendlyScheduleText.SanitizeHtml( strict: false ),
                 GroupCapacity = entity.GroupCapacity
             };
         }
@@ -4790,11 +4790,12 @@ namespace Rock.Blocks.Group
 
             // The first attached schedule's friendly text. Multi-schedule
             // locations show only the first; the editing surface manages
-            // the full schedule list.
+            // the full schedule list. The text can contain HTML (a list of
+            // specific dates) and is rendered with v-html, so sanitize it.
             var scheduleText = gl.Schedules
                 .OrderBy( s => s.Order )
                 .ThenBy( s => s.Id )
-                .Select( s => s.FriendlyScheduleText )
+                .Select( s => s.FriendlyScheduleText.SanitizeHtml( strict: false ) )
                 .FirstOrDefault( t => t.IsNotNullOrWhiteSpace() );
 
             return new GroupMeetingLocationBag

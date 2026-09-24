@@ -7451,8 +7451,15 @@ namespace Rock.Blocks.Event
                       */
                     if ( context.RegistrarOption == RegistrarOption.UseFirstRegistrant
                         && context.IsFirstRegistrant
-                        && context.RegistrarPerson != null )
+                        && context.RegistrarPerson != null
+                        && context.IsRegistrantFormNameMatch( context.RegistrarPerson ) )
                     {
+                        // Only reuse the Registrar Person as the first registrant when the registrant form
+                        // still identifies the same person as the Registrar. When the fallback registrar form
+                        // displayed (first registrant had no email) and the user typed a different registrar
+                        // (for example, a parent registering a child), the two are different people and we
+                        // must fall through so a new Person is created for the actual first registrant
+                        // instead of silently swapping in the Registrar and tripping the duplicate check.
                         return ResolveRegistrantPersonResult.Match( context.RegistrarPerson );
                     }
 

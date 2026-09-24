@@ -237,7 +237,7 @@ namespace Rock.Utility
     <ul>
     {% for registrant in waitlist %}
         <li>
-            <strong>{{ registrant.PersonAlias.Person.FullName }}</strong> - {{ registrant.Cost | FormatAsCurrency }}{% if registrant.Cost == 0 %} (not charged){% endif %} - <span class=""badge badge-warning"">Waiting List</span>
+            <strong>{{ registrant.PersonAlias.Person.FullName }}</strong>{% if registrant.Cost > 0 %} - {{ registrant.Cost | FormatAsCurrency }} (not charged){% endif %} - <span class=""badge badge-warning"">Waiting List</span>
         </li>
     {% endfor %}
     </ul>

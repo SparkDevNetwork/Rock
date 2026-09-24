@@ -54,7 +54,7 @@
                                 <div class="form-group static-control">
                                     <label class="control-label">Schedule</label>
                                     <div class="control-wrapper">
-                                        <div class="form-control-static">{{ modelValue.scheduleFriendlyText }}</div>
+                                        <div class="form-control-static" v-html="modelValue.scheduleFriendlyText"></div>
                                     </div>
                                 </div>
                             </div>
