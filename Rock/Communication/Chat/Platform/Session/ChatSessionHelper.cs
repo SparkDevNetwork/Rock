@@ -174,7 +174,9 @@ namespace Rock.Communication.Chat.Platform.Session
                 TenantId = configuration.TenantId
             };
 
-            return Sign( result, configuration, SyncScope, null );
+            // The platform exchanges a sync token as it does a person's and refuses one with no
+            // subject. No person stands behind a sync, so the church itself is the subject.
+            return Sign( result, configuration, SyncScope, configuration.TenantId );
         }
 
         /// <summary>

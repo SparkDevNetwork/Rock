@@ -62,7 +62,9 @@ namespace Rock.Tests.Communication.Chat.Platform.Sync
 
         private const string PublishableKey = "sb_publishable_test";
 
-        private const string Token = "stub.church.token";
+        // A platform token, as the job hands the client after exchanging the church's own. The name
+        // once said church token, and the job sent exactly that, which the platform refuses.
+        private const string Token = "stub.platform.token";
 
         /// <summary>
         /// Not on this framework's enumeration, and the status a refusal arrives with.

@@ -99,7 +99,7 @@ namespace Rock.Communication.Chat.Platform.Sync
         /// Creates a client for one church.
         /// </summary>
         /// <param name="configuration">The church's chat settings.</param>
-        /// <param name="tokenFactory">Mints a sync-scope church token. Asked once per request rather than once per client, because a church token is short lived and a run can outlast one.</param>
+        /// <param name="tokenFactory">Supplies the platform token the run's church token was exchanged for. Never the church token itself: the platform's data API verifies only tokens the platform signed.</param>
         /// <param name="handler">The transport, or null for the ordinary one.</param>
         public ChatSyncSubmitClient( ChatPlatformConfiguration configuration, Func<string> tokenFactory, HttpMessageHandler handler = null )
         {
@@ -349,7 +349,7 @@ namespace Rock.Communication.Chat.Platform.Sync
 
         /// <summary>
         /// The two things every call to the project carries: the key the project is addressed with,
-        /// and the church token the call is made under.
+        /// and the platform token the call is made under.
         /// </summary>
         private void AddCredentials( HttpRequestMessage request )
         {

@@ -433,7 +433,20 @@ namespace Rock.Jobs
                 Rock.VersionInfo.VersionInfo.GetRockSemanticVersionNumber(),
                 isManualRun );
 
-            using ( var client = new ChatSyncSubmitClient( configuration, () => MintToken( configuration ) ) )
+            string failure;
+            // Minted fresh here rather than reused from the check at the top: reading a large church
+            // can take long enough that the first token would be refused as too old to exchange.
+            var platformToken = ChatSyncCredential.Exchange( configuration, MintToken( configuration ), out failure );
+            if ( platformToken == null )
+            {
+                return new RunResult
+                {
+                    IsFailure = true,
+                    Message = Describe( submissionId, rowCounts, "nothing was submitted, because " + failure )
+                };
+            }
+
+            using ( var client = new ChatSyncSubmitClient( configuration, () => platformToken ) )
             {
                 var acknowledgement = client.Submit( submissionId, projection.Payload, headers );
 
@@ -727,14 +740,14 @@ namespace Rock.Jobs
         }
 
         /// <summary>
-        /// A fresh church token per request.
+        /// A fresh church token, for the exchange that yields the run's platform token.
         /// </summary>
         /// <param name="configuration">The church's chat settings.</param>
         /// <returns>The token, or null where one could not be minted.</returns>
         /// <remarks>
-        /// A church token lasts minutes and a run that read a large church and then waited out its poll
-        /// budget can outlast one, so minting it once at the top would expire mid-run on exactly the
-        /// churches this matters most for.
+        /// A church token lasts minutes, and the platform will not exchange one with less than two
+        /// left, so a token minted before a large church was read could be too old by the time it
+        /// is exchanged, on exactly the churches this matters most for.
         /// </remarks>
         private static string MintToken( ChatPlatformConfiguration configuration )
         {
@@ -805,6 +818,17 @@ namespace Rock.Jobs
                         + ( acknowledgement.TransportDetail.IsNullOrWhiteSpace()
                             ? "no reason was given"
                             : acknowledgement.TransportDetail )
+                };
+            }
+
+            // The gateway answers a token it cannot verify in its own shape, with no status, and
+            // that says something about this church's credential, not about this version of Rock.
+            if ( !acknowledgement.Status.HasValue && ( acknowledgement.HttpStatusCode == 401 || acknowledgement.HttpStatusCode == 403 ) )
+            {
+                return new RunResult
+                {
+                    IsFailure = true,
+                    Message = "the chat platform refused this church's credential" + Reason( acknowledgement.ErrorCode )
                 };
             }
 

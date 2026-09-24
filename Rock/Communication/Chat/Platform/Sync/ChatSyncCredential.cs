@@ -17,6 +17,8 @@
 using System;
 using System.Net.Http;
 
+using Newtonsoft.Json.Linq;
+
 using Rock.Communication.Chat.Platform.Configuration;
 
 namespace Rock.Communication.Chat.Platform.Sync
@@ -34,9 +36,72 @@ namespace Rock.Communication.Chat.Platform.Sync
         /// <param name="failure">Why there is no token, when there is none.</param>
         /// <param name="handler">The transport, or null for the ordinary one.</param>
         /// <returns>The platform token, or null.</returns>
+        /// <remarks>
+        /// The platform's data API verifies only tokens the platform signed, so a church token sent
+        /// to it directly is refused on every call. One exchange covers a whole run: the platform
+        /// grants no token with less than two minutes left, and the longest run polls for one.
+        /// </remarks>
         public static string Exchange( ChatPlatformConfiguration configuration, string churchToken, out string failure, HttpMessageHandler handler = null )
         {
-            throw new NotImplementedException();
+            if ( churchToken.IsNullOrWhiteSpace() )
+            {
+                failure = "this church could not sign a request to the chat platform";
+                return null;
+            }
+
+            var url = ( configuration.ProjectUrl ?? string.Empty ).TrimEnd( '/' ) + "/functions/v1/token-exchange";
+
+            try
+            {
+                using ( var client = handler == null ? new HttpClient() : new HttpClient( handler, false ) )
+                using ( var request = new HttpRequestMessage( HttpMethod.Post, url ) )
+                {
+                    request.Headers.TryAddWithoutValidation( "Authorization", "Bearer " + churchToken );
+                    request.Headers.TryAddWithoutValidation( "apikey", configuration.PublishableKey );
+
+                    using ( var response = client.SendAsync( request ).GetAwaiter().GetResult() )
+                    {
+                        var body = ReadBody( response );
+                        var token = ( string ) body?["access_token"];
+
+                        if ( response.IsSuccessStatusCode && token.IsNotNullOrWhiteSpace() )
+                        {
+                            failure = null;
+                            return token;
+                        }
+
+                        var code = ( string ) body?["error"]?["code"];
+                        failure = "the chat platform refused this church's credential: "
+                            + ( code.IsNotNullOrWhiteSpace() ? code : "HTTP " + ( int ) response.StatusCode );
+                        return null;
+                    }
+                }
+            }
+            catch ( Exception exception )
+            {
+                failure = "the chat platform could not be reached to exchange this church's credential: "
+                    + ( exception.InnerException ?? exception ).Message;
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// The response body as JSON, or null when it is not JSON.
+        /// </summary>
+        /// <param name="response">The response.</param>
+        /// <returns>The body, or null.</returns>
+        private static JObject ReadBody( HttpResponseMessage response )
+        {
+            try
+            {
+                var text = response.Content?.ReadAsStringAsync().GetAwaiter().GetResult();
+                return text.IsNullOrWhiteSpace() ? null : JObject.Parse( text );
+            }
+            catch
+            {
+                // Intentionally ignored: a gateway that answered in its own words has no token to read.
+                return null;
+            }
         }
     }
 }
