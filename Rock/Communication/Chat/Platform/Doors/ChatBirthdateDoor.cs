@@ -18,6 +18,7 @@ using System;
 
 using Rock.Communication.Chat.Platform.Session;
 using Rock.Data;
+using Rock.Model;
 using Rock.ViewModels.Blocks.Communication.Chat.ChatShell;
 
 namespace Rock.Communication.Chat.Platform.Doors
@@ -57,7 +58,90 @@ namespace Rock.Communication.Chat.Platform.Doors
         /// <returns>What happened, and the session after it.</returns>
         public static ChatBirthdateResultBag Save( int? personId, int year, int month, int day, ChatSessionContext context, RockContext rockContext )
         {
-            throw new NotImplementedException();
+            var person = personId.HasValue ? new PersonService( rockContext ).Get( personId.Value ) : null;
+
+            if ( person == null )
+            {
+                return Refused( SignInRequired, null, context, rockContext );
+            }
+
+            if ( person.BirthYear.HasValue && person.BirthMonth.HasValue && person.BirthDay.HasValue )
+            {
+                return Refused( BirthdateRecorded, person, context, rockContext );
+            }
+
+            // Every gate ahead of the age gate runs first, so a person chat would refuse for any
+            // other reason is never asked, and nothing is written for them.
+            if ( ChatSessionHelper.Evaluate( person, context, rockContext ).Gate != ChatMintGate.AgeVerificationRequired )
+            {
+                return Refused( NotAsked, person, context, rockContext );
+            }
+
+            var birthDate = ToDate( year, month, day );
+
+            if ( !birthDate.HasValue )
+            {
+                return Refused( InvalidDate, person, context, rockContext );
+            }
+
+            var isRecordedPartDifferent = ( person.BirthYear.HasValue && person.BirthYear.Value != year )
+                || ( person.BirthMonth.HasValue && person.BirthMonth.Value != month )
+                || ( person.BirthDay.HasValue && person.BirthDay.Value != day );
+
+            if ( isRecordedPartDifferent )
+            {
+                return Refused( BirthdateRecorded, person, context, rockContext );
+            }
+
+            person.SetBirthDate( birthDate.Value );
+            rockContext.SaveChanges();
+
+            return new ChatBirthdateResultBag
+            {
+                Code = Saved,
+                Session = ChatShellSession.Open( person, context, rockContext )
+            };
+        }
+
+        /// <summary>
+        /// The date the three parts name, when they name a real one no later than today.
+        /// </summary>
+        /// <param name="year">The year given.</param>
+        /// <param name="month">The month given.</param>
+        /// <param name="day">The day given.</param>
+        /// <returns>The date, or null when the parts do not make one chat may record.</returns>
+        private static DateTime? ToDate( int year, int month, int day )
+        {
+            if ( year < 1 || year > 9999 || month < 1 || month > 12 )
+            {
+                return null;
+            }
+
+            if ( day < 1 || day > DateTime.DaysInMonth( year, month ) )
+            {
+                return null;
+            }
+
+            var date = new DateTime( year, month, day );
+
+            return date > RockDateTime.Today ? ( DateTime? ) null : date;
+        }
+
+        /// <summary>
+        /// A refusal, carrying the session as it stands so the shell can follow it.
+        /// </summary>
+        /// <param name="code">Why nothing was written.</param>
+        /// <param name="person">The person, or null when nobody is signed in.</param>
+        /// <param name="context">The church's settings and the direct message access result.</param>
+        /// <param name="rockContext">Used by the gates.</param>
+        /// <returns>The refusal.</returns>
+        private static ChatBirthdateResultBag Refused( string code, Person person, ChatSessionContext context, RockContext rockContext )
+        {
+            return new ChatBirthdateResultBag
+            {
+                Code = code,
+                Session = ChatShellSession.Open( person, context, rockContext )
+            };
         }
     }
 }

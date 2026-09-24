@@ -20,11 +20,13 @@ using System.Linq;
 
 using Rock.Attribute;
 using Rock.Communication.Chat.Platform.Configuration;
+using Rock.Communication.Chat.Platform.Doors;
 using Rock.Communication.Chat.Platform.Session;
 using Rock.Data;
 using Rock.Model;
 using Rock.Reporting;
 using Rock.ViewModels.Blocks.Communication.Chat.ChatShell;
+using Rock.ViewModels.Controls;
 using Rock.Web.Cache;
 
 namespace Rock.Blocks.Communication.Chat
@@ -91,6 +93,21 @@ namespace Rock.Blocks.Communication.Chat
             var context = new ChatSessionContext { Configuration = ChatPlatformConfigurationService.Read() };
 
             return ActionOk( ChatShellSession.MintToken( GetCurrentPerson(), context, RockContext ) );
+        }
+
+        /// <summary>
+        /// Records the birthdate chat asked the person for, when Rock holds none, and describes
+        /// the session as it now stands so the shell can carry on without reloading.
+        /// </summary>
+        /// <param name="birthDate">The date the person gave.</param>
+        /// <returns>What happened, and the session after it.</returns>
+        [BlockAction]
+        public BlockActionResult SaveBirthdate( DatePartsPickerValueBag birthDate )
+        {
+            var person = GetCurrentPerson();
+            var date = birthDate ?? new DatePartsPickerValueBag();
+
+            return ActionOk( ChatBirthdateDoor.Save( person?.Id, date.Year, date.Month, date.Day, BuildSessionContext( person, RockContext ), RockContext ) );
         }
 
         #endregion Block Actions
