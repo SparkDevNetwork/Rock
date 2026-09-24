@@ -762,18 +762,27 @@ namespace Rock.Blocks.Event
             return GetRegistrationTemplatePlacements()
                 .Select( placement =>
                 {
-                    var placedGroupNames = personId.HasValue && _placementGroupsByPlacementId.TryGetValue( placement.Id, out var placementGroups )
-                        ? placementGroups
-                            .Where( g => g.PersonIds.Contains( personId.Value ) )
-                            .Select( g => g.GroupName )
-                            .ToList()
-                        : new List<string>();
+                    var placementGroups = personId.HasValue && _placementGroupsByPlacementId.TryGetValue( placement.Id, out var groupsForPlacement )
+                        ? groupsForPlacement
+                        : new List<PlacementGroupInfo>();
+
+                    var activeGroupNames = placementGroups
+                        .Where( g => g.ActivePersonIds.Contains( personId.Value ) )
+                        .Select( g => g.GroupName )
+                        .ToList();
+
+                    // An inactive membership still counts as placed, but only the active ones drive the count and green state.
+                    var inactiveGroupNames = placementGroups
+                        .Where( g => g.InactivePersonIds.Contains( personId.Value ) )
+                        .Select( g => g.GroupName )
+                        .ToList();
 
                     return new RegistrantPlacementBag
                     {
                         PlacementId = placement.Id,
-                        GroupCount = placedGroupNames.Count,
-                        GroupNames = placedGroupNames
+                        GroupCount = activeGroupNames.Count,
+                        GroupNames = activeGroupNames,
+                        InactiveGroupNames = inactiveGroupNames
                     };
                 } )
                 .ToList();
@@ -1181,7 +1190,12 @@ WHERE [g].[GroupTypeId] = @FamilyGroupTypeId
                     {
                         g.Id,
                         g.Name,
-                        PersonIds = g.Members.Select( m => m.PersonId )
+                        ActivePersonIds = g.Members
+                            .Where( m => !m.IsArchived && m.GroupMemberStatus != GroupMemberStatus.Inactive )
+                            .Select( m => m.PersonId ),
+                        InactivePersonIds = g.Members
+                            .Where( m => !m.IsArchived && m.GroupMemberStatus == GroupMemberStatus.Inactive )
+                            .Select( m => m.PersonId )
                     } )
                     .ToList();
 
@@ -1192,7 +1206,12 @@ WHERE [g].[GroupTypeId] = @FamilyGroupTypeId
                     {
                         g.Id,
                         g.Name,
-                        PersonIds = g.Members.Select( m => m.PersonId )
+                        ActivePersonIds = g.Members
+                            .Where( m => !m.IsArchived && m.GroupMemberStatus != GroupMemberStatus.Inactive )
+                            .Select( m => m.PersonId ),
+                        InactivePersonIds = g.Members
+                            .Where( m => !m.IsArchived && m.GroupMemberStatus == GroupMemberStatus.Inactive )
+                            .Select( m => m.PersonId )
                     } )
                     .ToList();
 
@@ -1220,7 +1239,8 @@ WHERE [g].[GroupTypeId] = @FamilyGroupTypeId
                     placementGroups.Add( new PlacementGroupInfo
                     {
                         GroupName = groupInfo.Name,
-                        PersonIds = new HashSet<int>( groupInfo.PersonIds )
+                        ActivePersonIds = new HashSet<int>( groupInfo.ActivePersonIds ),
+                        InactivePersonIds = new HashSet<int>( groupInfo.InactivePersonIds )
                     } );
                 }
 
@@ -1781,9 +1801,17 @@ WHERE [g].[GroupTypeId] = @FamilyGroupTypeId
             public string GroupName { get; set; }
 
             /// <summary>
-            /// Gets or sets the person identifiers of the group's members.
+            /// Gets or sets the person identifiers of the group's non-archived
+            /// members whose status is Active or Pending.
             /// </summary>
-            public HashSet<int> PersonIds { get; set; }
+            public HashSet<int> ActivePersonIds { get; set; }
+
+            /// <summary>
+            /// Gets or sets the person identifiers of the group's non-archived
+            /// members whose status is Inactive. These people are still placed
+            /// but are shown in a muted state.
+            /// </summary>
+            public HashSet<int> InactivePersonIds { get; set; }
         }
 
         /// <summary>

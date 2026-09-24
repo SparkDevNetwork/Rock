@@ -1150,6 +1150,11 @@ namespace Rock.Model
             /// <inheritdoc cref="GroupMember.IsArchived"/>
             public bool IsArchived { get; }
 
+            /// <summary>
+            /// Determines if the group member status is <see cref="GroupMemberStatus.Inactive"/>.
+            /// </summary>
+            public bool IsInactive { get; }
+
             public GroupMemberUpdatedState( GroupMember groupMember, EntityContextState state )
             {
                 if ( groupMember == null )
@@ -1165,6 +1170,7 @@ namespace Rock.Model
                 GroupRoleId = groupMember.GroupRoleId;
                 DateTimeAdded = groupMember.DateTimeAdded?.ToRockDateTimeOffset();
                 IsArchived = groupMember.IsArchived;
+                IsInactive = groupMember.GroupMemberStatus == GroupMemberStatus.Inactive;
             }
         }
 
@@ -1338,6 +1344,7 @@ namespace Rock.Model
 						GroupRoleIdKey = Rock.Utility.IdHasher.Instance.GetHash( item.GroupRoleId ),
                         DateTimeAdded = item.DateTimeAdded,
                         IsArchived = item.IsArchived,
+                        IsInactive = item.IsInactive,
                         Person = new ViewModels.Blocks.Group.GroupPlacement.PersonBag
 						{   
 							PersonIdKey = person.IdKey,

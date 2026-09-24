@@ -650,9 +650,12 @@ namespace Rock.Blocks.Group
 
             if ( role?.MaxCount is int maxCount )
             {
+                // Inactive members are shown as placed but do not take up a spot in the role.
                 var currentCount = new GroupMemberService( RockContext )
                     .Queryable()
-                    .Count( gm => gm.GroupId == group.Id && gm.GroupRoleId == roleId.Value );
+                    .Count( gm => gm.GroupId == group.Id
+                        && gm.GroupRoleId == roleId.Value
+                        && gm.GroupMemberStatus != GroupMemberStatus.Inactive );
 
                 if ( currentCount + pendingGroupMemberCount > maxCount )
                 {
@@ -1348,6 +1351,7 @@ namespace Rock.Blocks.Group
                         GroupRoleIdKey = row.GroupRoleId.HasValue
                             ? IdHasher.Instance.GetHash( row.GroupRoleId.Value )
                             : null,
+                        IsInactive = row.GroupMemberStatus == ( int ) GroupMemberStatus.Inactive,
                         DateTimeAdded = row.DateTimeAdded?.ToRockDateTimeOffset(),
                         Attributes = destinationGroupMember.GetPublicAttributesForView( GetCurrentPerson(), true, attributeFilter: a => displayedDestinationGroupMemberAttributeIds.Contains( a.Id ) ),
                         AttributeValues = destinationGroupMember.GetPublicAttributeValuesForView( GetCurrentPerson(), true, attributeFilter: a => displayedDestinationGroupMemberAttributeIds.Contains( a.Id ) ),
@@ -2317,6 +2321,12 @@ namespace Rock.Blocks.Group
             /// Gets or sets the role identifier within the group.
             /// </summary>
             public int? GroupRoleId { get; set; }
+
+            /// <summary>
+            /// Gets or sets the group member status as the integer value of <see cref="Rock.Model.GroupMemberStatus"/>.
+            /// This is null for people who are not in a destination group.
+            /// </summary>
+            public int? GroupMemberStatus { get; set; }
 
             /// <summary>
             /// Gets or sets the Date Time the Group Member was added.

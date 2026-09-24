@@ -79,6 +79,12 @@ namespace Rock.ViewModels.Group.GroupMember
         public bool IsArchived { get; set; }
 
         /// <summary>
+        /// Determines if the group member status is Inactive. Inactive members are still
+        /// considered placed but are displayed muted and are not counted toward capacity.
+        /// </summary>
+        public bool IsInactive { get; set; }
+
+        /// <summary>
         /// The person associated with the group member.
         /// </summary>
         public PersonBag Person { get; set; }
