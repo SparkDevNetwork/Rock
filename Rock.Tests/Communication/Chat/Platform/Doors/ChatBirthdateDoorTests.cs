@@ -275,6 +275,7 @@ namespace Rock.Tests.Communication.Chat.Platform.Doors
         {
             _rockContextMock.Verify( m => m.SaveChanges(), Times.Never(), "a refusal saved" );
             _rockContextMock.Verify( m => m.SaveChanges( It.IsAny<bool>() ), Times.Never(), "a refusal saved" );
+            _rockContextMock.Verify( m => m.SaveChanges( It.IsAny<SaveChangesArgs>() ), Times.Never(), "a refusal saved" );
         }
 
         private int MarkerCount()
