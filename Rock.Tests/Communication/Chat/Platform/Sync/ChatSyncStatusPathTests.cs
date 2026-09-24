@@ -175,6 +175,26 @@ namespace Rock.Tests.Communication.Chat.Platform.Sync
             StringAssert.Contains( result.Message, "the host could not be resolved" );
         }
 
+        [TestMethod]
+        public void WhenThePlatformRefusedTheCredential_TheJobSaysSoRatherThanThatItCouldNotReadTheAnswer()
+        {
+            // The platform's gateway answers a token it cannot verify in its own shape, with no
+            // submission status, and that is a statement about this church's credential rather
+            // than about the version of Rock reading it.
+            var ack = new ChatSyncAcknowledgement
+            {
+                SubmissionId = Guid.NewGuid(),
+                ErrorCode = "No suitable key or wrong key type",
+                HttpStatusCode = 401
+            };
+
+            var result = ChatPlatformSync.Resolve( ack, null );
+
+            Assert.IsTrue( result.IsFailure );
+            StringAssert.Contains( result.Message, "the chat platform refused this church's credential" );
+            StringAssert.Contains( result.Message, "No suitable key or wrong key type" );
+        }
+
         #endregion A submission that never got that far
 
         #region What the result names

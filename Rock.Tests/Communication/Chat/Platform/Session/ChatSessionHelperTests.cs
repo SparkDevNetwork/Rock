@@ -493,6 +493,21 @@ namespace Rock.Tests.Communication.Chat.Platform.Session
             Assert.IsTrue( token.Payload.ContainsKey( "exp" ), "a church token always expires" );
         }
 
+        [TestMethod]
+        public void TryMintSyncToken_ValidConfig_NamesTheChurchAsItsSubject()
+        {
+            // The platform exchanges a sync token exactly as it exchanges a person's, and refuses
+            // one with no subject. No person stands behind a sync, so the church itself is the
+            // subject; nothing on the platform reads it, because every sync function takes the
+            // church from the tenant claim and every person function refuses the sync scope.
+            var config = SigningConfig();
+
+            var result = ChatSessionHelper.TryMintSyncToken( config );
+
+            var token = new JwtSecurityTokenHandler().ReadJwtToken( result.ChurchToken );
+            Assert.AreEqual( config.Configuration.TenantId.ToString(), token.Subject );
+        }
+
         #endregion
 
         #region Enrolment
