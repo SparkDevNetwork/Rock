@@ -31,8 +31,8 @@
                            :reloadRequest="reloadRequest"
                            :selectRequest="selectRequest"
                            @moduleDropped="onModuleDropped"
-                           @moduleSelected="selectedBlockId = $event"
-                           @moduleEditRequested="openModuleSheet"
+                           @moduleSelected="onModuleSelected"
+                           @moduleEditRequested="onModuleEditRequested"
                            @moduleDeleteRequested="onModuleDeleteRequested" />
 
                 <NotificationBox v-if="blockActionErrorMessage"
@@ -49,7 +49,7 @@
             </div>
         </div>
 
-        <Sheet v-model="isModuleSheetShown" title="Edit Module">
+        <Sheet v-model="isModuleSheetShown" title="Edit Module" :beforeClose="canLeaveEditedModule">
             <NotificationBox v-if="moduleSheetErrorMessage" alertType="danger">
                 {{ moduleSheetErrorMessage }}
             </NotificationBox>
@@ -257,7 +257,8 @@
     import Sheet from "@Obsidian/Controls/Internal/sheet.obs";
     import { BtnType } from "@Obsidian/Enums/Controls/btnType";
     import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
-    import { confirmDelete } from "@Obsidian/Utility/dialogs";
+    import { confirm, confirmDelete } from "@Obsidian/Utility/dialogs";
+    import { deepEqual } from "@Obsidian/Utility/util";
     import { PageBuilderAddModuleBag } from "@Obsidian/ViewModels/Blocks/Cms/PageBuilder/pageBuilderAddModuleBag";
     import { PageBuilderInitializationBox } from "@Obsidian/ViewModels/Blocks/Cms/PageBuilder/pageBuilderInitializationBox";
     import { PageBuilderModuleSettingsBag } from "@Obsidian/ViewModels/Blocks/Cms/PageBuilder/pageBuilderModuleSettingsBag";
@@ -300,6 +301,7 @@
     const editingBlockId = ref<number | null>(null);
     const moduleAttributes = ref<Record<string, PublicAttributeBag>>({});
     const moduleAttributeValues = ref<Record<string, string>>({});
+    const savedModuleAttributeValues = ref<Record<string, string>>({});
     const isModuleSettingsLoading = ref(false);
     const isModuleSettingsLoaded = ref(false);
     const isModuleSaving = ref(false);
@@ -315,6 +317,8 @@
     // #region Computed Values
 
     const hasModuleAttributes = computed((): boolean => Object.keys(moduleAttributes.value).length > 0);
+
+    const isModuleSettingsDirty = computed((): boolean => !deepEqual(moduleAttributeValues.value, savedModuleAttributeValues.value, true));
 
     // #endregion Computed Values
 
@@ -416,7 +420,8 @@
     /**
      * Adds a dropped module to the page in a new Canvas block, then reloads
      * the frame so Rock renders the new block itself, selects it, and opens
-     * the sheet on it.
+     * the sheet on it unless the person keeps unsaved changes to the module
+     * already in the sheet.
      */
     async function onModuleDropped(drop: ModuleDrop): Promise<void> {
         blockActionErrorMessage.value = "";
@@ -434,10 +439,55 @@
             return;
         }
 
-        selectRequest.value = { blockId: result.data };
+        const blockId = result.data;
+
+        // Keeping the unsaved changes leaves the module in the sheet selected, and the reload keeps it that way.
+        if (!await canLeaveEditedModule()) {
+            reloadRequest.value = { type: "PAGE_FRAME_RELOAD_REQUEST" };
+            return;
+        }
+
+        selectRequest.value = { blockId };
         reloadRequest.value = { type: "PAGE_FRAME_RELOAD_REQUEST" };
 
-        await openModuleSheet(result.data);
+        await openModuleSheet(blockId);
+    }
+
+    /**
+     * Moves an open sheet to the module that was selected, asking first when
+     * that would discard unsaved changes.
+     */
+    async function onModuleSelected(blockId: number | null): Promise<void> {
+        selectedBlockId.value = blockId;
+
+        // Clearing the selection, which a frame reload also does, leaves the sheet where it is.
+        if (!isModuleSheetShown.value || blockId === null || blockId === editingBlockId.value) {
+            return;
+        }
+
+        if (!await canLeaveEditedModule()) {
+            // Selecting the module in the sheet again keeps the selection and the sheet in agreement.
+            if (editingBlockId.value !== null) {
+                selectRequest.value = { blockId: editingBlockId.value };
+            }
+
+            return;
+        }
+
+        await openModuleSheet(blockId);
+    }
+
+    /**
+     * Opens the sheet on the module whose edit control was clicked.
+     */
+    async function onModuleEditRequested(blockId: number): Promise<void> {
+        if (isModuleSheetShown.value && blockId === editingBlockId.value) {
+            return;
+        }
+
+        if (await canLeaveEditedModule()) {
+            await openModuleSheet(blockId);
+        }
     }
 
     /**
@@ -490,9 +540,10 @@
         moduleSheetErrorMessage.value = "";
         isModuleSaving.value = true;
 
+        const attributeValues = { ...moduleAttributeValues.value };
         const bag: PageBuilderModuleSettingsBag = {
             blockId,
-            attributeValues: moduleAttributeValues.value
+            attributeValues
         };
 
         const result = await invokeBlockAction("SaveModuleSettings", { bag });
@@ -503,6 +554,8 @@
             moduleSheetErrorMessage.value = result.errorMessage || "The module's settings could not be saved.";
             return;
         }
+
+        savedModuleAttributeValues.value = attributeValues;
 
         if (isClosingAfterSave.value) {
             isModuleSheetShown.value = false;
@@ -521,6 +574,9 @@
      */
     async function openModuleSheet(blockId: number): Promise<void> {
         editingBlockId.value = blockId;
+        moduleAttributes.value = {};
+        moduleAttributeValues.value = {};
+        savedModuleAttributeValues.value = {};
         moduleSheetErrorMessage.value = "";
         isModuleSettingsLoaded.value = false;
         isModuleSettingsLoading.value = true;
@@ -543,6 +599,31 @@
         moduleAttributes.value = result.data.attributes ?? {};
         moduleAttributeValues.value = result.data.attributeValues ?? {};
         isModuleSettingsLoaded.value = true;
+
+        // Field editors can normalize a value as they mount, so the unsaved changes baseline waits for them.
+        await nextTick();
+        savedModuleAttributeValues.value = { ...moduleAttributeValues.value };
+    }
+
+    /**
+     * Checks whether the sheet can move off the module it shows, asking first
+     * when that would discard unsaved changes.
+     */
+    async function canLeaveEditedModule(): Promise<boolean> {
+        if (!isModuleSheetShown.value) {
+            return true;
+        }
+
+        // The sheet stays on a module until its save finishes.
+        if (isModuleSaving.value) {
+            return false;
+        }
+
+        if (!isModuleSettingsDirty.value) {
+            return true;
+        }
+
+        return await confirm("Changes have been made that have not yet been saved. Do you want to leave without saving?");
     }
 
     /**
