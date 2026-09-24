@@ -65,3 +65,15 @@ export type ModuleDrop = {
     /** The identifier of the block it was dropped in front of, or null to place it last in the zone. */
     beforeBlockId: number | null;
 };
+
+/** Where a Canvas block was dragged by its handle, as reported by the page frame. */
+export type ModuleMove = {
+    /** The identifier of the Canvas block that was moved. */
+    blockId: number;
+
+    /** The key of the zone it was dropped in. */
+    zoneName: string;
+
+    /** The identifier of the block it was dropped in front of, or null to place it last in the zone. */
+    beforeBlockId: number | null;
+};

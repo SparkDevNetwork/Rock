@@ -200,6 +200,24 @@ export const builderStyles = `
     height: 40px;
     background-color: var(--color-interface-softest);
     cursor: grab;
+    touch-action: none;
+}
+
+.pagebuilder-moving {
+    opacity: 0.4;
+}
+
+.pagebuilder-module-moving,
+.pagebuilder-module-moving * {
+    cursor: grabbing !important;
+}
+
+.pagebuilder-move-mirror {
+    position: fixed;
+    z-index: 1060;
+    border-radius: var(--rounded-full);
+    box-shadow: var(--popup-box-shadow);
+    transform: translate(var(--spacing-small), var(--spacing-small));
 }
 
 .pagebuilder-selection-delete {

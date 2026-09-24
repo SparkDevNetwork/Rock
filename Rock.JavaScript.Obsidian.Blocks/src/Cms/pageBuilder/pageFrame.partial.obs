@@ -22,6 +22,7 @@
     import { builderStyles, builderStyleVariableNames } from "./frameStyles.partial";
     import {
         ModuleDrop,
+        ModuleMove,
         ModuleSelectRequest,
         ModuleTypeDragEndRequest,
         ModuleTypeDragLeaveRequest,
@@ -95,6 +96,7 @@
 
     const emit = defineEmits<{
         (e: "moduleDropped", value: ModuleDrop): void;
+        (e: "moduleMoved", value: ModuleMove): void;
         (e: "moduleSelected", blockId: number | null): void;
         (e: "moduleEditRequested", blockId: number): void;
         (e: "moduleDeleteRequested", blockId: number): void;
@@ -105,6 +107,9 @@
     const zoneSelector = "[data-pagebuilder=\"true\"]";
     const scrollTriggerDistance = 40;
 
+    /** How far the handle has to travel before a press becomes a move, so a click does not flash the drop chrome. */
+    const moveThresholdDistance = 4;
+
     const frameElement = ref<HTMLIFrameElement | undefined>();
     const draggingModuleType = ref<PageBuilderModuleTypeBag | null>(null);
     const dropTarget = ref<DropTarget | null>(null);
@@ -113,6 +118,7 @@
     const lastClientY = ref<number | null>(null);
     const selectedBlockElement = ref<HTMLElement | null>(null);
     const pendingSelectBlockId = ref<number | null>(null);
+    const movingBlockElement = ref<HTMLElement | null>(null);
 
     let isReloadPending = false;
 
@@ -136,6 +142,7 @@
 
         // Capture so a click inside a module selects it before the module's own content, such as a link, can act on it.
         frameDocument.addEventListener("click", onFrameClick, true);
+        frameDocument.addEventListener("pointerdown", onFramePointerDown, true);
 
         // A reload replaces the document, so any previous selection is gone.
         if (selectedBlockElement.value) {
@@ -193,6 +200,28 @@
     }
 
     /**
+     * Starts moving the selected module when its drag handle is pressed.
+     */
+    function onFramePointerDown(event: PointerEvent): void {
+        const target = event.target as Element | null;
+        const handleElement = target && typeof target.closest === "function"
+            ? target.closest<HTMLElement>(".pagebuilder-selection-drag")
+            : null;
+        const blockElement = handleElement?.closest<HTMLElement>(".block-instance") ?? null;
+        const blockId = getBlockId(blockElement);
+
+        // Only the primary button of the first pointer moves a module.
+        if (!handleElement || !blockElement || blockId === null || !event.isPrimary || event.button !== 0) {
+            return;
+        }
+
+        event.preventDefault();
+        event.stopPropagation();
+
+        startModuleMove(event, handleElement, blockElement, blockId);
+    }
+
+    /**
      * Begins a drag, which outlines every builder-enabled zone as a possible
      * drop target.
      */
@@ -217,15 +246,9 @@
             return;
         }
 
-        const frameHeight = frameElement.value.getBoundingClientRect().height;
+        const isScrolling = scrollNearFrameEdge(request.clientY);
 
-        if (request.clientY < scrollTriggerDistance) {
-            frameElement.value.contentWindow?.scrollBy({ top: -scrollTriggerDistance, behavior: "smooth" });
-        }
-        else if (request.clientY > frameHeight - scrollTriggerDistance) {
-            frameElement.value.contentWindow?.scrollBy({ top: scrollTriggerDistance, behavior: "smooth" });
-        }
-        else if (request.clientX === lastClientX.value && request.clientY === lastClientY.value) {
+        if (!isScrolling && request.clientX === lastClientX.value && request.clientY === lastClientY.value) {
             return;
         }
 
@@ -399,13 +422,191 @@
             }
         });
 
+        // A module being moved is left out, so the positions just above and below it both mean where it already is.
         const beforeElement = contentChildren.slice(firstPositionIndex).find(child => {
+            if (child === movingBlockElement.value) {
+                return false;
+            }
+
             const rect = child.getBoundingClientRect();
 
             return clientY < rect.top + (rect.height / 2);
         }) ?? null;
 
         return { containerElement, beforeElement };
+    }
+
+    /*
+        09/24/26 - JMH
+
+        A selected module moves by dragging its handle. The handle is inside the frame, so unlike a
+        drag from the sidebar, the pointer events arrive in the frame's own document and need no
+        translating. The drop targets, insertion line, and edge scrolling are the ones a sidebar drag
+        uses. The module moves in the page as soon as it is dropped, and the builder reloads the frame
+        once the move is saved, which also puts it back if saving fails.
+
+        Reason: Reordering reuses the drop targeting that placing a module already has.
+    */
+    function startModuleMove(event: PointerEvent, handleElement: HTMLElement, blockElement: HTMLElement, blockId: number): void {
+        const frameDocument = blockElement.ownerDocument;
+        const pointerId = event.pointerId;
+        const startX = event.clientX;
+        const startY = event.clientY;
+        let mirrorElement: HTMLElement | null = null;
+        let isEnded = false;
+
+        try {
+            handleElement.setPointerCapture(pointerId);
+        }
+        catch {
+            // Intentionally ignored: capture fails if the pointer is already gone, and the move then ends on the next release.
+        }
+
+        function onPointerMove(moveEvent: PointerEvent): void {
+            if (moveEvent.pointerId !== pointerId) {
+                return;
+            }
+
+            if (!mirrorElement) {
+                if (Math.hypot(moveEvent.clientX - startX, moveEvent.clientY - startY) < moveThresholdDistance) {
+                    return;
+                }
+
+                mirrorElement = createMoveMirror(blockElement);
+                movingBlockElement.value = blockElement;
+                blockElement.classList.add("pagebuilder-moving");
+                frameDocument.documentElement.classList.add("pagebuilder-dragging", "pagebuilder-module-moving");
+            }
+
+            mirrorElement.style.left = `${moveEvent.clientX}px`;
+            mirrorElement.style.top = `${moveEvent.clientY}px`;
+
+            scrollNearFrameEdge(moveEvent.clientY);
+
+            const target = findDropTarget(frameDocument, moveEvent.clientX, moveEvent.clientY);
+
+            if (target) {
+                showDropTarget(frameDocument, target);
+            }
+            else {
+                clearDropTarget();
+            }
+        }
+
+        function onPointerUp(upEvent: PointerEvent): void {
+            if (upEvent.pointerId !== pointerId) {
+                return;
+            }
+
+            // A cancelled pointer, such as a touch the browser took over, never drops.
+            const isDropped = !!mirrorElement && upEvent.type === "pointerup";
+            const target = isDropped ? findDropTarget(frameDocument, upEvent.clientX, upEvent.clientY) : null;
+
+            endMove();
+
+            if (target) {
+                moveBlockElement(blockElement, blockId, target);
+            }
+        }
+
+        function endMove(): void {
+            if (isEnded) {
+                return;
+            }
+
+            isEnded = true;
+            frameDocument.removeEventListener("pointermove", onPointerMove);
+            frameDocument.removeEventListener("pointerup", onPointerUp);
+            frameDocument.removeEventListener("pointercancel", onPointerUp);
+            handleElement.removeEventListener("lostpointercapture", endMove);
+
+            mirrorElement?.remove();
+            clearDropTarget();
+            blockElement.classList.remove("pagebuilder-moving");
+            frameDocument.documentElement.classList.remove("pagebuilder-dragging", "pagebuilder-module-moving");
+            movingBlockElement.value = null;
+        }
+
+        frameDocument.addEventListener("pointermove", onPointerMove);
+        frameDocument.addEventListener("pointerup", onPointerUp);
+        frameDocument.addEventListener("pointercancel", onPointerUp);
+
+        // Losing the pointer without a release, such as when it is let go outside the frame, ends the move where it started.
+        handleElement.addEventListener("lostpointercapture", endMove);
+    }
+
+    /**
+     * Moves a Canvas block to a drop target in the page right away and reports
+     * the move, unless the target is where the block already is.
+     */
+    function moveBlockElement(blockElement: HTMLElement, blockId: number, target: DropTarget): void {
+        const zoneName = target.containerElement.parentElement?.getAttribute("data-pagebuilder-zone");
+        const sourceContainerElement = blockElement.parentElement;
+
+        if (!zoneName || !sourceContainerElement || isCurrentPosition(blockElement, target)) {
+            return;
+        }
+
+        target.containerElement.insertBefore(blockElement, target.beforeElement);
+        updateEmptyState(blockElement.ownerDocument, sourceContainerElement);
+        updateEmptyState(blockElement.ownerDocument, target.containerElement);
+
+        emit("moduleMoved", {
+            blockId,
+            zoneName,
+            beforeBlockId: getBlockId(target.beforeElement)
+        });
+    }
+
+    /**
+     * Checks whether a drop target is where a block already is, so moving it
+     * there would change nothing.
+     */
+    function isCurrentPosition(blockElement: HTMLElement, target: DropTarget): boolean {
+        if (blockElement.parentElement !== target.containerElement) {
+            return false;
+        }
+
+        const contentChildren = getContentChildren(target.containerElement);
+
+        return target.beforeElement === (contentChildren[contentChildren.indexOf(blockElement) + 1] ?? null);
+    }
+
+    /**
+     * Creates the copy of a selected module's chip that follows the pointer
+     * while the module moves.
+     */
+    function createMoveMirror(blockElement: HTMLElement): HTMLElement {
+        const frameDocument = blockElement.ownerDocument;
+        const chipElement = blockElement.querySelector(":scope > .pagebuilder-selection-chip");
+        const mirrorElement = chipElement ? chipElement.cloneNode(true) as HTMLElement : frameDocument.createElement("div");
+
+        mirrorElement.classList.add("pagebuilder-move-mirror");
+        frameDocument.body.appendChild(mirrorElement);
+
+        return mirrorElement;
+    }
+
+    /**
+     * Scrolls the framed page when the pointer is near its top or bottom edge.
+     *
+     * @returns True if the page was scrolled.
+     */
+    function scrollNearFrameEdge(clientY: number): boolean {
+        const frameHeight = frameElement.value?.getBoundingClientRect().height ?? 0;
+        const contentWindow = frameElement.value?.contentWindow;
+
+        if (clientY < scrollTriggerDistance) {
+            contentWindow?.scrollBy({ top: -scrollTriggerDistance, behavior: "smooth" });
+            return true;
+        }
+
+        if (clientY > frameHeight - scrollTriggerDistance) {
+            contentWindow?.scrollBy({ top: scrollTriggerDistance, behavior: "smooth" });
+            return true;
+        }
+
+        return false;
     }
 
     /**

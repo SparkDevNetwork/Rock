@@ -344,6 +344,52 @@ namespace Rock.Blocks.Cms
         }
 
         /// <summary>
+        /// Moves a Canvas block to where its handle was dropped on the target page, which can be in another builder-enabled zone.
+        /// </summary>
+        /// <param name="bag">The Canvas block and where it was dropped.</param>
+        /// <returns>An empty successful result, or an error.</returns>
+        [BlockAction]
+        public BlockActionResult MoveModule( PageBuilderMoveModuleBag bag )
+        {
+            if ( bag == null || bag.ZoneName.IsNullOrWhiteSpace() )
+            {
+                return ActionBadRequest( "No drop location was provided." );
+            }
+
+            var blockService = new BlockService( RockContext );
+
+            if ( !TryGetCanvasBlock( bag.BlockId, blockService, out var block, out var error ) )
+            {
+                return error;
+            }
+
+            var pageId = block.PageId.Value;
+
+            RockContext.WrapTransaction( () =>
+            {
+                // A block moving to another zone is saved there first, so it is among the blocks the reorder renumbers.
+                if ( block.Zone != bag.ZoneName )
+                {
+                    block.Zone = bag.ZoneName;
+                    RockContext.SaveChanges();
+                }
+
+                // As when adding a module, the builder only offers positions among the zone's page blocks.
+                var zoneBlocks = blockService.GetByPageAndZone( pageId, bag.ZoneName ).ToList();
+
+                if ( zoneBlocks.ReorderEntity( block.Id.ToString(), bag.BeforeBlockId?.ToString() ) )
+                {
+                    RockContext.SaveChanges();
+                }
+            } );
+
+            // Moving a page block does not refresh its page's cached block list.
+            PageCache.Remove( pageId );
+
+            return ActionOk();
+        }
+
+        /// <summary>
         /// Deletes a Canvas block from the target page, along with its module instance unless that instance is shareable or displayed elsewhere.
         /// </summary>
         /// <param name="blockId">The identifier of the Canvas block to delete.</param>

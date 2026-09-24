@@ -31,6 +31,7 @@
                            :reloadRequest="reloadRequest"
                            :selectRequest="selectRequest"
                            @moduleDropped="onModuleDropped"
+                           @moduleMoved="onModuleMoved"
                            @moduleSelected="onModuleSelected"
                            @moduleEditRequested="onModuleEditRequested"
                            @moduleDeleteRequested="onModuleDeleteRequested" />
@@ -263,10 +264,12 @@
     import { PageBuilderInitializationBox } from "@Obsidian/ViewModels/Blocks/Cms/PageBuilder/pageBuilderInitializationBox";
     import { PageBuilderModuleSettingsBag } from "@Obsidian/ViewModels/Blocks/Cms/PageBuilder/pageBuilderModuleSettingsBag";
     import { PageBuilderModuleTypeBag } from "@Obsidian/ViewModels/Blocks/Cms/PageBuilder/pageBuilderModuleTypeBag";
+    import { PageBuilderMoveModuleBag } from "@Obsidian/ViewModels/Blocks/Cms/PageBuilder/pageBuilderMoveModuleBag";
     import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
     import PageFrame from "./pageBuilder/pageFrame.partial.obs";
     import {
         ModuleDrop,
+        ModuleMove,
         ModuleSelectRequest,
         ModuleTypeDragEndRequest,
         ModuleTypeDragLeaveRequest,
@@ -451,6 +454,29 @@
         reloadRequest.value = { type: "PAGE_FRAME_RELOAD_REQUEST" };
 
         await openModuleSheet(blockId);
+    }
+
+    /**
+     * Saves a module's new position after it was dragged by its handle, then
+     * reloads the frame so Rock renders the page in its new order.
+     */
+    async function onModuleMoved(move: ModuleMove): Promise<void> {
+        blockActionErrorMessage.value = "";
+
+        const bag: PageBuilderMoveModuleBag = {
+            blockId: move.blockId,
+            zoneName: move.zoneName,
+            beforeBlockId: move.beforeBlockId
+        };
+
+        const result = await invokeBlockAction("MoveModule", { bag });
+
+        if (!result.isSuccess) {
+            blockActionErrorMessage.value = result.errorMessage || "The module could not be moved.";
+        }
+
+        // The frame already shows the module in its new place, and reloading also puts it back if the move failed.
+        reloadRequest.value = { type: "PAGE_FRAME_RELOAD_REQUEST" };
     }
 
     /**
