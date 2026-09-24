@@ -10,7 +10,7 @@
 
             <div class="page-builder-module-types">
                 <div v-for="moduleType in moduleTypes"
-                     :key="moduleType.key"
+                     :key="moduleType.key ?? ''"
                      class="page-builder-module-type"
                      @pointerdown="onModuleTypeDragStart($event, moduleType)">
                     <i :class="moduleType.iconCssClass"></i>
