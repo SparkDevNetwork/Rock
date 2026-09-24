@@ -114,6 +114,8 @@
     const selectedBlockElement = ref<HTMLElement | null>(null);
     const pendingSelectBlockId = ref<number | null>(null);
 
+    let isReloadPending = false;
+
     // #endregion Values
 
     // #region Event Handlers
@@ -141,8 +143,13 @@
             emit("moduleSelected", null);
         }
 
+        isReloadPending = false;
+
         if (pendingSelectBlockId.value !== null) {
             selectCanvasBlock(pendingSelectBlockId.value);
+
+            // A block the loaded page does not show, such as one just deleted, is no longer waited for.
+            pendingSelectBlockId.value = null;
         }
     }
 
@@ -408,7 +415,8 @@
     function selectCanvasBlock(blockId: number): void {
         const blockElement = getFrameDocument()?.getElementById(`bid_${blockId}`);
 
-        if (!blockElement?.querySelector(".canvas-module")) {
+        // A document that is about to be replaced by a reload would lose the selection.
+        if (isReloadPending || !blockElement?.querySelector(".canvas-module")) {
             pendingSelectBlockId.value = blockId;
             return;
         }
@@ -619,9 +627,17 @@
     });
 
     watch(() => props.reloadRequest, request => {
-        if (request) {
-            frameElement.value?.contentWindow?.location.reload();
+        if (!request) {
+            return;
         }
+
+        // The selected module stays selected in the reloaded page, unless another selection is already waiting.
+        if (pendingSelectBlockId.value === null && selectedBlockElement.value) {
+            pendingSelectBlockId.value = getBlockId(selectedBlockElement.value);
+        }
+
+        isReloadPending = true;
+        frameElement.value?.contentWindow?.location.reload();
     });
 
     watch(() => props.selectRequest, request => {
