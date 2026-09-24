@@ -51,7 +51,8 @@ namespace Rock.Communication.Chat.Platform.Configuration
             {
                 IsEnabled = true,
                 TenantId = configuration.TenantId?.ToString(),
-                ProjectUrl = configuration.ProjectUrl
+                ProjectUrl = configuration.ProjectUrl,
+                IsCredentialUnreadable = configuration.IsEnabledWithoutCredentials
             };
         }
 

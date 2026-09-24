@@ -7,12 +7,8 @@
     <Panel v-else type="block" title="Chat Configuration">
 
         <div v-if="!config.isChatConfigured" class="chat-configuration-empty-state">
-            <p>
-                Chat is not turned on for this organization yet. It is enabled from Spark
-                Connected Services, which sets up the chat platform and hands Rock the keys
-                it needs. The settings on this page appear once that is done.
-            </p>
-            <a :href="connectedServicesUrl">Go to Spark Connected Services</a>
+            <p>{{ emptyState.message }}</p>
+            <a v-if="emptyState.isConnectedServicesLinkShown" :href="connectedServicesUrl">Go to Spark Connected Services</a>
         </div>
 
         <template v-else>
@@ -101,7 +97,7 @@
 
 <script setup lang="ts">
     import { computed, ref } from "vue";
-    import { hasUnsavedChanges, toBag, toFormModel } from "./ChatConfiguration/viewModel.partial";
+    import { hasUnsavedChanges, toBag, toEmptyState, toFormModel } from "./ChatConfiguration/viewModel.partial";
     import CheckBox from "@Obsidian/Controls/checkBox.obs";
     import ChatSyncNowButton from "@Obsidian/Controls/Internal/chatSyncNowButton.obs";
     import DataViewPicker from "@Obsidian/Controls/dataViewPicker.obs";
@@ -127,6 +123,9 @@
     // The form as last saved or loaded, which is what Sync Now would send.
     const savedForm = ref(toFormModel(config.configuration));
     const connectedServicesUrl = ref(config.connectedServicesUrl ?? "");
+
+    /** What the screen says when chat cannot run here, which depends on why. */
+    const emptyState = toEmptyState(config);
 
     const isSaving = ref(false);
     const message = ref("");

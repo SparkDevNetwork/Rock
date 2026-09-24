@@ -158,6 +158,7 @@ describe("chat configuration when chat cannot run here", () => {
     it("says the same one sentence as the Connected Services card, naming Spark as the contact", () => {
         expect(credentialUnreadableSentence).toBe(cardSentence);
         expect(credentialUnreadableSentence).toContain("Spark");
-        expect(credentialUnreadableSentence.split(/[.;!?]\s/).length).toBe(1);
+        // A semicolon joins two clauses of one sentence; only a full stop, question or exclamation ends one.
+        expect(credentialUnreadableSentence.split(/[.!?]\s/).length).toBe(1);
     });
 });

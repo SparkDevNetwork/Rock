@@ -137,6 +137,6 @@ namespace Rock.Communication.Chat.Platform.Configuration
         /// thing about it.
         /// </summary>
         [Newtonsoft.Json.JsonIgnore]
-        public bool IsEnabledWithoutCredentials => throw new System.NotImplementedException();
+        public bool IsEnabledWithoutCredentials => HasBeenEnabled && !IsConfigured;
     }
 }

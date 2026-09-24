@@ -66,6 +66,7 @@ namespace Rock.Blocks.Communication.Chat
             var box = new ChatConfigurationInitializationBox
             {
                 IsChatConfigured = configuration.IsConfigured,
+                IsCredentialUnreadable = ChatConfigurationPolicy.IsCredentialUnreadable( configuration ),
                 ConnectedServicesUrl = RequestContext.ResolveRockUrl( ConnectedServicesRoute ),
                 NavigationUrls = new System.Collections.Generic.Dictionary<string, string>
                 {

@@ -24,6 +24,12 @@
             </template>
         </DisplayCard>
 
+        <NotificationBox v-if="state.credentialUnreadableMessage"
+                         :alertType="AlertType.Warning"
+                         style="margin: 0 var(--spacing-large) var(--spacing-large);">
+            {{ state.credentialUnreadableMessage }}
+        </NotificationBox>
+
         <TransitionVerticalCollapse>
             <div v-if="isPanelShown">
                 <div style="padding: var(--spacing-large);">
@@ -69,10 +75,12 @@
 
 <script setup lang="ts">
     import DisplayCard from "@Obsidian/Controls/displayCard.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import RockButton from "@Obsidian/Controls/rockButton.obs";
     import TransitionVerticalCollapse from "@Obsidian/Controls/transitionVerticalCollapse.obs";
     import { useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { alert } from "@Obsidian/Utility/dialogs";
+    import { AlertType } from "@Obsidian/Enums/Controls/alertType";
     import { computed, PropType, ref } from "vue";
     import { ChatConfigurationBag } from "@Obsidian/ViewModels/Blocks/Administration/SparkConnectedServices/chatConfigurationBag";
     import { toChatCardState } from "./chatViewModel.partial";

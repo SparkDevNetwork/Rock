@@ -21,7 +21,10 @@ import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
  * Said instead of the settings when the organization was enabled and this Rock server cannot read
  * the chat credentials it was given. The Connected Services card says the same sentence.
  */
-export const credentialUnreadableSentence = "";
+export const credentialUnreadableSentence = "Chat was enabled for this organization, but this Rock server cannot read its chat credentials; contact Spark to restore chat.";
+
+/** Said when chat has not been enabled for this organization. */
+export const notEnabledSentence = "Chat is not turned on for this organization yet. It is enabled from Spark Connected Services, which sets up the chat platform and hands Rock the keys it needs. The settings on this page appear once that is done.";
 
 /** What the screen says when it has no settings to show. */
 export type ChatConfigurationEmptyState = {
@@ -32,12 +35,18 @@ export type ChatConfigurationEmptyState = {
 /**
  * What the screen says when chat cannot run here, depending on why.
  *
- * @param _box What the block sent when it opened.
+ * @param box What the block sent when it opened.
  *
  * @returns The sentence, and whether pointing at Connected Services would help.
  */
-export function toEmptyState(_box: { isCredentialUnreadable?: boolean } | null | undefined): ChatConfigurationEmptyState {
-    throw new Error("not implemented");
+export function toEmptyState(box: { isCredentialUnreadable?: boolean } | null | undefined): ChatConfigurationEmptyState {
+    // Connected Services rightly offers an enabled organization nothing, so pointing back at it
+    // would send the administrator round in a loop.
+    if (box?.isCredentialUnreadable === true) {
+        return { message: credentialUnreadableSentence, isConnectedServicesLinkShown: false };
+    }
+
+    return { message: notEnabledSentence, isConnectedServicesLinkShown: true };
 }
 
 /**

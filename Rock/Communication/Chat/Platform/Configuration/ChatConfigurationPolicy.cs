@@ -69,7 +69,7 @@ namespace Rock.Communication.Chat.Platform.Configuration
         /// <returns><c>true</c> when the organization is enabled and chat cannot run.</returns>
         public static bool IsCredentialUnreadable( ChatPlatformConfiguration stored )
         {
-            throw new NotImplementedException();
+            return ( stored ?? new ChatPlatformConfiguration() ).IsEnabledWithoutCredentials;
         }
 
         /// <summary>
