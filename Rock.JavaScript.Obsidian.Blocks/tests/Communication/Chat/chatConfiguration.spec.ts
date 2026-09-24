@@ -19,7 +19,8 @@
 // project that no build or pipeline step installs, so every mounting spec in this
 // repository fails to run today. What the form shows and what it sends back is this
 // module, and that is what is covered.
-import { hasUnsavedChanges, toBag, toFormModel } from "../../../src/Communication/Chat/ChatConfiguration/viewModel.partial";
+import { credentialUnreadableSentence as cardSentence } from "../../../src/Administration/SparkConnectedServices/chatViewModel.partial";
+import { credentialUnreadableSentence, hasUnsavedChanges, toBag, toEmptyState, toFormModel } from "../../../src/Communication/Chat/ChatConfiguration/viewModel.partial";
 
 function bag(): Record<string, unknown> {
     return {
@@ -134,5 +135,29 @@ describe("chatConfiguration unsaved edits", () => {
         form.directMessageAccessDataView = { value: "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb", text: "" };
 
         expect(hasUnsavedChanges(form, toFormModel(bag()))).toBe(false);
+    });
+});
+
+describe("chat configuration when chat cannot run here", () => {
+    it("points at Connected Services when chat was never enabled", () => {
+        const state = toEmptyState({ isCredentialUnreadable: false });
+
+        expect(state.isConnectedServicesLinkShown).toBe(true);
+        expect(state.message).not.toBe(credentialUnreadableSentence);
+        expect(toEmptyState(null).isConnectedServicesLinkShown).toBe(true);
+    });
+
+    it("says the credentials cannot be read, and does not point back at the card, when chat was enabled", () => {
+        // The card has nothing to offer this organization, so pointing at it is a loop.
+        const state = toEmptyState({ isCredentialUnreadable: true });
+
+        expect(state.message).toBe(credentialUnreadableSentence);
+        expect(state.isConnectedServicesLinkShown).toBe(false);
+    });
+
+    it("says the same one sentence as the Connected Services card, naming Spark as the contact", () => {
+        expect(credentialUnreadableSentence).toBe(cardSentence);
+        expect(credentialUnreadableSentence).toContain("Spark");
+        expect(credentialUnreadableSentence.split(/[.;!?]\s/).length).toBe(1);
     });
 });

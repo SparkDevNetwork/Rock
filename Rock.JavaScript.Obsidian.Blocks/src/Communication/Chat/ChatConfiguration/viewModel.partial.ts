@@ -18,6 +18,29 @@ import { ChatConfigurationBag } from "@Obsidian/ViewModels/Blocks/Communication/
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
 /**
+ * Said instead of the settings when the organization was enabled and this Rock server cannot read
+ * the chat credentials it was given. The Connected Services card says the same sentence.
+ */
+export const credentialUnreadableSentence = "";
+
+/** What the screen says when it has no settings to show. */
+export type ChatConfigurationEmptyState = {
+    message: string;
+    isConnectedServicesLinkShown: boolean;
+};
+
+/**
+ * What the screen says when chat cannot run here, depending on why.
+ *
+ * @param _box What the block sent when it opened.
+ *
+ * @returns The sentence, and whether pointing at Connected Services would help.
+ */
+export function toEmptyState(_box: { isCredentialUnreadable?: boolean } | null | undefined): ChatConfigurationEmptyState {
+    throw new Error("not implemented");
+}
+
+/**
  * The settings the form edits. The half the platform issued when chat was enabled is
  * deliberately absent: the screen shows those values from the box and never through
  * the form, so an edit cannot reach them and a save cannot carry them back.

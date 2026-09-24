@@ -56,6 +56,36 @@ namespace Rock.Tests.Communication.Chat.Platform.Blocks
             Assert.IsFalse( ChatCardPolicy.MayEnable( RestoredOntoAnotherInstallation() ), "the card would strand the tenant this organization already has" );
         }
 
+        [TestMethod]
+        public void ToBag_ForAChurchWhoseKeyCannotBeRead_SaysTheCredentialsCannotBeRead()
+        {
+            // The card still says Enabled and still offers nothing; this is what lets it say
+            // why chat does not run, instead of leaving the administrator in a loop with the
+            // configuration screen.
+            var bag = ChatCardPolicy.ToBag( RestoredOntoAnotherInstallation() );
+
+            Assert.IsTrue( bag.IsEnabled );
+            Assert.IsTrue( bag.IsCredentialUnreadable );
+            Assert.IsFalse( ChatCardPolicy.MayEnable( RestoredOntoAnotherInstallation() ) );
+        }
+
+        [TestMethod]
+        public void ToBag_ForAChurchEnabledWithoutItsProjectAddress_SaysTheCredentialsCannotBeRead()
+        {
+            var stored = Complete();
+            stored.ProjectUrl = null;
+
+            Assert.IsTrue( ChatCardPolicy.ToBag( stored ).IsCredentialUnreadable );
+        }
+
+        [TestMethod]
+        public void ToBag_ForEveryOtherChurch_SaysNothingAboutCredentials()
+        {
+            Assert.IsFalse( ChatCardPolicy.ToBag( new ChatPlatformConfiguration() ).IsCredentialUnreadable, "never set up" );
+            Assert.IsFalse( ChatCardPolicy.ToBag( null ).IsCredentialUnreadable, "nothing stored" );
+            Assert.IsFalse( ChatCardPolicy.ToBag( Complete() ).IsCredentialUnreadable, "set up and can chat" );
+        }
+
         #endregion A church whose stored key this installation cannot read
 
         #region A church that was never set up

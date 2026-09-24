@@ -16,12 +16,19 @@
 //
 import { ChatConfigurationBag } from "@Obsidian/ViewModels/Blocks/Administration/SparkConnectedServices/chatConfigurationBag";
 
+/**
+ * Said on the card when the organization was enabled and this Rock server cannot read the chat
+ * credentials it was given. The Chat Configuration screen says the same sentence.
+ */
+export const credentialUnreadableSentence = "";
+
 /** What the chat card renders, in whichever state the organization is in. */
 export type ChatCardState = {
     isEnabled: boolean;
     isEnableActionShown: boolean;
     tenantId: string | null;
     projectUrl: string | null;
+    credentialUnreadableMessage: string | null;
 };
 
 /**
@@ -39,6 +46,7 @@ export function toChatCardState(bag: Partial<ChatConfigurationBag> | null | unde
         // press to offer.
         isEnableActionShown: !isEnabled,
         tenantId: isEnabled ? bag?.tenantId ?? null : null,
-        projectUrl: isEnabled ? bag?.projectUrl ?? null : null
+        projectUrl: isEnabled ? bag?.projectUrl ?? null : null,
+        credentialUnreadableMessage: null
     };
 }

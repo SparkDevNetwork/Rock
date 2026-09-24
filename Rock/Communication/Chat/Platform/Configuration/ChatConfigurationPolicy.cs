@@ -60,6 +60,19 @@ namespace Rock.Communication.Chat.Platform.Configuration
         }
 
         /// <summary>
+        /// Whether the screen should say this organization was enabled and its chat
+        /// credentials cannot be read here. Without it the screen says chat is not set up
+        /// and points at Connected Services, which rightly offers nothing, and the two
+        /// screens send an administrator round in a loop.
+        /// </summary>
+        /// <param name="stored">The settings as stored.</param>
+        /// <returns><c>true</c> when the organization is enabled and chat cannot run.</returns>
+        public static bool IsCredentialUnreadable( ChatPlatformConfiguration stored )
+        {
+            throw new NotImplementedException();
+        }
+
+        /// <summary>
         /// Reads the church-owned settings out of what a screen sent back. The half the
         /// platform issued when chat was enabled, and the signing key, are not here at
         /// all: an administrator does not type them, the writer that stores this reaches

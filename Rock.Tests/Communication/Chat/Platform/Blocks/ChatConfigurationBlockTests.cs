@@ -164,6 +164,38 @@ namespace Rock.Tests.Communication.Chat.Platform.Blocks
 
         #endregion Pins
 
+        #region A church enabled whose credentials cannot be read
+
+        [TestMethod]
+        public void IsCredentialUnreadable_EnabledAndMissingAnythingChatNeeds_IsTrue()
+        {
+            var noKey = Stored();
+            noKey.PrivateKey = null;
+            var noProjectUrl = Stored();
+            noProjectUrl.ProjectUrl = " ";
+            var noPublishableKey = Stored();
+            noPublishableKey.PublishableKey = null;
+
+            Assert.IsTrue( ChatConfigurationPolicy.IsCredentialUnreadable( noKey ), "the signing key cannot be read" );
+            Assert.IsTrue( ChatConfigurationPolicy.IsCredentialUnreadable( noProjectUrl ), "no project address" );
+            Assert.IsTrue( ChatConfigurationPolicy.IsCredentialUnreadable( noPublishableKey ), "no publishable key" );
+        }
+
+        [TestMethod]
+        public void IsCredentialUnreadable_NeverEnabledOrReadyToChat_IsFalse()
+        {
+            var neverEnabled = Stored();
+            neverEnabled.TenantId = null;
+            neverEnabled.PrivateKey = null;
+
+            Assert.IsFalse( ChatConfigurationPolicy.IsCredentialUnreadable( neverEnabled ), "never enabled" );
+            Assert.IsFalse( ChatConfigurationPolicy.IsCredentialUnreadable( new ChatPlatformConfiguration() ), "nothing stored" );
+            Assert.IsFalse( ChatConfigurationPolicy.IsCredentialUnreadable( null ), "no settings at all" );
+            Assert.IsFalse( ChatConfigurationPolicy.IsCredentialUnreadable( Stored() ), "ready to chat" );
+        }
+
+        #endregion A church enabled whose credentials cannot be read
+
         #region Helpers
 
         private static ChatPlatformConfiguration Stored()

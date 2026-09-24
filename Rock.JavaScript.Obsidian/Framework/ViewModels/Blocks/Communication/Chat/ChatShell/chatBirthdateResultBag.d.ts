@@ -21,28 +21,22 @@
 // </copyright>
 //
 
+import { ChatShellSessionBag } from "./chatShellSessionBag";
+
 /**
- * What the chat card shows. The church's signing key is delivered by the
- * same call that fills this in and is deliberately absent from it: a bag
- * that carries a key is a bag that can leak one.
+ * What happened when a person gave chat their birthdate, and the session as it now
+ * stands, so the shell can carry on from it without reloading.
  */
-export type ChatConfigurationBag = {
+export type ChatBirthdateResultBag = {
     /**
-     * Whether this organization was enabled and this Rock server cannot read the
-     * chat credentials it was given, so chat cannot run and enabling again is not
-     * offered.
+     * Gets or sets the outcome as a stable snake_case code: "saved" when the birthdate was
+     * written, otherwise the reason nothing was.
      */
-    isCredentialUnreadable: boolean;
-
-    /** Whether this organization has enabled chat. */
-    isEnabled: boolean;
-
-    /** The chat platform project this organization talks to. */
-    projectUrl?: string | null;
+    code?: string | null;
 
     /**
-     * The organization's identifier on the chat platform, shown so an
-     * administrator can quote it to support.
+     * Gets or sets the session after the save, exactly as the block's initialization
+     * would describe it now.
      */
-    tenantId?: string | null;
+    session?: ChatShellSessionBag | null;
 };

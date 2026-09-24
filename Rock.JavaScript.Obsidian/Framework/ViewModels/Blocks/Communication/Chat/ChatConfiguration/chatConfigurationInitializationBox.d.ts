@@ -36,6 +36,12 @@ export type ChatConfigurationInitializationBox = {
     /** Gets or sets whether chat has everything it needs to run. */
     isChatConfigured: boolean;
 
+    /**
+     * Gets or sets whether this organization was enabled and this Rock server cannot
+     * read the chat credentials it was given.
+     */
+    isCredentialUnreadable: boolean;
+
     /** Gets or sets the settings, when there are any to show. */
     configuration?: ChatConfigurationBag | null;
 

@@ -127,5 +127,16 @@ namespace Rock.Communication.Chat.Platform.Configuration
             && !string.IsNullOrWhiteSpace( PrivateKey )
             && !string.IsNullOrWhiteSpace( ProjectUrl )
             && !string.IsNullOrWhiteSpace( PublishableKey );
+
+        /// <summary>
+        /// True when this church has been set up on the chat platform and Rock cannot use
+        /// what it was given, most often because the database was restored onto an
+        /// installation with a different encryption key, so the signing key reads as absent.
+        /// It is the one answer on which <see cref="HasBeenEnabled"/> and
+        /// <see cref="IsConfigured"/> disagree, named once so both admin screens say the same
+        /// thing about it.
+        /// </summary>
+        [Newtonsoft.Json.JsonIgnore]
+        public bool IsEnabledWithoutCredentials => throw new System.NotImplementedException();
     }
 }

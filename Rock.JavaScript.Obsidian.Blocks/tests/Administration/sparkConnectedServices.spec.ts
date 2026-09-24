@@ -19,7 +19,7 @@
 // project that no build or pipeline step installs, so every mounting spec in this
 // repository fails to run today. What the card shows in each state is this module,
 // and that is what is covered.
-import { toChatCardState } from "../../src/Administration/SparkConnectedServices/chatViewModel.partial";
+import { credentialUnreadableSentence, toChatCardState } from "../../src/Administration/SparkConnectedServices/chatViewModel.partial";
 
 function enabledBag(): Record<string, unknown> {
     return {
@@ -48,6 +48,21 @@ describe("spark connected services chat card", () => {
         expect(state.isEnableActionShown).toBe(false);
         expect(state.tenantId).toBe("11111111-1111-4111-8111-111111111111");
         expect(state.projectUrl).toBe("https://example.supabase.co");
+    });
+
+    it("says the credentials cannot be read, and still offers no action, when the block says so", () => {
+        const state = toChatCardState({ ...enabledBag(), isCredentialUnreadable: true });
+
+        expect(state.isEnabled).toBe(true);
+        expect(state.isEnableActionShown).toBe(false);
+        expect(state.credentialUnreadableMessage).toBe(credentialUnreadableSentence);
+        expect(state.credentialUnreadableMessage).toContain("Spark");
+    });
+
+    it("says nothing about credentials in every other state", () => {
+        expect(toChatCardState(null).credentialUnreadableMessage).toBeNull();
+        expect(toChatCardState(enabledBag()).credentialUnreadableMessage).toBeNull();
+        expect(toChatCardState({ ...enabledBag(), isCredentialUnreadable: false }).credentialUnreadableMessage).toBeNull();
     });
 
     it("carries nothing the card was not meant to render", () => {

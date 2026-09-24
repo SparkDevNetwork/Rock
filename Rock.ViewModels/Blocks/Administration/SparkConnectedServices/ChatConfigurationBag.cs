@@ -38,5 +38,12 @@ namespace Rock.ViewModels.Blocks.Administration.SparkConnectedServices
         /// The chat platform project this organization talks to.
         /// </summary>
         public string ProjectUrl { get; set; }
+
+        /// <summary>
+        /// Whether this organization was enabled and this Rock server cannot read the
+        /// chat credentials it was given, so chat cannot run and enabling again is not
+        /// offered.
+        /// </summary>
+        public bool IsCredentialUnreadable { get; set; }
     }
 }

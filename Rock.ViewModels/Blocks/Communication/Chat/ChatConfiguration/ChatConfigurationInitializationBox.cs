@@ -30,6 +30,13 @@ namespace Rock.ViewModels.Blocks.Communication.Chat.ChatConfiguration
         public bool IsChatConfigured { get; set; }
 
         /// <summary>
+        /// Gets or sets whether this organization was enabled and this Rock server cannot
+        /// read the chat credentials it was given. The screen then says so instead of
+        /// pointing back at Connected Services, which has nothing to offer it.
+        /// </summary>
+        public bool IsCredentialUnreadable { get; set; }
+
+        /// <summary>
         /// Gets or sets the settings, when there are any to show.
         /// </summary>
         public ChatConfigurationBag Configuration { get; set; }
