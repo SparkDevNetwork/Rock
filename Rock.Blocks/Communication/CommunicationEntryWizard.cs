@@ -463,7 +463,12 @@ namespace Rock.Blocks.Communication
                 return ActionBadRequest( validationResult.ErrorMessage );
             }
 
-            SendTestCommunication( bag, out var errorMessage );
+            string errorMessage;
+
+            using ( PersonTokenScope.RestrictTo( GetCurrentPerson() ) )
+            {
+                SendTestCommunication( bag, out errorMessage );
+            }
 
             if ( errorMessage.IsNotNullOrWhiteSpace() )
             {
@@ -690,7 +695,12 @@ namespace Rock.Blocks.Communication
             var commonMergeFields = this.RequestContext.GetCommonMergeFields( communicationCreatorOrLoggedInPerson );
             var mergeFields = sampleCommunicationRecipient.CommunicationMergeValues( commonMergeFields );
 
-            var previewHtml = GenerateEmailHtmlPreview( communication, communicationCreatorOrLoggedInPerson, mergeFields );
+            string previewHtml;
+
+            using ( PersonTokenScope.RestrictTo( currentPerson ) )
+            {
+                previewHtml = GenerateEmailHtmlPreview( communication, communicationCreatorOrLoggedInPerson, mergeFields );
+            }
 
             // Create response.
             bag = GetCommunicationBag( this.RockContext, communication, communication.CommunicationTemplate?.Guid, currentPerson );

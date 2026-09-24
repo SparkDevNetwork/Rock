@@ -2422,6 +2422,7 @@
     <Compile Include="Search\Finance\FinancialAccount.cs" />
     <Compile Include="Security\Options\PasswordRequirementOptions.cs" />
     <Compile Include="Security\Password.cs" />
+    <Compile Include="Security\PersonTokenScope.cs" />
     <Compile Include="Security\SecurityGrant.cs" />
     <Compile Include="Security\SecurityGrantRule.cs" />
     <Compile Include="Security\SecurityGrantRules\EntitySecurityGrantRule.cs" />

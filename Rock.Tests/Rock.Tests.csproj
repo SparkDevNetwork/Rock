@@ -288,6 +288,7 @@
     <Compile Include="Observability\LogExporterWrapperTests.cs" />
     <Compile Include="Observability\ObservabilityHelperTests.cs" />
     <Compile Include="Security\EncryptionTests.cs" />
+    <Compile Include="Security\PersonTokenScopeTests.cs" />
     <Compile Include="Slingshot\PersonCsvMapperTest.cs" />
     <Compile Include="Slingshot\PersonPhoneCsvMapperTest.cs" />
     <Compile Include="UnitTestInitializer.cs" />
