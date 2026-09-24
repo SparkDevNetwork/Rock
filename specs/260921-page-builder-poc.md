@@ -84,6 +84,9 @@ The budget is 40 goal hours, 50 approved.
   edge: a drag handle, edit, and delete.
 - Selection chrome MUST be visually distinct from zone chrome so a user can tell a
   droppable area from a selected object.
+- Dragging a selected module's handle MUST move it, within its zone or into another
+  builder-enabled zone, using the same drop positions as placing a new module. Dropping it
+  where it already is MUST change nothing.
 
 ### Sheet control
 
@@ -101,8 +104,8 @@ The budget is 40 goal hours, 50 approved.
 
 - The Page Builder block MUST call `onConfigurationValuesChanged(useReloadBlock())` so it
   reloads when its settings change.
-- Adding or deleting a module MUST require Administrate permission on the target page, the
-  same permission Rock requires to configure a page's blocks.
+- Adding, moving, or deleting a module MUST require Administrate permission on the target
+  page, the same permission Rock requires to configure a page's blocks.
 - Deleting a module from the builder MUST delete its module instance too, unless the instance
   is shareable or another Canvas block references it.
 - The Canvas block MUST render its module's Lava on the server, so the output is in the page
@@ -195,6 +198,20 @@ builder reloads the frame.
 
 Deleting a block leaves its attribute values in the database until the Rock Cleanup job
 removes them, so only values of blocks that still exist count as references.
+
+### Moving a module
+
+The drag handle on a selected module moves it. The handle is inside the frame, so unlike a
+drag from the sidebar, its pointer events arrive in the frame's own document and need no
+translating. The move reuses the drop targeting, insertion line, and edge scrolling that
+placing a module uses, with the module being moved left out of the positions it can land in,
+and a copy of its chip follows the pointer. Dropping it where it already is does nothing.
+
+On a drop the frame moves the block element right away and reports the zone and the block it
+now sits in front of. A `MoveModule` block action checks Administrate permission on the target
+page, saves the block's new zone when it changed zones, then renumbers `Order` across that
+zone's page blocks with `ReorderEntity`. The builder reloads the frame once the move is saved,
+which also puts the module back if saving fails, and the module stays selected.
 
 ### Editing a module
 
@@ -496,8 +513,6 @@ boolean extends to it cleanly when that time comes.
   context.
 - Sharing a module instance between Canvas blocks. The schema allows it; the builder does not
   offer it yet.
-- Moving a placed module from the builder. Rock's own block configuration bar still works on
-  a saved Canvas block.
 - Deleting the module instance when its Canvas is deleted from Rock's block configuration bar.
   Only the builder's delete removes the instance.
 - Standard / Block mode and Elements mode.
