@@ -151,7 +151,7 @@ export function gateMessage(gate: string | null): string {
         case "not_configured":
             return "Chat is not set up for this organization yet.";
         case "age_verification_required":
-            return "Chat needs your birthdate before it can open. Add it to your profile, then come back.";
+            return "Chat needs your birthdate before it can open.";
         case "age_restricted":
             return "Chat is not available at your age.";
         case "invalid_key":

@@ -1,7 +1,12 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
     <div class="chat-shell" data-testid="chat-shell" :data-phase="shell.state.phase">
-        <NotificationBox v-if="isRefused" :alertType="AlertType.Warning">
+        <BirthdatePrompt v-if="isPromptShown"
+                         :message="birthdateMessage"
+                         :isSaving="isSavingBirthdate"
+                         @save="onSaveBirthdate" />
+
+        <NotificationBox v-else-if="isRefused" :alertType="AlertType.Warning">
             {{ refusal }}
         </NotificationBox>
 
@@ -68,60 +73,52 @@
 </style>
 
 <script setup lang="ts">
-    import { computed, onBeforeUnmount, onMounted } from "vue";
+    import { computed, onBeforeUnmount, onMounted, ref, shallowRef } from "vue";
     import { createClient } from "@Obsidian/Libs/supabase";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import { AlertType } from "@Obsidian/Enums/Controls/alertType";
     import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { ChatBirthdateResultBag } from "@Obsidian/ViewModels/Blocks/Communication/Chat/ChatShell/chatBirthdateResultBag";
     import { ChatChurchTokenBag } from "@Obsidian/ViewModels/Blocks/Communication/Chat/ChatShell/chatChurchTokenBag";
     import { ChatShellInitializationBox } from "@Obsidian/ViewModels/Blocks/Communication/Chat/ChatShell/chatShellInitializationBox";
+    import { DatePartsPickerValueBag } from "@Obsidian/ViewModels/Controls/datePartsPickerValueBag";
+    import { birthdateOutcome, isBirthdatePromptShown } from "./ChatShell/birthdate.partial";
+    import BirthdatePrompt from "./ChatShell/components/birthdatePrompt.partial.obs";
     import ChannelSidebar from "./ChatShell/components/channelSidebar.partial.obs";
     import ChatHeader from "./ChatShell/components/chatHeader.partial.obs";
     import Composer from "./ChatShell/components/composer.partial.obs";
     import ErrorToast from "./ChatShell/components/errorToast.partial.obs";
     import MessageFeed from "./ChatShell/components/messageFeed.partial.obs";
-    import { createChatShell, PlatformClientLike, refusalMessage } from "./ChatShell/shell.partial";
+    import { createChatShell, PlatformClientLike, refusalMessage, ShellOptions } from "./ChatShell/shell.partial";
 
     const config = useConfigurationValues<ChatShellInitializationBox>();
     const invokeBlockAction = useInvokeBlockAction();
 
     // #region Values
 
-    const personAliasGuid = config.session?.personAliasGuid ?? "";
+    const personAliasGuid = ref(config.session?.personAliasGuid ?? "");
 
-    const shell = createChatShell({
-        session: config.session ?? {},
-        linkedChannelId: config.channelGuid ?? null,
-        mintChurchToken: async () => {
-            const result = await invokeBlockAction<ChatChurchTokenBag>("MintChurchToken");
-            return { isSuccess: result.isSuccess, statusCode: result.statusCode, data: result.data };
-        },
-        createPlatformClient: (url, key, accessToken) => createClient(url, key, { accessToken }) as unknown as PlatformClientLike,
-        fetch: (url, init) => window.fetch(url, init),
-        storage: safeLocalStorage(),
-        pageTargets: { document, window },
-        mark: name => {
-            try {
-                performance.mark(name);
-            }
-            catch {
-                // Intentionally ignored: timing marks are for measurement only.
-            }
-        }
-    });
+    // Replaced, not reloaded, when a birthdate lets the person in: the save answers with the
+    // session a fresh page load would have had.
+    const shell = shallowRef(buildShell(config.session ?? {}));
+
+    const birthdateMessage = ref<string | null>(null);
+    const isSavingBirthdate = ref(false);
 
     // #endregion Values
 
     // #region Computed Values
 
-    const activeChannelId = computed((): string | null => shell.state.activeChannelId);
+    const activeChannelId = computed((): string | null => shell.value.state.activeChannelId);
 
-    const isRefused = computed((): boolean => shell.state.phase === "refused" || shell.state.phase === "failed");
+    const isPromptShown = computed((): boolean => isBirthdatePromptShown(shell.value.state.phase, shell.value.state.gate));
 
-    const refusal = computed((): string => refusalMessage(shell.state.phase, shell.state.gate));
+    const isRefused = computed((): boolean => shell.value.state.phase === "refused" || shell.value.state.phase === "failed");
+
+    const refusal = computed((): string => refusalMessage(shell.value.state.phase, shell.value.state.gate));
 
     const activeTitle = computed((): string => {
-        const row = shell.channels.rows.find(r => r.channel_id === shell.state.activeChannelId);
+        const row = shell.value.channels.rows.find(r => r.channel_id === shell.value.state.activeChannelId);
         if (!row) {
             return "";
         }
@@ -133,16 +130,65 @@
     // #region Event Handlers
 
     function onSelect(channelId: string): void {
-        void shell.selectChannel(channelId);
+        void shell.value.selectChannel(channelId);
     }
 
     function onRetry(localId: string): void {
-        void shell.sender.retry(localId);
+        void shell.value.sender.retry(localId);
+    }
+
+    async function onSaveBirthdate(birthDate: DatePartsPickerValueBag): Promise<void> {
+        isSavingBirthdate.value = true;
+        const result = await invokeBlockAction<ChatBirthdateResultBag>("SaveBirthdate", { birthDate });
+        isSavingBirthdate.value = false;
+
+        const outcome = birthdateOutcome({ isSuccess: result.isSuccess, statusCode: result.statusCode, data: result.data });
+
+        if (outcome.kind === "retry") {
+            birthdateMessage.value = outcome.message;
+            return;
+        }
+
+        birthdateMessage.value = null;
+
+        if (outcome.kind === "refused") {
+            shell.value.state.gate = outcome.gate;
+            return;
+        }
+
+        await shell.value.stop();
+        personAliasGuid.value = outcome.session.personAliasGuid ?? "";
+        shell.value = buildShell(outcome.session);
+        void shell.value.start();
     }
 
     // #endregion Event Handlers
 
     // #region Functions
+
+    /** Builds the shell for a session, as the page load described it or a birthdate save did. */
+    function buildShell(session: ShellOptions["session"]): ReturnType<typeof createChatShell> {
+        return createChatShell({
+            session,
+            linkedChannelId: config.channelGuid ?? null,
+            mintChurchToken: async () => {
+                const result = await invokeBlockAction<ChatChurchTokenBag>("MintChurchToken");
+                return { isSuccess: result.isSuccess, statusCode: result.statusCode, data: result.data };
+            },
+            createPlatformClient: (url, key, accessToken) => createClient(url, key, { accessToken }) as unknown as PlatformClientLike,
+            fetch: (url, init) => window.fetch(url, init),
+            storage: safeLocalStorage(),
+            pageTargets: { document, window },
+            mark: name => {
+                try {
+                    performance.mark(name);
+                }
+                catch {
+                    // Intentionally ignored: timing marks are for measurement only.
+                }
+            }
+        });
+    }
 
     /** The browser's local storage, or null where the browser blocks it. */
     function safeLocalStorage(): Storage | null {
@@ -159,11 +205,11 @@
     // #region Lifecycle Hooks
 
     onMounted(() => {
-        void shell.start();
+        void shell.value.start();
     });
 
     onBeforeUnmount(() => {
-        void shell.stop();
+        void shell.value.stop();
     });
 
     // #endregion Lifecycle Hooks

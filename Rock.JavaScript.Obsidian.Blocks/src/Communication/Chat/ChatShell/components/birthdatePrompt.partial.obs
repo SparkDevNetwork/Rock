@@ -1,0 +1,79 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="chat-birthdate-prompt" data-testid="birthdate-prompt">
+        <p>Chat needs your birthdate before it can open. It is asked for once and kept on your profile.</p>
+
+        <RockForm @submit="onSubmit">
+            <DatePartsPicker v-model="birthDate"
+                             label="Birthdate"
+                             requireYear
+                             :allowFutureDates="false"
+                             rules="required"
+                             :disabled="isSaving" />
+
+            <NotificationBox v-if="message" :alertType="AlertType.Warning">
+                {{ message }}
+            </NotificationBox>
+
+            <RockButton type="submit"
+                        :btnType="BtnType.Primary"
+                        :isLoading="isSaving">
+                Save
+            </RockButton>
+        </RockForm>
+    </div>
+</template>
+
+<style scoped>
+.chat-birthdate-prompt {
+    max-width: 420px;
+    margin: 0 auto;
+    padding: var(--spacing-large, 24px) 0;
+}
+</style>
+
+<script setup lang="ts">
+    import { PropType, ref } from "vue";
+    import DatePartsPicker from "@Obsidian/Controls/datePartsPicker.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import RockForm from "@Obsidian/Controls/rockForm.obs";
+    import { AlertType } from "@Obsidian/Enums/Controls/alertType";
+    import { BtnType } from "@Obsidian/Enums/Controls/btnType";
+    import { DatePartsPickerValueBag } from "@Obsidian/ViewModels/Controls/datePartsPickerValueBag";
+
+    defineProps({
+        /** Why the last date was not taken, when it was not. */
+        message: {
+            type: String as PropType<string | null>,
+            default: null
+        },
+
+        /** Whether a save is in flight. */
+        isSaving: {
+            type: Boolean,
+            default: false
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "save", value: DatePartsPickerValueBag): void
+    }>();
+
+    // #region Values
+
+    const birthDate = ref<DatePartsPickerValueBag | undefined>();
+
+    // #endregion Values
+
+    // #region Event Handlers
+
+    /** Hands the date to the shell once the form's own checks pass. */
+    function onSubmit(): void {
+        if (birthDate.value) {
+            emit("save", birthDate.value);
+        }
+    }
+
+    // #endregion Event Handlers
+</script>
