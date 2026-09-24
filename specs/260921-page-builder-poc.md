@@ -196,6 +196,29 @@ builder reloads the frame.
 Deleting a block leaves its attribute values in the database until the Rock Cleanup job
 removes them, so only values of blocks that still exist count as references.
 
+### Editing a module
+
+The edit control on a selected module, and every successful drop, opens the Sheet on that
+module. A `GetModuleSettings` block action checks Administrate permission on the target page
+and returns the module instance's attributes and values for editing. The Module Settings
+section renders them with `AttributeValuesContainer` inside a `RockForm`, so required settings
+validate before saving. Save calls `SaveModuleSettings`, which writes the instance's attribute
+values, then the builder reloads the frame. Save and Close does the same and closes the Sheet.
+
+While the Sheet is open it follows the selection: selecting another module, or dropping a new
+one, moves the Sheet to that module. When the module in the Sheet has unsaved changes, the
+builder asks first, using Rock's standard unsaved changes prompt, and it asks the same way
+before the close button closes the Sheet. Keeping the changes selects the edited module again,
+so the selection and the Sheet never disagree. The Sheet also stays on
+a module while its save is in progress. Blocking selection would make the Sheet behave like a
+modal, and closing it on every selection change would cost an extra click per module and waste
+its remembered position.
+
+A frame reload keeps the selected module selected, so a saved module stays highlighted in the
+page that just re-rendered it. Deleting the module the Sheet is editing closes the Sheet.
+
+Module Items and Display Settings show an empty state, since their contents are out of scope.
+
 ### Drag and drop across the iframe
 
 The Obsidian Email Builder already solves this and the POC should follow it rather than
@@ -291,12 +314,36 @@ outline and Builder chip visually, and their click targets compete with drop tar
 POC has to either suppress the stock zone chrome while in builder mode or render the frame
 with `canConfigPage` false while keeping builder decoration on. See the open question below.
 
-### Sheet control placement
+### Sheet control
 
-New control, proposed at `Rock.JavaScript.Obsidian/Framework/Controls/Internal/sheet.obs`.
-Internal initially because the API surface is unproven, on the same reasoning as
-`[RockInternal]` on the C# side. It graduates out of `Internal/` once a second consumer
-confirms the shape.
+The Sheet lives at `Rock.JavaScript.Obsidian/Framework/Controls/Internal/sheet.obs`. It is
+internal because the API surface is unproven, on the same reasoning as `[RockInternal]` on the
+C# side, and graduates out of `Internal/` once a second consumer confirms the shape.
+
+| API | Purpose |
+|---|---|
+| `v-model` | Shows or hides the Sheet. |
+| `title` | The header text. |
+| `initialWidth` | The width in pixels the first time it opens, 480 by default. |
+| `beforeClose` | An async guard the close button awaits. `false` keeps the Sheet open. Closing through `v-model` bypasses it. |
+| Default slot | The scrolling body. |
+| `footer` slot | A footer pinned below the body, such as Save buttons. |
+
+The first time it opens, the Sheet sits against the right edge of the window at full height.
+Dragging the header moves it, dragging any edge or corner resizes it, and it always stays
+inside the window. It keeps its position and size while it stays mounted, so a consumer keeps
+it mounted and toggles `v-model`. Closing and reopening it then returns it to where it was,
+and a page refresh returns it to the right edge.
+
+While a move or resize is in progress, a transparent shield covers the window. Pointer events
+over an iframe go to the framed document, so without it, dragging the Sheet across the
+builder's frame would stop following the pointer.
+
+It floats at z-index 1050, the docked panel's layer, so popups opened from its fields appear
+above it, and modal dialogs such as the delete confirmation appear above both.
+
+In windows narrower than 768 pixels, it docks to the bottom at full width, up to 85% of the
+window's height, and does not move or resize.
 
 ### Overlay extraction
 
@@ -445,6 +492,8 @@ boolean extends to it cleanly when that time comes.
 
 - **Module instance items, their campus filters, and personalization.** See `MVP Design`.
 - **More than one module per Canvas.**
+- The contents of the Sheet's Display Settings section: a module's active state and campus
+  context.
 - Sharing a module instance between Canvas blocks. The schema allows it; the builder does not
   offer it yet.
 - Moving a placed module from the builder. Rock's own block configuration bar still works on
