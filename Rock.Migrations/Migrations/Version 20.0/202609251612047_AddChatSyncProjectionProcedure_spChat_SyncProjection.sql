@@ -54,28 +54,17 @@ AS
 BEGIN
     SET NOCOUNT ON;
 
-    -- -------------------------------------------------------------------------------------------
     -- The channel mark.
-    -- -------------------------------------------------------------------------------------------
 
-    -- Marks every group that is a chat channel right now and carries no mark yet.
+    -- Marks every group that is a chat channel right now and carries no mark yet. A marked group is
+    -- projected whatever its settings later say, so turning chat off archives a conversation rather
+    -- than losing it. Written once and never moved.
     --
-    -- The mark is what makes turning chat off on a group archive its conversation instead of losing
-    -- it: the projection keeps sending a marked group whatever its own settings later say, so the
-    -- platform keeps the channel and its history rather than reading the group as gone. It is written
-    -- once and never moved, so a group that had chat, lost it and got it back keeps the date it first
-    -- had it.
+    -- The first statement, and it commits on its own: a mark rolled back with a failed submission
+    -- would leave the next run treating the group as though it had never been a channel.
     --
-    -- It is the first statement, and it commits on its own before anything below reads, whether or
-    -- not the submission that follows works. A mark rolled back with a failed submission would leave
-    -- the next run projecting a group as though it had never been a channel, which is the one state
-    -- this column exists to prevent.
-    --
-    -- No transaction spans this procedure, so this statement commits the moment it ends, before any read below.
-    --
-    -- The condition below is the half of the channel rule that says a group qualifies right now. The
-    -- staging of the chat groups holds the same words with the marked groups added to them, and a test
-    -- fails if the two ever stop agreeing.
+    -- The condition is the half of the channel rule that says a group qualifies now. #ChatGroups
+    -- holds the same words, and a test fails if the two stop agreeing.
     UPDATE [G]
     SET [G].[ChatChannelFirstEnabledDateTime] = @StampedAt
     FROM [Group] AS [G]
@@ -86,18 +75,11 @@ BEGIN
         AND [GT].[IsChatAllowed] = 1
         AND COALESCE( [G].[IsChatEnabledOverride], [GT].[IsChatEnabledForAllGroups] ) = 1;
 
-    -- -------------------------------------------------------------------------------------------
     -- The moment and the identity marks.
-    -- -------------------------------------------------------------------------------------------
 
-    -- The moment this restatement describes, taken from the database and in UTC because it is
-    -- compared against the platform's own clock, and the identity seed of each table the projection
-    -- reads.
-    --
-    -- The seed and not the largest id in the table. Deleting the newest rows lowers the largest id and
-    -- leaves the seed where it was, and a database restored from a backup is the case these exist to
-    -- catch: its seeds go backwards and the platform refuses the submission rather than quietly
-    -- writing a church's older picture over its newer one.
+    -- The moment in UTC from the database, because it is compared against the platform's clock, and
+    -- each table's identity seed. The seed, not the largest id: deleting the newest rows lowers the
+    -- largest id, while a restored database moves the seed back, which the platform refuses.
     SELECT
         SYSUTCDATETIME() AS [read_at],
         CAST( IDENT_CURRENT( 'Person' ) AS BIGINT ) AS [person],
@@ -105,31 +87,16 @@ BEGIN
         CAST( IDENT_CURRENT( '[Group]' ) AS BIGINT ) AS [group],
         CAST( IDENT_CURRENT( 'GroupMember' ) AS BIGINT ) AS [group_member];
 
-    -- -------------------------------------------------------------------------------------------
     -- The staged sets.
-    -- -------------------------------------------------------------------------------------------
 
-    -- The question "is this group a chat channel" is asked here, once, and its answer is written into
-    -- #ChatGroups. Nothing below asks it again. That is not only about having one definition of the
-    -- rule: read straight from the tables, the four sections would be four moments, and a group that
-    -- starts qualifying, a person who joins a group, or a group or person deleted between two of them
-    -- would put a membership in the payload whose channel or whose person is in no other section of
-    -- it. The far side keys a membership to both, so a row like that fails the whole submission rather
-    -- than one table, and every retry reproduces it.
-    --
-    -- So the sections read the rows and the values of groups and people from these sets and not from
-    -- the tables. What they still read live is a value hung off a staged row, such as a campus, a photo
-    -- or a ban: a change there ships a slightly stale or empty value and the next cycle corrects it,
-    -- which is a difference in a value, not a row that cannot be stored.
-    --
-    -- A temporary table made here lives until this procedure returns, which is what lets the four
-    -- sections below read the sets this part made.
+    -- Whether a group is a chat channel is asked once, here. Read straight from the tables, the four
+    -- sections would be four moments, and a membership could ship without its channel or person,
+    -- which fails the whole submission on every retry. So the sections read their rows from these
+    -- sets; only values hung off a staged row, such as a campus or a photo, are read live, where a
+    -- change costs one stale cycle. A temporary table lives until the procedure returns.
 
-    -- Every group that is, or ever was, a chat channel, with what the channels section reads of it.
-    -- The marker half is what makes turning chat off archive a conversation instead of losing it, so
-    -- it is deliberately not filtered by the group's own state: an archived or deactivated channel
-    -- still belongs here and its row still ships. The groups Rock ships to run chat are left out of
-    -- both halves, so a mark on one does not keep it.
+    -- Every group that is, or ever was, a chat channel. Not filtered by the group's own state, so an
+    -- archived channel still ships. Rock's own chat groups are left out, even with a mark.
     SELECT
         [G].[Id] AS [GroupId],
         [G].[Guid] AS [ChannelGuid],
@@ -187,13 +154,9 @@ BEGIN
 
     CREATE CLUSTERED INDEX [IX_MemberRows] ON #MemberRows ( [PersonId] );
 
-    -- Everyone who needs an alias row on the far side.
-    --
-    -- The last arm is the one that looks redundant and is not. Anyone in #MemberRows is already in the
-    -- third arm, because a live channel is a chat group. It is here so that containment holds by
-    -- construction rather than by the two statements happening to see the same data: without it, a
-    -- person who joined before #MemberRows was staged and left before this runs is a membership with
-    -- no alias, and the far side refuses the whole submission over it.
+    -- Everyone who needs an alias row on the far side. The last arm looks redundant, since a live
+    -- channel is a chat group, but it makes containment hold by construction: without it, a person
+    -- who left between the two statements is a membership with no alias.
     SELECT [PersonId]
     INTO #Enrolled
     FROM (
@@ -230,12 +193,8 @@ BEGIN
 
     CREATE UNIQUE CLUSTERED INDEX [IX_Enrolled] ON #Enrolled ( [PersonId] );
 
-    -- One pass over the aliases of the enrolled population, with what the aliases section reads of
-    -- the person who owns each one, staged because it is read twice below and a common table
-    -- expression referenced twice is evaluated twice.
-    --
-    -- The ranking reproduces the documented fallback: the person's own primary alias, or the lowest
-    -- alias id when they have none.
+    -- Staged because it is read twice below, and a common table expression is evaluated per use.
+    -- The primary is the person's own primary alias, or the lowest alias id when they have none.
     SELECT
         [PA].[PersonId],
         [PA].[Guid] AS [AliasGuid],
@@ -257,12 +216,8 @@ BEGIN
 
     CREATE CLUSTERED INDEX [IX_Alias] ON #Alias ( [PersonId] );
 
-    -- The badge keys a person holds, ordered by the church's configured badge order, aggregated once
-    -- per person who holds one rather than once per alias row. Persisted as Rock counts it, interval or
-    -- schedule, because only persisted values are read.
-    --
-    -- The stored list is not trusted to be what the picker allows: a badge listed twice keeps its first
-    -- place, and a Data View of anything but people is left out, because holders are matched by person id.
+    -- The badge Data Views in the church's order. A badge listed twice keeps its first place, and a
+    -- Data View of anything but people is left out, because holders are matched by person id.
     SELECT
         [DV].[Guid] AS [DataViewGuid],
         MIN( CAST( [J].[key] AS INT ) ) AS [SortOrder]
@@ -274,8 +229,7 @@ BEGIN
 
     CREATE UNIQUE CLUSTERED INDEX [IX_BadgeViews] ON #BadgeViews ( [DataViewGuid] );
 
-    -- The keys are gathered with an XML method, which needs QUOTED_IDENTIFIER on. A procedure runs
-    -- with the setting it was created with rather than its caller's, and it is created with it on.
+    -- FOR XML needs QUOTED_IDENTIFIER on, which a procedure takes from its creation, not its caller.
     SELECT
         [BP].[PersonId],
         STUFF( (
@@ -299,22 +253,15 @@ BEGIN
 
     CREATE UNIQUE CLUSTERED INDEX [IX_Badges] ON #Badges ( [PersonId] );
 
-    -- -------------------------------------------------------------------------------------------
     -- The aliases section.
-    -- -------------------------------------------------------------------------------------------
 
-    -- Two row shapes. A person's primary alias row carries everything about them. Their other alias
-    -- rows carry the two identifiers and nothing else, which is what lets a client that still holds an
-    -- old alias resolve it to the person who owns it now. Every alias is restated on every cycle, so a
-    -- merge in Rock heals itself here with nothing tracking that it happened.
-    --
-    -- The last row is chat itself, the author of the messages a conversation generates about its own
-    -- membership. It is a constant, the same in every installation, and no person in Rock backs it.
+    -- A person's primary alias row carries everything; their other aliases carry only the two ids,
+    -- so a client holding an old alias resolves it and a merge heals itself on the next cycle. The
+    -- last row is chat itself, the author of membership messages, with no person behind it.
     SELECT
         [A].[AliasGuid] AS [person_alias_guid],
         [PR].[AliasGuid] AS [primary_person_alias_guid],
-        -- A blank name is sent as none, because the far side refuses an empty one and would refuse the
-        -- whole church with it. Anything else is sent as Rock holds it.
+        -- A blank name is sent as none: the far side refuses an empty one, and the church with it.
         CASE WHEN [A].[IsPrimary] = 1 AND LTRIM( RTRIM( [A].[NickName] ) ) <> N'' THEN [A].[NickName] END AS [nick_name],
         CASE WHEN [A].[IsPrimary] = 1 AND LTRIM( RTRIM( [A].[LastName] ) ) <> N'' THEN [A].[LastName] END AS [last_name],
 
@@ -329,9 +276,7 @@ BEGIN
 
         CASE WHEN [A].[IsPrimary] = 1 THEN [CM].[Guid] END AS [campus_id],
 
-        -- Returned joined, and split into a list before it reaches the wire. The column on the far side
-        -- holds a list, and a single string arrives there as no badges at all on a submission that is
-        -- otherwise accepted, with nothing reporting it.
+        -- Joined here, and split into a list before it reaches the wire.
         CASE WHEN [A].[IsPrimary] = 1 THEN [BK].[BadgeKeys] END AS [badge_keys],
 
         CASE WHEN [A].[IsPrimary] = 1 THEN COALESCE( [A].[IsChatProfilePublic], @ProfilesVisibleByDefault ) END AS [show_profile_details],
@@ -377,27 +322,20 @@ BEGIN
         CAST( 0 AS BIT ),
         CAST( 0 AS BIT );
 
-    -- -------------------------------------------------------------------------------------------
     -- The channels section.
-    -- -------------------------------------------------------------------------------------------
 
-    -- The columns are selected in the order the wire contract lists them and in no other, because rows
-    -- travel as positional arrays: two columns of the same type swapped here shift every value one
-    -- place and nothing on the far side can see it.
+    -- In the wire contract's column order and no other, because rows travel as positional arrays.
     --
-    -- Direct messages have five settings forced rather than read. The far side refuses a direct message
-    -- that is public, always shown, search indexed or campused, and it refuses any channel with no
-    -- name, and Rock enforces none of those five. One administrator editing one direct message would
-    -- otherwise fail this church's whole submission on every cycle until someone found it.
+    -- Five direct message settings are forced, because the far side refuses a direct message that is
+    -- public, always shown, search indexed or campused, and any channel without a name, and Rock
+    -- enforces none of them. One such row would fail the church's submission on every cycle.
     SELECT
         [CG].[ChannelGuid] AS [channel_id],
 
-        -- Never null. The far side requires a name on anything that is not a direct message, and a
-        -- group whose name is blank would fail the entire submission rather than that one row.
+        -- Never null: a blank name would fail the whole submission.
         COALESCE( NULLIF( LTRIM( RTRIM( [CG].[Name] ) ), N'' ), N'Channel ' + CAST( [CG].[GroupId] AS NVARCHAR( 20 ) ) ) AS [name],
 
-        -- An icon behind a binary file type that requires view security is not linked at all, for the
-        -- same reason a photo is not: the far side serves this URL to every member of the channel.
+        -- Not linked behind a file type that requires view security, for the same reason as a photo.
         CASE
             WHEN [BF].[Guid] IS NULL OR [BFT].[RequiresViewSecurity] = 1 THEN NULL
             ELSE @PublicApplicationRoot + N'GetImage.ashx?guid=' + LOWER( CAST( [BF].[Guid] AS NVARCHAR( 36 ) ) ) + N'&maxwidth=120&maxheight=120'
@@ -405,9 +343,8 @@ BEGIN
 
         CASE WHEN [CG].[GroupTypeGuid] = @DirectMessageGroupTypeGuid THEN 'dm' ELSE 'shared' END AS [channel_type],
 
-        -- A channel that is archived or deactivated keeps its row and loses its reach: it is not
-        -- public, not always shown and not searchable, so it stops appearing to anyone who was not
-        -- already in it while its history stays intact.
+        -- An archived or deactivated channel keeps its row and history but loses its reach: not
+        -- public, not always shown and not searchable.
         CASE
             WHEN [CG].[GroupTypeGuid] = @DirectMessageGroupTypeGuid OR [CG].[IsActive] = 0 OR [CG].[IsArchived] = 1 THEN CAST( 0 AS BIT )
             ELSE COALESCE( [CG].[IsChatChannelPublicOverride], [CG].[IsChatChannelPublic] )
@@ -446,23 +383,15 @@ BEGIN
     LEFT JOIN [BinaryFile] AS [BF] ON [BF].[Id] = [CG].[ChatChannelAvatarBinaryFileId]
     LEFT JOIN [BinaryFileType] AS [BFT] ON [BFT].[Id] = [BF].[BinaryFileTypeId];
 
-    -- -------------------------------------------------------------------------------------------
     -- The members section.
-    -- -------------------------------------------------------------------------------------------
 
-    -- Every row's channel is in #ChatGroups and every row's person has an alias in #Alias, both by
-    -- construction rather than by timing, which is the whole reason those sets are staged. The far side
-    -- keys a membership to a channel and to an alias, so a row whose channel or person is missing from
-    -- this same payload fails the entire submission rather than that one row.
+    -- Every row's channel and person are in the staged sets by construction, not by timing.
     --
-    -- The ban expiry is returned as Rock stores it, in the organisation's own time zone. It is
-    -- converted to UTC before it reaches the wire, because a time sent without a zone is read on the
-    -- far side as UTC and would be wrong by this church's offset, in the direction that lifts a ban
-    -- early for any church behind it.
+    -- The ban expiry is returned in the organization's time zone, and the job moves it to UTC.
     --
-    -- A person may hold several roles in one group, each its own group member, and the far side keeps
-    -- one row for each person in each channel. So the rows are folded: a leader in any role leads, a
-    -- ban in any role bans, and of the banned roles a ban without an end outlasts every dated one.
+    -- A person may hold several roles in one group and the far side keeps one row per person per
+    -- channel, so the rows are folded: a leader in any role leads, a ban in any role bans, and a ban
+    -- without an end outlasts every dated one.
     SELECT
         [F].[ChannelGuid] AS [channel_id],
         [A].[AliasGuid] AS [person_alias_guid],
@@ -485,19 +414,10 @@ BEGIN
     ) AS [F]
     INNER JOIN #Alias AS [A] ON [A].[PersonId] = [F].[PersonId] AND [A].[IsPrimary] = 1;
 
-    -- -------------------------------------------------------------------------------------------
     -- The badges section.
-    -- -------------------------------------------------------------------------------------------
 
-    -- The church's configured badge list, a few rows.
-    --
-    -- The sort order is the position the administrator put the badge in, not anything the Data View
-    -- carries, so that every client renders the church's own order rather than each one sorting by
-    -- whatever it happens to hold.
-    --
-    -- The highlight colour is returned raw. The pair of colours the wire carries is derived from it
-    -- before it is sent, so the contrast decision is made once here rather than three times in three
-    -- clients that would each reach a different answer.
+    -- The sort order is the church's own badge order, so every client renders the same one. The
+    -- highlight colour is returned raw, and the job derives the colour pair once for every client.
     SELECT
         [DV].[Guid] AS [badge_key],
         -- Never blank: the far side refuses a badge with no name, and the whole church with it.

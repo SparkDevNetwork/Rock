@@ -45,9 +45,8 @@ using Rock.ViewModels.Blocks.Communication.Chat.ChatSyncNow;
 namespace Rock.Communication.Chat.Platform.Sync
 {
     /// <summary>
-    /// What the Chat Platform Sync job needs to talk to the chat platform: the submission headers,
-    /// the credential, submit and poll, what the answer means, and the rules for writing a row value.
-    /// Also Sync Now, which the Chat Configuration and Group Type Detail blocks call.
+    /// What the Chat Platform Sync job says to the chat platform and how it reads the answer, and
+    /// Sync Now for the Chat Configuration and Group Type Detail blocks.
     /// </summary>
     internal static class ChatPlatformSyncHelper
     {
@@ -65,8 +64,7 @@ namespace Rock.Communication.Chat.Platform.Sync
 
         private const string UrgentHeader = "x-sync-urgent";
 
-        // Set by the transport rather than built with the others, so every attempt of one
-        // submission carries the same id.
+        // Added by the transport, so every attempt of one submission carries the same id.
         private const string SubmissionIdHeader = "x-sync-submission-id";
 
         // A tick is a hundred nanoseconds and the platform stores microseconds.
@@ -86,8 +84,7 @@ namespace Rock.Communication.Chat.Platform.Sync
 
         private static readonly string RunningMessage = "The sync is running.";
 
-        // What Rock records for a run that ended well. Anything else it records for an ended run, a
-        // warning, an exception or a job that could not be loaded, is a run that did not.
+        // What Rock records for a run that ended well; anything else is a run that did not.
         private const string SuccessStatus = "Success";
 
         #endregion Constants
@@ -172,17 +169,15 @@ namespace Rock.Communication.Chat.Platform.Sync
         }
 
         /// <summary>
-        /// Builds a header whose value is a JSON object keyed exactly by the key set the contract
-        /// lists for it.
+        /// Builds a header whose value is a JSON object keyed exactly by the contract's key set.
         /// </summary>
         /// <param name="contract">The parsed wire contract.</param>
         /// <param name="headerName">The header.</param>
         /// <param name="values">The values, by key.</param>
         /// <returns>The header value.</returns>
         /// <remarks>
-        /// The key sets are read from the contract rather than typed here, because the platform
-        /// compares them exactly and a copy typed into this assembly would pass every test that reads
-        /// it back and be refused on every cycle. Key order is not part of the set.
+        /// The keys are read from the contract, never typed here, because the platform compares
+        /// them exactly. Key order is not part of the set.
         /// </remarks>
         internal static string BuildKeyedHeader( JObject contract, string headerName, IDictionary<string, long> values )
         {
@@ -278,10 +273,6 @@ namespace Rock.Communication.Chat.Platform.Sync
         /// Refuses a contract whose row-count keys are not its payload sections.
         /// </summary>
         /// <param name="contract">The parsed wire contract.</param>
-        /// <remarks>
-        /// The platform builds both lists from one constant, so a copy where they differ is a defect
-        /// in the copy, and preferring either would send a header built from a guess.
-        /// </remarks>
         private static void RequireCountKeysAreTheSections( JObject contract )
         {
             var sections = GetPayloadSections( contract );
@@ -349,9 +340,7 @@ namespace Rock.Communication.Chat.Platform.Sync
         /// <param name="polled">What a status read found, or null where none could be made.</param>
         /// <returns>Whether the run failed, and a sentence saying why or what happened.</returns>
         /// <remarks>
-        /// This submission's polled outcome where the queue reached it, else the previous one's,
-        /// which the acknowledgement carries for this reason, else a plain "not yet applied". That
-        /// last is not a failure: the queue very often has not reached a submission by the time its
+        /// "Not yet applied" is not a failure: the queue often has not reached a submission when its
         /// run ends, and a run red on most cycles teaches an administrator to stop reading it.
         /// </remarks>
         internal static (bool IsFailure, string Message) Resolve( Acknowledgement acknowledgement, Outcome polled )
@@ -493,8 +482,7 @@ namespace Rock.Communication.Chat.Platform.Sync
             {
                 var time = ( DateTime ) value;
 
-                // The platform reads a time with no offset as UTC. The caller converts; this refuses
-                // what it cannot vouch for.
+                // The platform reads a time with no offset as UTC; the caller converts.
                 if ( time.Kind != DateTimeKind.Utc )
                 {
                     throw new InvalidOperationException( string.Format(
@@ -555,8 +543,7 @@ namespace Rock.Communication.Chat.Platform.Sync
                 return time;
             }
 
-            // Treated as UTC it would be wrong by this church's offset, and behind UTC a ban would
-            // lift early.
+            // Treated as UTC it would be wrong by the church's offset, lifting a ban early behind UTC.
             return TimeZoneInfo.ConvertTimeToUtc( DateTime.SpecifyKind( time, DateTimeKind.Unspecified ), organizationTimeZone );
         }
 
@@ -667,9 +654,8 @@ namespace Rock.Communication.Chat.Platform.Sync
         #region Sync Now
 
         /// <summary>
-        /// Answers a press of Sync Now on a chat block. A press does not run the sync: it asks Rock
-        /// to run the Chat Platform Sync job now, as the Jobs Administration page does, so the run is
-        /// the job's own, one at a time across every server and recorded in its history.
+        /// Answers a press of Sync Now. A press asks Rock to run the job now, as the Jobs
+        /// Administration page does, so the run is the job's own and is recorded in its history.
         /// </summary>
         /// <param name="rockContext">The block's context, for reading the job tables.</param>
         /// <param name="isAuthorized">Whether the caller may save on the block the button sits on.</param>
@@ -700,8 +686,7 @@ namespace Rock.Communication.Chat.Platform.Sync
         /// <param name="queueRunNow">Asks Rock to run the job with the given id now.</param>
         /// <returns>A refusal, or where the press has got to.</returns>
         /// <remarks>
-        /// Authority is asked first, so a caller who may not press the button learns nothing about the
-        /// state of chat from pressing it, and the job is read last, only for a press that may go ahead.
+        /// Authority is asked first, so a caller who may not press learns nothing about chat's state.
         /// </remarks>
         internal static SyncNowResult RequestSyncNow( ChatPlatformConfiguration configuration, bool isAuthorized, Func<JobSnapshot> readJob, Action<int> queueRunNow )
         {
@@ -716,9 +701,8 @@ namespace Rock.Communication.Chat.Platform.Sync
                 return new SyncNowResult { RefusalMessage = stored.HasBeenEnabled ? UnreadableKeyMessage : NeverEnabledMessage };
             }
 
-            // Read only now. Reading the job probes its lock, and a probe on the instant the schedule
-            // fires takes the lock first and costs the church that run, which a press about to be
-            // refused has no business doing.
+            // Read only now: reading the job probes its lock, and a probe as the schedule fires takes
+            // the lock and costs the church that run.
             var job = readJob();
             if ( job == null )
             {
@@ -727,11 +711,9 @@ namespace Rock.Communication.Chat.Platform.Sync
 
             if ( job.IsRunning )
             {
-                // Refused rather than followed. Rock would drop a second run without a word while this
-                // one holds the lock, and whatever holds it read the church before this press, so its
-                // result would answer an older question: often one asked before the Save this press
-                // exists to send. The lock is also held after a run's record has ended, while Rock
-                // sends the job's notification, so following "the next record" could wait on nothing.
+                // Refused rather than followed: Rock drops a second run while one holds the lock, the
+                // holder read the church before this press, and the lock outlives the run's record
+                // while Rock sends the job's notification.
                 return new SyncNowResult { RefusalMessage = AlreadyRunningMessage };
             }
 
@@ -817,12 +799,10 @@ namespace Rock.Communication.Chat.Platform.Sync
                 return null;
             }
 
-            // The history is read before the lock is probed, and the order is what makes the marker
-            // safe. Rock records a run only after that run has taken the lock, so a free lock after
-            // this read means any record newer than it belongs to a run that started after the press
-            // and so read the church after it. Probed first, a run starting in between would be
-            // missed by the probe and then taken as the marker itself, and the press would wait out
-            // its budget on a record that already exists.
+            // History before the lock probe, and the order matters. Rock records a run only after it
+            // takes the lock, so with the lock free any newer record belongs to a run that started
+            // after this read. Probed first, a run starting in between would become the marker, and
+            // the press would wait on a record that already exists.
             var latestRunId = new ServiceJobHistoryService( rockContext ).Queryable()
                 .Where( history => history.ServiceJobId == jobId.Value )
                 .OrderByDescending( history => history.Id )
@@ -869,9 +849,8 @@ namespace Rock.Communication.Chat.Platform.Sync
         /// </summary>
         /// <param name="jobId">The job's id.</param>
         /// <remarks>
-        /// That page's request is what gives the run its own scheduler, and the sync job reads the
-        /// scheduler's name to know a person is waiting on it, so it marks the submission urgent and
-        /// does not hold it back for the platform's backoff. Running the job any other way would lose both.
+        /// That page's request gives the run its own scheduler, whose name tells the job a person is
+        /// waiting, so it is marked urgent and not held back by the backoff.
         /// </remarks>
         private static void QueueRunNow( int jobId )
         {
@@ -899,10 +878,7 @@ namespace Rock.Communication.Chat.Platform.Sync
         /// <param name="jobId">The job's id.</param>
         /// <returns>True when a run holds it.</returns>
         /// <remarks>
-        /// The lock rather than the history record, because a run cut off by a restart leaves its record
-        /// open forever, and a press that trusted the record would follow that dead run and never start
-        /// another. This is the same probe Rock's own Run Now makes before it starts a job, held for no
-        /// longer than it takes to ask.
+        /// The lock, not the history, because a run cut off by a restart leaves its record open forever.
         /// </remarks>
         private static bool IsJobLocked( int jobId )
         {
@@ -1099,9 +1075,8 @@ namespace Rock.Communication.Chat.Platform.Sync
             public bool IsTransportFailure => !HttpStatusCode.HasValue;
 
             /// <summary>
-            /// Whether this is the platform's own word, and so whether its backoff, or the absence of
-            /// one, is worth recording. Silence recorded as "no backoff" would lift advice the
-            /// platform had given.
+            /// Whether this is the platform's own word, and so worth saving. Silence saved as "no
+            /// backoff" would lift advice the platform had given.
             /// </summary>
             public bool CarriesBackoffAdvice => !IsTransportFailure && Status.HasValue;
         }
@@ -1186,7 +1161,7 @@ namespace Rock.Communication.Chat.Platform.Sync
             public bool IsRunning { get; set; }
 
             /// <summary>
-            /// The id of the newest run recorded in the job's history, or null when it has never run.
+            /// The id of the newest run in the job's history, or null when it has never run.
             /// </summary>
             public int? LatestRunId { get; set; }
         }
@@ -1222,9 +1197,8 @@ namespace Rock.Communication.Chat.Platform.Sync
         /// the status reads, over one HttpClient that lives as long as the run.
         /// </summary>
         /// <remarks>
-        /// Nothing here throws at its caller over an answer. The platform records a refusal on its
-        /// history row and says so with the response status, because raising would roll the record
-        /// back, so the body of a 422 is read like any other.
+            /// Nothing here throws at its caller over an answer. The platform refuses with a 422 and its
+            /// history row committed, so the body of a 422 is read like any other.
         /// </remarks>
         internal sealed class PlatformClient : IDisposable
         {
@@ -1286,9 +1260,8 @@ namespace Rock.Communication.Chat.Platform.Sync
             /// <param name="failure">Why there is no token, when there is none.</param>
             /// <returns>True where the client now holds a platform token.</returns>
             /// <remarks>
-            /// Called once, after the church has been read: a church token lasts minutes and the
-            /// platform will not exchange one with under two left, so one minted before a slow read
-            /// could be refused.
+            /// Called once, after the church is read: a church token lasts minutes, and the platform
+            /// will not exchange one with under two left.
             /// </remarks>
             public bool SignIn( out string failure )
             {

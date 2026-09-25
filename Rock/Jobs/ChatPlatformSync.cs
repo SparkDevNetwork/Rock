@@ -41,47 +41,27 @@ namespace Rock.Jobs
     /// Sends this church's people, channels, memberships and badges to the chat platform.
     /// </summary>
     /// <remarks>
-    ///     <para>
-    ///         Every run sends the whole picture rather than what changed, so a run that does not
-    ///         happen costs nothing the next one cannot put right, and a run that happens twice
-    ///         writes the same thing twice. That is what lets this job give up early, skip itself
-    ///         when the platform asks for quiet, and be pressed by hand as often as anyone likes.
-    ///     </para>
-    ///     <para>
-    ///         Named apart from the Chat Sync job, which belongs to the other chat provider. The two
-    ///         appear side by side on the Jobs Administration page and do entirely different things,
-    ///         so they must not be read as one job under two names.
-    ///     </para>
+    /// Every run restates the whole picture, so a skipped or repeated run is harmless. Not to be
+    /// confused with the Chat Sync job, which belongs to the other chat provider.
     /// </remarks>
     public class ChatPlatformSync : RockJob
     {
         #region Constants
 
-        // A run started by hand gets its own scheduler, named this way by the page that starts it.
-        // It is the only thing here that tells a person's run from the schedule's, and the
-        // difference matters twice: a person is waiting, so the platform's backoff does not hold
-        // them up, and their submission is marked urgent so it is drained ahead of the queue.
+        // The page that starts a run by hand names its scheduler this way. A manual run ignores the
+        // platform's backoff and is marked urgent, because a person is waiting on it.
         private const string ManualRunSchedulerPrefix = "RunNow:";
 
-        // The longest quiet stretch a schedule may leave before it is worth saying so. A design
-        // bound on how stale the platform's picture of a church may get, not a measurement, and
-        // provisional until the platform is measured at full scale.
+        // The longest gap between runs worth warning about. A design bound, not a measurement.
         private static readonly TimeSpan MaximumScheduleGap = TimeSpan.FromHours( 24 );
 
-        // How far ahead a schedule is read. A fixed handful of fires is not enough: an hourly
-        // weekday schedule spends its first fourteen on the hour and the overnight, and the
-        // weekend, which is the gap over a day, sits further along. Eight days covers a weekly
-        // pattern whichever day the reading starts on.
+        // Eight days, so a weekly pattern is seen whichever day the reading starts on.
         private static readonly TimeSpan ScheduleSampleWindow = TimeSpan.FromDays( 8 );
 
-        // Where the walk stops if it never reaches that window. Eight days of a fire every second
-        // is 691200 steps, and the cap sits above that so a schedule that dense is still judged
-        // across the whole window rather than cut off inside it.
+        // Above eight days of a fire every second (691200), so even that schedule is judged whole.
         private const int ScheduleSampleCap = 700000;
 
-        // How long the projection may take. Generous, because it reads the whole of a large
-        // church's group membership and runs on that church's own server, and because the cost of
-        // being wrong here is a cycle lost rather than a cycle wrong. An estimate.
+        // Generous, because a timeout costs no more than one cycle. An estimate.
         private const int ProjectionTimeoutSeconds = 300;
 
         #endregion Constants
@@ -103,14 +83,11 @@ namespace Rock.Jobs
 
             var isManualRun = IsManualRun();
 
-            // The instant, not the organisation's wall clock. The backoff below is an instant the
-            // platform named with its offset, and a wall-clock reading would be stamped with this
-            // server's offset, which on a hosted server is not the organisation's, and be wrong by
-            // the difference.
+            // The instant, not the wall clock: the backoff carries the platform's offset, and this
+            // server's offset may not be the organization's.
             var now = DateTimeOffset.UtcNow;
 
-            // Carried whether or not the run goes ahead. A church whose schedule is too slow and
-            // whose platform is asking for quiet has two things wrong and should be told both.
+            // Taken whether or not the run goes ahead, so a skipped run still reports it.
             var scheduleWarning = ScheduleWarning( ServiceJob?.CronExpression, now );
 
             var skipReason = SkipReason( isManualRun, configuration.SyncBackoffUntil, now );
@@ -130,9 +107,7 @@ namespace Rock.Jobs
 
             if ( outcome.IsFailure )
             {
-                // Thrown rather than returned, because the scheduler is what records a run as
-                // failed and it only learns that from an exception. The message is already on the
-                // result, so this carries no detail the church has not been shown.
+                // Thrown because the scheduler records a failure only from an exception.
                 throw new RockJobWarningException( Result );
             }
         }
@@ -159,11 +134,6 @@ namespace Rock.Jobs
         /// <param name="backoffUntil">The time the chat platform last asked not to be called before.</param>
         /// <param name="now">The current instant.</param>
         /// <returns>The reason, or null where the run may go ahead.</returns>
-        /// <remarks>
-        /// The backoff is the platform's advice about its own load, and it binds the schedule but not a
-        /// person: someone who pressed Sync Now is at a screen waiting for an answer, and the cost of
-        /// letting them through is one submission the platform would rather have had later.
-        /// </remarks>
         internal static string SkipReason( bool isManualRun, DateTimeOffset? backoffUntil, DateTimeOffset now )
         {
             if ( isManualRun || !backoffUntil.HasValue || backoffUntil.Value <= now )
@@ -183,10 +153,6 @@ namespace Rock.Jobs
         /// <param name="cronExpression">The schedule.</param>
         /// <param name="after">The moment to look forward from.</param>
         /// <returns>The warning, or null.</returns>
-        /// <remarks>
-        /// The schedule is the church's own setting and is remarked on rather than corrected: nothing
-        /// here writes to the job.
-        /// </remarks>
         internal static string ScheduleWarning( string cronExpression, DateTimeOffset after )
         {
             var longest = LongestGap( cronExpression, after );
@@ -209,14 +175,6 @@ namespace Rock.Jobs
         /// <param name="cronExpression">The schedule.</param>
         /// <param name="after">The moment to look forward from.</param>
         /// <returns>The longest gap, or null where the schedule cannot be read or has no future runs.</returns>
-        /// <remarks>
-        /// The longest gap and not the next one, because the schedules that go wrong quietly are the ones
-        /// that look frequent. A weekday morning schedule fires five times a week and leaves seventy two
-        /// hours over every weekend, and the gap after any given Monday run is a reassuring twenty four.
-        /// The same is true of a schedule that fires every hour through a weekday: the first handful of
-        /// gaps are an hour or the overnight, and the weekend is only visible once the walk has covered
-        /// a week.
-        /// </remarks>
         private static TimeSpan? LongestGap( string cronExpression, DateTimeOffset after )
         {
             if ( cronExpression.IsNullOrWhiteSpace() )
@@ -231,15 +189,11 @@ namespace Rock.Jobs
             }
             catch ( Exception )
             {
-                // A schedule this job cannot read is the scheduler's to complain about. It has
-                // already refused to run on it, or it is running on something this does not
-                // understand; either way a second opinion from here would only be noise.
+                // A schedule this cannot read is the scheduler's to report.
                 return null;
             }
 
-            // Measured in elapsed time rather than wall clock. A daily schedule genuinely spans
-            // twenty five hours on the morning the clocks go back, and reporting a church's
-            // schedule as too slow once a year for that reason would be wrong every time.
+            // Elapsed time, not wall clock, so the morning the clocks go back is not a 25 hour gap.
             expression.TimeZone = TimeZoneInfo.Utc;
 
             var previous = after;
@@ -267,7 +221,7 @@ namespace Rock.Jobs
         }
 
         /// <summary>
-        /// A gap in the roundest words it fits, because a church reads this on a job page.
+        /// A gap in days or hours, for the job page.
         /// </summary>
         /// <param name="gap">The gap.</param>
         /// <returns>The words.</returns>
@@ -286,8 +240,7 @@ namespace Rock.Jobs
         #region The run
 
         /// <summary>
-        /// One whole restatement: mark the channels, read the church, send it, and find out what happened
-        /// to it.
+        /// One whole restatement: read the church, send it, and learn what became of it.
         /// </summary>
         /// <param name="rockContext">The context the projection reads through.</param>
         /// <param name="configuration">The church's chat settings.</param>
@@ -305,9 +258,7 @@ namespace Rock.Jobs
                 throw new ArgumentNullException( nameof( configuration ) );
             }
 
-            // Only the key is checked here, without minting: a key nothing can sign with would
-            // otherwise cost a whole projection on the church's server before it was found. The
-            // token itself is minted once, after the read.
+            // Checked without minting, so an unusable key fails before the projection runs.
             if ( !configuration.IsConfigured || !ChatSigningKey.IsUsable( configuration.PrivateKey ) )
             {
                 return new RunResult
@@ -321,8 +272,7 @@ namespace Rock.Jobs
             var projection = Project( rockContext, configuration );
             var rowCounts = projection.RowCounts;
 
-            // Built after the payload, because the counts have to be the rows actually written: a
-            // count of what was expected would agree with a truncated payload.
+            // Built after the payload, so the counts are the rows actually written.
             var headers = ChatPlatformSyncHelper.BuildSubmissionHeaders(
                 JObject.Parse( ChatWireContract.Json ),
                 projection.ReadAtUtc,
@@ -347,10 +297,7 @@ namespace Rock.Jobs
 
                 if ( acknowledgement.CarriesBackoffAdvice )
                 {
-                    // Written for a refusal as for an acceptance: advice about the platform's load
-                    // is no less true because this submission was turned away. Not written for a
-                    // run that never got the platform's own answer, whose silence would otherwise
-                    // clear advice the platform had given.
+                    // Saved for a refusal as for an acceptance.
                     ChatPlatformConfigurationService.SaveSyncBackoff( acknowledgement.SyncBackoffUntil );
                 }
 
@@ -372,20 +319,14 @@ namespace Rock.Jobs
         }
 
         /// <summary>
-        /// Marks the groups that are chat channels right now, then reads the church once, without
-        /// sending anything.
+        /// Marks the chat channels and reads the church once, without sending anything.
         /// </summary>
         /// <param name="rockContext">The context the projection reads through.</param>
         /// <param name="configuration">The church's chat settings.</param>
         /// <returns>The reading.</returns>
         /// <remarks>
-        /// One call to the projection procedure, read as it streams. Its first statement is the
-        /// marking, which commits on its own because no transaction spans the call: a mark rolled back
-        /// with a failed submission would leave the next run treating a group as though it had never
-        /// been a channel, and that is the one thing the mark exists to prevent. Then come the clock,
-        /// the identity seeds and every section, as five result sets. The sections read sets the
-        /// procedure stages in temporary tables that live until it returns, which is what stops a
-        /// membership arriving in the same payload as neither the channel nor the person it names.
+        /// The procedure's first statement writes the channel mark, which must commit even when the
+        /// submission fails, so no transaction may span this call.
         /// </remarks>
         internal static ProjectionResult Project( RockContext rockContext, ChatPlatformConfiguration configuration )
         {
@@ -399,8 +340,7 @@ namespace Rock.Jobs
                 throw new ArgumentNullException( nameof( configuration ) );
             }
 
-            // The context owns this connection, so it is closed here only if it was opened here.
-            // Disposing it would leave the caller holding a context that cannot read anything.
+            // The context owns the connection: close it only if it was opened here, never dispose it.
             var connection = rockContext.Database.Connection;
             var wasClosed = connection.State != ConnectionState.Open;
 
@@ -413,8 +353,7 @@ namespace Rock.Jobs
 
                 var result = new ProjectionResult();
 
-                // Streamed rather than filled into tables, because a filled result holds every row of
-                // the largest church in memory before the body is even written.
+                // Streamed, so the largest church is never held in memory as filled tables.
                 using ( var command = CreateCommand( connection, configuration ) )
                 using ( var reader = command.ExecuteReader() )
                 {
@@ -437,17 +376,10 @@ namespace Rock.Jobs
         }
 
         /// <summary>
-        /// The moment this restatement describes and the identity seed of each table the projection
-        /// reads, from the result set the reader is currently on.
+        /// Reads the moment and the identity seeds from the procedure's first result set.
         /// </summary>
         /// <param name="reader">The reader, on the procedure's first result set.</param>
         /// <param name="result">The reading to record them on.</param>
-        /// <remarks>
-        /// The moment is taken from the database rather than from this process, and in UTC because it
-        /// is compared against the platform's own clock. The marks are identity seeds, not maximum ids,
-        /// because a maximum drops when the newest rows are deleted and would read as a restored
-        /// database. The procedure names each by the contract's own mark key, so they are kept by name.
-        /// </remarks>
         private static void ReadMarks( DbDataReader reader, ProjectionResult result )
         {
             if ( !reader.Read() )
@@ -478,16 +410,11 @@ namespace Rock.Jobs
             var contract = JObject.Parse( ChatWireContract.Json );
             rowCounts = new Dictionary<string, int>();
 
-            // The body is encoded as it is written and handed on as the one buffer it was written
-            // into. Held as text and then encoded for the transport it would be two copies of the
-            // same bytes, and at the largest church measured that is tens of megabytes on the large
-            // object heap for nothing.
+            // One buffer, encoded as written: a second copy of a large body is tens of megabytes.
             var body = new MemoryStream();
 
-            // No byte order mark: the platform reads this body as UTF-8 text, and those three bytes
-            // would be the first thing its parser saw. The buffer size is here only because this is
-            // the overload that leaves the stream open, which the buffer handed to the transport
-            // below depends on; 64 KB rather than the 1 KB default is a choice, not a measurement.
+            // No byte order mark: the platform parses the body as UTF-8 text. This overload is used
+            // because it leaves the stream open for the buffer below; 64 KB is a choice.
             using ( var text = new StreamWriter( body, new UTF8Encoding( false ), 64 * 1024, true ) )
             using ( var jsonWriter = new JsonTextWriter( text ) { CloseOutput = false } )
             {
@@ -552,8 +479,7 @@ namespace Rock.Jobs
                 { "@ActiveRecordStatusValueId", activeStatus == null ? ( object ) DBNull.Value : activeStatus.Id },
                 { "@ProfilesVisibleByDefault", configuration.AreChatProfilesVisible },
                 { "@OpenDirectMessagesByDefault", configuration.IsOpenDirectMessagingAllowed },
-                // The icon address is built from this, so the slash between root and path is
-                // supplied here rather than trusted to however the administrator typed the root.
+                // The slash between root and path is ensured here, whatever the administrator typed.
                 { "@PublicApplicationRoot", ( GlobalAttributesCache.Get().GetValue( "PublicApplicationRoot" ) ?? string.Empty ).EnsureTrailingForwardslash() }
             };
         }
@@ -588,8 +514,6 @@ namespace Rock.Jobs
             var sections = ChatPlatformSyncHelper.GetPayloadSections( contract );
             var tables = contract["tables"] as JArray;
 
-            // A section holds the rows of the table in the same position, which is the only thing
-            // that ties a section to its columns.
             if ( tables == null || tables.Count != sections.Count )
             {
                 throw new InvalidOperationException( "the chat wire contract names a different number of payload sections than tables, so no section can be matched to its columns" );
@@ -741,19 +665,29 @@ namespace Rock.Jobs
         /// </summary>
         private enum WireConversion
         {
-            /// <summary>Sent as stored.</summary>
+            /// <summary>
+            /// Sent as stored.
+            /// </summary>
             None,
 
-            /// <summary>The joined keys, split into a list.</summary>
+            /// <summary>
+            /// The joined keys, split into a list.
+            /// </summary>
             BadgeKeys,
 
-            /// <summary>A time in the organization's zone, moved to UTC.</summary>
+            /// <summary>
+            /// A time in the organization's zone, moved to UTC.
+            /// </summary>
             Utc,
 
-            /// <summary>The background of the pair made from the highlight colour.</summary>
+            /// <summary>
+            /// The background of the pair made from the highlight colour.
+            /// </summary>
             Background,
 
-            /// <summary>The foreground of the pair made from the highlight colour.</summary>
+            /// <summary>
+            /// The foreground of the pair made from the highlight colour.
+            /// </summary>
             Foreground
         }
 
@@ -778,18 +712,13 @@ namespace Rock.Jobs
         #region What the run reports
 
         /// <summary>
-        /// The whole sentence a run that reached the platform leaves on the job: which submission it was,
-        /// what was sent, then what became of it.
+        /// The result line of a run that reached the platform. The submission id leads, because it
+        /// finds the platform's record of the run, for a reader of the job page and for support.
         /// </summary>
         /// <param name="submissionId">The id the restatement was submitted under.</param>
         /// <param name="rowCounts">The rows written, by section.</param>
         /// <param name="outcome">What became of the submission.</param>
         /// <returns>The result line.</returns>
-        /// <remarks>
-        /// The id leads because it is the one thing that finds the platform's own record of this run, for
-        /// whoever reads the job page, for Sync Now on a chat block, which learns nothing about the run
-        /// but what the job leaves here, and for a support request.
-        /// </remarks>
         internal static string Describe( Guid submissionId, IDictionary<string, int> rowCounts, string outcome )
         {
             return string.Format(
@@ -804,8 +733,7 @@ namespace Rock.Jobs
         }
 
         /// <summary>
-        /// The run's own sentence and the remark about its schedule, in that order, skipping whichever is
-        /// absent.
+        /// Joins the run's sentence and the schedule remark, skipping whichever is absent.
         /// </summary>
         /// <param name="outcome">What the run has to say for itself.</param>
         /// <param name="scheduleWarning">What is worth saying about the schedule, or null.</param>
@@ -837,15 +765,12 @@ namespace Rock.Jobs
         }
 
         /// <summary>
-        /// One reading of the church: the bytes, what was counted into them, the moment they describe and
-        /// the identity seeds taken at that moment.
+        /// One reading of the church and what its headers are built from.
         /// </summary>
         internal sealed class ProjectionResult
         {
             /// <summary>
-            /// The whole restatement, as the wire carries it: UTF-8 text in the one buffer it was
-            /// written into. It is handed to the transport as it is rather than decoded and encoded
-            /// again, because a second copy of a large church's body is tens of megabytes for nothing.
+            /// The whole restatement as UTF-8, in the one buffer it was written into.
             /// </summary>
             public ArraySegment<byte> Payload { get; set; }
 
@@ -855,7 +780,7 @@ namespace Rock.Jobs
             public IDictionary<string, int> RowCounts { get; set; }
 
             /// <summary>
-            /// The moment this reading describes, taken before it began.
+            /// The moment this reading describes, taken by the database.
             /// </summary>
             public DateTime ReadAtUtc { get; set; }
 
