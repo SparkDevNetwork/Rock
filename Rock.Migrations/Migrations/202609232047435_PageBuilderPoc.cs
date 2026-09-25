@@ -184,13 +184,13 @@ namespace Rock.Migrations
 <details><summary>An accordion title goes here?</summary><p>Accordion content goes here.</p></details>" );
 
             AddModuleType( BillboardModuleTypeGuid, "Billboard", "ti ti-presentation",
-                @"<div class=""jumbotron""><h1>{{ ModuleInstance | Attribute:'Title' }}</h1><p>{{ ModuleInstance | Attribute:'Text' }}</p></div>" );
+                @"<div class=""jumbotron""><h1>{{ ModuleInstance | Attribute:'Title' }}</h1><div>{{ ModuleInstance | Attribute:'Text' }}</div></div>" );
 
             AddModuleType( CardModuleTypeGuid, "Card", "ti ti-id",
-                @"<div class=""panel panel-default""><div class=""panel-body""><h4>{{ ModuleInstance | Attribute:'Title' }}</h4><p>{{ ModuleInstance | Attribute:'Text' }}</p><a class=""btn btn-default"" href=""#"">{{ ModuleInstance | Attribute:'ButtonText' }}</a></div></div>" );
+                @"<div class=""panel panel-default""><div class=""panel-body""><h4>{{ ModuleInstance | Attribute:'Title' }}</h4><div>{{ ModuleInstance | Attribute:'Text' }}</div><a class=""btn btn-default"" href=""#"">{{ ModuleInstance | Attribute:'ButtonText' }}</a></div></div>" );
 
             AddModuleType( ContentModuleTypeGuid, "Content", "ti ti-file-text",
-                @"<h2>{{ ModuleInstance | Attribute:'Title' }}</h2><p>{{ ModuleInstance | Attribute:'Text' }}</p>" );
+                @"<h2>{{ ModuleInstance | Attribute:'Title' }}</h2><div>{{ ModuleInstance | Attribute:'Text' }}</div>" );
 
             AddModuleType( VideoModuleTypeGuid, "Video", "ti ti-player-play",
                 @"<div class=""well text-center""><i class=""ti ti-player-play""></i> {{ ModuleInstance | Attribute:'Title' }}</div>" );
@@ -221,14 +221,14 @@ END" );
             AddModuleInstanceAttribute( AccordionModuleTypeGuid, SystemGuid.FieldType.TEXT, "Title", "Title", 0, "Accordion", AccordionTitleAttributeGuid );
 
             AddModuleInstanceAttribute( BillboardModuleTypeGuid, SystemGuid.FieldType.TEXT, "Title", "Title", 0, "Billboard", BillboardTitleAttributeGuid );
-            AddModuleInstanceAttribute( BillboardModuleTypeGuid, SystemGuid.FieldType.MEMO, "Text", "Text", 1, "A large banner that introduces the page.", BillboardTextAttributeGuid );
+            AddModuleInstanceAttribute( BillboardModuleTypeGuid, SystemGuid.FieldType.HTML, "Text", "Text", 1, "<p>A large banner that introduces the page.</p>", BillboardTextAttributeGuid );
 
             AddModuleInstanceAttribute( CardModuleTypeGuid, SystemGuid.FieldType.TEXT, "Title", "Title", 0, "Card", CardTitleAttributeGuid );
-            AddModuleInstanceAttribute( CardModuleTypeGuid, SystemGuid.FieldType.MEMO, "Text", "Text", 1, "A short summary with a link to more.", CardTextAttributeGuid );
+            AddModuleInstanceAttribute( CardModuleTypeGuid, SystemGuid.FieldType.HTML, "Text", "Text", 1, "<p>A short summary with a link to more.</p>", CardTextAttributeGuid );
             AddModuleInstanceAttribute( CardModuleTypeGuid, SystemGuid.FieldType.TEXT, "Button Text", "ButtonText", 2, "View details", CardButtonTextAttributeGuid );
 
             AddModuleInstanceAttribute( ContentModuleTypeGuid, SystemGuid.FieldType.TEXT, "Title", "Title", 0, "Content", ContentTitleAttributeGuid );
-            AddModuleInstanceAttribute( ContentModuleTypeGuid, SystemGuid.FieldType.MEMO, "Text", "Text", 1, "A block of formatted text.", ContentTextAttributeGuid );
+            AddModuleInstanceAttribute( ContentModuleTypeGuid, SystemGuid.FieldType.HTML, "Text", "Text", 1, "<p>A block of formatted text.</p>", ContentTextAttributeGuid );
 
             AddModuleInstanceAttribute( VideoModuleTypeGuid, SystemGuid.FieldType.TEXT, "Title", "Title", 0, "Video", VideoTitleAttributeGuid );
         }
