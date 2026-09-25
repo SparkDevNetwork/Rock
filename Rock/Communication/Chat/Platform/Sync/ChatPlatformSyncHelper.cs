@@ -375,14 +375,16 @@ namespace Rock.Communication.Chat.Platform.Sync
                     "this restatement was " + WireValueFor( polled.Status.Value ) + Reason( polled.ErrorCode ));
             }
 
-            // Named, so the previous cycle's result is never read as this one's.
+            // Named, so the previous cycle's result is never read as this one's, and information
+            // only: this run was accepted. A previous one still at accepted was replaced by a newer
+            // submission before the queue reached it, or is still waiting, so it has no result.
             var previous = acknowledgement.PreviousOutcome;
             if ( previous != null && previous.Status.HasValue )
             {
-                return (!IsJobSuccess( previous.Status.Value ),
+                return (false,
                     "this restatement was submitted, not yet applied. The previous submission, "
                         + previous.SubmissionId + ", was "
-                        + WireValueFor( previous.Status.Value )
+                        + ( previous.Status.Value == SubmissionStatus.Accepted ? "superseded or still queued" : WireValueFor( previous.Status.Value ) )
                         + Reason( previous.ErrorCode ));
             }
 
@@ -510,7 +512,13 @@ namespace Rock.Communication.Chat.Platform.Sync
                 return;
             }
 
-            if ( value is string || value is bool || value is int || value is long || value is short || value is byte || value is decimal || value is double )
+            if ( value is string text )
+            {
+                writer.WriteValue( WithoutControlCharacters( text ) );
+                return;
+            }
+
+            if ( value is bool || value is int || value is long || value is short || value is byte || value is decimal || value is double )
             {
                 writer.WriteValue( value );
                 return;
@@ -521,6 +529,46 @@ namespace Rock.Communication.Chat.Platform.Sync
                 "a {0} row carries a {1}, which has no agreed form on the wire",
                 section,
                 value.GetType().Name ) );
+        }
+
+        /// <summary>
+        /// The text without control characters below a space other than tab, carriage return and
+        /// line feed. The platform parses the body as jsonb, which refuses an escaped NUL.
+        /// </summary>
+        /// <param name="text">The text.</param>
+        /// <returns>The same string where there is nothing to take out, which is nearly always.</returns>
+        private static string WithoutControlCharacters( string text )
+        {
+            var i = 0;
+            while ( i < text.Length && !IsStrippedCharacter( text[i] ) )
+            {
+                i++;
+            }
+
+            if ( i == text.Length )
+            {
+                return text;
+            }
+
+            // Carries on from the first one found, so the string is still read once.
+            var kept = new StringBuilder( text, 0, i, text.Length );
+            for ( ; i < text.Length; i++ )
+            {
+                if ( !IsStrippedCharacter( text[i] ) )
+                {
+                    kept.Append( text[i] );
+                }
+            }
+
+            return kept.ToString();
+        }
+
+        /// <summary>
+        /// Whether a character is one <see cref="WithoutControlCharacters"/> takes out.
+        /// </summary>
+        private static bool IsStrippedCharacter( char character )
+        {
+            return character < ' ' && character != '\t' && character != '\r' && character != '\n';
         }
 
         /// <summary>
@@ -543,8 +591,22 @@ namespace Rock.Communication.Chat.Platform.Sync
                 return time;
             }
 
+            time = DateTime.SpecifyKind( time, DateTimeKind.Unspecified );
+
+            // A time the clocks skip going forward does not exist and cannot be converted, so it
+            // becomes the first minute that does.
+            if ( organizationTimeZone.IsInvalidTime( time ) )
+            {
+                time = time.AddTicks( -( time.Ticks % TimeSpan.TicksPerMinute ) );
+
+                while ( organizationTimeZone.IsInvalidTime( time ) )
+                {
+                    time = time.AddMinutes( 1 );
+                }
+            }
+
             // Treated as UTC it would be wrong by the church's offset, lifting a ban early behind UTC.
-            return TimeZoneInfo.ConvertTimeToUtc( DateTime.SpecifyKind( time, DateTimeKind.Unspecified ), organizationTimeZone );
+            return TimeZoneInfo.ConvertTimeToUtc( time, organizationTimeZone );
         }
 
         /// <summary>

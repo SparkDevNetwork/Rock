@@ -124,6 +124,22 @@ namespace Rock.Tests.Communication.Chat.Platform.Sync
         }
 
         /// <summary>
+        /// A NUL, or any control character below a space but tab, carriage return and line feed, is
+        /// left out of a text value.
+        /// </summary>
+        /// <remarks>
+        /// The platform parses the body as jsonb, which refuses an escaped NUL, so one such name
+        /// would fail the whole church's submission on every cycle.
+        /// </remarks>
+        [TestMethod]
+        public void Text_LosesControlCharactersButKeepsTabsAndLineBreaks()
+        {
+            var written = JToken.Parse( WriteOneValue( "A\u0000n\u0001n\u001Fa\t\r\nB" ) ).Value<string>();
+
+            Assert.AreEqual( "Anna\t\r\nB", written, "a control character reached the wire, where the platform cannot parse it" );
+        }
+
+        /// <summary>
         /// Writes one value as the body writer would.
         /// </summary>
         /// <param name="value">The value.</param>
@@ -215,6 +231,37 @@ namespace Rock.Tests.Communication.Chat.Platform.Sync
             Assert.IsTrue( converted.HasValue, "the ban expiry did not come out as a time" );
             Assert.AreEqual( DateTimeKind.Utc, converted.Value.Kind, "the ban expiry is not marked as UTC, so the writer cannot vouch for it" );
             Assert.AreEqual( new DateTime( 2026, 9, 22, 1, 0, 0, DateTimeKind.Utc ), converted.Value, "the ban expiry was not moved by the church's offset" );
+        }
+
+        /// <summary>
+        /// A ban expiry the clocks skip when they go forward is moved to the first time that exists.
+        /// </summary>
+        /// <remarks>
+        /// Half past two on 8 March 2026 does not exist in US Central time. Converting it as it is
+        /// throws, which stopped every run for as long as the row kept that expiry.
+        /// </remarks>
+        [TestMethod]
+        public void BanExpiry_InTheSpringForwardGap_MovesToTheFirstTimeThatExists()
+        {
+            var central = TimeZoneInfo.FindSystemTimeZoneById( "Central Standard Time" );
+
+            var converted = ChatPlatformSyncHelper.ToUtc( new DateTime( 2026, 3, 8, 2, 30, 15, DateTimeKind.Unspecified ), central );
+
+            Assert.AreEqual( new DateTime( 2026, 3, 8, 8, 0, 0, DateTimeKind.Utc ), converted, "the ban expiry was not moved to three o'clock, the first time that exists" );
+        }
+
+        /// <summary>
+        /// A ban expiry the clocks pass twice when they go back is converted as it always was, as the
+        /// standard time reading.
+        /// </summary>
+        [TestMethod]
+        public void BanExpiry_InTheFallBackHour_ConvertsAsStandardTime()
+        {
+            var central = TimeZoneInfo.FindSystemTimeZoneById( "Central Standard Time" );
+
+            var converted = ChatPlatformSyncHelper.ToUtc( new DateTime( 2026, 11, 1, 1, 30, 0, DateTimeKind.Unspecified ), central );
+
+            Assert.AreEqual( new DateTime( 2026, 11, 1, 7, 30, 0, DateTimeKind.Utc ), converted );
         }
 
         /// <summary>

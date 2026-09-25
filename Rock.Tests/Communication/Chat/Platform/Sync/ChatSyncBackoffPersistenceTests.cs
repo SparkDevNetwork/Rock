@@ -112,6 +112,26 @@ namespace Rock.Tests.Communication.Chat.Platform.Sync
             }
         }
 
+        /// <summary>
+        /// Most runs are told there is no backoff when none is stored, and that is not a change worth
+        /// rewriting the whole setting for. The stored text is written in a form the service would
+        /// never write, so any rewrite shows.
+        /// </summary>
+        [TestMethod]
+        public void SaveSyncBackoff_WithTheValueAlreadyStored_WritesNothing()
+        {
+            using ( TestHelper.CreateScopedRockApp() )
+            {
+                PrimeSettingKey();
+                SystemSettings.SetValue( SystemSetting.CHAT_PLATFORM_CONFIGURATION, "{ }" );
+                RockCache.ClearAllCachedItems( false );
+
+                SaveSyncBackoff( null );
+
+                Assert.AreEqual( "{ }", SystemSettings.GetValue( SystemSetting.CHAT_PLATFORM_CONFIGURATION ), "an unchanged backoff rewrote the setting" );
+            }
+        }
+
         #endregion Round trip
 
         #region Who owns which field

@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -63,6 +64,9 @@ namespace Rock.Jobs
 
         // Generous, because a timeout costs no more than one cycle. An estimate.
         private const int ProjectionTimeoutSeconds = 300;
+
+        // The longest gap each schedule leaves, by cron expression.
+        private static readonly ConcurrentDictionary<string, TimeSpan?> _longestGaps = new ConcurrentDictionary<string, TimeSpan?>( StringComparer.Ordinal );
 
         #endregion Constants
 
@@ -155,7 +159,10 @@ namespace Rock.Jobs
         /// <returns>The warning, or null.</returns>
         internal static string ScheduleWarning( string cronExpression, DateTimeOffset after )
         {
-            var longest = LongestGap( cronExpression, after );
+            // Walked once per expression, since a fire every second is hundreds of thousands of steps.
+            var longest = cronExpression.IsNullOrWhiteSpace()
+                ? null
+                : _longestGaps.GetOrAdd( cronExpression, expression => LongestGap( expression, after ) );
             if ( !longest.HasValue || longest.Value <= MaximumScheduleGap )
             {
                 return null;
@@ -177,11 +184,6 @@ namespace Rock.Jobs
         /// <returns>The longest gap, or null where the schedule cannot be read or has no future runs.</returns>
         private static TimeSpan? LongestGap( string cronExpression, DateTimeOffset after )
         {
-            if ( cronExpression.IsNullOrWhiteSpace() )
-            {
-                return null;
-            }
-
             Quartz.CronExpression expression;
             try
             {
@@ -289,7 +291,7 @@ namespace Rock.Jobs
                     return new RunResult
                     {
                         IsFailure = true,
-                        Message = Describe( submissionId, rowCounts, "nothing was submitted, because " + failure )
+                        Message = Join( Describe( submissionId, rowCounts, "nothing was submitted, because " + failure ), projection.BadgeWarning )
                     };
                 }
 
@@ -313,7 +315,7 @@ namespace Rock.Jobs
                 return new RunResult
                 {
                     IsFailure = resolved.IsFailure,
-                    Message = Describe( submissionId, rowCounts, resolved.Message )
+                    Message = Join( Describe( submissionId, rowCounts, resolved.Message ), projection.BadgeWarning )
                 };
             }
         }
@@ -362,6 +364,7 @@ namespace Rock.Jobs
                     IDictionary<string, int> rowCounts;
                     result.Payload = BuildPayload( reader, out rowCounts );
                     result.RowCounts = rowCounts;
+                    result.BadgeWarning = ReadBadgeWarning( reader );
                 }
 
                 return result;
@@ -397,6 +400,30 @@ namespace Rock.Jobs
             }
 
             result.Marks = marks;
+        }
+
+        /// <summary>
+        /// Names each configured badge the procedure left out, from its last result set.
+        /// </summary>
+        /// <param name="reader">The reader, on the badges section's result set.</param>
+        /// <returns>The sentences, or null where no badge was left out.</returns>
+        private static string ReadBadgeWarning( DbDataReader reader )
+        {
+            var sentences = new List<string>();
+
+            if ( reader.NextResult() )
+            {
+                while ( reader.Read() )
+                {
+                    var reason = reader.GetString( 2 );
+                    var badge = reason == "missing" ? reader.GetGuid( 0 ).ToString() : reader.GetString( 1 );
+                    var why = reason == "missing" ? "no longer exists" : reason == "not_people" ? "does not list people" : "is not persisted";
+
+                    sentences.Add( string.Format( "Badge '{0}' was skipped: its Data View {1}.", badge, why ) );
+                }
+            }
+
+            return sentences.Count == 0 ? null : string.Join( " ", sentences );
         }
 
         /// <summary>
@@ -733,19 +760,19 @@ namespace Rock.Jobs
         }
 
         /// <summary>
-        /// Joins the run's sentence and the schedule remark, skipping whichever is absent.
+        /// Joins the run's sentence and a remark, such as the schedule's, skipping whichever is absent.
         /// </summary>
         /// <param name="outcome">What the run has to say for itself.</param>
-        /// <param name="scheduleWarning">What is worth saying about the schedule, or null.</param>
+        /// <param name="remark">The remark, or null.</param>
         /// <returns>The result line.</returns>
-        internal static string Join( string outcome, string scheduleWarning )
+        internal static string Join( string outcome, string remark )
         {
-            if ( scheduleWarning.IsNullOrWhiteSpace() )
+            if ( remark.IsNullOrWhiteSpace() )
             {
                 return outcome;
             }
 
-            return outcome.IsNullOrWhiteSpace() ? scheduleWarning : outcome + " " + scheduleWarning;
+            return outcome.IsNullOrWhiteSpace() ? remark : outcome + " " + remark;
         }
 
         /// <summary>
@@ -788,6 +815,12 @@ namespace Rock.Jobs
             /// The identity seeds of the tables it read, by the contract's mark key.
             /// </summary>
             public IDictionary<string, long> Marks { get; set; }
+
+            /// <summary>
+            /// A sentence naming each configured badge the reading left out and why, or null where
+            /// it left none out.
+            /// </summary>
+            public string BadgeWarning { get; set; }
         }
 
         #endregion What the run reports

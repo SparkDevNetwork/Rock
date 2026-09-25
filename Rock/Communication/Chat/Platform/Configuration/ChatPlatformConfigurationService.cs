@@ -133,6 +133,12 @@ namespace Rock.Communication.Chat.Platform.Configuration
             {
                 var stored = ReadStored();
 
+                // Most runs are told what is already stored, usually no backoff at all.
+                if ( stored.SyncBackoffUntil == until )
+                {
+                    return;
+                }
+
                 stored.SyncBackoffUntil = until;
 
                 Write( stored );

@@ -119,18 +119,19 @@ namespace Rock.Tests.Communication.Chat.Platform.Sync
         }
 
         /// <summary>
-        /// The procedure returns the marks and then one result set for every section, and nothing
-        /// else, because the job reads them by position.
+        /// The procedure returns the marks, then one result set for every section, then the badges it
+        /// left out, and nothing else, because the job reads them by position.
         /// </summary>
         [TestMethod]
-        public void Projection_ReturnsTheMarksAndOneResultSetForEverySection()
+        public void Projection_ReturnsTheMarksOneResultSetForEverySectionAndTheBadgesLeftOut()
         {
             Assert.IsFalse( string.IsNullOrWhiteSpace( ChatSyncSqlText.Staging ), "the staging is missing, so nothing stages the sets the sections read" );
 
-            Assert.AreEqual( Sections().Length + 1, ChatSyncSqlText.ResultSets.Count,
-                "the procedure does not return the marks followed by exactly one result set per section, so the job reads a section from the wrong one" );
+            Assert.AreEqual( Sections().Length + 2, ChatSyncSqlText.ResultSets.Count,
+                "the procedure does not return the marks, exactly one result set per section and the badges left out, so the job reads a section from the wrong one" );
 
             StringAssert.Contains( ChatSyncSqlText.ResultSets[0], "SYSUTCDATETIME()", "the first result set is not the moment the reading describes" );
+            StringAssert.Contains( ChatSyncSqlText.ResultSets.Last(), "@BadgeDataViewGuidsJson", "the last result set is not the badges left out" );
         }
 
         /// <summary>

@@ -6,13 +6,15 @@
     </summary>
 
     <returns>
-        Five result sets, in this order, which is the order the Chat Platform Sync job reads them:
+        Six result sets, in this order, which is the order the Chat Platform Sync job reads them:
         * The moment the reading describes, in UTC, and the identity seed of Person, PersonAlias,
           Group and GroupMember.
         * The aliases section.
         * The channels section.
         * The members section.
         * The badges section.
+        * The configured badges left out, by Data View guid, name and reason: missing,
+          not_people or not_persisted. Not part of the payload.
         Each section's columns are named as the chat wire contract names them.
     </returns>
 
@@ -430,4 +432,27 @@ BEGIN
     -- Persisted as Rock counts it, interval or schedule: holders are read from persisted values alone.
     WHERE ( [DV].[PersistedScheduleIntervalMinutes] IS NOT NULL OR [DV].[PersistedScheduleId] IS NOT NULL )
     ORDER BY [BV].[SortOrder];
+
+    -- The badges left out.
+
+    -- Every configured badge whose Data View no longer exists, does not list people or is not
+    -- persisted, so the job can name each one rather than let it quietly never appear.
+    SELECT
+        [J].[DataViewGuid] AS [badge_key],
+        [DV].[Name] AS [name],
+        CASE
+            WHEN [DV].[Id] IS NULL THEN 'missing'
+            WHEN [DV].[EntityTypeId] <> @PersonEntityTypeId THEN 'not_people'
+            ELSE 'not_persisted'
+        END AS [reason]
+    FROM (
+        SELECT CAST( [value] AS UNIQUEIDENTIFIER ) AS [DataViewGuid], MIN( CAST( [key] AS INT ) ) AS [SortOrder]
+        FROM OPENJSON( @BadgeDataViewGuidsJson )
+        GROUP BY CAST( [value] AS UNIQUEIDENTIFIER )
+    ) AS [J]
+    LEFT JOIN [DataView] AS [DV] ON [DV].[Guid] = [J].[DataViewGuid]
+    WHERE [DV].[Id] IS NULL
+        OR [DV].[EntityTypeId] <> @PersonEntityTypeId
+        OR ( [DV].[PersistedScheduleIntervalMinutes] IS NULL AND [DV].[PersistedScheduleId] IS NULL )
+    ORDER BY [J].[SortOrder];
 END

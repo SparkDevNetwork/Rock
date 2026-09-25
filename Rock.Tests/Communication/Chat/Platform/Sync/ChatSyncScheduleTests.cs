@@ -117,6 +117,22 @@ namespace Rock.Tests.Communication.Chat.Platform.Sync
             Assert.IsNull( ChatPlatformSync.ScheduleWarning( "0 0 8-18 * * ? *", Monday ) );
         }
 
+        /// <summary>
+        /// A schedule is walked once per expression rather than on every run, because a schedule
+        /// that fires every second is several hundred thousand steps. The expression here fires on
+        /// three dates, so its answer depends on where the walk starts, and only a walk remembered
+        /// from the first run gives the same answer three days later.
+        /// </summary>
+        [TestMethod]
+        public void TheSameSchedule_IsWalkedOncePerExpression()
+        {
+            const string threeDates = "0 0 2 22,25,26 9 ? 2026";
+
+            Assert.IsNotNull( ChatPlatformSync.ScheduleWarning( threeDates, Monday ), "the three day gap from the 22nd to the 25th said nothing" );
+            Assert.IsNotNull( ChatPlatformSync.ScheduleWarning( threeDates, Monday.AddDays( 3 ) ),
+                "the schedule was walked again on a later run rather than once for its expression" );
+        }
+
         [TestMethod]
         public void AnExpressionThatWillNotParse_IsNotAWarningAboutTheSchedule()
         {

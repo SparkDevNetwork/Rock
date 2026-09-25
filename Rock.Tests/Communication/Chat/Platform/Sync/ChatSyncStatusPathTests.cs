@@ -42,7 +42,8 @@ namespace Rock.Tests.Communication.Chat.Platform.Sync
     /// </para>
     /// <para>
     /// The fallback reports the previous submission and says so. Reporting it as though it were
-    /// this run's result would be a lie that reads as a success on the cycle after a failure.
+    /// this run's result would be a lie that reads as a success on the cycle after a failure, and
+    /// the previous outcome never decides whether this run failed.
     /// </para>
     /// </remarks>
     [TestClass]
@@ -94,8 +95,12 @@ namespace Rock.Tests.Communication.Chat.Platform.Sync
             StringAssert.Contains( result.Message, previous.SubmissionId.ToString() );
         }
 
+        /// <summary>
+        /// This run's own status decides whether it failed. The previous submission's failure is
+        /// named, but a good run is not turned red by the one before it.
+        /// </summary>
         [TestMethod]
-        public void WhenThePreviousSubmissionFailed_TheJobFailsAndSaysWhichSubmissionItIsTalkingAbout()
+        public void WhenThePreviousSubmissionFailed_TheRunDoesNotFailButSaysWhichSubmissionItIsTalkingAbout()
         {
             var submissionId = Guid.NewGuid();
             var previous = PreviousOutcome( SubmissionStatus.Failed );
@@ -105,10 +110,28 @@ namespace Rock.Tests.Communication.Chat.Platform.Sync
                 AcceptedAck( submissionId, previous ),
                 Polled( submissionId, SubmissionStatus.Accepted ) );
 
-            Assert.IsTrue( result.IsFailure );
+            Assert.IsFalse( result.IsFailure, "an accepted run was failed because of the submission before it" );
             StringAssert.Contains( result.Message, "previous" );
             StringAssert.Contains( result.Message, previous.SubmissionId.ToString() );
             StringAssert.Contains( result.Message, "sync.apply_failed" );
+        }
+
+        /// <summary>
+        /// A previous submission still at accepted was replaced by a newer one before the queue
+        /// reached it, or is still waiting. Either way accepted is not a result.
+        /// </summary>
+        [TestMethod]
+        public void WhenThePreviousSubmissionIsStillAccepted_ItIsReadAsSupersededOrQueued()
+        {
+            var submissionId = Guid.NewGuid();
+
+            var result = ChatPlatformSyncHelper.Resolve(
+                AcceptedAck( submissionId, PreviousOutcome( SubmissionStatus.Accepted ) ),
+                null );
+
+            Assert.IsFalse( result.IsFailure );
+            StringAssert.Contains( result.Message, "superseded or still queued" );
+            Assert.IsFalse( result.Message.Contains( "was accepted" ), "a submission that never got a result was reported as though accepted were one: " + result.Message );
         }
 
         [TestMethod]

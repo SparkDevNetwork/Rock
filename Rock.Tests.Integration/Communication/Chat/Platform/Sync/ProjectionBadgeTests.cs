@@ -114,10 +114,46 @@ namespace Rock.Tests.Integration.Communication.Chat.Platform.Sync
 
                 Assert.IsFalse( badgeKeys != null && badgeKeys.Any( k => string.Equals( ( string ) k, badgeGuid.ToString(), StringComparison.OrdinalIgnoreCase ) ),
                     "a person carries a badge because their id equals a group's id" );
+                Assert.AreEqual( "Badge 'Group badge' was skipped: its Data View does not list people.", payload.Result.BadgeWarning );
             }
         }
 
         #endregion The badge list as stored
+
+        #region Badges left out
+
+        /// <summary>
+        /// A badge whose Data View is not persisted cannot be sent, and the run says so by name
+        /// rather than leaving the badge to quietly never appear.
+        /// </summary>
+        [TestMethod]
+        public void ABadgeWhoseDataViewIsNotPersisted_IsNamedInTheWarning()
+        {
+            using ( var fixture = new ChatSyncProjectionFixture() )
+            {
+                var badgeGuid = fixture.AddUnpersistedBadge( "Unpersisted badge" );
+
+                var payload = fixture.Project();
+
+                Assert.IsNull( payload.Row( "badges", "badge_key", badgeGuid ), "a badge with no persisted holders was projected" );
+                Assert.AreEqual( "Badge 'Unpersisted badge' was skipped: its Data View is not persisted.", payload.Result.BadgeWarning );
+            }
+        }
+
+        [TestMethod]
+        public void ABadgeWhoseDataViewNoLongerExists_IsNamedInTheWarning()
+        {
+            using ( var fixture = new ChatSyncProjectionFixture() )
+            {
+                var badgeGuid = fixture.AddMissingBadge();
+
+                var payload = fixture.Project();
+
+                Assert.AreEqual( "Badge '" + badgeGuid + "' was skipped: its Data View no longer exists.", payload.Result.BadgeWarning );
+            }
+        }
+
+        #endregion Badges left out
 
         #region Support
 
@@ -131,6 +167,7 @@ namespace Rock.Tests.Integration.Communication.Chat.Platform.Sync
             var payload = fixture.Project();
 
             Assert.IsNotNull( payload.Row( "badges", "badge_key", badgeGuid ), "the badge was not projected" );
+            Assert.IsNull( payload.Result.BadgeWarning, "a badge that was sent was warned about" );
 
             var badgeKeys = ( JArray ) payload.Value( "aliases", PrimaryRow( payload, personId ), "badge_keys" );
 

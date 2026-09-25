@@ -397,6 +397,29 @@ namespace Rock.Tests.Integration.Communication.Chat.Platform.Sync
         }
 
         /// <summary>
+        /// Adds a person Data View that is not persisted and puts it on the church's badge list.
+        /// </summary>
+        /// <param name="name">The Data View's name.</param>
+        /// <returns>The Data View's guid.</returns>
+        public Guid AddUnpersistedBadge( string name )
+        {
+            return AddBadge( name, dataView => { } );
+        }
+
+        /// <summary>
+        /// Puts a Data View that does not exist on the church's badge list, as one deleted after it
+        /// was chosen would leave it.
+        /// </summary>
+        /// <returns>The guid on the list.</returns>
+        public Guid AddMissingBadge()
+        {
+            var badgeGuid = Guid.NewGuid();
+            _badgeDataViewGuids.Add( badgeGuid );
+
+            return badgeGuid;
+        }
+
+        /// <summary>
         /// Puts a badge on the church's badge list a second time, after everything already on it.
         /// </summary>
         /// <param name="badgeGuid">The Data View.</param>

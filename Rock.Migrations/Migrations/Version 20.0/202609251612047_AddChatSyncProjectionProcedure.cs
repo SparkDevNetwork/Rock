@@ -50,6 +50,14 @@ IF EXISTS (SELECT * FROM sys.objects WHERE OBJECT_ID = OBJECT_ID(N'[dbo].[spChat
             // Restore the original settings.
             Sql( $"SET ANSI_NULLS {( isAnsiNullsOn ? "ON" : "OFF" )};" );
             Sql( $"SET QUOTED_IDENTIFIER {( isQuotedIdentifierOn ? "ON" : "OFF" )};" );
+
+            // The sync job was seeded to notify on every run, which is an email an hour; errors only
+            // is the usual choice. A setting an administrator has changed is left alone.
+            Sql( $@"
+UPDATE [ServiceJob]
+SET [NotificationStatus] = 3
+WHERE [Guid] = '{Rock.SystemGuid.ServiceJob.CHAT_PLATFORM_SYNC_JOB}'
+    AND [NotificationStatus] = 1;" );
         }
 
         /// <summary>
