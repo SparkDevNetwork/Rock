@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -25,8 +25,6 @@ using Newtonsoft.Json.Linq;
 
 using Rock.Communication.Chat.Platform.Contract;
 using Rock.Communication.Chat.Platform.Sync;
-using ChatSyncHeaderBuilder = Rock.Jobs.ChatPlatformSync.ChatSyncHeaderBuilder;
-using ChatSyncIdentityMarks = Rock.Jobs.ChatPlatformSync.ChatSyncIdentityMarks;
 
 namespace Rock.Tests.Communication.Chat.Platform.Sync
 {
@@ -35,22 +33,18 @@ namespace Rock.Tests.Communication.Chat.Platform.Sync
     /// </summary>
     /// <remarks>
     /// <para>
-    /// The two dictionary headers are the reason this file exists. Their key sets are checked
-    /// exactly by the platform and are the one part of a submission that cannot be derived from the
-    /// rest of the contract, so a builder with those strings typed into it compiles, passes any
-    /// test that reads its own output back, and is refused on every cycle for a reason no test in
-    /// this repository can see. The cells below hand the builder a contract whose key sets differ
-    /// from the shipped one and require the output to differ with it, which is the only shape of
-    /// assertion that can tell the two builders apart.
+    /// The two keyed headers are the reason this file exists. Their key sets are checked exactly by
+    /// the platform and cannot be derived from the rest of the contract, so a builder with those
+    /// strings typed into it compiles, passes any test that reads its own output back, and is
+    /// refused on every cycle. The cells below hand the helper a contract whose key sets differ
+    /// from the shipped one and require the output to differ with it.
     /// </para>
     /// <para>
-    /// Key order is deliberately not asserted anywhere here. Both sides of the platform comparison
-    /// sort, so order cannot break a submission, and pinning it in a test would invent a constraint
-    /// the wire does not have.
+    /// Key order is deliberately not asserted: both sides of the platform comparison sort.
     /// </para>
     /// </remarks>
     [TestClass]
-    public class ChatSyncHeaderBuilderTests
+    public class ChatSyncSubmissionHeaderTests
     {
         #region Methods
 
@@ -77,8 +71,8 @@ namespace Rock.Tests.Communication.Chat.Platform.Sync
         }
 
         /// <summary>
-        /// A count for every section the contract names, each one different so a header that
-        /// pairs a key with the wrong count is visible.
+        /// A count for every section named, each one different so a header that pairs a key with
+        /// the wrong count is visible.
         /// </summary>
         /// <param name="sections">The section names.</param>
         /// <returns>The counts.</returns>
@@ -96,6 +90,28 @@ namespace Rock.Tests.Communication.Chat.Platform.Sync
             return counts;
         }
 
+        /// <summary>
+        /// The counts in the form the keyed header takes.
+        /// </summary>
+        private static IDictionary<string, long> AsLong( IDictionary<string, int> counts )
+        {
+            return counts.ToDictionary( c => c.Key, c => ( long ) c.Value );
+        }
+
+        /// <summary>
+        /// The four marks the shipped contract lists, each a different value.
+        /// </summary>
+        private static IDictionary<string, long> Marks( long person = 11, long personAlias = 22, long group = 33, long groupMember = 44 )
+        {
+            return new Dictionary<string, long>
+            {
+                { "person", person },
+                { "person_alias", personAlias },
+                { "group", group },
+                { "group_member", groupMember }
+            };
+        }
+
         #endregion
 
         #region Row counts
@@ -105,8 +121,8 @@ namespace Rock.Tests.Communication.Chat.Platform.Sync
         /// </summary>
         /// <remarks>
         /// Both the section list and the header's key set are renamed together, because the
-        /// platform builds them from one constant and a builder is entitled to expect them to
-        /// agree. A builder holding the four strings emits the shipped names and fails here.
+        /// platform builds them from one constant. A helper holding the four strings emits the
+        /// shipped names and fails here.
         /// </remarks>
         [TestMethod]
         public void RowCounts_KeysFollowTheContract_RatherThanStringsTypedInThisAssembly()
@@ -117,8 +133,7 @@ namespace Rock.Tests.Communication.Chat.Platform.Sync
             contract["payload"]["sections"] = new JArray( renamed );
             Header( contract, "x-sync-counts" )["keys"] = new JArray( renamed );
 
-            var builder = new ChatSyncHeaderBuilder( contract );
-            var header = JObject.Parse( builder.BuildRowCounts( CountsFor( renamed ) ) );
+            var header = JObject.Parse( ChatPlatformSyncHelper.BuildKeyedHeader( contract, "x-sync-counts", AsLong( CountsFor( renamed ) ) ) );
 
             CollectionAssert.AreEquivalent(
                 renamed,
@@ -137,10 +152,9 @@ namespace Rock.Tests.Communication.Chat.Platform.Sync
         public void RowCounts_AgainstTheShippedContract_AreTheSectionNamesAndNotTheTableNames()
         {
             var contract = ShippedContract();
-            var builder = new ChatSyncHeaderBuilder( contract );
-            var sections = builder.GetPayloadSections();
+            var sections = ChatPlatformSyncHelper.GetPayloadSections( contract );
 
-            var header = JObject.Parse( builder.BuildRowCounts( CountsFor( sections ) ) );
+            var header = JObject.Parse( ChatPlatformSyncHelper.BuildKeyedHeader( contract, "x-sync-counts", AsLong( CountsFor( sections ) ) ) );
             var keys = header.Properties().Select( p => p.Name ).ToArray();
 
             CollectionAssert.AreEquivalent( new[] { "aliases", "channels", "members", "badges" }, keys, "the shipped key set is not the four payload sections" );
@@ -155,16 +169,19 @@ namespace Rock.Tests.Communication.Chat.Platform.Sync
         /// the submission stops here rather than going out built from a guess about which of the
         /// two was meant.
         /// </summary>
+        /// <remarks>
+        /// The counts supplied match the header's keys exactly, so only the check of those keys
+        /// against the sections can refuse this.
+        /// </remarks>
         [TestMethod]
         public void RowCounts_WhenTheContractSectionsAndKeysDisagree_TheSubmissionStopsHere()
         {
             var contract = ShippedContract();
-            Header( contract, "x-sync-counts" )["keys"] = new JArray( "aliases", "channels", "members", "unexpected" );
-
-            var builder = new ChatSyncHeaderBuilder( contract );
+            var keys = new[] { "aliases", "channels", "members", "unexpected" };
+            Header( contract, "x-sync-counts" )["keys"] = new JArray( keys );
 
             var thrown = Assert.ThrowsExactly<InvalidOperationException>(
-                () => builder.BuildRowCounts( CountsFor( new[] { "aliases", "channels", "members", "badges" } ) ),
+                () => ChatPlatformSyncHelper.BuildSubmissionHeaders( contract, ReadAt, Marks(), CountsFor( keys ), "20.0.0", false ),
                 "a contract whose count keys and payload sections disagree was accepted, so one of the two was silently preferred" );
 
             StringAssert.Contains( thrown.Message, "unexpected", "the failure does not name the key that disagrees, so a church support call starts from nothing" );
@@ -177,11 +194,10 @@ namespace Rock.Tests.Communication.Chat.Platform.Sync
         [TestMethod]
         public void RowCounts_WhenASectionHasNoCount_TheSubmissionStopsHere()
         {
-            var builder = new ChatSyncHeaderBuilder( ShippedContract() );
             var partial = CountsFor( new[] { "aliases", "channels", "members" } );
 
             var thrown = Assert.ThrowsExactly<InvalidOperationException>(
-                () => builder.BuildRowCounts( partial ),
+                () => ChatPlatformSyncHelper.BuildKeyedHeader( ShippedContract(), "x-sync-counts", AsLong( partial ) ),
                 "a section with no count was accepted, so a projection that never ran ships as an empty one" );
 
             StringAssert.Contains( thrown.Message, "badges", "the failure does not name the section that was not counted" );
@@ -196,10 +212,9 @@ namespace Rock.Tests.Communication.Chat.Platform.Sync
         /// value for stops the submission.
         /// </summary>
         /// <remarks>
-        /// The correspondence from a key to a table in Rock has to live in this assembly, because
-        /// the contract does not name Rock tables. What the contract decides is which keys must be
-        /// present, so a contract that renames or adds one breaks the build here instead of being
-        /// refused later under a code nobody can trace back to this file.
+        /// The correspondence from a key to a table in Rock lives in the projection procedure's
+        /// column names, because the contract does not name Rock tables. What the contract decides
+        /// is which keys must be present.
         /// </remarks>
         [TestMethod]
         public void IdentityMarks_WhenTheContractNamesAKeyThisAssemblyCannotSupply_TheSubmissionStopsHere()
@@ -207,10 +222,8 @@ namespace Rock.Tests.Communication.Chat.Platform.Sync
             var contract = ShippedContract();
             Header( contract, "x-sync-marks" )["keys"] = new JArray( "person", "person_alias", "group", "group_member", "person_search_key" );
 
-            var builder = new ChatSyncHeaderBuilder( contract );
-
             var thrown = Assert.ThrowsExactly<InvalidOperationException>(
-                () => builder.BuildIdentityMarks( new ChatSyncIdentityMarks() ),
+                () => ChatPlatformSyncHelper.BuildKeyedHeader( contract, "x-sync-marks", Marks() ),
                 "a mark key with no value behind it was accepted, so the header goes out short and is refused at the platform" );
 
             StringAssert.Contains( thrown.Message, "person_search_key", "the failure does not name the key that has no value behind it" );
@@ -226,10 +239,8 @@ namespace Rock.Tests.Communication.Chat.Platform.Sync
             var contract = ShippedContract();
             Header( contract, "x-sync-marks" )["keys"] = new JArray( "person", "person_alias", "group" );
 
-            var builder = new ChatSyncHeaderBuilder( contract );
-
             var thrown = Assert.ThrowsExactly<InvalidOperationException>(
-                () => builder.BuildIdentityMarks( new ChatSyncIdentityMarks() ),
+                () => ChatPlatformSyncHelper.BuildKeyedHeader( contract, "x-sync-marks", Marks() ),
                 "a contract missing a mark key was accepted, so this assembly quietly stopped sending one" );
 
             StringAssert.Contains( thrown.Message, "group_member", "the failure does not name the key the contract no longer lists" );
@@ -241,17 +252,10 @@ namespace Rock.Tests.Communication.Chat.Platform.Sync
         [TestMethod]
         public void IdentityMarks_AgainstTheShippedContract_CarryEachValueUnderItsOwnKey()
         {
-            var builder = new ChatSyncHeaderBuilder( ShippedContract() );
-
-            var marks = new ChatSyncIdentityMarks
-            {
-                Person = 196186,
-                PersonAlias = 3028,
-                Group = 40391,
-                GroupMember = 1300457
-            };
-
-            var header = JObject.Parse( builder.BuildIdentityMarks( marks ) );
+            var header = JObject.Parse( ChatPlatformSyncHelper.BuildKeyedHeader(
+                ShippedContract(),
+                "x-sync-marks",
+                Marks( person: 196186, personAlias: 3028, group: 40391, groupMember: 1300457 ) ) );
 
             CollectionAssert.AreEquivalent(
                 new[] { "person", "person_alias", "group", "group_member" },
@@ -273,9 +277,8 @@ namespace Rock.Tests.Communication.Chat.Platform.Sync
         /// </summary>
         /// <remarks>
         /// SQL Server keeps a hundred nanoseconds and the platform keeps a microsecond, and the
-        /// guard the value feeds fails closed on a tie, so a value rounded up rather than truncated
-        /// would let a stale write win a comparison built to refuse it. The offset is explicit
-        /// because a value without one is read in the receiving session's zone.
+        /// guard the value feeds fails closed on a tie, so a value rounded up would let a stale
+        /// write win a comparison built to refuse it.
         /// </remarks>
         [TestMethod]
         public void ReadTime_IsTruncatedTowardsThePastAndCarriesAnExplicitOffset()
@@ -284,7 +287,7 @@ namespace Rock.Tests.Communication.Chat.Platform.Sync
             // cannot hold and the one that must not round up
             var readAt = new DateTime( 2026, 9, 21, 16, 45, 12, DateTimeKind.Utc ).AddTicks( 1234567 );
 
-            var formatted = ChatSyncHeaderBuilder.FormatReadTime( readAt );
+            var formatted = ChatPlatformSyncHelper.FormatReadTime( readAt );
 
             StringAssert.EndsWith( formatted, "Z", "the read time carries no offset, so the platform reads it in its own zone" );
             Assert.AreEqual( "2026-09-21T16:45:12.123456Z", formatted, "the read time was not truncated towards the past at microsecond resolution" );
@@ -303,7 +306,7 @@ namespace Rock.Tests.Communication.Chat.Platform.Sync
             var local = new DateTime( 2026, 9, 21, 16, 45, 12, DateTimeKind.Local );
 
             Assert.ThrowsExactly<ArgumentException>(
-                () => ChatSyncHeaderBuilder.FormatReadTime( local ),
+                () => ChatPlatformSyncHelper.FormatReadTime( local ),
                 "a read time that is not UTC was accepted, so the whole payload would be judged by a clock shifted by the organisation's offset" );
         }
 
@@ -317,21 +320,13 @@ namespace Rock.Tests.Communication.Chat.Platform.Sync
         private static readonly DateTime ReadAt = new DateTime( 2026, 9, 21, 18, 0, 0, DateTimeKind.Utc );
 
         /// <summary>
-        /// Marks for the cells that build the whole set.
-        /// </summary>
-        private static ChatSyncIdentityMarks Marks()
-        {
-            return new ChatSyncIdentityMarks { Person = 11, PersonAlias = 22, Group = 33, GroupMember = 44 };
-        }
-
-        /// <summary>
         /// Builds the whole header set from a contract.
         /// </summary>
         private static IDictionary<string, string> Build( JObject contract, bool isUrgent )
         {
             var sections = contract["payload"]["sections"].Select( s => s.Value<string>() );
 
-            return new ChatSyncHeaderBuilder( contract ).BuildSubmissionHeaders( ReadAt, Marks(), CountsFor( sections ), "20.0.0", isUrgent );
+            return ChatPlatformSyncHelper.BuildSubmissionHeaders( contract, ReadAt, Marks(), CountsFor( sections ), "20.0.0", isUrgent );
         }
 
         /// <summary>
@@ -406,12 +401,12 @@ namespace Rock.Tests.Communication.Chat.Platform.Sync
 
             foreach ( var name in required )
             {
-                Assert.IsTrue( headers.ContainsKey( name ), string.Format( "the contract requires {0} and the builder did not set it", name ) );
+                Assert.IsTrue( headers.ContainsKey( name ), string.Format( "the contract requires {0} and the helper did not set it", name ) );
             }
 
             foreach ( var name in headers.Keys )
             {
-                CollectionAssert.Contains( names, name, string.Format( "the builder set {0}, which the contract does not list", name ) );
+                CollectionAssert.Contains( names, name, string.Format( "the helper set {0}, which the contract does not list", name ) );
             }
         }
 

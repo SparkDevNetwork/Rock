@@ -18,17 +18,19 @@ integration. It is not touched and not referenced from here.
 | Folder | Holds |
 |---|---|
 | `Session/` | Gating, enrolment and token minting for a person opening chat |
-| `Sync/` | The client that carries a submission to the platform, and what Sync Now on a chat block may start and report |
+| `Sync/` | `ChatPlatformSyncHelper`, everything the sync job says to the platform, and what Sync Now on a chat block may start and report |
 | `LaneA/` | The immediate lane: save hooks record keys, a flush pushes them |
 | `Doors/` | Block action handlers that change Rock truth, such as creating a direct message or joining a channel |
 | `Configuration/` | The settings model, its cached parsed form, and secret handling |
 | `Contract/` | The vendored wire contract and its hash |
 
-Folders appear when a file needs them. The job classes live in `Rock/Jobs` with every other job, and
-the scheduled sync keeps its whole run there rather than spread across this folder: whether the run
-happens, reading the church, shaping the payload, building the headers, submitting, polling and what
-it reports. What stays here is the transport, which owns an HttpClient and its lifetime and is the
-one piece that is not about this church's data.
+Folders appear when a file needs them. The scheduled sync follows Rock's job and helper pattern, as
+`GivingAutomation` does with `GivingAutomationHelper`. The job, `Rock/Jobs/ChatPlatformSync.cs`,
+decides whether the run happens, reads the church, writes the body and records what it reports.
+`Sync/ChatPlatformSyncHelper.cs` holds the rest: the submission headers, the credential, submit and
+poll over one HttpClient per run, what the answer means, and the rules for writing a row value,
+which the immediate lane will share. The signing stays in `Session/`, the settings in
+`Configuration/` and the contract in `Contract/`; the helper calls them.
 
 The projection itself is one stored procedure, `spChat_SyncProjection`, which marks the groups that
 are chat channels, stages the sets the sections read, and returns the sections as result sets. It

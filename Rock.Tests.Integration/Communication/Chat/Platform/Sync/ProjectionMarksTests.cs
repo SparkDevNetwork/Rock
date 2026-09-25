@@ -18,6 +18,10 @@ using System.Linq;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
+using Newtonsoft.Json.Linq;
+
+using Rock.Communication.Chat.Platform.Contract;
+using Rock.Communication.Chat.Platform.Sync;
 using Rock.Data;
 using Rock.Tests.Integration.TestFramework.Database;
 
@@ -54,10 +58,10 @@ namespace Rock.Tests.Integration.Communication.Chat.Platform.Sync
 
                 var before = fixture.Project().Result.Marks;
 
-                Assert.IsTrue( before.Person > 0, "no mark was taken for the person table" );
-                Assert.IsTrue( before.PersonAlias > 0, "no mark was taken for the person alias table" );
-                Assert.IsTrue( before.Group > 0, "no mark was taken for the group table" );
-                Assert.IsTrue( before.GroupMember > 0, "no mark was taken for the group membership table" );
+                Assert.IsTrue( before["person"] > 0, "no mark was taken for the person table" );
+                Assert.IsTrue( before["person_alias"] > 0, "no mark was taken for the person alias table" );
+                Assert.IsTrue( before["group"] > 0, "no mark was taken for the group table" );
+                Assert.IsTrue( before["group_member"] > 0, "no mark was taken for the group membership table" );
 
                 var largestPerson = LargestId( "Person" );
                 var largestAlias = LargestId( "PersonAlias" );
@@ -74,11 +78,33 @@ namespace Rock.Tests.Integration.Communication.Chat.Platform.Sync
 
                 var after = fixture.Project().Result.Marks;
 
-                Assert.AreEqual( before.Person, after.Person,
+                Assert.AreEqual( before["person"], after["person"],
                     "the person mark followed a delete, so it is the largest id rather than the seed and this church is refused as soon as it deletes a person" );
-                Assert.AreEqual( before.PersonAlias, after.PersonAlias, "the person alias mark followed a delete" );
-                Assert.AreEqual( before.GroupMember, after.GroupMember, "the group membership mark followed a delete" );
-                Assert.AreEqual( before.Group, after.Group, "the group mark moved while nothing was added" );
+                Assert.AreEqual( before["person_alias"], after["person_alias"], "the person alias mark followed a delete" );
+                Assert.AreEqual( before["group_member"], after["group_member"], "the group membership mark followed a delete" );
+                Assert.AreEqual( before["group"], after["group"], "the group mark moved while nothing was added" );
+            }
+        }
+
+        /// <summary>
+        /// The procedure names each mark by the contract's own key, which is the only place the
+        /// correspondence from a key to a Rock table is written, so the header built from them is
+        /// exactly the set the contract lists.
+        /// </summary>
+        [TestMethod]
+        public void TheMarksAreKeyedByTheContractsMarkKeys()
+        {
+            using ( var fixture = new ChatSyncProjectionFixture() )
+            {
+                var marks = fixture.Project().Result.Marks;
+                var contract = JObject.Parse( ChatWireContract.Json );
+
+                var header = JObject.Parse( ChatPlatformSyncHelper.BuildKeyedHeader( contract, "x-sync-marks", marks ) );
+
+                CollectionAssert.AreEquivalent(
+                    marks.Keys.ToArray(),
+                    header.Properties().Select( p => p.Name ).ToArray(),
+                    "the procedure's mark columns are not the contract's mark keys" );
             }
         }
 

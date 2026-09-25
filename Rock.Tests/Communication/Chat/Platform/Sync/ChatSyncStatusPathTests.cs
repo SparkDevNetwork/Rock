@@ -21,10 +21,9 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using Rock.Communication.Chat.Platform.Sync;
 using Rock.Jobs;
-using ChatSyncAcknowledgement = Rock.Communication.Chat.Platform.Sync.ChatSyncSubmitClient.ChatSyncAcknowledgement;
-using ChatSyncOutcome = Rock.Communication.Chat.Platform.Sync.ChatSyncSubmitClient.ChatSyncOutcome;
-using ChatSyncPollBudget = Rock.Communication.Chat.Platform.Sync.ChatSyncSubmitClient.ChatSyncPollBudget;
-using ChatSyncSubmissionStatus = Rock.Communication.Chat.Platform.Sync.ChatSyncSubmitClient.ChatSyncSubmissionStatus;
+using Acknowledgement = Rock.Communication.Chat.Platform.Sync.ChatPlatformSyncHelper.Acknowledgement;
+using Outcome = Rock.Communication.Chat.Platform.Sync.ChatPlatformSyncHelper.Outcome;
+using SubmissionStatus = Rock.Communication.Chat.Platform.Sync.ChatPlatformSyncHelper.SubmissionStatus;
 
 namespace Rock.Tests.Communication.Chat.Platform.Sync
 {
@@ -55,9 +54,9 @@ namespace Rock.Tests.Communication.Chat.Platform.Sync
         public void WhenThePollResolves_ThatOutcomeIsWhatTheJobReports()
         {
             var submissionId = Guid.NewGuid();
-            var result = ChatPlatformSync.Resolve(
-                AcceptedAck( submissionId, PreviousOutcome( ChatSyncSubmissionStatus.Failed ) ),
-                Outcome( submissionId, ChatSyncSubmissionStatus.Applied ) );
+            var result = ChatPlatformSyncHelper.Resolve(
+                AcceptedAck( submissionId, PreviousOutcome( SubmissionStatus.Failed ) ),
+                Polled( submissionId, SubmissionStatus.Applied ) );
 
             Assert.IsFalse( result.IsFailure );
             StringAssert.Contains( result.Message, "applied" );
@@ -67,10 +66,10 @@ namespace Rock.Tests.Communication.Chat.Platform.Sync
         public void WhenThePollResolvesToAFailure_TheJobFails()
         {
             var submissionId = Guid.NewGuid();
-            var outcome = Outcome( submissionId, ChatSyncSubmissionStatus.Failed );
+            var outcome = Polled( submissionId, SubmissionStatus.Failed );
             outcome.ErrorCode = "sync.apply_failed";
 
-            var result = ChatPlatformSync.Resolve( AcceptedAck( submissionId, null ), outcome );
+            var result = ChatPlatformSyncHelper.Resolve( AcceptedAck( submissionId, null ), outcome );
 
             Assert.IsTrue( result.IsFailure );
             StringAssert.Contains( result.Message, "sync.apply_failed" );
@@ -84,11 +83,11 @@ namespace Rock.Tests.Communication.Chat.Platform.Sync
         public void WhenThePollIsStillAccepted_TheAcknowledgementsPreviousOutcomeIsReportedInstead()
         {
             var submissionId = Guid.NewGuid();
-            var previous = PreviousOutcome( ChatSyncSubmissionStatus.Applied );
+            var previous = PreviousOutcome( SubmissionStatus.Applied );
 
-            var result = ChatPlatformSync.Resolve(
+            var result = ChatPlatformSyncHelper.Resolve(
                 AcceptedAck( submissionId, previous ),
-                Outcome( submissionId, ChatSyncSubmissionStatus.Accepted ) );
+                Polled( submissionId, SubmissionStatus.Accepted ) );
 
             Assert.IsFalse( result.IsFailure );
             StringAssert.Contains( result.Message, "previous" );
@@ -99,12 +98,12 @@ namespace Rock.Tests.Communication.Chat.Platform.Sync
         public void WhenThePreviousSubmissionFailed_TheJobFailsAndSaysWhichSubmissionItIsTalkingAbout()
         {
             var submissionId = Guid.NewGuid();
-            var previous = PreviousOutcome( ChatSyncSubmissionStatus.Failed );
+            var previous = PreviousOutcome( SubmissionStatus.Failed );
             previous.ErrorCode = "sync.apply_failed";
 
-            var result = ChatPlatformSync.Resolve(
+            var result = ChatPlatformSyncHelper.Resolve(
                 AcceptedAck( submissionId, previous ),
-                Outcome( submissionId, ChatSyncSubmissionStatus.Accepted ) );
+                Polled( submissionId, SubmissionStatus.Accepted ) );
 
             Assert.IsTrue( result.IsFailure );
             StringAssert.Contains( result.Message, "previous" );
@@ -117,9 +116,9 @@ namespace Rock.Tests.Communication.Chat.Platform.Sync
         {
             var submissionId = Guid.NewGuid();
 
-            var result = ChatPlatformSync.Resolve(
+            var result = ChatPlatformSyncHelper.Resolve(
                 AcceptedAck( submissionId, null ),
-                Outcome( submissionId, ChatSyncSubmissionStatus.Accepted ) );
+                Polled( submissionId, SubmissionStatus.Accepted ) );
 
             Assert.IsFalse( result.IsFailure );
             StringAssert.Contains( result.Message, "submitted, not yet applied" );
@@ -134,7 +133,7 @@ namespace Rock.Tests.Communication.Chat.Platform.Sync
         {
             var submissionId = Guid.NewGuid();
 
-            var result = ChatPlatformSync.Resolve( AcceptedAck( submissionId, null ), null );
+            var result = ChatPlatformSyncHelper.Resolve( AcceptedAck( submissionId, null ), null );
 
             Assert.IsFalse( result.IsFailure );
             Assert.IsNotNull( result.Message, "a run with nothing to report still owes its administrator a sentence" );
@@ -149,15 +148,15 @@ namespace Rock.Tests.Communication.Chat.Platform.Sync
         public void WhenTheSubmissionWasRefused_TheJobFailsWithTheNamedReasonAndNoPoll()
         {
             var submissionId = Guid.NewGuid();
-            var ack = new ChatSyncAcknowledgement
+            var ack = new Acknowledgement
             {
                 SubmissionId = submissionId,
-                Status = ChatSyncSubmissionStatus.Refused,
+                Status = SubmissionStatus.Refused,
                 ErrorCode = "sync.marks_regressed",
                 HttpStatusCode = 422
             };
 
-            var result = ChatPlatformSync.Resolve( ack, null );
+            var result = ChatPlatformSyncHelper.Resolve( ack, null );
 
             Assert.IsTrue( result.IsFailure );
             StringAssert.Contains( result.Message, "sync.marks_regressed" );
@@ -166,9 +165,9 @@ namespace Rock.Tests.Communication.Chat.Platform.Sync
         [TestMethod]
         public void WhenTheSubmissionNeverArrived_TheJobFailsAndCarriesTheTransportDetail()
         {
-            var ack = ChatSyncAcknowledgement.Unreachable( Guid.NewGuid(), "the host could not be resolved" );
+            var ack = new Acknowledgement { SubmissionId = Guid.NewGuid(), TransportDetail = "the host could not be resolved" };
 
-            var result = ChatPlatformSync.Resolve( ack, null );
+            var result = ChatPlatformSyncHelper.Resolve( ack, null );
 
             Assert.IsTrue( result.IsFailure );
             Assert.IsNotNull( result.Message, "a run that never reached the platform still owes its administrator a sentence" );
@@ -181,14 +180,14 @@ namespace Rock.Tests.Communication.Chat.Platform.Sync
             // The platform's gateway answers a token it cannot verify in its own shape, with no
             // submission status, and that is a statement about this church's credential rather
             // than about the version of Rock reading it.
-            var ack = new ChatSyncAcknowledgement
+            var ack = new Acknowledgement
             {
                 SubmissionId = Guid.NewGuid(),
                 ErrorCode = "No suitable key or wrong key type",
                 HttpStatusCode = 401
             };
 
-            var result = ChatPlatformSync.Resolve( ack, null );
+            var result = ChatPlatformSyncHelper.Resolve( ack, null );
 
             Assert.IsTrue( result.IsFailure );
             StringAssert.Contains( result.Message, "the chat platform refused this church's credential" );
@@ -218,25 +217,25 @@ namespace Rock.Tests.Communication.Chat.Platform.Sync
 
         #region Support
 
-        private static ChatSyncAcknowledgement AcceptedAck( Guid submissionId, ChatSyncOutcome previous )
+        private static Acknowledgement AcceptedAck( Guid submissionId, Outcome previous )
         {
-            return new ChatSyncAcknowledgement
+            return new Acknowledgement
             {
                 SubmissionId = submissionId,
-                Status = ChatSyncSubmissionStatus.Accepted,
+                Status = SubmissionStatus.Accepted,
                 HttpStatusCode = 200,
                 PreviousOutcome = previous
             };
         }
 
-        private static ChatSyncOutcome Outcome( Guid submissionId, ChatSyncSubmissionStatus status )
+        private static Outcome Polled( Guid submissionId, SubmissionStatus status )
         {
-            return new ChatSyncOutcome { SubmissionId = submissionId, Status = status };
+            return new Outcome { SubmissionId = submissionId, Status = status };
         }
 
-        private static ChatSyncOutcome PreviousOutcome( ChatSyncSubmissionStatus status )
+        private static Outcome PreviousOutcome( SubmissionStatus status )
         {
-            return new ChatSyncOutcome { SubmissionId = Guid.NewGuid(), Status = status };
+            return new Outcome { SubmissionId = Guid.NewGuid(), Status = status };
         }
 
         #endregion Support

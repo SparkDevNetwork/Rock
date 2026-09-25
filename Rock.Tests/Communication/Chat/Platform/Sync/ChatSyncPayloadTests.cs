@@ -31,7 +31,7 @@ using Rock.Jobs;
 namespace Rock.Tests.Communication.Chat.Platform.Sync
 {
     /// <summary>
-    /// Tests the body of a submission.
+    /// Tests the body of a submission, as the job writes it from the projection's result sets.
     /// </summary>
     /// <remarks>
     /// Two of the four tables are the same width, so a body that is an array of four arrays has two
@@ -40,7 +40,7 @@ namespace Rock.Tests.Communication.Chat.Platform.Sync
     /// than written into the assembly.
     /// </remarks>
     [TestClass]
-    public class ChatSyncPayloadWriterTests
+    public class ChatSyncPayloadTests
     {
         #region Shape
 
@@ -274,108 +274,170 @@ namespace Rock.Tests.Communication.Chat.Platform.Sync
 
         #endregion
 
-        #region Values
+        #region Converted columns
 
         /// <summary>
-        /// Guids are written lowercase and hyphenated, which is the one form that parses as a
-        /// Postgres uuid and compares equal to the same value stored there.
+        /// The badge keys reach the alias row as an array of identifiers.
         /// </summary>
         [TestMethod]
-        public void Guids_AreWrittenLowercaseAndHyphenated()
+        public void BadgeKeys_ReachTheAliasRowAsAList()
         {
-            var text = WriteOneValue( new Guid( "DFDC14A3-D1DC-4342-A012-5CE9E8994B5E" ) );
-
-            StringAssert.Contains( text, "dfdc14a3-d1dc-4342-a012-5ce9e8994b5e", "the guid was not written lowercase and hyphenated" );
-        }
-
-        /// <summary>
-        /// A collection of guids is written as a JSON array.
-        /// </summary>
-        /// <remarks>
-        /// The badge column on the far side is a uuid array, and the drain reads anything that is
-        /// not a JSON array as an empty one. A joined string would therefore give every person no
-        /// badges, on a submission the platform accepts, with no error raised anywhere.
-        /// </remarks>
-        [TestMethod]
-        public void CollectionsOfGuids_AreWrittenAsArraysRatherThanJoinedText()
-        {
-            var badges = new List<Guid>
+            var value = WrittenValue( "aliases", "badge_keys", new Dictionary<string, object>
             {
-                new Guid( "C1000000-0000-4000-8000-000000000001" ),
-                new Guid( "C1000000-0000-4000-8000-000000000002" )
-            };
+                { "badge_keys", "C1000000-0000-4000-8000-000000000001" }
+            } );
 
-            var element = JToken.Parse( WriteOneValue( badges ) );
-
-            Assert.AreEqual( JTokenType.Array, element.Type, "the badge keys were not written as an array, so every person arrives with none and nothing reports it" );
-            CollectionAssert.AreEqual(
-                new[] { "c1000000-0000-4000-8000-000000000001", "c1000000-0000-4000-8000-000000000002" },
-                element.Select( e => e.Value<string>() ).ToArray(),
-                "the badge keys are not lowercase hyphenated uuids" );
+            Assert.AreEqual( JTokenType.Array, value.Type, "the badge keys reached the row as something other than a list of identifiers" );
+            Assert.AreEqual( "c1000000-0000-4000-8000-000000000001", value[0].Value<string>(), "the badge key in the row is not the one the result set carried" );
         }
 
         /// <summary>
-        /// A time that is not UTC stops the submission rather than going out to be read in the
-        /// platform's own zone.
-        /// </summary>
-        /// <remarks>
-        /// Rock keeps times in the organisation's zone and the far side reads a value with no
-        /// offset as UTC, so a ban expiry sent as stored is wrong by that church's offset and, for
-        /// a church behind UTC, wrong in the direction that lifts the ban early. Converting here
-        /// silently would hide which times were already right, so the caller converts and this
-        /// refuses anything it cannot vouch for.
-        /// </remarks>
-        [TestMethod]
-        public void TimesThatAreNotUtc_StopTheSubmissionHere()
-        {
-            var thrown = Assert.ThrowsExactly<InvalidOperationException>(
-                () => WriteOneValue( new DateTime( 2026, 9, 21, 18, 0, 0, DateTimeKind.Unspecified ) ),
-                "a time with no zone was written, so the platform reads it in its own zone and the value is wrong by the church's offset" );
-
-            StringAssert.Contains( thrown.Message, "UTC", "the failure does not say what is wrong with the time" );
-        }
-
-        /// <summary>
-        /// A UTC time is written with an explicit offset.
+        /// The converted ban expiry is what reaches the member row.
         /// </summary>
         [TestMethod]
-        public void UtcTimes_AreWrittenWithAnExplicitOffset()
+        public void BanExpiry_ReachesTheMemberRowInUtc()
         {
-            var text = WriteOneValue( new DateTime( 2026, 9, 21, 18, 0, 0, DateTimeKind.Utc ) );
-
-            StringAssert.Contains( text, "2026-09-21T18:00:00", "the time was not written in a form the platform parses" );
-            StringAssert.Contains( text, "Z", "the time carries no offset, so it is read in the receiving session's zone" );
-        }
-
-        /// <summary>
-        /// A value of a type with no agreed form on the wire stops the submission rather than being
-        /// serialized however Json.NET decides.
-        /// </summary>
-        [TestMethod]
-        public void Values_WithNoAgreedForm_StopTheSubmissionHere()
-        {
-            var thrown = Assert.ThrowsExactly<InvalidOperationException>(
-                () => WriteOneValue( new byte[] { 1, 2 } ),
-                "a value with no agreed form was written in a shape nobody chose" );
-
-            StringAssert.Contains( thrown.Message, "members", "the failure does not name the section" );
-        }
-
-        /// <summary>
-        /// Writes one value as the body writer would.
-        /// </summary>
-        /// <param name="value">The value.</param>
-        /// <returns>The JSON text.</returns>
-        private static string WriteOneValue( object value )
-        {
-            var text = new StringWriter();
-
-            using ( var json = new JsonTextWriter( text ) )
+            var value = WrittenValue( "members", "ban_expires_at", new Dictionary<string, object>
             {
-                ChatPlatformSync.WriteValue( json, value, "members" );
+                { "ban_expires_at", new DateTime( 2026, 9, 21, 18, 0, 0, DateTimeKind.Unspecified ) }
+            } );
+
+            Assert.AreEqual( "2026-09-22T01:00:00.000000Z", value.Value<string>(), "the ban expiry on the wire was not moved by the church's offset" );
+        }
+
+        /// <summary>
+        /// A ban with no expiry has none on the wire either.
+        /// </summary>
+        [TestMethod]
+        public void BanExpiry_WhenThereIsNone_IsNullOnTheMemberRow()
+        {
+            var value = WrittenValue( "members", "ban_expires_at", null );
+
+            Assert.AreEqual( JTokenType.Null, value.Type, "a ban that does not expire was given an expiry on the wire" );
+        }
+
+        /// <summary>
+        /// Both halves of the colour pair reach the badge row.
+        /// </summary>
+        [TestMethod]
+        public void BadgeColours_ReachTheBadgeRowAsTwoColumns()
+        {
+            var values = new Dictionary<string, object> { { "highlight_color", "#1B4D3E" } };
+
+            Assert.AreEqual( "#1b4d3e", WrittenValue( "badges", "bg_color", values ).Value<string>(), "the background did not reach the badge row" );
+            Assert.AreEqual( "#ffffff", WrittenValue( "badges", "fg_color", values ).Value<string>(), "the foreground did not reach the badge row" );
+        }
+
+        /// <summary>
+        /// Writes one row of a section, with the shipped procedure's columns, and returns the value
+        /// under a named wire column.
+        /// </summary>
+        /// <param name="section">The section.</param>
+        /// <param name="wireColumn">The wire column to read back.</param>
+        /// <param name="values">Values for named result set columns; the rest are null.</param>
+        /// <returns>The written value.</returns>
+        private static JToken WrittenValue( string section, string wireColumn, IDictionary<string, object> values )
+        {
+            var contract = ChatSyncTestBody.ShippedContract();
+            var sections = contract["payload"]["sections"].Select( s => s.Value<string>() ).ToList();
+            var wireColumns = contract["tables"][sections.IndexOf( section )]["columns"].Select( c => c.Value<string>() ).ToList();
+
+            var resultSets = ChatSyncTestBody.ShippedResultSets();
+            ChatSyncTestBody.AddRow( resultSets[sections.IndexOf( section )], values );
+
+            // Read back as written, so a time stays the text the platform receives.
+            var body = JsonConvert.DeserializeObject<JObject>(
+                ChatSyncTestBody.Write( contract, resultSets ),
+                new JsonSerializerSettings { DateParseHandling = DateParseHandling.None } );
+
+            return body[section][0][wireColumns.IndexOf( wireColumn )];
+        }
+
+        #endregion
+
+        #region Missing columns
+
+        /// <summary>
+        /// A written row is as wide as the contract says.
+        /// </summary>
+        [TestMethod]
+        public void WrittenRows_AreAsWideAsTheContract()
+        {
+            var contract = ChatSyncTestBody.ShippedContract();
+            var sections = contract["payload"]["sections"].Select( s => s.Value<string>() ).ToList();
+            var resultSets = ChatSyncTestBody.ShippedResultSets();
+
+            foreach ( var table in resultSets )
+            {
+                ChatSyncTestBody.AddRow( table, null );
             }
 
-            return text.ToString();
+            var body = JObject.Parse( ChatSyncTestBody.Write( contract, resultSets ) );
+
+            for ( var i = 0; i < sections.Count; i++ )
+            {
+                Assert.AreEqual( contract["tables"][i]["columns"].Count(), body[sections[i]][0].Count(), string.Format( "the {0} section writes a row of the wrong width", sections[i] ) );
+            }
+        }
+
+        /// <summary>
+        /// A wire column the result set no longer returns stops the submission, naming the column.
+        /// </summary>
+        /// <remarks>
+        /// Emitting null for the missing column would keep the width right, so nothing downstream
+        /// could tell that a column had silently become empty for every row.
+        /// </remarks>
+        [TestMethod]
+        public void WireColumn_WithNothingBehindIt_StopsTheSubmissionHere()
+        {
+            AssertRefusedNaming( "is_leader", columns => columns.Where( c => c != "is_leader" ) );
+        }
+
+        /// <summary>
+        /// A wire column whose source the procedure renamed stops the submission, naming the column
+        /// it no longer finds.
+        /// </summary>
+        [TestMethod]
+        public void WireColumn_WhoseSourceWasRenamed_StopsTheSubmissionHere()
+        {
+            AssertRefusedNaming( "is_leader", columns => columns.Select( c => c == "is_leader" ? "is_group_leader" : c ) );
+        }
+
+        /// <summary>
+        /// A colour pair whose one source the procedure no longer returns stops the submission,
+        /// naming that source.
+        /// </summary>
+        [TestMethod]
+        public void ColourPair_WithNoHighlightColour_StopsTheSubmissionHere()
+        {
+            var resultSets = ChatSyncTestBody.ShippedResultSets();
+            resultSets[3] = ChatSyncTestBody.SectionTable( "badges", ChatSyncSqlText.SectionColumns( "badges" ).Where( c => c != "highlight_color" ) );
+
+            var thrown = Assert.ThrowsExactly<InvalidOperationException>(
+                () => ChatSyncTestBody.Write( ChatSyncTestBody.ShippedContract(), resultSets ),
+                "a badge row with no colour behind it was written with its colours silently empty" );
+
+            StringAssert.Contains( thrown.Message, "highlight_color", "the failure does not name the column that has nothing behind it" );
+        }
+
+        /// <summary>
+        /// Writes a body whose members result set has had its columns changed, and asserts it is
+        /// refused with the named column in the message.
+        /// </summary>
+        /// <param name="column">The column the failure must name.</param>
+        /// <param name="change">How the members columns are changed.</param>
+        private static void AssertRefusedNaming( string column, Func<IList<string>, IEnumerable<string>> change )
+        {
+            var resultSets = ChatSyncTestBody.ShippedResultSets();
+            resultSets[2] = ChatSyncTestBody.SectionTable( "members", change( ChatSyncSqlText.SectionColumns( "members" ) ) );
+            ChatSyncTestBody.AddRow( resultSets[2], null );
+
+            var thrown = Assert.ThrowsExactly<InvalidOperationException>(
+                () => ChatSyncTestBody.Write( ChatSyncTestBody.ShippedContract(), resultSets ),
+                "a wire column the result set no longer returns was filled in silently" );
+
+            StringAssert.Contains( thrown.Message, column, "the failure does not name the column that has nothing behind it" );
+            StringAssert.Contains( thrown.Message, "members", "the failure does not name the section" );
         }
 
         #endregion

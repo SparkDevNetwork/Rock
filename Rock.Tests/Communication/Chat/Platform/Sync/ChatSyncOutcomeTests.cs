@@ -24,10 +24,9 @@ using Newtonsoft.Json.Linq;
 
 using Rock.Communication.Chat.Platform.Contract;
 using Rock.Communication.Chat.Platform.Sync;
-using ChatSyncAcknowledgement = Rock.Communication.Chat.Platform.Sync.ChatSyncSubmitClient.ChatSyncAcknowledgement;
-using ChatSyncOutcome = Rock.Communication.Chat.Platform.Sync.ChatSyncSubmitClient.ChatSyncOutcome;
-using ChatSyncPollBudget = Rock.Communication.Chat.Platform.Sync.ChatSyncSubmitClient.ChatSyncPollBudget;
-using ChatSyncSubmissionStatus = Rock.Communication.Chat.Platform.Sync.ChatSyncSubmitClient.ChatSyncSubmissionStatus;
+using Acknowledgement = Rock.Communication.Chat.Platform.Sync.ChatPlatformSyncHelper.Acknowledgement;
+using Outcome = Rock.Communication.Chat.Platform.Sync.ChatPlatformSyncHelper.Outcome;
+using SubmissionStatus = Rock.Communication.Chat.Platform.Sync.ChatPlatformSyncHelper.SubmissionStatus;
 
 namespace Rock.Tests.Communication.Chat.Platform.Sync
 {
@@ -48,10 +47,10 @@ namespace Rock.Tests.Communication.Chat.Platform.Sync
         [TestMethod]
         public void JobSuccess_IsTheTwoStatusesThatReturnTwoHundred()
         {
-            Assert.IsTrue( ChatSyncSubmitClient.IsJobSuccess( ChatSyncSubmissionStatus.Accepted ) );
-            Assert.IsTrue( ChatSyncSubmitClient.IsJobSuccess( ChatSyncSubmissionStatus.Applied ) );
-            Assert.IsFalse( ChatSyncSubmitClient.IsJobSuccess( ChatSyncSubmissionStatus.Refused ) );
-            Assert.IsFalse( ChatSyncSubmitClient.IsJobSuccess( ChatSyncSubmissionStatus.Failed ) );
+            Assert.IsTrue( ChatPlatformSyncHelper.IsJobSuccess( SubmissionStatus.Accepted ) );
+            Assert.IsTrue( ChatPlatformSyncHelper.IsJobSuccess( SubmissionStatus.Applied ) );
+            Assert.IsFalse( ChatPlatformSyncHelper.IsJobSuccess( SubmissionStatus.Refused ) );
+            Assert.IsFalse( ChatPlatformSyncHelper.IsJobSuccess( SubmissionStatus.Failed ) );
         }
 
         /// <summary>
@@ -70,9 +69,9 @@ namespace Rock.Tests.Communication.Chat.Platform.Sync
                 .OrderBy( v => v )
                 .ToList();
 
-            var mirrored = Enum.GetValues( typeof( ChatSyncSubmissionStatus ) )
-                .Cast<ChatSyncSubmissionStatus>()
-                .Select( ChatSyncSubmitClient.WireValueFor )
+            var mirrored = Enum.GetValues( typeof( SubmissionStatus ) )
+                .Cast<SubmissionStatus>()
+                .Select( ChatPlatformSyncHelper.WireValueFor )
                 .OrderBy( v => v )
                 .ToList();
 
@@ -83,9 +82,9 @@ namespace Rock.Tests.Communication.Chat.Platform.Sync
         [TestMethod]
         public void ParsingAStatusRockDoesNotKnow_ReportsNothingRatherThanGuessing()
         {
-            Assert.IsNull( ChatSyncSubmitClient.ParseStatus( "quarantined" ) );
-            Assert.IsNull( ChatSyncSubmitClient.ParseStatus( null ) );
-            Assert.AreEqual( ChatSyncSubmissionStatus.Applied, ChatSyncSubmitClient.ParseStatus( "applied" ) );
+            Assert.IsNull( ChatPlatformSyncHelper.ParseStatus( "quarantined" ) );
+            Assert.IsNull( ChatPlatformSyncHelper.ParseStatus( null ) );
+            Assert.AreEqual( SubmissionStatus.Applied, ChatPlatformSyncHelper.ParseStatus( "applied" ) );
         }
 
         #endregion The four statuses
@@ -95,8 +94,8 @@ namespace Rock.Tests.Communication.Chat.Platform.Sync
         [TestMethod]
         public void AnAcknowledgementReportsSuccessFromItsStatus()
         {
-            Assert.IsTrue( ChatSyncSubmitClient.IsJobSuccess( Ack( ChatSyncSubmissionStatus.Accepted, 200 ).Status.Value ) );
-            Assert.IsFalse( ChatSyncSubmitClient.IsJobSuccess( Ack( ChatSyncSubmissionStatus.Refused, 422 ).Status.Value ) );
+            Assert.IsTrue( ChatPlatformSyncHelper.IsJobSuccess( Ack( SubmissionStatus.Accepted, 200 ).Status.Value ) );
+            Assert.IsFalse( ChatPlatformSyncHelper.IsJobSuccess( Ack( SubmissionStatus.Refused, 422 ).Status.Value ) );
         }
 
         /// <summary>
@@ -106,7 +105,7 @@ namespace Rock.Tests.Communication.Chat.Platform.Sync
         [TestMethod]
         public void ATransportFailureIsNotASuccess()
         {
-            var ack = ChatSyncAcknowledgement.Unreachable( Guid.NewGuid(), "the host could not be resolved" );
+            var ack = new Acknowledgement { SubmissionId = Guid.NewGuid(), TransportDetail = "the host could not be resolved" };
 
             Assert.IsFalse( ack.Status.HasValue, "an answer that never arrived cannot carry a status to succeed on" );
             Assert.IsTrue( ack.IsTransportFailure );
@@ -119,10 +118,10 @@ namespace Rock.Tests.Communication.Chat.Platform.Sync
         [TestMethod]
         public void ThePlatformsOwnAnswer_CarriesBackoffAdvice_WhetherOrNotItNamesABackoff()
         {
-            var refusedWithBackoff = Ack( ChatSyncSubmissionStatus.Refused, 422 );
+            var refusedWithBackoff = Ack( SubmissionStatus.Refused, 422 );
             refusedWithBackoff.SyncBackoffUntil = new DateTimeOffset( 2026, 9, 21, 11, 30, 0, TimeSpan.Zero );
 
-            var acceptedWithout = Ack( ChatSyncSubmissionStatus.Accepted, 200 );
+            var acceptedWithout = Ack( SubmissionStatus.Accepted, 200 );
 
             Assert.IsTrue( refusedWithBackoff.CarriesBackoffAdvice, "a refusal that names a backoff is the platform asking for quiet, and the run has to record it" );
             Assert.IsTrue( acceptedWithout.CarriesBackoffAdvice, "an acceptance naming no backoff is the platform saying there is none, and a backoff already stored has to be cleared by it" );
@@ -136,9 +135,9 @@ namespace Rock.Tests.Communication.Chat.Platform.Sync
         [TestMethod]
         public void AnAnswerThatIsNotThePlatforms_CarriesNoBackoffAdvice()
         {
-            var unreachable = ChatSyncAcknowledgement.Unreachable( Guid.NewGuid(), "the host could not be resolved" );
+            var unreachable = new Acknowledgement { SubmissionId = Guid.NewGuid(), TransportDetail = "the host could not be resolved" };
 
-            var unreadable = new ChatSyncAcknowledgement
+            var unreadable = new Acknowledgement
             {
                 SubmissionId = Guid.NewGuid(),
                 HttpStatusCode = 502,
@@ -153,9 +152,9 @@ namespace Rock.Tests.Communication.Chat.Platform.Sync
 
         #region Support
 
-        private static ChatSyncAcknowledgement Ack( ChatSyncSubmissionStatus status, int httpStatusCode )
+        private static Acknowledgement Ack( SubmissionStatus status, int httpStatusCode )
         {
-            return new ChatSyncAcknowledgement
+            return new Acknowledgement
             {
                 SubmissionId = Guid.NewGuid(),
                 Status = status,

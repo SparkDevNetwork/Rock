@@ -16,45 +16,52 @@
 //
 using System;
 using System.Collections.Generic;
+using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
+using Microsoft.IdentityModel.Tokens;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+
+using Newtonsoft.Json;
 
 using Rock.Communication.Chat.Platform.Configuration;
 using Rock.Communication.Chat.Platform.Sync;
-using ChatSyncAcknowledgement = Rock.Communication.Chat.Platform.Sync.ChatSyncSubmitClient.ChatSyncAcknowledgement;
-using ChatSyncOutcome = Rock.Communication.Chat.Platform.Sync.ChatSyncSubmitClient.ChatSyncOutcome;
-using ChatSyncPollBudget = Rock.Communication.Chat.Platform.Sync.ChatSyncSubmitClient.ChatSyncPollBudget;
-using ChatSyncSubmissionStatus = Rock.Communication.Chat.Platform.Sync.ChatSyncSubmitClient.ChatSyncSubmissionStatus;
+
+using PlatformClient = Rock.Communication.Chat.Platform.Sync.ChatPlatformSyncHelper.PlatformClient;
+using PollBudget = Rock.Communication.Chat.Platform.Sync.ChatPlatformSyncHelper.PollBudget;
+using SubmissionStatus = Rock.Communication.Chat.Platform.Sync.ChatPlatformSyncHelper.SubmissionStatus;
 
 namespace Rock.Tests.Communication.Chat.Platform.Sync
 {
     /// <summary>
-    /// The call that carries a restatement to the chat platform and brings back what happened to it.
+    /// One run's conversation with the chat platform: the credential exchange, the submission and
+    /// the status reads.
     /// </summary>
     /// <remarks>
     /// <para>
     /// A refusal arrives with an ordinary body and a 422 status, because the platform sets that
     /// status itself rather than raising: raising would roll back the history row the refusal was
-    /// just recorded on. A client written the usual way calls EnsureSuccessStatusCode, throws before
-    /// it reads a line of that body, and the church is left with a job that failed for no stated
-    /// reason while the platform knows exactly which check refused it. That is the defect these
-    /// cells exist to catch, and it is invisible to any test that only ever stubs a 200.
+    /// just recorded on. A client that calls EnsureSuccessStatusCode throws before it reads a line
+    /// of that body, which is invisible to any test that only ever stubs a 200.
     /// </para>
     /// <para>
-    /// The transport cell is the other half. A request that times out leaves Rock unable to say
-    /// whether the platform received it, so the retry has to carry the id the first attempt used;
-    /// a fresh id on the second attempt writes two history rows for one cycle and applies the same
-    /// restatement twice.
+    /// A request that times out leaves Rock unable to say whether the platform received it, so the
+    /// retry has to carry the id the first attempt used.
+    /// </para>
+    /// <para>
+    /// The church signs its own token, and the platform's data API cannot verify a church's
+    /// signature, so that token is exchanged for a platform token first. A sync sent under the
+    /// church token itself is refused on every call.
     /// </para>
     /// </remarks>
     [TestClass]
-    public class ChatSyncSubmitClientTests
+    public class ChatSyncPlatformClientTests
     {
         #region Fields
 
@@ -62,9 +69,13 @@ namespace Rock.Tests.Communication.Chat.Platform.Sync
 
         private const string PublishableKey = "sb_publishable_test";
 
-        // A platform token, as the job hands the client after exchanging the church's own. The name
-        // once said church token, and the job sent exactly that, which the platform refuses.
+        private const string ChurchToken = "church.signed.token";
+
+        // A platform token, as the exchange hands back. The job once sent the church token where
+        // this belonged, which the platform refuses.
         private const string Token = "stub.platform.token";
+
+        private const string Kid = "kid-test-1";
 
         /// <summary>
         /// Not on this framework's enumeration, and the status a refusal arrives with.
@@ -73,10 +84,104 @@ namespace Rock.Tests.Communication.Chat.Platform.Sync
 
         #endregion Fields
 
+        #region The credential
+
+        [TestMethod]
+        public void Exchange_PostsTheChurchTokenAndHoldsThePlatformToken()
+        {
+            var handler = StubHandler.Returning( HttpStatusCode.OK, "{\"access_token\":\"" + Token + "\",\"token_type\":\"bearer\",\"expires_in\":300}" );
+
+            using ( var client = new PlatformClient( Configuration( ProjectUrl + "/" ), handler ) )
+            {
+                var exchanged = client.Exchange( ChurchToken, out var failure );
+
+                Assert.IsTrue( exchanged );
+                Assert.IsNull( failure );
+                Assert.AreEqual( Token, client.PlatformToken );
+            }
+
+            var request = handler.Requests.Single();
+            Assert.AreEqual( HttpMethod.Post, request.Method );
+            Assert.AreEqual( ProjectUrl + "/functions/v1/token-exchange", request.Url );
+            Assert.AreEqual( "Bearer " + ChurchToken, request.Header( "Authorization" ) );
+            Assert.AreEqual( PublishableKey, request.Header( "apikey" ) );
+        }
+
+        [TestMethod]
+        public void Exchange_WhenRefused_HoldsNoTokenAndGivesThePlatformsReason()
+        {
+            var handler = StubHandler.Returning( HttpStatusCode.Unauthorized, "{\"error\":{\"code\":\"auth.invalid_token\",\"message\":\"auth.invalid_token\"}}" );
+
+            using ( var client = new PlatformClient( Configuration( ProjectUrl + "/" ), handler ) )
+            {
+                var exchanged = client.Exchange( ChurchToken, out var failure );
+
+                Assert.IsFalse( exchanged );
+                Assert.IsNull( client.PlatformToken );
+                StringAssert.Contains( failure, "the chat platform refused this church's credential" );
+                StringAssert.Contains( failure, "auth.invalid_token" );
+            }
+        }
+
+        [TestMethod]
+        public void SignIn_WhenTheChurchCannotSign_CallsNothing()
+        {
+            var handler = StubHandler.Returning( HttpStatusCode.OK, "{\"access_token\":\"" + Token + "\"}" );
+
+            using ( var client = new PlatformClient( Configuration( ProjectUrl + "/" ), handler ) )
+            {
+                var signedIn = client.SignIn( out var failure );
+
+                Assert.IsFalse( signedIn );
+                Assert.IsNotNull( failure );
+                Assert.IsNull( client.PlatformToken );
+            }
+
+            Assert.AreEqual( 0, handler.Requests.Count );
+        }
+
+        /// <summary>
+        /// One client carries the whole run: the church's sync token is minted once and exchanged,
+        /// and the submission goes out under the platform token the exchange returned.
+        /// </summary>
+        [TestMethod]
+        public void SignIn_ExchangesOneSyncTokenAndTheSubmissionCarriesThePlatformToken()
+        {
+            var submissionId = Guid.NewGuid();
+            var handler = StubHandler.ReturningInTurn(
+                "{\"access_token\":\"" + Token + "\",\"token_type\":\"bearer\",\"expires_in\":300}",
+                Accepted( submissionId ) );
+
+            var configuration = Configuration( ProjectUrl );
+            configuration.PrivateKey = CreatePrivateJwk( Kid );
+            configuration.Kid = Kid;
+
+            using ( var client = new PlatformClient( configuration, handler ) )
+            {
+                Assert.IsTrue( client.SignIn( out var failure ), failure );
+
+                client.Submit( submissionId, Body( "{}" ), Headers() );
+            }
+
+            Assert.AreEqual( 2, handler.Requests.Count, "the run did not make exactly one exchange and one submission" );
+
+            var exchange = handler.Requests[0];
+            Assert.AreEqual( ProjectUrl + "/functions/v1/token-exchange", exchange.Url );
+
+            var churchToken = new JwtSecurityTokenHandler().ReadJwtToken( exchange.Header( "Authorization" ).Substring( "Bearer ".Length ) );
+            Assert.AreEqual( "sync", churchToken.Payload["scp"].ToString(), "the exchange was not handed a sync-scope church token" );
+
+            var submit = handler.Requests[1];
+            Assert.AreEqual( ProjectUrl + "/rest/v1/rpc/sync_submit", submit.Url );
+            Assert.AreEqual( "Bearer " + Token, submit.Header( "Authorization" ), "the submission did not go out under the platform token" );
+        }
+
+        #endregion The credential
+
         #region Reading the body
 
         /// <summary>
-        /// The whole point of the slice's client cell: a refusal is a body, not an exception.
+        /// A refusal is a body, not an exception.
         /// </summary>
         [TestMethod]
         public void Submit_WhenThePlatformRefuses_ReadsTheBodyOfThe422AndDoesNotThrow()
@@ -90,14 +195,14 @@ namespace Rock.Tests.Communication.Chat.Platform.Sync
                 var ack = client.Submit( submissionId, Body( "{}" ), Headers() );
 
                 Assert.AreEqual( submissionId, ack.SubmissionId );
-                Assert.AreEqual( ChatSyncSubmissionStatus.Refused, ack.Status );
+                Assert.AreEqual( SubmissionStatus.Refused, ack.Status );
                 Assert.AreEqual( "sync.bad_counts", ack.ErrorCode );
                 Assert.AreEqual( 422, ack.HttpStatusCode );
                 Assert.IsFalse( ack.IsTransportFailure );
 
                 Assert.IsNotNull( ack.PreviousOutcome );
                 Assert.AreEqual( previousId, ack.PreviousOutcome.SubmissionId );
-                Assert.AreEqual( ChatSyncSubmissionStatus.Applied, ack.PreviousOutcome.Status );
+                Assert.AreEqual( SubmissionStatus.Applied, ack.PreviousOutcome.Status );
                 Assert.IsNull( ack.PreviousOutcome.ErrorCode );
 
                 Assert.IsNotNull( ack.SyncBackoffUntil );
@@ -118,7 +223,7 @@ namespace Rock.Tests.Communication.Chat.Platform.Sync
             {
                 var ack = client.Submit( submissionId, Body( "{}" ), Headers() );
 
-                Assert.AreEqual( ChatSyncSubmissionStatus.Accepted, ack.Status );
+                Assert.AreEqual( SubmissionStatus.Accepted, ack.Status );
                 Assert.IsNull( ack.ErrorCode );
                 Assert.IsNull( ack.PreviousOutcome );
                 Assert.AreEqual( 200, ack.HttpStatusCode );
@@ -131,9 +236,7 @@ namespace Rock.Tests.Communication.Chat.Platform.Sync
 
         /// <summary>
         /// The submission surface takes the whole request body as one raw text value. A client that
-        /// posts it as JSON is parsed before the function is reached and refused on every cycle, and
-        /// every other cell in this file passes against that client because the stub does not care
-        /// what it was sent.
+        /// posts it as JSON is parsed before the function is reached and refused on every cycle.
         /// </summary>
         [TestMethod]
         public void Submit_SendsTheRawBodyAsTextPlainUnderTheSyncCredential()
@@ -164,8 +267,8 @@ namespace Rock.Tests.Communication.Chat.Platform.Sync
         #region Retry
 
         /// <summary>
-        /// A timed-out request may or may not have arrived, and the platform's third ingest check
-        /// exists to answer that: the same id comes back with the outcome already recorded.
+        /// A timed-out request may or may not have arrived, and the platform answers a repeated id
+        /// with the outcome it already recorded.
         /// </summary>
         [TestMethod]
         public void Submit_WhenTheTransportFails_RetriesWithTheSameSubmissionId()
@@ -177,7 +280,7 @@ namespace Rock.Tests.Communication.Chat.Platform.Sync
             {
                 var ack = client.Submit( submissionId, Body( "{}" ), Headers() );
 
-                Assert.AreEqual( ChatSyncSubmissionStatus.Accepted, ack.Status );
+                Assert.AreEqual( SubmissionStatus.Accepted, ack.Status );
             }
 
             Assert.AreEqual( 2, handler.Requests.Count );
@@ -187,9 +290,8 @@ namespace Rock.Tests.Communication.Chat.Platform.Sync
         }
 
         /// <summary>
-        /// A transport that never comes back is not an exception thrown at the job. The job has a
-        /// result message to write and a backoff to honour, and it cannot do either from a stack
-        /// trace.
+        /// A transport that never comes back is not an exception thrown at the job, which has a
+        /// result to write and a backoff to honour.
         /// </summary>
         [TestMethod]
         public void Submit_WhenEveryAttemptFails_ReportsATransportFailureRatherThanThrowing()
@@ -229,9 +331,9 @@ namespace Rock.Tests.Communication.Chat.Platform.Sync
 
             using ( var client = NoWaitClient( handler ) )
             {
-                var outcome = client.Poll( submissionId, ChatSyncPollBudget.Manual );
+                var outcome = client.Poll( submissionId, PollBudget.Manual );
 
-                Assert.AreEqual( ChatSyncSubmissionStatus.Applied, outcome.Status );
+                Assert.AreEqual( SubmissionStatus.Applied, outcome.Status );
             }
 
             Assert.AreEqual( 2, handler.Requests.Count );
@@ -254,9 +356,9 @@ namespace Rock.Tests.Communication.Chat.Platform.Sync
                 client.Clock = () => now;
                 client.Wait = d => { waited += d; now = now.Add( d ); };
 
-                var outcome = client.Poll( submissionId, ChatSyncPollBudget.Manual );
+                var outcome = client.Poll( submissionId, PollBudget.Manual );
 
-                Assert.AreEqual( ChatSyncSubmissionStatus.Accepted, outcome.Status );
+                Assert.AreEqual( SubmissionStatus.Accepted, outcome.Status );
             }
 
             Assert.AreEqual( 20, handler.Requests.Count );
@@ -280,7 +382,7 @@ namespace Rock.Tests.Communication.Chat.Platform.Sync
                 client.Clock = () => now;
                 client.Wait = d => { waited += d; now = now.Add( d ); };
 
-                client.Poll( submissionId, ChatSyncPollBudget.Scheduled );
+                client.Poll( submissionId, PollBudget.Scheduled );
             }
 
             Assert.AreEqual( 6, handler.Requests.Count );
@@ -305,7 +407,7 @@ namespace Rock.Tests.Communication.Chat.Platform.Sync
                 // Every read costs ten seconds of the wall clock on top of the interval.
                 client.Wait = d => now = now.Add( d ).Add( TimeSpan.FromSeconds( 10 ) );
 
-                client.Poll( submissionId, ChatSyncPollBudget.Manual );
+                client.Poll( submissionId, PollBudget.Manual );
             }
 
             Assert.IsTrue( handler.Requests.Count < 20,
@@ -317,23 +419,29 @@ namespace Rock.Tests.Communication.Chat.Platform.Sync
 
         #region Support
 
-        private static ChatSyncSubmitClient Client( HttpMessageHandler handler )
+        private static ChatPlatformConfiguration Configuration( string projectUrl )
         {
-            var configuration = new ChatPlatformConfiguration
+            return new ChatPlatformConfiguration
             {
                 TenantId = Guid.NewGuid(),
-                ProjectUrl = ProjectUrl,
+                ProjectUrl = projectUrl,
                 PublishableKey = PublishableKey,
                 PrivateKey = "{}"
             };
+        }
 
-            return new ChatSyncSubmitClient( configuration, () => Token, handler );
+        /// <summary>
+        /// A client already holding a platform token, for the cells about the submission and polls.
+        /// </summary>
+        private static PlatformClient Client( HttpMessageHandler handler )
+        {
+            return new PlatformClient( Configuration( ProjectUrl ), handler ) { PlatformToken = Token };
         }
 
         /// <summary>
         /// A client whose waits cost nothing, for the cells that count attempts rather than time.
         /// </summary>
-        private static ChatSyncSubmitClient NoWaitClient( HttpMessageHandler handler )
+        private static PlatformClient NoWaitClient( HttpMessageHandler handler )
         {
             var client = Client( handler );
             client.Wait = d => { };
@@ -351,7 +459,7 @@ namespace Rock.Tests.Communication.Chat.Platform.Sync
         }
 
         /// <summary>
-        /// A body in the form the runner hands the client: the UTF-8 bytes it was written as.
+        /// A body in the form the job hands the client: the UTF-8 bytes it was written as.
         /// </summary>
         private static ArraySegment<byte> Body( string json )
         {
@@ -376,6 +484,19 @@ namespace Rock.Tests.Communication.Chat.Platform.Sync
         {
             return "{\"submission_id\":\"" + submissionId + "\",\"status\":\"" + status + "\","
                 + "\"error_code\":null,\"drained_at\":null}";
+        }
+
+        private static string CreatePrivateJwk( string kid )
+        {
+            using ( var ecdsa = ECDsa.Create( ECCurve.NamedCurves.nistP256 ) )
+            {
+                var key = new ECDsaSecurityKey( ecdsa ) { KeyId = kid };
+                var jwk = JsonWebKeyConverter.ConvertFromECDsaSecurityKey( key );
+                jwk.Kid = kid;
+                jwk.Use = "sig";
+                jwk.Alg = "ES256";
+                return JsonConvert.SerializeObject( jwk );
+            }
         }
 
         /// <summary>
