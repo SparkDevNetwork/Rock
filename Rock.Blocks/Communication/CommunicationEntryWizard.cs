@@ -463,6 +463,11 @@ namespace Rock.Blocks.Communication
                 return ActionBadRequest( validationResult.ErrorMessage );
             }
 
+            if ( !CanEditCommunication( bag ) )
+            {
+                return ActionForbidden( "You don't have edit access to this communication." );
+            }
+
             string errorMessage;
 
             using ( PersonTokenScope.RestrictTo( GetCurrentPerson() ) )
@@ -489,6 +494,11 @@ namespace Rock.Blocks.Communication
             if ( !IsValid( bag, out var validationResult ) )
             {
                 return ActionBadRequest( validationResult.ErrorMessage );
+            }
+
+            if ( !CanEditCommunication( bag ) )
+            {
+                return ActionForbidden( "You don't have edit access to this communication." );
             }
 
             var currentPerson = GetCurrentPerson();
@@ -662,6 +672,11 @@ namespace Rock.Blocks.Communication
                 return ActionBadRequest( validationResult.ErrorMessage );
             }
 
+            if ( !CanEditCommunication( bag ) )
+            {
+                return ActionForbidden( "You don't have edit access to this communication." );
+            }
+
             ProcessCommunicationSend( bag );
 
             var responseBag = new CommunicationEntryWizardSendResponseBag
@@ -684,6 +699,11 @@ namespace Rock.Blocks.Communication
             if ( !IsValid( bag, out var validationResult ) )
             {
                 return ActionBadRequest( validationResult.ErrorMessage );
+            }
+
+            if ( !CanEditCommunication( bag ) )
+            {
+                return ActionForbidden( "You don't have edit access to this communication." );
             }
 
             var communication = SaveAsDraft( this.RockContext, bag );
@@ -1177,6 +1197,19 @@ namespace Rock.Blocks.Communication
         private CommunicationEntryWizardCommunicationTemplateDetailBag GetCommunicationTemplateDetailBag( CommunicationEntryWizardTemplateInfo communicationTemplateInfo )
         {
             var mergeFields = this.RequestContext.GetCommonMergeFields();
+            string fromEmail;
+            string fromName;
+            string replyToEmail;
+            string message;
+
+            // The template renders into the message body before any recipient is known, so no one's token belongs in it.
+            using ( PersonTokenScope.RestrictTo( null ) )
+            {
+                fromEmail = communicationTemplateInfo.CommunicationTemplate.FromEmail?.ResolveMergeFields( mergeFields );
+                fromName = communicationTemplateInfo.CommunicationTemplate.FromName?.ResolveMergeFields( mergeFields );
+                replyToEmail = communicationTemplateInfo.CommunicationTemplate.ReplyToEmail?.ResolveMergeFields( mergeFields );
+                message = communicationTemplateInfo.CommunicationTemplate.Message?.ResolveMergeFields( mergeFields );
+            }
 
             return new CommunicationEntryWizardCommunicationTemplateDetailBag
             {
@@ -1190,13 +1223,13 @@ namespace Rock.Blocks.Communication
                 IsSystem = communicationTemplateInfo.CommunicationTemplate.IsSystem,
 
                 // Email fields
-                FromEmail = communicationTemplateInfo.CommunicationTemplate.FromEmail?.ResolveMergeFields( mergeFields ),
-                FromName = communicationTemplateInfo.CommunicationTemplate.FromName?.ResolveMergeFields( mergeFields ),
-                ReplyToEmail = communicationTemplateInfo.CommunicationTemplate.ReplyToEmail?.ResolveMergeFields( mergeFields ),
+                FromEmail = fromEmail,
+                FromName = fromName,
+                ReplyToEmail = replyToEmail,
                 CcEmails = communicationTemplateInfo.CommunicationTemplate.CCEmails,
                 BccEmails = communicationTemplateInfo.CommunicationTemplate.BCCEmails,
                 Subject = communicationTemplateInfo.CommunicationTemplate.Subject,
-                Message = communicationTemplateInfo.CommunicationTemplate.Message?.ResolveMergeFields( mergeFields ),
+                Message = message,
                 EmailAttachmentBinaryFiles = communicationTemplateInfo.CommunicationTemplate.GetAttachments( CommunicationType.Email )?.Select( cta => cta.BinaryFile )?.ToListItemBagList(),
 
                 // SMS fields
@@ -2075,6 +2108,29 @@ namespace Rock.Blocks.Communication
                 // Not an editable communication, so hide this block. If there is a CommunicationDetail block on this page, it'll be shown instead
                 return true;
             }
+        }
+
+        /// <summary>
+        /// Determines whether the current person may save changes to the communication a request targets.
+        /// </summary>
+        /// <param name="bag">The communication request to check.</param>
+        /// <returns><see langword="true"/> if the request targets a new communication or one the current person may edit; otherwise, <see langword="false"/>.</returns>
+        private bool CanEditCommunication( CommunicationEntryWizardCommunicationBag bag )
+        {
+            var communicationService = new CommunicationService( this.RockContext );
+            Model.Communication communication = null;
+
+            // Match the lookup order in CreateOrUpdateCommunication so the check covers the record that will be saved.
+            if ( bag.CommunicationId.GetValueOrDefault( 0 ) > 0 )
+            {
+                communication = communicationService.Get( bag.CommunicationId.Value );
+            }
+            else if ( !bag.CommunicationGuid.IsEmpty() )
+            {
+                communication = communicationService.Get( bag.CommunicationGuid );
+            }
+
+            return communication == null || !IsCommunicationHidden( communication, GetCurrentPerson() );
         }
 
         /// <summary>
