@@ -172,10 +172,36 @@ namespace Rock.Blocks.Finance
         {
             if ( GetAttributeValue( AttributeKey.UsePersonContext ).AsBoolean() )
             {
-                return RequestContext.GetContextEntity<Person>();
+                return GetAuthorizedContextPerson();
             }
 
             return RequestContext.CurrentPerson;
+        }
+
+        /// <summary>
+        /// Gets the person context, but only if the current person is allowed to view that
+        /// person's transactions.
+        /// </summary>
+        /// <returns>The context person, or <c>null</c> if there is none or it is not allowed.</returns>
+        private Person GetAuthorizedContextPerson()
+        {
+            var contextPerson = RequestContext.GetContextEntity<Person>();
+            var currentPerson = RequestContext.CurrentPerson;
+
+            if ( contextPerson == null || currentPerson == null )
+            {
+                return null;
+            }
+
+            var isInGivingUnit = contextPerson.GivingId.IsNotNullOrWhiteSpace()
+                && contextPerson.GivingId == currentPerson.GivingId;
+
+            if ( isInGivingUnit || currentPerson.GetBusinesses( RockContext ).Any( b => b.Id == contextPerson.Id ) )
+            {
+                return contextPerson;
+            }
+
+            return null;
         }
 
         /// <summary>
