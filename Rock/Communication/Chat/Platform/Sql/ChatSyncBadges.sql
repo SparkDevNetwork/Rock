@@ -17,5 +17,6 @@ SELECT
     [BV].[SortOrder] AS [sort_order]
 FROM #BadgeViews AS [BV]
 INNER JOIN [DataView] AS [DV] ON [DV].[Guid] = [BV].[DataViewGuid]
-WHERE [DV].[PersistedScheduleIntervalMinutes] IS NOT NULL
+-- Persisted as Rock counts it, interval or schedule: holders are read from persisted values alone.
+WHERE ( [DV].[PersistedScheduleIntervalMinutes] IS NOT NULL OR [DV].[PersistedScheduleId] IS NOT NULL )
 ORDER BY [BV].[SortOrder];

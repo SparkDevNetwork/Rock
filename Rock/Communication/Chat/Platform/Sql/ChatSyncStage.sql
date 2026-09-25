@@ -135,7 +135,8 @@ INNER JOIN #Enrolled AS [E] ON [E].[PersonId] = [PA].[PersonId];
 CREATE CLUSTERED INDEX [IX_Alias] ON #Alias ( [PersonId] );
 
 -- The badge keys a person holds, ordered by the church's configured badge order, aggregated once
--- per person who holds one rather than once per alias row.
+-- per person who holds one rather than once per alias row. Persisted as Rock counts it, interval or
+-- schedule, because only persisted values are read.
 IF OBJECT_ID( 'tempdb..#BadgeViews' ) IS NOT NULL DROP TABLE #BadgeViews;
 
 SELECT
@@ -156,7 +157,7 @@ SELECT
         INNER JOIN [DataView] AS [DV] ON [DV].[Id] = [DVPV].[DataViewId]
         INNER JOIN #BadgeViews AS [BV] ON [BV].[DataViewGuid] = [DV].[Guid]
         WHERE [DVPV].[EntityId] = [BP].[PersonId]
-            AND [DV].[PersistedScheduleIntervalMinutes] IS NOT NULL
+            AND ( [DV].[PersistedScheduleIntervalMinutes] IS NOT NULL OR [DV].[PersistedScheduleId] IS NOT NULL )
         ORDER BY [BV].[SortOrder]
         FOR XML PATH( '' ), TYPE ).value( '.', 'VARCHAR(MAX)' ), 1, 1, '' ) AS [BadgeKeys]
 INTO #Badges
@@ -166,7 +167,7 @@ FROM (
     INNER JOIN [DataView] AS [DV] ON [DV].[Id] = [DVPV].[DataViewId]
     INNER JOIN #BadgeViews AS [BV] ON [BV].[DataViewGuid] = [DV].[Guid]
     INNER JOIN #Enrolled AS [E] ON [E].[PersonId] = [DVPV].[EntityId]
-    WHERE [DV].[PersistedScheduleIntervalMinutes] IS NOT NULL
+    WHERE ( [DV].[PersistedScheduleIntervalMinutes] IS NOT NULL OR [DV].[PersistedScheduleId] IS NOT NULL )
 ) AS [BP];
 
 CREATE UNIQUE CLUSTERED INDEX [IX_Badges] ON #Badges ( [PersonId] );
