@@ -475,7 +475,7 @@ namespace Rock.Web.Cache
         /// </value>
         internal int? GetGroupMemberRecordSourceValueId()
         {
-            if ( this.GroupMemberRecordSourceValueId.HasValue && this.GroupType?.AllowGroupSpecificRecordSource == true  )
+            if ( this.GroupMemberRecordSourceValueId.HasValue && this.GroupType?.AllowGroupSpecificRecordSource == true )
             {
                 return this.GroupMemberRecordSourceValueId.Value;
             }

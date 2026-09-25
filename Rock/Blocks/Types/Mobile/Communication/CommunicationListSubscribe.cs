@@ -317,40 +317,8 @@ namespace Rock.Blocks.Types.Mobile.Events
             var communicationLists = communicationListsQry
                 .ToList();
 
-            var categoryGuids = CommunicationListCategories;
-
             var viewableCommunicationLists = communicationLists
-                .Where( a =>
-                {
-                    a.LoadAttributes( rockContext );
-
-                    if ( !categoryGuids.Any() )
-                    {
-                        //
-                        // If no categories where specified, only show
-                        // lists that the person has VIEW auth to.
-                        //
-                        if ( a.IsAuthorized( Rock.Security.Authorization.VIEW, RequestContext.CurrentPerson ) )
-                        {
-                            return true;
-                        }
-                    }
-                    else
-                    {
-                        //
-                        // If categories were specified, ensure that this
-                        // communication list has a category and is one of
-                        // the specified categories.
-                        //
-                        Guid? categoryGuid = a.GetAttributeValue( "Category" ).AsGuidOrNull();
-                        if ( categoryGuid.HasValue && categoryGuids.Contains( categoryGuid.Value ) )
-                        {
-                            return true;
-                        }
-                    }
-
-                    return false;
-                } )
+                .Where( a => IsAuthorizedCommunicationList( a, CommunicationListCategories, rockContext ) )
                 .ToList();
 
             var groupIds = viewableCommunicationLists.Select( a => a.Id ).ToList();
@@ -384,6 +352,11 @@ namespace Rock.Blocks.Types.Mobile.Events
             return viewableCommunicationLists
                 .Select( a =>
                 {
+                    if ( a.Attributes == null )
+                    {
+                        a.LoadAttributes( rockContext );
+                    }
+
                     var publicName = a.GetAttributeValue( "PublicName" );
                     var member = communicationListsMember.GetValueOrDefault( a.Id, null );
                     var isSubscribed = member != null && member.GroupMemberStatus == GroupMemberStatus.Active;
@@ -404,6 +377,56 @@ namespace Rock.Blocks.Types.Mobile.Events
         private bool ContainsActivePersonRecord( ICollection<GroupMember> groupMembers, int personId )
         {
             return ( groupMembers?.Any( m => m.PersonId == personId && m.GroupMemberStatus == GroupMemberStatus.Active ) ) ?? false;
+        }
+
+        /// <summary>
+        /// Determines whether the current person may see and manage a subscription to the group. A group qualifies
+        /// when it is a communication list and either the person has VIEW access to it (when no categories are
+        /// configured) or it belongs to one of the configured categories.
+        /// </summary>
+        /// <param name="group">The group to check.</param>
+        /// <param name="categoryGuids">The configured communication list category unique identifiers.</param>
+        /// <param name="rockContext">The data context used to load attributes when a category check is required.</param>
+        /// <returns><c>true</c> if the person may manage a subscription to the group; otherwise, <c>false</c>.</returns>
+        private bool IsAuthorizedCommunicationList( Rock.Model.Group group, List<Guid> categoryGuids, RockContext rockContext )
+        {
+            var communicationListGroupTypeId = GroupTypeCache.GetId( Rock.SystemGuid.GroupType.GROUPTYPE_COMMUNICATIONLIST.AsGuid() );
+
+            if ( group == null || group.GroupTypeId != communicationListGroupTypeId )
+            {
+                return false;
+            }
+
+            if ( !categoryGuids.Any() )
+            {
+                // With no categories configured, the person must have VIEW access to the list.
+                return group.IsAuthorized( Rock.Security.Authorization.VIEW, RequestContext.CurrentPerson );
+            }
+
+            // The category comparison reads a group attribute, so load attributes only for this branch.
+            if ( group.Attributes == null )
+            {
+                group.LoadAttributes( rockContext );
+            }
+
+            // With categories configured, the list must belong to one of them.
+            var categoryGuid = group.GetAttributeValue( "Category" ).AsGuidOrNull();
+            return categoryGuid.HasValue && categoryGuids.Contains( categoryGuid.Value );
+        }
+
+        /// <summary>
+        /// Gets the group for the supplied unique identifier, but only when the current person may manage a
+        /// subscription to it. Returns <c>null</c> for any other group so a person cannot manage a membership in a
+        /// group they are not authorized to subscribe to.
+        /// </summary>
+        /// <param name="communicationListGuid">The unique identifier of the communication list.</param>
+        /// <param name="rockContext">The data context to load the group from.</param>
+        /// <returns>The authorized communication list group, or <c>null</c> when it is not one the person may manage.</returns>
+        private Rock.Model.Group GetAuthorizedCommunicationListGroup( Guid communicationListGuid, RockContext rockContext )
+        {
+            var group = new GroupService( rockContext ).Get( communicationListGuid );
+
+            return IsAuthorizedCommunicationList( group, CommunicationListCategories, rockContext ) ? group : null;
         }
 
         #endregion
@@ -434,7 +457,14 @@ namespace Rock.Blocks.Types.Mobile.Events
             using ( var rockContext = new RockContext() )
             {
                 var groupMemberService = new GroupMemberService( rockContext );
-                var group = new GroupService( rockContext ).Get( communicationListGuid );
+
+                // Only communication lists the person is authorized to subscribe to are allowed; any other group is rejected.
+                var group = GetAuthorizedCommunicationListGroup( communicationListGuid, rockContext );
+                if ( group == null )
+                {
+                    return;
+                }
+
                 var groupMemberRecordsForPerson = groupMemberService.Queryable()
                     .Where( a => a.GroupId == group.Id && a.PersonId == RequestContext.CurrentPerson.Id )
                     .ToList();
@@ -519,7 +549,14 @@ namespace Rock.Blocks.Types.Mobile.Events
             using ( var rockContext = new RockContext() )
             {
                 var groupMemberService = new GroupMemberService( rockContext );
-                var group = new GroupService( rockContext ).Get( communicationListGuid );
+
+                // Only communication lists the person is authorized to manage are allowed; any other group is rejected.
+                var group = GetAuthorizedCommunicationListGroup( communicationListGuid, rockContext );
+                if ( group == null )
+                {
+                    return ActionBadRequest( "Communication list not found." );
+                }
+
                 var groupMemberRecordsForPerson = groupMemberService.Queryable()
                     .Where( a => a.GroupId == group.Id && a.PersonId == RequestContext.CurrentPerson.Id )
                     .ToList();
