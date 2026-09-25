@@ -22,14 +22,13 @@
 import { ChatSyncNowStatusBag } from "@Obsidian/ViewModels/Blocks/Communication/Chat/ChatSyncNow/chatSyncNowStatusBag";
 import {
     createSyncNow,
-    syncNowBudgetMilliseconds,
     syncNowCheckIntervalMilliseconds,
     SyncNowActionResult,
     SyncNowDependencies
 } from "@Obsidian/Controls/Internal/ChatSyncNow/syncNow.partial";
 
-function status(runMarker: number, isFinished: boolean, isFailure: boolean, message: string): SyncNowActionResult {
-    const data: ChatSyncNowStatusBag = { runMarker, isFinished, isFailure, message };
+function status(runMarker: number, isFinished: boolean, isFailure: boolean, message: string, budgetMilliseconds = 120000): SyncNowActionResult {
+    const data: ChatSyncNowStatusBag = { runMarker, isFinished, isFailure, message, budgetMilliseconds };
 
     return { isSuccess: true, data };
 }
@@ -133,15 +132,16 @@ describe("Sync Now", () => {
         expect(outcome?.message).toContain("Chat Platform Sync");
     });
 
-    it("stops waiting once its budget is spent and says the run is still going and where its result will appear", async () => {
+    it("stops waiting once the budget Rock gave with the press is spent and says the run is still going and where its result will appear", async () => {
+        // Only Rock knows how long its job can run, so the screen follows for as long as the press's
+        // answer says and no longer, whatever a check later carries.
         const h = harness(
-            () => Promise.resolve(status(900, false, false, "Waiting for the sync to start.")),
-            () => Promise.resolve(status(900, false, false, "The sync is running.")));
+            () => Promise.resolve(status(900, false, false, "Waiting for the sync to start.", 600000)),
+            () => Promise.resolve(status(900, false, false, "The sync is running.", 1)));
 
         const outcome = await createSyncNow(h.dependencies).press();
 
-        expect(syncNowBudgetMilliseconds).toBe(120000);
-        expect(h.checks).toHaveLength(syncNowBudgetMilliseconds / syncNowCheckIntervalMilliseconds);
+        expect(h.checks).toHaveLength(600000 / syncNowCheckIntervalMilliseconds);
         expect(outcome?.isFinished).toBe(false);
         expect(outcome?.isFailure).toBe(false);
         expect(outcome?.message).toContain("still running");

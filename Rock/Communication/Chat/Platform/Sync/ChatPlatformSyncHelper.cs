@@ -84,6 +84,15 @@ namespace Rock.Communication.Chat.Platform.Sync
 
         private static readonly string RunningMessage = "The sync is running.";
 
+        private static readonly string OvertakenMessage = "The schedule started a sync at the same moment, and it submitted nothing because the chat platform asked for a backoff. Press Sync Now again.";
+
+        // The longest a person's run can take, so the screen never gives up on one that will finish:
+        // the projection's timeout, every exchange and submission attempt and one status read at the
+        // request timeout, and the manual poll. An estimate that leaves out the short retry waits.
+        private static readonly int SyncNowBudgetMilliseconds = ( int ) ( TimeSpan.FromSeconds( ChatPlatformSync.ProjectionTimeoutSeconds )
+            + TimeSpan.FromTicks( PlatformClient.RequestTimeout.Ticks * ( ( 2 * PlatformClient.TransportAttempts ) + 1 ) )
+            + PollBudget.Manual.Duration ).TotalMilliseconds;
+
         // What Rock records for a run that ended well; anything else is a run that did not.
         private const string SuccessStatus = "Success";
 
@@ -815,6 +824,17 @@ namespace Rock.Communication.Chat.Platform.Sync
                 };
             }
 
+            // When the schedule fires first and takes the lock, Rock drops the press's run without a
+            // record, so this run is the schedule's. It read the church after the press, so its result
+            // answers it, unless it skipped for the backoff and sent nothing.
+            if ( run.StatusMessage != null && run.StatusMessage.StartsWith( ChatPlatformSync.BackoffSkipPrefix, StringComparison.Ordinal ) )
+            {
+                return new SyncNowResult
+                {
+                    Status = new ChatSyncNowStatusBag { RunMarker = runMarker, IsFinished = true, IsFailure = true, Message = OvertakenMessage }
+                };
+            }
+
             return new SyncNowResult
             {
                 Status = new ChatSyncNowStatusBag
@@ -961,7 +981,7 @@ namespace Rock.Communication.Chat.Platform.Sync
         {
             return new SyncNowResult
             {
-                Status = new ChatSyncNowStatusBag { RunMarker = runMarker, Message = WaitingMessage }
+                Status = new ChatSyncNowStatusBag { RunMarker = runMarker, Message = WaitingMessage, BudgetMilliseconds = SyncNowBudgetMilliseconds }
             };
         }
 
@@ -1273,9 +1293,12 @@ namespace Rock.Communication.Chat.Platform.Sync
             private const string ExchangePath = "/functions/v1/token-exchange";
 
             // Estimates, revisited when the platform is measured at full scale.
-            private const int TransportAttempts = 3;
+            internal const int TransportAttempts = 3;
 
             private static readonly TimeSpan TransportRetryDelay = TimeSpan.FromSeconds( 2 );
+
+            // HttpClient's own default, named so the Sync Now budget can count it.
+            internal static readonly TimeSpan RequestTimeout = TimeSpan.FromSeconds( 100 );
 
             // A platform token lasts about five minutes, and slow submission attempts followed by the
             // poll can outlast it. An estimate: enough for one more request to arrive before expiry.
@@ -1306,6 +1329,7 @@ namespace Rock.Communication.Chat.Platform.Sync
 
                 _configuration = configuration;
                 _httpClient = handler == null ? new HttpClient() : new HttpClient( handler );
+                _httpClient.Timeout = RequestTimeout;
 
                 Wait = duration => Thread.Sleep( duration );
                 Clock = () => DateTime.UtcNow;

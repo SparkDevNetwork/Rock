@@ -60,18 +60,9 @@ export type SyncNow = {
 /**
  * How often a press is checked on. The same cadence the sync job uses when a person is waiting on
  * the chat platform's answer, so the screen learns of the end of the run about as soon as the job
- * does; each check is one read of the job's own history. An estimate, like the budget below.
+ * does; each check is one read of the job's own history. An estimate.
  */
 export const syncNowCheckIntervalMilliseconds = 3000;
-
-/**
- * How long a press is followed before the screen stops waiting for it. Long enough to cover the
- * job's own wait for the chat platform's answer, which is a minute for a person's run, plus reading
- * the church and sending it at a typical church; an estimate, since how long that takes depends on
- * the church. A large church can outlast it, and then the screen says where the result will appear
- * rather than keep a person waiting.
- */
-export const syncNowBudgetMilliseconds = 120000;
 
 /** Said when the budget is spent and the run has not ended. */
 const stillRunningMessage = "The sync is still running. Its result will appear on the Chat Platform Sync job in Jobs Administration.";
@@ -126,10 +117,12 @@ export function createSyncNow(dependencies: SyncNowDependencies): SyncNow {
         let status = requested.data;
         dependencies.onProgress?.(status.message ?? "");
 
+        // Rock says how long its run can take, so the screen never gives up on one that will finish.
+        const budgetMilliseconds = status.budgetMilliseconds;
         const started = dependencies.now();
 
         while (!status.isFinished) {
-            if (dependencies.now() - started >= syncNowBudgetMilliseconds) {
+            if (dependencies.now() - started >= budgetMilliseconds) {
                 return { isFinished: false, isFailure: false, message: stillRunningMessage };
             }
 

@@ -62,8 +62,11 @@ namespace Rock.Jobs
         // Above eight days of a fire every second (691200), so even that schedule is judged whole.
         private const int ScheduleSampleCap = 700000;
 
+        // Sync Now reads a run whose result begins this way as the schedule's, which sent nothing.
+        internal const string BackoffSkipPrefix = "Nothing was submitted. The chat platform asked for a backoff until ";
+
         // Generous, because a timeout costs no more than one cycle. An estimate.
-        private const int ProjectionTimeoutSeconds = 300;
+        internal const int ProjectionTimeoutSeconds = 300;
 
         // The longest gap each schedule leaves, by cron expression.
         private static readonly ConcurrentDictionary<string, TimeSpan?> _longestGaps = new ConcurrentDictionary<string, TimeSpan?>( StringComparer.Ordinal );
@@ -147,7 +150,7 @@ namespace Rock.Jobs
 
             return string.Format(
                 CultureInfo.InvariantCulture,
-                "Nothing was submitted. The chat platform asked for a backoff until {0}, and this run was started by the schedule rather than by a person. Sync Now ignores the backoff.",
+                BackoffSkipPrefix + "{0}, and this run was started by the schedule rather than by a person. Sync Now ignores the backoff.",
                 backoffUntil.Value.ToUniversalTime().ToString( "yyyy-MM-dd HH:mm:ss'Z'", CultureInfo.InvariantCulture ) );
         }
 

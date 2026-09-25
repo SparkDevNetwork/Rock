@@ -44,4 +44,10 @@ export type ChatSyncNowStatusBag = {
      * to until then.
      */
     message?: string | null;
+
+    /**
+     * Gets or sets how long the screen follows the press before it stops waiting, in
+     * milliseconds. It is the longest the sync job's run can take, so only Rock can say it.
+     */
+    budgetMilliseconds: number;
 };

@@ -22,6 +22,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using Rock.Communication.Chat.Platform.Configuration;
 using Rock.Communication.Chat.Platform.Sync;
+using Rock.Jobs;
 using Rock.ViewModels.Blocks.Communication.Chat.ChatSyncNow;
 
 namespace Rock.Tests.Communication.Chat.Platform.Sync
@@ -143,6 +144,22 @@ namespace Rock.Tests.Communication.Chat.Platform.Sync
             Assert.AreEqual( 0, queued.Count, "a second run was asked for while one held the lock, and the lock would refuse it without a word" );
         }
 
+        [TestMethod]
+        public void Request_TellsTheScreenToFollowAsLongAsAPersonsRunCanTake()
+        {
+            // A person's run can spend the projection's timeout reading the church, every exchange and
+            // submission attempt at the request timeout, and then the whole manual poll. A screen that
+            // gives up sooner tells a large church "still running" about a sync that will finish.
+            var result = ChatPlatformSyncHelper.RequestSyncNow( Configured(), true, () => IdleJob( 900 ), id => { } );
+
+            var longestRun = TimeSpan.FromSeconds( ChatPlatformSync.ProjectionTimeoutSeconds )
+                + TimeSpan.FromTicks( ChatPlatformSyncHelper.PlatformClient.RequestTimeout.Ticks * 2 * ChatPlatformSyncHelper.PlatformClient.TransportAttempts )
+                + ChatPlatformSyncHelper.PollBudget.Manual.Duration;
+
+            Assert.IsTrue( result.Status.BudgetMilliseconds >= longestRun.TotalMilliseconds,
+                "the screen stops following at " + result.Status.BudgetMilliseconds + " ms, before a person's run can end" );
+        }
+
         #endregion A press
 
         #region A check
@@ -222,6 +239,22 @@ namespace Rock.Tests.Communication.Chat.Platform.Sync
             } );
 
             Assert.AreEqual( 0, reads, "a caller who may not press the button had the job's history read for them" );
+        }
+
+        [TestMethod]
+        public void Status_WhenTheScheduleOvertookThePressAndSkippedForTheBackoff_IsAFailureThatSaysToPressAgain()
+        {
+            // The schedule fired just after the press and took the lock, so Rock dropped the press's
+            // run without a record. The first run after the marker is the schedule's, and it sent nothing.
+            var now = DateTimeOffset.UtcNow;
+            var skipped = ChatPlatformSync.SkipReason( false, now.AddMinutes( 5 ), now );
+
+            var result = ChatPlatformSyncHelper.GetSyncNowStatus( true, 900, () => Ended( 901, "Success", skipped ) );
+
+            Assert.IsTrue( result.Status.IsFinished );
+            Assert.IsTrue( result.Status.IsFailure, "a scheduled run that submitted nothing was shown as this press's successful sync" );
+            Assert.AreNotEqual( skipped, result.Status.Message );
+            StringAssert.Contains( result.Status.Message, "again" );
         }
 
         #endregion A check

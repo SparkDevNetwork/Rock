@@ -44,5 +44,11 @@ namespace Rock.ViewModels.Blocks.Communication.Chat.ChatSyncNow
         /// to until then.
         /// </summary>
         public string Message { get; set; }
+
+        /// <summary>
+        /// Gets or sets how long the screen follows the press before it stops waiting, in
+        /// milliseconds. It is the longest the sync job's run can take, so only Rock can say it.
+        /// </summary>
+        public int BudgetMilliseconds { get; set; }
     }
 }
