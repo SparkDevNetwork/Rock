@@ -81,6 +81,22 @@ namespace Rock.Tests.Communication.Chat.Platform.Sync
         }
 
         /// <summary>
+        /// The groups Rock ships to run chat are left out by the same words in both, so neither the
+        /// stamp nor the staging query can make one of them a channel.
+        /// </summary>
+        [TestMethod]
+        public void TheStampAndTheStagingQueryLeaveOutTheSameSystemGroups()
+        {
+            const string systemGroups =
+                "[G].[Guid] NOT IN ( @ChatPeopleGroupGuid, @ChatBanListGroupGuid, @ChatAdministratorsGroupGuid )";
+
+            StringAssert.Contains( Flatten( ChatPlatformSync.GetStagingSql() ), systemGroups,
+                "the staging query can make a system chat group a channel" );
+            StringAssert.Contains( Flatten( ChatPlatformSync.GetStampSql() ), systemGroups,
+                "the stamp can mark a system chat group as a channel" );
+        }
+
+        /// <summary>
         /// The stamp writes the marker rather than reading it: a stamp filtered by the marker
         /// being absent is right, and one that qualified on the marker being present would only
         /// ever re-stamp groups that already had one.

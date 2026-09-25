@@ -22,7 +22,8 @@ SET QUOTED_IDENTIFIER ON;
 
 -- Every group that is, or ever was, a chat channel. The marker half is what makes turning chat off
 -- archive a conversation instead of losing it, so it is deliberately not filtered by the group's
--- own state: an archived or deactivated channel still belongs here and its row still ships.
+-- own state: an archived or deactivated channel still belongs here and its row still ships. The
+-- groups Rock ships to run chat are left out of both halves, so a mark on one does not keep it.
 IF OBJECT_ID( 'tempdb..#ChatGroups' ) IS NOT NULL DROP TABLE #ChatGroups;
 
 SELECT
@@ -31,9 +32,10 @@ SELECT
 INTO #ChatGroups
 FROM [Group] AS [G]
 INNER JOIN [GroupType] AS [GT] ON [GT].[Id] = [G].[GroupTypeId]
-WHERE [G].[ChatChannelFirstEnabledDateTime] IS NOT NULL
-    OR ( [GT].[IsChatAllowed] = 1
-         AND COALESCE( [G].[IsChatEnabledOverride], [GT].[IsChatEnabledForAllGroups] ) = 1 );
+WHERE [G].[Guid] NOT IN ( @ChatPeopleGroupGuid, @ChatBanListGroupGuid, @ChatAdministratorsGroupGuid )
+    AND ( [G].[ChatChannelFirstEnabledDateTime] IS NOT NULL
+          OR ( [GT].[IsChatAllowed] = 1
+               AND COALESCE( [G].[IsChatEnabledOverride], [GT].[IsChatEnabledForAllGroups] ) = 1 ) );
 
 CREATE UNIQUE CLUSTERED INDEX [IX_ChatGroups] ON #ChatGroups ( [GroupId] );
 

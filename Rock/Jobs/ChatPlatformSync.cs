@@ -541,7 +541,10 @@ namespace Rock.Jobs
             rockContext.Database.CommandTimeout = ProjectionTimeoutSeconds;
             rockContext.Database.ExecuteSqlCommand(
                 GetStampSql(),
-                new System.Data.SqlClient.SqlParameter( "@StampedAt", RockDateTime.Now ) );
+                new System.Data.SqlClient.SqlParameter( "@StampedAt", RockDateTime.Now ),
+                new System.Data.SqlClient.SqlParameter( "@ChatPeopleGroupGuid", Rock.SystemGuid.Group.GROUP_CHAT_PEOPLE.AsGuid() ),
+                new System.Data.SqlClient.SqlParameter( "@ChatBanListGroupGuid", Rock.SystemGuid.Group.GROUP_CHAT_BAN_LIST.AsGuid() ),
+                new System.Data.SqlClient.SqlParameter( "@ChatAdministratorsGroupGuid", Rock.SystemGuid.Group.GROUP_CHAT_ADMINISTRATORS.AsGuid() ) );
         }
 
         /// <summary>

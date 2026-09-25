@@ -22,5 +22,7 @@ SET [G].[ChatChannelFirstEnabledDateTime] = @StampedAt
 FROM [Group] AS [G]
 INNER JOIN [GroupType] AS [GT] ON [GT].[Id] = [G].[GroupTypeId]
 WHERE [G].[ChatChannelFirstEnabledDateTime] IS NULL
+    -- The groups Rock ships to run chat are never channels, whatever their type allows.
+    AND [G].[Guid] NOT IN ( @ChatPeopleGroupGuid, @ChatBanListGroupGuid, @ChatAdministratorsGroupGuid )
     AND [GT].[IsChatAllowed] = 1
     AND COALESCE( [G].[IsChatEnabledOverride], [GT].[IsChatEnabledForAllGroups] ) = 1;

@@ -52,6 +52,8 @@ namespace Rock.Tests.Integration.Communication.Chat.Platform.Sync
 
         private readonly List<Guid> _badgeDataViewGuids = new List<Guid>();
 
+        private readonly List<Action<RockContext>> _restores = new List<Action<RockContext>>();
+
         #endregion Fields
 
         #region Constructors
@@ -401,6 +403,69 @@ namespace Rock.Tests.Integration.Communication.Chat.Platform.Sync
         }
 
         /// <summary>
+        /// Turns chat on for every group of an existing group's type, and clears that group's own
+        /// chat setting, as an administrator could. Put back, marks included, when disposed.
+        /// </summary>
+        /// <param name="groupGuid">The existing group, such as one Rock ships.</param>
+        /// <returns>The group type's id.</returns>
+        public int EnableChatForGroupTypeOf( Guid groupGuid )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var database = rockContext.Database;
+                var groupTypeId = database.SqlQuery<int>( "SELECT [GroupTypeId] FROM [Group] WHERE [Guid] = @p0", groupGuid ).First();
+                var groupOverride = database.SqlQuery<bool?>( "SELECT [IsChatEnabledOverride] FROM [Group] WHERE [Guid] = @p0", groupGuid ).First();
+                var isChatAllowed = database.SqlQuery<bool>( "SELECT [IsChatAllowed] FROM [GroupType] WHERE [Id] = @p0", groupTypeId ).First();
+                var isChatEnabledForAllGroups = database.SqlQuery<bool>( "SELECT [IsChatEnabledForAllGroups] FROM [GroupType] WHERE [Id] = @p0", groupTypeId ).First();
+                var unmarkedGroupIds = string.Join( ",", database.SqlQuery<int>(
+                    "SELECT [Id] FROM [Group] WHERE [GroupTypeId] = @p0 AND [ChatChannelFirstEnabledDateTime] IS NULL", groupTypeId ).ToList() );
+
+                // A stamp run while this is on marks every group of the type, so those marks go too.
+                _restores.Add( context => context.Database.ExecuteSqlCommand(
+                    "UPDATE [GroupType] SET [IsChatAllowed] = @p1, [IsChatEnabledForAllGroups] = @p2 WHERE [Id] = @p0;"
+                    + "UPDATE [Group] SET [IsChatEnabledOverride] = @p4 WHERE [Guid] = @p3;"
+                    + "UPDATE [Group] SET [ChatChannelFirstEnabledDateTime] = NULL WHERE [Id] IN ( SELECT CAST( [value] AS INT ) FROM STRING_SPLIT( @p5, ',' ) );",
+                    groupTypeId,
+                    isChatAllowed,
+                    isChatEnabledForAllGroups,
+                    groupGuid,
+                    ( object ) groupOverride ?? DBNull.Value,
+                    unmarkedGroupIds ) );
+
+                database.ExecuteSqlCommand(
+                    "UPDATE [GroupType] SET [IsChatAllowed] = 1, [IsChatEnabledForAllGroups] = 1 WHERE [Id] = @p0;"
+                    + "UPDATE [Group] SET [IsChatEnabledOverride] = NULL WHERE [Guid] = @p1;",
+                    groupTypeId,
+                    groupGuid );
+
+                return groupTypeId;
+            }
+        }
+
+        /// <summary>
+        /// Writes a channel mark on an existing group, as a run before a rule changed could have
+        /// left it. Put back when disposed.
+        /// </summary>
+        /// <param name="groupGuid">The group.</param>
+        public void MarkChannelDirectly( Guid groupGuid )
+        {
+            var mark = ChannelMark( groupGuid );
+
+            _restores.Add( context => context.Database.ExecuteSqlCommand(
+                "UPDATE [Group] SET [ChatChannelFirstEnabledDateTime] = @p1 WHERE [Guid] = @p0",
+                groupGuid,
+                ( object ) mark ?? DBNull.Value ) );
+
+            using ( var rockContext = new RockContext() )
+            {
+                rockContext.Database.ExecuteSqlCommand(
+                    "UPDATE [Group] SET [ChatChannelFirstEnabledDateTime] = @p1 WHERE [Guid] = @p0",
+                    groupGuid,
+                    RockDateTime.Now );
+            }
+        }
+
+        /// <summary>
         /// Reads the whole church, exactly as a run would.
         /// </summary>
         /// <returns>The reading.</returns>
@@ -446,6 +511,12 @@ namespace Rock.Tests.Integration.Communication.Chat.Platform.Sync
         {
             using ( var rockContext = new RockContext() )
             {
+                // Newest first, so a group changed twice ends where it began.
+                for ( var i = _restores.Count - 1; i >= 0; i-- )
+                {
+                    _restores[i]( rockContext );
+                }
+
                 DeletePeopleAndChannels( rockContext, ForeignKey );
 
                 // A Data View's persisted values go with it; its schedule is let go of after it.
