@@ -15,6 +15,7 @@
 // </copyright>
 //
 
+import { Guid } from "@Obsidian/Types";
 import { PageBuilderModuleTypeBag } from "@Obsidian/ViewModels/Blocks/Cms/PageBuilder/pageBuilderModuleTypeBag";
 
 /** Tells the page frame that a module type has started dragging from the sidebar. */
@@ -52,6 +53,41 @@ export type PageFrameReloadRequest = {
 /** Tells the page frame to select a Canvas block, as soon as it is on the page. */
 export type ModuleSelectRequest = {
     blockId: number;
+};
+
+/** Tells the page frame to turn the placeholder of the module being added into its Canvas block. */
+export type ModuleAddedRequest = {
+    /** The identifier of the new Canvas block. */
+    blockId: number;
+
+    /** The unique identifier of the new Canvas block. */
+    blockGuid: Guid;
+
+    /** The module's HTML as the target page renders it. */
+    html: string;
+};
+
+/** Tells the page frame that the module being added could not be added, so its placeholder goes away. */
+export type ModuleAddFailedRequest = {
+    type: "MODULE_ADD_FAILED_REQUEST";
+};
+
+/** Tells the page frame to show a module's newly rendered HTML in place of its current content. */
+export type ModuleContentRequest = {
+    blockId: number;
+
+    /** The module's HTML as the target page renders it. */
+    html: string;
+};
+
+/** Tells the page frame to take a deleted module's Canvas block off the page. */
+export type ModuleRemoveRequest = {
+    blockId: number;
+};
+
+/** Tells the page frame that the last move could not be saved, so the module goes back where it was. */
+export type ModuleMoveFailedRequest = {
+    type: "MODULE_MOVE_FAILED_REQUEST";
 };
 
 /** Where a module type was dropped, as reported by the page frame. */

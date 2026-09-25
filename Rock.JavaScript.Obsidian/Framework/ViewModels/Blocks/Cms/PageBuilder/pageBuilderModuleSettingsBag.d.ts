@@ -21,6 +21,7 @@
 // </copyright>
 //
 
+import { Guid } from "@Obsidian/Types";
 import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
 
 /** The settings of the module a Canvas block displays, as edited in the Page Builder. */
@@ -30,6 +31,12 @@ export type PageBuilderModuleSettingsBag = {
 
     /** Gets or sets the values of the module's settings, keyed by attribute key. */
     attributeValues?: Record<string, string> | null;
+
+    /**
+     * Gets or sets the unique identifier of the Canvas block, which its own block actions are
+     * addressed by. The Page Builder ignores it when saving.
+     */
+    blockGuid: Guid;
 
     /** Gets or sets the identifier of the Canvas block that displays the module. */
     blockId: number;

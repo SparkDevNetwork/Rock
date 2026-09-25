@@ -30,6 +30,13 @@
                            :dragEndRequest="dragEndRequest"
                            :reloadRequest="reloadRequest"
                            :selectRequest="selectRequest"
+                           :moduleAddedRequest="moduleAddedRequest"
+                           :moduleAddFailedRequest="moduleAddFailedRequest"
+                           :moduleContentRequest="moduleContentRequest"
+                           :moduleRemoveRequest="moduleRemoveRequest"
+                           :moduleMoveFailedRequest="moduleMoveFailedRequest"
+                           :pendingBlockId="pendingBlockId"
+                           :isBusy="isBuilderBusy"
                            @moduleDropped="onModuleDropped"
                            @moduleMoved="onModuleMoved"
                            @moduleSelected="onModuleSelected"
@@ -68,6 +75,7 @@
                         <AttributeValuesContainer v-if="hasModuleAttributes"
                                                   v-model="moduleAttributeValues"
                                                   :attributes="moduleAttributes"
+                                                  :disabled="isModuleSaving"
                                                   isEditMode
                                                   :showCategoryLabel="false"
                                                   :numberOfColumns="1" />
@@ -257,19 +265,29 @@
     import Overlay from "@Obsidian/Controls/Internal/overlay.obs";
     import Sheet from "@Obsidian/Controls/Internal/sheet.obs";
     import { BtnType } from "@Obsidian/Enums/Controls/btnType";
-    import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
+    import { Guid } from "@Obsidian/Types";
+    import { createInvokeBlockAction, onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
     import { confirm, confirmDelete } from "@Obsidian/Utility/dialogs";
+    import { emptyGuid } from "@Obsidian/Utility/guid";
+    import { useHttp } from "@Obsidian/Utility/http";
     import { deepEqual } from "@Obsidian/Utility/util";
     import { PageBuilderAddModuleBag } from "@Obsidian/ViewModels/Blocks/Cms/PageBuilder/pageBuilderAddModuleBag";
+    import { PageBuilderAddModuleResponseBag } from "@Obsidian/ViewModels/Blocks/Cms/PageBuilder/pageBuilderAddModuleResponseBag";
     import { PageBuilderInitializationBox } from "@Obsidian/ViewModels/Blocks/Cms/PageBuilder/pageBuilderInitializationBox";
     import { PageBuilderModuleSettingsBag } from "@Obsidian/ViewModels/Blocks/Cms/PageBuilder/pageBuilderModuleSettingsBag";
     import { PageBuilderModuleTypeBag } from "@Obsidian/ViewModels/Blocks/Cms/PageBuilder/pageBuilderModuleTypeBag";
     import { PageBuilderMoveModuleBag } from "@Obsidian/ViewModels/Blocks/Cms/PageBuilder/pageBuilderMoveModuleBag";
+    import { ObsidianBlockConfigBag } from "@Obsidian/ViewModels/Cms/obsidianBlockConfigBag";
     import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
     import PageFrame from "./pageBuilder/pageFrame.partial.obs";
     import {
+        ModuleAddedRequest,
+        ModuleAddFailedRequest,
+        ModuleContentRequest,
         ModuleDrop,
         ModuleMove,
+        ModuleMoveFailedRequest,
+        ModuleRemoveRequest,
         ModuleSelectRequest,
         ModuleTypeDragEndRequest,
         ModuleTypeDragLeaveRequest,
@@ -281,11 +299,13 @@
 
     const config = useConfigurationValues<PageBuilderInitializationBox>();
     const invokeBlockAction = useInvokeBlockAction();
+    const http = useHttp();
 
     // #region Values
 
     const errorMessage = config.errorMessage ?? "";
     const targetPageUrl = config.targetPageUrl ?? "";
+    const targetPageGuid = config.targetPageGuid ?? null;
     const moduleTypes = config.moduleTypes ?? [];
 
     const frameContainerElement = ref<HTMLElement | undefined>();
@@ -298,10 +318,18 @@
     const dragEndRequest = ref<ModuleTypeDragEndRequest | null>(null);
     const reloadRequest = ref<PageFrameReloadRequest | null>(null);
     const selectRequest = ref<ModuleSelectRequest | null>(null);
+    const moduleAddedRequest = ref<ModuleAddedRequest | null>(null);
+    const moduleAddFailedRequest = ref<ModuleAddFailedRequest | null>(null);
+    const moduleContentRequest = ref<ModuleContentRequest | null>(null);
+    const moduleRemoveRequest = ref<ModuleRemoveRequest | null>(null);
+    const moduleMoveFailedRequest = ref<ModuleMoveFailedRequest | null>(null);
     const selectedBlockId = ref<number | null>(null);
+    const pendingBlockId = ref<number | null>(null);
+    const isAddingModule = ref(false);
 
     const isModuleSheetShown = ref(false);
     const editingBlockId = ref<number | null>(null);
+    const editingBlockGuid = ref<Guid | null>(null);
     const moduleAttributes = ref<Record<string, PublicAttributeBag>>({});
     const moduleAttributeValues = ref<Record<string, string>>({});
     const savedModuleAttributeValues = ref<Record<string, string>>({});
@@ -322,6 +350,9 @@
     const hasModuleAttributes = computed((): boolean => Object.keys(moduleAttributes.value).length > 0);
 
     const isModuleSettingsDirty = computed((): boolean => !deepEqual(moduleAttributeValues.value, savedModuleAttributeValues.value, true));
+
+    /** Whether a change to the page is waiting on the server, which locks the builder until it is confirmed. */
+    const isBuilderBusy = computed((): boolean => pendingBlockId.value !== null || isAddingModule.value);
 
     // #endregion Computed Values
 
@@ -344,8 +375,8 @@
         Reason: A drag in the parent page cannot target elements inside an iframe, with a mouse or with touch.
     */
     function onModuleTypeDragStart(event: PointerEvent, moduleType: PageBuilderModuleTypeBag): void {
-        // Only the primary button of the first pointer starts a drag.
-        if (!event.isPrimary || event.button !== 0) {
+        // Only the primary button of the first pointer starts a drag, and not while a change is waiting on the server.
+        if (!event.isPrimary || event.button !== 0 || isBuilderBusy.value) {
             return;
         }
 
@@ -421,13 +452,14 @@
     }
 
     /**
-     * Adds a dropped module to the page in a new Canvas block, then reloads
-     * the frame so Rock renders the new block itself, selects it, and opens
-     * the sheet on it unless the person keeps unsaved changes to the module
-     * already in the sheet.
+     * Adds a dropped module to the page in a new Canvas block, which the frame
+     * shows as a placeholder until the target page has rendered it. Then it is
+     * selected and the sheet opens on it, unless the person keeps unsaved
+     * changes to the module already in the sheet.
      */
     async function onModuleDropped(drop: ModuleDrop): Promise<void> {
         blockActionErrorMessage.value = "";
+        isAddingModule.value = true;
 
         const bag: PageBuilderAddModuleBag = {
             zoneName: drop.zoneName,
@@ -435,33 +467,45 @@
             beforeBlockId: drop.beforeBlockId
         };
 
-        const result = await invokeBlockAction<number>("AddModule", { bag });
+        const result = await invokeBlockAction<PageBuilderAddModuleResponseBag>("AddModule", { bag });
 
         if (!result.isSuccess || !result.data) {
+            isAddingModule.value = false;
+            moduleAddFailedRequest.value = { type: "MODULE_ADD_FAILED_REQUEST" };
             blockActionErrorMessage.value = result.errorMessage || `The ${drop.moduleType.name} module could not be added.`;
             return;
         }
 
-        const blockId = result.data;
+        const { blockId, blockGuid } = result.data;
+        const html = await getRenderedModuleHtml(blockGuid);
 
-        // Keeping the unsaved changes leaves the module in the sheet selected, and the reload keeps it that way.
-        if (!await canLeaveEditedModule()) {
+        isAddingModule.value = false;
+
+        // The module was added either way, so a reload shows it when its HTML could not be rendered.
+        if (html === null) {
             reloadRequest.value = { type: "PAGE_FRAME_RELOAD_REQUEST" };
+        }
+        else {
+            moduleAddedRequest.value = { blockId, blockGuid, html };
+        }
+
+        if (!await canLeaveEditedModule()) {
             return;
         }
 
         selectRequest.value = { blockId };
-        reloadRequest.value = { type: "PAGE_FRAME_RELOAD_REQUEST" };
 
         await openModuleSheet(blockId);
     }
 
     /**
-     * Saves a module's new position after it was dragged by its handle, then
-     * reloads the frame so Rock renders the page in its new order.
+     * Saves a module's new position after it was dragged by its handle. The
+     * frame already shows it there, so only a move the server rejects changes
+     * the page, putting the module back.
      */
     async function onModuleMoved(move: ModuleMove): Promise<void> {
         blockActionErrorMessage.value = "";
+        pendingBlockId.value = move.blockId;
 
         const bag: PageBuilderMoveModuleBag = {
             blockId: move.blockId,
@@ -471,12 +515,12 @@
 
         const result = await invokeBlockAction("MoveModule", { bag });
 
+        pendingBlockId.value = null;
+
         if (!result.isSuccess) {
+            moduleMoveFailedRequest.value = { type: "MODULE_MOVE_FAILED_REQUEST" };
             blockActionErrorMessage.value = result.errorMessage || "The module could not be moved.";
         }
-
-        // The frame already shows the module in its new place, and reloading also puts it back if the move failed.
-        reloadRequest.value = { type: "PAGE_FRAME_RELOAD_REQUEST" };
     }
 
     /**
@@ -517,17 +561,20 @@
     }
 
     /**
-     * Deletes a Canvas block and its module after confirming, then reloads
-     * the frame so the page shows without it.
+     * Deletes a Canvas block and its module after confirming. The module shows
+     * as pending until the server confirms, then comes off the page.
      */
     async function onModuleDeleteRequested(blockId: number): Promise<void> {
-        if (!await confirmDelete("module")) {
+        if (isBuilderBusy.value || !await confirmDelete("module")) {
             return;
         }
 
         blockActionErrorMessage.value = "";
+        pendingBlockId.value = blockId;
 
         const result = await invokeBlockAction("DeleteModule", { blockId });
+
+        pendingBlockId.value = null;
 
         if (!result.isSuccess) {
             blockActionErrorMessage.value = result.errorMessage || "The module could not be deleted.";
@@ -540,7 +587,7 @@
             isModuleSettingsLoaded.value = false;
         }
 
-        reloadRequest.value = { type: "PAGE_FRAME_RELOAD_REQUEST" };
+        moduleRemoveRequest.value = { blockId };
     }
 
     /**
@@ -553,11 +600,13 @@
     }
 
     /**
-     * Saves the module's settings once they pass validation, then reloads the
-     * frame so the module renders with them, keeping it selected.
+     * Saves the module's settings once they pass validation. The module shows
+     * as pending until the target page has rendered it with them, and then
+     * only that module changes.
      */
     async function onModuleSettingsSubmit(): Promise<void> {
         const blockId = editingBlockId.value;
+        const blockGuid = editingBlockGuid.value;
 
         if (blockId === null) {
             return;
@@ -565,18 +614,20 @@
 
         moduleSheetErrorMessage.value = "";
         isModuleSaving.value = true;
+        pendingBlockId.value = blockId;
 
         const attributeValues = { ...moduleAttributeValues.value };
         const bag: PageBuilderModuleSettingsBag = {
             blockId,
+            blockGuid: blockGuid ?? emptyGuid,
             attributeValues
         };
 
         const result = await invokeBlockAction("SaveModuleSettings", { bag });
 
-        isModuleSaving.value = false;
-
         if (!result.isSuccess) {
+            isModuleSaving.value = false;
+            pendingBlockId.value = null;
             moduleSheetErrorMessage.value = result.errorMessage || "The module's settings could not be saved.";
             return;
         }
@@ -587,8 +638,18 @@
             isModuleSheetShown.value = false;
         }
 
-        selectRequest.value = { blockId };
-        reloadRequest.value = { type: "PAGE_FRAME_RELOAD_REQUEST" };
+        const html = blockGuid ? await getRenderedModuleHtml(blockGuid) : null;
+
+        isModuleSaving.value = false;
+        pendingBlockId.value = null;
+
+        // The settings were saved either way, so a reload shows them when the module could not be rendered.
+        if (html === null) {
+            reloadRequest.value = { type: "PAGE_FRAME_RELOAD_REQUEST" };
+        }
+        else {
+            moduleContentRequest.value = { blockId, html };
+        }
     }
 
     // #endregion Event Handlers
@@ -600,6 +661,7 @@
      */
     async function openModuleSheet(blockId: number): Promise<void> {
         editingBlockId.value = blockId;
+        editingBlockGuid.value = null;
         moduleAttributes.value = {};
         moduleAttributeValues.value = {};
         savedModuleAttributeValues.value = {};
@@ -622,6 +684,7 @@
             return;
         }
 
+        editingBlockGuid.value = result.data.blockGuid;
         moduleAttributes.value = result.data.attributes ?? {};
         moduleAttributeValues.value = result.data.attributeValues ?? {};
         isModuleSettingsLoaded.value = true;
@@ -650,6 +713,28 @@
         }
 
         return await confirm("Changes have been made that have not yet been saved. Do you want to leave without saving?");
+    }
+
+    /*
+        09/24/26 - JMH
+
+        A Canvas block renders its module's HTML in its own RefreshObsidianBlockInitialization action,
+        the one Rock's block reload calls, so asking the block for it renders just that module, with
+        its Lava in the target page's context. Rock only reloads a block itself from the Block
+        Properties dialog, through a WebForms trigger that also posts back the whole page, so the
+        builder calls the action directly and places the HTML itself.
+
+        Reason: Updates one module in place without reloading the page.
+    */
+    async function getRenderedModuleHtml(blockGuid: Guid): Promise<string | null> {
+        if (!targetPageGuid) {
+            return null;
+        }
+
+        const invokeCanvasBlockAction = createInvokeBlockAction(http.post, targetPageGuid, blockGuid, {}, emptyGuid, emptyGuid);
+        const result = await invokeCanvasBlockAction<ObsidianBlockConfigBag>("RefreshObsidianBlockInitialization");
+
+        return result.isSuccess && result.data ? result.data.initialContent ?? "" : null;
     }
 
     /**

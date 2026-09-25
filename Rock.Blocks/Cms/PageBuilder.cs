@@ -88,6 +88,7 @@ namespace Rock.Blocks.Cms
             return new PageBuilderInitializationBox
             {
                 TargetPageUrl = targetPageUrl,
+                TargetPageGuid = GetTargetPage()?.Guid,
                 ModuleTypes = moduleTypes
                     .Select( moduleType => new PageBuilderModuleTypeBag
                     {
@@ -185,7 +186,7 @@ namespace Rock.Blocks.Cms
         /// Adds a new module of the dropped type to the target page in a new Canvas block, at the position it was dropped.
         /// </summary>
         /// <param name="bag">Where the module was dropped and which module type it is.</param>
-        /// <returns>The identifier of the new Canvas block, or an error.</returns>
+        /// <returns>The identifiers of the new Canvas block, or an error.</returns>
         [BlockAction]
         public BlockActionResult AddModule( PageBuilderAddModuleBag bag )
         {
@@ -278,7 +279,11 @@ namespace Rock.Blocks.Cms
             // Saving a new page block does not refresh its page's cached block list.
             PageCache.Remove( targetPage.Id );
 
-            return ActionOk( block.Id );
+            return ActionOk( new PageBuilderAddModuleResponseBag
+            {
+                BlockId = block.Id,
+                BlockGuid = block.Guid
+            } );
         }
 
         /// <summary>
@@ -306,6 +311,7 @@ namespace Rock.Blocks.Cms
             return ActionOk( new PageBuilderModuleSettingsBag
             {
                 BlockId = block.Id,
+                BlockGuid = block.Guid,
                 Attributes = moduleInstance.GetPublicAttributesForEdit( RequestContext.CurrentPerson ),
                 AttributeValues = moduleInstance.GetPublicAttributeValuesForEdit( RequestContext.CurrentPerson )
             } );

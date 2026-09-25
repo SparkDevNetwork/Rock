@@ -15,6 +15,7 @@
 // </copyright>
 //
 
+using System;
 using System.Collections.Generic;
 
 namespace Rock.ViewModels.Blocks.Cms.PageBuilder
@@ -28,6 +29,12 @@ namespace Rock.ViewModels.Blocks.Cms.PageBuilder
         /// Gets or sets the URL of the page the builder frames for composing.
         /// </summary>
         public string TargetPageUrl { get; set; }
+
+        /// <summary>
+        /// Gets or sets the unique identifier of the page the builder frames, which the page's
+        /// own blocks are addressed by.
+        /// </summary>
+        public Guid? TargetPageGuid { get; set; }
 
         /// <summary>
         /// Gets or sets the message to display instead of the builder when it cannot run.

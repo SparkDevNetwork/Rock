@@ -16,36 +16,23 @@
 //
 
 using System;
-using System.Collections.Generic;
-
-using Rock.ViewModels.Utility;
 
 namespace Rock.ViewModels.Blocks.Cms.PageBuilder
 {
     /// <summary>
-    /// The settings of the module a Canvas block displays, as edited in the Page Builder.
+    /// Identifies the Canvas block the Page Builder added for a dropped module.
     /// </summary>
-    public class PageBuilderModuleSettingsBag
+    public class PageBuilderAddModuleResponseBag
     {
         /// <summary>
-        /// Gets or sets the identifier of the Canvas block that displays the module.
+        /// Gets or sets the identifier of the new Canvas block.
         /// </summary>
         public int BlockId { get; set; }
 
         /// <summary>
-        /// Gets or sets the unique identifier of the Canvas block, which its own block actions are
-        /// addressed by. The Page Builder ignores it when saving.
+        /// Gets or sets the unique identifier of the new Canvas block, which its own block actions
+        /// are addressed by.
         /// </summary>
         public Guid BlockGuid { get; set; }
-
-        /// <summary>
-        /// Gets or sets the module's settings, which are the attributes of its module instance.
-        /// </summary>
-        public Dictionary<string, PublicAttributeBag> Attributes { get; set; }
-
-        /// <summary>
-        /// Gets or sets the values of the module's settings, keyed by attribute key.
-        /// </summary>
-        public Dictionary<string, string> AttributeValues { get; set; }
     }
 }

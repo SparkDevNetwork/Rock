@@ -220,6 +220,42 @@ export const builderStyles = `
     transform: translate(var(--spacing-small), var(--spacing-small));
 }
 
+.pagebuilder-busy,
+.pagebuilder-busy * {
+    cursor: progress !important;
+}
+
+.pagebuilder-pending {
+    opacity: 0.5;
+    transition: opacity 0.15s ease-in-out;
+}
+
+.pagebuilder-pending-module {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--spacing-xsmall);
+    margin: var(--spacing-tiny) 0;
+    padding: var(--spacing-large);
+    font-family: var(--font-family-sans);
+    font-size: var(--font-size-regular);
+    color: var(--color-primary);
+    background-color: var(--color-primary-soft);
+    border: 1px dashed var(--color-primary);
+    border-radius: var(--rounded-medium);
+}
+
+.pagebuilder-spinner {
+    display: inline-block;
+    animation: pagebuilder-spin 1s linear infinite;
+}
+
+@keyframes pagebuilder-spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
 .pagebuilder-selection-delete {
     color: var(--color-danger-strong);
     background-color: var(--color-danger-soft);

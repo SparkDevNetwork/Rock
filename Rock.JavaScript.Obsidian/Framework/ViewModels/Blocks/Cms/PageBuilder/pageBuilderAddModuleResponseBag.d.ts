@@ -22,22 +22,15 @@
 //
 
 import { Guid } from "@Obsidian/Types";
-import { PageBuilderModuleTypeBag } from "@Obsidian/ViewModels/Blocks/Cms/PageBuilder/pageBuilderModuleTypeBag";
 
-/** The top-level initialization object returned by the Page Builder block. */
-export type PageBuilderInitializationBox = {
-    /** Gets or sets the message to display instead of the builder when it cannot run. */
-    errorMessage?: string | null;
-
-    /** Gets or sets the module types listed in the sidebar, in display order. */
-    moduleTypes?: PageBuilderModuleTypeBag[] | null;
-
+/** Identifies the Canvas block the Page Builder added for a dropped module. */
+export type PageBuilderAddModuleResponseBag = {
     /**
-     * Gets or sets the unique identifier of the page the builder frames, which the page's
-     * own blocks are addressed by.
+     * Gets or sets the unique identifier of the new Canvas block, which its own block actions
+     * are addressed by.
      */
-    targetPageGuid?: Guid | null;
+    blockGuid: Guid;
 
-    /** Gets or sets the URL of the page the builder frames for composing. */
-    targetPageUrl?: string | null;
+    /** Gets or sets the identifier of the new Canvas block. */
+    blockId: number;
 };

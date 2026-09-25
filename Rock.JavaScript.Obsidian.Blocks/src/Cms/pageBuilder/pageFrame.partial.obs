@@ -21,8 +21,13 @@
     import { PageBuilderModuleTypeBag } from "@Obsidian/ViewModels/Blocks/Cms/PageBuilder/pageBuilderModuleTypeBag";
     import { builderStyles, builderStyleVariableNames } from "./frameStyles.partial";
     import {
+        ModuleAddedRequest,
+        ModuleAddFailedRequest,
+        ModuleContentRequest,
         ModuleDrop,
         ModuleMove,
+        ModuleMoveFailedRequest,
+        ModuleRemoveRequest,
         ModuleSelectRequest,
         ModuleTypeDragEndRequest,
         ModuleTypeDragLeaveRequest,
@@ -41,6 +46,18 @@
 
         /** The existing child the module is placed before, or null to place it last. */
         beforeElement: Element | null;
+    };
+
+    /** Where a moved block was before its move, so a move the server rejects can be undone. */
+    type MoveOrigin = {
+        /** The block that was moved. */
+        blockElement: HTMLElement;
+
+        /** The zone content element it was in. */
+        containerElement: HTMLElement;
+
+        /** The element it was in front of, or null when it was last. */
+        nextElement: Element | null;
     };
 
     // #endregion Types
@@ -91,6 +108,43 @@
         selectRequest: {
             type: Object as PropType<ModuleSelectRequest | null | undefined>,
             required: true
+        },
+
+        moduleAddedRequest: {
+            type: Object as PropType<ModuleAddedRequest | null | undefined>,
+            required: true
+        },
+
+        moduleAddFailedRequest: {
+            type: Object as PropType<ModuleAddFailedRequest | null | undefined>,
+            required: true
+        },
+
+        moduleContentRequest: {
+            type: Object as PropType<ModuleContentRequest | null | undefined>,
+            required: true
+        },
+
+        moduleRemoveRequest: {
+            type: Object as PropType<ModuleRemoveRequest | null | undefined>,
+            required: true
+        },
+
+        moduleMoveFailedRequest: {
+            type: Object as PropType<ModuleMoveFailedRequest | null | undefined>,
+            required: true
+        },
+
+        /** The Canvas block with a change the server has not confirmed yet, which is shown as pending. */
+        pendingBlockId: {
+            type: Number as PropType<number | null>,
+            default: null
+        },
+
+        /** Whether a change is waiting on the server, which locks the page until it is confirmed. */
+        isBusy: {
+            type: Boolean as PropType<boolean>,
+            default: false
         }
     });
 
@@ -119,8 +173,10 @@
     const selectedBlockElement = ref<HTMLElement | null>(null);
     const pendingSelectBlockId = ref<number | null>(null);
     const movingBlockElement = ref<HTMLElement | null>(null);
+    const pendingModuleElement = ref<HTMLElement | null>(null);
 
     let isReloadPending = false;
+    let lastMoveOrigin: MoveOrigin | null = null;
 
     // #endregion Values
 
@@ -144,6 +200,14 @@
         frameDocument.addEventListener("click", onFrameClick, true);
         frameDocument.addEventListener("pointerdown", onFramePointerDown, true);
 
+        pendingModuleElement.value = null;
+        lastMoveOrigin = null;
+        frameDocument.documentElement.classList.toggle("pagebuilder-busy", props.isBusy);
+
+        if (props.pendingBlockId !== null) {
+            frameDocument.getElementById(`bid_${props.pendingBlockId}`)?.classList.add("pagebuilder-pending");
+        }
+
         // A reload replaces the document, so any previous selection is gone.
         if (selectedBlockElement.value) {
             selectedBlockElement.value = null;
@@ -166,6 +230,13 @@
      */
     function onFrameClick(event: MouseEvent): void {
         const target = event.target as Element | null;
+
+        // Nothing on the page reacts while a change is waiting on the server, including its own links.
+        if (props.isBusy) {
+            event.preventDefault();
+            event.stopPropagation();
+            return;
+        }
 
         // Rock's own block configuration bar keeps working as it does on any block.
         if (!target || typeof target.closest !== "function" || target.closest(".block-configuration")) {
@@ -210,8 +281,8 @@
         const blockElement = handleElement?.closest<HTMLElement>(".block-instance") ?? null;
         const blockId = getBlockId(blockElement);
 
-        // Only the primary button of the first pointer moves a module.
-        if (!handleElement || !blockElement || blockId === null || !event.isPrimary || event.button !== 0) {
+        // Only the primary button of the first pointer moves a module, and not while a change is waiting on the server.
+        if (!handleElement || !blockElement || blockId === null || !event.isPrimary || event.button !== 0 || props.isBusy) {
             return;
         }
 
@@ -266,9 +337,10 @@
     }
 
     /**
-     * Reports where the module was released so it can be added to the page.
-     * The target is resolved again from the release point, because a fast
-     * drag can release somewhere the last move never reported.
+     * Reports where the module was released so it can be added to the page,
+     * and shows a placeholder there until it has been. The target is resolved
+     * again from the release point, because a fast drag can release somewhere
+     * the last move never reported.
      */
     function onDrop(request: ModuleTypeDropRequest): void {
         const frameDocument = getFrameDocument();
@@ -286,6 +358,10 @@
         if (!target || !zoneName) {
             return;
         }
+
+        pendingModuleElement.value = createPendingModuleElement(frameDocument, moduleType.name ?? "Module");
+        target.containerElement.insertBefore(pendingModuleElement.value, target.beforeElement);
+        updateEmptyState(frameDocument, target.containerElement);
 
         emit("moduleDropped", {
             moduleType,
@@ -547,6 +623,12 @@
             return;
         }
 
+        lastMoveOrigin = {
+            blockElement,
+            containerElement: sourceContainerElement,
+            nextElement: blockElement.nextElementSibling
+        };
+
         target.containerElement.insertBefore(blockElement, target.beforeElement);
         updateEmptyState(blockElement.ownerDocument, sourceContainerElement);
         updateEmptyState(blockElement.ownerDocument, target.containerElement);
@@ -607,6 +689,154 @@
         }
 
         return false;
+    }
+
+    /**
+     * Creates the placeholder shown where a module was dropped while the
+     * server adds it.
+     */
+    function createPendingModuleElement(frameDocument: Document, moduleTypeName: string): HTMLElement {
+        const iconElement = frameDocument.createElement("i");
+        iconElement.className = "ti ti-loader-2 pagebuilder-spinner";
+
+        const textElement = frameDocument.createElement("span");
+        textElement.textContent = `Adding ${moduleTypeName}…`;
+
+        const pendingElement = frameDocument.createElement("div");
+        pendingElement.classList.add("pagebuilder-pending-module");
+        pendingElement.append(iconElement, textElement);
+
+        return pendingElement;
+    }
+
+    /**
+     * Turns the placeholder of the module being added into its Canvas block,
+     * showing the HTML the target page rendered for it.
+     */
+    function completePendingModule(request: ModuleAddedRequest): void {
+        const placeholderElement = pendingModuleElement.value;
+
+        pendingModuleElement.value = null;
+
+        if (!placeholderElement?.isConnected) {
+            return;
+        }
+
+        placeholderElement.replaceWith(createCanvasBlockElement(placeholderElement.ownerDocument, request));
+    }
+
+    /*
+        09/24/26 - JMH
+
+        A block added without reloading the page gets the parts of Rock's block markup the builder
+        relies on: the bid_ id it is addressed by, the page zone location that keeps drops below
+        site and layout blocks, and the obsidian- root holding its module's HTML. Rock's
+        configuration bar and the block's own Obsidian app are rendered with the page, so they
+        arrive with the next full page load.
+
+        Reason: A new module behaves like any other Canvas block in the builder without a reload.
+    */
+    function createCanvasBlockElement(frameDocument: Document, request: ModuleAddedRequest): HTMLElement {
+        const wrapperElement = frameDocument.createElement("div");
+        wrapperElement.className = "obsidian-block-wrapper";
+        wrapperElement.innerHTML = request.html;
+
+        const rootElement = frameDocument.createElement("div");
+        rootElement.id = `obsidian-${request.blockGuid}`;
+        rootElement.appendChild(wrapperElement);
+
+        const contentElement = frameDocument.createElement("div");
+        contentElement.className = "block-content";
+        contentElement.appendChild(rootElement);
+
+        const blockElement = frameDocument.createElement("div");
+        blockElement.id = `bid_${request.blockId}`;
+        blockElement.className = "block-instance js-block-instance canvas block-role-content";
+        blockElement.setAttribute("data-zone-location", "Page");
+        blockElement.appendChild(contentElement);
+
+        return blockElement;
+    }
+
+    /**
+     * Removes the placeholder of a module the server could not add.
+     */
+    function removePendingModule(): void {
+        const placeholderElement = pendingModuleElement.value;
+        const containerElement = placeholderElement?.parentElement;
+
+        pendingModuleElement.value = null;
+        placeholderElement?.remove();
+
+        if (containerElement) {
+            updateEmptyState(containerElement.ownerDocument, containerElement);
+        }
+    }
+
+    /**
+     * Shows a module's newly rendered HTML in place of its current content.
+     */
+    function replaceModuleContent(request: ModuleContentRequest): void {
+        const frameDocument = getFrameDocument();
+        const moduleElement = frameDocument?.getElementById(`bid_${request.blockId}`)?.querySelector(".canvas-module");
+
+        if (!frameDocument || !moduleElement) {
+            return;
+        }
+
+        const templateElement = frameDocument.createElement("template");
+        templateElement.innerHTML = request.html;
+
+        const renderedModuleElement = templateElement.content.querySelector(".canvas-module");
+
+        // The block's Obsidian app placed the module element and still holds on to it, so only its content changes.
+        moduleElement.innerHTML = renderedModuleElement ? renderedModuleElement.innerHTML : request.html;
+    }
+
+    /**
+     * Takes a deleted module's Canvas block off the page.
+     */
+    function removeCanvasBlock(blockId: number): void {
+        const blockElement = getFrameDocument()?.getElementById(`bid_${blockId}`);
+        const containerElement = blockElement?.parentElement;
+
+        if (!blockElement) {
+            return;
+        }
+
+        if (blockElement === selectedBlockElement.value) {
+            clearSelection();
+        }
+
+        blockElement.remove();
+
+        if (containerElement) {
+            updateEmptyState(blockElement.ownerDocument, containerElement);
+        }
+    }
+
+    /**
+     * Puts the last moved module back where it was, after the server could not
+     * save the move.
+     */
+    function revertLastMove(): void {
+        const origin = lastMoveOrigin;
+        const currentContainerElement = origin?.blockElement.parentElement;
+
+        lastMoveOrigin = null;
+
+        if (!origin || !origin.blockElement.isConnected) {
+            return;
+        }
+
+        const nextElement = origin.nextElement?.parentElement === origin.containerElement ? origin.nextElement : null;
+
+        origin.containerElement.insertBefore(origin.blockElement, nextElement);
+        updateEmptyState(origin.blockElement.ownerDocument, origin.containerElement);
+
+        if (currentContainerElement && currentContainerElement !== origin.containerElement) {
+            updateEmptyState(origin.blockElement.ownerDocument, currentContainerElement);
+        }
     }
 
     /**
@@ -845,6 +1075,52 @@
         if (request) {
             selectCanvasBlock(request.blockId);
         }
+    });
+
+    watch(() => props.moduleAddedRequest, request => {
+        if (request) {
+            completePendingModule(request);
+        }
+    });
+
+    watch(() => props.moduleAddFailedRequest, request => {
+        if (request) {
+            removePendingModule();
+        }
+    });
+
+    watch(() => props.moduleContentRequest, request => {
+        if (request) {
+            replaceModuleContent(request);
+        }
+    });
+
+    watch(() => props.moduleRemoveRequest, request => {
+        if (request) {
+            removeCanvasBlock(request.blockId);
+        }
+    });
+
+    watch(() => props.moduleMoveFailedRequest, request => {
+        if (request) {
+            revertLastMove();
+        }
+    });
+
+    watch(() => props.pendingBlockId, (blockId, previousBlockId) => {
+        const frameDocument = getFrameDocument();
+
+        if (previousBlockId !== null) {
+            frameDocument?.getElementById(`bid_${previousBlockId}`)?.classList.remove("pagebuilder-pending");
+        }
+
+        if (blockId !== null) {
+            frameDocument?.getElementById(`bid_${blockId}`)?.classList.add("pagebuilder-pending");
+        }
+    });
+
+    watch(() => props.isBusy, isBusy => {
+        getFrameDocument()?.documentElement.classList.toggle("pagebuilder-busy", isBusy);
     });
 
     // #endregion Watchers
