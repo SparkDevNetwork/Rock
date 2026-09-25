@@ -16,13 +16,15 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Net;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using Rock.Communication.Chat.Platform.Configuration;
 using Rock.Communication.Chat.Platform.Sync;
+using Rock.ViewModels.Blocks.Communication.Chat.ChatSyncNow;
 
-namespace Rock.Tests.Communication.Chat.Platform.Blocks
+namespace Rock.Tests.Communication.Chat.Platform.Sync
 {
     /// <summary>
     /// What Sync Now on the Chat Configuration and Group Type Detail blocks may do, and what it
@@ -35,7 +37,7 @@ namespace Rock.Tests.Communication.Chat.Platform.Blocks
     /// result: a run that ended just before the press would otherwise read as its answer.
     /// </remarks>
     [TestClass]
-    public class ChatSyncNowPolicyTests
+    public class ChatSyncNowTests
     {
         private const int JobId = 42;
 
@@ -46,7 +48,7 @@ namespace Rock.Tests.Communication.Chat.Platform.Blocks
         {
             var queued = new List<int>();
 
-            var result = ChatSyncNowPolicy.Request( new ChatPlatformConfiguration(), true, () => IdleJob( 900 ), queued.Add );
+            var result = ChatPlatformSyncHelper.RequestSyncNow( new ChatPlatformConfiguration(), true, () => IdleJob( 900 ), queued.Add );
 
             Assert.IsTrue( result.IsRefused );
             Assert.IsFalse( result.IsForbidden );
@@ -61,8 +63,8 @@ namespace Rock.Tests.Communication.Chat.Platform.Blocks
             var unreadable = Configured();
             unreadable.PrivateKey = null;
 
-            var result = ChatSyncNowPolicy.Request( unreadable, true, () => IdleJob( 900 ), queued.Add );
-            var neverEnabled = ChatSyncNowPolicy.Request( new ChatPlatformConfiguration(), true, () => IdleJob( 900 ), queued.Add );
+            var result = ChatPlatformSyncHelper.RequestSyncNow( unreadable, true, () => IdleJob( 900 ), queued.Add );
+            var neverEnabled = ChatPlatformSyncHelper.RequestSyncNow( new ChatPlatformConfiguration(), true, () => IdleJob( 900 ), queued.Add );
 
             Assert.IsTrue( result.IsRefused );
             StringAssert.Contains( result.RefusalMessage, "signing key" );
@@ -75,7 +77,7 @@ namespace Rock.Tests.Communication.Chat.Platform.Blocks
         {
             var queued = new List<int>();
 
-            var result = ChatSyncNowPolicy.Request( Configured(), false, () => IdleJob( 900 ), queued.Add );
+            var result = ChatPlatformSyncHelper.RequestSyncNow( Configured(), false, () => IdleJob( 900 ), queued.Add );
 
             Assert.IsTrue( result.IsRefused );
             Assert.IsTrue( result.IsForbidden );
@@ -88,7 +90,7 @@ namespace Rock.Tests.Communication.Chat.Platform.Blocks
         {
             var queued = new List<int>();
 
-            var result = ChatSyncNowPolicy.Request( Configured(), true, () => null, queued.Add );
+            var result = ChatPlatformSyncHelper.RequestSyncNow( Configured(), true, () => null, queued.Add );
 
             Assert.IsTrue( result.IsRefused );
             Assert.IsFalse( result.IsForbidden );
@@ -101,7 +103,7 @@ namespace Rock.Tests.Communication.Chat.Platform.Blocks
         {
             var queued = new List<int>();
 
-            var result = ChatSyncNowPolicy.Request( Configured(), true, () => IdleJob( 900 ), queued.Add );
+            var result = ChatPlatformSyncHelper.RequestSyncNow( Configured(), true, () => IdleJob( 900 ), queued.Add );
 
             Assert.IsFalse( result.IsRefused );
             CollectionAssert.AreEqual( new[] { JobId }, queued );
@@ -116,7 +118,7 @@ namespace Rock.Tests.Communication.Chat.Platform.Blocks
             var job = IdleJob( 900 );
             job.LatestRunId = null;
 
-            var result = ChatSyncNowPolicy.Request( Configured(), true, () => job, queued.Add );
+            var result = ChatPlatformSyncHelper.RequestSyncNow( Configured(), true, () => job, queued.Add );
 
             CollectionAssert.AreEqual( new[] { JobId }, queued );
             Assert.AreEqual( 0, result.Status.RunMarker );
@@ -129,9 +131,9 @@ namespace Rock.Tests.Communication.Chat.Platform.Blocks
             // answer to the press. The lock is also held after a run's record has ended, while Rock
             // sends the job's notification, which is why the lock and not the record is what decides.
             var queued = new List<int>();
-            var job = new ChatSyncNowPolicy.JobSnapshot { JobId = JobId, IsRunning = true, LatestRunId = 900 };
+            var job = new ChatPlatformSyncHelper.JobSnapshot { JobId = JobId, IsRunning = true, LatestRunId = 900 };
 
-            var result = ChatSyncNowPolicy.Request( Configured(), true, () => job, queued.Add );
+            var result = ChatPlatformSyncHelper.RequestSyncNow( Configured(), true, () => job, queued.Add );
 
             Assert.IsTrue( result.IsRefused );
             Assert.IsFalse( result.IsForbidden );
@@ -148,7 +150,7 @@ namespace Rock.Tests.Communication.Chat.Platform.Blocks
         [TestMethod]
         public void Status_WithNoRunRecordedAfterTheMarker_IsNotFinished()
         {
-            var result = ChatSyncNowPolicy.Status( true, 900, () => null );
+            var result = ChatPlatformSyncHelper.GetSyncNowStatus( true, 900, () => null );
 
             Assert.IsFalse( result.IsRefused );
             Assert.IsFalse( result.Status.IsFinished );
@@ -158,9 +160,9 @@ namespace Rock.Tests.Communication.Chat.Platform.Blocks
         [TestMethod]
         public void Status_WhileTheRunIsGoing_IsNotFinished()
         {
-            var run = new ChatSyncNowPolicy.RunSnapshot { Id = 901, HasEnded = false, Status = "Running" };
+            var run = new ChatPlatformSyncHelper.RunSnapshot { Id = 901, HasEnded = false, Status = "Running" };
 
-            var result = ChatSyncNowPolicy.Status( true, 900, () => run );
+            var result = ChatPlatformSyncHelper.GetSyncNowStatus( true, 900, () => run );
 
             Assert.IsFalse( result.Status.IsFinished );
         }
@@ -170,7 +172,7 @@ namespace Rock.Tests.Communication.Chat.Platform.Blocks
         {
             var run = Ended( 901, "Success", "Submission 1: 3 channels were sent. this restatement was applied" );
 
-            var result = ChatSyncNowPolicy.Status( true, 900, () => run );
+            var result = ChatPlatformSyncHelper.GetSyncNowStatus( true, 900, () => run );
 
             Assert.IsTrue( result.Status.IsFinished );
             Assert.IsFalse( result.Status.IsFailure );
@@ -182,7 +184,7 @@ namespace Rock.Tests.Communication.Chat.Platform.Blocks
         {
             foreach ( var status in new[] { "Warning", "Exception" } )
             {
-                var result = ChatSyncNowPolicy.Status( true, 900, () => Ended( 901, status, "the chat platform refused this restatement" ) );
+                var result = ChatPlatformSyncHelper.GetSyncNowStatus( true, 900, () => Ended( 901, status, "the chat platform refused this restatement" ) );
 
                 Assert.IsTrue( result.Status.IsFinished, status );
                 Assert.IsTrue( result.Status.IsFailure, status );
@@ -193,7 +195,7 @@ namespace Rock.Tests.Communication.Chat.Platform.Blocks
         [TestMethod]
         public void Status_NeverReportsARunRecordedAtOrBeforeTheMarker()
         {
-            var result = ChatSyncNowPolicy.Status( true, 900, () => Ended( 900, "Success", "an earlier run" ) );
+            var result = ChatPlatformSyncHelper.GetSyncNowStatus( true, 900, () => Ended( 900, "Success", "an earlier run" ) );
 
             Assert.IsFalse( result.Status.IsFinished, "a run that ended before the press was reported as its result" );
             Assert.AreNotEqual( "an earlier run", result.Status.Message );
@@ -202,7 +204,7 @@ namespace Rock.Tests.Communication.Chat.Platform.Blocks
         [TestMethod]
         public void Status_ForACallerWhoMayNotSave_IsForbidden()
         {
-            var result = ChatSyncNowPolicy.Status( false, 900, () => Ended( 901, "Success", "done" ) );
+            var result = ChatPlatformSyncHelper.GetSyncNowStatus( false, 900, () => Ended( 901, "Success", "done" ) );
 
             Assert.IsTrue( result.IsForbidden );
             Assert.IsNull( result.Status );
@@ -213,7 +215,7 @@ namespace Rock.Tests.Communication.Chat.Platform.Blocks
         {
             var reads = 0;
 
-            ChatSyncNowPolicy.Status( false, 900, () =>
+            ChatPlatformSyncHelper.GetSyncNowStatus( false, 900, () =>
             {
                 reads++;
                 return null;
@@ -234,18 +236,18 @@ namespace Rock.Tests.Communication.Chat.Platform.Blocks
             // is going to be refused has no business doing either.
             var reads = 0;
             var queued = new List<int>();
-            Func<ChatSyncNowPolicy.JobSnapshot> readJob = () =>
+            Func<ChatPlatformSyncHelper.JobSnapshot> readJob = () =>
             {
                 reads++;
                 return IdleJob( 900 );
             };
 
-            ChatSyncNowPolicy.Request( Configured(), false, readJob, queued.Add );
-            ChatSyncNowPolicy.Request( new ChatPlatformConfiguration(), true, readJob, queued.Add );
+            ChatPlatformSyncHelper.RequestSyncNow( Configured(), false, readJob, queued.Add );
+            ChatPlatformSyncHelper.RequestSyncNow( new ChatPlatformConfiguration(), true, readJob, queued.Add );
 
             var unreadable = Configured();
             unreadable.PrivateKey = null;
-            ChatSyncNowPolicy.Request( unreadable, true, readJob, queued.Add );
+            ChatPlatformSyncHelper.RequestSyncNow( unreadable, true, readJob, queued.Add );
 
             Assert.AreEqual( 0, reads );
             Assert.AreEqual( 0, queued.Count );
@@ -253,28 +255,26 @@ namespace Rock.Tests.Communication.Chat.Platform.Blocks
 
         #endregion What a refused press touches
 
-        #region Group Type Detail
+        #region The block's answer
 
         [TestMethod]
-        public void ChatSection_IsShownWhenEitherChatProviderIsConfigured()
+        public void ActionResult_AnswersAsBothBlocksDid()
         {
-            Assert.IsTrue( ChatSyncNowPolicy.IsChatSectionShown( true, new ChatPlatformConfiguration() ), "a church on the previous provider lost its chat settings" );
-            Assert.IsTrue( ChatSyncNowPolicy.IsChatSectionShown( false, Configured() ), "a church on this platform sees no chat settings on a group type" );
-            Assert.IsFalse( ChatSyncNowPolicy.IsChatSectionShown( false, new ChatPlatformConfiguration() ) );
+            var forbidden = ChatPlatformSyncHelper.ToActionResult( ChatPlatformSyncHelper.RequestSyncNow( Configured(), false, () => IdleJob( 900 ), id => { } ) );
+            var refused = ChatPlatformSyncHelper.ToActionResult( ChatPlatformSyncHelper.RequestSyncNow( Configured(), true, () => null, id => { } ) );
+            var waiting = ChatPlatformSyncHelper.RequestSyncNow( Configured(), true, () => IdleJob( 900 ), id => { } );
+            var ok = ChatPlatformSyncHelper.ToActionResult( waiting );
+
+            Assert.AreEqual( HttpStatusCode.Forbidden, forbidden.StatusCode );
+            StringAssert.Contains( forbidden.Error, "not authorized" );
+            Assert.AreEqual( HttpStatusCode.BadRequest, refused.StatusCode );
+            StringAssert.Contains( refused.Error, "Chat Platform Sync" );
+            Assert.AreEqual( HttpStatusCode.OK, ok.StatusCode );
+            Assert.AreSame( waiting.Status, ok.Content );
+            Assert.AreEqual( typeof( ChatSyncNowStatusBag ), ok.ContentClrType );
         }
 
-        [TestMethod]
-        public void ChatPlatformConfigured_IsTrueOnlyWhenThisPlatformCanRun()
-        {
-            var unreadable = Configured();
-            unreadable.PrivateKey = null;
-
-            Assert.IsTrue( ChatSyncNowPolicy.IsChatPlatformConfigured( Configured() ) );
-            Assert.IsFalse( ChatSyncNowPolicy.IsChatPlatformConfigured( unreadable ) );
-            Assert.IsFalse( ChatSyncNowPolicy.IsChatPlatformConfigured( new ChatPlatformConfiguration() ) );
-        }
-
-        #endregion Group Type Detail
+        #endregion The block's answer
 
         #region Helpers
 
@@ -290,14 +290,14 @@ namespace Rock.Tests.Communication.Chat.Platform.Blocks
             };
         }
 
-        private static ChatSyncNowPolicy.JobSnapshot IdleJob( int latestRunId )
+        private static ChatPlatformSyncHelper.JobSnapshot IdleJob( int latestRunId )
         {
-            return new ChatSyncNowPolicy.JobSnapshot { JobId = JobId, IsRunning = false, LatestRunId = latestRunId };
+            return new ChatPlatformSyncHelper.JobSnapshot { JobId = JobId, IsRunning = false, LatestRunId = latestRunId };
         }
 
-        private static ChatSyncNowPolicy.RunSnapshot Ended( int id, string status, string message )
+        private static ChatPlatformSyncHelper.RunSnapshot Ended( int id, string status, string message )
         {
-            return new ChatSyncNowPolicy.RunSnapshot { Id = id, HasEnded = true, Status = status, StatusMessage = message };
+            return new ChatPlatformSyncHelper.RunSnapshot { Id = id, HasEnded = true, Status = status, StatusMessage = message };
         }
 
         #endregion Helpers

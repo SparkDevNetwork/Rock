@@ -122,7 +122,7 @@ namespace Rock.Blocks.Group
             {
                 EnableGroupViewLavaTemplate = GetAttributeValue( AttributeKey.EnableGroupViewLavaTemplate ).AsBoolean(),
                 IsChatEnabledSystem = IsChatSettingsEnabled( chatPlatformConfiguration ),
-                IsChatPlatformConfigured = ChatSyncNowPolicy.IsChatPlatformConfigured( chatPlatformConfiguration ),
+                IsChatPlatformConfigured = chatPlatformConfiguration.IsConfigured,
                 GroupRequirementTypeOptions = new GroupRequirementTypeService( RockContext ).Queryable()
                     .OrderBy( req => req.Name )
                     .Select( req => new GroupRequirementTypeBag
@@ -162,7 +162,7 @@ namespace Rock.Blocks.Group
         /// </remarks>
         private static bool IsChatSettingsEnabled( ChatPlatformConfiguration chatPlatformConfiguration )
         {
-            return ChatSyncNowPolicy.IsChatSectionShown( ChatHelper.IsChatEnabled, chatPlatformConfiguration );
+            return chatPlatformConfiguration.IsChatSectionShown( ChatHelper.IsChatEnabled );
         }
 
         /// <summary>
@@ -170,33 +170,16 @@ namespace Rock.Blocks.Group
         /// whether they may edit it.
         /// </summary>
         /// <returns>True when they may.</returns>
+        /// <remarks>
+        /// Read from the cache rather than loaded, because the screen asks on every status check while
+        /// it waits for a run. A new group type has no cached entry, so it is refused as before.
+        /// </remarks>
         private bool IsAuthorizedToSyncChat()
         {
-            var entity = GetInitialEntity();
+            var groupType = GroupTypeCache.Get( PageParameter( PageParameterKey.GroupTypeId ), !PageCache.Layout.Site.DisablePredictableIds );
 
-            return entity != null
-                && entity.Id != 0
-                && entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson );
-        }
-
-        /// <summary>
-        /// Turns what the Sync Now policy decided into the block's answer.
-        /// </summary>
-        /// <param name="result">The decision.</param>
-        /// <returns>A refusal, or the status.</returns>
-        private BlockActionResult ToSyncNowActionResult( ChatSyncNowPolicy.Result result )
-        {
-            if ( result.IsForbidden )
-            {
-                return ActionForbidden( result.RefusalMessage );
-            }
-
-            if ( result.IsRefused )
-            {
-                return ActionBadRequest( result.RefusalMessage );
-            }
-
-            return ActionOk( result.Status );
+            return groupType != null
+                && groupType.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson );
         }
 
         /// <summary>
@@ -1892,13 +1875,7 @@ namespace Rock.Blocks.Group
         [BlockAction]
         public BlockActionResult RequestSyncNow()
         {
-            var result = ChatSyncNowPolicy.Request(
-                ChatPlatformConfigurationService.Read(),
-                IsAuthorizedToSyncChat(),
-                () => ChatSyncNowPolicy.ReadJob( RockContext ),
-                ChatSyncNowPolicy.QueueRunNow );
-
-            return ToSyncNowActionResult( result );
+            return ChatPlatformSyncHelper.RequestSyncNow( RockContext, IsAuthorizedToSyncChat() );
         }
 
         /// <summary>
@@ -1909,12 +1886,7 @@ namespace Rock.Blocks.Group
         [BlockAction]
         public BlockActionResult GetSyncNowStatus( int runMarker )
         {
-            var result = ChatSyncNowPolicy.Status(
-                IsAuthorizedToSyncChat(),
-                runMarker,
-                () => ChatSyncNowPolicy.ReadRunAfter( RockContext, runMarker ) );
-
-            return ToSyncNowActionResult( result );
+            return ChatPlatformSyncHelper.GetSyncNowStatus( RockContext, IsAuthorizedToSyncChat(), runMarker );
         }
 
         /// <summary>

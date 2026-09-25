@@ -123,13 +123,7 @@ namespace Rock.Blocks.Communication.Chat
         [BlockAction]
         public BlockActionResult RequestSyncNow()
         {
-            var result = ChatSyncNowPolicy.Request(
-                ChatPlatformConfigurationService.Read(),
-                BlockCache.IsAuthorized( Authorization.EDIT, GetCurrentPerson() ),
-                () => ChatSyncNowPolicy.ReadJob( RockContext ),
-                ChatSyncNowPolicy.QueueRunNow );
-
-            return ToSyncNowActionResult( result );
+            return ChatPlatformSyncHelper.RequestSyncNow( RockContext, BlockCache.IsAuthorized( Authorization.EDIT, GetCurrentPerson() ) );
         }
 
         /// <summary>
@@ -140,37 +134,12 @@ namespace Rock.Blocks.Communication.Chat
         [BlockAction]
         public BlockActionResult GetSyncNowStatus( int runMarker )
         {
-            var result = ChatSyncNowPolicy.Status(
-                BlockCache.IsAuthorized( Authorization.EDIT, GetCurrentPerson() ),
-                runMarker,
-                () => ChatSyncNowPolicy.ReadRunAfter( RockContext, runMarker ) );
-
-            return ToSyncNowActionResult( result );
+            return ChatPlatformSyncHelper.GetSyncNowStatus( RockContext, BlockCache.IsAuthorized( Authorization.EDIT, GetCurrentPerson() ), runMarker );
         }
 
         #endregion Block Actions
 
         #region Private Methods
-
-        /// <summary>
-        /// Turns what the Sync Now policy decided into the block's answer.
-        /// </summary>
-        /// <param name="result">The decision.</param>
-        /// <returns>A refusal, or the status.</returns>
-        private BlockActionResult ToSyncNowActionResult( ChatSyncNowPolicy.Result result )
-        {
-            if ( result.IsForbidden )
-            {
-                return ActionForbidden( result.RefusalMessage );
-            }
-
-            if ( result.IsRefused )
-            {
-                return ActionBadRequest( result.RefusalMessage );
-            }
-
-            return ActionOk( result.Status );
-        }
 
         /// <summary>
         /// Fills in the names of the Data Views the settings point at. The stored value

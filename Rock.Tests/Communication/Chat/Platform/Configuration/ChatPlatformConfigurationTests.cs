@@ -345,7 +345,30 @@ namespace Rock.Tests.Communication.Chat.Platform.Configuration
             Assert.IsFalse( configuration.IsConfigured );
         }
 
+        [TestMethod]
+        public void IsConfigured_IsTrueOnlyWhenThisPlatformCanRun()
+        {
+            var unreadable = Complete();
+            unreadable.PrivateKey = null;
+
+            Assert.IsTrue( Complete().IsConfigured );
+            Assert.IsFalse( unreadable.IsConfigured );
+            Assert.IsFalse( new ChatPlatformConfiguration().IsConfigured );
+        }
+
         #endregion IsConfigured
+
+        #region Group Type Detail
+
+        [TestMethod]
+        public void ChatSection_IsShownWhenEitherChatProviderIsConfigured()
+        {
+            Assert.IsTrue( new ChatPlatformConfiguration().IsChatSectionShown( true ), "a church on the previous provider lost its chat settings" );
+            Assert.IsTrue( Complete().IsChatSectionShown( false ), "a church on this platform sees no chat settings on a group type" );
+            Assert.IsFalse( new ChatPlatformConfiguration().IsChatSectionShown( false ) );
+        }
+
+        #endregion Group Type Detail
 
         #region Helpers
 

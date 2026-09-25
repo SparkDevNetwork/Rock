@@ -178,25 +178,6 @@ namespace Rock.Jobs
         }
 
         /// <summary>
-        /// Refused at compile time.
-        /// </summary>
-        /// <param name="isManualRun">Whether a person started this run rather than the schedule.</param>
-        /// <param name="backoffUntil">The time the chat platform last asked not to be called before.</param>
-        /// <param name="now">A wall-clock reading, which is the mistake this exists to stop.</param>
-        /// <returns>Nothing; calling it does not compile.</returns>
-        /// <remarks>
-        /// A <see cref="DateTime"/> handed to the overload above would be converted to an instant with
-        /// this server's offset. Rock's own clock returns the organisation's wall clock, which on a
-        /// hosted server is not in this server's zone, so the backoff would be compared against a moment
-        /// wrong by the difference: honoured hours past its expiry, or released hours early.
-        /// </remarks>
-        [Obsolete( "Pass an instant, such as DateTimeOffset.UtcNow. A DateTime is converted with this server's offset, which is not the organisation's, and the backoff is then compared against the wrong moment.", true )]
-        internal static string SkipReason( bool isManualRun, DateTimeOffset? backoffUntil, DateTime now )
-        {
-            throw new NotSupportedException( "a backoff cannot be judged against a wall-clock reading" );
-        }
-
-        /// <summary>
         /// What is worth saying about this schedule, or null where there is nothing.
         /// </summary>
         /// <param name="cronExpression">The schedule.</param>

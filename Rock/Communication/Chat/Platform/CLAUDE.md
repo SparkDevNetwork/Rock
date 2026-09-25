@@ -28,8 +28,10 @@ Folders appear when a file needs them. The scheduled sync follows Rock's job and
 `GivingAutomation` does with `GivingAutomationHelper`. The job, `Rock/Jobs/ChatPlatformSync.cs`,
 decides whether the run happens, reads the church, writes the body and records what it reports.
 `Sync/ChatPlatformSyncHelper.cs` holds the rest: the submission headers, the credential, submit and
-poll over one HttpClient per run, what the answer means, and the rules for writing a row value,
-which the immediate lane will share. The signing stays in `Session/`, the settings in
+poll over one HttpClient per run, what the answer means, the rules for writing a row value,
+which the immediate lane will share, and Sync Now. Each block that shows Sync Now asks its own
+authority and hands the answer to the helper, which returns the block's action result. The
+signing stays in `Session/`, the settings in
 `Configuration/` and the contract in `Contract/`; the helper calls them.
 
 The projection itself is one stored procedure, `spChat_SyncProjection`, which marks the groups that

@@ -138,5 +138,16 @@ namespace Rock.Communication.Chat.Platform.Configuration
         /// </summary>
         [Newtonsoft.Json.JsonIgnore]
         public bool IsEnabledWithoutCredentials => HasBeenEnabled && !IsConfigured;
+
+        /// <summary>
+        /// Whether Group Type Detail shows and saves a group type's chat settings, which is when
+        /// either this platform or the chat provider Rock shipped before it is configured.
+        /// </summary>
+        /// <param name="isPreviousProviderEnabled">Whether the chat provider Rock shipped before this one is configured.</param>
+        /// <returns>True when either provider is configured.</returns>
+        public bool IsChatSectionShown( bool isPreviousProviderEnabled )
+        {
+            return isPreviousProviderEnabled || IsConfigured;
+        }
     }
 }
