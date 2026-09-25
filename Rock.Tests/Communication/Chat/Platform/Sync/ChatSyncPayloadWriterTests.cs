@@ -16,6 +16,7 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.IO;
 using System.Linq;
 
@@ -25,11 +26,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
 using Rock.Communication.Chat.Platform.Contract;
-using Rock.Communication.Chat.Platform.Sync;
-using ChatSyncHeaderBuilder = Rock.Jobs.ChatPlatformSync.ChatSyncHeaderBuilder;
-using ChatSyncIdentityMarks = Rock.Jobs.ChatPlatformSync.ChatSyncIdentityMarks;
-using ChatSyncPayloadWriter = Rock.Jobs.ChatPlatformSync.ChatSyncPayloadWriter;
-using ChatSyncRowMapper = Rock.Jobs.ChatPlatformSync.ChatSyncRowMapper;
+using Rock.Jobs;
 
 namespace Rock.Tests.Communication.Chat.Platform.Sync
 {
@@ -45,65 +42,6 @@ namespace Rock.Tests.Communication.Chat.Platform.Sync
     [TestClass]
     public class ChatSyncPayloadWriterTests
     {
-        #region Methods
-
-        /// <summary>
-        /// The contract as it ships, parsed fresh so a test that edits it cannot reach another.
-        /// </summary>
-        /// <returns>The parsed contract.</returns>
-        private static JObject ShippedContract()
-        {
-            return JObject.Parse( ChatWireContract.Json );
-        }
-
-        /// <summary>
-        /// A row of the right width for a section, every value null.
-        /// </summary>
-        /// <param name="writer">The writer, which knows the width.</param>
-        /// <param name="section">The section.</param>
-        /// <returns>The row.</returns>
-        private static IList<object> EmptyRow( ChatSyncPayloadWriter writer, string section )
-        {
-            return Enumerable.Repeat( (object)null, writer.GetRowWidth( section ) ).ToList();
-        }
-
-        /// <summary>
-        /// Writes every section the contract names, calling back for the rows of each.
-        /// </summary>
-        /// <param name="contract">The contract.</param>
-        /// <param name="rowsForSection">Supplies the rows of a section.</param>
-        /// <param name="rowCounts">Receives what the writer tallied.</param>
-        /// <returns>The body as text.</returns>
-        private static string WriteBody( JObject contract, Func<ChatSyncPayloadWriter, string, IEnumerable<IList<object>>> rowsForSection, out IDictionary<string, int> rowCounts )
-        {
-            var sections = contract["payload"]["sections"].Select( s => s.Value<string>() ).ToList();
-            var text = new StringWriter();
-
-            using ( var json = new JsonTextWriter( text ) )
-            {
-                var writer = new ChatSyncPayloadWriter( contract, json );
-
-                foreach ( var section in sections )
-                {
-                    writer.BeginSection( section );
-
-                    foreach ( var row in rowsForSection( writer, section ) )
-                    {
-                        writer.WriteRow( row );
-                    }
-
-                    writer.EndSection();
-                }
-
-                writer.Complete();
-                rowCounts = writer.RowCounts;
-            }
-
-            return text.ToString();
-        }
-
-        #endregion
-
         #region Shape
 
         /// <summary>
@@ -112,12 +50,11 @@ namespace Rock.Tests.Communication.Chat.Platform.Sync
         [TestMethod]
         public void Body_IsKeyedByTheContractsSectionNames()
         {
-            var contract = ShippedContract();
+            var contract = ChatSyncTestBody.ShippedContract();
             var renamed = new[] { "aliases_renamed", "channels_renamed", "members_renamed", "badges_renamed" };
             contract["payload"]["sections"] = new JArray( renamed );
 
-            IDictionary<string, int> counts;
-            var body = JObject.Parse( WriteBody( contract, ( w, s ) => Enumerable.Empty<IList<object>>(), out counts ) );
+            var body = JObject.Parse( ChatSyncTestBody.Write( contract, ChatSyncTestBody.ShippedResultSets() ) );
 
             CollectionAssert.AreEquivalent(
                 renamed,
@@ -131,12 +68,16 @@ namespace Rock.Tests.Communication.Chat.Platform.Sync
         [TestMethod]
         public void Rows_AreWrittenAsPositionalArrays()
         {
-            var contract = ShippedContract();
+            var resultSets = ChatSyncTestBody.ShippedResultSets();
 
-            IDictionary<string, int> counts;
-            var body = JObject.Parse( WriteBody( contract, ( w, s ) => new[] { EmptyRow( w, s ) }, out counts ) );
+            foreach ( var table in resultSets )
+            {
+                ChatSyncTestBody.AddRow( table, null );
+            }
 
-            foreach ( var section in new[] { "aliases", "channels", "members", "badges" } )
+            var body = JObject.Parse( ChatSyncTestBody.Write( ChatSyncTestBody.ShippedContract(), resultSets ) );
+
+            foreach ( var section in ChatSyncTestBody.ShippedSections )
             {
                 Assert.AreEqual( JTokenType.Array, body[section].Type, string.Format( "the {0} section is not an array of rows", section ) );
                 Assert.AreEqual( JTokenType.Array, body[section][0].Type, string.Format( "a {0} row is not a positional array", section ) );
@@ -144,75 +85,112 @@ namespace Rock.Tests.Communication.Chat.Platform.Sync
         }
 
         /// <summary>
-        /// The section list and the table list line up by position, which is how a section's width
-        /// is known at all.
+        /// The section list and the table list line up by position, which is how a section's
+        /// columns are known at all.
         /// </summary>
         [TestMethod]
         public void Sections_AndTables_LineUpByPosition()
         {
-            var contract = ShippedContract();
+            var contract = ChatSyncTestBody.ShippedContract();
 
             var sections = contract["payload"]["sections"].Select( s => s.Value<string>() ).ToList();
             var tables = contract["tables"].Select( t => t["name"].Value<string>() ).ToList();
 
-            Assert.AreEqual( tables.Count, sections.Count, "the contract names a different number of payload sections than tables, so no section can be matched to a width" );
+            Assert.AreEqual( tables.Count, sections.Count, "the contract names a different number of payload sections than tables, so no section can be matched to its columns" );
 
-            var writer = new ChatSyncPayloadWriter( contract, new JsonTextWriter( new StringWriter() ) );
+            var resultSets = ChatSyncTestBody.ShippedResultSets();
+
+            foreach ( var table in resultSets )
+            {
+                ChatSyncTestBody.AddRow( table, null );
+            }
+
+            var body = JObject.Parse( ChatSyncTestBody.Write( contract, resultSets ) );
 
             for ( var i = 0; i < sections.Count; i++ )
             {
                 var expected = contract["tables"][i]["columns"].Count();
 
-                Assert.AreEqual( expected, writer.GetRowWidth( sections[i] ), string.Format( "the {0} section was not matched to the width of {1}", sections[i], tables[i] ) );
+                Assert.AreEqual( expected, body[sections[i]][0].Count(), string.Format( "the {0} section was not written at the width of {1}", sections[i], tables[i] ) );
             }
         }
 
         /// <summary>
-        /// A row of the wrong width shifts every later value one place, and no check on the far
-        /// side can see it once the types happen to line up.
+        /// A contract whose section and table lists differ in length stops the submission, because
+        /// no section could then be matched to its columns.
         /// </summary>
         [TestMethod]
-        public void Rows_OfTheWrongWidth_StopTheSubmissionHere()
+        public void Contract_WithMoreSectionsThanTables_StopsTheSubmissionHere()
         {
-            var contract = ShippedContract();
-            var text = new StringWriter();
+            var contract = ChatSyncTestBody.ShippedContract();
+            ( ( JArray ) contract["tables"] ).RemoveAt( 3 );
 
-            using ( var json = new JsonTextWriter( text ) )
-            {
-                var writer = new ChatSyncPayloadWriter( contract, json );
-                writer.BeginSection( "members" );
-
-                var thrown = Assert.ThrowsExactly<InvalidOperationException>(
-                    () => writer.WriteRow( new List<object> { null, null, null, null } ),
-                    "a row one value short was written, so every value after the gap lands in the wrong column" );
-
-                StringAssert.Contains( thrown.Message, "members", "the failure does not name the section whose row was the wrong width" );
-                StringAssert.Contains( thrown.Message, "5", "the failure does not name the width the contract expects" );
-            }
+            Assert.ThrowsExactly<InvalidOperationException>(
+                () => ChatSyncTestBody.Write( contract, ChatSyncTestBody.ShippedResultSets() ),
+                "a section with no table in the contract was written, so its columns could only have been guessed" );
         }
 
         /// <summary>
-        /// Every section the contract names has to be written, because a section left out is not an
-        /// empty church, it is a projection that did not run.
+        /// A section the projection returned no result set for stops the submission, because a
+        /// section left out is not an empty church, it is a projection that did not run.
         /// </summary>
         [TestMethod]
-        public void Body_WithASectionNeverWritten_StopsTheSubmissionHere()
+        public void Body_WithAResultSetMissing_StopsTheSubmissionHere()
         {
-            var contract = ShippedContract();
-            var text = new StringWriter();
+            var shortOfOne = ChatSyncTestBody.ShippedResultSets().Take( 3 ).ToArray();
 
-            using ( var json = new JsonTextWriter( text ) )
+            var thrown = Assert.ThrowsExactly<InvalidOperationException>(
+                () => ChatSyncTestBody.Write( ChatSyncTestBody.ShippedContract(), shortOfOne ),
+                "a body missing its last section was written, so a projection that never returned it would be applied as a church with no badges" );
+
+            StringAssert.Contains( thrown.Message, "badges", "the failure does not name the section with no result set" );
+        }
+
+        /// <summary>
+        /// Every value lands under the wire column the contract lists at its position, whatever
+        /// order the result set returns its columns in.
+        /// </summary>
+        /// <remarks>
+        /// Rows travel as positional arrays, so the order on the wire is the one thing both sides
+        /// have to agree about. The result set's columns are reversed here, so a writer that
+        /// followed the reader's order rather than the contract's would put every value in the
+        /// wrong place.
+        /// </remarks>
+        [TestMethod]
+        public void Values_AreWrittenInTheContractsColumnOrder_NotTheResultSets()
+        {
+            var contract = ChatSyncTestBody.ShippedContract();
+            var resultSets = ChatSyncTestBody.ShippedSections
+                .Select( s => ChatSyncTestBody.SectionTable( s, ChatSyncSqlText.SectionColumns( s ).Reverse().ToList() ) )
+                .ToArray();
+
+            foreach ( var table in resultSets )
             {
-                var writer = new ChatSyncPayloadWriter( contract, json );
+                // Every column carries its own name, except the three that are converted on the way.
+                var values = table.Columns.Cast<DataColumn>()
+                    .Where( c => c.ColumnName != "badge_keys" && c.ColumnName != "ban_expires_at" && c.ColumnName != "highlight_color" )
+                    .ToDictionary( c => c.ColumnName, c => ( object ) c.ColumnName );
 
-                writer.BeginSection( "aliases" );
-                writer.EndSection();
+                ChatSyncTestBody.AddRow( table, values );
+            }
 
-                var thrown = Assert.ThrowsExactly<InvalidOperationException>(
-                    () => writer.Complete(),
-                    "a body missing three of its four sections was completed, so a projection that never ran would be applied as an empty church" );
+            var body = JObject.Parse( ChatSyncTestBody.Write( contract, resultSets ) );
+            var sections = contract["payload"]["sections"].Select( s => s.Value<string>() ).ToList();
 
-                StringAssert.Contains( thrown.Message, "channels", "the failure does not name a section that was never written" );
+            for ( var i = 0; i < sections.Count; i++ )
+            {
+                var wireColumns = contract["tables"][i]["columns"].Select( c => c.Value<string>() ).ToList();
+                var row = ( JArray ) body[sections[i]][0];
+
+                for ( var j = 0; j < wireColumns.Count; j++ )
+                {
+                    if ( row[j].Type != JTokenType.String )
+                    {
+                        continue;
+                    }
+
+                    Assert.AreEqual( wireColumns[j], row[j].Value<string>(), string.Format( "the {0} row carries another column's value at position {1}", sections[i], j ) );
+                }
             }
         }
 
@@ -234,7 +212,6 @@ namespace Rock.Tests.Communication.Chat.Platform.Sync
         [TestMethod]
         public void RowCounts_AreATallyOfTheRowsActuallyWritten()
         {
-            var contract = ShippedContract();
             var rowsBySection = new Dictionary<string, int>
             {
                 { "aliases", 7 },
@@ -243,11 +220,18 @@ namespace Rock.Tests.Communication.Chat.Platform.Sync
                 { "badges", 2 }
             };
 
-            IDictionary<string, int> counts;
-            var body = JObject.Parse( WriteBody(
-                contract,
-                ( w, s ) => Enumerable.Range( 0, rowsBySection[s] ).Select( _ => EmptyRow( w, s ) ),
-                out counts ) );
+            var resultSets = ChatSyncTestBody.ShippedResultSets();
+
+            foreach ( var table in resultSets )
+            {
+                for ( var i = 0; i < rowsBySection[table.TableName]; i++ )
+                {
+                    ChatSyncTestBody.AddRow( table, null );
+                }
+            }
+
+            var counts = new Dictionary<string, int>();
+            var body = JObject.Parse( ChatSyncTestBody.Write( ChatSyncTestBody.ShippedContract(), resultSets, counts ) );
 
             foreach ( var section in rowsBySection.Keys )
             {
@@ -268,69 +252,24 @@ namespace Rock.Tests.Communication.Chat.Platform.Sync
         [TestMethod]
         public void RowCounts_DoNotCountARowTheWriterFailedToWrite()
         {
-            var contract = ShippedContract();
-            var text = new FailingWriter();
+            var resultSets = ChatSyncTestBody.ShippedResultSets();
+            var aliases = resultSets[0];
 
-            using ( var json = new JsonTextWriter( text ) )
+            for ( var i = 0; i < 3; i++ )
             {
-                var writer = new ChatSyncPayloadWriter( contract, json );
-                writer.BeginSection( "members" );
-
-                for ( var i = 0; i < 3; i++ )
-                {
-                    writer.WriteRow( EmptyRow( writer, "members" ) );
-                }
-
-                text.FailFromNow = true;
-
-                Assert.ThrowsExactly<IOException>(
-                    () => writer.WriteRow( EmptyRow( writer, "members" ) ),
-                    "the fourth write did not fail, so this cell separates nothing" );
-
-                Assert.AreEqual( 3, writer.RowCounts["members"], "the tally counted a row that was never written, so a body cut short would agree with its own count" );
-
-                // Let the writer close its containers on the way out.
-                text.FailFromNow = false;
-            }
-        }
-
-        #endregion
-
-        #region Support
-
-        /// <summary>
-        /// A writer that can be told to refuse every write from a given moment on, which is the
-        /// only way to make a row fail to be written without changing the writer under test.
-        /// </summary>
-        private sealed class FailingWriter : StringWriter
-        {
-            public bool FailFromNow { get; set; }
-
-            public override void Write( char value )
-            {
-                Refuse();
-                base.Write( value );
+                ChatSyncTestBody.AddRow( aliases, null );
             }
 
-            public override void Write( string value )
-            {
-                Refuse();
-                base.Write( value );
-            }
+            // The fourth row carries a badge key that cannot be read, so it fails as it is written.
+            ChatSyncTestBody.AddRow( aliases, new Dictionary<string, object> { { "badge_keys", "not-an-identifier" } } );
 
-            public override void Write( char[] buffer, int index, int count )
-            {
-                Refuse();
-                base.Write( buffer, index, count );
-            }
+            var counts = new Dictionary<string, int>();
 
-            private void Refuse()
-            {
-                if ( FailFromNow )
-                {
-                    throw new IOException( "the stub writer refused the write" );
-                }
-            }
+            Assert.ThrowsExactly<InvalidOperationException>(
+                () => ChatSyncTestBody.Write( ChatSyncTestBody.ShippedContract(), resultSets, counts ),
+                "the fourth row did not fail, so this cell separates nothing" );
+
+            Assert.AreEqual( 3, counts["aliases"], "the tally counted a row that was never written, so a body cut short would agree with its own count" );
         }
 
         #endregion
@@ -344,19 +283,9 @@ namespace Rock.Tests.Communication.Chat.Platform.Sync
         [TestMethod]
         public void Guids_AreWrittenLowercaseAndHyphenated()
         {
-            var contract = ShippedContract();
-            var guid = new Guid( "DFDC14A3-D1DC-4342-A012-5CE9E8994B5E" );
-            var text = new StringWriter();
+            var text = WriteOneValue( new Guid( "DFDC14A3-D1DC-4342-A012-5CE9E8994B5E" ) );
 
-            using ( var json = new JsonTextWriter( text ) )
-            {
-                var writer = new ChatSyncPayloadWriter( contract, json );
-                writer.BeginSection( "members" );
-                writer.WriteRow( new List<object> { guid, null, null, null, null } );
-                writer.EndSection();
-            }
-
-            StringAssert.Contains( text.ToString(), "dfdc14a3-d1dc-4342-a012-5ce9e8994b5e", "the guid was not written lowercase and hyphenated" );
+            StringAssert.Contains( text, "dfdc14a3-d1dc-4342-a012-5ce9e8994b5e", "the guid was not written lowercase and hyphenated" );
         }
 
         /// <summary>
@@ -370,31 +299,13 @@ namespace Rock.Tests.Communication.Chat.Platform.Sync
         [TestMethod]
         public void CollectionsOfGuids_AreWrittenAsArraysRatherThanJoinedText()
         {
-            var contract = ShippedContract();
             var badges = new List<Guid>
             {
                 new Guid( "C1000000-0000-4000-8000-000000000001" ),
                 new Guid( "C1000000-0000-4000-8000-000000000002" )
             };
 
-            var text = new StringWriter();
-
-            using ( var json = new JsonTextWriter( text ) )
-            {
-                var writer = new ChatSyncPayloadWriter( contract, json );
-                writer.BeginSection( "aliases" );
-
-                var row = EmptyRow( writer, "aliases" );
-                row[6] = badges;
-                writer.WriteRow( row );
-
-                writer.EndSection();
-            }
-
-            // The writer closes the containers it opened when it is disposed, so the text is
-            // already a whole object by the time it is read back here.
-            var written = JObject.Parse( text.ToString() ).Value<JArray>( "aliases" );
-            var element = written[0][6];
+            var element = JToken.Parse( WriteOneValue( badges ) );
 
             Assert.AreEqual( JTokenType.Array, element.Type, "the badge keys were not written as an array, so every person arrives with none and nothing reports it" );
             CollectionAssert.AreEqual(
@@ -417,20 +328,11 @@ namespace Rock.Tests.Communication.Chat.Platform.Sync
         [TestMethod]
         public void TimesThatAreNotUtc_StopTheSubmissionHere()
         {
-            var contract = ShippedContract();
-            var text = new StringWriter();
+            var thrown = Assert.ThrowsExactly<InvalidOperationException>(
+                () => WriteOneValue( new DateTime( 2026, 9, 21, 18, 0, 0, DateTimeKind.Unspecified ) ),
+                "a time with no zone was written, so the platform reads it in its own zone and the value is wrong by the church's offset" );
 
-            using ( var json = new JsonTextWriter( text ) )
-            {
-                var writer = new ChatSyncPayloadWriter( contract, json );
-                writer.BeginSection( "members" );
-
-                var thrown = Assert.ThrowsExactly<InvalidOperationException>(
-                    () => writer.WriteRow( new List<object> { null, null, null, null, new DateTime( 2026, 9, 21, 18, 0, 0, DateTimeKind.Unspecified ) } ),
-                    "a time with no zone was written, so the platform reads it in its own zone and the value is wrong by the church's offset" );
-
-                StringAssert.Contains( thrown.Message, "UTC", "the failure does not say what is wrong with the time" );
-            }
+            StringAssert.Contains( thrown.Message, "UTC", "the failure does not say what is wrong with the time" );
         }
 
         /// <summary>
@@ -439,21 +341,143 @@ namespace Rock.Tests.Communication.Chat.Platform.Sync
         [TestMethod]
         public void UtcTimes_AreWrittenWithAnExplicitOffset()
         {
-            var contract = ShippedContract();
+            var text = WriteOneValue( new DateTime( 2026, 9, 21, 18, 0, 0, DateTimeKind.Utc ) );
+
+            StringAssert.Contains( text, "2026-09-21T18:00:00", "the time was not written in a form the platform parses" );
+            StringAssert.Contains( text, "Z", "the time carries no offset, so it is read in the receiving session's zone" );
+        }
+
+        /// <summary>
+        /// A value of a type with no agreed form on the wire stops the submission rather than being
+        /// serialized however Json.NET decides.
+        /// </summary>
+        [TestMethod]
+        public void Values_WithNoAgreedForm_StopTheSubmissionHere()
+        {
+            var thrown = Assert.ThrowsExactly<InvalidOperationException>(
+                () => WriteOneValue( new byte[] { 1, 2 } ),
+                "a value with no agreed form was written in a shape nobody chose" );
+
+            StringAssert.Contains( thrown.Message, "members", "the failure does not name the section" );
+        }
+
+        /// <summary>
+        /// Writes one value as the body writer would.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns>The JSON text.</returns>
+        private static string WriteOneValue( object value )
+        {
             var text = new StringWriter();
 
             using ( var json = new JsonTextWriter( text ) )
             {
-                var writer = new ChatSyncPayloadWriter( contract, json );
-                writer.BeginSection( "members" );
-                writer.WriteRow( new List<object> { null, null, null, null, new DateTime( 2026, 9, 21, 18, 0, 0, DateTimeKind.Utc ) } );
-                writer.EndSection();
+                ChatPlatformSync.WriteValue( json, value, "members" );
             }
 
-            StringAssert.Contains( text.ToString(), "2026-09-21T18:00:00", "the time was not written in a form the platform parses" );
-            StringAssert.Contains( text.ToString(), "Z", "the time carries no offset, so it is read in the receiving session's zone" );
+            return text.ToString();
         }
 
         #endregion
+    }
+
+    /// <summary>
+    /// Builds what the projection procedure returns, as a reader, and writes a body from it.
+    /// </summary>
+    internal static class ChatSyncTestBody
+    {
+        /// <summary>
+        /// The shipped contract's sections, in its order.
+        /// </summary>
+        public static readonly string[] ShippedSections = { "aliases", "channels", "members", "badges" };
+
+        /// <summary>
+        /// The contract as it ships, parsed fresh so a test that edits it cannot reach another.
+        /// </summary>
+        /// <returns>The parsed contract.</returns>
+        public static JObject ShippedContract()
+        {
+            return JObject.Parse( ChatWireContract.Json );
+        }
+
+        /// <summary>
+        /// A zone that is not UTC and does not observe daylight saving, so the arithmetic in these
+        /// tests is the same on every day of the year.
+        /// </summary>
+        /// <returns>The zone.</returns>
+        public static TimeZoneInfo FixedOffsetZone()
+        {
+            return TimeZoneInfo.FindSystemTimeZoneById( "US Mountain Standard Time" );
+        }
+
+        /// <summary>
+        /// One empty result set per section, with the columns the shipped procedure returns for it.
+        /// </summary>
+        /// <returns>The result sets, in the contract's section order.</returns>
+        public static DataTable[] ShippedResultSets()
+        {
+            return ShippedSections.Select( s => SectionTable( s, ChatSyncSqlText.SectionColumns( s ) ) ).ToArray();
+        }
+
+        /// <summary>
+        /// An empty result set for a section with the named columns, in the order given.
+        /// </summary>
+        /// <param name="section">The section.</param>
+        /// <param name="columns">The column names.</param>
+        /// <returns>The result set.</returns>
+        public static DataTable SectionTable( string section, IEnumerable<string> columns )
+        {
+            var table = new DataTable( section );
+
+            foreach ( var column in columns )
+            {
+                table.Columns.Add( column, typeof( object ) );
+            }
+
+            return table;
+        }
+
+        /// <summary>
+        /// Adds a row, with the named values and null in every other column.
+        /// </summary>
+        /// <param name="table">The result set.</param>
+        /// <param name="values">Values by column name, or null for none.</param>
+        public static void AddRow( DataTable table, IDictionary<string, object> values )
+        {
+            var row = table.NewRow();
+
+            foreach ( DataColumn column in table.Columns )
+            {
+                object value;
+                row[column] = values != null && values.TryGetValue( column.ColumnName, out value ) && value != null ? value : DBNull.Value;
+            }
+
+            table.Rows.Add( row );
+        }
+
+        /// <summary>
+        /// Writes a body from the result sets, read the way the job reads the procedure: after the
+        /// first result set, which carries the moment and the identity marks.
+        /// </summary>
+        /// <param name="contract">The contract.</param>
+        /// <param name="sections">The section result sets.</param>
+        /// <param name="rowCounts">Receives the tally, or null.</param>
+        /// <returns>The body as text.</returns>
+        public static string Write( JObject contract, DataTable[] sections, IDictionary<string, int> rowCounts = null )
+        {
+            var marks = new DataTable( "marks" );
+            marks.Columns.Add( "read_at", typeof( DateTime ) );
+            marks.Rows.Add( DateTime.UtcNow );
+
+            var text = new StringWriter();
+
+            using ( var reader = new DataTableReader( new[] { marks }.Concat( sections ).ToArray() ) )
+            using ( var json = new JsonTextWriter( text ) )
+            {
+                ChatPlatformSync.WriteSections( reader, contract, json, FixedOffsetZone(), rowCounts ?? new Dictionary<string, int>() );
+            }
+
+            return text.ToString();
+        }
     }
 }

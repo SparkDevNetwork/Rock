@@ -445,7 +445,6 @@ namespace Rock.Jobs
                 using ( var reader = command.ExecuteReader() )
                 {
                     ReadMarks( reader, result );
-                    reader.NextResult();
 
                     IDictionary<string, int> rowCounts;
                     result.Payload = BuildPayload( reader, out rowCounts );
@@ -491,16 +490,15 @@ namespace Rock.Jobs
         }
 
         /// <summary>
-        /// Writes every section from the result sets the reader is on into one buffer.
+        /// Writes every section from the result sets after the one the reader is on into one buffer.
         /// </summary>
-        /// <param name="reader">The reader, on the first section's result set.</param>
+        /// <param name="reader">The reader, on the result set before the first section's.</param>
         /// <param name="rowCounts">The rows actually written, by section.</param>
         /// <returns>The body, as the one buffer it was written into.</returns>
         private static ArraySegment<byte> BuildPayload( DbDataReader reader, out IDictionary<string, int> rowCounts )
         {
             var contract = JObject.Parse( ChatWireContract.Json );
-            var sections = new ChatSyncHeaderBuilder( contract ).GetPayloadSections();
-            var mapper = new ChatSyncRowMapper( contract, RockDateTime.OrgTimeZoneInfo );
+            rowCounts = new Dictionary<string, int>();
 
             // The body is encoded as it is written and handed on as the one buffer it was written
             // into. Held as text and then encoded for the transport it would be two copies of the
@@ -514,17 +512,8 @@ namespace Rock.Jobs
             // below depends on; 64 KB rather than the 1 KB default is a choice, not a measurement.
             using ( var text = new StreamWriter( body, new UTF8Encoding( false ), 64 * 1024, true ) )
             using ( var jsonWriter = new JsonTextWriter( text ) { CloseOutput = false } )
-            using ( var payloadWriter = new ChatSyncPayloadWriter( contract, jsonWriter ) )
             {
-                foreach ( var section in sections )
-                {
-                    WriteSection( reader, payloadWriter, mapper, section );
-
-                    reader.NextResult();
-                }
-
-                payloadWriter.Complete();
-                rowCounts = payloadWriter.RowCounts;
+                WriteSections( reader, contract, jsonWriter, RockDateTime.OrgTimeZoneInfo, rowCounts );
             }
 
             ArraySegment<byte> buffer;
@@ -535,26 +524,6 @@ namespace Rock.Jobs
             }
 
             return buffer;
-        }
-
-        /// <summary>
-        /// Writes one section from the result set the reader is currently on.
-        /// </summary>
-        private static void WriteSection( DbDataReader reader, ChatSyncPayloadWriter payloadWriter, ChatSyncRowMapper mapper, string section )
-        {
-            payloadWriter.BeginSection( section );
-
-            var columns = Enumerable.Range( 0, reader.FieldCount ).Select( reader.GetName ).ToList();
-
-            while ( reader.Read() )
-            {
-                var values = new object[reader.FieldCount];
-                reader.GetValues( values );
-
-                payloadWriter.WriteRow( mapper.Map( section, columns, values ) );
-            }
-
-            payloadWriter.EndSection();
         }
 
         /// <summary>
@@ -631,7 +600,7 @@ namespace Rock.Jobs
         /// <summary>
         /// How many rows a section carried, or zero where the section is not in the tally at all.
         /// </summary>
-        /// <param name="rowCounts">The tally the payload writer kept.</param>
+        /// <param name="rowCounts">The rows written, by section.</param>
         /// <param name="section">The section name.</param>
         /// <returns>The count.</returns>
         private static int Count( IDictionary<string, int> rowCounts, string section )
@@ -641,6 +610,418 @@ namespace Rock.Jobs
         }
 
         #endregion The run
+
+        #region Writing the body
+
+        /// <summary>
+        /// Writes the body: one object keyed by the contract's section names, each holding that
+        /// section's rows as positional arrays in the contract's column order.
+        /// </summary>
+        /// <param name="reader">The reader, on the result set before the first section's.</param>
+        /// <param name="contract">The parsed wire contract.</param>
+        /// <param name="writer">Where the body is written.</param>
+        /// <param name="organizationTimeZone">The zone Rock's stored times are in.</param>
+        /// <param name="rowCounts">Receives the rows of each section, counted as each one is written.</param>
+        internal static void WriteSections( DbDataReader reader, JObject contract, JsonWriter writer, TimeZoneInfo organizationTimeZone, IDictionary<string, int> rowCounts )
+        {
+            var sections = new ChatSyncHeaderBuilder( contract ).GetPayloadSections();
+            var tables = contract["tables"] as JArray;
+
+            // A section holds the rows of the table in the same position, which is the only thing
+            // that ties a section to its columns.
+            if ( tables == null || tables.Count != sections.Count )
+            {
+                throw new InvalidOperationException( "the chat wire contract names a different number of payload sections than tables, so no section can be matched to its columns" );
+            }
+
+            writer.WriteStartObject();
+
+            for ( var i = 0; i < sections.Count; i++ )
+            {
+                var section = sections[i];
+
+                // A section with no result set is a projection that did not run, not a church with none
+                // of that row, and the platform applies a restatement as truth.
+                if ( !reader.NextResult() )
+                {
+                    throw new InvalidOperationException( string.Format( "the projection returned no result set for the {0} section", section ) );
+                }
+
+                var columns = ResolveColumns( reader, section, tables[i]["columns"].Select( c => c.Value<string>() ).ToList() );
+                var written = 0;
+                rowCounts[section] = written;
+
+                writer.WritePropertyName( section );
+                writer.WriteStartArray();
+
+                while ( reader.Read() )
+                {
+                    WriteRow( reader, columns, writer, organizationTimeZone, section );
+                    rowCounts[section] = ++written;
+                }
+
+                writer.WriteEndArray();
+            }
+
+            writer.WriteEndObject();
+        }
+
+        /// <summary>
+        /// Finds, once per section, the result set column each wire column is read from.
+        /// </summary>
+        /// <param name="reader">The reader, on the section's result set.</param>
+        /// <param name="section">The payload section.</param>
+        /// <param name="wireColumns">The section's wire columns, in the contract's order.</param>
+        /// <returns>Where each wire column's value is read from, in the contract's order.</returns>
+        private static WireColumn[] ResolveColumns( DbDataReader reader, string section, IList<string> wireColumns )
+        {
+            var ordinals = new Dictionary<string, int>( StringComparer.OrdinalIgnoreCase );
+
+            for ( var i = 0; i < reader.FieldCount; i++ )
+            {
+                ordinals[reader.GetName( i )] = i;
+            }
+
+            var resolved = new WireColumn[wireColumns.Count];
+
+            for ( var i = 0; i < wireColumns.Count; i++ )
+            {
+                var conversion = ConversionFor( wireColumns[i] );
+                var source = conversion == WireConversion.Background || conversion == WireConversion.Foreground
+                    ? "highlight_color"
+                    : wireColumns[i];
+
+                int ordinal;
+
+                // Filling a missing column with null would keep every row the right width, and that
+                // column would be empty for every church with nothing reporting it.
+                if ( !ordinals.TryGetValue( source, out ordinal ) )
+                {
+                    throw new InvalidOperationException( string.Format(
+                        "the {0} result set returns no {1}, which the {2} column on the wire is built from",
+                        section,
+                        source,
+                        wireColumns[i] ) );
+                }
+
+                resolved[i] = new WireColumn( ordinal, conversion );
+            }
+
+            return resolved;
+        }
+
+        /// <summary>
+        /// How a wire column's value is made from what Rock stores.
+        /// </summary>
+        /// <param name="wireColumn">The wire column.</param>
+        /// <returns>The conversion.</returns>
+        private static WireConversion ConversionFor( string wireColumn )
+        {
+            switch ( wireColumn )
+            {
+                case "badge_keys":
+                    return WireConversion.BadgeKeys;
+                case "ban_expires_at":
+                    return WireConversion.Utc;
+                case "bg_color":
+                    return WireConversion.Background;
+                case "fg_color":
+                    return WireConversion.Foreground;
+                default:
+                    return WireConversion.None;
+            }
+        }
+
+        /// <summary>
+        /// Writes the row the reader is on.
+        /// </summary>
+        /// <param name="reader">The reader, on a row.</param>
+        /// <param name="columns">Where each wire column is read from, in the contract's order.</param>
+        /// <param name="writer">Where the row is written.</param>
+        /// <param name="organizationTimeZone">The zone Rock's stored times are in.</param>
+        /// <param name="section">The payload section, for a failure message.</param>
+        private static void WriteRow( DbDataReader reader, WireColumn[] columns, JsonWriter writer, TimeZoneInfo organizationTimeZone, string section )
+        {
+            Tuple<string, string> colors = null;
+
+            writer.WriteStartArray();
+
+            foreach ( var column in columns )
+            {
+                var stored = reader.GetValue( column.Ordinal );
+
+                switch ( column.Conversion )
+                {
+                    case WireConversion.BadgeKeys:
+                        WriteValue( writer, ReadBadgeKeys( stored ), section );
+                        break;
+                    case WireConversion.Utc:
+                        WriteValue( writer, ToUtc( stored, organizationTimeZone ), section );
+                        break;
+                    case WireConversion.Background:
+                        colors = colors ?? ReadBadgeColors( stored );
+                        WriteValue( writer, colors.Item1, section );
+                        break;
+                    case WireConversion.Foreground:
+                        colors = colors ?? ReadBadgeColors( stored );
+                        WriteValue( writer, colors.Item2, section );
+                        break;
+                    default:
+                        WriteValue( writer, stored, section );
+                        break;
+                }
+            }
+
+            writer.WriteEndArray();
+        }
+
+        /// <summary>
+        /// Writes one value in the form the platform parses it from.
+        /// </summary>
+        /// <param name="writer">Where the value is written.</param>
+        /// <param name="value">The value.</param>
+        /// <param name="section">The payload section, for a failure message.</param>
+        internal static void WriteValue( JsonWriter writer, object value, string section )
+        {
+            if ( value == null || value == DBNull.Value )
+            {
+                writer.WriteNull();
+                return;
+            }
+
+            if ( value is Guid )
+            {
+                // Lowercase and hyphenated is the one form that parses as a uuid on the far side and
+                // compares equal to the same value already stored there. "D" is already lowercase.
+                writer.WriteValue( ( ( Guid ) value ).ToString( "D" ) );
+                return;
+            }
+
+            if ( value is DateTime )
+            {
+                var time = ( DateTime ) value;
+
+                // The platform reads a time with no offset as UTC, so a time in any other zone would be
+                // wrong by this church's offset. The caller converts; this refuses what it cannot vouch for.
+                if ( time.Kind != DateTimeKind.Utc )
+                {
+                    throw new InvalidOperationException( string.Format(
+                        "a {0} row carries a time that is not UTC, so the platform would read it in its own zone and the value would be wrong by this church's offset",
+                        section ) );
+                }
+
+                writer.WriteValue( time.ToString( "yyyy-MM-ddTHH:mm:ss.ffffff'Z'", CultureInfo.InvariantCulture ) );
+                return;
+            }
+
+            var guids = value as IEnumerable<Guid>;
+
+            if ( guids != null )
+            {
+                // The column behind this is a uuid array, and the drain reads anything that is not a
+                // JSON array as an empty one.
+                writer.WriteStartArray();
+
+                foreach ( var guid in guids )
+                {
+                    writer.WriteValue( guid.ToString( "D" ) );
+                }
+
+                writer.WriteEndArray();
+                return;
+            }
+
+            if ( value is string || value is bool || value is int || value is long || value is short || value is byte || value is decimal || value is double )
+            {
+                writer.WriteValue( value );
+                return;
+            }
+
+            // Anything else would be serialized however Json.NET decides, in a shape nobody chose.
+            throw new InvalidOperationException( string.Format(
+                "a {0} row carries a {1}, which has no agreed form on the wire",
+                section,
+                value.GetType().Name ) );
+        }
+
+        /// <summary>
+        /// Moves a stored time onto the clock the far side reads it with.
+        /// </summary>
+        /// <param name="stored">The time as Rock stores it, or null.</param>
+        /// <param name="organizationTimeZone">The zone Rock's stored times are in.</param>
+        /// <returns>The same instant in UTC, or null.</returns>
+        internal static DateTime? ToUtc( object stored, TimeZoneInfo organizationTimeZone )
+        {
+            if ( stored == null || stored == DBNull.Value )
+            {
+                return null;
+            }
+
+            var time = ( DateTime ) stored;
+
+            if ( time.Kind == DateTimeKind.Utc )
+            {
+                return time;
+            }
+
+            // A time out of the database carries no zone, and it is in the organization's. Treated as
+            // UTC it would be wrong by this church's offset, and for a church behind UTC a ban would
+            // lift early.
+            return TimeZoneInfo.ConvertTimeToUtc( DateTime.SpecifyKind( time, DateTimeKind.Unspecified ), organizationTimeZone );
+        }
+
+        /// <summary>
+        /// Splits the joined badge keys into the list the wire carries.
+        /// </summary>
+        /// <param name="joined">The keys as the query returned them.</param>
+        /// <returns>The keys.</returns>
+        internal static IList<Guid> ReadBadgeKeys( object joined )
+        {
+            var text = joined as string;
+
+            if ( string.IsNullOrWhiteSpace( text ) )
+            {
+                // Empty rather than absent: the column on the far side cannot hold nothing, and a
+                // person holding no badge is not the same as a row that did not say.
+                return new List<Guid>();
+            }
+
+            var keys = new List<Guid>();
+
+            foreach ( var part in text.Split( ',' ) )
+            {
+                var trimmed = part.Trim();
+
+                if ( trimmed.Length == 0 )
+                {
+                    continue;
+                }
+
+                Guid key;
+
+                // Dropped rather than refused, this would hand the church a badge that quietly
+                // stops appearing on a submission the far side accepts, with nothing to look at.
+                if ( !Guid.TryParse( trimmed, out key ) )
+                {
+                    throw new InvalidOperationException( string.Format( "the badge key {0} is not an identifier", trimmed ) );
+                }
+
+                keys.Add( key );
+            }
+
+            return keys;
+        }
+
+        /// <summary>
+        /// Works out the colour pair a badge is drawn with.
+        /// </summary>
+        /// <param name="highlightColor">The colour the church configured, in whatever form.</param>
+        /// <returns>The background and the foreground, both null when the colour cannot be read.</returns>
+        internal static Tuple<string, string> ReadBadgeColors( object highlightColor )
+        {
+            var text = ( highlightColor as string ?? string.Empty ).Trim();
+
+            // The field is free text in Rock, so a church can put a colour name, a function or
+            // anything else in it. A badge with no colour still renders; a submission refused over
+            // one badge takes that church down for the whole cycle.
+            if ( text.Length == 0 || text[0] != '#' )
+            {
+                return Tuple.Create( ( string ) null, ( string ) null );
+            }
+
+            var digits = text.Substring( 1 );
+
+            if ( digits.Length == 3 )
+            {
+                // The short form is not accepted on the far side, and doubling each digit is what
+                // it means everywhere it is written.
+                digits = new string( new[] { digits[0], digits[0], digits[1], digits[1], digits[2], digits[2] } );
+            }
+
+            if ( digits.Length != 6 || !digits.All( Uri.IsHexDigit ) )
+            {
+                return Tuple.Create( ( string ) null, ( string ) null );
+            }
+
+            var red = int.Parse( digits.Substring( 0, 2 ), NumberStyles.HexNumber, CultureInfo.InvariantCulture );
+            var green = int.Parse( digits.Substring( 2, 2 ), NumberStyles.HexNumber, CultureInfo.InvariantCulture );
+            var blue = int.Parse( digits.Substring( 4, 2 ), NumberStyles.HexNumber, CultureInfo.InvariantCulture );
+
+            var luminance = RelativeLuminance( red, green, blue );
+
+            // Whichever of black and white the eye separates further from this background, by the
+            // accessibility contrast ratio rather than by a brightness rule of thumb, so a colour
+            // near the boundary gets the answer a checker would give.
+            var contrastWithWhite = 1.05 / ( luminance + 0.05 );
+            var contrastWithBlack = ( luminance + 0.05 ) / 0.05;
+
+            var foreground = contrastWithWhite >= contrastWithBlack ? "#ffffff" : "#000000";
+
+            return Tuple.Create( "#" + digits.ToLowerInvariant(), foreground );
+        }
+
+        /// <summary>
+        /// How bright a colour is to the eye, on the scale the accessibility contrast ratio uses.
+        /// </summary>
+        /// <param name="red">The red channel, 0 to 255.</param>
+        /// <param name="green">The green channel, 0 to 255.</param>
+        /// <param name="blue">The blue channel, 0 to 255.</param>
+        /// <returns>The relative luminance, 0 for black and 1 for white.</returns>
+        private static double RelativeLuminance( int red, int green, int blue )
+        {
+            return ( 0.2126 * Straighten( red ) ) + ( 0.7152 * Straighten( green ) ) + ( 0.0722 * Straighten( blue ) );
+        }
+
+        /// <summary>
+        /// Takes one channel out of the curve a display applies to it.
+        /// </summary>
+        /// <param name="channel">The channel, 0 to 255.</param>
+        /// <returns>The straightened value, 0 to 1.</returns>
+        private static double Straighten( int channel )
+        {
+            var value = channel / 255.0;
+
+            return value <= 0.03928 ? value / 12.92 : Math.Pow( ( value + 0.055 ) / 1.055, 2.4 );
+        }
+
+        /// <summary>
+        /// How a wire column's value is made from what Rock stores.
+        /// </summary>
+        private enum WireConversion
+        {
+            /// <summary>Sent as stored.</summary>
+            None,
+
+            /// <summary>The joined keys, split into a list.</summary>
+            BadgeKeys,
+
+            /// <summary>A time in the organization's zone, moved to UTC.</summary>
+            Utc,
+
+            /// <summary>The background of the pair made from the highlight colour.</summary>
+            Background,
+
+            /// <summary>The foreground of the pair made from the highlight colour.</summary>
+            Foreground
+        }
+
+        /// <summary>
+        /// Where one wire column's value is read from and how it is converted.
+        /// </summary>
+        private struct WireColumn
+        {
+            public readonly int Ordinal;
+
+            public readonly WireConversion Conversion;
+
+            public WireColumn( int ordinal, WireConversion conversion )
+            {
+                Ordinal = ordinal;
+                Conversion = conversion;
+            }
+        }
+
+        #endregion Writing the body
 
         #region What the run reports
 
@@ -1240,686 +1621,6 @@ namespace Rock.Jobs
                 // The offset is explicit because a time without one is read in the receiving session's
                 // own zone rather than in the zone it was taken in.
                 return truncated.ToString( "yyyy-MM-ddTHH:mm:ss.ffffff'Z'", CultureInfo.InvariantCulture );
-            }
-
-            #endregion
-        }
-
-        /// <summary>
-        /// Turns a row as Rock returns it into a row as the wire carries it.
-        /// </summary>
-        /// <remarks>
-        /// <para>
-        /// Most columns cross unchanged. Three do not, and each of them is a place where sending the
-        /// value as Rock holds it would be accepted by the far side and be wrong.
-        /// </para>
-        /// <para>
-        /// The badge keys come back joined into one string, because a query cannot return a list in a
-        /// single column, and the column they land in holds a list. A string arriving there is read as
-        /// no badges at all, on a submission that is otherwise accepted, with nothing reporting it.
-        /// </para>
-        /// <para>
-        /// The ban expiry comes back in the organisation's own time zone, as Rock stores every time.
-        /// The far side reads a time with no zone as UTC, so sending it unchanged makes it wrong by
-        /// this church's offset, and for a church behind UTC that lifts the ban early.
-        /// </para>
-        /// <para>
-        /// The badge colours are a pair on the wire and one value in Rock. Deciding which foreground
-        /// reads against which background is done once here rather than in each client, so the same
-        /// badge does not come out differently on the web and on a phone.
-        /// </para>
-        /// <para>
-        /// Nothing here is addressed by position. The values are matched by the name the query gave
-        /// them and emitted in the order the contract lists, so neither this file nor the queries carry
-        /// a column index that the other one has to agree with.
-        /// </para>
-        /// </remarks>
-        internal sealed class ChatSyncRowMapper
-        {
-            #region Fields
-
-            /// <summary>
-            /// The parsed wire contract, which decides the order values are emitted in.
-            /// </summary>
-            private readonly JObject _contract;
-
-            /// <summary>
-            /// The zone Rock's stored times are in.
-            /// </summary>
-            private readonly TimeZoneInfo _organizationTimeZone;
-
-            #endregion
-
-            #region Constructors
-
-            /// <summary>
-            /// Maps rows for one church.
-            /// </summary>
-            /// <param name="contract">The parsed wire contract.</param>
-            /// <param name="organizationTimeZone">The zone Rock's stored times are in.</param>
-            public ChatSyncRowMapper( JObject contract, TimeZoneInfo organizationTimeZone )
-            {
-                if ( contract == null )
-                {
-                    throw new ArgumentNullException( "contract" );
-                }
-
-                if ( organizationTimeZone == null )
-                {
-                    throw new ArgumentNullException( "organizationTimeZone" );
-                }
-
-                _contract = contract;
-                _organizationTimeZone = organizationTimeZone;
-            }
-
-            #endregion
-
-            #region Methods
-
-            /// <summary>
-            /// Maps one row of a section.
-            /// </summary>
-            /// <param name="section">The payload section, as the contract names it.</param>
-            /// <param name="queryColumns">The names the query gave its columns, in the order it returned them.</param>
-            /// <param name="rawValues">The values the query returned, in the same order.</param>
-            /// <returns>The values the wire carries, in the order the contract lists them.</returns>
-            public IList<object> Map( string section, IList<string> queryColumns, IList<object> rawValues )
-            {
-                if ( queryColumns == null )
-                {
-                    throw new ArgumentNullException( "queryColumns" );
-                }
-
-                if ( rawValues == null )
-                {
-                    throw new ArgumentNullException( "rawValues" );
-                }
-
-                if ( queryColumns.Count != rawValues.Count )
-                {
-                    throw new InvalidOperationException( string.Format(
-                        "the {0} query returned {1} values for {2} columns",
-                        section,
-                        rawValues.Count,
-                        queryColumns.Count ) );
-                }
-
-                var byName = new Dictionary<string, object>( StringComparer.OrdinalIgnoreCase );
-
-                for ( var i = 0; i < queryColumns.Count; i++ )
-                {
-                    byName[queryColumns[i]] = Normalize( rawValues[i] );
-                }
-
-                return GetWireColumns( section ).Select( c => ReadWireColumn( section, c, byName ) ).ToList();
-            }
-
-            /// <summary>
-            /// The one value a wire column carries.
-            /// </summary>
-            /// <param name="section">The payload section, for the failure message.</param>
-            /// <param name="wireColumn">The wire column.</param>
-            /// <param name="byName">What the query returned, keyed by the name it gave each column.</param>
-            /// <returns>The value.</returns>
-            private object ReadWireColumn( string section, string wireColumn, IDictionary<string, object> byName )
-            {
-                if ( wireColumn == "badge_keys" )
-                {
-                    return ReadBadgeKeys( Require( section, wireColumn, "badge_keys", byName ) );
-                }
-
-                if ( wireColumn == "ban_expires_at" )
-                {
-                    return ReadTime( Require( section, wireColumn, "ban_expires_at", byName ) );
-                }
-
-                if ( wireColumn == "bg_color" )
-                {
-                    return ReadBadgeColors( Require( section, wireColumn, "highlight_color", byName ) ).Item1;
-                }
-
-                if ( wireColumn == "fg_color" )
-                {
-                    return ReadBadgeColors( Require( section, wireColumn, "highlight_color", byName ) ).Item2;
-                }
-
-                return Require( section, wireColumn, wireColumn, byName );
-            }
-
-            /// <summary>
-            /// Reads the query column a wire column is built from, refusing to invent one.
-            /// </summary>
-            /// <param name="section">The payload section.</param>
-            /// <param name="wireColumn">The wire column being built.</param>
-            /// <param name="queryColumn">The query column it is built from.</param>
-            /// <param name="byName">What the query returned.</param>
-            /// <returns>The value.</returns>
-            /// <remarks>
-            /// Filling a missing column with null would keep the row the right width and leave every
-            /// other value in its correct place, so the payload would be accepted and that one column
-            /// would be empty for every row of every church, with nothing anywhere reporting it.
-            /// </remarks>
-            private static object Require( string section, string wireColumn, string queryColumn, IDictionary<string, object> byName )
-            {
-                object value;
-
-                if ( !byName.TryGetValue( queryColumn, out value ) )
-                {
-                    throw new InvalidOperationException( string.Format(
-                        "the {0} query returns no {1}, which the {2} column on the wire is built from",
-                        section,
-                        queryColumn,
-                        wireColumn ) );
-                }
-
-                return value;
-            }
-
-            /// <summary>
-            /// The wire columns of a section, in the order the contract lists them.
-            /// </summary>
-            /// <param name="section">The payload section.</param>
-            /// <returns>The column names.</returns>
-            private IList<string> GetWireColumns( string section )
-            {
-                var sections = _contract["payload"]["sections"].Select( s => s.Value<string>() ).ToList();
-                var position = sections.IndexOf( section );
-
-                if ( position < 0 )
-                {
-                    throw new InvalidOperationException( string.Format( "the chat wire contract names no payload section called {0}", section ) );
-                }
-
-                return _contract["tables"][position]["columns"].Select( c => c.Value<string>() ).ToList();
-            }
-
-            /// <summary>
-            /// Turns the absence a data reader reports into the absence the rest of this understands.
-            /// </summary>
-            /// <param name="value">The value as it was read.</param>
-            /// <returns>The value, or null.</returns>
-            private static object Normalize( object value )
-            {
-                return value == DBNull.Value ? null : value;
-            }
-
-            /// <summary>
-            /// Moves a stored time onto the clock the far side reads it with.
-            /// </summary>
-            /// <param name="value">The time as Rock stores it.</param>
-            /// <returns>The same instant, in UTC.</returns>
-            private object ReadTime( object value )
-            {
-                if ( value == null )
-                {
-                    return null;
-                }
-
-                var stored = (DateTime) value;
-
-                if ( stored.Kind == DateTimeKind.Utc )
-                {
-                    return stored;
-                }
-
-                // A time out of the database carries no zone, and it is in the organisation's, because
-                // that is the only clock Rock writes by. Treating it as already UTC would make it wrong
-                // by this church's offset, and for a church behind UTC a ban would lift early.
-                var unspecified = DateTime.SpecifyKind( stored, DateTimeKind.Unspecified );
-
-                return TimeZoneInfo.ConvertTimeToUtc( unspecified, _organizationTimeZone );
-            }
-
-            /// <summary>
-            /// Splits the joined badge keys into the list the wire carries.
-            /// </summary>
-            /// <param name="joined">The keys as the query returned them.</param>
-            /// <returns>The keys.</returns>
-            public static IList<Guid> ReadBadgeKeys( object joined )
-            {
-                var text = Normalize( joined ) as string;
-
-                if ( string.IsNullOrWhiteSpace( text ) )
-                {
-                    // Empty rather than absent: the column on the far side cannot hold nothing, and a
-                    // person holding no badge is not the same as a row that did not say.
-                    return new List<Guid>();
-                }
-
-                var keys = new List<Guid>();
-
-                foreach ( var part in text.Split( ',' ) )
-                {
-                    var trimmed = part.Trim();
-
-                    if ( trimmed.Length == 0 )
-                    {
-                        continue;
-                    }
-
-                    Guid key;
-
-                    // Dropped rather than refused, this would hand the church a badge that quietly
-                    // stops appearing on a submission the far side accepts, with nothing to look at.
-                    if ( !Guid.TryParse( trimmed, out key ) )
-                    {
-                        throw new InvalidOperationException( string.Format( "the badge key {0} is not an identifier", trimmed ) );
-                    }
-
-                    keys.Add( key );
-                }
-
-                return keys;
-            }
-
-            /// <summary>
-            /// Works out the colour pair a badge is drawn with.
-            /// </summary>
-            /// <param name="highlightColor">The colour the church configured, in whatever form.</param>
-            /// <returns>The background and the foreground, both null when the colour cannot be read.</returns>
-            public static Tuple<string, string> ReadBadgeColors( object highlightColor )
-            {
-                var text = ( Normalize( highlightColor ) as string ?? string.Empty ).Trim();
-
-                // The field is free text in Rock, so a church can put a colour name, a function or
-                // anything else in it. A badge with no colour still renders; a submission refused over
-                // one badge takes that church down for the whole cycle.
-                if ( text.Length == 0 || text[0] != '#' )
-                {
-                    return Tuple.Create( (string) null, (string) null );
-                }
-
-                var digits = text.Substring( 1 );
-
-                if ( digits.Length == 3 )
-                {
-                    // The short form is not accepted on the far side, and doubling each digit is what
-                    // it means everywhere it is written.
-                    digits = new string( new[] { digits[0], digits[0], digits[1], digits[1], digits[2], digits[2] } );
-                }
-
-                if ( digits.Length != 6 || !digits.All( Uri.IsHexDigit ) )
-                {
-                    return Tuple.Create( (string) null, (string) null );
-                }
-
-                var red = int.Parse( digits.Substring( 0, 2 ), NumberStyles.HexNumber, CultureInfo.InvariantCulture );
-                var green = int.Parse( digits.Substring( 2, 2 ), NumberStyles.HexNumber, CultureInfo.InvariantCulture );
-                var blue = int.Parse( digits.Substring( 4, 2 ), NumberStyles.HexNumber, CultureInfo.InvariantCulture );
-
-                var luminance = RelativeLuminance( red, green, blue );
-
-                // Whichever of black and white the eye separates further from this background, by the
-                // accessibility contrast ratio rather than by a brightness rule of thumb, so a colour
-                // near the boundary gets the answer a checker would give.
-                var contrastWithWhite = 1.05 / ( luminance + 0.05 );
-                var contrastWithBlack = ( luminance + 0.05 ) / 0.05;
-
-                var foreground = contrastWithWhite >= contrastWithBlack ? "#ffffff" : "#000000";
-
-                return Tuple.Create( "#" + digits.ToLowerInvariant(), foreground );
-            }
-
-            /// <summary>
-            /// How bright a colour is to the eye, on the scale the accessibility contrast ratio uses.
-            /// </summary>
-            /// <param name="red">The red channel, 0 to 255.</param>
-            /// <param name="green">The green channel, 0 to 255.</param>
-            /// <param name="blue">The blue channel, 0 to 255.</param>
-            /// <returns>The relative luminance, 0 for black and 1 for white.</returns>
-            /// <remarks>
-            /// The channels are straightened out of the curve a display applies before they are weighed,
-            /// and green counts for far more than blue, which is why a saturated blue reads as dark and
-            /// a saturated yellow reads as light even though both are equally far from grey.
-            /// </remarks>
-            private static double RelativeLuminance( int red, int green, int blue )
-            {
-                return ( 0.2126 * Straighten( red ) ) + ( 0.7152 * Straighten( green ) ) + ( 0.0722 * Straighten( blue ) );
-            }
-
-            /// <summary>
-            /// Takes one channel out of the curve a display applies to it.
-            /// </summary>
-            /// <param name="channel">The channel, 0 to 255.</param>
-            /// <returns>The straightened value, 0 to 1.</returns>
-            private static double Straighten( int channel )
-            {
-                var value = channel / 255.0;
-
-                return value <= 0.03928 ? value / 12.92 : Math.Pow( ( value + 0.055 ) / 1.055, 2.4 );
-            }
-
-            #endregion
-        }
-
-        /// <summary>
-        /// Writes the body of a submission: one object keyed by the payload's section names, each
-        /// holding that section's rows as positional arrays.
-        /// </summary>
-        /// <remarks>
-        /// <para>
-        /// Rows go over the wire as arrays of values rather than as named fields, which halves the
-        /// bytes and makes the column order something both sides have to agree about. This writer does
-        /// not choose the order: the projection selects its columns in the order the contract lists
-        /// them and this writes them out in the order it is handed them. What it does enforce is the
-        /// width, because a row one value short shifts every later value one place and the only other
-        /// thing that could notice is a type mismatch that may never happen.
-        /// </para>
-        /// <para>
-        /// It writes as it goes rather than building a document and serializing it at the end. The
-        /// largest church measured restates in about ten megabytes and the platform's bound is
-        /// thirty-two, so holding the whole body as objects and then again as text is tens of megabytes
-        /// of large-object heap for nothing. Streaming is also what makes the row counts honest: they
-        /// are a tally of what was actually written, so a read that stopped early is short in both the
-        /// body and the count, and a body truncated after this point disagrees with a count that was
-        /// already taken.
-        /// </para>
-        /// </remarks>
-        internal sealed class ChatSyncPayloadWriter : IDisposable
-        {
-            #region Fields
-
-            /// <summary>
-            /// The parsed wire contract, which decides the order values are emitted in.
-            /// </summary>
-            private readonly JObject _contract;
-
-            /// <summary>
-            /// The writer the body is streamed to.
-            /// </summary>
-            private readonly JsonWriter _writer;
-
-            /// <summary>
-            /// How many rows have been written to each section.
-            /// </summary>
-            private readonly Dictionary<string, int> _rowCounts = new Dictionary<string, int>();
-
-            /// <summary>
-            /// The section currently open, or null between sections.
-            /// </summary>
-            private string _openSection;
-
-            #endregion
-
-            #region Constructors
-
-            /// <summary>
-            /// Writes a body to the supplied writer.
-            /// </summary>
-            /// <param name="contract">The parsed wire contract.</param>
-            /// <param name="writer">Where the body is written.</param>
-            public ChatSyncPayloadWriter( JObject contract, JsonWriter writer )
-            {
-                if ( contract == null )
-                {
-                    throw new ArgumentNullException( "contract" );
-                }
-
-                if ( writer == null )
-                {
-                    throw new ArgumentNullException( "writer" );
-                }
-
-                _contract = contract;
-                _writer = writer;
-
-                _writer.WriteStartObject();
-            }
-
-            #endregion
-
-            #region Properties
-
-            /// <summary>
-            /// How many rows were written to each section, which is what the row-count header carries.
-            /// </summary>
-            public IDictionary<string, int> RowCounts
-            {
-                get { return _rowCounts; }
-            }
-
-            #endregion
-
-            #region Methods
-
-            /// <summary>
-            /// How many values a row of a section carries.
-            /// </summary>
-            /// <param name="section">The payload section.</param>
-            /// <returns>The column count.</returns>
-            public int GetRowWidth( string section )
-            {
-                var sections = GetSections();
-                var position = sections.IndexOf( section );
-
-                if ( position < 0 )
-                {
-                    throw new InvalidOperationException( string.Format( "the chat wire contract names no payload section called {0}", section ) );
-                }
-
-                var tables = _contract["tables"];
-
-                // The contract states that a section holds the rows of the table in the same position
-                // in its table list, which is the only thing that ties a section to a width.
-                if ( tables == null || tables.Count() != sections.Count )
-                {
-                    throw new InvalidOperationException( "the chat wire contract names a different number of payload sections than tables, so no section can be matched to a width" );
-                }
-
-                return tables[position]["columns"].Count();
-            }
-
-            /// <summary>
-            /// The payload's section names, in the order the contract lists them.
-            /// </summary>
-            /// <returns>The section names.</returns>
-            private IList<string> GetSections()
-            {
-                var sections = _contract["payload"] == null ? null : _contract["payload"]["sections"];
-
-                if ( sections == null )
-                {
-                    throw new InvalidOperationException( "the chat wire contract does not name the payload sections, so nothing here can key a body" );
-                }
-
-                return sections.Select( s => s.Value<string>() ).ToList();
-            }
-
-            /// <summary>
-            /// Opens a section and begins its row array.
-            /// </summary>
-            /// <param name="section">The payload section.</param>
-            public void BeginSection( string section )
-            {
-                if ( _openSection != null )
-                {
-                    throw new InvalidOperationException( string.Format( "the {0} section is still open", _openSection ) );
-                }
-
-                if ( _rowCounts.ContainsKey( section ) )
-                {
-                    throw new InvalidOperationException( string.Format( "the {0} section has already been written", section ) );
-                }
-
-                // Asks the contract for the width now rather than at the first row, so a section name
-                // the contract does not know fails where it was named.
-                GetRowWidth( section );
-
-                _openSection = section;
-                _rowCounts[section] = 0;
-
-                _writer.WritePropertyName( section );
-                _writer.WriteStartArray();
-            }
-
-            /// <summary>
-            /// Writes one row of the open section.
-            /// </summary>
-            /// <param name="values">The row's values, in the contract's column order.</param>
-            public void WriteRow( IList<object> values )
-            {
-                if ( _openSection == null )
-                {
-                    throw new InvalidOperationException( "no payload section is open" );
-                }
-
-                if ( values == null )
-                {
-                    throw new ArgumentNullException( "values" );
-                }
-
-                var width = GetRowWidth( _openSection );
-
-                // A row of the wrong width shifts every value after the gap one place. Nothing further
-                // down can see that once the types on either side of the gap happen to agree, so it is
-                // refused here rather than sent.
-                if ( values.Count != width )
-                {
-                    throw new InvalidOperationException( string.Format(
-                        "a {0} row carries {1} values where the contract gives that table {2} columns",
-                        _openSection,
-                        values.Count,
-                        width ) );
-                }
-
-                _writer.WriteStartArray();
-
-                foreach ( var value in values )
-                {
-                    WriteValue( value );
-                }
-
-                _writer.WriteEndArray();
-
-                _rowCounts[_openSection] = _rowCounts[_openSection] + 1;
-            }
-
-            /// <summary>
-            /// Writes one value in the form the platform parses it from.
-            /// </summary>
-            /// <param name="value">The value.</param>
-            private void WriteValue( object value )
-            {
-                if ( value == null )
-                {
-                    _writer.WriteNull();
-                    return;
-                }
-
-                if ( value is Guid )
-                {
-                    // Lowercase and hyphenated is the one form that parses as a uuid on the far side
-                    // and compares equal to the same value already stored there. SQL Server renders
-                    // them uppercase by default and orders their bytes differently again.
-                    _writer.WriteValue( ( (Guid)value ).ToString( "D" ).ToLowerInvariant() );
-                    return;
-                }
-
-                if ( value is DateTime )
-                {
-                    WriteTime( (DateTime)value );
-                    return;
-                }
-
-                var guids = value as IEnumerable<Guid>;
-
-                if ( guids != null )
-                {
-                    // The column behind this is a uuid array, and the drain reads anything that is not
-                    // a JSON array as an empty one, so a joined string would give a person no badges
-                    // on a submission the platform accepts with nothing reported anywhere.
-                    _writer.WriteStartArray();
-
-                    foreach ( var guid in guids )
-                    {
-                        _writer.WriteValue( guid.ToString( "D" ).ToLowerInvariant() );
-                    }
-
-                    _writer.WriteEndArray();
-                    return;
-                }
-
-                if ( value is string || value is bool || value is int || value is long || value is short || value is byte || value is decimal || value is double )
-                {
-                    _writer.WriteValue( value );
-                    return;
-                }
-
-                // Anything else would be serialized by whatever Json.NET decides, which is how a value
-                // reaches the wire in a shape nobody chose.
-                throw new InvalidOperationException( string.Format(
-                    "a {0} row carries a {1}, which has no agreed form on the wire",
-                    _openSection,
-                    value.GetType().Name ) );
-            }
-
-            /// <summary>
-            /// Writes a time, refusing one whose zone is not known to be UTC.
-            /// </summary>
-            /// <param name="value">The time.</param>
-            /// <remarks>
-            /// Rock keeps times in the organisation's zone and the platform reads a time with no offset
-            /// in its own, which is UTC, so a value sent as stored is wrong by that church's offset. For
-            /// a church behind UTC a ban expiry sent that way lifts the ban early. Converting silently
-            /// here would hide which values were already right, so the caller converts and this refuses
-            /// what it cannot vouch for.
-            /// </remarks>
-            private void WriteTime( DateTime value )
-            {
-                if ( value.Kind != DateTimeKind.Utc )
-                {
-                    throw new InvalidOperationException( string.Format(
-                        "a {0} row carries a time that is not UTC, so the platform would read it in its own zone and the value would be wrong by this church's offset",
-                        _openSection ) );
-                }
-
-                _writer.WriteValue( value.ToString( "yyyy-MM-ddTHH:mm:ss.ffffff'Z'", CultureInfo.InvariantCulture ) );
-            }
-
-            /// <summary>
-            /// Closes the open section.
-            /// </summary>
-            public void EndSection()
-            {
-                if ( _openSection == null )
-                {
-                    throw new InvalidOperationException( "no payload section is open" );
-                }
-
-                _writer.WriteEndArray();
-                _openSection = null;
-            }
-
-            /// <summary>
-            /// Closes the body, which is only valid once every section the contract names has been
-            /// written.
-            /// </summary>
-            public void Complete()
-            {
-                if ( _openSection != null )
-                {
-                    throw new InvalidOperationException( string.Format( "the {0} section is still open", _openSection ) );
-                }
-
-                // A section left out is not a church with none of that row, it is a projection that did
-                // not run, and the platform applies a restatement as truth.
-                var missing = GetSections().Except( _rowCounts.Keys ).ToList();
-
-                if ( missing.Any() )
-                {
-                    throw new InvalidOperationException( string.Format(
-                        "the body was completed without the {0} section, which the platform would apply as an empty church",
-                        string.Join( ", ", missing ) ) );
-                }
-
-                _writer.WriteEndObject();
-            }
-
-            /// <inheritdoc />
-            public void Dispose()
-            {
-                _writer.Close();
             }
 
             #endregion
