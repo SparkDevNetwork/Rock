@@ -57,7 +57,7 @@
             </div>
         </div>
 
-        <Sheet v-model="isModuleSheetShown" title="Edit Module" :beforeClose="canLeaveEditedModule">
+        <Sheet v-model="isModuleSheetShown" title="Edit Module" :beforeClose="canCloseModuleSheet">
             <NotificationBox v-if="moduleSheetErrorMessage" alertType="danger">
                 {{ moduleSheetErrorMessage }}
             </NotificationBox>
@@ -489,7 +489,7 @@
             moduleAddedRequest.value = { blockId, blockGuid, html };
         }
 
-        if (!await canLeaveEditedModule()) {
+        if (!await canLeaveEditedModule("switch modules")) {
             return;
         }
 
@@ -535,7 +535,7 @@
             return;
         }
 
-        if (!await canLeaveEditedModule()) {
+        if (!await canLeaveEditedModule("switch modules")) {
             // Selecting the module in the sheet again keeps the selection and the sheet in agreement.
             if (editingBlockId.value !== null) {
                 selectRequest.value = { blockId: editingBlockId.value };
@@ -555,7 +555,7 @@
             return;
         }
 
-        if (await canLeaveEditedModule()) {
+        if (await canLeaveEditedModule("switch modules")) {
             await openModuleSheet(blockId);
         }
     }
@@ -695,10 +695,20 @@
     }
 
     /**
+     * Checks whether the sheet can close, asking first when that would discard
+     * unsaved changes.
+     */
+    function canCloseModuleSheet(): Promise<boolean> {
+        return canLeaveEditedModule("close");
+    }
+
+    /**
      * Checks whether the sheet can move off the module it shows, asking first
      * when that would discard unsaved changes.
+     *
+     * @param action What moving off the module does, worded to complete "Are you sure you want to ... without saving?".
      */
-    async function canLeaveEditedModule(): Promise<boolean> {
+    async function canLeaveEditedModule(action: string): Promise<boolean> {
         if (!isModuleSheetShown.value) {
             return true;
         }
@@ -712,7 +722,7 @@
             return true;
         }
 
-        return await confirm("Changes have been made that have not yet been saved. Do you want to leave without saving?");
+        return await confirm(`Are you sure you want to ${action} without saving?`);
     }
 
     /*
