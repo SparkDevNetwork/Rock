@@ -20,6 +20,7 @@ using System.Linq;
 
 using Rock.Attribute;
 using Rock.Model;
+using Rock.Security;
 
 namespace Rock.Blocks.Cms
 {
@@ -84,7 +85,7 @@ namespace Rock.Blocks.Cms
 
             if ( moduleInstance?.ModuleType == null )
             {
-                return BlockCache.IsAuthorized( Rock.Security.Authorization.ADMINISTRATE, RequestContext.CurrentPerson )
+                return BlockCache.IsAuthorized( Authorization.ADMINISTRATE, RequestContext.CurrentPerson )
                     ? "<div class='alert alert-warning'>This Canvas has no module.</div>"
                     : string.Empty;
             }
@@ -93,31 +94,35 @@ namespace Rock.Blocks.Cms
             moduleInstance.LoadAttributes( RockContext );
 
             var mergeFields = RequestContext.GetCommonMergeFields();
+            string moduleHtml;
 
-            /*
-                09/25/26 - JMH
-
-                A module's settings can hold Lava of their own. Each one is resolved on its own before the
-                module type's template renders, so the template reads finished text. Resolving the template's
-                output a second time instead would also run any Lava-like text in data the template pulled in,
-                and the template's filters would work on a setting's Lava rather than on its result. The
-                resolved values only exist for this render and are never saved.
-
-                Reason: Settings can use Lava without the template's output being evaluated twice.
-            */
-            foreach ( var attributeKey in moduleInstance.AttributeValues.Keys.ToList() )
+            using ( PersonTokenScope.RestrictTo( RequestContext.CurrentPerson ) )
             {
-                var value = moduleInstance.GetAttributeValue( attributeKey );
+                /*
+                    09/25/26 - JMH
 
-                if ( value.IsLavaTemplate() )
+                    A module's settings can hold Lava of their own. Each one is resolved on its own before the
+                    module type's template renders, so the template reads finished text. Resolving the template's
+                    output a second time instead would also run any Lava-like text in data the template pulled in,
+                    and the template's filters would work on a setting's Lava rather than on its result. The
+                    resolved values only exist for this render and are never saved.
+
+                    Reason: Settings can use Lava without the template's output being evaluated twice.
+                */
+                foreach ( var attributeKey in moduleInstance.AttributeValues.Keys.ToList() )
                 {
-                    moduleInstance.SetAttributeValue( attributeKey, value.ResolveMergeFields( mergeFields ) );
+                    var value = moduleInstance.GetAttributeValue( attributeKey );
+
+                    if ( value.IsLavaTemplate() )
+                    {
+                        moduleInstance.SetAttributeValue( attributeKey, value.ResolveMergeFields( mergeFields ) );
+                    }
                 }
+
+                mergeFields.Add( "ModuleInstance", moduleInstance );
+
+                moduleHtml = moduleInstance.ModuleType.WebLavaTemplate.ResolveMergeFields( mergeFields );
             }
-
-            mergeFields.Add( "ModuleInstance", moduleInstance );
-
-            var moduleHtml = moduleInstance.ModuleType.WebLavaTemplate.ResolveMergeFields( mergeFields );
 
             return $"<div class=\"canvas-module\" data-module-type=\"{moduleInstance.ModuleType.IdKey}\">{moduleHtml}</div>";
         }
