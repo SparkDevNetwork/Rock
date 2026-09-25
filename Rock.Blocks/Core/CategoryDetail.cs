@@ -189,6 +189,11 @@ namespace Rock.Blocks.Core
                 return;
             }
 
+            if ( entity.Id == 0 )
+            {
+                SetParentCategory( entity, GetParentCategoryIdFromPageParameter() );
+            }
+
             var isViewable = entity.IsAuthorized( Rock.Security.Authorization.VIEW, RequestContext.CurrentPerson );
             box.IsEditable = entity.IsAuthorized( Rock.Security.Authorization.EDIT, RequestContext.CurrentPerson );
 
@@ -394,8 +399,64 @@ namespace Rock.Blocks.Core
             }
         }
 
+        /// <summary>
+        /// Gets the parent category identifier from the ParentCategoryId page
+        /// parameter. This is used when creating a new child category.
+        /// </summary>
+        /// <returns>The parent category identifier or <c>null</c> if not specified.</returns>
+        private int? GetParentCategoryIdFromPageParameter()
+        {
+            var parentCategoryKey = PageParameter( PageParameterKey.ParentCategoryId );
+
+            if ( parentCategoryKey.IsNullOrWhiteSpace() )
+            {
+                return null;
+            }
+
+            return CategoryCache.Get( parentCategoryKey, !PageCache.Layout.Site.DisablePredictableIds )?.Id;
+        }
+
+        /// <summary>
+        /// Sets both the parent category identifier and the parent category
+        /// navigation property on the category.
+        /// </summary>
+        /// <param name="entity">The category whose parent will be set.</param>
+        /// <param name="parentCategoryId">The parent category identifier.</param>
+        private void SetParentCategory( Category entity, int? parentCategoryId )
+        {
+            /*
+                9/24/2026 - MSE
+
+                Category security inherits from ParentAuthority, which reads the
+                ParentCategory navigation property rather than ParentCategoryId. A
+                new category is not a lazy-loading proxy, so setting only the Id
+                leaves ParentCategory null and IsAuthorized() falls back to the
+                entity type. The parent must be loaded so that Edit on the parent
+                category is enough to create a child, matching the WebForms block.
+
+                Reason: Allow Edit on a parent category to grant creating child categories.
+            */
+            entity.ParentCategoryId = parentCategoryId;
+            entity.ParentCategory = parentCategoryId.HasValue
+                ? new CategoryService( RockContext ).Get( parentCategoryId.Value )
+                : null;
+        }
+
         // <inheritdoc/>
         protected override bool TryGetEntityForEditAction( string idKey, out Category entity, out BlockActionResult error )
+        {
+            return TryGetEntityForEditAction( idKey, GetParentCategoryIdFromPageParameter(), out entity, out error );
+        }
+
+        /// <summary>
+        /// Attempts to load an entity to be used for an edit action.
+        /// </summary>
+        /// <param name="idKey">The identifier key of the entity to load, or empty to create a new entity.</param>
+        /// <param name="newEntityParentCategoryId">The parent category to use for security when creating a new entity.</param>
+        /// <param name="entity">Contains the entity that was loaded when <c>true</c> is returned.</param>
+        /// <param name="error">Contains the action error result when <c>false</c> is returned.</param>
+        /// <returns><c>true</c> if the entity was loaded and passed security checks.</returns>
+        private bool TryGetEntityForEditAction( string idKey, int? newEntityParentCategoryId, out Category entity, out BlockActionResult error )
         {
             var entityService = new CategoryService( RockContext );
             error = null;
@@ -418,6 +479,10 @@ namespace Rock.Blocks.Core
                     entity.EntityTypeId = EntityTypeCache.Get( entityTypeGuid.Value ).Id;
                 }
 
+                // Load the parent before checking security so that Edit on the
+                // parent category grants creating a child of it.
+                SetParentCategory( entity, newEntityParentCategoryId );
+
                 entityService.Add( entity );
             }
 
@@ -429,7 +494,7 @@ namespace Rock.Blocks.Core
 
             if ( !entity.IsAuthorized( Rock.Security.Authorization.EDIT, RequestContext.CurrentPerson ) )
             {
-                error = ActionBadRequest( $"Not authorized to edit ${Category.FriendlyTypeName}." );
+                error = ActionBadRequest( $"Not authorized to edit {Category.FriendlyTypeName}." );
                 return false;
             }
 
@@ -497,15 +562,35 @@ namespace Rock.Blocks.Core
         {
             var entityService = new CategoryService( RockContext );
 
-            if ( !TryGetEntityForEditAction( box.Bag.IdKey, out var entity, out var actionError ) )
+            // A new category is secured by the parent selected in the form,
+            // so use that parent when checking if it can be created.
+            var selectedParentCategoryId = box.Bag.ParentCategory.GetEntityId<Category>( RockContext );
+
+            if ( !TryGetEntityForEditAction( box.Bag.IdKey, selectedParentCategoryId, out var entity, out var actionError ) )
             {
                 return actionError;
             }
+
+            var originalParentCategoryId = entity.ParentCategoryId;
 
             // Update the entity instance from the information in the bag.
             if ( !UpdateEntityFromBox( entity, box ) )
             {
                 return ActionBadRequest( "Invalid data." );
+            }
+
+            // Moving an existing category requires permission on the new parent.
+            if ( entity.Id != 0 && entity.ParentCategoryId.HasValue && entity.ParentCategoryId != originalParentCategoryId )
+            {
+                var newParentCategory = entityService.Get( entity.ParentCategoryId.Value );
+                var canEditNewParent = newParentCategory != null
+                    && ( newParentCategory.IsAuthorized( Rock.Security.Authorization.EDIT, RequestContext.CurrentPerson )
+                        || newParentCategory.IsAuthorized( Rock.Security.Authorization.ADMINISTRATE, RequestContext.CurrentPerson ) );
+
+                if ( !canEditNewParent )
+                {
+                    return ActionBadRequest( "You are not authorized to add a category to the selected parent category." );
+                }
             }
 
             var isNew = entity.Id == 0;
@@ -536,6 +621,20 @@ namespace Rock.Blocks.Core
                 }
 
                 entity.Order = nextOrder;
+            }
+
+            // The parent picker only shows categories of the block's entity
+            // type, so reject a parent of any other entity type. Only check
+            // when the parent is being set so existing data can still be saved.
+            var isParentChanged = isNew || entity.ParentCategoryId != originalParentCategoryId;
+            if ( isParentChanged && entity.ParentCategoryId.HasValue )
+            {
+                var parentEntityTypeId = entityService.GetSelect( entity.ParentCategoryId.Value, c => ( int? ) c.EntityTypeId );
+
+                if ( parentEntityTypeId != entity.EntityTypeId )
+                {
+                    return ActionBadRequest( "The selected parent category is not valid for this category." );
+                }
             }
 
             // Ensure everything is valid before saving.
