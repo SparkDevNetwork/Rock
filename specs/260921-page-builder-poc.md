@@ -21,8 +21,8 @@ two things are buildable inside Rock before the full feature is scoped: drag and
 across an iframe boundary, and a general purpose Sheet control.
 
 **The POC saves what it places.** Dropping a module calls a block action that creates a
-module instance and a real Canvas block at the drop position, then reloads the frame, so the
-result behaves like any other block on the page and survives a refresh. The POC builds the
+module instance and a real Canvas block at the drop position, and the builder updates just that
+spot in the frame, so the result behaves like any other block on the page and survives a refresh. The POC builds the
 `ModuleType` and `ModuleInstance` entities with their full columns. A module type's settings
 are `ModuleInstance` attributes, so each instance's settings are its attribute values, and the
 Canvas references its instance from a block attribute value. The migration seeds five sample
@@ -108,6 +108,9 @@ The budget is 40 goal hours, 50 approved.
   page, the same permission Rock requires to configure a page's blocks.
 - Deleting a module from the builder MUST delete its module instance too, unless the instance
   is shareable or another Canvas block references it.
+- Adding, saving, moving, and deleting a module MUST update the framed page in place rather
+  than reloading it, and the builder MUST lock further changes until the server confirms each
+  one.
 - The Canvas block MUST render its module's Lava on the server, so the output is in the page
   HTML rather than built in the browser.
 
@@ -159,6 +162,13 @@ instance as `ModuleInstance`, and templates read settings with
 its attribute's default value. The template stays with the type, so changing a type's template
 changes every module of that type.
 
+A setting can hold Lava of its own, such as a title that greets the current person. Each
+setting that contains Lava is resolved with the common merge fields before the template renders,
+so the template reads finished text. Content Channel Item View does the same for an item's
+content and attribute values when its Merge Content setting is on. The resolved values exist
+only for that render and are never saved. In the POC every module resolves its settings this
+way, with the same Default Enabled Lava Commands the template uses.
+
 ### Adding a module
 
 The Page Builder block gains an `AddModule` block action taking the zone name, the module type
@@ -170,7 +180,7 @@ It:
 3. Creates a Canvas `Block` on the target page in that zone, inheriting the page's security.
 4. Renumbers `Order` across the zone's page blocks with the new block in position.
 5. Sets the Canvas block's Module Instance attribute to the new instance.
-6. Returns the new block's id.
+6. Returns the new block's id and Guid.
 
 Steps 2 through 5 run in one transaction.
 
@@ -180,9 +190,10 @@ positioned among other page blocks. The frame reads each block wrapper's
 `data-zone-location` and keeps the drop line below any site or layout blocks in the zone,
 which keeps every drop position one the server can honor.
 
-On success the builder reloads the frame so Rock renders the new block itself, then selects
-it by its `bid_{id}` wrapper. A reload is simpler than injecting the returned markup and keeps
-the frame identical to what a visitor sees.
+The frame shows a placeholder at the drop position as soon as the module is dropped. Once
+`AddModule` succeeds, the target page renders the new module (see Updating the page in place),
+the frame replaces the placeholder with the block, and the block is selected. If the add fails,
+the placeholder goes away.
 
 `AddModule` first makes sure the Canvas block type's attributes are registered. Rock otherwise
 creates them the first time a page renders a block of that type, and until then the new block
@@ -193,8 +204,8 @@ has no Module Instance attribute to hold its reference.
 The delete control on a selected module confirms, then calls a `DeleteModule` block action
 with the Canvas block's id. It checks Administrate permission on the target page and deletes
 the Canvas block. It also deletes the module instance, unless the instance is shareable or
-another Canvas block still references it. Both deletes run in one transaction, and the
-builder reloads the frame.
+another Canvas block still references it. Both deletes run in one transaction. The module
+shows as pending while the server deletes it, then comes off the page.
 
 Deleting a block leaves its attribute values in the database until the Rock Cleanup job
 removes them, so only values of blocks that still exist count as references.
@@ -210,8 +221,8 @@ and a copy of its chip follows the pointer. Dropping it where it already is does
 On a drop the frame moves the block element right away and reports the zone and the block it
 now sits in front of. A `MoveModule` block action checks Administrate permission on the target
 page, saves the block's new zone when it changed zones, then renumbers `Order` across that
-zone's page blocks with `ReorderEntity`. The builder reloads the frame once the move is saved,
-which also puts the module back if saving fails, and the module stays selected.
+zone's page blocks with `ReorderEntity`. The module shows as pending until the move is saved,
+and stays selected. If saving fails, the frame puts it back where it was.
 
 ### Editing a module
 
@@ -220,19 +231,41 @@ module. A `GetModuleSettings` block action checks Administrate permission on the
 and returns the module instance's attributes and values for editing. The Module Settings
 section renders them with `AttributeValuesContainer` inside a `RockForm`, so required settings
 validate before saving. Save calls `SaveModuleSettings`, which writes the instance's attribute
-values, then the builder reloads the frame. Save and Close does the same and closes the Sheet.
+values, then the module is re-rendered in place. Save and Close does the same and closes the
+Sheet. The Sheet's fields are disabled while a save is in progress.
 
 While the Sheet is open it follows the selection: selecting another module, or dropping a new
 one, moves the Sheet to that module. When the module in the Sheet has unsaved changes, the
-builder asks first, using Rock's standard unsaved changes prompt, and it asks the same way
-before the close button closes the Sheet. Keeping the changes selects the edited module again,
-so the selection and the Sheet never disagree. The Sheet also stays on
-a module while its save is in progress. Blocking selection would make the Sheet behave like a
-modal, and closing it on every selection change would cost an extra click per module and waste
-its remembered position.
+builder asks first, and it asks the same way before the close button closes the Sheet. The
+prompt takes the most common shape of a Rock confirmation, a single "Are you sure you want
+to...?" question with Rock's standard OK and Cancel buttons: "Are you sure you want to switch
+modules without saving?" or "Are you sure you want to close without saving?" Keeping the
+changes selects the edited module again,
+so the selection and the Sheet never disagree. The Sheet also stays on a module while its save
+is in progress. Blocking selection would make the Sheet behave like a modal, and closing it on
+every selection change would cost an extra click per module and waste its remembered position.
 
-A frame reload keeps the selected module selected, so a saved module stays highlighted in the
-page that just re-rendered it. Deleting the module the Sheet is editing closes the Sheet.
+Deleting the module the Sheet is editing closes the Sheet.
+
+### Updating the page in place
+
+No change reloads the frame. Each one shows in the page as soon as it is made: a placeholder
+where a module was dropped, the module in its new spot after a move, and a dimmed module while
+it is saved or deleted. The builder locks until the server confirms, ignoring drops, selection,
+and clicks in the frame, so two changes never race. Then the frame settles on the result: the
+placeholder becomes the new block, a saved module shows its new content, and a deleted module
+comes off the page. A change the server rejects is undone.
+
+The module HTML comes from the Canvas block's own `RefreshObsidianBlockInitialization` action,
+the one Rock's block reload calls. It renders just that module, with its Lava in the target
+page's context. Rock only reloads a block itself from the Block Properties dialog, through a
+WebForms trigger that also posts back the whole page, so the builder calls the action directly
+and places the HTML itself.
+
+A new block gets the parts of Rock's block markup the builder relies on: its `bid_` id, its
+zone location, and its `obsidian-` root. Rock's configuration bar and the block's Obsidian app
+are rendered with the page, so they arrive with the next full page load. If a module cannot be
+rendered this way, the frame falls back to a reload, which keeps the selected module selected.
 
 Module Items and Display Settings show an empty state, since their contents are out of scope.
 
@@ -420,6 +453,16 @@ order on the placement where it belongs. Extending the block attribute to an ord
 the POC's shape but stores content in an attribute value, which Rock's two precedents for block
 owned content (`HtmlContent`, `ForgeContent`) avoided by choosing a table.
 
+### Lava in module settings
+
+In the MVP, resolving settings as Lava should be a module type choice, off by default, with
+its own Enabled Lava Commands, following the Merge Content and Enabled Lava Commands settings
+on Content Channel View and Content Channel Item View. Both fit in the type's
+`AdditionalSettingsJson` without a schema change. Keeping the choice on the type, which only
+administrators author, keeps decisions about which Lava commands can run out of content
+editors' hands. A setting that greets the current person makes the module's output differ for
+each viewer, which ties into the caching strategy listed under Out of Scope.
+
 ### Modules and elements
 
 Modules and elements differ in who authors the type. A module type is data: an admin writes
@@ -504,6 +547,27 @@ Rejected for the POC. `data-pagebuilder-accepts="modules"`, with absence meaning
 would fold `pagebuilderaccepts` in now rather than later. It requires settling the
 semantics of blocks and both modes before there is anything to exercise them, and the
 boolean extends to it cleanly when that time comes.
+
+### Resolve the template's output a second time
+Rejected. Running the rendered module through Lava again would also resolve the Lava in its
+settings, but it would run any Lava-like text in data the template pulled in, such as a
+person's name or a form entry. The template's filters would also work on a setting's Lava
+rather than its result, so a `Truncate` could cut a merge field in half, and braces the
+template means to output, such as a JavaScript template, would be evaluated too.
+
+### Reload the frame after each change
+Rejected. An earlier version reloaded the whole framed page after every add, save, move, and
+delete. It always matched the server, but the flash and the lost scroll position made every
+change feel heavy.
+
+### Fetch the page in the background and swap in the changed block
+Rejected. It would bring back Rock's exact block markup, configuration bar included, but it
+renders the whole page on the server for every change. That is the same work as a postback,
+only hidden.
+
+### Trigger Rock's own block reload
+Rejected. Rock's block reload is light, but the only way to trigger it from outside the block is
+the WebForms configuration trigger, which also runs an async postback of the whole page.
 
 ## Out of Scope
 
