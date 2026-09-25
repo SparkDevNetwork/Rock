@@ -9,13 +9,21 @@
 -- converted to UTC before it reaches the wire, because a time sent without a zone is read on the
 -- far side as UTC and would be wrong by this church's offset, in the direction that lifts a ban
 -- early for any church behind it.
+--
+-- A person may hold several roles in one group, each its own group member, and the far side keeps
+-- one row for each person in each channel. So the rows are folded: a leader in any role leads, a
+-- ban in any role bans, and of the banned roles a ban without an end outlasts every dated one.
 
 SELECT
     [MR].[ChannelGuid] AS [channel_id],
     [A].[AliasGuid] AS [person_alias_guid],
-    [GTR].[IsLeader] AS [is_leader],
-    [MR].[IsChatBanned] AS [is_banned],
-    [MR].[ChatBannedUntil] AS [ban_expires_at]
+    CAST( MAX( CAST( [GTR].[IsLeader] AS INT ) ) AS BIT ) AS [is_leader],
+    CAST( MAX( CAST( [MR].[IsChatBanned] AS INT ) ) AS BIT ) AS [is_banned],
+    CASE
+        WHEN MAX( CASE WHEN [MR].[IsChatBanned] = 1 AND [MR].[ChatBannedUntil] IS NULL THEN 1 ELSE 0 END ) = 1 THEN NULL
+        ELSE MAX( CASE WHEN [MR].[IsChatBanned] = 1 THEN [MR].[ChatBannedUntil] END )
+    END AS [ban_expires_at]
 FROM #MemberRows AS [MR]
 INNER JOIN [GroupTypeRole] AS [GTR] ON [GTR].[Id] = [MR].[GroupRoleId]
-INNER JOIN #Alias AS [A] ON [A].[PersonId] = [MR].[PersonId] AND [A].[IsPrimary] = 1;
+INNER JOIN #Alias AS [A] ON [A].[PersonId] = [MR].[PersonId] AND [A].[IsPrimary] = 1
+GROUP BY [MR].[ChannelGuid], [A].[AliasGuid];
