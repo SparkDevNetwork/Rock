@@ -78,8 +78,18 @@ namespace Rock.Model
                 {
                     return null;
                 }
-                // If a token is disallowed by security settings, return an error message.
-                if ( !person.IsPersonTokenUsageAllowed() )
+
+                /*
+                    09/24/26 - JMH
+
+                    A token is refused when security settings disallow tokens for this person's
+                    account protection profile, or when an active PersonTokenScope excludes the person.
+                    The Communication Entry Wizard's preview and test send show rendered Lava back to its author,
+                    so they use the scope to keep the output from carrying anyone else's token.
+
+                    Reason: Keep person tokens from reaching anyone but their owner.
+                */
+                if ( !person.IsPersonTokenUsageAllowed() || !Rock.Security.PersonTokenScope.IsTokenAllowed( person.Id ) )
                 {
                     return "TokenProhibited";
                 }

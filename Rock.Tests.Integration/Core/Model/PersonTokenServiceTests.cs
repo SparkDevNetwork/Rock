@@ -6,6 +6,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
+using Rock.Security;
 using Rock.Tests.Integration.TestFramework.Database;
 using Rock.Utility.Enums;
 using Rock.Web.Cache;
@@ -158,6 +159,38 @@ namespace Rock.Tests.Integration.Core.Model
             var personFromToken = personTokenService.GetByImpersonationToken( token );
 
             Assert.IsNull( personFromToken );
+        }
+
+        [TestMethod]
+        public void PersonOutsideActivePersonTokenScopeShouldNotGetAToken()
+        {
+            var rockContext = new RockContext();
+            var personService = new PersonService( rockContext );
+            var scopedPerson = personService.Get( PersonGuid.PersonWithMediumAccountProtectionProfileGuid.AsGuid() );
+            var otherPerson = personService.Get( PersonGuid.PersonWithLowAccountProtectionProfileGuid.AsGuid() );
+
+            using ( PersonTokenScope.RestrictTo( scopedPerson ) )
+            {
+                var token = otherPerson.GetImpersonationToken();
+
+                Assert.AreEqual( "TokenProhibited", token );
+            }
+        }
+
+        [TestMethod]
+        public void PersonInsideActivePersonTokenScopeShouldGetAToken()
+        {
+            var rockContext = new RockContext();
+            var personService = new PersonService( rockContext );
+            var scopedPerson = personService.Get( PersonGuid.PersonWithLowAccountProtectionProfileGuid.AsGuid() );
+
+            using ( PersonTokenScope.RestrictTo( scopedPerson ) )
+            {
+                var token = scopedPerson.GetImpersonationToken();
+
+                Assert.IsNotNull( token );
+                Assert.AreNotEqual( "TokenProhibited", token );
+            }
         }
     }
 }
