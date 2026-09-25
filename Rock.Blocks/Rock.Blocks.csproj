@@ -162,6 +162,7 @@
     <Compile Include="Lms\Public\PublicLearningCourseList.cs" />
     <Compile Include="Lms\Public\PublicLearningProgramList.cs" />
     <Compile Include="Administration\PageProperties.cs" />
+    <Compile Include="Administration\SecurityVersionNotice.cs" />
     <Compile Include="Finance\FinancialPersonSavedAccountDetail.cs" />
     <Compile Include="Mobile\CheckIn\CheckIn.cs" />
     <Compile Include="Security\Oidc\AuthClientDetail.cs" />
