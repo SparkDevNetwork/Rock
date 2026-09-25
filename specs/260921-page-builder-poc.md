@@ -141,8 +141,10 @@ A module type's settings are attributes of `ModuleInstance` qualified by `Module
 same pattern Rock uses for group member attributes by group type. `LoadAttributes()` resolves
 the qualifier from the instance's own `ModuleTypeId`, so every instance of a type has that
 type's settings with no extra code, and an instance's settings are its attribute values. The
-seeded types use Text attributes for titles and button text and Memo attributes for body text,
+seeded types use Text attributes for titles and button text and HTML attributes for body text,
 so the Sheet can render each with its field type's editor through `AttributeValuesContainer`.
+The templates wrap body text in a `<div>` rather than a `<p>`, because the HTML editor adds its
+own paragraphs.
 
 ### Canvas block
 
@@ -168,6 +170,10 @@ so the template reads finished text. Content Channel Item View does the same for
 content and attribute values when its Merge Content setting is on. The resolved values exist
 only for that render and are never saved. In the POC every module resolves its settings this
 way, with the same Default Enabled Lava Commands the template uses.
+
+Both the settings and the template resolve inside a `PersonTokenScope` restricted to the current
+person, so a module's Lava can create a person token only for the person viewing the page.
+An anonymous visitor gets none.
 
 ### Adding a module
 
@@ -462,6 +468,13 @@ on Content Channel View and Content Channel Item View. Both fit in the type's
 administrators author, keeps decisions about which Lava commands can run out of content
 editors' hands. A setting that greets the current person makes the module's output differ for
 each viewer, which ties into the caching strategy listed under Out of Scope.
+
+The Sheet's HTML editors show no merge field button, because Rock's HTML field type never gives
+the editor a merge field list, so Lava is typed by hand. The MVP could let the HTML field's
+editor take an optional list from the page around it, the way `RockField` passes `isRequired`
+to field editors, and have the Page Builder pass the list the HTML Content block offers.
+A merge fields setting on the HTML field type itself would put the list in the wrong place,
+because the Canvas decides which merge fields a setting can use, not the attribute.
 
 ### Modules and elements
 
