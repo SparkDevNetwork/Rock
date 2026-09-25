@@ -355,7 +355,11 @@ namespace RockWeb.Blocks.Groups
             if ( groupMemberId != null )
             {
                 GroupMember groupMember = new GroupMemberService( new RockContext() ).Get( groupMemberId.Value );
-                if ( groupMember != null )
+                if ( groupMember == null )
+                {
+                    breadCrumbs.Add( new BreadCrumb( "New Group Member", pageReference ) );
+                }
+                else if ( CanViewGroup( groupMember.Group ) )
                 {
                     // This should be replaced with a block setting when converted to Obsidian. -dsh
                     var pageReferenceHistory = ( Dictionary<int, (BreadCrumb pageBreadCrumb, List<BreadCrumb> blockBreadCrumbs)> ) System.Web.HttpContext.Current.Session["RockPageReferenceHistory"];
@@ -382,10 +386,6 @@ namespace RockWeb.Blocks.Groups
                     }
 
                     breadCrumbs.Add( new BreadCrumb( groupMember.Person.FullName, pageReference ) );
-                }
-                else
-                {
-                    breadCrumbs.Add( new BreadCrumb( "New Group Member", pageReference ) );
                 }
             }
             else
@@ -566,8 +566,6 @@ namespace RockWeb.Blocks.Groups
                 return;
             }
 
-            pnlEditDetails.Visible = true;
-
             hfGroupId.Value = groupMember.GroupId.ToString();
             hfGroupMemberId.Value = groupMember.Id.ToString();
 
@@ -585,6 +583,18 @@ namespace RockWeb.Blocks.Groups
             {
                 hfScheduleId.Value = scheduleId.Value.ToString();
             }
+
+            // The sign-up SCHEDULE check reads the location and schedule hidden fields, so they must be set first.
+            if ( !CanViewGroup( groupMember.Group ) )
+            {
+                nbErrorMessage.NotificationBoxType = Rock.Web.UI.Controls.NotificationBoxType.Danger;
+                nbErrorMessage.Title = "Error";
+                nbErrorMessage.Text = EditModeMessage.NotAuthorizedToView( GroupMember.FriendlyTypeName );
+                pnlEditDetails.Visible = false;
+                return;
+            }
+
+            pnlEditDetails.Visible = true;
 
             if ( IsUserAuthorized( Authorization.ADMINISTRATE ) )
             {
@@ -634,10 +644,7 @@ namespace RockWeb.Blocks.Groups
             bool readOnly = true;
             nbEditModeMessage.Text = EditModeMessage.ReadOnlyEditActionNotAllowed( Group.FriendlyTypeName );
 
-            if ( IsUserAuthorized( Authorization.EDIT )
-                || group.IsAuthorized( Authorization.EDIT, this.CurrentPerson )
-                || group.IsAuthorized( Authorization.MANAGE_MEMBERS, this.CurrentPerson )
-                || ( IsSignUpMode && group.IsAuthorized( Authorization.SCHEDULE, this.CurrentPerson ) ) )
+            if ( CanEditGroup( group ) )
             {
                 readOnly = false;
                 nbEditModeMessage.Text = string.Empty;
@@ -763,7 +770,7 @@ namespace RockWeb.Blocks.Groups
              * 2/21/2023 - JPH
              * If Location and Schedule IDs were provided in the query string, this block is being used in sign-up mode,
              * meaning scheduling is managed differently; don't display scheduling controls.
-             * 
+             *
              * Reason: Sign-Up Feature
              */
             pnlScheduling.Visible = groupType.IsSchedulingEnabled && !this.IsSignUpMode;
@@ -1185,7 +1192,8 @@ namespace RockWeb.Blocks.Groups
             var currentPersonIsLeaderOfCurrentGroup = this.CurrentPerson != null ?
                 groupMemberQuery.Where( m => m.GroupRole.IsLeader ).Select( m => m.PersonId ).Contains( this.CurrentPerson.Id ) : false;
 
-            gmrcRequirements.CreateRequirementStatusControls( groupMemberId, currentPersonIsLeaderOfCurrentGroup, IsCardInteractionDisabled( rockContext, groupMemberId, group.Id ) );
+            var isInteractionDisabled = IsCardInteractionDisabled( rockContext, groupMemberId, group.Id ) || !CanEditGroup( group );
+            gmrcRequirements.CreateRequirementStatusControls( groupMemberId, currentPersonIsLeaderOfCurrentGroup, isInteractionDisabled );
         }
 
         private bool IsCardInteractionDisabled( RockContext rockContext, int groupMemberId, int groupId )
@@ -1225,7 +1233,7 @@ namespace RockWeb.Blocks.Groups
              * 2/21/2023 - JPH
              * If Location and Schedule IDs were provided in the query string, this block is being used in sign-up mode;
              * send the IDs back to the parent page.
-             * 
+             *
              * Reason: Sign-Up Feature
              */
             if ( this.IsSignUpMode )
@@ -1494,23 +1502,27 @@ namespace RockWeb.Blocks.Groups
             var groupMemberService = new GroupMemberService( rockContext );
             int restoreGroupMemberId = hfRestoreGroupMemberId.Value.AsInteger();
             var groupMemberToRestore = groupMemberService.GetArchived().Where( a => a.Id == restoreGroupMemberId ).FirstOrDefault();
-            if ( groupMemberToRestore != null )
+            if ( groupMemberToRestore == null || !CanEditGroup( groupMemberToRestore.Group ) )
             {
-                groupMemberService.Restore( groupMemberToRestore );
-
-                // if the groupMember IsValid is false, and the UI controls didn't report any errors, it is probably because the custom rules of GroupMember didn't pass.
-                // So, make sure a message is displayed in the validation summary
-                var isValid = groupMemberToRestore.IsValidGroupMember( rockContext );
-                if ( !isValid )
-                {
-                    nbRestoreError.Text = groupMemberToRestore.ValidationResults.Select( a => a.ErrorMessage ).ToList().AsDelimited( "<br />" );
-                    nbRestoreError.Visible = true;
-                    return;
-                }
-
-                rockContext.SaveChanges();
-                NavigateToCurrentPageReference( new Dictionary<string, string> { { PageParameterKey.GroupMemberId, restoreGroupMemberId.ToString() } } );
+                nbRestoreError.Text = "You are not authorized to restore this group member.";
+                nbRestoreError.Visible = true;
+                return;
             }
+
+            groupMemberService.Restore( groupMemberToRestore );
+
+            // if the groupMember IsValid is false, and the UI controls didn't report any errors, it is probably because the custom rules of GroupMember didn't pass.
+            // So, make sure a message is displayed in the validation summary
+            var isValid = groupMemberToRestore.IsValidGroupMember( rockContext );
+            if ( !isValid )
+            {
+                nbRestoreError.Text = groupMemberToRestore.ValidationResults.Select( a => a.ErrorMessage ).ToList().AsDelimited( "<br />" );
+                nbRestoreError.Visible = true;
+                return;
+            }
+
+            rockContext.SaveChanges();
+            NavigateToCurrentPageReference( new Dictionary<string, string> { { PageParameterKey.GroupMemberId, restoreGroupMemberId.ToString() } } );
         }
 
         /// <summary>
@@ -1587,6 +1599,42 @@ namespace RockWeb.Blocks.Groups
         }
 
         /// <summary>
+        /// Determines whether the current person can edit members of the specified group.
+        /// </summary>
+        /// <param name="group">The group.</param>
+        /// <returns><c>true</c> if the current person can edit members of the group; otherwise, <c>false</c>.</returns>
+        private bool CanEditGroup( Group group )
+        {
+            return IsUserAuthorized( Authorization.EDIT )
+                || group.IsAuthorized( Authorization.EDIT, this.CurrentPerson )
+                || group.IsAuthorized( Authorization.MANAGE_MEMBERS, this.CurrentPerson )
+                || ( IsSignUpMode && IsGroupSignUpOccurrence( group ) && group.IsAuthorized( Authorization.SCHEDULE, this.CurrentPerson ) );
+        }
+
+        /// <summary>
+        /// Determines whether the current location and schedule are an occurrence of the specified group.
+        /// </summary>
+        /// <param name="group">The group.</param>
+        /// <returns><c>true</c> if the group has the location with the schedule; otherwise, <c>false</c>.</returns>
+        private bool IsGroupSignUpOccurrence( Group group )
+        {
+            var locationId = this.LocationId.Value;
+            var scheduleId = this.ScheduleId.Value;
+
+            return group.GroupLocations.Any( gl => gl.LocationId == locationId && gl.Schedules.Any( s => s.Id == scheduleId ) );
+        }
+
+        /// <summary>
+        /// Determines whether the current person can view members of the specified group.
+        /// </summary>
+        /// <param name="group">The group.</param>
+        /// <returns><c>true</c> if the current person can view members of the group; otherwise, <c>false</c>.</returns>
+        private bool CanViewGroup( Group group )
+        {
+            return CanEditGroup( group ) || group.IsAuthorized( Authorization.VIEW, this.CurrentPerson );
+        }
+
+        /// <summary>
         /// Saves the group member.
         /// </summary>
         /// <param name="checkForArchivedGroupMember">if set to <c>true</c> check to see if there already is a matching archived group member record</param>
@@ -1630,7 +1678,7 @@ namespace RockWeb.Blocks.Groups
 
                 int groupMemberId = int.Parse( hfGroupMemberId.Value );
 
-                // if adding a new group member 
+                // if adding a new group member
                 if ( groupMemberId.Equals( 0 ) )
                 {
                     if ( this.IsSignUpMode )
@@ -1639,7 +1687,7 @@ namespace RockWeb.Blocks.Groups
                          * 2/21/2023 - JPH
                          * Only create a new GroupMember record if one doesn't already exist for this project (Group) & Person combination.
                          * It's possible they've already signed up for another occurrence (GroupLocationSchedule) within this same project.
-                         * 
+                         *
                          * Reason: Sign-Up Feature
                          */
                         groupMember = groupMemberService
@@ -1665,6 +1713,12 @@ namespace RockWeb.Blocks.Groups
                 {
                     // load existing group member
                     groupMember = groupMemberService.Get( groupMemberId );
+                }
+
+                if ( groupMember == null || groupMember.GroupId != group.Id || !CanEditGroup( group ) )
+                {
+                    nbErrorMessage.Title = "You are not authorized to edit this group member.";
+                    return false;
                 }
 
                 if ( checkForArchivedGroupMember )
@@ -1751,7 +1805,7 @@ namespace RockWeb.Blocks.Groups
                      * meaning scheduling is managed differently; create a GroupMemberAssignment record for this project (Group),
                      * GroupMember, Location & Schedule combination, but only if one doesn't already exist (we might simply be
                      * updating an existing GroupMember record).
-                     * 
+                     *
                      * Reason: Sign-Up Feature
                      */
                     signUpGroupMemberAssignment = groupMemberAssignmentService
@@ -1831,7 +1885,20 @@ namespace RockWeb.Blocks.Groups
                     int? binaryFileId = fuSignedDocument.BinaryFileId;
                     if ( signatureDocumentId.HasValue )
                     {
-                        document = documentService.Get( signatureDocumentId.Value );
+                        document = documentService.Queryable()
+                            .FirstOrDefault( d => d.Id == signatureDocumentId.Value
+                                && d.SignatureDocumentTemplateId == group.RequiredSignatureDocumentTemplateId.Value
+                                && d.AppliesToPersonAlias.PersonId == personId.Value );
+                    }
+
+                    // Only accept the document's current file or a new upload, otherwise keep the current file.
+                    if ( binaryFileId.HasValue && binaryFileId != document?.BinaryFileId )
+                    {
+                        var postedBinaryFile = binaryFileService.Get( binaryFileId.Value );
+                        if ( postedBinaryFile == null || !postedBinaryFile.IsTemporary )
+                        {
+                            binaryFileId = document?.BinaryFileId;
+                        }
                     }
 
                     if ( document == null && binaryFileId.HasValue )
@@ -2244,9 +2311,17 @@ namespace RockWeb.Blocks.Groups
             var rockContext = new RockContext();
             var groupMemberService = new GroupMemberService( rockContext );
             var groupMember = groupMemberService.Get( hfGroupMemberId.Value.AsInteger() );
-            groupMember.LoadAttributes();
             int destGroupId = gpMoveGroupMember.SelectedValue.AsInteger();
             var destGroup = new GroupService( rockContext ).Get( destGroupId );
+
+            if ( groupMember == null || !CanEditGroup( groupMember.Group ) || destGroup == null || !CanEditGroup( destGroup ) )
+            {
+                nbMoveGroupMemberWarning.Visible = true;
+                nbMoveGroupMemberWarning.Text = "You are not authorized to move this group member.";
+                return;
+            }
+
+            groupMember.LoadAttributes();
 
             var destGroupMember = groupMemberService.Queryable().Where( a =>
                 a.GroupId == destGroupId
@@ -2363,12 +2438,13 @@ namespace RockWeb.Blocks.Groups
         {
             var rockContext = new RockContext();
             var destGroup = new GroupService( rockContext ).Get( gpMoveGroupMember.SelectedValue.AsInteger() );
-            if ( destGroup != null )
+            if ( destGroup != null && destGroup.IsAuthorized( Authorization.VIEW, this.CurrentPerson ) )
             {
                 var destTempGroupMember = new GroupMember { Group = destGroup, GroupId = destGroup.Id };
                 destTempGroupMember.LoadAttributes( rockContext );
                 var destGroupMemberAttributes = destTempGroupMember.Attributes;
                 var groupMember = new GroupMemberService( rockContext ).Get( hfGroupMemberId.Value.AsInteger() );
+
                 groupMember.LoadAttributes();
                 var currentGroupMemberAttributes = groupMember.Attributes;
 
@@ -2391,6 +2467,7 @@ namespace RockWeb.Blocks.Groups
             }
             else
             {
+                gpMoveGroupMember.SetValue( null );
                 nbMoveGroupMemberWarning.Visible = false;
                 grpMoveGroupMember.Visible = false;
             }
@@ -2412,7 +2489,7 @@ namespace RockWeb.Blocks.Groups
         {
             var rockContext = new RockContext();
             var groupMember = new GroupMemberService( rockContext ).Get( hfGroupMemberId.Value.AsInteger() );
-            if ( groupMember != null )
+            if ( groupMember != null && CanViewGroup( groupMember.Group ) )
             {
                 lCommunicationTo.Text = string.Format( "<strong>To: </strong>{0}", groupMember.Person.FullName );
                 bool enableSMS = this.GetAttributeValue( AttributeKey.EnableSMS ).AsBooleanOrNull() ?? true;
@@ -2426,7 +2503,7 @@ namespace RockWeb.Blocks.Groups
         {
             var rockContext = new RockContext();
             var groupMember = new GroupMemberService( rockContext ).Get( hfGroupMemberId.Value.AsInteger() );
-            if ( groupMember != null )
+            if ( groupMember != null && CanViewGroup( groupMember.Group ) )
             {
                 if ( tglCommunicationPreference.Checked )
                 {
@@ -2529,7 +2606,7 @@ namespace RockWeb.Blocks.Groups
         {
             var rockContext = new RockContext();
             var groupMember = new GroupMemberService( rockContext ).Get( hfGroupMemberId.Value.AsInteger() );
-            if ( groupMember == null )
+            if ( groupMember == null || !CanViewGroup( groupMember.Group ) )
             {
                 return false;
             }
@@ -2549,10 +2626,17 @@ namespace RockWeb.Blocks.Groups
                     emailMessage = $"{emailHeader} {emailMessage} {emailFooter}";
                 }
 
-                SendEmail( rockEmailMessageRecipient, groupMember.Person.Email, groupMember.Person.FullName, tbEmailCommunicationSubject.Text, emailMessage, false );
+                SendEmail( rockEmailMessageRecipient, CurrentPerson?.Email, CurrentPerson?.FullName, tbEmailCommunicationSubject.Text, emailMessage, false );
                 return true;
             }
-            else if ( communicationType == CommunicationType.SMS && hfToSMSNumber.Value.IsNotNullOrWhiteSpace() )
+
+            // Resolve the SMS number server side so a posted value can't redirect the message.
+            var toSmsNumber = groupMember.Person.PhoneNumbers
+                .Where( p => p.IsMessagingEnabled && p.IsValid )
+                .FirstOrDefault()
+                ?.ToSmsNumber();
+
+            if ( communicationType == CommunicationType.SMS && toSmsNumber.IsNotNullOrWhiteSpace() )
             {
                 hfFromSMSNumber.SetValue( ddlSmsNumbers.SelectedValue.AsInteger() );
                 var smsPhoneNumbers = SystemPhoneNumberCache.All( false )
@@ -2568,7 +2652,7 @@ namespace RockWeb.Blocks.Groups
                 }
 
                 var selectedSMSFrom = smsPhoneNumbers.First();
-                RockSMSMessageRecipient rockSMSMessageRecipient = new RockSMSMessageRecipient( groupMember.Person, hfToSMSNumber.Value, new Dictionary<string, object>() );
+                RockSMSMessageRecipient rockSMSMessageRecipient = new RockSMSMessageRecipient( groupMember.Person, toSmsNumber, new Dictionary<string, object>() );
                 SendSMS( rockSMSMessageRecipient, selectedSMSFrom, tbCommunicationMessage.Text, false );
                 return true;
             }
