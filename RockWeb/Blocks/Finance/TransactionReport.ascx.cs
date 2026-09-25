@@ -71,7 +71,7 @@ namespace RockWeb.Blocks.Finance
 
             if ( GetAttributeValue( "UsePersonContext" ).AsBoolean() )
             {
-                TargetPerson = ContextEntity<Person>();
+                TargetPerson = GetAuthorizedContextPerson();
             }
             else
             {
@@ -150,6 +150,32 @@ namespace RockWeb.Blocks.Finance
         #endregion
 
         #region Methods
+
+        /// <summary>
+        /// Gets the person context, but only if the current person is allowed to view that
+        /// person's transactions.
+        /// </summary>
+        /// <returns>The context person, or <c>null</c> if there is none or it is not allowed.</returns>
+        private Person GetAuthorizedContextPerson()
+        {
+            var contextPerson = ContextEntity<Person>();
+            var currentPerson = CurrentPerson;
+
+            if ( contextPerson == null || currentPerson == null )
+            {
+                return null;
+            }
+
+            var isInGivingUnit = contextPerson.GivingId.IsNotNullOrWhiteSpace()
+                && contextPerson.GivingId == currentPerson.GivingId;
+
+            if ( isInGivingUnit || currentPerson.GetBusinesses().Any( b => b.Id == contextPerson.Id ) )
+            {
+                return contextPerson;
+            }
+
+            return null;
+        }
 
         /// <summary>
         /// Loads the accounts.
