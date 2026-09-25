@@ -315,23 +315,50 @@ namespace Rock.Tests.Integration.Communication.Chat.Platform.Sync
         /// <returns>The Data View's guid, which is the badge's key.</returns>
         public Guid AddBadge( string name )
         {
+            return AddBadge( name, dataView => dataView.PersistedScheduleIntervalMinutes = 60 );
+        }
+
+        /// <summary>
+        /// Adds a person Data View persisted on a named schedule rather than an interval, and puts
+        /// it on the church's badge list.
+        /// </summary>
+        /// <param name="name">The Data View's name.</param>
+        /// <returns>The Data View's guid, which is the badge's key.</returns>
+        public Guid AddBadgeOnSchedule( string name )
+        {
+            int scheduleId;
+
             using ( var rockContext = new RockContext() )
             {
-                var dataView = new DataView
+                var schedule = new Schedule
                 {
                     Guid = Guid.NewGuid(),
-                    Name = name,
-                    EntityTypeId = EntityTypeCache.GetId<Person>().Value,
-                    PersistedScheduleIntervalMinutes = 60,
+                    Name = name + " schedule",
                     ForeignKey = ForeignKey
                 };
 
-                rockContext.Set<DataView>().Add( dataView );
+                new ScheduleService( rockContext ).Add( schedule );
                 rockContext.SaveChanges();
 
-                _badgeDataViewGuids.Add( dataView.Guid );
+                scheduleId = schedule.Id;
+            }
 
-                return dataView.Guid;
+            return AddBadge( name, dataView => dataView.PersistedScheduleId = scheduleId );
+        }
+
+        /// <summary>
+        /// Puts a person in a badge Data View's persisted values, as a refresh of it would.
+        /// </summary>
+        /// <param name="badgeGuid">The Data View.</param>
+        /// <param name="personId">The person.</param>
+        public void GiveBadge( Guid badgeGuid, int personId )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                rockContext.Database.ExecuteSqlCommand(
+                    "INSERT INTO [DataViewPersistedValue] ( [DataViewId], [EntityId] ) SELECT [Id], @p1 FROM [DataView] WHERE [Guid] = @p0",
+                    badgeGuid,
+                    personId );
             }
         }
 
@@ -397,7 +424,11 @@ namespace Rock.Tests.Integration.Communication.Chat.Platform.Sync
             {
                 DeletePeopleAndChannels( rockContext, ForeignKey );
 
-                rockContext.Database.ExecuteSqlCommand( "DELETE FROM [DataView] WHERE [ForeignKey] = @p0;", ForeignKey );
+                // A Data View's persisted values go with it; its schedule is let go of after it.
+                rockContext.Database.ExecuteSqlCommand(
+                    "DELETE FROM [DataView] WHERE [ForeignKey] = @p0;"
+                    + "DELETE FROM [Schedule] WHERE [ForeignKey] = @p0;",
+                    ForeignKey );
 
                 foreach ( var familyGroupId in _createdFamilyGroupIds )
                 {
@@ -461,6 +492,29 @@ namespace Rock.Tests.Integration.Communication.Chat.Platform.Sync
                 IsOpenDirectMessagingAllowed = true,
                 ChatBadgeDataViewGuids = _badgeDataViewGuids.ToList()
             };
+        }
+
+        private Guid AddBadge( string name, Action<DataView> persist )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var dataView = new DataView
+                {
+                    Guid = Guid.NewGuid(),
+                    Name = name,
+                    EntityTypeId = EntityTypeCache.GetId<Person>().Value,
+                    ForeignKey = ForeignKey
+                };
+
+                persist( dataView );
+
+                rockContext.Set<DataView>().Add( dataView );
+                rockContext.SaveChanges();
+
+                _badgeDataViewGuids.Add( dataView.Guid );
+
+                return dataView.Guid;
+            }
         }
 
         private int AddChatGroupType( RockContext rockContext, string name, Guid? guid )
