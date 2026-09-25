@@ -64,6 +64,61 @@ namespace Rock.Tests.Integration.Communication.Chat.Platform.Sync
 
         #endregion Persistence
 
+        #region The badge list as stored
+
+        [TestMethod]
+        public void ABadgeListedTwice_IsProjectedOnceAndCarriedOnce()
+        {
+            using ( var fixture = new ChatSyncProjectionFixture() )
+            {
+                var badgeGuid = fixture.AddBadge( "Repeated badge" );
+                fixture.RepeatBadge( badgeGuid );
+                var channelGuid = fixture.AddChannel( fixture.SharedGroupTypeId, "Repeated badge channel" );
+                var personId = fixture.AddPerson( "RepeatedBadge" );
+                fixture.AddMember( channelGuid, personId );
+                fixture.GiveBadge( badgeGuid, personId );
+
+                var payload = fixture.Project();
+
+                var keyIndex = payload.ColumnIndex( "badges", "badge_key" );
+                var badgeRows = payload.Rows( "badges" )
+                    .Count( r => string.Equals( ( string ) r[keyIndex], badgeGuid.ToString(), StringComparison.OrdinalIgnoreCase ) );
+
+                Assert.AreEqual( 1, badgeRows, "the badge was not projected exactly once" );
+
+                var badgeKeys = ( JArray ) payload.Value( "aliases", PrimaryRow( payload, personId ), "badge_keys" );
+
+                Assert.AreEqual( 1, badgeKeys.Count( k => string.Equals( ( string ) k, badgeGuid.ToString(), StringComparison.OrdinalIgnoreCase ) ),
+                    "the person does not carry the badge's key exactly once" );
+            }
+        }
+
+        [TestMethod]
+        public void AGroupDataViewOnTheBadgeList_IsNotProjectedAndNobodyCarriesIt()
+        {
+            using ( var fixture = new ChatSyncProjectionFixture() )
+            {
+                var badgeGuid = fixture.AddGroupDataViewBadge( "Group badge" );
+                var channelGuid = fixture.AddChannel( fixture.SharedGroupTypeId, "Group badge channel" );
+                var personId = fixture.AddPerson( "GroupBadge" );
+                fixture.AddMember( channelGuid, personId );
+
+                // A group whose id happens to equal this person's id.
+                fixture.GiveBadge( badgeGuid, personId );
+
+                var payload = fixture.Project();
+
+                Assert.IsNull( payload.Row( "badges", "badge_key", badgeGuid ), "a Data View of groups was projected as a badge" );
+
+                var badgeKeys = payload.Value( "aliases", PrimaryRow( payload, personId ), "badge_keys" ) as JArray;
+
+                Assert.IsFalse( badgeKeys != null && badgeKeys.Any( k => string.Equals( ( string ) k, badgeGuid.ToString(), StringComparison.OrdinalIgnoreCase ) ),
+                    "a person carries a badge because their id equals a group's id" );
+            }
+        }
+
+        #endregion The badge list as stored
+
         #region Support
 
         private static void AssertProjectedAndCarried( ChatSyncProjectionFixture fixture, Guid badgeGuid, string lastName )

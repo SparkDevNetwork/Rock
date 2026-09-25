@@ -90,7 +90,7 @@ namespace Rock.Tests.Communication.Chat.Platform.Blocks
             bag.TenantId = Guid.NewGuid().ToString();
             bag.Kid = "attacker-kid";
 
-            var result = ChatConfigurationPolicy.Save( bag, isAuthorizedToEdit: true );
+            var result = ChatConfigurationPolicy.Save( bag, isAuthorizedToEdit: true, EveryDataViewIsOfPeople );
 
             Assert.IsTrue( result.IsSaved );
             Assert.IsNull( result.Configuration.ProjectUrl );
@@ -107,7 +107,7 @@ namespace Rock.Tests.Communication.Chat.Platform.Blocks
             var bag = ChatConfigurationPolicy.ToBag( stored );
             bag.ChatBadgeDataViews = new List<ListItemBag> { null };
 
-            var result = ChatConfigurationPolicy.Save( bag, isAuthorizedToEdit: true );
+            var result = ChatConfigurationPolicy.Save( bag, isAuthorizedToEdit: true, EveryDataViewIsOfPeople );
 
             Assert.AreEqual( 0, result.Configuration.ChatBadgeDataViewGuids.Count );
         }
@@ -124,7 +124,7 @@ namespace Rock.Tests.Communication.Chat.Platform.Blocks
             bag.DirectMessageAccessDataView = new ListItemBag { Value = newDataView.ToString(), Text = "Members" };
             bag.ChatBadgeDataViews = new List<ListItemBag>();
 
-            var result = ChatConfigurationPolicy.Save( bag, isAuthorizedToEdit: true );
+            var result = ChatConfigurationPolicy.Save( bag, isAuthorizedToEdit: true, EveryDataViewIsOfPeople );
 
             Assert.IsFalse( result.Configuration.AreChatProfilesVisible );
             Assert.IsFalse( result.Configuration.IsOpenDirectMessagingAllowed );
@@ -134,13 +134,48 @@ namespace Rock.Tests.Communication.Chat.Platform.Blocks
         }
 
         [TestMethod]
+        public void Save_WithABadgeListedTwice_KeepsItOnceInItsFirstPlace()
+        {
+            var first = Guid.NewGuid();
+            var second = Guid.NewGuid();
+            var bag = ChatConfigurationPolicy.ToBag( Stored() );
+            bag.ChatBadgeDataViews = new List<ListItemBag>
+            {
+                new ListItemBag { Value = first.ToString() },
+                new ListItemBag { Value = second.ToString() },
+                new ListItemBag { Value = first.ToString().ToUpperInvariant() }
+            };
+
+            var result = ChatConfigurationPolicy.Save( bag, isAuthorizedToEdit: true, EveryDataViewIsOfPeople );
+
+            CollectionAssert.AreEqual( new List<Guid> { first, second }, result.Configuration.ChatBadgeDataViewGuids );
+        }
+
+        [TestMethod]
+        public void Save_WithABadgeThatIsNotADataViewOfPeople_DropsIt()
+        {
+            var people = Guid.NewGuid();
+            var groups = Guid.NewGuid();
+            var bag = ChatConfigurationPolicy.ToBag( Stored() );
+            bag.ChatBadgeDataViews = new List<ListItemBag>
+            {
+                new ListItemBag { Value = groups.ToString() },
+                new ListItemBag { Value = people.ToString() }
+            };
+
+            var result = ChatConfigurationPolicy.Save( bag, isAuthorizedToEdit: true, guid => guid == people );
+
+            CollectionAssert.AreEqual( new List<Guid> { people }, result.Configuration.ChatBadgeDataViewGuids );
+        }
+
+        [TestMethod]
         public void Save_WhenNotAuthorizedToEdit_Refuses()
         {
             var stored = Stored();
             var bag = ChatConfigurationPolicy.ToBag( stored );
             bag.MinimumAge = 99;
 
-            var result = ChatConfigurationPolicy.Save( bag, isAuthorizedToEdit: false );
+            var result = ChatConfigurationPolicy.Save( bag, isAuthorizedToEdit: false, EveryDataViewIsOfPeople );
 
             Assert.IsFalse( result.IsSaved );
             Assert.IsNull( result.Configuration );
@@ -197,6 +232,11 @@ namespace Rock.Tests.Communication.Chat.Platform.Blocks
         #endregion A church enabled whose credentials cannot be read
 
         #region Helpers
+
+        private static bool EveryDataViewIsOfPeople( Guid dataViewGuid )
+        {
+            return true;
+        }
 
         private static ChatPlatformConfiguration Stored()
         {

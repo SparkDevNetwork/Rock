@@ -102,7 +102,7 @@ namespace Rock.Blocks.Communication.Chat
             }
 
             var isAuthorizedToEdit = BlockCache.IsAuthorized( Authorization.EDIT, GetCurrentPerson() );
-            var result = ChatConfigurationPolicy.Save( bag, isAuthorizedToEdit );
+            var result = ChatConfigurationPolicy.Save( bag, isAuthorizedToEdit, IsPersonDataView );
 
             if ( !result.IsSaved )
             {
@@ -192,6 +192,19 @@ namespace Rock.Blocks.Communication.Chat
             }
 
             return bag;
+        }
+
+        /// <summary>
+        /// Whether a Data View exists and lists people. The picker offers only those, but a
+        /// badge is read by person id, so one of anything else would badge the wrong people.
+        /// </summary>
+        /// <param name="dataViewGuid">The Data View.</param>
+        /// <returns><c>true</c> when it is a Data View of people.</returns>
+        private static bool IsPersonDataView( Guid dataViewGuid )
+        {
+            var dataView = DataViewCache.Get( dataViewGuid );
+
+            return dataView != null && dataView.EntityTypeId == EntityTypeCache.GetId<Rock.Model.Person>();
         }
 
         private static string NameOf( string dataViewGuid )

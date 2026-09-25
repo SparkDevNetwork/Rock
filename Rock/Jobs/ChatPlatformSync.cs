@@ -730,6 +730,7 @@ namespace Rock.Jobs
                 { "@ChatSystemAuthorGuid", Rock.SystemGuid.Person.CHAT_SYSTEM_AUTHOR.AsGuid() },
                 { "@DirectMessageGroupTypeGuid", Rock.SystemGuid.GroupType.GROUPTYPE_CHAT_DIRECT_MESSAGE.AsGuid() },
                 { "@BadgeDataViewGuidsJson", new JArray( badgeGuids.Select( g => g.ToString() ) ).ToString( Formatting.None ) },
+                { "@PersonEntityTypeId", EntityTypeCache.GetId<Rock.Model.Person>() },
                 { "@ActiveRecordStatusValueId", activeStatus == null ? ( object ) DBNull.Value : activeStatus.Id },
                 { "@ProfilesVisibleByDefault", configuration.AreChatProfilesVisible },
                 { "@OpenDirectMessagesByDefault", configuration.IsOpenDirectMessagingAllowed },

@@ -80,8 +80,9 @@ namespace Rock.Communication.Chat.Platform.Configuration
         /// </summary>
         /// <param name="bag">What the screen sent back.</param>
         /// <param name="isAuthorizedToEdit">Whether the caller may change this block's settings.</param>
+        /// <param name="isPersonDataView">Whether a Data View exists and is a Data View of people.</param>
         /// <returns>The outcome, carrying the settings to store when the save is allowed.</returns>
-        public static ChatConfigurationSaveResult Save( ChatConfigurationBag bag, bool isAuthorizedToEdit )
+        public static ChatConfigurationSaveResult Save( ChatConfigurationBag bag, bool isAuthorizedToEdit, Func<Guid, bool> isPersonDataView )
         {
             if ( !isAuthorizedToEdit )
             {
@@ -99,10 +100,14 @@ namespace Rock.Communication.Chat.Platform.Configuration
                     IsOpenDirectMessagingAllowed = sent.IsOpenDirectMessagingAllowed,
                     MinimumAge = sent.MinimumAge,
                     DirectMessageAccessDataViewGuid = sent.DirectMessageAccessDataView?.Value.AsGuidOrNull(),
+                    // Once each, in its first place, and people only: a badge is matched to its
+                    // holders by person id, and the picker's own limits hold in the browser alone.
                     ChatBadgeDataViewGuids = ( sent.ChatBadgeDataViews ?? new List<ListItemBag>() )
                         .Select( item => item?.Value.AsGuidOrNull() )
                         .Where( guid => guid.HasValue )
                         .Select( guid => guid.Value )
+                        .Distinct()
+                        .Where( guid => isPersonDataView( guid ) )
                         .ToList()
                 }
             };

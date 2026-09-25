@@ -347,6 +347,30 @@ namespace Rock.Tests.Integration.Communication.Chat.Platform.Sync
         }
 
         /// <summary>
+        /// Adds a persisted group Data View and puts it on the church's badge list, as a settings
+        /// call that skipped the picker could.
+        /// </summary>
+        /// <param name="name">The Data View's name.</param>
+        /// <returns>The Data View's guid.</returns>
+        public Guid AddGroupDataViewBadge( string name )
+        {
+            return AddBadge( name, dataView =>
+            {
+                dataView.EntityTypeId = EntityTypeCache.GetId<Group>().Value;
+                dataView.PersistedScheduleIntervalMinutes = 60;
+            } );
+        }
+
+        /// <summary>
+        /// Puts a badge on the church's badge list a second time, after everything already on it.
+        /// </summary>
+        /// <param name="badgeGuid">The Data View.</param>
+        public void RepeatBadge( Guid badgeGuid )
+        {
+            _badgeDataViewGuids.Add( badgeGuid );
+        }
+
+        /// <summary>
         /// Puts a person in a badge Data View's persisted values, as a refresh of it would.
         /// </summary>
         /// <param name="badgeGuid">The Data View.</param>

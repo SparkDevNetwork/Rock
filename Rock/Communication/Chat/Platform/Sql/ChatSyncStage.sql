@@ -137,13 +137,19 @@ CREATE CLUSTERED INDEX [IX_Alias] ON #Alias ( [PersonId] );
 -- The badge keys a person holds, ordered by the church's configured badge order, aggregated once
 -- per person who holds one rather than once per alias row. Persisted as Rock counts it, interval or
 -- schedule, because only persisted values are read.
+--
+-- The stored list is not trusted to be what the picker allows: a badge listed twice keeps its first
+-- place, and a Data View of anything but people is left out, because holders are matched by person id.
 IF OBJECT_ID( 'tempdb..#BadgeViews' ) IS NOT NULL DROP TABLE #BadgeViews;
 
 SELECT
-    CAST( [J].[value] AS UNIQUEIDENTIFIER ) AS [DataViewGuid],
-    CAST( [J].[key] AS INT ) AS [SortOrder]
+    [DV].[Guid] AS [DataViewGuid],
+    MIN( CAST( [J].[key] AS INT ) ) AS [SortOrder]
 INTO #BadgeViews
-FROM OPENJSON( @BadgeDataViewGuidsJson ) AS [J];
+FROM OPENJSON( @BadgeDataViewGuidsJson ) AS [J]
+INNER JOIN [DataView] AS [DV] ON [DV].[Guid] = CAST( [J].[value] AS UNIQUEIDENTIFIER )
+WHERE [DV].[EntityTypeId] = @PersonEntityTypeId
+GROUP BY [DV].[Guid];
 
 CREATE UNIQUE CLUSTERED INDEX [IX_BadgeViews] ON #BadgeViews ( [DataViewGuid] );
 
