@@ -35,16 +35,6 @@ namespace Rock.ViewModels.Blocks.Engagement.PersonProgramStepList
         public string StepTerm { get; set; }
 
         /// <summary>
-        /// Gets or sets the number of step cards shown per row on desktop.
-        /// </summary>
-        public int StepsPerRow { get; set; }
-
-        /// <summary>
-        /// Gets or sets the number of step cards shown per row on mobile.
-        /// </summary>
-        public int StepsPerRowMobile { get; set; }
-
-        /// <summary>
         /// Gets or sets a value indicating whether the campus column is
         /// visible. False when the setting is off or only one campus exists.
         /// </summary>

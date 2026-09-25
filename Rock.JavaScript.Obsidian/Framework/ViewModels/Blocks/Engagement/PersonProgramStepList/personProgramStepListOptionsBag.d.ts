@@ -47,12 +47,6 @@ export type PersonProgramStepListOptionsBag = {
      */
     stepEntryUrlTemplate?: string | null;
 
-    /** Gets or sets the number of step cards shown per row on desktop. */
-    stepsPerRow: number;
-
-    /** Gets or sets the number of step cards shown per row on mobile. */
-    stepsPerRowMobile: number;
-
     /** Gets or sets the term the program uses for its steps (defaults to "Step"). */
     stepTerm?: string | null;
 };

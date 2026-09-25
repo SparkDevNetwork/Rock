@@ -38,25 +38,25 @@
                     title="Campus"
                     field="campus"
                     :filter="pickExistingValueFilter"
-                    visiblePriority="md" />
+                    visiblePriority="xs" />
 
         <DateColumn v-if="options.isStartDateColumnVisible"
                     name="startDateTime"
                     title="Start Date"
                     field="startDateTime"
                     :filter="dateValueFilter"
-                    visiblePriority="sm" />
+                    visiblePriority="xs" />
 
         <DateColumn name="completedDateTime"
                     title="Completion Date"
                     field="completedDateTime"
                     :filter="dateValueFilter"
-                    visiblePriority="sm" />
+                    visiblePriority="xs" />
 
         <HtmlColumn name="summary"
                     title="Summary"
                     field="summary"
-                    visiblePriority="md" />
+                    visiblePriority="xs" />
 
         <Column name="status"
                 title="Status"

@@ -70,8 +70,10 @@
     position: relative;
     display: flex;
     flex-direction: column;
+    /* Fills its grid column up to the max width set by the card view, so every card stops at the same size. */
+    width: 100%;
+    max-width: var(--step-card-max-width);
     aspect-ratio: 4 / 5;
-    max-height: 500px;
     padding: var(--spacing-small) var(--spacing-small) var(--spacing-large);
     text-align: center;
     border: 1px solid var(--color-interface-soft);
