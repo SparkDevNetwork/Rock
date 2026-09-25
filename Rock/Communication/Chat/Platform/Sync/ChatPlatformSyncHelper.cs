@@ -1215,6 +1215,17 @@ namespace Rock.Communication.Chat.Platform.Sync
 
             private static readonly TimeSpan TransportRetryDelay = TimeSpan.FromSeconds( 2 );
 
+            // A platform token lasts about five minutes, and slow submission attempts followed by the
+            // poll can outlast it. An estimate: enough for one more request to arrive before expiry.
+            private static readonly TimeSpan TokenRefreshMargin = TimeSpan.FromSeconds( 60 );
+
+            // Closer than this is the time an answer took to arrive, not a clock worth naming.
+            private static readonly TimeSpan ClockSkewWorthReporting = TimeSpan.FromSeconds( 30 );
+
+            // Postgres's code for a statement cancelled by its timeout. The data API runs the call in
+            // one transaction, so it rolled back whole and the same submission id may be sent again.
+            private const string StatementTimeoutCode = "57014";
+
             private readonly ChatPlatformConfiguration _configuration;
 
             private readonly HttpClient _httpClient;
@@ -1255,13 +1266,20 @@ namespace Rock.Communication.Chat.Platform.Sync
             public string PlatformToken { get; internal set; }
 
             /// <summary>
+            /// When the platform token expires by <see cref="Clock"/>, or null where the exchange did
+            /// not say, in which case the token is never exchanged again.
+            /// </summary>
+            public DateTime? PlatformTokenExpiresAtUtc { get; internal set; }
+
+            /// <summary>
             /// Mints the church's sync token and exchanges it for a platform token.
             /// </summary>
             /// <param name="failure">Why there is no token, when there is none.</param>
             /// <returns>True where the client now holds a platform token.</returns>
             /// <remarks>
-            /// Called once, after the church is read: a church token lasts minutes, and the platform
-            /// will not exchange one with under two left.
+            /// Called after the church is read, because a church token lasts minutes and the platform
+            /// will not exchange one with under two left, and again by the client itself when the
+            /// platform token is near its end.
             /// </remarks>
             public bool SignIn( out string failure )
             {
@@ -1285,6 +1303,7 @@ namespace Rock.Communication.Chat.Platform.Sync
             public bool Exchange( string churchToken, out string failure )
             {
                 PlatformToken = null;
+                PlatformTokenExpiresAtUtc = null;
 
                 if ( churchToken.IsNullOrWhiteSpace() )
                 {
@@ -1292,37 +1311,138 @@ namespace Rock.Communication.Chat.Platform.Sync
                     return false;
                 }
 
-                try
+                string lastFailure = null;
+
+                // The same attempts as a submission: the exchange changes nothing, so it is always
+                // safe to repeat.
+                for ( var attempt = 0; attempt < TransportAttempts; attempt++ )
                 {
-                    using ( var request = new HttpRequestMessage( HttpMethod.Post, Url( ExchangePath ) ) )
+                    if ( attempt > 0 )
                     {
-                        request.Headers.TryAddWithoutValidation( "Authorization", "Bearer " + churchToken );
-                        request.Headers.TryAddWithoutValidation( "apikey", _configuration.PublishableKey );
+                        Wait( TransportRetryDelay );
+                    }
 
-                        using ( var response = _httpClient.SendAsync( request ).GetAwaiter().GetResult() )
+                    HttpResponseMessage response;
+                    try
+                    {
+                        using ( var request = new HttpRequestMessage( HttpMethod.Post, Url( ExchangePath ) ) )
                         {
-                            var body = ReadBody( response );
-                            var token = ( string ) body?["access_token"];
+                            request.Headers.TryAddWithoutValidation( "Authorization", "Bearer " + churchToken );
+                            request.Headers.TryAddWithoutValidation( "apikey", _configuration.PublishableKey );
 
-                            if ( response.IsSuccessStatusCode && token.IsNotNullOrWhiteSpace() )
-                            {
-                                PlatformToken = token;
-                                failure = null;
-                                return true;
-                            }
-
-                            var code = ( string ) body?["error"]?["code"];
-                            failure = "the chat platform refused this church's credential: "
-                                + ( code.IsNotNullOrWhiteSpace() ? code : "HTTP " + ( int ) response.StatusCode );
-                            return false;
+                            response = _httpClient.SendAsync( request ).GetAwaiter().GetResult();
                         }
                     }
+                    catch ( Exception exception )
+                    {
+                        lastFailure = Describe( exception );
+                        continue;
+                    }
+
+                    using ( response )
+                    {
+                        var statusCode = ( int ) response.StatusCode;
+                        var body = ReadBody( response );
+
+                        var unfinished = DescribeUnfinishedAnswer( statusCode, body );
+                        if ( unfinished != null )
+                        {
+                            lastFailure = unfinished;
+                            continue;
+                        }
+
+                        var token = ( string ) body?["access_token"];
+
+                        if ( response.IsSuccessStatusCode && token.IsNotNullOrWhiteSpace() )
+                        {
+                            PlatformToken = token;
+
+                            var expiresIn = ( int? ) body["expires_in"];
+                            PlatformTokenExpiresAtUtc = expiresIn.HasValue ? Clock().AddSeconds( expiresIn.Value ) : ( DateTime? ) null;
+
+                            failure = null;
+                            return true;
+                        }
+
+                        var code = ( string ) body?["error"]?["code"];
+                        failure = "the chat platform refused this church's credential: "
+                            + ( code.IsNotNullOrWhiteSpace() ? code : "HTTP " + statusCode )
+                            + DescribeClockSkew( code, response.Headers.Date );
+                        return false;
+                    }
                 }
-                catch ( Exception exception )
+
+                failure = "the chat platform could not be reached to exchange this church's credential: " + lastFailure;
+                return false;
+            }
+
+            /// <summary>
+            /// Exchanges again when the platform token is near its end, keeping the token held where
+            /// the exchange fails, since it may still be good for the request about to be made.
+            /// </summary>
+            private void RefreshTokenIfExpiring()
+            {
+                var isExpiring = PlatformTokenExpiresAtUtc.HasValue && PlatformTokenExpiresAtUtc.Value - Clock() < TokenRefreshMargin;
+                if ( !isExpiring )
                 {
-                    failure = "the chat platform could not be reached to exchange this church's credential: " + Describe( exception );
-                    return false;
+                    return;
                 }
+
+                var heldToken = PlatformToken;
+                var heldExpiry = PlatformTokenExpiresAtUtc;
+
+                if ( !SignIn( out _ ) )
+                {
+                    PlatformToken = heldToken;
+                    PlatformTokenExpiresAtUtc = heldExpiry;
+                }
+            }
+
+            /// <summary>
+            /// Where a refusal is about the church token's times, how far this server's clock is from
+            /// the platform's, as a clause; otherwise an empty string.
+            /// </summary>
+            /// <remarks>
+            /// The church token's times come from this server's clock, so a clock minutes out is
+            /// refused on every run, and the code alone does not say the clock is what to fix.
+            /// </remarks>
+            private string DescribeClockSkew( string code, DateTimeOffset? platformTime )
+            {
+                var isAboutTokenTimes = code == "auth.stale_token" || code == "auth.invalid_token";
+                if ( !isAboutTokenTimes || !platformTime.HasValue )
+                {
+                    return string.Empty;
+                }
+
+                var offset = platformTime.Value.UtcDateTime - Clock();
+                if ( offset.Duration() <= ClockSkewWorthReporting )
+                {
+                    return string.Empty;
+                }
+
+                return string.Format( CultureInfo.InvariantCulture,
+                    ", and this server's clock is {0:0} s {1} the chat platform",
+                    offset.Duration().TotalSeconds,
+                    offset > TimeSpan.Zero ? "behind" : "ahead of" );
+            }
+
+            /// <summary>
+            /// Why an answer says the call never completed, so the same request may be sent again, or
+            /// null where it is an answer to read.
+            /// </summary>
+            private static string DescribeUnfinishedAnswer( int statusCode, JObject body )
+            {
+                if ( statusCode == 502 || statusCode == 503 || statusCode == 504 )
+                {
+                    return "it answered HTTP " + statusCode;
+                }
+
+                if ( statusCode == 500 && ( string ) body?["code"] == StatementTimeoutCode )
+                {
+                    return "it was busy and cancelled the call at its statement timeout (" + StatementTimeoutCode + ")";
+                }
+
+                return null;
             }
 
             /// <summary>
@@ -1347,6 +1467,8 @@ namespace Rock.Communication.Chat.Platform.Sync
                         Wait( TransportRetryDelay );
                     }
 
+                    RefreshTokenIfExpiring();
+
                     HttpResponseMessage response;
                     try
                     {
@@ -1360,7 +1482,17 @@ namespace Rock.Communication.Chat.Platform.Sync
 
                     using ( response )
                     {
-                        return ReadAcknowledgement( submissionId, response );
+                        var statusCode = ( int ) response.StatusCode;
+                        var body = ReadBody( response );
+
+                        var unfinished = DescribeUnfinishedAnswer( statusCode, body );
+                        if ( unfinished != null )
+                        {
+                            lastFailure = unfinished;
+                            continue;
+                        }
+
+                        return ReadAcknowledgement( submissionId, statusCode, body );
                     }
                 }
 
@@ -1420,6 +1552,8 @@ namespace Rock.Communication.Chat.Platform.Sync
             /// <returns>The outcome, or null where nothing readable came back.</returns>
             public Outcome ReadStatus( Guid submissionId )
             {
+                RefreshTokenIfExpiring();
+
                 HttpResponseMessage response;
                 try
                 {
@@ -1523,11 +1657,8 @@ namespace Rock.Communication.Chat.Platform.Sync
             /// <summary>
             /// Reads the acknowledgement out of a response, for a refusal exactly as for an acceptance.
             /// </summary>
-            private static Acknowledgement ReadAcknowledgement( Guid submissionId, HttpResponseMessage response )
+            private static Acknowledgement ReadAcknowledgement( Guid submissionId, int statusCode, JObject body )
             {
-                var statusCode = ( int ) response.StatusCode;
-                var body = ReadBody( response );
-
                 if ( body == null )
                 {
                     return new Acknowledgement

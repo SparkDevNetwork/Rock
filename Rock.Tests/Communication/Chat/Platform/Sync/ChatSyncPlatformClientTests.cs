@@ -176,6 +176,160 @@ namespace Rock.Tests.Communication.Chat.Platform.Sync
             Assert.AreEqual( "Bearer " + Token, submit.Header( "Authorization" ), "the submission did not go out under the platform token" );
         }
 
+        /// <summary>
+        /// A church token signed by a clock the platform disagrees with is refused, and the reason
+        /// that reaches an administrator should name the clock, which is the thing to fix.
+        /// </summary>
+        [TestMethod]
+        [DataRow( "auth.stale_token" )]
+        [DataRow( "auth.invalid_token" )]
+        public void Exchange_WhenRefusedAndThisClockIsBehind_SaysHowFarBehind( string code )
+        {
+            var now = new DateTime( 2026, 9, 21, 12, 0, 0, DateTimeKind.Utc );
+            var handler = StubHandler.AnsweringInTurn( Answer( HttpStatusCode.Unauthorized, ErrorBody( code ), now.AddSeconds( 240 ) ) );
+
+            using ( var client = new PlatformClient( Configuration( ProjectUrl ), handler ) { Clock = () => now } )
+            {
+                Assert.IsFalse( client.Exchange( ChurchToken, out var failure ) );
+
+                StringAssert.Contains( failure, code );
+                StringAssert.Contains( failure, "this server's clock is 240 s behind the chat platform" );
+            }
+        }
+
+        [TestMethod]
+        public void Exchange_WhenRefusedAndThisClockIsAhead_SaysHowFarAhead()
+        {
+            var now = new DateTime( 2026, 9, 21, 12, 0, 0, DateTimeKind.Utc );
+            var handler = StubHandler.AnsweringInTurn( Answer( HttpStatusCode.Unauthorized, ErrorBody( "auth.invalid_token" ), now.AddSeconds( -90 ) ) );
+
+            using ( var client = new PlatformClient( Configuration( ProjectUrl ), handler ) { Clock = () => now } )
+            {
+                Assert.IsFalse( client.Exchange( ChurchToken, out var failure ) );
+
+                StringAssert.Contains( failure, "this server's clock is 90 s ahead of the chat platform" );
+            }
+        }
+
+        /// <summary>
+        /// A few seconds apart is the time the answer took to arrive, not a clock to fix.
+        /// </summary>
+        [TestMethod]
+        public void Exchange_WhenRefusedAndTheClocksAgree_SaysNothingAboutTheClock()
+        {
+            var now = new DateTime( 2026, 9, 21, 12, 0, 0, DateTimeKind.Utc );
+            var handler = StubHandler.AnsweringInTurn( Answer( HttpStatusCode.Unauthorized, ErrorBody( "auth.stale_token" ), now.AddSeconds( 10 ) ) );
+
+            using ( var client = new PlatformClient( Configuration( ProjectUrl ), handler ) { Clock = () => now } )
+            {
+                Assert.IsFalse( client.Exchange( ChurchToken, out var failure ) );
+
+                StringAssert.Contains( failure, "auth.stale_token" );
+                Assert.IsFalse( failure.Contains( "clock" ), failure );
+            }
+        }
+
+        /// <summary>
+        /// The exchange is one more request of the run, and one dropped connection should cost it no
+        /// more than it costs the submission.
+        /// </summary>
+        [TestMethod]
+        public void Exchange_WhenTheTransportFailsOnce_RetriesAndHoldsTheToken()
+        {
+            var handler = StubHandler.ThrowingThenReturning( 1, HttpStatusCode.OK, Exchanged( Token ) );
+
+            using ( var client = NoWaitClient( handler ) )
+            {
+                Assert.IsTrue( client.Exchange( ChurchToken, out var failure ), failure );
+                Assert.AreEqual( Token, client.PlatformToken );
+            }
+
+            Assert.AreEqual( 2, handler.Requests.Count );
+        }
+
+        [TestMethod]
+        public void Exchange_WhenTheGatewayIsUnavailableOnce_RetriesAndHoldsTheToken()
+        {
+            var handler = StubHandler.AnsweringInTurn(
+                Answer( HttpStatusCode.ServiceUnavailable, "<html>unavailable</html>" ),
+                Answer( HttpStatusCode.OK, Exchanged( Token ) ) );
+
+            using ( var client = NoWaitClient( handler ) )
+            {
+                Assert.IsTrue( client.Exchange( ChurchToken, out var failure ), failure );
+                Assert.AreEqual( Token, client.PlatformToken );
+            }
+
+            Assert.AreEqual( 2, handler.Requests.Count );
+        }
+
+        /// <summary>
+        /// A platform token lasts about five minutes, and slow submission attempts followed by the
+        /// poll can outlast it, so a token near its end is exchanged again before it is sent.
+        /// </summary>
+        [TestMethod]
+        public void Submit_WhenThePlatformTokenIsAboutToExpire_ExchangesAgainFirst()
+        {
+            var submissionId = Guid.NewGuid();
+            var handler = StubHandler.ReturningInTurn( Exchanged( "first.token" ), Exchanged( "second.token" ), Accepted( submissionId ) );
+            var now = new DateTime( 2026, 9, 21, 12, 0, 0, DateTimeKind.Utc );
+
+            using ( var client = SigningClient( handler, () => now ) )
+            {
+                Assert.IsTrue( client.SignIn( out var failure ), failure );
+
+                now = now.AddSeconds( 250 );
+                var ack = client.Submit( submissionId, Body( "{}" ), Headers() );
+
+                Assert.AreEqual( SubmissionStatus.Accepted, ack.Status );
+            }
+
+            Assert.AreEqual( 3, handler.Requests.Count, "the run did not exchange again before a submission under a token with 50 s left" );
+            Assert.AreEqual( ProjectUrl + "/functions/v1/token-exchange", handler.Requests[1].Url );
+            Assert.AreEqual( "Bearer second.token", handler.Requests[2].Header( "Authorization" ) );
+        }
+
+        [TestMethod]
+        public void Submit_WhenThePlatformTokenHasTimeLeft_DoesNotExchangeAgain()
+        {
+            var submissionId = Guid.NewGuid();
+            var handler = StubHandler.ReturningInTurn( Exchanged( "first.token" ), Accepted( submissionId ) );
+            var now = new DateTime( 2026, 9, 21, 12, 0, 0, DateTimeKind.Utc );
+
+            using ( var client = SigningClient( handler, () => now ) )
+            {
+                Assert.IsTrue( client.SignIn( out var failure ), failure );
+
+                now = now.AddSeconds( 200 );
+                client.Submit( submissionId, Body( "{}" ), Headers() );
+            }
+
+            Assert.AreEqual( 2, handler.Requests.Count );
+            Assert.AreEqual( "Bearer first.token", handler.Requests[1].Header( "Authorization" ) );
+        }
+
+        [TestMethod]
+        public void ReadStatus_WhenThePlatformTokenIsAboutToExpire_ExchangesAgainFirst()
+        {
+            var submissionId = Guid.NewGuid();
+            var handler = StubHandler.ReturningInTurn( Exchanged( "first.token" ), Exchanged( "second.token" ), Status( submissionId, "applied" ) );
+            var now = new DateTime( 2026, 9, 21, 12, 0, 0, DateTimeKind.Utc );
+
+            using ( var client = SigningClient( handler, () => now ) )
+            {
+                Assert.IsTrue( client.SignIn( out var failure ), failure );
+
+                now = now.AddSeconds( 250 );
+                var outcome = client.ReadStatus( submissionId );
+
+                Assert.AreEqual( SubmissionStatus.Applied, outcome.Status );
+            }
+
+            Assert.AreEqual( 3, handler.Requests.Count, "the run did not exchange again before a status read under a token with 50 s left" );
+            Assert.AreEqual( ProjectUrl + "/rest/v1/rpc/sync_status", handler.Requests[2].Url );
+            Assert.AreEqual( "Bearer second.token", handler.Requests[2].Header( "Authorization" ) );
+        }
+
         #endregion The credential
 
         #region Reading the body
@@ -310,6 +464,93 @@ namespace Rock.Tests.Communication.Chat.Platform.Sync
             }
 
             Assert.AreEqual( 3, handler.Requests.Count );
+        }
+
+        /// <summary>
+        /// A gateway answer means the call never completed, so the same id may be sent again.
+        /// </summary>
+        [TestMethod]
+        [DataRow( 502 )]
+        [DataRow( 503 )]
+        [DataRow( 504 )]
+        public void Submit_WhenTheGatewayAnswersAnError_RetriesWithTheSameSubmissionId( int code )
+        {
+            var submissionId = Guid.NewGuid();
+            var handler = StubHandler.AnsweringInTurn(
+                Answer( ( HttpStatusCode ) code, "<html>gateway</html>" ),
+                Answer( HttpStatusCode.OK, Accepted( submissionId ) ) );
+
+            using ( var client = NoWaitClient( handler ) )
+            {
+                var ack = client.Submit( submissionId, Body( "{}" ), Headers() );
+
+                Assert.AreEqual( SubmissionStatus.Accepted, ack.Status );
+            }
+
+            Assert.AreEqual( 2, handler.Requests.Count );
+            Assert.AreEqual( submissionId.ToString(), handler.Requests[1].Header( "x-sync-submission-id" ) );
+        }
+
+        /// <summary>
+        /// A submission that arrives while the drain holds the church's inbox row waits on the lock
+        /// until the statement timeout cancels it. The whole call rolled back, so a retry is safe.
+        /// </summary>
+        [TestMethod]
+        public void Submit_WhenTheStatementTimesOut_RetriesWithTheSameSubmissionId()
+        {
+            var submissionId = Guid.NewGuid();
+            var handler = StubHandler.AnsweringInTurn(
+                Answer( HttpStatusCode.InternalServerError, StatementTimeout() ),
+                Answer( HttpStatusCode.OK, Accepted( submissionId ) ) );
+
+            using ( var client = NoWaitClient( handler ) )
+            {
+                var ack = client.Submit( submissionId, Body( "{}" ), Headers() );
+
+                Assert.AreEqual( SubmissionStatus.Accepted, ack.Status );
+            }
+
+            Assert.AreEqual( 2, handler.Requests.Count );
+            Assert.AreEqual( submissionId.ToString(), handler.Requests[1].Header( "x-sync-submission-id" ) );
+        }
+
+        [TestMethod]
+        public void Submit_WhenEveryAttemptTimesOut_ReportsATransportFailureNamingTheTimeout()
+        {
+            var submissionId = Guid.NewGuid();
+            var handler = StubHandler.AnsweringInTurn( Answer( HttpStatusCode.InternalServerError, StatementTimeout() ) );
+
+            using ( var client = NoWaitClient( handler ) )
+            {
+                var ack = client.Submit( submissionId, Body( "{}" ), Headers() );
+
+                Assert.IsTrue( ack.IsTransportFailure );
+                StringAssert.Contains( ack.TransportDetail, "57014" );
+                StringAssert.StartsWith( ChatPlatformSyncHelper.Resolve( ack, null ).Message, "the chat platform could not be reached" );
+            }
+
+            Assert.AreEqual( 3, handler.Requests.Count );
+        }
+
+        /// <summary>
+        /// Any other server error is not known to have rolled back, so it is reported, not repeated.
+        /// </summary>
+        [TestMethod]
+        public void Submit_WhenThePlatformAnswersAnotherServerError_DoesNotRetry()
+        {
+            var submissionId = Guid.NewGuid();
+            var handler = StubHandler.AnsweringInTurn(
+                Answer( HttpStatusCode.InternalServerError, "{\"code\":\"XX000\",\"details\":null,\"hint\":null,\"message\":\"internal error\"}" ) );
+
+            using ( var client = NoWaitClient( handler ) )
+            {
+                var ack = client.Submit( submissionId, Body( "{}" ), Headers() );
+
+                Assert.AreEqual( 500, ack.HttpStatusCode );
+                Assert.IsFalse( ack.IsTransportFailure );
+            }
+
+            Assert.AreEqual( 1, handler.Requests.Count );
         }
 
         #endregion Retry
@@ -448,6 +689,54 @@ namespace Rock.Tests.Communication.Chat.Platform.Sync
             return client;
         }
 
+        /// <summary>
+        /// A client that signs its own church tokens, so it can exchange again during a run.
+        /// </summary>
+        private static PlatformClient SigningClient( HttpMessageHandler handler, Func<DateTime> clock )
+        {
+            var configuration = Configuration( ProjectUrl );
+            configuration.PrivateKey = CreatePrivateJwk( Kid );
+            configuration.Kid = Kid;
+
+            return new PlatformClient( configuration, handler ) { Clock = clock, Wait = d => { } };
+        }
+
+        private static string Exchanged( string token )
+        {
+            return "{\"access_token\":\"" + token + "\",\"token_type\":\"bearer\",\"expires_in\":300}";
+        }
+
+        private static string ErrorBody( string code )
+        {
+            return "{\"error\":{\"code\":\"" + code + "\",\"message\":\"" + code + "\",\"request_id\":\"r\"}}";
+        }
+
+        /// <summary>
+        /// The body the data API answers with when the statement timeout cancels a call.
+        /// </summary>
+        private static string StatementTimeout()
+        {
+            return "{\"code\":\"57014\",\"details\":null,\"hint\":null,\"message\":\"canceling statement due to statement timeout\"}";
+        }
+
+        /// <summary>
+        /// One scripted answer, with the time the platform says it answered at when one is given.
+        /// </summary>
+        private static Func<HttpResponseMessage> Answer( HttpStatusCode code, string body, DateTime? platformTimeUtc = null )
+        {
+            return () =>
+            {
+                var response = StubHandler.Response( code, body );
+
+                if ( platformTimeUtc.HasValue )
+                {
+                    response.Headers.Date = new DateTimeOffset( platformTimeUtc.Value );
+                }
+
+                return response;
+            };
+        }
+
         private static IDictionary<string, string> Headers()
         {
             return new Dictionary<string, string>
@@ -525,6 +814,14 @@ namespace Rock.Tests.Communication.Chat.Platform.Sync
                 return new StubHandler( call => Response( HttpStatusCode.OK, bodies[Math.Min( call, bodies.Length - 1 )] ) );
             }
 
+            /// <summary>
+            /// Answers in turn from the script, repeating the last answer once the script runs out.
+            /// </summary>
+            public static StubHandler AnsweringInTurn( params Func<HttpResponseMessage>[] answers )
+            {
+                return new StubHandler( call => answers[Math.Min( call, answers.Length - 1 )]() );
+            }
+
             public static StubHandler ThrowingThenReturning( int throwCount, HttpStatusCode code, string body )
             {
                 return new StubHandler( call =>
@@ -562,7 +859,7 @@ namespace Rock.Tests.Communication.Chat.Platform.Sync
                 return Task.FromResult( _answer( call ) );
             }
 
-            private static HttpResponseMessage Response( HttpStatusCode code, string body )
+            public static HttpResponseMessage Response( HttpStatusCode code, string body )
             {
                 return new HttpResponseMessage( code )
                 {
