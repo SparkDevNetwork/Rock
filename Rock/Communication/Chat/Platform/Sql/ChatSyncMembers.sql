@@ -15,15 +15,23 @@
 -- ban in any role bans, and of the banned roles a ban without an end outlasts every dated one.
 
 SELECT
-    [MR].[ChannelGuid] AS [channel_id],
+    [F].[ChannelGuid] AS [channel_id],
     [A].[AliasGuid] AS [person_alias_guid],
-    CAST( MAX( CAST( [GTR].[IsLeader] AS INT ) ) AS BIT ) AS [is_leader],
-    CAST( MAX( CAST( [MR].[IsChatBanned] AS INT ) ) AS BIT ) AS [is_banned],
-    CASE
-        WHEN MAX( CASE WHEN [MR].[IsChatBanned] = 1 AND [MR].[ChatBannedUntil] IS NULL THEN 1 ELSE 0 END ) = 1 THEN NULL
-        ELSE MAX( CASE WHEN [MR].[IsChatBanned] = 1 THEN [MR].[ChatBannedUntil] END )
-    END AS [ban_expires_at]
-FROM #MemberRows AS [MR]
-INNER JOIN [GroupTypeRole] AS [GTR] ON [GTR].[Id] = [MR].[GroupRoleId]
-INNER JOIN #Alias AS [A] ON [A].[PersonId] = [MR].[PersonId] AND [A].[IsPrimary] = 1
-GROUP BY [MR].[ChannelGuid], [A].[AliasGuid];
+    [F].[IsLeader] AS [is_leader],
+    [F].[IsBanned] AS [is_banned],
+    [F].[BanExpiresAt] AS [ban_expires_at]
+FROM (
+    SELECT
+        [MR].[PersonId],
+        [MR].[ChannelGuid],
+        CAST( MAX( CAST( [GTR].[IsLeader] AS INT ) ) AS BIT ) AS [IsLeader],
+        CAST( MAX( CAST( [MR].[IsChatBanned] AS INT ) ) AS BIT ) AS [IsBanned],
+        CASE
+            WHEN MAX( CASE WHEN [MR].[IsChatBanned] = 1 AND [MR].[ChatBannedUntil] IS NULL THEN 1 ELSE 0 END ) = 1 THEN NULL
+            ELSE MAX( CASE WHEN [MR].[IsChatBanned] = 1 THEN [MR].[ChatBannedUntil] END )
+        END AS [BanExpiresAt]
+    FROM #MemberRows AS [MR]
+    INNER JOIN [GroupTypeRole] AS [GTR] ON [GTR].[Id] = [MR].[GroupRoleId]
+    GROUP BY [MR].[PersonId], [MR].[ChannelGuid]
+) AS [F]
+INNER JOIN #Alias AS [A] ON [A].[PersonId] = [F].[PersonId] AND [A].[IsPrimary] = 1;
