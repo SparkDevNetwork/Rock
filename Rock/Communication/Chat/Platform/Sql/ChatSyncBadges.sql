@@ -10,7 +10,8 @@
 
 SELECT
     [DV].[Guid] AS [badge_key],
-    [DV].[Name] AS [name],
+    -- Never blank: the far side refuses a badge with no name, and the whole church with it.
+    CASE WHEN LTRIM( RTRIM( [DV].[Name] ) ) <> N'' THEN [DV].[Name] ELSE N'Badge ' + CAST( [DV].[Id] AS NVARCHAR( 20 ) ) END AS [name],
     [DV].[IconCssClass] AS [icon_css],
     [DV].[HighlightColor] AS [highlight_color],
     [BV].[SortOrder] AS [sort_order]

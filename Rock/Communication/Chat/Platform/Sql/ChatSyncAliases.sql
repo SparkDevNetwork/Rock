@@ -11,8 +11,10 @@
 SELECT
     [A].[AliasGuid] AS [person_alias_guid],
     [PR].[AliasGuid] AS [primary_person_alias_guid],
-    CASE WHEN [A].[IsPrimary] = 1 THEN [P].[NickName] END AS [nick_name],
-    CASE WHEN [A].[IsPrimary] = 1 THEN [P].[LastName] END AS [last_name],
+    -- A blank name is sent as none, because the far side refuses an empty one and would refuse the
+    -- whole church with it. Anything else is sent as Rock holds it.
+    CASE WHEN [A].[IsPrimary] = 1 AND LTRIM( RTRIM( [P].[NickName] ) ) <> N'' THEN [P].[NickName] END AS [nick_name],
+    CASE WHEN [A].[IsPrimary] = 1 AND LTRIM( RTRIM( [P].[LastName] ) ) <> N'' THEN [P].[LastName] END AS [last_name],
 
     -- A photo behind a binary file type that requires view security is not linked at all, because
     -- the far side serves this URL to every member of every channel the person is in.
