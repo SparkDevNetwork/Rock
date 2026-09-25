@@ -30,6 +30,7 @@ using Rock.Configuration;
 using Rock.Data;
 using Rock.Jobs;
 using Rock.Model;
+using Rock.Web.Cache;
 
 namespace Rock.Tests.Integration.Communication.Chat.Platform.Sync
 {
@@ -48,6 +49,8 @@ namespace Rock.Tests.Integration.Communication.Chat.Platform.Sync
         private readonly List<int> _createdGroupTypeIds = new List<int>();
 
         private readonly List<int> _createdFamilyGroupIds = new List<int>();
+
+        private readonly List<Guid> _badgeDataViewGuids = new List<Guid>();
 
         #endregion Fields
 
@@ -278,6 +281,75 @@ namespace Rock.Tests.Integration.Communication.Chat.Platform.Sync
         }
 
         /// <summary>
+        /// Writes a person's nick name past Rock's own save path, for the states a row can only
+        /// reach from outside Rock.
+        /// </summary>
+        /// <param name="personId">The person.</param>
+        /// <param name="nickName">The nick name to write.</param>
+        public void SetNickNameDirectly( int personId, string nickName )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                rockContext.Database.ExecuteSqlCommand( "UPDATE [Person] SET [NickName] = @p1 WHERE [Id] = @p0", personId, nickName );
+            }
+        }
+
+        /// <summary>
+        /// Writes a person's last name past Rock's own save path, for the states a row can only
+        /// reach from outside Rock.
+        /// </summary>
+        /// <param name="personId">The person.</param>
+        /// <param name="lastName">The last name to write.</param>
+        public void SetLastNameDirectly( int personId, string lastName )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                rockContext.Database.ExecuteSqlCommand( "UPDATE [Person] SET [LastName] = @p1 WHERE [Id] = @p0", personId, lastName );
+            }
+        }
+
+        /// <summary>
+        /// Adds a persisted person Data View and puts it on the church's badge list.
+        /// </summary>
+        /// <param name="name">The Data View's name.</param>
+        /// <returns>The Data View's guid, which is the badge's key.</returns>
+        public Guid AddBadge( string name )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var dataView = new DataView
+                {
+                    Guid = Guid.NewGuid(),
+                    Name = name,
+                    EntityTypeId = EntityTypeCache.GetId<Person>().Value,
+                    PersistedScheduleIntervalMinutes = 60,
+                    ForeignKey = ForeignKey
+                };
+
+                rockContext.Set<DataView>().Add( dataView );
+                rockContext.SaveChanges();
+
+                _badgeDataViewGuids.Add( dataView.Guid );
+
+                return dataView.Guid;
+            }
+        }
+
+        /// <summary>
+        /// Writes a badge Data View's name past Rock's own validation, for the states a row can
+        /// only reach from outside Rock.
+        /// </summary>
+        /// <param name="badgeGuid">The Data View.</param>
+        /// <param name="name">The name to write.</param>
+        public void SetBadgeNameDirectly( Guid badgeGuid, string name )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                rockContext.Database.ExecuteSqlCommand( "UPDATE [DataView] SET [Name] = @p1 WHERE [Guid] = @p0", badgeGuid, name );
+            }
+        }
+
+        /// <summary>
         /// Reads the whole church, exactly as a run would.
         /// </summary>
         /// <returns>The reading.</returns>
@@ -324,6 +396,8 @@ namespace Rock.Tests.Integration.Communication.Chat.Platform.Sync
             using ( var rockContext = new RockContext() )
             {
                 DeletePeopleAndChannels( rockContext, ForeignKey );
+
+                rockContext.Database.ExecuteSqlCommand( "DELETE FROM [DataView] WHERE [ForeignKey] = @p0;", ForeignKey );
 
                 foreach ( var familyGroupId in _createdFamilyGroupIds )
                 {
@@ -376,15 +450,16 @@ namespace Rock.Tests.Integration.Communication.Chat.Platform.Sync
 
         /// <summary>
         /// The settings a reading needs. Nothing here reaches the chat platform, so only the two
-        /// defaults the projection reads and the badge list matter.
+        /// defaults the projection reads and the badge list matter. The badge list is the badges
+        /// this fixture made, in the order it made them.
         /// </summary>
-        private static ChatPlatformConfiguration Configuration()
+        private ChatPlatformConfiguration Configuration()
         {
             return new ChatPlatformConfiguration
             {
                 AreChatProfilesVisible = true,
                 IsOpenDirectMessagingAllowed = true,
-                ChatBadgeDataViewGuids = new List<Guid>()
+                ChatBadgeDataViewGuids = _badgeDataViewGuids.ToList()
             };
         }
 
