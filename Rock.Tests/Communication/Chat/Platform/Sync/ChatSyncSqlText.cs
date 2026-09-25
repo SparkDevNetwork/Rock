@@ -14,27 +14,35 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Text;
 using System.Text.RegularExpressions;
 
-using Rock.Jobs;
+using Newtonsoft.Json.Linq;
+
+using Rock.Communication.Chat.Platform.Contract;
 
 namespace Rock.Tests.Communication.Chat.Platform.Sync
 {
     /// <summary>
-    /// What the shipped projection queries say about themselves, read out of their own text.
+    /// What the shipped projection procedure says about itself, read out of its own text.
     /// </summary>
     /// <remarks>
     ///     <para>
-    ///         This is scaffolding for the tests below it and nothing in the run path uses it. The
+    ///         This is scaffolding for the tests that use it and nothing in the run path uses it. The
     ///         job takes its column names from the data reader at the moment it reads, so a second
     ///         copy of the order in shipped code would be a third place for the order to be wrong.
     ///     </para>
     ///     <para>
-    ///         The scrape is a stopgap. Once the queries become stored procedures the text is no
-    ///         longer here to read, and the check becomes the integration suite asking each
-    ///         procedure for its result schema, which is the stronger form of the same assertion.
+    ///         The text is the file the migration creates the procedure from, linked into this
+    ///         assembly. It is cut into statements the way the server runs them, and each statement is
+    ///         one of three kinds: the one that writes the channel mark, the ones that return a result
+    ///         set, and the staging between them. The result sets come back in the order they are
+    ///         written, which is the order the job reads them: the moment and the identity marks
+    ///         first, then one per section in the contract's order.
     ///     </para>
     /// </remarks>
     internal static class ChatSyncSqlText
@@ -53,17 +61,123 @@ namespace Rock.Tests.Communication.Chat.Platform.Sync
 
         private static readonly Regex _projectedAlias = new Regex( @"(?i:\bAS)\s+\[(?<name>[a-z0-9_]+)\]", RegexOptions.Compiled );
 
+        private static readonly Regex _comment = new Regex( @"/\*.*?\*/|--[^\r\n]*", RegexOptions.Compiled | RegexOptions.Singleline );
+
+        private static readonly Regex _intoTemporaryTable = new Regex( @"\bINTO\s+#", RegexOptions.Compiled | RegexOptions.IgnoreCase );
+
+        private static readonly Lazy<IList<string>> _statements = new Lazy<IList<string>>( ReadStatements );
+
         /// <summary>
-        /// The columns a section's query returns, in the order it returns them.
+        /// The whole procedure, as the migration ships it.
+        /// </summary>
+        public static string Procedure
+        {
+            get
+            {
+                using ( var stream = typeof( ChatSyncSqlText ).Assembly.GetManifestResourceStream( "spChat_SyncProjection.sql" ) )
+                {
+                    if ( stream == null )
+                    {
+                        throw new InvalidOperationException( "the projection procedure's text is not linked into this test assembly" );
+                    }
+
+                    using ( var reader = new StreamReader( stream, Encoding.UTF8 ) )
+                    {
+                        return reader.ReadToEnd();
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// The statement that writes the channel mark.
+        /// </summary>
+        public static string Stamp
+        {
+            get
+            {
+                return _statements.Value.Single( IsStamp );
+            }
+        }
+
+        /// <summary>
+        /// Every statement that neither writes the mark nor returns a result set, in order.
+        /// </summary>
+        public static string Staging
+        {
+            get
+            {
+                return string.Join( ";" + Environment.NewLine, _statements.Value.Where( s => !IsStamp( s ) && !IsResultSet( s ) ) );
+            }
+        }
+
+        /// <summary>
+        /// The statements that return a result set, in the order the server returns them.
+        /// </summary>
+        public static IList<string> ResultSets
+        {
+            get
+            {
+                return _statements.Value.Where( IsResultSet ).ToList();
+            }
+        }
+
+        /// <summary>
+        /// The statement that returns one payload section.
+        /// </summary>
+        /// <param name="section">The section, as the wire contract names it.</param>
+        /// <returns>The statement.</returns>
+        public static string Section( string section )
+        {
+            var sections = JObject.Parse( ChatWireContract.Json )["payload"]["sections"]
+                .Select( s => s.Value<string>() )
+                .ToList();
+
+            var position = sections.IndexOf( section );
+
+            if ( position < 0 )
+            {
+                throw new ArgumentException( string.Format( "the contract has no {0} section", section ), nameof( section ) );
+            }
+
+            // The first result set is the moment and the identity marks, so section n is n + 1.
+            return ResultSets[position + 1];
+        }
+
+        /// <summary>
+        /// The columns a section's statement returns, in the order it returns them.
         /// </summary>
         /// <param name="section">The section.</param>
         /// <returns>The column names.</returns>
         public static IList<string> SectionColumns( string section )
         {
-            return _projectedAlias.Matches( ChatPlatformSync.GetSectionSql( section ) )
+            return _projectedAlias.Matches( Section( section ) )
                 .Cast<Match>()
                 .Select( m => m.Groups["name"].Value )
                 .ToList();
+        }
+
+        /// <summary>
+        /// The procedure cut into its statements, with the comments taken out first so that a
+        /// semicolon in a sentence does not end a statement.
+        /// </summary>
+        private static IList<string> ReadStatements()
+        {
+            return _comment.Replace( Procedure, string.Empty )
+                .Split( ';' )
+                .Select( s => s.Trim() )
+                .Where( s => s.Length > 0 )
+                .ToList();
+        }
+
+        private static bool IsStamp( string statement )
+        {
+            return statement.StartsWith( "UPDATE", StringComparison.OrdinalIgnoreCase );
+        }
+
+        private static bool IsResultSet( string statement )
+        {
+            return statement.StartsWith( "SELECT", StringComparison.OrdinalIgnoreCase ) && !_intoTemporaryTable.IsMatch( statement );
         }
     }
 }

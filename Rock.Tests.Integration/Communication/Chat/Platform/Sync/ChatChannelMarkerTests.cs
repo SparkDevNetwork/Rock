@@ -44,12 +44,12 @@ namespace Rock.Tests.Integration.Communication.Chat.Platform.Sync
 
                 Assert.IsNull( fixture.ChannelMark( channelGuid ), "the group was marked before anything ran" );
 
-                fixture.StampChannels();
+                fixture.Project();
                 var first = fixture.ChannelMark( channelGuid );
 
                 Assert.IsNotNull( first, "a group that is a chat channel was not marked" );
 
-                fixture.StampChannels();
+                fixture.Project();
 
                 Assert.AreEqual( first, fixture.ChannelMark( channelGuid ),
                     "the mark moved, so the record of when this group first had chat is whatever the last run wrote" );
@@ -63,7 +63,7 @@ namespace Rock.Tests.Integration.Communication.Chat.Platform.Sync
             {
                 var channelGuid = fixture.AddChannel( fixture.SharedGroupTypeId, "Retired marker channel" );
 
-                fixture.StampChannels();
+                fixture.Project();
                 fixture.EditChannel( channelGuid, group => group.IsChatEnabledOverride = false );
 
                 var payload = fixture.Project();
@@ -81,7 +81,7 @@ namespace Rock.Tests.Integration.Communication.Chat.Platform.Sync
                 var channelGuid = fixture.AddChannel( fixture.SharedGroupTypeId, "Not a channel",
                     group => group.IsChatEnabledOverride = false );
 
-                fixture.StampChannels();
+                fixture.Project();
 
                 Assert.IsNull( fixture.ChannelMark( channelGuid ), "a group with chat switched off was marked as a channel" );
                 Assert.IsNull( fixture.Project().Row( "channels", "channel_id", channelGuid ),

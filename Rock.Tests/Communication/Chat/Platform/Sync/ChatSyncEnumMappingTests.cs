@@ -25,7 +25,6 @@ using Newtonsoft.Json.Linq;
 
 using Rock.Communication.Chat.Platform.Contract;
 using Rock.Communication.Chat.Platform.Sync;
-using Rock.Jobs;
 using Rock.Enums.Communication.Chat;
 
 namespace Rock.Tests.Communication.Chat.Platform.Sync
@@ -60,7 +59,7 @@ namespace Rock.Tests.Communication.Chat.Platform.Sync
         /// <returns>The text between CASE and END.</returns>
         private static string CaseFor( string wireColumn )
         {
-            var sql = ChatPlatformSync.GetSectionSql( "channels" );
+            var sql = ChatSyncSqlText.Section( "channels" );
 
             var match = Regex.Match(
                 sql,
@@ -255,8 +254,14 @@ namespace Rock.Tests.Communication.Chat.Platform.Sync
 
             StringAssert.Matches(
                 arms,
-                new Regex( @"\bWHEN\s+\[GT\]\.\[Guid\]\s*=\s*@DirectMessageGroupTypeGuid\s+THEN\s+'dm'", RegexOptions.IgnoreCase ),
+                new Regex( @"\bWHEN\s+\[CG\]\.\[GroupTypeGuid\]\s*=\s*@DirectMessageGroupTypeGuid\s+THEN\s+'dm'", RegexOptions.IgnoreCase ),
                 "the direct message group type does not project as dm" );
+            // The channels section reads the group type's guid as the staging of the chat groups
+            // wrote it, so the staging is where it has to be the type's guid and not the group's.
+            StringAssert.Matches(
+                ChatSyncSqlText.Staging,
+                new Regex( @"\[GT\]\.\[Guid\]\s+AS\s+\[GroupTypeGuid\]", RegexOptions.IgnoreCase ),
+                "the group type guid the channel type is decided by is not the group type's own" );
             StringAssert.Matches(
                 arms,
                 new Regex( @"\bELSE\s+'shared'", RegexOptions.IgnoreCase ),

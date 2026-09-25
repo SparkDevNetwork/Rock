@@ -119,6 +119,44 @@ namespace Rock.Tests.Integration.Communication.Chat.Platform.Sync
 
         #endregion Archived and deactivated
 
+        #region Icon
+
+        [TestMethod]
+        public void AChannelIcon_IsLinked()
+        {
+            using ( var fixture = new ChatSyncProjectionFixture() )
+            {
+                var channelGuid = fixture.AddChannel( fixture.SharedGroupTypeId, "Channel with an icon" );
+                var iconGuid = fixture.SetChannelIcon( channelGuid, false );
+
+                var payload = fixture.Project();
+                var row = payload.Row( "channels", "channel_id", channelGuid );
+
+                Assert.IsNotNull( row, "the channel was not projected at all" );
+                StringAssert.Contains( ( string ) payload.Value( "channels", row, "icon_url" ), iconGuid.ToString(),
+                    "a channel icon anyone may view was not linked" );
+            }
+        }
+
+        [TestMethod]
+        public void AChannelIconWhoseFileTypeRequiresViewSecurity_IsNotLinked()
+        {
+            using ( var fixture = new ChatSyncProjectionFixture() )
+            {
+                var channelGuid = fixture.AddChannel( fixture.SharedGroupTypeId, "Channel with a secured icon" );
+                fixture.SetChannelIcon( channelGuid, true );
+
+                var payload = fixture.Project();
+                var row = payload.Row( "channels", "channel_id", channelGuid );
+
+                Assert.IsNotNull( row, "the channel was not projected at all" );
+                Assert.AreEqual( Newtonsoft.Json.Linq.JTokenType.Null, payload.Value( "channels", row, "icon_url" ).Type,
+                    "an icon behind view security was linked, and the far side serves that link to every member of the channel" );
+            }
+        }
+
+        #endregion Icon
+
         #region Support
 
         private static void AssertChannelIsProjectedWithoutReach( Action<Group> makeUnreachable )

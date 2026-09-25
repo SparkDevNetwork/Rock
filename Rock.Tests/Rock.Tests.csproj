@@ -39,4 +39,13 @@
     <Reference Include="System.Web" />
   </ItemGroup>
 
+  <ItemGroup>
+    <!--
+      The chat sync projection procedure, exactly as the migration that creates it holds it, so the
+      unit tests can read what ships without a database. A migration that alters the procedure moves
+      this link to its own file.
+    -->
+    <EmbeddedResource Include="..\Rock.Migrations\Migrations\Version 20.0\202609251612047_AddChatSyncProjectionProcedure_spChat_SyncProjection.sql" LogicalName="spChat_SyncProjection.sql" />
+  </ItemGroup>
+
 </Project>

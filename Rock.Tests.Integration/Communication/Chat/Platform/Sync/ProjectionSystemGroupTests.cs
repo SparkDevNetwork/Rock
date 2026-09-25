@@ -75,7 +75,6 @@ namespace Rock.Tests.Integration.Communication.Chat.Platform.Sync
                 // Another group of the same type still qualifies, so the rule is not off for the type.
                 var otherGuid = fixture.AddChannel( groupTypeId, "Same type as a system group" );
 
-                fixture.StampChannels();
                 var payload = fixture.Project();
 
                 Assert.IsNull( fixture.ChannelMark( systemGroupGuid ), "a system chat group was marked as a channel" );

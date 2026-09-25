@@ -309,78 +309,6 @@ namespace Rock.Jobs
 
         #endregion Whether the run happens
 
-        #region The projection queries
-
-        /// <summary>
-        /// The query that stages the sets the section queries read.
-        /// </summary>
-        /// <returns>The query text.</returns>
-        internal static string GetStagingSql()
-        {
-            return ReadSql( "ChatSyncStage.sql" );
-        }
-
-        /// <summary>
-        /// The statement that marks the groups that are chat channels right now.
-        /// </summary>
-        /// <returns>The statement text.</returns>
-        internal static string GetStampSql()
-        {
-            return ReadSql( "ChatSyncStampChannels.sql" );
-        }
-
-        /// <summary>
-        /// The query that reads one payload section.
-        /// </summary>
-        /// <param name="section">The payload section, as the wire contract names it.</param>
-        /// <returns>The query text.</returns>
-        internal static string GetSectionSql( string section )
-        {
-            switch ( section )
-            {
-                case "aliases":
-                    return ReadSql( "ChatSyncAliases.sql" );
-                case "channels":
-                    return ReadSql( "ChatSyncChannels.sql" );
-                case "members":
-                    return ReadSql( "ChatSyncMembers.sql" );
-                case "badges":
-                    return ReadSql( "ChatSyncBadges.sql" );
-                default:
-                    throw new InvalidOperationException( string.Format( "no chat projection query ships for the {0} section", section ?? "(none)" ) );
-            }
-        }
-
-        /// <summary>
-        /// Reads one query out of this assembly's manifest.
-        /// </summary>
-        /// <param name="fileName">The query's file name.</param>
-        /// <returns>The query text.</returns>
-        /// <exception cref="InvalidOperationException">
-        /// Thrown when the query is not packaged into the assembly, which is a build failure rather
-        /// than a runtime condition: without it this church cannot restate at all, so it says so
-        /// here rather than sending a payload missing a section.
-        /// </exception>
-        private static string ReadSql( string fileName )
-        {
-            var assembly = typeof( ChatPlatformSync ).Assembly;
-            var resourceName = assembly.GetManifestResourceNames()
-                .FirstOrDefault( n => n.EndsWith( "." + fileName, StringComparison.OrdinalIgnoreCase ) );
-
-            if ( resourceName == null )
-            {
-                throw new InvalidOperationException( string.Format( "the chat projection query {0} is not embedded in this assembly", fileName ) );
-            }
-
-            using ( var stream = assembly.GetManifestResourceStream( resourceName ) )
-            using ( var reader = new StreamReader( stream, Encoding.UTF8 ) )
-            {
-                return reader.ReadToEnd();
-            }
-        }
-
-        #endregion The projection queries
-
         #region The run
 
         /// <summary>
@@ -412,11 +340,6 @@ namespace Rock.Jobs
                     Message = "Nothing was submitted. This church could not sign a request to the chat platform: " + token.Gate + "."
                 };
             }
-
-            // The marking runs first and on its own. A mark rolled back alongside a failed
-            // submission would leave the next run treating a group as though it had never been a
-            // channel, and that is the one thing the mark exists to prevent.
-            StampChannels( rockContext );
 
             var submissionId = Guid.NewGuid();
             var projection = Project( rockContext, configuration );
@@ -475,16 +398,20 @@ namespace Rock.Jobs
         }
 
         /// <summary>
-        /// Reads the church once, without sending anything.
+        /// Marks the groups that are chat channels right now, then reads the church once, without
+        /// sending anything.
         /// </summary>
         /// <param name="rockContext">The context the projection reads through.</param>
         /// <param name="configuration">The church's chat settings.</param>
         /// <returns>The reading.</returns>
         /// <remarks>
-        /// The clock, the identity seeds and every section are taken on one open connection, and the
-        /// staging query and the sections go as one batch. The staging query leaves its sets in temporary
-        /// tables that live as long as that batch, which is what stops a membership arriving in the same
-        /// payload as neither the channel nor the person it names.
+        /// One call to the projection procedure, read as it streams. Its first statement is the
+        /// marking, which commits on its own because no transaction spans the call: a mark rolled back
+        /// with a failed submission would leave the next run treating a group as though it had never
+        /// been a channel, and that is the one thing the mark exists to prevent. Then come the clock,
+        /// the identity seeds and every section, as five result sets. The sections read sets the
+        /// procedure stages in temporary tables that live until it returns, which is what stops a
+        /// membership arriving in the same payload as neither the channel nor the person it names.
         /// </remarks>
         internal static ProjectionResult Project( RockContext rockContext, ChatPlatformConfiguration configuration )
         {
@@ -510,15 +437,20 @@ namespace Rock.Jobs
                     connection.Open();
                 }
 
-                var result = new ProjectionResult
-                {
-                    ReadAtUtc = ReadClock( connection, configuration ),
-                    Marks = ReadIdentityMarks( connection, configuration )
-                };
+                var result = new ProjectionResult();
 
-                IDictionary<string, int> rowCounts;
-                result.Payload = BuildPayload( connection, configuration, out rowCounts );
-                result.RowCounts = rowCounts;
+                // Streamed rather than filled into tables, because a filled result holds every row of
+                // the largest church in memory before the body is even written.
+                using ( var command = CreateCommand( connection, configuration ) )
+                using ( var reader = command.ExecuteReader() )
+                {
+                    ReadMarks( reader, result );
+                    reader.NextResult();
+
+                    IDictionary<string, int> rowCounts;
+                    result.Payload = BuildPayload( reader, out rowCounts );
+                    result.RowCounts = rowCounts;
+                }
 
                 return result;
             }
@@ -532,100 +464,43 @@ namespace Rock.Jobs
         }
 
         /// <summary>
-        /// Marks the groups that are chat channels right now, in its own transaction and before the clock
-        /// is read, so the projection sees one settled set of marks.
+        /// The moment this restatement describes and the identity seed of each table the projection
+        /// reads, from the result set the reader is currently on.
         /// </summary>
-        /// <param name="rockContext">The context to mark through.</param>
-        internal static void StampChannels( RockContext rockContext )
-        {
-            rockContext.Database.CommandTimeout = ProjectionTimeoutSeconds;
-            rockContext.Database.ExecuteSqlCommand(
-                GetStampSql(),
-                new System.Data.SqlClient.SqlParameter( "@StampedAt", RockDateTime.Now ),
-                new System.Data.SqlClient.SqlParameter( "@ChatPeopleGroupGuid", Rock.SystemGuid.Group.GROUP_CHAT_PEOPLE.AsGuid() ),
-                new System.Data.SqlClient.SqlParameter( "@ChatBanListGroupGuid", Rock.SystemGuid.Group.GROUP_CHAT_BAN_LIST.AsGuid() ),
-                new System.Data.SqlClient.SqlParameter( "@ChatAdministratorsGroupGuid", Rock.SystemGuid.Group.GROUP_CHAT_ADMINISTRATORS.AsGuid() ) );
-        }
-
-        /// <summary>
-        /// The moment this restatement describes, taken from the database rather than from this process,
-        /// and in UTC because it is compared against the platform's own clock.
-        /// </summary>
-        /// <param name="connection">The open connection.</param>
-        /// <param name="configuration">The church's chat settings.</param>
-        /// <returns>The moment.</returns>
-        private static DateTime ReadClock( DbConnection connection, ChatPlatformConfiguration configuration )
-        {
-            using ( var command = CreateCommand( connection, "SELECT SYSUTCDATETIME();", configuration ) )
-            {
-                return DateTime.SpecifyKind( ( DateTime ) command.ExecuteScalar(), DateTimeKind.Utc );
-            }
-        }
-
-        /// <summary>
-        /// The identity seed of each table the projection reads.
-        /// </summary>
-        /// <param name="connection">The open connection.</param>
-        /// <param name="configuration">The church's chat settings.</param>
-        /// <returns>The marks.</returns>
+        /// <param name="reader">The reader, on the procedure's first result set.</param>
+        /// <param name="result">The reading to record them on.</param>
         /// <remarks>
-        /// The seed and not the largest id in the table. Deleting the newest rows lowers the largest id
-        /// and leaves the seed where it was, and a database restored from a backup is the case these
-        /// exist to catch: its seeds go backwards and the platform refuses the submission rather than
-        /// quietly writing a church's older picture over its newer one.
+        /// The moment is taken from the database rather than from this process, and in UTC because it
+        /// is compared against the platform's own clock.
         /// </remarks>
-        private static ChatSyncIdentityMarks ReadIdentityMarks( DbConnection connection, ChatPlatformConfiguration configuration )
+        private static void ReadMarks( DbDataReader reader, ProjectionResult result )
         {
-            const string sql =
-                "SELECT CAST( IDENT_CURRENT( 'Person' ) AS BIGINT ), "
-                + "CAST( IDENT_CURRENT( 'PersonAlias' ) AS BIGINT ), "
-                + "CAST( IDENT_CURRENT( '[Group]' ) AS BIGINT ), "
-                + "CAST( IDENT_CURRENT( 'GroupMember' ) AS BIGINT );";
-
-            using ( var command = CreateCommand( connection, sql, configuration ) )
-            using ( var reader = command.ExecuteReader() )
+            if ( !reader.Read() )
             {
-                if ( !reader.Read() )
-                {
-                    throw new InvalidOperationException( "the identity marks of the tables this projection reads could not be taken" );
-                }
-
-                return new ChatSyncIdentityMarks
-                {
-                    Person = reader.GetInt64( 0 ),
-                    PersonAlias = reader.GetInt64( 1 ),
-                    Group = reader.GetInt64( 2 ),
-                    GroupMember = reader.GetInt64( 3 )
-                };
+                throw new InvalidOperationException( "the identity marks of the tables this projection reads could not be taken" );
             }
+
+            result.ReadAtUtc = DateTime.SpecifyKind( reader.GetDateTime( 0 ), DateTimeKind.Utc );
+            result.Marks = new ChatSyncIdentityMarks
+            {
+                Person = reader.GetInt64( 1 ),
+                PersonAlias = reader.GetInt64( 2 ),
+                Group = reader.GetInt64( 3 ),
+                GroupMember = reader.GetInt64( 4 )
+            };
         }
 
         /// <summary>
-        /// Stages the sets once and writes every section from them into one buffer.
+        /// Writes every section from the result sets the reader is on into one buffer.
         /// </summary>
-        /// <param name="connection">The open connection.</param>
-        /// <param name="configuration">The church's chat settings.</param>
+        /// <param name="reader">The reader, on the first section's result set.</param>
         /// <param name="rowCounts">The rows actually written, by section.</param>
         /// <returns>The body, as the one buffer it was written into.</returns>
-        /// <remarks>
-        /// The staging and the four section queries go as one command, and the sections come back as its
-        /// four result sets. That is not a round trip saved: a command carrying parameters is sent as a
-        /// nested batch, and a temporary table made inside one of those is dropped the moment it ends.
-        /// Split across commands, every section would ask for sets that no longer existed.
-        /// </remarks>
-        private static ArraySegment<byte> BuildPayload( DbConnection connection, ChatPlatformConfiguration configuration, out IDictionary<string, int> rowCounts )
+        private static ArraySegment<byte> BuildPayload( DbDataReader reader, out IDictionary<string, int> rowCounts )
         {
             var contract = JObject.Parse( ChatWireContract.Json );
             var sections = new ChatSyncHeaderBuilder( contract ).GetPayloadSections();
             var mapper = new ChatSyncRowMapper( contract, RockDateTime.OrgTimeZoneInfo );
-
-            var sql = new StringBuilder();
-            sql.AppendLine( GetStagingSql() );
-
-            foreach ( var section in sections )
-            {
-                sql.AppendLine( GetSectionSql( section ) );
-            }
 
             // The body is encoded as it is written and handed on as the one buffer it was written
             // into. Held as text and then encoded for the transport it would be two copies of the
@@ -641,15 +516,11 @@ namespace Rock.Jobs
             using ( var jsonWriter = new JsonTextWriter( text ) { CloseOutput = false } )
             using ( var payloadWriter = new ChatSyncPayloadWriter( contract, jsonWriter ) )
             {
-                using ( var command = CreateCommand( connection, sql.ToString(), configuration ) )
-                using ( var reader = command.ExecuteReader() )
+                foreach ( var section in sections )
                 {
-                    foreach ( var section in sections )
-                    {
-                        WriteSection( reader, payloadWriter, mapper, section );
+                    WriteSection( reader, payloadWriter, mapper, section );
 
-                        reader.NextResult();
-                    }
+                    reader.NextResult();
                 }
 
                 payloadWriter.Complete();
@@ -687,25 +558,20 @@ namespace Rock.Jobs
         }
 
         /// <summary>
-        /// One command, with only the parameters the text it runs actually names.
+        /// The one call to the projection procedure.
         /// </summary>
         /// <param name="connection">The open connection.</param>
-        /// <param name="sql">The text to run.</param>
         /// <param name="configuration">The church's chat settings.</param>
         /// <returns>The command.</returns>
-        private static DbCommand CreateCommand( DbConnection connection, string sql, ChatPlatformConfiguration configuration )
+        private static DbCommand CreateCommand( DbConnection connection, ChatPlatformConfiguration configuration )
         {
             var command = connection.CreateCommand();
-            command.CommandText = sql;
+            command.CommandText = "[dbo].[spChat_SyncProjection]";
+            command.CommandType = CommandType.StoredProcedure;
             command.CommandTimeout = ProjectionTimeoutSeconds;
 
             foreach ( var parameter in ProjectionParameters( configuration ) )
             {
-                if ( sql.IndexOf( parameter.Key, StringComparison.OrdinalIgnoreCase ) < 0 )
-                {
-                    continue;
-                }
-
                 var bound = command.CreateParameter();
                 bound.ParameterName = parameter.Key;
                 bound.Value = parameter.Value ?? DBNull.Value;
@@ -716,7 +582,7 @@ namespace Rock.Jobs
         }
 
         /// <summary>
-        /// Everything the projection texts ask to be told rather than look up for themselves.
+        /// Everything the projection procedure asks to be told rather than look up for itself.
         /// </summary>
         /// <param name="configuration">The church's chat settings.</param>
         /// <returns>The parameters, by name.</returns>
@@ -727,6 +593,8 @@ namespace Rock.Jobs
 
             return new Dictionary<string, object>( StringComparer.OrdinalIgnoreCase )
             {
+                // The channel mark is in the organization's time, as every date Rock stores is.
+                { "@StampedAt", RockDateTime.Now },
                 { "@ChatPeopleGroupGuid", Rock.SystemGuid.Group.GROUP_CHAT_PEOPLE.AsGuid() },
                 { "@ChatBanListGroupGuid", Rock.SystemGuid.Group.GROUP_CHAT_BAN_LIST.AsGuid() },
                 { "@ChatAdministratorsGroupGuid", Rock.SystemGuid.Group.GROUP_CHAT_ADMINISTRATORS.AsGuid() },

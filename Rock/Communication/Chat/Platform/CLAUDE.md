@@ -18,7 +18,7 @@ integration. It is not touched and not referenced from here.
 | Folder | Holds |
 |---|---|
 | `Session/` | Gating, enrolment and token minting for a person opening chat |
-| `Sync/` and `Sql/` | The projection queries, the client that carries a submission to the platform, and what Sync Now on a chat block may start and report |
+| `Sync/` | The client that carries a submission to the platform, and what Sync Now on a chat block may start and report |
 | `LaneA/` | The immediate lane: save hooks record keys, a flush pushes them |
 | `Doors/` | Block action handlers that change Rock truth, such as creating a direct message or joining a channel |
 | `Configuration/` | The settings model, its cached parsed form, and secret handling |
@@ -26,9 +26,14 @@ integration. It is not touched and not referenced from here.
 
 Folders appear when a file needs them. The job classes live in `Rock/Jobs` with every other job, and
 the scheduled sync keeps its whole run there rather than spread across this folder: whether the run
-happens, which queries it loads, reading the church, shaping the payload, building the headers,
-submitting, polling and what it reports. What stays here is the transport, which owns an HttpClient
-and its lifetime and is the one piece that is not about this church's data.
+happens, reading the church, shaping the payload, building the headers, submitting, polling and what
+it reports. What stays here is the transport, which owns an HttpClient and its lifetime and is the
+one piece that is not about this church's data.
+
+The projection itself is one stored procedure, `spChat_SyncProjection`, which marks the groups that
+are chat channels, stages the sets the sections read, and returns the sections as result sets. It
+is created by a Rock migration like every other procedure, so it changes by a new migration, never
+by editing one that has shipped. `Rock.Tests` links the migration's file to read the text that ships.
 
 The blocks live in `Rock.Blocks/Communication/Chat`, the bags in
 `Rock.ViewModels/Blocks/Communication/Chat`, and the client in

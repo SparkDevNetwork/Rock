@@ -23,19 +23,19 @@ using Newtonsoft.Json.Linq;
 
 using Rock.Communication.Chat.Platform.Contract;
 using Rock.Communication.Chat.Platform.Sync;
-using Rock.Jobs;
 
 namespace Rock.Tests.Communication.Chat.Platform.Sync
 {
     /// <summary>
-    /// Tests the queries that read a church's chat rows out of Rock.
+    /// Tests the procedure that reads a church's chat rows out of Rock.
     /// </summary>
     /// <remarks>
-    /// These read the query text rather than run it. What a query returns needs a database and is
-    /// covered by the integration suite; what is asserted here is the two properties that are
-    /// decided by where a line of SQL sits rather than by what it returns, and that a database
-    /// cannot show: that the rule deciding what a chat channel is lives in exactly one query, and
-    /// that each section returns its columns in the order the wire contract lists them.
+    /// These read the procedure's text rather than run it. What it returns needs a database and is
+    /// covered by the integration suite; what is asserted here is the properties that are decided
+    /// by where a line of SQL sits rather than by what it returns, and that a database cannot show:
+    /// that the rule deciding what a chat channel is lives in the staging alone, that the sections
+    /// read the staged sets, and that each section returns its columns in the order the wire
+    /// contract lists them.
     /// </remarks>
     [TestClass]
     public class ChatSyncProjectionTests
@@ -65,8 +65,8 @@ namespace Rock.Tests.Communication.Chat.Platform.Sync
         /// turned off and the conversation is not archived.
         /// </summary>
         /// <remarks>
-        /// Written out here rather than extracted from one of the files, so that changing either
-        /// file turns this red and changing both means saying so in a third place.
+        /// Written out here rather than extracted from one of the statements, so that changing either
+        /// statement turns this red and changing both means saying so in a third place.
         /// </remarks>
         [TestMethod]
         public void TheStampAndTheStagingQueryAgreeOnWhatQualifiesRightNow()
@@ -74,9 +74,9 @@ namespace Rock.Tests.Communication.Chat.Platform.Sync
             const string liveQualification =
                 "[GT].[IsChatAllowed] = 1 AND COALESCE( [G].[IsChatEnabledOverride], [GT].[IsChatEnabledForAllGroups] ) = 1";
 
-            StringAssert.Contains( Flatten( ChatPlatformSync.GetStagingSql() ), liveQualification,
+            StringAssert.Contains( Flatten( ChatSyncSqlText.Staging ), liveQualification,
                 "the staging query no longer reads the rule this stamp is written against" );
-            StringAssert.Contains( Flatten( ChatPlatformSync.GetStampSql() ), liveQualification,
+            StringAssert.Contains( Flatten( ChatSyncSqlText.Stamp ), liveQualification,
                 "the stamp marks a different set of groups than the projection reads" );
         }
 
@@ -90,9 +90,9 @@ namespace Rock.Tests.Communication.Chat.Platform.Sync
             const string systemGroups =
                 "[G].[Guid] NOT IN ( @ChatPeopleGroupGuid, @ChatBanListGroupGuid, @ChatAdministratorsGroupGuid )";
 
-            StringAssert.Contains( Flatten( ChatPlatformSync.GetStagingSql() ), systemGroups,
+            StringAssert.Contains( Flatten( ChatSyncSqlText.Staging ), systemGroups,
                 "the staging query can make a system chat group a channel" );
-            StringAssert.Contains( Flatten( ChatPlatformSync.GetStampSql() ), systemGroups,
+            StringAssert.Contains( Flatten( ChatSyncSqlText.Stamp ), systemGroups,
                 "the stamp can mark a system chat group as a channel" );
         }
 
@@ -104,14 +104,14 @@ namespace Rock.Tests.Communication.Chat.Platform.Sync
         [TestMethod]
         public void TheStampWritesTheMarkerAndOnlyWhereThereIsNotOneAlready()
         {
-            var sql = Flatten( ChatPlatformSync.GetStampSql() );
+            var sql = Flatten( ChatSyncSqlText.Stamp );
 
             StringAssert.Contains( sql, "UPDATE" );
             StringAssert.Contains( sql, "[ChatChannelFirstEnabledDateTime] IS NULL" );
         }
 
         /// <summary>
-        /// Collapses whitespace so the two files may be laid out as their own readability wants.
+        /// Collapses whitespace so the two statements may be laid out as their own readability wants.
         /// </summary>
         private static string Flatten( string sql )
         {
@@ -119,17 +119,18 @@ namespace Rock.Tests.Communication.Chat.Platform.Sync
         }
 
         /// <summary>
-        /// Every query the projection needs is present and not empty.
+        /// The procedure returns the marks and then one result set for every section, and nothing
+        /// else, because the job reads them by position.
         /// </summary>
         [TestMethod]
-        public void Projection_ShipsAQueryForStagingAndForEverySection()
+        public void Projection_ReturnsTheMarksAndOneResultSetForEverySection()
         {
-            Assert.IsFalse( string.IsNullOrWhiteSpace( ChatPlatformSync.GetStagingSql() ), "the staging query is missing, so nothing stages the sets the sections read" );
+            Assert.IsFalse( string.IsNullOrWhiteSpace( ChatSyncSqlText.Staging ), "the staging is missing, so nothing stages the sets the sections read" );
 
-            foreach ( var section in Sections() )
-            {
-                Assert.IsFalse( string.IsNullOrWhiteSpace( ChatPlatformSync.GetSectionSql( section ) ), string.Format( "the {0} section has no query", section ) );
-            }
+            Assert.AreEqual( Sections().Length + 1, ChatSyncSqlText.ResultSets.Count,
+                "the procedure does not return the marks followed by exactly one result set per section, so the job reads a section from the wrong one" );
+
+            StringAssert.Contains( ChatSyncSqlText.ResultSets[0], "SYSUTCDATETIME()", "the first result set is not the moment the reading describes" );
         }
 
         /// <summary>
@@ -145,7 +146,7 @@ namespace Rock.Tests.Communication.Chat.Platform.Sync
         {
             foreach ( var section in Sections() )
             {
-                var sql = ChatPlatformSync.GetSectionSql( section );
+                var sql = ChatSyncSqlText.Section( section );
 
                 foreach ( var column in ChatSyncSqlText.QualificationColumns )
                 {
@@ -163,7 +164,7 @@ namespace Rock.Tests.Communication.Chat.Platform.Sync
         [TestMethod]
         public void StagingQuery_HoldsTheRuleThatDecidesWhetherAGroupIsAChatChannel()
         {
-            var sql = ChatPlatformSync.GetStagingSql();
+            var sql = ChatSyncSqlText.Staging;
 
             foreach ( var column in ChatSyncSqlText.QualificationColumns )
             {
@@ -186,12 +187,54 @@ namespace Rock.Tests.Communication.Chat.Platform.Sync
         [TestMethod]
         public void MembershipSection_ReadsTheStagedSetRatherThanTheMembershipTable()
         {
-            var sql = ChatPlatformSync.GetSectionSql( "members" );
+            var sql = ChatSyncSqlText.Section( "members" );
 
             Assert.IsTrue( sql.IndexOf( "#MemberRows", StringComparison.OrdinalIgnoreCase ) >= 0, "the membership section does not read the staged set" );
             Assert.IsFalse(
                 sql.IndexOf( "[GroupMember]", StringComparison.OrdinalIgnoreCase ) >= 0,
                 "the membership section reads the group membership table directly, so its set is taken at a different moment than the channels it names" );
+        }
+
+        /// <summary>
+        /// The aliases section reads its people from the staged aliases rather than the person table.
+        /// </summary>
+        /// <remarks>
+        /// Joined to the person table, a person deleted between the staging and this section, as a
+        /// merge deletes one, drops out of the aliases while the members section, which reads the
+        /// staged set, still names them.
+        /// </remarks>
+        [TestMethod]
+        public void AliasSection_ReadsTheStagedPeopleRatherThanThePersonTable()
+        {
+            var sql = ChatSyncSqlText.Section( "aliases" );
+
+            Assert.IsTrue( sql.IndexOf( "#Alias", StringComparison.OrdinalIgnoreCase ) >= 0, "the aliases section does not read the staged set" );
+            Assert.IsFalse(
+                sql.IndexOf( "[Person]", StringComparison.OrdinalIgnoreCase ) >= 0,
+                "the aliases section reads the person table directly, so a person deleted after the staging drops out of it and not out of the memberships" );
+        }
+
+        /// <summary>
+        /// The channels section reads its groups from the staged chat groups rather than the group
+        /// tables.
+        /// </summary>
+        /// <remarks>
+        /// Joined to the group table, a group deleted between the staging and this section drops out
+        /// of the channels while the members section still names it.
+        /// </remarks>
+        [TestMethod]
+        public void ChannelSection_ReadsTheStagedGroupsRatherThanTheGroupTables()
+        {
+            var sql = ChatSyncSqlText.Section( "channels" );
+
+            Assert.IsTrue( sql.IndexOf( "#ChatGroups", StringComparison.OrdinalIgnoreCase ) >= 0, "the channels section does not read the staged set" );
+
+            foreach ( var table in new[] { "[Group]", "[GroupType]" } )
+            {
+                Assert.IsFalse(
+                    sql.IndexOf( table, StringComparison.OrdinalIgnoreCase ) >= 0,
+                    string.Format( "the channels section reads {0} directly, so a group deleted after the staging drops out of it and not out of the memberships", table ) );
+            }
         }
 
         #endregion
@@ -265,26 +308,9 @@ namespace Rock.Tests.Communication.Chat.Platform.Sync
         [TestMethod]
         public void BadgeSection_ReturnsTheHighlightColourRatherThanThePairTheWireCarries()
         {
-            var sql = ChatPlatformSync.GetSectionSql( "badges" );
+            var sql = ChatSyncSqlText.Section( "badges" );
 
             Assert.IsTrue( sql.IndexOf( "highlight_color", StringComparison.OrdinalIgnoreCase ) >= 0, "the badge section does not return the highlight colour the pair is derived from" );
-        }
-
-        #endregion
-
-        #region Unknown sections
-
-        /// <summary>
-        /// A section the contract does not name has no query, and asking for one says so.
-        /// </summary>
-        [TestMethod]
-        public void UnknownSection_HasNoQuery()
-        {
-            var thrown = Assert.ThrowsExactly<InvalidOperationException>(
-                () => ChatPlatformSync.GetSectionSql( "sermons" ),
-                "a section nothing ships a query for returned one anyway" );
-
-            StringAssert.Contains( thrown.Message, "sermons", "the failure does not name the section that was asked for" );
         }
 
         #endregion

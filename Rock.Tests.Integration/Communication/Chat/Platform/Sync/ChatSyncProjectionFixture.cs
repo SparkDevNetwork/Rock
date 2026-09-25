@@ -283,6 +283,39 @@ namespace Rock.Tests.Integration.Communication.Chat.Platform.Sync
         }
 
         /// <summary>
+        /// Gives a group an icon, as a file of a binary file type made for it.
+        /// </summary>
+        /// <param name="channelGuid">The group.</param>
+        /// <param name="requiresViewSecurity">Whether the file's type requires view security.</param>
+        /// <returns>The file's guid.</returns>
+        /// <remarks>
+        /// Written as rows rather than saved through Rock, because the projection reads only the
+        /// file's guid and its type, and a save would ask a storage provider for content nothing
+        /// here reads.
+        /// </remarks>
+        public Guid SetChannelIcon( Guid channelGuid, bool requiresViewSecurity )
+        {
+            var fileGuid = Guid.NewGuid();
+
+            using ( var rockContext = new RockContext() )
+            {
+                rockContext.Database.ExecuteSqlCommand(
+                    "INSERT INTO [BinaryFileType] ( [IsSystem], [Name], [CacheToServerFileSystem], [RequiresViewSecurity], [Guid], [ForeignKey] ) "
+                    + "VALUES ( 0, @p0, 0, @p1, NEWID(), @p2 );"
+                    + "INSERT INTO [BinaryFile] ( [IsTemporary], [IsSystem], [BinaryFileTypeId], [FileName], [MimeType], [Guid], [ForeignKey] ) "
+                    + "VALUES ( 0, 0, SCOPE_IDENTITY(), N'icon.png', N'image/png', @p3, @p2 );"
+                    + "UPDATE [Group] SET [ChatChannelAvatarBinaryFileId] = ( SELECT [Id] FROM [BinaryFile] WHERE [Guid] = @p3 ) WHERE [Guid] = @p4;",
+                    "Chat icon fixture " + fileGuid.ToString( "N" ).Substring( 0, 8 ),
+                    requiresViewSecurity,
+                    ForeignKey,
+                    fileGuid,
+                    channelGuid );
+            }
+
+            return fileGuid;
+        }
+
+        /// <summary>
         /// Writes a person's nick name past Rock's own save path, for the states a row can only
         /// reach from outside Rock.
         /// </summary>
@@ -466,7 +499,8 @@ namespace Rock.Tests.Integration.Communication.Chat.Platform.Sync
         }
 
         /// <summary>
-        /// Reads the whole church, exactly as a run would.
+        /// Marks the groups that are chat channels right now and reads the whole church, exactly as
+        /// a run would.
         /// </summary>
         /// <returns>The reading.</returns>
         public ProjectedPayload Project()
@@ -476,17 +510,6 @@ namespace Rock.Tests.Integration.Communication.Chat.Platform.Sync
                 var result = ChatPlatformSync.Project( rockContext, Configuration() );
 
                 return new ProjectedPayload( result );
-            }
-        }
-
-        /// <summary>
-        /// Marks the groups that are chat channels right now, exactly as a run would.
-        /// </summary>
-        public void StampChannels()
-        {
-            using ( var rockContext = new RockContext() )
-            {
-                ChatPlatformSync.StampChannels( rockContext );
             }
         }
 
@@ -519,10 +542,13 @@ namespace Rock.Tests.Integration.Communication.Chat.Platform.Sync
 
                 DeletePeopleAndChannels( rockContext, ForeignKey );
 
-                // A Data View's persisted values go with it; its schedule is let go of after it.
+                // A Data View's persisted values go with it; its schedule is let go of after it. A
+                // channel icon goes once the group that pointed at it has, and its type after it.
                 rockContext.Database.ExecuteSqlCommand(
                     "DELETE FROM [DataView] WHERE [ForeignKey] = @p0;"
-                    + "DELETE FROM [Schedule] WHERE [ForeignKey] = @p0;",
+                    + "DELETE FROM [Schedule] WHERE [ForeignKey] = @p0;"
+                    + "DELETE FROM [BinaryFile] WHERE [ForeignKey] = @p0;"
+                    + "DELETE FROM [BinaryFileType] WHERE [ForeignKey] = @p0;",
                     ForeignKey );
 
                 foreach ( var familyGroupId in _createdFamilyGroupIds )
