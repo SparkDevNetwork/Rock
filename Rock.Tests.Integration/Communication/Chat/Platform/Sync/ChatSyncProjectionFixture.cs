@@ -191,6 +191,33 @@ namespace Rock.Tests.Integration.Communication.Chat.Platform.Sync
         }
 
         /// <summary>
+        /// Adds another role to one of this fixture's group types.
+        /// </summary>
+        /// <param name="groupTypeId">The type, which must be one this fixture made.</param>
+        /// <param name="name">The role's name.</param>
+        /// <param name="isLeader">Whether holding the role makes a person a leader of the group.</param>
+        /// <returns>The role's id.</returns>
+        public int AddRole( int groupTypeId, string name, bool isLeader )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var role = new GroupTypeRole
+                {
+                    Guid = Guid.NewGuid(),
+                    GroupTypeId = groupTypeId,
+                    Name = name,
+                    IsLeader = isLeader,
+                    ForeignKey = ForeignKey
+                };
+
+                rockContext.Set<GroupTypeRole>().Add( role );
+                rockContext.SaveChanges();
+
+                return role.Id;
+            }
+        }
+
+        /// <summary>
         /// Puts a person in a group.
         /// </summary>
         /// <param name="channelGuid">The group.</param>
