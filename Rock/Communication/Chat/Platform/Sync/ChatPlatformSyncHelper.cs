@@ -96,6 +96,8 @@ namespace Rock.Communication.Chat.Platform.Sync
         // What Rock records for a run that ended well; anything else is a run that did not.
         private const string SuccessStatus = "Success";
 
+        private static readonly Guid SyncJobGuid = Rock.SystemGuid.ServiceJob.CHAT_PLATFORM_SYNC_JOB.AsGuid();
+
         #endregion Constants
 
         #region Submission headers
@@ -408,17 +410,7 @@ namespace Rock.Communication.Chat.Platform.Sync
         /// <returns>True where the run worked.</returns>
         internal static bool IsJobSuccess( SubmissionStatus status )
         {
-            switch ( status )
-            {
-                case SubmissionStatus.Accepted:
-                case SubmissionStatus.Applied:
-                    return true;
-                case SubmissionStatus.Refused:
-                case SubmissionStatus.Failed:
-                    return false;
-                default:
-                    throw new ArgumentOutOfRangeException( nameof( status ), status, "no run outcome is mapped for this recorded status" );
-            }
+            return status == SubmissionStatus.Accepted || status == SubmissionStatus.Applied;
         }
 
         /// <summary>
@@ -875,7 +867,7 @@ namespace Rock.Communication.Chat.Platform.Sync
         /// <returns>The job as it stands, or null when its row is missing.</returns>
         private static JobSnapshot ReadJob( RockContext rockContext )
         {
-            var jobId = ReadJobId( rockContext );
+            var jobId = new ServiceJobService( rockContext ).GetId( SyncJobGuid );
             if ( !jobId.HasValue )
             {
                 return null;
@@ -907,14 +899,10 @@ namespace Rock.Communication.Chat.Platform.Sync
         /// <returns>The run, or null when none has been recorded since, or the job's row is missing.</returns>
         private static RunSnapshot ReadRunAfter( RockContext rockContext, int runMarker )
         {
-            var jobId = ReadJobId( rockContext );
-            if ( !jobId.HasValue )
-            {
-                return null;
-            }
-
+            // By the job's guid through the history's own join, so a check every few seconds is one
+            // query rather than two.
             return new ServiceJobHistoryService( rockContext ).Queryable()
-                .Where( history => history.ServiceJobId == jobId.Value && history.Id > runMarker )
+                .Where( history => history.ServiceJob.Guid == SyncJobGuid && history.Id > runMarker )
                 .OrderBy( history => history.Id )
                 .Select( history => new RunSnapshot
                 {
@@ -937,21 +925,6 @@ namespace Rock.Communication.Chat.Platform.Sync
         private static void QueueRunNow( int jobId )
         {
             new ProcessRunJobNow.Message { JobId = jobId }.Send();
-        }
-
-        /// <summary>
-        /// The sync job's id, or null when its row is missing.
-        /// </summary>
-        /// <param name="rockContext">The context to read through.</param>
-        /// <returns>The id.</returns>
-        private static int? ReadJobId( RockContext rockContext )
-        {
-            var jobGuid = Rock.SystemGuid.ServiceJob.CHAT_PLATFORM_SYNC_JOB.AsGuid();
-
-            return new ServiceJobService( rockContext ).Queryable()
-                .Where( job => job.Guid == jobGuid )
-                .Select( job => ( int? ) job.Id )
-                .FirstOrDefault();
         }
 
         /// <summary>
@@ -1054,9 +1027,10 @@ namespace Rock.Communication.Chat.Platform.Sync
         }
 
         /// <summary>
-        /// Reads one recorded outcome block, or null where there is none.
+        /// Reads one recorded outcome block, or null where there is none. A status read and the
+        /// previous outcome an acknowledgement carries are the same shape.
         /// </summary>
-        private static Outcome ReadOutcome( JObject outcome )
+        private static Outcome ReadOutcome( JObject outcome, Guid fallbackSubmissionId )
         {
             if ( outcome == null )
             {
@@ -1065,7 +1039,7 @@ namespace Rock.Communication.Chat.Platform.Sync
 
             return new Outcome
             {
-                SubmissionId = ReadGuid( outcome["submission_id"] ) ?? Guid.Empty,
+                SubmissionId = ReadGuid( outcome["submission_id"] ) ?? fallbackSubmissionId,
                 Status = ParseStatus( ( string ) outcome["status"] ),
                 ErrorCode = ( string ) outcome["error_code"]
             };
@@ -1397,10 +1371,52 @@ namespace Rock.Communication.Chat.Platform.Sync
                     return false;
                 }
 
-                string lastFailure = null;
+                string refusal = null;
 
                 // The same attempts as a submission: the exchange changes nothing, so it is always
                 // safe to repeat.
+                var unreached = SendWithRetry(
+                    () =>
+                    {
+                        var request = new HttpRequestMessage( HttpMethod.Post, Url( ExchangePath ) );
+                        request.Headers.TryAddWithoutValidation( "Authorization", "Bearer " + churchToken );
+                        request.Headers.TryAddWithoutValidation( "apikey", _configuration.PublishableKey );
+                        return request;
+                    },
+                    ( response, statusCode, body ) =>
+                    {
+                        var token = ( string ) body?["access_token"];
+
+                        if ( response.IsSuccessStatusCode && token.IsNotNullOrWhiteSpace() )
+                        {
+                            PlatformToken = token;
+
+                            var expiresIn = ( int? ) body["expires_in"];
+                            PlatformTokenExpiresAtUtc = expiresIn.HasValue ? Clock().AddSeconds( expiresIn.Value ) : ( DateTime? ) null;
+                            return;
+                        }
+
+                        var code = ( string ) body?["error"]?["code"];
+                        refusal = "the chat platform refused this church's credential: "
+                            + ( code.IsNotNullOrWhiteSpace() ? code : "HTTP " + statusCode )
+                            + DescribeClockSkew( code, response.Headers.Date );
+                    } );
+
+                failure = unreached == null ? refusal : "the chat platform could not be reached to exchange this church's credential: " + unreached;
+                return PlatformToken != null;
+            }
+
+            /// <summary>
+            /// Sends a request until an answer arrives that says the call completed, waiting between
+            /// attempts, and reads that answer.
+            /// </summary>
+            /// <param name="buildRequest">Builds the request for one attempt, because a request message cannot be sent twice.</param>
+            /// <param name="read">Reads a completed answer from the response, its status code and its body.</param>
+            /// <returns>Why the last attempt got no completed answer, or null where one did and was read.</returns>
+            private string SendWithRetry( Func<HttpRequestMessage> buildRequest, Action<HttpResponseMessage, int, JObject> read )
+            {
+                string lastFailure = null;
+
                 for ( var attempt = 0; attempt < TransportAttempts; attempt++ )
                 {
                     if ( attempt > 0 )
@@ -1411,11 +1427,8 @@ namespace Rock.Communication.Chat.Platform.Sync
                     HttpResponseMessage response;
                     try
                     {
-                        using ( var request = new HttpRequestMessage( HttpMethod.Post, Url( ExchangePath ) ) )
+                        using ( var request = buildRequest() )
                         {
-                            request.Headers.TryAddWithoutValidation( "Authorization", "Bearer " + churchToken );
-                            request.Headers.TryAddWithoutValidation( "apikey", _configuration.PublishableKey );
-
                             response = _httpClient.SendAsync( request ).GetAwaiter().GetResult();
                         }
                     }
@@ -1437,29 +1450,12 @@ namespace Rock.Communication.Chat.Platform.Sync
                             continue;
                         }
 
-                        var token = ( string ) body?["access_token"];
-
-                        if ( response.IsSuccessStatusCode && token.IsNotNullOrWhiteSpace() )
-                        {
-                            PlatformToken = token;
-
-                            var expiresIn = ( int? ) body["expires_in"];
-                            PlatformTokenExpiresAtUtc = expiresIn.HasValue ? Clock().AddSeconds( expiresIn.Value ) : ( DateTime? ) null;
-
-                            failure = null;
-                            return true;
-                        }
-
-                        var code = ( string ) body?["error"]?["code"];
-                        failure = "the chat platform refused this church's credential: "
-                            + ( code.IsNotNullOrWhiteSpace() ? code : "HTTP " + statusCode )
-                            + DescribeClockSkew( code, response.Headers.Date );
-                        return false;
+                        read( response, statusCode, body );
+                        return null;
                     }
                 }
 
-                failure = "the chat platform could not be reached to exchange this church's credential: " + lastFailure;
-                return false;
+                return lastFailure;
             }
 
             /// <summary>
@@ -1544,49 +1540,17 @@ namespace Rock.Communication.Chat.Platform.Sync
             /// </remarks>
             public Acknowledgement Submit( Guid submissionId, ArraySegment<byte> payload, IDictionary<string, string> headers )
             {
-                string lastFailure = null;
+                Acknowledgement acknowledgement = null;
 
-                for ( var attempt = 0; attempt < TransportAttempts; attempt++ )
-                {
-                    if ( attempt > 0 )
+                var unreached = SendWithRetry(
+                    () =>
                     {
-                        Wait( TransportRetryDelay );
-                    }
+                        RefreshTokenIfExpiring();
+                        return BuildSubmitRequest( submissionId, payload, headers );
+                    },
+                    ( response, statusCode, body ) => acknowledgement = ReadAcknowledgement( submissionId, statusCode, body ) );
 
-                    RefreshTokenIfExpiring();
-
-                    HttpResponseMessage response;
-                    try
-                    {
-                        response = _httpClient.SendAsync( BuildSubmitRequest( submissionId, payload, headers ) ).GetAwaiter().GetResult();
-                    }
-                    catch ( Exception exception )
-                    {
-                        lastFailure = Describe( exception );
-                        continue;
-                    }
-
-                    using ( response )
-                    {
-                        var statusCode = ( int ) response.StatusCode;
-                        var body = ReadBody( response );
-
-                        var unfinished = DescribeUnfinishedAnswer( statusCode, body );
-                        if ( unfinished != null )
-                        {
-                            lastFailure = unfinished;
-                            continue;
-                        }
-
-                        return ReadAcknowledgement( submissionId, statusCode, body );
-                    }
-                }
-
-                return new Acknowledgement
-                {
-                    SubmissionId = submissionId,
-                    TransportDetail = lastFailure
-                };
+                return acknowledgement ?? new Acknowledgement { SubmissionId = submissionId, TransportDetail = unreached };
             }
 
             /// <summary>
@@ -1653,24 +1617,10 @@ namespace Rock.Communication.Chat.Platform.Sync
 
                 using ( response )
                 {
-                    var body = ReadBody( response );
-                    if ( body == null )
-                    {
-                        return null;
-                    }
+                    // A status this build does not know is no read at all.
+                    var outcome = ReadOutcome( ReadBody( response ), submissionId );
 
-                    var status = ParseStatus( ( string ) body["status"] );
-                    if ( !status.HasValue )
-                    {
-                        return null;
-                    }
-
-                    return new Outcome
-                    {
-                        SubmissionId = ReadGuid( body["submission_id"] ) ?? submissionId,
-                        Status = status,
-                        ErrorCode = ( string ) body["error_code"]
-                    };
+                    return outcome != null && outcome.Status.HasValue ? outcome : null;
                 }
             }
 
@@ -1761,7 +1711,7 @@ namespace Rock.Communication.Chat.Platform.Sync
                     Status = ParseStatus( ( string ) body["status"] ),
                     ErrorCode = ReadErrorCode( body ),
                     HttpStatusCode = statusCode,
-                    PreviousOutcome = ReadOutcome( body["previous_outcome"] as JObject ),
+                    PreviousOutcome = ReadOutcome( body["previous_outcome"] as JObject, Guid.Empty ),
                     SyncBackoffUntil = ReadTime( body["sync_backoff_until"] )
                 };
             }
