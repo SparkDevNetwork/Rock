@@ -1198,6 +1198,11 @@ namespace Rock.Blocks.Security
                 return null;
             }
 
+            if ( !PageCache.Layout.Site.IsSafeRedirectUrl( decodedUrl, RequestContext.RequestUri ) )
+            {
+                return null;
+            }
+
             return decodedUrl;
         }
 

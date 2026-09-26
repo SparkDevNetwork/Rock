@@ -145,9 +145,9 @@ namespace RockWeb.Blocks.Security
                         {
                             rockContext.SaveChanges();
 
-                            if ( !string.IsNullOrWhiteSpace( PageParameter( "ReturnUrl" ) ) )
+                            string redirectUrl = Server.UrlDecode( PageParameter( "ReturnUrl" ) );
+                            if ( RockPage.Site.IsSafeRedirectUrl( redirectUrl, Request.UrlProxySafe() ) )
                             {
-                                string redirectUrl = Server.UrlDecode( PageParameter( "ReturnUrl" ) );
                                 Response.Redirect( redirectUrl );
                                 Context.ApplicationInstance.CompleteRequest();
                             }

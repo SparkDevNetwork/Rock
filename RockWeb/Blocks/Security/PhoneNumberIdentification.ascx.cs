@@ -555,6 +555,11 @@ namespace RockWeb.Blocks.Security
             else
             {
                 returnUrl = Server.UrlDecode( returnUrl );
+
+                if ( !RockPage.Site.IsSafeRedirectUrl( returnUrl, Request.UrlProxySafe() ) )
+                {
+                    returnUrl = "/";
+                }
             }
 
             if ( qryParams.IsNotNullOrWhiteSpace() )

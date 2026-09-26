@@ -270,6 +270,40 @@ namespace Rock.Tests.Utility.ExtensionMethods
 
         #endregion RedirectUrlContainsXss
 
+        #region IsSafeRedirectUrl
+
+        private static readonly string[] RedirectAllowedHosts = new[] { "rock.church.org", "*.partner.org" };
+
+        [DataRow( "/page/1" )]
+        [DataRow( "~/page/1" )]
+        [DataRow( "https://rock.church.org/page/1" )]
+        [DataRow( "https://app.partner.org/" )]                         // Wildcard subdomain.
+        [DataTestMethod]
+        public void IsSafeRedirectUrl_SafeInput( string input )
+        {
+            var output = input.IsSafeRedirectUrl( RedirectAllowedHosts );
+            Assert.That.AreEqual( true, output );
+        }
+
+        [DataRow( "https://unsafe.com" )]                               // Unlisted host.
+        [DataRow( "/\\unsafe.com" )]                                    // Backslash.
+        [DataRow( "//unsafe.com" )]                                     // Protocol-relative.
+        [DataRow( "https://rock.church.org@unsafe.com" )]               // Userinfo.
+        [DataRow( "https://unsafepartner.org" )]                        // Wildcard suffix without the dot.
+        [DataRow( "https://rock.church.org\0.unsafe.com" )]             // Null byte.
+        [DataRow( "https:/unsafe.com" )]                                // Single slash, which only browsers resolve.
+        [DataRow( "https://%75nsafe.com" )]                             // Encoded host, which only browsers resolve.
+        [DataRow( " https:/unsafe.com" )]                               // Leading space.
+        [DataRow( "page/1" )]                                           // Relative path without a leading slash.
+        [DataTestMethod]
+        public void IsSafeRedirectUrl_UnsafeInput( string input )
+        {
+            var output = input.IsSafeRedirectUrl( RedirectAllowedHosts );
+            Assert.That.AreEqual( false, output );
+        }
+
+        #endregion IsSafeRedirectUrl
+
         #region Truncate
 
         [TestMethod]

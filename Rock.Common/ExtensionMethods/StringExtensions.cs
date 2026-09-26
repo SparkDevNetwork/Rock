@@ -265,6 +265,164 @@ namespace Rock
         }
 
         /// <summary>
+        /// Determines whether a value intended to be a redirect URL is safe to send the browser to.
+        /// A URL is safe when it is a local path (e.g. <c>/page/1</c> or <c>~/page/1</c>) or an
+        /// absolute URL whose host matches one of <paramref name="allowedHosts"/>.
+        /// </summary>
+        /// <param name="redirectUrl">The value intended to be used for a redirect URL.</param>
+        /// <param name="allowedHosts">
+        /// The hosts that may be redirected to. Entries may include a scheme, port or path, and a leading <c>*.</c> matches
+        /// any subdomain.
+        /// </param>
+        /// <returns><c>true</c> if <paramref name="redirectUrl"/> is safe to redirect to; otherwise, <c>false</c>.</returns>
+        public static bool IsSafeRedirectUrl( this string redirectUrl, IEnumerable<string> allowedHosts )
+        {
+            if ( redirectUrl.IsNullOrWhiteSpace() )
+            {
+                return false;
+            }
+
+            if ( IsLocalUrl( redirectUrl ) )
+            {
+                return true;
+            }
+
+            // Anything else must be a well-formed absolute URL. Rejecting what
+            // won't parse keeps browser-only forms like "https:/unsafe.com" out,
+            // and a control character (e.g. a null byte) can make parsers
+            // disagree on the host.
+            if ( redirectUrl.Any( char.IsControl ) || !Uri.TryCreate( redirectUrl, UriKind.Absolute, out var uri ) )
+            {
+                return false;
+            }
+
+            // Text before "@" is user info, not the host, so "https://trusted.com@unsafe.com"
+            // sends the browser to unsafe.com. Redirects never need user info,
+            // so reject any URL that has user info.
+            if ( uri.UserInfo.IsNotNullOrWhiteSpace() )
+            {
+                return false;
+            }
+
+            return allowedHosts.Any( allowedHost => IsRedirectHostMatch( uri.Host, allowedHost ) );
+        }
+
+        /// <summary>
+        /// Determines whether a URL is a path on the current site, using the same rules as ASP.NET Core's
+        /// <c>IUrlHelper.IsLocalUrl()</c>.
+        /// </summary>
+        /// <param name="url">The URL to check.</param>
+        /// <returns><c>true</c> if <paramref name="url"/> is a local path; otherwise, <c>false</c>.</returns>
+        /// <remarks>Taken from https://github.com/dotnet/aspnetcore/blob/7c9c01bc83da59ef62638484803c8aa77e0c975e/src/Shared/ResultsHelpers/SharedUrlHelper.cs#L37-L95</remarks>
+        private static bool IsLocalUrl( string url )
+        {
+            if ( string.IsNullOrEmpty( url ) )
+            {
+                return false;
+            }
+
+            // Allows "/" or "/foo" but not "//" or "/\".
+            if ( url[0] == '/' )
+            {
+                // url is exactly "/"
+                if ( url.Length == 1 )
+                {
+                    return true;
+                }
+
+                // url doesn't start with "//" or "/\"
+                if ( url[1] != '/' && url[1] != '\\' )
+                {
+                    return !HasControlCharacter( url, 1 );
+                }
+
+                return false;
+            }
+
+            // Allows "~/" or "~/foo" but not "~//" or "~/\".
+            if ( url[0] == '~' && url.Length > 1 && url[1] == '/' )
+            {
+                // url is exactly "~/"
+                if ( url.Length == 2 )
+                {
+                    return true;
+                }
+
+                // url doesn't start with "~//" or "~/\"
+                if ( url[2] != '/' && url[2] != '\\' )
+                {
+                    return !HasControlCharacter( url, 2 );
+                }
+
+                return false;
+            }
+
+            return false;
+
+            bool HasControlCharacter( string value, int startIndex )
+            {
+                // URLs may not contain ASCII control characters.
+                for ( var i = startIndex; i < value.Length; i++ )
+                {
+                    if ( char.IsControl( value[i] ) )
+                    {
+                        return true;
+                    }
+                }
+
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Determines whether a host matches an allowed host entry such as <c>example.com</c>, <c>https://example.com:443</c>
+        /// or <c>*.example.com</c>.
+        /// </summary>
+        /// <param name="host">The host being redirected to.</param>
+        /// <param name="allowedHost">The allowed host entry.</param>
+        /// <returns><c>true</c> if <paramref name="host"/> matches <paramref name="allowedHost"/>; otherwise, <c>false</c>.</returns>
+        private static bool IsRedirectHostMatch( string host, string allowedHost )
+        {
+            // Blank entries match nothing.
+            if ( allowedHost.IsNullOrWhiteSpace() )
+            {
+                return false;
+            }
+
+            var entry = allowedHost.Trim();
+
+            // Drop the scheme: "https://example.com" becomes "example.com".
+            var schemeIndex = entry.IndexOf( "://" );
+            if ( schemeIndex >= 0 )
+            {
+                entry = entry.Substring( schemeIndex + 3 );
+            }
+
+            // Drop the path: "example.com/page" becomes "example.com".
+            var pathIndex = entry.IndexOf( '/' );
+            if ( pathIndex >= 0 )
+            {
+                entry = entry.Substring( 0, pathIndex );
+            }
+
+            // Drop the port: "example.com:443" becomes "example.com".
+            var portIndex = entry.IndexOf( ':' );
+            if ( portIndex >= 0 )
+            {
+                entry = entry.Substring( 0, portIndex );
+            }
+
+            // "*.example.com" matches any subdomain; keeping the dot stops "unsafeexample.com" from matching.
+            if ( entry.StartsWith( "*." ) )
+            {
+                return host.EndsWith( entry.Substring( 1 ), StringComparison.OrdinalIgnoreCase );
+            }
+
+            // Everything else must match exactly, ignoring case.
+            return host.Equals( entry, StringComparison.OrdinalIgnoreCase );
+        }
+
+        /// <summary>
         /// Gets a fully URL-decoded string (or returns string.Empty if it cannot be decoded within 10 attempts).
         /// </summary>
         /// <param name="encodedString">The encoded string.</param>
