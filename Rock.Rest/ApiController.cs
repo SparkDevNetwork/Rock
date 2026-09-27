@@ -987,7 +987,7 @@ namespace Rock.Rest
         /// <returns><c>true</c> if the person is authorized to EDIT the model; otherwise <c>false</c>.</returns>
         private bool IsAuthorizedForNewModel( ISecured securedModel, Person person )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var service = ( Service<T> ) Activator.CreateInstance( Service.GetType(), rockContext );
                 var proxyModel = rockContext.Set<T>().Create();

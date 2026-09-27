@@ -275,7 +275,7 @@ namespace Rock.Jobs
             {
                 var updatedCount = 0;
 
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     rockContext.Database.SetCommandTimeout( commandTimeout );
 

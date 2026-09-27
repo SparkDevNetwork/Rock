@@ -347,7 +347,7 @@ namespace Rock.Model
         [RockInternal( "20.1" )]
         public static int RemoveExpiredSessionsForRegistration( int registrationId )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var registrationSessionService = new RegistrationSessionService( rockContext );
                 var expiredSessionsQuery = registrationSessionService.Queryable()

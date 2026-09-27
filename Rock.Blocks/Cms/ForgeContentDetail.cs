@@ -21,6 +21,7 @@ using System.ComponentModel;
 using Rock.Attribute;
 using Rock.Blocks;
 using Rock.Cms;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
@@ -60,7 +61,7 @@ namespace Rock.Blocks.Cms
         {
             var box = new ForgeContentDetailInitializationBox();
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var content = new ForgeContentService( rockContext ).GetByBlockId( BlockId );
 
@@ -115,7 +116,7 @@ namespace Rock.Blocks.Cms
                 return ActionForbidden( "You are not authorized to edit this component." );
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var content = new ForgeContentService( rockContext ).GetByBlockId( BlockId );
 
@@ -183,7 +184,7 @@ namespace Rock.Blocks.Cms
                 return ActionBadRequest( string.Join( "\n", compileResult.Errors ) );
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var service = new ForgeContentService( rockContext );
                 var content = service.GetOrCreateByBlockId( BlockId );

@@ -86,7 +86,7 @@ namespace Rock.Rest.Controllers
             // Security role membership must not be managed through this generic endpoint. Loading
             // the group directly (its navigation property is not populated on a posted entity) lets
             // us reject any group that is a security role or uses the security role group type.
-            var group = new GroupService( new RockContext() ).Get( value.GroupId );
+            var group = new GroupService( RockApp.Current.CreateRockContext() ).Get( value.GroupId );
             if ( group != null && group.IsSecurityRoleOrSecurityGroupType() )
             {
                 var response = ControllerContext.Request.CreateErrorResponse(
