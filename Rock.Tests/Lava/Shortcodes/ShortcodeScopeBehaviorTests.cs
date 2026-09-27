@@ -17,14 +17,18 @@
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
+using Rock.Tests.Lava.Shared;
+
 using Rock.Lava;
+using Rock.Tests.Shared.Constants;
 
 namespace Rock.Tests.Lava.Shortcodes
 {
     [TestClass]
+    [TestCategory( TestFeatures.Lava )]
     [TestCategory( "Core.Lava.Shortcodes" )]
     [TestCategory( "ShortcodeScopeBehavior" )]
-    public class ShortcodeScopeBehaviorTests : LavaUnitTestBase
+    public class ShortcodeScopeBehaviorTests
     {
         [TestMethod]
         public void ShortcodeScopeBehavior_Isolated_DoesNotLeakShortcodeVariablesToParentScope()
@@ -51,9 +55,15 @@ Inner Scope: counter={{ counter }},
 {{% endfor %}}
 ";
 
-            var expectedOutput = "<Pass1><InnerPass1><InnerPass2><InnerPass3>InnerScope:counter=3,OuterScope:counter=0<Pass2><InnerPass1><InnerPass2><InnerPass3>InnerScope:counter=3,OuterScope:counter=0<Pass3><InnerPass1><InnerPass2><InnerPass3>InnerScope:counter=3,OuterScope:counter=0";
+            // Isolation means each pass gets its own inner counter, which always
+            // reaches 3, and never writes back to the outer one.
+            var expectedOutput = "\n\n\n\n"
+                + GetExpectedPassOutput( 1, innerCounter: 3, outerCounter: 0 )
+                + GetExpectedPassOutput( 2, innerCounter: 3, outerCounter: 0 )
+                + GetExpectedPassOutput( 3, innerCounter: 3, outerCounter: 0 )
+                + "\n";
 
-            TestHelper.ExecuteForActiveEngines( ( engine ) =>
+            LavaRenderTestHelper.ExecuteForActiveEngines( ( engine ) =>
             {
                 engine.RegisterShortcode( tagName, ( name ) =>
                 {
@@ -66,7 +76,9 @@ Inner Scope: counter={{ counter }},
                     };
                 } );
 
-                TestHelper.AssertTemplateOutput( engine, expectedOutput, input, ignoreWhitespace: true );
+                var output = LavaRenderTestHelper.Render( engine, input );
+
+                Assert.AreEqual( expectedOutput, output );
             } );
         }
 
@@ -95,9 +107,15 @@ Inner Scope: counter={{ counter }},
 {{% endfor %}}
 ";
 
-            var expectedOutput = "<Pass1><InnerPass1><InnerPass2><InnerPass3>InnerScope:counter=3,OuterScope:counter=3<Pass2><InnerPass1><InnerPass2><InnerPass3>InnerScope:counter=6,OuterScope:counter=6<Pass3><InnerPass1><InnerPass2><InnerPass3>InnerScope:counter=9,OuterScope:counter=9";
+            // Sharing means the shortcode keeps incrementing the outer counter, so
+            // each pass starts where the last one finished.
+            var expectedOutput = "\n\n\n\n"
+                + GetExpectedPassOutput( 1, innerCounter: 3, outerCounter: 3 )
+                + GetExpectedPassOutput( 2, innerCounter: 6, outerCounter: 6 )
+                + GetExpectedPassOutput( 3, innerCounter: 9, outerCounter: 9 )
+                + "\n";
 
-            TestHelper.ExecuteForActiveEngines( ( engine ) =>
+            LavaRenderTestHelper.ExecuteForActiveEngines( ( engine ) =>
             {
                 engine.RegisterShortcode( tagName, ( name ) =>
                 {
@@ -110,8 +128,25 @@ Inner Scope: counter={{ counter }},
                     };
                 } );
 
-                TestHelper.AssertTemplateOutput( engine, expectedOutput, input, ignoreWhitespace: true );
+                var output = LavaRenderTestHelper.Render( engine, input );
+
+                Assert.AreEqual( expectedOutput, output );
             } );
         }
-    }
+            /// <summary>
+        /// Builds the output one pass of the outer loop produces.
+        /// </summary>
+        /// <param name="pass">The 1-based pass number.</param>
+        /// <param name="innerCounter">The counter value the shortcode reports.</param>
+        /// <param name="outerCounter">The counter value the outer scope reports.</param>
+        /// <returns>The expected text for that pass.</returns>
+        private static string GetExpectedPassOutput( int pass, int innerCounter, int outerCounter )
+        {
+            return "\n    <Pass " + pass + ">"
+                + "\n    <InnerPass 1>\n    \n"
+                + "\n    <InnerPass 2>\n    \n"
+                + "\n    <InnerPass 3>\n    \n"
+                + "\nInner Scope: counter=" + innerCounter + ",\n    Outer Scope: counter=" + outerCounter + "\n";
+        }
+}
 }

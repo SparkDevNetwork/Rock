@@ -83,7 +83,7 @@ namespace Rock.Tests.Integration.TestFramework.Database
 
                 LogHelper.Log( $"Initializing Lava Database Elements..." );
 
-                LavaIntegrationTestHelper.Initialize( testFluidEngine: true, loadShortcodes: true );
+                LavaIntegrationEngineFactory.InitializeCurrentEngine( shouldRegisterDynamicShortcodes: true );
 
                 LogHelper.Log( $"Initializing Lava Database Elements: completed." );
             }
@@ -122,7 +122,11 @@ namespace Rock.Tests.Integration.TestFramework.Database
             {
                 var repositoryTag = DatabaseContainerImageBuilder.GetRepositoryAndTag();
 
-                using ( var dockerClient = new DockerClientConfiguration().CreateClient() )
+                // The configuration owns the credentials it was built with, so it
+                // is disposed alongside the client rather than being left to the
+                // finalizer.
+                using ( var dockerConfiguration = TestDockerClientFactory.CreateConfiguration() )
+                using ( var dockerClient = dockerConfiguration.CreateClient() )
                 {
                     // Check if the docker client is available.
                     try

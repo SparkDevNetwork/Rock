@@ -2,7 +2,7 @@ using System;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-using Rock.Tests.Lava;
+using Rock.Tests.Shared.Utility;
 
 namespace Rock.Tests.Utility.ExtensionMethods
 {
@@ -14,7 +14,7 @@ namespace Rock.Tests.Utility.ExtensionMethods
         public static void Initialize( TestContext context )
         {
             // Reset the timezone to avoid problems with other tests.
-            LavaTestHelper.SetRockDateTimeToLocalTimezone();
+            DateTimeTestHelper.SetRockDateTimeToLocalTimezone();
         }
 
         #region AsDateTime

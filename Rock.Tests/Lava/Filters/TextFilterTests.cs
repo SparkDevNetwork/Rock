@@ -19,13 +19,17 @@ using System.Globalization;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
+using Rock.Tests.Lava.Shared;
+
 using Rock.Lava;
 using Rock.Tests.Shared;
+using Rock.Tests.Shared.Constants;
 
 namespace Rock.Tests.Lava.Filters
 {
     [TestClass]
-    public class TextFilterTests : LavaUnitTestBase
+    [TestCategory( TestFeatures.Lava )]
+    public class TextFilterTests
     {
         private const string _TestTextParagraph = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.Odio eu feugiat pretium nibh.Semper risus in hendrerit gravida.Enim diam vulputate ut pharetra. Massa tincidunt nunc pulvinar sapien et ligula ullamcorper. Morbi tristique senectus et netus et malesuada.Praesent semper feugiat nibh sed pulvinar proin gravida hendrerit.Ultrices in iaculis nunc sed.Tortor id aliquet lectus proin nibh nisl condimentum id.Vel pretium lectus quam id leo in vitae.In mollis nunc sed id.";
 
@@ -38,11 +42,17 @@ namespace Rock.Tests.Lava.Filters
         [TestMethod]
         public void AsString_AnonymousObjectWithToStringMethodOverride_ReturnsToStringForObject()
         {
-            var person = TestHelper.GetTestPersonAlishaMarble();
+            var person = LavaTestData.GetTestPersonAlishaMarble();
 
             var mergeValues = new LavaDataDictionary { { "CurrentPerson", person } };
 
-            TestHelper.AssertTemplateOutput( "Alisha Marble", "{{ CurrentPerson | AsString }}", mergeValues );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var options = new LavaRenderOptions { MergeFields = mergeValues };
+                var output = LavaRenderTestHelper.Render( engine, "{{ CurrentPerson | AsString }}", options );
+
+                Assert.AreEqual( "Alisha Marble", output );
+            } );
         }
 
         #region Filter Tests: Humanize
@@ -53,7 +63,12 @@ namespace Rock.Tests.Lava.Filters
         [TestMethod]
         public void Humanize_CamelCase_ProducesSeparatedWords()
         {
-            TestHelper.AssertTemplateOutput( "Camel case", "{{ 'camelCase' | Humanize }}" );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, "{{ 'camelCase' | Humanize }}" );
+
+                Assert.AreEqual( "Camel case", output );
+            } );
         }
 
         /// <summary>
@@ -62,7 +77,12 @@ namespace Rock.Tests.Lava.Filters
         [TestMethod]
         public void Humanize_Underscore_ProducesSeparatedWords()
         {
-            TestHelper.AssertTemplateOutput( "underscore a point", "{{ 'underscore_a_point' | Humanize }}" );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, "{{ 'underscore_a_point' | Humanize }}" );
+
+                Assert.AreEqual( "underscore a point", output );
+            } );
         }
 
         /// <summary>
@@ -71,7 +91,12 @@ namespace Rock.Tests.Lava.Filters
         [TestMethod]
         public void Humanize_DashSeparator_ProducesSeparatedWords()
         {
-            TestHelper.AssertTemplateOutput( "css classes", "{{ 'css-classes' | Humanize }}" );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, "{{ 'css-classes' | Humanize }}" );
+
+                Assert.AreEqual( "css classes", output );
+            } );
         }
 
         #endregion
@@ -82,7 +107,12 @@ namespace Rock.Tests.Lava.Filters
         [TestMethod]
         public void SentenceCase_LowerCaseString_ProducesSentenceCase()
         {
-            TestHelper.AssertTemplateOutput( "Good to great", "{{ 'good to great' | SentenceCase }}" );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, "{{ 'good to great' | SentenceCase }}" );
+
+                Assert.AreEqual( "Good to great", output );
+            } );
         }
 
         /// <summary>
@@ -91,7 +121,12 @@ namespace Rock.Tests.Lava.Filters
         [TestMethod]
         public void TitleCase_MixedCaseString_ProducesTitleCase()
         {
-            TestHelper.AssertTemplateOutput( "Job Posting For Groundskeeper", "{{ 'Job posting for groundskeeper' | TitleCase }}" );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, "{{ 'Job posting for groundskeeper' | TitleCase }}" );
+
+                Assert.AreEqual( "Job Posting For Groundskeeper", output );
+            } );
         }
 
         #region Filter Tests: TruncateWords
@@ -99,19 +134,34 @@ namespace Rock.Tests.Lava.Filters
         [TestMethod]
         public void TruncateWords_WithLongerText_AddsEllipis()
         {
-            TestHelper.AssertTemplateOutput( "one two three...", "{{ 'one two three four five' | TruncateWords:3 }}" );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, "{{ 'one two three four five' | TruncateWords:3 }}" );
+
+                Assert.AreEqual( "one two three...", output );
+            } );
         }
 
         [TestMethod]
         public void TruncateWords_WithShorterText_DoesNotTruncate()
         {
-            TestHelper.AssertTemplateOutput( "one two three four five", "{{ 'one two three four five' | TruncateWords:6 }}" );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, "{{ 'one two three four five' | TruncateWords:6 }}" );
+
+                Assert.AreEqual( "one two three four five", output );
+            } );
         }
 
         [TestMethod]
         public void TruncateWords_WithEmptyString_HasNoEffect()
         {
-            TestHelper.AssertTemplateOutput( "", "{{ '' | TruncateWords:1 }}" );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, "{{ '' | TruncateWords:1 }}" );
+
+                Assert.AreEqual( "", output );
+            } );
         }
 
         #endregion
@@ -122,7 +172,12 @@ namespace Rock.Tests.Lava.Filters
         [TestMethod]
         public void ToPascal_LowerCaseString_ProducesPascalCase()
         {
-            TestHelper.AssertTemplateOutput( "CommunityParticipant", "{{ 'community participant' | ToPascal }}" );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, "{{ 'community participant' | ToPascal }}" );
+
+                Assert.AreEqual( "CommunityParticipant", output );
+            } );
         }
 
         /// <summary>
@@ -131,7 +186,12 @@ namespace Rock.Tests.Lava.Filters
         [TestMethod]
         public void ToString_NumericInput_ProducesText()
         {
-            TestHelper.AssertTemplateOutput( "1234567.89", "{{ 1234567.89 | ToString }}" );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, "{{ 1234567.89 | ToString }}" );
+
+                Assert.AreEqual( "1234567.89", output );
+            } );
         }
 
         /// <summary>
@@ -140,7 +200,12 @@ namespace Rock.Tests.Lava.Filters
         [TestMethod]
         public void ObfuscateEmail_ReadableEmailAddress_IsObfuscated()
         {
-            TestHelper.AssertTemplateOutput( "txxxxx@rocksolidchurchdemo.com", "{{ 'ted@rocksolidchurchdemo.com' | ObfuscateEmail }}" );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, "{{ 'ted@rocksolidchurchdemo.com' | ObfuscateEmail }}" );
+
+                Assert.AreEqual( "txxxxx@rocksolidchurchdemo.com", output );
+            } );
         }
 
         #region Filter Tests: Pluralize
@@ -151,7 +216,12 @@ namespace Rock.Tests.Lava.Filters
         [TestMethod]
         public void Pluralize_SingularTerm_ProducesPluralizedTerm()
         {
-            TestHelper.AssertTemplateOutput( "geese", "{{ 'goose' | Pluralize }}" );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, "{{ 'goose' | Pluralize }}" );
+
+                Assert.AreEqual( "geese", output );
+            } );
         }
 
         /// <summary>
@@ -160,7 +230,12 @@ namespace Rock.Tests.Lava.Filters
         [TestMethod]
         public void Pluralize_PluralTerm_ProducesUnchangedOutput()
         {
-            TestHelper.AssertTemplateOutput( "requests", "{{ 'requests' | Pluralize }}" );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, "{{ 'requests' | Pluralize }}" );
+
+                Assert.AreEqual( "requests", output );
+            } );
         }
 
         /// <summary>
@@ -169,7 +244,12 @@ namespace Rock.Tests.Lava.Filters
         [TestMethod]
         public void Pluralize_EmptyInput_ProducesEmptyOutput()
         {
-            TestHelper.AssertTemplateOutput( "", "{{ '' | Pluralize }}" );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, "{{ '' | Pluralize }}" );
+
+                Assert.AreEqual( "", output );
+            } );
         }
 
         #endregion
@@ -182,7 +262,12 @@ namespace Rock.Tests.Lava.Filters
         [TestMethod]
         public void PluralizeForQuantity_QuantityOf3_ProducesPluralizedTerm()
         {
-            TestHelper.AssertTemplateOutput( "Leaders", "{{ 'Leader' | PluralizeForQuantity:3 }}" );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, "{{ 'Leader' | PluralizeForQuantity:3 }}" );
+
+                Assert.AreEqual( "Leaders", output );
+            } );
         }
 
         /// <summary>
@@ -191,7 +276,12 @@ namespace Rock.Tests.Lava.Filters
         [TestMethod]
         public void PluralizeForQuantity_QuantityOf1_ProducesSingularTerm()
         {
-            TestHelper.AssertTemplateOutput( "Leader", "{{ 'Leader' | PluralizeForQuantity:1 }}" );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, "{{ 'Leader' | PluralizeForQuantity:1 }}" );
+
+                Assert.AreEqual( "Leader", output );
+            } );
         }
 
         /// <summary>
@@ -212,7 +302,12 @@ namespace Rock.Tests.Lava.Filters
             var template = "{% assign x = <input> %}{{ 'degree' | PluralizeForQuantity:x }}"
                .Replace( "<input>", input );
 
-            TestHelper.AssertTemplateOutput( expected, template );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, template );
+
+                Assert.AreEqual( expected, output );
+            } );
         }
 
         #endregion
@@ -223,7 +318,12 @@ namespace Rock.Tests.Lava.Filters
         [TestMethod]
         public void Possessive_NameEndingWithS_ProducesPossessiveFormWithTrailingApostrophe()
         {
-            TestHelper.AssertTemplateOutput( "Charles’", "{{ 'Charles' | Possessive }}" );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, "{{ 'Charles' | Possessive }}" );
+
+                Assert.AreEqual( "Charles’", output );
+            } );
         }
 
         /// <summary>
@@ -232,7 +332,12 @@ namespace Rock.Tests.Lava.Filters
         [TestMethod]
         public void Possessive_NameNotEndingWithS_ProducesPossessiveForm()
         {
-            TestHelper.AssertTemplateOutput( "Ted’s", "{{ 'Ted' | Possessive }}" );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, "{{ 'Ted' | Possessive }}" );
+
+                Assert.AreEqual( "Ted’s", output );
+            } );
         }
 
         #region Filter Tests: Read Time
@@ -251,9 +356,9 @@ namespace Rock.Tests.Lava.Filters
             var template = "{{ '<content>' | ReadTime }}"
                 .Replace( "<content>", documentText );
 
-            TestHelper.ExecuteForActiveEngines( ( engine ) =>
+            LavaRenderTestHelper.ExecuteForActiveEngines( ( engine ) =>
             {
-                var output = TestHelper.GetTemplateOutput( engine, template );
+                var output = LavaRenderTestHelper.Render( engine, template );
 
                 Assert.IsFalse( string.IsNullOrWhiteSpace( output ) );
 
@@ -275,9 +380,9 @@ namespace Rock.Tests.Lava.Filters
             var template = "{{ '<content>' | ReadTime:5,30 }}"
                 .Replace( "<content>", documentText );
 
-            TestHelper.ExecuteForActiveEngines( ( engine ) =>
+            LavaRenderTestHelper.ExecuteForActiveEngines( ( engine ) =>
             {
-                var output = TestHelper.GetTemplateOutput( engine, template );
+                var output = LavaRenderTestHelper.Render( engine, template );
 
                 Assert.IsFalse( string.IsNullOrWhiteSpace( output ) );
 
@@ -299,9 +404,9 @@ namespace Rock.Tests.Lava.Filters
             var template = "{{ '<content>' | ReadTime:500,6 }}"
                 .Replace( "<content>", documentText );
 
-            TestHelper.ExecuteForActiveEngines( ( engine ) =>
+            LavaRenderTestHelper.ExecuteForActiveEngines( ( engine ) =>
             {
-                var output = TestHelper.GetTemplateOutput( engine, template );
+                var output = LavaRenderTestHelper.Render( engine, template );
                 var readTime = TimeSpan.ParseExact( output, _timeSpanOutputFormats, CultureInfo.CurrentCulture );
 
                 Assert.That.AreProximate( 50, readTime.TotalSeconds, 10 );
@@ -347,7 +452,12 @@ namespace Rock.Tests.Lava.Filters
             var template = @"{% capture regex %}\w+([-+.]\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*{% endcapture %}{{ '<input>' | RegExMatch:regex }}"
                            .Replace( "<input>", input );
 
-            TestHelper.AssertTemplateOutput( isMatch.ToString().ToLower(), template );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, template );
+
+                Assert.AreEqual( isMatch.ToString().ToLower(), output );
+            } );
         }
 
         /// <summary>
@@ -356,8 +466,18 @@ namespace Rock.Tests.Lava.Filters
         [TestMethod]
         public void RegExMatchValue_FindsFirstMatchOnly()
         {
-            TestHelper.AssertTemplateOutput( "12345", @"{% capture regex %}\d+{% endcapture %}{{ 'group 12345' | RegExMatchValue:regex }}" );
-            TestHelper.AssertTemplateOutput( "Saturday", @"{% capture regex %}\b\w+day\b{% endcapture %}{{ 'Services on Saturday and Sunday' | RegExMatchValue:regex }}" );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, @"{% capture regex %}\d+{% endcapture %}{{ 'group 12345' | RegExMatchValue:regex }}" );
+
+                Assert.AreEqual( "12345", output );
+            } );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, @"{% capture regex %}\b\w+day\b{% endcapture %}{{ 'Services on Saturday and Sunday' | RegExMatchValue:regex }}" );
+
+                Assert.AreEqual( "Saturday", output );
+            } );
         }
 
         /// <summary>
@@ -372,7 +492,12 @@ namespace Rock.Tests.Lava.Filters
 ";
             template = template.Replace( "\n", string.Empty ).Replace( "\r", string.Empty );
 
-            TestHelper.AssertTemplateOutput( "Saturday,Sunday,Monday,", template );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, template );
+
+                Assert.AreEqual( "Saturday,Sunday,Monday,", output );
+            } );
         }
 
         [TestMethod]
@@ -382,7 +507,12 @@ namespace Rock.Tests.Lava.Filters
 {{ 'Testing: one, two, One, two, ONE, two...' | RegExReplace:'one','ONE','i' }}
 ";
 
-            TestHelper.AssertTemplateOutput( "Testing: ONE, two, ONE, two, ONE, two...", template );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, template );
+
+                Assert.AreEqual( "\nTesting: ONE, two, ONE, two, ONE, two...\n", output );
+            } );
         }
 
         [TestMethod]
@@ -392,7 +522,12 @@ namespace Rock.Tests.Lava.Filters
 {% capture regex %}[Hh]ello (\w+){% endcapture %}{{ 'Hello Ted, how are you?' | RegExReplace:regex,'Greetings $1' }}
 ";
 
-            TestHelper.AssertTemplateOutput( "Greetings Ted, how are you?", template );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, template );
+
+                Assert.AreEqual( "\nGreetings Ted, how are you?\n", output );
+            } );
         }
 
         #endregion
@@ -411,7 +546,12 @@ namespace Rock.Tests.Lava.Filters
             var template = "{{ '<input>' | ReplaceLast:'Red','Green' }}"
                            .Replace( "<input>", input );
 
-            TestHelper.AssertTemplateOutput( expected, template );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, template );
+
+                Assert.AreEqual( expected, output );
+            } );
         }
 
         #region Filter Tests: Right
@@ -422,7 +562,12 @@ namespace Rock.Tests.Lava.Filters
         [TestMethod]
         public void Right_LessThanStringLength_ProducesSubstring()
         {
-            TestHelper.AssertTemplateOutput( "cker", "{{ 'Decker' | Right:4 }}" );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, "{{ 'Decker' | Right:4 }}" );
+
+                Assert.AreEqual( "cker", output );
+            } );
         }
 
         /// <summary>
@@ -431,7 +576,12 @@ namespace Rock.Tests.Lava.Filters
         [TestMethod]
         public void Right_GreaterThanStringLength_ProducesEntireString()
         {
-            TestHelper.AssertTemplateOutput( "Decker", "{{ 'Decker' | Right:10 }}" );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, "{{ 'Decker' | Right:10 }}" );
+
+                Assert.AreEqual( "Decker", output );
+            } );
         }
 
         /// <summary>
@@ -440,7 +590,12 @@ namespace Rock.Tests.Lava.Filters
         [TestMethod]
         public void Right_EmptyString_ProducesEmptyString()
         {
-            TestHelper.AssertTemplateOutput( "", "{{ '' | Right:10 }}" );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, "{{ '' | Right:10 }}" );
+
+                Assert.AreEqual( "", output );
+            } );
         }
 
         #endregion
@@ -453,7 +608,12 @@ namespace Rock.Tests.Lava.Filters
         [TestMethod]
         public void Singularize_SingularTerm_ProducesUnchangedOutput()
         {
-            TestHelper.AssertTemplateOutput( "goose", "{{ 'goose' | Singularize }}" );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, "{{ 'goose' | Singularize }}" );
+
+                Assert.AreEqual( "goose", output );
+            } );
         }
 
         /// <summary>
@@ -462,7 +622,12 @@ namespace Rock.Tests.Lava.Filters
         [TestMethod]
         public void Singularize_PluralTerm_ProducesSingularTerm()
         {
-            TestHelper.AssertTemplateOutput( "goose", "{{ 'geese' | Singularize }}" );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, "{{ 'geese' | Singularize }}" );
+
+                Assert.AreEqual( "goose", output );
+            } );
         }
 
         #endregion
@@ -486,14 +651,17 @@ namespace Rock.Tests.Lava.Filters
         {
             // Note: This test is different than the other Split tests so we
             // we can truly detect the empty list case.
-            var template = @"
-{{ '<inputString>' | Split:<args> | Size }}
-";
+            var template = "{{ '<inputString>' | Split:<args> | Size }}";
 
             template = template.Replace( "<inputString>", inputString );
             template = template.Replace( "<args>", filterArgsString );
 
-            TestHelper.AssertTemplateOutput( expectedOutput, template, ignoreWhitespace: true );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, template );
+
+                Assert.AreEqual( expectedOutput, output );
+            } );
         }
 
         /// <summary>
@@ -510,18 +678,26 @@ namespace Rock.Tests.Lava.Filters
         [DataRow( ",1,,3,4,5,6,7,,9,", "',','false'", "+1++3+4+5+6+7++9+" )]
         public void Split_WithRemoveEmptyEntriesOption_RetainsOrRemovesEmptyEntries( string inputString, string filterArgsString, string expectedOutput )
         {
+            // The trim markers keep the rendered output to just the filter result,
+            // so the data row values describe what Split returns rather than how
+            // the surrounding template happens to be laid out.
             var template = @"
-{% assign items = '<inputString>' | Split:<args> %}
-{% for item in items %}
-    {{ item }}
-    {% if forloop.last == false %}+{% endif %}
-{% endfor %}
+{%- assign items = '<inputString>' | Split:<args> -%}
+{%- for item in items -%}
+{{ item }}
+{%- if forloop.last == false -%}+{%- endif -%}
+{%- endfor -%}
 ";
 
             template = template.Replace( "<inputString>", inputString );
             template = template.Replace( "<args>", filterArgsString );
 
-            TestHelper.AssertTemplateOutput( expectedOutput, template, ignoreWhitespace: true );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, template );
+
+                Assert.AreEqual( expectedOutput, output );
+            } );
         }
 
         /// <summary>
@@ -537,18 +713,26 @@ namespace Rock.Tests.Lava.Filters
         [DataRow( "1,2,3,4,5,6,7,8,9", "','", "1+2+3+4+5+6+7+8+9" )]
         public void Split_WithCountOption_ReturnsSpecifiedNumberOfSubstrings( string inputString, string filterArgsString, string expectedOutput )
         {
+            // The trim markers keep the rendered output to just the filter result,
+            // so the data row values describe what Split returns rather than how
+            // the surrounding template happens to be laid out.
             var template = @"
-{% assign items = '<inputString>' | Split:<args> %}
-{% for item in items %}
-    {{ item }}
-    {% if forloop.last == false %}+{% endif %}
-{% endfor %}
+{%- assign items = '<inputString>' | Split:<args> -%}
+{%- for item in items -%}
+{{ item }}
+{%- if forloop.last == false -%}+{%- endif -%}
+{%- endfor -%}
 ";
 
             template = template.Replace( "<inputString>", inputString );
             template = template.Replace( "<args>", filterArgsString );
 
-            TestHelper.AssertTemplateOutput( expectedOutput, template, ignoreWhitespace: true );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, template );
+
+                Assert.AreEqual( expectedOutput, output );
+            } );
         }
 
         /// <summary>
@@ -557,13 +741,18 @@ namespace Rock.Tests.Lava.Filters
         [TestMethod]
         public void Split_DocumentationExamples_ProduceExpectedSampleOutput()
         {
-            var expected = "1 and 3 and 4 and 5 and 6 and 7 and 9";
+            var expected = "\n1 and 3 and 4 and 5 and 6 and 7 and 9\n";
 
             var template = @"
 {{ '1,,3,4,5,6,7,,9' | Split:',',true | Join:' and ' }}
 ";
 
-            TestHelper.AssertTemplateOutput( expected, template, ignoreWhitespace: true );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, template );
+
+                Assert.AreEqual( expected, output );
+            } );
         }
 
         #endregion
@@ -586,7 +775,12 @@ namespace Rock.Tests.Lava.Filters
         {
             var template = "{{ '" + input + "' | ToCssClass }}";
 
-            TestHelper.AssertTemplateOutput( expected, template );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, template );
+
+                Assert.AreEqual( expected, output );
+            } );
         }
 
         #endregion
@@ -606,7 +800,12 @@ namespace Rock.Tests.Lava.Filters
         {
             var template = "{{ '" + input + "' | Trim }}";
 
-            TestHelper.AssertTemplateOutput( expected, template, ignoreWhitespace: false );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, template );
+
+                Assert.AreEqual( expected, output );
+            } );
         }
 
         /// <summary>
@@ -625,7 +824,12 @@ namespace Rock.Tests.Lava.Filters
         {
             var template = "{{ '" + input + "' | Trim:'" + textToRemove + "' }}";
 
-            TestHelper.AssertTemplateOutput( expected, template );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, template );
+
+                Assert.AreEqual( expected, output );
+            } );
         }
 
         /// <summary>
@@ -641,7 +845,12 @@ namespace Rock.Tests.Lava.Filters
         {
             var template = "{{ '" + input + "' | TrimEnd }}";
 
-            TestHelper.AssertTemplateOutput( expected, template, ignoreWhitespace: false );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, template );
+
+                Assert.AreEqual( expected, output );
+            } );
         }
 
         /// <summary>
@@ -660,7 +869,12 @@ namespace Rock.Tests.Lava.Filters
         {
             var template = "{{ '" + input + "' | TrimEnd:'" + textToRemove + "' }}";
 
-            TestHelper.AssertTemplateOutput( expected, template );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, template );
+
+                Assert.AreEqual( expected, output );
+            } );
         }
 
         /// <summary>
@@ -675,7 +889,12 @@ namespace Rock.Tests.Lava.Filters
         {
             var template = "{{ '" + input + "' | TrimStart }}";
 
-            TestHelper.AssertTemplateOutput( expected, template, ignoreWhitespace: false );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, template );
+
+                Assert.AreEqual( expected, output );
+            } );
         }
 
         /// <summary>
@@ -694,7 +913,12 @@ namespace Rock.Tests.Lava.Filters
         {
             var template = "{{ '" + input + "' | TrimStart:'" + textToRemove + "' }}";
 
-            TestHelper.AssertTemplateOutput( expected, template );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, template );
+
+                Assert.AreEqual( expected, output );
+            } );
         }
 
         #endregion
@@ -731,7 +955,12 @@ namespace Rock.Tests.Lava.Filters
 
             template = template.Replace( "<url>", url );
 
-            TestHelper.AssertTemplateOutput( "/|WorkflowEntry/|35", template );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, template );
+
+                Assert.AreEqual( "/|WorkflowEntry/|35", output );
+            } );
         }
 
         private void VerifyUrlPart( string url, string part, string key, string expected )
@@ -748,7 +977,12 @@ namespace Rock.Tests.Lava.Filters
             template = template.Replace( "<url>", url );
             template = template.Replace( "<options>", options );
 
-            TestHelper.AssertTemplateOutput( expected, template );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, template );
+
+                Assert.AreEqual( expected, output );
+            } );
         }
 
         /// <summary>
@@ -757,7 +991,12 @@ namespace Rock.Tests.Lava.Filters
         [TestMethod]
         public void WithFallback_InputTextContainsValue_SuccessTextIsAppended()
         {
-            TestHelper.AssertTemplateOutput( "Ted, are you interested in baptism?", "{{ 'Ted' | WithFallback:', are', 'Are', 'append' }} you interested in baptism?" );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, "{{ 'Ted' | WithFallback:', are', 'Are', 'append' }} you interested in baptism?" );
+
+                Assert.AreEqual( "Ted, are you interested in baptism?", output );
+            } );
         }
 
         /// <summary>
@@ -766,7 +1005,12 @@ namespace Rock.Tests.Lava.Filters
         [TestMethod]
         public void WithFallback_InputTextIsEmpty_FallbackTextIsAppended()
         {
-            TestHelper.AssertTemplateOutput( "Are you interested in baptism?", "{{ '' | WithFallback:', are', 'Are' }} you interested in baptism?" );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, "{{ '' | WithFallback:', are', 'Are' }} you interested in baptism?" );
+
+                Assert.AreEqual( "Are you interested in baptism?", output );
+            } );
         }
         /// <summary>
         /// Success text is prepended when input text contains value.
@@ -774,7 +1018,12 @@ namespace Rock.Tests.Lava.Filters
         [TestMethod]
         public void WithFallback_InputTextContainsValue_SuccessTextIsPrepended()
         {
-            TestHelper.AssertTemplateOutput( "Welcome back Ted!", "Welcome{{ 'Ted' | WithFallback:' back ', ' stranger', 'prepend' }}!" );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, "Welcome{{ 'Ted' | WithFallback:' back ', ' stranger', 'prepend' }}!" );
+
+                Assert.AreEqual( "Welcome back Ted!", output );
+            } );
         }
 
         /// <summary>
@@ -783,7 +1032,12 @@ namespace Rock.Tests.Lava.Filters
         [TestMethod]
         public void WithFallback_InputTextIsEmpty_FallbackTextIsPrepended()
         {
-            TestHelper.AssertTemplateOutput( "Welcome stranger!", "Welcome{{ '' | WithFallback:' back ', ' stranger', 'prepend' }}!" );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, "Welcome{{ '' | WithFallback:' back ', ' stranger', 'prepend' }}!" );
+
+                Assert.AreEqual( "Welcome stranger!", output );
+            } );
         }
 
         #region Filter Tests: ToMarkdown
@@ -795,9 +1049,14 @@ namespace Rock.Tests.Lava.Filters
         public void ToMarkdown_HtmlHeadingAndText_ProducesMarkdownHeading()
         {
             var template = "{{ '<h1>Hello World</h1>Now is the time for all good men...' | ToMarkdown }}";
-            var expected = "# Hello World Now is the time for all good men...";
+            var expected = "# Hello World\n\nNow is the time for all good men...";
 
-            TestHelper.AssertTemplateOutput( expected, template, ignoreWhitespace: true );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, template );
+
+                Assert.AreEqual( expected, output );
+            } );
         }
 
         /// <summary>
@@ -806,7 +1065,12 @@ namespace Rock.Tests.Lava.Filters
         [TestMethod]
         public void ToMarkdown_BoldTag_ProducesMarkdownStrong()
         {
-            TestHelper.AssertTemplateOutput( "**bold text**", "{{ '<strong>bold text</strong>' | ToMarkdown }}", ignoreWhitespace: true );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, "{{ '<strong>bold text</strong>' | ToMarkdown }}" );
+
+                Assert.AreEqual( "**bold text**", output );
+            } );
         }
 
         /// <summary>
@@ -815,7 +1079,12 @@ namespace Rock.Tests.Lava.Filters
         [TestMethod]
         public void ToMarkdown_ItalicTag_ProducesMarkdownEmphasis()
         {
-            TestHelper.AssertTemplateOutput( "*italic text*", "{{ '<i>italic text</i>' | ToMarkdown }}", ignoreWhitespace: true );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, "{{ '<i>italic text</i>' | ToMarkdown }}" );
+
+                Assert.AreEqual( "*italic text*", output );
+            } );
         }
 
         /// <summary>
@@ -824,7 +1093,12 @@ namespace Rock.Tests.Lava.Filters
         [TestMethod]
         public void ToMarkdown_AnchorTag_ProducesMarkdownLink()
         {
-            TestHelper.AssertTemplateOutput( "[Rock RMS](https://www.rockrms.com)", "{{ '<a href=\"https://www.rockrms.com\">Rock RMS</a>' | ToMarkdown }}", ignoreWhitespace: true );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, "{{ '<a href=\"https://www.rockrms.com\">Rock RMS</a>' | ToMarkdown }}" );
+
+                Assert.AreEqual( "[Rock RMS](https://www.rockrms.com)", output );
+            } );
         }
 
         /// <summary>
@@ -833,7 +1107,12 @@ namespace Rock.Tests.Lava.Filters
         [TestMethod]
         public void ToMarkdown_HorizontalRuleTag_ProducesMarkdownHorizontalRule()
         {
-            TestHelper.AssertTemplateOutput( "***", "{{ '<hr />' | ToMarkdown }}", ignoreWhitespace: true );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, "{{ '<hr />' | ToMarkdown }}" );
+
+                Assert.AreEqual( "***", output );
+            } );
         }
 
         /// <summary>
@@ -842,7 +1121,12 @@ namespace Rock.Tests.Lava.Filters
         [TestMethod]
         public void ToMarkdown_BlockquoteTag_ProducesMarkdownBlockquote()
         {
-            TestHelper.AssertTemplateOutput( "> Blockquote", "{{ '<blockquote>Blockquote</blockquote>' | ToMarkdown }}", ignoreWhitespace: true );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, "{{ '<blockquote>Blockquote</blockquote>' | ToMarkdown }}" );
+
+                Assert.AreEqual( "> Blockquote", output );
+            } );
         }
 
         /// <summary>
@@ -851,7 +1135,12 @@ namespace Rock.Tests.Lava.Filters
         [TestMethod]
         public void ToMarkdown_InlineCodeTag_ProducesMarkdownCode()
         {
-            TestHelper.AssertTemplateOutput( "`Person.FirstName` is the Lava property", "{{ '<code>Person.FirstName</code> is the Lava property' | ToMarkdown }}", ignoreWhitespace: true );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, "{{ '<code>Person.FirstName</code> is the Lava property' | ToMarkdown }}" );
+
+                Assert.AreEqual( "`Person.FirstName` is the Lava property", output );
+            } );
         }
 
         /// <summary>
@@ -860,7 +1149,12 @@ namespace Rock.Tests.Lava.Filters
         [TestMethod]
         public void ToMarkdown_PreCodeTag_ProducesMarkdownPreCode()
         {
-            TestHelper.AssertTemplateOutput( "```Person.FirstName```", "{{ '<pre><code>Person.FirstName</code></pre>' | ToMarkdown }}", ignoreWhitespace: true );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, "{{ '<pre><code>Person.FirstName</code></pre>' | ToMarkdown }}" );
+
+                Assert.AreEqual( "```\nPerson.FirstName\n```", output );
+            } );
         }
 
         /// <summary>
@@ -870,9 +1164,14 @@ namespace Rock.Tests.Lava.Filters
         public void ToMarkdown_UnorderedList_ProducesMarkdownList()
         {
             var template = "{{ '<ul><li>One</li><li>Two</li></ul>' | ToMarkdown }}";
-            var expected = "- One - Two";
+            var expected = "- One\n- Two";
 
-            TestHelper.AssertTemplateOutput( expected, template, ignoreWhitespace: true );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, template );
+
+                Assert.AreEqual( expected, output );
+            } );
         }
 
         /// <summary>
@@ -881,7 +1180,12 @@ namespace Rock.Tests.Lava.Filters
         [TestMethod]
         public void ToMarkdown_ExplicitHtmlSourceType_ProducesMarkdown()
         {
-            TestHelper.AssertTemplateOutput( "**bold**", "{{ '<b>bold</b>' | ToMarkdown:'html' }}", ignoreWhitespace: true );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, "{{ '<b>bold</b>' | ToMarkdown:'html' }}" );
+
+                Assert.AreEqual( "**bold**", output );
+            } );
         }
 
         /// <summary>
@@ -890,7 +1194,12 @@ namespace Rock.Tests.Lava.Filters
         [TestMethod]
         public void ToMarkdown_MixedCaseSourceType_IsCaseInsensitive()
         {
-            TestHelper.AssertTemplateOutput( "**bold**", "{{ '<b>bold</b>' | ToMarkdown:'HTML' }}", ignoreWhitespace: true );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, "{{ '<b>bold</b>' | ToMarkdown:'HTML' }}" );
+
+                Assert.AreEqual( "**bold**", output );
+            } );
         }
 
         /// <summary>
@@ -899,7 +1208,12 @@ namespace Rock.Tests.Lava.Filters
         [TestMethod]
         public void ToMarkdown_EmptyInput_ProducesEmptyOutput()
         {
-            TestHelper.AssertTemplateOutput( "", "{{ '' | ToMarkdown }}" );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, "{{ '' | ToMarkdown }}" );
+
+                Assert.AreEqual( "", output );
+            } );
         }
 
         /// <summary>
@@ -908,7 +1222,12 @@ namespace Rock.Tests.Lava.Filters
         [TestMethod]
         public void ToMarkdown_PlainText_ProducesUnchangedOutput()
         {
-            TestHelper.AssertTemplateOutput( "Now is the time for all good men.", "{{ 'Now is the time for all good men.' | ToMarkdown }}", ignoreWhitespace: true );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, "{{ 'Now is the time for all good men.' | ToMarkdown }}" );
+
+                Assert.AreEqual( "Now is the time for all good men.", output );
+            } );
         }
 
         /// <summary>
@@ -917,7 +1236,12 @@ namespace Rock.Tests.Lava.Filters
         [TestMethod]
         public void ToMarkdown_UnsupportedSourceType_ReturnsInputUnchanged()
         {
-            TestHelper.AssertTemplateOutput( "<h1>Hello</h1>", "{{ '<h1>Hello</h1>' | ToMarkdown:'unknown' }}", ignoreWhitespace: true );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, "{{ '<h1>Hello</h1>' | ToMarkdown:'unknown' }}" );
+
+                Assert.AreEqual( "<h1>Hello</h1>", output );
+            } );
         }
 
         #endregion

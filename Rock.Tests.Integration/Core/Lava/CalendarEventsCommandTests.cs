@@ -25,7 +25,7 @@ using Rock.Data;
 using Rock.Lava;
 using Rock.Model;
 using Rock.Tests.Integration.TestData;
-using Rock.Tests.Integration.TestFramework.Lava;
+using Rock.Tests.Lava.Shared;
 
 namespace Rock.Tests.Integration.Core.Lava
 {
@@ -75,9 +75,12 @@ namespace Rock.Tests.Integration.Core.Lava
         {
             var template = GetTestTemplate( "calendarid:'Internal' unknown_parameter:'any_value'" );
 
-            TestHelper.AssertTemplateOutput( "Calendar Events not available. Invalid configuration setting \"unknown_parameter\".",
-                template,
-                new LavaTestRenderOptions { OutputMatchType = LavaTestOutputMatchTypeSpecifier.Contains, EnabledCommands = "calendarevents" } );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, template, new LavaRenderOptions { EnabledCommands = "calendarevents" } );
+
+                Assert.Contains( "Calendar Events not available. Invalid configuration setting \"unknown_parameter\".", output );
+            } );
         }
 
         [TestMethod]
@@ -85,9 +88,12 @@ namespace Rock.Tests.Integration.Core.Lava
         {
             var template = GetTestTemplate( "calendarid:'Internal' daterange:'12m' maxoccurrences:2" );
 
-            TestHelper.AssertTemplateOutput( "<Calendars: Internal",
-                template,
-                new LavaTestRenderOptions { OutputMatchType = LavaTestOutputMatchTypeSpecifier.Contains, EnabledCommands = "calendarevents" } );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, template, new LavaRenderOptions { EnabledCommands = "calendarevents" } );
+
+                Assert.Contains( "<Calendars: Internal", output );
+            } );
         }
 
         [TestMethod]
@@ -96,9 +102,12 @@ namespace Rock.Tests.Integration.Core.Lava
             // CalendarId = 1 represents the Public calendar in the standard test data.
             var template = GetTestTemplate( "calendarid:'1' startdate:'2018-1-1' daterange:'12m' maxoccurrences:2" );
 
-            TestHelper.AssertTemplateOutput( "<Calendars: Internal, Public>",
-                template,
-                new LavaTestRenderOptions { OutputMatchType = LavaTestOutputMatchTypeSpecifier.Contains, EnabledCommands = "calendarevents" } );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, template, new LavaRenderOptions { EnabledCommands = "calendarevents" } );
+
+                Assert.Contains( "<Calendars: Internal, Public>", output );
+            } );
         }
 
         [TestMethod]
@@ -106,9 +115,12 @@ namespace Rock.Tests.Integration.Core.Lava
         {
             var template = GetTestTemplate( $"calendarid:'{InternalCalendarGuidString}' startdate:'2020-1-1' daterange:'12m' maxoccurrences:2" );
 
-            TestHelper.AssertTemplateOutput( "<Calendars: Internal",
-                template,
-                new LavaTestRenderOptions { OutputMatchType = LavaTestOutputMatchTypeSpecifier.Contains, EnabledCommands = "calendarevents" } );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, template, new LavaRenderOptions { EnabledCommands = "calendarevents" } );
+
+                Assert.Contains( "<Calendars: Internal", output );
+            } );
         }
 
         [TestMethod]
@@ -116,9 +128,12 @@ namespace Rock.Tests.Integration.Core.Lava
         {
             var template = GetTestTemplate( "startdate:'2020-1-1' daterange:'12m' maxoccurrences:2" );
 
-            TestHelper.AssertTemplateOutput( "Calendar Events not available. A calendar reference must be specified.",
-                template,
-                new LavaTestRenderOptions { OutputMatchType = LavaTestOutputMatchTypeSpecifier.Contains, EnabledCommands = "calendarevents" } );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, template, new LavaRenderOptions { EnabledCommands = "calendarevents" } );
+
+                Assert.Contains( "Calendar Events not available. A calendar reference must be specified.", output );
+            } );
         }
 
         [TestMethod]
@@ -126,9 +141,12 @@ namespace Rock.Tests.Integration.Core.Lava
         {
             var template = GetTestTemplate( "calendarid:'no_calendar' startdate:'2020-1-1' daterange:'12m' maxoccurrences:2" );
 
-            TestHelper.AssertTemplateOutput( "Calendar Events not available. Cannot find a calendar matching the reference \"no_calendar\".",
-                template,
-                new LavaTestRenderOptions { OutputMatchType = LavaTestOutputMatchTypeSpecifier.Contains, EnabledCommands = "calendarevents" } );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, template, new LavaRenderOptions { EnabledCommands = "calendarevents" } );
+
+                Assert.Contains( "Calendar Events not available. Cannot find a calendar matching the reference \"no_calendar\".", output );
+            } );
         }
 
         [TestMethod]
@@ -137,18 +155,24 @@ namespace Rock.Tests.Integration.Core.Lava
             // This filter should return the Warrior Youth Event scheduled once on 2018-05-02.
             var template = GetTestTemplate( "calendarid:'Public' audienceids:'Youth' daterange:'12m' maxoccurrences:2" );
 
-            TestHelper.AssertTemplateOutput( "<Audiences: All Church, Adults, Youth>",
-                template,
-                new LavaTestRenderOptions { OutputMatchType = LavaTestOutputMatchTypeSpecifier.Contains, EnabledCommands = "calendarevents" } );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, template, new LavaRenderOptions { EnabledCommands = "calendarevents" } );
+
+                Assert.Contains( "<Audiences: All Church, Adults, Youth>", output );
+            } );
         }
 
         public void CalendarEventsCommand_WithAudienceAsMultipleValues_RetrievesEventsWithAnyMatchingAudience()
         {
             var template = GetTestTemplate( "calendarid:'Public' audienceids:'Men,Women' startdate:'2020-1-1' daterange:'12m' maxoccurrences:2" );
 
-            TestHelper.AssertTemplateOutput( "<Audiences: Internal>",
-                template,
-                new LavaTestRenderOptions { OutputMatchType = LavaTestOutputMatchTypeSpecifier.Contains, EnabledCommands = "calendarevents" } );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, template, new LavaRenderOptions { EnabledCommands = "calendarevents" } );
+
+                Assert.Contains( "<Audiences: Internal>", output );
+            } );
         }
 
         [TestMethod]
@@ -164,9 +188,12 @@ namespace Rock.Tests.Integration.Core.Lava
 
             var template = GetTestTemplate( $"calendarid:'Public' audienceids:'{definedValueId}' startdate:'2018-1-1'" );
 
-            TestHelper.AssertTemplateOutput( "<Audiences: All Church,",
-                template,
-                new LavaTestRenderOptions { OutputMatchType = LavaTestOutputMatchTypeSpecifier.Contains, EnabledCommands = "calendarevents" } );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, template, new LavaRenderOptions { EnabledCommands = "calendarevents" } );
+
+                Assert.Contains( "<Audiences: All Church,", output );
+            } );
         }
 
         [TestMethod]
@@ -174,9 +201,12 @@ namespace Rock.Tests.Integration.Core.Lava
         {
             var template = GetTestTemplate( $"calendarid:'Public' audienceids:'{YouthAudienceGuidString}' startdate:'2018-1-1'" );
 
-            TestHelper.AssertTemplateOutput( "<Audiences: All Church, Adults, Youth>",
-                template,
-                new LavaTestRenderOptions { OutputMatchType = LavaTestOutputMatchTypeSpecifier.Contains, EnabledCommands = "calendarevents" } );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, template, new LavaRenderOptions { EnabledCommands = "calendarevents" } );
+
+                Assert.Contains( "<Audiences: All Church, Adults, Youth>", output );
+            } );
         }
 
         [TestMethod]
@@ -184,9 +214,12 @@ namespace Rock.Tests.Integration.Core.Lava
         {
             var template = GetTestTemplate( "calendarid:'Internal' audienceids:'no_audience'" );
 
-            TestHelper.AssertTemplateOutput( "Calendar Events not available. Cannot apply an audience filter for the reference \"no_audience\".",
-                template,
-                new LavaTestRenderOptions { OutputMatchType = LavaTestOutputMatchTypeSpecifier.Contains, EnabledCommands = "calendarevents" } );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, template, new LavaRenderOptions { EnabledCommands = "calendarevents" } );
+
+                Assert.Contains( "Calendar Events not available. Cannot apply an audience filter for the reference \"no_audience\".", output );
+            } );
         }
 
         [TestMethod]
@@ -195,22 +228,31 @@ namespace Rock.Tests.Integration.Core.Lava
             // This filter should return the Warrior Youth Event scheduled once on 2018-05-02.
             var template = GetTestTemplate( "calendarid:'Public' campusids:'Main Campus' startdate:'2018-1-1' daterange:'12m' maxoccurrences:2" );
 
-            TestHelper.AssertTemplateOutput( "<Campus: Main Campus>",
-                template,
-                new LavaTestRenderOptions { OutputMatchType = LavaTestOutputMatchTypeSpecifier.Contains, EnabledCommands = "calendarevents" } );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, template, new LavaRenderOptions { EnabledCommands = "calendarevents" } );
+
+                Assert.Contains( "<Campus: Main Campus>", output );
+            } );
         }
 
         public void CalendarEventsCommand_WithCampusAsMultipleValues_RetrievesEventsWithAnyMatchingCampus()
         {
             var template = GetTestTemplate( "calendarid:'Public' campusids:'Main Campus,Stepping Stone' startdate:'2020-1-1' daterange:'12m' maxoccurrences:2" );
 
-            TestHelper.AssertTemplateOutput( "<Campus: Main Campus>",
-                template,
-                new LavaTestRenderOptions { OutputMatchType = LavaTestOutputMatchTypeSpecifier.Contains, EnabledCommands = "calendarevents" } );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, template, new LavaRenderOptions { EnabledCommands = "calendarevents" } );
 
-            TestHelper.AssertTemplateOutput( "<Campus: Stepping Stone>",
-                template,
-                new LavaTestRenderOptions { OutputMatchType = LavaTestOutputMatchTypeSpecifier.Contains, EnabledCommands = "calendarevents" } );
+                Assert.Contains( "<Campus: Main Campus>", output );
+            } );
+
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, template, new LavaRenderOptions { EnabledCommands = "calendarevents" } );
+
+                Assert.Contains( "<Campus: Stepping Stone>", output );
+            } );
         }
 
         [TestMethod]
@@ -223,9 +265,12 @@ namespace Rock.Tests.Integration.Core.Lava
 
             var template = GetTestTemplate( $"calendarid:'Public' campusids:'{campusId}' startdate:'2018-1-1'" );
 
-            TestHelper.AssertTemplateOutput( "<Campus: Main Campus>",
-                template,
-                new LavaTestRenderOptions { OutputMatchType = LavaTestOutputMatchTypeSpecifier.Contains, EnabledCommands = "calendarevents" } );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, template, new LavaRenderOptions { EnabledCommands = "calendarevents" } );
+
+                Assert.Contains( "<Campus: Main Campus>", output );
+            } );
         }
 
         [TestMethod]
@@ -233,9 +278,12 @@ namespace Rock.Tests.Integration.Core.Lava
         {
             var template = GetTestTemplate( $"calendarid:'Public' campusids:'{MainCampusGuidString}' startdate:'2018-1-1'" );
 
-            TestHelper.AssertTemplateOutput( "<Campus: Main Campus>",
-                template,
-                new LavaTestRenderOptions { OutputMatchType = LavaTestOutputMatchTypeSpecifier.Contains, EnabledCommands = "calendarevents" } );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, template, new LavaRenderOptions { EnabledCommands = "calendarevents" } );
+
+                Assert.Contains( "<Campus: Main Campus>", output );
+            } );
         }
 
         [TestMethod]
@@ -248,9 +296,15 @@ namespace Rock.Tests.Integration.Core.Lava
 
             var template = GetTestTemplate( $"calendarid:'Public' campusids:'{campusId}' startdate:'{effectiveDate:yyyy-MM-dd}'" );
 
-            TestHelper.AssertTemplateOutput( new List<string> { "<Campus: Main Campus>", "<Campus: All Campuses>" },
-                template,
-                new LavaTestRenderOptions { OutputMatchType = LavaTestOutputMatchTypeSpecifier.Contains, EnabledCommands = "calendarevents" } );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, template, new LavaRenderOptions { EnabledCommands = "calendarevents" } );
+
+                // The predecessor helper took a list and required every entry to
+                // be present, which reads as one assertion per entry here.
+                Assert.Contains( "<Campus: Main Campus>", output );
+                Assert.Contains( "<Campus: All Campuses>", output );
+            } );
         }
 
         [TestMethod]
@@ -258,9 +312,12 @@ namespace Rock.Tests.Integration.Core.Lava
         {
             var template = GetTestTemplate( "calendarid:'Internal' campusids:'no_campus'" );
 
-            TestHelper.AssertTemplateOutput( "Calendar Events not available. Cannot apply a campus filter for the reference \"no_campus\".",
-                template,
-                new LavaTestRenderOptions { OutputMatchType = LavaTestOutputMatchTypeSpecifier.Contains, EnabledCommands = "calendarevents" } );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, template, new LavaRenderOptions { EnabledCommands = "calendarevents" } );
+
+                Assert.Contains( "Calendar Events not available. Cannot apply a campus filter for the reference \"no_campus\".", output );
+            } );
         }
 
         [TestMethod]
@@ -324,9 +381,12 @@ namespace Rock.Tests.Integration.Core.Lava
         {
             var template = GetTestTemplate( "calendarid:'Internal' startdate:'1020-1-1' daterange:'12m'" );
 
-            TestHelper.AssertTemplateOutput( "<EventCount = 0>",
-                template,
-                new LavaTestRenderOptions { OutputMatchType = LavaTestOutputMatchTypeSpecifier.Contains, EnabledCommands = "calendarevents" } );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, template, new LavaRenderOptions { EnabledCommands = "calendarevents" } );
+
+                Assert.Contains( "<EventCount = 0>", output );
+            } );
         }
 
         [TestMethod]
@@ -335,9 +395,12 @@ namespace Rock.Tests.Integration.Core.Lava
             var template = GetTestTemplate( "calendarid:'Internal' startdate:'2020-1-1' maxoccurrences:200" );
 
             // Ensure that the maximum number of occurrences has been retrieved.
-            TestHelper.AssertTemplateOutput( "<EventCount = 200>",
-                template,
-                new LavaTestRenderOptions { OutputMatchType = LavaTestOutputMatchTypeSpecifier.Contains, EnabledCommands = "calendarevents" } );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, template, new LavaRenderOptions { EnabledCommands = "calendarevents" } );
+
+                Assert.Contains( "<EventCount = 200>", output );
+            } );
         }
 
         [TestMethod]
@@ -345,9 +408,12 @@ namespace Rock.Tests.Integration.Core.Lava
         {
             var template = GetTestTemplate( "calendarid:'Internal' daterange:'invalid'" );
 
-            TestHelper.AssertTemplateOutput( "Calendar Events not available. The specified Date Range is invalid.",
-                template,
-                new LavaTestRenderOptions { OutputMatchType = LavaTestOutputMatchTypeSpecifier.Contains, EnabledCommands = "calendarevents" } );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, template, new LavaRenderOptions { EnabledCommands = "calendarevents" } );
+
+                Assert.Contains( "Calendar Events not available. The specified Date Range is invalid.", output );
+            } );
         }
 
         [TestMethod]
@@ -357,16 +423,22 @@ namespace Rock.Tests.Integration.Core.Lava
             // The default maximum is 100 events.
             var template1 = GetTestTemplate( "calendarid:'Internal' startdate:'2020-1-1' maxoccurrences:101" );
 
-            TestHelper.AssertTemplateOutput( "<EventCount = 101>",
-                template1,
-                new LavaTestRenderOptions { OutputMatchType = LavaTestOutputMatchTypeSpecifier.Contains, EnabledCommands = "calendarevents" } );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, template1, new LavaRenderOptions { EnabledCommands = "calendarevents" } );
+
+                Assert.Contains( "<EventCount = 101>", output );
+            } );
 
             // Now ensure that the default limit is applied.
             var template2 = GetTestTemplate( "calendarid:'Internal' startdate:'2020-1-1'" );
 
-            TestHelper.AssertTemplateOutput( "<EventCount = 100>",
-                template2,
-                new LavaTestRenderOptions { OutputMatchType = LavaTestOutputMatchTypeSpecifier.Contains, EnabledCommands = "calendarevents" } );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, template2, new LavaRenderOptions { EnabledCommands = "calendarevents" } );
+
+                Assert.Contains( "<EventCount = 100>", output );
+            } );
         }
 
         [TestMethod]
@@ -375,16 +447,22 @@ namespace Rock.Tests.Integration.Core.Lava
             // First, ensure that there are more than the test maximum number of events to return.
             var template1 = GetTestTemplate( "calendarid:'Internal' startdate:'2020-1-1' maxoccurrences:11" );
 
-            TestHelper.AssertTemplateOutput( "<EventCount = 11>",
-                template1,
-                new LavaTestRenderOptions { OutputMatchType = LavaTestOutputMatchTypeSpecifier.Contains, EnabledCommands = "calendarevents" } );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, template1, new LavaRenderOptions { EnabledCommands = "calendarevents" } );
+
+                Assert.Contains( "<EventCount = 11>", output );
+            } );
 
             // Now ensure that the maxoccurences limit is applied.
             var template2 = GetTestTemplate( "calendarid:'Internal' startdate:'2020-1-1' maxoccurrences:10" );
 
-            TestHelper.AssertTemplateOutput( "<EventCount = 10>",
-                template2,
-                new LavaTestRenderOptions { OutputMatchType = LavaTestOutputMatchTypeSpecifier.Contains, EnabledCommands = "calendarevents" } );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, template2, new LavaRenderOptions { EnabledCommands = "calendarevents" } );
+
+                Assert.Contains( "<EventCount = 10>", output );
+            } );
         }
 
         [TestMethod]
@@ -392,9 +470,12 @@ namespace Rock.Tests.Integration.Core.Lava
         {
             var template = GetTestTemplate( "calendarid:'Internal' startdate:'2020-1-1' maxoccurrences:'invalid_value'" );
 
-            TestHelper.AssertTemplateOutput( "Calendar Events not available. Invalid configuration setting \"maxoccurrences\".",
-                template,
-                new LavaTestRenderOptions { OutputMatchType = LavaTestOutputMatchTypeSpecifier.Contains, EnabledCommands = "calendarevents" } );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, template, new LavaRenderOptions { EnabledCommands = "calendarevents" } );
+
+                Assert.Contains( "Calendar Events not available. Invalid configuration setting \"maxoccurrences\".", output );
+            } );
         }
 
         /// <summary>
@@ -403,27 +484,40 @@ namespace Rock.Tests.Integration.Core.Lava
         [TestMethod]
         public void CalendarEventsCommand_ForSampleDataKnownEvents_ReturnsExpectedEventData()
         {
+            // The tags carry whitespace control so that they do not each leave a
+            // blank line behind, which keeps the expected value below readable.
             var input = @"
-{% calendarevents calendarid:'Internal' startdate:'2021-1-1' maxoccurrences:2 %}
-    {% for item in EventScheduledInstances %}
+{%- calendarevents calendarid:'Internal' startdate:'2021-1-1' maxoccurrences:2 -%}
+    {%- for item in EventScheduledInstances -%}
         Name={{ item.Name }}<br>
         Date={{ item.Date | Date:'yyyy-MM-dd' }}<br>
         Time={{ item.Time }}<br>
         DateTime={{ item.DateTime | Date:'yyyy-MM-ddTHH:mm:sszzz' }}
         <hr>
-    {% endfor %}
-{% endcalendarevents %}
+    {%- endfor -%}
+{%- endcalendarevents -%}
 ";
             var rockTimeOffset = LavaDateTime.ConvertToRockDateTime( new DateTime( 2021, 1, 1, 0, 0, 0, DateTimeKind.Unspecified ) ).ToString( "zzz" );
 
-            var expectedOutput = @"
-Name=Rock Solid Finances Class<br>Date=2021-01-02<br>Time=4:30 PM<br>DateTime=2021-01-02T16:30:00<offset><hr>
-Name=Rock Solid Finances Class<br>Date=2021-01-03<br>Time=12:00 PM<br>DateTime=2021-01-03T12:00:00<offset><hr>
-";
-            expectedOutput = expectedOutput.Replace( "<offset>", rockTimeOffset );
+            // The indentation is the template's own; only the blank lines the
+            // tags used to leave behind have been removed.
+            var expectedOutput = ( "Name=Rock Solid Finances Class<br>\n"
+                + "        Date=2021-01-02<br>\n"
+                + "        Time=4:30 PM<br>\n"
+                + "        DateTime=2021-01-02T16:30:00<offset>\n"
+                + "        <hr>Name=Rock Solid Finances Class<br>\n"
+                + "        Date=2021-01-03<br>\n"
+                + "        Time=12:00 PM<br>\n"
+                + "        DateTime=2021-01-03T12:00:00<offset>\n"
+                + "        <hr>" )
+                .Replace( "<offset>", rockTimeOffset );
 
-            TestHelper.AssertTemplateOutput( expectedOutput, input,
-                new LavaTestRenderOptions { EnabledCommands = "calendarevents" } );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, input, new LavaRenderOptions { EnabledCommands = "calendarevents" } );
+
+                Assert.AreEqual( expectedOutput, output );
+            } );
         }
 
         private void AssertTestEventOccurrences( string template, List<DateTime> validDateList, List<DateTime> invalidDateList = null )
@@ -431,12 +525,11 @@ Name=Rock Solid Finances Class<br>Date=2021-01-03<br>Time=12:00 PM<br>DateTime=2
             var meetingName = "Rock Solid Finances Class";
             var meetingTime = "4:30 PM";
 
-            TestHelper.ExecuteForActiveEngines( ( engine ) =>
-            {
-                var output = TestHelper.GetTemplateOutput( engine, template,
-                    new LavaTestRenderOptions { EnabledCommands = "calendarevents" } );
+            var options = new LavaRenderOptions { EnabledCommands = "calendarevents" };
 
-                TestHelper.DebugWriteRenderResult( engine, template, output );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, template, options );
 
                 foreach ( var validDate in validDateList )
                 {
@@ -447,7 +540,17 @@ Name=Rock Solid Finances Class<br>Date=2021-01-03<br>Time=12:00 PM<br>DateTime=2
                 {
                     foreach ( var invalidDate in invalidDateList )
                     {
-                        Assert.DoesNotContain( output, $"<<{meetingName}|{invalidDate:yyyy-MM-dd}|{meetingTime}|" );
+                        /*
+                            9/26/26 - CLAUDE
+
+                            The arguments here were the wrong way round, asking
+                            whether the date fragment contains the whole rendered
+                            output. That is never true, so every invalid date
+                            passed without being checked.
+
+                            Reason: The assertion was inverted and tested nothing.
+                        */
+                        Assert.DoesNotContain( $"<<{meetingName}|{invalidDate:yyyy-MM-dd}|{meetingTime}|", output );
                     }
                 }
             } );

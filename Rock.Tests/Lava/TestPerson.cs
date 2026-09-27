@@ -16,7 +16,7 @@
 //
 using Rock.Lava;
 
-namespace Rock.Tests.Lava.Filters
+namespace Rock.Tests.Lava
 {
     /// <summary>
     /// A representation of a Person used for testing purposes.
@@ -42,5 +42,10 @@ namespace Rock.Tests.Lava.Filters
     {
         public int Id { get; set; }
         public string Name { get; set; }
+
+        public override string ToString()
+        {
+            return Name;
+        }
     }
 }

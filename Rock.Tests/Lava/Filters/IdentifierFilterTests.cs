@@ -18,7 +18,10 @@ using System;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
+using Rock.Tests.Lava.Shared;
+
 using Rock.Lava.Fluid;
+using Rock.Tests.Shared.Constants;
 
 namespace Rock.Tests.Lava.Filters
 {
@@ -26,7 +29,8 @@ namespace Rock.Tests.Lava.Filters
     /// Tests for the Lava filters that produce or translate identifier values.
     /// </summary>
     [TestClass]
-    public class IdentifierFilterTests : LavaUnitTestBase
+    [TestCategory( TestFeatures.Lava )]
+    public class IdentifierFilterTests
     {
         /// <summary>
         /// The standard RFC 4122 namespace for fully-qualified domain names, which has widely published
@@ -43,7 +47,12 @@ namespace Rock.Tests.Lava.Filters
         {
             var template = "{{ 'python.org' | ToGuidV5:'" + DnsNamespace + "' }}";
 
-            TestHelper.AssertTemplateOutput( "886313e1-3b8a-5372-9b90-0c9aee199e5d", template );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, template );
+
+                Assert.AreEqual( "886313e1-3b8a-5372-9b90-0c9aee199e5d", output );
+            } );
         }
 
         /// <summary>
@@ -57,7 +66,12 @@ namespace Rock.Tests.Lava.Filters
 
             var expectedOutput = "7e6286f7-0297-41ff-bdf6-bd5656e1bc53".ToGuidV5( new Guid( DnsNamespace ) ).ToString();
 
-            TestHelper.AssertTemplateOutput( expectedOutput, input );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, input );
+
+                Assert.AreEqual( expectedOutput, output );
+            } );
         }
 
         /// <summary>
@@ -70,7 +84,12 @@ namespace Rock.Tests.Lava.Filters
                 + "{% assign second = 'alpha' | ToGuidV5:'" + DnsNamespace + "' %}"
                 + "{% if first == second %}match{% else %}differ{% endif %}";
 
-            TestHelper.AssertTemplateOutput( "match", input );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, input );
+
+                Assert.AreEqual( "match", output );
+            } );
         }
 
         /// <summary>
@@ -84,7 +103,12 @@ namespace Rock.Tests.Lava.Filters
                 + "{% assign upper = '7E6286F7-0297-41FF-BDF6-BD5656E1BC53' | ToGuidV5:'" + DnsNamespace + "' %}"
                 + "{% if lower == upper %}match{% else %}differ{% endif %}";
 
-            TestHelper.AssertTemplateOutput( "match", input );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, input );
+
+                Assert.AreEqual( "match", output );
+            } );
         }
 
         /// <summary>
@@ -97,7 +121,12 @@ namespace Rock.Tests.Lava.Filters
                 + "{% assign upper = 'alpha' | ToGuidV5:'" + DnsNamespace.ToUpper() + "' %}"
                 + "{% if lower == upper %}match{% else %}differ{% endif %}";
 
-            TestHelper.AssertTemplateOutput( "match", input );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, input );
+
+                Assert.AreEqual( "match", output );
+            } );
         }
 
         /// <summary>
@@ -110,7 +139,12 @@ namespace Rock.Tests.Lava.Filters
                 + "{% assign second = 'beta' | ToGuidV5:'" + DnsNamespace + "' %}"
                 + "{% if first == second %}match{% else %}differ{% endif %}";
 
-            TestHelper.AssertTemplateOutput( "differ", input );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, input );
+
+                Assert.AreEqual( "differ", output );
+            } );
         }
 
         /// <summary>
@@ -124,7 +158,12 @@ namespace Rock.Tests.Lava.Filters
         {
             var template = "{{ " + inputValue + " | ToGuidV5:'" + DnsNamespace + "' }}";
 
-            TestHelper.AssertTemplateOutput( string.Empty, template );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, template );
+
+                Assert.AreEqual( string.Empty, output );
+            } );
         }
 
         /// <summary>
@@ -138,11 +177,13 @@ namespace Rock.Tests.Lava.Filters
         {
             var template = "{{ 'alpha' | ToGuidV5:" + namespaceValue + " }}";
 
-            var engine = TestHelper.GetEngineInstance( typeof( FluidEngine ) );
-            var result = engine.RenderTemplate( template );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var result = LavaRenderTestHelper.RenderResult( engine, template );
 
-            Assert.IsTrue( result.HasErrors, "Expected an invalid namespace to produce a render error." );
-            StringAssert.Contains( result.Error.ToString(), "Invalid Namespace Guid Value" );
+                Assert.IsTrue( result.HasErrors, "Expected an invalid namespace to produce a render error." );
+                StringAssert.Contains( result.Error.ToString(), "Invalid Namespace Guid Value" );
+            } );
         }
     }
 }

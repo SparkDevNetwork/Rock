@@ -16,6 +16,8 @@
 //
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
+using Rock.Tests.Lava.Shared;
+
 using Rock.Tests.Shared.Constants;
 
 namespace Rock.Tests.Lava.Tags
@@ -25,7 +27,7 @@ namespace Rock.Tests.Lava.Tags
     /// </summary>
     [TestClass]
     [TestCategory( TestFeatures.Lava )]
-    public class IfTagTests : LavaUnitTestBase
+    public class IfTagTests
     {
         /// <summary>
         /// Tests the Liquid standard if / else
@@ -33,7 +35,12 @@ namespace Rock.Tests.Lava.Tags
         [TestMethod]
         public void IfTag_IfElse_ShouldIf()
         {
-            TestHelper.AssertTemplateOutput( " CORRECT ", "{% if true %} CORRECT {% else %} NO {% endif %}" );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, "{% if true %} CORRECT {% else %} NO {% endif %}" );
+
+                Assert.AreEqual( " CORRECT ", output );
+            } );
         }
 
         /// <summary>
@@ -42,7 +49,12 @@ namespace Rock.Tests.Lava.Tags
         [TestMethod]
         public void IfTag_IfElse_ShouldElse()
         {
-            TestHelper.AssertTemplateOutput( " CORRECT ", "{% if false %} NO {% else %} CORRECT {% endif %}" );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, "{% if false %} NO {% else %} CORRECT {% endif %}" );
+
+                Assert.AreEqual( " CORRECT ", output );
+            } );
         }
 
         /// <summary>
@@ -51,7 +63,12 @@ namespace Rock.Tests.Lava.Tags
         [TestMethod]
         public void IfTag_IfElsIf_ShouldIf()
         {
-            TestHelper.AssertTemplateOutput( "CORRECT", "{% if 1 == 1 %}CORRECT{% elsif 1 == 1%}1{% else %}2{% endif %}" );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, "{% if 1 == 1 %}CORRECT{% elsif 1 == 1%}1{% else %}2{% endif %}" );
+
+                Assert.AreEqual( "CORRECT", output );
+            } );
         }
 
         /// <summary>
@@ -60,7 +77,12 @@ namespace Rock.Tests.Lava.Tags
         [TestMethod]
         public void IfTag_IfElsIf_ShouldElsIf()
         {
-            TestHelper.AssertTemplateOutput( "CORRECT", "{% if 1 == 0 %}0{% elsif 1 == 1%}CORRECT{% else %}2{% endif %}" );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, "{% if 1 == 0 %}0{% elsif 1 == 1%}CORRECT{% else %}2{% endif %}" );
+
+                Assert.AreEqual( "CORRECT", output );
+            } );
         }
 
         /// <summary>
@@ -69,7 +91,12 @@ namespace Rock.Tests.Lava.Tags
         [TestMethod]
         public void IfTag_IfElsIf_ShouldElse()
         {
-            TestHelper.AssertTemplateOutput( "CORRECT", "{% if 2 == 0 %}0{% elsif 2 == 1%}1{% else %}CORRECT{% endif %}" );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, "{% if 2 == 0 %}0{% elsif 2 == 1%}1{% else %}CORRECT{% endif %}" );
+
+                Assert.AreEqual( "CORRECT", output );
+            } );
         }
 
         /// <summary>
@@ -78,7 +105,12 @@ namespace Rock.Tests.Lava.Tags
         [TestMethod]
         public void IfTag_IfElseIf_ShouldElseIf()
         {
-            TestHelper.AssertTemplateOutput( "CORRECT", "{% if 1 == 0 %}0{% elseif 1 == 1%}CORRECT{% else %}2{% endif %}" );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, "{% if 1 == 0 %}0{% elseif 1 == 1%}CORRECT{% else %}2{% endif %}" );
+
+                Assert.AreEqual( "CORRECT", output );
+            } );
         }
 
         /// <summary>
@@ -87,7 +119,12 @@ namespace Rock.Tests.Lava.Tags
         [TestMethod]
         public void IfTag_IfElseIf_ShouldElse()
         {
-            TestHelper.AssertTemplateOutput( "CORRECT", "{% if 1 == 0 %}0{% elseif 1 == 2%}1{% else %}CORRECT{% endif %}" );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, "{% if 1 == 0 %}0{% elseif 1 == 2%}1{% else %}CORRECT{% endif %}" );
+
+                Assert.AreEqual( "CORRECT", output );
+            } );
         }
 
         /// <summary>
@@ -97,21 +134,26 @@ namespace Rock.Tests.Lava.Tags
         public void IfTag_WithMultipleElsIfClauses_ShouldRenderCorrectClause()
         {
             var input = @"
-{% for i in (1..4) %}
-    {% if i == 1 %}
+{%- for i in (1..4) -%}
+    {%- if i == 1 -%}
     3...
-    {% elsif i == 2 %}
+    {%- elsif i == 2 -%}
     2...
-    {% elsif i == 3 %}
+    {%- elsif i == 3 -%}
     1...
-    {% else %}
+    {%- else -%}
     go!
-    {% endif %}
-{% endfor %}
+    {%- endif -%}
+{%- endfor -%}
 ";
-            var output = "3...2...1...go!";
+            var expectedOutput = "3...2...1...go!";
 
-            TestHelper.AssertTemplateOutput( output, input, ignoreWhitespace: true );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, input );
+
+                Assert.AreEqual( expectedOutput, output );
+            } );
         }
 
         /// <summary>
@@ -121,21 +163,26 @@ namespace Rock.Tests.Lava.Tags
         public void IfTag_WithMultipleElseIfClauses_ShouldRenderCorrectClause()
         {
             var input = @"
-{% for i in (1..4) %}
-    {% if i == 1 %}
+{%- for i in (1..4) -%}
+    {%- if i == 1 -%}
     3...
-    {% elseif i == 2 %}
+    {%- elseif i == 2 -%}
     2...
-    {% elseif i == 3 %}
+    {%- elseif i == 3 -%}
     1...
-    {% else %}
+    {%- else -%}
     go!
-    {% endif %}
-{% endfor %}
+    {%- endif -%}
+{%- endfor -%}
 ";
-            var output = "3...2...1...go!";
+            var expectedOutput = "3...2...1...go!";
 
-            TestHelper.AssertTemplateOutput( output, input, ignoreWhitespace: true );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, input );
+
+                Assert.AreEqual( expectedOutput, output );
+            } );
         }
 
         [TestMethod]
@@ -151,9 +198,14 @@ Moderate
 Slow
 {% endif -%}
 ";
-            var expectedOutput = @"Moderate";
+            var expectedOutput = "\n\nModerate\n";
 
-            TestHelper.AssertTemplateOutput( expectedOutput, input, ignoreWhitespace: true );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, input );
+
+                Assert.AreEqual( expectedOutput, output );
+            } );
         }
 
         [TestMethod]
@@ -164,7 +216,12 @@ Slow
 {% if isTruthy %}true{% else %}false{% endif %}
 ";
 
-            TestHelper.AssertTemplateOutput( "true", input, ignoreWhitespace: true );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, input );
+
+                Assert.AreEqual( "\n\ntrue\n", output );
+            } );
         }
 
         [TestMethod]
@@ -175,7 +232,12 @@ Slow
 {% if isTruthy %}true{% else %}false{% endif %}
 ";
 
-            TestHelper.AssertTemplateOutput( "true", input, ignoreWhitespace: true );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, input );
+
+                Assert.AreEqual( "\n\ntrue\n", output );
+            } );
         }
     }
 }

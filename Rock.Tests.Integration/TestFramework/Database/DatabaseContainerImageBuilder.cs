@@ -40,7 +40,10 @@ namespace Rock.Tests.Integration.TestFramework.Database
         /// <returns>A task that indicates when the operation has completed.</returns>
         public async Task BuildAsync()
         {
-            using ( var dockerClient = new DockerClientConfiguration().CreateClient() )
+            // The configuration owns the credentials it was built with, so it is
+            // disposed alongside the client rather than being left to the finalizer.
+            using ( var dockerConfiguration = TestDockerClientFactory.CreateConfiguration() )
+            using ( var dockerClient = dockerConfiguration.CreateClient() )
             {
                 var upgrade = false;
 
@@ -78,8 +81,35 @@ namespace Rock.Tests.Integration.TestFramework.Database
                 }
                 catch ( Exception ex )
                 {
-                    System.Diagnostics.Debug.WriteLine( ex.Message );
-                    await container.DisposeAsync();
+                    /*
+                        9/26/26 - CLAUDE
+
+                        The reason the build failed has to be logged here. What
+                        reaches the caller is the message MigrateDatabase wraps
+                        around the real error, and the test runner reports only
+                        that outer message, so the SQL error that actually stopped
+                        the migration is never shown. LogError writes the whole
+                        exception chain.
+
+                        Disposal gets its own catch because a failure here usually
+                        means something is wrong with Docker as well. Removing the
+                        container then throws too, and because that happened while
+                        an exception was already in flight, it replaced the build
+                        failure and the original was lost.
+
+                        Reason: A failed image build has to report why it failed.
+                    */
+                    LogHelper.LogError( ex, "Test Database image build failed." );
+
+                    try
+                    {
+                        await container.DisposeAsync();
+                    }
+                    catch ( Exception disposeEx )
+                    {
+                        LogHelper.LogError( disposeEx, "Test Database image build failed, and the container could not be removed afterwards." );
+                    }
+
                     throw;
                 }
 
@@ -290,8 +320,7 @@ ALTER DATABASE [{dbName}] SET RECOVERY SIMPLE";
 
             // Initialize the Lava Engine first, because it is needed by
             // the sample data loader.
-            LavaIntegrationTestHelper.Initialize( testFluidEngine: true, loadShortcodes: false );
-            LavaIntegrationTestHelper.GetEngineInstance( typeof( Rock.Lava.Fluid.FluidEngine ) );
+            LavaIntegrationEngineFactory.InitializeCurrentEngine( shouldRegisterDynamicShortcodes: false );
 
             // Make sure all Entity Types are registered.
             // This is necessary because some components are only registered at runtime,

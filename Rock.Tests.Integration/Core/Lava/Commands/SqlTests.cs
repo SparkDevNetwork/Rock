@@ -16,12 +16,13 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using Rock.Lava;
-using Rock.Tests.Integration.TestFramework.Lava;
+using Rock.Tests.Lava.Shared;
 
 namespace Rock.Tests.Integration.Core.Lava.Commands
 {
@@ -32,39 +33,52 @@ namespace Rock.Tests.Integration.Core.Lava.Commands
         public void SqlBlock_CommandNotEnabled_ReturnsConfigurationErrorMessage()
         {
             var input = @"
-{% sql %}
+{%- sql -%}
     SELECT   [NickName], [LastName]
     FROM     [Person] 
     WHERE    [LastName] = 'Decker'
     AND      [NickName] IN ('Ted', 'Alex')
     ORDER BY [NickName]
-{% endsql %}
+{%- endsql -%}
 ";
 
             var expectedOutput = "The Lava command 'sql' is not configured for this template.";
 
-            TestHelper.AssertTemplateOutput( expectedOutput, input );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, input );
+
+                Assert.AreEqual( expectedOutput, output );
+            } );
         }
 
         [TestMethod]
         public void SqlBlock_WithInvalidSql_RendersErrorMessage()
         {
             var input = @"
-{% sql %}
+{%- sql -%}
     SELECT   [Unknown]
     FROM     [Person] 
-{% endsql %}
+{%- endsql -%}
 ";
 
             var expectedOutput = "Lava Error:(.*)Invalid column name 'Unknown'.";
 
-            var options = new LavaTestRenderOptions
+            var options = new LavaRenderOptions
             {
                 EnabledCommands = "Sql",
-                ExceptionHandlingStrategy = ExceptionHandlingStrategySpecifier.RenderToOutput,
-                OutputMatchType = LavaTestOutputMatchTypeSpecifier.RegEx
+                ExceptionHandlingStrategy = ExceptionHandlingStrategySpecifier.RenderToOutput
             };
-            TestHelper.AssertTemplateOutput( expectedOutput, input, options );
+
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, input, options );
+
+                // The error text between the two fragments carries a template
+                // position that is not worth pinning down, so this is matched
+                // as a pattern rather than compared.
+                StringAssert.Matches( output, new Regex( expectedOutput, RegexOptions.Singleline ) );
+            } );
 
         }
 
@@ -72,29 +86,34 @@ namespace Rock.Tests.Integration.Core.Lava.Commands
         public void SqlBlock_PersonWhereLastNameIsDecker_ReturnsDeckers()
         {
             var input = @"
-{% sql %}
+{%- sql -%}
     SELECT   [NickName], [LastName]
     FROM     [Person] 
     WHERE    [LastName] = 'Decker'
     AND      [NickName] IN ('Ted', 'Alex')
     ORDER BY [NickName]
-{% endsql %}
+{%- endsql -%}
 
-{% for item in results %}{{ item.NickName }}_{{ item.LastName }};{% endfor %}
+{%- for item in results -%}{{ item.NickName }}_{{ item.LastName }};{%- endfor -%}
 ";
 
             var expectedOutput = @"Alex_Decker;Ted_Decker;";
 
-            var options = new LavaTestRenderOptions { EnabledCommands = "Sql" };
+            var options = new LavaRenderOptions { EnabledCommands = "Sql" };
 
-            TestHelper.AssertTemplateOutput( expectedOutput, input, options );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, input, options );
+
+                Assert.AreEqual( expectedOutput, output );
+            } );
         }
 
         [TestMethod]
         public void SqlBlock_NullColumnValueInResult_IsRenderedAsEmptyString()
         {
             var input = @"
-{% sql %}
+{%- sql -%}
     SELECT   [NickName], [LastName]
     FROM     [Person] 
     WHERE    [LastName] = 'Decker'
@@ -102,16 +121,21 @@ namespace Rock.Tests.Integration.Core.Lava.Commands
 UNION
     SELECT   null as [NickName], null as [LastName]
     ORDER BY [NickName]
-{% endsql %}
+{%- endsql -%}
 
-{% for item in results %}{{ item.NickName }}_{{ item.LastName }};{% endfor %}
+{%- for item in results -%}{{ item.NickName }}_{{ item.LastName }};{%- endfor -%}
 ";
 
             var expectedOutput = @"_;Alex_Decker;Ted_Decker;";
 
-            var options = new LavaTestRenderOptions { EnabledCommands = "Sql" };
+            var options = new LavaRenderOptions { EnabledCommands = "Sql" };
 
-            TestHelper.AssertTemplateOutput( expectedOutput, input, options );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, input, options );
+
+                Assert.AreEqual( expectedOutput, output );
+            } );
         }
 
         /// <summary>
@@ -121,21 +145,26 @@ UNION
         public void SqlBlock_NullableDatabaseColumn_IsReturnedAsNullableType()
         {
             var input = @"
-{% sql return:'Items' %}
+{%- sql return:'Items' -%}
     SELECT TOP 1 p.[PhotoId] FROM [Person] as p WHERE [PhotoId] IS NULL
-{% endsql %}
-{% for item in Items %}
-    {% if item.PhotoId == null %}
+{%- endsql -%}
+{%- for item in Items -%}
+    {%- if item.PhotoId == null -%}
     Is Null
-    {% endif %}
-{% endfor %}
+    {%- endif -%}
+{%- endfor -%}
 ";
 
             var expectedOutput = @"Is Null";
 
-            var options = new LavaTestRenderOptions { EnabledCommands = "Sql" };
+            var options = new LavaRenderOptions { EnabledCommands = "Sql" };
 
-            TestHelper.AssertTemplateOutput( expectedOutput, input, options );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, input, options );
+
+                Assert.AreEqual( expectedOutput, output );
+            } );
         }
 
         /// <summary>
@@ -148,49 +177,57 @@ UNION
         public void SqlBlock_SelectFilterAppliedToResultSet_ReturnsSelectedField()
         {
             var input = @"
-{% sql %}
+{%- sql -%}
 SELECT * FROM Campus WHERE [Name] IN ('Main Campus', 'Stepping Stone');
-{% endsql %}
-{% assign campusNames = results | Select:'Name' | Uniq %}
-{% for campusName in campusNames %}
+{%- endsql -%}
+{%- assign campusNames = results | Select:'Name' | Uniq -%}
+{%- for campusName in campusNames -%}
 {{ campusName }};
-{% endfor %}
+{%- endfor -%}
 ";
 
             var expectedOutput = @"
 Main Campus;Stepping Stone;
-";
+".NormalizeLineEndings();
 
-            var options = new LavaTestRenderOptions { EnabledCommands = "Sql" };
+            var options = new LavaRenderOptions { EnabledCommands = "Sql" };
 
-            TestHelper.AssertTemplateOutput( expectedOutput, input, options );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, input, options );
+
+                Assert.AreEqual( expectedOutput, output );
+            } );
         }
 
         [TestMethod]
         public void SqlBlock_WithCommandType_ExecutesCorrectly()
         {
             var input = @"
-{% sql statement:'command' %}
+{%- sql statement:'command' -%}
     DELETE FROM [Person]
     WHERE 1 != 1
-{% endsql %}
+{%- endsql -%}
 {{ results }} records were selected.";
 
-            var expectedOutput = @"
-0 records were selected.
-";
-            var options = new LavaTestRenderOptions
+            var expectedOutput = "0 records were selected.";
+            var options = new LavaRenderOptions
             {
                 EnabledCommands = "sql",
                 ExceptionHandlingStrategy = ExceptionHandlingStrategySpecifier.RenderToOutput
 
             };
 
-            TestHelper.AssertTemplateOutput( expectedOutput, input, options );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, input, options );
+
+                Assert.AreEqual( expectedOutput, output );
+            } );
         }
 
         /// <summary>
-        /// Verifies that a {% sql %} block nested inside a {% lava %} tag executes the
+        /// Verifies that a {%- sql -%} block nested inside a {%- lava -%} tag executes the
         /// SQL and returns results, rather than misparsing lines like "SELECT ..." as
         /// unknown Lava tags. Regression test for the "Lava block SQL error" reported
         /// against Rock v20.0.
@@ -198,11 +235,11 @@ Main Campus;Stepping Stone;
         [TestMethod]
         public void SqlBlock_NestedInsideLavaTag_ExecutesQueryAndReturnsResults()
         {
-            // The sql block's content is SQL, not Lava. When wrapped in a {% lava %} tag
+            // The sql block's content is SQL, not Lava. When wrapped in a {%- lava -%} tag
             // the parser must treat that content as opaque text rather than parsing it as
-            // a {% liquid %} body (which would misread "SELECT" as an unknown tag).
+            // a {%- liquid -%} body (which would misread "SELECT" as an unknown tag).
             var input = @"
-{% lava
+{%- lava
     sql return:'results'
         SELECT   [NickName], [LastName]
         FROM     [Person]
@@ -211,14 +248,19 @@ Main Campus;Stepping Stone;
         ORDER BY [NickName]
     endsql
 %}
-{% for item in results %}{{ item.NickName }}_{{ item.LastName }};{% endfor %}
+{%- for item in results -%}{{ item.NickName }}_{{ item.LastName }};{%- endfor -%}
 ";
 
             var expectedOutput = @"Alex_Decker;Ted_Decker;";
 
-            var options = new LavaTestRenderOptions { EnabledCommands = "Sql" };
+            var options = new LavaRenderOptions { EnabledCommands = "Sql" };
 
-            TestHelper.AssertTemplateOutput( expectedOutput, input, options );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, input, options );
+
+                Assert.AreEqual( expectedOutput, output );
+            } );
         }
     }
 
@@ -232,27 +274,27 @@ Main Campus;Stepping Stone;
         [TestProperty( "Execution Time", "Long" )]
         public void SqlSelectShortTimeoutShouldFail()
         {
-            var lavaScript = @"{% sql timeout:'10' %}
+            var lavaScript = @"{%- sql timeout:'10' -%}
 
             WAITFOR DELAY '00:00:20';
             SELECT TOP 5 * 
             FROM Person
-            {% endsql %}
+            {%- endsql -%}
 
             [
             {%- for item in results -%}
                 {
                         ""CreatedDateTime"": {{ item.CreatedDateTime | ToJSON }},
                         ""LastName"": {{ item.LastName | ToJSON }},
-                }{% unless forloop.last -%},{% endunless %}
+                }{%- unless forloop.last -%},{%- endunless -%}
             {%- endfor -%}
             ]";
 
-            TestHelper.ExecuteForActiveEngines( ( engine ) =>
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
             {
                 var result = ExecuteSqlBlock( engine, lavaScript );
 
-                Assert.Contains( result.Error?.Messages().JoinStrings( "//" ), "Execution Timeout Expired." );
+                Assert.Contains( "Execution Timeout Expired.", result.Error?.Messages().JoinStrings( "//" ) );
             } );
         }
 
@@ -260,23 +302,23 @@ Main Campus;Stepping Stone;
         [TestProperty( "Execution Time", "Long" )]
         public void SqlSelectLongTimeoutShouldPass()
         {
-            var lavaScript = @"{% sql timeout:'40' %}
+            var lavaScript = @"{%- sql timeout:'40' -%}
 
             WAITFOR DELAY '00:00:35';
             SELECT TOP 5 * 
             FROM Person
-            {% endsql %}
+            {%- endsql -%}
 
             [
             {%- for item in results -%}
                 {
                         ""CreatedDateTime"": {{ item.CreatedDateTime | ToJSON }},
                         ""LastName"": {{ item.LastName | ToJSON }},
-                }{% unless forloop.last -%},{% endunless %}
+                }{%- unless forloop.last -%},{%- endunless -%}
             {%- endfor -%}
             ]";
 
-            TestHelper.ExecuteForActiveEngines( ( engine ) =>
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
             {
                 var result = ExecuteSqlBlock( engine, lavaScript );
 
@@ -287,22 +329,22 @@ Main Campus;Stepping Stone;
         [TestMethod]
         public void SqlSelectNoTimeoutShouldPass()
         {
-            var lavaScript = @"{% sql %}
+            var lavaScript = @"{%- sql -%}
 
             SELECT TOP 5 * 
             FROM Person
-            {% endsql %}
+            {%- endsql -%}
 
             [
             {%- for item in results -%}
                 {
                         ""CreatedDateTime"": {{ item.CreatedDateTime | ToJSON }},
                         ""LastName"": {{ item.LastName | ToJSON }},
-                }{% unless forloop.last -%},{% endunless %}
+                }{%- unless forloop.last -%},{%- endunless -%}
             {%- endfor -%}
             ]";
 
-            TestHelper.ExecuteForActiveEngines( ( engine ) =>
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
             {
                 var result = ExecuteSqlBlock( engine, lavaScript );
 
@@ -314,27 +356,27 @@ Main Campus;Stepping Stone;
         [TestProperty( "Execution Time", "Long" )]
         public void SqlSelectNoTimeoutButQueryLongerThen30SecondsShouldFail()
         {
-            var lavaScript = @"{% sql %}
+            var lavaScript = @"{%- sql -%}
 
             WAITFOR DELAY '00:00:35';
             SELECT TOP 5 * 
             FROM Person
-            {% endsql %}
+            {%- endsql -%}
 
             [
             {%- for item in results -%}
                 {
                         ""CreatedDateTime"": {{ item.CreatedDateTime | ToJSON }},
                         ""LastName"": {{ item.LastName | ToJSON }},
-                }{% unless forloop.last -%},{% endunless %}
+                }{%- unless forloop.last -%},{%- endunless -%}
             {%- endfor -%}
             ]";
 
-            TestHelper.ExecuteForActiveEngines( ( engine ) =>
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
             {
                 var result = ExecuteSqlBlock( engine, lavaScript );
 
-                Assert.Contains( result.Error?.Messages().JoinStrings( "//" ), "Execution Timeout Expired." );
+                Assert.Contains( "Execution Timeout Expired.", result.Error?.Messages().JoinStrings( "//" ) );
             } );
         }
 
@@ -342,19 +384,19 @@ Main Campus;Stepping Stone;
         [TestProperty( "Execution Time", "Long" )]
         public void SqlCommandShortTimeoutShouldFail()
         {
-            var lavaScript = @"{% sql statement:'command' timeout:'10' %}
+            var lavaScript = @"{%- sql statement:'command' timeout:'10' -%}
                 WAITFOR DELAY '00:00:20';
                 SELECT TOP 5 * 
                 FROM Person
-            {% endsql %}
+            {%- endsql -%}
 
             {{ results }} {{ 'record' | PluralizeForQuantity:results }} were deleted.";
 
-            TestHelper.ExecuteForActiveEngines( ( engine ) =>
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
             {
                 var result = ExecuteSqlBlock( engine, lavaScript );
 
-                Assert.Contains( result.Error?.Messages().JoinStrings( "//" ), "Execution Timeout Expired." );
+                Assert.Contains( "Execution Timeout Expired.", result.Error?.Messages().JoinStrings( "//" ) );
             } );
         }
 
@@ -362,14 +404,14 @@ Main Campus;Stepping Stone;
         [TestProperty( "Execution Time", "Long" )]
         public void SqlCommandLongTimeoutShouldPass()
         {
-            var lavaScript = @"{% sql statement:'command' timeout:'40' %}
+            var lavaScript = @"{%- sql statement:'command' timeout:'40' -%}
                 WAITFOR DELAY '00:00:35';
                 DELETE FROM [DefinedValue] WHERE 1 != 1
-            {% endsql %}
+            {%- endsql -%}
 
             {{ results }} {{ 'record' | PluralizeForQuantity:results }} were deleted.";
 
-            TestHelper.ExecuteForActiveEngines( ( engine ) =>
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
             {
                 var result = ExecuteSqlBlock( engine, lavaScript );
 
@@ -380,13 +422,13 @@ Main Campus;Stepping Stone;
         [TestMethod]
         public void SqlCommandNoTimeoutShouldPass()
         {
-            var lavaScript = @"{% sql statement:'command' %}
+            var lavaScript = @"{%- sql statement:'command' -%}
                 DELETE FROM [DefinedValue] WHERE 1 != 1
-            {% endsql %}
+            {%- endsql -%}
 
             {{ results }} {{ 'record' | PluralizeForQuantity:results }} were deleted.";
 
-            TestHelper.ExecuteForActiveEngines( ( engine ) =>
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
             {
                 var result = ExecuteSqlBlock( engine, lavaScript );
 
@@ -398,14 +440,14 @@ Main Campus;Stepping Stone;
         [TestProperty( "Execution Time", "Long" )]
         public void SqlCommandNoTimeoutButQueryLongerThen30SecondsShouldFail()
         {
-            var lavaScript = @"{% sql statement:'command' %}
+            var lavaScript = @"{%- sql statement:'command' -%}
                 WAITFOR DELAY '00:00:35';
                 DELETE FROM [DefinedValue] WHERE 1 != 1
-            {% endsql %}
+            {%- endsql -%}
 
             {{ results }} {{ 'record' | PluralizeForQuantity:results }} were deleted.";
 
-            TestHelper.ExecuteForActiveEngines( ( engine ) =>
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
             {
                 var renderContext = engine.NewRenderContext( new List<string> { "Sql" } );
 
@@ -422,27 +464,32 @@ Main Campus;Stepping Stone;
         public void SqlBlock_MultipleExecutionsWithTimeout_TimeoutShouldReturnToDefault()
         {
             var input = @"
-{% sql statement:'command' timeout:'60' %}
+{%- sql statement:'command' timeout:'60' -%}
     WAITFOR DELAY '00:00:35';
     DELETE FROM [DefinedValue] WHERE 1 != 1
-{% endsql %}
+{%- endsql -%}
 
-{% sql timeout:'10' %}
+{%- sql timeout:'10' -%}
     SELECT   [NickName], [LastName]
     FROM     [Person] 
     WHERE    [LastName] = 'Decker'
     AND      [NickName] IN ('Ted', 'Alex')
     ORDER BY [NickName];
-{% endsql %}
+{%- endsql -%}
 
-{% for item in results %}{{ item.NickName }}_{{ item.LastName }};{% endfor %}
+{%- for item in results -%}{{ item.NickName }}_{{ item.LastName }};{%- endfor -%}
 ";
 
             var expectedOutput = @"Alex_Decker;Ted_Decker;";
 
-            var options = new LavaTestRenderOptions { EnabledCommands = "Sql" };
+            var options = new LavaRenderOptions { EnabledCommands = "Sql" };
 
-            TestHelper.AssertTemplateOutput( expectedOutput, input, options );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, input, options );
+
+                Assert.AreEqual( expectedOutput, output );
+            } );
         }
 
         /// <summary>
@@ -455,45 +502,56 @@ Main Campus;Stepping Stone;
 ***
 Iteration: {{ iteration }}
 ***
-{% sql statement:'command' timeout:'60' %}
+{%- sql statement:'command' timeout:'60' -%}
     SELECT DELETE FROM [DefinedValue] WHERE 1 != 1
     WAITFOR DELAY '00:00:35';
-{% endsql %}
+{%- endsql -%}
 ";
 
             var templateShort = @"
 
-{% sql %}
+{%- sql -%}
     WAITFOR DELAY '00:00:05';
     SELECT   [NickName], [LastName]
     FROM     [Person] 
     WHERE    [LastName] = 'Decker'
     AND      [NickName] IN ('Ted', 'Alex')
     ORDER BY [NickName];
-{% endsql %}
+{%- endsql -%}
 
-{% for item in results %}{{ item.NickName }}_{{ item.LastName }};{% endfor %}
+{%- for item in results -%}{{ item.NickName }}_{{ item.LastName }};{%- endfor -%}
 ";
 
             var expectedOutput = @"***Iteration: <?>***Alex_Decker;Ted_Decker;";
 
-            TestHelper.ExecuteForActiveEngines( ( engine ) =>
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
             {
                 Action<int, string> renderAction = ( x, input ) =>
                        {
                            var context = new LavaDataDictionary();
                            context["iteration"] = x;
-                           var options = new LavaTestRenderOptions() { EnabledCommands = "Sql", MergeFields = context, Wildcards = new List<string> { "<?>" } };
+                           var options = new LavaRenderOptions { EnabledCommands = "Sql", MergeFields = context };
 
-                           TestHelper.AssertTemplateOutput( engine, expectedOutput, input, options );
+                           var output = LavaRenderTestHelper.Render( engine, input, options );
+
+                           LavaAssert.Matches( expectedOutput, output, "<?>" );
                        };
-
 
                 var task1 = Task.Run( () => renderAction( 1, templateLong ) );
                 var task2 = Task.Run( () => renderAction( 2, templateShort ) );
                 var task3 = Task.Run( () => renderAction( 2, templateShort ) );
 
-                Task.WhenAll( task1, task2, task3 );
+                /*
+                    9/26/26 - CLAUDE
+
+                    The result of WhenAll was discarded here, so the test ended
+                    without waiting for the three renders and without observing
+                    whether any of them failed. Waiting is the point of the
+                    test, which is about running templates in parallel.
+
+                    Reason: The test did not wait for the work it started.
+                */
+                Task.WhenAll( task1, task2, task3 ).Wait();
             } );
         }
 

@@ -20,7 +20,7 @@ using System.Text;
 
 using Microsoft.Extensions.FileProviders;
 
-namespace Rock.Tests.Integration.TestFramework.Lava
+namespace Rock.Tests.Lava.Shared
 {
     public class MockFileInfo : IFileInfo
     {

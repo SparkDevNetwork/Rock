@@ -14,16 +14,14 @@
 // limitations under the License.
 // </copyright>
 //
-using System.Collections.Generic;
 using System.Linq;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using Rock.Configuration;
-using Rock.Data;
 using Rock.Lava;
 using Rock.Model;
-using Rock.Tests.Integration.TestFramework.Lava;
+using Rock.Tests.Lava.Shared;
 using Rock.Tests.Shared.Constants;
 
 namespace Rock.Tests.Integration.Core.Lava.Filters
@@ -39,8 +37,6 @@ namespace Rock.Tests.Integration.Core.Lava.Filters
         [TestMethod]
         public void AttributeFilter_ForEntityDefaultAttribute_ReturnsCorrectValue()
         {
-            var personDecker = TestHelper.GetTestPersonTedDecker();
-
             var tedDeckerGuid = TestGuids.TestPeople.TedDecker.AsGuid();
 
             var rockContext = RockApp.Current.CreateRockContext();
@@ -49,28 +45,36 @@ namespace Rock.Tests.Integration.Core.Lava.Filters
 
             var values = new LavaDataDictionary { { "Person", tedDeckerPerson } };
 
-            var options = new LavaTestRenderOptions { MergeFields = values };
+            var options = new LavaRenderOptions { MergeFields = values };
 
-            TestHelper.AssertTemplateOutput( "2001-09-13",
-                "{{ Person | Attribute:'BaptismDate' | Date:'yyyy-MM-dd' }}",
-                options );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, "{{ Person | Attribute:'BaptismDate' | Date:'yyyy-MM-dd' }}", options );
+
+                Assert.AreEqual( "2001-09-13", output );
+            } );
         }
 
         [TestMethod]
         public void AttributeFilter_ForBinaryFileWithObjectParameter_ReturnsBinaryFileObject()
         {
             var inputTemplate = @"
-{% contentchannelitem expression:'ContentChannel.Name == ""External Website Ads"" && Title == ""SAMPLE: Easter""' %}
-    {% assign image = contentchannelitem | Attribute:'Image','Object' %}
+{%- contentchannelitem expression:'ContentChannel.Name == ""External Website Ads"" && Title == ""SAMPLE: Easter""' -%}
+    {%- assign image = contentchannelitem | Attribute:'Image','Object' -%}
     Base64Format: {{ image | Base64Encode }}<br/>
-{% endcontentchannelitem %}
+{%- endcontentchannelitem -%}
 ";
 
-            var expectedOutput = @"Base64Format: /9j/4AAQSkZJRgABAQEAAAAAAAD/*";
+            var expectedOutput = "Base64Format: /9j/4AAQSkZJRgABAQEAAAAAAAD/{base64Data}<br/>\n";
 
-            var options = new LavaTestRenderOptions() { Wildcards = new List<string> { "*" }, EnabledCommands = "RockEntity" };
+            var options = new LavaRenderOptions { EnabledCommands = "RockEntity" };
 
-            TestHelper.AssertTemplateOutput( expectedOutput, inputTemplate, options );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, inputTemplate, options );
+
+                LavaAssert.Matches( expectedOutput, output, "{base64Data}" );
+            } );
         }
 
         /// <summary>
@@ -79,9 +83,7 @@ namespace Rock.Tests.Integration.Core.Lava.Filters
         [TestMethod]
         public void AttributeFilter_RawValueBooleanComparison_ConvertsRawValueToBoolean()
         {
-            // Set Attribute [BaptizedHere] = True for Ted Decker. 
-            var personDecker = TestHelper.GetTestPersonTedDecker();
-
+            // Set Attribute [BaptizedHere] = True for Ted Decker.
             var tedDeckerGuid = TestGuids.TestPeople.TedDecker.AsGuid();
 
             var rockContext = RockApp.Current.CreateRockContext();
@@ -98,7 +100,7 @@ namespace Rock.Tests.Integration.Core.Lava.Filters
 
             var values = new LavaDataDictionary { { "Person", tedDeckerPerson } };
 
-            var options = new LavaTestRenderOptions { MergeFields = values };
+            var options = new LavaRenderOptions { MergeFields = values };
 
             // Test a boolean comparison for the Raw Value of the [BaptizedHere] Attribute.
             var inputTemplate = @"
@@ -108,9 +110,12 @@ True
 {%- endif -%}
 ";
 
-            var expectedOutput = @"True";
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, inputTemplate, options );
 
-            TestHelper.AssertTemplateOutput( expectedOutput, inputTemplate, options );
+                Assert.AreEqual( "True", output );
+            } );
         }
 
         #endregion

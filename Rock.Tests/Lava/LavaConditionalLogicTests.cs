@@ -22,8 +22,10 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rock.Configuration;
 using Rock.Lava;
 using Rock.Model;
+using Rock.Tests.Lava.Shared;
 using Rock.Tests.Shared.TestFramework;
 using Rock.Web.Cache;
+using Rock.Tests.Shared.Constants;
 
 namespace Rock.Tests.Lava;
 
@@ -39,6 +41,7 @@ namespace Rock.Tests.Lava;
 /// conditional was true, or an empty string when it was false).
 /// </summary>
 [TestClass]
+[TestCategory( TestFeatures.Lava )]
 public class LavaConditionalLogicTests
 {
     #region Helpers
@@ -54,7 +57,7 @@ public class LavaConditionalLogicTests
 
         setup?.Invoke();
 
-        var engines = LavaUnitTestHelper.CurrentInstance.CreateActiveTestEngines();
+        var engines = LavaRenderTestHelper.CreateActiveEngines();
 
         foreach ( var engine in engines )
         {

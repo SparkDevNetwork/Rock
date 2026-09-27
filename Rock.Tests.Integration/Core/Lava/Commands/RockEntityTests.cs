@@ -27,7 +27,7 @@ using Rock.Lava.Blocks;
 using Rock.Model;
 using Rock.Tests.Integration.TestData;
 using Rock.Tests.Integration.TestData.Core;
-using Rock.Tests.Integration.TestFramework.Lava;
+using Rock.Tests.Lava.Shared;
 using Rock.Tests.Shared;
 using Rock.Tests.Shared.Constants;
 using Rock.Web.Cache;
@@ -61,11 +61,11 @@ namespace Rock.Tests.Integration.Core.Lava.Commands
 
             var mergeFields = new Dictionary<string, object>();
 
-            var lava = @"{% eventcalendaritem where:'EventCalendarId == 1' %}
-{% for item in eventcalendaritemItems %}
+            var lava = @"{%- eventcalendaritem where:'EventCalendarId == 1' -%}
+{%- for item in eventcalendaritemItems -%}
 {{ item.Id }} [{{ item.EventItemId }}]: {{ item.EventItem.Summary }}<br>
-{% endfor %}
-{% endeventcalendaritem %}";
+{%- endfor -%}
+{%- endeventcalendaritem -%}";
             string output = lava.ResolveMergeFields( mergeFields, "RockEntity" ).Trim();
 
             Assert.That.AreEqualIgnoreNewline( expectedOutput, output );
@@ -88,24 +88,23 @@ Occurrence Collection Type = {{ occurrence | TypeName }}
                 {{ item.Name }}
                 <b>{{ item.DateTime | Date:'dddd' }} Series</b><br>
                 <ol>
-            {% endif %}
+            {%- endif -%}
 
             <li>{{ item.DateTime | Date:'MMM d, yyyy' }} in {{ item.LocationDescription }}</li>
 
             {%- if forloop.last -%}
                 </ol>
-            {% endif %}
-        {% endfor %}
+            {%- endif -%}
+        {%- endfor -%}
 
-    {% endfor %}
-{% endeventscheduledinstance %}
+    {%- endfor -%}
+{%- endeventscheduledinstance -%}
 ";
-            TestHelper.ExecuteForActiveEngines( ( engine ) =>
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
             {
-                var output = TestHelper.GetTemplateOutput( engine, template,
-                    new LavaTestRenderOptions { EnabledCommands = "eventscheduledinstance" } );
+                var output = LavaRenderTestHelper.Render( engine, template,
+                    new LavaRenderOptions { EnabledCommands = "eventscheduledinstance" } );
 
-                TestHelper.DebugWriteRenderResult( engine, template, output );
 
                 // Verify that the output contains series headings and relevant dates for both schedules.
                 Assert.Contains( "<b>Series 1</b>", output );
@@ -119,23 +118,22 @@ Occurrence Collection Type = {{ occurrence | TypeName }}
         public void EntityCommandBlock_NestedInParentEntityCommandBlock_ExecutesCorrectly()
         {
             var template = @"
-{%- contentchannelitem where:'ContentChannelId == 21' limit:'1000' sort:'StartDateTime desc' iterator:'MessageSeries' -%}
-  {%- for item in MessageSeries -%}
+{%- contentchannelitem where:'ContentChannelId == 21' limit:'1000' sort:'StartDateTime desc' iterator:'MessageSeries' -%}
+  {%- for item in MessageSeries -%}
 
-      {%- contentchannelitem ids:'391,392' sort:'StartDateTime desc' iterator:'Messages' -%}
-        {%- for message in Messages -%}
-          {{ message.Title }}
-        {%- endfor -%}
-      {%- endcontentchannelitem -%}
-      
-  {%- endfor -%}
-{%- endcontentchannelitem -%}
+      {%- contentchannelitem ids:'391,392' sort:'StartDateTime desc' iterator:'Messages' -%}
+        {%- for message in Messages -%}
+          {{ message.Title }}
+        {%- endfor -%}
+      {%- endcontentchannelitem -%}
+      
+  {%- endfor -%}
+{%- endcontentchannelitem -%}
 ";
-            TestHelper.ExecuteForActiveEngines( ( engine ) =>
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
             {
-                var output = TestHelper.GetTemplateOutput( engine, template, engine.NewRenderContext( new List<string> { "All" } ) );
+                var output = LavaRenderTestHelper.Render( engine, template, new LavaRenderOptions { EnabledCommands = "All" } );
 
-                TestHelper.DebugWriteRenderResult( engine, template, output );
 
                 // Verify that the output contains series headings and relevant dates for both schedules.
                 //Assert.Contains( output, "<b>Series 1</b>" );
@@ -149,19 +147,18 @@ Occurrence Collection Type = {{ occurrence | TypeName }}
         public void EntityCommandBlock_WhereFilterByAttribute_ReturnsMatchedEntitiesOnly()
         {
             var template = @"
-{% contentchannelitem where:'Speaker == ""Pete Foster""' iterator:'items' %}
+{%- contentchannelitem where:'Speaker == ""Pete Foster""' iterator:'items' -%}
 
-  {% for item in items %}
-  {{ item.Title }} ({{ item | Attribute:'Speaker' }})
-  {% endfor %}
-{% endcontentchannelitem %}
+  {%- for item in items -%}
+  {{ item.Title }} ({{ item | Attribute:'Speaker' }})
+  {%- endfor -%}
+{%- endcontentchannelitem -%}
 ";
 
-            TestHelper.ExecuteForActiveEngines( ( engine ) =>
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
             {
-                var output = TestHelper.GetTemplateOutput( engine, template, engine.NewRenderContext( new List<string> { "All" } ) );
+                var output = LavaRenderTestHelper.Render( engine, template, new LavaRenderOptions { EnabledCommands = "All" } );
 
-                TestHelper.DebugWriteRenderResult( engine, template, output );
 
                 Assert.Contains( "Of Faith and Firsts (Pete Foster)", output );
                 Assert.Contains( "1x8 (Pete Foster)", output );
@@ -172,7 +169,7 @@ Occurrence Collection Type = {{ occurrence | TypeName }}
         public void EntityCommandBlock_WrappedInLavaTag_RendersInnerRockEntityBlockContent()
         {
             var template = @"
-{% lava
+{%- lava
     contentchannelitem where:'Id == 34' limit:'1' securityenabled:'false'
         assign item = contentchannelitem
         echo item.Title
@@ -180,8 +177,14 @@ Occurrence Collection Type = {{ occurrence | TypeName }}
 %}
 ";
 
-            TestHelper.AssertTemplateOutput( typeof( Rock.Lava.Fluid.FluidEngine ), "Of Myths and Money", template,
-                new LavaTestRenderOptions { EnabledCommands = "rockentity", IgnoreWhiteSpace = true } );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, template, new LavaRenderOptions { EnabledCommands = "rockentity" } );
+
+                // The closing of the lava tag leaves behind the newline that
+                // followed it.
+                Assert.AreEqual( "Of Myths and Money\n", output );
+            } );
         }
 
         private const string _Count1AttributeGuid = "38850248-49DE-44B0-A150-1BA447AE35D0";
@@ -197,31 +200,30 @@ Occurrence Collection Type = {{ occurrence | TypeName }}
             AddDefinedTypesWithDuplicateAttribute();
 
             var template = @"
-{% definedtype where:'Name == ""Title"" || Name == ""Suffix""' sort:'Name desc' iterator:'definedTypes' %}
-    {% for definedType in definedTypes %}
-        {% assign definedTypeId = definedType.Id %}
+{%- definedtype where:'Name == ""Title"" || Name == ""Suffix""' sort:'Name desc' iterator:'definedTypes' -%}
+    {%- for definedType in definedTypes -%}
+        {%- assign definedTypeId = definedType.Id -%}
         <h1>{{ definedType.Name }}</h1>
         <ul>
-        {% definedvalue where:'DefinedTypeId == {{definedTypeId}}' sort:'Count desc' iterator:'values' %}
-            {% for value in values %}<li>{{ value | Attribute:'Count' }}: {{ value.Value }}</li>{% endfor %}
-        {% enddefinedvalue %}
+        {%- definedvalue where:'DefinedTypeId == {{definedTypeId}}' sort:'Count desc' iterator:'values' -%}
+            {%- for value in values -%}<li>{{ value | Attribute:'Count' }}: {{ value.Value }}</li>{%- endfor -%}
+        {%- enddefinedvalue -%}
         </ul>
-    {% endfor %}
-{% enddefinedtype %}
+    {%- endfor -%}
+{%- enddefinedtype -%}
 ";
 
-            var expectedOutput = @"
-<h1>Title</h1>
-<ul>
-    <li>7: Rev.</li><li>6: Ms.</li><li>5: Mrs.</li><li>4: Mr.</li><li>3: Miss</li><li>2: Dr.</li><li>1: Cpt.</li>
-</ul>
-<h1>Suffix</h1>
-<ul>
-    <li>8: VI</li><li>7: V</li><li>6: Sr.</li><li>5: Ph.D.</li><li>4: Jr.</li><li>3: IV</li><li>2: III</li><li>1: II</li>
-</ul>
-";
+            // The indentation on the list lines is the template's own.
+            var expectedOutput = "<h1>Title</h1>\n"
+                + "        <ul><li>7: Rev.</li><li>6: Ms.</li><li>5: Mrs.</li><li>4: Mr.</li><li>3: Miss</li><li>2: Dr.</li><li>1: Cpt.</li></ul><h1>Suffix</h1>\n"
+                + "        <ul><li>8: VI</li><li>7: V</li><li>6: Sr.</li><li>5: Ph.D.</li><li>4: Jr.</li><li>3: IV</li><li>2: III</li><li>1: II</li></ul>";
 
-            TestHelper.AssertTemplateOutput( expectedOutput, template, new LavaTestRenderOptions { EnabledCommands = "all" } );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, template, new LavaRenderOptions { EnabledCommands = "all" } );
+
+                Assert.AreEqual( expectedOutput, output );
+            } );
         }
 
         private void AddDefinedTypesWithDuplicateAttribute()
@@ -283,26 +285,25 @@ Occurrence Collection Type = {{ occurrence | TypeName }}
         public void EntityCommandBlock_BusinessAlias_ReturnsPersonEntities()
         {
             var template = @"
-{% business where:'LastName == ""Ace Hardware""' iterator:'items' %}
+{%- business where:'LastName == ""Ace Hardware""' iterator:'items' -%}
 <ul>
-  {% for item in items %}
+  {%- for item in items -%}
     <li>{{ item.LastName }}</li>
-  {% endfor %}
+  {%- endfor -%}
 </ul>
-{% endbusiness %}
+{%- endbusiness -%}
 ";
 
-            TestHelper.ExecuteForActiveEngines( ( engine ) =>
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
             {
-                var output = TestHelper.GetTemplateOutput( engine, template, engine.NewRenderContext( new List<string> { "All" } ) );
-
-                var options = new LavaTestRenderOptions
+                var options = new LavaRenderOptions
                 {
-                    EnabledCommands = "rockentity",
-                    OutputMatchType = LavaTestOutputMatchTypeSpecifier.Contains
+                    EnabledCommands = "rockentity"
                 };
 
-                TestHelper.AssertTemplateOutput( engine, "Ace Hardware", template, options );
+                var output = LavaRenderTestHelper.Render( engine, template, options );
+
+                Assert.Contains( "Ace Hardware", output );
             } );
         }
 
@@ -323,25 +324,27 @@ Occurrence Collection Type = {{ occurrence | TypeName }}
         public void EntityCommandBlock_WhereFilterOperators_AreProcessedCorrectly( string whereClause, string expectedOutputItem )
         {
             var template = @"
-{% person where:'<whereClause>' iterator:'items' %}
+{%- person where:'<whereClause>' iterator:'items' -%}
 <ul>
-  {% for item in items %}
+  {%- for item in items -%}
     <li>{{ item.NickName }} {{ item.LastName }}</li>
-  {% endfor %}
+  {%- endfor -%}
 </ul>
-{% endperson %}
+{%- endperson -%}
 ";
 
             template = template.Replace( "<whereClause>", whereClause );
 
-            TestHelper.ExecuteForActiveEngines( ( engine ) =>
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
             {
-                var options = new LavaTestRenderOptions
+                var options = new LavaRenderOptions
                 {
-                    EnabledCommands = "rockentity",
-                    OutputMatchType = LavaTestOutputMatchTypeSpecifier.Contains
+                    EnabledCommands = "rockentity"
                 };
-                TestHelper.AssertTemplateOutput( engine, expectedOutputItem, template, options );
+
+                var output = LavaRenderTestHelper.Render( engine, template, options );
+
+                Assert.Contains( expectedOutputItem, output );
             } );
         }
 
@@ -350,11 +353,11 @@ Occurrence Collection Type = {{ occurrence | TypeName }}
         public void EntityCommandBlock_WhereWithLavaEmbeddedInStringLiteral_ResolvesLavaCorrectly()
         {
             var template = @"
-{% person where:'BirthDate < ""{{ 'Now' | Date }}"" && LastName == ""Decker"" && NickName == ""Ted""' iterator:'items' %}
-  {% for item in items %}
+{%- person where:'BirthDate < ""{{ 'Now' | Date }}"" && LastName == ""Decker"" && NickName == ""Ted""' iterator:'items' -%}
+  {%- for item in items -%}
     {{ item.NickName }} {{ item.LastName }} ({{ item.BirthDate | Date:'yyyy-MM-dd' }})
-  {% endfor %}
-{% endperson %}
+  {%- endfor -%}
+{%- endperson -%}
 ";
 
             var tedDecker = new PersonService( RockApp.Current.CreateRockContext() )
@@ -362,14 +365,16 @@ Occurrence Collection Type = {{ occurrence | TypeName }}
 
             var expectedOutput = $"{tedDecker.NickName} {tedDecker.LastName} ({tedDecker.BirthDate:yyyy-MM-dd})";
 
-            TestHelper.ExecuteForActiveEngines( ( engine ) =>
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
             {
-                var options = new LavaTestRenderOptions
+                var options = new LavaRenderOptions
                 {
-                    EnabledCommands = "rockentity",
-                    IgnoreWhiteSpace = true
+                    EnabledCommands = "rockentity"
                 };
-                TestHelper.AssertTemplateOutput( engine, expectedOutput, template, options );
+
+                var output = LavaRenderTestHelper.Render( engine, template, options );
+
+                Assert.AreEqual( expectedOutput, output );
             } );
         }
 
@@ -377,7 +382,7 @@ Occurrence Collection Type = {{ occurrence | TypeName }}
         public void EntityCommandBlock_WrappedInLavaTag_WithInnerForLoop_RendersCorrectly()
         {
             var template = @"
-{% lava
+{%- lava
     person where:'LastName == ""Decker""'
         for person in personItems
             echo person.FullName
@@ -387,15 +392,19 @@ Occurrence Collection Type = {{ occurrence | TypeName }}
 ";
             var expectedOutput = @"Ted Decker"; // Should contain Ted
 
-            TestHelper.AssertTemplateOutput( typeof( Rock.Lava.Fluid.FluidEngine ), expectedOutput, template,
-                new LavaTestRenderOptions { EnabledCommands = "rockentity", IgnoreWhiteSpace = true, OutputMatchType = LavaTestOutputMatchTypeSpecifier.Contains } );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, template, new LavaRenderOptions { EnabledCommands = "rockentity" } );
+
+                Assert.Contains( expectedOutput, output );
+            } );
         }
 
         [TestMethod]
         public void EntityCommandBlock_WrappedInLavaTag_WithInnerForLoopWithIf_RendersCorrectly()
         {
             var template = @"
-{% lava
+{%- lava
     person where:'LastName == ""Decker""'
         for person in personItems
             if person.FullName == 'Ted Decker'
@@ -407,15 +416,19 @@ Occurrence Collection Type = {{ occurrence | TypeName }}
 ";
             var expectedOutput = @"I found Ted!";
 
-            TestHelper.AssertTemplateOutput( typeof( Rock.Lava.Fluid.FluidEngine ), expectedOutput, template,
-                new LavaTestRenderOptions { EnabledCommands = "rockentity", IgnoreWhiteSpace = true, OutputMatchType = LavaTestOutputMatchTypeSpecifier.Contains } );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, template, new LavaRenderOptions { EnabledCommands = "rockentity" } );
+
+                Assert.Contains( expectedOutput, output );
+            } );
         }
 
         [TestMethod]
         public void EntityCommandBlock_WrappedInLavaTag_WithInnerForLoopWithIfElse_RendersCorrectly()
         {
             var template = @"
-{% lava
+{%- lava
     person where:'LastName == ""Decker""'
         for person in personItems
             if person.FullName == 'Ted Decker'
@@ -429,8 +442,12 @@ Occurrence Collection Type = {{ occurrence | TypeName }}
 ";
             var expectedOutput = @"I found Ted!";
 
-            TestHelper.AssertTemplateOutput( typeof( Rock.Lava.Fluid.FluidEngine ), expectedOutput, template,
-                new LavaTestRenderOptions { EnabledCommands = "rockentity", IgnoreWhiteSpace = true, OutputMatchType = LavaTestOutputMatchTypeSpecifier.Contains } );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, template, new LavaRenderOptions { EnabledCommands = "rockentity" } );
+
+                Assert.Contains( expectedOutput, output );
+            } );
         }
 
         /// <summary>
@@ -444,26 +461,24 @@ Occurrence Collection Type = {{ occurrence | TypeName }}
             // The Exception is wrapped in higher-level LavaExceptions, but we want to ensure that the original message 
             // is displayed in the render output to alert the user.
             var input = @"
-{% person %}
-    {% for person in personItems %}
+{%- person -%}
+    {%- for person in personItems -%}
         {{ person.FullName }} <br/>
-    {% endfor %}
-{% endperson %}
+    {%- endfor -%}
+{%- endperson -%}
             ";
 
-            TestHelper.ExecuteForActiveEngines( ( engine ) =>
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
             {
-                var context = engine.NewRenderContext();
+                var options = new LavaRenderOptions
+                {
+                    EnabledCommands = "RockEntity",
+                    ExceptionHandlingStrategy = ExceptionHandlingStrategySpecifier.RenderToOutput
+                };
 
-                context.SetEnabledCommands( "RockEntity" );
+                var result = LavaRenderTestHelper.RenderResult( engine, input, options );
 
-                var renderOptions = new LavaRenderParameters { Context = context, ExceptionHandlingStrategy = ExceptionHandlingStrategySpecifier.RenderToOutput };
-
-                var output = TestHelper.GetTemplateRenderResult( engine, input, renderOptions );
-
-                TestHelper.DebugWriteRenderResult( engine, input, output.Text );
-
-                Assert.Contains( "No parameters were found in your command.", output.Text, "Expected message not found." );
+                Assert.Contains( "No parameters were found in your command.", result.Text, "Expected message not found." );
             } );
         }
 
@@ -473,55 +488,60 @@ Occurrence Collection Type = {{ occurrence | TypeName }}
         [TestMethod]
         public void EntityCommandBlock_ParameterNames_AreCaseInsentitive()
         {
-            var options = new LavaTestRenderOptions() { EnabledCommands = "RockEntity" };
+            var options = new LavaRenderOptions() { EnabledCommands = "RockEntity" };
 
             // Verify parameters: "where", "sort".
             var input1 = @"
-{% person WHERE:'LastName == ""Decker""' Sort:'NickName' iterator:'people' %}
-    {% for person in people %}
+{%- person WHERE:'LastName == ""Decker""' Sort:'NickName' iterator:'people' -%}
+    {%- for person in people -%}
         {{ person.FullName }} <br/>
-    {% endfor %}
-{% endperson %}
+    {%- endfor -%}
+{%- endperson -%}
 ";
 
-            var expectedOutput1 = @"
-Alex Decker<br/>
-Cindy Decker<br/>
-Noah Decker<br/>
-Ted Decker<br/>
-";
+            // The template writes a space before the break, and the whitespace
+            // control on the loop tags puts every person on one line.
+            var expectedOutput1 = "Alex Decker <br/>Cindy Decker <br/>Noah Decker <br/>Ted Decker <br/>";
 
-            TestHelper.AssertTemplateOutput( expectedOutput1, input1, options );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, input1, options );
+
+                Assert.Contains( expectedOutput1, output );
+            } );
 
             // Verify parameters: "id", "iterator".
             var tedPerson = TestDataHelper.GetTestPerson( TestGuids.TestPeople.TedDecker );
 
             var input2 = @"
-{% person ID:$personId iTeRaToR:'people' %}
-    {% for person in people %}
+{%- person ID:$personId iTeRaToR:'people' -%}
+    {%- for person in people -%}
         {{ person.FullName }} <br/>
-    {% endfor %}
-{% endperson %}
+    {%- endfor -%}
+{%- endperson -%}
 ";
 
-            var expectedOutput2 = @"
-TedDecker<br/>
-";
+            var expectedOutput2 = "Ted Decker <br/>";
 
             input2 = input2.Replace( "$personId", tedPerson.Id.ToString() );
-            TestHelper.AssertTemplateOutput( expectedOutput2, input2, options );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, input2, options );
+
+                Assert.AreEqual( expectedOutput2, output );
+            } );
         }
 
         [TestMethod]
         public void EntityCommandBlock_WithCountParameterIsTrue_ReturnsCountVariableInContext()
         {
             var input = @"
-{% person count:'true' expression:'Id != 0' limit:'10' %}
+{%- person count:'true' expression:'Id != 0' limit:'10' -%}
 {{ count }}
-{% endperson %}
+{%- endperson -%}
 ";
 
-            TestHelper.ExecuteForActiveEngines( ( engine ) =>
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
             {
                 var context = engine.NewRenderContext( new List<string> { "RockEntity" } );
                 var result = engine.RenderTemplate( input, new LavaRenderParameters { Context = context } );

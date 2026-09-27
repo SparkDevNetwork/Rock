@@ -16,107 +16,26 @@
 //
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
+using Rock.Lava;
+using Rock.Tests.Integration.TestData;
 using Rock.Tests.Integration.TestData.Crm;
-using Rock.Tests.Integration.TestFramework.Lava;
+using Rock.Tests.Lava.Shared;
 using Rock.Tests.Shared.Constants;
 
 namespace Rock.Tests.Integration.Core.Lava.Documentation
 {
     /// <summary>
-    /// Tests to verify examples provided in the Lava documentation.
+    /// Tests to verify examples provided in the Lava documentation for the if tag.
     /// </summary>
+    /// <remarks>
+    /// These examples seed a person attribute and read it back, so they need a
+    /// database. The examples that only need a merge field live in Rock.Tests as
+    /// unit tests.
+    /// </remarks>
     [TestClass]
     [TestCategory( TestFeatures.Lava )]
     public class IfTagExamples : LavaIntegrationTestBase
     {
-        [TestMethod]
-        public void IfTag_DocumentationExample_TestingIfPropertyExists()
-        {
-            var personNoCallSign = new
-            {
-                FullName = "Ted Decker"
-            };
-
-            var input = @"
-{% if Person.CallSign %}
-    {{ Person.FullName }} you have a call sign... you must be cool!
-{% else %}
-    Oh... hi {{ Person.FullName }}
-{% endif %}
-";
-
-            // Test the documentation example.
-            var options = LavaTestRenderOptions.AllEngines
-                .WithContextVariable( "Person", personNoCallSign )
-                .WithIgnoreWhiteSpace();
-
-            TestHelper.AssertTemplateOutput( "Oh... hi Ted Decker", input, options );
-
-            // Test the inverse case of the example.
-            var personWithCallSign = new
-            {
-                FullName = "Cindy Decker",
-                CallSign = "C.D."
-            };
-
-            options.WithContextVariable( "Person", personWithCallSign );
-
-            TestHelper.AssertTemplateOutput( "Cindy Decker you have a call sign... you must be cool!", input, options );
-        }
-
-        [TestMethod]
-        public void IfTag_DocumentationExample_TestingForEmptyProperty()
-        {
-            var person = new
-            {
-                FullName = "Ted Decker",
-                MiddleName = ""
-            };
-
-            var input = @"
-{% if Person.MiddleName == '' %}
-    {{ Person.FullName }}, what no middle name?!
-{% endif %}
-";
-
-            var options = LavaTestRenderOptions.AllEngines
-                .WithContextVariable( "Person", person )
-                .WithIgnoreWhiteSpace();
-
-            TestHelper.AssertTemplateOutput( "Ted Decker, what no middle name?!", input, options );
-        }
-
-        [TestMethod]
-        public void IfTag_DocumentationExample_TestingForEmptyArray()
-        {
-            var personWithoutNumbers = new
-            {
-                FullName = "Ted Decker",
-                PhoneNumbers = new string[] { }
-            };
-            var personWithNumbers = new
-            {
-                FullName = "Cindy Decker",
-                PhoneNumbers = new string[] { "1234567890" }
-            };
-
-            var input = @"
-{% if Person.PhoneNumbers != empty %}
-    You have phone numbers
-{% endif %}
-";
-
-            var options = LavaTestRenderOptions.AllEngines
-                 .WithContextVariable( "Person", personWithNumbers )
-                 .WithIgnoreWhiteSpace();
-
-            TestHelper.AssertTemplateOutput( "You have phone numbers", input, options );
-
-            options.WithContextVariable( "Person", personWithoutNumbers );
-
-            TestHelper.AssertTemplateOutput( string.Empty, input, options );
-        }
-
         [TestMethod]
         [Ignore( "This example is incorrect for the Fluid engine. If either operand is numeric, a numeric comparison is made." )]
         public void IfTag_DocumentationExample_NumberStringComparisons()
@@ -139,21 +58,30 @@ namespace Rock.Tests.Integration.Core.Lava.Documentation
             var input = @"
 {% assign AgeInYears = CurrentPerson | Attribute:'AgeInYears' %}
 AgeInYears: ""{{ AgeInYears }}""<br>
-{% if AgeInYears > 10 %} 
+{% if AgeInYears > 10 %}
     {{ AgeInYears }} is greater than 10???
 {% endif %}
 ";
 
-            var output = @"
+            var expectedOutput = @"
 AgeInYears: ""3""<br>
 3 is greater than 10???
-";
+".NormalizeLineEndings();
 
-            var options = LavaTestRenderOptions.AllEngines
-                .WithIgnoreWhiteSpace()
-                .WithCurrentPerson( TestGuids.TestPeople.TedDecker );
+            var options = new LavaRenderOptions
+            {
+                MergeFields = new LavaDataDictionary
+                {
+                    { "CurrentPerson", TestDataHelper.GetTestPerson( TestGuids.TestPeople.TedDecker ) }
+                }
+            };
 
-            TestHelper.AssertTemplateOutput( output, input, options );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, input, options );
+
+                Assert.AreEqual( expectedOutput, output );
+            } );
         }
 
         [TestMethod]
@@ -173,37 +101,35 @@ isTrained is: ""{{ isTrained }}""<br>
 
 {% if isTrained == true %}
     Evaluates to true
-{% elseif isTrained == false %} 
+{% elseif isTrained == false %}
     Evaluates to false
-{% elseif isTrained == null %} 
+{% elseif isTrained == null %}
     Evaluates to null -- meaning there is no value stored
 {% else %}
     Evaluates to something else?
 {% endif %}";
 
-            var output = @"
-isTrained is: """"<br>
-Evaluates to null -- meaning there is no value stored
-";
+            // The assign tag and the if branches each leave behind the newline
+            // that followed them, and the matched branch keeps its indentation.
+            var expectedOutput = "\n\n"
+                + "isTrained is: \"\"<br>\n"
+                + "\n\n"
+                + "    Evaluates to null -- meaning there is no value stored\n";
 
-            var options = LavaTestRenderOptions.AllEngines
-                .WithIgnoreWhiteSpace()
-                .WithCurrentPerson( TestGuids.TestPeople.TedDecker );
+            var options = new LavaRenderOptions
+            {
+                MergeFields = new LavaDataDictionary
+                {
+                    { "CurrentPerson", TestDataHelper.GetTestPerson( TestGuids.TestPeople.TedDecker ) }
+                }
+            };
 
-            TestHelper.AssertTemplateOutput( output, input, options );
-        }
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, input, options );
 
-        [TestMethod]
-        public void IfTag_DocumentationExample_OrderOfLogicalOperations()
-        {
-            var input = @"
-{% if true or false and false %}
-  This evaluates to true, since the 'and' condition is checked first.
-{% endif %}";
-
-            TestHelper.AssertTemplateOutput( "This evaluates to true, since the 'and' condition is checked first.",
-                input,
-                LavaTestRenderOptions.AllEngines.WithIgnoreWhiteSpace() );
+                Assert.AreEqual( expectedOutput, output );
+            } );
         }
     }
 }

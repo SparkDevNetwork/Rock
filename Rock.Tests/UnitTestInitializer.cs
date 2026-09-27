@@ -16,7 +16,7 @@
 //
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-using Rock.Tests.Lava;
+using Rock.Tests.Lava.Shared;
 
 [assembly: DoNotParallelize]
 
@@ -28,17 +28,23 @@ namespace Rock.Tests
         /// <summary>
         /// This will run before any tests in this assembly are run.
         /// </summary>
+        /// <remarks>
+        /// The Lava engine itself is built per test by
+        /// <see cref="Rock.Tests.Lava.Shared.LavaRenderTestHelper"/>. Only the factory
+        /// is registered here, because code that resolves an engine from LavaService
+        /// rather than receiving one - the merge template types, for example - has
+        /// no other way to reach it.
+        /// </remarks>
         /// <param name="context">The context.</param>
         [AssemblyInitialize]
         public static void AssemblyInitialize( TestContext context )
         {
-            LavaUnitTestHelper.Initialize( testFluidEngine: true );
+            LavaTestEngineFactory.RegisterEngineFactory();
         }
 
         /// <summary>
         /// This will run after all tests in this assembly are run.
         /// </summary>
-        /// <param name="context">The context.</param>
         [AssemblyCleanup]
         public static void AssemblyCleanup()
         {

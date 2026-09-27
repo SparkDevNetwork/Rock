@@ -16,21 +16,29 @@
 //
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
+using Rock.Tests.Lava.Shared;
+
 using Rock.Lava;
 using Rock.Tests.Lava.Filters;
+using Rock.Tests.Shared.Constants;
 
 namespace Rock.Tests.Lava
 {
     [TestClass]
-    public class LavaTypeAttributesTests : LavaUnitTestBase
+    [TestCategory( TestFeatures.Lava )]
+    public class LavaTypeAttributesTests
     {
-        #region Constructors
+        #region Support Methods
 
-        [ClassInitialize]
-        public static void Initialize( TestContext context )
+        /// <summary>
+        /// Registers the types these tests expose to Lava. Each test gets its own
+        /// engine, so this runs per test rather than once for the class.
+        /// </summary>
+        /// <param name="engine">The engine under test.</param>
+        private static void RegisterSafeTypes( ILavaEngine engine )
         {
-            TestHelper.RegisterSafeType( typeof( TestPerson ) );
-            TestHelper.RegisterSafeType( typeof( TestCampus ) );
+            engine.RegisterSafeType( typeof( TestPerson ) );
+            engine.RegisterSafeType( typeof( TestCampus ) );
         }
 
         #endregion
@@ -55,9 +63,15 @@ Email: {{ PersonInfo.Email }}
             var expectedOutput = @"
 Name: Ted Decker
 Email: tdecker@rocksolidchurch.com
-";
+".NormalizeLineEndings();
 
-            TestHelper.AssertTemplateOutput( expectedOutput, template, mergeValues, ignoreWhitespace: true );
+            LavaRenderTestHelper.ExecuteForActiveEngines( RegisterSafeTypes, engine =>
+            {
+                var options = new LavaRenderOptions { MergeFields = mergeValues };
+                var output = LavaRenderTestHelper.Render( engine, template, options );
+
+                Assert.AreEqual( expectedOutput, output );
+            } );
         }
 
         /// <summary>
@@ -75,13 +89,16 @@ Name: {{ PersonInfo.Name }}
 Date of Birth: {{ PersonInfo.DateOfBirth }}
 ";
 
-            var expectedOutput = @"
-Name: Ted Decker
-Date of Birth:
-";
+            var expectedOutput = "\nName: Ted Decker\nDate of Birth: \n";
 
             // Date of Birth should be omitted because it is not a named as a Lava property.
-            TestHelper.AssertTemplateOutput( expectedOutput, template, mergeValues, ignoreWhitespace: true );
+            LavaRenderTestHelper.ExecuteForActiveEngines( RegisterSafeTypes, engine =>
+            {
+                var options = new LavaRenderOptions { MergeFields = mergeValues };
+                var output = LavaRenderTestHelper.Render( engine, template, options );
+
+                Assert.AreEqual( expectedOutput, output );
+            } );
         }
 
         /// <summary>
@@ -99,13 +116,16 @@ Name: {{ PersonInfo.Name }}
 Password: {{ PersonInfo.Password }}
 ";
 
-            var expectedOutput = @"
-Name: Ted Decker
-Password:
-";
+            var expectedOutput = "\nName: Ted Decker\nPassword: \n";
 
             // Password value should be omitted even though it is named in the whitelist, because it is marked with the LavaIgnore attribute.
-            TestHelper.AssertTemplateOutput( expectedOutput, template, mergeValues, ignoreWhitespace: true );
+            LavaRenderTestHelper.ExecuteForActiveEngines( RegisterSafeTypes, engine =>
+            {
+                var options = new LavaRenderOptions { MergeFields = mergeValues };
+                var output = LavaRenderTestHelper.Render( engine, template, options );
+
+                Assert.AreEqual( expectedOutput, output );
+            } );
         }
 
         #endregion
@@ -128,10 +148,16 @@ Name: {{ PersonInfo.Name }}
 
             var expectedOutput = @"
 Name: Ted Decker
-";
+".NormalizeLineEndings();
 
             // Name value should be the only available property, because it is the only property marked with LavaInclude.
-            TestHelper.AssertTemplateOutput( expectedOutput, template, mergeValues, ignoreWhitespace: true );
+            LavaRenderTestHelper.ExecuteForActiveEngines( RegisterSafeTypes, engine =>
+            {
+                var options = new LavaRenderOptions { MergeFields = mergeValues };
+                var output = LavaRenderTestHelper.Render( engine, template, options );
+
+                Assert.AreEqual( expectedOutput, output );
+            } );
         }
 
         /// <summary>
@@ -149,13 +175,16 @@ Name: {{ PersonInfo.Name }}
 Password: {{ PersonInfo.Password }}
 ";
 
-            var expectedOutput = @"
-Name: Ted Decker
-Password:
-";
+            var expectedOutput = "\nName: Ted Decker\nPassword: \n";
 
             // Name value should be the only available property, because it is the only property marked with LavaInclude.
-            TestHelper.AssertTemplateOutput( expectedOutput, template, mergeValues, ignoreWhitespace: true );
+            LavaRenderTestHelper.ExecuteForActiveEngines( RegisterSafeTypes, engine =>
+            {
+                var options = new LavaRenderOptions { MergeFields = mergeValues };
+                var output = LavaRenderTestHelper.Render( engine, template, options );
+
+                Assert.AreEqual( expectedOutput, output );
+            } );
         }
 
         #endregion

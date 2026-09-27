@@ -20,6 +20,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
+using System.Text.RegularExpressions;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -29,7 +30,7 @@ using Rock.Lava;
 using Rock.Lava.Fluid;
 using Rock.Model;
 using Rock.Tests.Integration.TestData;
-using Rock.Tests.Integration.TestFramework.Lava;
+using Rock.Tests.Lava.Shared;
 using Rock.Tests.Shared;
 using Rock.Tests.Shared.Constants;
 using Rock.Web.Cache;
@@ -48,36 +49,49 @@ namespace Rock.Tests.Integration.Core.Lava.Commands
         public void CacheBlock_CommandNotEnabled_ReturnsConfigurationErrorMessage()
         {
             var input = @"
-{% cache key:'decker-page-list' duration:'3600' %}
+{%- cache key:'decker-page-list' duration:'3600' -%}
 This is the cached page list!
-{% endcache %}
+{%- endcache -%}
 ";
 
             var expectedOutput = "The Lava command 'cache' is not configured for this template.";
 
-            TestHelper.AssertTemplateOutput( expectedOutput, input, new LavaTestRenderOptions { OutputMatchType = LavaTestOutputMatchTypeSpecifier.Contains } );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, input, new LavaRenderOptions { } );
+
+                Assert.Contains( expectedOutput, output );
+            } );
         }
 
         [TestMethod]
         public void CacheBlock_ForEntityCommandResult_IsCached()
         {
             var input = @"
-{% cache key:'decker-page-list' duration:'3600' %}
-    {% person where:'LastName == ""Decker"" && NickName == ""Ted""' %}
-        {% for person in personItems %}
+{%- cache key:'decker-page-list' duration:'3600' -%}
+    {%- person where:'LastName == ""Decker"" && NickName == ""Ted""' -%}
+        {%- for person in personItems -%}
             {{ person.FullName }} <br/>
-        {% endfor %}
-    {% endperson %}
-{% endcache %}
+        {%- endfor -%}
+    {%- endperson -%}
+{%- endcache -%}
 ";
 
-            var expectedOutput = @"
-TedDecker<br/>
-";
+            var expectedOutput = "\n"
+                + "    \n"
+                + "        \n"
+                + "            Ted Decker <br/>\n"
+                + "        \n"
+                + "    \n";
 
-            var options = new LavaTestRenderOptions() { EnabledCommands = "Cache,RockEntity" };
+            var options = new LavaRenderOptions() { EnabledCommands = "Cache,RockEntity" };
 
-            TestHelper.AssertTemplateOutput( expectedOutput, input, options );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, input, options );
+
+                Assert.AreEqual( expectedOutput, output );
+            } );
         }
 
         /// <summary>
@@ -89,28 +103,32 @@ TedDecker<br/>
         public void CacheBlock_InnerScopeAssign_DoesNotModifyOuterVariable()
         {
             var input = @"
-{% assign color = 'blue' %}
+{%- assign color = 'blue' -%}
 Color 1: {{ color }}
 
-{% cache key:'fav-color' duration:'1200' %}
+{%- cache key:'fav-color' duration:'1200' -%}
     Color 2: {{ color }}
-    {% assign color = 'red' %}
+    {%- assign color = 'red' -%}
     Color 3: {{color }}
-{% endcache %}
+{%- endcache -%}
 
 Color 4: {{ color }}
 ";
 
-            var expectedOutput = @"
-Color 1: blue
-Color 2: blue
-Color 3: red
-Color 4: blue
-";
+            var expectedOutput = "Color 1: blue\n"
+                + "    Color 2: blue\n"
+                + "    \n"
+                + "    Color 3: red\n"
+                + "Color 4: blue\n";
 
-            var options = new LavaTestRenderOptions() { EnabledCommands = "Cache" };
+            var options = new LavaRenderOptions() { EnabledCommands = "Cache" };
 
-            TestHelper.AssertTemplateOutput( expectedOutput, input, options );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, input, options );
+
+                Assert.AreEqual( expectedOutput, output );
+            } );
         }
 
         /// <summary>
@@ -122,30 +140,34 @@ Color 4: blue
         public void CacheBlock_InsideNewScope_HasAccessToOuterVariable()
         {
             var input = @"
-{% if 1 == 1 %}
-    {% assign color = 'blue' %}
+{%- if 1 == 1 -%}
+    {%- assign color = 'blue' -%}
     Color 1: {{ color }}
 
-    {% cache key:'fav-color' duration:'0' %}
+    {%- cache key:'fav-color' duration:'0' -%}
         Color 2: {{ color }}
-        {% assign color = 'red' %}
+        {%- assign color = 'red' -%}
         Color 3: {{color }}
-    {% endcache %}
+    {%- endcache -%}
 
     Color 4: {{ color }}
-{% endif %}
+{%- endif -%}
 ";
 
-            var expectedOutput = @"
-Color 1: blue
-Color 2: blue
-Color 3: red
-Color 4: blue
-";
+            var expectedOutput = "Color 1: blue\n"
+                + "        Color 2: blue\n"
+                + "        \n"
+                + "        Color 3: red\n"
+                + "    Color 4: blue";
 
-            var options = new LavaTestRenderOptions() { EnabledCommands = "Cache" };
+            var options = new LavaRenderOptions() { EnabledCommands = "Cache" };
 
-            TestHelper.AssertTemplateOutput( expectedOutput, input, options );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, input, options );
+
+                Assert.AreEqual( expectedOutput, output );
+            } );
         }
 
         [TestMethod]
@@ -171,23 +193,31 @@ Color 4: blue
 
             input = input.Replace( "`", "\"" );
 
-            var options = new LavaTestRenderOptions
+            var options = new LavaRenderOptions
             {
-                EnabledCommands = "Cache,RockEntity",
-                OutputMatchType = LavaTestOutputMatchTypeSpecifier.Contains
+                EnabledCommands = "Cache,RockEntity"
             };
 
             var expectedOutput = @"
 <divid=`mbb-1`data-topbar-name=`dismiss1Topbar`data-topbar-value=`dismissed`class=`topbar`style=`background-color:;color:;`><ahref=``><spanclass=`topbar-text`></span></a><buttontype=`button`class=`close`data-dismiss=`alert`aria-label=`Close`><spanaria-hidden=`true`>&times;</span></button></div>
 <divid=`mbb-2`data-topbar-name=`dismiss2Topbar`data-topbar-value=`dismissed`class=`topbar`style=`background-color:;color:;`><ahref=``><spanclass=`topbar-text`></span></a><buttontype=`button`class=`close`data-dismiss=`alert`aria-label=`Close`><spanaria-hidden=`true`>&times;</span></button></div>
 <divid=`mbb-3`data-topbar-name=`dismiss3Topbar`data-topbar-value=`dismissed`class=`topbar`style=`background-color:;color:;`><ahref=``><spanclass=`topbar-text`></span></a><buttontype=`button`class=`close`data-dismiss=`alert`aria-label=`Close`><spanaria-hidden=`true`>&times;</span></button></div>
-";
+".NormalizeLineEndings();
 
             expectedOutput = expectedOutput.Replace( "`", @"""" );
 
-            TestHelper.ExecuteForActiveEngines( ( engine ) =>
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
             {
-                TestHelper.AssertTemplateOutput( engine, expectedOutput, input, options );
+                var output = LavaRenderTestHelper.Render( engine, input, options );
+
+                // The expected value above is written with every whitespace
+                // character already removed, which is how the predecessor
+                // comparison treated it, so the output is reduced the same way
+                // before looking for it.
+                var comparableOutput = Regex.Replace( output, @"\s", string.Empty );
+                var comparableExpected = Regex.Replace( expectedOutput, @"\s", string.Empty );
+
+                Assert.Contains( comparableExpected, comparableOutput );
             } );
         }
 
@@ -202,16 +232,21 @@ This is the cache content.
 
             input = input.Replace( "`", "\"" );
 
-            var options = new LavaTestRenderOptions { EnabledCommands = "Cache" };
+            var options = new LavaRenderOptions { EnabledCommands = "Cache" };
 
-            var expectedOutput = @"This is the cache content.";
+            var expectedOutput = "\n"
+                + "This is the cache content.\n";
 
-            TestHelper.ExecuteForActiveEngines( ( engine ) =>
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
             {
                 // Render the template twice to ensure the result is the same.
                 // The result is rendered and cached on the first pass and the same result should be rendered from the cache on the second pass.
-                TestHelper.AssertTemplateOutput( engine, expectedOutput, input, options );
-                TestHelper.AssertTemplateOutput( engine, expectedOutput, input, options );
+                var output = LavaRenderTestHelper.Render( engine, input, options );
+
+                Assert.AreEqual( expectedOutput, output );
+                var secondPass = LavaRenderTestHelper.Render( engine, input, options );
+
+                Assert.AreEqual( expectedOutput, secondPass );
             } );
         }
 
@@ -222,38 +257,54 @@ This is the cache content.
         public void CacheBlock_MultipleInstancesOfCachedSqlBlocks_RendersCorrectOutput()
         {
             var input = @"
-{% cache key:'test1' duration:'10' %}
-{% sql %}
+{%- cache key:'test1' duration:'10' -%}
+{%- sql -%}
     SELECT 1 AS [Count]
-{% endsql %}
-{% assign item = results | First %}
+{%- endsql -%}
+{%- assign item = results | First -%}
 Cache #{{ item.Count }}
-{% endcache %}
+{%- endcache -%}
 
 {%- cache key:'test2' duration:'10' -%}
-{% sql %}
+{%- sql -%}
     SELECT 2 AS [Count]
-{% endsql %}
-{% assign item = results | First %}
+{%- endsql -%}
+{%- assign item = results | First -%}
 Cache #{{ item.Count }}
-{% endcache %}
+{%- endcache -%}
 
 {%- cache key:'test3' duration:'10' -%}
-{% sql %}
+{%- sql -%}
     SELECT 3 AS [Count]
-{% endsql %}
-{% assign item = results | First %}
+{%- endsql -%}
+{%- assign item = results | First -%}
 Cache #{{ item.Count }}
-{% endcache %}
+{%- endcache -%}
 ";
 
             input = input.Replace( "`", "\"" );
 
-            var options = new LavaTestRenderOptions { EnabledCommands = "Cache,Sql" };
+            var options = new LavaRenderOptions { EnabledCommands = "Cache,Sql" };
 
-            var expectedOutput = @"Cache #1 Cache #2 Cache #3";
+            var expectedOutput = "\n"
+                + "\n"
+                + "\n"
+                + "Cache #1\n"
+                + "\n"
+                + "\n"
+                + "\n"
+                + "Cache #2\n"
+                + "\n"
+                + "\n"
+                + "\n"
+                + "Cache #3\n";
 
-            TestHelper.AssertTemplateOutput( expectedOutput, input, options );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, input, options );
+
+                Assert.Contains( expectedOutput, output );
+            } );
         }
 
         [TestMethod]
@@ -271,7 +322,7 @@ Cache #{{ item.Count }}
 
             // Define the test Lava templates.
             var mergeFields = new LavaDataDictionary();
-            var options = new LavaTestRenderOptions
+            var options = new LavaRenderOptions
             {
                 EnabledCommands = "Cache",
                 MergeFields = mergeFields
@@ -280,35 +331,41 @@ Cache #{{ item.Count }}
             var input = @"
 <h2>Cache Tests</h2>
 Input Value={{i}}<br>
-{% cache key:'key1' tags:'tag1' %} 
+{%- cache key:'key1' tags:'tag1' -%} 
 Cache Value = {{i}}, Key=key1, Tag=tag1
-{% endcache %}
+{%- endcache -%}
 <br>
-{% cache key:'key2' tags:'tag2' %} 
+{%- cache key:'key2' tags:'tag2' -%} 
 Cache Value = {{i}}, Key=key2, Tag=tag2
-{% endcache %}
+{%- endcache -%}
 <br>
-{% cache key:'key3' tags:'tag1,tag2' %} 
+{%- cache key:'key3' tags:'tag1,tag2' -%} 
 Cache Value = {{i}}, Key=key3, Tag=tag1,tag2
-{% endcache %}
+{%- endcache -%}
 <br>
-{% cache key:'key4' tags:'undefined,tag2' %} 
+{%- cache key:'key4' tags:'undefined,tag2' -%} 
 Cache Value = {{i}}, Key=key4, Tag=undefined,tag2
-{% endcache %}
+{%- endcache -%}
 <br>
 ";
 
-            var expectedOutputTemplate = @"
-<h2>CacheTests</h2>
-InputValue={input}<br>
-CacheValue={cache1},Key=key1,Tag=tag1<br>
-CacheValue={cache2},Key=key2,Tag=tag2<br>
-CacheValue={cache2},Key=key3,Tag=tag1,tag2<br>
-CacheValue={cache2},Key=key4,Tag=undefined,tag2<br>
-";
+            // This was written with every space removed, which is how the
+            // predecessor comparison treated it. Some lines end in a space that
+            // is part of the output, so escapes are used to keep it visible.
+            var expectedOutputTemplate = "\n"
+                + "<h2>Cache Tests</h2>\n"
+                + "Input Value={input}<br> \n"
+                + "Cache Value = {cache1}, Key=key1, Tag=tag1\n"
+                + "<br> \n"
+                + "Cache Value = {cache2}, Key=key2, Tag=tag2\n"
+                + "<br> \n"
+                + "Cache Value = {cache2}, Key=key3, Tag=tag1,tag2\n"
+                + "<br> \n"
+                + "Cache Value = {cache2}, Key=key4, Tag=undefined,tag2\n"
+                + "<br>\n";
 
             // Test the cache tags for each Lava engine.
-            TestHelper.ExecuteForActiveEngines( ( engine ) =>
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
             {
                 // Clear the cache for the current engine.
                 RockCache.ClearAllCachedItems();
@@ -318,7 +375,9 @@ CacheValue={cache2},Key=key4,Tag=undefined,tag2<br>
                 var expectedOutput = expectedOutputTemplate.Replace( "{input}", "1" )
                     .Replace( "{cache1}", "1" )
                     .Replace( "{cache2}", "1" );
-                TestHelper.AssertTemplateOutput( engine, expectedOutput, input, options );
+                var output = LavaRenderTestHelper.Render( engine, input, options );
+
+                Assert.AreEqual( expectedOutput, output );
 
                 // Render the template with value 2. The cache block output should be retrieved from the cache unchanged.
                 mergeFields["i"] = "2";
@@ -326,7 +385,9 @@ CacheValue={cache2},Key=key4,Tag=undefined,tag2<br>
                     .Replace( "{cache1}", "1" )
                     .Replace( "{cache2}", "1" );
 
-                TestHelper.AssertTemplateOutput( engine, expectedOutput, input, options );
+                output = LavaRenderTestHelper.Render( engine, input, options );
+
+                Assert.AreEqual( expectedOutput, output );
 
                 // Verify that the tag "tag2" is associated with the correct keys.
                 Assert.AreEqual( 3, RockCache.GetCountOfCachedItemsForTag( "tag2" ), "Invalid cache count for tag 'tag2'." );
@@ -341,7 +402,9 @@ CacheValue={cache2},Key=key4,Tag=undefined,tag2<br>
                     .Replace( "{cache1}", "1" )
                     .Replace( "{cache2}", "2" );
 
-                TestHelper.AssertTemplateOutput( engine, expectedOutput, input, options );
+                output = LavaRenderTestHelper.Render( engine, input, options );
+
+                Assert.AreEqual( expectedOutput, output );
             } );
 
         }
@@ -354,13 +417,17 @@ CacheValue={cache2},Key=key4,Tag=undefined,tag2<br>
         public void CreateEntitySet_WithInvalidInput_RendersErrorMessage()
         {
             var inputTemplate = @"
-{% assign entitySet = null | CreateEntitySet %}
+{%- assign entitySet = null | CreateEntitySet -%}
 {{ entitySet.Id }}
 ";
-            var options = new LavaTestRenderOptions { ExceptionHandlingStrategy = ExceptionHandlingStrategySpecifier.RenderToOutput };
-            var output = TestHelper.GetTemplateOutput( typeof( FluidEngine ), inputTemplate, options );
+            var options = new LavaRenderOptions { ExceptionHandlingStrategy = ExceptionHandlingStrategySpecifier.RenderToOutput };
 
-            Assert.Contains( "CreateEntitySet failed.", output );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, inputTemplate, options );
+
+                Assert.Contains( "CreateEntitySet failed.", output );
+            } );
         }
 
         [TestMethod]
@@ -442,40 +509,58 @@ CacheValue={cache2},Key=key4,Tag=undefined,tag2<br>
         public void CreateEntitySet_DocumentationExample1_ReturnsExpectedOutput()
         {
             var inputTemplate = @"
-{% person where:'LastName == ""Decker""' select:'Id' iterator:'personIds' limit:4 %}
-{% assign personIdList = personIds %}
-{% endperson %} 
-{% entitytype where:'FriendlyName == ""Person""' %}
-{% assign entityTypeId = entitytype.Id %}
-{% endentitytype %}
-{% assign entitySet = personIdList | CreateEntitySet:entityTypeId,5,'Person Merge Request','Test note.','' %}
+{%- person where:'LastName == ""Decker""' select:'Id' iterator:'personIds' limit:4 -%}
+{%- assign personIdList = personIds -%}
+{%- endperson -%} 
+{%- entitytype where:'FriendlyName == ""Person""' -%}
+{%- assign entityTypeId = entitytype.Id -%}
+{%- endentitytype -%}
+{%- assign entitySet = personIdList | CreateEntitySet:entityTypeId,5,'Person Merge Request','Test note.','' -%}
 An Entity Set (Id={{ entitySet.Id }}) was created and {{ personIdList | Size }} people have been added.
 ";
 
-            var expectedOutput = @"
-An Entity Set (Id=*) was created and 4 people have been added.
-";
+            var expectedOutput = "An Entity Set (Id=13) was created and 4 people have been added.\n";
 
-            var options = new LavaTestRenderOptions { EnabledCommands = "rockentity", Wildcards = new List<string>() { "*" } };
-            TestHelper.AssertTemplateOutput( typeof( FluidEngine ), expectedOutput, inputTemplate, options );
+            var options = new LavaRenderOptions { EnabledCommands = "rockentity" };
+
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, inputTemplate, options );
+
+                LavaAssert.Matches( expectedOutput, output, "*" );
+            } );
         }
 
         private void AssertCreateEntitySetForEntityTypeParameter( string entityTypeParameter )
         {
             var inputTemplate = @"
-{% assign entitySet = '$personId' | CreateEntitySet:'$entityType' %}
+{%- assign entitySet = '$personId' | CreateEntitySet:'$entityType' -%}
 {{ entitySet.Id }}
 ";
             // Require an Id integer value as output.
-            var expectedOutput = "[0-9]*";
+            var expectedOutput = "[0-9]+";
 
-            var person = TestHelper.GetTestPersonTedDecker();
+            var person = TestDataHelper.GetTestPerson( TestGuids.TestPeople.TedDecker );
 
             inputTemplate = inputTemplate.Replace( "$personId", person.Id.ToString() )
                 .Replace( "$entityType", entityTypeParameter );
 
-            var options = new LavaTestRenderOptions { OutputMatchType = LavaTestOutputMatchTypeSpecifier.RegEx };
-            TestHelper.AssertTemplateOutput( typeof( FluidEngine ), expectedOutput, inputTemplate, options );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, inputTemplate );
+
+                /*
+                    9/26/26 - CLAUDE
+
+                    The comment says an Id is required, and the expected value
+                    is written as a pattern, but the predecessor call compared
+                    it as a literal string. It is matched as a pattern here, as
+                    the comment intends.
+
+                    Reason: The expected value was always meant to be a pattern.
+                */
+                StringAssert.Matches( output.Trim(), new Regex( expectedOutput ) );
+            } );
         }
 
         private List<Person> GetTestPersonEntityList()
@@ -498,7 +583,7 @@ An Entity Set (Id=*) was created and 4 people have been added.
         private EntitySet CreateEntitySet( object input, string entityType = null, int? expiryInMinutes = null, int? purposeId = null, string note = null, int? parentSetId = null )
         {
             var inputTemplate = @"
-{% assign entitySet = $input | CreateEntitySet:$args %}
+{%- assign entitySet = $input | CreateEntitySet:$args -%}
 {{ entitySet.Id }}
 ";
 
@@ -513,10 +598,9 @@ An Entity Set (Id=*) was created and 4 people have been added.
 
             inputTemplate = inputTemplate.Replace( "$args", args.AsDelimited( "," ).TrimEnd( ',' ) );
 
-            var options = new LavaTestRenderOptions
+            var options = new LavaRenderOptions
             {
-                EnabledCommands = "rockentity",
-                Wildcards = new List<string>() { "*" }
+                EnabledCommands = "rockentity"
             };
 
             if ( input is IEnumerable )
@@ -533,7 +617,12 @@ An Entity Set (Id=*) was created and 4 people have been added.
             }
 
 
-            var output = TestHelper.GetTemplateOutput( typeof( FluidEngine ), inputTemplate, options );
+            // This helper reads the rendered identifier and then goes on to check
+            // the entity set it refers to, so it renders once against a single
+            // engine rather than iterating the active engines.
+            var engine = LavaRenderTestHelper.CreateActiveEngines().First();
+
+            var output = LavaRenderTestHelper.Render( engine, inputTemplate, options );
 
             var entitySetId = output.ConvertToIntegerOrThrow();
 

@@ -133,6 +133,11 @@ namespace Rock.Tests.Shared.TestFramework
                 .Returns( GetRockWebPath() ?? Directory.GetCurrentDirectory() );
             hostingMock.Setup( a => a.NodeName ).Returns( "TestNode" );
 
+            // A Loose mock returns null for anything not stubbed, which is
+            // indistinguishable from a real machine reporting no name. Stub it so a
+            // test comparing against this value has something to compare.
+            hostingMock.Setup( a => a.MachineName ).Returns( "TestMachine" );
+
             sc.AddSingleton<IConnectionStringProvider>( new TestConnectionStringProvider( connectionString ) );
             sc.AddSingleton<IInitializationSettings, TestInitializationSettings>();
             sc.AddSingleton<IDatabaseConfiguration, DatabaseConfiguration>();

@@ -85,7 +85,10 @@ namespace Rock.Tests.Integration.TestFramework.Database
             catch ( Exception ex )
             {
                 LogHelper.LogError( ex, "The database instance failed to start." );
-                throw ex;
+
+                // Rethrow without naming the exception, which would reset its
+                // stack trace to this line and hide where the failure came from.
+                throw;
             }
 
             LogHelper.Log( $"Starting Database Instance: completed." );

@@ -16,7 +16,7 @@
 //
 using System;
 
-namespace Rock.Tests.Lava
+namespace Rock.Tests.Lava.Shared
 {
     /// <summary>
     /// Helper class to compare dates for equality within specific tolerances.

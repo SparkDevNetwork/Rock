@@ -18,9 +18,12 @@ using System.Collections.Generic;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
+using Rock.Tests.Lava.Shared;
+
 using Rock.Lava;
 using Rock.Lava.Fluid;
 using Rock.Model;
+using Rock.Tests.Shared.Constants;
 
 namespace Rock.Tests.Lava
 {
@@ -28,7 +31,8 @@ namespace Rock.Tests.Lava
     /// Tests the accessibility of different container-type variables when resolving a Lava template.
     /// </summary>
     [TestClass]
-    public class ContainerVariableTests : LavaUnitTestBase
+    [TestCategory( TestFeatures.Lava )]
+    public class ContainerVariableTests
     {
         /// <summary>
         /// Referencing an existing dictionary entry with a string key type should return the dictionary value.
@@ -40,7 +44,13 @@ namespace Rock.Tests.Lava
 
             var mergeValues = new LavaDataDictionary { { "StringDictionary", value } };
 
-            TestHelper.AssertTemplateOutput( "Two", "{{ StringDictionary['b'] }}", mergeValues );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var options = new LavaRenderOptions { MergeFields = mergeValues };
+                var output = LavaRenderTestHelper.Render( engine, "{{ StringDictionary['b'] }}", options );
+
+                Assert.AreEqual( "Two", output );
+            } );
         }
 
         /// <summary>
@@ -53,7 +63,13 @@ namespace Rock.Tests.Lava
 
             var mergeValues = new LavaDataDictionary { { "IntDictionary", value } };
 
-            TestHelper.AssertTemplateOutput( "Two", "{{ IntDictionary[2] }}", mergeValues );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var options = new LavaRenderOptions { MergeFields = mergeValues };
+                var output = LavaRenderTestHelper.Render( engine, "{{ IntDictionary[2] }}", options );
+
+                Assert.AreEqual( "Two", output );
+            } );
         }
 
         /// <summary>
@@ -73,7 +89,13 @@ namespace Rock.Tests.Lava
 
             // This use case only works with Lava library implementations that use the LavaDataObject
             // as the default proxy wrapper. It exists here for test coverage, but is not used in any production Lava templates.
-            TestHelper.AssertTemplateOutput( typeof( FluidEngine ), "Male", "{{ EnumDictionary['Male'] }}", mergeValues );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var options = new LavaRenderOptions { MergeFields = mergeValues };
+                var output = LavaRenderTestHelper.Render( engine, "{{ EnumDictionary['Male'] }}", options );
+
+                Assert.AreEqual( "Male", output );
+            } );
         }
 
         /// <summary>
@@ -89,7 +111,13 @@ namespace Rock.Tests.Lava
                 { "Case", "mixed" }
             };
 
-            TestHelper.AssertTemplateOutput( typeof( FluidEngine ), "lower,upper,mixed", "{{ case }},{{ CASE }},{{ Case }}", mergeValues );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var options = new LavaRenderOptions { MergeFields = mergeValues };
+                var output = LavaRenderTestHelper.Render( engine, "{{ case }},{{ CASE }},{{ Case }}", options );
+
+                Assert.AreEqual( "lower,upper,mixed", output );
+            } );
         }
     }
 }

@@ -22,6 +22,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rock.Configuration;
 using Rock.Lava;
 using Rock.Model;
+using Rock.Tests.Lava.Shared;
 using Rock.Tests.Shared.TestFramework;
 using Rock.Web.Cache;
 
@@ -49,19 +50,26 @@ namespace Rock.Tests.Lava.Blocks
                 EntityTypeCache.Get<Campus>( true, rockContext );
                 rockContext.Set<Campus>().Add( campus );
 
-                var engines = LavaUnitTestHelper.CurrentInstance.CreateActiveTestEngines();
+                /*
+                    9/26/26 - CLAUDE
 
-                Assert.IsNotEmpty( engines, "No active Lava engines were created." );
+                    The engine is built inside the scoped app, after the Campus
+                    entity type has been seeded, because RockEntityBlock registers
+                    one Lava block per entity type during its startup. An engine
+                    built before those rows exist has no "campus" tag and the
+                    template renders "Unknown tag 'campus'".
 
-                foreach ( var engine in engines )
+                    Reason: The entity tags only exist on an engine built after the
+                    entity types are visible.
+                */
+                LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
                 {
-                    LavaService.SetCurrentEngine( engine );
                     var result = template.ResolveMergeFields( new Dictionary<string, object>(), "all" );
 
                     // This verifies that the `Guid.ToString()` part of the
                     // select statement worked.
                     Assert.AreEqual( campus.Guid.ToString(), result );
-                }
+                } );
             }
         }
     }

@@ -16,10 +16,13 @@
 //
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
+using Rock.Tests.Lava.Shared;
+
 using Rock.Lava;
 using Rock.Lava.Fluid;
 using Rock.Model;
 using Rock.Tests.Shared;
+using Rock.Tests.Shared.Constants;
 
 namespace Rock.Tests.Lava
 {
@@ -27,7 +30,8 @@ namespace Rock.Tests.Lava
     /// Tests specific aspects of rendering in Lava that are not specifically defined in the Liquid language.
     /// </summary>
     [TestClass]
-    public class RenderTests : LavaUnitTestBase
+    [TestCategory( TestFeatures.Lava )]
+    public class RenderTests
     {
         /// <summary>
         /// Enum types should render as a name rather than an integer value.
@@ -39,7 +43,13 @@ namespace Rock.Tests.Lava
 
             var mergeValues = new LavaDataDictionary { { "EnumValue", enumValue } };
 
-            TestHelper.AssertTemplateOutput( "Approved", "{{ EnumValue }}", mergeValues );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var options = new LavaRenderOptions { MergeFields = mergeValues };
+                var output = LavaRenderTestHelper.Render( engine, "{{ EnumValue }}", options );
+
+                Assert.AreEqual( "Approved", output );
+            } );
         }
 
         /// <summary>
@@ -52,12 +62,18 @@ namespace Rock.Tests.Lava
             var template = @"Xml Encoded String: {{ StringToEncode }}";
             var expectedOutput = @"Xml Encoded String: Ted &amp; Cindy";
 
-            var parameters = new LavaRenderParameters
+            var options = new LavaRenderOptions
             {
-                ShouldEncodeStringsAsXml = true,
-                Context = LavaRenderContext.FromMergeValues( mergeValues )
+                MergeFields = mergeValues,
+                ShouldEncodeStringsAsXml = true
             };
-            TestHelper.AssertTemplateOutput( expectedOutput, template, parameters );
+
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, template, options );
+
+                Assert.AreEqual( expectedOutput, output );
+            } );
         }
 
         /// <summary>
@@ -70,12 +86,18 @@ namespace Rock.Tests.Lava
             var template = @"Unencoded String: {{ UnencodedString }}";
             var expectedOutput = @"Unencoded String: Ted & Cindy";
 
-            var parameters = new LavaRenderParameters
+            var options = new LavaRenderOptions
             {
-                ShouldEncodeStringsAsXml = false,
-                Context = LavaRenderContext.FromMergeValues( mergeValues )
+                MergeFields = mergeValues,
+                ShouldEncodeStringsAsXml = false
             };
-            TestHelper.AssertTemplateOutput( expectedOutput, template, parameters );
+
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, template, options );
+
+                Assert.AreEqual( expectedOutput, output );
+            } );
         }
 
         /// <summary>
@@ -91,11 +113,13 @@ namespace Rock.Tests.Lava
 Lava Error: Unknown tag 'assignnnnn' at (1:14)
 ";
 
-            var fluidEngine = TestHelper.GetEngineInstance( typeof( FluidEngine ) );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var result = LavaRenderTestHelper.RenderResult( engine, template );
 
-            var result = fluidEngine.RenderTemplate( template );
-            Assert.IsTrue( result.HasErrors );
-            Assert.That.AreEqualIgnoreWhitespace( expectedOutputFluid, result.Text );
+                Assert.IsTrue( result.HasErrors );
+                Assert.That.AreEqualIgnoreWhitespace( expectedOutputFluid, result.Text );
+            } );
         }
     }
 }

@@ -20,10 +20,13 @@ using System.Linq;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
+using Rock.Tests.Lava.Shared;
+
 using Newtonsoft.Json;
 
 using Rock.Lava;
 using Rock.Utility;
+using Rock.Tests.Shared.Constants;
 
 namespace Rock.Tests.Lava
 {
@@ -31,16 +34,20 @@ namespace Rock.Tests.Lava
     /// Tests security of access to merge object properties in a Lava template.
     /// </summary>
     [TestClass]
-    public class DynamicObjectTests : LavaUnitTestBase
+    [TestCategory( TestFeatures.Lava )]
+    public class DynamicObjectTests
     {
-        #region Constructors
+        #region Support Methods
 
-        [ClassInitialize]
-        public static void Initialize( TestContext context )
+        /// <summary>
+        /// Registers the types these tests expose to Lava. Each test gets its own
+        /// engine, so this runs per test rather than once for the class.
+        /// </summary>
+        /// <param name="engine">The engine under test.</param>
+        private static void RegisterSafeTypes( ILavaEngine engine )
         {
-            TestHelper.RegisterSafeType( typeof( PersonRockDynamic ) );
-            TestHelper.RegisterSafeType( typeof( CampusRockDynamic ) );
-
+            engine.RegisterSafeType( typeof( PersonRockDynamic ) );
+            engine.RegisterSafeType( typeof( CampusRockDynamic ) );
         }
 
         #endregion
@@ -60,9 +67,13 @@ namespace Rock.Tests.Lava
 
             var mergeValues = new LavaDataDictionary { { "GroupMember", groupMember } };
 
-            TestHelper.AssertTemplateOutput( "Group 1: Andrews, Alex (1 Main St)",
-                "{{ GroupMember.GroupName }}: {{ GroupMember.Person.LastName }}, {{ GroupMember.Person.FirstName }} ({{ GroupMember.Person.Address.Street }})",
-                mergeValues );
+            LavaRenderTestHelper.ExecuteForActiveEngines( RegisterSafeTypes, engine =>
+            {
+                var options = new LavaRenderOptions { MergeFields = mergeValues };
+                var output = LavaRenderTestHelper.Render( engine, "{{ GroupMember.GroupName }}: {{ GroupMember.Person.LastName }}, {{ GroupMember.Person.FirstName }} ({{ GroupMember.Person.Address.Street }})", options );
+
+                Assert.AreEqual( "Group 1: Andrews, Alex (1 Main St)", output );
+            } );
 
         }
 
@@ -74,7 +85,13 @@ namespace Rock.Tests.Lava
         {
             var mergeValues = new LavaDataDictionary { { "CurrentPerson", GetRockDynamicTestPersonTedDecker() } };
 
-            TestHelper.AssertTemplateOutput( "Decker", "{{ CurrentPerson.LastName }}", mergeValues );
+            LavaRenderTestHelper.ExecuteForActiveEngines( RegisterSafeTypes, engine =>
+            {
+                var options = new LavaRenderOptions { MergeFields = mergeValues };
+                var output = LavaRenderTestHelper.Render( engine, "{{ CurrentPerson.LastName }}", options );
+
+                Assert.AreEqual( "Decker", output );
+            } );
         }
 
         /// <summary>
@@ -85,7 +102,13 @@ namespace Rock.Tests.Lava
         {
             var mergeValues = new LavaDataDictionary { { "CurrentPerson", GetRockDynamicTestPersonTedDecker() } };
 
-            TestHelper.AssertTemplateOutput( "North Campus", "{{ CurrentPerson.Campus.Name }}", mergeValues );
+            LavaRenderTestHelper.ExecuteForActiveEngines( RegisterSafeTypes, engine =>
+            {
+                var options = new LavaRenderOptions { MergeFields = mergeValues };
+                var output = LavaRenderTestHelper.Render( engine, "{{ CurrentPerson.Campus.Name }}", options );
+
+                Assert.AreEqual( "North Campus", output );
+            } );
         }
 
         /// <summary>
@@ -96,7 +119,13 @@ namespace Rock.Tests.Lava
         {
             var mergeValues = new LavaDataDictionary { { "CurrentPerson", GetRockDynamicTestPersonTedDecker() } };
 
-            TestHelper.AssertTemplateOutput( string.Empty, "{{ CurrentPerson.NonexistentProperty }}", mergeValues );
+            LavaRenderTestHelper.ExecuteForActiveEngines( RegisterSafeTypes, engine =>
+            {
+                var options = new LavaRenderOptions { MergeFields = mergeValues };
+                var output = LavaRenderTestHelper.Render( engine, "{{ CurrentPerson.NonexistentProperty }}", options );
+
+                Assert.AreEqual( string.Empty, output );
+            } );
         }
 
         /// <summary>
@@ -115,7 +144,13 @@ namespace Rock.Tests.Lava
 
             var template = @"Color 1: {{ Colors.Color1 }}, Color 2: {{ Colors.Color2 }}, Color 3: {{ Colors.Color3 }}";
 
-            TestHelper.AssertTemplateOutput( "Color 1: red, Color 2: green, Color 3: blue", template, mergeValues );
+            LavaRenderTestHelper.ExecuteForActiveEngines( RegisterSafeTypes, engine =>
+            {
+                var options = new LavaRenderOptions { MergeFields = mergeValues };
+                var output = LavaRenderTestHelper.Render( engine, template, options );
+
+                Assert.AreEqual( "Color 1: red, Color 2: green, Color 3: blue", output );
+            } );
         }
 
         #region LavaDataObject
@@ -128,7 +163,13 @@ namespace Rock.Tests.Lava
         {
             var mergeValues = new LavaDataDictionary { { "CurrentPerson", GetLavaDataObjectTestPersonTedDecker() } };
 
-            TestHelper.AssertTemplateOutput( "Decker", "{{ CurrentPerson.LastName }}", mergeValues );
+            LavaRenderTestHelper.ExecuteForActiveEngines( RegisterSafeTypes, engine =>
+            {
+                var options = new LavaRenderOptions { MergeFields = mergeValues };
+                var output = LavaRenderTestHelper.Render( engine, "{{ CurrentPerson.LastName }}", options );
+
+                Assert.AreEqual( "Decker", output );
+            } );
         }
 
         /// <summary>
@@ -139,7 +180,13 @@ namespace Rock.Tests.Lava
         {
             var mergeValues = new LavaDataDictionary { { "CurrentPerson", GetLavaDataObjectTestPersonTedDecker() } };
 
-            TestHelper.AssertTemplateOutput( "North Campus", "{{ CurrentPerson.Campus.Name }}", mergeValues );
+            LavaRenderTestHelper.ExecuteForActiveEngines( RegisterSafeTypes, engine =>
+            {
+                var options = new LavaRenderOptions { MergeFields = mergeValues };
+                var output = LavaRenderTestHelper.Render( engine, "{{ CurrentPerson.Campus.Name }}", options );
+
+                Assert.AreEqual( "North Campus", output );
+            } );
         }
 
         /// <summary>
@@ -150,7 +197,13 @@ namespace Rock.Tests.Lava
         {
             var mergeValues = new LavaDataDictionary { { "CurrentPerson", GetLavaDataObjectTestPersonTedDecker() } };
 
-            TestHelper.AssertTemplateOutput( string.Empty, "{{ CurrentPerson.NonexistentProperty }}", mergeValues );
+            LavaRenderTestHelper.ExecuteForActiveEngines( RegisterSafeTypes, engine =>
+            {
+                var options = new LavaRenderOptions { MergeFields = mergeValues };
+                var output = LavaRenderTestHelper.Render( engine, "{{ CurrentPerson.NonexistentProperty }}", options );
+
+                Assert.AreEqual( string.Empty, output );
+            } );
         }
 
         /// <summary>
@@ -169,7 +222,13 @@ namespace Rock.Tests.Lava
             var template = @"Color 1: {{ Colors.Color1 }}, Color 2: {{ Colors.Color2 }}, Color 3: {{ Colors.Color3 }}";
 
             // This test is only valid for the Fluid Engine.
-            TestHelper.AssertTemplateOutput( "Color 1: red, Color 2: green, Color 3: blue", template, mergeValues );
+            LavaRenderTestHelper.ExecuteForActiveEngines( RegisterSafeTypes, engine =>
+            {
+                var options = new LavaRenderOptions { MergeFields = mergeValues };
+                var output = LavaRenderTestHelper.Render( engine, template, options );
+
+                Assert.AreEqual( "Color 1: red, Color 2: green, Color 3: blue", output );
+            } );
         }
 
         /// <summary>
@@ -191,7 +250,13 @@ namespace Rock.Tests.Lava
 
             var template = @"Color 1: {{ Colors.Color1 }}, Color 2: {{ Colors.Color2 }}, Color 3: {{ Colors.Color3 }}";
 
-            TestHelper.AssertTemplateOutput( "Color 1: red, Color 2: green, Color 3: blue", template, mergeValues );
+            LavaRenderTestHelper.ExecuteForActiveEngines( RegisterSafeTypes, engine =>
+            {
+                var options = new LavaRenderOptions { MergeFields = mergeValues };
+                var output = LavaRenderTestHelper.Render( engine, template, options );
+
+                Assert.AreEqual( "Color 1: red, Color 2: green, Color 3: blue", output );
+            } );
         }
 
         /// <summary>
@@ -202,7 +267,13 @@ namespace Rock.Tests.Lava
         {
             var mergeValues = new LavaDataDictionary { { "CurrentPerson", GetLavaDataObjectTestPersonTedDecker() } };
 
-            TestHelper.AssertTemplateOutput( "Ted's Password:", "{{ CurrentPerson.NickName }}'s Password:{{ CurrentPerson.Password }}", mergeValues );
+            LavaRenderTestHelper.ExecuteForActiveEngines( RegisterSafeTypes, engine =>
+            {
+                var options = new LavaRenderOptions { MergeFields = mergeValues };
+                var output = LavaRenderTestHelper.Render( engine, "{{ CurrentPerson.NickName }}'s Password:{{ CurrentPerson.Password }}", options );
+
+                Assert.AreEqual( "Ted's Password:", output );
+            } );
         }
 
         #endregion

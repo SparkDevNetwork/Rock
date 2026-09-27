@@ -57,6 +57,19 @@
     <PackageReference Include="Testcontainers.MsSql" Version="4.9.0" />
   </ItemGroup>
 
+  <!--
+    The Lava test framework under Rock.Tests\Lava\Shared is compiled into both test
+    projects from a single copy of the source. It is linked rather than referenced
+    so that neither test project takes a dependency on the other, and so that
+    Rock.Tests.Shared - which plugin authors consume - stays free of the Lava test
+    framework. Everything in that folder must build against Rock alone plus the
+    Lava assemblies both projects already reference; anything needing a database
+    belongs in TestFramework\Lava instead.
+  -->
+  <ItemGroup>
+    <Compile Include="..\Rock.Tests\Lava\Shared\*.cs" Link="TestFramework\Lava\Shared\%(Filename)%(Extension)" />
+  </ItemGroup>
+
   <ItemGroup>
     <ProjectReference Include="..\Rock.Common\Rock.Common.csproj" />
     <ProjectReference Include="..\Rock.Enums\Rock.Enums.csproj" />

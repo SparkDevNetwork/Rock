@@ -26,7 +26,7 @@ using Rock.Lava;
 using Rock.Model;
 using Rock.Security;
 using Rock.Tests.Integration.TestData;
-using Rock.Tests.Integration.TestFramework.Lava;
+using Rock.Tests.Lava.Shared;
 using Rock.Tests.Shared.Constants;
 using Rock.Utility.Enums;
 using Rock.Web.Cache;
@@ -50,14 +50,18 @@ namespace Rock.Tests.Integration.Core.Lava.Filters
         {
             var values = AddTestPersonToMergeDictionary( TestGuids.TestPeople.TedDecker.AsGuid() );
 
-            var options = new LavaTestRenderOptions { MergeFields = values };
+            var options = new LavaRenderOptions { MergeFields = values };
 
             var template = "Home Address: {{ CurrentPerson | Address:'Home' }}";
-            var outputExpected = @"Home Address: 11624 N 31st Dr Phoenix, AZ 85029-3202";
+            // The formatted address puts the city line on its own line.
+            var outputExpected = "Home Address: 11624 N 31st Dr\nPhoenix, AZ 85029-3202";
 
-            TestHelper.AssertTemplateOutput( outputExpected,
-                template,
-                options );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, template, options );
+
+                Assert.AreEqual( outputExpected, output );
+            } );
         }
 
         [TestMethod]
@@ -65,14 +69,17 @@ namespace Rock.Tests.Integration.Core.Lava.Filters
         {
             var values = AddTestPersonToMergeDictionary( TestGuids.TestPeople.TedDecker.AsGuid() );
 
-            var options = new LavaTestRenderOptions { MergeFields = values };
+            var options = new LavaRenderOptions { MergeFields = values };
 
             var template = "{{ CurrentPerson | Address:'Home','[[City]], [[State]]' }}";
             var outputExpected = @"Phoenix, AZ";
 
-            TestHelper.AssertTemplateOutput( outputExpected,
-                template,
-                options );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, template, options );
+
+                Assert.AreEqual( outputExpected, output );
+            } );
         }
 
         [TestMethod]
@@ -82,15 +89,18 @@ namespace Rock.Tests.Integration.Core.Lava.Filters
 
             var person = values["CurrentPerson"] as Person;
 
-            var options = new LavaTestRenderOptions { MergeFields = values };
+            var options = new LavaRenderOptions { MergeFields = values };
 
             var template = @"{{ CurrentPerson | Address:'Home','[[Guid]]' }}";
 
             var outputExpected = person.GetHomeLocation()?.Guid.ToString( "D" );
 
-            TestHelper.AssertTemplateOutput( outputExpected,
-                template,
-                options );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, template, options );
+
+                Assert.AreEqual( outputExpected, output );
+            } );
         }
 
         #endregion
@@ -102,14 +112,19 @@ namespace Rock.Tests.Integration.Core.Lava.Filters
         {
             var values = AddTestPersonToMergeDictionary( TestGuids.TestPeople.TedDecker.AsGuid() );
             var person = values["CurrentPerson"] as Person;
-            var options = new LavaTestRenderOptions { MergeFields = values };
+            var options = new LavaRenderOptions { MergeFields = values };
 
-            var template = @"{% assign campus = CurrentPerson | Campus %}{{ campus.Name }}";
-            var outputExpected = person.GetCampus()?.Name.SplitCase();
+            var template = @"{%- assign campus = CurrentPerson | Campus -%}{{ campus.Name }}";
+            // The template writes campus.Name, so the expected value is the name as
+            // stored. SplitCase would insert a second space into "Main Campus".
+            var outputExpected = person.GetCampus()?.Name;
 
-            TestHelper.AssertTemplateOutput( outputExpected,
-                template,
-                options );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, template, options );
+
+                Assert.AreEqual( outputExpected, output );
+            } );
         }
 
         [TestMethod]
@@ -118,11 +133,17 @@ namespace Rock.Tests.Integration.Core.Lava.Filters
             var values = AddTestPersonToMergeDictionary( TestGuids.TestPeople.TedDecker.AsGuid() );
             var person = values["CurrentPerson"] as Person;
 
-            var template = @"{% assign campus = " + person.Id.ToString() + " | Campus %}{{ campus.Name }}";
-            var outputExpected = person.GetCampus()?.Name.SplitCase();
+            var template = @"{%- assign campus = " + person.Id.ToString() + " | Campus -%}{{ campus.Name }}";
+            // The template writes campus.Name, so the expected value is the name as
+            // stored. SplitCase would insert a second space into "Main Campus".
+            var outputExpected = person.GetCampus()?.Name;
 
-            TestHelper.AssertTemplateOutput( outputExpected,
-                template );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, template );
+
+                Assert.AreEqual( outputExpected, output );
+            } );
         }
 
         #region Filter: NearestCampus
@@ -133,18 +154,23 @@ namespace Rock.Tests.Integration.Core.Lava.Filters
             var campusManager = CampusDataManager.Instance;
             campusManager.AddCampusTestDataSet();
 
-            var options = new LavaTestRenderOptions { EnabledCommands = "RockEntity" };
+            var options = new LavaRenderOptions { EnabledCommands = "RockEntity" };
 
             var template = @"
-{% person where:'[NickName] == ""Ted"" && [LastName] == ""Decker""' limit:'1' %}
-{% assign campus = person | NearestCampus %}
+{%- person where:'[NickName] == ""Ted"" && [LastName] == ""Decker""' limit:'1' -%}
+{%- assign campus = person | NearestCampus -%}
 Ted's Nearest Campus: {{ campus.Name }}
-{% endperson %}";
-            var outputExpected = "Ted's Nearest Campus: Main Campus";
+{%- endperson -%}";
+            // The person block and the assign tag each leave behind the newline
+            // that followed them.
+            var outputExpected = "Ted's Nearest Campus: Main Campus\n";
 
-            TestHelper.AssertTemplateOutput( outputExpected,
-                template,
-                options );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, template, options );
+
+                Assert.AreEqual( outputExpected, output );
+            } );
         }
 
         /// <summary>
@@ -156,26 +182,27 @@ Ted's Nearest Campus: {{ campus.Name }}
             var campusManager = CampusDataManager.Instance;
             campusManager.AddCampusTestDataSet();
 
-            var options = new LavaTestRenderOptions { EnabledCommands = "RockEntity" };
+            var options = new LavaRenderOptions { EnabledCommands = "RockEntity" };
 
             var template = @"
-{% person where:'[NickName] == ""Ted"" && [LastName] == ""Decker""' limit:'1' %}
-{% assign campus = person | NearestCampus %}
+{%- person where:'[NickName] == ""Ted"" && [LastName] == ""Decker""' limit:'1' -%}
+{%- assign campus = person | NearestCampus -%}
 The nearest campus to {{ person.NickName }} is: {{ campus.Name }}.
 <hr>
-{% assign campusList = person | NearestCampus:2 %}
+{%- assign campusList = person | NearestCampus:2 -%}
 The two nearest campuses to {{ person.NickName }} are: {{ campusList | Select:'Name' | Join:',' }}.
-{% endperson %}
+{%- endperson -%}
 ";
-            var outputExpected = @"
-The nearest campus to Ted is: Main Campus.
-<hr>
-The two nearest campuses to Ted are: Main Campus, North Campus.
-";
+            // Join writes no space after the delimiter it is given.
+            var outputExpected = "The nearest campus to Ted is: Main Campus.\n"
+                + "<hr>The two nearest campuses to Ted are: Main Campus,North Campus.\n";
 
-            TestHelper.AssertTemplateOutput( outputExpected,
-                template,
-                options );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, template, options );
+
+                Assert.AreEqual( outputExpected, output );
+            } );
         }
 
         [TestMethod]
@@ -185,21 +212,26 @@ The two nearest campuses to Ted are: Main Campus, North Campus.
             campusManager.AddCampusTestDataSet();
 
             var values = AddTestPersonToMergeDictionary( TestGuids.TestPeople.TedDecker.AsGuid() );
-            var options = new LavaTestRenderOptions { MergeFields = values, EnabledCommands = "RockEntity" };
+            var options = new LavaRenderOptions { MergeFields = values, EnabledCommands = "RockEntity" };
 
             // Request all campuses, and verify that the Online campus is excluded from the result
             // because it has no GeoCode information.
             var template = @"
-{% person where:'[NickName] == ""Ted"" && [LastName] == ""Decker""' limit:'1' %}
-{% assign campusList = person | NearestCampus:99 %}
+{%- person where:'[NickName] == ""Ted"" && [LastName] == ""Decker""' limit:'1' -%}
+{%- assign campusList = person | NearestCampus:99 -%}
 Ted's Nearest Campuses: {{ campusList | Select:'Name' | Join:',' }}
-{% endperson %}";
+{%- endperson -%}";
 
-            var outputExpected = "Ted's Nearest Campuses: Main Campus, North Campus, South Campus";
+            // Join writes no space after the delimiter it is given. The Online
+            // campus is absent because it has no GeoCode, which is the point.
+            var outputExpected = "Ted's Nearest Campuses: Main Campus,North Campus,South Campus\n";
 
-            TestHelper.AssertTemplateOutput( outputExpected,
-                template,
-                options );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, template, options );
+
+                Assert.AreEqual( outputExpected, output );
+            } );
         }
 
         [TestMethod]
@@ -230,21 +262,26 @@ Ted's Nearest Campuses: {{ campusList | Select:'Name' | Join:',' }}
 
             PersonService.SaveNewPerson( person, rockContext );
 
-            var options = new LavaTestRenderOptions { EnabledCommands = "RockEntity" };
+            var options = new LavaRenderOptions { EnabledCommands = "RockEntity" };
 
             var template = @"
-{% person where:'[Guid] == ""<testPersonGuid>""' %}
-{% assign campus = person | NearestCampus %}
-{{ person.NickName }}'s Nearest Campus: {% if campus == null %}Unknown{% endif %}
-{% endperson %}";
+{%- person where:'[Guid] == ""<testPersonGuid>""' -%}
+{%- assign campus = person | NearestCampus -%}
+{{ person.NickName }}'s Nearest Campus: {% if campus == null -%}Unknown{%- endif -%}
+{%- endperson -%}";
 
             template = template.Replace( "<testPersonGuid>", testPersonGuidString );
 
+            // The person block and the assign tag each leave behind the newline
+            // that followed them.
             var outputExpected = "John's Nearest Campus: Unknown";
 
-            TestHelper.AssertTemplateOutput( outputExpected,
-                template,
-                options );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, template, options );
+
+                Assert.AreEqual( outputExpected, output );
+            } );
         }
 
         #endregion
@@ -254,12 +291,15 @@ Ted's Nearest Campuses: {{ campusList | Select:'Name' | Join:',' }}
         {
             // Ted Decker has two children, Alex and Noah.
             var values = AddTestPersonToMergeDictionary( TestGuids.TestPeople.TedDecker.AsGuid() );
-            var template = @"{% assign children = CurrentPerson | Children | Sort:'NickName' %}{% for child in children %}{{ child.NickName }}|{% endfor %}";
+            var template = @"{%- assign children = CurrentPerson | Children | Sort:'NickName' -%}{%- for child in children -%}{{ child.NickName }}|{%- endfor -%}";
             var outputExpected = @"Alex|Noah|";
 
-            TestHelper.AssertTemplateOutput( outputExpected,
-                template,
-                new LavaTestRenderOptions { MergeFields = values } );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, template, new LavaRenderOptions { MergeFields = values } );
+
+                Assert.AreEqual( outputExpected, output );
+            } );
         }
 
         [TestMethod]
@@ -267,12 +307,15 @@ Ted's Nearest Campuses: {{ campusList | Select:'Name' | Join:',' }}
         {
             // Alex Decker is a child in the Decker family, and has a brother Noah.
             var values = AddTestPersonToMergeDictionary( TestGuids.TestPeople.AlexDecker.AsGuid() );
-            var template = @"{% assign children = CurrentPerson | Children | Sort:'NickName' %}{% for child in children %}{{ child.FullName }}|{% endfor %}";
+            var template = @"{%- assign children = CurrentPerson | Children | Sort:'NickName' -%}{%- for child in children -%}{{ child.FullName }}|{%- endfor -%}";
             var outputExpected = @"";
 
-            TestHelper.AssertTemplateOutput( outputExpected,
-                template,
-                new LavaTestRenderOptions { MergeFields = values } );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, template, new LavaRenderOptions { MergeFields = values } );
+
+                Assert.AreEqual( outputExpected, output );
+            } );
         }
 
         [TestMethod]
@@ -280,12 +323,15 @@ Ted's Nearest Campuses: {{ campusList | Select:'Name' | Join:',' }}
         {
             // Alex Decker has two parents, Ted and Cindy.
             var values = AddTestPersonToMergeDictionary( TestGuids.TestPeople.AlexDecker.AsGuid() );
-            var template = @"{% assign parents = CurrentPerson | Parents | Sort:'NickName' %}{% for parent in parents %}{{ parent.NickName }}|{% endfor %}";
+            var template = @"{%- assign parents = CurrentPerson | Parents | Sort:'NickName' -%}{%- for parent in parents -%}{{ parent.NickName }}|{%- endfor -%}";
             var outputExpected = @"Cindy|Ted|";
 
-            TestHelper.AssertTemplateOutput( outputExpected,
-                template,
-                new LavaTestRenderOptions { MergeFields = values } );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, template, new LavaRenderOptions { MergeFields = values } );
+
+                Assert.AreEqual( outputExpected, output );
+            } );
         }
 
         [TestMethod]
@@ -293,12 +339,15 @@ Ted's Nearest Campuses: {{ campusList | Select:'Name' | Join:',' }}
         {
             // Cindy Decker is a parent of two children with Ted Decker.
             var values = AddTestPersonToMergeDictionary( TestGuids.TestPeople.CindyDecker.AsGuid() );
-            var template = @"{% assign parents = CurrentPerson | Parents | Sort:'NickName' %}{% for parent in parents %}{{ parent.NickName }}|{% endfor %}";
+            var template = @"{%- assign parents = CurrentPerson | Parents | Sort:'NickName' -%}{%- for parent in parents -%}{{ parent.NickName }}|{%- endfor -%}";
             var outputExpected = @"";
 
-            TestHelper.AssertTemplateOutput( outputExpected,
-                template,
-                new LavaTestRenderOptions { MergeFields = values } );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, template, new LavaRenderOptions { MergeFields = values } );
+
+                Assert.AreEqual( outputExpected, output );
+            } );
         }
 
         /// <summary>
@@ -308,11 +357,15 @@ Ted's Nearest Campuses: {{ campusList | Select:'Name' | Join:',' }}
         [TestMethod]
         public void PersonCampus_WithNullInput_ReturnsEmptyString()
         {
-            var template = @"{% assign campus = UndefinedPerson | Campus %}{{ campus.Name }}";
+            var template = @"{%- assign campus = UndefinedPerson | Campus -%}{{ campus.Name }}";
             var outputExpected = "";
 
-            TestHelper.AssertTemplateOutput( outputExpected,
-                template );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, template );
+
+                Assert.AreEqual( outputExpected, output );
+            } );
         }
 
         #endregion
@@ -325,14 +378,17 @@ Ted's Nearest Campuses: {{ campusList | Select:'Name' | Join:',' }}
         {
             var values = AddTestPersonToMergeDictionary( TestGuids.TestPeople.TedDecker.AsGuid() );
 
-            var options = new LavaTestRenderOptions { MergeFields = values };
+            var options = new LavaRenderOptions { MergeFields = values };
 
             var template = "Family Salutation: {{ CurrentPerson | FamilySalutation }}";
             var outputExpected = @"Family Salutation: Ted & Cindy Decker";
 
-            TestHelper.AssertTemplateOutput( outputExpected,
-                template,
-                options );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, template, options );
+
+                Assert.AreEqual( outputExpected, output );
+            } );
         }
 
         #endregion
@@ -343,23 +399,24 @@ Ted's Nearest Campuses: {{ campusList | Select:'Name' | Join:',' }}
         public void PersonNotes_WithCurrentPersonHavingNotes_ReturnsNotes()
         {
             var values = AddTestPersonToMergeDictionary( TestGuids.TestPeople.TedDecker.AsGuid() );
-            var options = new LavaTestRenderOptions { MergeFields = values };
+            var options = new LavaRenderOptions { MergeFields = values };
 
             var template = @"
-{% assign notes = CurrentPerson | Notes:'4,5','asc',2 %}
-{% for note in notes %}
+{%- assign notes = CurrentPerson | Notes:'4,5','asc',2 -%}
+{%- for note in notes -%}
     <p>{{ note.Text }}</p>
-{% endfor %}
+{%- endfor -%}
 ";
 
-            var outputExpected = @"
-<p>Called Ted and heard that his mother is in the hospital and could use prayer.</p>
-<p>Talked to Ted today about starting a new Young Adults ministry</p>
-";
+            var outputExpected = "<p>Called Ted and heard that his mother is in the hospital and could use prayer.</p>"
+                + "<p>Talked to Ted today about starting a new Young Adults ministry</p>";
 
-            TestHelper.AssertTemplateOutput( outputExpected,
-                template,
-                options );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, template, options );
+
+                Assert.AreEqual( outputExpected, output );
+            } );
         }
 
         #endregion
@@ -388,18 +445,21 @@ Ted's Nearest Campuses: {{ campusList | Select:'Name' | Join:',' }}
             SetPersonAccountProtectionProfile( TestGuids.TestPeople.TedDecker, AccountProtectionProfile.Extreme );
 
             var values = AddTestPersonToMergeDictionary( TestGuids.TestPeople.TedDecker.AsGuid() );
-            var options = new LavaTestRenderOptions { MergeFields = values, Wildcards = new List<string> { "<token>" } };
+            var options = new LavaRenderOptions { MergeFields = values };
 
             var template = @"
 Your token is: {{ CurrentPerson | PersonTokenCreate }}
 ";
             var outputExpected = @"
 Your token is: TokenProhibited
-";
+".NormalizeLineEndings();
 
-            TestHelper.AssertTemplateOutput( outputExpected,
-                template,
-                options );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, template, options );
+
+                Assert.AreEqual( outputExpected, output );
+            } );
         }
 
         /// <summary>
@@ -412,18 +472,21 @@ Your token is: TokenProhibited
             SetPersonAccountProtectionProfile( TestGuids.TestPeople.SamHanks, AccountProtectionProfile.Medium );
 
             var values = AddTestPersonToMergeDictionary( TestGuids.TestPeople.SamHanks.AsGuid(), null, "Person" );
-            var options = new LavaTestRenderOptions { MergeFields = values, Wildcards = new List<string> { "<token>" } };
+            var options = new LavaRenderOptions { MergeFields = values };
 
             var template = @"
 Your token is: {{ Person | PersonTokenCreate }}
 ";
             var outputExpected = @"
 Your token is: <token>
-";
+".NormalizeLineEndings();
 
-            TestHelper.AssertTemplateOutput( outputExpected,
-                template,
-                options );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, template, options );
+
+                LavaAssert.Matches( outputExpected, output, "<token>" );
+            } );
         }
 
         /// <summary>
@@ -435,18 +498,21 @@ Your token is: <token>
             SetPersonAccountProtectionProfile( TestGuids.TestPeople.BillMarble, AccountProtectionProfile.Low );
 
             var values = AddTestPersonToMergeDictionary( TestGuids.TestPeople.BillMarble.AsGuid() );
-            var options = new LavaTestRenderOptions { MergeFields = values, Wildcards = new List<string> { "<token>" } };
+            var options = new LavaRenderOptions { MergeFields = values };
 
             var template = @"
 Your token is: {{ CurrentPerson | PersonTokenCreate }}
 ";
             var outputExpected = @"
 Your token is: <token>
-";
+".NormalizeLineEndings();
 
-            TestHelper.AssertTemplateOutput( outputExpected,
-                template,
-                options );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, template, options );
+
+                LavaAssert.Matches( outputExpected, output, "<token>" );
+            } );
         }
         private void SetPersonAccountProtectionProfile( String guid, AccountProtectionProfile profile )
         {
@@ -473,17 +539,20 @@ Your token is: <token>
                 { "IdentifierToken", actionIdentifier }
             };
 
-            var options = new LavaTestRenderOptions { MergeFields = values };
+            var options = new LavaRenderOptions { MergeFields = values };
 
             const string template = @"
-{% assign person = IdentifierToken | PersonByPersonActionIdentifier: 'photo-opt-out' %}
+{%- assign person = IdentifierToken | PersonByPersonActionIdentifier: 'photo-opt-out' -%}
 Current Person Guid = {{ person.Guid }}
 ";
-            string outputExpected = $"Current Person Guid = {person.Guid}";
+            string outputExpected = $"Current Person Guid = {person.Guid}\n";
 
-            TestHelper.AssertTemplateOutput( outputExpected,
-                template,
-                options );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, template, options );
+
+                Assert.AreEqual( outputExpected, output );
+            } );
         }
 
         #endregion
@@ -496,20 +565,23 @@ Current Person Guid = {{ person.Guid }}
         {
             var values = AddTestPersonToMergeDictionary( TestGuids.TestPeople.TedDecker.AsGuid() );
 
-            var options = new LavaTestRenderOptions { MergeFields = values };
+            var options = new LavaRenderOptions { MergeFields = values };
 
             var template = @"
-{% assign steps = CurrentPerson | Steps %}
-{% for step in steps %}
+{%- assign steps = CurrentPerson | Steps -%}
+{%- for step in steps -%}
     <p>{{ step.StepType.Name }} - {{ step.StepStatus.Name }}</p>
-{% endfor %}
+{%- endfor -%}
 ";
 
             var outputExpected = @"<p>Baptism-Success</p><p>Confirmation-Success</p><p>Marriage-Incomplete</p><p>Marriage-Success</p><p>Attender-Completed</p><p>Volunteer-Started</p>";
 
-            TestHelper.AssertTemplateOutput( outputExpected,
-                template,
-                options );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, template, options );
+
+                Assert.AreEqual( outputExpected, output );
+            } );
         }
 
         [TestMethod]
@@ -585,19 +657,22 @@ Current Person Guid = {{ person.Guid }}
             values.Add( "stepType", stepType );
             values.Add( "stepStatus", stepStatus );
 
-            var options = new LavaTestRenderOptions { MergeFields = values };
+            var options = new LavaRenderOptions { MergeFields = values };
 
             var template = @"
-{% assign steps = CurrentPerson | Steps:stepProgram,stepStatus,stepType %}
+{%- assign steps = CurrentPerson | Steps:stepProgram,stepStatus,stepType -%}
 {{ CurrentPerson.FullName }}:
-{% for step in steps %}
+{%- for step in steps -%}
     <p>{{ step.StepType.Name }} - {{ step.StepStatus.Name }}</p>
-{% endfor %}
+{%- endfor -%}
 ";
 
-            TestHelper.AssertTemplateOutput( expectedOutput,
-                template,
-                options );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, template, options );
+
+                Assert.AreEqual( expectedOutput, output );
+            } );
         }
 
         #endregion
@@ -612,17 +687,21 @@ Current Person Guid = {{ person.Guid }}
 
             var values = AddTestPersonToMergeDictionary( TestGuids.TestPeople.AlishaMarble.AsGuid() );
             values.AddOrReplace( "GroupId", group.Id );
-            var options = new LavaTestRenderOptions { MergeFields = values };
+            var options = new LavaRenderOptions { MergeFields = values };
 
             const string template = @"
-{% assign isInRole = CurrentPerson | IsInSecurityRole: GroupId %}
+{%- assign isInRole = CurrentPerson | IsInSecurityRole: GroupId -%}
 User is in Role = {{ isInRole }}
 ";
-            const string outputExpected = "User is in Role = true";
+            // The assign tag leaves behind the newline that followed it.
+            const string outputExpected = "User is in Role = true\n";
 
-            TestHelper.AssertTemplateOutput( outputExpected,
-                template,
-                options );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, template, options );
+
+                Assert.AreEqual( outputExpected, output );
+            } );
         }
 
         private static string _TestSecurityGroupGuid = "A92BC2E7-912F-4538-B5FA-EECFC1D7C68A";
@@ -661,15 +740,21 @@ User is in Role = {{ isInRole }}
 
             var values = AddTestPersonToMergeDictionary( TestGuids.TestPeople.AlishaMarble.AsGuid() );
             values.AddOrReplace( "GroupId", group.Id );
-            var options = new LavaTestRenderOptions { MergeFields = values };
+            var options = new LavaRenderOptions { MergeFields = values };
 
             const string template = @"
-{% assign isInRole = CurrentPerson | IsInSecurityRole: GroupId %}
+{%- assign isInRole = CurrentPerson | IsInSecurityRole: GroupId -%}
 User is in Role = {{ isInRole }}
 ";
-            const string outputExpected = "User is in Role = true";
+            // The assign tag leaves behind the newline that followed it.
+            const string outputExpected = "User is in Role = true\n";
 
-            TestHelper.AssertTemplateOutput( outputExpected, template, options );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, template, options );
+
+                Assert.AreEqual( outputExpected, output );
+            } );
         }
 
         [TestMethod]
@@ -680,15 +765,21 @@ User is in Role = {{ isInRole }}
 
             var values = AddTestPersonToMergeDictionary( TestGuids.TestPeople.TedDecker.AsGuid() );
             values.AddOrReplace( "GroupId", group.Id );
-            var options = new LavaTestRenderOptions { MergeFields = values };
+            var options = new LavaRenderOptions { MergeFields = values };
 
             const string template = @"
-{% assign isInRole = CurrentPerson | IsInSecurityRole: GroupId %}
+{%- assign isInRole = CurrentPerson | IsInSecurityRole: GroupId -%}
 User is in Role = {{ isInRole }}
 ";
-            const string outputExpected = "User is in Role = false";
+            // The assign tag leaves behind the newline that followed it.
+            const string outputExpected = "User is in Role = false\n";
 
-            TestHelper.AssertTemplateOutput( outputExpected, template, options );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, template, options );
+
+                Assert.AreEqual( outputExpected, output );
+            } );
         }
 
         [TestMethod]
@@ -696,15 +787,21 @@ User is in Role = {{ isInRole }}
         {
             var values = AddTestPersonToMergeDictionary( TestGuids.TestPeople.TedDecker.AsGuid() );
             values.AddOrReplace( "GroupId", "-1" );
-            var options = new LavaTestRenderOptions { MergeFields = values };
+            var options = new LavaRenderOptions { MergeFields = values };
 
             const string template = @"
-{% assign isInRole = CurrentPerson | IsInSecurityRole: GroupId %}
+{%- assign isInRole = CurrentPerson | IsInSecurityRole: GroupId -%}
 User is in Role = {{ isInRole }}
 ";
-            const string outputExpected = "User is in Role = false";
+            // The assign tag leaves behind the newline that followed it.
+            const string outputExpected = "User is in Role = false\n";
 
-            TestHelper.AssertTemplateOutput( outputExpected, template, options );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, template, options );
+
+                Assert.AreEqual( outputExpected, output );
+            } );
         }
 
         #endregion

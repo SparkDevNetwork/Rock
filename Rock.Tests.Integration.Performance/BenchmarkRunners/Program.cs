@@ -19,7 +19,6 @@ using System;
 using BenchmarkDotNet.Configs;
 using BenchmarkDotNet.Running;
 
-using Rock.Lava.Fluid;
 using Rock.Tests.Integration.Performance.Lava;
 using Rock.Tests.Integration.TestFramework.Lava;
 using Rock.Tests.Lava;
@@ -91,19 +90,29 @@ namespace Rock.Tests.Integration.Performance.BenchmarkRunners
 
         private static void RunLavaTemplateParse()
         {
-            LavaUnitTestHelper.Initialize( testFluidEngine: true );
+            /*
+                9/26/26 - CLAUDE
 
+                This used to initialize the unit test Lava helper first. The test's
+                base class now builds its engine on first use, so there is nothing
+                to initialize.
+
+                Naming the factory type here is also not possible: this project
+                references both Rock.Tests and Rock.Tests.Integration, and the Lava
+                test framework source is compiled into both, so the type name is
+                ambiguous from here.
+
+                Reason: The engine is created on demand, so no setup call is needed.
+            */
             var tests = new CollectionFilterTests();
             tests.AddToArray_AddToStringCollection_AppendsNewItem();
         }
 
         private static void RunLavaTemplateParse( string[] args )
         {
-            LavaIntegrationTestHelper.Initialize( testFluidEngine: true, loadShortcodes: false );
+            var engine = LavaIntegrationEngineFactory.InitializeCurrentEngine( shouldRegisterDynamicShortcodes: false );
 
-            var lavaHelper = LavaIntegrationTestHelper.CurrentInstance;
-
-            lavaHelper.GetTemplateOutput( typeof( FluidEngine ), "" );
+            engine.RenderTemplate( "" );
         }
     }
 }

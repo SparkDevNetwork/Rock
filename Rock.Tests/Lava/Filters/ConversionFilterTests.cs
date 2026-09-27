@@ -16,10 +16,14 @@
 //
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
+using Rock.Tests.Lava.Shared;
+using Rock.Tests.Shared.Constants;
+
 namespace Rock.Tests.Lava.Filters
 {
     [TestClass]
-    public class ConversionFilterTests : LavaUnitTestBase
+    [TestCategory( TestFeatures.Lava )]
+    public class ConversionFilterTests
     {
         [TestMethod]
         public void AsGuidFilter_DocumentationExample_ReturnsExpectedOutput()
@@ -39,14 +43,26 @@ namespace Rock.Tests.Lava.Filters
 {% endif %}
 ";
 
-            var expectedOutput = @"
-<p>Value 1: 8FEDC6EE-8630-41ED-9FC5-C7157FD1EAA4</p>
-<p>Value 2: 8FEDC6EE863041ED9FC5C7157FD1EAA4</p>
-<p>Compared as Strings, these values are different.</p>
-<p>Compared as Guids, these values are the same.</p>
-";
+            // Every assign and if tag leaves behind the newline that followed it, so
+            // the rendered output carries blank lines the documentation example does
+            // not show. The expected value is built from explicit parts because
+            // blank lines inside a string literal are invisible to a reader.
+            var expectedOutput =
+                "\n\n\n"
+                + "<p>Value 1: 8FEDC6EE-8630-41ED-9FC5-C7157FD1EAA4</p>\n"
+                + "<p>Value 2: 8FEDC6EE863041ED9FC5C7157FD1EAA4</p>\n"
+                + "\n"
+                + "<p>Compared as Strings, these values are different.</p>\n"
+                + "\n\n\n\n"
+                + "<p>Compared as Guids, these values are the same.</p>\n"
+                + "\n";
 
-            TestHelper.AssertTemplateOutput( expectedOutput.ToString(), input, ignoreWhitespace: true );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, input );
+
+                Assert.AreEqual( expectedOutput, output );
+            } );
         }
 
         /// <summary>
@@ -63,7 +79,12 @@ namespace Rock.Tests.Lava.Filters
             Assert.IsNotNull( expectedResult );
 
             // Verify the Lava filter output.
-            TestHelper.AssertTemplateOutput( expectedResult.ToString(), "{{ '" + input + "' | AsGuid }}" );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, "{{ '" + input + "' | AsGuid }}" );
+
+                Assert.AreEqual( expectedResult.ToString(), output );
+            } );
         }
 
         /// <summary>
@@ -80,7 +101,12 @@ namespace Rock.Tests.Lava.Filters
             Assert.IsNull( expectedResult );
 
             // Verify the Lava filter output.
-            TestHelper.AssertTemplateOutput( string.Empty, "{{ '" + input + "' | AsGuid }}" );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, "{{ '" + input + "' | AsGuid }}" );
+
+                Assert.AreEqual( string.Empty, output );
+            } );
         }
     }
 

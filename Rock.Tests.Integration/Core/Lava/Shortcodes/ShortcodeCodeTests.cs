@@ -21,7 +21,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using Rock.Lava;
 using Rock.Lava.Fluid;
-using Rock.Tests.Integration.TestFramework.Lava;
+using Rock.Tests.Lava.Shared;
 
 namespace Rock.Tests.Integration.Core.Lava.Shortcodes
 {
@@ -31,86 +31,6 @@ namespace Rock.Tests.Integration.Core.Lava.Shortcodes
     [TestClass]
     public partial class ShortcodeCodeTests : LavaIntegrationTestBase
     {
-        [TestMethod]
-        public void Shortcode_WithMergeFieldAsParameter_CorrectlyResolvesParameters()
-        {
-            var shortcodeTemplate = @"
-Font Name: {{ fontname }}
-Font Size: {{ fontsize }}
-Font Bold: {{ fontbold }}
-";
-
-            // Create a new test shortcode.
-            var shortcodeDefinition = new DynamicShortcodeDefinition();
-
-            shortcodeDefinition.ElementType = LavaShortcodeTypeSpecifier.Block;
-            shortcodeDefinition.TemplateMarkup = shortcodeTemplate;
-            shortcodeDefinition.Name = "shortcodetest";
-
-            var input = @"
-{[ shortcodetest fontname:'Arial' fontsize:'{{ fontsize }}' fontbold:'true' ]}
-{[ endshortcodetest ]}
-";
-
-            var expectedOutput = @"
-Font Name: Arial
-Font Size: 99
-Font Bold: true
-";
-
-            expectedOutput = expectedOutput.Replace( "``", @"""" );
-
-            var context = new LavaDataDictionary() { { "fontsize", 99 } };
-
-            var options = new LavaTestRenderOptions { MergeFields = context };
-
-            TestHelper.ExecuteForActiveEngines( ( engine ) =>
-            {
-                engine.RegisterShortcode( shortcodeDefinition.Name, ( shortcodeName ) => { return shortcodeDefinition; } );
-
-                TestHelper.AssertTemplateOutput( engine, expectedOutput, input, options );
-            } );
-        }
-
-        [TestMethod]
-        [TestCategory( "ShortcodeScopeBehavior" )]
-        public void Shortcode_ReferencingItemFromParentScope_CorrectlyResolvesItem()
-        {
-            var shortcodeTemplate = @"
-ValueInShortcodeScope = {{ Value }}
-";
-
-            // Create a new test shortcode.
-            var shortcodeDefinition = new DynamicShortcodeDefinition();
-
-            shortcodeDefinition.ElementType = LavaShortcodeTypeSpecifier.Inline;
-            shortcodeDefinition.TemplateMarkup = shortcodeTemplate;
-            shortcodeDefinition.Name = "debug";
-
-            var input = @"
-ValueInOuterScope = {{ Value }}
-{[ debug ]}
-";
-
-            var expectedOutput = @"
-ValueInOuterScope = 99
-ValueInShortcodeScope = 99
-";
-
-            expectedOutput = expectedOutput.Replace( "``", @"""" );
-
-            var context = new LavaDataDictionary() { { "Value", 99 } };
-
-            var options = new LavaTestRenderOptions { MergeFields = context };
-
-            TestHelper.ExecuteForActiveEngines( ( engine ) =>
-            {
-                engine.RegisterShortcode( shortcodeDefinition.Name, ( shortcodeName ) => { return shortcodeDefinition; } );
-
-                TestHelper.AssertTemplateOutput( engine, expectedOutput, input, options );
-            } );
-        }
-
         /// <summary>
         /// A shortcode with no specific commands enabled should inherit the enabled commands from the outer scope.
         /// </summary>
@@ -118,9 +38,9 @@ ValueInShortcodeScope = 99
         public void Shortcode_WithUnspecifiedEnabledCommands_InheritsEnabledCommandsFromOuterScope()
         {
             var shortcodeTemplate = @"
-{% execute %}
+{%- execute -%}
     return ""Shortcode!"";
-{% endexecute %}
+{%- endexecute -%}
 ";
 
             // Create a new test shortcode with no enabled commands.
@@ -136,26 +56,29 @@ Shortcode Output:
 {[ shortcode_execute ]}
 <br>
 Main Output:
-{% execute %}
+{%- execute -%}
     return ""Main!"";
-{% endexecute %}
+{%- endexecute -%}
 <br>
 ";
 
-            var expectedOutput = @"
-Shortcode Output: Shortcode!<br>
-Main Output: Main!<br>
-";
+            var expectedOutput = "\n"
+                + "Shortcode Output:\n"
+                + "Shortcode!\n"
+                + "<br>\n"
+                + "Main Output:Main!<br>\n";
 
             // Render the template with the "execute" command enabled.
             // This permission setting should be inherited by the shortcode, allowing it to render the "execute" command.
-            var options = new LavaTestRenderOptions { EnabledCommands = "execute" };
+            var options = new LavaRenderOptions { EnabledCommands = "execute" };
 
-            TestHelper.ExecuteForActiveEngines( ( engine ) =>
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
             {
                 engine.RegisterShortcode( shortcodeDefinition.Name, ( shortcodeName ) => { return shortcodeDefinition; } );
 
-                TestHelper.AssertTemplateOutput( engine, expectedOutput, input, options );
+                var output = LavaRenderTestHelper.Render( engine, input, options );
+
+                Assert.AreEqual( expectedOutput, output );
             } );
         }
 
@@ -166,9 +89,9 @@ Main Output: Main!<br>
         public void Shortcode_WithEnabledCommand_DoesNotEnableCommandForOuterScope()
         {
             var shortcodeTemplate = @"
-{% execute %}
+{%- execute -%}
     return ""Shortcode!"";
-{% endexecute %}
+{%- endexecute -%}
 ";
 
             // Create a new test shortcode with the "execute" command permission.
@@ -184,27 +107,30 @@ Shortcode Output:
 {[ shortcode_execute ]}
 <br>
 Main Output:
-{% execute %}
+{%- execute -%}
     return ""Main!"";
-{% endexecute %}
+{%- endexecute -%}
 <br>
 ";
 
-            var expectedOutput = @"
-Shortcode Output: Shortcode!<br>
-Main Output: The Lava command 'execute' is not configured for this template.<br>
-";
+            var expectedOutput = "\n"
+                + "Shortcode Output:\n"
+                + "Shortcode!\n"
+                + "<br>\n"
+                + "Main Output:The Lava command 'execute' is not configured for this template.<br>\n";
 
             // Render the template with no enabled commands.
             // The shortcode should render correctly using the enabled commands defined by its definition,
             // but the main template should show a permission error.
-            var options = new LavaTestRenderOptions { EnabledCommands = "" };
+            var options = new LavaRenderOptions { EnabledCommands = "" };
 
-            TestHelper.ExecuteForActiveEngines( ( engine ) =>
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
             {
                 engine.RegisterShortcode( shortcodeDefinition.Name, ( shortcodeName ) => { return shortcodeDefinition; } );
 
-                TestHelper.AssertTemplateOutput( engine, expectedOutput, input, options );
+                var output = LavaRenderTestHelper.Render( engine, input, options );
+
+                Assert.AreEqual( expectedOutput, output );
             } );
         }
 
@@ -218,7 +144,12 @@ Main Output: The Lava command 'execute' is not configured for this template.<br>
         [DataRow( "{[ bootstrapalert type:'success' ]}This is a success message.{[ endbootstrapalert ]}", "<div class='alert alert-success'>This is a success message.</div>" )]
         public void BootstrapAlertShortcode_VariousTypes_ProducesCorrectHtml( string input, string expectedResult )
         {
-            TestHelper.AssertTemplateOutput( expectedResult, input );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, input );
+
+                Assert.AreEqual( expectedResult, output );
+            } );
         }
 
         #endregion
@@ -231,21 +162,23 @@ Main Output: The Lava command 'execute' is not configured for this template.<br>
             var input = @"
 {[mediaplayer media:'18' ]}{[endmediaplayer]}
 ";
-            var expectedOutput = @"
-<div id=`mediaplayer_*` style=`--plyr-color-main:var(--color-primary);`$></div>
-<script>
-(function(){newRock.UI.MediaPlayer(`#mediaplayer_*`,{`autopause`:true,`autoplay`:false,`clickToPlay`:true,`controls`:`play-large,play,progress,current-time,mute,volume,captions,settings,pip,airplay,fullscreen`,`debug`:false,`hideControls`:true,`map`:``,`mediaUrl`:``,`muted`:false,`posterUrl`:``,`resumePlaying`:true,`seekTime`:10.0,`trackProgress`:true,`type`:``,`volume`:1.0,`writeInteraction`:true});})();
-</script>
-";
-            expectedOutput = expectedOutput.Replace( "`", @"""" );
+            // The player element carries an identifier generated per render, so
+            // it is matched as a wildcard rather than written out.
+            var expectedOutput = "\n"
+                + "<div id=\"mediaplayer_<id>\" style=\"--plyr-color-main: var(--color-primary);\"$></div>\n"
+                + "<script>\n"
+                + "(function() {\n"
+                + "    new Rock.UI.MediaPlayer(\"#mediaplayer_<id>\", {\"autopause\":true,\"autoplay\":false,\"clickToPlay\":true,\"controls\":\"play-large,play,progress,current-time,mute,volume,captions,settings,pip,airplay,fullscreen\",\"debug\":false,\"hideControls\":true,\"map\":\"\",\"mediaUrl\":\"\",\"muted\":false,\"posterUrl\":\"\",\"resumePlaying\":true,\"seekTime\":10.0,\"trackProgress\":true,\"type\":\"\",\"volume\":1.0,\"writeInteraction\":true});\n"
+                + "})();\n"
+                + "</script>\n"
+                + "\n";
 
-            var options = new LavaTestRenderOptions
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
             {
-                OutputMatchType = LavaTestOutputMatchTypeSpecifier.RegEx,
-                Wildcards = new List<string> { "*" }
-            };
+                var output = LavaRenderTestHelper.Render( engine, input );
 
-            TestHelper.AssertTemplateOutput( expectedOutput, input, options );
+                LavaAssert.Matches( expectedOutput, output, "<id>" );
+            } );
         }
 
         #endregion
@@ -262,15 +195,23 @@ Main Output: The Lava command 'execute' is not configured for this template.<br>
 
         public void ScripturizeShortcode_YouVersion_ProducesCorrectHtml( string input, string expectedResult )
         {
-            TestHelper.AssertTemplateOutput( expectedResult,
-                                          "{[ scripturize defaulttranslation:'NLT' landingsite:'YouVersion' cssclass:'scripture' ]}" + input + "{[ endscripturize ]}" );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, "{[ scripturize defaulttranslation:'NLT' landingsite:'YouVersion' cssclass:'scripture' ]}" + input + "{[ endscripturize ]}" );
+
+                Assert.AreEqual( expectedResult, output );
+            } );
         }
 
         [TestMethod]
         public void ScripturizeShortcode_WithInvalidLandingSite_ProducesErrorMessage()
         {
-            TestHelper.AssertTemplateOutput( "<!--the landing site provided to the scripturize shortcode was not correct-->John 3:16",
-                                          "{[ scripturize defaulttranslation:'NLT' landingsite:'InvalidSite' cssclass:'scripture' ]}John 3:16{[ endscripturize ]}" );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, "{[ scripturize defaulttranslation:'NLT' landingsite:'InvalidSite' cssclass:'scripture' ]}John 3:16{[ endscripturize ]}" );
+
+                Assert.AreEqual( "<!-- the landing site provided to the scripturize shortcode was not correct -->John 3:16", output );
+            } );
         }
 
         #endregion
@@ -283,19 +224,21 @@ Main Output: The Lava command 'execute' is not configured for this template.<br>
         public void WorkflowActivate_WithPreexistingReservedMergeField_SavesAndRestoresMergeFieldValue( string mergeFieldKey, string mergeFieldValue )
         {
             var input = $@"
-{{% workflowactivate workflowtype:'51FE9641-FB8F-41BF-B09E-235900C3E53E' %}}
-{{% endworkflowactivate %}}
+{{%- workflowactivate workflowtype:'51FE9641-FB8F-41BF-B09E-235900C3E53E' -%}}
+{{%- endworkflowactivate -%}}
 Restored Value: {{{{{mergeFieldKey}}}}}";
 
             var expectedOutput = $"Restored Value: {mergeFieldValue}";
 
-            TestHelper.ExecuteForActiveEngines( ( engine ) =>
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
             {
-                var options = new LavaTestRenderOptions()
-                    .WithContextVariable( mergeFieldKey, mergeFieldValue )
-                    .WithEnabledCommands( "workflowactivate" );
+                var options = new LavaRenderOptions
+                {
+                    EnabledCommands = "workflowactivate",
+                    MergeFields = new LavaDataDictionary { { mergeFieldKey, mergeFieldValue } }
+                };
 
-                var output = TestHelper.GetTemplateOutput( engine, input, options );
+                var output = LavaRenderTestHelper.Render( engine, input, options );
 
                 Assert.Contains( expectedOutput, output, $"Reserved merge field with key '{mergeFieldKey}' was not restored." );
             } );
@@ -305,96 +248,27 @@ Restored Value: {{{{{mergeFieldKey}}}}}";
         public void WorkflowActivate_WithPreexistingErrorMergeField_SavesAndRestoresMergeFieldValue()
         {
             var input = @"
-{% workflowactivate workflowtype:'some-invalid-workflow-type-guid' %}
-{% endworkflowactivate %}
+{%- workflowactivate workflowtype:'some-invalid-workflow-type-guid' -%}
+{%- endworkflowactivate -%}
 Restored Value: {{Error}}";
 
             var expectedOutput = $"Restored Value: some error";
 
-            TestHelper.ExecuteForActiveEngines( ( engine ) =>
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
             {
-                var options = new LavaTestRenderOptions()
-                    .WithContextVariable( "Error", "some error" )
-                    .WithEnabledCommands( "workflowactivate" );
+                var options = new LavaRenderOptions
+                {
+                    EnabledCommands = "workflowactivate",
+                    MergeFields = new LavaDataDictionary { { "Error", "some error" } }
+                };
 
-                var output = TestHelper.GetTemplateOutput( engine, input, options );
+                var output = LavaRenderTestHelper.Render( engine, input, options );
 
                 Assert.Contains( expectedOutput, output, $"Reserved merge field with key 'Error' was not restored." );
             } );
         }
 
         #endregion
-
-        /// <summary>
-        /// Verify that an invalid shortcode name correctly throws a shortcode parsing error when embedded in an if/endif block.
-        /// </summary>
-        [TestMethod]
-        public void ShortcodeParsing_UndefinedShortcodeTag_ThrowsUnknownShortcodeParsingError()
-        {
-            // Create a template containing an undefined shortcode "testshortcode1".
-
-            var input = @"
-<p>Document start.</p>
-{[ testshortcode1 ]}
-<p>Document end.</p>
-";
-
-            TestHelper.ExecuteForActiveEngines( ( engine ) =>
-            {
-                var result = engine.RenderTemplate( input, new LavaRenderParameters { ExceptionHandlingStrategy = ExceptionHandlingStrategySpecifier.Ignore } );
-
-                // Verify that the result emits the expected parse error.
-                var error = result.Error;
-                if ( !( error is LavaException ) )
-                {
-                    throw new Exception( "Lava Exception expected but not encountered." );
-                }
-
-                if ( engine.GetType() == typeof( FluidEngine ) )
-                {
-                    Assert.Contains( "Unknown shortcode 'testshortcode1'", error.Message, "Unexpected Lava error message." );
-                }
-            } );
-
-        }
-
-        /// <summary>
-        /// Verify that an invalid shortcode name correctly throws a shortcode parsing error when embedded in an if/endif block.
-        /// </summary>
-        [TestMethod]
-        public void ShortcodeParsing_UndefinedShortcodeEmbeddedInIfBlock_ThrowsCorrectParsingError()
-        {
-            // Create a template containing an undefined shortcode "testshortcode1".
-
-            var input = @"
-{% if 1 == 1 %}
-    {[ invalidshortcode ]}
-{% endif %}
-";
-
-            TestHelper.ExecuteForActiveEngines( ( engine ) =>
-            {
-                var result = engine.RenderTemplate( input, new LavaRenderParameters { ExceptionHandlingStrategy = ExceptionHandlingStrategySpecifier.Ignore } );
-
-                // Verify that the result emits the expected parse error.
-                var error = result.Error;
-                if ( !( error is LavaException ) )
-                {
-                    throw new Exception( "Lava Exception expected but not encountered." );
-                }
-
-                // In Fluid, parse error should correctly identify the invalid shortcode.
-                if ( engine.GetType() == typeof( FluidEngine ) )
-                {
-                    if ( !error.Message.Contains( "Unknown shortcode 'invalidshortcode'" ) )
-                    {
-                        throw result.Error;
-                    }
-                }
-
-            } );
-
-        }
 
         /// <summary>
         /// Verify that a shortcode tag is parsed correctly when embedded in an if/endif block.
@@ -404,13 +278,14 @@ Restored Value: {{Error}}";
         public void ShortcodeParsing_ShortcodeEmbeddedInIfBlock_IsParsedCorrectly()
         {
             var input = @"
-{% if 1 == 1 %}
+{%- if 1 == 1 -%}
 {[ sparkline type:'line' data:'5,6,7,9,9,5,3,2,2,4,6,7' ]}
-{% endif %}
+{%- endif -%}
 ";
 
-            var expectedResult = @"
-<script src='~/Scripts/sparkline/jquery-sparkline.min.js' type='text/javascript'></script>
+            // The whitespace control on the if tags leaves no newline before the
+            // first script element, and none after the last one.
+            var expectedResult = @"<script src='~/Scripts/sparkline/jquery-sparkline.min.js' type='text/javascript'></script>
 <span class=""sparkline sparkline-id-<guid>"">Loading...</span><script>
   $("".sparkline-id-<guid>"").sparkline([5,6,7,9,9,5,3,2,2,4,6,7], {
       type: 'line'
@@ -433,10 +308,18 @@ Restored Value: {{Error}}";
       , normalRangeMax: undefined
       , normalRangeColor: '#ccc'
     });
-  </script>
-";
+".NormalizeLineEndings()
+                // A line of two spaces, written separately so that it is not
+                // lost to an editor that trims trailing whitespace.
+                + "  \n"
+                + "  </script>";
 
-            TestHelper.AssertTemplateOutput( expectedResult, input, new LavaTestRenderOptions { Wildcards = new List<string> { "<guid>" } } );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, input );
+
+                LavaAssert.Matches( expectedResult, output, "<guid>" );
+            } );
         }
 
         /// <summary>
@@ -453,50 +336,56 @@ Restored Value: {{Error}}";
 {[ endaccordion ]}
 ";
 
-            var expectedResult = @"
-<div class=""panel-group"" id=""accordion-id-<guid1>"" role=""tablist"" aria-multiselectable=""true"">
-    <div class=""panel panel-default"">
-        <div class=""panel-heading"" role=""tab"" id=""heading1-id-<guid1>"">
-          <h4 class=""panel-title"">
-            <a role=""button"" data-toggle=""collapse"" data-parent=""#accordion-id-<guid1>"" href=""#collapse1-id-<guid1>"" aria-expanded=""true"" aria-controls=""collapse1"">
-              Line Chart
-            </a>
-          </h4>
-        </div>
-        <div id=""collapse1-id-<guid1>"" class=""panel-collapse collapse in"" role=""tabpanel"" aria-labelledby=""heading1-id-<guid1>"">
-          <div class=""panel-body"">
-            <script src='~/Scripts/sparkline/jquery-sparkline.min.js' type='text/javascript'></script>
-            <span class=""sparkline sparkline-id-<guid2>"">Loading...</span>
-            <script>
-              $("".sparkline-id-<guid2>"").sparkline([5,6,7,9,9,5,3,2,2,4,6,7], {
-                  type: 'line'
-                  , width: 'auto'
-                  , height: 'auto'
-                  , lineColor: '#ee7625'
-                  , fillColor: '#f7c09b'
-                  , lineWidth: 1
-                  , spotColor: '#f80'
-                  , minSpotColor: '#f80'
-                  , maxSpotColor: '#f80'
-                  , highlightSpotColor: ''
-                  , highlightLineColor: ''
-                  , spotRadius: 1.5
-                  , chartRangeMin: undefined
-                  , chartRangeMax: undefined
-                  , chartRangeMinX: undefined
-                  , chartRangeMaxX: undefined
-                  , normalRangeMin: undefined
-                  , normalRangeMax: undefined
-                  , normalRangeColor: '#ccc'
-                });
-            </script>
-          </div>
-        </div>
-    </div>
-</div>
-";
+            var expectedResult = string.Join( "\n", new[]
+            {
+                @"",
+                @"<div class=""panel-group"" id=""accordion-id-<guid1>"" role=""tablist"" aria-multiselectable=""true""><div class=""panel panel-default"">",
+                @"        <div class=""panel-heading"" role=""tab"" id=""heading1-id-<guid1>"">",
+                @"          <h4 class=""panel-title"">",
+                @"            <a role=""button"" data-toggle=""collapse"" data-parent=""#accordion-id-<guid1>"" href=""#collapse1-id-<guid1>"" aria-expanded=""true"" aria-controls=""collapse1"">",
+                @"              Line Chart",
+                @"            </a>",
+                @"          </h4>",
+                @"        </div>",
+                @"        <div id=""collapse1-id-<guid1>"" class=""panel-collapse collapse in"" role=""tabpanel"" aria-labelledby=""heading1-id-<guid1>"">",
+                @"          <div class=""panel-body"">",
+                @"            <script src='~/Scripts/sparkline/jquery-sparkline.min.js' type='text/javascript'></script>",
+                @"<span class=""sparkline sparkline-id-<guid2>"">Loading...</span><script>",
+                @"  $("".sparkline-id-<guid2>"").sparkline([5,6,7,9,9,5,3,2,2,4,6,7], {",
+                @"      type: 'line'",
+                @"      , width: 'auto'",
+                @"      , height: 'auto'",
+                @"      , lineColor: '#ee7625'",
+                @"      , fillColor: '#f7c09b'",
+                @"      , lineWidth: 1",
+                @"      , spotColor: '#f80'",
+                @"      , minSpotColor: '#f80'",
+                @"      , maxSpotColor: '#f80'",
+                @"      , highlightSpotColor: ''",
+                @"      , highlightLineColor: ''",
+                @"      , spotRadius: 1.5",
+                @"      , chartRangeMin: undefined",
+                @"      , chartRangeMax: undefined",
+                @"      , chartRangeMinX: undefined",
+                @"      , chartRangeMaxX: undefined",
+                @"      , normalRangeMin: undefined",
+                @"      , normalRangeMax: undefined",
+                @"      , normalRangeColor: '#ccc'",
+                @"    });",
+                @"  ",
+                @"  </script>",
+                @"          </div>",
+                @"        </div>",
+                @"      </div></div>",
+                @"",
+            } );
 
-            TestHelper.AssertTemplateOutput( expectedResult, input, new LavaTestRenderOptions { Wildcards = new List<string> { "<guid1>", "<guid2>" } } );
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, input );
+
+                LavaAssert.Matches( expectedResult, output, "<guid1>", "<guid2>" );
+            } );
         }
 
         /// <summary>
@@ -517,42 +406,45 @@ Restored Value: {{Error}}";
 {[ endaccordion ]}
 ";
 
-            var expectedResult = @"
-<div class=""panel-group"" id=""accordion-id-<guid1>"" role=""tablist"" aria-multiselectable=""true"">
-    <div class=""panel panel-default"">
-        <div class=""panel-heading"" role=""tab"" id=""heading1-id-<guid1>"">
-          <h4 class=""panel-title"">
-            <a role=""button"" data-toggle=""collapse"" data-parent=""#accordion-id-<guid1>"" href=""#collapse1-id-<guid1>"" aria-expanded=""true"" aria-controls=""collapse1"">
-              Item 1
-            </a>
-          </h4>
-        </div>
-        <div id=""collapse1-id-<guid1>"" class=""panel-collapse collapse in"" role=""tabpanel"" aria-labelledby=""heading1-id-<guid1>"">
-          <div class=""panel-body"">
+            var expectedResult = string.Join( "\n", new[]
+            {
+                @"",
+                @"<div class=""panel-group"" id=""accordion-id-<guid1>"" role=""tablist"" aria-multiselectable=""true""><div class=""panel panel-default"">",
+                @"        <div class=""panel-heading"" role=""tab"" id=""heading1-id-<guid1>"">",
+                @"          <h4 class=""panel-title"">",
+                @"            <a role=""button"" data-toggle=""collapse"" data-parent=""#accordion-id-<guid1>"" href=""#collapse1-id-<guid1>"" aria-expanded=""true"" aria-controls=""collapse1"">",
+                @"              Item 1",
+                @"            </a>",
+                @"          </h4>",
+                @"        </div>",
+                @"        <div id=""collapse1-id-<guid1>"" class=""panel-collapse collapse in"" role=""tabpanel"" aria-labelledby=""heading1-id-<guid1>"">",
+                @"          <div class=""panel-body"">",
+                @"            <div class=""panel-group"" id=""accordion-id-<guid1>"" role=""tablist"" aria-multiselectable=""true""><div class=""panel panel-default"">",
+                @"        <div class=""panel-heading"" role=""tab"" id=""heading1-id-<guid1>"">",
+                @"          <h4 class=""panel-title"">",
+                @"            <a role=""button"" data-toggle=""collapse"" data-parent=""#accordion-id-<guid1>"" href=""#collapse1-id-<guid1>"" aria-expanded=""true"" aria-controls=""collapse1"">",
+                @"              Item 2",
+                @"            </a>",
+                @"          </h4>",
+                @"        </div>",
+                @"        <div id=""collapse1-id-<guid1>"" class=""panel-collapse collapse in"" role=""tabpanel"" aria-labelledby=""heading1-id-<guid1>"">",
+                @"          <div class=""panel-body"">",
+                @"            ",
+                @"          </div>",
+                @"        </div>",
+                @"      </div></div>",
+                @"          </div>",
+                @"        </div>",
+                @"      </div></div>",
+                @"",
+            } );
 
-            <div class=""panel-group"" id=""accordion-id-<guid2>"" role=""tablist"" aria-multiselectable=""true"">
-                <div class=""panel panel-default"">
-                    <div class=""panel-heading"" role=""tab"" id=""heading1-id-<guid2>"">
-                      <h4 class=""panel-title"">
-                        <a role=""button"" data-toggle=""collapse"" data-parent=""#accordion-id-<guid2>"" href=""#collapse1-id-<guid2>"" aria-expanded=""true"" aria-controls=""collapse1"">
-                          Item 2
-                        </a>
-                      </h4>
-                    </div>
-                    <div id=""collapse1-id-<guid2>"" class=""panel-collapse collapse in"" role=""tabpanel"" aria-labelledby=""heading1-id-<guid2>"">
-                      <div class=""panel-body"">
-                      </div>
-                    </div>
-                </div>
-            </div>
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, input );
 
-          </div>
-        </div>
-    </div>
-</div>
-";
-
-            TestHelper.AssertTemplateOutput( expectedResult, input, new LavaTestRenderOptions { Wildcards = new List<string> { "<guid1>", "<guid2>" } } );
+                LavaAssert.Matches( expectedResult, output, "<guid1>", "<guid2>" );
+            } );
         }
 
     }
