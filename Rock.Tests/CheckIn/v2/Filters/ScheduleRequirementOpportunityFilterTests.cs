@@ -82,6 +82,7 @@ namespace Rock.Tests.CheckIn.v2.Filters
             var groupId = 100;
             var attendance = new Attendance
             {
+                Id = 1,
                 ScheduledToAttend = true,
                 PersonAlias = new PersonAlias
                 {
@@ -121,6 +122,7 @@ namespace Rock.Tests.CheckIn.v2.Filters
             var groupId = 100;
             var attendance = new Attendance
             {
+                Id = 1,
                 ScheduledToAttend = true,
                 PersonAlias = new PersonAlias
                 {
@@ -161,6 +163,7 @@ namespace Rock.Tests.CheckIn.v2.Filters
             var groupId = 100;
             var attendance = new Attendance
             {
+                Id = 1,
                 ScheduledToAttend = true,
                 PersonAlias = new PersonAlias
                 {
@@ -210,6 +213,7 @@ namespace Rock.Tests.CheckIn.v2.Filters
             var groupId = 100;
             var attendance = new Attendance
             {
+                Id = 1,
                 ScheduledToAttend = true,
                 PersonAlias = new PersonAlias
                 {
@@ -259,6 +263,7 @@ namespace Rock.Tests.CheckIn.v2.Filters
             var groupId = 100;
             var attendance = new Attendance
             {
+                Id = 1,
                 ScheduledToAttend = true,
                 PersonAlias = new PersonAlias
                 {
@@ -359,6 +364,7 @@ namespace Rock.Tests.CheckIn.v2.Filters
             var groupId = 100;
             var attendance = new Attendance
             {
+                Id = 1,
                 ScheduledToAttend = true,
                 PersonAlias = new PersonAlias
                 {
@@ -418,6 +424,7 @@ namespace Rock.Tests.CheckIn.v2.Filters
             var groupId = 100;
             var attendance = new Attendance
             {
+                Id = 1,
                 ScheduledToAttend = true,
                 PersonAlias = new PersonAlias
                 {
@@ -494,6 +501,7 @@ namespace Rock.Tests.CheckIn.v2.Filters
             var groupId = 100;
             var attendance = new Attendance
             {
+                Id = 1,
                 ScheduledToAttend = true,
                 PersonAlias = new PersonAlias
                 {

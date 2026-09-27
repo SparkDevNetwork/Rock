@@ -2,7 +2,7 @@
 
 The Rock test projects cover a number of different testing scenarios, namely:
 1. Unit Tests
-The Rock.Tests.UnitTests project contains tests that cover the fundamentals of the Rock codebase.
+The Rock.Tests project contains tests that cover the fundamentals of the Rock codebase.
 These tests are designed to verify the behavior of small and isolated pieces of code that are the fundamental building blocks of the Rock application.
 Unit tests should be self-contained - they should not depend on any resources that are external to the Rock codebase, such as third-party applications or services, and network or database access.
 Unit tests should also be independent of one another - that is, the order in which the tests are executed should not affect the result.
@@ -21,7 +21,8 @@ These tests are specifically used for benchmarking changes to parts of the codeb
 Determining the appropriate test type for the circumstances is not always easy, but here are some guidelines to keep in mind:
 1. Always prefer unit tests.
 Unit tests are faster to execute, and require little or no configuration so they can be executed more often. Wherever possible, code components should be designed in a way that allows them to be unit tested. If the code has external dependencies, try to design the component so that the dependencies can be replaced with a mock for testing purposes.
-2. If your tests require a database, a RockContext, or access to the SqlServerTypes library, the test belongs in the `Rock.Tests.Integration` project.
+2. Code that uses a `RockContext` can usually still be unit tested. `TestHelper.CreateScopedRockApp()` provides a mocked `RockContext` backed by in-memory data, which is enough to test services, caches, and block initialization and actions (see `Rock.Tests/Blocks` for examples). Read the "Mocked RockContext" section of the `Rock.Tests.Shared` README before seeding data; in particular, every seeded row needs a non-zero `Id`.
+3. If your tests require a real database (raw SQL, stored procedures, bulk operations, or the standard sample data set) or access to the SqlServerTypes library, the test belongs in the `Rock.Tests.Integration` project.
 
 ## MS Test
 
