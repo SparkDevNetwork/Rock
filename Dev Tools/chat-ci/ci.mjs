@@ -43,6 +43,12 @@ const gates = [
     cwd: here,
   },
   {
+    name: "Rock's wire contract is the platform's bytes, when the platform's file is at hand",
+    cmd: process.execPath,
+    args: ['check-contract.mjs'],
+    cwd: here,
+  },
+  {
     name: 'the gates keep the shape the pipeline assumes',
     cmd: process.execPath,
     args: ['--test'],

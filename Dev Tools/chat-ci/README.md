@@ -19,6 +19,8 @@ tree is subject to that rule. Three folders are shared with the chat that alread
 they are deliberately absent from the list, and a chat file landing in one of them is named there
 individually.
 
+`check-contract.mjs` fails when Rock's vendored wire contract differs by a byte from the platform's, read from `CHAT_PLATFORM_CONTRACT` or else a platform checkout beside this repository; with neither, it says it skipped and passes.
+
 `ci.mjs` builds the unit test project and what it depends on, rather than the solution: the point is
 to prove the chat code compiles and its own tests run. It uses MSBuild when it is on the path and
 the .NET SDK otherwise.
