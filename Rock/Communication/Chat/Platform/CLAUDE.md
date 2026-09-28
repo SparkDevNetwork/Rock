@@ -18,8 +18,7 @@ integration. It is not touched and not referenced from here.
 | Folder | Holds |
 |---|---|
 | `Session/` | Gating, enrolment, token minting and the birthdate chat asks for, for a person opening chat; `ChatSessionHelper` answers each chat block action in one call, reading the settings and the Direct Message Access data view itself |
-| `Sync/` | `ChatPlatformSyncHelper`, everything the sync job says to the platform, and what Sync Now on a chat block may start and report |
-| `LaneA/` | The immediate lane: save hooks record keys, a flush pushes them |
+| `Sync/` | `ChatPlatformSyncHelper`, split into partial files: everything the full sync says to the platform, the immediate sync that pushes what a save touched (`ChatPlatformSyncHelper.Immediate.cs`), and what Sync Now on a chat block may start and report |
 | `Configuration/` | The settings model, its cached parsed form, and secret handling |
 | `Contract/` | The vendored wire contract and its hash |
 
@@ -28,7 +27,8 @@ Folders appear when a file needs them. The scheduled sync follows Rock's job and
 decides whether the run happens, reads the church, writes the body and records what it reports.
 `Sync/ChatPlatformSyncHelper.cs` holds the rest: the submission headers, the credential, submit and
 poll over one HttpClient per run, what the answer means, the rules for writing a row value,
-which the immediate lane will share, and Sync Now. Each block that shows Sync Now asks its own
+which the immediate sync shares, and Sync Now. The immediate sync lives in the same helper, in
+its own partial file, `Sync/ChatPlatformSyncHelper.Immediate.cs`. Each block that shows Sync Now asks its own
 authority and hands the answer to the helper, which returns the block's action result. The
 signing stays in `Session/`, the settings in
 `Configuration/` and the contract in `Contract/`; the helper calls them.
@@ -94,11 +94,11 @@ no agent attribution trailer and no co-author line.
 
 ## Traps worth knowing before writing here
 
-- No synchronous HTTP inside a save hook. The immediate lane hands rows to an asynchronous
+- No synchronous HTTP inside a save hook. The immediate sync hands rows to an asynchronous
   transport; an awaited call belongs to a block action alone and carries a time budget.
 - A secret never enters a view model bag, a log line or an exception message.
 - A block action that changes Rock truth returns a typed result with a stable code, never exception
   text. The birthdate save writes only a value Rock does not hold, and only when the age gate is
   the one asking, so it can never change a recorded age.
-- Bulk operations bypass hooks, which is why the scheduled job, not the immediate lane, is the
+- Bulk operations bypass hooks, which is why the scheduled job, not the immediate sync, is the
   guarantee that the platform catches up.

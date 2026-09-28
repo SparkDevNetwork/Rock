@@ -245,6 +245,20 @@ namespace Rock.Jobs
         #region The run
 
         /// <summary>
+        /// One whole restatement over a given transport, so a test can stand in for the platform
+        /// and see every call the run makes.
+        /// </summary>
+        /// <param name="rockContext">The context the projection reads through.</param>
+        /// <param name="configuration">The church's chat settings.</param>
+        /// <param name="isManualRun">Whether a person started this run rather than the schedule.</param>
+        /// <param name="handler">The transport to send through, or null for the network.</param>
+        /// <returns>What the run has to say for itself.</returns>
+        internal static RunResult Run( RockContext rockContext, ChatPlatformConfiguration configuration, bool isManualRun, System.Net.Http.HttpMessageHandler handler )
+        {
+            throw new NotImplementedException();
+        }
+
+        /// <summary>
         /// One whole restatement: read the church, send it, and learn what became of it.
         /// </summary>
         /// <param name="rockContext">The context the projection reads through.</param>

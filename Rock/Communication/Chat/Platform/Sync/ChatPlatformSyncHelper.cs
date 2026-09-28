@@ -48,7 +48,7 @@ namespace Rock.Communication.Chat.Platform.Sync
     /// What the Chat Platform Sync job says to the chat platform and how it reads the answer, and
     /// Sync Now for the Chat Configuration and Group Type Detail blocks.
     /// </summary>
-    internal static class ChatPlatformSyncHelper
+    internal static partial class ChatPlatformSyncHelper
     {
         #region Constants
 

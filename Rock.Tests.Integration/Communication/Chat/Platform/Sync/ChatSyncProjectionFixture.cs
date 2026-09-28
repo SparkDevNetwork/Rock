@@ -537,6 +537,49 @@ namespace Rock.Tests.Integration.Communication.Chat.Platform.Sync
         }
 
         /// <summary>
+        /// Reads back only what one save touched, as the immediate sync does after the save commits.
+        /// </summary>
+        /// <param name="changes">The keys the save touched.</param>
+        /// <returns>The push body.</returns>
+        public ChatPlatformSyncHelper.PushBody ProjectChanges( ChatPlatformSyncHelper.ImmediateChanges changes )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                return ChatPlatformSyncHelper.ProjectChanges( rockContext, Configuration(), changes );
+            }
+        }
+
+        /// <summary>
+        /// The guid of a person's primary alias, which is the key a membership row carries.
+        /// </summary>
+        /// <param name="personId">The person.</param>
+        /// <returns>The alias guid.</returns>
+        public Guid PrimaryAliasGuid( int personId )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                return new PersonService( rockContext ).Get( personId ).PrimaryAlias.Guid;
+            }
+        }
+
+        /// <summary>
+        /// Takes a person out of a group by deleting every membership they hold in it.
+        /// </summary>
+        /// <param name="channelGuid">The group.</param>
+        /// <param name="personId">The person.</param>
+        public void DeleteMember( Guid channelGuid, int personId )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var service = new GroupMemberService( rockContext );
+                var members = service.Queryable().Where( m => m.Group.Guid == channelGuid && m.PersonId == personId ).ToList();
+
+                service.DeleteRange( members );
+                rockContext.SaveChanges();
+            }
+        }
+
+        /// <summary>
         /// The mark a group is carrying, if any.
         /// </summary>
         /// <param name="channelGuid">The group.</param>
