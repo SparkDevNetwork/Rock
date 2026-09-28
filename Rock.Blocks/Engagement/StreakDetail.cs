@@ -400,7 +400,7 @@ namespace Rock.Blocks.Engagement
 
             if ( !entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
             {
-                error = ActionBadRequest( $"Not authorized to edit ${Streak.FriendlyTypeName}." );
+                error = ActionBadRequest( $"Not authorized to edit {Streak.FriendlyTypeName}." );
                 return false;
             }
 

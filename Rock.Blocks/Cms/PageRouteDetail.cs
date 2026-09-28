@@ -397,7 +397,7 @@ namespace Rock.Blocks.Cms
 
             if ( !entity.IsAuthorized(Rock.Security.Authorization.EDIT, RequestContext.CurrentPerson ) )
             {
-                error = ActionBadRequest( $"Not authorized to edit ${PageRoute.FriendlyTypeName}." );
+                error = ActionBadRequest( $"Not authorized to edit {PageRoute.FriendlyTypeName}." );
                 return false;
             }
 

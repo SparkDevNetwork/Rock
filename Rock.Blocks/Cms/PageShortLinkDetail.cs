@@ -496,7 +496,7 @@ namespace Rock.Blocks.Cms
 
             if ( !BlockCache.IsAuthorized( Rock.Security.Authorization.EDIT, RequestContext.CurrentPerson ) )
             {
-                error = ActionForbidden( $"Not authorized to edit ${PageShortLink.FriendlyTypeName}." );
+                error = ActionForbidden( $"Not authorized to edit {PageShortLink.FriendlyTypeName}." );
                 return false;
             }
 

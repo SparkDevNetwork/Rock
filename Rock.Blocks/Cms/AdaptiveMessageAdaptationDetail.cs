@@ -333,7 +333,7 @@ namespace Rock.Blocks.Cms
 
             if ( !entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
             {
-                error = ActionBadRequest( $"Not authorized to edit ${AdaptiveMessageAdaptation.FriendlyTypeName}." );
+                error = ActionBadRequest( $"Not authorized to edit {AdaptiveMessageAdaptation.FriendlyTypeName}." );
                 return false;
             }
 

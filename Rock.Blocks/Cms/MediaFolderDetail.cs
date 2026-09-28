@@ -411,7 +411,7 @@ namespace Rock.Blocks.Cms
 
             if ( !BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
             {
-                error = ActionBadRequest( $"Not authorized to edit ${MediaFolder.FriendlyTypeName}." );
+                error = ActionBadRequest( $"Not authorized to edit {MediaFolder.FriendlyTypeName}." );
                 return false;
             }
 

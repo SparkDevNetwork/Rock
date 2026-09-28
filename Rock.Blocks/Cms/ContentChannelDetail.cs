@@ -760,7 +760,7 @@ namespace Rock.Blocks.Cms
 
             if ( !entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
             {
-                error = ActionBadRequest( $"Not authorized to edit ${ContentChannel.FriendlyTypeName}." );
+                error = ActionBadRequest( $"Not authorized to edit {ContentChannel.FriendlyTypeName}." );
                 return false;
             }
 

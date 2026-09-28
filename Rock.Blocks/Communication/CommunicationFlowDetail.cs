@@ -1948,7 +1948,7 @@ namespace Rock.Blocks.Communication
 
             if ( !entity.IsAuthorized( Authorization.EDIT, currentPerson ) )
             {
-                error = ActionBadRequest( $"Not authorized to edit ${CommunicationFlow.FriendlyTypeName}." );
+                error = ActionBadRequest( $"Not authorized to edit {CommunicationFlow.FriendlyTypeName}." );
                 return false;
             }
 

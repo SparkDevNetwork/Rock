@@ -292,7 +292,7 @@ namespace Rock.Blocks.Core
 
             if ( !entity.IsAuthorized( Rock.Security.Authorization.EDIT, RequestContext.CurrentPerson ) )
             {
-                error = ActionBadRequest( $"Not authorized to edit ${FollowingSuggestionType.FriendlyTypeName}." );
+                error = ActionBadRequest( $"Not authorized to edit {FollowingSuggestionType.FriendlyTypeName}." );
                 return false;
             }
 

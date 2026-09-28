@@ -359,7 +359,7 @@ namespace Rock.Blocks.CheckIn.Configuration
 
             if ( !BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
             {
-                error = ActionBadRequest( $"Not authorized to edit ${CheckInLabel.FriendlyTypeName}." );
+                error = ActionBadRequest( $"Not authorized to edit {CheckInLabel.FriendlyTypeName}." );
                 return false;
             }
 
@@ -533,7 +533,7 @@ namespace Rock.Blocks.CheckIn.Configuration
 
             if ( !BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
             {
-                return ActionBadRequest( $"Not authorized to edit ${CheckInLabel.FriendlyTypeName}." );
+                return ActionBadRequest( $"Not authorized to edit {CheckInLabel.FriendlyTypeName}." );
             }
 
             if ( attendanceId.IsNullOrWhiteSpace() )
@@ -611,7 +611,7 @@ namespace Rock.Blocks.CheckIn.Configuration
 
             if ( !BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
             {
-                return ActionBadRequest( $"Not authorized to edit ${CheckInLabel.FriendlyTypeName}." );
+                return ActionBadRequest( $"Not authorized to edit {CheckInLabel.FriendlyTypeName}." );
             }
 
             return await LabelDesigner.PrintPreviewLabelAsync( checkInLabel, printerKey, content, RockContext );

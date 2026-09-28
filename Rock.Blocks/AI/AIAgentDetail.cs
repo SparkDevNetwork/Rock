@@ -448,7 +448,7 @@ namespace Rock.Blocks.AI
 
             if ( !entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
             {
-                error = ActionBadRequest( $"Not authorized to edit ${AIAgent.FriendlyTypeName}." );
+                error = ActionBadRequest( $"Not authorized to edit {AIAgent.FriendlyTypeName}." );
                 return false;
             }
 

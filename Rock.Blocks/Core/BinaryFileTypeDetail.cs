@@ -361,7 +361,7 @@ namespace Rock.Blocks.Core
 
             if ( !BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
             {
-                error = ActionBadRequest( $"Not authorized to edit ${BinaryFileType.FriendlyTypeName}." );
+                error = ActionBadRequest( $"Not authorized to edit {BinaryFileType.FriendlyTypeName}." );
                 return false;
             }
 

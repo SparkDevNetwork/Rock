@@ -351,7 +351,7 @@ namespace Rock.Blocks.Core
 
             if ( !BlockCache.IsAuthorized( Rock.Security.Authorization.EDIT, RequestContext.CurrentPerson ) )
             {
-                error = ActionBadRequest( $"Not authorized to edit ${AssetStorageProvider.FriendlyTypeName}." );
+                error = ActionBadRequest( $"Not authorized to edit {AssetStorageProvider.FriendlyTypeName}." );
                 return false;
             }
 

@@ -404,7 +404,7 @@ namespace Rock.Blocks.Tv
 
             if ( !entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
             {
-                error = ActionBadRequest( $"Not authorized to edit ${Site.FriendlyTypeName}." );
+                error = ActionBadRequest( $"Not authorized to edit {Site.FriendlyTypeName}." );
                 return false;
             }
 

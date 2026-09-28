@@ -375,7 +375,7 @@ namespace Rock.Blocks.Finance
 
             if ( !entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
             {
-                error = ActionBadRequest( $"Not authorized to edit ${FinancialAccount.FriendlyTypeName}." );
+                error = ActionBadRequest( $"Not authorized to edit {FinancialAccount.FriendlyTypeName}." );
                 return false;
             }
 

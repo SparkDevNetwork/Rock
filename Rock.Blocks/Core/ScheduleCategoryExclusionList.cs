@@ -195,7 +195,7 @@ namespace Rock.Blocks.Core
 
             if ( !BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
             {
-                return ActionBadRequest( $"Not authorized to delete ${ScheduleCategoryExclusion.FriendlyTypeName}." );
+                return ActionBadRequest( $"Not authorized to delete {ScheduleCategoryExclusion.FriendlyTypeName}." );
             }
 
             if ( !entityService.CanDelete( entity, out var errorMessage ) )
@@ -223,7 +223,7 @@ namespace Rock.Blocks.Core
         {
             if ( !BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
             {
-                return ActionBadRequest( $"Not authorized to edit ${ScheduleCategoryExclusion.FriendlyTypeName}." );
+                return ActionBadRequest( $"Not authorized to edit {ScheduleCategoryExclusion.FriendlyTypeName}." );
             }
 
             var entityService = new ScheduleCategoryExclusionService( RockContext );

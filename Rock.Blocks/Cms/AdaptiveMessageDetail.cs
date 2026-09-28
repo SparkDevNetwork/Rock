@@ -432,7 +432,7 @@ namespace Rock.Blocks.Cms
 
             if ( !entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
             {
-                error = ActionBadRequest( $"Not authorized to edit ${AdaptiveMessage.FriendlyTypeName}." );
+                error = ActionBadRequest( $"Not authorized to edit {AdaptiveMessage.FriendlyTypeName}." );
                 return false;
             }
 
@@ -719,7 +719,7 @@ namespace Rock.Blocks.Cms
 
             if ( !entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
             {
-                return ActionBadRequest( $"Not authorized to edit ${AdaptiveMessageAdaptation.FriendlyTypeName}." );
+                return ActionBadRequest( $"Not authorized to edit {AdaptiveMessageAdaptation.FriendlyTypeName}." );
             }
 
             if ( !entityService.CanDelete( entity, out var errorMessage ) )

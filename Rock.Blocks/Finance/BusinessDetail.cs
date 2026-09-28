@@ -537,7 +537,7 @@ Because the contents of this setting will be rendered inside a menu element, it 
 
             if ( !entity.IsAuthorized( Rock.Security.Authorization.EDIT, RequestContext.CurrentPerson ) )
             {
-                error = ActionBadRequest( $"Not authorized to edit ${Person.FriendlyTypeName}." );
+                error = ActionBadRequest( $"Not authorized to edit {Person.FriendlyTypeName}." );
                 return false;
             }
 

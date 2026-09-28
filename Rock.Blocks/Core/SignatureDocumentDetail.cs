@@ -376,7 +376,7 @@ namespace Rock.Blocks.Core
 
             if ( !entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
             {
-                error = ActionBadRequest( $"Not authorized to edit ${SignatureDocument.FriendlyTypeName}." );
+                error = ActionBadRequest( $"Not authorized to edit {SignatureDocument.FriendlyTypeName}." );
                 return false;
             }
 

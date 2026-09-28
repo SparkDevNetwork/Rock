@@ -295,7 +295,7 @@ namespace Rock.Blocks.Crm
 
             if ( !entity.IsAuthorized( Rock.Security.Authorization.EDIT, RequestContext.CurrentPerson ) )
             {
-                error = ActionBadRequest( $"Not authorized to edit ${Model.Badge.FriendlyTypeName}." );
+                error = ActionBadRequest( $"Not authorized to edit {Model.Badge.FriendlyTypeName}." );
                 return false;
             }
 

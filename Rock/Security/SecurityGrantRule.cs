@@ -121,7 +121,7 @@ namespace Rock.Security
                         // Ensure the rule type was given a RockGuid attribute.
                         if ( guidAttribute == null )
                         {
-                            throw new InvalidOperationException( $"Missing ${nameof( RockGuidAttribute )} on rule type." );
+                            throw new InvalidOperationException( $"Missing {nameof( RockGuidAttribute )} on rule type." );
                         }
 
                         // Ensure the guid is valid.
@@ -134,7 +134,7 @@ namespace Rock.Security
                     }
                     catch ( Exception ex )
                     {
-                        System.Diagnostics.Debug.WriteLine( $"Failed to add grant rule type ${ruleType.FullName}: {ex.Message}" );
+                        System.Diagnostics.Debug.WriteLine( $"Failed to add grant rule type {ruleType.FullName}: {ex.Message}" );
                         Model.ExceptionLogService.LogException( ex );
                     }
                 }

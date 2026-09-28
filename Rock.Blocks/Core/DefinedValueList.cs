@@ -333,7 +333,7 @@ namespace Rock.Blocks.Core
         {
             if ( !BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
             {
-                return ActionBadRequest( $"Not authorized to edit ${DefinedValue.FriendlyTypeName}." );
+                return ActionBadRequest( $"Not authorized to edit {DefinedValue.FriendlyTypeName}." );
             }
 
             var entityService = new DefinedValueService( RockContext );
@@ -370,7 +370,7 @@ namespace Rock.Blocks.Core
 
             if ( !BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
             {
-                return ActionBadRequest( $"Not authorized to edit ${DefinedValue.FriendlyTypeName}." );
+                return ActionBadRequest( $"Not authorized to edit {DefinedValue.FriendlyTypeName}." );
             }
 
             if ( bag.IdKey.IsNullOrWhiteSpace() )

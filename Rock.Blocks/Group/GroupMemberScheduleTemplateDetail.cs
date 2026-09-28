@@ -305,7 +305,7 @@ namespace Rock.Blocks.Group
         {
             if ( !BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
             {
-                return ActionBadRequest($"Not authorized to edit ${GroupMemberScheduleTemplate.FriendlyTypeName}.");
+                return ActionBadRequest($"Not authorized to edit {GroupMemberScheduleTemplate.FriendlyTypeName}.");
             }
 
             if ( !TryGetEntityForEditAction( box.Bag.IdKey, out var entity, out var actionError ) )

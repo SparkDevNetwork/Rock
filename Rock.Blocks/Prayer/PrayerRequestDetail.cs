@@ -578,7 +578,7 @@ namespace Rock.Blocks.Prayer
 
             if ( !BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
             {
-                error = ActionBadRequest( $"Not authorized to edit ${PrayerRequest.FriendlyTypeName}." );
+                error = ActionBadRequest( $"Not authorized to edit {PrayerRequest.FriendlyTypeName}." );
                 return false;
             }
 

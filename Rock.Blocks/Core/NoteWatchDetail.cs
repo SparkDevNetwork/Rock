@@ -517,7 +517,7 @@ namespace Rock.Blocks.Core
 
             if ( !entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
             {
-                error = ActionBadRequest( $"Not authorized to edit ${NoteWatch.FriendlyTypeName}." );
+                error = ActionBadRequest( $"Not authorized to edit {NoteWatch.FriendlyTypeName}." );
                 return false;
             }
 

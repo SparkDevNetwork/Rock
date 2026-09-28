@@ -533,7 +533,7 @@ namespace Rock.Blocks.Finance
 
             if ( !BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
             {
-                error = ActionBadRequest( $"Not authorized to edit ${BenevolenceRequest.FriendlyTypeName}." );
+                error = ActionBadRequest( $"Not authorized to edit {BenevolenceRequest.FriendlyTypeName}." );
                 return false;
             }
 

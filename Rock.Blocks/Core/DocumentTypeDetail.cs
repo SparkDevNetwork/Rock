@@ -395,7 +395,7 @@ namespace Rock.Blocks.Core
 
             if ( !entity.IsAuthorized( Rock.Security.Authorization.EDIT, RequestContext.CurrentPerson ) )
             {
-                error = ActionBadRequest( $"Not authorized to edit ${DocumentType.FriendlyTypeName}." );
+                error = ActionBadRequest( $"Not authorized to edit {DocumentType.FriendlyTypeName}." );
                 return false;
             }
 

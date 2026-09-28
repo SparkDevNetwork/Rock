@@ -256,7 +256,7 @@ namespace Rock.Blocks.Core
 
             if ( !BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
             {
-                error = ActionBadRequest( $"Not authorized to edit ${AttributeMatrixTemplate.FriendlyTypeName}." );
+                error = ActionBadRequest( $"Not authorized to edit {AttributeMatrixTemplate.FriendlyTypeName}." );
                 return false;
             }
 

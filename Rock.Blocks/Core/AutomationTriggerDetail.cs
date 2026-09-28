@@ -363,7 +363,7 @@ namespace Rock.Blocks.Core
 
             if ( !BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
             {
-                error = ActionBadRequest( $"Not authorized to edit ${AutomationTrigger.FriendlyTypeName}." );
+                error = ActionBadRequest( $"Not authorized to edit {AutomationTrigger.FriendlyTypeName}." );
                 return false;
             }
 
@@ -543,7 +543,7 @@ namespace Rock.Blocks.Core
 
             if ( !BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
             {
-                error = ActionBadRequest( $"Not authorized to edit ${AutomationEvent.FriendlyTypeName}." );
+                error = ActionBadRequest( $"Not authorized to edit {AutomationEvent.FriendlyTypeName}." );
                 return false;
             }
 

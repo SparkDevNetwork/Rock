@@ -165,7 +165,7 @@ namespace Rock.Blocks.Cms
 
             if ( !BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
             {
-                return ActionBadRequest( $"Not authorized to delete ${Page.FriendlyTypeName}." );
+                return ActionBadRequest( $"Not authorized to delete {Page.FriendlyTypeName}." );
             }
 
             // Pass includeSecondLvl so the delete is blocked when a Site references this page
