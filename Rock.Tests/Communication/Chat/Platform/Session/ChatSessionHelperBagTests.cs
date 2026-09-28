@@ -17,67 +17,34 @@
 using System;
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
-using System.Security.Cryptography;
 
-using Microsoft.IdentityModel.Tokens;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using Newtonsoft.Json;
 
-using Rock.Communication.Chat.Platform.Configuration;
 using Rock.Communication.Chat.Platform.Session;
 using Rock.Data;
 using Rock.Model;
-using Rock.Tests.Shared.TestFramework;
 using Rock.ViewModels.Blocks.Communication.Chat.ChatShell;
+
+using static Rock.Tests.Communication.Chat.Platform.Session.ChatSessionFixture;
 
 namespace Rock.Tests.Communication.Chat.Platform.Session
 {
     /// <summary>
-    /// What the chat shell tells the browser when it opens and when it is asked for a token.
-    /// The gates themselves are proven in ChatSessionHelperTests; these prove the shell passes
+    /// What a chat block tells the browser when it opens and when it is asked for a token.
+    /// The gates themselves are proven in ChatSessionHelperTests; these prove the helper passes
     /// every outcome through, never hands the browser a key, and asks the gates again each time.
     /// </summary>
     [TestClass]
-    public class ChatShellSessionTests
+    public class ChatSessionHelperBagTests
     {
-        private const int InactiveRecordStatusValueId = 3;
-        private const int BanListGroupId = 40;
-        private const int ChatPeopleGroupId = 50;
-        private const int ChatPeopleRoleId = 7;
-        private const string Kid = "kid-shell-1";
-
         private RockContext _rockContext;
 
         [TestInitialize]
         public void TestInitialize()
         {
-            var rockContext = MockDatabaseHelper.CreateRockContextMock().Object;
-
-            rockContext.Set<DefinedValue>().Add( new DefinedValue
-            {
-                Id = InactiveRecordStatusValueId,
-                Guid = Guid.Parse( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE )
-            } );
-
-            rockContext.Set<Group>().Add( new Group
-            {
-                Id = BanListGroupId,
-                Guid = Guid.Parse( Rock.SystemGuid.Group.GROUP_CHAT_BAN_LIST ),
-                Name = "Chat Ban List",
-                GroupTypeId = 1
-            } );
-
-            rockContext.Set<Group>().Add( new Group
-            {
-                Id = ChatPeopleGroupId,
-                Guid = Guid.Parse( Rock.SystemGuid.Group.GROUP_CHAT_PEOPLE ),
-                Name = "Chat People",
-                GroupTypeId = 1,
-                GroupType = new GroupType { Id = 1, DefaultGroupRoleId = ChatPeopleRoleId }
-            } );
-
-            _rockContext = rockContext;
+            _rockContext = CreateRockContextMock().Object;
         }
 
         #region Gate codes
@@ -86,7 +53,7 @@ namespace Rock.Tests.Communication.Chat.Platform.Session
         public void ToGateCode_EveryGate_HasItsOwnSnakeCaseCode()
         {
             var gates = Enum.GetValues( typeof( ChatMintGate ) ).Cast<ChatMintGate>().ToList();
-            var codes = gates.Select( ChatShellSession.ToGateCode ).ToList();
+            var codes = gates.Select( ChatSessionHelper.ToGateCode ).ToList();
 
             Assert.AreEqual( gates.Count, codes.Distinct().Count(), "two gates share a code, so the browser cannot tell them apart" );
             foreach ( var code in codes )
@@ -94,22 +61,22 @@ namespace Rock.Tests.Communication.Chat.Platform.Session
                 Assert.IsTrue( System.Text.RegularExpressions.Regex.IsMatch( code, "^[a-z]+(_[a-z]+)*$" ), $"'{code}' is not snake_case" );
             }
 
-            Assert.AreEqual( "ok", ChatShellSession.ToGateCode( ChatMintGate.Ok ) );
-            Assert.AreEqual( "age_verification_required", ChatShellSession.ToGateCode( ChatMintGate.AgeVerificationRequired ) );
-            Assert.AreEqual( "age_restricted", ChatShellSession.ToGateCode( ChatMintGate.AgeRestricted ) );
+            Assert.AreEqual( "ok", ChatSessionHelper.ToGateCode( ChatMintGate.Ok ) );
+            Assert.AreEqual( "age_verification_required", ChatSessionHelper.ToGateCode( ChatMintGate.AgeVerificationRequired ) );
+            Assert.AreEqual( "age_restricted", ChatSessionHelper.ToGateCode( ChatMintGate.AgeRestricted ) );
         }
 
         #endregion
 
-        #region Open
+        #region OpenSession
 
         [TestMethod]
-        public void Open_Ok_CarriesThePublicSettingsAndTheDirectMessageRight()
+        public void OpenSession_Ok_CarriesThePublicSettingsAndTheDirectMessageRight()
         {
             var person = Adult();
             var config = SigningConfig();
 
-            var bag = ChatShellSession.Open( person, config, _rockContext );
+            var bag = ChatSessionHelper.OpenSession( person, config, _rockContext );
 
             Assert.AreEqual( "ok", bag.Gate );
             Assert.AreEqual( config.Configuration.ProjectUrl, bag.ProjectUrl );
@@ -120,21 +87,21 @@ namespace Rock.Tests.Communication.Chat.Platform.Session
         }
 
         [TestMethod]
-        public void Open_PersonOutsideTheDirectMessageDataView_MayNotStartOne()
+        public void OpenSession_PersonOutsideTheDirectMessageDataView_MayNotStartOne()
         {
             // A church that names a Direct Message Access data view which resolved to someone else.
             var config = SigningConfig();
             config.Configuration.DirectMessageAccessDataViewGuid = Guid.Parse( "dddddddd-dddd-4ddd-8ddd-dddddddddddd" );
             config.DirectMessageAccessPersonIds = new System.Collections.Generic.HashSet<int> { 999 };
 
-            var bag = ChatShellSession.Open( Adult(), config, _rockContext );
+            var bag = ChatSessionHelper.OpenSession( Adult(), config, _rockContext );
 
             Assert.AreEqual( "ok", bag.Gate );
             Assert.IsFalse( bag.CanStartDm );
         }
 
         [TestMethod]
-        public void Open_RefusedGates_CarryTheGateAndNoPlatformSettings()
+        public void OpenSession_RefusedGates_CarryTheGateAndNoPlatformSettings()
         {
             var deceased = Adult();
             deceased.IsDeceased = true;
@@ -161,7 +128,7 @@ namespace Rock.Tests.Communication.Chat.Platform.Session
 
             foreach ( var c in cases )
             {
-                var bag = ChatShellSession.Open( c.Person, c.Config, _rockContext );
+                var bag = ChatSessionHelper.OpenSession( c.Person, c.Config, _rockContext );
 
                 Assert.AreEqual( c.Gate, bag.Gate );
                 Assert.IsNull( bag.ProjectUrl, $"{c.Gate} was told where the platform is" );
@@ -173,7 +140,7 @@ namespace Rock.Tests.Communication.Chat.Platform.Session
         }
 
         [TestMethod]
-        public void Open_Ok_SerialisesNoTokenAndNoPartOfTheSigningKey()
+        public void OpenSession_Ok_SerialisesNoTokenAndNoPartOfTheSigningKey()
         {
             var config = SigningConfig();
             var privatePart = Newtonsoft.Json.Linq.JObject.Parse( config.Configuration.PrivateKey )
@@ -181,7 +148,7 @@ namespace Rock.Tests.Communication.Chat.Platform.Session
                 .ToString();
             Assert.IsFalse( string.IsNullOrEmpty( privatePart ), "the fixture key has no private part to look for" );
 
-            var box = new ChatShellInitializationBox { Session = ChatShellSession.Open( Adult(), config, _rockContext ) };
+            var box = new ChatShellInitializationBox { Session = ChatSessionHelper.OpenSession( Adult(), config, _rockContext ) };
             var json = JsonConvert.SerializeObject( box );
 
             Assert.IsFalse( json.Contains( privatePart ), "the private key reached the browser" );
@@ -193,25 +160,25 @@ namespace Rock.Tests.Communication.Chat.Platform.Session
         }
 
         [TestMethod]
-        public void Open_Ok_EnrolsThePersonOnceAcrossTwoOpens()
+        public void OpenSession_Ok_EnrolsThePersonOnceAcrossTwoOpens()
         {
             var person = Adult();
 
-            ChatShellSession.Open( person, SigningConfig(), _rockContext );
-            ChatShellSession.Open( person, SigningConfig(), _rockContext );
+            ChatSessionHelper.OpenSession( person, SigningConfig(), _rockContext );
+            ChatSessionHelper.OpenSession( person, SigningConfig(), _rockContext );
 
-            Assert.AreEqual( 1, MarkerCount( person.Id ) );
+            Assert.AreEqual( 1, MarkerCount( _rockContext, person.Id ) );
         }
 
         [TestMethod]
-        public void Open_RefusedGate_EnrolsNobody()
+        public void OpenSession_RefusedGate_EnrolsNobody()
         {
             var person = Adult();
             person.IsDeceased = true;
 
-            ChatShellSession.Open( person, SigningConfig(), _rockContext );
+            ChatSessionHelper.OpenSession( person, SigningConfig(), _rockContext );
 
-            Assert.AreEqual( 0, MarkerCount( person.Id ) );
+            Assert.AreEqual( 0, MarkerCount( _rockContext, person.Id ) );
         }
 
         #endregion
@@ -223,7 +190,7 @@ namespace Rock.Tests.Communication.Chat.Platform.Session
         {
             var person = Adult();
 
-            var bag = ChatShellSession.MintToken( person, SigningConfig(), _rockContext );
+            var bag = ChatSessionHelper.MintToken( person, SigningConfig(), _rockContext );
 
             Assert.AreEqual( "ok", bag.Gate );
             Assert.IsFalse( string.IsNullOrWhiteSpace( bag.ChurchToken ) );
@@ -238,15 +205,9 @@ namespace Rock.Tests.Communication.Chat.Platform.Session
         {
             var person = Adult();
 
-            var first = ChatShellSession.MintToken( person, SigningConfig(), _rockContext );
-            _rockContext.Set<GroupMember>().Add( new GroupMember
-            {
-                GroupId = BanListGroupId,
-                PersonId = person.Id,
-                GroupMemberStatus = GroupMemberStatus.Active,
-                IsArchived = false
-            } );
-            var second = ChatShellSession.MintToken( person, SigningConfig(), _rockContext );
+            var first = ChatSessionHelper.MintToken( person, SigningConfig(), _rockContext );
+            AddBanListMember( _rockContext, person.Id, GroupMemberStatus.Active, isArchived: false );
+            var second = ChatSessionHelper.MintToken( person, SigningConfig(), _rockContext );
 
             Assert.AreEqual( "ok", first.Gate );
             Assert.AreEqual( "banned", second.Gate );
@@ -260,65 +221,12 @@ namespace Rock.Tests.Communication.Chat.Platform.Session
             var config = SigningConfig();
             config.Configuration.PrivateKey = "{\"kty\":\"EC\"}";
 
-            var bag = ChatShellSession.MintToken( Adult(), config, _rockContext );
+            var bag = ChatSessionHelper.MintToken( Adult(), config, _rockContext );
             var json = JsonConvert.SerializeObject( bag );
 
             Assert.AreEqual( "invalid_key", bag.Gate );
             Assert.IsNull( bag.ChurchToken );
             Assert.IsFalse( json.IndexOf( "exception", StringComparison.OrdinalIgnoreCase ) >= 0 );
-        }
-
-        #endregion
-
-        #region Helpers
-
-        private int MarkerCount( int personId )
-        {
-            return _rockContext.Set<GroupMember>()
-                .Count( m => m.GroupId == ChatPeopleGroupId && m.PersonId == personId );
-        }
-
-        private static Person Adult()
-        {
-            return new Person
-            {
-                Id = 10,
-                Gender = Gender.Unknown,
-                RecordStatusValueId = 1,
-                PrimaryAliasGuid = Guid.Parse( "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa" ),
-                BirthYear = RockDateTime.Now.Year - 30,
-                BirthMonth = 1,
-                BirthDay = 1
-            };
-        }
-
-        private static ChatSessionContext SigningConfig()
-        {
-            return new ChatSessionContext
-            {
-                Configuration = new ChatPlatformConfiguration
-                {
-                    TenantId = Guid.Parse( "11111111-1111-4111-8111-111111111111" ),
-                    PrivateKey = CreatePrivateJwk( Kid ),
-                    ProjectUrl = "http://127.0.0.1:54321",
-                    PublishableKey = "sb_publishable_test",
-                    Kid = Kid,
-                    MinimumAge = 13
-                }
-            };
-        }
-
-        private static string CreatePrivateJwk( string kid )
-        {
-            using ( var ecdsa = ECDsa.Create( ECCurve.NamedCurves.nistP256 ) )
-            {
-                var key = new ECDsaSecurityKey( ecdsa ) { KeyId = kid };
-                var jwk = JsonWebKeyConverter.ConvertFromECDsaSecurityKey( key );
-                jwk.Kid = kid;
-                jwk.Use = "sig";
-                jwk.Alg = "ES256";
-                return JsonConvert.SerializeObject( jwk );
-            }
         }
 
         #endregion

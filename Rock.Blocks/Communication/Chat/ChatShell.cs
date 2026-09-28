@@ -14,20 +14,12 @@
 // limitations under the License.
 // </copyright>
 //
-using System.Collections.Generic;
 using System.ComponentModel;
-using System.Linq;
 
 using Rock.Attribute;
-using Rock.Communication.Chat.Platform.Configuration;
-using Rock.Communication.Chat.Platform.Doors;
 using Rock.Communication.Chat.Platform.Session;
-using Rock.Data;
-using Rock.Model;
-using Rock.Reporting;
 using Rock.ViewModels.Blocks.Communication.Chat.ChatShell;
 using Rock.ViewModels.Controls;
-using Rock.Web.Cache;
 
 namespace Rock.Blocks.Communication.Chat
 {
@@ -66,11 +58,9 @@ namespace Rock.Blocks.Communication.Chat
         /// <inheritdoc/>
         public override object GetObsidianBlockInitialization()
         {
-            var person = GetCurrentPerson();
-
             return new ChatShellInitializationBox
             {
-                Session = ChatShellSession.Open( person, BuildSessionContext( person, RockContext ), RockContext ),
+                Session = ChatSessionHelper.OpenSession( GetCurrentPerson(), RockContext ),
                 ChannelGuid = PageParameter( PageParameterKey.ChannelGuid ).AsGuidOrNull()
             };
         }
@@ -87,12 +77,7 @@ namespace Rock.Blocks.Communication.Chat
         [BlockAction]
         public BlockActionResult MintChurchToken()
         {
-            // Whether the person may start a direct message is not in the token, so the data
-            // view is left out: every open person asks for a token every few minutes, and a data
-            // view that fails must not stop chat for everyone.
-            var context = new ChatSessionContext { Configuration = ChatPlatformConfigurationService.Read() };
-
-            return ActionOk( ChatShellSession.MintToken( GetCurrentPerson(), context, RockContext ) );
+            return ActionOk( ChatSessionHelper.MintToken( GetCurrentPerson(), RockContext ) );
         }
 
         /// <summary>
@@ -104,55 +89,11 @@ namespace Rock.Blocks.Communication.Chat
         [BlockAction]
         public BlockActionResult SaveBirthdate( DatePartsPickerValueBag birthDate )
         {
-            var person = GetCurrentPerson();
             var date = birthDate ?? new DatePartsPickerValueBag();
 
-            return ActionOk( ChatBirthdateDoor.Save( person?.Id, date.Year, date.Month, date.Day, BuildSessionContext( person, RockContext ), RockContext ) );
+            return ActionOk( ChatSessionHelper.SaveBirthdate( GetCurrentPerson(), date.Year, date.Month, date.Day, RockContext ) );
         }
 
         #endregion Block Actions
-
-        #region Methods
-
-        /// <summary>
-        /// Reads the church's settings and whether this person is in the church's Direct Message
-        /// Access data view. Only this person is looked for, so the data view is never read whole
-        /// for one open.
-        /// </summary>
-        /// <param name="person">The person opening chat, or null.</param>
-        /// <param name="rockContext">The context the data view is read in.</param>
-        /// <returns>The session context the gates read.</returns>
-        private static ChatSessionContext BuildSessionContext( Person person, RockContext rockContext )
-        {
-            var configuration = ChatPlatformConfigurationService.Read();
-            var context = new ChatSessionContext { Configuration = configuration };
-
-            if ( person == null || !configuration.DirectMessageAccessDataViewGuid.HasValue )
-            {
-                return context;
-            }
-
-            // A data view that no longer exists admits nobody, so a deleted data view never
-            // opens direct messages to everyone.
-            context.DirectMessageAccessPersonIds = new HashSet<int>();
-
-            var dataView = DataViewCache.Get( configuration.DirectMessageAccessDataViewGuid.Value );
-            if ( dataView == null )
-            {
-                return context;
-            }
-
-            var isInDataView = dataView.GetQuery( new GetQueryableOptions { DbContext = rockContext } )
-                .Any( entity => entity.Id == person.Id );
-
-            if ( isInDataView )
-            {
-                context.DirectMessageAccessPersonIds.Add( person.Id );
-            }
-
-            return context;
-        }
-
-        #endregion Methods
     }
 }

@@ -18,20 +18,17 @@ using System;
 using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
-using System.Security.Cryptography;
 
-using Microsoft.IdentityModel.Tokens;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
-using Rock.Communication.Chat.Platform.Configuration;
 using Rock.Communication.Chat.Platform.Session;
 using Rock.Data;
 using Rock.Enums.Crm;
 using Rock.Model;
-using Rock.Tests.Shared.TestFramework;
+
+using static Rock.Tests.Communication.Chat.Platform.Session.ChatSessionFixture;
 
 namespace Rock.Tests.Communication.Chat.Platform.Session
 {
@@ -41,60 +38,12 @@ namespace Rock.Tests.Communication.Chat.Platform.Session
     [TestClass]
     public class ChatSessionHelperTests
     {
-        private const int InactiveRecordStatusValueId = 3;
-        private const int BanListGroupId = 40;
-        private const int ChatPeopleGroupId = 50;
-        private const int ChatPeopleRoleId = 7;
-        private const string Kid = "kid-test-1";
-
         private RockContext _rockContext;
 
         [TestInitialize]
         public void TestInitialize()
         {
-            _rockContext = BuildContext( withInactiveRecordStatus: true, withBanListGroup: true );
-        }
-
-        /// <summary>
-        /// A context seeded the way a healthy Rock is. The two flags leave out the rows the
-        /// record-status gate and the ban gate each read, which is how a database missing its
-        /// own seed data is reproduced.
-        /// </summary>
-        private static RockContext BuildContext( bool withInactiveRecordStatus, bool withBanListGroup )
-        {
-            var rockContextMock = MockDatabaseHelper.CreateRockContextMock();
-            var rockContext = rockContextMock.Object;
-
-            if ( withInactiveRecordStatus )
-            {
-                rockContext.Set<DefinedValue>().Add( new DefinedValue
-                {
-                    Id = InactiveRecordStatusValueId,
-                    Guid = Guid.Parse( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE )
-                } );
-            }
-
-            if ( withBanListGroup )
-            {
-                rockContext.Set<Group>().Add( new Group
-                {
-                    Id = BanListGroupId,
-                    Guid = Guid.Parse( Rock.SystemGuid.Group.GROUP_CHAT_BAN_LIST ),
-                    Name = "Chat Ban List",
-                    GroupTypeId = 1
-                } );
-            }
-
-            rockContext.Set<Group>().Add( new Group
-            {
-                Id = ChatPeopleGroupId,
-                Guid = Guid.Parse( Rock.SystemGuid.Group.GROUP_CHAT_PEOPLE ),
-                Name = "Chat People",
-                GroupTypeId = 1,
-                GroupType = new GroupType { Id = 1, DefaultGroupRoleId = ChatPeopleRoleId }
-            } );
-
-            return rockContext;
+            _rockContext = CreateRockContextMock().Object;
         }
 
         #region Gates
@@ -192,7 +141,7 @@ namespace Rock.Tests.Communication.Chat.Platform.Session
         public void Evaluate_ActiveBanListMember_IsBanned()
         {
             var person = Adult();
-            AddBanListMember( person.Id, GroupMemberStatus.Active, isArchived: false );
+            AddBanListMember( _rockContext, person.Id, GroupMemberStatus.Active, isArchived: false );
 
             var result = ChatSessionHelper.Evaluate( person, ValidConfig(), _rockContext );
 
@@ -204,8 +153,8 @@ namespace Rock.Tests.Communication.Chat.Platform.Session
         public void Evaluate_ArchivedOrInactiveBanListMember_IsNotBanned()
         {
             var person = Adult();
-            AddBanListMember( person.Id, GroupMemberStatus.Active, isArchived: true );
-            AddBanListMember( person.Id, GroupMemberStatus.Inactive, isArchived: false );
+            AddBanListMember( _rockContext, person.Id, GroupMemberStatus.Active, isArchived: true );
+            AddBanListMember( _rockContext, person.Id, GroupMemberStatus.Inactive, isArchived: false );
 
             var result = ChatSessionHelper.Evaluate( person, ValidConfig(), _rockContext );
 
@@ -290,7 +239,7 @@ namespace Rock.Tests.Communication.Chat.Platform.Session
         [TestMethod]
         public void Evaluate_MissingBanListGroup_IsGateUnavailable()
         {
-            var context = BuildContext( withInactiveRecordStatus: true, withBanListGroup: false );
+            var context = CreateRockContextMock( withInactiveRecordStatus: true, withBanListGroup: false ).Object;
 
             var result = ChatSessionHelper.Evaluate( Adult(), ValidConfig(), context );
 
@@ -301,7 +250,7 @@ namespace Rock.Tests.Communication.Chat.Platform.Session
         [TestMethod]
         public void Evaluate_MissingInactiveRecordStatusValue_IsGateUnavailable()
         {
-            var context = BuildContext( withInactiveRecordStatus: false, withBanListGroup: true );
+            var context = CreateRockContextMock( withInactiveRecordStatus: false, withBanListGroup: true ).Object;
 
             var result = ChatSessionHelper.Evaluate( Adult(), ValidConfig(), context );
 
@@ -315,7 +264,7 @@ namespace Rock.Tests.Communication.Chat.Platform.Session
             var person = Adult();
 
             var first = ChatSessionHelper.Evaluate( person, ValidConfig(), _rockContext );
-            AddBanListMember( person.Id, GroupMemberStatus.Active, isArchived: false );
+            AddBanListMember( _rockContext, person.Id, GroupMemberStatus.Active, isArchived: false );
             var second = ChatSessionHelper.Evaluate( person, ValidConfig(), _rockContext );
 
             Assert.AreEqual( ChatMintGate.Ok, first.Gate );
@@ -519,7 +468,7 @@ namespace Rock.Tests.Communication.Chat.Platform.Session
 
             ChatSessionHelper.EnsureEnrollment( person, ValidConfig(), _rockContext );
 
-            Assert.AreEqual( 1, MarkerCount( person.Id ) );
+            Assert.AreEqual( 1, MarkerCount( _rockContext, person.Id ) );
         }
 
         [TestMethod]
@@ -530,7 +479,7 @@ namespace Rock.Tests.Communication.Chat.Platform.Session
             ChatSessionHelper.EnsureEnrollment( person, ValidConfig(), _rockContext );
             ChatSessionHelper.EnsureEnrollment( person, ValidConfig(), _rockContext );
 
-            Assert.AreEqual( 1, MarkerCount( person.Id ) );
+            Assert.AreEqual( 1, MarkerCount( _rockContext, person.Id ) );
         }
 
         [TestMethod]
@@ -541,7 +490,7 @@ namespace Rock.Tests.Communication.Chat.Platform.Session
             ChatSessionHelper.TryMintChurchToken( person, SigningConfig(), _rockContext );
             ChatSessionHelper.TryMintChurchToken( person, SigningConfig(), _rockContext );
 
-            Assert.AreEqual( 0, MarkerCount( person.Id ) );
+            Assert.AreEqual( 0, MarkerCount( _rockContext, person.Id ) );
         }
 
         [TestMethod]
@@ -552,67 +501,12 @@ namespace Rock.Tests.Communication.Chat.Platform.Session
 
             ChatSessionHelper.EnsureEnrollment( person, ValidConfig(), _rockContext );
 
-            Assert.AreEqual( 0, MarkerCount( person.Id ) );
+            Assert.AreEqual( 0, MarkerCount( _rockContext, person.Id ) );
         }
 
         #endregion
 
         #region Helpers
-
-        private void AddBanListMember( int personId, GroupMemberStatus status, bool isArchived )
-        {
-            _rockContext.Set<GroupMember>().Add( new GroupMember
-            {
-                GroupId = BanListGroupId,
-                PersonId = personId,
-                GroupMemberStatus = status,
-                IsArchived = isArchived
-            } );
-        }
-
-        private int MarkerCount( int personId )
-        {
-            return _rockContext.Set<GroupMember>()
-                .Count( m => m.GroupId == ChatPeopleGroupId && m.PersonId == personId );
-        }
-
-        private static Person Adult()
-        {
-            return new Person
-            {
-                Id = 10,
-                Gender = Gender.Unknown,
-                RecordStatusValueId = 1,
-                PrimaryAliasGuid = Guid.Parse( "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa" ),
-                BirthYear = RockDateTime.Now.Year - 30,
-                BirthMonth = 1,
-                BirthDay = 1
-            };
-        }
-
-        private static ChatSessionContext ValidConfig()
-        {
-            return new ChatSessionContext
-            {
-                Configuration = new ChatPlatformConfiguration
-                {
-                    TenantId = Guid.Parse( "11111111-1111-4111-8111-111111111111" ),
-                    PrivateKey = "{\"kty\":\"EC\"}",
-                    ProjectUrl = "http://127.0.0.1:54321",
-                    PublishableKey = "sb_publishable_test",
-                    Kid = "kid-1",
-                    MinimumAge = 13
-                }
-            };
-        }
-
-        private static ChatSessionContext SigningConfig()
-        {
-            var context = ValidConfig();
-            context.Configuration.PrivateKey = CreatePrivateJwk( Kid );
-            context.Configuration.Kid = Kid;
-            return context;
-        }
 
         private static string StripJwkProperty( string jwkJson, string name )
         {
@@ -638,19 +532,6 @@ namespace Rock.Tests.Communication.Chat.Platform.Session
             }
 
             return jwk.ToString();
-        }
-
-        private static string CreatePrivateJwk( string kid )
-        {
-            using ( var ecdsa = ECDsa.Create( ECCurve.NamedCurves.nistP256 ) )
-            {
-                var key = new ECDsaSecurityKey( ecdsa ) { KeyId = kid };
-                var jwk = JsonWebKeyConverter.ConvertFromECDsaSecurityKey( key );
-                jwk.Kid = kid;
-                jwk.Use = "sig";
-                jwk.Alg = "ES256";
-                return JsonConvert.SerializeObject( jwk );
-            }
         }
 
         #endregion

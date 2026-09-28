@@ -17,10 +17,9 @@ integration. It is not touched and not referenced from here.
 
 | Folder | Holds |
 |---|---|
-| `Session/` | Gating, enrolment and token minting for a person opening chat |
+| `Session/` | Gating, enrolment, token minting and the birthdate chat asks for, for a person opening chat; `ChatSessionHelper` answers each chat block action in one call, reading the settings and the Direct Message Access data view itself |
 | `Sync/` | `ChatPlatformSyncHelper`, everything the sync job says to the platform, and what Sync Now on a chat block may start and report |
 | `LaneA/` | The immediate lane: save hooks record keys, a flush pushes them |
-| `Doors/` | Block action handlers that change Rock truth, such as creating a direct message or joining a channel |
 | `Configuration/` | The settings model, its cached parsed form, and secret handling |
 | `Contract/` | The vendored wire contract and its hash |
 
@@ -96,8 +95,10 @@ no agent attribution trailer and no co-author line.
 ## Traps worth knowing before writing here
 
 - No synchronous HTTP inside a save hook. The immediate lane hands rows to an asynchronous
-  transport; the awaited path exists for the doors alone and carries a time budget.
+  transport; an awaited call belongs to a block action alone and carries a time budget.
 - A secret never enters a view model bag, a log line or an exception message.
-- A door returns a typed result with a stable code, never exception text.
+- A block action that changes Rock truth returns a typed result with a stable code, never exception
+  text. The birthdate save writes only a value Rock does not hold, and only when the age gate is
+  the one asking, so it can never change a recorded age.
 - Bulk operations bypass hooks, which is why the scheduled job, not the immediate lane, is the
   guarantee that the platform catches up.
