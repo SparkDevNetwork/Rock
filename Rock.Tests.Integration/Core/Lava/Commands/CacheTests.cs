@@ -519,7 +519,7 @@ Cache Value = {{i}}, Key=key4, Tag=undefined,tag2
 An Entity Set (Id={{ entitySet.Id }}) was created and {{ personIdList | Size }} people have been added.
 ";
 
-            var expectedOutput = "An Entity Set (Id=13) was created and 4 people have been added.\n";
+            var expectedOutput = "An Entity Set (Id=*) was created and 4 people have been added.\n";
 
             var options = new LavaRenderOptions { EnabledCommands = "rockentity" };
 
