@@ -1,7 +1,8 @@
 // Comments explain in place. This gate fails when a chat file refers to planning material that
 // lives outside this repository: decision, guardrail or open-item numbers (D-12, G-03, BP-07,
-// SY-17), work-item ids (P0-S1), the planning file names, or section signs. A reader of this
-// repository has none of those to open, so the reason belongs in the comment itself.
+// SY-17), work-item ids (P0-S1), the planning file names, section signs, or the lane names the
+// plan gave the two syncs. A reader of this repository has none of those to open, so the reason
+// belongs in the comment itself.
 //
 // It scans the chat paths rather than every tracked file, because this is a branch of Rock and
 // almost nothing in it is ours to hold to this rule. The gate skips itself and its test, which
@@ -89,6 +90,10 @@ export const PATTERNS = [
   },
   { name: 'planning folder', re: /\bdocs\/(?:planes|slices|archive|context|product|evidence|schema)\b/ },
   { name: 'section sign', re: /§/ },
+  // The two syncs were planned as lanes. The code calls them the immediate sync and the full sync,
+  // so the planning names never reach a reader here: spaced in prose, joined in an identifier.
+  { name: 'planning name for a sync', re: /\blane[ _-]?[ab]\b/i },
+  { name: 'planning name for a sync', re: /\b[Ll]ane[AB](?![a-z])/ },
 ];
 
 /**

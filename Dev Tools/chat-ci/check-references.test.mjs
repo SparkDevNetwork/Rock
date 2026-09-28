@@ -30,10 +30,26 @@ test('it refuses each kind of reference to material that is not in this reposito
   assert.match(hits[3], /§/);
 });
 
+test('it refuses the lane names the plan gave the two syncs, spaced or joined', () => {
+  const planted = [
+    '// the Lane A push runs after the save commits',
+    'var changes = new ChatPlatformSyncHelper.LaneAChanges();',
+    '// and lane-b restates the whole church',
+  ].join('\n');
+
+  const hits = scan('Rock/Communication/Chat/Platform/Example.cs', planted);
+
+  assert.equal(hits.length, 3, `expected one hit per planted line, got ${hits.length}: ${hits.join(' | ')}`);
+  assert.match(hits[0], /:1:.*Lane A/);
+  assert.match(hits[1], /:2:.*LaneA/);
+  assert.match(hits[2], /:3:.*lane-b/);
+});
+
 test('it passes prose that explains itself in place', () => {
   const clean = [
     '// The column order here is a wire: the payload is positional, so two columns of the same',
     '// width swapped shift every value one place and no row-width check can see it.',
+    '// The immediate sync pushes a save at once; the full sync restates the church lane by lane.',
   ].join('\n');
 
   assert.deepEqual(scan('Rock/Communication/Chat/Platform/Example.cs', clean), []);
