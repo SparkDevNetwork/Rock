@@ -16,7 +16,6 @@
 //
 using System;
 using System.Collections.Generic;
-using System.Data;
 using System.Data.Common;
 using System.Linq;
 using System.Net.Http;
@@ -36,8 +35,6 @@ using Rock.Model;
 using Rock.Net;
 using Rock.Web.Cache;
 
-using ConnectionState = System.Data.ConnectionState;
-
 namespace Rock.Communication.Chat.Platform.Sync
 {
     /// <summary>
@@ -48,40 +45,34 @@ namespace Rock.Communication.Chat.Platform.Sync
     {
         #region Constants
 
-        // A push reads a handful of keys, and the full sync repairs whatever one that gives up
-        // leaves behind, so it is never worth the full sync's long wait. An estimate.
+        // A push reads a handful of keys, and the full sync repairs one that gives up, so it is
+        // never worth the full sync's long wait. Every figure here is an estimate.
         private const int PushProjectionTimeoutSeconds = 10;
 
         // No save a person makes through Rock's screens comes near this, so a push past it is a bulk
-        // write that reached the hooks, and the full sync carries it instead. An estimate.
+        // write that reached the hooks, and the full sync carries it instead.
         internal const int PushRowCeiling = 5000;
 
-        // How long a push nobody waits on may take before it is abandoned. An estimate.
         internal static readonly TimeSpan BackgroundPushTimeout = TimeSpan.FromSeconds( 10 );
 
-        // How long a block action waits on its own save's push before it answers without it. An
-        // estimate, within what a person waiting on a chat action is given.
+        // Within what a person waiting on a chat action is given.
         internal static readonly TimeSpan AwaitedPushBudget = TimeSpan.FromSeconds( 2 );
 
-        // A failure is logged at most this often, so a platform that is down for an hour leaves a
-        // handful of rows in the exception log rather than one for every save in that hour.
+        // So a platform that is down for an hour leaves a handful of rows in the exception log
+        // rather than one for every save in that hour.
         private static readonly TimeSpan FailureLogInterval = TimeSpan.FromMinutes( 1 );
 
-        // How long the ids of the groups that run chat are trusted while one of them is missing.
         // Chat People is added by a startup fix, so a save made before it ran must not hide it for good.
         private const int MissingSystemGroupRetryMilliseconds = 60000;
 
-        // The one transport override a test may hold at a time, or null in production.
         private static ImmediateSyncOverride _override;
 
-        // The client every push is sent through, kept for the process so its platform token is
-        // exchanged once every few minutes rather than once a save.
-        private static ImmediateTransport _transport;
+        // Kept for the process, so its platform token is exchanged once every few minutes rather
+        // than once a save.
+        private static PlatformClient _transport;
 
-        // The ids of the groups that run chat, looked up once rather than on every save.
         private static ChatSystemGroups _systemGroups;
 
-        // When a push failure was last logged, in UTC ticks.
         private static long _failureLoggedAtTicks;
 
         #endregion Constants
@@ -99,8 +90,8 @@ namespace Rock.Communication.Chat.Platform.Sync
             public HashSet<int> PersonIds { get; } = new HashSet<int>();
 
             /// <summary>
-            /// Groups whose channel, or whose whole membership, may have changed. By guid, so a
-            /// group that was deleted can still be named.
+            /// Groups whose channel or whole membership may have changed, by guid so a deleted
+            /// group can still be named.
             /// </summary>
             public HashSet<Guid> GroupGuids { get; } = new HashSet<Guid>();
 
@@ -120,8 +111,7 @@ namespace Rock.Communication.Chat.Platform.Sync
             internal bool IsFlushRegistered { get; set; }
 
             /// <summary>
-            /// The address of the request that made the save, for the one warning a push too large
-            /// to send leaves behind.
+            /// The address of the request that made the save, for the warning a push too large leaves.
             /// </summary>
             internal string Source { get; set; }
 
@@ -136,8 +126,7 @@ namespace Rock.Communication.Chat.Platform.Sync
             internal bool IsEmpty => PersonIds.Count == 0 && GroupGuids.Count == 0 && MemberKeys.Count == 0;
 
             /// <summary>
-            /// Moves the recorded keys into a new set and leaves this one empty, so the next save
-            /// on the context records afresh.
+            /// Moves the recorded keys into a new set, so the next save on the context records afresh.
             /// </summary>
             /// <returns>The keys recorded until now.</returns>
             internal ImmediateChanges TakeKeys()
@@ -194,8 +183,8 @@ namespace Rock.Communication.Chat.Platform.Sync
         }
 
         /// <summary>
-        /// Stands in for the immediate sync's transport while a test holds it, and records what
-        /// the immediate sync began and warned about in that time.
+        /// Stands in for the immediate sync's transport while a test holds it, and records the pushes
+        /// begun and the warnings logged in that time.
         /// </summary>
         /// <remarks>
         /// Process wide, as the transport it replaces is, so a test waits on the pushes it caused
@@ -292,55 +281,6 @@ namespace Rock.Communication.Chat.Platform.Sync
         }
 
         /// <summary>
-        /// The process's client to the chat platform for the immediate sync, and the settings and
-        /// transport it was built with.
-        /// </summary>
-        private sealed class ImmediateTransport
-        {
-            // A wait rather than a lock, because a sign-in is awaited and a lock cannot be held
-            // across an await.
-            private readonly SemaphoreSlim _signIn = new SemaphoreSlim( 1, 1 );
-
-            public ImmediateTransport( ChatPlatformConfiguration configuration, HttpMessageHandler handler )
-            {
-                Configuration = configuration;
-                Handler = handler;
-                Client = new PlatformClient( configuration, handler );
-            }
-
-            public ChatPlatformConfiguration Configuration { get; }
-
-            public HttpMessageHandler Handler { get; }
-
-            public PlatformClient Client { get; }
-
-            /// <summary>
-            /// Makes sure the client holds a platform token with time left on it, exchanging for
-            /// one where it does not. Pushes that arrive together share one exchange.
-            /// </summary>
-            /// <param name="cancellationToken">Ends the wait when the push's time is up.</param>
-            /// <returns>True where the client holds a token to push under.</returns>
-            public async Task<bool> EnsureSignedInAsync( CancellationToken cancellationToken )
-            {
-                if ( Client.HasFreshToken )
-                {
-                    return true;
-                }
-
-                await _signIn.WaitAsync( cancellationToken ).ConfigureAwait( false );
-
-                try
-                {
-                    return Client.HasFreshToken || await Client.SignInAsync( cancellationToken ).ConfigureAwait( false );
-                }
-                finally
-                {
-                    _signIn.Release();
-                }
-            }
-        }
-
-        /// <summary>
         /// The ids of the groups that run chat, as they were when last looked up.
         /// </summary>
         private sealed class ChatSystemGroups
@@ -361,14 +301,10 @@ namespace Rock.Communication.Chat.Platform.Sync
         #region Methods
 
         /// <summary>
-        /// Records a person's save for the immediate sync when it changed something chat shows.
-        /// Called at the end of the person save hook's pre-save.
+        /// Records a person's save when it changed something chat shows. Called at the end of the
+        /// person save hook's pre-save, on every person save in Rock.
         /// </summary>
         /// <param name="entry">The save entry.</param>
-        /// <remarks>
-        /// Runs on every person save in Rock, so a save that changes nothing chat shows returns
-        /// having read nothing and allocated nothing.
-        /// </remarks>
         internal static void RecordPersonSave( IEntitySaveEntry entry )
         {
             var isRecorded = IsPersonChangeInScope( entry ) && RockRequestContextAccessor.Current != null;
@@ -381,14 +317,10 @@ namespace Rock.Communication.Chat.Platform.Sync
         }
 
         /// <summary>
-        /// Records a group's save for the immediate sync when the group can be a chat channel.
-        /// Called at the end of the group save hook's pre-save.
+        /// Records a group's save when the group can be a chat channel. Called at the end of the
+        /// group save hook's pre-save, on every group save in Rock, families included.
         /// </summary>
         /// <param name="entry">The save entry.</param>
-        /// <remarks>
-        /// Runs on every group save in Rock, families included, so a group chat cannot reach returns
-        /// having read nothing and allocated nothing.
-        /// </remarks>
         internal static void RecordGroupSave( IEntitySaveEntry entry )
         {
             var group = entry?.Entity as Group;
@@ -408,15 +340,11 @@ namespace Rock.Communication.Chat.Platform.Sync
         }
 
         /// <summary>
-        /// Records a membership's save for the immediate sync when its group can be a chat channel
-        /// or is one of the groups that run chat. Called at the end of the group member save hook's
-        /// pre-save, after the hook has set the member's group type.
+        /// Records a membership's save when its group can be a chat channel or is one of the groups
+        /// that run chat. Called at the end of the group member save hook's pre-save, after the hook
+        /// has set the member's group type.
         /// </summary>
         /// <param name="entry">The save entry.</param>
-        /// <remarks>
-        /// Runs on every membership save in Rock, so one chat cannot reach returns having read
-        /// nothing and allocated nothing.
-        /// </remarks>
         internal static void RecordGroupMemberSave( IEntitySaveEntry entry )
         {
             var member = entry?.Entity as GroupMember;
@@ -469,7 +397,8 @@ namespace Rock.Communication.Chat.Platform.Sync
         }
 
         /// <summary>
-        /// Whether a person's save changed a value chat shows, read from the entry alone.
+        /// Whether a person's save changed a value chat shows, read from the entry alone so an
+        /// ordinary save reads and allocates nothing.
         /// </summary>
         /// <param name="entry">The save entry.</param>
         /// <returns>True where the save is one the immediate sync pushes.</returns>
@@ -497,8 +426,9 @@ namespace Rock.Communication.Chat.Platform.Sync
         }
 
         /// <summary>
-        /// Whether a group, or a membership of it, is one the immediate sync pushes: its type
-        /// allows chat, or it is one of the groups that run chat. Read from cached values alone.
+        /// Whether a group, or a membership of it, is one the immediate sync pushes: its type allows
+        /// chat, or it is one of the groups that run chat. Read from cached values alone, so an
+        /// ordinary save never reaches the database here.
         /// </summary>
         /// <param name="groupId">The group.</param>
         /// <param name="groupTypeId">The group's type.</param>
@@ -510,7 +440,6 @@ namespace Rock.Communication.Chat.Platform.Sync
                 return true;
             }
 
-            // A cached read, so an ordinary save never reaches the database here.
             var groupType = GroupTypeCache.Get( groupTypeId );
 
             return groupType != null && groupType.IsChatAllowed;
@@ -559,13 +488,31 @@ namespace Rock.Communication.Chat.Platform.Sync
         /// <param name="rockContext">The context the block action saved with.</param>
         /// <returns>Applied where the platform took the push or there was nothing to push, and Pending otherwise. Never throws.</returns>
         /// <remarks>
-        /// For a block action that tells a person their change is live. A push that outlasts the
-        /// budget is abandoned by the caller, not cancelled: it may still land, and the full sync
-        /// carries the change if it does not.
+        /// A push that outlasts the budget is abandoned, not cancelled: it may still land, and the
+        /// full sync carries the change if it does not.
         /// </remarks>
-        internal static Task<PushOutcome> FlushAsync( RockContext rockContext )
+        internal static async Task<PushOutcome> FlushAsync( RockContext rockContext )
         {
-            return WaitForLastPushAsync( rockContext?.GetOptions<ImmediateChanges>()?.LastPush );
+            var push = rockContext?.GetOptions<ImmediateChanges>()?.LastPush;
+
+            // Nothing began means nothing chat shows changed, so there is nothing pending.
+            if ( push == null )
+            {
+                return PushOutcome.Applied;
+            }
+
+            try
+            {
+                var finished = await Task.WhenAny( push, Task.Delay( AwaitedPushBudget ) ).ConfigureAwait( false );
+
+                return finished == push ? await push.ConfigureAwait( false ) : PushOutcome.Pending;
+            }
+            catch ( Exception exception )
+            {
+                // The push absorbs its own failures, so this only keeps the promise never to throw.
+                LogPushFailure( exception );
+                return PushOutcome.Pending;
+            }
         }
 
         /// <summary>
@@ -583,8 +530,7 @@ namespace Rock.Communication.Chat.Platform.Sync
                 throw new InvalidOperationException( "the immediate sync's transport is already overridden, and two overrides could not tell whose push is whose" );
             }
 
-            // Dropped so the first push under the override signs in through it, with no token left
-            // from before.
+            // Dropped so the first push under the override signs in through it.
             Interlocked.Exchange( ref _transport, null );
 
             return replacement;
@@ -605,8 +551,7 @@ namespace Rock.Communication.Chat.Platform.Sync
 
             var changes = rockContext.GetOrCreateOptions<ImmediateChanges>();
 
-            // Read once per context and only for a save that passed the filter, because the read
-            // parses and decrypts a stored setting.
+            // Read once per context, because the read parses and decrypts a stored setting.
             if ( changes.Configuration == null )
             {
                 changes.Configuration = ChatPlatformConfigurationService.Read();
@@ -617,10 +562,9 @@ namespace Rock.Communication.Chat.Platform.Sync
                 return null;
             }
 
-            // One registration per commit: the callback clears the flag, so the next save on the
-            // context registers again. After a rollback the registration and the keys stay, and
-            // ride along with the context's next commit. That is harmless, because a push reads
-            // committed truth, so a key whose change was rolled back is pushed as it stands.
+            // One registration per commit: the callback clears the flag. After a rollback the
+            // registration and the keys ride along with the context's next commit, which is
+            // harmless because a push reads committed truth.
             if ( !changes.IsFlushRegistered )
             {
                 changes.IsFlushRegistered = true;
@@ -636,9 +580,9 @@ namespace Rock.Communication.Chat.Platform.Sync
         /// </summary>
         /// <param name="changes">The context's keys.</param>
         /// <remarks>
-        /// The read runs in the background along with the request, so the save's thread returns at
-        /// once, and a read made while the caller still holds a transaction waits for the commit on
-        /// its own thread rather than blocking the thread that holds the locks.
+        /// The read runs in the background too, so the save's thread returns at once, and a read
+        /// made while the caller still holds a transaction waits for the commit on its own thread
+        /// rather than blocking the thread that holds the locks.
         /// </remarks>
         private static void Flush( ImmediateChanges changes )
         {
@@ -688,24 +632,20 @@ namespace Rock.Communication.Chat.Platform.Sync
 
                 if ( push.RowCount > PushRowCeiling )
                 {
-                    Warn( string.Format(
+                    var warning = string.Format(
                         "A chat push of {0} rows from {1} was not sent, because no ordinary save touches that many; the next full chat sync carries it.",
                         push.RowCount,
-                        source ?? "a save outside a web request" ) );
+                        source ?? "a save outside a web request" );
+
+                    RockLogger.LoggerFactory.CreateLogger( typeof( ChatPlatformSyncHelper ).FullName ).LogWarning( warning );
+                    Volatile.Read( ref _override )?.Warned( warning );
 
                     return PushOutcome.Pending;
                 }
 
                 using ( var timeout = new CancellationTokenSource( BackgroundPushTimeout ) )
                 {
-                    var transport = TransportFor( configuration );
-
-                    if ( !await transport.EnsureSignedInAsync( timeout.Token ).ConfigureAwait( false ) )
-                    {
-                        return PushOutcome.Pending;
-                    }
-
-                    return await transport.Client.PushAsync( push, timeout.Token ).ConfigureAwait( false );
+                    return await TransportFor( configuration ).PushAsync( push, timeout.Token ).ConfigureAwait( false );
                 }
             }
             catch ( Exception exception )
@@ -716,59 +656,22 @@ namespace Rock.Communication.Chat.Platform.Sync
         }
 
         /// <summary>
-        /// Waits on a push within the awaited budget.
-        /// </summary>
-        /// <param name="push">The push, or null where the save began none.</param>
-        /// <returns>Applied where the push was taken or there was none, and Pending otherwise.</returns>
-        private static async Task<PushOutcome> WaitForLastPushAsync( Task<PushOutcome> push )
-        {
-            // Nothing began means nothing chat shows changed, so there is nothing pending.
-            if ( push == null )
-            {
-                return PushOutcome.Applied;
-            }
-
-            try
-            {
-                var finished = await Task.WhenAny( push, Task.Delay( AwaitedPushBudget ) ).ConfigureAwait( false );
-
-                return finished == push ? await push.ConfigureAwait( false ) : PushOutcome.Pending;
-            }
-            catch ( Exception exception )
-            {
-                // The push absorbs its own failures, so this only keeps the promise that a block
-                // action waiting here is never thrown at.
-                LogPushFailure( exception );
-                return PushOutcome.Pending;
-            }
-        }
-
-        /// <summary>
-        /// The process's client for these settings, built anew when the settings or the test
-        /// transport changed.
+        /// The process's client, built anew when the settings or the test transport changed.
         /// </summary>
         /// <param name="configuration">The church's chat settings.</param>
-        /// <returns>The client and its settings.</returns>
-        private static ImmediateTransport TransportFor( ChatPlatformConfiguration configuration )
+        /// <returns>The client.</returns>
+        private static PlatformClient TransportFor( ChatPlatformConfiguration configuration )
         {
             var handler = Volatile.Read( ref _override )?.Handler;
             var current = Volatile.Read( ref _transport );
 
-            var isCurrent = current != null
-                && current.Handler == handler
-                && current.Configuration.TenantId == configuration.TenantId
-                && current.Configuration.ProjectUrl == configuration.ProjectUrl
-                && current.Configuration.PublishableKey == configuration.PublishableKey
-                && current.Configuration.Kid == configuration.Kid
-                && current.Configuration.PrivateKey == configuration.PrivateKey;
-
-            if ( isCurrent )
+            if ( current != null && current.IsFor( configuration, handler ) )
             {
                 return current;
             }
 
             // Two pushes racing to replace it each get a working client, and one of them is kept.
-            var created = new ImmediateTransport( configuration, handler );
+            var created = new PlatformClient( configuration, handler );
             var previous = Interlocked.CompareExchange( ref _transport, created, current );
 
             return previous == current ? created : previous ?? created;
@@ -851,15 +754,6 @@ namespace Rock.Communication.Chat.Platform.Sync
         }
 
         /// <summary>
-        /// Logs a warning about the immediate sync, and hands it to a test override where one is held.
-        /// </summary>
-        private static void Warn( string message )
-        {
-            RockLogger.LoggerFactory.CreateLogger( typeof( ChatPlatformSyncHelper ).FullName ).LogWarning( message );
-            Volatile.Read( ref _override )?.Warned( message );
-        }
-
-        /// <summary>
         /// Logs why a push did not land, at most once a minute, since every save made while the
         /// platform is unreachable fails the same way.
         /// </summary>
@@ -885,11 +779,6 @@ namespace Rock.Communication.Chat.Platform.Sync
         /// <param name="configuration">The church's chat settings.</param>
         /// <param name="changes">What the save touched.</param>
         /// <returns>The push body.</returns>
-        /// <remarks>
-        /// The procedure writes the channel mark for the groups the save touched before it reads
-        /// anything, and the mark must commit even when the push fails, so no transaction may span
-        /// this call.
-        /// </remarks>
         internal static PushBody ProjectChanges( RockContext rockContext, ChatPlatformConfiguration configuration, ImmediateChanges changes )
         {
             if ( rockContext == null )
@@ -915,35 +804,12 @@ namespace Rock.Communication.Chat.Platform.Sync
             parameters["@ScopeGroupGuidsJson"] = new JArray( changes.GroupGuids.Select( g => g.ToString() ) ).ToString( Formatting.None );
             parameters["@ScopeMemberKeysJson"] = new JArray( changes.MemberKeys.Select( k => new JArray( k.GroupGuid.ToString(), k.PersonId ) ) ).ToString( Formatting.None );
 
-            // The context owns the connection: close it only if it was opened here, never dispose it.
-            var connection = rockContext.Database.Connection;
-            var wasClosed = connection.State != ConnectionState.Open;
-
-            try
-            {
-                if ( wasClosed )
-                {
-                    connection.Open();
-                }
-
-                using ( var command = CreateProjectionCommand( connection, parameters, PushProjectionTimeoutSeconds ) )
-                using ( var reader = command.ExecuteReader() )
-                {
-                    return ReadPushBody( reader );
-                }
-            }
-            finally
-            {
-                if ( wasClosed && connection.State == ConnectionState.Open )
-                {
-                    connection.Close();
-                }
-            }
+            return ReadProjection( rockContext, parameters, PushProjectionTimeoutSeconds, ReadPushBody );
         }
 
         /// <summary>
         /// Builds the push body from a scoped call's result sets: the moment, the four sections
-        /// written by the same rules as the full sync's, and the keys named absent.
+        /// written by the full sync's own row writer, and the keys named absent.
         /// </summary>
         /// <param name="reader">The reader, on the procedure's first result set.</param>
         /// <returns>The push body.</returns>
@@ -958,16 +824,14 @@ namespace Rock.Communication.Chat.Platform.Sync
             var rowCounts = new Dictionary<string, int>();
             JObject body;
 
-            // Written as tokens rather than text, through the one row writer, so a push row can
-            // never differ from the same row in a restatement.
+            // The one row writer, so a push row can never differ from the same row in a restatement.
             using ( var writer = new JTokenWriter() )
             {
                 WriteSections( reader, JObject.Parse( ChatWireContract.Json ), writer, RockDateTime.OrgTimeZoneInfo, rowCounts );
                 body = ( JObject ) writer.Token;
             }
 
-            // The configured badges left out, which a scoped call leaves empty, since a push never
-            // carries badges.
+            // The badges left out, which a scoped call leaves empty, since a push never carries badges.
             if ( !reader.NextResult() )
             {
                 throw new InvalidOperationException( "the projection returned no result set for the badges it left out" );
@@ -1000,8 +864,8 @@ namespace Rock.Communication.Chat.Platform.Sync
         /// <param name="kind">The name the push gives the set.</param>
         private static void WriteAbsentKeys( DbDataReader reader, JsonWriter writer, string kind )
         {
-            // Missing only when the call was not scoped, and then nothing it returned may be read as
-            // a push: an empty set would say that nothing left chat.
+            // Missing only when the call was not scoped, and then an empty set would say that
+            // nothing left chat.
             if ( !reader.NextResult() )
             {
                 throw new InvalidOperationException( string.Format( "the projection returned no absent {0}, so it did not read a scope", kind ) );

@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.IO;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
@@ -40,12 +41,13 @@ namespace Rock.Communication.Chat.Platform.Sync
     public static partial class ChatPlatformSyncHelper
     {
         /// <summary>
-        /// One run's conversation with the chat platform: the credential exchange, the submission and
-        /// the status reads, over one HttpClient that lives as long as the run.
+        /// A conversation with the chat platform over one HttpClient: the credential exchange, the
+        /// submission and status reads for one sync run, and the pushes the immediate sync keeps
+        /// one client for the process to send.
         /// </summary>
         /// <remarks>
-            /// Nothing here throws at its caller over an answer. The platform refuses with a 422 and its
-            /// history row committed, so the body of a 422 is read like any other.
+        /// Nothing here throws at its caller over an answer. The platform refuses with a 422 and its
+        /// history row committed, so the body of a 422 is read like any other.
         /// </remarks>
         internal sealed class PlatformClient : IDisposable
         {
@@ -69,8 +71,8 @@ namespace Rock.Communication.Chat.Platform.Sync
             // outlast the longer. Estimates, from local measurement.
             private static readonly TimeSpan BusyRetryDelay = TimeSpan.FromSeconds( 5 );
 
-            // The longest one busy wait honours the platform's backoff advice. An operator's backoff
-            // hours out is saved by the run for the schedule to honour, not waited for inside it.
+            // An operator's backoff hours out is saved by the run for the schedule to honour, not
+            // waited for inside it.
             internal static readonly TimeSpan BusyRetryCeiling = TimeSpan.FromSeconds( 30 );
 
             // HttpClient's own default, named so the Sync Now budget can count it.
@@ -89,10 +91,16 @@ namespace Rock.Communication.Chat.Platform.Sync
 
             private readonly ChatPlatformConfiguration _configuration;
 
+            private readonly HttpMessageHandler _handler;
+
             private readonly HttpClient _httpClient;
 
+            // A wait rather than a lock, because a push's sign-in is awaited, so pushes that arrive
+            // together share one exchange.
+            private readonly SemaphoreSlim _signIn = new SemaphoreSlim( 1, 1 );
+
             /// <summary>
-            /// Creates the client for one run.
+            /// Creates the client.
             /// </summary>
             /// <param name="configuration">The church's chat settings.</param>
             /// <param name="handler">The transport, or null for the ordinary one.</param>
@@ -104,6 +112,7 @@ namespace Rock.Communication.Chat.Platform.Sync
                 }
 
                 _configuration = configuration;
+                _handler = handler;
                 _httpClient = handler == null ? new HttpClient() : new HttpClient( handler );
                 _httpClient.Timeout = RequestTimeout;
 
@@ -122,8 +131,8 @@ namespace Rock.Communication.Chat.Platform.Sync
             public Func<DateTime> Clock { get; set; }
 
             /// <summary>
-            /// The platform token the submission and status reads are made under. Set by
-            /// <see cref="SignIn"/>; never the church token, which the data API cannot verify.
+            /// The platform token the data calls are made under; never the church token, which the
+            /// data API cannot verify.
             /// </summary>
             public string PlatformToken { get; internal set; }
 
@@ -145,15 +154,7 @@ namespace Rock.Communication.Chat.Platform.Sync
             /// </remarks>
             public bool SignIn( out string failure )
             {
-                var minted = ChatSessionHelper.TryMintSyncToken( new ChatSessionContext { Configuration = _configuration } );
-
-                if ( !minted.Success )
-                {
-                    failure = "this church could not sign a request to the chat platform";
-                    return false;
-                }
-
-                return Exchange( minted.ChurchToken, out failure );
+                return Exchange( MintChurchToken(), out failure );
             }
 
             /// <summary>
@@ -178,23 +179,11 @@ namespace Rock.Communication.Chat.Platform.Sync
                 // The same attempts as a submission: the exchange changes nothing, so it is always
                 // safe to repeat.
                 var unreached = SendWithRetry(
-                    () =>
-                    {
-                        var request = new HttpRequestMessage( HttpMethod.Post, Url( ExchangePath ) );
-                        request.Headers.TryAddWithoutValidation( "Authorization", "Bearer " + churchToken );
-                        request.Headers.TryAddWithoutValidation( "apikey", _configuration.PublishableKey );
-                        return request;
-                    },
+                    () => BuildExchangeRequest( churchToken ),
                     ( response, statusCode, body ) =>
                     {
-                        var token = ( string ) body?["access_token"];
-
-                        if ( response.IsSuccessStatusCode && token.IsNotNullOrWhiteSpace() )
+                        if ( AcceptPlatformToken( response, body ) )
                         {
-                            PlatformToken = token;
-
-                            var expiresIn = ( int? ) body["expires_in"];
-                            PlatformTokenExpiresAtUtc = expiresIn.HasValue ? Clock().AddSeconds( expiresIn.Value ) : ( DateTime? ) null;
                             return;
                         }
 
@@ -239,7 +228,15 @@ namespace Rock.Communication.Chat.Platform.Sync
                     }
                     catch ( Exception exception )
                     {
-                        lastFailure = Describe( exception );
+                        // The innermost message, because the wrappers above it name this code rather
+                        // than what went wrong.
+                        var innermost = exception;
+                        while ( innermost.InnerException != null )
+                        {
+                            innermost = innermost.InnerException;
+                        }
+
+                        lastFailure = innermost.Message;
                         continue;
                     }
 
@@ -344,12 +341,9 @@ namespace Rock.Communication.Chat.Platform.Sync
 
             /// <summary>
             /// How long to wait before sending again where the drain held the church's pending row
-            /// when the submission arrived, or null where the answer is not that one.
+            /// when the submission arrived, or null where the answer is not that one: long enough to
+            /// outlast a drain pass, or until the time the answer advises, up to a ceiling.
             /// </summary>
-            /// <remarks>
-            /// Long enough to outlast a drain pass, or until the time the answer advises where that
-            /// is later, up to a ceiling.
-            /// </remarks>
             private TimeSpan? BusyRetryDelayFor( int statusCode, JObject body )
             {
                 var isBusy = statusCode == 422 && ( string ) body?["error_code"] == BusyCode;
@@ -389,7 +383,22 @@ namespace Rock.Communication.Chat.Platform.Sync
                     () =>
                     {
                         RefreshTokenIfExpiring();
-                        return BuildSubmitRequest( submissionId, payload, headers );
+
+                        // Built per attempt, because a request message cannot be sent twice; the body
+                        // buffer is wrapped, not copied.
+                        var content = new ByteArrayContent( payload.Array, payload.Offset, payload.Count );
+                        content.Headers.ContentType = new MediaTypeHeaderValue( "text/plain" ) { CharSet = "utf-8" };
+
+                        var request = BuildDataRequest( SubmitPath, content );
+
+                        foreach ( var header in headers )
+                        {
+                            request.Headers.TryAddWithoutValidation( header.Key, header.Value );
+                        }
+
+                        request.Headers.TryAddWithoutValidation( SubmissionIdHeader, submissionId.ToString() );
+
+                        return request;
                     },
                     ( response, statusCode, body ) => acknowledgement = ReadAcknowledgement( submissionId, statusCode, body ) );
 
@@ -447,10 +456,13 @@ namespace Rock.Communication.Chat.Platform.Sync
             {
                 RefreshTokenIfExpiring();
 
+                var body = new JObject { ["p_submission_id"] = submissionId.ToString() };
+                var content = new StringContent( body.ToString( Formatting.None ), Encoding.UTF8, "application/json" );
+
                 HttpResponseMessage response;
                 try
                 {
-                    response = _httpClient.SendAsync( BuildStatusRequest( submissionId ) ).GetAwaiter().GetResult();
+                    response = _httpClient.SendAsync( BuildDataRequest( StatusPath, content ) ).GetAwaiter().GetResult();
                 }
                 catch
                 {
@@ -468,27 +480,33 @@ namespace Rock.Communication.Chat.Platform.Sync
             }
 
             /// <summary>
-            /// Pushes the rows one save touched, once, under the platform token this client holds.
+            /// Pushes the rows one save touched, once, signing in first where the token held is near
+            /// its end.
             /// </summary>
             /// <param name="push">The rows and the moment they were read at.</param>
-            /// <param name="cancellationToken">Ends the attempt when the push's time is up.</param>
+            /// <param name="cancellationToken">Ends the push when its time is up.</param>
             /// <returns>Applied where the platform took the push, and Pending otherwise. Never an exception.</returns>
             /// <remarks>
-            /// One attempt and no retry: the full sync repairs a push that did not land, so waiting
+            /// One attempt and no waits: the full sync repairs a push that did not land, so waiting
             /// to send it again would only hold a thread.
             /// </remarks>
             public async Task<PushOutcome> PushAsync( PushBody push, CancellationToken cancellationToken )
             {
                 try
                 {
-                    using ( var request = new HttpRequestMessage( HttpMethod.Post, Url( PushPath ) ) )
+                    if ( !await EnsureSignedInAsync( cancellationToken ).ConfigureAwait( false ) )
                     {
-                        // JSON, unlike a submission's raw text, because a push is a few rows and the
-                        // platform parses it on the way in.
-                        request.Content = new StringContent( push.Body.ToString( Formatting.None ), Encoding.UTF8, "application/json" );
+                        return PushOutcome.Pending;
+                    }
+
+                    // JSON, unlike a submission's raw text, because a push is a few rows and the
+                    // platform parses it on the way in.
+                    var content = new StringContent( push.Body.ToString( Formatting.None ), Encoding.UTF8, "application/json" );
+
+                    using ( var request = BuildDataRequest( PushPath, content ) )
+                    {
                         request.Headers.TryAddWithoutValidation( ReadTimeHeader, FormatReadTime( push.ReadAtUtc ) );
                         request.Headers.TryAddWithoutValidation( ContractHeader, ChatWireContract.ComputedHash );
-                        AddCredentials( request );
 
                         using ( var response = await _httpClient.SendAsync( request, cancellationToken ).ConfigureAwait( false ) )
                         {
@@ -515,23 +533,36 @@ namespace Rock.Communication.Chat.Platform.Sync
             }
 
             /// <summary>
-            /// A response body as JSON, read without blocking, or null where it is not JSON.
+            /// A response body as JSON, read without blocking, or null where it is not JSON. Dates are
+            /// left as written, because Json.NET would turn an instant with an offset into a local time.
             /// </summary>
             private static async Task<JObject> ReadBodyAsync( HttpResponseMessage response )
             {
-                if ( response.Content == null )
+                var text = response.Content == null ? null : await response.Content.ReadAsStringAsync().ConfigureAwait( false );
+                if ( text.IsNullOrWhiteSpace() )
                 {
                     return null;
                 }
 
-                return ParseBody( await response.Content.ReadAsStringAsync().ConfigureAwait( false ) );
+                try
+                {
+                    using ( var reader = new JsonTextReader( new StringReader( text ) ) { DateParseHandling = DateParseHandling.None } )
+                    {
+                        return JObject.Load( reader );
+                    }
+                }
+                catch ( JsonException )
+                {
+                    // A gateway that answered in its own words rather than the project's.
+                    return null;
+                }
             }
 
             /// <summary>
             /// Whether the client holds a platform token with enough time left for a request to
             /// arrive before it expires.
             /// </summary>
-            public bool HasFreshToken
+            private bool HasFreshToken
             {
                 get
                 {
@@ -542,46 +573,49 @@ namespace Rock.Communication.Chat.Platform.Sync
             }
 
             /// <summary>
-            /// Mints the church's sync token and exchanges it for a platform token, once and
-            /// without waiting between attempts, for a push that has seconds to land.
+            /// Makes sure the client holds a token with time left on it for a push, exchanging once
+            /// and without waiting between attempts, since a push has seconds to land.
             /// </summary>
-            /// <param name="cancellationToken">Ends the exchange when the push's time is up.</param>
-            /// <returns>True where the client now holds a platform token.</returns>
-            public async Task<bool> SignInAsync( CancellationToken cancellationToken )
+            private async Task<bool> EnsureSignedInAsync( CancellationToken cancellationToken )
             {
-                var minted = ChatSessionHelper.TryMintSyncToken( new ChatSessionContext { Configuration = _configuration } );
-
-                if ( !minted.Success )
+                if ( HasFreshToken )
                 {
-                    LogPushFailure( new InvalidOperationException( "This church could not sign a request to the chat platform, so an immediate chat sync push was not sent." ) );
-                    return false;
+                    return true;
                 }
 
-                using ( var request = new HttpRequestMessage( HttpMethod.Post, Url( ExchangePath ) ) )
-                {
-                    request.Headers.TryAddWithoutValidation( "Authorization", "Bearer " + minted.ChurchToken );
-                    request.Headers.TryAddWithoutValidation( "apikey", _configuration.PublishableKey );
+                await _signIn.WaitAsync( cancellationToken ).ConfigureAwait( false );
 
+                try
+                {
+                    if ( HasFreshToken )
+                    {
+                        return true;
+                    }
+
+                    var churchToken = MintChurchToken();
+                    if ( churchToken == null )
+                    {
+                        LogPushFailure( new InvalidOperationException( "This church could not sign a request to the chat platform, so an immediate chat sync push was not sent." ) );
+                        return false;
+                    }
+
+                    using ( var request = BuildExchangeRequest( churchToken ) )
                     using ( var response = await _httpClient.SendAsync( request, cancellationToken ).ConfigureAwait( false ) )
                     {
                         var body = await ReadBodyAsync( response ).ConfigureAwait( false );
-                        var token = ( string ) body?["access_token"];
-
-                        if ( !response.IsSuccessStatusCode || token.IsNullOrWhiteSpace() )
+                        if ( AcceptPlatformToken( response, body ) )
                         {
-                            var code = ( string ) body?["error"]?["code"] ?? "HTTP " + ( int ) response.StatusCode;
-                            LogPushFailure( new InvalidOperationException( "The chat platform refused this church's credential for an immediate chat sync push: " + code ) );
-                            return false;
+                            return true;
                         }
 
-                        // The expiry is set first, so a push that reads the token between the two
-                        // writes never sees a new token with the old token's expiry.
-                        var expiresIn = ( int? ) body["expires_in"];
-                        PlatformTokenExpiresAtUtc = expiresIn.HasValue ? Clock().AddSeconds( expiresIn.Value ) : ( DateTime? ) null;
-                        PlatformToken = token;
-
-                        return true;
+                        var code = ( string ) body?["error"]?["code"] ?? "HTTP " + ( int ) response.StatusCode;
+                        LogPushFailure( new InvalidOperationException( "The chat platform refused this church's credential for an immediate chat sync push: " + code ) );
+                        return false;
                     }
+                }
+                finally
+                {
+                    _signIn.Release();
                 }
             }
 
@@ -592,54 +626,76 @@ namespace Rock.Communication.Chat.Platform.Sync
             }
 
             /// <summary>
-            /// One submission request. Built per attempt, because a request message cannot be sent
-            /// twice; the body buffer is wrapped, not copied.
+            /// Whether this client was built for these settings and this transport, so the immediate
+            /// sync may keep sending through it.
             /// </summary>
-            private HttpRequestMessage BuildSubmitRequest( Guid submissionId, ArraySegment<byte> payload, IDictionary<string, string> headers )
+            /// <param name="configuration">The church's chat settings as just read.</param>
+            /// <param name="handler">The transport a test holds, or null.</param>
+            /// <returns>True where nothing the client was built from has changed.</returns>
+            internal bool IsFor( ChatPlatformConfiguration configuration, HttpMessageHandler handler )
             {
-                var content = new ByteArrayContent( payload.Array, payload.Offset, payload.Count );
-                content.Headers.ContentType = new MediaTypeHeaderValue( "text/plain" ) { CharSet = "utf-8" };
+                return _handler == handler
+                    && _configuration.TenantId == configuration.TenantId
+                    && _configuration.ProjectUrl == configuration.ProjectUrl
+                    && _configuration.PublishableKey == configuration.PublishableKey
+                    && _configuration.Kid == configuration.Kid
+                    && _configuration.PrivateKey == configuration.PrivateKey;
+            }
 
-                var request = new HttpRequestMessage( HttpMethod.Post, Url( SubmitPath ) )
-                {
-                    Content = content
-                };
+            /// <summary>
+            /// The church's sync token, or null where this church cannot sign one.
+            /// </summary>
+            private string MintChurchToken()
+            {
+                var minted = ChatSessionHelper.TryMintSyncToken( new ChatSessionContext { Configuration = _configuration } );
 
-                foreach ( var header in headers )
+                return minted.Success ? minted.ChurchToken : null;
+            }
+
+            /// <summary>
+            /// Holds the platform token an exchange answered with, or holds nothing new where the
+            /// answer carries none.
+            /// </summary>
+            /// <returns>True where the answer carried a token.</returns>
+            private bool AcceptPlatformToken( HttpResponseMessage response, JObject body )
+            {
+                var token = ( string ) body?["access_token"];
+                if ( !response.IsSuccessStatusCode || token.IsNullOrWhiteSpace() )
                 {
-                    request.Headers.TryAddWithoutValidation( header.Key, header.Value );
+                    return false;
                 }
 
-                request.Headers.TryAddWithoutValidation( SubmissionIdHeader, submissionId.ToString() );
-                AddCredentials( request );
+                // The expiry is set first, so a push that reads the token between the two writes
+                // never sees a new token with the old token's expiry.
+                var expiresIn = ( int? ) body["expires_in"];
+                PlatformTokenExpiresAtUtc = expiresIn.HasValue ? Clock().AddSeconds( expiresIn.Value ) : ( DateTime? ) null;
+                PlatformToken = token;
+
+                return true;
+            }
+
+            /// <summary>
+            /// The request that exchanges a church token for a platform token.
+            /// </summary>
+            private HttpRequestMessage BuildExchangeRequest( string churchToken )
+            {
+                var request = new HttpRequestMessage( HttpMethod.Post, Url( ExchangePath ) );
+                request.Headers.TryAddWithoutValidation( "Authorization", "Bearer " + churchToken );
+                request.Headers.TryAddWithoutValidation( "apikey", _configuration.PublishableKey );
 
                 return request;
             }
 
             /// <summary>
-            /// The request that asks what became of one submission.
+            /// A data call with its body, carrying the project's key and the platform token.
             /// </summary>
-            private HttpRequestMessage BuildStatusRequest( Guid submissionId )
+            private HttpRequestMessage BuildDataRequest( string path, HttpContent content )
             {
-                var body = new JObject { ["p_submission_id"] = submissionId.ToString() };
-
-                var request = new HttpRequestMessage( HttpMethod.Post, Url( StatusPath ) )
-                {
-                    Content = new StringContent( body.ToString( Formatting.None ), Encoding.UTF8, "application/json" )
-                };
-
-                AddCredentials( request );
-
-                return request;
-            }
-
-            /// <summary>
-            /// The project's key and the platform token every data call carries.
-            /// </summary>
-            private void AddCredentials( HttpRequestMessage request )
-            {
+                var request = new HttpRequestMessage( HttpMethod.Post, Url( path ) ) { Content = content };
                 request.Headers.TryAddWithoutValidation( "apikey", _configuration.PublishableKey );
                 request.Headers.TryAddWithoutValidation( "Authorization", "Bearer " + PlatformToken );
+
+                return request;
             }
 
             /// <summary>
@@ -666,11 +722,19 @@ namespace Rock.Communication.Chat.Platform.Sync
                     };
                 }
 
+                // The submissions that cannot own a history row raise, and name their reason in the
+                // error's message.
+                var errorCode = ( string ) body["error_code"];
+                if ( errorCode.IsNullOrWhiteSpace() )
+                {
+                    errorCode = ( string ) body["message"];
+                }
+
                 return new Acknowledgement
                 {
                     SubmissionId = ReadGuid( body["submission_id"] ) ?? submissionId,
                     Status = ParseStatus( ( string ) body["status"] ),
-                    ErrorCode = ReadErrorCode( body ),
+                    ErrorCode = errorCode.IsNullOrWhiteSpace() ? null : errorCode,
                     HttpStatusCode = statusCode,
                     PreviousOutcome = ReadOutcome( body["previous_outcome"] as JObject, Guid.Empty ),
                     SyncBackoffUntil = ReadTime( body["sync_backoff_until"] )
@@ -678,20 +742,61 @@ namespace Rock.Communication.Chat.Platform.Sync
             }
 
             /// <summary>
-            /// The named reason, from the acknowledgement's own field or from the error shape of the
-            /// submissions that cannot own a history row and so raise.
+            /// Reads one recorded outcome block, or null where there is none. A status read and the
+            /// previous outcome an acknowledgement carries are the same shape.
             /// </summary>
-            private static string ReadErrorCode( JObject body )
+            private static Outcome ReadOutcome( JObject outcome, Guid fallbackSubmissionId )
             {
-                var code = ( string ) body["error_code"];
-                if ( code.IsNotNullOrWhiteSpace() )
+                if ( outcome == null )
                 {
-                    return code;
+                    return null;
                 }
 
-                var raised = ( string ) body["message"];
+                return new Outcome
+                {
+                    SubmissionId = ReadGuid( outcome["submission_id"] ) ?? fallbackSubmissionId,
+                    Status = ParseStatus( ( string ) outcome["status"] ),
+                    ErrorCode = ( string ) outcome["error_code"]
+                };
+            }
 
-                return raised.IsNotNullOrWhiteSpace() ? raised : null;
+            /// <summary>
+            /// A response body as JSON, or null where it cannot be read or is not JSON.
+            /// </summary>
+            private static JObject ReadBody( HttpResponseMessage response )
+            {
+                try
+                {
+                    return ReadBodyAsync( response ).GetAwaiter().GetResult();
+                }
+                catch
+                {
+                    return null;
+                }
+            }
+
+            /// <summary>
+            /// A guid from the wire, or null.
+            /// </summary>
+            private static Guid? ReadGuid( JToken token )
+            {
+                return Guid.TryParse( ( string ) token, out var parsed ) ? parsed : ( Guid? ) null;
+            }
+
+            /// <summary>
+            /// An instant from the wire, or null. Parsed round-trip, so the platform's offset is kept.
+            /// </summary>
+            private static DateTimeOffset? ReadTime( JToken token )
+            {
+                var value = ( string ) token;
+                if ( value.IsNullOrWhiteSpace() )
+                {
+                    return null;
+                }
+
+                var isParsed = DateTimeOffset.TryParse( value, CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind | DateTimeStyles.AllowWhiteSpaces, out var parsed );
+
+                return isParsed ? parsed : ( DateTimeOffset? ) null;
             }
         }
     }

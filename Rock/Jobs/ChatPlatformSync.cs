@@ -18,7 +18,6 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Data;
 using System.Data.Common;
 using System.Globalization;
 using System.IO;
@@ -358,40 +357,17 @@ namespace Rock.Jobs
                 throw new ArgumentNullException( nameof( configuration ) );
             }
 
-            // The context owns the connection: close it only if it was opened here, never dispose it.
-            var connection = rockContext.Database.Connection;
-            var wasClosed = connection.State != ConnectionState.Open;
-
-            try
+            return ChatPlatformSyncHelper.ReadProjection( rockContext, ChatPlatformSyncHelper.ProjectionParameters( configuration ), ProjectionTimeoutSeconds, reader =>
             {
-                if ( wasClosed )
-                {
-                    connection.Open();
-                }
-
                 var result = new ProjectionResult();
 
-                // Streamed, so the largest church is never held in memory as filled tables.
-                using ( var command = ChatPlatformSyncHelper.CreateProjectionCommand( connection, ChatPlatformSyncHelper.ProjectionParameters( configuration ), ProjectionTimeoutSeconds ) )
-                using ( var reader = command.ExecuteReader() )
-                {
-                    ReadMarks( reader, result );
-
-                    IDictionary<string, int> rowCounts;
-                    result.Payload = BuildPayload( reader, out rowCounts );
-                    result.RowCounts = rowCounts;
-                    result.BadgeWarning = ReadBadgeWarning( reader );
-                }
+                ReadMarks( reader, result );
+                result.Payload = BuildPayload( reader, out var rowCounts );
+                result.RowCounts = rowCounts;
+                result.BadgeWarning = ReadBadgeWarning( reader );
 
                 return result;
-            }
-            finally
-            {
-                if ( wasClosed && connection.State == ConnectionState.Open )
-                {
-                    connection.Close();
-                }
-            }
+            } );
         }
 
         /// <summary>

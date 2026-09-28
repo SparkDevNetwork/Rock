@@ -19,10 +19,8 @@ using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
 using System.Globalization;
-using System.IO;
 using System.Linq;
 using System.Net;
-using System.Net.Http;
 using System.Text;
 
 using Microsoft.Extensions.DependencyInjection;
@@ -41,6 +39,8 @@ using Rock.Model;
 using Rock.Tasks;
 using Rock.ViewModels.Blocks.Communication.Chat.ChatSyncNow;
 using Rock.Web.Cache;
+
+using ConnectionState = System.Data.ConnectionState;
 
 namespace Rock.Communication.Chat.Platform.Sync
 {
@@ -758,28 +758,59 @@ namespace Rock.Communication.Chat.Platform.Sync
 
         /// <summary>
         /// The one call to the projection procedure, which the full sync and the immediate sync
-        /// both read their rows from.
+        /// both read their rows from, on the context's own connection.
         /// </summary>
-        /// <param name="connection">The open connection.</param>
+        /// <typeparam name="T">What the caller reads from the result sets.</typeparam>
+        /// <param name="rockContext">The context whose connection the call is made on.</param>
         /// <param name="parameters">The procedure's parameters, by name.</param>
         /// <param name="timeoutSeconds">How long the call may take.</param>
-        /// <returns>The command.</returns>
-        internal static DbCommand CreateProjectionCommand( DbConnection connection, IDictionary<string, object> parameters, int timeoutSeconds )
+        /// <param name="read">Reads the result sets, from the reader on the first.</param>
+        /// <returns>What the caller read.</returns>
+        /// <remarks>
+        /// The procedure writes the channel mark before it reads anything, and the mark must commit
+        /// even when what is sent next fails, so no transaction may span this call.
+        /// </remarks>
+        internal static T ReadProjection<T>( RockContext rockContext, IDictionary<string, object> parameters, int timeoutSeconds, Func<DbDataReader, T> read )
         {
-            var command = connection.CreateCommand();
-            command.CommandText = "[dbo].[spChat_SyncProjection]";
-            command.CommandType = CommandType.StoredProcedure;
-            command.CommandTimeout = timeoutSeconds;
+            // The context owns the connection: close it only if it was opened here, never dispose it.
+            var connection = rockContext.Database.Connection;
+            var wasClosed = connection.State != ConnectionState.Open;
 
-            foreach ( var parameter in parameters )
+            try
             {
-                var bound = command.CreateParameter();
-                bound.ParameterName = parameter.Key;
-                bound.Value = parameter.Value ?? DBNull.Value;
-                command.Parameters.Add( bound );
-            }
+                if ( wasClosed )
+                {
+                    connection.Open();
+                }
 
-            return command;
+                using ( var command = connection.CreateCommand() )
+                {
+                    command.CommandText = "[dbo].[spChat_SyncProjection]";
+                    command.CommandType = CommandType.StoredProcedure;
+                    command.CommandTimeout = timeoutSeconds;
+
+                    foreach ( var parameter in parameters )
+                    {
+                        var bound = command.CreateParameter();
+                        bound.ParameterName = parameter.Key;
+                        bound.Value = parameter.Value ?? DBNull.Value;
+                        command.Parameters.Add( bound );
+                    }
+
+                    // Streamed, so the largest church is never held in memory as filled tables.
+                    using ( var reader = command.ExecuteReader() )
+                    {
+                        return read( reader );
+                    }
+                }
+            }
+            finally
+            {
+                if ( wasClosed && connection.State == ConnectionState.Open )
+                {
+                    connection.Close();
+                }
+            }
         }
 
         /// <summary>
@@ -1265,116 +1296,6 @@ namespace Rock.Communication.Chat.Platform.Sync
         }
 
         #endregion Sync Now
-
-        #region Transport support
-
-        /// <summary>
-        /// A response body as JSON, or null where it is not JSON. Dates are left as written, because
-        /// Json.NET would turn an instant with an offset into a local time.
-        /// </summary>
-        private static JObject ReadBody( HttpResponseMessage response )
-        {
-            string text;
-            try
-            {
-                text = response.Content == null ? null : response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
-            }
-            catch
-            {
-                return null;
-            }
-
-            return ParseBody( text );
-        }
-
-        /// <summary>
-        /// A response body's text as JSON, or null where it is not JSON, with dates left as written.
-        /// </summary>
-        private static JObject ParseBody( string text )
-        {
-            if ( text.IsNullOrWhiteSpace() )
-            {
-                return null;
-            }
-
-            try
-            {
-                using ( var reader = new JsonTextReader( new StringReader( text ) ) { DateParseHandling = DateParseHandling.None } )
-                {
-                    return JObject.Load( reader );
-                }
-            }
-            catch ( JsonException )
-            {
-                // A gateway that answered in its own words rather than the project's.
-                return null;
-            }
-        }
-
-        /// <summary>
-        /// A guid from the wire, or null.
-        /// </summary>
-        private static Guid? ReadGuid( JToken token )
-        {
-            Guid parsed;
-            return Guid.TryParse( ( string ) token, out parsed ) ? parsed : ( Guid? ) null;
-        }
-
-        /// <summary>
-        /// An instant from the wire, or null. Parsed round-trip, so the platform's offset is kept.
-        /// </summary>
-        private static DateTimeOffset? ReadTime( JToken token )
-        {
-            var value = ( string ) token;
-            if ( value.IsNullOrWhiteSpace() )
-            {
-                return null;
-            }
-
-            DateTimeOffset parsed;
-            if ( !DateTimeOffset.TryParse( value, CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind | DateTimeStyles.AllowWhiteSpaces, out parsed ) )
-            {
-                return null;
-            }
-
-            return parsed;
-        }
-
-        /// <summary>
-        /// Reads one recorded outcome block, or null where there is none. A status read and the
-        /// previous outcome an acknowledgement carries are the same shape.
-        /// </summary>
-        private static Outcome ReadOutcome( JObject outcome, Guid fallbackSubmissionId )
-        {
-            if ( outcome == null )
-            {
-                return null;
-            }
-
-            return new Outcome
-            {
-                SubmissionId = ReadGuid( outcome["submission_id"] ) ?? fallbackSubmissionId,
-                Status = ParseStatus( ( string ) outcome["status"] ),
-                ErrorCode = ( string ) outcome["error_code"]
-            };
-        }
-
-        /// <summary>
-        /// The innermost message of a transport failure; the wrappers above it name this code rather
-        /// than what went wrong.
-        /// </summary>
-        private static string Describe( Exception exception )
-        {
-            var innermost = exception;
-            while ( innermost.InnerException != null )
-            {
-                innermost = innermost.InnerException;
-            }
-
-            return innermost.Message;
-        }
-
-        #endregion Transport support
 
         #region Nested types
 
