@@ -1,0 +1,67 @@
+name: Rock RMS CI
+
+on:
+  push:
+    branches: [ develop, 'ci/**' ]
+  pull_request:
+    branches: [ develop ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-latest
+    timeout-minutes: 120
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 1
+
+      - name: Setup Node.js 24
+        uses: actions/setup-node@v6
+        with:
+          node-version: '24'
+          cache: 'npm'
+
+      - name: Setup .NET 9 SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '9.0.x'
+
+      - name: Setup MSBuild
+        uses: microsoft/setup-msbuild@v2
+
+      - name: Setup NuGet
+        uses: NuGet/setup-nuget@v2
+
+      - name: Cache NuGet packages
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.nuget/packages
+            packages
+          key: nuget-${{ runner.os }}-${{ hashFiles('**/*.csproj', '**/packages.config', 'Directory.Build.props') }}
+          restore-keys: nuget-${{ runner.os }}-
+
+      - name: Install front-end packages
+        run: npm ci
+
+      - name: Restore NuGet packages
+        run: nuget restore Rock.sln
+
+      - name: Build solution
+        run: msbuild Rock.sln /p:Configuration=Release /m /restore /verbosity:minimal
+
+      - name: Package RockWeb
+        shell: pwsh
+        run: |
+          $version = "build-${{ github.run_number }}"
+          Compress-Archive -Path RockWeb\* -DestinationPath "rock-$version.zip"
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: rock-build-${{ github.run_number }}
+          path: rock-*.zip
+          retention-days: 7
