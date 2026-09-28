@@ -32,7 +32,6 @@ using Rock.Communication.Chat.Platform.Configuration;
 using Rock.Communication.Chat.Platform.Contract;
 using Rock.Communication.Chat.Platform.Sync;
 using Rock.Data;
-using Rock.Web.Cache;
 
 namespace Rock.Jobs
 {
@@ -245,6 +244,18 @@ namespace Rock.Jobs
         #region The run
 
         /// <summary>
+        /// One whole restatement: read the church, send it, and learn what became of it.
+        /// </summary>
+        /// <param name="rockContext">The context the projection reads through.</param>
+        /// <param name="configuration">The church's chat settings.</param>
+        /// <param name="isManualRun">Whether a person started this run rather than the schedule.</param>
+        /// <returns>What the run has to say for itself.</returns>
+        internal static RunResult Run( RockContext rockContext, ChatPlatformConfiguration configuration, bool isManualRun )
+        {
+            return Run( rockContext, configuration, isManualRun, null );
+        }
+
+        /// <summary>
         /// One whole restatement over a given transport, so a test can stand in for the platform
         /// and see every call the run makes.
         /// </summary>
@@ -254,18 +265,6 @@ namespace Rock.Jobs
         /// <param name="handler">The transport to send through, or null for the network.</param>
         /// <returns>What the run has to say for itself.</returns>
         internal static RunResult Run( RockContext rockContext, ChatPlatformConfiguration configuration, bool isManualRun, System.Net.Http.HttpMessageHandler handler )
-        {
-            throw new NotImplementedException();
-        }
-
-        /// <summary>
-        /// One whole restatement: read the church, send it, and learn what became of it.
-        /// </summary>
-        /// <param name="rockContext">The context the projection reads through.</param>
-        /// <param name="configuration">The church's chat settings.</param>
-        /// <param name="isManualRun">Whether a person started this run rather than the schedule.</param>
-        /// <returns>What the run has to say for itself.</returns>
-        internal static RunResult Run( RockContext rockContext, ChatPlatformConfiguration configuration, bool isManualRun )
         {
             if ( rockContext == null )
             {
@@ -300,7 +299,7 @@ namespace Rock.Jobs
                 Rock.VersionInfo.VersionInfo.GetRockSemanticVersionNumber(),
                 isManualRun );
 
-            using ( var client = new ChatPlatformSyncHelper.PlatformClient( configuration ) )
+            using ( var client = new ChatPlatformSyncHelper.PlatformClient( configuration, handler ) )
             {
                 string failure;
                 if ( !client.SignIn( out failure ) )
@@ -373,7 +372,7 @@ namespace Rock.Jobs
                 var result = new ProjectionResult();
 
                 // Streamed, so the largest church is never held in memory as filled tables.
-                using ( var command = CreateCommand( connection, configuration ) )
+                using ( var command = ChatPlatformSyncHelper.CreateProjectionCommand( connection, ChatPlatformSyncHelper.ProjectionParameters( configuration ), ProjectionTimeoutSeconds ) )
                 using ( var reader = command.ExecuteReader() )
                 {
                     ReadMarks( reader, result );
@@ -462,7 +461,7 @@ namespace Rock.Jobs
             using ( var text = new StreamWriter( body, new UTF8Encoding( false ), 64 * 1024, true ) )
             using ( var jsonWriter = new JsonTextWriter( text ) { CloseOutput = false } )
             {
-                WriteSections( reader, contract, jsonWriter, RockDateTime.OrgTimeZoneInfo, rowCounts );
+                ChatPlatformSyncHelper.WriteSections( reader, contract, jsonWriter, RockDateTime.OrgTimeZoneInfo, rowCounts );
             }
 
             ArraySegment<byte> buffer;
@@ -473,59 +472,6 @@ namespace Rock.Jobs
             }
 
             return buffer;
-        }
-
-        /// <summary>
-        /// The one call to the projection procedure.
-        /// </summary>
-        /// <param name="connection">The open connection.</param>
-        /// <param name="configuration">The church's chat settings.</param>
-        /// <returns>The command.</returns>
-        private static DbCommand CreateCommand( DbConnection connection, ChatPlatformConfiguration configuration )
-        {
-            var command = connection.CreateCommand();
-            command.CommandText = "[dbo].[spChat_SyncProjection]";
-            command.CommandType = CommandType.StoredProcedure;
-            command.CommandTimeout = ProjectionTimeoutSeconds;
-
-            foreach ( var parameter in ProjectionParameters( configuration ) )
-            {
-                var bound = command.CreateParameter();
-                bound.ParameterName = parameter.Key;
-                bound.Value = parameter.Value ?? DBNull.Value;
-                command.Parameters.Add( bound );
-            }
-
-            return command;
-        }
-
-        /// <summary>
-        /// Everything the projection procedure asks to be told rather than look up for itself.
-        /// </summary>
-        /// <param name="configuration">The church's chat settings.</param>
-        /// <returns>The parameters, by name.</returns>
-        private static IDictionary<string, object> ProjectionParameters( ChatPlatformConfiguration configuration )
-        {
-            var badgeGuids = configuration.ChatBadgeDataViewGuids ?? new List<Guid>();
-            var activeStatus = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_ACTIVE.AsGuid() );
-
-            return new Dictionary<string, object>( StringComparer.OrdinalIgnoreCase )
-            {
-                // The channel mark is in the organization's time, as every date Rock stores is.
-                { "@StampedAt", RockDateTime.Now },
-                { "@ChatPeopleGroupGuid", Rock.SystemGuid.Group.GROUP_CHAT_PEOPLE.AsGuid() },
-                { "@ChatBanListGroupGuid", Rock.SystemGuid.Group.GROUP_CHAT_BAN_LIST.AsGuid() },
-                { "@ChatAdministratorsGroupGuid", Rock.SystemGuid.Group.GROUP_CHAT_ADMINISTRATORS.AsGuid() },
-                { "@ChatSystemAuthorGuid", Rock.SystemGuid.Person.CHAT_SYSTEM_AUTHOR.AsGuid() },
-                { "@DirectMessageGroupTypeGuid", Rock.SystemGuid.GroupType.GROUPTYPE_CHAT_DIRECT_MESSAGE.AsGuid() },
-                { "@BadgeDataViewGuidsJson", new JArray( badgeGuids.Select( g => g.ToString() ) ).ToString( Formatting.None ) },
-                { "@PersonEntityTypeId", EntityTypeCache.GetId<Rock.Model.Person>() },
-                { "@ActiveRecordStatusValueId", activeStatus == null ? ( object ) DBNull.Value : activeStatus.Id },
-                { "@ProfilesVisibleByDefault", configuration.AreChatProfilesVisible },
-                { "@OpenDirectMessagesByDefault", configuration.IsOpenDirectMessagingAllowed },
-                // The slash between root and path is ensured here, whatever the administrator typed.
-                { "@PublicApplicationRoot", ( GlobalAttributesCache.Get().GetValue( "PublicApplicationRoot" ) ?? string.Empty ).EnsureTrailingForwardslash() }
-            };
         }
 
         /// <summary>
@@ -541,217 +487,6 @@ namespace Rock.Jobs
         }
 
         #endregion The run
-
-        #region Writing the body
-
-        /// <summary>
-        /// Writes the body: one object keyed by the contract's section names, each holding that
-        /// section's rows as positional arrays in the contract's column order.
-        /// </summary>
-        /// <param name="reader">The reader, on the result set before the first section's.</param>
-        /// <param name="contract">The parsed wire contract.</param>
-        /// <param name="writer">Where the body is written.</param>
-        /// <param name="organizationTimeZone">The zone Rock's stored times are in.</param>
-        /// <param name="rowCounts">Receives the rows of each section, counted as each one is written.</param>
-        internal static void WriteSections( DbDataReader reader, JObject contract, JsonWriter writer, TimeZoneInfo organizationTimeZone, IDictionary<string, int> rowCounts )
-        {
-            var sections = ChatPlatformSyncHelper.GetPayloadSections( contract );
-            var tables = contract["tables"] as JArray;
-
-            if ( tables == null || tables.Count != sections.Count )
-            {
-                throw new InvalidOperationException( "the chat wire contract names a different number of payload sections than tables, so no section can be matched to its columns" );
-            }
-
-            writer.WriteStartObject();
-
-            for ( var i = 0; i < sections.Count; i++ )
-            {
-                var section = sections[i];
-
-                // A section with no result set is a projection that did not run, not a church with none
-                // of that row, and the platform applies a restatement as truth.
-                if ( !reader.NextResult() )
-                {
-                    throw new InvalidOperationException( string.Format( "the projection returned no result set for the {0} section", section ) );
-                }
-
-                var columns = ResolveColumns( reader, section, tables[i]["columns"].Select( c => c.Value<string>() ).ToList() );
-                var written = 0;
-                rowCounts[section] = written;
-
-                writer.WritePropertyName( section );
-                writer.WriteStartArray();
-
-                while ( reader.Read() )
-                {
-                    WriteRow( reader, columns, writer, organizationTimeZone, section );
-                    rowCounts[section] = ++written;
-                }
-
-                writer.WriteEndArray();
-            }
-
-            writer.WriteEndObject();
-        }
-
-        /// <summary>
-        /// Finds, once per section, the result set column each wire column is read from.
-        /// </summary>
-        /// <param name="reader">The reader, on the section's result set.</param>
-        /// <param name="section">The payload section.</param>
-        /// <param name="wireColumns">The section's wire columns, in the contract's order.</param>
-        /// <returns>Where each wire column's value is read from, in the contract's order.</returns>
-        private static WireColumn[] ResolveColumns( DbDataReader reader, string section, IList<string> wireColumns )
-        {
-            var ordinals = new Dictionary<string, int>( StringComparer.OrdinalIgnoreCase );
-
-            for ( var i = 0; i < reader.FieldCount; i++ )
-            {
-                ordinals[reader.GetName( i )] = i;
-            }
-
-            var resolved = new WireColumn[wireColumns.Count];
-
-            for ( var i = 0; i < wireColumns.Count; i++ )
-            {
-                var conversion = ConversionFor( wireColumns[i] );
-                var source = conversion == WireConversion.Background || conversion == WireConversion.Foreground
-                    ? "highlight_color"
-                    : wireColumns[i];
-
-                int ordinal;
-
-                // Filling a missing column with null would keep every row the right width, and that
-                // column would be empty for every church with nothing reporting it.
-                if ( !ordinals.TryGetValue( source, out ordinal ) )
-                {
-                    throw new InvalidOperationException( string.Format(
-                        "the {0} result set returns no {1}, which the {2} column on the wire is built from",
-                        section,
-                        source,
-                        wireColumns[i] ) );
-                }
-
-                resolved[i] = new WireColumn( ordinal, conversion );
-            }
-
-            return resolved;
-        }
-
-        /// <summary>
-        /// How a wire column's value is made from what Rock stores.
-        /// </summary>
-        /// <param name="wireColumn">The wire column.</param>
-        /// <returns>The conversion.</returns>
-        private static WireConversion ConversionFor( string wireColumn )
-        {
-            switch ( wireColumn )
-            {
-                case "badge_keys":
-                    return WireConversion.BadgeKeys;
-                case "ban_expires_at":
-                    return WireConversion.Utc;
-                case "bg_color":
-                    return WireConversion.Background;
-                case "fg_color":
-                    return WireConversion.Foreground;
-                default:
-                    return WireConversion.None;
-            }
-        }
-
-        /// <summary>
-        /// Writes the row the reader is on.
-        /// </summary>
-        /// <param name="reader">The reader, on a row.</param>
-        /// <param name="columns">Where each wire column is read from, in the contract's order.</param>
-        /// <param name="writer">Where the row is written.</param>
-        /// <param name="organizationTimeZone">The zone Rock's stored times are in.</param>
-        /// <param name="section">The payload section, for a failure message.</param>
-        private static void WriteRow( DbDataReader reader, WireColumn[] columns, JsonWriter writer, TimeZoneInfo organizationTimeZone, string section )
-        {
-            Tuple<string, string> colors = null;
-
-            writer.WriteStartArray();
-
-            foreach ( var column in columns )
-            {
-                var stored = reader.GetValue( column.Ordinal );
-
-                switch ( column.Conversion )
-                {
-                    case WireConversion.BadgeKeys:
-                        ChatPlatformSyncHelper.WriteValue( writer, ChatPlatformSyncHelper.ReadBadgeKeys( stored ), section );
-                        break;
-                    case WireConversion.Utc:
-                        ChatPlatformSyncHelper.WriteValue( writer, ChatPlatformSyncHelper.ToUtc( stored, organizationTimeZone ), section );
-                        break;
-                    case WireConversion.Background:
-                        colors = colors ?? ChatPlatformSyncHelper.ReadBadgeColors( stored );
-                        ChatPlatformSyncHelper.WriteValue( writer, colors.Item1, section );
-                        break;
-                    case WireConversion.Foreground:
-                        colors = colors ?? ChatPlatformSyncHelper.ReadBadgeColors( stored );
-                        ChatPlatformSyncHelper.WriteValue( writer, colors.Item2, section );
-                        break;
-                    default:
-                        ChatPlatformSyncHelper.WriteValue( writer, stored, section );
-                        break;
-                }
-            }
-
-            writer.WriteEndArray();
-        }
-
-        /// <summary>
-        /// How a wire column's value is made from what Rock stores.
-        /// </summary>
-        private enum WireConversion
-        {
-            /// <summary>
-            /// Sent as stored.
-            /// </summary>
-            None,
-
-            /// <summary>
-            /// The joined keys, split into a list.
-            /// </summary>
-            BadgeKeys,
-
-            /// <summary>
-            /// A time in the organization's zone, moved to UTC.
-            /// </summary>
-            Utc,
-
-            /// <summary>
-            /// The background of the pair made from the highlight colour.
-            /// </summary>
-            Background,
-
-            /// <summary>
-            /// The foreground of the pair made from the highlight colour.
-            /// </summary>
-            Foreground
-        }
-
-        /// <summary>
-        /// Where one wire column's value is read from and how it is converted.
-        /// </summary>
-        private struct WireColumn
-        {
-            public readonly int Ordinal;
-
-            public readonly WireConversion Conversion;
-
-            public WireColumn( int ordinal, WireConversion conversion )
-            {
-                Ordinal = ordinal;
-                Conversion = conversion;
-            }
-        }
-
-        #endregion Writing the body
 
         #region What the run reports
 

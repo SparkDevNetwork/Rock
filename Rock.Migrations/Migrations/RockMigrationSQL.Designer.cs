@@ -2246,6 +2246,15 @@ namespace Rock.Migrations.Migrations {
         }
 
         /// <summary>
+        ///   Looks up a localized string similar to the scoped [spChat_SyncProjection] stored procedure..
+        /// </summary>
+        public static string _202609281437215_AddChatSyncProjectionScope_spChat_SyncProjection {
+            get {
+                return ResourceManager.GetString("_202609281437215_AddChatSyncProjectionScope_spChat_SyncProjection", resourceCulture);
+            }
+        }
+
+        /// <summary>
         ///   Looks up a localized resource of type System.Byte[].
         /// </summary>
         public static byte[] lms_header_min {

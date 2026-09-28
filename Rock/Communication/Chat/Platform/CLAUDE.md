@@ -26,9 +26,10 @@ Folders appear when a file needs them. The scheduled sync follows Rock's job and
 `GivingAutomation` does with `GivingAutomationHelper`. The job, `Rock/Jobs/ChatPlatformSync.cs`,
 decides whether the run happens, reads the church, writes the body and records what it reports.
 `Sync/ChatPlatformSyncHelper.cs` holds the rest: the submission headers, the credential, submit and
-poll over one HttpClient per run, what the answer means, the rules for writing a row value,
-which the immediate sync shares, and Sync Now. The immediate sync lives in the same helper, in
-its own partial file, `Sync/ChatPlatformSyncHelper.Immediate.cs`. Each block that shows Sync Now asks its own
+poll over one HttpClient per run, what the answer means, the call to the projection and the
+writing of its rows and values, which the immediate sync shares, and Sync Now. The transport
+lives in its own partial file, `Sync/ChatPlatformSyncHelper.PlatformClient.cs`, because it owns
+an HttpClient, and the immediate sync in another, `Sync/ChatPlatformSyncHelper.Immediate.cs`. Each block that shows Sync Now asks its own
 authority and hands the answer to the helper, which returns the block's action result. The
 signing stays in `Session/`, the settings in
 `Configuration/` and the contract in `Contract/`; the helper calls them.

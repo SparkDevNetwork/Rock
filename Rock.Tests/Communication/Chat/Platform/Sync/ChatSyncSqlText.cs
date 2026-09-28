@@ -42,7 +42,9 @@ namespace Rock.Tests.Communication.Chat.Platform.Sync
     ///         one of three kinds: the one that writes the channel mark, the ones that return a result
     ///         set, and the staging between them. The result sets come back in the order they are
     ///         written, which is the order the job reads them: the moment and the identity marks
-    ///         first, then one per section in the contract's order.
+    ///         first, then one per section in the contract's order. The two sets only a scoped call
+    ///         returns each sit in an IF, so they count with the staging, and the result sets here
+    ///         are the ones every call returns.
     ///     </para>
     /// </remarks>
     internal static class ChatSyncSqlText

@@ -16,14 +16,14 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Data;
+using System.Data.Common;
 using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
-using System.Net.Http.Headers;
 using System.Text;
-using System.Threading;
 
 using Microsoft.Extensions.DependencyInjection;
 
@@ -34,19 +34,20 @@ using Rock.Blocks;
 using Rock.Bus.Locking;
 using Rock.Communication.Chat.Platform.Configuration;
 using Rock.Communication.Chat.Platform.Contract;
-using Rock.Communication.Chat.Platform.Session;
 using Rock.Configuration;
 using Rock.Data;
 using Rock.Jobs;
 using Rock.Model;
 using Rock.Tasks;
 using Rock.ViewModels.Blocks.Communication.Chat.ChatSyncNow;
+using Rock.Web.Cache;
 
 namespace Rock.Communication.Chat.Platform.Sync
 {
     /// <summary>
-    /// What the Chat Platform Sync job says to the chat platform and how it reads the answer, and
-    /// Sync Now for the Chat Configuration and Group Type Detail blocks.
+    /// What the Chat Platform Sync job says to the chat platform and how it reads the answer, the
+    /// rows both the full sync and the immediate sync write from the one projection, and Sync Now
+    /// for the Chat Configuration and Group Type Detail blocks.
     /// </summary>
     internal static partial class ChatPlatformSyncHelper
     {
@@ -748,6 +749,272 @@ namespace Rock.Communication.Chat.Platform.Sync
 
         #endregion Row values
 
+        #region Projection rows
+
+        /// <summary>
+        /// The one call to the projection procedure, which the full sync and the immediate sync
+        /// both read their rows from.
+        /// </summary>
+        /// <param name="connection">The open connection.</param>
+        /// <param name="parameters">The procedure's parameters, by name.</param>
+        /// <param name="timeoutSeconds">How long the call may take.</param>
+        /// <returns>The command.</returns>
+        internal static DbCommand CreateProjectionCommand( DbConnection connection, IDictionary<string, object> parameters, int timeoutSeconds )
+        {
+            var command = connection.CreateCommand();
+            command.CommandText = "[dbo].[spChat_SyncProjection]";
+            command.CommandType = CommandType.StoredProcedure;
+            command.CommandTimeout = timeoutSeconds;
+
+            foreach ( var parameter in parameters )
+            {
+                var bound = command.CreateParameter();
+                bound.ParameterName = parameter.Key;
+                bound.Value = parameter.Value ?? DBNull.Value;
+                command.Parameters.Add( bound );
+            }
+
+            return command;
+        }
+
+        /// <summary>
+        /// Everything the projection procedure asks to be told rather than look up for itself.
+        /// </summary>
+        /// <param name="configuration">The church's chat settings.</param>
+        /// <returns>The parameters, by name.</returns>
+        internal static IDictionary<string, object> ProjectionParameters( ChatPlatformConfiguration configuration )
+        {
+            var badgeGuids = configuration.ChatBadgeDataViewGuids ?? new List<Guid>();
+            var activeStatus = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_ACTIVE.AsGuid() );
+
+            return new Dictionary<string, object>( StringComparer.OrdinalIgnoreCase )
+            {
+                // The channel mark is in the organization's time, as every date Rock stores is.
+                { "@StampedAt", RockDateTime.Now },
+                { "@ChatPeopleGroupGuid", Rock.SystemGuid.Group.GROUP_CHAT_PEOPLE.AsGuid() },
+                { "@ChatBanListGroupGuid", Rock.SystemGuid.Group.GROUP_CHAT_BAN_LIST.AsGuid() },
+                { "@ChatAdministratorsGroupGuid", Rock.SystemGuid.Group.GROUP_CHAT_ADMINISTRATORS.AsGuid() },
+                { "@ChatSystemAuthorGuid", Rock.SystemGuid.Person.CHAT_SYSTEM_AUTHOR.AsGuid() },
+                { "@DirectMessageGroupTypeGuid", Rock.SystemGuid.GroupType.GROUPTYPE_CHAT_DIRECT_MESSAGE.AsGuid() },
+                { "@BadgeDataViewGuidsJson", new JArray( badgeGuids.Select( g => g.ToString() ) ).ToString( Formatting.None ) },
+                { "@PersonEntityTypeId", EntityTypeCache.GetId<Rock.Model.Person>() },
+                { "@ActiveRecordStatusValueId", activeStatus == null ? ( object ) DBNull.Value : activeStatus.Id },
+                { "@ProfilesVisibleByDefault", configuration.AreChatProfilesVisible },
+                { "@OpenDirectMessagesByDefault", configuration.IsOpenDirectMessagingAllowed },
+                // The slash between root and path is ensured here, whatever the administrator typed.
+                { "@PublicApplicationRoot", ( GlobalAttributesCache.Get().GetValue( "PublicApplicationRoot" ) ?? string.Empty ).EnsureTrailingForwardslash() }
+            };
+        }
+
+        /// <summary>
+        /// Writes the body: one object keyed by the contract's section names, each holding that
+        /// section's rows as positional arrays in the contract's column order.
+        /// </summary>
+        /// <param name="reader">The reader, on the result set before the first section's.</param>
+        /// <param name="contract">The parsed wire contract.</param>
+        /// <param name="writer">Where the body is written.</param>
+        /// <param name="organizationTimeZone">The zone Rock's stored times are in.</param>
+        /// <param name="rowCounts">Receives the rows of each section, counted as each one is written.</param>
+        internal static void WriteSections( DbDataReader reader, JObject contract, JsonWriter writer, TimeZoneInfo organizationTimeZone, IDictionary<string, int> rowCounts )
+        {
+            var sections = GetPayloadSections( contract );
+            var tables = contract["tables"] as JArray;
+
+            if ( tables == null || tables.Count != sections.Count )
+            {
+                throw new InvalidOperationException( "the chat wire contract names a different number of payload sections than tables, so no section can be matched to its columns" );
+            }
+
+            writer.WriteStartObject();
+
+            for ( var i = 0; i < sections.Count; i++ )
+            {
+                var section = sections[i];
+
+                // A section with no result set is a projection that did not run, not a church with none
+                // of that row, and the platform applies a restatement as truth.
+                if ( !reader.NextResult() )
+                {
+                    throw new InvalidOperationException( string.Format( "the projection returned no result set for the {0} section", section ) );
+                }
+
+                var columns = ResolveColumns( reader, section, tables[i]["columns"].Select( c => c.Value<string>() ).ToList() );
+                var written = 0;
+                rowCounts[section] = written;
+
+                writer.WritePropertyName( section );
+                writer.WriteStartArray();
+
+                while ( reader.Read() )
+                {
+                    WriteRow( reader, columns, writer, organizationTimeZone, section );
+                    rowCounts[section] = ++written;
+                }
+
+                writer.WriteEndArray();
+            }
+
+            writer.WriteEndObject();
+        }
+
+        /// <summary>
+        /// Finds, once per section, the result set column each wire column is read from.
+        /// </summary>
+        /// <param name="reader">The reader, on the section's result set.</param>
+        /// <param name="section">The payload section.</param>
+        /// <param name="wireColumns">The section's wire columns, in the contract's order.</param>
+        /// <returns>Where each wire column's value is read from, in the contract's order.</returns>
+        private static WireColumn[] ResolveColumns( DbDataReader reader, string section, IList<string> wireColumns )
+        {
+            var ordinals = new Dictionary<string, int>( StringComparer.OrdinalIgnoreCase );
+
+            for ( var i = 0; i < reader.FieldCount; i++ )
+            {
+                ordinals[reader.GetName( i )] = i;
+            }
+
+            var resolved = new WireColumn[wireColumns.Count];
+
+            for ( var i = 0; i < wireColumns.Count; i++ )
+            {
+                var conversion = ConversionFor( wireColumns[i] );
+                var source = conversion == WireConversion.Background || conversion == WireConversion.Foreground
+                    ? "highlight_color"
+                    : wireColumns[i];
+
+                int ordinal;
+
+                // Filling a missing column with null would keep every row the right width, and that
+                // column would be empty for every church with nothing reporting it.
+                if ( !ordinals.TryGetValue( source, out ordinal ) )
+                {
+                    throw new InvalidOperationException( string.Format(
+                        "the {0} result set returns no {1}, which the {2} column on the wire is built from",
+                        section,
+                        source,
+                        wireColumns[i] ) );
+                }
+
+                resolved[i] = new WireColumn( ordinal, conversion );
+            }
+
+            return resolved;
+        }
+
+        /// <summary>
+        /// How a wire column's value is made from what Rock stores.
+        /// </summary>
+        /// <param name="wireColumn">The wire column.</param>
+        /// <returns>The conversion.</returns>
+        private static WireConversion ConversionFor( string wireColumn )
+        {
+            switch ( wireColumn )
+            {
+                case "badge_keys":
+                    return WireConversion.BadgeKeys;
+                case "ban_expires_at":
+                    return WireConversion.Utc;
+                case "bg_color":
+                    return WireConversion.Background;
+                case "fg_color":
+                    return WireConversion.Foreground;
+                default:
+                    return WireConversion.None;
+            }
+        }
+
+        /// <summary>
+        /// Writes the row the reader is on.
+        /// </summary>
+        /// <param name="reader">The reader, on a row.</param>
+        /// <param name="columns">Where each wire column is read from, in the contract's order.</param>
+        /// <param name="writer">Where the row is written.</param>
+        /// <param name="organizationTimeZone">The zone Rock's stored times are in.</param>
+        /// <param name="section">The payload section, for a failure message.</param>
+        private static void WriteRow( DbDataReader reader, WireColumn[] columns, JsonWriter writer, TimeZoneInfo organizationTimeZone, string section )
+        {
+            Tuple<string, string> colors = null;
+
+            writer.WriteStartArray();
+
+            foreach ( var column in columns )
+            {
+                var stored = reader.GetValue( column.Ordinal );
+
+                switch ( column.Conversion )
+                {
+                    case WireConversion.BadgeKeys:
+                        WriteValue( writer, ReadBadgeKeys( stored ), section );
+                        break;
+                    case WireConversion.Utc:
+                        WriteValue( writer, ToUtc( stored, organizationTimeZone ), section );
+                        break;
+                    case WireConversion.Background:
+                        colors = colors ?? ReadBadgeColors( stored );
+                        WriteValue( writer, colors.Item1, section );
+                        break;
+                    case WireConversion.Foreground:
+                        colors = colors ?? ReadBadgeColors( stored );
+                        WriteValue( writer, colors.Item2, section );
+                        break;
+                    default:
+                        WriteValue( writer, stored, section );
+                        break;
+                }
+            }
+
+            writer.WriteEndArray();
+        }
+
+        /// <summary>
+        /// How a wire column's value is made from what Rock stores.
+        /// </summary>
+        private enum WireConversion
+        {
+            /// <summary>
+            /// Sent as stored.
+            /// </summary>
+            None,
+
+            /// <summary>
+            /// The joined keys, split into a list.
+            /// </summary>
+            BadgeKeys,
+
+            /// <summary>
+            /// A time in the organization's zone, moved to UTC.
+            /// </summary>
+            Utc,
+
+            /// <summary>
+            /// The background of the pair made from the highlight colour.
+            /// </summary>
+            Background,
+
+            /// <summary>
+            /// The foreground of the pair made from the highlight colour.
+            /// </summary>
+            Foreground
+        }
+
+        /// <summary>
+        /// Where one wire column's value is read from and how it is converted.
+        /// </summary>
+        private struct WireColumn
+        {
+            public readonly int Ordinal;
+
+            public readonly WireConversion Conversion;
+
+            public WireColumn( int ordinal, WireConversion conversion )
+            {
+                Ordinal = ordinal;
+                Conversion = conversion;
+            }
+        }
+
+        #endregion Projection rows
+
         #region Sync Now
 
         /// <summary>
@@ -1280,542 +1547,6 @@ namespace Rock.Communication.Chat.Platform.Sync
             /// The result the run left.
             /// </summary>
             public string StatusMessage { get; set; }
-        }
-
-        /// <summary>
-        /// One run's conversation with the chat platform: the credential exchange, the submission and
-        /// the status reads, over one HttpClient that lives as long as the run.
-        /// </summary>
-        /// <remarks>
-            /// Nothing here throws at its caller over an answer. The platform refuses with a 422 and its
-            /// history row committed, so the body of a 422 is read like any other.
-        /// </remarks>
-        internal sealed class PlatformClient : IDisposable
-        {
-            // The submission surface takes the body as one raw text value; a JSON content type is
-            // parsed on the way in and the function is never reached.
-            private const string SubmitPath = "/rest/v1/rpc/sync_submit";
-
-            private const string StatusPath = "/rest/v1/rpc/sync_status";
-
-            private const string ExchangePath = "/functions/v1/token-exchange";
-
-            // Estimates, revisited when the platform is measured at full scale.
-            internal const int TransportAttempts = 3;
-
-            private static readonly TimeSpan TransportRetryDelay = TimeSpan.FromSeconds( 2 );
-
-            // A drain pass holds the church's pending row for about a second at the largest church
-            // measured and up to about nine at five times it, so the two waits the attempts leave
-            // outlast the longer. Estimates, from local measurement.
-            private static readonly TimeSpan BusyRetryDelay = TimeSpan.FromSeconds( 5 );
-
-            // The longest one busy wait honours the platform's backoff advice. An operator's backoff
-            // hours out is saved by the run for the schedule to honour, not waited for inside it.
-            internal static readonly TimeSpan BusyRetryCeiling = TimeSpan.FromSeconds( 30 );
-
-            // HttpClient's own default, named so the Sync Now budget can count it.
-            internal static readonly TimeSpan RequestTimeout = TimeSpan.FromSeconds( 100 );
-
-            // A platform token lasts about five minutes, and slow submission attempts followed by the
-            // poll can outlast it. An estimate: enough for one more request to arrive before expiry.
-            private static readonly TimeSpan TokenRefreshMargin = TimeSpan.FromSeconds( 60 );
-
-            // Closer than this is the time an answer took to arrive, not a clock worth naming.
-            private static readonly TimeSpan ClockSkewWorthReporting = TimeSpan.FromSeconds( 30 );
-
-            // Postgres's code for a statement cancelled by its timeout. The data API runs the call in
-            // one transaction, so it rolled back whole and the same submission id may be sent again.
-            private const string StatementTimeoutCode = "57014";
-
-            private readonly ChatPlatformConfiguration _configuration;
-
-            private readonly HttpClient _httpClient;
-
-            /// <summary>
-            /// Creates the client for one run.
-            /// </summary>
-            /// <param name="configuration">The church's chat settings.</param>
-            /// <param name="handler">The transport, or null for the ordinary one.</param>
-            public PlatformClient( ChatPlatformConfiguration configuration, HttpMessageHandler handler = null )
-            {
-                if ( configuration == null )
-                {
-                    throw new ArgumentNullException( nameof( configuration ) );
-                }
-
-                _configuration = configuration;
-                _httpClient = handler == null ? new HttpClient() : new HttpClient( handler );
-                _httpClient.Timeout = RequestTimeout;
-
-                Wait = duration => Thread.Sleep( duration );
-                Clock = () => DateTime.UtcNow;
-            }
-
-            /// <summary>
-            /// How the client waits. Replaced where a caller does not want a real wait.
-            /// </summary>
-            public Action<TimeSpan> Wait { get; set; }
-
-            /// <summary>
-            /// Where the client reads the time, for the elapsed half of a poll budget.
-            /// </summary>
-            public Func<DateTime> Clock { get; set; }
-
-            /// <summary>
-            /// The platform token the submission and status reads are made under. Set by
-            /// <see cref="SignIn"/>; never the church token, which the data API cannot verify.
-            /// </summary>
-            public string PlatformToken { get; internal set; }
-
-            /// <summary>
-            /// When the platform token expires by <see cref="Clock"/>, or null where the exchange did
-            /// not say, in which case the token is never exchanged again.
-            /// </summary>
-            public DateTime? PlatformTokenExpiresAtUtc { get; internal set; }
-
-            /// <summary>
-            /// Mints the church's sync token and exchanges it for a platform token.
-            /// </summary>
-            /// <param name="failure">Why there is no token, when there is none.</param>
-            /// <returns>True where the client now holds a platform token.</returns>
-            /// <remarks>
-            /// Called after the church is read, because a church token lasts minutes and the platform
-            /// will not exchange one with under two left, and again by the client itself when the
-            /// platform token is near its end.
-            /// </remarks>
-            public bool SignIn( out string failure )
-            {
-                var minted = ChatSessionHelper.TryMintSyncToken( new ChatSessionContext { Configuration = _configuration } );
-
-                if ( !minted.Success )
-                {
-                    failure = "this church could not sign a request to the chat platform";
-                    return false;
-                }
-
-                return Exchange( minted.ChurchToken, out failure );
-            }
-
-            /// <summary>
-            /// Exchanges a church token for a platform token.
-            /// </summary>
-            /// <param name="churchToken">The church's sync token.</param>
-            /// <param name="failure">Why there is no token, when there is none.</param>
-            /// <returns>True where the client now holds a platform token.</returns>
-            public bool Exchange( string churchToken, out string failure )
-            {
-                PlatformToken = null;
-                PlatformTokenExpiresAtUtc = null;
-
-                if ( churchToken.IsNullOrWhiteSpace() )
-                {
-                    failure = "this church could not sign a request to the chat platform";
-                    return false;
-                }
-
-                string refusal = null;
-
-                // The same attempts as a submission: the exchange changes nothing, so it is always
-                // safe to repeat.
-                var unreached = SendWithRetry(
-                    () =>
-                    {
-                        var request = new HttpRequestMessage( HttpMethod.Post, Url( ExchangePath ) );
-                        request.Headers.TryAddWithoutValidation( "Authorization", "Bearer " + churchToken );
-                        request.Headers.TryAddWithoutValidation( "apikey", _configuration.PublishableKey );
-                        return request;
-                    },
-                    ( response, statusCode, body ) =>
-                    {
-                        var token = ( string ) body?["access_token"];
-
-                        if ( response.IsSuccessStatusCode && token.IsNotNullOrWhiteSpace() )
-                        {
-                            PlatformToken = token;
-
-                            var expiresIn = ( int? ) body["expires_in"];
-                            PlatformTokenExpiresAtUtc = expiresIn.HasValue ? Clock().AddSeconds( expiresIn.Value ) : ( DateTime? ) null;
-                            return;
-                        }
-
-                        var code = ( string ) body?["error"]?["code"];
-                        refusal = "the chat platform refused this church's credential: "
-                            + ( code.IsNotNullOrWhiteSpace() ? code : "HTTP " + statusCode )
-                            + DescribeClockSkew( code, response.Headers.Date );
-                    } );
-
-                failure = unreached == null ? refusal : "the chat platform could not be reached to exchange this church's credential: " + unreached;
-                return PlatformToken != null;
-            }
-
-            /// <summary>
-            /// Sends a request until an answer arrives that says the call completed, waiting between
-            /// attempts, and reads that answer.
-            /// </summary>
-            /// <param name="buildRequest">Builds the request for one attempt, because a request message cannot be sent twice.</param>
-            /// <param name="read">Reads a completed answer from the response, its status code and its body.</param>
-            /// <returns>Why the last attempt got no completed answer, or null where one did and was read.</returns>
-            private string SendWithRetry( Func<HttpRequestMessage> buildRequest, Action<HttpResponseMessage, int, JObject> read )
-            {
-                string lastFailure = null;
-                var retryDelay = TransportRetryDelay;
-
-                for ( var attempt = 0; attempt < TransportAttempts; attempt++ )
-                {
-                    if ( attempt > 0 )
-                    {
-                        Wait( retryDelay );
-                    }
-
-                    retryDelay = TransportRetryDelay;
-
-                    HttpResponseMessage response;
-                    try
-                    {
-                        using ( var request = buildRequest() )
-                        {
-                            response = _httpClient.SendAsync( request ).GetAwaiter().GetResult();
-                        }
-                    }
-                    catch ( Exception exception )
-                    {
-                        lastFailure = Describe( exception );
-                        continue;
-                    }
-
-                    using ( response )
-                    {
-                        var statusCode = ( int ) response.StatusCode;
-                        var body = ReadBody( response );
-
-                        var unfinished = DescribeUnfinishedAnswer( statusCode, body );
-                        if ( unfinished != null )
-                        {
-                            lastFailure = unfinished;
-                            continue;
-                        }
-
-                        // Busy is the platform's own answer, so the last attempt's is read like any
-                        // other and the run can name it.
-                        var busyDelay = BusyRetryDelayFor( statusCode, body );
-                        var isLastAttempt = attempt == TransportAttempts - 1;
-                        if ( busyDelay.HasValue && !isLastAttempt )
-                        {
-                            retryDelay = busyDelay.Value;
-                            continue;
-                        }
-
-                        read( response, statusCode, body );
-                        return null;
-                    }
-                }
-
-                return lastFailure;
-            }
-
-            /// <summary>
-            /// Exchanges again when the platform token is near its end, keeping the token held where
-            /// the exchange fails, since it may still be good for the request about to be made.
-            /// </summary>
-            private void RefreshTokenIfExpiring()
-            {
-                var isExpiring = PlatformTokenExpiresAtUtc.HasValue && PlatformTokenExpiresAtUtc.Value - Clock() < TokenRefreshMargin;
-                if ( !isExpiring )
-                {
-                    return;
-                }
-
-                var heldToken = PlatformToken;
-                var heldExpiry = PlatformTokenExpiresAtUtc;
-
-                if ( !SignIn( out _ ) )
-                {
-                    PlatformToken = heldToken;
-                    PlatformTokenExpiresAtUtc = heldExpiry;
-                }
-            }
-
-            /// <summary>
-            /// Where a refusal is about the church token's times, how far this server's clock is from
-            /// the platform's, as a clause; otherwise an empty string.
-            /// </summary>
-            /// <remarks>
-            /// The church token's times come from this server's clock, so a clock minutes out is
-            /// refused on every run, and the code alone does not say the clock is what to fix.
-            /// </remarks>
-            private string DescribeClockSkew( string code, DateTimeOffset? platformTime )
-            {
-                var isAboutTokenTimes = code == "auth.stale_token" || code == "auth.invalid_token";
-                if ( !isAboutTokenTimes || !platformTime.HasValue )
-                {
-                    return string.Empty;
-                }
-
-                var offset = platformTime.Value.UtcDateTime - Clock();
-                if ( offset.Duration() <= ClockSkewWorthReporting )
-                {
-                    return string.Empty;
-                }
-
-                return string.Format( CultureInfo.InvariantCulture,
-                    ", and this server's clock is {0:0} s {1} the chat platform",
-                    offset.Duration().TotalSeconds,
-                    offset > TimeSpan.Zero ? "behind" : "ahead of" );
-            }
-
-            /// <summary>
-            /// Why an answer says the call never completed, so the same request may be sent again, or
-            /// null where it is an answer to read.
-            /// </summary>
-            private static string DescribeUnfinishedAnswer( int statusCode, JObject body )
-            {
-                if ( statusCode == 502 || statusCode == 503 || statusCode == 504 )
-                {
-                    return "it answered HTTP " + statusCode;
-                }
-
-                if ( statusCode == 500 && ( string ) body?["code"] == StatementTimeoutCode )
-                {
-                    return "it was busy and cancelled the call at its statement timeout (" + StatementTimeoutCode + ")";
-                }
-
-                return null;
-            }
-
-            /// <summary>
-            /// How long to wait before sending again where the drain held the church's pending row
-            /// when the submission arrived, or null where the answer is not that one.
-            /// </summary>
-            /// <remarks>
-            /// Long enough to outlast a drain pass, or until the time the answer advises where that
-            /// is later, up to a ceiling.
-            /// </remarks>
-            private TimeSpan? BusyRetryDelayFor( int statusCode, JObject body )
-            {
-                var isBusy = statusCode == 422 && ( string ) body?["error_code"] == BusyCode;
-                if ( !isBusy )
-                {
-                    return null;
-                }
-
-                var advisedUntil = ReadTime( body["sync_backoff_until"] );
-                var untilAdvised = advisedUntil.HasValue ? advisedUntil.Value.UtcDateTime - Clock() : TimeSpan.Zero;
-
-                if ( untilAdvised <= BusyRetryDelay )
-                {
-                    return BusyRetryDelay;
-                }
-
-                return untilAdvised < BusyRetryCeiling ? untilAdvised : BusyRetryCeiling;
-            }
-
-            /// <summary>
-            /// Submits one restatement and reads the acknowledgement, whatever status it arrives with.
-            /// </summary>
-            /// <param name="submissionId">The idempotency key, used for every attempt.</param>
-            /// <param name="payload">The body, as the UTF-8 bytes it was written as.</param>
-            /// <param name="headers">The submission headers.</param>
-            /// <returns>The acknowledgement. Never null, and never an exception.</returns>
-            /// <remarks>
-            /// The same id on every attempt: a request that timed out may have arrived, and the
-            /// platform answers a repeated id with the outcome it already recorded. A busy answer
-            /// recorded nothing, so the same id is ingested once the drain lets go.
-            /// </remarks>
-            public Acknowledgement Submit( Guid submissionId, ArraySegment<byte> payload, IDictionary<string, string> headers )
-            {
-                Acknowledgement acknowledgement = null;
-
-                var unreached = SendWithRetry(
-                    () =>
-                    {
-                        RefreshTokenIfExpiring();
-                        return BuildSubmitRequest( submissionId, payload, headers );
-                    },
-                    ( response, statusCode, body ) => acknowledgement = ReadAcknowledgement( submissionId, statusCode, body ) );
-
-                return acknowledgement ?? new Acknowledgement { SubmissionId = submissionId, TransportDetail = unreached };
-            }
-
-            /// <summary>
-            /// Reads what became of a submission, waiting inside the budget for the queue to reach it.
-            /// </summary>
-            /// <param name="submissionId">The submission to read.</param>
-            /// <param name="budget">How long to keep asking.</param>
-            /// <returns>The outcome, or null where nothing readable came back at all.</returns>
-            public Outcome Poll( Guid submissionId, PollBudget budget )
-            {
-                var start = Clock();
-                Outcome outcome = null;
-                var attempts = 0;
-
-                while ( true )
-                {
-                    // A read that could not be made leaves the last one standing.
-                    var read = ReadStatus( submissionId );
-                    if ( read != null )
-                    {
-                        outcome = read;
-                    }
-
-                    attempts++;
-
-                    if ( outcome != null && outcome.Status.HasValue && outcome.Status.Value != SubmissionStatus.Accepted )
-                    {
-                        return outcome;
-                    }
-
-                    if ( attempts >= budget.MaxAttempts )
-                    {
-                        return outcome;
-                    }
-
-                    Wait( budget.Interval );
-
-                    if ( Clock() - start >= budget.Duration )
-                    {
-                        return outcome;
-                    }
-                }
-            }
-
-            /// <summary>
-            /// Reads what became of a submission, once.
-            /// </summary>
-            /// <param name="submissionId">The submission to read.</param>
-            /// <returns>The outcome, or null where nothing readable came back.</returns>
-            public Outcome ReadStatus( Guid submissionId )
-            {
-                RefreshTokenIfExpiring();
-
-                HttpResponseMessage response;
-                try
-                {
-                    response = _httpClient.SendAsync( BuildStatusRequest( submissionId ) ).GetAwaiter().GetResult();
-                }
-                catch
-                {
-                    // The run falls back to what the acknowledgement already told it.
-                    return null;
-                }
-
-                using ( response )
-                {
-                    // A status this build does not know is no read at all.
-                    var outcome = ReadOutcome( ReadBody( response ), submissionId );
-
-                    return outcome != null && outcome.Status.HasValue ? outcome : null;
-                }
-            }
-
-            /// <inheritdoc />
-            public void Dispose()
-            {
-                _httpClient.Dispose();
-            }
-
-            /// <summary>
-            /// One submission request. Built per attempt, because a request message cannot be sent
-            /// twice; the body buffer is wrapped, not copied.
-            /// </summary>
-            private HttpRequestMessage BuildSubmitRequest( Guid submissionId, ArraySegment<byte> payload, IDictionary<string, string> headers )
-            {
-                var content = new ByteArrayContent( payload.Array, payload.Offset, payload.Count );
-                content.Headers.ContentType = new MediaTypeHeaderValue( "text/plain" ) { CharSet = "utf-8" };
-
-                var request = new HttpRequestMessage( HttpMethod.Post, Url( SubmitPath ) )
-                {
-                    Content = content
-                };
-
-                foreach ( var header in headers )
-                {
-                    request.Headers.TryAddWithoutValidation( header.Key, header.Value );
-                }
-
-                request.Headers.TryAddWithoutValidation( SubmissionIdHeader, submissionId.ToString() );
-                AddCredentials( request );
-
-                return request;
-            }
-
-            /// <summary>
-            /// The request that asks what became of one submission.
-            /// </summary>
-            private HttpRequestMessage BuildStatusRequest( Guid submissionId )
-            {
-                var body = new JObject { ["p_submission_id"] = submissionId.ToString() };
-
-                var request = new HttpRequestMessage( HttpMethod.Post, Url( StatusPath ) )
-                {
-                    Content = new StringContent( body.ToString( Formatting.None ), Encoding.UTF8, "application/json" )
-                };
-
-                AddCredentials( request );
-
-                return request;
-            }
-
-            /// <summary>
-            /// The project's key and the platform token every data call carries.
-            /// </summary>
-            private void AddCredentials( HttpRequestMessage request )
-            {
-                request.Headers.TryAddWithoutValidation( "apikey", _configuration.PublishableKey );
-                request.Headers.TryAddWithoutValidation( "Authorization", "Bearer " + PlatformToken );
-            }
-
-            /// <summary>
-            /// A platform address, with one slash between the project and the path however the
-            /// project url was typed.
-            /// </summary>
-            private string Url( string path )
-            {
-                return ( _configuration.ProjectUrl ?? string.Empty ).TrimEnd( '/' ) + path;
-            }
-
-            /// <summary>
-            /// Reads the acknowledgement out of a response, for a refusal exactly as for an acceptance.
-            /// </summary>
-            private static Acknowledgement ReadAcknowledgement( Guid submissionId, int statusCode, JObject body )
-            {
-                if ( body == null )
-                {
-                    return new Acknowledgement
-                    {
-                        SubmissionId = submissionId,
-                        HttpStatusCode = statusCode,
-                        TransportDetail = "the chat platform answered with something that is not an acknowledgement"
-                    };
-                }
-
-                return new Acknowledgement
-                {
-                    SubmissionId = ReadGuid( body["submission_id"] ) ?? submissionId,
-                    Status = ParseStatus( ( string ) body["status"] ),
-                    ErrorCode = ReadErrorCode( body ),
-                    HttpStatusCode = statusCode,
-                    PreviousOutcome = ReadOutcome( body["previous_outcome"] as JObject, Guid.Empty ),
-                    SyncBackoffUntil = ReadTime( body["sync_backoff_until"] )
-                };
-            }
-
-            /// <summary>
-            /// The named reason, from the acknowledgement's own field or from the error shape of the
-            /// submissions that cannot own a history row and so raise.
-            /// </summary>
-            private static string ReadErrorCode( JObject body )
-            {
-                var code = ( string ) body["error_code"];
-                if ( code.IsNotNullOrWhiteSpace() )
-                {
-                    return code;
-                }
-
-                var raised = ( string ) body["message"];
-
-                return raised.IsNotNullOrWhiteSpace() ? raised : null;
-            }
         }
 
         #endregion Nested types

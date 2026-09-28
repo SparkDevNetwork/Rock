@@ -26,7 +26,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
 using Rock.Communication.Chat.Platform.Contract;
-using Rock.Jobs;
+using Rock.Communication.Chat.Platform.Sync;
 
 namespace Rock.Tests.Communication.Chat.Platform.Sync
 {
@@ -536,7 +536,7 @@ namespace Rock.Tests.Communication.Chat.Platform.Sync
             using ( var reader = new DataTableReader( new[] { marks }.Concat( sections ).ToArray() ) )
             using ( var json = new JsonTextWriter( text ) )
             {
-                ChatPlatformSync.WriteSections( reader, contract, json, FixedOffsetZone(), rowCounts ?? new Dictionary<string, int>() );
+                ChatPlatformSyncHelper.WriteSections( reader, contract, json, FixedOffsetZone(), rowCounts ?? new Dictionary<string, int>() );
             }
 
             return text.ToString();

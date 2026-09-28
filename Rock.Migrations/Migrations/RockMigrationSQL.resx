@@ -469,4 +469,7 @@
   <data name="_202609251612047_AddChatSyncProjectionProcedure_spChat_SyncProjection" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>Version 20.0\202609251612047_AddChatSyncProjectionProcedure_spChat_SyncProjection.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
   </data>
+  <data name="_202609281437215_AddChatSyncProjectionScope_spChat_SyncProjection" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>Version 20.0\202609281437215_AddChatSyncProjectionScope_spChat_SyncProjection.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+  </data>
 </root>
