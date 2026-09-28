@@ -21,7 +21,7 @@ These tests are specifically used for benchmarking changes to parts of the codeb
 Determining the appropriate test type for the circumstances is not always easy, but here are some guidelines to keep in mind:
 1. Always prefer unit tests.
 Unit tests are faster to execute, and require little or no configuration so they can be executed more often. Wherever possible, code components should be designed in a way that allows them to be unit tested. If the code has external dependencies, try to design the component so that the dependencies can be replaced with a mock for testing purposes.
-2. Code that uses a `RockContext` can usually still be unit tested. `TestHelper.CreateScopedRockApp()` provides a mocked `RockContext` backed by in-memory data, which is enough to test services, caches, and block initialization and actions (see `Rock.Tests/Blocks` for examples). Read the "Mocked RockContext" section of the `Rock.Tests.Shared` README before seeding data; in particular, every seeded row needs a non-zero `Id`.
+2. Code that uses a `RockContext` can usually still be unit tested. `TestHelper.CreateScopedRockApp()` provides a mocked `RockContext` backed by in-memory data, which is enough to test services, caches, and block initialization and actions. Tests for blocks in the `Rock.Blocks` project belong in the `Rock.Blocks.Tests` project, which has examples. Read the "Mocked RockContext" section of the `Rock.Tests.Shared` README before seeding data; in particular, every seeded row needs a non-zero `Id`.
 3. If your tests require a real database (raw SQL, stored procedures, bulk operations, or the standard sample data set) or access to the SqlServerTypes library, the test belongs in the `Rock.Tests.Integration` project.
 
 ## MS Test
