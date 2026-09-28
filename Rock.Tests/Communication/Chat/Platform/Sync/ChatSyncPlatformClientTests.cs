@@ -264,6 +264,26 @@ namespace Rock.Tests.Communication.Chat.Platform.Sync
         }
 
         /// <summary>
+        /// The exchange answers 503 in its own error shape when it cannot look up the church's key,
+        /// which is the platform's fault and passes, so it is asked again like a gateway's 503.
+        /// </summary>
+        [TestMethod]
+        public void Exchange_WhenThePlatformAnswersUnavailable_RetriesAndHoldsTheToken()
+        {
+            var handler = StubHandler.AnsweringInTurn(
+                Answer( HttpStatusCode.ServiceUnavailable, ErrorBody( "rpc.unavailable" ) ),
+                Answer( HttpStatusCode.OK, Exchanged( Token ) ) );
+
+            using ( var client = NoWaitClient( handler ) )
+            {
+                Assert.IsTrue( client.Exchange( ChurchToken, out var failure ), failure );
+                Assert.AreEqual( Token, client.PlatformToken );
+            }
+
+            Assert.AreEqual( 2, handler.Requests.Count );
+        }
+
+        /// <summary>
         /// A platform token lasts about five minutes, and slow submission attempts followed by the
         /// poll can outlast it, so a token near its end is exchanged again before it is sent.
         /// </summary>
@@ -533,6 +553,112 @@ namespace Rock.Tests.Communication.Chat.Platform.Sync
         }
 
         /// <summary>
+        /// A busy answer records nothing, so the same id is sent again once the drain lets go of
+        /// the church. The waits between attempts together outlast the longest drain pass measured,
+        /// about nine seconds at five times the largest church.
+        /// </summary>
+        [TestMethod]
+        public void Submit_WhenThePlatformIsBusy_WaitsOutADrainPassAndRetriesWithTheSameSubmissionId()
+        {
+            var submissionId = Guid.NewGuid();
+            var handler = StubHandler.AnsweringInTurn(
+                Answer( UnprocessableEntity, Busy( submissionId, null ) ),
+                Answer( UnprocessableEntity, Busy( submissionId, null ) ),
+                Answer( HttpStatusCode.OK, Accepted( submissionId ) ) );
+            var waited = TimeSpan.Zero;
+
+            using ( var client = Client( handler ) )
+            {
+                client.Wait = d => waited += d;
+
+                var ack = client.Submit( submissionId, Body( "{}" ), Headers() );
+
+                Assert.AreEqual( SubmissionStatus.Accepted, ack.Status );
+            }
+
+            Assert.AreEqual( 3, handler.Requests.Count );
+            CollectionAssert.AreEqual(
+                new List<string> { submissionId.ToString(), submissionId.ToString(), submissionId.ToString() },
+                handler.Requests.Select( r => r.Header( "x-sync-submission-id" ) ).ToList() );
+            Assert.IsTrue( waited > TimeSpan.FromSeconds( 9 ), "the waits between busy answers came to " + waited + ", which a nine second drain pass outlasts" );
+        }
+
+        /// <summary>
+        /// The backoff a busy answer carries is the platform saying when to come back, so a later
+        /// time than the ordinary busy wait is waited for.
+        /// </summary>
+        [TestMethod]
+        public void Submit_WhenABusyAnswerAdvisesALaterTime_WaitsUntilThen()
+        {
+            var submissionId = Guid.NewGuid();
+            var now = new DateTime( 2026, 9, 28, 12, 0, 0, DateTimeKind.Utc );
+            var handler = StubHandler.AnsweringInTurn(
+                Answer( UnprocessableEntity, Busy( submissionId, now.AddSeconds( 20 ) ) ),
+                Answer( HttpStatusCode.OK, Accepted( submissionId ) ) );
+            var waited = TimeSpan.Zero;
+
+            using ( var client = Client( handler ) )
+            {
+                client.Clock = () => now;
+                client.Wait = d => waited += d;
+
+                client.Submit( submissionId, Body( "{}" ), Headers() );
+            }
+
+            Assert.AreEqual( 2, handler.Requests.Count );
+            Assert.AreEqual( TimeSpan.FromSeconds( 20 ), waited );
+        }
+
+        /// <summary>
+        /// A backoff an operator set hours out is not waited for inside a run: the wait stops at a
+        /// ceiling, and the advice is saved for the next scheduled run to honour.
+        /// </summary>
+        [TestMethod]
+        public void Submit_WhenABusyAnswerAdvisesAnHourAway_WaitsNoLongerThanTheCeiling()
+        {
+            var submissionId = Guid.NewGuid();
+            var now = new DateTime( 2026, 9, 28, 12, 0, 0, DateTimeKind.Utc );
+            var handler = StubHandler.AnsweringInTurn(
+                Answer( UnprocessableEntity, Busy( submissionId, now.AddHours( 1 ) ) ),
+                Answer( HttpStatusCode.OK, Accepted( submissionId ) ) );
+            var waited = TimeSpan.Zero;
+
+            using ( var client = Client( handler ) )
+            {
+                client.Clock = () => now;
+                client.Wait = d => waited += d;
+
+                client.Submit( submissionId, Body( "{}" ), Headers() );
+            }
+
+            Assert.AreEqual( 2, handler.Requests.Count );
+            Assert.AreEqual( TimeSpan.FromSeconds( 30 ), waited );
+        }
+
+        /// <summary>
+        /// A run busy on every attempt reads the last answer as the platform's own, so the run
+        /// names it rather than calling the platform unreachable, and keeps its backoff advice.
+        /// </summary>
+        [TestMethod]
+        public void Submit_WhenEveryAttemptIsBusy_ReportsBusyRatherThanATransportFailure()
+        {
+            var submissionId = Guid.NewGuid();
+            var handler = StubHandler.AnsweringInTurn( Answer( UnprocessableEntity, Busy( submissionId, null ) ) );
+
+            using ( var client = NoWaitClient( handler ) )
+            {
+                var ack = client.Submit( submissionId, Body( "{}" ), Headers() );
+
+                Assert.IsFalse( ack.IsTransportFailure );
+                Assert.AreEqual( SubmissionStatus.Refused, ack.Status );
+                Assert.AreEqual( "sync.busy", ack.ErrorCode );
+                Assert.IsTrue( ack.CarriesBackoffAdvice );
+            }
+
+            Assert.AreEqual( 3, handler.Requests.Count );
+        }
+
+        /// <summary>
         /// Any other server error is not known to have rolled back, so it is reported, not repeated.
         /// </summary>
         [TestMethod]
@@ -767,6 +893,19 @@ namespace Rock.Tests.Communication.Chat.Platform.Sync
                 + "\"previous_outcome\":{\"submission_id\":\"" + previousId + "\",\"status\":\"applied\","
                 + "\"error_code\":null,\"drained_at\":\"2026-09-21T10:00:00+00:00\"},"
                 + "\"sync_backoff_until\":\"2026-09-21T11:30:00+00:00\"}";
+        }
+
+        /// <summary>
+        /// The answer to a submission that arrives while the drain holds the church's pending row.
+        /// </summary>
+        private static string Busy( Guid submissionId, DateTime? backoffUntilUtc )
+        {
+            var backoff = backoffUntilUtc.HasValue
+                ? "\"" + backoffUntilUtc.Value.ToString( "yyyy-MM-ddTHH:mm:ss'+00:00'", System.Globalization.CultureInfo.InvariantCulture ) + "\""
+                : "null";
+
+            return "{\"submission_id\":\"" + submissionId + "\",\"status\":\"refused\",\"error_code\":\"sync.busy\","
+                + "\"previous_outcome\":null,\"sync_backoff_until\":" + backoff + "}";
         }
 
         private static string Status( Guid submissionId, string status )

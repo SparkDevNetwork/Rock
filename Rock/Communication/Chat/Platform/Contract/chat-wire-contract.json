@@ -16,7 +16,7 @@
     {
       "name": "x-sync-read-at",
       "required": true,
-      "carries": "The UTC time taken in Rock before the projection read, truncated to microseconds. It is the clock every row of this payload is judged by, and it is Rock's clock, never the platform's."
+      "carries": "The UTC time taken in Rock before the projection read, truncated to microseconds, written as ISO 8601 with an explicit offset (Z or +hh:mm) and at most six fractional digits; any other form is refused. It is the clock every row of this payload is judged by, and it is Rock's clock, never the platform's."
     },
     {
       "name": "x-sync-counts",
@@ -53,7 +53,7 @@
     {
       "name": "x-sync-urgent",
       "required": false,
-      "carries": "Set for a manual sync and for a failed immediate write that needs draining sooner. Never set for a first load. Absent means ordinary priority, which is why this is the one optional header."
+      "carries": "The value 1 for a manual sync and for a failed immediate write that needs draining sooner. Never set for a first load. Absent, or any other value, means ordinary priority, which is why this is the one optional header."
     }
   ],
   "payload": {
@@ -320,6 +320,7 @@
       "authz.wrong_scope",
       "authz.wrong_tenant",
       "rpc.bad_request",
+      "rpc.unavailable",
       "rpc.unknown_error_code",
       "sync.bad_counts",
       "sync.bad_header",
@@ -330,14 +331,17 @@
       "sync.future_read",
       "sync.kill_switch",
       "sync.marks_regressed",
-      "sync.payload_too_large",
       "sync.stale_read",
       "sync.unknown_submission",
       "sync.apply_failed",
       "sync.bad_alias_row",
       "sync.bad_payload",
       "sync.bad_row_width",
-      "sync.count_mismatch"
+      "sync.count_mismatch",
+      "sync.bad_row",
+      "sync.apply_timeout",
+      "sync.busy",
+      "sync.superseded"
     ]
   }
 }

@@ -340,18 +340,32 @@ namespace Rock.Tests.Communication.Chat.Platform
                 "sync.bad_header",
                 "sync.bad_marks",
                 "sync.bad_submission_id",
+                "sync.busy",
                 "sync.contract_mismatch",
                 "sync.duplicate_submission",
                 "sync.future_read",
                 "sync.kill_switch",
                 "sync.marks_regressed",
-                "sync.payload_too_large",
                 "sync.stale_read",
+                "sync.superseded",
                 "sync.unknown_submission"
             } )
             {
                 Assert.IsTrue( codes.Contains( code ), string.Format( "the contract does not carry {0}, so nothing here can branch on a refusal that names it", code ) );
             }
+        }
+
+        /// <summary>
+        /// The ingest no longer refuses a submission for its size, so the copy here no longer
+        /// carries the code that refusal named.
+        /// </summary>
+        [TestMethod]
+        public void EmbeddedContract_NoLongerCarriesTheSizeRefusal()
+        {
+            var contract = ReadEmbeddedContract();
+            var codes = contract["error_codes"]["codes"].Select( c => c.Value<string>() ).ToList();
+
+            Assert.IsFalse( codes.Contains( "sync.payload_too_large" ), "the contract still carries a size refusal the ingest can no longer return" );
         }
         #endregion
     }

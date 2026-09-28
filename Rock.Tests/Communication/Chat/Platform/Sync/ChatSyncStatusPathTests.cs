@@ -76,6 +76,23 @@ namespace Rock.Tests.Communication.Chat.Platform.Sync
             StringAssert.Contains( result.Message, "sync.apply_failed" );
         }
 
+        /// <summary>
+        /// A submission the schedule replaced inside the poll window is recorded as failed, but the
+        /// newer one carries everything it would have, so the run that made it did not fail.
+        /// </summary>
+        [TestMethod]
+        public void WhenThePollFindsTheSubmissionSuperseded_TheRunDoesNotFailAndSaysItWasReplaced()
+        {
+            var submissionId = Guid.NewGuid();
+            var outcome = Polled( submissionId, SubmissionStatus.Failed );
+            outcome.ErrorCode = "sync.superseded";
+
+            var result = ChatPlatformSyncHelper.Resolve( AcceptedAck( submissionId, null ), outcome );
+
+            Assert.IsFalse( result.IsFailure, "a submission replaced by a newer one was reported as a failed run" );
+            StringAssert.Contains( result.Message, "replaced by a newer submission" );
+        }
+
         #endregion The polled outcome
 
         #region The fallback
@@ -135,6 +152,19 @@ namespace Rock.Tests.Communication.Chat.Platform.Sync
         }
 
         [TestMethod]
+        public void WhenThePreviousSubmissionWasSuperseded_ItIsNamedAsReplaced()
+        {
+            var submissionId = Guid.NewGuid();
+            var previous = PreviousOutcome( SubmissionStatus.Failed );
+            previous.ErrorCode = "sync.superseded";
+
+            var result = ChatPlatformSyncHelper.Resolve( AcceptedAck( submissionId, previous ), null );
+
+            Assert.IsFalse( result.IsFailure );
+            StringAssert.Contains( result.Message, previous.SubmissionId + ", was replaced by a newer submission" );
+        }
+
+        [TestMethod]
         public void WhenThereIsNoPolledOutcomeAndNoPreviousOne_TheRunIsQueuedAndNotFailed()
         {
             var submissionId = Guid.NewGuid();
@@ -183,6 +213,30 @@ namespace Rock.Tests.Communication.Chat.Platform.Sync
 
             Assert.IsTrue( result.IsFailure );
             StringAssert.Contains( result.Message, "sync.marks_regressed" );
+        }
+
+        /// <summary>
+        /// Busy on every attempt means the drain was still applying this church's previous
+        /// submission. Nothing is wrong and nothing was recorded, and the next run sends a fresh
+        /// restatement, so the run names it without failing.
+        /// </summary>
+        [TestMethod]
+        public void WhenEveryAttemptWasBusy_TheRunNamesItAndDoesNotFail()
+        {
+            var ack = new Acknowledgement
+            {
+                SubmissionId = Guid.NewGuid(),
+                Status = SubmissionStatus.Refused,
+                ErrorCode = "sync.busy",
+                HttpStatusCode = 422
+            };
+
+            var result = ChatPlatformSyncHelper.Resolve( ack, null );
+
+            Assert.IsFalse( result.IsFailure, "a platform busy applying the previous submission was reported as a failed run" );
+            StringAssert.Contains( result.Message, "still applying" );
+            StringAssert.Contains( result.Message, "sync.busy" );
+            StringAssert.Contains( result.Message, "the next sync" );
         }
 
         [TestMethod]

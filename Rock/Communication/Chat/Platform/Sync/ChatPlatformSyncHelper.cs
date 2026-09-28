@@ -67,6 +67,14 @@ namespace Rock.Communication.Chat.Platform.Sync
         // Added by the transport, so every attempt of one submission carries the same id.
         private const string SubmissionIdHeader = "x-sync-submission-id";
 
+        // The drain held this church's pending row when the submission arrived, and nothing was
+        // recorded, so the same id may be sent again.
+        private const string BusyCode = "sync.busy";
+
+        // A submission replaced by a newer one before the queue reached it. Recorded as failed,
+        // but the newer submission carries everything it would have.
+        private const string SupersededCode = "sync.superseded";
+
         // A tick is a hundred nanoseconds and the platform stores microseconds.
         private const long TicksPerMicrosecond = 10L;
 
@@ -88,9 +96,11 @@ namespace Rock.Communication.Chat.Platform.Sync
 
         // The longest a person's run can take, so the screen never gives up on one that will finish:
         // the projection's timeout, every exchange and submission attempt and one status read at the
-        // request timeout, and the manual poll. An estimate that leaves out the short retry waits.
+        // request timeout, the longest waits between busy answers, and the manual poll. An estimate
+        // that leaves out the short retry waits.
         private static readonly int SyncNowBudgetMilliseconds = ( int ) ( TimeSpan.FromSeconds( ChatPlatformSync.ProjectionTimeoutSeconds )
             + TimeSpan.FromTicks( PlatformClient.RequestTimeout.Ticks * ( ( 2 * PlatformClient.TransportAttempts ) + 1 ) )
+            + TimeSpan.FromTicks( PlatformClient.BusyRetryCeiling.Ticks * ( PlatformClient.TransportAttempts - 1 ) )
             + PollBudget.Manual.Duration ).TotalMilliseconds;
 
         // What Rock records for a run that ended well; anything else is a run that did not.
@@ -374,6 +384,14 @@ namespace Rock.Communication.Chat.Platform.Sync
                 return (true, "the chat platform answered with nothing this version of Rock can read" + Reason( acknowledgement.ErrorCode ));
             }
 
+            // Busy on every attempt: nothing is wrong and nothing was recorded, and the next run
+            // sends a fresh restatement, so this one names it without failing.
+            var isBusy = acknowledgement.Status.Value == SubmissionStatus.Refused && acknowledgement.ErrorCode == BusyCode;
+            if ( isBusy )
+            {
+                return (false, "the chat platform was still applying this church's previous submission on every attempt, so this restatement was not taken and the next sync sends a fresh one" + Reason( BusyCode ));
+            }
+
             // A refused submission never reaches the queue, so there is nothing to poll for.
             if ( acknowledgement.Status.Value == SubmissionStatus.Refused )
             {
@@ -382,6 +400,13 @@ namespace Rock.Communication.Chat.Platform.Sync
 
             if ( polled != null && polled.Status.HasValue && polled.Status.Value != SubmissionStatus.Accepted )
             {
+                // Replaced inside the poll window, usually by the schedule: the newer submission
+                // carries everything this one would have, so the run did not fail.
+                if ( polled.ErrorCode == SupersededCode )
+                {
+                    return (false, "this restatement was replaced by a newer submission before it was applied" + Reason( polled.ErrorCode ));
+                }
+
                 return (!IsJobSuccess( polled.Status.Value ),
                     "this restatement was " + WireValueFor( polled.Status.Value ) + Reason( polled.ErrorCode ));
             }
@@ -392,10 +417,19 @@ namespace Rock.Communication.Chat.Platform.Sync
             var previous = acknowledgement.PreviousOutcome;
             if ( previous != null && previous.Status.HasValue )
             {
+                var previousResult = WireValueFor( previous.Status.Value );
+                if ( previous.Status.Value == SubmissionStatus.Accepted )
+                {
+                    previousResult = "superseded or still queued";
+                }
+                else if ( previous.ErrorCode == SupersededCode )
+                {
+                    previousResult = "replaced by a newer submission";
+                }
+
                 return (false,
                     "this restatement was submitted, not yet applied. The previous submission, "
-                        + previous.SubmissionId + ", was "
-                        + ( previous.Status.Value == SubmissionStatus.Accepted ? "superseded or still queued" : WireValueFor( previous.Status.Value ) )
+                        + previous.SubmissionId + ", was " + previousResult
                         + Reason( previous.ErrorCode ));
             }
 
@@ -1271,6 +1305,15 @@ namespace Rock.Communication.Chat.Platform.Sync
 
             private static readonly TimeSpan TransportRetryDelay = TimeSpan.FromSeconds( 2 );
 
+            // A drain pass holds the church's pending row for about a second at the largest church
+            // measured and up to about nine at five times it, so the two waits the attempts leave
+            // outlast the longer. Estimates, from local measurement.
+            private static readonly TimeSpan BusyRetryDelay = TimeSpan.FromSeconds( 5 );
+
+            // The longest one busy wait honours the platform's backoff advice. An operator's backoff
+            // hours out is saved by the run for the schedule to honour, not waited for inside it.
+            internal static readonly TimeSpan BusyRetryCeiling = TimeSpan.FromSeconds( 30 );
+
             // HttpClient's own default, named so the Sync Now budget can count it.
             internal static readonly TimeSpan RequestTimeout = TimeSpan.FromSeconds( 100 );
 
@@ -1416,13 +1459,16 @@ namespace Rock.Communication.Chat.Platform.Sync
             private string SendWithRetry( Func<HttpRequestMessage> buildRequest, Action<HttpResponseMessage, int, JObject> read )
             {
                 string lastFailure = null;
+                var retryDelay = TransportRetryDelay;
 
                 for ( var attempt = 0; attempt < TransportAttempts; attempt++ )
                 {
                     if ( attempt > 0 )
                     {
-                        Wait( TransportRetryDelay );
+                        Wait( retryDelay );
                     }
+
+                    retryDelay = TransportRetryDelay;
 
                     HttpResponseMessage response;
                     try
@@ -1447,6 +1493,16 @@ namespace Rock.Communication.Chat.Platform.Sync
                         if ( unfinished != null )
                         {
                             lastFailure = unfinished;
+                            continue;
+                        }
+
+                        // Busy is the platform's own answer, so the last attempt's is read like any
+                        // other and the run can name it.
+                        var busyDelay = BusyRetryDelayFor( statusCode, body );
+                        var isLastAttempt = attempt == TransportAttempts - 1;
+                        if ( busyDelay.HasValue && !isLastAttempt )
+                        {
+                            retryDelay = busyDelay.Value;
                             continue;
                         }
 
@@ -1528,6 +1584,33 @@ namespace Rock.Communication.Chat.Platform.Sync
             }
 
             /// <summary>
+            /// How long to wait before sending again where the drain held the church's pending row
+            /// when the submission arrived, or null where the answer is not that one.
+            /// </summary>
+            /// <remarks>
+            /// Long enough to outlast a drain pass, or until the time the answer advises where that
+            /// is later, up to a ceiling.
+            /// </remarks>
+            private TimeSpan? BusyRetryDelayFor( int statusCode, JObject body )
+            {
+                var isBusy = statusCode == 422 && ( string ) body?["error_code"] == BusyCode;
+                if ( !isBusy )
+                {
+                    return null;
+                }
+
+                var advisedUntil = ReadTime( body["sync_backoff_until"] );
+                var untilAdvised = advisedUntil.HasValue ? advisedUntil.Value.UtcDateTime - Clock() : TimeSpan.Zero;
+
+                if ( untilAdvised <= BusyRetryDelay )
+                {
+                    return BusyRetryDelay;
+                }
+
+                return untilAdvised < BusyRetryCeiling ? untilAdvised : BusyRetryCeiling;
+            }
+
+            /// <summary>
             /// Submits one restatement and reads the acknowledgement, whatever status it arrives with.
             /// </summary>
             /// <param name="submissionId">The idempotency key, used for every attempt.</param>
@@ -1536,7 +1619,8 @@ namespace Rock.Communication.Chat.Platform.Sync
             /// <returns>The acknowledgement. Never null, and never an exception.</returns>
             /// <remarks>
             /// The same id on every attempt: a request that timed out may have arrived, and the
-            /// platform answers a repeated id with the outcome it already recorded.
+            /// platform answers a repeated id with the outcome it already recorded. A busy answer
+            /// recorded nothing, so the same id is ingested once the drain lets go.
             /// </remarks>
             public Acknowledgement Submit( Guid submissionId, ArraySegment<byte> payload, IDictionary<string, string> headers )
             {
