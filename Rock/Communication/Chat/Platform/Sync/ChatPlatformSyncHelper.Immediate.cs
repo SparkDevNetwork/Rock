@@ -23,12 +23,20 @@ using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 
+using Microsoft.Extensions.Logging;
+
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
 using Rock.Communication.Chat.Platform.Configuration;
 using Rock.Communication.Chat.Platform.Contract;
 using Rock.Data;
+using Rock.Logging;
+using Rock.Model;
+using Rock.Net;
+using Rock.Web.Cache;
+
+using ConnectionState = System.Data.ConnectionState;
 
 namespace Rock.Communication.Chat.Platform.Sync
 {
@@ -36,7 +44,7 @@ namespace Rock.Communication.Chat.Platform.Sync
     /// The immediate sync: what a save touched, read back after it commits and pushed to the chat
     /// platform at once, so a change made in Rock shows in chat without waiting for the next sync.
     /// </summary>
-    internal static partial class ChatPlatformSyncHelper
+    public static partial class ChatPlatformSyncHelper
     {
         #region Constants
 
@@ -55,8 +63,26 @@ namespace Rock.Communication.Chat.Platform.Sync
         // estimate, within what a person waiting on a chat action is given.
         internal static readonly TimeSpan AwaitedPushBudget = TimeSpan.FromSeconds( 2 );
 
+        // A failure is logged at most this often, so a platform that is down for an hour leaves a
+        // handful of rows in the exception log rather than one for every save in that hour.
+        private static readonly TimeSpan FailureLogInterval = TimeSpan.FromMinutes( 1 );
+
+        // How long the ids of the groups that run chat are trusted while one of them is missing.
+        // Chat People is added by a startup fix, so a save made before it ran must not hide it for good.
+        private const int MissingSystemGroupRetryMilliseconds = 60000;
+
         // The one transport override a test may hold at a time, or null in production.
         private static ImmediateSyncOverride _override;
+
+        // The client every push is sent through, kept for the process so its platform token is
+        // exchanged once every few minutes rather than once a save.
+        private static ImmediateTransport _transport;
+
+        // The ids of the groups that run chat, looked up once rather than on every save.
+        private static ChatSystemGroups _systemGroups;
+
+        // When a push failure was last logged, in UTC ticks.
+        private static long _failureLoggedAtTicks;
 
         #endregion Constants
 
@@ -82,6 +108,51 @@ namespace Rock.Communication.Chat.Platform.Sync
             /// Single memberships that may have changed, as the group's guid and the person's id.
             /// </summary>
             public HashSet<(Guid GroupGuid, int PersonId)> MemberKeys { get; } = new HashSet<(Guid GroupGuid, int PersonId)>();
+
+            /// <summary>
+            /// The church's chat settings, read for the first key a context records.
+            /// </summary>
+            internal ChatPlatformConfiguration Configuration { get; set; }
+
+            /// <summary>
+            /// Whether the context will push these keys after its next commit.
+            /// </summary>
+            internal bool IsFlushRegistered { get; set; }
+
+            /// <summary>
+            /// The address of the request that made the save, for the one warning a push too large
+            /// to send leaves behind.
+            /// </summary>
+            internal string Source { get; set; }
+
+            /// <summary>
+            /// The push the context's last committed save began, which a block action may wait on.
+            /// </summary>
+            internal Task<PushOutcome> LastPush { get; set; }
+
+            /// <summary>
+            /// Whether nothing is recorded.
+            /// </summary>
+            internal bool IsEmpty => PersonIds.Count == 0 && GroupGuids.Count == 0 && MemberKeys.Count == 0;
+
+            /// <summary>
+            /// Moves the recorded keys into a new set and leaves this one empty, so the next save
+            /// on the context records afresh.
+            /// </summary>
+            /// <returns>The keys recorded until now.</returns>
+            internal ImmediateChanges TakeKeys()
+            {
+                var keys = new ImmediateChanges();
+                keys.PersonIds.UnionWith( PersonIds );
+                keys.GroupGuids.UnionWith( GroupGuids );
+                keys.MemberKeys.UnionWith( MemberKeys );
+
+                PersonIds.Clear();
+                GroupGuids.Clear();
+                MemberKeys.Clear();
+
+                return keys;
+            }
         }
 
         /// <summary>
@@ -214,7 +285,75 @@ namespace Rock.Communication.Chat.Platform.Sync
             public void Dispose()
             {
                 Interlocked.CompareExchange( ref _override, null, this );
+
+                // The client was built over this override's transport, so the next push builds its own.
+                Interlocked.Exchange( ref _transport, null );
             }
+        }
+
+        /// <summary>
+        /// The process's client to the chat platform for the immediate sync, and the settings and
+        /// transport it was built with.
+        /// </summary>
+        private sealed class ImmediateTransport
+        {
+            // A wait rather than a lock, because a sign-in is awaited and a lock cannot be held
+            // across an await.
+            private readonly SemaphoreSlim _signIn = new SemaphoreSlim( 1, 1 );
+
+            public ImmediateTransport( ChatPlatformConfiguration configuration, HttpMessageHandler handler )
+            {
+                Configuration = configuration;
+                Handler = handler;
+                Client = new PlatformClient( configuration, handler );
+            }
+
+            public ChatPlatformConfiguration Configuration { get; }
+
+            public HttpMessageHandler Handler { get; }
+
+            public PlatformClient Client { get; }
+
+            /// <summary>
+            /// Makes sure the client holds a platform token with time left on it, exchanging for
+            /// one where it does not. Pushes that arrive together share one exchange.
+            /// </summary>
+            /// <param name="cancellationToken">Ends the wait when the push's time is up.</param>
+            /// <returns>True where the client holds a token to push under.</returns>
+            public async Task<bool> EnsureSignedInAsync( CancellationToken cancellationToken )
+            {
+                if ( Client.HasFreshToken )
+                {
+                    return true;
+                }
+
+                await _signIn.WaitAsync( cancellationToken ).ConfigureAwait( false );
+
+                try
+                {
+                    return Client.HasFreshToken || await Client.SignInAsync( cancellationToken ).ConfigureAwait( false );
+                }
+                finally
+                {
+                    _signIn.Release();
+                }
+            }
+        }
+
+        /// <summary>
+        /// The ids of the groups that run chat, as they were when last looked up.
+        /// </summary>
+        private sealed class ChatSystemGroups
+        {
+            public int? ChatPeopleId { get; set; }
+
+            public int? BanListId { get; set; }
+
+            public int? AdministratorsId { get; set; }
+
+            public int ReadAtTickCount { get; set; }
+
+            public bool IsComplete => ChatPeopleId.HasValue && BanListId.HasValue && AdministratorsId.HasValue;
         }
 
         #endregion Types
@@ -232,7 +371,13 @@ namespace Rock.Communication.Chat.Platform.Sync
         /// </remarks>
         internal static void RecordPersonSave( IEntitySaveEntry entry )
         {
-            throw new NotImplementedException();
+            var isRecorded = IsPersonChangeInScope( entry ) && RockRequestContextAccessor.Current != null;
+            if ( !isRecorded )
+            {
+                return;
+            }
+
+            ChangesFor( entry.DataContext as RockContext )?.PersonIds.Add( ( ( Person ) entry.Entity ).Id );
         }
 
         /// <summary>
@@ -246,7 +391,20 @@ namespace Rock.Communication.Chat.Platform.Sync
         /// </remarks>
         internal static void RecordGroupSave( IEntitySaveEntry entry )
         {
-            throw new NotImplementedException();
+            var group = entry?.Entity as Group;
+
+            // The groups that run chat are never channels, so their own saves have nothing to push.
+            var isRecorded = group != null
+                && !IsChatSystemGroup( group.Id )
+                && IsGroupInScope( group.Id, group.GroupTypeId )
+                && RockRequestContextAccessor.Current != null;
+
+            if ( !isRecorded )
+            {
+                return;
+            }
+
+            ChangesFor( entry.DataContext as RockContext )?.GroupGuids.Add( group.Guid );
         }
 
         /// <summary>
@@ -261,7 +419,53 @@ namespace Rock.Communication.Chat.Platform.Sync
         /// </remarks>
         internal static void RecordGroupMemberSave( IEntitySaveEntry entry )
         {
-            throw new NotImplementedException();
+            var member = entry?.Entity as GroupMember;
+            if ( member == null || !IsGroupInScope( member.GroupId, member.GroupTypeId ) )
+            {
+                return;
+            }
+
+            // A ban is pushed from every path, because a workflow the job engine runs is still a
+            // ban. Every other save is pushed only from a request, so a job or an import is left to
+            // the full sync rather than sending a push for each row it writes.
+            var isBanList = member.GroupId == SystemGroups().BanListId;
+            if ( !isBanList && RockRequestContextAccessor.Current == null )
+            {
+                return;
+            }
+
+            var changes = ChangesFor( entry.DataContext as RockContext );
+            if ( changes == null )
+            {
+                return;
+            }
+
+            // A membership of a group that runs chat changes the person's own alias row, such as
+            // whether they are banned, rather than a membership row.
+            if ( IsChatSystemGroup( member.GroupId ) )
+            {
+                changes.PersonIds.Add( member.PersonId );
+                return;
+            }
+
+            AddMemberKey( changes, member.Group?.Guid, member.GroupId, member.PersonId );
+
+            if ( entry.State != EntityContextState.Modified )
+            {
+                return;
+            }
+
+            // A membership moved to another group or person leaves its old pair behind, and only a
+            // pair the push names is stamped absent.
+            var originalGroupId = entry.OriginalValues.TryGetValue( nameof( GroupMember.GroupId ), out var groupId ) ? groupId as int? : null;
+            var originalPersonId = entry.OriginalValues.TryGetValue( nameof( GroupMember.PersonId ), out var personId ) ? personId as int? : null;
+            var isMoved = ( originalGroupId.HasValue && originalGroupId.Value != member.GroupId )
+                || ( originalPersonId.HasValue && originalPersonId.Value != member.PersonId );
+
+            if ( isMoved )
+            {
+                AddMemberKey( changes, null, originalGroupId ?? member.GroupId, originalPersonId ?? member.PersonId );
+            }
         }
 
         /// <summary>
@@ -271,7 +475,25 @@ namespace Rock.Communication.Chat.Platform.Sync
         /// <returns>True where the save is one the immediate sync pushes.</returns>
         internal static bool IsPersonChangeInScope( IEntitySaveEntry entry )
         {
-            throw new NotImplementedException();
+            var person = entry?.Entity as Person;
+
+            // A new person is in no chat group yet, so the membership that brings them in pushes
+            // their alias row; a deleted one has no alias left to project.
+            if ( person == null || entry.State != EntityContextState.Modified )
+            {
+                return false;
+            }
+
+            var original = entry.OriginalValues;
+
+            return !IsUnchanged( original, nameof( Person.NickName ), person.NickName )
+                || !IsUnchanged( original, nameof( Person.LastName ), person.LastName )
+                || !IsUnchanged( original, nameof( Person.PhotoId ), person.PhotoId )
+                || !IsUnchanged( original, nameof( Person.PrimaryCampusId ), person.PrimaryCampusId )
+                || !IsUnchanged( original, nameof( Person.RecordStatusValueId ), person.RecordStatusValueId )
+                || !IsUnchanged( original, nameof( Person.IsDeceased ), person.IsDeceased )
+                || !IsUnchanged( original, nameof( Person.IsChatProfilePublic ), person.IsChatProfilePublic )
+                || !IsUnchanged( original, nameof( Person.IsChatOpenDirectMessageAllowed ), person.IsChatOpenDirectMessageAllowed );
         }
 
         /// <summary>
@@ -283,7 +505,15 @@ namespace Rock.Communication.Chat.Platform.Sync
         /// <returns>True where the save is one the immediate sync pushes.</returns>
         internal static bool IsGroupInScope( int groupId, int groupTypeId )
         {
-            throw new NotImplementedException();
+            if ( IsChatSystemGroup( groupId ) )
+            {
+                return true;
+            }
+
+            // A cached read, so an ordinary save never reaches the database here.
+            var groupType = GroupTypeCache.Get( groupTypeId );
+
+            return groupType != null && groupType.IsChatAllowed;
         }
 
         /// <summary>
@@ -296,9 +526,31 @@ namespace Rock.Communication.Chat.Platform.Sync
         /// The person merge runs a procedure that moves aliases and memberships past Entity
         /// Framework, so it records the surviving person here, inside its transaction.
         /// </remarks>
-        internal static void RecordPersonChange( RockContext rockContext, int personId )
+        [Rock.Attribute.RockInternal( "20.0", true )]
+        public static void RecordPersonChange( RockContext rockContext, int personId )
         {
-            throw new NotImplementedException();
+            var changes = ChangesFor( rockContext );
+            if ( changes == null )
+            {
+                return;
+            }
+
+            changes.PersonIds.Add( personId );
+
+            // A person's key carries their aliases alone, so each membership that can be a channel's
+            // is named too, read inside the caller's transaction where the merge has already moved it.
+            var memberships = new GroupMemberService( rockContext ).Queryable()
+                .Where( m => m.PersonId == personId )
+                .Select( m => new { m.GroupId, m.GroupTypeId, GroupGuid = m.Group.Guid } )
+                .ToList();
+
+            foreach ( var membership in memberships )
+            {
+                if ( !IsChatSystemGroup( membership.GroupId ) && IsGroupInScope( membership.GroupId, membership.GroupTypeId ) )
+                {
+                    changes.MemberKeys.Add( (membership.GroupGuid, personId) );
+                }
+            }
         }
 
         /// <summary>
@@ -313,7 +565,7 @@ namespace Rock.Communication.Chat.Platform.Sync
         /// </remarks>
         internal static Task<PushOutcome> FlushAsync( RockContext rockContext )
         {
-            throw new NotImplementedException();
+            return WaitForLastPushAsync( rockContext?.GetOptions<ImmediateChanges>()?.LastPush );
         }
 
         /// <summary>
@@ -331,7 +583,299 @@ namespace Rock.Communication.Chat.Platform.Sync
                 throw new InvalidOperationException( "the immediate sync's transport is already overridden, and two overrides could not tell whose push is whose" );
             }
 
+            // Dropped so the first push under the override signs in through it, with no token left
+            // from before.
+            Interlocked.Exchange( ref _transport, null );
+
             return replacement;
+        }
+
+        /// <summary>
+        /// The keys the context has recorded, with the push after its next commit registered, or
+        /// null where the church has not set chat up.
+        /// </summary>
+        /// <param name="rockContext">The context the save is made in.</param>
+        /// <returns>The context's keys, or null.</returns>
+        private static ImmediateChanges ChangesFor( RockContext rockContext )
+        {
+            if ( rockContext == null )
+            {
+                return null;
+            }
+
+            var changes = rockContext.GetOrCreateOptions<ImmediateChanges>();
+
+            // Read once per context and only for a save that passed the filter, because the read
+            // parses and decrypts a stored setting.
+            if ( changes.Configuration == null )
+            {
+                changes.Configuration = ChatPlatformConfigurationService.Read();
+            }
+
+            if ( !changes.Configuration.IsConfigured )
+            {
+                return null;
+            }
+
+            // One registration per commit: the callback clears the flag, so the next save on the
+            // context registers again. After a rollback the registration and the keys stay, and
+            // ride along with the context's next commit. That is harmless, because a push reads
+            // committed truth, so a key whose change was rolled back is pushed as it stands.
+            if ( !changes.IsFlushRegistered )
+            {
+                changes.IsFlushRegistered = true;
+                changes.Source = RockRequestContextAccessor.Current?.RequestUri?.AbsolutePath;
+                rockContext.ExecuteAfterCommit( () => Flush( changes ) );
+            }
+
+            return changes;
+        }
+
+        /// <summary>
+        /// Begins the push of what a commit touched, in the background.
+        /// </summary>
+        /// <param name="changes">The context's keys.</param>
+        /// <remarks>
+        /// The read runs in the background along with the request, so the save's thread returns at
+        /// once, and a read made while the caller still holds a transaction waits for the commit on
+        /// its own thread rather than blocking the thread that holds the locks.
+        /// </remarks>
+        private static void Flush( ImmediateChanges changes )
+        {
+            changes.IsFlushRegistered = false;
+
+            if ( changes.IsEmpty )
+            {
+                return;
+            }
+
+            var keys = changes.TakeKeys();
+            var configuration = changes.Configuration;
+            var source = changes.Source;
+
+            var push = Task.Run( () => PushChangesAsync( configuration, keys, source ) );
+            changes.LastPush = push;
+
+            Volatile.Read( ref _override )?.Began( push );
+        }
+
+        /// <summary>
+        /// Reads back what a commit touched and pushes it, absorbing every failure, since the full
+        /// sync repairs a push that did not land.
+        /// </summary>
+        /// <param name="configuration">The church's chat settings.</param>
+        /// <param name="keys">What the commit touched.</param>
+        /// <param name="source">Where the save came from, for a warning.</param>
+        /// <returns>Applied where the platform took the push or there was nothing to push.</returns>
+        private static async Task<PushOutcome> PushChangesAsync( ChatPlatformConfiguration configuration, ImmediateChanges keys, string source )
+        {
+            try
+            {
+                PushBody push;
+
+                // Disposed before any request is sent, so a slow platform never holds a connection.
+                using ( var rockContext = new RockContext() )
+                {
+                    push = ProjectChanges( rockContext, configuration, keys );
+                }
+
+                var absent = push.Body["absent"];
+                var absentCount = ( ( JArray ) absent["channels"] ).Count + ( ( JArray ) absent["members"] ).Count;
+                if ( push.RowCount == 0 && absentCount == 0 )
+                {
+                    return PushOutcome.Applied;
+                }
+
+                if ( push.RowCount > PushRowCeiling )
+                {
+                    Warn( string.Format(
+                        "A chat push of {0} rows from {1} was not sent, because no ordinary save touches that many; the next full chat sync carries it.",
+                        push.RowCount,
+                        source ?? "a save outside a web request" ) );
+
+                    return PushOutcome.Pending;
+                }
+
+                using ( var timeout = new CancellationTokenSource( BackgroundPushTimeout ) )
+                {
+                    var transport = TransportFor( configuration );
+
+                    if ( !await transport.EnsureSignedInAsync( timeout.Token ).ConfigureAwait( false ) )
+                    {
+                        return PushOutcome.Pending;
+                    }
+
+                    return await transport.Client.PushAsync( push, timeout.Token ).ConfigureAwait( false );
+                }
+            }
+            catch ( Exception exception )
+            {
+                LogPushFailure( exception );
+                return PushOutcome.Pending;
+            }
+        }
+
+        /// <summary>
+        /// Waits on a push within the awaited budget.
+        /// </summary>
+        /// <param name="push">The push, or null where the save began none.</param>
+        /// <returns>Applied where the push was taken or there was none, and Pending otherwise.</returns>
+        private static async Task<PushOutcome> WaitForLastPushAsync( Task<PushOutcome> push )
+        {
+            // Nothing began means nothing chat shows changed, so there is nothing pending.
+            if ( push == null )
+            {
+                return PushOutcome.Applied;
+            }
+
+            try
+            {
+                var finished = await Task.WhenAny( push, Task.Delay( AwaitedPushBudget ) ).ConfigureAwait( false );
+
+                return finished == push ? await push.ConfigureAwait( false ) : PushOutcome.Pending;
+            }
+            catch ( Exception exception )
+            {
+                // The push absorbs its own failures, so this only keeps the promise that a block
+                // action waiting here is never thrown at.
+                LogPushFailure( exception );
+                return PushOutcome.Pending;
+            }
+        }
+
+        /// <summary>
+        /// The process's client for these settings, built anew when the settings or the test
+        /// transport changed.
+        /// </summary>
+        /// <param name="configuration">The church's chat settings.</param>
+        /// <returns>The client and its settings.</returns>
+        private static ImmediateTransport TransportFor( ChatPlatformConfiguration configuration )
+        {
+            var handler = Volatile.Read( ref _override )?.Handler;
+            var current = Volatile.Read( ref _transport );
+
+            var isCurrent = current != null
+                && current.Handler == handler
+                && current.Configuration.TenantId == configuration.TenantId
+                && current.Configuration.ProjectUrl == configuration.ProjectUrl
+                && current.Configuration.PublishableKey == configuration.PublishableKey
+                && current.Configuration.Kid == configuration.Kid
+                && current.Configuration.PrivateKey == configuration.PrivateKey;
+
+            if ( isCurrent )
+            {
+                return current;
+            }
+
+            // Two pushes racing to replace it each get a working client, and one of them is kept.
+            var created = new ImmediateTransport( configuration, handler );
+            var previous = Interlocked.CompareExchange( ref _transport, created, current );
+
+            return previous == current ? created : previous ?? created;
+        }
+
+        /// <summary>
+        /// Whether a group is one of the groups that run chat.
+        /// </summary>
+        private static bool IsChatSystemGroup( int groupId )
+        {
+            var groups = SystemGroups();
+
+            return groupId == groups.ChatPeopleId || groupId == groups.BanListId || groupId == groups.AdministratorsId;
+        }
+
+        /// <summary>
+        /// The ids of the groups that run chat, looked up again only while one is missing, and then
+        /// no more than once a minute.
+        /// </summary>
+        private static ChatSystemGroups SystemGroups()
+        {
+            var current = Volatile.Read( ref _systemGroups );
+            var isTrusted = current != null
+                && ( current.IsComplete || unchecked( Environment.TickCount - current.ReadAtTickCount ) < MissingSystemGroupRetryMilliseconds );
+
+            if ( isTrusted )
+            {
+                return current;
+            }
+
+            var read = new ChatSystemGroups
+            {
+                ChatPeopleId = GroupCache.GetId( Rock.SystemGuid.Group.GROUP_CHAT_PEOPLE.AsGuid() ),
+                BanListId = GroupCache.GetId( Rock.SystemGuid.Group.GROUP_CHAT_BAN_LIST.AsGuid() ),
+                AdministratorsId = GroupCache.GetId( Rock.SystemGuid.Group.GROUP_CHAT_ADMINISTRATORS.AsGuid() ),
+                ReadAtTickCount = Environment.TickCount
+            };
+
+            Volatile.Write( ref _systemGroups, read );
+
+            return read;
+        }
+
+        /// <summary>
+        /// Records a membership pair by its group's guid, which names it even once the group is gone.
+        /// </summary>
+        private static void AddMemberKey( ImmediateChanges changes, Guid? groupGuid, int groupId, int personId )
+        {
+            var guid = groupGuid ?? GroupCache.Get( groupId )?.Guid;
+
+            if ( guid.HasValue )
+            {
+                changes.MemberKeys.Add( (guid.Value, personId) );
+            }
+        }
+
+        /// <summary>
+        /// Whether a text value is as it was before the save. A value the entry does not carry is
+        /// read as unchanged.
+        /// </summary>
+        private static bool IsUnchanged( IReadOnlyDictionary<string, object> original, string name, string current )
+        {
+            return !original.TryGetValue( name, out var value ) || string.Equals( value as string, current, StringComparison.Ordinal );
+        }
+
+        /// <summary>
+        /// Whether a number is as it was before the save. Unboxed in place, so it allocates nothing.
+        /// </summary>
+        private static bool IsUnchanged( IReadOnlyDictionary<string, object> original, string name, int? current )
+        {
+            return !original.TryGetValue( name, out var value ) || ( value as int? ) == current;
+        }
+
+        /// <summary>
+        /// Whether a flag is as it was before the save. Unboxed in place, so it allocates nothing.
+        /// </summary>
+        private static bool IsUnchanged( IReadOnlyDictionary<string, object> original, string name, bool? current )
+        {
+            return !original.TryGetValue( name, out var value ) || ( value as bool? ) == current;
+        }
+
+        /// <summary>
+        /// Logs a warning about the immediate sync, and hands it to a test override where one is held.
+        /// </summary>
+        private static void Warn( string message )
+        {
+            RockLogger.LoggerFactory.CreateLogger( typeof( ChatPlatformSyncHelper ).FullName ).LogWarning( message );
+            Volatile.Read( ref _override )?.Warned( message );
+        }
+
+        /// <summary>
+        /// Logs why a push did not land, at most once a minute, since every save made while the
+        /// platform is unreachable fails the same way.
+        /// </summary>
+        /// <param name="exception">What went wrong. It never carries a token or a key.</param>
+        private static void LogPushFailure( Exception exception )
+        {
+            var now = DateTime.UtcNow.Ticks;
+            var last = Interlocked.Read( ref _failureLoggedAtTicks );
+
+            var isDue = now - last >= FailureLogInterval.Ticks
+                && Interlocked.CompareExchange( ref _failureLoggedAtTicks, now, last ) == last;
+
+            if ( isDue )
+            {
+                ExceptionLogService.LogException( exception );
+            }
         }
 
         /// <summary>

@@ -379,6 +379,10 @@ namespace Rock.Model
                             return;
                         }
                 }
+
+                // Last, so it sees the values this hook set, such as whether the person is deceased.
+                Rock.Communication.Chat.Platform.Sync.ChatPlatformSyncHelper.RecordPersonSave( Entry );
+
                 base.PreSave();
             }
 

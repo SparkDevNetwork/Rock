@@ -253,6 +253,9 @@ namespace Rock.Model
 
                 _preSaveChangesOldGroupId = oldGroupId;
 
+                // Last, because this hook sets the member's group type partway through.
+                Rock.Communication.Chat.Platform.Sync.ChatPlatformSyncHelper.RecordGroupMemberSave( Entry );
+
                 base.PreSave();
             }
 

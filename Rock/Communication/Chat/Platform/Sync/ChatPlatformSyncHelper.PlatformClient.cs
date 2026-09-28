@@ -28,6 +28,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
 using Rock.Communication.Chat.Platform.Configuration;
+using Rock.Communication.Chat.Platform.Contract;
 using Rock.Communication.Chat.Platform.Session;
 
 namespace Rock.Communication.Chat.Platform.Sync
@@ -36,7 +37,7 @@ namespace Rock.Communication.Chat.Platform.Sync
     /// The transport to the chat platform, in its own file because it owns an HttpClient and every
     /// other part of the helper is stateless.
     /// </summary>
-    internal static partial class ChatPlatformSyncHelper
+    public static partial class ChatPlatformSyncHelper
     {
         /// <summary>
         /// One run's conversation with the chat platform: the credential exchange, the submission and
@@ -53,6 +54,8 @@ namespace Rock.Communication.Chat.Platform.Sync
             private const string SubmitPath = "/rest/v1/rpc/sync_submit";
 
             private const string StatusPath = "/rest/v1/rpc/sync_status";
+
+            private const string PushPath = "/rest/v1/rpc/sync_push";
 
             private const string ExchangePath = "/functions/v1/token-exchange";
 
@@ -474,9 +477,112 @@ namespace Rock.Communication.Chat.Platform.Sync
             /// One attempt and no retry: the full sync repairs a push that did not land, so waiting
             /// to send it again would only hold a thread.
             /// </remarks>
-            public Task<PushOutcome> PushAsync( PushBody push, CancellationToken cancellationToken )
+            public async Task<PushOutcome> PushAsync( PushBody push, CancellationToken cancellationToken )
             {
-                throw new NotImplementedException();
+                try
+                {
+                    using ( var request = new HttpRequestMessage( HttpMethod.Post, Url( PushPath ) ) )
+                    {
+                        // JSON, unlike a submission's raw text, because a push is a few rows and the
+                        // platform parses it on the way in.
+                        request.Content = new StringContent( push.Body.ToString( Formatting.None ), Encoding.UTF8, "application/json" );
+                        request.Headers.TryAddWithoutValidation( ReadTimeHeader, FormatReadTime( push.ReadAtUtc ) );
+                        request.Headers.TryAddWithoutValidation( ContractHeader, ChatWireContract.ComputedHash );
+                        AddCredentials( request );
+
+                        using ( var response = await _httpClient.SendAsync( request, cancellationToken ).ConfigureAwait( false ) )
+                        {
+                            if ( response.StatusCode == HttpStatusCode.OK )
+                            {
+                                return PushOutcome.Applied;
+                            }
+
+                            // A refusal names its code in the message, as the data API reports a raise.
+                            var body = await ReadBodyAsync( response ).ConfigureAwait( false );
+                            var code = ( string ) body?["message"] ?? ( string ) body?["code"] ?? "HTTP " + ( int ) response.StatusCode;
+
+                            LogPushFailure( new InvalidOperationException( "The chat platform refused an immediate chat sync push: " + code ) );
+
+                            return PushOutcome.Pending;
+                        }
+                    }
+                }
+                catch ( Exception exception )
+                {
+                    LogPushFailure( exception );
+                    return PushOutcome.Pending;
+                }
+            }
+
+            /// <summary>
+            /// A response body as JSON, read without blocking, or null where it is not JSON.
+            /// </summary>
+            private static async Task<JObject> ReadBodyAsync( HttpResponseMessage response )
+            {
+                if ( response.Content == null )
+                {
+                    return null;
+                }
+
+                return ParseBody( await response.Content.ReadAsStringAsync().ConfigureAwait( false ) );
+            }
+
+            /// <summary>
+            /// Whether the client holds a platform token with enough time left for a request to
+            /// arrive before it expires.
+            /// </summary>
+            public bool HasFreshToken
+            {
+                get
+                {
+                    var expiresAt = PlatformTokenExpiresAtUtc;
+
+                    return PlatformToken != null && ( !expiresAt.HasValue || expiresAt.Value - Clock() >= TokenRefreshMargin );
+                }
+            }
+
+            /// <summary>
+            /// Mints the church's sync token and exchanges it for a platform token, once and
+            /// without waiting between attempts, for a push that has seconds to land.
+            /// </summary>
+            /// <param name="cancellationToken">Ends the exchange when the push's time is up.</param>
+            /// <returns>True where the client now holds a platform token.</returns>
+            public async Task<bool> SignInAsync( CancellationToken cancellationToken )
+            {
+                var minted = ChatSessionHelper.TryMintSyncToken( new ChatSessionContext { Configuration = _configuration } );
+
+                if ( !minted.Success )
+                {
+                    LogPushFailure( new InvalidOperationException( "This church could not sign a request to the chat platform, so an immediate chat sync push was not sent." ) );
+                    return false;
+                }
+
+                using ( var request = new HttpRequestMessage( HttpMethod.Post, Url( ExchangePath ) ) )
+                {
+                    request.Headers.TryAddWithoutValidation( "Authorization", "Bearer " + minted.ChurchToken );
+                    request.Headers.TryAddWithoutValidation( "apikey", _configuration.PublishableKey );
+
+                    using ( var response = await _httpClient.SendAsync( request, cancellationToken ).ConfigureAwait( false ) )
+                    {
+                        var body = await ReadBodyAsync( response ).ConfigureAwait( false );
+                        var token = ( string ) body?["access_token"];
+
+                        if ( !response.IsSuccessStatusCode || token.IsNullOrWhiteSpace() )
+                        {
+                            var code = ( string ) body?["error"]?["code"] ?? "HTTP " + ( int ) response.StatusCode;
+                            LogPushFailure( new InvalidOperationException( "The chat platform refused this church's credential for an immediate chat sync push: " + code ) );
+                            return false;
+                        }
+
+                        // The expiry is set first, so a push that reads the token between the two
+                        // writes never sees a new token with the old token's expiry.
+                        var expiresIn = ( int? ) body["expires_in"];
+                        PlatformTokenExpiresAtUtc = expiresIn.HasValue ? Clock().AddSeconds( expiresIn.Value ) : ( DateTime? ) null;
+                        PlatformToken = token;
+
+                        return true;
+                    }
+                }
             }
 
             /// <inheritdoc />

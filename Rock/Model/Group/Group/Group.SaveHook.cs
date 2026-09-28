@@ -197,6 +197,9 @@ namespace Rock.Model
                         }
                 }
 
+                // Last, so it sees the group as this hook left it.
+                Rock.Communication.Chat.Platform.Sync.ChatPlatformSyncHelper.RecordGroupSave( Entry );
+
                 base.PreSave();
             }
 

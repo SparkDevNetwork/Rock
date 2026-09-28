@@ -49,7 +49,12 @@ namespace Rock.Communication.Chat.Platform.Sync
     /// rows both the full sync and the immediate sync write from the one projection, and Sync Now
     /// for the Chat Configuration and Group Type Detail blocks.
     /// </summary>
-    internal static partial class ChatPlatformSyncHelper
+    /// <remarks>
+    /// Public only so that a WebForms block, which cannot see this assembly's internals, can tell
+    /// the immediate sync about a change no save hook sees. Everything else in it stays internal.
+    /// </remarks>
+    [Rock.Attribute.RockInternal( "20.0", true )]
+    public static partial class ChatPlatformSyncHelper
     {
         #region Constants
 
@@ -1279,6 +1284,14 @@ namespace Rock.Communication.Chat.Platform.Sync
                 return null;
             }
 
+            return ParseBody( text );
+        }
+
+        /// <summary>
+        /// A response body's text as JSON, or null where it is not JSON, with dates left as written.
+        /// </summary>
+        private static JObject ParseBody( string text )
+        {
             if ( text.IsNullOrWhiteSpace() )
             {
                 return null;

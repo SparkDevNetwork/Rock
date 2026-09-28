@@ -795,6 +795,9 @@ DROP TABLE #Seeded;",
                 + "DELETE FROM [Group] WHERE [ForeignKey] = @p0;"
                 + "DELETE FROM [PersonSearchKey] WHERE [PersonAliasId] IN "
                 + "( SELECT [Id] FROM [PersonAlias] WHERE [PersonId] IN ( SELECT [Id] FROM [Person] WHERE [ForeignKey] = @p0 ) );"
+                // A merge of two people with different last names records the one that went.
+                + "DELETE FROM [PersonPreviousName] WHERE [PersonAliasId] IN "
+                + "( SELECT [Id] FROM [PersonAlias] WHERE [PersonId] IN ( SELECT [Id] FROM [Person] WHERE [ForeignKey] = @p0 ) );"
                 + "UPDATE [Person] SET [PrimaryAliasId] = NULL WHERE [ForeignKey] = @p0;"
                 + "DELETE FROM [PersonAlias] WHERE [PersonId] IN ( SELECT [Id] FROM [Person] WHERE [ForeignKey] = @p0 );"
                 + "DELETE FROM [Person] WHERE [ForeignKey] = @p0;",
