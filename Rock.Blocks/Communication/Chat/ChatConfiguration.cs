@@ -66,7 +66,7 @@ namespace Rock.Blocks.Communication.Chat
             var box = new ChatConfigurationInitializationBox
             {
                 IsChatConfigured = configuration.IsConfigured,
-                IsCredentialUnreadable = ChatConfigurationPolicy.IsCredentialUnreadable( configuration ),
+                IsCredentialUnreadable = configuration.IsEnabledWithoutCredentials,
                 ConnectedServicesUrl = RequestContext.ResolveRockUrl( ConnectedServicesRoute ),
                 NavigationUrls = new System.Collections.Generic.Dictionary<string, string>
                 {
@@ -76,7 +76,7 @@ namespace Rock.Blocks.Communication.Chat
 
             if ( configuration.IsConfigured )
             {
-                box.Configuration = WithDataViewNames( ChatConfigurationPolicy.ToBag( configuration ) );
+                box.Configuration = WithDataViewNames( ChatPlatformConfigurationService.ToConfigurationBag( configuration ) );
             }
 
             return box;
@@ -102,7 +102,7 @@ namespace Rock.Blocks.Communication.Chat
             }
 
             var isAuthorizedToEdit = BlockCache.IsAuthorized( Authorization.EDIT, GetCurrentPerson() );
-            var result = ChatConfigurationPolicy.Save( bag, isAuthorizedToEdit, IsPersonDataView );
+            var result = ChatPlatformConfigurationService.SaveConfiguration( bag, isAuthorizedToEdit, IsPersonDataView );
 
             if ( !result.IsSaved )
             {

@@ -29,20 +29,20 @@ namespace Rock.Tests.Communication.Chat.Platform.Blocks
     /// the card must read the first.
     /// </summary>
     [TestClass]
-    public class ChatCardPolicyTests
+    public class ChatConnectedServicesCardTests
     {
         private const string PrivateKey = "{\"kty\":\"EC\",\"crv\":\"P-256\",\"kid\":\"kid-1\",\"d\":\"secret-part\"}";
 
         #region A church whose stored key this installation cannot read
 
         [TestMethod]
-        public void ToBag_ForAChurchWhoseKeyCannotBeRead_StillSaysEnabled()
+        public void ToCardBag_ForAChurchWhoseKeyCannotBeRead_StillSaysEnabled()
         {
             // A database restored onto an installation with a different encryption key.
             // Reading the settings returns no private key, because decryption fails and
             // is swallowed, so everything else is intact and the organization is still
             // live on the chat platform.
-            var bag = ChatCardPolicy.ToBag( RestoredOntoAnotherInstallation() );
+            var bag = ChatPlatformConfigurationService.ToCardBag( RestoredOntoAnotherInstallation() );
 
             Assert.IsTrue( bag.IsEnabled, "a church already live on the platform is shown as not enabled, so the card offers to set it up again" );
             Assert.AreEqual( "https://example.supabase.co", bag.ProjectUrl );
@@ -53,37 +53,37 @@ namespace Rock.Tests.Communication.Chat.Platform.Blocks
         {
             // Enabling again mints a second signing key and orphans the first, and
             // nothing in Rock or on the platform can rotate or retire one.
-            Assert.IsFalse( ChatCardPolicy.MayEnable( RestoredOntoAnotherInstallation() ), "the card would strand the tenant this organization already has" );
+            Assert.IsFalse( ChatPlatformConfigurationService.MayEnable( RestoredOntoAnotherInstallation() ), "the card would strand the tenant this organization already has" );
         }
 
         [TestMethod]
-        public void ToBag_ForAChurchWhoseKeyCannotBeRead_SaysTheCredentialsCannotBeRead()
+        public void ToCardBag_ForAChurchWhoseKeyCannotBeRead_SaysTheCredentialsCannotBeRead()
         {
             // The card still says Enabled and still offers nothing; this is what lets it say
             // why chat does not run, instead of leaving the administrator in a loop with the
             // configuration screen.
-            var bag = ChatCardPolicy.ToBag( RestoredOntoAnotherInstallation() );
+            var bag = ChatPlatformConfigurationService.ToCardBag( RestoredOntoAnotherInstallation() );
 
             Assert.IsTrue( bag.IsEnabled );
             Assert.IsTrue( bag.IsCredentialUnreadable );
-            Assert.IsFalse( ChatCardPolicy.MayEnable( RestoredOntoAnotherInstallation() ) );
+            Assert.IsFalse( ChatPlatformConfigurationService.MayEnable( RestoredOntoAnotherInstallation() ) );
         }
 
         [TestMethod]
-        public void ToBag_ForAChurchEnabledWithoutItsProjectAddress_SaysTheCredentialsCannotBeRead()
+        public void ToCardBag_ForAChurchEnabledWithoutItsProjectAddress_SaysTheCredentialsCannotBeRead()
         {
             var stored = Complete();
             stored.ProjectUrl = null;
 
-            Assert.IsTrue( ChatCardPolicy.ToBag( stored ).IsCredentialUnreadable );
+            Assert.IsTrue( ChatPlatformConfigurationService.ToCardBag( stored ).IsCredentialUnreadable );
         }
 
         [TestMethod]
-        public void ToBag_ForEveryOtherChurch_SaysNothingAboutCredentials()
+        public void ToCardBag_ForEveryOtherChurch_SaysNothingAboutCredentials()
         {
-            Assert.IsFalse( ChatCardPolicy.ToBag( new ChatPlatformConfiguration() ).IsCredentialUnreadable, "never set up" );
-            Assert.IsFalse( ChatCardPolicy.ToBag( null ).IsCredentialUnreadable, "nothing stored" );
-            Assert.IsFalse( ChatCardPolicy.ToBag( Complete() ).IsCredentialUnreadable, "set up and can chat" );
+            Assert.IsFalse( ChatPlatformConfigurationService.ToCardBag( new ChatPlatformConfiguration() ).IsCredentialUnreadable, "never set up" );
+            Assert.IsFalse( ChatPlatformConfigurationService.ToCardBag( null ).IsCredentialUnreadable, "nothing stored" );
+            Assert.IsFalse( ChatPlatformConfigurationService.ToCardBag( Complete() ).IsCredentialUnreadable, "set up and can chat" );
         }
 
         #endregion A church whose stored key this installation cannot read
@@ -91,9 +91,9 @@ namespace Rock.Tests.Communication.Chat.Platform.Blocks
         #region A church that was never set up
 
         [TestMethod]
-        public void ToBag_ForAChurchThatWasNeverSetUp_SaysNotEnabledAndNamesNothing()
+        public void ToCardBag_ForAChurchThatWasNeverSetUp_SaysNotEnabledAndNamesNothing()
         {
-            var bag = ChatCardPolicy.ToBag( new ChatPlatformConfiguration() );
+            var bag = ChatPlatformConfigurationService.ToCardBag( new ChatPlatformConfiguration() );
 
             Assert.IsFalse( bag.IsEnabled );
             Assert.IsNull( bag.TenantId );
@@ -103,13 +103,13 @@ namespace Rock.Tests.Communication.Chat.Platform.Blocks
         [TestMethod]
         public void MayEnable_ForAChurchThatWasNeverSetUp_IsTrue()
         {
-            Assert.IsTrue( ChatCardPolicy.MayEnable( new ChatPlatformConfiguration() ) );
+            Assert.IsTrue( ChatPlatformConfigurationService.MayEnable( new ChatPlatformConfiguration() ) );
         }
 
         [TestMethod]
         public void MayEnable_WithNothingStoredAtAll_IsTrueRatherThanThrowing()
         {
-            Assert.IsTrue( ChatCardPolicy.MayEnable( null ) );
+            Assert.IsTrue( ChatPlatformConfigurationService.MayEnable( null ) );
         }
 
         #endregion A church that was never set up
@@ -117,11 +117,11 @@ namespace Rock.Tests.Communication.Chat.Platform.Blocks
         #region A church that is set up and can chat
 
         [TestMethod]
-        public void ToBag_ForAChurchThatCanChat_SaysEnabledAndNamesTheOrganization()
+        public void ToCardBag_ForAChurchThatCanChat_SaysEnabledAndNamesTheOrganization()
         {
             var stored = Complete();
 
-            var bag = ChatCardPolicy.ToBag( stored );
+            var bag = ChatPlatformConfigurationService.ToCardBag( stored );
 
             Assert.IsTrue( bag.IsEnabled );
             Assert.AreEqual( stored.TenantId.ToString(), bag.TenantId );
@@ -131,7 +131,7 @@ namespace Rock.Tests.Communication.Chat.Platform.Blocks
         [TestMethod]
         public void MayEnable_ForAChurchThatCanChat_IsFalse()
         {
-            Assert.IsFalse( ChatCardPolicy.MayEnable( Complete() ) );
+            Assert.IsFalse( ChatPlatformConfigurationService.MayEnable( Complete() ) );
         }
 
         #endregion A church that is set up and can chat
@@ -139,9 +139,9 @@ namespace Rock.Tests.Communication.Chat.Platform.Blocks
         #region Pins
 
         [TestMethod]
-        public void ToBag_CarriesNoSigningKey()
+        public void ToCardBag_CarriesNoSigningKey()
         {
-            var serialized = ChatCardPolicy.ToBag( Complete() ).ToJson();
+            var serialized = ChatPlatformConfigurationService.ToCardBag( Complete() ).ToJson();
 
             Assert.IsFalse( serialized.Contains( "secret-part" ), "the card's bag carries the church signing key" );
             Assert.IsFalse( serialized.Contains( "\"kty\"" ), "the card's bag carries the church signing key" );

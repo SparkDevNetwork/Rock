@@ -201,7 +201,7 @@ namespace Rock.Blocks.Administration
         /// <returns>The chat card's state.</returns>
         private static ChatConfigurationBag GetChatConfiguration()
         {
-            return ChatCardPolicy.ToBag( ChatPlatformConfigurationService.Read() );
+            return ChatPlatformConfigurationService.ToCardBag( ChatPlatformConfigurationService.Read() );
         }
 
         #region Block Actions
@@ -219,7 +219,7 @@ namespace Rock.Blocks.Administration
         {
             var provider = RockApp.Current.GetRequiredService<ConnectedServicesProvider>();
 
-            if ( !ChatCardPolicy.MayEnable( ChatPlatformConfigurationService.Read() ) )
+            if ( !ChatPlatformConfigurationService.MayEnable( ChatPlatformConfigurationService.Read() ) )
             {
                 return ActionBadRequest( "Chat is already enabled for this organization." );
             }

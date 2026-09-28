@@ -38,9 +38,9 @@ namespace Rock.Tests.Communication.Chat.Platform.Blocks
         #region What the browser is sent
 
         [TestMethod]
-        public void ToBag_CarriesNoPrivateKey_ButSaysWhetherOneIsPresent()
+        public void ToConfigurationBag_CarriesNoPrivateKey_ButSaysWhetherOneIsPresent()
         {
-            var bag = ChatConfigurationPolicy.ToBag( Stored() );
+            var bag = ChatPlatformConfigurationService.ToConfigurationBag( Stored() );
 
             Assert.IsTrue( bag.IsChurchKeyPresent );
 
@@ -50,20 +50,20 @@ namespace Rock.Tests.Communication.Chat.Platform.Blocks
         }
 
         [TestMethod]
-        public void ToBag_WithNoKeyStored_SaysSo()
+        public void ToConfigurationBag_WithNoKeyStored_SaysSo()
         {
             var stored = Stored();
             stored.PrivateKey = null;
 
-            Assert.IsFalse( ChatConfigurationPolicy.ToBag( stored ).IsChurchKeyPresent );
+            Assert.IsFalse( ChatPlatformConfigurationService.ToConfigurationBag( stored ).IsChurchKeyPresent );
         }
 
         [TestMethod]
-        public void ToBag_CarriesEveryChurchOwnedSetting()
+        public void ToConfigurationBag_CarriesEveryChurchOwnedSetting()
         {
             var stored = Stored();
 
-            var bag = ChatConfigurationPolicy.ToBag( stored );
+            var bag = ChatPlatformConfigurationService.ToConfigurationBag( stored );
 
             Assert.IsTrue( bag.AreChatProfilesVisible );
             Assert.IsTrue( bag.IsOpenDirectMessagingAllowed );
@@ -77,20 +77,20 @@ namespace Rock.Tests.Communication.Chat.Platform.Blocks
         #region What the browser may send back
 
         [TestMethod]
-        public void Save_ReturnsTheChurchHalfOnly_SoTheScreenCannotWriteThePlatformHalfOrTheKey()
+        public void SaveConfiguration_ReturnsTheChurchHalfOnly_SoTheScreenCannotWriteThePlatformHalfOrTheKey()
         {
             // The screen owns the church half and nothing else. The platform half and the
             // signing key belong to Enable Chat, which writes them by name, so what comes
             // out of here carries neither: there is nothing to take away and nothing to
             // overwrite, whatever a modified client sends back.
             var stored = Stored();
-            var bag = ChatConfigurationPolicy.ToBag( stored );
+            var bag = ChatPlatformConfigurationService.ToConfigurationBag( stored );
             bag.ProjectUrl = "https://attacker.example";
             bag.PublishableKey = "sb_publishable_attacker";
             bag.TenantId = Guid.NewGuid().ToString();
             bag.Kid = "attacker-kid";
 
-            var result = ChatConfigurationPolicy.Save( bag, isAuthorizedToEdit: true, EveryDataViewIsOfPeople );
+            var result = ChatPlatformConfigurationService.SaveConfiguration( bag, isAuthorizedToEdit: true, EveryDataViewIsOfPeople );
 
             Assert.IsTrue( result.IsSaved );
             Assert.IsNull( result.Configuration.ProjectUrl );
@@ -101,30 +101,30 @@ namespace Rock.Tests.Communication.Chat.Platform.Blocks
         }
 
         [TestMethod]
-        public void Save_WithAnEmptyBadgeEntry_IgnoresItRatherThanThrowing()
+        public void SaveConfiguration_WithAnEmptyBadgeEntry_IgnoresItRatherThanThrowing()
         {
             var stored = Stored();
-            var bag = ChatConfigurationPolicy.ToBag( stored );
+            var bag = ChatPlatformConfigurationService.ToConfigurationBag( stored );
             bag.ChatBadgeDataViews = new List<ListItemBag> { null };
 
-            var result = ChatConfigurationPolicy.Save( bag, isAuthorizedToEdit: true, EveryDataViewIsOfPeople );
+            var result = ChatPlatformConfigurationService.SaveConfiguration( bag, isAuthorizedToEdit: true, EveryDataViewIsOfPeople );
 
             Assert.AreEqual( 0, result.Configuration.ChatBadgeDataViewGuids.Count );
         }
 
         [TestMethod]
-        public void Save_AppliesEveryChurchOwnedSetting()
+        public void SaveConfiguration_AppliesEveryChurchOwnedSetting()
         {
             var stored = Stored();
             var newDataView = Guid.NewGuid();
-            var bag = ChatConfigurationPolicy.ToBag( stored );
+            var bag = ChatPlatformConfigurationService.ToConfigurationBag( stored );
             bag.AreChatProfilesVisible = false;
             bag.IsOpenDirectMessagingAllowed = false;
             bag.MinimumAge = 16;
             bag.DirectMessageAccessDataView = new ListItemBag { Value = newDataView.ToString(), Text = "Members" };
             bag.ChatBadgeDataViews = new List<ListItemBag>();
 
-            var result = ChatConfigurationPolicy.Save( bag, isAuthorizedToEdit: true, EveryDataViewIsOfPeople );
+            var result = ChatPlatformConfigurationService.SaveConfiguration( bag, isAuthorizedToEdit: true, EveryDataViewIsOfPeople );
 
             Assert.IsFalse( result.Configuration.AreChatProfilesVisible );
             Assert.IsFalse( result.Configuration.IsOpenDirectMessagingAllowed );
@@ -134,11 +134,11 @@ namespace Rock.Tests.Communication.Chat.Platform.Blocks
         }
 
         [TestMethod]
-        public void Save_WithABadgeListedTwice_KeepsItOnceInItsFirstPlace()
+        public void SaveConfiguration_WithABadgeListedTwice_KeepsItOnceInItsFirstPlace()
         {
             var first = Guid.NewGuid();
             var second = Guid.NewGuid();
-            var bag = ChatConfigurationPolicy.ToBag( Stored() );
+            var bag = ChatPlatformConfigurationService.ToConfigurationBag( Stored() );
             bag.ChatBadgeDataViews = new List<ListItemBag>
             {
                 new ListItemBag { Value = first.ToString() },
@@ -146,36 +146,36 @@ namespace Rock.Tests.Communication.Chat.Platform.Blocks
                 new ListItemBag { Value = first.ToString().ToUpperInvariant() }
             };
 
-            var result = ChatConfigurationPolicy.Save( bag, isAuthorizedToEdit: true, EveryDataViewIsOfPeople );
+            var result = ChatPlatformConfigurationService.SaveConfiguration( bag, isAuthorizedToEdit: true, EveryDataViewIsOfPeople );
 
             CollectionAssert.AreEqual( new List<Guid> { first, second }, result.Configuration.ChatBadgeDataViewGuids );
         }
 
         [TestMethod]
-        public void Save_WithABadgeThatIsNotADataViewOfPeople_DropsIt()
+        public void SaveConfiguration_WithABadgeThatIsNotADataViewOfPeople_DropsIt()
         {
             var people = Guid.NewGuid();
             var groups = Guid.NewGuid();
-            var bag = ChatConfigurationPolicy.ToBag( Stored() );
+            var bag = ChatPlatformConfigurationService.ToConfigurationBag( Stored() );
             bag.ChatBadgeDataViews = new List<ListItemBag>
             {
                 new ListItemBag { Value = groups.ToString() },
                 new ListItemBag { Value = people.ToString() }
             };
 
-            var result = ChatConfigurationPolicy.Save( bag, isAuthorizedToEdit: true, guid => guid == people );
+            var result = ChatPlatformConfigurationService.SaveConfiguration( bag, isAuthorizedToEdit: true, guid => guid == people );
 
             CollectionAssert.AreEqual( new List<Guid> { people }, result.Configuration.ChatBadgeDataViewGuids );
         }
 
         [TestMethod]
-        public void Save_WhenNotAuthorizedToEdit_Refuses()
+        public void SaveConfiguration_WhenNotAuthorizedToEdit_Refuses()
         {
             var stored = Stored();
-            var bag = ChatConfigurationPolicy.ToBag( stored );
+            var bag = ChatPlatformConfigurationService.ToConfigurationBag( stored );
             bag.MinimumAge = 99;
 
-            var result = ChatConfigurationPolicy.Save( bag, isAuthorizedToEdit: false, EveryDataViewIsOfPeople );
+            var result = ChatPlatformConfigurationService.SaveConfiguration( bag, isAuthorizedToEdit: false, EveryDataViewIsOfPeople );
 
             Assert.IsFalse( result.IsSaved );
             Assert.IsNull( result.Configuration );
@@ -211,9 +211,9 @@ namespace Rock.Tests.Communication.Chat.Platform.Blocks
             var noPublishableKey = Stored();
             noPublishableKey.PublishableKey = null;
 
-            Assert.IsTrue( ChatConfigurationPolicy.IsCredentialUnreadable( noKey ), "the signing key cannot be read" );
-            Assert.IsTrue( ChatConfigurationPolicy.IsCredentialUnreadable( noProjectUrl ), "no project address" );
-            Assert.IsTrue( ChatConfigurationPolicy.IsCredentialUnreadable( noPublishableKey ), "no publishable key" );
+            Assert.IsTrue( noKey.IsEnabledWithoutCredentials, "the signing key cannot be read" );
+            Assert.IsTrue( noProjectUrl.IsEnabledWithoutCredentials, "no project address" );
+            Assert.IsTrue( noPublishableKey.IsEnabledWithoutCredentials, "no publishable key" );
         }
 
         [TestMethod]
@@ -223,10 +223,10 @@ namespace Rock.Tests.Communication.Chat.Platform.Blocks
             neverEnabled.TenantId = null;
             neverEnabled.PrivateKey = null;
 
-            Assert.IsFalse( ChatConfigurationPolicy.IsCredentialUnreadable( neverEnabled ), "never enabled" );
-            Assert.IsFalse( ChatConfigurationPolicy.IsCredentialUnreadable( new ChatPlatformConfiguration() ), "nothing stored" );
-            Assert.IsFalse( ChatConfigurationPolicy.IsCredentialUnreadable( null ), "no settings at all" );
-            Assert.IsFalse( ChatConfigurationPolicy.IsCredentialUnreadable( Stored() ), "ready to chat" );
+            Assert.IsFalse( neverEnabled.IsEnabledWithoutCredentials, "never enabled" );
+            // The settings service reads missing storage as the defaults, so a fresh install shows no warning.
+            Assert.IsFalse( new ChatPlatformConfiguration().IsEnabledWithoutCredentials, "nothing stored" );
+            Assert.IsFalse( Stored().IsEnabledWithoutCredentials, "ready to chat" );
         }
 
         #endregion A church enabled whose credentials cannot be read
