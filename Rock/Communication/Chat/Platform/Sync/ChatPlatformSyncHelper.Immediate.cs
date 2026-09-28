@@ -19,6 +19,9 @@ using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
 using System.Linq;
+using System.Net.Http;
+using System.Threading;
+using System.Threading.Tasks;
 
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -40,6 +43,20 @@ namespace Rock.Communication.Chat.Platform.Sync
         // A push reads a handful of keys, and the full sync repairs whatever one that gives up
         // leaves behind, so it is never worth the full sync's long wait. An estimate.
         private const int PushProjectionTimeoutSeconds = 10;
+
+        // No save a person makes through Rock's screens comes near this, so a push past it is a bulk
+        // write that reached the hooks, and the full sync carries it instead. An estimate.
+        internal const int PushRowCeiling = 5000;
+
+        // How long a push nobody waits on may take before it is abandoned. An estimate.
+        internal static readonly TimeSpan BackgroundPushTimeout = TimeSpan.FromSeconds( 10 );
+
+        // How long a block action waits on its own save's push before it answers without it. An
+        // estimate, within what a person waiting on a chat action is given.
+        internal static readonly TimeSpan AwaitedPushBudget = TimeSpan.FromSeconds( 2 );
+
+        // The one transport override a test may hold at a time, or null in production.
+        private static ImmediateSyncOverride _override;
 
         #endregion Constants
 
@@ -88,9 +105,234 @@ namespace Rock.Communication.Chat.Platform.Sync
             public int RowCount { get; set; }
         }
 
+        /// <summary>
+        /// What a block action that waited on its save's push can tell the person.
+        /// </summary>
+        internal enum PushOutcome
+        {
+            /// <summary>
+            /// The chat platform took the push.
+            /// </summary>
+            Applied,
+
+            /// <summary>
+            /// The push failed or did not answer in time. It may still land, and the full sync
+            /// carries the change if it does not.
+            /// </summary>
+            Pending
+        }
+
+        /// <summary>
+        /// Stands in for the immediate sync's transport while a test holds it, and records what
+        /// the immediate sync began and warned about in that time.
+        /// </summary>
+        /// <remarks>
+        /// Process wide, as the transport it replaces is, so a test waits on the pushes it caused
+        /// rather than guessing how long a background push takes. Only one may be held at a time,
+        /// because two tests sharing one transport could not tell whose push is whose.
+        /// </remarks>
+        internal sealed class ImmediateSyncOverride : IDisposable
+        {
+            private readonly object _sync = new object();
+
+            private readonly List<Task> _pushes = new List<Task>();
+
+            private readonly List<string> _warnings = new List<string>();
+
+            /// <summary>
+            /// Creates the override.
+            /// </summary>
+            /// <param name="handler">The transport every push is sent through while this is held.</param>
+            internal ImmediateSyncOverride( HttpMessageHandler handler )
+            {
+                Handler = handler ?? throw new ArgumentNullException( nameof( handler ) );
+            }
+
+            /// <summary>
+            /// The transport every push is sent through while this is held.
+            /// </summary>
+            public HttpMessageHandler Handler { get; }
+
+            /// <summary>
+            /// Every warning the immediate sync logged while this was held.
+            /// </summary>
+            public IList<string> Warnings
+            {
+                get
+                {
+                    lock ( _sync )
+                    {
+                        return _warnings.ToList();
+                    }
+                }
+            }
+
+            /// <summary>
+            /// Waits for every push begun while this was held to finish, however it finishes.
+            /// </summary>
+            /// <param name="timeout">How long to wait.</param>
+            /// <returns>True where every one finished in time.</returns>
+            public bool WaitForPushes( TimeSpan timeout )
+            {
+                Task[] pushes;
+
+                lock ( _sync )
+                {
+                    // A faulted push is still a finished one, so each is waited on through a
+                    // continuation that cannot fault.
+                    pushes = _pushes.Select( p => p.ContinueWith( _ => { }, TaskScheduler.Default ) ).ToArray();
+                }
+
+                return Task.WaitAll( pushes, timeout );
+            }
+
+            /// <summary>
+            /// Records a push the immediate sync began.
+            /// </summary>
+            /// <param name="push">The push's work.</param>
+            internal void Began( Task push )
+            {
+                lock ( _sync )
+                {
+                    _pushes.Add( push );
+                }
+            }
+
+            /// <summary>
+            /// Records a warning the immediate sync logged.
+            /// </summary>
+            /// <param name="message">The warning.</param>
+            internal void Warned( string message )
+            {
+                lock ( _sync )
+                {
+                    _warnings.Add( message );
+                }
+            }
+
+            /// <inheritdoc />
+            public void Dispose()
+            {
+                Interlocked.CompareExchange( ref _override, null, this );
+            }
+        }
+
         #endregion Types
 
         #region Methods
+
+        /// <summary>
+        /// Records a person's save for the immediate sync when it changed something chat shows.
+        /// Called at the end of the person save hook's pre-save.
+        /// </summary>
+        /// <param name="entry">The save entry.</param>
+        /// <remarks>
+        /// Runs on every person save in Rock, so a save that changes nothing chat shows returns
+        /// having read nothing and allocated nothing.
+        /// </remarks>
+        internal static void RecordPersonSave( IEntitySaveEntry entry )
+        {
+            throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// Records a group's save for the immediate sync when the group can be a chat channel.
+        /// Called at the end of the group save hook's pre-save.
+        /// </summary>
+        /// <param name="entry">The save entry.</param>
+        /// <remarks>
+        /// Runs on every group save in Rock, families included, so a group chat cannot reach returns
+        /// having read nothing and allocated nothing.
+        /// </remarks>
+        internal static void RecordGroupSave( IEntitySaveEntry entry )
+        {
+            throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// Records a membership's save for the immediate sync when its group can be a chat channel
+        /// or is one of the groups that run chat. Called at the end of the group member save hook's
+        /// pre-save, after the hook has set the member's group type.
+        /// </summary>
+        /// <param name="entry">The save entry.</param>
+        /// <remarks>
+        /// Runs on every membership save in Rock, so one chat cannot reach returns having read
+        /// nothing and allocated nothing.
+        /// </remarks>
+        internal static void RecordGroupMemberSave( IEntitySaveEntry entry )
+        {
+            throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// Whether a person's save changed a value chat shows, read from the entry alone.
+        /// </summary>
+        /// <param name="entry">The save entry.</param>
+        /// <returns>True where the save is one the immediate sync pushes.</returns>
+        internal static bool IsPersonChangeInScope( IEntitySaveEntry entry )
+        {
+            throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// Whether a group, or a membership of it, is one the immediate sync pushes: its type
+        /// allows chat, or it is one of the groups that run chat. Read from cached values alone.
+        /// </summary>
+        /// <param name="groupId">The group.</param>
+        /// <param name="groupTypeId">The group's type.</param>
+        /// <returns>True where the save is one the immediate sync pushes.</returns>
+        internal static bool IsGroupInScope( int groupId, int groupTypeId )
+        {
+            throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// Records that a person's aliases and memberships changed where no save hook sees it, so
+        /// they are pushed after the context's transaction commits.
+        /// </summary>
+        /// <param name="rockContext">The context whose commit the push follows.</param>
+        /// <param name="personId">The person.</param>
+        /// <remarks>
+        /// The person merge runs a procedure that moves aliases and memberships past Entity
+        /// Framework, so it records the surviving person here, inside its transaction.
+        /// </remarks>
+        internal static void RecordPersonChange( RockContext rockContext, int personId )
+        {
+            throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// Waits, within the awaited budget, for the push the context's last save began.
+        /// </summary>
+        /// <param name="rockContext">The context the block action saved with.</param>
+        /// <returns>Applied where the platform took the push or there was nothing to push, and Pending otherwise. Never throws.</returns>
+        /// <remarks>
+        /// For a block action that tells a person their change is live. A push that outlasts the
+        /// budget is abandoned by the caller, not cancelled: it may still land, and the full sync
+        /// carries the change if it does not.
+        /// </remarks>
+        internal static Task<PushOutcome> FlushAsync( RockContext rockContext )
+        {
+            throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// Sends every immediate push through another transport until the returned override is
+        /// disposed. For tests.
+        /// </summary>
+        /// <param name="handler">The transport.</param>
+        /// <returns>The override, which records the pushes begun and the warnings logged while it is held.</returns>
+        internal static ImmediateSyncOverride OverrideImmediateSync( HttpMessageHandler handler )
+        {
+            var replacement = new ImmediateSyncOverride( handler );
+
+            if ( Interlocked.CompareExchange( ref _override, replacement, null ) != null )
+            {
+                throw new InvalidOperationException( "the immediate sync's transport is already overridden, and two overrides could not tell whose push is whose" );
+            }
+
+            return replacement;
+        }
 
         /// <summary>
         /// Reads back the committed rows a save touched through the one projection.

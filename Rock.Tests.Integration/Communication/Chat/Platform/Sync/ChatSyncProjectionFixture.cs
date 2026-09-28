@@ -30,6 +30,7 @@ using Rock.Configuration;
 using Rock.Data;
 using Rock.Jobs;
 using Rock.Model;
+using Rock.Web;
 using Rock.Web.Cache;
 
 namespace Rock.Tests.Integration.Communication.Chat.Platform.Sync
@@ -341,6 +342,144 @@ namespace Rock.Tests.Integration.Communication.Chat.Platform.Sync
             {
                 rockContext.Database.ExecuteSqlCommand( "UPDATE [Person] SET [LastName] = @p1 WHERE [Id] = @p0", personId, lastName );
             }
+        }
+
+        /// <summary>
+        /// Puts many more people in a group, each as a copy of one person already in it, written as
+        /// rows past Rock's save path so that no save hook sees them.
+        /// </summary>
+        /// <param name="channelGuid">The group.</param>
+        /// <param name="templatePersonId">A person this fixture made who is already a member of the group.</param>
+        /// <param name="count">How many people to add.</param>
+        /// <remarks>
+        /// Each copy gets its own guid and its own primary alias, and carries this fixture's foreign
+        /// key, so disposing takes them away with everything else. Columns are copied by name from
+        /// the catalog, so a column Rock adds later is copied too.
+        /// </remarks>
+        public void SeedMembersDirectly( Guid channelGuid, int templatePersonId, int count )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                rockContext.Database.CommandTimeout = 120;
+                rockContext.Database.ExecuteSqlCommand(
+                    @"
+DECLARE @TemplateMemberId INT = (
+    SELECT TOP 1 [GM].[Id]
+    FROM [GroupMember] AS [GM]
+    INNER JOIN [Group] AS [G] ON [G].[Id] = [GM].[GroupId]
+    WHERE [G].[Guid] = @p0 AND [GM].[PersonId] = @p1 );
+
+DECLARE @PersonColumns NVARCHAR(MAX) = (
+    SELECT STRING_AGG( QUOTENAME( [name] ), ',' )
+    FROM sys.columns
+    WHERE [object_id] = OBJECT_ID( 'Person' )
+        AND [is_identity] = 0 AND [is_computed] = 0
+        AND [name] NOT IN ( 'Guid', 'PrimaryAliasId', 'PrimaryFamilyId', 'GivingGroupId' ) );
+
+DECLARE @MemberColumns NVARCHAR(MAX) = (
+    SELECT STRING_AGG( QUOTENAME( [name] ), ',' )
+    FROM sys.columns
+    WHERE [object_id] = OBJECT_ID( 'GroupMember' )
+        AND [is_identity] = 0 AND [is_computed] = 0
+        AND [name] NOT IN ( 'Guid', 'PersonId' ) );
+
+CREATE TABLE #Seeded ( [Id] INT NOT NULL );
+
+DECLARE @Sql NVARCHAR(MAX) = N'INSERT INTO [Person] ( ' + @PersonColumns + N', [Guid] ) OUTPUT inserted.[Id] INTO #Seeded '
+    + N'SELECT ' + @PersonColumns + N', NEWID() FROM [Person] '
+    + N'CROSS JOIN ( SELECT TOP ( @Count ) 1 AS [N] FROM sys.all_objects AS [A] CROSS JOIN sys.all_objects AS [B] ) AS [Numbers] '
+    + N'WHERE [Person].[Id] = @TemplatePersonId;';
+EXEC sp_executesql @Sql, N'@Count INT, @TemplatePersonId INT', @p2, @p1;
+
+INSERT INTO [PersonAlias] ( [PersonId], [AliasPersonId], [AliasPersonGuid], [Guid], [ForeignKey] )
+SELECT [P].[Id], [P].[Id], [P].[Guid], NEWID(), [P].[ForeignKey]
+FROM [Person] AS [P]
+INNER JOIN #Seeded AS [S] ON [S].[Id] = [P].[Id];
+
+UPDATE [P]
+SET [P].[PrimaryAliasId] = [PA].[Id]
+FROM [Person] AS [P]
+INNER JOIN #Seeded AS [S] ON [S].[Id] = [P].[Id]
+INNER JOIN [PersonAlias] AS [PA] ON [PA].[AliasPersonId] = [P].[Id];
+
+SET @Sql = N'INSERT INTO [GroupMember] ( ' + @MemberColumns + N', [PersonId], [Guid] ) '
+    + N'SELECT ' + @MemberColumns + N', [S].[Id], NEWID() FROM [GroupMember] CROSS JOIN #Seeded AS [S] '
+    + N'WHERE [GroupMember].[Id] = @TemplateMemberId;';
+EXEC sp_executesql @Sql, N'@TemplateMemberId INT', @TemplateMemberId;
+
+DROP TABLE #Seeded;",
+                    channelGuid,
+                    templatePersonId,
+                    count );
+            }
+        }
+
+        /// <summary>
+        /// Stores chat settings as enabling chat and the settings screen would, so that code which
+        /// reads the church's own settings finds them. Put back when disposed.
+        /// </summary>
+        /// <param name="configuration">The settings, with the signing key in the clear.</param>
+        public void StoreConfiguration( ChatPlatformConfiguration configuration )
+        {
+            var stored = SystemSettings.GetValue( Rock.SystemKey.SystemSetting.CHAT_PLATFORM_CONFIGURATION );
+            _restores.Add( context => SystemSettings.SetValue( Rock.SystemKey.SystemSetting.CHAT_PLATFORM_CONFIGURATION, stored ) );
+
+            ChatPlatformConfigurationService.SaveChurchSettings( configuration );
+            ChatPlatformConfigurationService.SavePlatformCredentials( new ConnectedServicesChatEntry
+            {
+                TenantId = configuration.TenantId.Value,
+                ProjectUrl = configuration.ProjectUrl,
+                PublishableKey = configuration.PublishableKey,
+                Kid = configuration.Kid,
+                PrivateKey = configuration.PrivateKey
+            } );
+        }
+
+        /// <summary>
+        /// Makes a new signing key pair, as enabling chat gives a church.
+        /// </summary>
+        /// <param name="kid">The key's id.</param>
+        /// <returns>The private key as the settings store it, and the public key as the platform registers it.</returns>
+        public static (string PrivateJwk, JObject PublicJwk) CreateSigningKey( string kid )
+        {
+            using ( var ecdsa = System.Security.Cryptography.ECDsa.Create( System.Security.Cryptography.ECCurve.NamedCurves.nistP256 ) )
+            {
+                var key = new Microsoft.IdentityModel.Tokens.ECDsaSecurityKey( ecdsa ) { KeyId = kid };
+                var jwk = Microsoft.IdentityModel.Tokens.JsonWebKeyConverter.ConvertFromECDsaSecurityKey( key );
+                jwk.Kid = kid;
+                jwk.Use = "sig";
+                jwk.Alg = "ES256";
+
+                var publicJwk = new JObject
+                {
+                    ["kty"] = "EC",
+                    ["crv"] = "P-256",
+                    ["kid"] = kid,
+                    ["x"] = jwk.X,
+                    ["y"] = jwk.Y
+                };
+
+                return (JsonConvert.SerializeObject( jwk ), publicJwk);
+            }
+        }
+
+        /// <summary>
+        /// Makes the code that follows run as though inside a web request, as a save from a block
+        /// or the API does, until the result is disposed.
+        /// </summary>
+        /// <returns>The request, ended when disposed.</returns>
+        /// <remarks>
+        /// Rock marks a request with an ambient value that flows to the code the request calls, so
+        /// setting it here is exactly what a real request does, minus the request.
+        /// </remarks>
+        public static IDisposable InsideRequest()
+        {
+            var accessor = new Rock.Net.RockRequestContextAccessor
+            {
+                RockRequestContext = new Rock.Net.RockRequestContext()
+            };
+
+            return new RequestScope( accessor );
         }
 
         /// <summary>
@@ -747,6 +886,28 @@ namespace Rock.Tests.Integration.Communication.Chat.Platform.Sync
         }
 
         #endregion Private Methods
+
+        #region Support Classes
+
+        /// <summary>
+        /// Ends a simulated request when disposed.
+        /// </summary>
+        private sealed class RequestScope : IDisposable
+        {
+            private readonly Rock.Net.RockRequestContextAccessor _accessor;
+
+            public RequestScope( Rock.Net.RockRequestContextAccessor accessor )
+            {
+                _accessor = accessor;
+            }
+
+            public void Dispose()
+            {
+                _accessor.RockRequestContext = null;
+            }
+        }
+
+        #endregion Support Classes
     }
 
     /// <summary>

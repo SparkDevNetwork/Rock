@@ -22,6 +22,7 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Threading;
+using System.Threading.Tasks;
 
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -461,6 +462,21 @@ namespace Rock.Communication.Chat.Platform.Sync
 
                     return outcome != null && outcome.Status.HasValue ? outcome : null;
                 }
+            }
+
+            /// <summary>
+            /// Pushes the rows one save touched, once, under the platform token this client holds.
+            /// </summary>
+            /// <param name="push">The rows and the moment they were read at.</param>
+            /// <param name="cancellationToken">Ends the attempt when the push's time is up.</param>
+            /// <returns>Applied where the platform took the push, and Pending otherwise. Never an exception.</returns>
+            /// <remarks>
+            /// One attempt and no retry: the full sync repairs a push that did not land, so waiting
+            /// to send it again would only hold a thread.
+            /// </remarks>
+            public Task<PushOutcome> PushAsync( PushBody push, CancellationToken cancellationToken )
+            {
+                throw new NotImplementedException();
             }
 
             /// <inheritdoc />
