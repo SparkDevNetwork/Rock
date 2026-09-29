@@ -290,7 +290,7 @@
 
 <script setup lang="ts">
     import { computed, ref } from "vue";
-    import { useInvokeBlockAction, useConfigurationValues, onConfigurationValuesChanged } from "@Obsidian/Utility/block";
+    import { useInvokeBlockAction, useConfigurationValues, onConfigurationValuesChanged, getSecurityGrant, provideSecurityGrant } from "@Obsidian/Utility/block";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { toCurrencyOrNull } from "@Obsidian/Utility/numberUtils";
     import { confirm, confirmDelete } from "@Obsidian/Utility/dialogs";
@@ -312,6 +312,9 @@
 
     const config = useConfigurationValues<GivingConfigurationInitializationBag>();
     const invokeBlockAction = useInvokeBlockAction();
+
+    // Provide the security grant so the account picker can show every account.
+    provideSecurityGrant(getSecurityGrant(config.securityGrantToken));
 
     const selectedFinancialAccount = ref<ListItemBag>({});
     const selectedSavedAccount = ref<string>("");

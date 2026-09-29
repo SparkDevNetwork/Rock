@@ -36,4 +36,10 @@ export type WorkflowEntryOptionsBag = {
      * component data back to the server.
      */
     isCaptchaEnabled: boolean;
+
+    /**
+     * The security grant token that UI controls on the block use to
+     * ensure they have the proper permissions.
+     */
+    securityGrantToken?: string | null;
 };

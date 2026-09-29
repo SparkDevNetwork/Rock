@@ -28,6 +28,7 @@ using Rock.Data;
 using Rock.Model;
 using Rock.Obsidian.UI;
 using Rock.Security;
+using Rock.Security.SecurityGrantRules;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Finance.FinancialScheduledTransactionList;
 using Rock.ViewModels.Utility;
@@ -214,7 +215,28 @@ namespace Rock.Blocks.Finance
             box.Options = GetBoxOptions();
             box.GridDefinition = builder.BuildDefinition();
             box.Options.ShowTransactionTypeColumn = GetAttributeValue( AttributeKey.ShowTransactionTypeColumn ).AsBoolean();
+            box.SecurityGrantToken = GetSecurityGrantToken();
             return box;
+        }
+
+        /// <inheritdoc/>
+        protected override string RenewSecurityGrantToken()
+        {
+            return GetSecurityGrantToken();
+        }
+
+        /// <summary>
+        /// Gets the security grant token that will be used by UI controls on
+        /// this block to ensure they have the proper permissions.
+        /// </summary>
+        /// <returns>A string that represents the security grant token.</returns>
+        private string GetSecurityGrantToken()
+        {
+            // This is an administrative block, so the account picker can show
+            // every account along with its internal details.
+            return new SecurityGrant()
+                .AddRule( FinancialAccountPickerSecurityGrantRule.CreateFullAccessRule() )
+                .ToToken();
         }
 
         /// <summary>

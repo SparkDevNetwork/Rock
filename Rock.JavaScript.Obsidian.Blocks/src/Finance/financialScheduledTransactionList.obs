@@ -130,7 +130,7 @@
 }
 </style>
 <script setup lang="ts">
-    import { useConfigurationValues, useInvokeBlockAction, usePersonPreferences } from "@Obsidian/Utility/block";
+    import { getSecurityGrant, provideSecurityGrant, useConfigurationValues, useInvokeBlockAction, usePersonPreferences } from "@Obsidian/Utility/block";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
     import Grid, { AttributeColumns, BooleanColumn, PersonColumn, DateColumn, dateValueFilter, numberValueFilter, pickExistingValueFilter, TextColumn, textValueFilter, CurrencyColumn, booleanValueFilter } from "@Obsidian/Controls/grid";
     import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
@@ -145,6 +145,9 @@
 
     const config = useConfigurationValues<ListBlockBox<FinancialScheduledTransactionListOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
+
+    // Provide the security grant so the account picker can show every account.
+    provideSecurityGrant(getSecurityGrant(config.securityGrantToken));
     const preferences = usePersonPreferences().blockPreferences;
 
     // #region Values

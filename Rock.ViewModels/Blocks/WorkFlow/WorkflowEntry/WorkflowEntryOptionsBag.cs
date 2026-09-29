@@ -34,5 +34,11 @@ namespace Rock.ViewModels.Blocks.WorkFlow.WorkflowEntry
         /// The initial action details to display.
         /// </summary>
         public InteractiveActionBag InitialAction { get; set; }
+
+        /// <summary>
+        /// The security grant token that UI controls on the block use to
+        /// ensure they have the proper permissions.
+        /// </summary>
+        public string SecurityGrantToken { get; set; }
     }
 }

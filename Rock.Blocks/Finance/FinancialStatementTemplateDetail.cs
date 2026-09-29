@@ -26,6 +26,7 @@ using Rock.Data;
 using Rock.Financial;
 using Rock.Model;
 using Rock.Security;
+using Rock.Security.SecurityGrantRules;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Finance.FinancialStatementTemplateDetail;
 using Rock.ViewModels.Utility;
@@ -387,6 +388,15 @@ namespace Rock.Blocks.Finance
             {
                 return FinancialStatementTemplateTransactionSettingAccountSelectionOption.SelectedAccounts;
             }
+        }
+
+        /// <inheritdoc/>
+        protected override SecurityGrant GetSecurityGrant( FinancialStatementTemplate entity )
+        {
+            // This is an administrative block, so the account picker can show
+            // every account along with its internal details.
+            return base.GetSecurityGrant( entity )
+                .AddRule( FinancialAccountPickerSecurityGrantRule.CreateFullAccessRule() );
         }
 
         /// <inheritdoc/>

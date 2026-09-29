@@ -329,8 +329,77 @@ namespace Rock.Blocks.Workflow
             return new WorkflowEntryOptionsBag
             {
                 IsCaptchaEnabled = !GetAttributeValue( AttributeKey.DisableCaptchaSupport ).AsBoolean(),
-                InitialAction = initialAction
+                InitialAction = initialAction,
+                SecurityGrantToken = GetSecurityGrantToken( workflow.WorkflowTypeCache )
             };
+        }
+
+        /// <inheritdoc/>
+        protected override string RenewSecurityGrantToken()
+        {
+            var workflowType = GetConfiguredWorkflowType();
+
+            return workflowType != null ? GetSecurityGrantToken( workflowType ) : string.Empty;
+        }
+
+        /// <summary>
+        /// Gets the security grant token that will be used by UI controls on
+        /// this block to ensure they have the proper permissions.
+        /// </summary>
+        /// <param name="workflowType">The workflow type whose forms are being displayed.</param>
+        /// <returns>A string that represents the security grant token.</returns>
+        private string GetSecurityGrantToken( WorkflowTypeCache workflowType )
+        {
+            // Anonymous visitors only get the public view of accounts. The
+            // workflow type can come from the page parameters sent by the
+            // client, so apply the same checks used when loading the workflow.
+            if ( RequestContext.CurrentPerson == null
+                || !workflowType.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson )
+                || workflowType.IsActive != true )
+            {
+                return string.Empty;
+            }
+
+            // Only the account attributes that can be edited on one of this
+            // workflow type's forms add rules, so the account picker shows
+            // what those attributes are configured to show and no more.
+            var attributes = workflowType.ActivityTypes
+                .SelectMany( at => at.ActionTypes )
+                .Select( at => at.WorkflowForm )
+                .Where( f => f != null )
+                .SelectMany( f => f.FormAttributes )
+                .Where( fa => fa.IsVisible && !fa.IsReadOnly )
+                .Select( fa => AttributeCache.Get( fa.AttributeId, RockContext ) )
+                .Where( a => a?.FieldType?.Field is Rock.Field.Types.AccountFieldType
+                    || a?.FieldType?.Field is Rock.Field.Types.AccountsFieldType )
+                .Distinct()
+                .ToList();
+
+            return new SecurityGrant()
+                .AddRulesForAttributes( attributes )
+                .ToToken();
+        }
+
+        /// <summary>
+        /// Gets the workflow type from the block settings or page parameters.
+        /// </summary>
+        /// <returns>The workflow type or <c>null</c> if one was not specified.</returns>
+        private WorkflowTypeCache GetConfiguredWorkflowType()
+        {
+            if ( WorkflowType.HasValue )
+            {
+                return WorkflowTypeCache.Get( WorkflowType.Value, RockContext );
+            }
+            else if ( RequestContext.PageParameters.ContainsKey( "WorkflowTypeGuid" ) )
+            {
+                return WorkflowTypeCache.Get( RequestContext.PageParameters["WorkflowTypeGuid"].AsGuid(), RockContext );
+            }
+            else if ( RequestContext.PageParameters.ContainsKey( "WorkflowTypeId" ) && !GetAttributeValue( AttributeKey.DisablePassingWorkflowTypeId ).AsBoolean() )
+            {
+                return WorkflowTypeCache.Get( RequestContext.GetPageParameter( "WorkflowTypeId" ).AsInteger(), RockContext );
+            }
+
+            return null;
         }
 
         /// <summary>
@@ -342,20 +411,7 @@ namespace Rock.Blocks.Workflow
         /// <returns>An instance of <see cref="Model.Workflow"/> or <c>null</c>.</returns>
         private Model.Workflow LoadWorkflow( int? workflowId, Guid? workflowGuid, out InteractiveMessageBag errorMessage )
         {
-            WorkflowTypeCache workflowType = null;
-
-            if ( WorkflowType.HasValue )
-            {
-                workflowType = WorkflowTypeCache.Get( WorkflowType.Value, RockContext );
-            }
-            else if ( RequestContext.PageParameters.ContainsKey( "WorkflowTypeGuid" ) )
-            {
-                workflowType = WorkflowTypeCache.Get( RequestContext.PageParameters["WorkflowTypeGuid"].AsGuid(), RockContext );
-            }
-            else if ( RequestContext.PageParameters.ContainsKey( "WorkflowTypeId" ) && !GetAttributeValue( AttributeKey.DisablePassingWorkflowTypeId ).AsBoolean() )
-            {
-                workflowType = WorkflowTypeCache.Get( RequestContext.GetPageParameter( "WorkflowTypeId" ).AsInteger(), RockContext );
-            }
+            var workflowType = GetConfiguredWorkflowType();
 
             if ( workflowType == null )
             {

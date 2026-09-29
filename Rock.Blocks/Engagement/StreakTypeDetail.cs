@@ -24,6 +24,7 @@ using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
+using Rock.Security.SecurityGrantRules;
 using Rock.Tasks;
 using Rock.Utility;
 using Rock.ViewModels.Blocks;
@@ -545,6 +546,10 @@ namespace Rock.Blocks.Engagement
             var securityGrant = new Rock.Security.SecurityGrant();
 
             securityGrant.AddRulesForAttributes( entity, RequestContext.CurrentPerson );
+
+            // This is an administrative block, so the account picker can show
+            // every account along with its internal details.
+            securityGrant.AddRule( FinancialAccountPickerSecurityGrantRule.CreateFullAccessRule() );
 
             return securityGrant.ToToken();
         }

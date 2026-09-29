@@ -60,7 +60,7 @@
     import NotesContainer from "@Obsidian/Controls/Internal/notesContainer.obs";
     import { InteractiveMessageType } from "@Obsidian/Enums/Workflow/interactiveMessageType";
     import { useStore } from "@Obsidian/PageState";
-    import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { getSecurityGrant, provideSecurityGrant, useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { alert } from "@Obsidian/Utility/dialogs";
     import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
     import { useSuspense } from "@Obsidian/Utility/suspense";
@@ -75,6 +75,10 @@
     import { InteractiveActionError } from "./WorkflowEntry/types";
 
     const config = useConfigurationValues<WorkflowEntryOptionsBag>();
+
+    // Provide the security grant so the account picker can show what the
+    // form's account attributes are configured to show.
+    provideSecurityGrant(getSecurityGrant(config.securityGrantToken));
     const invokeBlockAction = useInvokeBlockAction();
     const suspense = useSuspense();
     const store = useStore();

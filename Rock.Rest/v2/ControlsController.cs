@@ -99,9 +99,11 @@ namespace Rock.Rest.v2
         [Rock.SystemGuid.RestActionGuid( "5052e4a9-8cc3-4937-a2d3-9cfec07ed070" )]
         public IActionResult AccountPickerGetChildren( [FromBody] AccountPickerGetChildrenOptionsBag options )
         {
+            var access = GetAccountPickerAccess( options.SecurityGrantToken );
+
             using ( var rockContext = new RockContext() )
             {
-                return Ok( AccountPickerGetChildrenData( options, rockContext ) );
+                return Ok( AccountPickerGetChildrenData( options, access, rockContext ) );
             }
         }
 
@@ -109,18 +111,33 @@ namespace Rock.Rest.v2
         /// Gets the accounts that can be displayed in the account picker.
         /// </summary>
         /// <param name="options">The options that describe which items to load.</param>
+        /// <param name="access">Describes which accounts and details the request is allowed to see.</param>
         /// <param name="rockContext">DB context.</param>
         /// <returns>A List of <see cref="TreeItemBag"/> objects that represent the accounts.</returns>
-        private List<TreeItemBag> AccountPickerGetChildrenData( AccountPickerGetChildrenOptionsBag options, RockContext rockContext )
+        private List<TreeItemBag> AccountPickerGetChildrenData( AccountPickerGetChildrenOptionsBag options, AccountPickerAccess access, RockContext rockContext )
         {
             var financialAccountService = new FinancialAccountService( rockContext );
+            var includeInactive = options.IncludeInactive && access.AllowInactiveAccounts;
+            var displayPublicName = options.DisplayPublicName || !access.AllowInternalDetails;
 
             IQueryable<FinancialAccount> qry;
 
             if ( options.ParentGuid == Guid.Empty )
             {
-                qry = financialAccountService.Queryable().AsNoTracking()
-                    .Where( f => f.ParentAccountId.HasValue == false );
+                if ( access.AllowNonPublicAccounts )
+                {
+                    qry = financialAccountService.Queryable().AsNoTracking()
+                        .Where( f => f.ParentAccountId.HasValue == false );
+                }
+                else
+                {
+                    // A public account whose parent can't be shown becomes a
+                    // root item, otherwise it could never be reached.
+                    qry = financialAccountService.Queryable().AsNoTracking()
+                        .Where( f => f.ParentAccountId.HasValue == false
+                            || f.ParentAccount.IsPublic != true
+                            || f.ParentAccount.IsActive == false );
+                }
             }
             else
             {
@@ -128,22 +145,20 @@ namespace Rock.Rest.v2
                     .Where( f => f.ParentAccount != null && f.ParentAccount.Guid == options.ParentGuid );
             }
 
-            if ( !options.IncludeInactive )
-            {
-                qry = qry
-                    .Where( f => f.IsActive == true );
-            }
+            qry = FilterAccountPickerQuery( qry, access, includeInactive );
 
             var accountList = qry
                 .OrderBy( f => f.Order )
                 .ThenBy( f => f.Name )
+                .ToList()
+                .Where( f => f.IsAuthorized( Authorization.VIEW, RockRequestContext.CurrentPerson ) )
                 .ToList();
 
             var accountTreeViewItems = accountList
                 .Select( a => new TreeItemBag
                 {
                     Value = a.Guid.ToString(),
-                    Text = options.DisplayPublicName ? a.PublicName : a.Name,
+                    Text = GetAccountPickerText( a.Name, a.PublicName, a.IsPublic, displayPublicName ),
                     IsActive = a.IsActive,
                     IconCssClass = "fa fa-file-o"
                 } ).ToList();
@@ -162,7 +177,7 @@ namespace Rock.Rest.v2
                         ParentGuid = new Guid( accountTreeViewItem.Value ),
                         SecurityGrantToken = options.SecurityGrantToken
                     };
-                    accountTreeViewItem.Children = AccountPickerGetChildrenData( newOptions, rockContext );
+                    accountTreeViewItem.Children = AccountPickerGetChildrenData( newOptions, access, rockContext );
                     int childrenCount = accountTreeViewItem.Children.Count;
 
                     accountTreeViewItem.HasChildren = childrenCount > 0;
@@ -182,18 +197,20 @@ namespace Rock.Rest.v2
                     f.ParentAccountId.HasValue && resultIds.Contains( f.ParentAccountId.Value )
                     );
 
-                if ( !options.IncludeInactive )
-                {
-                    childQry = childQry.Where( f => f.IsActive == true );
-                }
+                childQry = FilterAccountPickerQuery( childQry, access, includeInactive );
 
-                var childrenList = childQry.Select( f => f.ParentAccount.Guid.ToString() )
+                // Count only the children that the request is allowed to see.
+                var childrenList = childQry
+                    .ToList()
+                    .Where( f => f.IsAuthorized( Authorization.VIEW, RockRequestContext.CurrentPerson ) )
+                    .Select( f => f.ParentAccountId.Value )
                     .ToList();
 
-                foreach ( var accountTreeViewItem in accountTreeViewItems )
+                for ( var i = 0; i < accountTreeViewItems.Count; i++ )
                 {
-                    int childrenCount = 0;
-                    childrenCount = ( childrenList?.Count( v => v == accountTreeViewItem.Value ) ).GetValueOrDefault( 0 );
+                    var accountTreeViewItem = accountTreeViewItems[i];
+                    var accountId = accountList[i].Id;
+                    int childrenCount = childrenList.Count( id => id == accountId );
 
                     accountTreeViewItem.HasChildren = childrenCount > 0;
                     accountTreeViewItem.IsFolder = childrenCount > 0;
@@ -221,15 +238,22 @@ namespace Rock.Rest.v2
         [Rock.SystemGuid.RestActionGuid( "007512c6-0147-4683-a3fe-3fdd1da275c2" )]
         public IActionResult AccountPickerGetParentGuids( [FromBody] AccountPickerGetParentGuidsOptionsBag options )
         {
+            var access = GetAccountPickerAccess( options.SecurityGrantToken );
             var results = new HashSet<Guid>();
 
             foreach ( var guid in options.Guids )
             {
                 var result = FinancialAccountCache.Get( guid )?
                     .GetAncestorFinancialAccounts()?
+                    .Where( a => access.AllowNonPublicAccounts || a.IsPublic == true )
                     .OrderBy( a => 0 )?
                     .Reverse()?
                     .Select( a => a.Guid );
+
+                if ( result == null )
+                {
+                    continue;
+                }
 
                 foreach ( var resultGuid in result )
                 {
@@ -261,25 +285,47 @@ namespace Rock.Rest.v2
                 return BadRequest( "Search Term is required" );
             }
 
+            var access = GetAccountPickerAccess( options.SecurityGrantToken );
+            var includeInactive = options.IncludeInactive && access.AllowInactiveAccounts;
+            var displayPublicName = options.DisplayPublicName || !access.AllowInternalDetails;
+
             using ( var rockContext = new RockContext() )
             {
                 var financialAccountService = new FinancialAccountService( rockContext );
-                qry = financialAccountService.GetAccountsBySearchTerm( options.SearchTerm );
 
-                if ( !options.IncludeInactive )
+                if ( access.AllowInternalDetails )
                 {
-                    qry = qry.Where( f => f.IsActive == true );
+                    qry = financialAccountService.GetAccountsBySearchTerm( options.SearchTerm );
                 }
+                else
+                {
+                    // Only match on the text the request is allowed to see, so
+                    // the search can't be used to probe internal names or GL
+                    // codes. The name is only displayed for a public account
+                    // that has no public name.
+                    var searchTerm = options.SearchTerm;
+
+                    qry = financialAccountService.Queryable()
+                        .Where( f => ( f.PublicName != null && f.PublicName.Contains( searchTerm ) )
+                            || ( f.IsPublic == true
+                                && ( f.PublicName == null || f.PublicName.Trim() == string.Empty )
+                                && f.Name != null
+                                && f.Name.Contains( searchTerm ) ) );
+                }
+
+                qry = FilterAccountPickerQuery( qry, access, includeInactive );
 
                 var accountList = qry
                     .OrderBy( f => f.Order )
                     .ThenBy( f => f.Name )
                     .ToList()
+                    .Where( a => a.IsAuthorized( Authorization.VIEW, RockRequestContext.CurrentPerson ) )
                     .Select( a => new ListItemBag
                     {
                         Value = a.Guid.ToString(),
-                        Text = ( options.DisplayPublicName ? a.PublicName : a.Name ) + ( a.GlCode.IsNotNullOrWhiteSpace() ? $" ({a.GlCode})" : "" ),
-                        Category = financialAccountService.GetDelimitedAccountHierarchy( a, FinancialAccountService.AccountHierarchyDirection.CurrentAccountToParent )
+                        Text = GetAccountPickerText( a.Name, a.PublicName, a.IsPublic, displayPublicName )
+                            + ( access.AllowInternalDetails && a.GlCode.IsNotNullOrWhiteSpace() ? $" ({a.GlCode})" : "" ),
+                        Category = GetAccountPickerHierarchy( a, access, financialAccountService )
                     } )
                     .ToList();
 
@@ -307,21 +353,29 @@ namespace Rock.Rest.v2
                 return Ok( new List<ListItemBag>() );
             }
 
+            var access = GetAccountPickerAccess( options.SecurityGrantToken );
+            var displayPublicName = options.DisplayPublicName || !access.AllowInternalDetails;
+
             using ( var rockContext = new RockContext() )
             {
                 var financialAccountService = new FinancialAccountService( rockContext );
                 qry = financialAccountService.Queryable().AsNoTracking()
                     .Where( f => options.SelectedGuids.Contains( f.Guid ) );
 
+                // Accounts that are already selected are shown even if they
+                // have since become inactive, the same as before.
+                qry = FilterAccountPickerQuery( qry, access, true );
+
                 var accountList = qry
                     .OrderBy( f => f.Order )
                     .ThenBy( f => f.Name )
                     .ToList()
+                    .Where( a => a.IsAuthorized( Authorization.VIEW, RockRequestContext.CurrentPerson ) )
                     .Select( a => new ListItemBag
                     {
                         Value = a.Guid.ToString(),
-                        Text = options.DisplayPublicName ? a.PublicName : a.Name,
-                        Category = financialAccountService.GetDelimitedAccountHierarchy( a, FinancialAccountService.AccountHierarchyDirection.CurrentAccountToParent )
+                        Text = GetAccountPickerText( a.Name, a.PublicName, a.IsPublic, displayPublicName ),
+                        Category = GetAccountPickerHierarchy( a, access, financialAccountService )
                     } )
                     .ToList();
 
@@ -348,6 +402,121 @@ namespace Rock.Rest.v2
 
                 return Ok( count < 1500 );
             }
+        }
+
+        /// <summary>
+        /// Describes which accounts and account details an account picker
+        /// request is allowed to see.
+        /// </summary>
+        private sealed class AccountPickerAccess
+        {
+            /// <summary>
+            /// Gets or sets a value indicating whether accounts that are not public can be returned.
+            /// </summary>
+            public bool AllowNonPublicAccounts { get; set; }
+
+            /// <summary>
+            /// Gets or sets a value indicating whether the account name and GL code can be returned.
+            /// </summary>
+            public bool AllowInternalDetails { get; set; }
+
+            /// <summary>
+            /// Gets or sets a value indicating whether inactive accounts can be returned.
+            /// </summary>
+            public bool AllowInactiveAccounts { get; set; }
+        }
+
+        /// <summary>
+        /// Gets what an account picker request is allowed to see. Financial
+        /// accounts can be viewed by everyone by default, so anything beyond
+        /// active, public accounts with their public names requires a security
+        /// grant from the block that is showing the picker.
+        /// </summary>
+        /// <param name="securityGrantToken">The security grant token sent with the request.</param>
+        /// <returns>The access allowed for the request.</returns>
+        private static AccountPickerAccess GetAccountPickerAccess( string securityGrantToken )
+        {
+            var grant = SecurityGrant.FromToken( securityGrantToken );
+
+            return new AccountPickerAccess
+            {
+                AllowNonPublicAccounts = grant?.IsAccessGranted( FinancialAccountPickerSecurityGrantRule.NonPublicAccountsInstance, Authorization.VIEW ) == true,
+                AllowInternalDetails = grant?.IsAccessGranted( FinancialAccountPickerSecurityGrantRule.InternalDetailsInstance, Authorization.VIEW ) == true,
+                AllowInactiveAccounts = grant?.IsAccessGranted( FinancialAccountPickerSecurityGrantRule.InactiveAccountsInstance, Authorization.VIEW ) == true
+            };
+        }
+
+        /// <summary>
+        /// Limits the account query to the accounts the request is allowed to see.
+        /// </summary>
+        /// <param name="qry">The account query.</param>
+        /// <param name="access">Describes which accounts the request is allowed to see.</param>
+        /// <param name="includeInactive">If <c>true</c> then inactive accounts are included.</param>
+        /// <returns>The filtered query.</returns>
+        private static IQueryable<FinancialAccount> FilterAccountPickerQuery( IQueryable<FinancialAccount> qry, AccountPickerAccess access, bool includeInactive )
+        {
+            if ( !access.AllowNonPublicAccounts )
+            {
+                qry = qry.Where( f => f.IsPublic == true );
+            }
+
+            if ( !includeInactive )
+            {
+                qry = qry.Where( f => f.IsActive == true );
+            }
+
+            return qry;
+        }
+
+        /// <summary>
+        /// Gets the text to display for an account in the account picker.
+        /// </summary>
+        /// <param name="name">The account name.</param>
+        /// <param name="publicName">The account public name.</param>
+        /// <param name="isPublic">The account public flag.</param>
+        /// <param name="displayPublicName">If <c>true</c> then the public name is displayed.</param>
+        /// <returns>The text to display.</returns>
+        private static string GetAccountPickerText( string name, string publicName, bool? isPublic, bool displayPublicName )
+        {
+            if ( !displayPublicName )
+            {
+                return name;
+            }
+
+            // A public account can fall back to its name since it is already public.
+            if ( publicName.IsNullOrWhiteSpace() && isPublic == true )
+            {
+                return name;
+            }
+
+            return publicName;
+        }
+
+        /// <summary>
+        /// Gets the '^' delimited names of the account's ancestors, limited to
+        /// the accounts and names the request is allowed to see.
+        /// </summary>
+        /// <param name="account">The account.</param>
+        /// <param name="access">Describes which accounts and details the request is allowed to see.</param>
+        /// <param name="financialAccountService">The financial account service.</param>
+        /// <returns>The delimited account hierarchy.</returns>
+        private string GetAccountPickerHierarchy( FinancialAccount account, AccountPickerAccess access, FinancialAccountService financialAccountService )
+        {
+            if ( access.AllowInternalDetails )
+            {
+                return financialAccountService.GetDelimitedAccountHierarchy( account, FinancialAccountService.AccountHierarchyDirection.CurrentAccountToParent );
+            }
+
+            var ancestors = FinancialAccountCache.Get( account.Id )?.GetAncestorFinancialAccounts() ?? new FinancialAccountCache[0];
+
+            return ancestors
+                .Where( a => access.AllowNonPublicAccounts || a.IsPublic == true )
+                .Where( a => a.IsAuthorized( Authorization.VIEW, RockRequestContext.CurrentPerson ) )
+                .OrderBy( a => a.Id )
+                .Select( a => GetAccountPickerText( a.Name, a.PublicName, a.IsPublic, true ) )
+                .Where( t => t.IsNotNullOrWhiteSpace() )
+                .Select( t => System.Net.WebUtility.HtmlEncode( t ) )
+                .JoinStrings( "^" );
         }
 
         #endregion

@@ -26,6 +26,8 @@ using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Reporting;
+using Rock.Security;
+using Rock.Security.SecurityGrantRules;
 using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
@@ -38,7 +40,7 @@ namespace Rock.Field.Types
     [FieldTypeUsage( FieldTypeUsage.Administrative )]
     [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.FINANCIAL_ACCOUNTS )]
-    public class AccountsFieldType : FieldType, IEntityReferenceFieldType
+    public class AccountsFieldType : FieldType, IEntityReferenceFieldType, ISecurityGrantFieldType
     {
         #region Configuration
 
@@ -210,6 +212,22 @@ namespace Rock.Field.Types
                 new ReferencedProperty( EntityTypeCache.GetId<FinancialAccount>().Value, nameof( FinancialAccount.Name ) ),
                 new ReferencedProperty( EntityTypeCache.GetId<FinancialAccount>().Value, nameof( FinancialAccount.PublicName ) ),
             };
+        }
+
+        #endregion
+
+        #region ISecurityGrantFieldType
+
+        /// <inheritdoc/>
+        public void AddRulesToSecurityGrant( SecurityGrant grant, Dictionary<string, string> privateConfigurationValues )
+        {
+            // Let the account picker show what this attribute is configured to
+            // show, and no more. A missing value is treated the same way the
+            // edit control treats it.
+            var displayPublicName = privateConfigurationValues?.GetValueOrNull( DISPLAY_PUBLIC_NAME ).AsBoolean() ?? false;
+            var displayActiveOnly = privateConfigurationValues?.GetValueOrNull( DISPLAY_ACTIVE_ONLY ).AsBoolean() ?? false;
+
+            grant.AddRule( new FinancialAccountPickerSecurityGrantRule( true, !displayPublicName, !displayActiveOnly ) );
         }
 
         #endregion

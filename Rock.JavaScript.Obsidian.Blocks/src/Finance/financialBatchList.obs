@@ -214,7 +214,7 @@
 </template>
 
 <script setup lang="ts">
-    import { useConfigurationValues, useInvokeBlockAction, usePersonPreferences } from "@Obsidian/Utility/block";
+    import { getSecurityGrant, provideSecurityGrant, useConfigurationValues, useInvokeBlockAction, usePersonPreferences } from "@Obsidian/Utility/block";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
     import Grid, { AttributeColumns, Column, DateColumn, dateValueFilter, LabelColumn, CurrencyColumn, HighlightDetailColumn, numberValueFilter, TextColumn, textValueFilter, DeleteColumn, SelectColumn, pickExistingValueFilter, NumberColumn } from "@Obsidian/Controls/grid";
     import RockButton from "@Obsidian/Controls/rockButton.obs";
@@ -234,6 +234,9 @@
 
     const config = useConfigurationValues<ListBlockBox<FinancialBatchListOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
+
+    // Provide the security grant so the account picker can show every account.
+    provideSecurityGrant(getSecurityGrant(config.securityGrantToken));
     const preferences = usePersonPreferences().blockPreferences;
 
     // #region Values
