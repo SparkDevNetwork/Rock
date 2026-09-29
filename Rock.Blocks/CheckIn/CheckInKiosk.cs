@@ -1713,6 +1713,14 @@ WHERE [RT].[Guid] = '" + SystemGuid.DefinedValue.PERSON_RECORD_TYPE_RESTUSER + "
                 return ActionBadRequest( "Missing family identifier." );
             }
 
+            // Make the same kiosk check that BeginAddIndividual makes.
+            var addMode = kiosk.GetAttributeValue( SystemKey.DeviceAttributeKey.DEVICE_KIOSK_ALLOW_ADDING_INDIVIDUALS_TO_EXISTING_FAMILIES ).ConvertToEnum<AdultsOrChildrenSelectionMode>();
+
+            if ( addMode == AdultsOrChildrenSelectionMode.None )
+            {
+                return ActionBadRequest( "This kiosk does not support individual registration." );
+            }
+
             var registration = new FamilyRegistration( RockContext, RequestContext.CurrentPerson, template );
             var result = registration.AddIndividual( options.FamilyId, options.Person, kiosk.GetCampusId() );
 

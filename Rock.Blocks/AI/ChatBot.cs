@@ -209,6 +209,30 @@ namespace Rock.Blocks.AI
                 .ToList();
         }
 
+        /// <summary>
+        /// Determines whether the chat session belongs to the current person and
+        /// the specified agent. Session identifiers come from the client, so this
+        /// must be checked before a session is loaded.
+        /// </summary>
+        /// <param name="sessionId">The chat session identifier.</param>
+        /// <param name="agentId">The agent identifier.</param>
+        /// <returns><c>true</c> if the session belongs to the current person; otherwise <c>false</c>.</returns>
+        private bool IsSessionOwnedByCurrentPerson( int sessionId, int agentId )
+        {
+            var currentPersonId = RequestContext.CurrentPerson?.Id;
+
+            if ( !currentPersonId.HasValue )
+            {
+                return false;
+            }
+
+            return new AIAgentSessionService( RockContext )
+                .Queryable()
+                .Any( s => s.Id == sessionId
+                    && s.AIAgentId == agentId
+                    && s.PersonAlias.PersonId == currentPersonId.Value );
+        }
+
         #endregion
 
         #region Block Actions
@@ -235,12 +259,21 @@ namespace Rock.Blocks.AI
                 return ActionBadRequest( "You are not authorized to access this agent." );
             }
 
+            if ( !IsSessionOwnedByCurrentPerson( request.SessionId, agentCache.Id ) )
+            {
+                return ActionBadRequest( "Invalid session." );
+            }
+
+            // Debug output includes the agent's internal prompts and tool calls,
+            // so only honor the request for debug output from administrators.
+            var isDebugEnabled = request.IsDebugEnabled && BlockCache.IsAuthorized( Authorization.ADMINISTRATE, RequestContext.CurrentPerson );
+
             var startTimestamp = RockDateTime.Now;
             var sw = System.Diagnostics.Stopwatch.StartNew();
 
             var agent = _agentBuilder.Build( agentCache.Id, new ChatAgentOptions
             {
-                IsDebugEnabled = request.IsDebugEnabled,
+                IsDebugEnabled = isDebugEnabled,
                 IsSecurityEnabled = true
             } );
 
@@ -303,7 +336,7 @@ namespace Rock.Blocks.AI
                         Message = messageBag
                     };
 
-                    if ( request.IsDebugEnabled && response.Debug != null )
+                    if ( isDebugEnabled && response.Debug != null )
                     {
                         responseBag.Logs = response.Debug
                             ?.Logs
@@ -523,6 +556,11 @@ namespace Rock.Blocks.AI
                 return ActionBadRequest( "You are not authorized to access this agent." );
             }
 
+            if ( !IsSessionOwnedByCurrentPerson( sessionId, agentCache.Id ) )
+            {
+                return ActionBadRequest( "Invalid session." );
+            }
+
             var entityTypeCache = EntityTypeCache.Get( "Rock.Model." + entityTypeName, false, RockContext );
 
             if ( entityTypeCache == null )
@@ -532,7 +570,8 @@ namespace Rock.Blocks.AI
 
             var entity = Reflection.GetIEntityForEntityType( entityTypeCache.Id, entityId, RockContext );
 
-            if ( entity == null )
+            // Only allow anchoring entities the person is allowed to view.
+            if ( entity == null || ( entity is ISecured securedEntity && !securedEntity.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson ) ) )
             {
                 return ActionBadRequest( "Entity not found." );
             }
@@ -568,6 +607,11 @@ namespace Rock.Blocks.AI
             if ( !agentCache.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson ) )
             {
                 return ActionBadRequest( "You are not authorized to access this agent." );
+            }
+
+            if ( !IsSessionOwnedByCurrentPerson( sessionId, agentCache.Id ) )
+            {
+                return ActionBadRequest( "Invalid session." );
             }
 
             var agent = _agentBuilder.Build( agentCache.Id, new ChatAgentOptions

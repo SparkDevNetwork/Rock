@@ -724,6 +724,28 @@ namespace Rock.Blocks.Mobile.CheckIn
         [BlockAction]
         public BlockActionResult BeginAddIndividual( FamilyMembersOptionsBag options )
         {
+            if ( !GetAttributeValue( AttributeKey.AllowAddFamilyMember ).AsBoolean() )
+            {
+                return ActionBadRequest( "This kiosk does not support family registration." );
+            }
+
+            if ( RequestContext.CurrentPerson == null )
+            {
+                return ActionUnauthorized();
+            }
+
+            // Only the current person's primary family may be edited, which is
+            // the same rule used by SaveFamily.
+            if ( options.FamilyId.IsNotNullOrWhiteSpace() )
+            {
+                var familyId = new GroupService( RockContext ).GetNoTracking( options.FamilyId, false )?.Id;
+
+                if ( !familyId.HasValue || familyId.Value != RequestContext.CurrentPerson.PrimaryFamilyId )
+                {
+                    return ActionForbidden( "Not authorized to edit this family." );
+                }
+            }
+
             var response = Rock.Blocks.CheckIn.CheckInKiosk.TryGetEditFamilyResponseBag( RockContext,
                 person: RequestContext.CurrentPerson,
                 familyId: options.FamilyId,
