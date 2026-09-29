@@ -371,6 +371,11 @@ namespace RockWeb.Blocks.Finance
             {
                 FinancialScheduledTransactionService fstService = new FinancialScheduledTransactionService( rockContext );
                 var currentTransaction = fstService.Get( hfScheduledTransactionId.Value.AsInteger() );
+                if ( !IsCurrentPersonScheduledTransaction( currentTransaction, rockContext ) )
+                {
+                    return;
+                }
+
                 if ( currentTransaction != null && currentTransaction.FinancialGateway != null )
                 {
                     currentTransaction.FinancialGateway.LoadAttributes( rockContext );
@@ -419,8 +424,9 @@ namespace RockWeb.Blocks.Finance
                 return;
             }
 
-            var financialScheduledTransaction = new FinancialScheduledTransactionService( new RockContext() ).Get( scheduledTransactionId.Value );
-            if ( financialScheduledTransaction == null )
+            var rockContext = new RockContext();
+            var financialScheduledTransaction = new FinancialScheduledTransactionService( rockContext ).Get( scheduledTransactionId.Value );
+            if ( financialScheduledTransaction == null || !IsCurrentPersonScheduledTransaction( financialScheduledTransaction, rockContext ) )
             {
                 return;
             }
@@ -510,6 +516,26 @@ namespace RockWeb.Blocks.Finance
                     lNoScheduledTransactionsMessage.Text = string.Format( "No {0} currently exist.", GetAttributeValue( AttributeKey.TransactionLabel ).Pluralize().ToLower() );
                 }
             }
+        }
+
+        /// <summary>
+        /// Determines whether the scheduled transaction belongs to the current person
+        /// or one of their businesses, which is the same scope used by <see cref="ShowContent"/>.
+        /// </summary>
+        /// <param name="scheduledTransaction">The scheduled transaction.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns><c>true</c> if the scheduled transaction belongs to the current person; otherwise <c>false</c>.</returns>
+        private bool IsCurrentPersonScheduledTransaction( FinancialScheduledTransaction scheduledTransaction, RockContext rockContext )
+        {
+            if ( CurrentPerson == null || scheduledTransaction?.AuthorizedPersonAlias?.Person == null )
+            {
+                return false;
+            }
+
+            var givingIds = new PersonService( rockContext ).GetBusinesses( CurrentPerson.Id ).Select( g => g.GivingId ).ToList();
+            givingIds.Add( CurrentPerson.GivingId );
+
+            return givingIds.Contains( scheduledTransaction.AuthorizedPersonAlias.Person.GivingId );
         }
 
         #endregion
