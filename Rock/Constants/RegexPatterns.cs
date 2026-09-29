@@ -49,16 +49,23 @@ namespace Rock.Constants
         ///   - Letterlike Symbols, Number Forms, Arrows, Mathematical Operators (U+2100 to U+2BFF)
         ///   - Miscellaneous Symbols, Dingbats (U+2600 to U+27BF)
         ///   - Supplemental Arrows-A, Braille Patterns, Supplemental Arrows-B (U+27F0 to U+2BFF)
+        ///   - Supplemental Punctuation (U+2E00 to U+2E7F)
+        ///   - Ideographic Description Characters (U+2FF0 to U+2FFF)
         ///   - CJK Symbols and Punctuation (U+3000 to U+303F)
-        ///   - Emoji and various symbol blocks (U+1F000 to U+1F9FF)
+        ///   - Enclosed CJK Letters and Months, CJK Compatibility (U+3200 to U+33FF)
+        ///   - Emoji and various symbol blocks (U+1F000 to U+1FFFF)
         ///   - Mathematical Alphanumeric Symbols (U+1D400 to U+1D7FF)
+        ///   - Tags (U+E0000 to U+E007F)
+        ///   - Supplementary Private Use Areas (U+F0000 to U+10FFFF)
+        /// Characters above U+FFFF are matched as explicit UTF-16 surrogate pairs. A bare surrogate range inside a character
+        /// class also matches BMP code points U+D000 to U+D7FF, which is how Korean Hangul was previously excluded by mistake.
         /// It can be used to validate input that should not contain emoji or special font characters.
         /// </remarks>
-        public static string EmojiAndSpecialFontPattern = @"^[^\u00a9\u00ae\u2000-\u3300\uD83C\uD000-\uDFFF\uD83D\uD000-\uDFFF\uD83E\uD000-\uDFFF\uD835\uDC00-\uDFFF]*$";
+        public static string EmojiAndSpecialFontPattern = @"^(?:(?![\u00A9\u00AE\u2000-\u2BFF\u2E00-\u2E7F\u2FF0-\u2FFF\u3000-\u303F\u3200-\u33ff]|[\uD83C-\uD83F][\uDC00-\uDFFF]|\uD835[\uDC00-\uDFFF]|\uDB40[\uDC00-\uDC7F]|[\uDB80-\uDBFF][\uDC00-\uDFFF])[\s\S])*$";
 
         /// <summary>
         /// Regular expression pattern used to identify and remove emojis and special font characters.
         /// </summary>
-        public static string EmojiAndSpecialFontRemovalPattern = @"[\u00A9\u00AE\u2000-\u3300\uD83C\uD000-\uDFFF\uD83D\uD000-\uDFFF\uD83E\uD000-\uDFFF\uD835\uDC00-\uDFFF]";
+        public static string EmojiAndSpecialFontRemovalPattern = @"[\u00A9\u00AE\u2000-\u2BFF\u2E00-\u2E7F\u2FF0-\u2FFF\u3000-\u303F\u3200-\u33ff]|[\uD83C-\uD83F][\uDC00-\uDFFF]|\uD835[\uDC00-\uDFFF]|\uDB40[\uDC00-\uDC7F]|[\uDB80-\uDBFF][\uDC00-\uDFFF]";
     }
 }
