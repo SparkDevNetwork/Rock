@@ -35,6 +35,8 @@ type FakeChannel = RealtimeChannelLike & {
     topic: string;
     isPrivate: boolean;
     handler: ((message: { event: string, payload: unknown }) => void) | null;
+    // Realtime hands a system listener the message itself: its status, its words, the topic.
+    system: ((message: { event: string, payload: unknown }) => void) | null;
     status: ((status: string, error?: unknown) => void) | null;
 };
 
@@ -55,9 +57,16 @@ function fakeClient(): { client: RealtimeClientLike, log: string[], channels: Fa
                 topic,
                 isPrivate: options.config.private,
                 handler: null,
+                system: null,
                 status: null,
-                on: (_type, _filter, callback) => {
-                    channel.handler = callback;
+                on: (type, _filter, callback) => {
+                    // Realtime's own messages about the channel arrive on their own listener.
+                    if ((type as string) === "system") {
+                        channel.system = callback;
+                    }
+                    else {
+                        channel.handler = callback;
+                    }
                     return channel;
                 },
                 subscribe: (callback) => {
@@ -191,4 +200,45 @@ describe("createRealtimeHub", () => {
 
         expect(f.removed.sort()).toEqual([channelTopic(tenant, channelOne), personalTopic(tenant, alias)].sort());
     });
+
+    test("an error Realtime sends about the open channel is reported by its code", async () => {
+        const f = fakeClient();
+        const { hub, seen } = hubWith(f.client);
+        await hub.start();
+        hub.openChannel(channelOne);
+        f.channels[1].status?.("SUBSCRIBED");
+
+        f.channels[1].system?.({ status: "error", message: "Token has expired 1 seconds ago" } as never);
+
+        expect(seen).toEqual([`joined ${channelOne}`, "status rt.token_expired"]);
+    });
+
+    test("a join refused with Realtime's words is reported by their code", async () => {
+        const f = fakeClient();
+        const { hub, seen } = hubWith(f.client);
+        await hub.start();
+        hub.openChannel(channelOne);
+
+        f.channels[1].status?.("CHANNEL_ERROR", new Error("Unauthorized: You do not have permissions to read from this Channel topic: x"));
+
+        expect(seen).toEqual(["status rt.not_readable"]);
+    });
+
+    test("a channel whose read was revoked is left and not joined again, and the personal topic stays", async () => {
+        const f = fakeClient();
+        const { hub, seen } = hubWith(f.client);
+        await hub.start();
+        hub.openChannel(channelOne);
+        const open = f.channels[1];
+        open.status?.("SUBSCRIBED");
+
+        open.system?.({ status: "error", message: "You do not have permissions to read from this Channel topic: x" } as never);
+        open.status?.("CLOSED");
+        open.status?.("SUBSCRIBED");
+        open.handler?.({ event: "message.created", payload: { id: 9 } });
+
+        expect(seen).toEqual([`joined ${channelOne}`, "status rt.read_revoked"]);
+        expect(f.removed).toEqual([channelTopic(tenant, channelOne)]);
+    });
 });
+

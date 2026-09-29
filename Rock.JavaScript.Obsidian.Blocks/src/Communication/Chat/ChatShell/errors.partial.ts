@@ -116,3 +116,15 @@ export function classifyRealtimeStatus(status: string): ChatError {
     // confirmed join fetches what was missed.
     return code ? { code, severity: "degraded" } : { code: "rt.unknown", severity: "unknown" };
 }
+
+/**
+ * Classifies the words Realtime closes or refuses a channel with.
+ *
+ * @param message The message Realtime sent.
+ * @param wasJoined True when the channel had been joined before this arrived.
+ *
+ * @returns The code and severity.
+ */
+export function classifyRealtimeMessage(message: string, wasJoined: boolean): ChatError {
+    return { code: "rt.unknown", severity: "unknown" };
+}

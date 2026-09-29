@@ -19,7 +19,7 @@
 // topic is the one joined, it is the one remembered, and what is seen in it is saved against it,
 // however the earlier opens and saves settle.
 import { churchTokenFromAction, createChatShell, PlatformClientLike, refusalMessage, RpcResult } from "../../../../src/Communication/Chat/ChatShell/shell.partial";
-import { channelTopic } from "../../../../src/Communication/Chat/ChatShell/composables/useRealtimeHub.partial";
+import { channelTopic, personalTopic } from "../../../../src/Communication/Chat/ChatShell/composables/useRealtimeHub.partial";
 import { HistoryPage } from "../../../../src/Communication/Chat/ChatShell/types.partial";
 
 const tenant = "10000000-0000-4000-8000-000000000001";
@@ -55,6 +55,13 @@ function fakeResponse(status: number, body: unknown): Response {
     return { ok: status >= 200 && status < 300, status, json: async () => body } as unknown as Response;
 }
 
+/** A topic the fake client joined, with the listeners the shell gave it. */
+type LiveTopic = {
+    topic: string;
+    listeners: Record<string, (message: unknown) => void>;
+    status: ((status: string, error?: unknown) => void) | null;
+};
+
 function build(): {
     shell: ReturnType<typeof createChatShell>,
     history: Record<string, Deferred<RpcResult>[]>,
@@ -62,8 +69,14 @@ function build(): {
     joined: string[],
     removed: string[],
     stored: Record<string, string>,
-    fireBlur: () => void
+    fireBlur: () => void,
+    topics: LiveTopic[],
+    counts: { mints: number, clients: number, setAuths: number, bootstraps: number },
+    mintGate: { value: string }
 } {
+    const topics: LiveTopic[] = [];
+    const counts = { mints: 0, clients: 0, setAuths: 0, bootstraps: 0 };
+    const mintGate = { value: "ok" };
     const history: Record<string, Deferred<RpcResult>[]> = {};
     const saves: Array<{ channelId: string, messageId: number, answer: Deferred<Response> }> = [];
     const joined: string[] = [];
@@ -72,15 +85,27 @@ function build(): {
     const windowListeners: Record<string, Array<() => void>> = {};
 
     const client: PlatformClientLike = {
-        realtime: { setAuth: async () => undefined },
+        realtime: {
+            setAuth: async () => {
+                counts.setAuths++;
+            }
+        },
         channel: (topic) => {
             joined.push(topic);
+            const live: LiveTopic = { topic, listeners: {}, status: null };
+            topics.push(live);
             const channel = {
                 topic,
-                on: () => channel,
-                subscribe: () => channel
+                on: (type: string, _filter: unknown, callback: (message: unknown) => void) => {
+                    live.listeners[type] = callback;
+                    return channel;
+                },
+                subscribe: (callback: (status: string, error?: unknown) => void) => {
+                    live.status = callback;
+                    return channel;
+                }
             };
-            return channel;
+            return channel as never;
         },
         removeChannel: async (channel) => {
             removed.push((channel as unknown as { topic: string }).topic);
@@ -88,6 +113,7 @@ function build(): {
         },
         rpc: (name, args) => {
             if (name === "chat_get_bootstrap") {
+                counts.bootstraps++;
                 return Promise.resolve({ data: [], error: null, status: 200 });
             }
             const answer = deferred<RpcResult>();
@@ -99,8 +125,15 @@ function build(): {
     const shell = createChatShell({
         session: { gate: "ok", projectUrl: "http://platform", publishableKey: "k", tenantId: tenant, personAliasGuid: person },
         linkedChannelId: channelA,
-        mintChurchToken: async () => ({ isSuccess: true, statusCode: 200, data: { gate: "ok", churchToken: "church" } }),
-        createPlatformClient: () => client,
+        mintChurchToken: async () => {
+            counts.mints++;
+            const isOk = mintGate.value === "ok";
+            return { isSuccess: true, statusCode: 200, data: { gate: mintGate.value, churchToken: isOk ? `church-${counts.mints}` : null } };
+        },
+        createPlatformClient: () => {
+            counts.clients++;
+            return client;
+        },
         fetch: async (url, init) => {
             if (url.endsWith("/functions/v1/token-exchange")) {
                 return fakeResponse(200, { access_token: "platform", expires_in: 300 });
@@ -121,7 +154,10 @@ function build(): {
         mark: () => undefined
     });
 
-    return { shell, history, saves, joined, removed, stored, fireBlur: () => (windowListeners["blur"] ?? []).forEach(l => l()) };
+    return {
+        shell, history, saves, joined, removed, stored, topics, counts, mintGate,
+        fireBlur: () => (windowListeners["blur"] ?? []).forEach(l => l())
+    };
 }
 
 /** Answers the oldest pending history call for a channel. */
@@ -225,5 +261,127 @@ describe("createChatShell", () => {
 
         expect(h.shell.state.activeChannelId).toBe(channelB);
         expect(h.saves.slice(before).map(s => `${s.channelId}:${s.messageId}`)).toEqual([`${channelB}:20`]);
+    });
+});
+
+
+/** The last topic joined under this name. */
+function topicOf(h: ReturnType<typeof build>, topic: string): LiveTopic {
+    const found = [...h.topics].reverse().find(t => t.topic === topic);
+    if (!found) {
+        throw new Error(`${topic} was never joined`);
+    }
+    return found;
+}
+
+/** Starts the shell with channel A open and joined. */
+async function started(): Promise<ReturnType<typeof build>> {
+    const h = build();
+    const starting = h.shell.start();
+    await settle();
+    answerHistory(h, channelA, 10);
+    await starting;
+    await settle();
+    topicOf(h, channelTopic(tenant, channelA)).status?.("SUBSCRIBED");
+    await settle();
+    return h;
+}
+
+/** Delivers an event on the person's own topic. */
+function personal(h: ReturnType<typeof build>, event: string, payload: unknown): void {
+    topicOf(h, personalTopic(tenant, person)).listeners["broadcast"]?.({ event, payload });
+}
+
+describe("the live cut", () => {
+    afterEach(() => {
+        jest.useRealTimers();
+        jest.restoreAllMocks();
+    });
+
+    test("a membership change in the channel on screen fetches a new token for the open socket", async () => {
+        const h = await started();
+        const before = { ...h.counts };
+
+        personal(h, "membership.changed", { channel_id: channelA });
+        await settle();
+
+        expect(h.counts.mints).toBe(before.mints + 1);
+        expect(h.counts.setAuths).toBe(before.setAuths + 1);
+    });
+
+    test("a recheck and a membership change together fetch one token, not two", async () => {
+        const h = await started();
+        const before = h.counts.mints;
+
+        personal(h, "membership.changed", { channel_id: channelA });
+        personal(h, "session.recheck", {});
+        await settle();
+
+        expect(h.counts.mints).toBe(before + 1);
+    });
+
+    test("a membership change in another channel only reloads the list", async () => {
+        const h = await started();
+        const before = { ...h.counts };
+
+        personal(h, "membership.changed", { channel_id: channelB });
+        await settle();
+
+        expect(h.counts.mints).toBe(before.mints);
+        expect(h.counts.bootstraps).toBe(before.bootstraps + 1);
+    });
+
+    test("a change to the channel on screen fetches a new token after a random wait of up to five seconds", async () => {
+        const h = await started();
+        jest.useFakeTimers({ doNotFake: ["queueMicrotask", "nextTick"] });
+        jest.spyOn(Math, "random").mockReturnValue(0.5);
+        const before = h.counts.mints;
+
+        topicOf(h, channelTopic(tenant, channelA)).listeners["broadcast"]?.({ event: "channel.changed", payload: { channel_id: channelA } });
+        await settle();
+        jest.advanceTimersByTime(2_400);
+        await settle();
+        expect(h.counts.mints).toBe(before);
+
+        jest.advanceTimersByTime(200);
+        await settle();
+        expect(h.counts.mints).toBe(before + 1);
+    });
+
+    test("a refresh Rock refuses leaves both topics and shows the gate", async () => {
+        const h = await started();
+        h.mintGate.value = "banned";
+
+        personal(h, "session.recheck", {});
+        await settle();
+
+        expect(h.removed.sort()).toEqual([channelTopic(tenant, channelA), personalTopic(tenant, person)].sort());
+        expect(h.shell.state.phase).toBe("refused");
+        expect(h.shell.state.gate).toBe("banned");
+    });
+
+    test("a refresh keeps the one platform client and its socket", async () => {
+        const h = await started();
+        const before = h.counts.mints;
+
+        personal(h, "session.recheck", {});
+        await settle();
+
+        expect(h.counts.mints).toBe(before + 1);
+        expect(h.counts.clients).toBe(1);
+        expect(h.removed).toEqual([]);
+    });
+
+    test("a channel Realtime closes as no longer readable tells the person and reloads the list", async () => {
+        const h = await started();
+        const before = h.counts.bootstraps;
+        const open = topicOf(h, channelTopic(tenant, channelA));
+
+        open.listeners["system"]?.({ status: "error", message: "You do not have permissions to read from this Channel topic: x" });
+        open.status?.("CLOSED");
+        await settle();
+
+        expect(h.shell.state.errors.map(e => e.code)).toContain("rt.read_revoked");
+        expect(h.counts.bootstraps).toBe(before + 1);
     });
 });

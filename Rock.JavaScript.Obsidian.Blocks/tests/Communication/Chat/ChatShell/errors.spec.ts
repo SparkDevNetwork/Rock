@@ -20,6 +20,7 @@
 import {
     classifyActionFailure,
     classifyPlatformError,
+    classifyRealtimeMessage,
     classifyRealtimeStatus
 } from "../../../../src/Communication/Chat/ChatShell/errors.partial";
 
@@ -78,5 +79,59 @@ describe("classifyRealtimeStatus", () => {
 
     test("a status it does not know is unknown", () => {
         expect(classifyRealtimeStatus("SOMETHING_NEW")).toEqual({ code: "rt.unknown", severity: "unknown" });
+    });
+});
+
+describe("classifyRealtimeMessage", () => {
+    // Worded as Realtime v2.130.0 sends them; the platform's live cut test asserts the same text
+    // from the real server, so a Realtime upgrade that rewords one goes red there first.
+    const notPermitted = "You do not have permissions to read from this Channel topic: t:10000000-0000-4000-8000-000000000001:c:c0000001-0000-4000-8000-000000000000";
+
+    test("a channel that was joined and may no longer be read is a revoked read, for that channel only", () => {
+        expect(classifyRealtimeMessage(notPermitted, true)).toEqual({ code: "rt.read_revoked", severity: "permission" });
+    });
+
+    test("the same words on a join that never succeeded are a refused join", () => {
+        expect(classifyRealtimeMessage(`Unauthorized: ${notPermitted}`, false)).toEqual({ code: "rt.not_readable", severity: "permission" });
+    });
+
+    test("an expired token asks for a fresh one", () => {
+        expect(classifyRealtimeMessage("Token has expired 3 seconds ago", true)).toEqual({ code: "rt.token_expired", severity: "session" });
+    });
+
+    test.each([
+        "MalformedJWT: The token provided is not a valid JWT",
+        "JwtSignatureError: Failed to validate JWT signature",
+        "Fields `role` and `exp` are required in JWT",
+        "InvalidJWTToken: Token expiration time is invalid"
+    ])("a token Realtime cannot use is a session failure (%p)", message => {
+        expect(classifyRealtimeMessage(message, false)).toEqual({ code: "rt.token_invalid", severity: "session" });
+    });
+
+    // Copied from the v2.130.0 source; a local stack cannot provoke them.
+    test.each([
+        ["ClientJoinRateLimitReached: Too many joins per second", "rt.too_many_joins"],
+        ["ConnectionRateLimitReached: Too many connected users", "rt.too_many_connections"],
+        ["ChannelRateLimitReached: Too many channels", "rt.too_many_channels"],
+        ["Too many messages per second", "rt.too_many_messages"],
+        ["IncreaseConnectionPool: Please increase your connection pool size", "rt.pool_exhausted"]
+    ])("a project limit drops the whole socket (%p)", (message, code) => {
+        expect(classifyRealtimeMessage(message, true)).toEqual({ code, severity: "quota" });
+    });
+
+    test.each([
+        ["UnableToConnectToProject: Realtime was unable to connect to the project database", "rt.database_unavailable"],
+        ["DatabaseLackOfConnections: Database can't accept more connections, Realtime won't connect", "rt.database_unavailable"],
+        ["DatabaseConnectionRateLimitReached: Too many database connections attempts per second", "rt.database_unavailable"],
+        ["Query was cancelled, please try again", "rt.database_unavailable"],
+        ["InitializingProjectConnection: Realtime is initializing the project connection", "rt.database_unavailable"],
+        ["TimeoutOnRpcCall: Node request timeout", "rt.database_unavailable"],
+        ["RealtimeRestarting: Realtime is restarting, please standby", "rt.restarting"]
+    ])("a Realtime that cannot answer for now degrades the live connection (%p)", (message, code) => {
+        expect(classifyRealtimeMessage(message, true)).toEqual({ code, severity: "degraded" });
+    });
+
+    test("words it does not know are unknown, never passed through", () => {
+        expect(classifyRealtimeMessage("Something Realtime has never said", true)).toEqual({ code: "rt.unknown", severity: "unknown" });
     });
 });
