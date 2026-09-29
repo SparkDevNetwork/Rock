@@ -490,71 +490,57 @@ namespace Rock.Blocks.Communication
                     targetPerson = RequestContext.CurrentPerson;
                 }
 
-                // Temporarily change the person's email address
-                string originalEmail = targetPerson.Email;
-                targetPerson.Email = box.Email;
-                rockContext.SaveChanges();
+                // Prepare the email
+                var rockEmailMessage = new RockEmailMessage( systemCommunication.Guid );
 
+                // Append Lava Template if any
+                var lavaTemplateAppend = GetAttributeValue( AttributeKey.LavaTemplateAppend );
+                if ( !string.IsNullOrWhiteSpace( lavaTemplateAppend ) )
+                {
+                    rockEmailMessage.Message = lavaTemplateAppend + rockEmailMessage.Message;
+                }
+
+                // Remove Lava Debug command
+                rockEmailMessage.Message = rockEmailMessage.Message.Replace( PageConstants.LavaDebugCommand, string.Empty );
+
+                // Prepare merge fields
+                var mergeFields = new Dictionary<string, object> { { MergeFieldKey.Person, targetPerson } };
+
+                // Get the Publication Date
+                if ( DateTime.TryParse( box.PublicationDate, out var dateItemValue ) )
+                {
+                    // Add the "SendDateTime" merge field if a valid date is provided
+                    mergeFields.AddOrReplace( MergeFieldKey.SendDateTime, dateItemValue.ToString( "MMMM d, yyyy" ) );
+                }
+
+                // Set the recipient with merge fields. The test email is sent
+                // to the provided address without modifying the person record.
+                rockEmailMessage.AddRecipient( new RockEmailMessageRecipient( targetPerson, mergeFields )
+                {
+                    To = box.Email
+                } );
+                rockEmailMessage.CreateCommunicationRecord = false;
+
+                // Set the From Name and From Email based on System Communication or Global Attributes
+                SetEmailFromDetails( rockEmailMessage, systemCommunication );
+
+                // Prepare the subject, removing carriage returns and line feeds, as well as enforcing max length
+                rockEmailMessage.Subject = Regex.Replace( rockEmailMessage.Subject, @"\r\n?|\n", string.Empty ).Left( 998 );
+
+                // Send the email
+                var errors = new List<string>();
                 try
                 {
-                    // Prepare the email
-                    var rockEmailMessage = new RockEmailMessage( systemCommunication.Guid );
-
-                    // Append Lava Template if any
-                    var lavaTemplateAppend = GetAttributeValue( AttributeKey.LavaTemplateAppend );
-                    if ( !string.IsNullOrWhiteSpace( lavaTemplateAppend ) )
-                    {
-                        rockEmailMessage.Message = lavaTemplateAppend + rockEmailMessage.Message;
-                    }
-
-                    // Remove Lava Debug command
-                    rockEmailMessage.Message = rockEmailMessage.Message.Replace( PageConstants.LavaDebugCommand, string.Empty );
-
-                    // Prepare merge fields
-                    var mergeFields = new Dictionary<string, object> { { MergeFieldKey.Person, targetPerson } };
-
-                    // Get the Publication Date
-                    if ( DateTime.TryParse( box.PublicationDate, out var dateItemValue ) )
-                    {
-                        // Add the "SendDateTime" merge field if a valid date is provided
-                        mergeFields.AddOrReplace( MergeFieldKey.SendDateTime, dateItemValue.ToString( "MMMM d, yyyy" ) );
-                    }
-
-                    // Set the recipient with merge fields
-                    rockEmailMessage.AddRecipient( new RockEmailMessageRecipient( targetPerson, mergeFields ) );
-                    rockEmailMessage.CreateCommunicationRecord = false;
-
-                    // Set the From Name and From Email based on System Communication or Global Attributes
-                    SetEmailFromDetails( rockEmailMessage, systemCommunication );
-
-                    // Prepare the subject, removing carriage returns and line feeds, as well as enforcing max length
-                    rockEmailMessage.Subject = Regex.Replace( rockEmailMessage.Subject, @"\r\n?|\n", string.Empty ).Left( 998 );
-
-                    // Send the email
-                    var errors = new List<string>();
-                    try
-                    {
-                        rockEmailMessage.Send( out errors );
-                    }
-                    catch ( Exception ex )
-                    {
-                        errors.Add( ex.Message );
-                    }
-                    if ( errors.Any() )
-                    {
-                        // Revert the target person's email to it's original value if sending fails
-                        targetPerson.Email = originalEmail;
-                        rockContext.SaveChanges();
-
-                        string errorMessage = string.Join( ", ", errors );
-                        return ActionBadRequest( $"Failed to send test email: {errorMessage}" );
-                    }
+                    rockEmailMessage.Send( out errors );
                 }
-                finally
+                catch ( Exception ex )
                 {
-                    // Revert the target person's email to it's original value
-                    targetPerson.Email = originalEmail;
-                    rockContext.SaveChanges();
+                    errors.Add( ex.Message );
+                }
+                if ( errors.Any() )
+                {
+                    string errorMessage = string.Join( ", ", errors );
+                    return ActionBadRequest( $"Failed to send test email: {errorMessage}" );
                 }
 
                 return ActionOk( "Test email sent successfully." );

@@ -1076,11 +1076,14 @@ namespace RockWeb.Blocks.CheckIn
                 familyPersonState = FamilyRegistrationState.FamilyPersonState.FromTemporaryPerson();
                 familyPersonState.GroupMemberGuid = groupMemberGuid;
                 familyPersonState.PersonId = null;
+
+                // The connection status is not editable, so use the same default that EditGroupMember used for a new person
+                // instead of the posted value. Existing people keep the value already in EditFamilyState.
+                familyPersonState.ConnectionStatusValueId = CurrentCheckInState.CheckInType.Registration.DefaultPersonConnectionStatusId;
                 EditFamilyState.FamilyPersonListState.Add( familyPersonState );
             }
 
             familyPersonState.RecordStatusValueId = dvpRecordStatus.SelectedValue.AsIntegerOrNull();
-            familyPersonState.ConnectionStatusValueId = hfConnectionStatus.Value.AsIntegerOrNull();
             familyPersonState.IsAdult = tglAdultChild.Checked;
 
             familyPersonState.Gender = bgGender.SelectedValueAsEnumOrNull<Gender>() ?? Gender.Unknown;

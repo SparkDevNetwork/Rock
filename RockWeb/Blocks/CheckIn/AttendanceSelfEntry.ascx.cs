@@ -1720,6 +1720,20 @@ ORDER BY [Text]",
                 members.AddRange( otherMembers );
             }
 
+            // Only allow the individuals that were offered for selection (from ViewState).
+            var allowedPersonIds = new List<int>();
+            if ( PrimaryWatcher != null )
+            {
+                allowedPersonIds.Add( PrimaryWatcher.Id );
+            }
+
+            if ( OtherWatchers != null )
+            {
+                allowedPersonIds.AddRange( OtherWatchers.Select( a => a.Id ) );
+            }
+
+            members = members.Where( a => a != default( int ) && allowedPersonIds.Contains( a ) ).Distinct().ToList();
+
             return members;
         }
 

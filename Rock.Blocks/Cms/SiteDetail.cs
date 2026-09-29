@@ -734,6 +734,23 @@ namespace Rock.Blocks.Cms
 
             var isNew = entity.Id == 0;
 
+            // Make sure the image files are either the current ones or newly
+            // uploaded files.
+            var uploadedFileService = new BinaryFileService( RockContext );
+
+            if ( !uploadedFileService.IsUploadedBinaryFileAllowedForPerson( entity.FavIconBinaryFileId, existingIconId, RequestContext.CurrentPerson )
+                || !uploadedFileService.IsUploadedBinaryFileAllowedForPerson( entity.SiteLogoBinaryFileId, existingLogoId, RequestContext.CurrentPerson ) )
+            {
+                return ActionBadRequest( "Invalid file." );
+            }
+
+            // Make sure the page attributes are either new or already belong
+            // to this site.
+            if ( !PublicAttributeHelper.AreAttributeEditsAllowed( box.Bag.SiteAttributes, new Page().TypeId, "SiteId", isNew ? null : entity.Id.ToString(), RockContext ) )
+            {
+                return ActionBadRequest( "Invalid attribute." );
+            }
+
             RockContext.WrapTransaction( () =>
             {
                 RockContext.SaveChanges();

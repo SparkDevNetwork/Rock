@@ -846,6 +846,7 @@ mission. We are so grateful for your commitment.</p>
             public const string CustomerTokenEncrypted = "CustomerTokenEncrypted";
             public const string TargetPersonGuid = "TargetPersonGuid";
             public const string ScheduledTransactionIdToBeTransferred = "ScheduledTransactionIdToBeTransferred";
+            public const string TransactionGuid = "TransactionGuid";
             public const string CreatedScheduledTransactionId = "CreatedScheduledTransactionId";
             public const string IsTargetPersonVerified = "IsTargetPersonVerified";
         }
@@ -982,6 +983,19 @@ mission. We are so grateful for your commitment.</p>
         }
 
         /// <summary>
+        /// Gets or sets the unique guid used for the transaction being processed.
+        /// This is kept in ViewState so it cannot be changed by the client.
+        /// </summary>
+        /// <value>
+        /// The transaction unique identifier.
+        /// </value>
+        protected Guid TransactionGuid
+        {
+            get { return ViewState[ViewStateKey.TransactionGuid] as Guid? ?? Guid.Empty; }
+            set { ViewState[ViewStateKey.TransactionGuid] = value; }
+        }
+
+        /// <summary>
         /// Gets or sets the identifier of the scheduled transaction created on this page, which
         /// an anonymous giver is allowed to manage.
         /// </summary>
@@ -1059,7 +1073,7 @@ mission. We are so grateful for your commitment.</p>
             {
                 // Ensure that there is only one transaction processed by getting a unique guid when this block loads for the first time
                 // This will ensure there are no (unintended) duplicate transactions
-                hfTransactionGuid.Value = Guid.NewGuid().ToString();
+                TransactionGuid = Guid.NewGuid();
                 ShowDetails();
             }
             else
@@ -1782,11 +1796,11 @@ mission. We are so grateful for your commitment.</p>
             var financialGatewayComponent = this.FinancialGatewayComponent;
             var financialGateway = this.FinancialGateway;
 
-            var financialPaymentDetail = new FinancialTransactionService( rockContext ).GetSelect( hfTransactionGuid.Value.AsGuid(), s => s.FinancialPaymentDetail );
+            var financialPaymentDetail = new FinancialTransactionService( rockContext ).GetSelect( TransactionGuid, s => s.FinancialPaymentDetail );
             if ( financialPaymentDetail == null )
             {
                 // if this was a ScheduledTransaction, get the FinancialPaymentDetail from that instead
-                financialPaymentDetail = new FinancialScheduledTransactionService( rockContext ).GetSelect( hfTransactionGuid.Value.AsGuid(), s => s.FinancialPaymentDetail );
+                financialPaymentDetail = new FinancialScheduledTransactionService( rockContext ).GetSelect( TransactionGuid, s => s.FinancialPaymentDetail );
             }
 
             var gatewayPersonIdentifier = Rock.Security.Encryption.DecryptString( this.CustomerTokenEncrypted );
@@ -2900,7 +2914,7 @@ mission. We are so grateful for your commitment.</p>
                 return;
             }
 
-            var transactionGuid = hfTransactionGuid.Value.AsGuid();
+            var transactionGuid = TransactionGuid;
             var rockContext = new RockContext();
 
             // to make duplicate transactions impossible, make sure that our Transaction hasn't already been processed as a regular or scheduled transaction
@@ -3181,7 +3195,7 @@ mission. We are so grateful for your commitment.</p>
         protected void ShowTransactionSummary()
         {
             var rockContext = new RockContext();
-            var transactionGuid = hfTransactionGuid.Value.AsGuid();
+            var transactionGuid = TransactionGuid;
 
             var mergeFields = LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson, new CommonMergeFieldsOptions() );
             var finishLavaTemplate = this.GetAttributeValue( AttributeKey.FinishLavaTemplate );
@@ -3252,7 +3266,7 @@ mission. We are so grateful for your commitment.</p>
             var rockContext = new RockContext();
 
             // manually assign the Guid that we generated at the beginning of the transaction UI entry to help make duplicate transactions impossible
-            transaction.Guid = hfTransactionGuid.Value.AsGuid();
+            transaction.Guid = TransactionGuid;
 
             transaction.AuthorizedPersonAliasId = new PersonAliasService( rockContext ).GetPrimaryAliasId( personId );
             if ( this.GivingAsBusiness() )
@@ -3462,7 +3476,7 @@ mission. We are so grateful for your commitment.</p>
             var rockContext = new RockContext();
 
             // manually assign the Guid that we generated at the beginning of the transaction UI entry to help make duplicate transactions impossible
-            scheduledTransaction.Guid = hfTransactionGuid.Value.AsGuid();
+            scheduledTransaction.Guid = TransactionGuid;
 
             scheduledTransaction.TransactionFrequencyValueId = schedule.TransactionFrequencyValue.Id;
             scheduledTransaction.StartDate = schedule.StartDate;

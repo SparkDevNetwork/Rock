@@ -123,21 +123,7 @@ namespace Rock.Blocks.Workflow.FormBuilder
                 var formBuilderEntityTypeId = EntityTypeCache.Get( typeof( Rock.Workflow.Action.FormBuilder ) ).Id;
                 var workflowType = new WorkflowTypeService( RockContext ).Get( workflowTypeId.Value );
 
-                // If WorkflowType has an explicit rule for EDIT, use it. Otherwise, fall back to Category security.
-                bool canEdit = false;
-                if ( workflowType != null )
-                {
-                    var wfAuth = Authorization.AuthorizedForEntity( workflowType, Authorization.EDIT, RequestContext.CurrentPerson, false );
-                    if ( wfAuth.HasValue )
-                    {
-                        canEdit = wfAuth.Value;
-                    }
-                    else
-                    {
-                        var category = workflowType.CategoryId.HasValue ? CategoryCache.Get( workflowType.CategoryId.Value ) : null;
-                        canEdit = category != null && category.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson );
-                    }
-                }
+                bool canEdit = workflowType != null && CanEditWorkflowType( workflowType );
 
                 if ( workflowType != null && workflowType.IsFormBuilder && canEdit )
                 {
@@ -807,6 +793,27 @@ namespace Rock.Blocks.Workflow.FormBuilder
             return filteredPages;
         }
 
+        /// <summary>
+        /// Determines if the current person is allowed to edit the form. If the
+        /// workflow type has an explicit rule for EDIT, use it. Otherwise, fall
+        /// back to Category security.
+        /// </summary>
+        /// <param name="workflowType">The workflow type that represents the form.</param>
+        /// <returns><c>true</c> if the current person can edit the form; otherwise <c>false</c>.</returns>
+        private bool CanEditWorkflowType( WorkflowType workflowType )
+        {
+            var wfAuth = Authorization.AuthorizedForEntity( workflowType, Authorization.EDIT, RequestContext.CurrentPerson, false );
+
+            if ( wfAuth.HasValue )
+            {
+                return wfAuth.Value;
+            }
+
+            var category = workflowType.CategoryId.HasValue ? CategoryCache.Get( workflowType.CategoryId.Value ) : null;
+
+            return category != null && category.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson );
+        }
+
         #endregion
 
         #region Block Action
@@ -831,6 +838,13 @@ namespace Rock.Blocks.Workflow.FormBuilder
             if ( workflowType == null || !workflowType.IsFormBuilder )
             {
                 return ActionBadRequest( "Specified workflow type is not a form builder." );
+            }
+
+            // Make sure the person is allowed to edit this form, the same way
+            // the initialization code checks before sending the form.
+            if ( !CanEditWorkflowType( workflowType ) )
+            {
+                return ActionBadRequest( "You are not authorized to edit this form." );
             }
 
             // Ensure the slug is unique.

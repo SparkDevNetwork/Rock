@@ -519,13 +519,10 @@ namespace RockWeb.Blocks.CheckIn.Manager
 
             var rockContext = new RockContext();
 
-            var attendanceIds = hfCurrentAttendanceIds.Value.SplitDelimitedValues().AsIntegerList();
+            int personId = GetReprintPersonId( personGuid, rockContext );
 
-            // Get the person Id from the PersonId page parameter, or look it up based on the Person Guid page parameter.
-            int? personIdParam = PageParameter( PageParameterKey.PersonId ).AsIntegerOrNull();
-            int personId = personIdParam.HasValue
-                ? personIdParam.Value
-                : new PersonService( rockContext ).GetId( personGuid ).GetValueOrDefault();
+            // Only allow re-printing labels from this person's attendance records.
+            var attendanceIds = GetPersonAttendanceIds( hfCurrentAttendanceIds.Value.SplitDelimitedValues().AsIntegerList(), personId, rockContext );
 
             hfPersonId.Value = personId.ToString();
 
@@ -573,7 +570,10 @@ namespace RockWeb.Blocks.CheckIn.Manager
         /// <param name="e"></param>
         protected void mdReprintLabels_PrintClick( object sender, EventArgs e )
         {
-            var personId = hfPersonId.ValueAsInt();
+            var rockContext = new RockContext();
+
+            // Determine the person the same way the reprint button did instead of trusting the posted value.
+            var personId = GetReprintPersonId( GetPersonGuid(), rockContext );
             if ( personId == 0 )
             {
                 return;
@@ -593,8 +593,8 @@ namespace RockWeb.Blocks.CheckIn.Manager
                 return;
             }
 
-            // Get the person Id from the Guid
-            var selectedAttendanceIds = hfCurrentAttendanceIds.Value.SplitDelimitedValues().AsIntegerList();
+            // Only allow re-printing labels from this person's attendance records.
+            var selectedAttendanceIds = GetPersonAttendanceIds( hfCurrentAttendanceIds.Value.SplitDelimitedValues().AsIntegerList(), personId, rockContext );
 
             var fileGuids = cblLabels.SelectedValues.AsGuidList();
 
@@ -610,6 +610,49 @@ namespace RockWeb.Blocks.CheckIn.Manager
             nbReprintMessage.Text = messages.JoinStrings( "<br>" );
 
             mdReprintLabels.Hide();
+        }
+
+        /// <summary>
+        /// Gets the identifier of the person whose labels are being re-printed, from the PersonId
+        /// page parameter or by looking it up based on the Person Guid page parameter.
+        /// </summary>
+        /// <param name="personGuid">The person unique identifier.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns>The person identifier, or 0 if not found.</returns>
+        private int GetReprintPersonId( Guid personGuid, RockContext rockContext )
+        {
+            int? personIdParam = PageParameter( PageParameterKey.PersonId ).AsIntegerOrNull();
+            if ( personIdParam.HasValue )
+            {
+                return personIdParam.Value;
+            }
+
+            if ( personGuid == Guid.Empty )
+            {
+                return 0;
+            }
+
+            return new PersonService( rockContext ).GetId( personGuid ).GetValueOrDefault();
+        }
+
+        /// <summary>
+        /// Filters the attendance identifiers to only those that belong to the specified person.
+        /// </summary>
+        /// <param name="attendanceIds">The attendance identifiers.</param>
+        /// <param name="personId">The person identifier.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns>The attendance identifiers that belong to the person.</returns>
+        private List<int> GetPersonAttendanceIds( List<int> attendanceIds, int personId, RockContext rockContext )
+        {
+            if ( attendanceIds == null || !attendanceIds.Any() )
+            {
+                return new List<int>();
+            }
+
+            return new AttendanceService( rockContext ).Queryable()
+                .Where( a => attendanceIds.Contains( a.Id ) && a.PersonAlias.PersonId == personId )
+                .Select( a => a.Id )
+                .ToList();
         }
 
         #endregion

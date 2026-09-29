@@ -403,6 +403,17 @@ namespace Rock.Blocks.Event
                 return false;
             }
 
+            // Make sure a new photo is one the current person is allowed to use.
+            if ( box.IsValidProperty( nameof( box.Entity.Photo ) ) )
+            {
+                var photoId = box.Entity.Photo.GetEntityId<BinaryFile>( rockContext );
+
+                if ( !new BinaryFileService( rockContext ).IsUploadedBinaryFileAllowedForPerson( photoId, entity.PhotoId, RequestContext.CurrentPerson ) )
+                {
+                    return false;
+                }
+            }
+
             box.IfValidProperty( nameof( box.Entity.Description ),
                 () => entity.Description = box.Entity.Description );
 
@@ -803,6 +814,12 @@ namespace Rock.Blocks.Event
 
             foreach ( var eventCalendar in eventCalendarService.GetByGuids( addCalendarsGuids ) )
             {
+                // Make sure user is authorized to add the calendar, the same check used to build the list of available calendars.
+                if ( !BlockCache.IsAuthorized( Authorization.EDIT, GetCurrentPerson() ) && !eventCalendar.IsAuthorized( Authorization.EDIT, GetCurrentPerson() ) )
+                {
+                    continue;
+                }
+
                 entity.EventCalendarItems.Add( new EventCalendarItem
                 {
                     EventCalendarId = eventCalendar.Id,
@@ -952,6 +969,13 @@ namespace Rock.Blocks.Event
                 if ( !ValidateEventItem( entity, rockContext, out var validationMessage ) )
                 {
                     return ActionBadRequest( validationMessage );
+                }
+
+                // Make sure the occurrence attributes are either new or already
+                // belong to this event item.
+                if ( !PublicAttributeHelper.AreAttributeEditsAllowed( box.Entity.EventOccurenceAttributes?.ConvertAll( e => e.Attribute ), new EventItemOccurrence().TypeId, "EventItemId", entity.Id == 0 ? null : entity.Id.ToString(), rockContext ) )
+                {
+                    return ActionBadRequest( "Invalid attribute." );
                 }
 
                 rockContext.WrapTransaction( () =>
