@@ -60,6 +60,12 @@ export type SessionDependencies = {
 
     /** The time now in milliseconds; the browser's clock unless a test stands in. */
     now?: () => number;
+
+    /**
+     * Called when a session that held a token no longer does: Rock refused a refresh, or the
+     * token ran out before one succeeded. Whatever the token opened should be closed.
+     */
+    onEnded?: () => void;
 };
 
 /** Why the session is not running, when it is not. */
@@ -184,8 +190,12 @@ export function createSession(dependencies: SessionDependencies): ChatSession {
         }
 
         if (outcome === "refused" || token === null || now() >= expiresAt) {
+            const wasHeld = token !== null;
             token = null;
             clear();
+            if (wasHeld) {
+                dependencies.onEnded?.();
+            }
             return false;
         }
 

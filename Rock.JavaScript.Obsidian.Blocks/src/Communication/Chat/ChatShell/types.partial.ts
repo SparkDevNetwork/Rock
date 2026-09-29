@@ -138,8 +138,11 @@ export type PendingMessage = {
     errorCode: string | null;
 };
 
-/** How bad a failure is, which decides where it is shown. */
-export type ChatErrorSeverity = "session" | "permission" | "failed" | "degraded" | "unknown";
+/**
+ * How bad a failure is, which decides where it is shown. A quota refusal is Realtime turning the
+ * whole connection away because the project is over one of its limits.
+ */
+export type ChatErrorSeverity = "session" | "permission" | "failed" | "degraded" | "quota" | "unknown";
 
 /** A failure after classification: a stable code and how bad it is. */
 export type ChatError = {

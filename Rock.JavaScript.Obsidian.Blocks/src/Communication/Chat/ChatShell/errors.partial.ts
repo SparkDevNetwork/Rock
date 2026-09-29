@@ -118,6 +118,32 @@ export function classifyRealtimeStatus(status: string): ChatError {
 }
 
 /**
+ * Realtime's words for each way it refuses or closes a channel, as v2.130.0 sends them, first
+ * match wins. Realtime prefixes most with a name of its own ("Unauthorized: ..."), so each is
+ * matched anywhere in the message. Quota refusals drop the whole socket, not one channel, so they
+ * carry their own severity: retrying them at once is what keeps a project over its limits.
+ */
+const realtimeMessages: Array<{ words: string, code: string, severity: ChatError["severity"] }> = [
+    { words: "Token has expired", code: "rt.token_expired", severity: "session" },
+    { words: "not a valid JWT", code: "rt.token_invalid", severity: "session" },
+    { words: "Failed to validate JWT signature", code: "rt.token_invalid", severity: "session" },
+    { words: "Fields `role` and `exp` are required in JWT", code: "rt.token_invalid", severity: "session" },
+    { words: "Token expiration time is invalid", code: "rt.token_invalid", severity: "session" },
+    { words: "Too many joins per second", code: "rt.too_many_joins", severity: "quota" },
+    { words: "Too many connected users", code: "rt.too_many_connections", severity: "quota" },
+    { words: "Too many channels", code: "rt.too_many_channels", severity: "quota" },
+    { words: "Too many messages per second", code: "rt.too_many_messages", severity: "quota" },
+    { words: "Please increase your connection pool size", code: "rt.pool_exhausted", severity: "quota" },
+    { words: "unable to connect to the project database", code: "rt.database_unavailable", severity: "degraded" },
+    { words: "Database can't accept more connections", code: "rt.database_unavailable", severity: "degraded" },
+    { words: "Too many database connections attempts", code: "rt.database_unavailable", severity: "degraded" },
+    { words: "Query was cancelled", code: "rt.database_unavailable", severity: "degraded" },
+    { words: "initializing the project connection", code: "rt.database_unavailable", severity: "degraded" },
+    { words: "Node request timeout", code: "rt.database_unavailable", severity: "degraded" },
+    { words: "Realtime is restarting", code: "rt.restarting", severity: "degraded" }
+];
+
+/**
  * Classifies the words Realtime closes or refuses a channel with.
  *
  * @param message The message Realtime sent.
@@ -126,5 +152,13 @@ export function classifyRealtimeStatus(status: string): ChatError {
  * @returns The code and severity.
  */
 export function classifyRealtimeMessage(message: string, wasJoined: boolean): ChatError {
-    return { code: "rt.unknown", severity: "unknown" };
+    // Realtime words a read revoked from a joined channel exactly as it words a refused join, so
+    // only whether the channel had been joined tells the two apart.
+    if (message.includes("You do not have permissions to read from this Channel topic")) {
+        return { code: wasJoined ? "rt.read_revoked" : "rt.not_readable", severity: "permission" };
+    }
+
+    const known = realtimeMessages.find(m => message.includes(m.words));
+
+    return known ? { code: known.code, severity: known.severity } : { code: "rt.unknown", severity: "unknown" };
 }

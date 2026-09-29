@@ -17,12 +17,23 @@
 // The live connection. A person holds two private topics on one socket: their personal topic
 // for the whole session, which carries short signals and never a message body, and the topic
 // of the channel they have open, which carries that channel's messages.
-import { classifyRealtimeStatus } from "../errors.partial";
+import { classifyRealtimeMessage, classifyRealtimeStatus } from "../errors.partial";
 import { ChatError } from "../types.partial";
+
+/**
+ * What a channel listener is handed: a broadcast's event and payload, or Realtime's own message
+ * about the channel, its status and its words.
+ */
+export type RealtimeMessageLike = {
+    event?: string;
+    payload?: unknown;
+    status?: string;
+    message?: string;
+};
 
 /** The part of a realtime channel the hub uses. */
 export type RealtimeChannelLike = {
-    on: (type: "broadcast", filter: { event: string }, callback: (message: { event: string, payload: unknown }) => void) => RealtimeChannelLike;
+    on: (type: "broadcast" | "system", filter: { event?: string }, callback: (message: RealtimeMessageLike) => void) => RealtimeChannelLike;
     subscribe: (callback: (status: string, error?: unknown) => void) => RealtimeChannelLike;
 };
 
@@ -48,7 +59,10 @@ export type RealtimeHubDependencies = {
     /** The open channel's topic has been joined, the first time or again after a drop. */
     onJoined: (channelId: string) => void;
 
-    /** The live connection's health changed; null when it is healthy again. */
+    /**
+     * The live connection's health changed; null when it is healthy again. A read Realtime has
+     * revoked from the open channel arrives here as rt.read_revoked, after the hub has left it.
+     */
     onStatus: (error: ChatError | null) => void;
 };
 
@@ -98,11 +112,14 @@ export function personalTopic(tenantId: string, personAliasGuid: string): string
 export function createRealtimeHub(dependencies: RealtimeHubDependencies): RealtimeHub {
     const { client } = dependencies;
     let personal: RealtimeChannelLike | null = null;
-    let open: { channelId: string, channel: RealtimeChannelLike } | null = null;
+    let open: { channelId: string, channel: RealtimeChannelLike, isJoined: boolean } | null = null;
     let isDegraded = false;
 
-    /** Reports the connection's health, only when it changes. */
-    function report(status: string): void {
+    /**
+     * Reports the connection's health, only when it changes. A refused join carries Realtime's
+     * words, which say more than the status does.
+     */
+    function report(status: string, error?: unknown): void {
         if (status === "SUBSCRIBED") {
             if (isDegraded) {
                 isDegraded = false;
@@ -111,8 +128,31 @@ export function createRealtimeHub(dependencies: RealtimeHubDependencies): Realti
             return;
         }
 
+        const words = error instanceof Error ? classifyRealtimeMessage(error.message, false) : null;
         isDegraded = true;
-        dependencies.onStatus(classifyRealtimeStatus(status));
+        dependencies.onStatus(words && words.code !== "rt.unknown" ? words : classifyRealtimeStatus(status));
+    }
+
+    /**
+     * Handles Realtime's own error about a channel. A read revoked from the open channel means
+     * the person may no longer read it at all, so the hub leaves it rather than let the client
+     * library join it again; anything else is reported and the channel's status says the rest.
+     */
+    function onSystem(channel: RealtimeChannelLike, message: RealtimeMessageLike): void {
+        if (message.status !== "error") {
+            return;
+        }
+
+        const isOpen = open?.channel === channel;
+        const error = classifyRealtimeMessage(message.message ?? "", isOpen ? open!.isJoined : true);
+
+        if (isOpen && error.code === "rt.read_revoked") {
+            open = null;
+            void client.removeChannel(channel);
+        }
+
+        isDegraded = true;
+        dependencies.onStatus(error);
     }
 
     return {
@@ -122,9 +162,11 @@ export function createRealtimeHub(dependencies: RealtimeHubDependencies): Realti
             // not only the first.
             await client.realtime.setAuth();
 
-            personal = client.channel(personalTopic(dependencies.tenantId, dependencies.personAliasGuid), { config: { private: true } })
-                .on("broadcast", { event: "*" }, message => dependencies.onPersonalEvent(message.event, message.payload))
-                .subscribe(status => report(status));
+            const channel = client.channel(personalTopic(dependencies.tenantId, dependencies.personAliasGuid), { config: { private: true } });
+            personal = channel
+                .on("broadcast", { event: "*" }, message => dependencies.onPersonalEvent(message.event ?? "", message.payload))
+                .on("system", {}, message => onSystem(channel, message))
+                .subscribe((status, error) => report(status, error));
         },
 
         openChannel: (channelId: string): void => {
@@ -138,19 +180,21 @@ export function createRealtimeHub(dependencies: RealtimeHubDependencies): Realti
             const channel = client.channel(channelTopic(dependencies.tenantId, channelId), { config: { private: true } })
                 .on("broadcast", { event: "*" }, message => {
                     if (open?.channel === channel) {
-                        dependencies.onChannelEvent(channelId, message.event, message.payload);
+                        dependencies.onChannelEvent(channelId, message.event ?? "", message.payload);
                     }
-                });
+                })
+                .on("system", {}, message => onSystem(channel, message));
 
-            open = { channelId, channel };
+            open = { channelId, channel, isJoined: false };
 
-            channel.subscribe(status => {
+            channel.subscribe((status, error) => {
                 if (open?.channel !== channel) {
                     return;
                 }
 
-                report(status);
+                report(status, error);
                 if (status === "SUBSCRIBED") {
+                    open.isJoined = true;
                     dependencies.onJoined(channelId);
                 }
             });

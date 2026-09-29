@@ -38,7 +38,7 @@ import {
     writeRememberedChannel
 } from "./pageLoad.partial";
 import { ChannelStore, createChannelStore } from "./stores/channelStore.partial";
-import { ChatError, HistoryPage, SidebarRow, TokenExchangeResponse } from "./types.partial";
+import { ChannelUnreadEvent, ChatError, HistoryPage, SidebarRow, TokenExchangeResponse } from "./types.partial";
 
 /** What a platform call answers, as the platform client returns it. */
 export type RpcResult = {
@@ -244,8 +244,35 @@ export function createChatShell(options: ShellOptions): ChatShell {
         },
         random: Math.random,
         setTimer: (callback, milliseconds) => setTimeout(callback, milliseconds),
-        clearTimer: handle => clearTimeout(handle as ReturnType<typeof setTimeout>)
+        clearTimer: handle => clearTimeout(handle as ReturnType<typeof setTimeout>),
+        onEnded: () => void end()
     });
+
+    /**
+     * The longest a viewer waits before fetching a new token when the channel on screen changed,
+     * an estimate. Everyone watching the channel is told at once, and the wait spreads their token
+     * requests at Rock and their join checks at Realtime.
+     */
+    const channelChangedWaitMs = 5_000;
+
+    /**
+     * Asks again whether the person may still read what they have open. Realtime keeps a join's
+     * answer until the socket is handed a new token, so a new token is fetched and handed over;
+     * Realtime then closes whatever the person has lost. Refreshes already running are shared.
+     */
+    function recheck(): void {
+        void session.refresh();
+    }
+
+    /**
+     * Leaves every topic once the session holds no token, because Rock refused a refresh or the
+     * token ran out, and shows why. Realtime would close the topics at the token's expiry anyway.
+     */
+    async function end(): Promise<void> {
+        state.gate = session.state.gate;
+        state.phase = session.state.gate === "ok" ? "failed" : "refused";
+        await hub?.stop();
+    }
 
     /** Exchanges a church token for a platform token. */
     async function exchange(churchToken: string): Promise<ExchangeResult> {
@@ -402,13 +429,38 @@ export function createChatShell(options: ShellOptions): ChatShell {
                 client,
                 tenantId,
                 personAliasGuid,
-                onChannelEvent: (channelId, event, payload) => timelines.applyEvent(channelId, event, payload),
-                onPersonalEvent: (event, payload) => channels.applyPersonalEvent(event, payload),
+                onChannelEvent: (channelId, event, payload) => {
+                    if (event === "channel.changed") {
+                        if (channelId === state.activeChannelId) {
+                            setTimeout(recheck, Math.random() * channelChangedWaitMs);
+                        }
+                        return;
+                    }
+                    timelines.applyEvent(channelId, event, payload);
+                },
+                onPersonalEvent: (event, payload) => {
+                    channels.applyPersonalEvent(event, payload);
+
+                    // Only the channel on screen is joined, so only a change to it can need a cut.
+                    const changed = (payload as Partial<Record<keyof ChannelUnreadEvent, unknown>> | null)?.channel_id;
+                    if (event === "session.recheck" || (event === "membership.changed" && changed === state.activeChannelId)) {
+                        recheck();
+                    }
+                },
                 onJoined: channelId => {
                     options.mark("chat:join");
                     timelines.onJoined(channelId).catch(error => report(classifyPlatformError(error)));
                 },
-                onStatus: error => state.connection = error
+                onStatus: error => {
+                    // The hub has already left a channel whose read was revoked; the person is told,
+                    // and the list is loaded again without it.
+                    if (error?.code === "rt.read_revoked") {
+                        report(error);
+                        void loadSidebar();
+                        return;
+                    }
+                    state.connection = error;
+                }
             });
 
             // The token is on the socket before the first join, which the hub does first.

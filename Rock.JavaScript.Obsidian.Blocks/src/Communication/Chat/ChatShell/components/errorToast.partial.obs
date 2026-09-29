@@ -46,6 +46,10 @@
 
     /** What the person is told for a failure, by how bad it is. */
     function messageFor(error: ChatError): string {
+        if (error.code === "rt.read_revoked") {
+            return "You no longer have access to this channel.";
+        }
+
         switch (error.severity) {
             case "session":
                 return "Your chat session has ended. Refresh the page to continue.";
