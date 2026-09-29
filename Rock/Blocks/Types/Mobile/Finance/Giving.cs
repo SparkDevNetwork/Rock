@@ -1372,6 +1372,12 @@ namespace Rock.Blocks.Types.Mobile.Finance
                 return false;
             }
 
+            if ( scheduledTransaction.AuthorizedPersonAlias.PersonId != RequestContext.CurrentPerson?.Id )
+            {
+                errorMessage = "You are not authorized to delete this scheduled transaction.";
+                return false;
+            }
+
             scheduledTransaction.FinancialGateway.LoadAttributes( RockContext );
 
             if ( financialScheduledTransactionService.Cancel( scheduledTransaction, out errorMessage ) )
