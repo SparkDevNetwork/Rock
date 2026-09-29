@@ -371,4 +371,43 @@ describe("createSession", () => {
 
         expect(f.timers[0].cleared).toBe(true);
     });
+
+    test("a refresh still running when the session stops schedules nothing after it", async () => {
+        let answer!: (result: ChurchTokenResult) => void;
+        let calls = 0;
+        const f = fakes({
+            mintChurchToken: async (): Promise<ChurchTokenResult> => {
+                calls++;
+                if (calls === 1) {
+                    return { gate: "ok", churchToken: "church-1" };
+                }
+                return new Promise(resolve => answer = resolve);
+            }
+        });
+        const session = createSession(f.dependencies);
+        await session.start();
+
+        const refreshing = session.refresh();
+        await settle();
+        session.stop();
+        answer({ gate: "ok", churchToken: "church-2" });
+        await refreshing;
+
+        expect(f.timers.filter(t => !t.cleared)).toEqual([]);
+        expect(f.pushes).toBe(0);
+    });
+
+    test("once stopped, a call the platform calls expired does not mint again", async () => {
+        const f = fakes();
+        const session = createSession(f.dependencies);
+        await session.start();
+        session.stop();
+        const before = f.mints;
+
+        const result = await session.withFreshToken(async () => "expired", () => true);
+
+        expect(result).toBe("expired");
+        expect(f.mints).toBe(before);
+    });
 });
+

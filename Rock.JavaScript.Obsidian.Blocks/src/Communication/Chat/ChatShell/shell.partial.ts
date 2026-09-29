@@ -287,6 +287,7 @@ export function createChatShell(options: ShellOptions): ChatShell {
     async function end(): Promise<void> {
         isStopped = true;
         cancelRecheck();
+        session.stop();
         state.gate = session.state.gate;
         state.phase = session.state.gate === "ok" ? "failed" : "refused";
 
@@ -445,6 +446,11 @@ export function createChatShell(options: ShellOptions): ChatShell {
                 return;
             }
 
+            // Stopped while signing in, or ended by then: nothing is joined.
+            if (isStopped) {
+                return;
+            }
+
             client = options.createPlatformClient(projectUrl, publishableKey, async () => session.currentToken() ?? "");
 
             hub = createRealtimeHub({
@@ -480,6 +486,8 @@ export function createChatShell(options: ShellOptions): ChatShell {
                     if (error?.code === "rt.read_revoked") {
                         // Nothing is open any more, so choosing the channel again, once the
                         // person may read it, opens it afresh.
+                        // An open of it still loading is superseded, so it cannot take it back.
+                        openCount++;
                         void tracker.leave();
                         state.activeChannelId = null;
                         channels.setActive(null);
@@ -493,6 +501,9 @@ export function createChatShell(options: ShellOptions): ChatShell {
 
             // The token is on the socket before the first join, which the hub does first.
             await hub.start();
+            if (isStopped) {
+                return;
+            }
             detachPage = tracker.attach(options.pageTargets);
             state.phase = "ready";
 

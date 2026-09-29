@@ -433,5 +433,41 @@ describe("the live cut", () => {
 
         expect(h.joined.slice(joinsBefore)).toEqual([]);
     });
+
+    test("an open still loading when its channel is revoked does not take the channel back", async () => {
+        const h = await started();
+        const toB = h.shell.selectChannel(channelB);
+        await settle();
+        const b = topicOf(h, channelTopic(tenant, channelB));
+        b.status?.("SUBSCRIBED");
+        await settle();
+
+        b.listeners["system"]?.({ status: "error", message: "You do not have permissions to read from this Channel topic: x" });
+        await settle();
+        while (h.history[channelB]?.length) {
+            answerHistory(h, channelB, 21);
+            await settle();
+        }
+        h.saves.forEach(save => save.answer.resolve(fakeResponse(200, { read_cursor: save.messageId, last_message_id: save.messageId })));
+        await toB;
+        await settle();
+
+        expect(h.shell.state.activeChannelId).toBeNull();
+        expect(Object.values(h.stored)).not.toContain(channelB);
+    });
+
+    test("a shell stopped while it signs in joins nothing", async () => {
+        const h = build();
+        const starting = h.shell.start();
+        await h.shell.stop();
+        await settle();
+        while (h.history[channelA]?.length) {
+            answerHistory(h, channelA, 10);
+            await settle();
+        }
+        await starting;
+
+        expect(h.joined).toEqual([]);
+    });
 });
 

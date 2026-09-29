@@ -91,7 +91,7 @@ export type ChatSession = {
      */
     withFreshToken: <T>(call: () => Promise<T>, isExpired: (result: T) => boolean) => Promise<T>;
 
-    /** Stops the refresh timer. */
+    /** Stops the session for good: no refresh runs, is scheduled or is handed over after this. */
     stop: () => void;
 
     /** Why the session is not running. */
@@ -125,6 +125,7 @@ export function createSession(dependencies: SessionDependencies): ChatSession {
     let lifeSeconds = 0;
     let expiresAt = 0;
     let refreshing: Promise<boolean> | null = null;
+    let isStopped = false;
     const now = dependencies.now ?? ((): number => Date.now());
 
     /**
@@ -209,6 +210,9 @@ export function createSession(dependencies: SessionDependencies): ChatSession {
      */
     function schedule(expiresInSeconds: number): void {
         clear();
+        if (isStopped) {
+            return;
+        }
         const fraction = refreshWindowStart + (refreshWindowEnd - refreshWindowStart) * dependencies.random();
         timer = dependencies.setTimer(() => void refresh(), expiresInSeconds * 1000 * fraction);
     }
@@ -216,6 +220,9 @@ export function createSession(dependencies: SessionDependencies): ChatSession {
     /** Schedules another refresh after a failed one, a twentieth of the token's life later. */
     function retryLater(): void {
         clear();
+        if (isStopped) {
+            return;
+        }
         timer = dependencies.setTimer(() => void refresh(), lifeSeconds * 1000 * refreshRetryFraction);
     }
 
@@ -233,8 +240,14 @@ export function createSession(dependencies: SessionDependencies): ChatSession {
      * to decide what the session holds.
      */
     function refresh(): Promise<boolean> {
+        // A stopped session asks Rock for nothing more, whatever still calls it: an expired call
+        // in flight, or a timer that fired late.
+        if (isStopped) {
+            return Promise.resolve(false);
+        }
+
         refreshing ??= (async (): Promise<boolean> => {
-            if (!await renew()) {
+            if (!await renew() || isStopped) {
                 return false;
             }
 
@@ -257,7 +270,10 @@ export function createSession(dependencies: SessionDependencies): ChatSession {
 
             return call();
         },
-        stop: clear,
+        stop: (): void => {
+            isStopped = true;
+            clear();
+        },
         state
     };
 }
