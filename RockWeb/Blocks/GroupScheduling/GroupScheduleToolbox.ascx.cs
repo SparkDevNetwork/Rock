@@ -1066,6 +1066,12 @@ $('#{0}').tooltip();
             if ( groupMemberAssignmentId.HasValue )
             {
                 groupMemberAssignment = groupMemberAssignmentService.GetInclude( groupMemberAssignmentId.Value, a => a.GroupMember );
+
+                // The assignment id comes from a hidden field, so make sure it belongs to the selected person.
+                if ( groupMemberAssignment != null && ( groupMemberAssignment.GroupMember == null || groupMemberAssignment.GroupMember.PersonId != this.SelectedPersonId ) )
+                {
+                    return;
+                }
             }
 
             var groupMemberService = new GroupMemberService( rockContext );
@@ -1853,6 +1859,14 @@ $('#{0}').tooltip();
                     var locationId = ddlSignupLocations.SelectedValue.AsIntegerOrNull();
                     var groupId = hfGroupId.Value.AsInteger();
                     var attendanceId = hfAttendanceId.Value.AsIntegerOrNull();
+
+                    // The group and schedule come from hidden fields, so make sure they are
+                    // still one of the sign-ups that is available to the selected person.
+                    if ( !IsScheduleSignUpAllowed( rockContext, groupId, scheduleId, locationId ) )
+                    {
+                        return;
+                    }
+
                     AttendanceOccurrence attendanceOccurrence = new AttendanceOccurrenceService( rockContext ).GetOrAdd( occurrenceDate, groupId, locationId, scheduleId );
                     var attendanceService = new AttendanceService( rockContext );
 
@@ -1861,7 +1875,7 @@ $('#{0}').tooltip();
                         // if there is an attendanceId, this is an attendance that they just signed up for,
                         // but they might have either unselected it, or changed the location, so remove it
                         var attendance = attendanceService.Get( attendanceId.Value );
-                        if ( attendance != null )
+                        if ( attendance != null && attendance.PersonAlias != null && attendance.PersonAlias.PersonId == this.SelectedPersonId )
                         {
                             attendanceService.Delete( attendance );
                         }
@@ -1880,6 +1894,33 @@ $('#{0}').tooltip();
                     rockContext.SaveChanges();
                 }
             }
+        }
+
+        /// <summary>
+        /// Determines whether the group, schedule and location are one of the sign-ups
+        /// that are available to the selected person. This uses the same group and
+        /// schedule rules as <see cref="GetScheduleData"/>.
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        /// <param name="groupId">The group identifier.</param>
+        /// <param name="scheduleId">The schedule identifier.</param>
+        /// <param name="locationId">The location identifier, or <c>null</c> for no location preference.</param>
+        /// <returns><c>true</c> if the sign-up is allowed; otherwise, <c>false</c>.</returns>
+        private bool IsScheduleSignUpAllowed( RockContext rockContext, int groupId, int scheduleId, int? locationId )
+        {
+            var selectedPersonId = this.SelectedPersonId;
+
+            return new GroupLocationService( rockContext ).Queryable()
+                .AsNoTracking()
+                .Where( a => a.GroupId == groupId
+                    && ( !locationId.HasValue || a.LocationId == locationId.Value )
+                    && a.Group.IsArchived == false
+                    && a.Group.GroupType.IsSchedulingEnabled == true
+                    && a.Group.DisableScheduling == false
+                    && a.Group.DisableScheduleToolboxAccess == false
+                    && a.Group.Members.Any( m => m.PersonId == selectedPersonId && m.IsArchived == false && m.GroupMemberStatus == GroupMemberStatus.Active )
+                    && a.Schedules.Any( s => s.Id == scheduleId && ( s.IsPublic ?? true ) && s.IsActive ) )
+                .Any();
         }
 
         /// <summary>

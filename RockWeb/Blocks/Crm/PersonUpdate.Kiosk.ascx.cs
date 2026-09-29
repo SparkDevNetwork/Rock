@@ -417,9 +417,13 @@ namespace RockWeb.Blocks.Crm
 
         protected void lbProfileNext_Click( object sender, EventArgs e )
         {
+            // Use the person selected from the search results (stored in ViewState)
+            // rather than the hidden field, which can be changed by the client.
+            var personId = this.SelectedPerson != null ? this.SelectedPerson.PersonId.ToString() : string.Empty;
+
             // setup merge fields
             var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
-            mergeFields.Add( "PersonId", hfPersonId.Value );
+            mergeFields.Add( "PersonId", personId );
             mergeFields.Add( "FirstName", tbFirstName.Text );
             mergeFields.Add( "LastName", tbLastName.Text );
             mergeFields.Add( "StreetAddress", acAddress.Street1 );
@@ -461,7 +465,7 @@ namespace RockWeb.Blocks.Crm
                     var workflow = Rock.Model.Workflow.Activate( workflowType, "Kiosk Update Info" );
 
                     // set attributes
-                    workflow.SetAttributeValue( "PersonId", hfPersonId.Value );
+                    workflow.SetAttributeValue( "PersonId", personId );
                     workflow.SetAttributeValue( "FirstName", tbFirstName.Text );
                     workflow.SetAttributeValue( "LastName", tbLastName.Text );
                     workflow.SetAttributeValue( "StreetAddress", acAddress.Street1 );
