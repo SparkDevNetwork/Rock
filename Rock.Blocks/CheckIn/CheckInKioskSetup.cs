@@ -745,10 +745,12 @@ namespace Rock.Blocks.CheckIn
                 return ActionBadRequest( "You don't have permission to edit saved configurations." );
             }
 
+            var savedConfigurationDefinedTypeId = DefinedTypeCache.Get( SystemGuid.DefinedType.SAVED_KIOSK_TEMPLATES.AsGuid(), RockContext )?.Id;
             var definedValueService = new DefinedValueService( RockContext );
             var definedValue = definedValueService.Get( id, false );
 
-            if ( definedValue == null )
+            // Only saved kiosk configurations may be deleted.
+            if ( definedValue == null || !savedConfigurationDefinedTypeId.HasValue || definedValue.DefinedTypeId != savedConfigurationDefinedTypeId.Value )
             {
                 return ActionBadRequest( "Configuration was not found." );
             }

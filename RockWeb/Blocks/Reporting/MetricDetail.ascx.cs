@@ -312,6 +312,11 @@ Example: Let's say you have a DataView called 'Small Group Attendance for Last W
             {
                 metric = metricService.Get( metricId, !disablePredictableIds );
 
+                if ( !IsMetricAuthorized( metric, Authorization.EDIT ) )
+                {
+                    return;
+                }
+
                 // remove any metricPartitions that were removed in the UI
                 var selectedMetricPartitionGuids = MetricPartitionsState.Select( r => r.Guid );
                 foreach ( var item in metric.MetricPartitions.Where( r => !selectedMetricPartitionGuids.Contains( r.Guid ) ).ToList() )
@@ -650,6 +655,11 @@ Example: Let's say you have a DataView called 'Small Group Attendance for Last W
                 // Canceling on Edit.  Return to Details.
                 MetricService metricService = new MetricService( new RockContext() );
                 Metric metric = metricService.Get( hfMetricId.Value, !disablePredictableIds );
+                if ( !IsMetricAuthorized( metric, Authorization.VIEW ) )
+                {
+                    return;
+                }
+
                 ShowReadonlyDetails( metric );
             }
         }
@@ -664,6 +674,11 @@ Example: Let's say you have a DataView called 'Small Group Attendance for Last W
             var disablePredictableIds = PageCache.Layout.Site.DisablePredictableIds;
             MetricService metricService = new MetricService( new RockContext() );
             Metric metric = metricService.Get( hfMetricId.Value, !disablePredictableIds );
+            if ( !IsMetricAuthorized( metric, Authorization.EDIT ) )
+            {
+                return;
+            }
+
             ShowEditDetails( metric );
         }
 
@@ -678,6 +693,11 @@ Example: Let's say you have a DataView called 'Small Group Attendance for Last W
             var disablePredictableIds = PageCache.Layout.Site.DisablePredictableIds;
             MetricService metricService = new MetricService( rockContext );
             Metric metric = metricService.Get( hfMetricId.Value, !disablePredictableIds );
+
+            if ( metric != null && !IsMetricAuthorized( metric, Authorization.EDIT ) )
+            {
+                return;
+            }
 
             // intentionally get metricCategory with new RockContext() so we don't confuse SaveChanges()
             string parentCategoryId = null;
@@ -789,6 +809,13 @@ Example: Let's say you have a DataView called 'Small Group Attendance for Last W
         protected void mdManualRunConfirm_SaveClick( object sender, EventArgs e )
         {
             mdManualRunConfirm.Hide();
+
+            var metric = new MetricService( new RockContext() ).Get( hfMetricId.Value, !PageCache.Layout.Site.DisablePredictableIds );
+            if ( !IsMetricAuthorized( metric, Authorization.ADMINISTRATE ) )
+            {
+                return;
+            }
+
             mdManualRunInfo.Show( string.Format( "The manual metric for '{0}' has been started.", lReadOnlyTitle.Text ), ModalAlertType.Information );
             ManualMetricRun( hfMetricId.Value );
         }
@@ -796,6 +823,34 @@ Example: Let's say you have a DataView called 'Small Group Attendance for Last W
         #endregion
 
         #region Methods
+
+        /// <summary>
+        /// Determines whether the current person is authorized to perform the
+        /// action on the metric. This mirrors the checks in <see cref="ShowDetail(int, int?)"/>
+        /// and is used to re-validate the metric identifier posted in the hidden field.
+        /// </summary>
+        /// <param name="metric">The metric.</param>
+        /// <param name="action">The security action.</param>
+        /// <returns><c>true</c> if the metric exists and the current person is authorized; otherwise <c>false</c>.</returns>
+        private bool IsMetricAuthorized( Metric metric, string action )
+        {
+            if ( metric == null )
+            {
+                return false;
+            }
+
+            if ( action == Authorization.EDIT && UserCanEdit )
+            {
+                return true;
+            }
+
+            if ( action == Authorization.ADMINISTRATE && UserCanAdministrate )
+            {
+                return true;
+            }
+
+            return metric.IsAuthorized( action, CurrentPerson );
+        }
 
         /// <summary>
         /// Shows the detail.

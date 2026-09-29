@@ -474,7 +474,7 @@ namespace RockWeb.Blocks.Utility
             {
                 string rootFolder = GetRootFolderPath();
                 string physicalRootFolder = this.MapPath( rootFolder );
-                string physicalFolder = Path.Combine( physicalRootFolder, relativeFolderPath.TrimStart( '/', '\\' ) );
+                string physicalFolder = GetPhysicalFolder( relativeFolderPath );
 
                 bool isRestricted = false;
                 bool isUploadRestricted = false;
@@ -595,9 +595,7 @@ namespace RockWeb.Blocks.Utility
         {
             try
             {
-                string rootFolder = GetRootFolderPath();
-                string physicalRootFolder = this.MapPath( rootFolder );
-                string physicalFilePath = Path.Combine( physicalRootFolder, relativeFilePath.TrimStart( '\\', '/' ) );
+                string physicalFilePath = GetPhysicalFolder( relativeFilePath );
                 File.Delete( physicalFilePath );
                 ListFolderContents( Path.GetDirectoryName( relativeFilePath ) );
             }
@@ -613,6 +611,9 @@ namespace RockWeb.Blocks.Utility
         /// <param name="relativeFilePath">The relative file path.</param>
         protected string getSelectedFileResult( string relativeFilePath )
         {
+            // Throws if the path is outside the root folder.
+            GetPhysicalFolder( relativeFilePath );
+
             string rootFolder = GetRootFolderPath();
             string imageUrl = rootFolder.TrimEnd( '\\', '/' ) + '/' + relativeFilePath.TrimStart( '\\', '/' ).Replace( '\\', '/' );
 
@@ -665,7 +666,7 @@ namespace RockWeb.Blocks.Utility
 
             try
             {
-                string selectedPhysicalFolder = GetSelectedPhysicalFolder();
+                string selectedPhysicalFolder = GetSelectedPhysicalFolder( false );
                 Directory.Delete( selectedPhysicalFolder, true );
 
                 string rootFolder = GetRootFolderPath();
@@ -823,8 +824,9 @@ namespace RockWeb.Blocks.Utility
                 mdRenameFolder.Hide();
                 try
                 {
-                    string selectedPhysicalFolder = GetSelectedPhysicalFolder();
+                    string selectedPhysicalFolder = GetSelectedPhysicalFolder( false );
                     string renamedPhysicalFolder = Path.Combine( Path.GetDirectoryName( selectedPhysicalFolder ), tbRenameFolderName.Text );
+                    EnsurePathIsWithinRootFolder( renamedPhysicalFolder, false );
                     Directory.Move( selectedPhysicalFolder, renamedPhysicalFolder );
 
                     // set selected folder to renamed folder
@@ -857,8 +859,9 @@ namespace RockWeb.Blocks.Utility
 
             try
             {
-                string selectedPhysicalFolder = GetSelectedPhysicalFolder();
+                string selectedPhysicalFolder = GetSelectedPhysicalFolder( false );
                 string targetPhysicalFolder = Path.Combine( GetPhysicalFolder( targetFolder ), Path.GetFileName( selectedPhysicalFolder ) );
+                EnsurePathIsWithinRootFolder( targetPhysicalFolder, false );
 
                 if ( !Directory.Exists( targetPhysicalFolder ) && !File.Exists( targetPhysicalFolder ) )
                 {
@@ -906,6 +909,16 @@ namespace RockWeb.Blocks.Utility
             try
             {
                 var physicalZipFile = this.Request.MapPath( fupZipUpload.UploadedContentFilePath );
+
+                // The uploaded file name comes from the browser, so make sure
+                // it is really in the folder the uploader saves files to.
+                if ( !Rock.Utility.FileUtilities.IsPathWithinFolder( physicalZipFile, this.Request.MapPath( fupZipUpload.RootFolder ) ) )
+                {
+                    nbErrorMessage.Text = "Invalid File Uploaded.";
+                    nbErrorMessage.Visible = true;
+                    return;
+                }
+
                 if ( File.Exists( physicalZipFile ) )
                 {
                     string selectedPhysicalFolder = GetSelectedPhysicalFolder();
@@ -917,6 +930,13 @@ namespace RockWeb.Blocks.Utility
                             foreach ( ZipArchiveEntry file in archive.Entries )
                             {
                                 string completeFileName = Path.Combine( selectedPhysicalFolder, file.FullName );
+
+                                // Skip any entry that would extract outside of the selected folder.
+                                if ( !Rock.Utility.FileUtilities.IsPathWithinFolder( completeFileName, selectedPhysicalFolder ) )
+                                {
+                                    continue;
+                                }
+
                                 if ( file.Name == string.Empty )
                                 {
                                     // Assuming Empty for Directory
@@ -1014,11 +1034,46 @@ namespace RockWeb.Blocks.Utility
         /// <returns></returns>
         private string GetPhysicalFolder( string relativeFolderPath )
         {
+            return GetPhysicalFolder( relativeFolderPath, true );
+        }
+
+        /// <summary>
+        /// Gets the physical folder of the specified virtual folder. The
+        /// relative path is posted back by the browser, so an exception is
+        /// thrown if it resolves to a location outside of the root folder.
+        /// </summary>
+        /// <param name="relativeFolderPath">The path relative to the root folder.</param>
+        /// <param name="allowRootFolder">If <c>false</c> then the path may not resolve to the root folder itself.</param>
+        /// <returns>The physical path.</returns>
+        private string GetPhysicalFolder( string relativeFolderPath, bool allowRootFolder )
+        {
             string rootFolder = GetRootFolderPath();
             string physicalRootFolder = this.MapPath( rootFolder );
-            string selectedPhysicalFolder = Path.Combine( physicalRootFolder, relativeFolderPath.TrimStart( '/', '\\' ) );
+            string selectedPhysicalFolder = Path.Combine( physicalRootFolder, ( relativeFolderPath ?? string.Empty ).TrimStart( '/', '\\' ) );
+
+            EnsurePathIsWithinRootFolder( selectedPhysicalFolder, allowRootFolder );
 
             return selectedPhysicalFolder;
+        }
+
+        /// <summary>
+        /// Throws an exception if the physical path is not within the root folder.
+        /// </summary>
+        /// <param name="physicalPath">The physical path to check.</param>
+        /// <param name="allowRootFolder">If <c>false</c> then the path may not be the root folder itself.</param>
+        private void EnsurePathIsWithinRootFolder( string physicalPath, bool allowRootFolder )
+        {
+            string physicalRootFolder = this.MapPath( GetRootFolderPath() );
+
+            if ( !Rock.Utility.FileUtilities.IsPathWithinFolder( physicalPath, physicalRootFolder ) )
+            {
+                throw new Exception( "The path is not within the root folder." );
+            }
+
+            if ( !allowRootFolder && Rock.Utility.FileUtilities.IsPathWithinFolder( physicalRootFolder, physicalPath ) )
+            {
+                throw new Exception( "The root folder cannot be modified." );
+            }
         }
 
         /// <summary>
@@ -1028,6 +1083,16 @@ namespace RockWeb.Blocks.Utility
         private string GetSelectedPhysicalFolder()
         {
             return GetPhysicalFolder( hfSelectedFolder.Value );
+        }
+
+        /// <summary>
+        /// Gets the selected physical folder.
+        /// </summary>
+        /// <param name="allowRootFolder">If <c>false</c> then the selected folder may not be the root folder itself.</param>
+        /// <returns>The physical path.</returns>
+        private string GetSelectedPhysicalFolder( bool allowRootFolder )
+        {
+            return GetPhysicalFolder( hfSelectedFolder.Value, allowRootFolder );
         }
     }
 }

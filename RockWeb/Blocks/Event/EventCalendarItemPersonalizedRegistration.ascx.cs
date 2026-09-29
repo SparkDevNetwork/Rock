@@ -191,9 +191,14 @@ namespace RockWeb.Blocks.Event
             // get event item
             int eventItemOccurrenceId = hfSelectedEventId.Value.AsInteger();
 
+            // The occurrence id comes from a hidden field, so make sure it belongs to the event item
+            // this block is showing, which is where the selectable occurrences come from.
+            int eventItemId = PageParameter( "EventItemId" ).AsInteger();
+
             // find registration
             var eventGroup = new EventItemOccurrenceGroupMapService( _rockContext ).Queryable()
-                                .Where( m => m.EventItemOccurrenceId == eventItemOccurrenceId )
+                                .Where( m => m.EventItemOccurrenceId == eventItemOccurrenceId
+                                    && m.EventItemOccurrence.EventItemId == eventItemId )
                                 .Select( m => m.EventItemOccurrence )
                                 .FirstOrDefault();
 

@@ -590,10 +590,18 @@ namespace Rock.Blocks.Reporting
                     return actionError;
                 }
 
+                var originalTemplateBinaryFileId = entity.TemplateBinaryFileId;
+
                 // Update the entity instance from the information in the bag.
                 if ( !UpdateEntityFromBox( entity, box, rockContext ) )
                 {
                     return ActionBadRequest( "Invalid data." );
+                }
+
+                // Only allow the template file to be changed to one the person is allowed to use.
+                if ( !new BinaryFileService( rockContext ).IsUploadedBinaryFileAllowedForPerson( entity.TemplateBinaryFileId, originalTemplateBinaryFileId, RequestContext.CurrentPerson ) )
+                {
+                    return ActionBadRequest( "Invalid template file." );
                 }
 
                 // Ensure everything is valid before saving.

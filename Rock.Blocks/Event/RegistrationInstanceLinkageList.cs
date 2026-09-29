@@ -397,6 +397,13 @@ namespace Rock.Blocks.Event
                 return ActionBadRequest( $"{EventItemOccurrenceGroupMap.FriendlyTypeName} not found." );
             }
 
+            // Only linkages of the registration instance shown in the list may be deleted.
+            var registrationInstance = GetRegistrationInstance();
+            if ( registrationInstance == null || entity.RegistrationInstanceId != registrationInstance.Id )
+            {
+                return ActionBadRequest( $"{EventItemOccurrenceGroupMap.FriendlyTypeName} not found." );
+            }
+
             if ( !entityService.CanDelete( entity, out var errorMessage ) )
             {
                 return ActionBadRequest( errorMessage );

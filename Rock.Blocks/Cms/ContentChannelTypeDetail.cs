@@ -553,6 +553,18 @@ namespace Rock.Blocks.Cms
                     return ActionBadRequest( validationMessage );
                 }
 
+                // Make sure the channel and item attributes are either new or
+                // already belong to this content channel type.
+                var qualifierValue = entity.Id == 0 ? null : entity.Id.ToString();
+                var channelEntityTypeId = EntityTypeCache.Get( typeof( ContentChannel ) ).Id;
+                var itemEntityTypeId = EntityTypeCache.Get( typeof( ContentChannelItem ) ).Id;
+
+                if ( !PublicAttributeHelper.AreAttributeEditsAllowed( box.Entity.ChannelAttributes, channelEntityTypeId, "ContentChannelTypeId", qualifierValue, rockContext )
+                    || !PublicAttributeHelper.AreAttributeEditsAllowed( box.Entity.ItemAttributes, itemEntityTypeId, "ContentChannelTypeId", qualifierValue, rockContext ) )
+                {
+                    return ActionBadRequest( "Invalid attribute." );
+                }
+
                 if ( entity.Id == 0 )
                 {
                     entity.CreatedByPersonAliasId = GetCurrentPerson()?.PrimaryAliasId;

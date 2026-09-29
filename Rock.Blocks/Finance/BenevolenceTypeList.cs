@@ -175,6 +175,13 @@ namespace Rock.Blocks.Finance
                     return ActionBadRequest( $"Not authorized to delete ${BenevolenceType.FriendlyTypeName}." );
                 }
 
+                // The list only shows types the person can view, so don't
+                // allow deleting a type that would not have been displayed.
+                if ( !entity.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson ) )
+                {
+                    return ActionBadRequest( $"Not authorized to delete {BenevolenceType.FriendlyTypeName}." );
+                }
+
                 string errorMessage = null;
                 rockContext.WrapTransaction( () =>
                 {
