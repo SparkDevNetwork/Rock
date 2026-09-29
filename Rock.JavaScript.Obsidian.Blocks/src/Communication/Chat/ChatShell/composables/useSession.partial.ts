@@ -137,6 +137,11 @@ export function createSession(dependencies: SessionDependencies): ChatSession {
         for (let attempt = 0; attempt < 2; attempt++) {
             const minted = await dependencies.mintChurchToken();
 
+            // Stopped while Rock answered: nothing more is asked, and nothing it said is kept.
+            if (isStopped) {
+                return "unavailable";
+            }
+
             if (minted.isUnreachable) {
                 // Only a session with nothing yet shows it; one that holds a token carries on.
                 if (token === null) {
@@ -151,6 +156,9 @@ export function createSession(dependencies: SessionDependencies): ChatSession {
             }
 
             const exchanged = await dependencies.exchange(minted.churchToken);
+            if (isStopped) {
+                return "unavailable";
+            }
             if (exchanged.ok) {
                 token = exchanged.accessToken;
                 lifeSeconds = exchanged.expiresInSeconds;
@@ -185,6 +193,11 @@ export function createSession(dependencies: SessionDependencies): ChatSession {
      */
     async function renew(): Promise<boolean> {
         const outcome = await acquire();
+
+        // A stopped session has already been closed by whoever stopped it; it is not ended again.
+        if (isStopped) {
+            return false;
+        }
 
         if (outcome === "ok") {
             return true;

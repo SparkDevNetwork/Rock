@@ -252,5 +252,30 @@ describe("createRealtimeHub", () => {
         expect(seen).toEqual(["status rt.not_readable"]);
         expect(f.removed).toEqual([]);
     });
+
+    test("a hub stopped while it loads the token subscribes to nothing", async () => {
+        const f = fakeClient();
+        let loaded!: () => void;
+        f.client.realtime.setAuth = () => new Promise<void>(resolve => loaded = resolve);
+        const { hub } = hubWith(f.client);
+
+        const starting = hub.start();
+        await hub.stop();
+        loaded();
+        await starting;
+
+        expect(f.channels).toEqual([]);
+    });
+
+    test("a stopped hub joins no channel", async () => {
+        const f = fakeClient();
+        const { hub } = hubWith(f.client);
+        await hub.start();
+        await hub.stop();
+
+        hub.openChannel(channelOne);
+
+        expect(f.channels.map(c => c.topic)).toEqual([personalTopic(tenant, alias)]);
+    });
 });
 

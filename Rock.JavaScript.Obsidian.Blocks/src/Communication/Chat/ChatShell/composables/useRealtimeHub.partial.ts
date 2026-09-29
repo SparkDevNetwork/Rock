@@ -115,6 +115,10 @@ export function createRealtimeHub(dependencies: RealtimeHubDependencies): Realti
     let open: { channelId: string, channel: RealtimeChannelLike, isJoined: boolean } | null = null;
     let isDegraded = false;
 
+    // Set by stop; a hub stopped while it waits on the token, or asked to open a channel after,
+    // joins nothing.
+    let isStopped = false;
+
     /**
      * Reports the connection's health, only when it changes. A refused join carries Realtime's
      * words, which say more than the status does.
@@ -163,6 +167,9 @@ export function createRealtimeHub(dependencies: RealtimeHubDependencies): Realti
             // callback, which is the form that authorises every private join on the socket and
             // not only the first.
             await client.realtime.setAuth();
+            if (isStopped) {
+                return;
+            }
 
             const channel = client.channel(personalTopic(dependencies.tenantId, dependencies.personAliasGuid), { config: { private: true } });
             personal = channel
@@ -172,6 +179,10 @@ export function createRealtimeHub(dependencies: RealtimeHubDependencies): Realti
         },
 
         openChannel: (channelId: string): void => {
+            if (isStopped) {
+                return;
+            }
+
             if (open) {
                 void client.removeChannel(open.channel);
             }
@@ -203,6 +214,7 @@ export function createRealtimeHub(dependencies: RealtimeHubDependencies): Realti
         },
 
         stop: async (): Promise<void> => {
+            isStopped = true;
             const channels = [open?.channel, personal].filter((c): c is RealtimeChannelLike => !!c);
             open = null;
             personal = null;

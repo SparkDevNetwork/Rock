@@ -258,7 +258,7 @@ export function createChatShell(options: ShellOptions): ChatShell {
     /** The pending wait before a recheck, so a stopped or ended shell can cancel it. */
     let recheckTimer: ReturnType<typeof setTimeout> | null = null;
 
-    /** Set once the shell is stopped or its session has ended; nothing fetches a token after. */
+    /** Set once the shell is stopped or its session has ended; the page load goes no further. */
     let isStopped = false;
 
     /**
@@ -267,9 +267,7 @@ export function createChatShell(options: ShellOptions): ChatShell {
      * Realtime then closes whatever the person has lost. Refreshes already running are shared.
      */
     function recheck(): void {
-        if (!isStopped) {
-            void session.refresh();
-        }
+        void session.refresh();
     }
 
     /** Cancels a recheck still waiting. */
@@ -290,11 +288,7 @@ export function createChatShell(options: ShellOptions): ChatShell {
         session.stop();
         state.gate = session.state.gate;
         state.phase = session.state.gate === "ok" ? "failed" : "refused";
-
-        // Cleared first, so a page load or an open still running joins nothing on it.
-        const ended = hub;
-        hub = null;
-        await ended?.stop();
+        await hub?.stop();
     }
 
     /** Exchanges a church token for a platform token. */
@@ -552,9 +546,12 @@ export function createChatShell(options: ShellOptions): ChatShell {
         stop: async (): Promise<void> => {
             isStopped = true;
             cancelRecheck();
+
+            // Stopped before the last save, so no refresh starts while it goes out; the token is
+            // kept, and the save still carries it.
+            session.stop();
             await tracker.leave();
             detachPage?.();
-            session.stop();
             await hub?.stop();
         }
     };

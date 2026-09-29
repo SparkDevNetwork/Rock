@@ -395,6 +395,7 @@ describe("createSession", () => {
 
         expect(f.timers.filter(t => !t.cleared)).toEqual([]);
         expect(f.pushes).toBe(0);
+        expect(f.exchanges).toEqual(["church-1"]);
     });
 
     test("once stopped, a call the platform calls expired does not mint again", async () => {
@@ -408,6 +409,32 @@ describe("createSession", () => {
 
         expect(result).toBe("expired");
         expect(f.mints).toBe(before);
+    });
+
+    test("a refusal that arrives after the session stopped does not end it a second time", async () => {
+        let answer!: (result: ChurchTokenResult) => void;
+        let calls = 0;
+        let ended = 0;
+        const f = fakes({
+            mintChurchToken: async (): Promise<ChurchTokenResult> => {
+                calls++;
+                if (calls === 1) {
+                    return { gate: "ok", churchToken: "church-1" };
+                }
+                return new Promise(resolve => answer = resolve);
+            },
+            onEnded: () => ended++
+        });
+        const session = createSession(f.dependencies);
+        await session.start();
+
+        const refreshing = session.refresh();
+        await settle();
+        session.stop();
+        answer({ gate: "banned", churchToken: null });
+        await refreshing;
+
+        expect(ended).toBe(0);
     });
 });
 
