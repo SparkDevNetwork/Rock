@@ -137,6 +137,8 @@ export function createRealtimeHub(dependencies: RealtimeHubDependencies): Realti
      * Handles Realtime's own error about a channel. A read revoked from the open channel means
      * the person may no longer read it at all, so the hub leaves it rather than let the client
      * library join it again; anything else is reported and the channel's status says the rest.
+     * Only the open channel can be revoked: the same words on the personal topic are a refused
+     * read, and that topic is kept, since the session's end is what closes it.
      */
     function onSystem(channel: RealtimeChannelLike, message: RealtimeMessageLike): void {
         if (message.status !== "error") {
@@ -144,7 +146,7 @@ export function createRealtimeHub(dependencies: RealtimeHubDependencies): Realti
         }
 
         const isOpen = open?.channel === channel;
-        const error = classifyRealtimeMessage(message.message ?? "", isOpen ? open!.isJoined : true);
+        const error = classifyRealtimeMessage(message.message ?? "", isOpen && open!.isJoined);
 
         if (isOpen && error.code === "rt.read_revoked") {
             open = null;

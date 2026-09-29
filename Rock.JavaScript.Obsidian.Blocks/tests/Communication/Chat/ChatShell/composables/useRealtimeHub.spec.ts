@@ -240,5 +240,17 @@ describe("createRealtimeHub", () => {
         expect(seen).toEqual([`joined ${channelOne}`, "status rt.read_revoked"]);
         expect(f.removed).toEqual([channelTopic(tenant, channelOne)]);
     });
+
+    test("the refusal words on the personal topic are a refused read, never a revoked channel, and the topic is kept", async () => {
+        const f = fakeClient();
+        const { hub, seen } = hubWith(f.client);
+        await hub.start();
+        hub.openChannel(channelOne);
+
+        f.channels[0].system?.({ status: "error", message: "You do not have permissions to read from this Channel topic: x" } as never);
+
+        expect(seen).toEqual(["status rt.not_readable"]);
+        expect(f.removed).toEqual([]);
+    });
 });
 

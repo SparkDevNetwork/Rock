@@ -255,13 +255,29 @@ export function createChatShell(options: ShellOptions): ChatShell {
      */
     const channelChangedWaitMs = 5_000;
 
+    /** The pending wait before a recheck, so a stopped or ended shell can cancel it. */
+    let recheckTimer: ReturnType<typeof setTimeout> | null = null;
+
+    /** Set once the shell is stopped or its session has ended; nothing fetches a token after. */
+    let isStopped = false;
+
     /**
      * Asks again whether the person may still read what they have open. Realtime keeps a join's
      * answer until the socket is handed a new token, so a new token is fetched and handed over;
      * Realtime then closes whatever the person has lost. Refreshes already running are shared.
      */
     function recheck(): void {
-        void session.refresh();
+        if (!isStopped) {
+            void session.refresh();
+        }
+    }
+
+    /** Cancels a recheck still waiting. */
+    function cancelRecheck(): void {
+        if (recheckTimer !== null) {
+            clearTimeout(recheckTimer);
+            recheckTimer = null;
+        }
     }
 
     /**
@@ -269,9 +285,15 @@ export function createChatShell(options: ShellOptions): ChatShell {
      * token ran out, and shows why. Realtime would close the topics at the token's expiry anyway.
      */
     async function end(): Promise<void> {
+        isStopped = true;
+        cancelRecheck();
         state.gate = session.state.gate;
         state.phase = session.state.gate === "ok" ? "failed" : "refused";
-        await hub?.stop();
+
+        // Cleared first, so a page load or an open still running joins nothing on it.
+        const ended = hub;
+        hub = null;
+        await ended?.stop();
     }
 
     /** Exchanges a church token for a platform token. */
@@ -432,7 +454,8 @@ export function createChatShell(options: ShellOptions): ChatShell {
                 onChannelEvent: (channelId, event, payload) => {
                     if (event === "channel.changed") {
                         if (channelId === state.activeChannelId) {
-                            setTimeout(recheck, Math.random() * channelChangedWaitMs);
+                            cancelRecheck();
+                            recheckTimer = setTimeout(recheck, Math.random() * channelChangedWaitMs);
                         }
                         return;
                     }
@@ -455,6 +478,11 @@ export function createChatShell(options: ShellOptions): ChatShell {
                     // The hub has already left a channel whose read was revoked; the person is told,
                     // and the list is loaded again without it.
                     if (error?.code === "rt.read_revoked") {
+                        // Nothing is open any more, so choosing the channel again, once the
+                        // person may read it, opens it afresh.
+                        void tracker.leave();
+                        state.activeChannelId = null;
+                        channels.setActive(null);
                         report(error);
                         void loadSidebar();
                         return;
@@ -511,6 +539,8 @@ export function createChatShell(options: ShellOptions): ChatShell {
         },
 
         stop: async (): Promise<void> => {
+            isStopped = true;
+            cancelRecheck();
             await tracker.leave();
             detachPage?.();
             session.stop();

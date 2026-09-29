@@ -384,4 +384,54 @@ describe("the live cut", () => {
         expect(h.shell.state.errors.map(e => e.code)).toContain("rt.read_revoked");
         expect(h.counts.bootstraps).toBe(before + 1);
     });
+
+    test("a wait begun before the shell stops never fetches a token after it", async () => {
+        const h = await started();
+        jest.useFakeTimers({ doNotFake: ["queueMicrotask", "nextTick"] });
+        jest.spyOn(Math, "random").mockReturnValue(0.5);
+        const before = h.counts.mints;
+
+        topicOf(h, channelTopic(tenant, channelA)).listeners["broadcast"]?.({ event: "channel.changed", payload: { channel_id: channelA } });
+        await settle();
+        await h.shell.stop();
+        jest.advanceTimersByTime(10_000);
+        await settle();
+
+        expect(h.counts.mints).toBe(before);
+    });
+
+    test("a channel whose read was revoked is no longer the open one, so choosing it again opens it", async () => {
+        const h = await started();
+        const open = topicOf(h, channelTopic(tenant, channelA));
+
+        open.listeners["system"]?.({ status: "error", message: "You do not have permissions to read from this Channel topic: x" });
+        await settle();
+        expect(h.shell.state.activeChannelId).toBeNull();
+
+        const joinsBefore = h.joined.length;
+        const reopening = h.shell.selectChannel(channelA);
+        await settle();
+        while (h.history[channelA]?.length) {
+            answerHistory(h, channelA, 11);
+            await settle();
+        }
+        await reopening;
+
+        expect(h.shell.state.activeChannelId).toBe(channelA);
+        expect(h.joined.slice(joinsBefore)).toEqual([channelTopic(tenant, channelA)]);
+    });
+
+    test("once Rock refuses a refresh, choosing a channel joins nothing", async () => {
+        const h = await started();
+        h.mintGate.value = "banned";
+        personal(h, "session.recheck", {});
+        await settle();
+        const joinsBefore = h.joined.length;
+
+        void h.shell.selectChannel(channelB);
+        await settle();
+
+        expect(h.joined.slice(joinsBefore)).toEqual([]);
+    });
 });
+
