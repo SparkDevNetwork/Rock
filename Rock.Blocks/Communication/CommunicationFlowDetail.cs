@@ -237,6 +237,12 @@ namespace Rock.Blocks.Communication
 
             // Build the communication template (without saving).
             var communicationTemplate = GetOrCreateFlowCommunicationTemplate( this.RockContext, bag.CommunicationTemplate );
+
+            if ( !AreTemplateBinaryFilesAllowed( this.RockContext, currentPerson, communicationTemplate, bag.CommunicationTemplate ) )
+            {
+                return ActionBadRequest( "Invalid attachment." );
+            }
+
             ApplyBagToCommunicationTemplate( this.RockContext, communicationTemplate, bag.CommunicationTemplate );
 
             // Build the communication (without saving).
@@ -595,6 +601,12 @@ namespace Rock.Blocks.Communication
         {
             communicationTemplate = GetOrCreateFlowCommunicationTemplate( this.RockContext, bag );
 
+            if ( !AreTemplateBinaryFilesAllowed( this.RockContext, currentPerson, communicationTemplate, bag ) )
+            {
+                errorResult = new ValidationResult( "Invalid attachment." );
+                return false;
+            }
+
             ApplyBagToCommunicationTemplate( this.RockContext, communicationTemplate, bag );
 
             if ( !ValidateCommunicationTemplate( this.RockContext, currentPerson, communicationTemplate, out errorResult ) )
@@ -883,6 +895,55 @@ namespace Rock.Blocks.Communication
             return true;
         }
         
+        /// <summary>
+        /// Determines whether the binary files sent by the client for the template
+        /// (image, email attachments and SMS attachment) may be used. A file is
+        /// allowed if it is already used by the template, or if it is a temporary
+        /// file that was not uploaded by somebody else.
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        /// <param name="currentPerson">The current person.</param>
+        /// <param name="communicationTemplate">The existing or new communication template.</param>
+        /// <param name="bag">The template bag sent by the client.</param>
+        /// <returns><c>true</c> if all the binary files may be used; otherwise <c>false</c>.</returns>
+        private bool AreTemplateBinaryFilesAllowed( RockContext rockContext, Person currentPerson, CommunicationTemplate communicationTemplate, CommunicationFlowDetailCommunicationTemplateBag bag )
+        {
+            var binaryFileService = new BinaryFileService( rockContext );
+            var currentBinaryFileGuids = new List<Guid>();
+
+            if ( communicationTemplate.Id != 0 )
+            {
+                currentBinaryFileGuids = new CommunicationTemplateAttachmentService( rockContext )
+                    .Queryable()
+                    .Where( a => a.CommunicationTemplateId == communicationTemplate.Id )
+                    .Select( a => a.BinaryFile.Guid )
+                    .ToList();
+
+                if ( communicationTemplate.ImageFile != null )
+                {
+                    currentBinaryFileGuids.Add( communicationTemplate.ImageFile.Guid );
+                }
+
+                if ( communicationTemplate.LogoBinaryFile != null )
+                {
+                    currentBinaryFileGuids.Add( communicationTemplate.LogoBinaryFile.Guid );
+                }
+            }
+
+            var postedBinaryFileGuids = new List<Guid?>
+            {
+                bag.ImageFile?.Value?.AsGuidOrNull(),
+                bag.SmsAttachmentBinaryFile?.Value?.AsGuidOrNull()
+            };
+
+            postedBinaryFileGuids.AddRange( bag.EmailAttachmentBinaryFiles?.Select( a => a.Value?.AsGuidOrNull() ) ?? Enumerable.Empty<Guid?>() );
+
+            return postedBinaryFileGuids
+                .Where( g => g.HasValue && !g.Value.IsEmpty() && !currentBinaryFileGuids.Contains( g.Value ) )
+                .All( g => binaryFileService.IsUploadedBinaryFileAllowedForPerson( g, null, currentPerson ) );
+        }
+
+
         private CommunicationTemplate GetOrCreateFlowCommunicationTemplate( RockContext rockContext, CommunicationFlowDetailCommunicationTemplateBag bag )
         {
             var communicationTemplateService = new CommunicationTemplateService( rockContext );

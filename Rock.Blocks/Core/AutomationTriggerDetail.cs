@@ -840,6 +840,11 @@ namespace Rock.Blocks.Core
         [BlockAction]
         public BlockActionResult ReorderEvent( string key, string beforeKey )
         {
+            if ( !BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
+            {
+                return ActionBadRequest( $"Not authorized to edit {AutomationEvent.FriendlyTypeName}." );
+            }
+
             var eventCache = AutomationEventCache.GetByIdKey( key, RockContext );
 
             if ( eventCache == null )

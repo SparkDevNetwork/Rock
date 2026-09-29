@@ -1542,7 +1542,15 @@ namespace Rock.Blocks.Engagement
 
             var targetStepProgram = StepProgramCache.Get( transferBag.TargetStepProgramGuid.Value );
 
-            if ( targetStepProgram == null )
+            // Only allow the same programs that GetStepPrograms() offers.
+            var targetStepProgramEntity = targetStepProgram != null
+                ? new StepProgramService( RockContext ).Get( targetStepProgram.Id )
+                : null;
+
+            if ( targetStepProgramEntity == null
+                || !targetStepProgramEntity.IsActive
+                || targetStepProgramEntity.Id == stepType.StepProgramId
+                || !targetStepProgramEntity.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson ) )
             {
                 return ActionBadRequest( "Target Step Program not found." );
             }
