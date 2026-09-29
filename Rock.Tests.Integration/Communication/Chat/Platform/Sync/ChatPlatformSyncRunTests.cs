@@ -39,7 +39,8 @@ using Rock.Web;
 namespace Rock.Tests.Integration.Communication.Chat.Platform.Sync
 {
     /// <summary>
-    /// The Chat Platform Sync job's whole run, against a stand-in for the platform.
+    /// The Chat Platform Sync job's whole run, against a stand-in for the platform and against a
+    /// real one.
     /// </summary>
     /// <remarks>
     /// Every part of the run has its own tests, and the run once shipped sending the church's own
@@ -97,6 +98,50 @@ namespace Rock.Tests.Integration.Communication.Chat.Platform.Sync
             {
                 // A run saves the platform's backoff advice into the stored settings.
                 SystemSettings.SetValue( SystemSetting.CHAT_PLATFORM_CONFIGURATION, storedSetting );
+            }
+        }
+
+        /// <summary>
+        /// The same run against a real platform: signed in, submitted, drained and applied, with a
+        /// member Rock projected present on the platform afterwards.
+        /// </summary>
+        /// <remarks>
+        /// The stand-in above agrees with Rock about every call by construction, so a header the
+        /// platform refuses or a payload its drain cannot apply would still pass it. This makes the
+        /// real calls. It needs the platform's drain job running, since the run waits for the
+        /// drain's outcome; a local stack's seed switches that job off, and
+        /// <see cref="LocalChatPlatform"/> says how to name the platform.
+        /// </remarks>
+        [TestMethod]
+        [TestCategory( "ChatPlatformEndToEnd" )]
+        public void ARunAgainstARealPlatformIsAppliedAndItsMemberReachesThePlatform()
+        {
+            var platform = LocalChatPlatform.FromEnvironment();
+
+            using ( var fixture = new ChatSyncProjectionFixture() )
+            {
+                var configuration = platform.ProvisionChurch();
+                fixture.StoreConfiguration( configuration );
+
+                var channel = fixture.AddChannel( fixture.SharedGroupTypeId, "Full sync channel" );
+                var personId = fixture.AddPerson( "FullSync" );
+                fixture.AddMember( channel, personId );
+
+                ChatPlatformSync.RunResult result;
+
+                // A manual run, for its longer wait on the drain's outcome.
+                using ( var rockContext = new RockContext() )
+                {
+                    result = ChatPlatformSync.Run( rockContext, configuration, true );
+                }
+
+                Assert.IsFalse( result.IsFailure, result.Message );
+                StringAssert.Contains( result.Message, "this restatement was applied",
+                    "the run should see its own submission applied; if it was only submitted, the platform's drain job is not running" );
+
+                var row = platform.WaitForMember( configuration.TenantId.Value, channel, fixture.PrimaryAliasGuid( personId ), r => r != null );
+                Assert.IsNotNull( row, "the member Rock projected is not on the platform" );
+                Assert.AreEqual( JTokenType.Null, row["absent_since"].Type, "a member in the restatement is present" );
             }
         }
 

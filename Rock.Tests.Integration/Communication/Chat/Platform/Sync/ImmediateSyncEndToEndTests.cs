@@ -18,19 +18,15 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
-using System.IO;
 using System.Linq;
 using System.Net.Http;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
-using Rock.Communication.Chat.Platform.Configuration;
 using Rock.Communication.Chat.Platform.Sync;
 using Rock.Data;
 using Rock.Model;
@@ -52,23 +48,8 @@ namespace Rock.Tests.Integration.Communication.Chat.Platform.Sync
     ///         platform's data API under the service role.
     ///     </para>
     ///     <para>
-    ///         It runs only when a chat platform is named in the environment, and reports
-    ///         Inconclusive otherwise, so the continuous integration run, which has none, passes
-    ///         over it. <c>ROCK_CHAT_PLATFORM_URL</c> is the platform's API address,
-    ///         <c>ROCK_CHAT_PLATFORM_PUBLISHABLE_KEY</c> its publishable key,
-    ///         <c>ROCK_CHAT_PLATFORM_SERVICE_ROLE_KEY</c> its service role key, used only to read
-    ///         rows back, and <c>ROCK_CHAT_PLATFORM_PROVISION_SECRET</c> the secret its tenant
-    ///         provisioning function compares.
-    ///     </para>
-    ///     <para>
-    ///         To run it against a local platform, start the stack from the platform repository with
-    ///         <c>npx supabase start</c>, and serve its functions with the signing key and provision
-    ///         secret in <c>supabase/functions/.env</c>. <c>npx supabase status -o env</c> prints
-    ///         <c>API_URL</c>, <c>PUBLISHABLE_KEY</c> and <c>SERVICE_ROLE_KEY</c> for the first three
-    ///         variables, and the fourth is <c>CHAT_PROVISION_SECRET</c> from that file. Then run
-    ///         <c>dotnet test Rock.Tests.Integration/Rock.Tests.Integration.csproj --filter
-    ///         "FullyQualifiedName~ImmediateSyncEndToEnd"</c> from this repository. The timings go
-    ///         to the test output. Each run leaves its own church's rows on the platform.
+    ///         It runs only when a chat platform is named in the environment, as
+    ///         <see cref="LocalChatPlatform"/> describes. The timings go to the test output.
     ///     </para>
     /// </remarks>
     [TestClass]
@@ -77,21 +58,7 @@ namespace Rock.Tests.Integration.Communication.Chat.Platform.Sync
     {
         #region Constants
 
-        private const string PlatformUrlVariable = "ROCK_CHAT_PLATFORM_URL";
-
-        private const string PublishableKeyVariable = "ROCK_CHAT_PLATFORM_PUBLISHABLE_KEY";
-
-        private const string ServiceRoleKeyVariable = "ROCK_CHAT_PLATFORM_SERVICE_ROLE_KEY";
-
-        private const string ProvisionSecretVariable = "ROCK_CHAT_PLATFORM_PROVISION_SECRET";
-
         private const int TimedSaves = 20;
-
-        // Far past what a push to a local platform takes, so a row that is not there by then was
-        // never pushed.
-        private static readonly TimeSpan RowWait = TimeSpan.FromSeconds( 10 );
-
-        private static readonly TimeSpan PollInterval = TimeSpan.FromMilliseconds( 5 );
 
         #endregion Constants
 
@@ -100,7 +67,7 @@ namespace Rock.Tests.Integration.Communication.Chat.Platform.Sync
         [TestMethod]
         public void AMemberSavedInsideARequestReachesThePlatformAtItsReadTimeAndItsDeletionStampsItAbsent()
         {
-            var platform = LocalPlatform.FromEnvironment();
+            var platform = LocalChatPlatform.FromEnvironment();
 
             using ( var fixture = new ChatSyncProjectionFixture() )
             using ( var recorder = new PushRecorder() )
@@ -145,7 +112,7 @@ namespace Rock.Tests.Integration.Communication.Chat.Platform.Sync
         [TestMethod]
         public void ABanListAddSetsTheGloballyBannedFlagOnThePlatform()
         {
-            var platform = LocalPlatform.FromEnvironment();
+            var platform = LocalChatPlatform.FromEnvironment();
 
             using ( var fixture = new ChatSyncProjectionFixture() )
             using ( var recorder = new PushRecorder() )
@@ -172,7 +139,7 @@ namespace Rock.Tests.Integration.Communication.Chat.Platform.Sync
         [TestMethod]
         public void TwentySavesAreTimedFromTheSaveToTheRowOnThePlatform()
         {
-            var platform = LocalPlatform.FromEnvironment();
+            var platform = LocalChatPlatform.FromEnvironment();
 
             using ( var fixture = new ChatSyncProjectionFixture() )
             using ( var recorder = new PushRecorder() )
@@ -213,7 +180,7 @@ namespace Rock.Tests.Integration.Communication.Chat.Platform.Sync
                 elapsed.Sort();
 
                 TestContext.WriteLine( string.Join( Environment.NewLine,
-                    $"saves timed: {elapsed.Count}, from SaveChanges returning to the row readable on the platform, polled every {PollInterval.TotalMilliseconds:F0} ms",
+                    $"saves timed: {elapsed.Count}, from SaveChanges returning to the row readable on the platform, polled every {LocalChatPlatform.PollInterval.TotalMilliseconds:F0} ms",
                     "elapsed ms: " + string.Join( ", ", elapsed.Select( e => e.ToString( "F1", CultureInfo.InvariantCulture ) ) ),
                     $"p50 ms: {Percentile( elapsed, 0.50 ):F1}",
                     $"p95 ms: {Percentile( elapsed, 0.95 ):F1}",
@@ -291,158 +258,6 @@ namespace Rock.Tests.Integration.Communication.Chat.Platform.Sync
                 }
 
                 return base.SendAsync( request, cancellationToken );
-            }
-        }
-
-        /// <summary>
-        /// The chat platform the environment names: provisioning a church on it, and reading its
-        /// rows back.
-        /// </summary>
-        private sealed class LocalPlatform
-        {
-            private static readonly HttpClient _http = new HttpClient();
-
-            private string _url;
-
-            private string _publishableKey;
-
-            private string _serviceRoleKey;
-
-            private string _provisionSecret;
-
-            /// <summary>
-            /// The platform the environment names, or an Inconclusive result naming what is missing.
-            /// </summary>
-            public static LocalPlatform FromEnvironment()
-            {
-                var platform = new LocalPlatform
-                {
-                    _url = Environment.GetEnvironmentVariable( PlatformUrlVariable ),
-                    _publishableKey = Environment.GetEnvironmentVariable( PublishableKeyVariable ),
-                    _serviceRoleKey = Environment.GetEnvironmentVariable( ServiceRoleKeyVariable ),
-                    _provisionSecret = Environment.GetEnvironmentVariable( ProvisionSecretVariable )
-                };
-
-                var missing = new[]
-                {
-                    platform._url.IsNullOrWhiteSpace() ? PlatformUrlVariable : null,
-                    platform._publishableKey.IsNullOrWhiteSpace() ? PublishableKeyVariable : null,
-                    platform._serviceRoleKey.IsNullOrWhiteSpace() ? ServiceRoleKeyVariable : null,
-                    platform._provisionSecret.IsNullOrWhiteSpace() ? ProvisionSecretVariable : null
-                }.Where( v => v != null ).ToList();
-
-                if ( missing.Any() )
-                {
-                    Assert.Inconclusive( "Set " + string.Join( ", ", missing ) + " to run this against a chat platform." );
-                }
-
-                platform._url = platform._url.TrimEnd( '/' );
-
-                return platform;
-            }
-
-            /// <summary>
-            /// Provisions a new church with a key made on the spot, and returns the settings Rock
-            /// would hold for it after enabling chat.
-            /// </summary>
-            public ChatPlatformConfiguration ProvisionChurch()
-            {
-                var tenantId = Guid.NewGuid();
-                var kid = "kid-" + tenantId.ToString( "N" ).Substring( 0, 12 );
-                var key = ChatSyncProjectionFixture.CreateSigningKey( kid );
-
-                var body = new JObject
-                {
-                    ["tenant_id"] = tenantId.ToString(),
-                    ["name"] = "Rock immediate sync " + tenantId.ToString( "N" ).Substring( 0, 8 ),
-                    ["rock_public_key"] = key.PublicJwk
-                };
-
-                using ( var request = new HttpRequestMessage( HttpMethod.Post, _url + "/functions/v1/provision-tenant" ) )
-                {
-                    request.Headers.TryAddWithoutValidation( "apikey", _publishableKey );
-                    request.Headers.TryAddWithoutValidation( "Authorization", "Bearer " + _provisionSecret );
-                    request.Content = new StringContent( body.ToString( Formatting.None ), Encoding.UTF8, "application/json" );
-
-                    using ( var response = _http.SendAsync( request ).GetAwaiter().GetResult() )
-                    {
-                        var text = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
-                        Assert.IsTrue( response.IsSuccessStatusCode, $"the platform would not provision a church: HTTP {( int ) response.StatusCode} {text}" );
-                    }
-                }
-
-                return new ChatPlatformConfiguration
-                {
-                    TenantId = tenantId,
-                    ProjectUrl = _url,
-                    PublishableKey = _publishableKey,
-                    Kid = kid,
-                    PrivateKey = key.PrivateJwk,
-                    AreChatProfilesVisible = true,
-                    IsOpenDirectMessagingAllowed = true,
-                    ChatBadgeDataViewGuids = new List<Guid>()
-                };
-            }
-
-            /// <summary>
-            /// Reads a membership row until it satisfies a condition, or null when it never does.
-            /// </summary>
-            public JObject WaitForMember( Guid tenantId, Guid channelId, Guid aliasGuid, Func<JObject, bool> isReady )
-            {
-                return WaitFor(
-                    $"chat_channel_members?select=synced_at,absent_since&tenant_id=eq.{tenantId}&channel_id=eq.{channelId}&person_alias_guid=eq.{aliasGuid}",
-                    isReady );
-            }
-
-            /// <summary>
-            /// Reads an alias row until it satisfies a condition, or null when it never does.
-            /// </summary>
-            public JObject WaitForAlias( Guid tenantId, Guid aliasGuid, Func<JObject, bool> isReady )
-            {
-                return WaitFor(
-                    $"chat_aliases?select=synced_at,is_globally_banned&tenant_id=eq.{tenantId}&person_alias_guid=eq.{aliasGuid}",
-                    isReady );
-            }
-
-            private JObject WaitFor( string query, Func<JObject, bool> isReady )
-            {
-                var stopwatch = Stopwatch.StartNew();
-
-                while ( stopwatch.Elapsed < RowWait )
-                {
-                    var row = Read( query );
-                    if ( isReady( row ) )
-                    {
-                        return row;
-                    }
-
-                    Thread.Sleep( PollInterval );
-                }
-
-                return null;
-            }
-
-            /// <summary>
-            /// One row from the platform's data API under the service role, or null where there is none.
-            /// </summary>
-            private JObject Read( string query )
-            {
-                using ( var request = new HttpRequestMessage( HttpMethod.Get, _url + "/rest/v1/" + query ) )
-                {
-                    request.Headers.TryAddWithoutValidation( "apikey", _serviceRoleKey );
-                    request.Headers.TryAddWithoutValidation( "Authorization", "Bearer " + _serviceRoleKey );
-
-                    using ( var response = _http.SendAsync( request ).GetAwaiter().GetResult() )
-                    {
-                        var text = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
-                        Assert.IsTrue( response.IsSuccessStatusCode, $"the platform's rows could not be read: HTTP {( int ) response.StatusCode} {text}" );
-
-                        using ( var reader = new JsonTextReader( new StringReader( text ) ) { DateParseHandling = DateParseHandling.None } )
-                        {
-                            return JArray.Load( reader ).OfType<JObject>().FirstOrDefault();
-                        }
-                    }
-                }
             }
         }
 
