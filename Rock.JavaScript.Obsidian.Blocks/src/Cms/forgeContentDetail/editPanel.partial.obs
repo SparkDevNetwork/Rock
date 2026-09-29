@@ -1,0 +1,52 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <NotificationBox v-if="compileError"
+                     alertType="warning">
+        <strong>Compile error</strong>
+        <pre class="mb-0 mt-1">{{ compileError }}</pre>
+    </NotificationBox>
+
+    <CodeEditor v-model="internalSource"
+                mode="html"
+                :editorHeight="500"
+                :disableValidation="true" />
+
+    <p class="text-muted mt-2 mb-0">
+        Write a single-file component: a <code>&lt;template&gt;</code>, a
+        <code>&lt;script setup&gt;</code> in plain JavaScript, and an optional
+        <code>&lt;style scoped&gt;</code>. You may import Rock controls, for example
+        <code>import RockButton from "@Obsidian/Controls/rockButton.obs";</code>.
+        The component is compiled on the server when you save.
+    </p>
+</template>
+
+<script setup lang="ts">
+    import { PropType } from "vue";
+    import CodeEditor from "@Obsidian/Controls/codeEditor.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import { useVModelPassthrough } from "@Obsidian/Utility/component";
+
+    const props = defineProps({
+        /** The authored source being edited. */
+        modelValue: {
+            type: String as PropType<string>,
+            required: true
+        },
+
+        /** A compile error message to surface inline, if any. */
+        compileError: {
+            type: String as PropType<string>,
+            default: ""
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: string): void;
+    }>();
+
+    // #region Values
+
+    const internalSource = useVModelPassthrough(props, "modelValue", emit);
+
+    // #endregion Values
+</script>

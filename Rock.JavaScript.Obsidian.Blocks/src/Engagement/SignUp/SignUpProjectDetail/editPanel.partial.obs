@@ -1,0 +1,347 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <ContentSectionContainer :sidebar="false">
+        <ContentSection light>
+            <div class="row">
+                <div class="col-md-6">
+                    <TextBox v-model="name" label="Project Name" rules="required" />
+                </div>
+
+                <div class="col-md-6">
+                    <CheckBox v-model="isActive" label="Active" />
+                </div>
+            </div>
+
+            <TextBox v-model="description" label="Description" textMode="multiline" :rows="4" />
+
+            <div class="row">
+                <div class="col-md-6">
+                    <template v-if="isAddMode">
+                        <NotificationBox v-if="options.allowedGroupTypesWarning" alertType="warning">
+                            {{ options.allowedGroupTypesWarning }}
+                        </NotificationBox>
+
+                        <DropDownList v-model="groupTypeIdValue"
+                                      label="Group Type"
+                                      rules="required"
+                                      help="The type of sign-up group."
+                                      :items="options.allowedGroupTypes ?? []" />
+                    </template>
+
+                    <StaticFormControl v-else label="Group Type" :modelValue="groupTypeName" />
+                </div>
+
+                <div class="col-md-6">
+                    <CampusPicker v-model="campus"
+                                  label="Campus"
+                                  showBlankItem
+                                  :rules="groupTypeOptions.requiresCampus ? 'required' : ''" />
+
+                    <DefinedValuePicker v-if="groupTypeOptions.isRecordSourceVisible"
+                                        v-model="groupMemberRecordSource"
+                                        label="Record Source Override"
+                                        help="The record source for attendees added to this project. If not set, the group type's record source will be used."
+                                        :definedTypeGuid="DefinedType.RecordSourceType"
+                                        showBlankItem />
+                </div>
+            </div>
+
+            <RadioButtonList v-if="isProjectTypeVisible"
+                             v-model="projectTypeValue"
+                             label="Project Type"
+                             horizontal
+                             :items="options.projectTypes ?? []"
+                             :rules="isProjectTypeRequired ? 'required' : ''"
+                             :help="projectTypeHelpText" />
+        </ContentSection>
+
+        <ContentSection v-if="hasAttributes" title="Attributes" icon="ti ti-binary-tree-2">
+            <AttributeValuesContainer v-model="attributeValues"
+                                      :attributes="attributes"
+                                      isEditMode
+                                      :showCategoryLabel="false"
+                                      :numberOfColumns="2" />
+        </ContentSection>
+
+        <ContentSection title="Communications" icon="ti ti-mail">
+            <ContentStack>
+                <template v-if="isProjectTypeInPerson">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <DropDownList v-model="reminderSystemCommunicationValue"
+                                          label="Reminder Communication Template"
+                                          help="The communication template to use when sending reminders."
+                                          :items="options.reminderSystemCommunications ?? []"
+                                          showBlankItem />
+                        </div>
+
+                        <div class="col-md-6">
+                            <NumberBox v-model="reminderOffsetDays"
+                                       label="Number of Days Ahead to Send Reminders"
+                                       help="The number of days before the event to send reminders." />
+                        </div>
+                    </div>
+
+                    <HtmlEditor v-model="reminderAdditionalDetails"
+                                label="Reminder Details"
+                                :editorHeight="200"
+                                help="Optional additional project details that will be appended to the reminder communication." />
+                </template>
+
+                <HtmlEditor v-model="confirmationAdditionalDetails"
+                            label="Confirmation Details"
+                            :editorHeight="200"
+                            help="Optional additional project details that will be appended to the communication that is sent when registering." />
+            </ContentStack>
+        </ContentSection>
+
+        <ContentSection v-if="isMemberAttributesSectionVisible" title="Member Attributes" icon="ti ti-user-cog">
+            <MemberAttributes v-model="memberAttributes"
+                              :inheritedAttributes="groupTypeOptions.inheritedMemberAttributes ?? []"
+                              :attributeEntityTypeGuid="EntityType.GroupMember"
+                              :isAddHidden="!groupTypeOptions.allowSpecificGroupMemberAttributes"
+                              title="Member Attributes"
+                              itemTerm="Member Attribute"
+                              modalTitle="Member Attribute">
+                Member Attributes apply to all of the members of this project. Each member will have their own value for these attributes.
+                <br />
+                <br />
+                The <strong>Sign-Up Register</strong> block will only show these attributes when the block is operating in "Anonymous" mode.
+            </MemberAttributes>
+        </ContentSection>
+
+        <ContentSection v-if="isMemberOpportunityAttributesSectionVisible" title="Member Opportunity Attributes" icon="ti ti-calendar-user">
+            <MemberAttributes v-model="memberOpportunityAttributes"
+                              :attributeEntityTypeGuid="EntityType.GroupMemberAssignment"
+                              :isAddHidden="!groupTypeOptions.allowSpecificGroupMemberAttributes"
+                              title="Member Opportunity Attributes"
+                              itemTerm="Member Opportunity Attribute"
+                              modalTitle="Member Opportunity Attribute">
+                Member Opportunity Attributes apply to all of the members in every opportunity of this project. Each member will have their own value for these attributes, for each opportunity.
+                <br />
+                <br />
+                The <strong>Sign-Up Register</strong> block will only show these attributes when the block is operating in "Anonymous" mode.
+            </MemberAttributes>
+        </ContentSection>
+
+        <GroupRequirements v-if="canAdministrate"
+                           v-model:groupRequirements="groupRequirements"
+                           :inheritedGroupRequirements="groupTypeOptions.inheritedGroupRequirements ?? []"
+                           :groupRoleOptions="groupTypeOptions.groupRoleOptions ?? []"
+                           :groupTypeId="groupTypeId"
+                           :enableSpecificGroupRequirements="groupTypeOptions.enableSpecificGroupRequirements" />
+    </ContentSectionContainer>
+</template>
+
+<script setup lang="ts">
+    import { computed, PropType, ref, watch } from "vue";
+    import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
+    import CampusPicker from "@Obsidian/Controls/campusPicker.obs";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import ContentSection from "@Obsidian/Controls/contentSection.obs";
+    import ContentSectionContainer from "@Obsidian/Controls/contentSectionContainer.obs";
+    import ContentStack from "@Obsidian/Controls/contentStack.obs";
+    import DefinedValuePicker from "@Obsidian/Controls/definedValuePicker.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import HtmlEditor from "@Obsidian/Controls/htmlEditor.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import NumberBox from "@Obsidian/Controls/numberBox.obs";
+    import RadioButtonList from "@Obsidian/Controls/radioButtonList.obs";
+    import StaticFormControl from "@Obsidian/Controls/staticFormControl.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import { DefinedType } from "@Obsidian/SystemGuids/definedType";
+    import { DefinedValue } from "@Obsidian/SystemGuids/definedValue";
+    import { EntityType } from "@Obsidian/SystemGuids/entityType";
+    import { setPropertiesBoxValue, watchPropertyChanges } from "@Obsidian/Utility/block";
+    import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
+    import { toNumberOrNull } from "@Obsidian/Utility/numberUtils";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { PublicEditableAttributeBag } from "@Obsidian/ViewModels/Utility/publicEditableAttributeBag";
+    import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
+    import { SignUpProjectDetailBag } from "@Obsidian/ViewModels/Blocks/Engagement/SignUp/SignUpProjectDetail/signUpProjectDetailBag";
+    import { SignUpProjectDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Engagement/SignUp/SignUpProjectDetail/signUpProjectDetailOptionsBag";
+    import { SignUpProjectGroupTypeOptionsBag } from "@Obsidian/ViewModels/Blocks/Engagement/SignUp/SignUpProjectDetail/signUpProjectGroupTypeOptionsBag";
+    import { SignUpProjectRequirementBag } from "@Obsidian/ViewModels/Blocks/Engagement/SignUp/SignUpProjectDetail/signUpProjectRequirementBag";
+    import GroupRequirements from "./groupRequirements.partial.obs";
+    import MemberAttributes from "./memberAttributes.partial.obs";
+
+    const props = defineProps({
+        /** The project being edited. */
+        modelValue: {
+            type: Object as PropType<ValidPropertiesBox<SignUpProjectDetailBag>>,
+            required: true
+        },
+
+        /** The additional options of the block. */
+        options: {
+            type: Object as PropType<SignUpProjectDetailOptionsBag>,
+            required: true
+        },
+
+        /** The options that depend on the project's current group type. */
+        groupTypeOptions: {
+            type: Object as PropType<SignUpProjectGroupTypeOptionsBag>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: ValidPropertiesBox<SignUpProjectDetailBag>): void,
+        (e: "propertyChanged", value: string): void
+    }>();
+
+    // #region Values
+
+    const attributes = ref(props.modelValue.bag?.attributes ?? {});
+    const attributeValues = ref(props.modelValue.bag?.attributeValues ?? {});
+    const name = propertyRef(props.modelValue.bag?.name ?? "", "Name");
+    const isActive = propertyRef(props.modelValue.bag?.isActive ?? true, "IsActive");
+    const description = propertyRef(props.modelValue.bag?.description ?? "", "Description");
+    const groupTypeId = propertyRef<number | null>(props.modelValue.bag?.groupTypeId ?? null, "GroupTypeId");
+    const campus = propertyRef<ListItemBag | null>(props.modelValue.bag?.campus ?? null, "Campus");
+    const groupMemberRecordSource = propertyRef<ListItemBag | null>(props.modelValue.bag?.groupMemberRecordSource ?? null, "GroupMemberRecordSource");
+    const projectTypeValue = propertyRef(props.modelValue.bag?.projectTypeValue ?? "", "ProjectTypeValue");
+    const reminderSystemCommunication = propertyRef<ListItemBag | null>(props.modelValue.bag?.reminderSystemCommunication ?? null, "ReminderSystemCommunication");
+    const reminderOffsetDays = propertyRef<number | null>(props.modelValue.bag?.reminderOffsetDays ?? null, "ReminderOffsetDays");
+    const reminderAdditionalDetails = propertyRef(props.modelValue.bag?.reminderAdditionalDetails ?? "", "ReminderAdditionalDetails");
+    const confirmationAdditionalDetails = propertyRef(props.modelValue.bag?.confirmationAdditionalDetails ?? "", "ConfirmationAdditionalDetails");
+    const memberAttributes = propertyRef<PublicEditableAttributeBag[]>(props.modelValue.bag?.memberAttributes ?? [], "MemberAttributes");
+    const memberOpportunityAttributes = propertyRef<PublicEditableAttributeBag[]>(props.modelValue.bag?.memberOpportunityAttributes ?? [], "MemberOpportunityAttributes");
+    const groupRequirements = propertyRef<SignUpProjectRequirementBag[]>(props.modelValue.bag?.groupRequirements ?? [], "GroupRequirements");
+
+    // The properties that are being edited. This should only contain
+    // objects returned by propertyRef().
+    const propRefs = [
+        name,
+        isActive,
+        description,
+        groupTypeId,
+        campus,
+        groupMemberRecordSource,
+        projectTypeValue,
+        reminderSystemCommunication,
+        reminderOffsetDays,
+        reminderAdditionalDetails,
+        confirmationAdditionalDetails,
+        memberAttributes,
+        memberOpportunityAttributes,
+        groupRequirements
+    ];
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    /** Whether a project is being added, in which case the group type can be chosen. */
+    const isAddMode = computed((): boolean => !props.modelValue.bag?.idKey);
+
+    const canAdministrate = computed((): boolean => props.modelValue.bag?.canAdministrate === true);
+
+    const groupTypeName = computed((): string => props.modelValue.bag?.groupTypeName ?? "");
+
+    const isProjectTypeVisible = computed((): boolean => props.modelValue.bag?.isProjectTypeVisible === true);
+
+    const isProjectTypeRequired = computed((): boolean => props.modelValue.bag?.isProjectTypeRequired === true);
+
+    const projectTypeHelpText = computed((): string => props.modelValue.bag?.projectTypeHelpText ?? "");
+
+    /** Whether the project is an in-person project, which is the only project type that sends reminders. */
+    const isProjectTypeInPerson = computed((): boolean => {
+        return (projectTypeValue.value ?? "").toUpperCase() === DefinedValue.ProjectTypeInPerson;
+    });
+
+    const hasAttributes = computed((): boolean => {
+        return Object.keys(attributes.value).length > 0;
+    });
+
+    /**
+     * Member attributes are shown when the group type allows them to be defined
+     * or when any exist, so existing attributes remain editable.
+     */
+    const isMemberAttributesSectionVisible = computed((): boolean => {
+        return props.groupTypeOptions.allowSpecificGroupMemberAttributes
+            || (props.groupTypeOptions.inheritedMemberAttributes ?? []).length > 0
+            || memberAttributes.value.length > 0;
+    });
+
+    const isMemberOpportunityAttributesSectionVisible = computed((): boolean => {
+        return props.groupTypeOptions.allowSpecificGroupMemberAttributes
+            || memberOpportunityAttributes.value.length > 0;
+    });
+
+    /** String proxy of the group type identifier for the drop down list. */
+    const groupTypeIdValue = computed({
+        get(): string {
+            return groupTypeId.value?.toString() ?? "";
+        },
+        set(value: string) {
+            groupTypeId.value = toNumberOrNull(value);
+        }
+    });
+
+    /** String proxy of the reminder communication for the drop down list. */
+    const reminderSystemCommunicationValue = computed({
+        get(): string {
+            return reminderSystemCommunication.value?.value ?? "";
+        },
+        set(value: string) {
+            reminderSystemCommunication.value = (props.options.reminderSystemCommunications ?? []).find(c => c.value === value) ?? null;
+        }
+    });
+
+    // #endregion Computed Values
+
+    // #region Watchers
+
+    // Watch for parental changes in our model value and update all our values.
+    watch(() => props.modelValue, () => {
+        updateRefValue(attributes, props.modelValue.bag?.attributes ?? {});
+        updateRefValue(attributeValues, props.modelValue.bag?.attributeValues ?? {});
+        updateRefValue(name, props.modelValue.bag?.name ?? "");
+        updateRefValue(isActive, props.modelValue.bag?.isActive ?? true);
+        updateRefValue(description, props.modelValue.bag?.description ?? "");
+        updateRefValue(groupTypeId, props.modelValue.bag?.groupTypeId ?? null);
+        updateRefValue(campus, props.modelValue.bag?.campus ?? null);
+        updateRefValue(groupMemberRecordSource, props.modelValue.bag?.groupMemberRecordSource ?? null);
+        updateRefValue(projectTypeValue, props.modelValue.bag?.projectTypeValue ?? "");
+        updateRefValue(reminderSystemCommunication, props.modelValue.bag?.reminderSystemCommunication ?? null);
+        updateRefValue(reminderOffsetDays, props.modelValue.bag?.reminderOffsetDays ?? null);
+        updateRefValue(reminderAdditionalDetails, props.modelValue.bag?.reminderAdditionalDetails ?? "");
+        updateRefValue(confirmationAdditionalDetails, props.modelValue.bag?.confirmationAdditionalDetails ?? "");
+        updateRefValue(memberAttributes, props.modelValue.bag?.memberAttributes ?? []);
+        updateRefValue(memberOpportunityAttributes, props.modelValue.bag?.memberOpportunityAttributes ?? []);
+        updateRefValue(groupRequirements, props.modelValue.bag?.groupRequirements ?? []);
+    });
+
+    // Determines which values we want to track changes on (defined in the
+    // array) and then emit a new object defined as newValue.
+    watch([attributeValues, ...propRefs], () => {
+        const newValue: ValidPropertiesBox<SignUpProjectDetailBag> = {
+            bag: { ...props.modelValue.bag } as SignUpProjectDetailBag
+        };
+
+        setPropertiesBoxValue(newValue, "attributeValues", attributeValues.value);
+        setPropertiesBoxValue(newValue, "name", name.value);
+        setPropertiesBoxValue(newValue, "isActive", isActive.value);
+        setPropertiesBoxValue(newValue, "description", description.value);
+        setPropertiesBoxValue(newValue, "groupTypeId", groupTypeId.value);
+        setPropertiesBoxValue(newValue, "campus", campus.value);
+        setPropertiesBoxValue(newValue, "groupMemberRecordSource", groupMemberRecordSource.value);
+        setPropertiesBoxValue(newValue, "projectTypeValue", projectTypeValue.value);
+        setPropertiesBoxValue(newValue, "reminderSystemCommunication", reminderSystemCommunication.value);
+        setPropertiesBoxValue(newValue, "reminderOffsetDays", reminderOffsetDays.value);
+        setPropertiesBoxValue(newValue, "reminderAdditionalDetails", reminderAdditionalDetails.value);
+        setPropertiesBoxValue(newValue, "confirmationAdditionalDetails", confirmationAdditionalDetails.value);
+        setPropertiesBoxValue(newValue, "memberAttributes", memberAttributes.value);
+        setPropertiesBoxValue(newValue, "memberOpportunityAttributes", memberOpportunityAttributes.value);
+        setPropertiesBoxValue(newValue, "groupRequirements", groupRequirements.value);
+
+        emit("update:modelValue", newValue);
+    });
+
+    // Watch for any changes to props that represent properties and then
+    // automatically emit which property changed.
+    watchPropertyChanges(propRefs, emit);
+
+    // #endregion Watchers
+</script>

@@ -16,6 +16,7 @@
 
 using System.Linq;
 using System.Web.Hosting;
+
 using Rock.Store;
 
 namespace Rock.Plugin.HotFixes

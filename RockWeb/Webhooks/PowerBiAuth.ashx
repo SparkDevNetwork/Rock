@@ -1,4 +1,4 @@
-﻿<%@ WebHandler Language="C#" Class="PowerBiAuth" %>
+<%@ WebHandler Language="C#" Class="PowerBiAuth" %>
 
 using System;
 using System.Web;

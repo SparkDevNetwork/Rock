@@ -21,9 +21,7 @@
 // </copyright>
 //
 
-/**
- * Identifies the group marker a person clicked so the block can render its info window Lava.
- */
+/** Identifies the group marker a person clicked so the block can render its info window Lava. */
 export type GroupTypeMapInfoWindowRequestBag = {
     /** Gets or sets the Id of the group whose marker was clicked. */
     groupId: number;

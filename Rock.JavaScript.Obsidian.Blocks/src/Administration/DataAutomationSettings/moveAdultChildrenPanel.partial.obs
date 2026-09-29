@@ -1,0 +1,97 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <ContentStack>
+        <CheckBox v-model="settings.isEnabled"
+                  label="Enable"
+                  text="Enable the automatic moving of children in a family to their own new family when they become adults." />
+    </ContentStack>
+
+    <fieldset :disabled="!settings.isEnabled">
+        <CheckBox v-model="settings.isOnlyMoveGraduated" label="Should children only be moved if they have graduated?" />
+
+        <NumberBox v-model="settings.adultAge"
+                   label="The age a child should be considered an adult"
+                   inputGroupClasses="input-width-md">
+            <template #inputGroupAppend>
+                <span class="input-group-addon">years</span>
+            </template>
+        </NumberBox>
+
+        <GroupRolePicker v-model="parentRelationship"
+                         label="An optional known relationship that should be added between the parent(s) and the new adult"
+                         help="Usually this would be set to 'Parent', but if you have a different known relationship you want to use, you can set it here"
+                         :groupTypeGuid="knownRelationshipGroupTypeGuid ?? null"
+                         showBlankItem
+                         :hideGroupTypePicker="true" />
+
+        <GroupRolePicker v-model="siblingRelationship"
+                         label="An optional known relationship that should be added between the new adult and their sibling(s)"
+                         :groupTypeGuid="knownRelationshipGroupTypeGuid ?? null"
+                         showBlankItem
+                         :hideGroupTypePicker="true" />
+
+        <CheckBox v-model="settings.useSameHomeAddress" label="Should the new adult's home address be the same as their current family?" />
+
+        <CheckBox v-model="settings.useSameHomePhone" label="If the new adult does not have a home phone, should they use same number as their parent?" />
+
+        <WorkflowTypePicker v-model="workflows"
+                            label="The workflow type(s) to launch for each person that is processed."
+                            help="The person will be passed to the workflow as the entity. If the workflow has an 'OldFamily' Group attribute it will set this to the person's primary family before processing the person. If the workflow has a 'NewFamily' Group attribute it will set to the family that the person was updated or added as an adult to."
+                            :multiple="true" />
+
+        <NumberBox v-model="settings.maximumRecords"
+                   label="The maximum number of records that should be processed at a time."
+                   inputGroupClasses="input-width-lg">
+            <template #inputGroupAppend>
+                <span class="input-group-addon">records</span>
+            </template>
+        </NumberBox>
+    </fieldset>
+</template>
+
+<script setup lang="ts">
+    import { computed, PropType, WritableComputedRef } from "vue";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import ContentStack from "@Obsidian/Controls/contentStack.obs";
+    import NumberBox from "@Obsidian/Controls/numberBox.obs";
+    import GroupRolePicker from "@Obsidian/Controls/groupRolePicker.obs";
+    import WorkflowTypePicker from "@Obsidian/Controls/workflowTypePicker.obs";
+    import { Guid } from "@Obsidian/Types";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { MoveAdultChildrenSettingsBag } from "@Obsidian/ViewModels/Blocks/Administration/DataAutomationSettings/moveAdultChildrenSettingsBag";
+
+    const props = defineProps({
+        settings: {
+            type: Object as PropType<MoveAdultChildrenSettingsBag>,
+            required: true
+        },
+
+        knownRelationshipGroupTypeGuid: {
+            type: String as PropType<Guid | null | undefined>,
+            required: false
+        }
+    });
+
+    // #region Computed Values
+
+    // The picker binds to a list item bag array, so bridge the nullable bag
+    // property to an always-present array.
+    const workflows: WritableComputedRef<ListItemBag[]> = computed({
+        get: () => props.settings.workflows ?? [],
+        set: (value) => props.settings.workflows = value
+    });
+
+    // The group role picker does not accept an undefined value, so bridge the
+    // nullable bag properties to null.
+    const parentRelationship: WritableComputedRef<ListItemBag | ListItemBag[] | null> = computed({
+        get: () => props.settings.parentRelationship ?? null,
+        set: (value) => props.settings.parentRelationship = Array.isArray(value) ? (value[0] ?? null) : value
+    });
+
+    const siblingRelationship: WritableComputedRef<ListItemBag | ListItemBag[] | null> = computed({
+        get: () => props.settings.siblingRelationship ?? null,
+        set: (value) => props.settings.siblingRelationship = Array.isArray(value) ? (value[0] ?? null) : value
+    });
+
+    // #endregion Computed Values
+</script>

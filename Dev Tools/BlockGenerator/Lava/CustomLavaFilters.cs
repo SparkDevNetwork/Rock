@@ -1,4 +1,4 @@
-﻿namespace BlockGenerator.Lava
+namespace BlockGenerator.Lava
 {
     /// <summary>
     /// Custom lava filters that are added to our Lava engine.

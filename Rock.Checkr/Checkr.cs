@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -15,20 +15,22 @@
 // </copyright>
 //
 using System;
-using System.Collections.Generic;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.Linq;
+
 using Newtonsoft.Json;
+
 using Rock.Attribute;
-using Rock.Configuration;
-using Rock.Web.Cache;
 using Rock.Checkr.CheckrApi;
 using Rock.Checkr.Constants;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
+using Rock.Web.Cache;
 
 namespace Rock.Checkr
 {

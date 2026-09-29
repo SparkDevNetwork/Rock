@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -15,11 +15,11 @@
 // </copyright>
 //
 
-using Rock.Data;
-using Rock.Utility;
-
 using System.Linq.Expressions;
 using System.Reflection;
+
+using Rock.Data;
+using Rock.Utility;
 
 namespace Rock.Core.EntitySearch
 {

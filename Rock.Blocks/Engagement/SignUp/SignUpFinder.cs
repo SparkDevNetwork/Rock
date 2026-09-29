@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -37,6 +37,7 @@ using System.Data.Entity.Spatial;
 #endif
 using System.Linq;
 using System.Linq.Expressions;
+
 using Rock.Configuration;
 
 namespace Rock.Blocks.Engagement.SignUp
@@ -936,16 +937,25 @@ namespace Rock.Blocks.Engagement.SignUp
                         }
 
                         var attributeCache = AttributeCache.Get( attributeGuid.Value );
-                        var entityField = EntityHelper.GetEntityFieldForAttribute( attributeCache, false );
 
-                        var values = new List<string>
+                        // A null comparison type is preserved rather than stringified, so
+                        // checkbox-style field types get their natural "any of" filter.
+                        var publicComparisonValue = new ComparisonValue
                         {
-                            filter.ComparisonType.ToString(),
-                            PublicAttributeHelper.GetPrivateValue( attributeCache, filter.Value )
+                            ComparisonType = filter.ComparisonType.HasValue
+                                ? ( ComparisonType ) filter.ComparisonType.Value
+                                : ( ComparisonType? ) null,
+                            Value = filter.Value
                         };
 
-                        // Get the expression for this attribute filter.
-                        var filterExpression = ExpressionHelper.GetAttributeExpression( groupService, parameterExpression, entityField, values );
+                        // Get the expression for this attribute filter. A selection that should
+                        // not filter anything comes back as null and is replaced with a literal
+                        // true, which is neutral inside the AND below while still marking this
+                        // project type as participating so its projects are not ruled out by the
+                        // OR. That preserves the previous shape, where a non-filtering selection
+                        // also produced a term that always matched.
+                        var filterExpression = ExpressionHelper.GetAttributeFilterExpression( groupService, parameterExpression, attributeCache, publicComparisonValue )
+                            ?? ( Expression ) Expression.Constant( true );
 
                         // Combine it with expressions for any other selected filters tied to this project type.
                         projectTypeExpression = projectTypeExpression == null

@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -19,16 +19,17 @@ using System.Collections.Generic;
 using System.Data;
 using System.Data.Entity;
 using System.Linq;
+using System.Threading.Tasks;
+
+using Microsoft.Extensions.Logging;
 
 using Rock.Configuration;
 using Rock.Data;
-using Rock.RealTime.Topics;
+using Rock.Logging;
 using Rock.RealTime;
+using Rock.RealTime.Topics;
 using Rock.ViewModels.Event;
 using Rock.Web.Cache;
-using System.Threading.Tasks;
-using Rock.Logging;
-using Microsoft.Extensions.Logging;
 
 namespace Rock.Model
 {

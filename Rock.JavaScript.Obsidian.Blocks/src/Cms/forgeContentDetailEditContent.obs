@@ -1,0 +1,152 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Modal v-model="isModalOpen"
+           title="Forge Content"
+           :saveText="saveButtonText"
+           :isSaveButtonDisabled="isSaving"
+           @save="onSave">
+
+        <NotificationBox v-if="errorMessage"
+                         alertType="warning">{{ errorMessage }}</NotificationBox>
+
+        <LoadingIndicator v-else-if="isLoading" :delay="500" />
+
+        <EditPanel v-else
+                   v-model="source"
+                   :compileError="compileError" />
+
+    </Modal>
+</template>
+
+<script setup lang="ts">
+    import { computed, ref, watch } from "vue";
+    import LoadingIndicator from "@Obsidian/Controls/loadingIndicator.obs";
+    import Modal from "@Obsidian/Controls/modal.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import { useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
+    import { ForgeContentSourceBag } from "@Obsidian/ViewModels/Blocks/Cms/ForgeContentDetail/forgeContentSourceBag";
+    import { SaveForgeContentRequestBag } from "@Obsidian/ViewModels/Blocks/Cms/ForgeContentDetail/saveForgeContentRequestBag";
+    import { SaveForgeContentResponseBag } from "@Obsidian/ViewModels/Blocks/Cms/ForgeContentDetail/saveForgeContentResponseBag";
+    import EditPanel from "./forgeContentDetail/editPanel.partial.obs";
+
+    const emit = defineEmits(["close"]);
+
+    const invokeBlockAction = useInvokeBlockAction();
+    const reloadBlock = useReloadBlock();
+
+    // #region Values
+
+    /** The starter source shown when an author opens an unconfigured block. */
+    /* eslint-disable no-useless-escape -- the escaped closing script tag keeps the SFC parser from ending this component's own script block. */
+    const defaultSource = `<template>
+    <div class="custom-component-example">
+        <RockLabel>Count is {{ count }}</RockLabel>
+        <RockButton btnType="primary" @click="increment">Add one</RockButton>
+    </div>
+</template>
+
+<script setup>
+import RockButton from "@Obsidian/Controls/rockButton.obs";
+import RockLabel from "@Obsidian/Controls/rockLabel.obs";
+import { ref } from "vue";
+
+const count = ref(0);
+
+function increment() {
+    count.value += 1;
+}
+<\/script>
+
+<style scoped>
+.custom-component-example {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+</style>`;
+    /* eslint-enable no-useless-escape */
+
+    const errorMessage = ref("");
+    const isLoading = ref(true);
+    const isModalOpen = ref(true);
+    const isSaving = ref(false);
+    const source = ref("");
+    const compileError = ref("");
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    const saveButtonText = computed((): string => {
+        return errorMessage.value || !isLoading.value ? "Save" : "";
+    });
+
+    // #endregion Computed Values
+
+    // #region Functions
+
+    /**
+     * Loads the authored source from the server, seeding the starter source
+     * when the block has no component yet. No compiler loads in the browser;
+     * compilation happens on Save, on the server.
+     */
+    async function startLoading(): Promise<void> {
+        const result = await invokeBlockAction<ForgeContentSourceBag>("GetEditContent");
+
+        if (result.isSuccess && result.data) {
+            source.value = result.data.source || defaultSource;
+        }
+        else {
+            errorMessage.value = result.errorMessage || "Unknown error while loading the component source.";
+        }
+
+        isLoading.value = false;
+    }
+
+    // #endregion Functions
+
+    // #region Event Handlers
+
+    /**
+     * Sends the source to the server, which compiles and stores it. A compile
+     * failure stores nothing, keeps the modal open, and is surfaced inline
+     * from the server's own error text.
+     */
+    async function onSave(): Promise<void> {
+        isSaving.value = true;
+        compileError.value = "";
+
+        try {
+            const bag: SaveForgeContentRequestBag = {
+                source: source.value
+            };
+
+            const response = await invokeBlockAction<SaveForgeContentResponseBag>("SaveContent", { bag });
+
+            if (!response.isSuccess) {
+                compileError.value = response.errorMessage ?? "The component could not be saved.";
+                return;
+            }
+
+            isModalOpen.value = false;
+            reloadBlock();
+        }
+        finally {
+            isSaving.value = false;
+        }
+    }
+
+    // #endregion Event Handlers
+
+    // #region Watchers
+
+    watch(isModalOpen, () => {
+        if (!isModalOpen.value) {
+            emit("close");
+        }
+    });
+
+    // #endregion Watchers
+
+    startLoading();
+</script>

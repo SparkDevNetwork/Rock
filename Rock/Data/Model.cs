@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -24,12 +24,13 @@ using System.Linq;
 using System.Runtime.Serialization;
 using System.Text;
 using System.Threading.Tasks;
+
 using Rock.Attribute;
+using Rock.Lava;
 using Rock.Model;
 using Rock.Security;
 using Rock.Transactions;
 using Rock.Web.Cache;
-using Rock.Lava;
 
 namespace Rock.Data
 {

@@ -1,0 +1,234 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="progress progress-sign-ups m-0 flex-fill"
+         :class="`text-${progressState}`"
+         role="progressbar"
+         aria-label="Sign-Ups Progress"
+         :data-slots-filled="filled"
+         v-tooltip.html.wide="tooltipHtml">
+        <div class="progress-bar progress-bar-sign-ups"
+             :class="`bg-${progressState}`"
+             :style="{ width: `${filledPercentage}%` }"></div>
+        <div v-for="indicator in indicators"
+             :key="indicator.key"
+             class="indicator"
+             :style="{ left: `${indicator.percentage}%` }"></div>
+    </div>
+</template>
+
+<style scoped>
+.progress.progress-sign-ups {
+    position: relative;
+    width: 215px;
+    height: 14px;
+    overflow: visible;
+    background: transparent;
+    border: 1px solid currentColor;
+    border-radius: 50px;
+    box-shadow: none;
+}
+
+.progress.progress-sign-ups .indicator {
+    position: absolute;
+    top: -1px;
+    bottom: -1px;
+    width: 5px;
+}
+
+.progress.progress-sign-ups .indicator::before,
+.progress.progress-sign-ups .indicator::after {
+    position: absolute;
+    left: 0;
+    width: 2px;
+    height: 3px;
+    content: "";
+    background: currentColor;
+    box-shadow: inset 0 0 0 2px rgba(0, 0, 0, .25);
+}
+
+.progress.progress-sign-ups .indicator::before {
+    top: -1px;
+}
+
+.progress.progress-sign-ups .indicator::after {
+    bottom: -1px;
+}
+
+.progress-bar.progress-bar-sign-ups {
+    position: absolute;
+    left: 0;
+    border-radius: 50px;
+    box-shadow: none;
+}
+</style>
+
+<script setup lang="ts">
+    import { computed, PropType } from "vue";
+    import { vTooltip } from "@Obsidian/Directives/tooltip";
+
+    // #region Types
+
+    type ProgressState = "success" | "warning" | "critical" | "danger";
+
+    type Indicator = {
+        key: string;
+        percentage: number;
+    };
+
+    // #endregion Types
+
+    const props = defineProps({
+        /** The minimum number of attendees. */
+        slotsMinimum: {
+            type: Number as PropType<number | null>,
+            default: null
+        },
+
+        /** The desired number of attendees. */
+        slotsDesired: {
+            type: Number as PropType<number | null>,
+            default: null
+        },
+
+        /** The maximum number of attendees. */
+        slotsMaximum: {
+            type: Number as PropType<number | null>,
+            default: null
+        },
+
+        /** The number of attendees signed up. */
+        slotsFilled: {
+            type: Number as PropType<number>,
+            default: 0
+        }
+    });
+
+    // #region Computed Values
+
+    const minimum = computed((): number => props.slotsMinimum ?? 0);
+    const desired = computed((): number => props.slotsDesired ?? 0);
+    const maximum = computed((): number => props.slotsMaximum ?? 0);
+    const filled = computed((): number => props.slotsFilled ?? 0);
+
+    /**
+     * The value that represents a full bar: the largest configured capacity,
+     * raised to the filled count when more people signed up than configured.
+     */
+    const whole = computed((): number => {
+        let value = 0;
+
+        if (maximum.value > 0) {
+            value = maximum.value;
+        }
+        else if (desired.value > 0) {
+            value = desired.value;
+        }
+        else if (minimum.value > 0) {
+            value = minimum.value;
+        }
+
+        return filled.value > value ? filled.value : value;
+    });
+
+    const minimumPercentage = computed((): number => getPercentageOfWhole(minimum.value, true));
+    const desiredPercentage = computed((): number => getPercentageOfWhole(desired.value, true));
+    const maximumPercentage = computed((): number => getPercentageOfWhole(maximum.value, false));
+    const filledPercentage = computed((): number => getPercentageOfWhole(filled.value, false));
+
+    /** The color state of the bar based on how the filled count compares to the capacities. */
+    const progressState = computed((): ProgressState => {
+        if (filled.value <= 0) {
+            return "danger";
+        }
+
+        if (maximum.value > 0 && filled.value > maximum.value) {
+            return "critical";
+        }
+
+        if (filled.value < minimum.value) {
+            return "danger";
+        }
+
+        if (filled.value < desired.value) {
+            return "warning";
+        }
+
+        return "success";
+    });
+
+    /** The threshold ticks to draw on the bar. */
+    const indicators = computed((): Indicator[] => {
+        const items: Indicator[] = [];
+
+        if (isIndicatorVisible(minimumPercentage.value)) {
+            items.push({ key: "minimum", percentage: minimumPercentage.value });
+        }
+
+        if (isIndicatorVisible(desiredPercentage.value)) {
+            items.push({ key: "desired", percentage: desiredPercentage.value });
+        }
+
+        // The maximum tick is only meaningful once the maximum has been exceeded.
+        if (isIndicatorVisible(maximumPercentage.value) && filled.value > maximum.value) {
+            items.push({ key: "maximum", percentage: maximumPercentage.value });
+        }
+
+        return items;
+    });
+
+    /** The tooltip describing the filled count and the configured capacities. */
+    const tooltipHtml = computed((): string => {
+        const capacityLines: string[] = [];
+
+        if (minimum.value > 0) {
+            capacityLines.push(`<div class="text-nowrap">Minimum: ${minimum.value.toLocaleString()}</div>`);
+        }
+
+        if (desired.value > 0) {
+            capacityLines.push(`<div class="text-nowrap">Desired: ${desired.value.toLocaleString()}</div>`);
+        }
+
+        if (maximum.value > 0) {
+            capacityLines.push(`<div class="text-nowrap">Maximum: ${maximum.value.toLocaleString()}</div>`);
+        }
+
+        const capacityHtml = capacityLines.length > 0
+            ? `<span class="text-nowrap">${capacityLines.join("")}</span>`
+            : "";
+
+        return `<div class="d-flex justify-content-between align-items-center"><span class="text-nowrap mr-5">Slots Filled: ${filled.value.toLocaleString()}</span>${capacityHtml}</div>`;
+    });
+
+    // #endregion Computed Values
+
+    // #region Functions
+
+    /**
+     * Gets the percentage of the whole that a value represents, capped at 100.
+     *
+     * @param part The value to get the percentage of.
+     * @param isThreshold True when the value is a threshold, in which case the
+     * tick is drawn just before the spot that satisfies the value.
+     */
+    function getPercentageOfWhole(part: number, isThreshold: boolean): number {
+        if (whole.value <= 0) {
+            return 0;
+        }
+
+        const adjustedPart = isThreshold ? part - 1 : part;
+        const percentage = Math.trunc(adjustedPart / whole.value * 100);
+
+        return percentage > 100 ? 100 : percentage;
+    }
+
+    /**
+     * Determines whether a threshold tick should be drawn for the percentage.
+     *
+     * @param percentage The percentage of the tick.
+     */
+    function isIndicatorVisible(percentage: number): boolean {
+        return percentage > 0 && percentage < 100;
+    }
+
+    // #endregion Functions
+</script>

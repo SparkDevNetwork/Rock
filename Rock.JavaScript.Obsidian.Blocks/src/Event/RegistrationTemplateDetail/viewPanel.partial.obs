@@ -1,0 +1,361 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="d-flex flex-column gap-spacing-lg" style="padding: var(--spacing-xsmall);">
+        <div class="row">
+            <div :class="isRightRailVisible ? 'col-md-8' : 'col-md-12'">
+                <div class="d-flex flex-column" style="gap: 30px;">
+                    <ContentSection title="Overview" icon="ti ti-list-details" :disableCollapse="true">
+                        <div>
+                            <div v-if="modelValue?.description" class="form-group static-control">
+                                <label class="control-label">Description</label>
+                                <div class="control-wrapper">
+                                    <div class="form-control-static">{{ modelValue.description }}</div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div v-for="value in overviewValues" :key="value.label" class="col-md-6">
+                                    <div class="form-group static-control">
+                                        <label class="control-label">{{ value.label }}</label>
+                                        <div class="control-wrapper">
+                                            <div class="form-control-static">{{ value.text }}</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </ContentSection>
+
+                    <ContentSection v-if="forms.length"
+                                    title="Registrant Forms"
+                                    icon="ti ti-forms"
+                                    :isCollapsed="true">
+                        <template #headerActions>
+                            <span class="label label-default">{{ formCountText }}</span>
+                        </template>
+
+                        <div class="d-flex flex-column gap-spacing-md">
+                            <ContentSection v-for="(form, index) in forms"
+                                            :key="form.guid"
+                                            light
+                                            class="registrant-form-section"
+                                            :title="form.name ?? ''"
+                                            icon="ti ti-file-description"
+                                            :isCollapsed="index > 0">
+                                <template #headerActions>
+                                    <span class="text-sm text-interface-medium">{{ getFieldCountText(form) }}</span>
+                                </template>
+
+                                <div class="d-flex flex-column gap-spacing-tiny">
+                                    <div v-for="field in getFormFields(form)"
+                                         :key="field.guid"
+                                         class="d-flex justify-content-between align-items-baseline gap-spacing-sm">
+                                        <span>
+                                            {{ getFieldDisplayName(field) }}
+                                            <span v-if="field.isRequired" v-tooltip="'Required'" class="required-field-marker"></span>
+                                        </span>
+                                        <span class="text-sm text-interface-medium text-right">{{ getFieldSummary(field) }}</span>
+                                    </div>
+                                </div>
+                            </ContentSection>
+                        </div>
+                    </ContentSection>
+
+                    <ContentSection v-if="registrationAttributes.length"
+                                    title="Registration Attributes"
+                                    icon="ti ti-tag"
+                                    :isCollapsed="true">
+                        <template #headerActions>
+                            <span class="label label-default">{{ registrationAttributeCountText }}</span>
+                        </template>
+
+                        <div class="d-flex flex-column gap-spacing-tiny">
+                            <div v-for="attribute in registrationAttributes"
+                                 :key="attribute.key ?? attribute.name ?? ''"
+                                 class="d-flex justify-content-between align-items-baseline gap-spacing-sm">
+                                <span>{{ attribute.name }}</span>
+                                <span class="text-sm text-interface-medium text-right">{{ getAttributeFieldTypeName(attribute) }}</span>
+                            </div>
+                        </div>
+                    </ContentSection>
+                </div>
+            </div>
+
+            <div v-if="isRightRailVisible" class="col-md-4">
+                <div class="d-flex flex-column" style="gap: 30px;">
+                    <ContentSection v-if="fees.length" title="Fees" icon="ti ti-receipt" :disableCollapse="true">
+                        <div>
+                            <div v-for="(fee, index) in fees"
+                                 :key="fee.guid"
+                                 class="form-group static-control"
+                                 :class="{ 'mb-0': index === fees.length - 1 }">
+                                <label class="control-label">{{ fee.name }}</label>
+                                <div class="control-wrapper">
+                                    <div class="form-control-static">{{ formatFeeItems(fee.feeItems, options.currencyInfo) }}</div>
+                                </div>
+                            </div>
+                        </div>
+                    </ContentSection>
+
+                    <ContentSection v-if="groupPlacements.length"
+                                    title="Group Placements"
+                                    icon="ti ti-route-square"
+                                    :disableCollapse="true">
+                        <ul class="list-unstyled mb-0">
+                            <li v-for="(placement, index) in groupPlacements" :key="placement.url ?? index">
+                                <a :href="placement.url ?? ''" class="list-group-item nav-link placement-link">
+                                    <i :class="placement.iconCssClass ?? ''" aria-hidden="true"></i>
+                                    <span>{{ placement.name }}</span>
+                                </a>
+                            </li>
+                        </ul>
+                    </ContentSection>
+                </div>
+            </div>
+        </div>
+    </div>
+</template>
+
+<style scoped>
+/* Long, unbreakable values (a fee item list, or a pasted description) have no
+   break opportunities, so with the default overflow-wrap they spill out of
+   their column and render on top of the adjacent column's values. */
+:deep(.form-control-static) {
+    overflow-wrap: break-word;
+}
+
+/*
+    9/18/26 - MSE
+
+    A light section zeroes the padding below its header because its body is
+    expected to supply that space. These sections collapse, and a collapsed
+    section has no body, so the header keeps its 58px minimum height with
+    padding on one side only and the title row sits low in the card. Restoring
+    the padding for the collapsed state alone would change the header height on
+    every toggle, which reads as the title jumping, so it is restored in both
+    states instead.
+
+    Reason: Collapsed form headers sat low in their card and shifted when toggled.
+*/
+:deep(.registrant-form-section > .contentsection-header) {
+    align-items: center;
+    padding-bottom: var(--spacing-small);
+}
+
+/* The header padding above pushes the body down, so take it back off the top of
+   the field list and keep the title close to the fields it describes. */
+:deep(.registrant-form-section > div > .contentsection-body) {
+    padding-top: var(--spacing-tiny);
+}
+
+/*
+    The core `.required-indicator` marker is only defined for table cells, so
+    the dot is drawn here to match what a required form label shows elsewhere
+    in Rock: a 6px danger coloured dot.
+*/
+.required-field-marker {
+    display: inline-block;
+    width: 6px;
+    height: 6px;
+    margin-left: var(--spacing-tiny);
+    border-radius: 50%;
+    background-color: var(--color-danger-strong);
+    vertical-align: middle;
+}
+
+/*
+    A placement's icon comes from its configuration, so the glyphs are whatever
+    the person picked and are rarely the same width. The icon is given a fixed
+    box, wide enough for the widest Font Awesome glyph, and is rendered even
+    when a placement has no icon at all, so every label in the list starts at
+    the same place.
+*/
+.placement-link > i {
+    width: 1.5em;
+    flex-shrink: 0;
+    text-align: center;
+}
+</style>
+
+<script setup lang="ts">
+    import { computed, PropType } from "vue";
+    import ContentSection from "@Obsidian/Controls/contentSection.obs";
+    import { vTooltip } from "@Obsidian/Directives/tooltip";
+    import { RegistrationFieldSourceDescription } from "@Obsidian/Enums/Event/registrationFieldSource";
+    import { areEqual } from "@Obsidian/Utility/guid";
+    import { PublicEditableAttributeBag } from "@Obsidian/ViewModels/Utility/publicEditableAttributeBag";
+    import { RegistrationTemplateBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationTemplateDetail/registrationTemplateBag";
+    import { RegistrationTemplateDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationTemplateDetail/registrationTemplateDetailOptionsBag";
+    import { RegistrationTemplateFeeBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationTemplateDetail/registrationTemplateFeeBag";
+    import { RegistrationTemplateFormBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationTemplateDetail/registrationTemplateFormBag";
+    import { RegistrationTemplateFormFieldBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationTemplateDetail/registrationTemplateFormFieldBag";
+    import { RegistrationTemplateGroupPlacementBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationTemplateDetail/registrationTemplateGroupPlacementBag";
+    import { formatCurrency, formatFeeItems, getFieldDisplayName } from "./utils.partial";
+
+    // #region Types
+
+    /** A single read-only label and value rendered in the Overview section. */
+    type OverviewValue = {
+        label: string;
+        text: string;
+    };
+
+    // #endregion Types
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<RegistrationTemplateBag | null>,
+            required: false
+        },
+
+        options: {
+            type: Object as PropType<RegistrationTemplateDetailOptionsBag>,
+            required: true
+        }
+    });
+
+    // #region Computed Values
+
+    const forms = computed((): RegistrationTemplateFormBag[] => {
+        return [...(props.modelValue?.forms ?? [])].sort((a, b) => a.order - b.order);
+    });
+
+    const registrationAttributes = computed((): PublicEditableAttributeBag[] => {
+        return props.modelValue?.registrationAttributes ?? [];
+    });
+
+    const fees = computed((): RegistrationTemplateFeeBag[] => {
+        return [...(props.modelValue?.fees ?? [])].sort((a, b) => a.order - b.order);
+    });
+
+    const groupPlacements = computed((): RegistrationTemplateGroupPlacementBag[] => {
+        return props.modelValue?.groupPlacements ?? [];
+    });
+
+    /** The right rail only earns its space when at least one of its sections has content. */
+    const isRightRailVisible = computed((): boolean => {
+        return fees.value.length > 0 || groupPlacements.value.length > 0;
+    });
+
+    const formCountText = computed((): string => {
+        return forms.value.length === 1 ? "1 Form" : `${forms.value.length} Forms`;
+    });
+
+    const registrationAttributeCountText = computed((): string => {
+        const count = registrationAttributes.value.length;
+
+        return count === 1 ? "1 Attribute" : `${count} Attributes`;
+    });
+
+    /** The label and value pairs shown in the two column Overview grid. */
+    const overviewValues = computed((): OverviewValue[] => {
+        const bag = props.modelValue;
+        const values: OverviewValue[] = [];
+
+        if (!bag) {
+            return values;
+        }
+
+        values.push({ label: "Group Type", text: bag.groupType?.text ?? "" });
+
+        if (bag.isSetCostOnInstance) {
+            values.push({ label: "Cost", text: "Set on Instance" });
+            values.push({ label: "Minimum Initial Payment", text: "Set on Instance" });
+            values.push({ label: "Default Payment Amount", text: "Set on Instance" });
+        }
+        else {
+            values.push({ label: "Cost", text: formatCurrency(bag.cost, props.options.currencyInfo) });
+
+            if (bag.minimumInitialPayment !== null && bag.minimumInitialPayment !== undefined) {
+                values.push({ label: "Minimum Initial Payment", text: formatCurrency(bag.minimumInitialPayment, props.options.currencyInfo) });
+            }
+
+            if (bag.defaultPayment !== null && bag.defaultPayment !== undefined) {
+                values.push({ label: "Default Payment Amount", text: formatCurrency(bag.defaultPayment, props.options.currencyInfo) });
+            }
+        }
+
+        if (bag.registrationWorkflowType?.text) {
+            values.push({ label: "Registration Workflow", text: bag.registrationWorkflowType.text });
+        }
+
+        if (bag.registrantWorkflowType?.text) {
+            values.push({ label: "Registrant Workflow", text: bag.registrantWorkflowType.text });
+        }
+
+        if (bag.requiredSignatureDocumentTemplate?.text) {
+            values.push({ label: "Required Signature Document", text: bag.requiredSignatureDocumentTemplate.text });
+        }
+
+        return values;
+    });
+
+    // #endregion Computed Values
+
+    // #region Functions
+
+    /**
+     * Gets the fields of a form in the order they are presented to a registrant.
+     *
+     * @param form The registrant form.
+     *
+     * @returns The ordered fields of the form.
+     */
+    function getFormFields(form: RegistrationTemplateFormBag): RegistrationTemplateFormFieldBag[] {
+        return [...(form.fields ?? [])].sort((a, b) => a.order - b.order);
+    }
+
+    /**
+     * Gets the summary of how many fields a form contains.
+     *
+     * @param form The registrant form.
+     *
+     * @returns The field count text.
+     */
+    function getFieldCountText(form: RegistrationTemplateFormBag): string {
+        const count = form.fields?.length ?? 0;
+
+        return count === 1 ? "1 field" : `${count} fields`;
+    }
+
+    /**
+     * Gets the description of where a field's value comes from.
+     *
+     * @param field The form field.
+     *
+     * @returns The field source description.
+     */
+    function getFieldSourceName(field: RegistrationTemplateFormFieldBag): string {
+        return RegistrationFieldSourceDescription[field.fieldSource] ?? "";
+    }
+
+    /**
+     * Gets the secondary text of a field, which describes its type and where
+     * its value comes from. Person fields have no field type, so the separator
+     * is only used when both parts are present.
+     *
+     * @param field The form field.
+     *
+     * @returns The field type and source, or an empty string when neither is known.
+     */
+    function getFieldSummary(field: RegistrationTemplateFormFieldBag): string {
+        return [field.fieldTypeName, getFieldSourceName(field)]
+            .filter(part => !!part)
+            .join(" · ");
+    }
+
+    /**
+     * Gets the name of the field type used by a registration attribute.
+     *
+     * @param attribute The registration attribute.
+     *
+     * @returns The field type name, or an empty string when it is not known.
+     */
+    function getAttributeFieldTypeName(attribute: PublicEditableAttributeBag): string {
+        const fieldTypeGuid = attribute.realFieldTypeGuid ?? attribute.fieldTypeGuid;
+
+        return (props.options.fieldTypes ?? []).find(f => areEqual(f.value, fieldTypeGuid))?.text ?? "";
+    }
+
+    // #endregion Functions
+</script>

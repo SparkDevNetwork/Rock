@@ -1,4 +1,4 @@
-﻿namespace InteractiveExperienceLoadTest
+namespace InteractiveExperienceLoadTest
 {
     /// <summary>
     /// The state of the simulated client.

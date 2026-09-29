@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -120,6 +120,20 @@ namespace Rock.ViewModels.Blocks.Engagement.ConnectionsHub
         /// Gets or sets a value indicating whether the current view is the "My Connections" view.
         /// </summary>
         public bool IsMyConnectionsView { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether the context slicer's Connection Type filter
+        /// should be hidden in the "My Connections" view because the block is pinned to a single
+        /// Connection Type by its block setting.
+        /// </summary>
+        public bool IsConnectionTypeFilterHidden { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether the block is limited to requests assigned to
+        /// the current person. When true the context slicer's connector filter is rendered
+        /// disabled and locked to "My Requests".
+        /// </summary>
+        public bool IsLimitedToAssignedConnections { get; set; }
 
         /// <summary>
         /// Gets or sets the list of connection types for the context slicer filter in the "My Connections" view.

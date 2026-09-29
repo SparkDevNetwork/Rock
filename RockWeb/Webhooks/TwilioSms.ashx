@@ -1,4 +1,4 @@
-﻿<%@ WebHandler Language="C#" Class="TwilioSmsAsync" %>
+<%@ WebHandler Language="C#" Class="TwilioSmsAsync" %>
 // <copyright>
 // Copyright 2013 by the Spark Development Network
 //
@@ -179,7 +179,7 @@ class TwilioSmsResponseAsync : TwilioDefaultResponseAsync
                         rockContext
                     );
 
-                    if ( responseCommunicationId.HasValue )
+                    if ( responseCommunicationId.HasValue && !smsResponse.IsWebhookReply )
                     {
                         // There's no need to send a message object back to the caller of this method since we've
                         // already queued a response to be sent.

@@ -18,6 +18,7 @@
 namespace Rock.ViewModels.Blocks.Cms.RequestFilterDetail
 {
     using System.Collections.Generic;
+
     using Rock.ViewModels.Utility;
 
     /// <summary>

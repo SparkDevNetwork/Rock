@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -26,13 +26,13 @@ using System.Text;
 using Rock.Attribute;
 using Rock.Communication.Chat;
 using Rock.Communication.Chat.DTO;
-using Rock.Data;
+using Rock.Configuration;
 using Rock.Core.Geography.Classes;
+using Rock.Data;
 using Rock.Model.Groups.Group.Options;
 using Rock.Web.Cache;
 
 using Z.EntityFramework.Plus;
-using Rock.Configuration;
 
 namespace Rock.Model
 {

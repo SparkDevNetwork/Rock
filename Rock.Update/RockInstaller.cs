@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -20,7 +20,9 @@ using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Net;
+
 using Microsoft.Web.XmlTransform;
+
 using Rock.Model;
 using Rock.Update.Exceptions;
 using Rock.Update.Helpers;

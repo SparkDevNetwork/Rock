@@ -1,4 +1,4 @@
-﻿namespace Rock.Enums.Cms
+namespace Rock.Enums.Cms
 {
     /// <summary>
     /// Represents the type of a mobile page.

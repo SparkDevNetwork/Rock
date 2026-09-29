@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -20,17 +20,19 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
 
+using Microsoft.Extensions.Logging;
+
 using Rock.Configuration;
 using Rock.Data;
 using Rock.Logging;
-using Rock.RealTime.Topics;
 using Rock.RealTime;
+using Rock.RealTime.Topics;
 using Rock.Reporting;
 using Rock.Utility;
-using Rock.Web.Cache;
-using Z.EntityFramework.Plus;
-using Microsoft.Extensions.Logging;
 using Rock.ViewModels.Group.GroupMember;
+using Rock.Web.Cache;
+
+using Z.EntityFramework.Plus;
 
 namespace Rock.Model
 {
@@ -1148,6 +1150,11 @@ namespace Rock.Model
             /// <inheritdoc cref="GroupMember.IsArchived"/>
             public bool IsArchived { get; }
 
+            /// <summary>
+            /// Determines if the group member status is <see cref="GroupMemberStatus.Inactive"/>.
+            /// </summary>
+            public bool IsInactive { get; }
+
             public GroupMemberUpdatedState( GroupMember groupMember, EntityContextState state )
             {
                 if ( groupMember == null )
@@ -1163,6 +1170,7 @@ namespace Rock.Model
                 GroupRoleId = groupMember.GroupRoleId;
                 DateTimeAdded = groupMember.DateTimeAdded?.ToRockDateTimeOffset();
                 IsArchived = groupMember.IsArchived;
+                IsInactive = groupMember.GroupMemberStatus == GroupMemberStatus.Inactive;
             }
         }
 
@@ -1336,6 +1344,7 @@ namespace Rock.Model
 						GroupRoleIdKey = Rock.Utility.IdHasher.Instance.GetHash( item.GroupRoleId ),
                         DateTimeAdded = item.DateTimeAdded,
                         IsArchived = item.IsArchived,
+                        IsInactive = item.IsInactive,
                         Person = new ViewModels.Blocks.Group.GroupPlacement.PersonBag
 						{   
 							PersonIdKey = person.IdKey,

@@ -1,6 +1,6 @@
 <template>
     <GalleryAndResult :importCode="importCode" :exampleCode="exampleCode">
-        <TabbedContent :tabs="list">
+        <TabbedContent :tabs="list" :tabBarType="tabBarType">
             <template #tabpane="{ item }">
                 <div v-if="item === 'Matthew'">
                     A former tax collector turned disciple of Jesus, Matthew is traditionally credited with writing a Gospel that emphasizes Jesus as the promised Messiah and teacher.
@@ -16,17 +16,38 @@
                 </div>
             </template>
         </TabbedContent>
+
+        <template #settings>
+            <div class="row">
+                <div class="col-md-4">
+                    <DropDownList v-model="tabBarType"
+                                  label="Tab Bar Type"
+                                  :items="tabBarTypeItems"
+                                  :showBlankItem="false" />
+                </div>
+            </div>
+        </template>
     </GalleryAndResult>
 </template>
 
 <script setup lang="ts">
+    import { computed, ref } from "vue";
     import GalleryAndResult from "./common/galleryAndResult.partial.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
     import TabbedContent from "@Obsidian/Controls/tabbedContent.obs";
     import { getSfcControlImportPath } from "./common/utils.partial";
 
     const list = ["Matthew", "Mark", "Luke", "John"];
+    const tabBarType = ref<"tabs" | "pills">("tabs");
+    const tabBarTypeItems = [{ value: "tabs", text: "Tabs" }, { value: "pills", text: "Pills" }];
     const importCode = getSfcControlImportPath("tabbedContent");
-    const exampleCode = `<TabbedContent :tabs="['Matthew', 'Mark', 'Luke', 'John']">
+
+    const exampleCode = computed((): string => {
+        const tabBarTypeAttribute = tabBarType.value === "tabs"
+            ? ""
+            : `\n               tabBarType="${tabBarType.value}"`;
+
+        return `<TabbedContent :tabs="['Matthew', 'Mark', 'Luke', 'John']"${tabBarTypeAttribute}>
     <template #tabpane="{item}">
         <div v-if="item === 'Matthew'">
             A former tax collector turned disciple of Jesus, Matthew is traditionally credited with writing a Gospel that emphasizes Jesus as the promised Messiah and teacher.
@@ -42,4 +63,5 @@
         </div>
     </template>
 </TabbedContent>`;
+    });
 </script>

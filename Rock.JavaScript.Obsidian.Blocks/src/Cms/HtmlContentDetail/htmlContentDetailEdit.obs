@@ -1,0 +1,222 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <TabbedModal v-model="isModalOpen"
+                 v-model:selectedTab="selectedTab"
+                 :tabs="tabs"
+                 tabBarType="pills"
+                 title="Edit HTML"
+                 saveText="Save"
+                 @save="onSave">
+        <template #prepend>
+            <NotificationBox v-if="errorMessage" alertType="danger">
+                {{ errorMessage }}
+            </NotificationBox>
+
+            <NotificationBox v-if="markupWarnings.length" alertType="warning">
+                <strong>Warning: The HTML has the following errors:</strong>
+                <ul>
+                    <li v-for="warning in markupWarnings" :key="warning">{{ warning }}</li>
+                </ul>
+                If you wish to save anyway, click Save again.
+            </NotificationBox>
+        </template>
+
+        <template #tabpane="{ item }">
+            <LoadingIndicator v-if="isLoading" :delay="500" />
+
+            <template v-else-if="editBag && options">
+                <ContentTab v-if="item === TabName.Content"
+                            v-model="editBag"
+                            v-model:isOverwriteCurrentVersion="isOverwriteCurrentVersion"
+                            :options="options" />
+
+                <VersionHistoryTab v-else-if="item === TabName.VersionHistory"
+                                   :versions="versions"
+                                   @selectVersion="onSelectVersion" />
+            </template>
+        </template>
+    </TabbedModal>
+</template>
+
+<script setup lang="ts">
+    import { computed, ref, watch } from "vue";
+    import LoadingIndicator from "@Obsidian/Controls/loadingIndicator.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import TabbedModal from "@Obsidian/Controls/tabbedModal.obs";
+    import { getSecurityGrant, provideSecurityGrant, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
+    import { alert } from "@Obsidian/Utility/dialogs";
+    import { HtmlContentEditBag } from "@Obsidian/ViewModels/Blocks/Cms/HtmlContentDetail/htmlContentEditBag";
+    import { HtmlContentEditBox } from "@Obsidian/ViewModels/Blocks/Cms/HtmlContentDetail/htmlContentEditBox";
+    import { HtmlContentEditOptionsBag } from "@Obsidian/ViewModels/Blocks/Cms/HtmlContentDetail/htmlContentEditOptionsBag";
+    import { HtmlContentVersionBag } from "@Obsidian/ViewModels/Blocks/Cms/HtmlContentDetail/htmlContentVersionBag";
+    import { SaveHtmlContentRequestBag } from "@Obsidian/ViewModels/Blocks/Cms/HtmlContentDetail/saveHtmlContentRequestBag";
+    import { SaveHtmlContentResponseBag } from "@Obsidian/ViewModels/Blocks/Cms/HtmlContentDetail/saveHtmlContentResponseBag";
+    import ContentTab from "./contentTab.partial.obs";
+    import VersionHistoryTab from "./versionHistoryTab.partial.obs";
+    import { TabName } from "./types.partial";
+
+    const emit = defineEmits<{
+        (e: "close"): void;
+    }>();
+
+    const invokeBlockAction = useInvokeBlockAction();
+    const reloadBlock = useReloadBlock();
+
+    // Provided empty up front so the editor's controls can inject it before the token arrives.
+    const securityGrant = getSecurityGrant(null);
+    provideSecurityGrant(securityGrant);
+
+    // #region Values
+
+    const isModalOpen = ref(true);
+    const isLoading = ref(true);
+    const errorMessage = ref("");
+    const selectedTab = ref<string>(TabName.Content);
+
+    const editBag = ref<HtmlContentEditBag | null>(null);
+    const options = ref<HtmlContentEditOptionsBag | null>(null);
+    const versions = ref<HtmlContentVersionBag[]>([]);
+    const isOverwriteCurrentVersion = ref(false);
+
+    const markupWarnings = ref<string[]>([]);
+    const isMarkupWarningAcknowledged = ref(false);
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    /** The Version History tab is only offered when the block keeps versions. */
+    const tabs = computed((): string[] => {
+        return options.value?.isVersioningEnabled
+            ? [TabName.Content, TabName.VersionHistory]
+            : [TabName.Content];
+    });
+
+    // #endregion Computed Values
+
+    // #region Functions
+
+    /**
+     * Loads the edit box for the block's latest version.
+     */
+    async function loadEditContent(): Promise<void> {
+        const result = await invokeBlockAction<HtmlContentEditBox>("GetEditContent");
+
+        if (!result.isSuccess || !result.data?.content || !result.data.options) {
+            errorMessage.value = result.errorMessage ?? "Unable to load the content for editing.";
+            isLoading.value = false;
+            return;
+        }
+
+        securityGrant.updateToken(result.data.securityGrantToken);
+        options.value = result.data.options;
+        versions.value = result.data.versions ?? [];
+        loadVersion(result.data.content);
+        isLoading.value = false;
+    }
+
+    /**
+     * Puts a version into the editor and resets the per-version state.
+     *
+     * @param bag The version to edit.
+     */
+    function loadVersion(bag: HtmlContentEditBag): void {
+        editBag.value = bag;
+        isOverwriteCurrentVersion.value = false;
+        clearMarkupWarnings();
+    }
+
+    /**
+     * Clears any markup warnings so the next save is validated again.
+     */
+    function clearMarkupWarnings(): void {
+        markupWarnings.value = [];
+        isMarkupWarningAcknowledged.value = false;
+    }
+
+    // #endregion Functions
+
+    // #region Event Handlers
+
+    /**
+     * Saves the editor's content. A first save with markup problems shows the
+     * warnings and waits for a second click before writing anything.
+     */
+    async function onSave(): Promise<void> {
+        if (!editBag.value) {
+            return;
+        }
+
+        errorMessage.value = "";
+
+        const request: SaveHtmlContentRequestBag = {
+            version: editBag.value.version,
+            content: editBag.value.content,
+            startDateTime: editBag.value.startDateTime,
+            expireDateTime: editBag.value.expireDateTime,
+            approvalStatus: editBag.value.approvalStatus,
+            isOverwriteCurrentVersion: isOverwriteCurrentVersion.value,
+            isMarkupWarningAcknowledged: isMarkupWarningAcknowledged.value
+        };
+
+        const result = await invokeBlockAction<SaveHtmlContentResponseBag>("Save", { request });
+
+        if (!result.isSuccess || !result.data) {
+            errorMessage.value = result.errorMessage ?? "Unable to save the content.";
+            return;
+        }
+
+        if (!result.data.isSaved) {
+            markupWarnings.value = result.data.markupWarnings ?? [];
+            isMarkupWarningAcknowledged.value = true;
+            return;
+        }
+
+        if (result.data.isApprovalPending) {
+            await alert("Your changes will not be visible until they are reviewed and approved.");
+        }
+
+        isModalOpen.value = false;
+        reloadBlock();
+    }
+
+    /**
+     * Loads the selected version into the editor and returns to the Content tab.
+     *
+     * @param idKey The identifier key of the version to load.
+     */
+    async function onSelectVersion(idKey: string): Promise<void> {
+        errorMessage.value = "";
+
+        const result = await invokeBlockAction<HtmlContentEditBag>("GetVersion", { idKey });
+
+        if (!result.isSuccess || !result.data) {
+            errorMessage.value = result.errorMessage ?? "Unable to load the selected version.";
+            return;
+        }
+
+        loadVersion(result.data);
+        selectedTab.value = TabName.Content;
+    }
+
+    // #endregion Event Handlers
+
+    // #region Watchers
+
+    // Edits after a warning invalidate the acknowledgement so the new markup is checked again.
+    watch(() => editBag.value?.content, () => {
+        if (markupWarnings.value.length) {
+            clearMarkupWarnings();
+        }
+    });
+
+    watch(isModalOpen, () => {
+        if (!isModalOpen.value) {
+            emit("close");
+        }
+    });
+
+    // #endregion Watchers
+
+    loadEditContent();
+</script>

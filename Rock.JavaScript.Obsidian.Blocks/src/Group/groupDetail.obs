@@ -159,9 +159,10 @@
 
     /**
      * Labels rendered in the panel sub-header: lifecycle / context chips for
-     * Archived, Inactive, Security Level, Relationship Strength, Chat-Enabled,
-     * and Public. GroupType and Campus render as headerLabels next to the
-     * panel title instead. Hidden in Add mode.
+     * Inactive, Security Level, Relationship Strength, Chat-Enabled, and
+     * Public. GroupType and Campus render as headerLabels next to the panel
+     * title instead. Hidden in Add mode. Archived groups never reach this
+     * component because the block returns a warning instead of the group.
      */
     const blockLabels = computed((): PanelAction[] => {
         const bag = groupViewBag.value;
@@ -170,14 +171,6 @@
         }
 
         const labels: PanelAction[] = [];
-
-        if (bag.isArchived) {
-            labels.push({
-                title: "Archived",
-                type: "danger",
-                iconCssClass: "ti ti-archive"
-            });
-        }
 
         if (!bag.isActive) {
             labels.push({

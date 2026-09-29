@@ -1,15 +1,16 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
+
 using Rock.Attribute;
 using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
+using Rock.NCOA;
 using Rock.SystemGuid;
 using Rock.Utility.Settings.SparkData;
 using Rock.ViewModels.Blocks.Communication.NcoaProcess;
 using Rock.Web.Cache;
-using Rock.NCOA;
-using System.Linq;
 
 namespace Rock.Blocks.Communication
 {

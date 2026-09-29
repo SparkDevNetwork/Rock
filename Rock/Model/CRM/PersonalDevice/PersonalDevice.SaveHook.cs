@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -15,9 +15,10 @@
 // </copyright>
 //
 
+using System.Linq;
+
 using Rock.Data;
 using Rock.Web.Cache;
-using System.Linq;
 
 namespace Rock.Model
 {

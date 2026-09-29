@@ -1,7 +1,7 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
     <div>
-        <TabbedBar v-model="selectedTab" :tabs="tabs" :class="tabBarClass" :selectedTabQueryParameterKey="selectedTabQueryParameterKey" />
+        <TabbedBar v-model="selectedTab" :tabs="tabs" :type="tabBarType" :class="tabBarClass" :selectedTabQueryParameterKey="selectedTabQueryParameterKey" />
 
         <div class="tab-content mt-4">
             <div v-for="(item, i) in tabs" :key="i" :class="classes[i]">
@@ -44,6 +44,12 @@
         tabBarClass: {
             type: [String, Object, Array] as PropType<string | string[] | Record<string, boolean>>,
             default: ""
+        },
+
+        /** The style of tab bar to display. */
+        tabBarType: {
+            type: String as PropType<"tabs" | "pills">,
+            default: "tabs"
         }
     });
 

@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -24,12 +24,12 @@ using Ical.Net.DataTypes;
 using Ical.Net.Serialization;
 
 using Rock;
+using Rock.Configuration;
 using Rock.Data;
 
 using TimeZoneConverter;
 
 using Calendar = Ical.Net.Calendar;
-using Rock.Configuration;
 
 namespace Rock.Model
 {

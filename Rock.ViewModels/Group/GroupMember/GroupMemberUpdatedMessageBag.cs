@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -77,6 +77,12 @@ namespace Rock.ViewModels.Group.GroupMember
         /// treat an update with this set to true the same as a removal.
         /// </summary>
         public bool IsArchived { get; set; }
+
+        /// <summary>
+        /// Determines if the group member status is Inactive. Inactive members are still
+        /// considered placed but are displayed muted and are not counted toward capacity.
+        /// </summary>
+        public bool IsInactive { get; set; }
 
         /// <summary>
         /// The person associated with the group member.

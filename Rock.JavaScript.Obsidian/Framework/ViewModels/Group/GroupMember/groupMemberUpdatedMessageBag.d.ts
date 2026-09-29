@@ -63,6 +63,12 @@ export type GroupMemberUpdatedMessageBag = {
      */
     isArchived: boolean;
 
+    /**
+     * Determines if the group member status is Inactive. Inactive members are still
+     * considered placed but are displayed muted and are not counted toward capacity.
+     */
+    isInactive: boolean;
+
     /** The person associated with the group member. */
     person?: PersonBag | null;
 };

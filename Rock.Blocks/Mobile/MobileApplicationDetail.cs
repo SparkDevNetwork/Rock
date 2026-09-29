@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -25,6 +25,7 @@ using Humanizer;
 using Rock.Attribute;
 using Rock.Common.Mobile;
 using Rock.Common.Mobile.Enums;
+using Rock.Configuration;
 using Rock.Constants;
 using Rock.Data;
 using Rock.DownhillCss;
@@ -41,7 +42,6 @@ using Rock.Web.Cache;
 using AdditionalSiteSettings = Rock.Mobile.AdditionalSiteSettings;
 using ShellType = Rock.Common.Mobile.Enums.ShellType;
 using TabLocation = Rock.Mobile.TabLocation;
-using Rock.Configuration;
 
 namespace Rock.Blocks.Mobile
 {

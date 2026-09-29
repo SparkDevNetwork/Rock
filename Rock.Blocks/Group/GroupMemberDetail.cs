@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -178,6 +178,11 @@ namespace Rock.Blocks.Group
 
         #region Fields
 
+        /// <summary>
+        /// The message shown in place of a group member whose group has been archived.
+        /// </summary>
+        private static readonly string GroupArchivedMessage = "This group member belongs to a group that has been archived.";
+
         private const string NoLocationPreference = "No Location Preference";
 
         /// <summary>
@@ -199,6 +204,11 @@ namespace Rock.Blocks.Group
         /// The group identifier the cached requirements were loaded for.
         /// </summary>
         private int? _cachedGroupRequirementsGroupId;
+
+        /// <summary>
+        /// The validated sign-up mode result, resolved once per request.
+        /// </summary>
+        private bool? _isSignUpMode;
 
         #endregion Fields
 
@@ -222,14 +232,70 @@ namespace Rock.Blocks.Group
             ?? Rock.Utility.IdHasher.Instance.GetId( PageParameter( PageParameterKey.ScheduleId ) );
 
         /// <summary>
-        /// Sign-up mode is active when both a location and a schedule are
-        /// supplied, as when reached from a Sign-Up project's attendee list.
+        /// Sign-up mode is active when the supplied location and schedule are
+        /// one of the group's configured pairs, as when reached from a Sign-Up
+        /// project's attendee list. Unrelated ids do not qualify, because
+        /// sign-up mode extends edit rights to the SCHEDULE action.
         /// </summary>
-        private bool IsSignUpMode => LocationId.ToIntSafe() > 0 && ScheduleId.ToIntSafe() > 0;
+        private bool IsSignUpMode
+        {
+            get
+            {
+                if ( !_isSignUpMode.HasValue )
+                {
+                    _isSignUpMode = GetIsSignUpMode();
+                }
+
+                return _isSignUpMode.Value;
+            }
+        }
 
         #endregion Properties
 
         #region Methods
+
+        /// <summary>
+        /// Determines whether the location and schedule page parameters name a
+        /// pair configured on the group being viewed. The group comes from the
+        /// member when one is identified, otherwise from the GroupId parameter.
+        /// </summary>
+        /// <returns><c>true</c> when the request targets a genuine sign-up occurrence.</returns>
+        private bool GetIsSignUpMode()
+        {
+            var locationId = LocationId ?? 0;
+            var scheduleId = ScheduleId ?? 0;
+
+            if ( locationId <= 0 || scheduleId <= 0 )
+            {
+                return false;
+            }
+
+            var allowIntegerIds = !PageCache.Layout.Site.DisablePredictableIds;
+            var groupMemberKey = PageParameter( PageParameterKey.GroupMemberId );
+            var groupId = groupMemberKey.IsNotNullOrWhiteSpace()
+                ? new GroupMemberService( RockContext ).GetSelect( groupMemberKey, m => ( int? ) m.GroupId, allowIntegerIds )
+                : null;
+
+            // Adding a member has no member yet, so the group parameter identifies the group.
+            if ( !groupId.HasValue )
+            {
+                var groupKey = PageParameter( PageParameterKey.GroupId );
+                groupId = groupKey.IsNotNullOrWhiteSpace()
+                    ? new GroupService( RockContext ).GetSelect( groupKey, g => ( int? ) g.Id, allowIntegerIds )
+                    : null;
+            }
+
+            if ( !groupId.HasValue )
+            {
+                return false;
+            }
+
+            return new GroupLocationService( RockContext )
+                .Queryable()
+                .Any( gl => gl.GroupId == groupId.Value
+                    && gl.LocationId == locationId
+                    && gl.Schedules.Any( s => s.Id == scheduleId ) );
+        }
 
         /// <summary>
         /// Returns the group's requirements, querying the database once per request and reusing the
@@ -265,6 +331,43 @@ namespace Rock.Blocks.Group
                 box.ErrorMessage = isLookupAttempt
                     ? "Group Member not found. Group Member may have been moved to another group or deleted."
                     : "An incorrect querystring parameter was used. A valid GroupMemberId or GroupId parameter is required.";
+
+                PrepareDetailBox( box, entity );
+
+                return box;
+            }
+
+            if ( IsGroupArchived( entity ) )
+            {
+                /*
+                    9/18/26 - MSE
+
+                    Archiving a group also archives its members, but records such as event
+                    registrants still link to the group member. Rather than displaying and
+                    allowing edits to a member of an archived group, show a warning in the
+                    same way the Group Detail block does for an archived group.
+
+                    Reason: Group Member Detail shows a warning for members of archived groups. (Fixes #7047)
+                */
+                var box = new DetailBlockBox<GroupMemberBag, GroupMemberDetailOptionsBag>
+                {
+                    ErrorMessage = GroupArchivedMessage
+                };
+
+                PrepareDetailBox( box, entity );
+
+                return box;
+            }
+
+            // Group VIEW gates the load as it does every block action and the Group Detail block; block security alone is not enough.
+            var isViewable = entity.Group.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson ) || IsAuthorizedToEdit( entity.Group );
+
+            if ( !isViewable )
+            {
+                var box = new DetailBlockBox<GroupMemberBag, GroupMemberDetailOptionsBag>
+                {
+                    ErrorMessage = EditModeMessage.NotAuthorizedToView( GroupMember.FriendlyTypeName )
+                };
 
                 PrepareDetailBox( box, entity );
 
@@ -337,6 +440,8 @@ namespace Rock.Blocks.Group
                 entity = ApplyNewGroupMemberDefaultValues( entity );
             }
 
+            EnsureGroupIsLoaded( entity );
+
             return entity;
         }
 
@@ -366,6 +471,45 @@ namespace Rock.Blocks.Group
             entity.DateTimeAdded = RockDateTime.Now;
 
             return entity;
+        }
+
+        /// <summary>
+        /// Ensures the <see cref="GroupMember.Group"/> navigation property of an
+        /// existing group member is populated, even when the group has been archived.
+        /// </summary>
+        /// <param name="entity">The group member, which may be <c>null</c>.</param>
+        private void EnsureGroupIsLoaded( GroupMember entity )
+        {
+            if ( entity == null || entity.Id == 0 || entity.Group != null )
+            {
+                return;
+            }
+
+            /*
+                9/18/26 - MSE
+
+                Archiving a group also archives its members. The group member lookups in this
+                block bypass the archived filter, but Rock's global query filter still hides
+                archived groups from root queries, including EF lazy loads. So the Group of a
+                member whose group was archived lazy loads as null and the block would throw a
+                NullReferenceException. Get() bypasses the filter, so load the group explicitly.
+                The loaded group is also what lets the block detect an archived group and show
+                a warning instead of the member.
+
+                Reason: Group Member Detail errored for members of archived groups. (Fixes #7047)
+            */
+            entity.Group = new GroupService( RockContext ).Get( entity.GroupId );
+        }
+
+        /// <summary>
+        /// Determines whether the group that the group member belongs to has been archived.
+        /// Call <see cref="EnsureGroupIsLoaded(GroupMember)"/> first so the group is populated.
+        /// </summary>
+        /// <param name="entity">The group member, which may be <c>null</c>.</param>
+        /// <returns><c>true</c> if the member's group is archived; otherwise, <c>false</c>.</returns>
+        private static bool IsGroupArchived( GroupMember entity )
+        {
+            return entity?.Group != null && entity.Group.IsArchived;
         }
 
         /// <summary>
@@ -1238,7 +1382,8 @@ namespace Rock.Blocks.Group
             var isReadOnly = GetIsReadOnly( entity );
             var groupType = GroupTypeCache.Get( entity.Group.GroupTypeId );
 
-            bag.SignedDocument = GetLatestSignedDocumentFile( entity );
+            // View-only callers never receive the file reference, matching RefreshRequirements.
+            bag.SignedDocument = isReadOnly ? null : GetLatestSignedDocumentFile( entity );
 
             if ( groupType.IsSchedulingEnabled && !IsSignUpMode )
             {
@@ -1269,16 +1414,8 @@ namespace Rock.Blocks.Group
                 return null;
             }
 
-            var binaryFile = new SignatureDocumentService( RockContext )
-                .Queryable().AsNoTracking()
-                .Where( d =>
-                    d.SignatureDocumentTemplateId == templateId.Value &&
-                    d.AppliesToPersonAlias != null &&
-                    d.AppliesToPersonAlias.PersonId == entity.PersonId &&
-                    d.LastStatusDate.HasValue &&
-                    d.Status == SignatureDocumentStatus.Signed &&
-                    d.BinaryFile != null )
-                .OrderByDescending( d => d.LastStatusDate.Value )
+            var binaryFile = GetLatestSignedDocumentQuery( templateId.Value, entity.PersonId )
+                .AsNoTracking()
                 .Select( d => new
                 {
                     d.BinaryFile.Guid,
@@ -1296,6 +1433,84 @@ namespace Rock.Blocks.Group
                 Value = binaryFile.Guid.ToString(),
                 Text = binaryFile.FileName
             };
+        }
+
+        /// <summary>
+        /// Gets the person's signed documents for the template with a file
+        /// attached, most recently signed first. Shared by the uploader
+        /// display, its validation, and the save so all three agree on which
+        /// document is current.
+        /// </summary>
+        /// <param name="templateId">The required signature document template identifier.</param>
+        /// <param name="personId">The person identifier.</param>
+        /// <returns>The ordered signed document query.</returns>
+        private IQueryable<SignatureDocument> GetLatestSignedDocumentQuery( int templateId, int personId )
+        {
+            return new SignatureDocumentService( RockContext )
+                .Queryable()
+                .Where( d =>
+                    d.SignatureDocumentTemplateId == templateId &&
+                    d.AppliesToPersonAlias != null &&
+                    d.AppliesToPersonAlias.PersonId == personId &&
+                    d.LastStatusDate.HasValue &&
+                    d.Status == SignatureDocumentStatus.Signed &&
+                    d.BinaryFile != null )
+                .OrderByDescending( d => d.LastStatusDate );
+        }
+
+        /// <summary>
+        /// Validates the signed document file the client sent. Any file other
+        /// than the one already on the person's current signed document must
+        /// be a fresh upload: still flagged temporary and of the template's
+        /// file type. This stops a crafted request from attaching an arbitrary
+        /// binary file by guid, which the save would later mark for deletion.
+        /// Must run before the entity is updated so the current document is
+        /// read unmodified.
+        /// </summary>
+        private bool TryValidateSignedDocument( GroupMember entity, ValidPropertiesBox<GroupMemberBag> box, out string errorMessage )
+        {
+            errorMessage = null;
+
+            var template = entity.Group.RequiredSignatureDocumentTemplate;
+            var binaryFileGuid = box.Bag.SignedDocument?.Value?.AsGuidOrNull();
+
+            if ( template == null || !binaryFileGuid.HasValue || !box.IsValidProperty( nameof( box.Bag.SignedDocument ) ) )
+            {
+                return true;
+            }
+
+            // A new member has no person yet, so the selected person supplies it.
+            var personId = entity.Id == 0
+                ? GetPersonFromAliasGuid( box.Bag.Person?.Value?.AsGuidOrNull() )?.Id ?? 0
+                : entity.PersonId;
+
+            var currentBinaryFileGuid = personId != 0
+                ? GetLatestSignedDocumentQuery( template.Id, personId ).AsNoTracking().Select( d => d.BinaryFile.Guid ).FirstOrDefault()
+                : Guid.Empty;
+
+            if ( currentBinaryFileGuid == binaryFileGuid.Value )
+            {
+                return true;
+            }
+
+            var binaryFile = new BinaryFileService( RockContext )
+                .Queryable().AsNoTracking()
+                .Where( f => f.Guid == binaryFileGuid.Value )
+                .Select( f => new { f.IsTemporary, f.BinaryFileTypeId } )
+                .FirstOrDefault();
+
+            // The uploader creates files as temporary, and only this save clears the flag, so temporary means just uploaded.
+            var isFreshUpload = binaryFile != null
+                && binaryFile.IsTemporary
+                && ( !template.BinaryFileTypeId.HasValue || binaryFile.BinaryFileTypeId == template.BinaryFileTypeId.Value );
+
+            if ( !isFreshUpload )
+            {
+                errorMessage = "The signed document must be a newly uploaded file of the template's file type.";
+                return false;
+            }
+
+            return true;
         }
 
         /// <summary>
@@ -1454,18 +1669,7 @@ namespace Rock.Blocks.Group
             }
 
             // The same latest-signed-document query that fed the uploader picks the document to update.
-            var personId = entity.PersonId;
-            var document = new SignatureDocumentService( RockContext )
-                .Queryable()
-                .Where( d =>
-                    d.SignatureDocumentTemplateId == template.Id &&
-                    d.AppliesToPersonAlias != null &&
-                    d.AppliesToPersonAlias.PersonId == personId &&
-                    d.LastStatusDate.HasValue &&
-                    d.Status == SignatureDocumentStatus.Signed &&
-                    d.BinaryFile != null )
-                .OrderByDescending( d => d.LastStatusDate )
-                .FirstOrDefault();
+            var document = GetLatestSignedDocumentQuery( template.Id, entity.PersonId ).FirstOrDefault();
 
             if ( document == null && binaryFileId.HasValue )
             {
@@ -1775,6 +1979,7 @@ namespace Rock.Blocks.Group
             if ( idKey.IsNotNullOrWhiteSpace() )
             {
                 entity = entityService.Get( idKey, !PageCache.Layout.Site.DisablePredictableIds );
+                EnsureGroupIsLoaded( entity );
             }
             else
             {
@@ -1790,6 +1995,13 @@ namespace Rock.Blocks.Group
             if ( entity == null )
             {
                 error = ActionBadRequest( $"{GroupMember.FriendlyTypeName} not found." );
+                return false;
+            }
+
+            // The block presents a member of an archived group as unavailable, so do not allow edits either.
+            if ( IsGroupArchived( entity ) )
+            {
+                error = ActionBadRequest( GroupArchivedMessage );
                 return false;
             }
 
@@ -1893,6 +2105,11 @@ namespace Rock.Blocks.Group
                 }
             }
 
+            if ( !TryValidateSignedDocument( entity, box, out var signedDocumentError ) )
+            {
+                return ActionBadRequest( signedDocumentError );
+            }
+
             // The archived-member check only applies when the person or role is changing.
             var previousPersonId = entity.PersonId;
             var previousRoleId = entity.GroupRoleId;
@@ -1990,10 +2207,16 @@ namespace Rock.Blocks.Group
             var groupMemberService = new GroupMemberService( RockContext );
             var groupMemberId = Rock.Utility.IdHasher.Instance.GetId( archivedGroupMemberIdKey );
             var entity = groupMemberService.GetArchived().FirstOrDefault( m => m.Id == groupMemberId );
+            EnsureGroupIsLoaded( entity );
 
             if ( entity == null )
             {
                 return ActionBadRequest( $"{GroupMember.FriendlyTypeName} not found." );
+            }
+
+            if ( IsGroupArchived( entity ) )
+            {
+                return ActionBadRequest( GroupArchivedMessage );
             }
 
             if ( !IsAuthorizedToEdit( entity.Group ) )
@@ -2031,12 +2254,23 @@ namespace Rock.Blocks.Group
                 return ActionBadRequest( "Invalid request." );
             }
 
+            if ( !GetAttributeValue( AttributeKey.ShowMoveToOtherGroup ).AsBoolean( true ) )
+            {
+                return ActionBadRequest( "Moving group members is not enabled." );
+            }
+
             var groupMemberService = new GroupMemberService( RockContext );
             var groupMember = groupMemberService.Get( bag.GroupMemberIdKey, !PageCache.Layout.Site.DisablePredictableIds );
+            EnsureGroupIsLoaded( groupMember );
 
             if ( groupMember == null )
             {
                 return ActionBadRequest( $"{GroupMember.FriendlyTypeName} not found." );
+            }
+
+            if ( IsGroupArchived( groupMember ) )
+            {
+                return ActionBadRequest( GroupArchivedMessage );
             }
 
             if ( !IsAuthorizedToEdit( groupMember.Group ) )
@@ -2049,6 +2283,12 @@ namespace Rock.Blocks.Group
             if ( destGroup == null )
             {
                 return ActionBadRequest( "Please select a Destination Group." );
+            }
+
+            // Moving adds a member to the destination, so the rights to add one there are required.
+            if ( !IsAuthorizedToEdit( destGroup ) )
+            {
+                return ActionBadRequest( "Not authorized to move members into the destination group." );
             }
 
             // The role must belong to the destination group's type; the client dropdown is not trusted.
@@ -2105,47 +2345,55 @@ namespace Rock.Blocks.Group
                 registrant.GroupMemberId = null;
             }
 
-            RockContext.WrapTransaction( () =>
+            try
             {
-                groupMemberService.Add( destGroupMember );
-                RockContext.SaveChanges();
-                destGroupMember.SaveAttributeValues( RockContext );
-
-                // Move any Note records that were associated with the old member to the new record.
-                if ( bag.IsMoveNotesChecked )
+                RockContext.WrapTransaction( () =>
                 {
-                    destGroupMember.Note = groupMember.Note;
-                    var groupMemberEntityTypeId = EntityTypeCache.GetId<GroupMember>().Value;
-                    var groupMemberNotes = new NoteService( RockContext )
-                        .Queryable()
-                        .Where( a => a.NoteType.EntityTypeId == groupMemberEntityTypeId && a.EntityId == groupMember.Id );
+                    groupMemberService.Add( destGroupMember );
+                    RockContext.SaveChanges();
+                    destGroupMember.SaveAttributeValues( RockContext );
 
-                    foreach ( var note in groupMemberNotes )
+                    // Move any Note records that were associated with the old member to the new record.
+                    if ( bag.IsMoveNotesChecked )
                     {
-                        note.EntityId = destGroupMember.Id;
+                        destGroupMember.Note = groupMember.Note;
+                        var groupMemberEntityTypeId = EntityTypeCache.GetId<GroupMember>().Value;
+                        var groupMemberNotes = new NoteService( RockContext )
+                            .Queryable()
+                            .Where( a => a.NoteType.EntityTypeId == groupMemberEntityTypeId && a.EntityId == groupMember.Id );
+
+                        foreach ( var note in groupMemberNotes )
+                        {
+                            note.EntityId = destGroupMember.Id;
+                        }
+
+                        RockContext.SaveChanges();
+                    }
+
+                    if ( bag.IsMoveFundraisingTransactionsChecked )
+                    {
+                        MoveFundraisingTransactions( groupMember, destGroupMember );
+                    }
+
+                    if ( isArchive )
+                    {
+                        groupMemberService.Archive( groupMember, RequestContext.CurrentPerson?.PrimaryAliasId, true );
+                    }
+                    else
+                    {
+                        groupMemberService.Delete( groupMember );
                     }
 
                     RockContext.SaveChanges();
-                }
 
-                if ( bag.IsMoveFundraisingTransactionsChecked )
-                {
-                    MoveFundraisingTransactions( groupMember, destGroupMember );
-                }
-
-                if ( isArchive )
-                {
-                    groupMemberService.Archive( groupMember, RequestContext.CurrentPerson?.PrimaryAliasId, true );
-                }
-                else
-                {
-                    groupMemberService.Delete( groupMember );
-                }
-
-                RockContext.SaveChanges();
-
-                destGroupMember.CalculateRequirements( RockContext, true );
-            } );
+                    destGroupMember.CalculateRequirements( RockContext, true );
+                } );
+            }
+            catch ( GroupMemberValidationException ex )
+            {
+                // The destination group's own rules (capacity, duplicates, requirements) rejected the new member; the transaction rolled back.
+                return ActionBadRequest( ex.Message.Replace( "; ", "<br>" ) );
+            }
 
             // Only the new member's id rides along; a stale GroupId or returnUrl from the
             // old record would redirect later navigation (WebForms parity).
@@ -2364,11 +2612,22 @@ namespace Rock.Blocks.Group
         [BlockAction]
         public BlockActionResult GetMoveGroupMemberOptions( string groupMemberIdKey, string destinationGroupIdKey )
         {
+            if ( !GetAttributeValue( AttributeKey.ShowMoveToOtherGroup ).AsBoolean( true ) )
+            {
+                return ActionBadRequest( "Moving group members is not enabled." );
+            }
+
             var entity = new GroupMemberService( RockContext ).Get( groupMemberIdKey, !PageCache.Layout.Site.DisablePredictableIds );
+            EnsureGroupIsLoaded( entity );
 
             if ( entity == null )
             {
                 return ActionBadRequest( $"{GroupMember.FriendlyTypeName} not found." );
+            }
+
+            if ( IsGroupArchived( entity ) )
+            {
+                return ActionBadRequest( GroupArchivedMessage );
             }
 
             if ( !IsAuthorizedToEdit( entity.Group ) )
@@ -2400,6 +2659,13 @@ namespace Rock.Blocks.Group
             if ( destinationGroup.Id == entity.GroupId )
             {
                 options.Warnings.Add( "The destination group is the same as the current group." );
+                return ActionOk( options );
+            }
+
+            // Stop before the role list so an unauthorized destination reveals nothing about the group.
+            if ( !IsAuthorizedToEdit( destinationGroup ) )
+            {
+                options.Warnings.Add( "You are not authorized to move members into the destination group." );
                 return ActionOk( options );
             }
 
@@ -2472,10 +2738,16 @@ namespace Rock.Blocks.Group
             }
 
             var entity = new GroupMemberService( RockContext ).Get( groupMemberIdKey, !PageCache.Layout.Site.DisablePredictableIds );
+            EnsureGroupIsLoaded( entity );
 
             if ( entity == null )
             {
                 return ActionBadRequest( $"{GroupMember.FriendlyTypeName} not found." );
+            }
+
+            if ( IsGroupArchived( entity ) )
+            {
+                return ActionBadRequest( GroupArchivedMessage );
             }
 
             if ( !IsAuthorizedToCommunicate( entity.Group ) )
@@ -2556,7 +2828,7 @@ namespace Rock.Blocks.Group
             }
 
             var memberSmsNumber = GetMemberSmsNumber( entity );
-            options.RecipientSmsNumber = memberSmsNumber?.NumberFormatted;
+            options.RecipientSmsNumber = memberSmsNumber?.ToString();
 
             var smsNumbers = GetAuthorizedSmsNumbers();
 
@@ -2660,15 +2932,26 @@ namespace Rock.Blocks.Group
             }
 
             var entity = new GroupMemberService( RockContext ).Get( bag.GroupMemberIdKey, !PageCache.Layout.Site.DisablePredictableIds );
+            EnsureGroupIsLoaded( entity );
 
             if ( entity == null )
             {
                 return ActionBadRequest( $"{GroupMember.FriendlyTypeName} not found." );
             }
 
+            if ( IsGroupArchived( entity ) )
+            {
+                return ActionBadRequest( GroupArchivedMessage );
+            }
+
             if ( !IsAuthorizedToCommunicate( entity.Group ) )
             {
                 return ActionBadRequest( "Not authorized to communicate with this group member." );
+            }
+
+            if ( bag.IsSms && !GetAttributeValue( AttributeKey.EnableSMS ).AsBoolean( true ) )
+            {
+                return ActionBadRequest( "SMS communications are not enabled." );
             }
 
             return bag.IsSms
@@ -2869,7 +3152,15 @@ namespace Rock.Blocks.Group
                 } );
             }
 
-            if ( !entity.Group.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson ) && !IsAuthorizedToEdit( entity.Group ) )
+            // Evaluating a person who is not yet a member is part of adding one, so it needs the same rights as the add itself.
+            if ( entity.Id == 0 )
+            {
+                if ( !IsAuthorizedToEdit( entity.Group ) )
+                {
+                    return ActionBadRequest( "Not authorized to edit this group." );
+                }
+            }
+            else if ( !entity.Group.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson ) && !IsAuthorizedToEdit( entity.Group ) )
             {
                 return ActionBadRequest( "Not authorized to view this group." );
             }
@@ -2915,10 +3206,16 @@ namespace Rock.Blocks.Group
         public BlockActionResult LaunchRequirementWorkflow( string groupMemberIdKey, Guid groupRequirementGuid, bool isWarningWorkflow )
         {
             var entity = new GroupMemberService( RockContext ).Get( groupMemberIdKey, !PageCache.Layout.Site.DisablePredictableIds );
+            EnsureGroupIsLoaded( entity );
 
             if ( entity == null )
             {
                 return ActionBadRequest( $"{GroupMember.FriendlyTypeName} not found." );
+            }
+
+            if ( IsGroupArchived( entity ) )
+            {
+                return ActionBadRequest( GroupArchivedMessage );
             }
 
             if ( !entity.Group.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson ) && !IsAuthorizedToEdit( entity.Group ) )
@@ -3032,9 +3329,24 @@ namespace Rock.Blocks.Group
         [BlockAction]
         public BlockActionResult GetScheduleAssignmentOptions( string groupMemberIdKey, int? selectedScheduleId )
         {
-            var group = groupMemberIdKey.IsNotNullOrWhiteSpace()
-                ? new GroupMemberService( RockContext ).Get( groupMemberIdKey, !PageCache.Layout.Site.DisablePredictableIds )?.Group
-                : GetGroupFromPageParameter();
+            Model.Group group;
+
+            if ( groupMemberIdKey.IsNotNullOrWhiteSpace() )
+            {
+                var groupMember = new GroupMemberService( RockContext ).Get( groupMemberIdKey, !PageCache.Layout.Site.DisablePredictableIds );
+                EnsureGroupIsLoaded( groupMember );
+
+                if ( IsGroupArchived( groupMember ) )
+                {
+                    return ActionBadRequest( GroupArchivedMessage );
+                }
+
+                group = groupMember?.Group;
+            }
+            else
+            {
+                group = GetGroupFromPageParameter();
+            }
 
             if ( group == null )
             {

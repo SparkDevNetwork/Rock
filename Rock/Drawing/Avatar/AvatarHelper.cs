@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -17,14 +17,16 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Web;
+
 using Rock.Model;
 using Rock.Web.Cache;
+
 using SixLabors.Fonts;
-using SixLabors.ImageSharp.PixelFormats;
-using SixLabors.ImageSharp.Processing;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Drawing.Processing;
-using System.Web;
+using SixLabors.ImageSharp.PixelFormats;
+using SixLabors.ImageSharp.Processing;
 
 namespace Rock.Drawing.Avatar
 {

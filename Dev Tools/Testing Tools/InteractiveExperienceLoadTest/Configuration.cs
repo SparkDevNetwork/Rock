@@ -1,4 +1,4 @@
-﻿namespace InteractiveExperienceLoadTest
+namespace InteractiveExperienceLoadTest
 {
     /// <summary>
     /// The configuration provided by the individual.

@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -98,6 +98,18 @@ namespace Rock.Model
         /// </summary>
         [DataMember]
         public AudienceType AudienceType { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this agent is part of the
+        /// Rock core system. System agents cannot be deleted and their
+        /// <see cref="Instructions"/> cannot be modified through the UI.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance is system; otherwise, <c>false</c>.
+        /// </value>
+        [Required]
+        [DataMember( IsRequired = true )]
+        public bool IsSystem { get; set; }
 
         /// <inheritdoc/>
         [DataMember]

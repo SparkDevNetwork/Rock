@@ -5,7 +5,8 @@
                     iconCssClass="ti ti-plug"
                     :provider="itemProvider"
                     :multiple="multiple"
-                    autoExpand />
+                    autoExpand
+                    disableFolderSelection />
 </template>
 
 <script setup lang="ts">

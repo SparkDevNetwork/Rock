@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -66,12 +66,14 @@ namespace RockWeb.Blocks.Connection
         Description = "Page used to display group details.",
         Order = 3,
         Key = AttributeKeys.GroupDetailPage )]
+#pragma warning disable CS0618 // Type or member is obsolete
     [LinkedPage(
         "SMS Link Page",
         Description = "Page that will be linked for SMS enabled phones.",
         Order = 4,
-        DefaultValue = Rock.SystemGuid.Page.NEW_COMMUNICATION,
+        DefaultValue = Rock.SystemGuid.Page.NEW_COMMUNICATION_OBSIDIAN,
         Key = AttributeKeys.SmsLinkPage )]
+#pragma warning restore CS0618 // Type or member is obsolete
     [BadgesField(
         "Badges",
         Description = "The badges to display in this block.",

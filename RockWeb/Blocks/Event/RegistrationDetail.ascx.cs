@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -529,6 +529,9 @@ namespace RockWeb.Blocks.Event
                             mdDeleteWarning.Show( "You are not authorized to delete this registration.", ModalAlertType.Information );
                             return;
                         }
+
+                        // Remove any expired sessions first so an abandoned, timed-out session cannot block the delete.
+                        RegistrationSessionService.RemoveExpiredSessionsForRegistration( registration.Id );
 
                         string errorMessage;
                         if ( !registrationService.CanDelete( registration, out errorMessage ) )
@@ -1404,6 +1407,7 @@ namespace RockWeb.Blocks.Event
                             }
 
                             var sendErrorMessages = new List<string>();
+#pragma warning disable CS0618 // Type or member is obsolete
                             if ( new SignatureDocumentTemplateService( rockContext ).SendLegacyProviderDocument(
                                 signatureDocumentTemplateService.Get( Registration.RegistrationInstance.RegistrationTemplate.RequiredSignatureDocumentTemplateId.Value ),
                                 appliesTo,
@@ -1411,6 +1415,7 @@ namespace RockWeb.Blocks.Event
                                 Registration.RegistrationInstance.Name,
                                 email,
                                 out sendErrorMessages ) )
+#pragma warning restore CS0618 // Type or member is obsolete
                             {
                                 rockContext.SaveChanges();
                                 maSignatureRequestSent.Show( "A Signature Request Has Been Sent.", Rock.Web.UI.Controls.ModalAlertType.Information );
@@ -2819,7 +2824,18 @@ namespace RockWeb.Blocks.Event
                 Registration.Group != null &&
                 Registration.Group.GroupTypeId == this.RegistrationTemplate.GroupTypeId.Value )
             {
-                if ( Registration != null && Registration.Group != null )
+                /*
+                    9/18/26 - MSE
+
+                    When the group a registrant was placed in has been archived, do not show
+                    the group on the registrant at all. The Group Member Detail block no longer
+                    displays members of archived groups, so linking to one is not useful.
+
+                    Reason: Registrant's group is hidden once the group has been archived. (Fixes #7047)
+                */
+                var isRegistrantGroupHidden = registrant.GroupMemberId.HasValue && registrant.IsGroupArchived;
+
+                if ( Registration != null && Registration.Group != null && !isRegistrantGroupHidden )
                 {
                     var rcwGroupMember = new RockControlWrapper();
                     rcwGroupMember.ID = string.Format( "rcwGroupMember_{0}", registrant.Id );
@@ -2840,6 +2856,13 @@ namespace RockWeb.Blocks.Event
                         aProfileLink.HRef = LinkedPageUrl( "GroupMemberPage", qryParams );
                         pGroupMember.Controls.Add( aProfileLink );
                         aProfileLink.Controls.Add( new LiteralControl( string.IsNullOrWhiteSpace( registrant.GroupName ) ? "Group" : registrant.GroupName ) );
+
+                        // The group itself is not archived at this point, so this label only
+                        // appears when the group member record was archived directly.
+                        if ( registrant.IsGroupMemberArchived )
+                        {
+                            pGroupMember.Controls.Add( new LiteralControl( " <span class='label label-danger'>Archived</span>" ) );
+                        }
                     }
                     else
                     {

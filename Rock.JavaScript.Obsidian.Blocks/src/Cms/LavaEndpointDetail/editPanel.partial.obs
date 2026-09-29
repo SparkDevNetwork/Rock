@@ -47,6 +47,10 @@
                 <CheckBox v-model="enableCrossSiteForgeryProtection"
                           label="Enable Cross-Site Forgery Protection"
                           help="When enabled the endpoint will check for a cross-site header for all requests. The Helix Content block provides this header automatically. We strongly encourage you to keep this setting enabled." />
+
+                <TextBox v-model="contentType"
+                         label="Content Type"
+                         help="The content type returned with the endpoint's response, for example 'text/html' or 'application/json'. Use 'application/json' for endpoints that return data to a component." />
             </div>
         </div>
 
@@ -124,6 +128,10 @@
     const invokeBlockAction = useInvokeBlockAction();
     // #region Values
 
+    // Matches the default on LavaEndpointAdditionalSettings so an endpoint saved before
+    // the setting existed keeps returning HTML.
+    const defaultContentType = "text/html";
+
     const attributes = ref(props.modelValue.attributes ?? {});
     const attributeValues = ref(props.modelValue.attributeValues ?? {});
     const name = propertyRef(props.modelValue.name ?? "", "Name");
@@ -140,11 +148,12 @@
     const securityModeOptions = ref(props.options.securityModeOptions ?? []);
     const securityMode = propertyRef(props.modelValue.securityMode?.toString(), "SecurityMode");
     const enableCrossSiteForgeryProtection = propertyRef(props.modelValue.enableCrossSiteForgeryProtection ?? true, "EnableCrossSiteForgeryProtection");
+    const contentType = propertyRef(props.modelValue.contentType ?? defaultContentType, "ContentType");
     const slugError = ref("");
 
     // The properties that are being edited. This should only contain
     // objects returned by propertyRef().
-    const propRefs = [name, isActive, description, slug, httpMethod, codeTemplate, enabledLavaCommands, securityMode, cacheControlHeaderSettings, rateLimitPeriodDurationSeconds, rateLimitRequestPerPeriod, enableCrossSiteForgeryProtection];
+    const propRefs = [name, isActive, description, slug, httpMethod, codeTemplate, enabledLavaCommands, securityMode, cacheControlHeaderSettings, rateLimitPeriodDurationSeconds, rateLimitRequestPerPeriod, enableCrossSiteForgeryProtection, contentType];
 
 
     // #endregion
@@ -192,6 +201,7 @@
         updateRefValue(rateLimitRequestPerPeriod, props.modelValue.rateLimitRequestPerPeriod ?? null);
         updateRefValue(securityMode, props.modelValue.securityMode?.toString() ?? "");
         updateRefValue(enableCrossSiteForgeryProtection, props.modelValue.enableCrossSiteForgeryProtection ?? true);
+        updateRefValue(contentType, props.modelValue.contentType ?? defaultContentType);
     });
 
     // Determines which values we want to track changes on (defined in the
@@ -212,6 +222,7 @@
             rateLimitRequestPerPeriod: rateLimitRequestPerPeriod.value,
             securityMode: toNumberOrNull(securityMode.value) as LavaEndpointSecurityMode | null,
             enableCrossSiteForgeryProtection: enableCrossSiteForgeryProtection.value,
+            contentType: contentType.value,
         };
 
         emit("update:modelValue", newValue);

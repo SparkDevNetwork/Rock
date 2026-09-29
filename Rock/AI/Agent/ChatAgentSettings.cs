@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -45,6 +45,13 @@ namespace Rock.AI.Agent
         /// model to use.
         /// </summary>
         public ModelServiceRole Role { get; set; }
+
+        /// <summary>
+        /// How much reasoning effort the language model should spend when
+        /// responding to a chat message. When <c>null</c> a low effort is
+        /// used, which matches the behavior before this setting existed.
+        /// </summary>
+        public ReasoningEffort? ReasoningEffort { get; set; }
 
         /// <summary>
         /// The Lava template that will be used to generate the current person

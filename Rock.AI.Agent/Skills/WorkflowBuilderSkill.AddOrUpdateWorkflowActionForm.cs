@@ -212,6 +212,13 @@ internal sealed partial class WorkflowBuilderSkill
             instructions += " " + storageWarning;
         }
 
+        var personPickerWarning = GetPersonPickerWarning( savedActionType ?? actionType );
+
+        if ( personPickerWarning.IsNotNullOrWhiteSpace() )
+        {
+            instructions += " " + personPickerWarning;
+        }
+
         return Success( result )
             .WithInstructions( instructions )
             .WithHistoryContent( new KeyNameResult( actionType.Id, actionType.Guid, actionType.Name ) );
@@ -242,6 +249,69 @@ internal sealed partial class WorkflowBuilderSkill
     /// needs no persistence. Only the caller knows which case it is.
     /// </para>
     /// </remarks>
+    /// <summary>
+    /// Warns when the form shows a visible Person field, because that field renders
+    /// a picker that searches the entire person database.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// 9/17/26 - CLAUDE
+    ///
+    /// A Person attribute rendered as a form field is a person picker, and the picker
+    /// searches every person record in Rock, not a scoped list. On a form anyone can
+    /// reach, that lets an anonymous visitor enumerate people by typing names. It is
+    /// the highest-stakes thing a form field can do and nothing about the finished form
+    /// shows it.
+    /// </para>
+    /// <para>
+    /// This warns rather than refuses, and it is phrased conditionally, because the tool
+    /// cannot see the page the Workflow Entry block sits on and therefore cannot know
+    /// whether the form is public. A picker on an access-restricted staff form is
+    /// routine and correct; only the caller knows which case this is.
+    /// </para>
+    /// <para>
+    /// Only visible fields count. A hidden Person field renders no picker, so it exposes
+    /// nothing.
+    /// </para>
+    /// <para>
+    /// Reason: A person picker on a public form silently exposes the whole person
+    /// database, and nothing else reports it.
+    /// </para>
+    /// </remarks>
+    /// <param name="actionType">The saved action type carrying the form and its attributes.</param>
+    /// <returns>The warning, or <c>null</c> when no visible Person field is present.</returns>
+    private static string GetPersonPickerWarning( WorkflowActionType actionType )
+    {
+        var formAttributes = actionType?.WorkflowForm?.FormAttributes;
+
+        if ( formAttributes == null || !formAttributes.Any() )
+        {
+            return null;
+        }
+
+        var personFieldTypeId = FieldTypeCache.GetId( Rock.SystemGuid.FieldType.PERSON.AsGuid() );
+
+        if ( !personFieldTypeId.HasValue )
+        {
+            return null;
+        }
+
+        var hasVisiblePersonField = formAttributes
+            .Where( fa => fa.IsVisible )
+            .Select( fa => AttributeCache.Get( fa.AttributeId ) )
+            .Any( a => a != null && a.FieldTypeId == personFieldTypeId.Value );
+
+        if ( !hasVisiblePersonField )
+        {
+            return null;
+        }
+
+        return "This form shows a Person field, which renders a picker that searches the entire person database. "
+            + "If the form is reachable by anonymous or public users, that lets them enumerate people in the database by typing names. "
+            + "Confirm the page hosting this form is access-restricted, or if the goal is to collect a person rather than look one up, use Person Entry "
+            + "(AddOrUpdateWorkflowFormPersonEntry), which captures a person without exposing a search. Say which in your summary so the person can secure the page.";
+    }
+
     /// <param name="workflowTypeId">The workflow type the form belongs to.</param>
     /// <param name="rockContext">The context to read through.</param>
     /// <returns>The warning, or <c>null</c> when the values are stored.</returns>

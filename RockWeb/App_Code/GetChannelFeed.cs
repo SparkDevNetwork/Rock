@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -48,7 +48,7 @@ namespace RockWeb
             public const string LastModified = "Last-Modified";
         }
 
-        #endregion Attribute Keys
+        #endregion Attribute Keys
 
         #region Page Parameter Keys
 

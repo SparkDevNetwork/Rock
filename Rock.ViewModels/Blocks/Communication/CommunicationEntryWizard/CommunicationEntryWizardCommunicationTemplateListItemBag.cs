@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -37,6 +37,11 @@ namespace Rock.ViewModels.Blocks.Communication.CommunicationEntryWizard
         /// Gets or sets a value indicating whether this template supports SMS communications.
         /// </summary>
         public bool? IsSmsSupported { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this template supports Push communications.
+        /// </summary>
+        public bool? IsPushSupported { get; set; }
 
         /// <summary>
         /// Gets or sets the category unique identifier for this template.

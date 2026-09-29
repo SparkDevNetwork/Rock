@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -17,6 +17,7 @@
 
 using System.Collections.Generic;
 using System.ComponentModel;
+
 using Rock.Attribute;
 using Rock.Bus;
 using Rock.Model;

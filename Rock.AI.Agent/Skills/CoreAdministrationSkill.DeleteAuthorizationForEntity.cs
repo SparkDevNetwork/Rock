@@ -14,8 +14,8 @@
 // limitations under the License.
 // </copyright>
 
-using System.Linq;
 using System.ComponentModel;
+using System.Linq;
 
 using Rock.AI.Agent.Annotations;
 using Rock.Configuration;

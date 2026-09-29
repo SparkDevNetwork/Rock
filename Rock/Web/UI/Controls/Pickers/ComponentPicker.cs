@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -21,8 +21,8 @@ using System.Reflection;
 using System.Web.UI.WebControls;
 
 using Rock.Extension;
-using Rock.Web.Cache;
 using Rock.Utility;
+using Rock.Web.Cache;
 
 namespace Rock.Web.UI.Controls
 {

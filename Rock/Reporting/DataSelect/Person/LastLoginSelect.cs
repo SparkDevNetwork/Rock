@@ -22,10 +22,10 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 
+using Rock;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.UI.Controls;
-using Rock;
 
 namespace Rock.Reporting.DataSelect.Person
 {

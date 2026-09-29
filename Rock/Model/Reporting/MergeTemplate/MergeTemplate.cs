@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -21,10 +21,10 @@ using System.Runtime.Serialization;
 
 using Rock.Data;
 using Rock.Enums.Security;
+using Rock.Lava;
 using Rock.MergeTemplates;
 using Rock.Security;
 using Rock.Web.Cache;
-using Rock.Lava;
 
 namespace Rock.Model
 {

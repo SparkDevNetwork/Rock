@@ -393,6 +393,42 @@
                 </template>
             </template>
         </ContentSection>
+        <ContentSection v-if="workflowRows.length > 0"
+                        icon="ti ti-settings-cog"
+                        :isCollapsed="true">
+            <template #title>
+                <span class="pr-spacing-xs">Workflows</span>
+                <Badge badgeType="info">{{ workflowRows.length }}</Badge>
+            </template>
+            <Grid :data="workflowGridData"
+                  keyField="idKey"
+                  itemTerm="Workflow"
+                  light
+                  :onSelectItem="onWorkflowSelected">
+                <TextColumn name="workflowTypeName"
+                            title="Workflow Type"
+                            field="workflowTypeName"
+                            visiblePriority="xs" />
+                <TextColumn name="trigger"
+                            title="Trigger"
+                            field="trigger"
+                            visiblePriority="sm" />
+                <TextColumn name="currentActivity"
+                            title="Current Activity"
+                            field="currentActivity"
+                            visiblePriority="sm" />
+                <DateColumn name="activatedDateTime"
+                            title="Start Date"
+                            field="activatedDateTime"
+                            visiblePriority="xs" />
+                <LabelColumn name="status"
+                             title="Status"
+                             field="status"
+                             :classSource="workflowStatusClassSource"
+                             defaultLabelClass="success"
+                             visiblePriority="xs" />
+            </Grid>
+        </ContentSection>
     </div>
 </template>
 
@@ -441,6 +477,10 @@
     import { UpdateGroupMemberRequirementBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/updateGroupMemberRequirementBag";
     import { ConnectionRequestDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/connectionRequestDetailOptionsBag";
     import { LaunchWorkflowBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/launchWorkflowBag";
+    import { ConnectionRequestWorkflowBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/connectionRequestWorkflowBag";
+    import { ConnectionWorkflowTriggerTypeDescription } from "@Obsidian/Enums/Connection/connectionWorkflowTriggerType";
+    import Grid, { TextColumn, DateColumn, LabelColumn } from "@Obsidian/Controls/grid";
+    import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
     import { ConnectorItemBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/connectorItemBag";
     import { tooltip } from "@Obsidian/Utility/tooltip";
     import StaticFormControl from "@Obsidian/Controls/staticFormControl.obs";
@@ -537,7 +577,14 @@
     const selectedConnector = ref(props.requestDetails?.connectorPerson ?? "");
     const connectorItems = ref<ConnectorItemBag[]>(props.options?.connectorItems ?? []);
     const activityEntries = ref<ActivityEntryBag[]>(props.requestDetails?.activityEntries ?? []);
+    const workflows = ref<ConnectionRequestWorkflowBag[]>(props.requestDetails?.workflows ?? []);
     const groupMemberRequirements = ref<GroupMemberRequirementBag[]>(props.requestDetails?.placementGroup?.groupMemberRequirements ?? []);
+
+    // Running workflows get the info label; every other status (Completed or a custom
+    // terminal status) falls through to the LabelColumn's success default.
+    const workflowStatusClassSource: Record<string, string> = {
+        Running: "info"
+    };
 
     const isManualRequirementLoadingRecord = ref<Record<string, boolean>>({});
     const isManualRequirementSavedRecord = ref<Record<string, boolean>>({});
@@ -563,6 +610,21 @@
     //     return props.requestDetails?.additionalRequests;
     // });
     const hiddenAdditionalRequests = computed(() => Math.max(0, (props.requestDetails?.additionalRequests?.length ?? 0) - 5));
+
+    const workflowRows = computed((): Record<string, unknown>[] => {
+        return workflows.value.map(workflow => ({
+            idKey: workflow.idKey ?? "",
+            workflowTypeName: workflow.workflowTypeName ?? "",
+            trigger: ConnectionWorkflowTriggerTypeDescription[workflow.triggerType] ?? "",
+            currentActivity: (workflow.activeActivityNames ?? []).join(", "),
+            activatedDateTime: workflow.activatedDateTime ?? null,
+            status: getWorkflowStatusText(workflow)
+        }));
+    });
+
+    const workflowGridData = computed((): GridDataBag => ({
+        rows: workflowRows.value
+    }));
 
     const createdDateTimeElapsed = computed(() => {
         if (isNullOrWhiteSpace(props.requestDetails?.createdDateTime)) {
@@ -910,6 +972,40 @@
         emit("launchWorkflow", launchWorkflowBag);
     }
 
+    /**
+     * Gets the display text for a workflow's status pill. Running workflows always read
+     * "Running" (the legacy board rewrote the raw "Active" status). Completed workflows
+     * show their raw status so a custom terminal status set by a Set Status action stays
+     * visible, falling back to "Completed" when the raw value is empty or still "Active".
+     */
+    function getWorkflowStatusText(workflow: ConnectionRequestWorkflowBag): string {
+        if (!workflow.isCompleted) {
+            return "Running";
+        }
+
+        const rawStatus = workflow.status?.trim() ?? "";
+
+        if (rawStatus === "" || rawStatus === "Active") {
+            return "Completed";
+        }
+
+        return rawStatus;
+    }
+
+    /**
+     * Opens the selected workflow in a new tab. The server chose between the Workflow Entry
+     * page and the Workflow Detail page; rows with no configured page have no URL and no-op.
+     */
+    function onWorkflowSelected(key: string): void {
+        const workflow = workflows.value.find(w => w.idKey === key);
+
+        if (!workflow?.workflowUrl) {
+            return;
+        }
+
+        window.open(workflow.workflowUrl, "_blank");
+    }
+
     async function onAddRequestNote(): Promise<void> {
         const bag: ConnectionRequestNoteBag = {
             connectionRequestIdKey: props.requestDetails?.connectionRequestIdKey,
@@ -1092,5 +1188,9 @@
 
     watch(() => props.requestDetails?.activityEntries, () => {
         activityEntries.value = props.requestDetails?.activityEntries ?? [];
+    });
+
+    watch(() => props.requestDetails?.workflows, () => {
+        workflows.value = props.requestDetails?.workflows ?? [];
     });
 </script>

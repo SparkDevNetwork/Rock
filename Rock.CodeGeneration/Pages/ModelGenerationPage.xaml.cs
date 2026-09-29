@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
@@ -2013,13 +2013,21 @@ GO
                     Console.WriteLine( "Updating header in {0}", fileName );
                     result++;
 
-                    System.Text.Encoding encoding;
-                    using ( var r = new StreamReader( fileName, detectEncodingFromByteOrderMarks: true ) )
-                    {
-                        encoding = r.CurrentEncoding;
-                    }
+                    /*
+                        9/13/26 - CLAUDE
 
-                    File.WriteAllText( fileName, newFileContents, encoding );
+                        Write the file as UTF-8 without a byte order mark. The previous code read
+                        StreamReader.CurrentEncoding before any Read call, so BOM auto-detection never
+                        ran and CurrentEncoding was always the default UTF-8 encoding, whose GetPreamble()
+                        emits a BOM. That reintroduced a BOM into regenerated files, conflicting with the
+                        repository .editorconfig (charset = utf-8, no BOM) and the other generator write
+                        paths, which use the no-encoding File.WriteAllText overload (UTF-8, no BOM).
+
+                        Reason: Keep generated .cs files BOM-free to match .editorconfig.
+                    */
+                    var utf8NoBomEncoding = new System.Text.UTF8Encoding( false );
+
+                    File.WriteAllText( fileName, newFileContents, utf8NoBomEncoding );
                 }
             }
             return result;

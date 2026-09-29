@@ -30,7 +30,7 @@ export const ModelServiceRole = {
     Medium: 0,
 
     /** High-performance model for high reasoning and code generation tasks. */
-    High: 1
+    High: 1,
 } as const;
 
 /**
@@ -40,11 +40,12 @@ export const ModelServiceRole = {
 export const ModelServiceRoleDescription: Record<number, string> = {
     0: "Medium",
 
-    1: "High"
+    1: "High",
 };
 
 /**
  * The role of the model service in the AI agent's architecture. This is used
  * to determine which AI model to use for different types of tasks.
  */
-export type ModelServiceRole = typeof ModelServiceRole[keyof typeof ModelServiceRole];
+export type ModelServiceRole =
+    (typeof ModelServiceRole)[keyof typeof ModelServiceRole];

@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -18,6 +18,7 @@
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
+
 using Rock.Security;
 
 namespace Rock.Model
@@ -134,6 +135,15 @@ namespace Rock.Model
         public bool HasEmailTemplate()
         {
             return !string.IsNullOrEmpty( this.Message ) || !string.IsNullOrEmpty( this.FromEmail );
+        }
+
+        /// <summary>
+        /// Returns true if this Communication Template has a Push Message for a Push Template.
+        /// </summary>
+        /// <returns><c>true</c> if [has push template]; otherwise, <c>false</c>.</returns>
+        public bool HasPushTemplate()
+        {
+            return !string.IsNullOrWhiteSpace( this.PushMessage );
         }
 
         /// <summary>

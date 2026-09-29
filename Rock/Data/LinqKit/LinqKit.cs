@@ -1,4 +1,4 @@
-﻿// Taken from MIT licensed LinqKit project: https://github.com/scottksmith95/LINQKit
+// Taken from MIT licensed LinqKit project: https://github.com/scottksmith95/LINQKit
 //
 // We are not using the NuGet package to avoid the confusion of multiple extensions
 // methods that has come about as the package has grown. Such as multiple AsExpandable()

@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -14,27 +14,28 @@
 // limitations under the License.
 // </copyright>
 
-using Rock.Attribute;
-using Rock.Data;
-using Rock.Mobile;
-using Rock.Model.Connection.ConnectionType.Options;
-using Rock.Model;
-
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using Rock.Common.Mobile.ViewModel;
-using System.Linq;
-using Rock.ClientService.Connection.ConnectionOpportunity;
-using Rock.Configuration;
-using Rock.Model.Connection.ConnectionOpportunity.Options;
-using Rock.Security;
-using Rock.Common.Mobile.Blocks.Connection.AddConnectionRequestLegacy;
-using Rock.Web.Cache;
-using Rock.Common.Mobile.Blocks.Connection.ConnectionRequestDetailLegacy;
-using GroupMemberStatus = Rock.Model.GroupMemberStatus;
 using System.Data.Entity;
+using System.Linq;
+
+using Rock.Attribute;
+using Rock.ClientService.Connection.ConnectionOpportunity;
+using Rock.Common.Mobile.Blocks.Connection.AddConnectionRequestLegacy;
+using Rock.Common.Mobile.Blocks.Connection.ConnectionRequestDetailLegacy;
+using Rock.Common.Mobile.ViewModel;
+using Rock.Configuration;
+using Rock.Data;
+using Rock.Mobile;
+using Rock.Model;
+using Rock.Model.Connection.ConnectionOpportunity.Options;
+using Rock.Model.Connection.ConnectionType.Options;
+using Rock.Security;
 using Rock.Utility;
+using Rock.Web.Cache;
+
+using GroupMemberStatus = Rock.Model.GroupMemberStatus;
 
 namespace Rock.Blocks.Types.Mobile.Connection
 {

@@ -38,6 +38,14 @@ export type BulkUpdateAttributeCategoryBag = {
     /** Gets or sets the icon CSS class for the attribute category. */
     iconCssClass?: string | null;
 
+    /**
+     * Gets or sets the starting value for each Matrix attribute in this category, keyed by
+     * attribute key. The Matrix editor reads its column definitions out of the value, so it
+     * cannot start from an empty string. No other field type belongs here; every one of them
+     * starts blank.
+     */
+    matrixAttributeValues?: Record<string, string> | null;
+
     /** Gets or sets the name of the attribute category. */
     name?: string | null;
 };

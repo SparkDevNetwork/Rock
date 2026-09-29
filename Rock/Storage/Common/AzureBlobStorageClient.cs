@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -14,9 +14,10 @@
 // limitations under the License.
 // </copyright>
 //
-using Azure.Storage.Blobs;
 using System.Collections.Concurrent;
 using System.Net.Http;
+
+using Azure.Storage.Blobs;
 
 namespace Rock.Storage.Common
 {

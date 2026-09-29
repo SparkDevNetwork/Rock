@@ -48,6 +48,13 @@ export type RegistrationCostSummaryInfo = {
     paidAmount: number;
     remainingAmount: number;
     minimumRemainingAmount: number;
+
+    /**
+     * Whether the cost line items have been successfully retrieved from the
+     * server. This is false while the request is in-flight and after a failed
+     * request so the registration cannot be submitted against an empty cost.
+     */
+    isLoaded: boolean;
 };
 
 export type PaymentPlanFrequency = {

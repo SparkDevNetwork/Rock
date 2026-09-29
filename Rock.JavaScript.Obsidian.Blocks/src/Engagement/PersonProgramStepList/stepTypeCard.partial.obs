@@ -1,0 +1,330 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="step-type-card" :class="{ 'has-actions': isActionsShown }" :style="cardStyle">
+        <div class="step-type-card-main">
+            <i v-if="stepType.iconCssClass" :class="stepType.iconCssClass" class="step-type-icon"></i>
+            <div class="step-type-name">{{ stepType.name }}</div>
+        </div>
+
+        <div class="step-type-card-details">
+            <div v-if="latestStep" class="step-labels">
+                <span class="label step-status" :style="getStatusLabelStyle(latestStepStatusColor)">{{ latestStep.statusName }}</span>
+                <span v-if="isCampusShown && latestStep.campusName" class="label label-default step-campus">{{ latestStep.campusName }}</span>
+                <span v-if="steps.length > 1" class="badge step-count" :title="`${steps.length} ${stepTerm} records`">{{ steps.length }}</span>
+            </div>
+            <div v-if="latestStep" class="step-date">{{ formatDate(latestStep.completedDateTime) }}</div>
+        </div>
+
+        <div v-if="isActionsShown" class="step-type-card-actions">
+            <div v-if="steps.length > 0" class="step-record-list">
+                <div v-for="step in steps" :key="step.idKey ?? step.id" class="step-record">
+                    <div class="step-record-info">
+                        <div class="step-record-status">{{ step.statusName }}</div>
+                        <div class="step-record-date">{{ getStepDateText(step) }}</div>
+                    </div>
+
+                    <button v-if="step.canEdit"
+                            type="button"
+                            class="btn btn-link step-record-action"
+                            title="Edit"
+                            @click="emit('edit', stepType.id, step.id)">
+                        <i class="ti ti-pencil"></i>
+                    </button>
+
+                    <button v-if="step.canDelete"
+                            type="button"
+                            class="btn btn-link step-record-action"
+                            title="Delete"
+                            @click="onDeleteClick(step.idKey ?? '')">
+                        <i class="ti ti-x"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div v-if="isPrerequisiteListShown" class="step-prerequisites">
+                <div class="step-prerequisites-info">This {{ stepTerm }} requires the following prerequisites:</div>
+                <ul class="list-unstyled mb-0">
+                    <li v-for="prerequisite in stepType.prerequisites" :key="prerequisite.name ?? ''">
+                        <i v-if="prerequisite.isComplete" class="ti ti-check text-success"></i>
+                        <i v-else class="ti ti-x text-danger"></i>
+                        {{ prerequisite.name }}
+                    </li>
+                </ul>
+            </div>
+
+            <button v-if="stepType.isAddEnabled || isPrerequisiteListShown"
+                    type="button"
+                    class="btn btn-default btn-xs btn-block flex-shrink-0"
+                    :disabled="!stepType.isAddEnabled"
+                    @click="emit('add', stepType.id)">
+                <i class="ti ti-plus"></i> Add a {{ stepTerm }}
+            </button>
+        </div>
+    </div>
+</template>
+
+<style scoped>
+.step-type-card {
+    /* Legacy card icons inherited the body text color until complete, so incomplete cards stay gray. */
+    --step-type-color: var(--color-interface-strong);
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    aspect-ratio: 4 / 5;
+    max-height: 500px;
+    padding: var(--spacing-small) var(--spacing-small) var(--spacing-large);
+    text-align: center;
+    border: 1px solid var(--color-interface-soft);
+    border-radius: var(--rounded-medium);
+    background: linear-gradient(to bottom, color-mix(in srgb, var(--step-type-color) 8%, transparent), transparent 40%);
+}
+
+/* Fills the space above the details so the icon and name center in what is left. */
+.step-type-card-main {
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: var(--spacing-small);
+    min-height: 0;
+    transition: transform 0.3s ease;
+}
+
+/* Hover effects only run when there is an actions block to reveal. */
+.step-type-card.has-actions:hover .step-type-card-main {
+    transform: translateY(-20%);
+}
+
+/* In normal flow so it reserves its own height and can never overlap the name. */
+.step-type-card-details {
+    display: flex;
+    flex-shrink: 0;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--spacing-small);
+    /* Always rendered and reserving one label row plus the date so icons align across cards. */
+    min-height: calc(3em + var(--spacing-small));
+    transition: opacity 0.25s ease;
+}
+
+.step-type-card.has-actions:hover .step-type-card-details {
+    opacity: 0;
+}
+
+/* Hidden until hover; pointer events stay off so the invisible buttons cannot be clicked. */
+.step-type-card-actions {
+    position: absolute;
+    left: var(--spacing-small);
+    right: var(--spacing-small);
+    bottom: var(--spacing-large);
+    max-height: calc(60% - var(--spacing-large));
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xsmall);
+    text-align: left;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.25s ease;
+}
+
+/* Delay only on the way in so the status has started fading before the actions appear. */
+.step-type-card.has-actions:hover .step-type-card-actions {
+    opacity: 1;
+    pointer-events: auto;
+    transition-delay: 0.15s;
+}
+
+.step-record-list,
+.step-prerequisites {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+}
+
+.step-prerequisites {
+    padding: var(--spacing-xsmall) 0;
+    font-size: var(--font-size-small);
+    color: var(--color-interface-medium);
+}
+
+.step-prerequisites-info {
+    margin-bottom: var(--spacing-tiny);
+    color: var(--color-interface-stronger);
+}
+
+.step-record {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-xsmall);
+    padding: var(--spacing-small);
+    border-radius: var(--rounded-small);
+}
+
+.step-record:nth-child(odd) {
+    background-color: var(--color-interface-softer);
+}
+
+.step-record-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.step-record-status {
+    color: var(--color-interface-stronger);
+}
+
+.step-record-date {
+    font-size: var(--font-size-small);
+    color: var(--color-interface-medium);
+}
+
+.step-record-action {
+    padding: var(--spacing-xsmall) 0 var(--spacing-xsmall) var(--spacing-xsmall);
+    color: var(--color-interface-strong);
+}
+
+.step-type-icon {
+    font-size: 3.5rem;
+    color: var(--step-type-color);
+}
+
+.step-type-name {
+    font-size: var(--font-size-h5);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-interface-stronger);
+}
+
+.step-labels {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: var(--spacing-xsmall);
+}
+
+.step-count {
+    background-color: var(--step-type-color);
+}
+
+.step-status,
+.step-campus {
+    border-radius: var(--rounded-full);
+}
+
+.step-date {
+    color: var(--color-interface-medium);
+}
+</style>
+
+<script setup lang="ts">
+    import { computed, PropType } from "vue";
+    import { confirmDelete } from "@Obsidian/Utility/dialogs";
+    import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
+    import { PersonProgramStepBag } from "@Obsidian/ViewModels/Blocks/Engagement/PersonProgramStepList/personProgramStepBag";
+    import { PersonProgramStepTypeBag } from "@Obsidian/ViewModels/Blocks/Engagement/PersonProgramStepList/personProgramStepTypeBag";
+    import { getStatusLabelStyle } from "./utils.partial";
+
+    const props = defineProps({
+        stepType: {
+            type: Object as PropType<PersonProgramStepTypeBag>,
+            required: true
+        },
+
+        stepTerm: {
+            type: String as PropType<string>,
+            required: true
+        },
+
+        stepStatusColors: {
+            type: Object as PropType<Record<string, string>>,
+            default: () => ({})
+        },
+
+        isCampusShown: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "add", stepTypeId: number): void;
+        (e: "edit", stepTypeId: number, stepId: number): void;
+        (e: "delete", stepIdKey: string): void;
+    }>();
+
+    // #region Computed Values
+
+    const steps = computed((): PersonProgramStepBag[] => props.stepType.steps ?? []);
+
+    /** The person's most recent step of this type, matching WebForms' LatestStep. */
+    const latestStep = computed((): PersonProgramStepBag | undefined => steps.value[steps.value.length - 1]);
+
+    const latestStepStatusColor = computed((): string | undefined => {
+        const statusName = latestStep.value?.statusName;
+
+        return statusName ? props.stepStatusColors[statusName] : undefined;
+    });
+
+    /** Overrides the card's accent color with the step type's highlight color once the step is complete, matching the default WebForms card. */
+    const cardStyle = computed((): Record<string, string> | undefined => {
+        const isHighlighted = props.stepType.isComplete && !!props.stepType.highlightColor;
+
+        return isHighlighted ? { "--step-type-color": props.stepType.highlightColor ?? "" } : undefined;
+    });
+
+    /** Shown to people who manage this step type so they can see why add is blocked. */
+    const isPrerequisiteListShown = computed((): boolean => props.stepType.canEdit && !props.stepType.hasMetPrerequisites);
+
+    const isActionsShown = computed((): boolean => steps.value.length > 0 || props.stepType.isAddEnabled || isPrerequisiteListShown.value);
+
+    // #endregion Computed Values
+
+    // #region Event Handlers
+
+    /**
+     * Called when a step's delete icon is clicked. Confirms before emitting.
+     *
+     * @param stepIdKey The identifier key of the step.
+     */
+    async function onDeleteClick(stepIdKey: string): Promise<void> {
+        if (await confirmDelete(props.stepTerm)) {
+            emit("delete", stepIdKey);
+        }
+    }
+
+    // #endregion Event Handlers
+
+    // #region Functions
+
+    /**
+     * Formats an ISO date string as a short date, or an empty string.
+     *
+     * @param value The ISO 8601 date string.
+     */
+    function formatDate(value: string | null | undefined): string {
+        if (!value) {
+            return "";
+        }
+
+        return RockDateTime.parseISO(value)?.toASPString("d") ?? "";
+    }
+
+    /**
+     * Gets the date line for a step row: the completed date when complete,
+     * otherwise the start date prefixed with "Started".
+     *
+     * @param step The step.
+     */
+    function getStepDateText(step: PersonProgramStepBag): string {
+        if (step.completedDateTime) {
+            return formatDate(step.completedDateTime);
+        }
+
+        const startDate = formatDate(step.startDateTime);
+
+        return startDate ? `Started ${startDate}` : "";
+    }
+
+    // #endregion Functions
+</script>

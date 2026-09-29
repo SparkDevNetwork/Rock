@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -24,8 +24,8 @@ using System.Text;
 using Rock.Attribute;
 using Rock.Communication;
 using Rock.Data;
-using Rock.Model;
 using Rock.MergeTemplates;
+using Rock.Model;
 using Rock.Security;
 using Rock.ViewModels.Blocks.Cms.EmailForm;
 using Rock.Web.Cache;

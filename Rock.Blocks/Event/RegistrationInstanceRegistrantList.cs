@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -140,6 +140,8 @@ namespace Rock.Blocks.Event
         private Dictionary<int, PhoneNumberLookupResult> _homePhoneNumbers = new Dictionary<int, PhoneNumberLookupResult>();
         private Dictionary<int, PhoneNumberLookupResult> _workPhoneNumbers = new Dictionary<int, PhoneNumberLookupResult>();
         private Dictionary<int, List<string>> _personCampusNames = new Dictionary<int, List<string>>();
+        private Dictionary<int, IHasAttributes> _personsById = new Dictionary<int, IHasAttributes>();
+        private Dictionary<int, IHasAttributes> _groupMembersById = new Dictionary<int, IHasAttributes>();
 
         #endregion
 
@@ -657,11 +659,11 @@ namespace Rock.Blocks.Event
                         break;
 
                     case RegistrationFieldSource.PersonAttribute:
-                        AddEntityAttributeField( builder, attribute, r => r.PersonAlias?.Person );
+                        AddEntityAttributeField( builder, attribute, r => _personsById.GetValueOrNull( r.PersonAlias?.PersonId ?? 0 ) );
                         break;
 
                     case RegistrationFieldSource.GroupMemberAttribute:
-                        AddEntityAttributeField( builder, attribute, r => r.GroupMember );
+                        AddEntityAttributeField( builder, attribute, r => _groupMembersById.GetValueOrNull( r.GroupMemberId ?? 0 ) );
                         break;
                 }
             }
@@ -760,18 +762,27 @@ namespace Rock.Blocks.Event
             return GetRegistrationTemplatePlacements()
                 .Select( placement =>
                 {
-                    var placedGroupNames = personId.HasValue && _placementGroupsByPlacementId.TryGetValue( placement.Id, out var placementGroups )
-                        ? placementGroups
-                            .Where( g => g.PersonIds.Contains( personId.Value ) )
-                            .Select( g => g.GroupName )
-                            .ToList()
-                        : new List<string>();
+                    var placementGroups = personId.HasValue && _placementGroupsByPlacementId.TryGetValue( placement.Id, out var groupsForPlacement )
+                        ? groupsForPlacement
+                        : new List<PlacementGroupInfo>();
+
+                    var activeGroupNames = placementGroups
+                        .Where( g => g.ActivePersonIds.Contains( personId.Value ) )
+                        .Select( g => g.GroupName )
+                        .ToList();
+
+                    // An inactive membership still counts as placed, but only the active ones drive the count and green state.
+                    var inactiveGroupNames = placementGroups
+                        .Where( g => g.InactivePersonIds.Contains( personId.Value ) )
+                        .Select( g => g.GroupName )
+                        .ToList();
 
                     return new RegistrantPlacementBag
                     {
                         PlacementId = placement.Id,
-                        GroupCount = placedGroupNames.Count,
-                        GroupNames = placedGroupNames
+                        GroupCount = activeGroupNames.Count,
+                        GroupNames = activeGroupNames,
+                        InactiveGroupNames = inactiveGroupNames
                     };
                 } )
                 .ToList();
@@ -1179,7 +1190,12 @@ WHERE [g].[GroupTypeId] = @FamilyGroupTypeId
                     {
                         g.Id,
                         g.Name,
-                        PersonIds = g.Members.Select( m => m.PersonId )
+                        ActivePersonIds = g.Members
+                            .Where( m => !m.IsArchived && m.GroupMemberStatus != GroupMemberStatus.Inactive )
+                            .Select( m => m.PersonId ),
+                        InactivePersonIds = g.Members
+                            .Where( m => !m.IsArchived && m.GroupMemberStatus == GroupMemberStatus.Inactive )
+                            .Select( m => m.PersonId )
                     } )
                     .ToList();
 
@@ -1190,7 +1206,12 @@ WHERE [g].[GroupTypeId] = @FamilyGroupTypeId
                     {
                         g.Id,
                         g.Name,
-                        PersonIds = g.Members.Select( m => m.PersonId )
+                        ActivePersonIds = g.Members
+                            .Where( m => !m.IsArchived && m.GroupMemberStatus != GroupMemberStatus.Inactive )
+                            .Select( m => m.PersonId ),
+                        InactivePersonIds = g.Members
+                            .Where( m => !m.IsArchived && m.GroupMemberStatus == GroupMemberStatus.Inactive )
+                            .Select( m => m.PersonId )
                     } )
                     .ToList();
 
@@ -1218,7 +1239,8 @@ WHERE [g].[GroupTypeId] = @FamilyGroupTypeId
                     placementGroups.Add( new PlacementGroupInfo
                     {
                         GroupName = groupInfo.Name,
-                        PersonIds = new HashSet<int>( groupInfo.PersonIds )
+                        ActivePersonIds = new HashSet<int>( groupInfo.ActivePersonIds ),
+                        InactivePersonIds = new HashSet<int>( groupInfo.InactivePersonIds )
                     } );
                 }
 
@@ -1243,10 +1265,12 @@ WHERE [g].[GroupTypeId] = @FamilyGroupTypeId
                 var persons = items
                     .Select( r => r.PersonAlias?.Person )
                     .Where( p => p != null )
-                    .Cast<IHasAttributes>()
+                    .DistinctBy( p => p.Id )
                     .ToList();
 
-                Helper.LoadFilteredAttributes( typeof( Person ), persons, rockContext, a => personAttributeIds.Contains( a.Id ) );
+                Helper.LoadFilteredAttributes( typeof( Person ), persons.Cast<IHasAttributes>().ToList(), rockContext, a => personAttributeIds.Contains( a.Id ) );
+
+                _personsById = persons.ToDictionary( p => p.Id, p => ( IHasAttributes ) p );
             }
 
             var groupMemberAttributes = GetGridAttributesBySource( RegistrationFieldSource.GroupMemberAttribute );
@@ -1257,10 +1281,12 @@ WHERE [g].[GroupTypeId] = @FamilyGroupTypeId
                 var groupMembers = items
                     .Select( r => r.GroupMember )
                     .Where( gm => gm != null )
-                    .Cast<IHasAttributes>()
+                    .DistinctBy( gm => gm.Id )
                     .ToList();
 
-                Helper.LoadFilteredAttributes( typeof( GroupMember ), groupMembers, rockContext, a => groupMemberAttributeIds.Contains( a.Id ) );
+                Helper.LoadFilteredAttributes( typeof( GroupMember ), groupMembers.Cast<IHasAttributes>().ToList(), rockContext, a => groupMemberAttributeIds.Contains( a.Id ) );
+
+                _groupMembersById = groupMembers.ToDictionary( gm => gm.Id, gm => ( IHasAttributes ) gm );
             }
         }
 
@@ -1775,9 +1801,17 @@ WHERE [g].[GroupTypeId] = @FamilyGroupTypeId
             public string GroupName { get; set; }
 
             /// <summary>
-            /// Gets or sets the person identifiers of the group's members.
+            /// Gets or sets the person identifiers of the group's non-archived
+            /// members whose status is Active or Pending.
             /// </summary>
-            public HashSet<int> PersonIds { get; set; }
+            public HashSet<int> ActivePersonIds { get; set; }
+
+            /// <summary>
+            /// Gets or sets the person identifiers of the group's non-archived
+            /// members whose status is Inactive. These people are still placed
+            /// but are shown in a muted state.
+            /// </summary>
+            public HashSet<int> InactivePersonIds { get; set; }
         }
 
         /// <summary>

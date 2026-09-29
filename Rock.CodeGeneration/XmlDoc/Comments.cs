@@ -1,4 +1,4 @@
-﻿namespace Rock.CodeGeneration.XmlDoc
+namespace Rock.CodeGeneration.XmlDoc
 {
     /// <summary>
     /// The comments that were loaded for a given type or member.

@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -249,7 +249,9 @@ namespace Rock.Blocks.AI
                 IsExcludingSystemSkills = entity.AgentType == AgentType.Chat
                     ? chatSettings.IsExcludingSystemSkills
                     : mcpSettings.IsExcludingSystemSkills,
+                IsSystem = entity.IsSystem,
                 Role = chatSettings.Role,
+                ReasoningEffort = chatSettings.ReasoningEffort ?? ReasoningEffort.Low,
                 CurrentPersonTemplate = chatSettings.CurrentPersonTemplate,
                 Slug = mcpSettings.Slug,
             };
@@ -354,8 +356,14 @@ namespace Rock.Blocks.AI
             box.IfValidProperty( nameof( box.Bag.Name ),
                 () => entity.Name = box.Bag.Name );
 
-            box.IfValidProperty( nameof( box.Bag.Instructions ),
-                () => entity.Instructions = box.Bag.Instructions );
+            // The instructions of a system agent are owned by Rock and must
+            // not be changed through the UI, so silently ignore any value sent
+            // from the client for those agents.
+            if ( !entity.IsSystem )
+            {
+                box.IfValidProperty( nameof( box.Bag.Instructions ),
+                    () => entity.Instructions = box.Bag.Instructions );
+            }
 
             if ( entity.AgentType == AgentType.Chat )
             {
@@ -369,6 +377,9 @@ namespace Rock.Blocks.AI
 
                 box.IfValidProperty( nameof( box.Bag.Role ),
                     () => chatSettings.Role = box.Bag.Role );
+
+                box.IfValidProperty( nameof( box.Bag.ReasoningEffort ),
+                    () => chatSettings.ReasoningEffort = box.Bag.ReasoningEffort );
 
                 box.IfValidProperty( nameof( box.Bag.CurrentPersonTemplate ),
                     () => chatSettings.CurrentPersonTemplate = box.Bag.CurrentPersonTemplate );
@@ -442,6 +453,28 @@ namespace Rock.Blocks.AI
             }
 
             return true;
+        }
+
+        /// <summary>
+        /// Builds the lookup of tool descriptions used by the UI to explain what
+        /// each tool lets the agent do. The keys are the tool Guids, which is what
+        /// ToListItemBagList() puts in each item's Value, so the UI can pair a
+        /// description with its tool without a second lookup.
+        /// Tools with no description are omitted rather than mapped to an empty
+        /// string, which would render an empty help icon.
+        /// </summary>
+        /// <param name="tools">The tools defined on the skill.</param>
+        /// <returns>A dictionary of tool descriptions keyed by the tool's Guid.</returns>
+        private static Dictionary<string, string> GetToolDescriptions( IEnumerable<AISkillTool> tools )
+        {
+            if ( tools == null )
+            {
+                return new Dictionary<string, string>();
+            }
+
+            return tools
+                .Where( t => t != null && t.Description.IsNotNullOrWhiteSpace() )
+                .ToDictionary( t => t.Guid.ToString(), t => t.Description );
         }
 
         #endregion
@@ -540,6 +573,11 @@ namespace Rock.Blocks.AI
                 return actionError;
             }
 
+            if ( entity.IsSystem )
+            {
+                return ActionBadRequest( $"This {AIAgent.FriendlyTypeName} is a system agent and cannot be deleted." );
+            }
+
             if ( !entityService.CanDelete( entity, out var errorMessage ) )
             {
                 return ActionBadRequest( errorMessage );
@@ -579,6 +617,7 @@ namespace Rock.Blocks.AI
             response.Skill = GetSkillBag( agentSkill, true );
             response.AvailableTools = agentSkill.AISkill.AISkillTools
                 .ToListItemBagList();
+            response.ToolDescriptions = GetToolDescriptions( agentSkill.AISkill.AISkillTools );
 
             return ActionOk( response );
         }
@@ -686,6 +725,7 @@ namespace Rock.Blocks.AI
 
             response.AvailableTools = skill.AISkillTools
                 .ToListItemBagList();
+            response.ToolDescriptions = GetToolDescriptions( skill.AISkillTools );
 
             return ActionOk( response );
         }

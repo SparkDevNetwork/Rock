@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -28,12 +28,13 @@ using Rock.Model;
 using Rock.Obsidian.UI;
 using Rock.Security;
 using Rock.SystemGuid;
+using Rock.Utility;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Core.SignatureDocumentList;
 using Rock.Web.Cache;
-using Person = Rock.Model.Person;
 using Rock.Web.UI.Controls;
-using Rock.Utility;
+
+using Person = Rock.Model.Person;
 
 namespace Rock.Blocks.Core
 {

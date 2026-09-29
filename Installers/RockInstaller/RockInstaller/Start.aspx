@@ -58,7 +58,7 @@
         // first disable the no ASP.Net message
         lNoScripting.Visible = false;
 
-        string version = "2_9_2";
+        string version = "2_9_5";
         bool isDebug = false;
 
         // Make sure the latest security protocols for .net 4.5.2 are turned on for the client in case they are required by the server or network.
@@ -328,7 +328,7 @@
 
                     <h1>Before We Get Started...</h1>
                     <p>Before we can get started we have some work to do. Your system's environment does not meet all of the
-                        specs for Rock. Read through our <a href='http://www.rockrms.com/Rock/Learn' target="_blank"> install guides</a> for details on preparing your server for install.
+                        specs for Rock. Read through our <a href='https://www.rockrms.com/Rock/Learn' target="_blank" rel="noopener noreferrer"> install guides</a> for details on preparing your server for install.
                     </p>
                 </asp:Label>
 

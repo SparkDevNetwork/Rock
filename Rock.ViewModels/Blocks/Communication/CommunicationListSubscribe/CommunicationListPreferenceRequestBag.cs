@@ -15,6 +15,7 @@
 // </copyright>
 
 using System;
+
 using Rock.Enums.Communication;
 
 namespace Rock.ViewModels.Blocks.Communication.CommunicationListSubscribe

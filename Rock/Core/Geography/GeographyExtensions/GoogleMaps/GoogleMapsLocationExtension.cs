@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -23,9 +23,9 @@ using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 
-using Newtonsoft.Json;
-
 using Microsoft.Extensions.Logging;
+
+using Newtonsoft.Json;
 
 using Rock.Core.Geography.Classes;
 using Rock.Core.Geography.GeographyExtensions.GoogleMaps.Classes;

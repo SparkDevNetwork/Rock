@@ -1138,6 +1138,12 @@ export const Page = {
      */
     OrgChart: "C3909F1A-6908-4035-BB93-EC4FBFDCC536",
     /**
+     * Gets the Orphaned Pages page guid. This is a hidden system page that acts as a
+     * holding place for child pages whose parent page has been deleted by a migration.
+     * ParentPage: CMS Configuration
+     */
+    OrphanedPages: "51457268-8F59-4E2A-8E22-2B57F2E3607B",
+    /**
      * Gets the Package Detail page guid
      * ParentPage: Rock Shop
      */
@@ -1394,7 +1400,7 @@ export const Page = {
      */
     RestKeys: "881AB1C2-4E00-4A73-80CC-9886B3717A20",
     /**
-     * Gets the Rock Settings page guid
+     * Gets the Rock Settings (Administration) page guid
      * ParentPage: Admin Tools
      */
     RockSettings: "550A898C-EDEA-48B5-9C58-B20EC13AF13B",

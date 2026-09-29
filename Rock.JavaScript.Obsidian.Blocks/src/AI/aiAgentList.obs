@@ -42,7 +42,7 @@
                      visiblePriority="sm" />
 
         <LabelColumn name="role"
-                     title="Role"
+                     title="Model"
                      field="role"
                      :filter="pickExistingValueFilter"
                      width="160px"
@@ -50,7 +50,9 @@
 
         <SecurityColumn />
 
-        <DeleteColumn v-if="config.isDeleteEnabled" @click="onDeleteClick" />
+        <DeleteColumn v-if="config.isDeleteEnabled"
+                      :rowDisabled="row => !!row.isSystem"
+                      @click="onDeleteClick" />
     </Grid>
 </template>
 

@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -15,9 +15,12 @@
 // </copyright>
 //
 using System;
+
 using Fluid.Parser;
+
 using Parlot;
 using Parlot.Fluent;
+
 using static Parlot.Fluent.Parsers;
 
 namespace Rock.Lava.Fluid

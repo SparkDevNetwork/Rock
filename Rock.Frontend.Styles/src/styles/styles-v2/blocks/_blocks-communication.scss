@@ -13,6 +13,8 @@
 //  + Legacy Email Editor
 //  + Communication History
 //  + Communication Template Detail
+//  + Communication Flow Performance & Flow Instance Message Metrics
+//  + Communication Saturation Report
 // =============================================================
 
 
@@ -752,3 +754,22 @@ iframe.email-body {
   }
 
 }
+
+// ======================== COMMUNICATION FLOW PERFORMANCE & FLOW INSTANCE MESSAGE METRICS ========================
+// From CommunicationFlowPerformance/nothingToShow.partial.obs and CommunicationFlowInstanceMessageMetrics/nothingToShow.partial.obs
+// Matches the height of the charts the empty state stands in for.
+.panel .communication-flow-empty-state-panel-body {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 268px;
+  padding: var(--spacing-medium) var(--spacing-large);
+}
+// ====================== END COMMUNICATION FLOW PERFORMANCE & FLOW INSTANCE MESSAGE METRICS ======================
+
+// ======================== COMMUNICATION SATURATION REPORT ========================
+// From CommunicationSaturationReport/nothingToShow.partial.obs
+.communication-saturation-report-empty-state {
+  padding: var(--spacing-xlarge) 0;
+}
+// ====================== END COMMUNICATION SATURATION REPORT ======================

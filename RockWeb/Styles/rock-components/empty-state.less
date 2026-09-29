@@ -1,0 +1,32 @@
+// Empty State - Centered icon and message shown when a chart, list or panel has no data to display.
+// Height and padding are left to the consuming block so it can match the space the data would fill.
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-small);
+  color: var(--color-interface-medium);
+}
+
+.empty-state-icon {
+  font-size: 60px;
+  line-height: 1;
+}
+
+.empty-state-body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-tiny);
+}
+
+.empty-state-text {
+  margin: 0;
+}
+
+.empty-state-help-text {
+  margin: 0;
+  font-size: var(--font-size-xsmall);
+}

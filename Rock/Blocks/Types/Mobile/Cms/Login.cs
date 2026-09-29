@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -15,9 +15,17 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
 using System.Net;
+using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Threading.Tasks;
+
+using Microsoft.Extensions.Logging;
+
+using Newtonsoft.Json;
 
 using RestSharp;
 
@@ -32,12 +40,6 @@ using Rock.Mobile;
 using Rock.Model;
 using Rock.Utility;
 using Rock.Web.Cache;
-using Newtonsoft.Json;
-using System.Collections.Generic;
-using System.Net.Http.Headers;
-using System.Net.Http;
-using System.Linq;
-using Microsoft.Extensions.Logging;
 
 namespace Rock.Blocks.Types.Mobile.Cms
 {

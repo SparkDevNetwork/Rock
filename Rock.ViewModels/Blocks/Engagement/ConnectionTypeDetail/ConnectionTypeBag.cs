@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -17,9 +17,9 @@
 
 using System.Collections.Generic;
 
+using Rock.Enums.Connection;
 using Rock.ViewModels.Rest.Controls;
 using Rock.ViewModels.Utility;
-using Rock.Enums.Connection;
 
 namespace Rock.ViewModels.Blocks.Engagement.ConnectionTypeDetail
 {

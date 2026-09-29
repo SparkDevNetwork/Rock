@@ -1,16 +1,18 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
     <li :class="listItemClass">
-        <i v-if="hasChildren" :class="folderClass" @click.prevent.stop="onExpand"></i>
-        <span :class="itemNameClass" :title="itemName" @click.prevent.stop="onSelect">
-            <i :class="itemIconClass"></i>
-            {{ itemName }}
-            <span class="label label-tree" v-if="showChildCount && item.childCount">{{ item.childCount }}</span>
-        </span>
-        <i v-if="showSelectChildren && multiple && item.isFolder"
-           class="ti ti-chevrons-down icon-fw clickable select-children"
-           title="Select Children"
-           @click.prevent.stop="onSelectDescendants"></i>
+        <div>
+            <i v-if="hasChildren" :class="folderClass" @click.prevent.stop="onExpand"></i>
+            <span :class="itemNameClass" :title="itemName" @click.prevent.stop="onSelect">
+                <i :class="itemIconClass"></i>
+                {{ itemName }}
+                <span class="label label-tree" v-if="showChildCount && item.childCount">{{ item.childCount }}</span>
+            </span>
+            <i v-if="showSelectChildren && multiple && item.isFolder"
+               class="ti ti-chevrons-down icon-fw clickable select-children"
+               title="Select Children"
+               @click.prevent.stop="onSelectDescendants"></i>
+        </div>
 
         <ul v-if="hasChildrenLoaded" v-show="showChildren" class="rocktree-children">
             <treeListItem v-for="child in children"

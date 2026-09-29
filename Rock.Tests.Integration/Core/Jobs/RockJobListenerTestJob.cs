@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 
 using Rock.Attribute;
 using Rock.Jobs;

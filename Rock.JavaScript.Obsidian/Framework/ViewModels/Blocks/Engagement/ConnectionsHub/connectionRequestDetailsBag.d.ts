@@ -26,6 +26,7 @@ import { DueStatus } from "@Obsidian/Enums/Connection/dueStatus";
 import { Guid } from "@Obsidian/Types";
 import { ActivityEntryBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/activityEntryBag";
 import { AdditionalRequestBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/additionalRequestBag";
+import { ConnectionRequestWorkflowBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/connectionRequestWorkflowBag";
 import { ConnectionStatusBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/connectionStatusBag";
 import { PersonNoteBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/personNoteBag";
 import { PlacementGroupDetailsBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/placementGroupDetailsBag";
@@ -112,4 +113,7 @@ export type ConnectionRequestDetailsBag = {
 
     /** Gets or sets the unique identifier of the requester's person alias. */
     requesterPersonAliasGuid: Guid;
+
+    /** Gets or sets the persisted workflows launched from this connection request that the current person is authorized to view, newest first. */
+    workflows?: ConnectionRequestWorkflowBag[] | null;
 };

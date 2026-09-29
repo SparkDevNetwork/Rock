@@ -54,3 +54,21 @@ if (typeof Element.prototype.scrollIntoView !== "function") {
         // Intentionally does nothing: there is no viewport to scroll in jsdom.
     };
 }
+
+// Layout observation API. jsdom has no layout engine, so there is nothing to
+// observe; controls such as Modal construct one and expect it to exist.
+if (typeof window.ResizeObserver !== "function") {
+    window.ResizeObserver = class ResizeObserver {
+        observe(): void {
+            // Intentionally does nothing: there is no layout to observe in jsdom.
+        }
+
+        unobserve(): void {
+            // Intentionally does nothing: there is no layout to observe in jsdom.
+        }
+
+        disconnect(): void {
+            // Intentionally does nothing: there is no layout to observe in jsdom.
+        }
+    };
+}

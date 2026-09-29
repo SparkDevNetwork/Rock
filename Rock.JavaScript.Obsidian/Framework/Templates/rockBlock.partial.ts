@@ -459,6 +459,11 @@ export default defineComponent({
         provide("invokeBlockAction", invokeBlockAction);
         provide("invokeStreamingBlockAction", invokeStreamingBlockAction);
         provide("configurationValues", configurationValues);
+
+        // The page-render trace, so descendant utilities (such as useLavaApp)
+        // can send the traceparent header and link their HTTP calls to the
+        // page view that triggered them, the same way block actions do above.
+        provide("blockParentTrace", props.config.parentTrace ?? null);
         provideReloadBlock(reloadBlock);
         providePersonPreferences(getPreferenceProvider());
         const configurationValuesChanged = provideConfigurationValuesChanged();

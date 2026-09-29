@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -22,6 +22,7 @@ using System.Data.Entity;
 using System.Linq;
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Media;
 using Rock.Model;
@@ -37,7 +38,6 @@ using Rock.Web.Cache;
 using static Rock.Blocks.Cms.MediaAccountList;
 using static Rock.Blocks.Cms.MediaFolderList;
 using static Rock.Blocks.Finance.FinancialBatchList;
-using Rock.Configuration;
 
 namespace Rock.Blocks.Cms
 {

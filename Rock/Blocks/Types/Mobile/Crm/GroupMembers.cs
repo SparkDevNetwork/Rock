@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -14,20 +14,20 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
 
 using Rock.Attribute;
+using Rock.Common.Mobile.Blocks.Crm.GroupMembers;
 using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
+using Rock.Security;
 using Rock.SystemGuid;
 using Rock.Web.Cache;
-using Rock.Common.Mobile.Blocks.Crm.GroupMembers;
 using Rock.Web.UI;
-using Rock.Security;
-using System;
 
 namespace Rock.Blocks.Types.Mobile.Crm
 {

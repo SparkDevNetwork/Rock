@@ -1,6 +1,20 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
     <div class="email-editor-wrapper styled-scroll">
+        <NotificationBox v-if="isNestedSectionWarningShown"
+                         class="nested-section-warning"
+                         alertType="warning"
+                         dismissible
+                         heading="Nested sections may not display in some mail apps."
+                         @dismiss="onNestedSectionWarningDismissed">
+            This email has {{ nestedSectionCount }} {{ nestedSectionCount === 1 ? "section" : "sections" }} placed inside other sections.
+            Apple Mail on iPhone and iPad can leave that content blank.
+            Moving the content into fewer nested sections resolves it.
+            <div class="nested-section-warning-switch">
+                <InlineSwitch v-model="isNestedSectionHighlightEnabled" label="Highlight affected sections" />
+            </div>
+        </NotificationBox>
+
         <div class="email-editor">
             <SidePanel v-if="ltr"
                        v-model:bodyGlobalProps="bodyGlobalProps"
@@ -40,8 +54,10 @@
                                :getHtmlRequest="getHtmlRequest"
                                :replaceComponentRequest="replaceComponentRequest"
                                :isDisabled="disabled"
+                               :isNestedSectionHighlightEnabled="isNestedSectionHighlightEnabled"
                                @emailDocumentUpdated="onEmailDocumentUpdated"
-                               @componentAdded="onComponentAdded" />
+                               @componentAdded="onComponentAdded"
+                               @nestedSectionsChanged="onNestedSectionsChanged" />
             </div>
 
             <SidePanel v-if="!ltr"
@@ -82,6 +98,14 @@
     height: 100%;
 }
 
+.nested-section-warning {
+    margin-bottom: 0;
+}
+
+.nested-section-warning-switch {
+    margin-top: var(--spacing-xsmall);
+}
+
 /* #endregion Email Editor Container */
 
 /* #region Email Editor */
@@ -105,9 +129,11 @@
 </style>
 
 <script setup lang="ts">
-    import { PropType, ref, watch } from "vue";
+    import { PropType, computed, ref, watch } from "vue";
     import EmailDesigner from "./emailDesigner.partial.obs";
     import SidePanel from "./sidePanel.partial.obs";
+    import InlineSwitch from "@Obsidian/Controls/inlineSwitch.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import { BodyGlobalProps, ButtonGlobalProps, CloneComponentRequest, CompleteComponentRequest, ComponentTypeDragEndRequest, ComponentTypeDragStartRequest, ComponentTypeName, DeleteComponentRequest, DividerGlobalProps, ReplaceComponentRequest } from "./types.partial";
     import { GetHtmlRequest, UsageType } from "./types.partial";
     import { BinaryFiletype } from "@Obsidian/SystemGuids/binaryFiletype";
@@ -228,7 +254,19 @@
     const buttonGlobalProps = ref<ButtonGlobalProps>({} as ButtonGlobalProps);
     const dividerGlobalProps = ref<DividerGlobalProps>({} as DividerGlobalProps);
 
+    const nestedSectionCount = ref<number>(0);
+    const isNestedSectionWarningDismissed = ref<boolean>(false);
+
+    // Defaults on so the offending sections are visible the moment the warning appears.
+    const isNestedSectionHighlightEnabled = ref<boolean>(true);
+
     // #endregion
+
+    // #region Computed Values
+
+    const isNestedSectionWarningShown = computed<boolean>(() => nestedSectionCount.value > 0 && !isNestedSectionWarningDismissed.value);
+
+    // #endregion Computed Values
 
     // #region Functions
 
@@ -267,6 +305,25 @@
 
     function onDeleteComponent(event: DeleteComponentRequest): void {
         deleteComponentRequest.value = event;
+    }
+
+    function onNestedSectionsChanged(event: { nestedSectionCount: number }): void {
+        // Let a dismissed warning return once the problem clears and later reappears.
+        // The highlight switch keeps whatever state the person left it in; forcing it
+        // back on would nudge annoyed users toward dismissing the warning altogether.
+        if (event.nestedSectionCount === 0) {
+            isNestedSectionWarningDismissed.value = false;
+        }
+
+        nestedSectionCount.value = event.nestedSectionCount;
+    }
+
+    function onNestedSectionWarningDismissed(): void {
+        isNestedSectionWarningDismissed.value = true;
+
+        // The switch lives in the banner, so dismissing must also clear the highlight
+        // or the overlays would linger with no visible control to turn them off.
+        isNestedSectionHighlightEnabled.value = false;
     }
 
     function onEmailDocumentUpdated(eventArgs: { emailDocument: Document, areGlobalDefaultsRequired: boolean }): void {

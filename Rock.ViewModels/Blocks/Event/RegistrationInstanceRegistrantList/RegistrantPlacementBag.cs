@@ -43,5 +43,12 @@ namespace Rock.ViewModels.Blocks.Event.RegistrationInstanceRegistrantList
         /// been placed in for this placement.
         /// </summary>
         public List<string> GroupNames { get; set; }
+
+        /// <summary>
+        /// Gets or sets the names of the placement groups in which the
+        /// registrant is an Inactive member. These are not included in the
+        /// group count or group names.
+        /// </summary>
+        public List<string> InactiveGroupNames { get; set; }
     }
 }

@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -16,16 +16,17 @@
 //
 
 using System.ComponentModel;
+using System.Linq;
+
 using Rock.Attribute;
 using Rock.Bus;
-using Rock.Bus.Queue;
 using Rock.Bus.Consumer;
+using Rock.Bus.Queue;
 using Rock.Data;
 using Rock.Model;
+using Rock.Obsidian.UI;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Bus.ConsumerList;
-using System.Linq;
-using Rock.Obsidian.UI;
 
 namespace Rock.Blocks.Bus
 {

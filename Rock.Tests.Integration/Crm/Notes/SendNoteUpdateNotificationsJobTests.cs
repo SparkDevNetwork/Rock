@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -20,6 +20,7 @@ using System.Linq;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Jobs;
 using Rock.Logging;
@@ -31,7 +32,6 @@ using Rock.Tests.Shared.Constants;
 using Rock.Web.Cache;
 
 using static Rock.Jobs.SendNoteNotifications;
-using Rock.Configuration;
 
 namespace Rock.Tests.Integration.Crm.Notes
 {

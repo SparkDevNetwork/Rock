@@ -1,4 +1,4 @@
-﻿namespace Rock.AI.Agent.Utilities;
+namespace Rock.AI.Agent.Utilities;
 
 /// <summary>
 /// Represents an exception that is thrown when an unsupported or invalid

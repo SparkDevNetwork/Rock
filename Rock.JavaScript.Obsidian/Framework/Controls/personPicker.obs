@@ -1,6 +1,6 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <RockFormField :modelValue="internalValue" :formGroupClasses="'person-picker ' + formGroupClasses" name="personpicker">
+    <RockFormField :modelValue="internalValue?.value" :formGroupClasses="'person-picker ' + formGroupClasses" name="personpicker">
         <template #default>
             <div v-if="!isInputHidden" class="control-wrapper">
                 <div class="picker picker-select person-picker">
@@ -16,7 +16,7 @@
             </div>
 
             <teleport to="body" v-if="showPopup">
-                <div class="backdrop" @keydown.esc.stop="onCancel">
+                <div class="backdrop person-picker-popup" @keydown.esc.stop="onCancel">
                     <div class="absolute-panel picker">
                         <div class="action-header d-flex align-items-center justify-content-between">
                             <h4>Person Search</h4>

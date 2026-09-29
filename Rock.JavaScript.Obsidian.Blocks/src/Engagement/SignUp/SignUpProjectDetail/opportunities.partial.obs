@@ -1,0 +1,385 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="row">
+        <div class="col-md-12">
+            <h3>Opportunities</h3>
+
+            <div class="d-flex flex-wrap justify-content-between align-items-center border-bottom border-panel">
+                <p>Below are opportunities for the sign-up based on location and schedule.</p>
+
+                <div class="form-group">
+                    <ButtonGroup v-model="timeframe" :items="timeframeItems" :btnSize="BtnSize.ExtraSmall" />
+                </div>
+            </div>
+
+            <NotificationBox v-if="isScheduleTypeWarningVisible" alertType="warning">
+                The <strong>{{ groupTypeOptions.groupTypeName }}</strong> group type does not allow Custom or Named Group Schedule Options.
+                Please <a :href="groupTypeOptions.groupTypeUrl ?? ''" target="_blank" rel="noopener noreferrer">enable at least one of these types</a> to edit opportunities.
+            </NotificationBox>
+
+            <NotificationBox v-if="isLocationModeWarningVisible" alertType="warning">
+                The <strong>{{ groupTypeOptions.groupTypeName }}</strong> group type does not allow any Location Selection Modes.
+                Please <a :href="groupTypeOptions.groupTypeUrl ?? ''" target="_blank" rel="noopener noreferrer">enable at least one mode</a> to edit opportunities.
+            </NotificationBox>
+
+            <Grid :data="gridData"
+                  keyField="key"
+                  :itemTerm="itemTerm"
+                  :emptyDataText="emptyDataText"
+                  liveUpdates
+                  light
+                  :onAddItem="canSchedule ? onAddClick : undefined">
+                <TextColumn v-if="isNameColumnVisible"
+                            name="name"
+                            field="name"
+                            title="Opportunity Name"
+                            visiblePriority="xs" />
+
+                <TextColumn name="friendlyDateTime"
+                            field="friendlyDateTime"
+                            title="Date/Time"
+                            visiblePriority="xs" />
+
+                <TextColumn name="friendlyLocation"
+                            field="friendlyLocation"
+                            title="Location"
+                            visiblePriority="xs" />
+
+                <Column name="signUps"
+                        title="Sign-Ups"
+                        itemClass="align-middle"
+                        visiblePriority="xs">
+                    <template #format="{ row }">
+                        <OpportunityProgressBar :slotsMinimum="(row.slotsMinimum as number | null)"
+                                                :slotsDesired="(row.slotsDesired as number | null)"
+                                                :slotsMaximum="(row.slotsMaximum as number | null)"
+                                                :slotsFilled="(row.slotsFilled as number)" />
+                    </template>
+                </Column>
+
+                <ButtonColumn v-if="attendeeListUrl"
+                              name="attendees"
+                              iconClass="ti ti-users"
+                              tooltip="Attendee List"
+                              :onClick="onAttendeesClick"
+                              visiblePriority="xs" />
+
+                <EditColumn v-if="canSchedule" @click="onEditClick" />
+
+                <DeleteColumn v-if="canSchedule" disableConfirmation @click="onDeleteClick" />
+            </Grid>
+        </div>
+    </div>
+
+    <OpportunityModal v-model="isModalVisible"
+                      :opportunity="editingOpportunity"
+                      :groupIdKey="groupIdKey"
+                      :groupTypeOptions="groupTypeOptions"
+                      :isProjectTypeInPerson="isProjectTypeInPerson"
+                      @save="onOpportunitiesSaved" />
+</template>
+
+<script setup lang="ts">
+    import { computed, PropType, ref } from "vue";
+    import Grid, { ButtonColumn, Column, DeleteColumn, EditColumn, TextColumn } from "@Obsidian/Controls/grid";
+    import ButtonGroup from "@Obsidian/Controls/buttonGroup.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
+    import { LocationPickerMode } from "@Obsidian/Enums/Controls/locationPickerMode";
+    import { ScheduleType } from "@Obsidian/Enums/Group/scheduleType";
+    import { useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { alert, confirm } from "@Obsidian/Utility/dialogs";
+    import { SignUpOpportunityBag } from "@Obsidian/ViewModels/Blocks/Engagement/SignUp/SignUpProjectDetail/signUpOpportunityBag";
+    import { SignUpProjectGroupTypeOptionsBag } from "@Obsidian/ViewModels/Blocks/Engagement/SignUp/SignUpProjectDetail/signUpProjectGroupTypeOptionsBag";
+    import OpportunityModal from "./opportunityModal.partial.obs";
+    import OpportunityProgressBar from "./opportunityProgressBar.partial.obs";
+    import { OpportunityTimeframe } from "./types.partial";
+
+    const props = defineProps({
+        /** The project's opportunities. */
+        modelValue: {
+            type: Array as PropType<SignUpOpportunityBag[]>,
+            required: true
+        },
+
+        /** The identifier key of the project. */
+        groupIdKey: {
+            type: String as PropType<string>,
+            required: true
+        },
+
+        /** Whether the current person may add, edit and delete opportunities. */
+        canSchedule: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        /** The options that depend on the project's group type. */
+        groupTypeOptions: {
+            type: Object as PropType<SignUpProjectGroupTypeOptionsBag>,
+            required: true
+        },
+
+        /** Whether the project is an in-person project, which is the only project type that sends reminders. */
+        isProjectTypeInPerson: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        /** The URL of the attendee list page with placeholders for the opportunity, or null when no page is configured. */
+        attendeeListUrl: {
+            type: String as PropType<string | null>,
+            default: null
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: SignUpOpportunityBag[]): void
+    }>();
+
+    // #region Values
+
+    const invokeBlockAction = useInvokeBlockAction();
+
+    const timeframe = ref<string>(OpportunityTimeframe.Upcoming);
+    const timeframeItems: { text: string, value: string }[] = [
+        { text: "Upcoming", value: OpportunityTimeframe.Upcoming },
+        { text: "Past", value: OpportunityTimeframe.Past }
+    ];
+
+    const isModalVisible = ref(false);
+    const editingOpportunity = ref<SignUpOpportunityBag | null>(null);
+    const isScheduleTypeWarningVisible = ref(false);
+    const isLocationModeWarningVisible = ref(false);
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    const isUpcomingTimeframe = computed((): boolean => timeframe.value === OpportunityTimeframe.Upcoming);
+
+    const itemTerm = computed((): string => isUpcomingTimeframe.value ? "Upcoming Opportunity" : "Past Opportunity");
+
+    /**
+     * Grid itemTerm is not reactive, so the empty message is bound separately
+     * and updates when the timeframe toggle changes.
+     */
+    const emptyDataText = computed((): string => {
+        return isUpcomingTimeframe.value
+            ? "No Upcoming Opportunities Found"
+            : "No Past Opportunities Found";
+    });
+
+    /**
+     * The opportunities of the selected timeframe. Upcoming opportunities are
+     * listed soonest first and past opportunities most recent first, with
+     * opportunities that have no date last in both cases.
+     */
+    const timeframeOpportunities = computed((): SignUpOpportunityBag[] => {
+        return props.modelValue
+            .filter(o => o.isUpcoming === isUpcomingTimeframe.value)
+            .sort(compareOpportunities);
+    });
+
+    const isNameColumnVisible = computed((): boolean => {
+        return timeframeOpportunities.value.some(o => !!o.name?.trim());
+    });
+
+    const gridData = computed(() => {
+        return {
+            rows: timeframeOpportunities.value.map(o => ({
+                key: getOpportunityKey(o),
+                name: o.name ?? "",
+                friendlyDateTime: o.friendlyDateTime ?? "",
+                friendlyLocation: o.friendlyLocation ?? "",
+                slotsMinimum: o.slotsMinimum ?? null,
+                slotsDesired: o.slotsDesired ?? null,
+                slotsMaximum: o.slotsMaximum ?? null,
+                slotsFilled: o.slotsFilled ?? 0
+            }))
+        };
+    });
+
+    /** Whether the group type allows at least one of the schedule types an opportunity can use. */
+    const isAnyScheduleTypeAllowed = computed((): boolean => {
+        return ((props.groupTypeOptions.allowedScheduleTypes ?? 0) & (ScheduleType.Custom | ScheduleType.Named)) !== 0;
+    });
+
+    /** Whether the group type allows at least one of the location modes an opportunity can use. */
+    const isAnyLocationModeAllowed = computed((): boolean => {
+        return ((props.groupTypeOptions.locationSelectionMode ?? 0) & LocationPickerMode.All) !== 0;
+    });
+
+    // #endregion Computed Values
+
+    // #region Functions
+
+    /**
+     * Gets the grid row key of an opportunity.
+     *
+     * @param opportunity The opportunity.
+     */
+    function getOpportunityKey(opportunity: SignUpOpportunityBag): string {
+        return `${opportunity.locationIdKey ?? ""}|${opportunity.scheduleIdKey ?? ""}`;
+    }
+
+    /**
+     * Finds the opportunity that matches a grid row key.
+     *
+     * @param key The grid row key.
+     */
+    function findOpportunity(key: string): SignUpOpportunityBag | undefined {
+        return props.modelValue.find(o => getOpportunityKey(o) === key);
+    }
+
+    /**
+     * Gets the sortable time of an opportunity, or null when it has no date.
+     *
+     * @param opportunity The opportunity.
+     */
+    function getSortTime(opportunity: SignUpOpportunityBag): number | null {
+        if (!opportunity.nextOrLastStartDateTime) {
+            return null;
+        }
+
+        const time = new Date(opportunity.nextOrLastStartDateTime).getTime();
+
+        return isNaN(time) ? null : time;
+    }
+
+    /**
+     * Compares two opportunities by date (according to the selected timeframe),
+     * then by name and then by the number of people signed up.
+     *
+     * @param a The first opportunity.
+     * @param b The second opportunity.
+     */
+    function compareOpportunities(a: SignUpOpportunityBag, b: SignUpOpportunityBag): number {
+        const aTime = getSortTime(a);
+        const bTime = getSortTime(b);
+
+        if (aTime !== bTime) {
+            if (aTime === null) {
+                return 1;
+            }
+
+            if (bTime === null) {
+                return -1;
+            }
+
+            return isUpcomingTimeframe.value ? aTime - bTime : bTime - aTime;
+        }
+
+        const nameComparison = (a.name ?? "").localeCompare(b.name ?? "");
+        if (nameComparison !== 0) {
+            return nameComparison;
+        }
+
+        return (b.slotsFilled ?? 0) - (a.slotsFilled ?? 0);
+    }
+
+    /**
+     * Opens the modal for the opportunity unless the group type allows no
+     * schedule type or no location mode, in which case the matching warnings
+     * are shown instead.
+     *
+     * @param opportunity The opportunity to edit, or null to add one.
+     */
+    function tryOpenModal(opportunity: SignUpOpportunityBag | null): void {
+        isScheduleTypeWarningVisible.value = !isAnyScheduleTypeAllowed.value;
+        isLocationModeWarningVisible.value = !isAnyLocationModeAllowed.value;
+
+        if (isScheduleTypeWarningVisible.value || isLocationModeWarningVisible.value) {
+            return;
+        }
+
+        editingOpportunity.value = opportunity;
+        isModalVisible.value = true;
+    }
+
+    // #endregion Functions
+
+    // #region Event Handlers
+
+    /**
+     * Opens the modal to add an opportunity.
+     */
+    function onAddClick(): void {
+        tryOpenModal(null);
+    }
+
+    /**
+     * Opens the modal to edit the opportunity of the row.
+     *
+     * @param key The grid row key.
+     */
+    function onEditClick(key: string): void {
+        const opportunity = findOpportunity(key);
+
+        if (opportunity) {
+            tryOpenModal(opportunity);
+        }
+    }
+
+    /**
+     * Deletes the opportunity of the row, and its participants, after confirmation.
+     *
+     * @param key The grid row key.
+     */
+    async function onDeleteClick(key: string): Promise<void> {
+        const opportunity = findOpportunity(key);
+        if (!opportunity) {
+            return;
+        }
+
+        const participantCount = opportunity.slotsFilled ?? 0;
+        const message = participantCount > 0
+            ? `This Opportunity has ${participantCount.toLocaleString()} ${participantCount > 1 ? "participants" : "participant"}. Are you sure you want to delete this Opportunity and remove all participants?`
+            : "Are you sure you want to delete this Opportunity?";
+
+        if (!await confirm(message)) {
+            return;
+        }
+
+        const result = await invokeBlockAction<SignUpOpportunityBag[]>("DeleteOpportunity", {
+            key: props.groupIdKey,
+            locationKey: opportunity.locationIdKey,
+            scheduleKey: opportunity.scheduleIdKey
+        });
+
+        if (result.isSuccess && result.data) {
+            emit("update:modelValue", result.data);
+        }
+        else {
+            await alert(result.errorMessage ?? "Unknown error while trying to delete the opportunity.");
+        }
+    }
+
+    /**
+     * Navigates to the attendee list of the opportunity of the row.
+     *
+     * @param key The grid row key.
+     */
+    function onAttendeesClick(key: string): void {
+        const opportunity = findOpportunity(key);
+        if (!opportunity || !props.attendeeListUrl) {
+            return;
+        }
+
+        window.location.href = props.attendeeListUrl
+            .replace("((GroupId))", props.groupIdKey)
+            .replace("((LocationId))", opportunity.locationIdKey ?? "")
+            .replace("((ScheduleId))", opportunity.scheduleIdKey ?? "");
+    }
+
+    /**
+     * Replaces the opportunities with the list returned after saving one.
+     *
+     * @param opportunities The refreshed opportunities.
+     */
+    function onOpportunitiesSaved(opportunities: SignUpOpportunityBag[]): void {
+        emit("update:modelValue", opportunities);
+    }
+
+    // #endregion Event Handlers
+</script>

@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -14,14 +14,6 @@
 // limitations under the License.
 // </copyright>
 
-using Rock;
-using Rock.Attribute;
-using Rock.Communication;
-using Rock.Data;
-using Rock.Lava;
-using Rock.Logging;
-using Rock.Model;
-using Rock.Web.Cache;
 using System;
 using System.Collections.Generic;
 using System.Data.Entity;
@@ -31,14 +23,23 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Text;
+using System.Threading.Tasks;
 using System.Web;
 using System.Web.UI.WebControls;
 using System.Xml.Linq;
 
-using Microsoft.Extensions.Logging;
-using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
+
+using Rock;
+using Rock.Attribute;
+using Rock.Communication;
 using Rock.Configuration;
+using Rock.Data;
+using Rock.Lava;
+using Rock.Logging;
+using Rock.Model;
+using Rock.Web.Cache;
 
 namespace Rock.Utility
 {
@@ -759,6 +760,10 @@ namespace Rock.Utility
                                         attrState.Guid = formFieldElement.Attribute( "guid" ).Value.AsGuid();
                                         attrState.Name = formFieldElement.Attribute( "name" ).Value.Trim();
                                         attrState.Key = attrState.Name.RemoveSpecialCharacters().Replace( " ", string.Empty );
+
+                                        // The template editor keeps these attribute flags in sync with the form field, so mirror that here.
+                                        attrState.IsRequired = formFieldElement.Attribute( "isRequired" ) != null ? formFieldElement.Attribute( "isRequired" ).Value.AsBoolean() : false;
+                                        attrState.IsGridColumn = formFieldElement.Attribute( "showOnGrid" ) != null ? formFieldElement.Attribute( "showOnGrid" ).Value.AsBoolean() : false;
                                         var type = formFieldElement.Attribute( "type" ).Value.Trim();
                                         var fieldType = FieldTypeCache.All().Where( f => f.Name == type ).FirstOrDefault();
                                         if ( fieldType != null )

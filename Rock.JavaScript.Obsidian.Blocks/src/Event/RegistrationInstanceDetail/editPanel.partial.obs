@@ -76,7 +76,8 @@
                     <div class="col-md-6">
                         <PersonPicker v-model="contactPersonAlias"
                                       label="Contact"
-                                      enableSelfSelection />
+                                      enableSelfSelection
+                                      @update:selectedPersonChanged="autoFillContactFromPerson" />
                     </div>
                 </div>
                 <div class="row">
@@ -338,8 +339,9 @@
 
     // #region Event Handlers
 
-    // Auto-fills blank contact fields when the user picks a person. Wired via watch() below
-    // so it only runs on user-initiated changes (not on bag refreshes).
+    // Auto-fills blank contact fields when the user picks a person. Wired to the
+    // PersonPicker's update:selectedPersonChanged event so it only runs on user
+    // selection or clear, never on a programmatic v-model push from a bag refresh.
     async function autoFillContactFromPerson(value: ListItemBag | undefined): Promise<void> {
         if (!value?.value) {
             return;
@@ -458,15 +460,6 @@
         setPropertiesBoxValue(newValue, "externalGatewayFundId", externalGatewayFundId.value);
 
         emit("update:modelValue", newValue);
-    });
-
-    // Skip the side effect when the new value matches the bag — that's a bag refresh,
-    // not a user selection.
-    watch(contactPersonAlias, (newValue) => {
-        if ((newValue?.value ?? "") === (props.modelValue.bag?.contactPersonAlias?.value ?? "")) {
-            return;
-        }
-        void autoFillContactFromPerson(newValue);
     });
 
     watch(externalGatewayMerchantId, (newValue) => {

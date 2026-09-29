@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -14,14 +14,14 @@
 // limitations under the License.
 // </copyright>
 //
-using Rock.DownhillCss.Utility;
-
 using System;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.RegularExpressions;
+
+using Rock.DownhillCss.Utility;
 
 namespace Rock.DownhillCss
 {
@@ -764,10 +764,6 @@ namespace Rock.DownhillCss
     background-color: transparent;
 }
 
-^Page {
-    -rock-status-bar-text: light;
-}
-
 ^ContentPage {
     background-color: ?color-interface-softer;
 }
@@ -1402,10 +1398,6 @@ Resets
 
 ^radiobutton {
     background-color: transparent;
-}
-
-^Page {
-    -rock-status-bar-text: light;
 }
 
 ^contentpage {

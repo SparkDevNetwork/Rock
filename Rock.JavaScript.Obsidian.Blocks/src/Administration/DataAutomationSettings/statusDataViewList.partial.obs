@@ -1,0 +1,36 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div>
+        <DataViewPicker v-for="(item, index) in modelValue"
+                        :key="item.status?.value ?? index"
+                        v-model="item.dataView"
+                        :label="item.status?.text ?? ''"
+                        :entityTypeGuid="entityTypeGuid"
+                        :disabled="disabled" />
+    </div>
+</template>
+
+<script setup lang="ts">
+    import { PropType } from "vue";
+    import DataViewPicker from "@Obsidian/Controls/dataViewPicker.obs";
+    import { Guid } from "@Obsidian/Types";
+    import { StatusDataViewMappingBag } from "@Obsidian/ViewModels/Blocks/Administration/DataAutomationSettings/statusDataViewMappingBag";
+
+    defineProps({
+        modelValue: {
+            type: Array as PropType<StatusDataViewMappingBag[]>,
+            required: true
+        },
+
+        entityTypeGuid: {
+            type: String as PropType<Guid>,
+            required: true
+        },
+
+        /** Disables the data view pickers when the section is not enabled. */
+        disabled: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        }
+    });
+</script>

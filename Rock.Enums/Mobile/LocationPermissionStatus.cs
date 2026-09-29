@@ -1,4 +1,4 @@
-﻿namespace Rock.Enums.Mobile
+namespace Rock.Enums.Mobile
 {
     /// <summary>
     /// Represents the different levels of location permission that can be granted to an application.

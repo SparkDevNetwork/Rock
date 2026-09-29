@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -14,19 +14,19 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
+using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
 
 using Rock.Attribute;
+using Rock.Blocks.Types.Mobile.Connection;
+using Rock.Common.Mobile.Blocks.Reminders;
+using Rock.Common.Mobile.Blocks.Reminders.ReminderDashboard;
+using Rock.Common.Mobile.Blocks.Reminders.ReminderList;
 using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
-using System.Linq;
-using System.Collections.Generic;
-using Rock.Blocks.Types.Mobile.Connection;
-using Rock.Common.Mobile.Blocks.Reminders.ReminderDashboard;
-using Rock.Common.Mobile.Blocks.Reminders;
-using Rock.Common.Mobile.Blocks.Reminders.ReminderList;
-using System;
 
 namespace Rock.Blocks.Types.Mobile.Reminders
 {

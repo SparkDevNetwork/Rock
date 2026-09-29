@@ -25,6 +25,7 @@ using System.Web;
 using System.Web.Http;
 
 using ImageResizer;
+
 using Rock.Data;
 
 namespace Rock.Rest.Controllers

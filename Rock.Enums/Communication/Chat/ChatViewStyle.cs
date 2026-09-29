@@ -1,4 +1,4 @@
-﻿namespace Rock.Enums.Communication.Chat
+namespace Rock.Enums.Communication.Chat
 {
     /// <summary>
     /// Represents the visual style of the chat experience.

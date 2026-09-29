@@ -123,6 +123,23 @@ export const RockRuntimeWrapperElementCssClass = "rock-runtime-wrapper-element" 
 export const SmallEmptyClass = `${RockRuntimeClassCssClassPrefix}-small` as const;
 
 /**
+ * Runtime CSS class applied to section components nested deeply enough to risk being dropped by some mail clients.
+ */
+export const NestedSectionCssClass = `${RockRuntimeClassCssClassPrefix}-nested-section` as const;
+
+/*
+    09/10/26 - JMH
+
+    Sections nested inside other sections stack seven tables per level. iOS Apple Mail
+    drops content at a table depth somewhere between 14 (renders) and 28 (dropped), and
+    the exact threshold has not been bisected. Flagging from the second level means a
+    two-deep template (about 21 tables) is warned about rather than silently at risk.
+
+    Reason: Threshold is unproven; warn early and tune here after a depth bisect.
+*/
+export const NestedSectionWarningMinimumAncestorCount = 1 as const;
+
+/**
  * Decodes browser-encoded entities inside every Lava block (`{% %}`, `{{ }}`,
  * and `{[ ]}` shortcodes).
  *
@@ -820,14 +837,12 @@ export function ensureBodyWrapsEmailWrapper(document: Document): HTMLTableElemen
     wrapperTable.setAttribute("width", "100%");
     wrapperTable.setAttribute("role", "presentation");
     wrapperTable.style.minWidth = "100%";
-    wrapperTable.style.height = "100%"; // Forces full-height behavior
 
     const wrapperTbody = document.createElement("tbody");
     const wrapperRow = document.createElement("tr");
     const wrapperCell = document.createElement("td");
     wrapperCell.setAttribute("align", "center");
     wrapperCell.setAttribute("valign", "top"); // Prevent content from being squashed
-    wrapperCell.style.height = "100%"; // Ensures row stretches
 
     // Create `.email-row` (full width row)
 
@@ -3841,6 +3856,33 @@ export function getRowComponentHelper(): ComponentMigrationHelper & {
     return helper;
 }
 
+/**
+ * Finds the section components nested inside other sections deeply enough to be flagged.
+ *
+ * @param root The document or element to search.
+ * @param minimumAncestorCount The number of section ancestors a section must have to be included.
+ * @returns The offending section component elements, in document order.
+ */
+export function findNestedSectionElements(root: ParentNode, minimumAncestorCount: number = NestedSectionWarningMinimumAncestorCount): HTMLElement[] {
+    return Enumerable
+        .from(root.querySelectorAll(".component-section"))
+        .ofType<HTMLElement>((el): el is HTMLElement => isHTMLElement(el))
+        .where(section => countSectionAncestors(section) >= minimumAncestorCount)
+        .toArray();
+}
+
+function countSectionAncestors(section: Element): number {
+    let count = 0;
+    let ancestor = section.parentElement?.closest(".component-section");
+
+    while (ancestor) {
+        count++;
+        ancestor = ancestor.parentElement?.closest(".component-section");
+    }
+
+    return count;
+}
+
 type SectionComponentTypeName = Extract<EditorComponentTypeName,
     "section"
     | "one-column-section"
@@ -4164,7 +4206,7 @@ function addOrUpdateMetaTag(emailDocument: Document, name: string, content: stri
 }
 
 function createBodyGlobalAdapter(): BodyGlobalAdapter {
-    const globalVersions = ["v0", "v17.3-alpha", "v18.2", "v19.1", "v19.3"] as const;
+    const globalVersions = ["v0", "v17.3-alpha", "v18.2", "v19.1", "v19.3", "v20.1"] as const;
     type BodyGlobalVersion = (typeof globalVersions)[number];
 
     const attributeValues = {
@@ -4505,6 +4547,56 @@ function createBodyGlobalAdapter(): BodyGlobalAdapter {
                 emailDocument.querySelectorAll(`.component:not([data-component-background-color="true"]) .padding-wrapper-for-row`).forEach(element => {
                     setAttributePropertyValue(element, "bgcolor", bgcolorValue);
                 });
+            }
+        },
+
+        /*
+            - Removes the `height: 100%` declarations on `html`, `body`, and
+              `.email-wrapper` (both the `rock-styles` rules and the inline styles
+              on the wrapper table and its cell). Clients that honor them (e.g.
+              iOS Mail) stretch the wrapper past its content and expose the gray
+              body background as a scrollable blank area below short emails. The
+              mobile `min-height: 100vh` counterpart was removed in v19.1.
+              Existing emails are repaired on load: the version bump makes
+              migrateGlobalProps re-run this write.
+         */
+        "v20.1": {
+            version: "v20.1",
+
+            readGlobalProps(emailDocument: Document): BodyGlobalProps {
+                return adapters["v19.3"].readGlobalProps(emailDocument);
+            },
+
+            writeGlobalProps(emailDocument: Document, globalProps: BodyGlobalProps): void {
+                adapters["v19.3"].writeGlobalProps(emailDocument, globalProps);
+
+                addOrUpdateMetaTag(emailDocument, attributeValues.META_NAME_GLOBAL_BODY_VERSION, "v20.1");
+
+                const updatedRules: CSSRule[] = [];
+
+                const removeFullHeight = (rule: CSSStyleRule): void => {
+                    if (rule.style.getPropertyValue("height") === "100%") {
+                        rule.style.removeProperty("height");
+                        updatedRules.push(rule);
+                    }
+                };
+
+                // Remove `height: 100%` from the `rock-styles` rules.
+                findRockStyleRules(emailDocument, "html, body").forEach(removeFullHeight);
+                findRockStyleRules(emailDocument, `.${EmailWrapperCssClass}`).forEach(removeFullHeight);
+
+                synchronizeRulesToDom(updatedRules);
+
+                // Remove the same declaration inlined on the wrapper table and its cell.
+                const wrapperTable = emailDocument.querySelector(`table.${EmailWrapperCssClass}`);
+                if (isHTMLElement(wrapperTable) && wrapperTable.style.getPropertyValue("height") === "100%") {
+                    wrapperTable.style.removeProperty("height");
+                }
+
+                const wrapperCell = wrapperTable?.querySelector(":scope > tbody > tr > td");
+                if (isHTMLElement(wrapperCell) && wrapperCell.style.getPropertyValue("height") === "100%") {
+                    wrapperCell.style.removeProperty("height");
+                }
             }
         }
     };

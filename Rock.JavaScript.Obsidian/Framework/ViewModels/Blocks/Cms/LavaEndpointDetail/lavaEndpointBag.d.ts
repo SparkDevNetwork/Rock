@@ -40,6 +40,9 @@ export type LavaEndpointBag = {
     /** Gets or sets the code template. */
     codeTemplate?: string | null;
 
+    /** Gets or sets the content type the endpoint's response is returned as. */
+    contentType?: string | null;
+
     /** Gets or sets a description of the lava application. */
     description?: string | null;
 

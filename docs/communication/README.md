@@ -12,6 +12,6 @@ If you are new, start with [communication-overview.md](communication-overview.md
 | [Communication Entry List Selection](communication-entry-list-selection.md) | Sending to a Communication List from the simple Communication Entry block: the Enable Communication List Selection setting, Full-mode gating, the per-medium reachable count, and ListGroupId persistence. |
 | [Communication Domain Overview](communication-overview.md) | Three parallel constructs: bulk Communication, SystemCommunication for transactional, and CommunicationFlow for multi-step sequences with conversion tracking. |
 | [Communication Flows](communication-flows.md) | Multi-step orchestrator: enrollment, per-step Communication generation, conversion tracking, multi-channel sequences. |
-| [Email Editor and Sections](email-editor-and-sections.md) | The drag-and-drop section model, CommunicationTemplate vs EmailSection vs Snippet, Lava merge fields at send time. |
+| [Email Editor and Sections](email-editor-and-sections.md) | The drag-and-drop section model, CommunicationTemplate vs EmailSection vs Snippet, Lava merge fields at send time, versioned content migration, and the nested-section depth warning. |
 | [Push Notifications](push-notifications.md) | CommunicationType.Push, PersonalDevice token routing, fallback to email/SMS, mobile-shell registration. |
 | [SMS Pipeline](sms-pipeline.md) | Inbound SMS chain-of-responsibility, SmsAction components, opt-in/out compliance per SystemPhoneNumber. |

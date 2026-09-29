@@ -69,10 +69,11 @@ internal sealed partial class WorkflowBuilderSkill
         string name = null,
         [Description( "The key of the action component this step runs." )]
         string actionEntityTypeIdKey = null,
+        [Description( "Whether the action is marked complete when it succeeds. Defaults to true; an action left incomplete holds its activity open." )]
         bool? isActionCompletedOnSuccess = null,
         [Description( "Whether the whole activity finishes when this action succeeds." )]
         bool? isActivityCompletedOnSuccess = null,
-        [Description( "Whether the action counts as complete when its criteria are not met, rather than blocking the activity." )]
+        [Description( "Whether the action counts as complete when its criteria are not met, rather than blocking the activity. Defaults to true on a new action given criteria; pass false to make the activity wait for them." )]
         bool? isActionCompletedIfCriteriaUnmet = null,
         [Description( "The key of the workflow attribute to test before running this action. Omit for an action that always runs." )]
         string criteriaAttributeIdKey = null,
@@ -173,6 +174,26 @@ internal sealed partial class WorkflowBuilderSkill
 
             // Matches what the Rock UI does and what nearly every action needs.
             actionType.IsActionCompletedOnSuccess = true;
+
+            /*
+                9/16/26 - CLAUDE
+
+                Rock's UI leaves this false and this deliberately does not. Supplying criteria
+                means "run this step only when X", not "hold this activity open until X". With
+                the flag false a skipped action is never marked complete, so its activity never
+                completes and the workflow sits at Active forever with nothing reported.
+
+                Only applied when criteria are actually supplied, so an action without criteria
+                is unaffected, and an explicit value from the caller still wins because the
+                UpdateProperty call further down runs after this.
+
+                Reason: A conditional action left at the Rock default silently prevents the
+                workflow from ever completing.
+            */
+            if ( criteriaAttributeIdKey.IsNotNullOrWhiteSpace() )
+            {
+                actionType.IsActionCompletedIfCriteriaUnmet = true;
+            }
 
             actionTypeService.Add( actionType );
         }
@@ -330,6 +351,15 @@ internal sealed partial class WorkflowBuilderSkill
         {
             toolResult = toolResult
                 .WithInstructions( $"This is a user entry action and has no form yet, so it will show the person nothing. Call {nameof( AddOrUpdateWorkflowActionForm )} to build it." );
+        }
+
+        // Reported from here rather than left to GetWorkflowTypeConfiguration because
+        // the action just written is fully visible from here, so the caller does not
+        // have to read the whole tree back to find out. This is also what catches an
+        // update that attaches criteria after the create-time default has run.
+        foreach ( var warning in GetActionWarnings( result ) )
+        {
+            toolResult = toolResult.WithInstructions( warning );
         }
 
         return toolResult;

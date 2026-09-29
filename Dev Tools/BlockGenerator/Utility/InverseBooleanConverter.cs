@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Windows.Data;
 
 namespace BlockGenerator.Utility

@@ -20,6 +20,7 @@ using System.Linq;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Tests.Integration.TestData;
@@ -28,7 +29,6 @@ using Rock.Tests.Integration.TestFramework.Database;
 using Rock.Web.Cache;
 
 using static Rock.Tests.Integration.TestData.EventsDataManager;
-using Rock.Configuration;
 
 namespace Rock.Tests.Integration.Core.Model
 {

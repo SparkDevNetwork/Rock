@@ -1,0 +1,289 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <NotificationBox v-if="blockError" alertType="warning" v-html="blockError"></NotificationBox>
+
+    <NotificationBox v-if="errorMessage" alertType="danger" v-html="errorMessage"></NotificationBox>
+
+    <DetailBlock v-if="!blockError"
+                 v-model:mode="panelMode"
+                 :name="panelName"
+                 :labels="blockLabels"
+                 :showLabelsInHeader="true"
+                 :entityKey="entityKey"
+                 entityTypeName="Sign-Up Project"
+                 :isAuditHidden="panelMode === DetailPanelMode.Add"
+                 :isDeleteVisible="canEdit && panelMode !== DetailPanelMode.Add"
+                 :isEditVisible="canEdit"
+                 :isFollowVisible="panelMode !== DetailPanelMode.Add"
+                 :isSecurityHidden="panelMode === DetailPanelMode.Add || !viewBag?.canAdministrate"
+                 :additionalDeleteMessage="deleteMessage"
+                 @cancelEdit="onCancelEdit"
+                 @delete="onDelete"
+                 @edit="onEdit"
+                 @save="onSave">
+        <template #view>
+            <ViewPanel :modelValue="viewBag"
+                       :options="options"
+                       :navigationUrls="config.navigationUrls"
+                       v-model:opportunities="opportunities" />
+        </template>
+
+        <template #edit>
+            <EditPanel v-model="editBag"
+                       :options="options"
+                       :groupTypeOptions="groupTypeOptions"
+                       @propertyChanged="baseBlock.onPropertyChanged" />
+        </template>
+    </DetailBlock>
+</template>
+
+<script setup lang="ts">
+    import { computed, ref, watch } from "vue";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import { DetailPanelMode } from "@Obsidian/Enums/Controls/detailPanelMode";
+    import DetailBlock from "@Obsidian/Templates/detailBlock";
+    import { PanelAction } from "@Obsidian/Types/Controls/panelAction";
+    import { onConfigurationValuesChanged, useConfigurationValues, useEntityDetailBlock, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
+    import { DetailBlockBox } from "@Obsidian/ViewModels/Blocks/detailBlockBox";
+    import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
+    import { SignUpOpportunityBag } from "@Obsidian/ViewModels/Blocks/Engagement/SignUp/SignUpProjectDetail/signUpOpportunityBag";
+    import { SignUpProjectDetailBag } from "@Obsidian/ViewModels/Blocks/Engagement/SignUp/SignUpProjectDetail/signUpProjectDetailBag";
+    import { SignUpProjectDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Engagement/SignUp/SignUpProjectDetail/signUpProjectDetailOptionsBag";
+    import { SignUpProjectGroupTypeOptionsBag } from "@Obsidian/ViewModels/Blocks/Engagement/SignUp/SignUpProjectDetail/signUpProjectGroupTypeOptionsBag";
+    import EditPanel from "./SignUpProjectDetail/editPanel.partial.obs";
+    import ViewPanel from "./SignUpProjectDetail/viewPanel.partial.obs";
+
+    const config = useConfigurationValues<DetailBlockBox<SignUpProjectDetailBag, SignUpProjectDetailOptionsBag>>();
+    const invokeBlockAction = useInvokeBlockAction();
+
+    onConfigurationValuesChanged(useReloadBlock());
+
+    // #region Values
+
+    const blockError = ref("");
+    const errorMessage = ref("");
+
+    const viewBag = ref(config.entity);
+    const editBag = ref<ValidPropertiesBox<SignUpProjectDetailBag>>({
+        bag: {} as SignUpProjectDetailBag
+    });
+
+    const opportunities = ref<SignUpOpportunityBag[]>(config.entity?.opportunities ?? []);
+
+    const groupTypeOptions = ref<SignUpProjectGroupTypeOptionsBag>(config.options?.groupTypeOptions ?? {} as SignUpProjectGroupTypeOptionsBag);
+    let loadedOptionsGroupTypeId: number | null = config.entity?.groupTypeId ?? null;
+
+    const panelMode = ref<DetailPanelMode>(DetailPanelMode.View);
+
+    const baseBlock = useEntityDetailBlock({
+        blockConfig: config,
+        entity: editBag
+    });
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    const options = computed((): SignUpProjectDetailOptionsBag => config.options ?? {} as SignUpProjectDetailOptionsBag);
+
+    const panelName = computed((): string => viewBag.value?.name ?? "");
+
+    const entityKey = computed((): string => viewBag.value?.idKey ?? "");
+
+    const canEdit = computed((): boolean => viewBag.value?.canEdit === true);
+
+    /** The project type, campus and inactive labels shown next to the title in view mode. */
+    const blockLabels = computed((): PanelAction[] => {
+        const bag = viewBag.value;
+        if (!bag || panelMode.value === DetailPanelMode.Add) {
+            return [];
+        }
+
+        const labels: PanelAction[] = [];
+
+        if (bag.projectTypeName) {
+            labels.push({ title: bag.projectTypeName, type: "default" });
+        }
+
+        if (bag.campusName) {
+            labels.push({ title: bag.campusName, type: "campus" });
+        }
+
+        if (!bag.isActive) {
+            labels.push({ title: "Inactive", type: "danger" });
+        }
+
+        return labels;
+    });
+
+    /**
+     * The additional text of the delete confirmation, describing the
+     * opportunities and participants that will be removed with the project.
+     */
+    const deleteMessage = computed((): string => {
+        const opportunityCount = opportunities.value.length;
+        if (opportunityCount === 0) {
+            return "";
+        }
+
+        const participantCount = opportunities.value.reduce((sum, o) => sum + (o.slotsFilled ?? 0), 0);
+
+        let message = `This Project has ${opportunityCount.toLocaleString()} ${opportunityCount > 1 ? "opportunities" : "opportunity"}`;
+
+        if (participantCount > 0) {
+            message += ` and ${participantCount.toLocaleString()} ${participantCount > 1 ? "participants" : "participant"}`;
+        }
+
+        message += `. Deleting it will also remove all opportunities${participantCount > 0 ? " and participants" : ""}.`;
+
+        return message;
+    });
+
+    // #endregion Computed Values
+
+    // #region Event Handlers
+
+    /**
+     * Cancel from edit mode. An existing project returns to view mode and a
+     * project being added navigates back to its parent group.
+     */
+    async function onCancelEdit(): Promise<boolean | string> {
+        if (editBag.value.bag?.idKey) {
+            return true;
+        }
+
+        return options.value.addModeCancelUrl || false;
+    }
+
+    /**
+     * Enters edit mode by fetching the edit bag of the project.
+     */
+    async function onEdit(): Promise<boolean> {
+        const result = await invokeBlockAction<ValidPropertiesBox<SignUpProjectDetailBag>>("Edit", {
+            key: viewBag.value?.idKey
+        });
+
+        if (result.isSuccess && result.data?.bag) {
+            editBag.value = {
+                bag: result.data.bag,
+                validProperties: result.data.validProperties ?? Object.keys(result.data.bag)
+            };
+
+            return true;
+        }
+
+        errorMessage.value = result.errorMessage ?? "Unable to enter edit mode.";
+        return false;
+    }
+
+    /**
+     * Saves the project. Updating an existing project returns the refreshed
+     * view bag; adding a project returns the URL of the new project.
+     */
+    async function onSave(): Promise<boolean | string> {
+        errorMessage.value = "";
+
+        const result = await invokeBlockAction<ValidPropertiesBox<SignUpProjectDetailBag> | string>("Save", {
+            box: editBag.value
+        });
+
+        if (result.isSuccess && result.data) {
+            if (result.statusCode === 200 && typeof result.data === "object") {
+                viewBag.value = result.data.bag;
+                opportunities.value = result.data.bag?.opportunities ?? [];
+
+                return true;
+            }
+            else if (result.statusCode === 201 && typeof result.data === "string") {
+                return result.data;
+            }
+        }
+
+        errorMessage.value = result.errorMessage ?? "Unknown error while trying to save the sign-up project.";
+        return false;
+    }
+
+    /**
+     * Deletes the project and returns the URL of its parent group.
+     */
+    async function onDelete(): Promise<false | string> {
+        errorMessage.value = "";
+
+        const result = await invokeBlockAction<string>("Delete", {
+            key: viewBag.value?.idKey
+        });
+
+        if (result.isSuccess && result.data) {
+            return result.data;
+        }
+
+        errorMessage.value = result.errorMessage ?? "Unknown error while trying to delete the sign-up project.";
+        return false;
+    }
+
+    // #endregion Event Handlers
+
+    // #region Watchers
+
+    /**
+     * Fetches the group type options whenever the group type of a project
+     * being added changes. Concurrent requests are resolved by a version
+     * counter so the options always match the latest selection.
+     */
+    let groupTypeRequestVersion = 0;
+    watch(() => editBag.value.bag?.groupTypeId, async (newId) => {
+        const version = ++groupTypeRequestVersion;
+
+        if (newId === loadedOptionsGroupTypeId) {
+            return;
+        }
+
+        if (!newId || newId <= 0) {
+            groupTypeOptions.value = {} as SignUpProjectGroupTypeOptionsBag;
+            loadedOptionsGroupTypeId = newId ?? null;
+            return;
+        }
+
+        const result = await invokeBlockAction<SignUpProjectGroupTypeOptionsBag>("GetGroupTypeOptions", {
+            groupTypeId: newId
+        });
+
+        if (version !== groupTypeRequestVersion) {
+            return;
+        }
+
+        if (result.isSuccess && result.data) {
+            groupTypeOptions.value = result.data;
+            loadedOptionsGroupTypeId = newId;
+        }
+        else {
+            errorMessage.value = result.errorMessage ?? "Unable to fetch the options for this Group Type.";
+
+            // Keep the drop-down on the last type whose options actually loaded.
+            const bag = editBag.value.bag;
+            if (bag && bag.groupTypeId !== loadedOptionsGroupTypeId) {
+                editBag.value = {
+                    ...editBag.value,
+                    bag: {
+                        ...bag,
+                        groupTypeId: loadedOptionsGroupTypeId
+                    }
+                };
+            }
+        }
+    });
+
+    // #endregion Watchers
+
+    // Handle any initial error conditions or the need to go into edit mode.
+    if (config.errorMessage) {
+        blockError.value = config.errorMessage;
+    }
+    else if (!config.entity) {
+        blockError.value = "The specified sign-up project could not be viewed.";
+    }
+    else if (!config.entity.idKey) {
+        editBag.value = { bag: config.entity };
+        panelMode.value = DetailPanelMode.Add;
+    }
+</script>

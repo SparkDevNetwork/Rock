@@ -1,0 +1,31 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div>
+        <div v-for="(item, index) in modelValue" :key="item.guid ?? index" class="row margin-b-sm">
+            <div class="col-md-5 col-sm-6 col-xs-8 padding-t-sm">
+                <CheckBox v-model="item.isInteractionTypeEnabled" label="" :text="item.name ?? ''" />
+            </div>
+            <div class="col-md-7 col-sm-6 col-xs-4">
+                <NumberBox v-model="item.lastInteractionDays" inputGroupClasses="input-width-md">
+                    <template #inputGroupAppend>
+                        <span class="input-group-addon">days</span>
+                    </template>
+                </NumberBox>
+            </div>
+        </div>
+    </div>
+</template>
+
+<script setup lang="ts">
+    import { PropType } from "vue";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import NumberBox from "@Obsidian/Controls/numberBox.obs";
+    import { DataAutomationInteractionItemBag } from "@Obsidian/ViewModels/Blocks/Administration/DataAutomationSettings/dataAutomationInteractionItemBag";
+
+    defineProps({
+        modelValue: {
+            type: Array as PropType<DataAutomationInteractionItemBag[]>,
+            required: true
+        }
+    });
+</script>

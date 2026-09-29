@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -299,6 +299,11 @@ namespace Rock.Blocks.Group
         #region Fields
 
         /// <summary>
+        /// The message shown in place of the group when it does not exist or has been archived.
+        /// </summary>
+        private static readonly string GroupNotFoundOrArchivedMessage = "That group does not exist or it has been archived.";
+
+        /// <summary>
         /// Per-request memo for the active <see cref="GroupTypeCache"/>.
         /// </summary>
         private GroupTypeCache _cachedGroupType;
@@ -430,6 +435,22 @@ namespace Rock.Blocks.Group
             if ( entity == null )
             {
                 box.ErrorMessage = $"The {Model.Group.FriendlyTypeName} was not found.";
+                return;
+            }
+
+            if ( entity.IsArchived )
+            {
+                /*
+                    9/18/26 - MSE
+
+                    The base GetInitialEntity() uses an unfiltered lookup, so an archived group
+                    loads and would render with an Archived label and allow edits. The WebForms
+                    block queried with the archived filter applied, which treated an archived
+                    group the same as a missing one and showed a warning instead. Match that.
+
+                    Reason: Group Detail shows a warning rather than an archived group. (Fixes #7047)
+                */
+                box.ErrorMessage = GroupNotFoundOrArchivedMessage;
                 return;
             }
 
@@ -675,7 +696,7 @@ namespace Rock.Blocks.Group
                 Administrator = BuildAdministratorRef( entity.GroupAdministratorPersonAlias, groupType ),
                 AdministratorLabel = BuildAdministratorLabel( groupType ),
                 ParentGroup = BuildParentGroupRef( entity.ParentGroup ),
-                ScheduleFriendlyText = entity.Schedule?.FriendlyScheduleText,
+                ScheduleFriendlyText = entity.Schedule?.FriendlyScheduleText.SanitizeHtml( strict: false ),
                 GroupCapacity = entity.GroupCapacity
             };
         }
@@ -810,6 +831,13 @@ namespace Rock.Blocks.Group
             if ( entity == null )
             {
                 error = ActionBadRequest( $"{Model.Group.FriendlyTypeName} not found." );
+                return false;
+            }
+
+            // The block presents an archived group as not found, so do not allow it to be edited either.
+            if ( entity.IsArchived )
+            {
+                error = ActionBadRequest( GroupNotFoundOrArchivedMessage );
                 return false;
             }
 
@@ -3905,23 +3933,37 @@ namespace Rock.Blocks.Group
         /// <summary>
         /// Builds a single <see cref="GroupLocationStateBag"/> from an
         /// existing <see cref="GroupLocation"/>. The selected-location
-        /// mode is rebuilt from the underlying Location's geo state and
-        /// the GroupMember alias presence.
+        /// mode is rebuilt from the GroupMember alias presence and the
+        /// underlying Location's Name, address and geo state.
         /// </summary>
         private GroupLocationStateBag BuildGroupLocationStateBag( GroupLocation gl )
         {
             var location = gl.Location;
 
+            /*
+                9/22/26 - MSE
+
+                Named and Address are checked before Point and Polygon because
+                named and address Locations are routinely geocoded. Checking geo
+                first sent them to the LocationPicker as WKT, which the picker
+                discards when the group type does not allow that geo mode, so the
+                Location field opened empty on edit. This order matches the
+                WebForms LocationPicker.GetBestPickerModeForLocation.
+
+                Reason: Keep the saved Location populated when editing a group location.
+            */
+
             // Mode classification, in priority order:
             //   1. GroupMember (the row was added via the Member tab; the
             //      PersonAlias FK is the discriminator).
-            //   2. Polygon / Point (geo data, unambiguous).
-            //   3. Named (the Location has a Name - the user picked a
+            //   2. Named (the Location has a Name - the user picked a
             //      pre-existing Location tree node). Named takes priority
             //      over Address because Named Locations can carry an
             //      attached address (e.g., a Building room with a street),
             //      and the user's original choice was the Name.
-            //   4. Address (no Name; user typed an address).
+            //   3. Address (no Name; user typed an address).
+            //   4. Point / Polygon (no Name or address; user drew a pin or
+            //      a geo-fence).
             //   5. None (defensive fallback for rows with a null Location;
             //      should not happen in practice but keeps the hydration
             //      total).
@@ -3935,16 +3977,6 @@ namespace Rock.Blocks.Group
                     Value = location.Guid.ToString(),
                     Text = location.ToString( false )
                 };
-            }
-            else if ( location?.GeoFence != null )
-            {
-                mode = GroupLocationPickerMode.Polygon;
-                selectedLocation = location.GeoFence.AsText();
-            }
-            else if ( location?.GeoPoint != null )
-            {
-                mode = GroupLocationPickerMode.Point;
-                selectedLocation = location.GeoPoint.AsText();
             }
             else if ( location != null && location.Name.IsNotNullOrWhiteSpace() )
             {
@@ -3968,6 +4000,16 @@ namespace Rock.Blocks.Group
                     PostalCode = location.PostalCode,
                     Country = location.Country
                 };
+            }
+            else if ( location?.GeoPoint != null )
+            {
+                mode = GroupLocationPickerMode.Point;
+                selectedLocation = location.GeoPoint.AsText();
+            }
+            else if ( location?.GeoFence != null )
+            {
+                mode = GroupLocationPickerMode.Polygon;
+                selectedLocation = location.GeoFence.AsText();
             }
             else
             {
@@ -4128,8 +4170,13 @@ namespace Rock.Blocks.Group
         /// <see cref="GroupLocationStateBag"/> to a tracked
         /// <see cref="Location"/>, routing by
         /// <see cref="GroupLocationStateBag.SelectedLocationMode"/>.
+        /// Returns <paramref name="currentLocation"/> when the payload still
+        /// describes it.
         /// </summary>
-        private Location ResolveLocationFromBag( GroupLocationStateBag bag, LocationService locationService )
+        /// <param name="bag">The group location bag.</param>
+        /// <param name="locationService">The location service.</param>
+        /// <param name="currentLocation">The Location currently attached to the row, or <c>null</c> for a new row.</param>
+        private Location ResolveLocationFromBag( GroupLocationStateBag bag, LocationService locationService, Location currentLocation )
         {
             if ( bag?.SelectedLocation == null )
             {
@@ -4163,6 +4210,19 @@ namespace Rock.Blocks.Group
                         return null;
                     }
 
+                    var isCurrentAddress = currentLocation != null
+                        && ( address.Street1 ?? string.Empty ) == ( currentLocation.Street1 ?? string.Empty )
+                        && ( address.Street2 ?? string.Empty ) == ( currentLocation.Street2 ?? string.Empty )
+                        && ( address.City ?? string.Empty ) == ( currentLocation.City ?? string.Empty )
+                        && ( address.State ?? string.Empty ) == ( currentLocation.State ?? string.Empty )
+                        && ( address.PostalCode ?? string.Empty ) == ( currentLocation.PostalCode ?? string.Empty )
+                        && ( address.Country ?? string.Empty ) == ( currentLocation.Country ?? string.Empty );
+
+                    if ( isCurrentAddress )
+                    {
+                        return currentLocation;
+                    }
+
                     return locationService.Get(
                         address.Street1,
                         address.Street2,
@@ -4180,6 +4240,12 @@ namespace Rock.Blocks.Group
                     {
                         return null;
                     }
+
+                    if ( wkt == currentLocation?.GeoPoint?.AsText() )
+                    {
+                        return currentLocation;
+                    }
+
                     System.Data.Entity.Spatial.DbGeography point;
                     try
                     {
@@ -4202,6 +4268,12 @@ namespace Rock.Blocks.Group
                     {
                         return null;
                     }
+
+                    if ( wkt == currentLocation?.GeoFence?.AsText() )
+                    {
+                        return currentLocation;
+                    }
+
                     System.Data.Entity.Spatial.DbGeography fence;
                     try
                     {
@@ -4266,6 +4338,7 @@ namespace Rock.Blocks.Group
             // so we can diff against the incoming bags. The entity's
             // GroupLocations navigation may or may not be hydrated.
             var existingLocations = groupLocationService.Queryable()
+                .Include( gl => gl.Location )
                 .Include( gl => gl.Schedules )
                 .Include( gl => gl.GroupLocationScheduleConfigs )
                 .Where( gl => gl.GroupId == entity.Id )
@@ -4328,10 +4401,22 @@ namespace Rock.Blocks.Group
                     existingLocations.Add( existing );
                 }
 
+                /*
+                    9/22/26 - MSE
+
+                    Every row is sent back on every group save, so an unchanged
+                    row must keep its current Location. Looking it up again by
+                    value could return a different Location (GetByGeoPoint takes
+                    the highest Id sharing the coordinates), which re-pointed the
+                    row and deleted its scheduling assignments below.
+
+                    Reason: Do not re-point unchanged group locations on save.
+                */
+
                 // Resolve the LocationPicker bag. Skip the GroupLocation
                 // entirely when the resolver returns null: the picker has
                 // no valid selection and there is nothing to persist.
-                var resolvedLocation = ResolveLocationFromBag( bag, locationService );
+                var resolvedLocation = ResolveLocationFromBag( bag, locationService, existing.Location );
                 if ( resolvedLocation == null )
                 {
                     if ( isNewLocation )
@@ -4705,11 +4790,12 @@ namespace Rock.Blocks.Group
 
             // The first attached schedule's friendly text. Multi-schedule
             // locations show only the first; the editing surface manages
-            // the full schedule list.
+            // the full schedule list. The text can contain HTML (a list of
+            // specific dates) and is rendered with v-html, so sanitize it.
             var scheduleText = gl.Schedules
                 .OrderBy( s => s.Order )
                 .ThenBy( s => s.Id )
-                .Select( s => s.FriendlyScheduleText )
+                .Select( s => s.FriendlyScheduleText.SanitizeHtml( strict: false ) )
                 .FirstOrDefault( t => t.IsNotNullOrWhiteSpace() );
 
             return new GroupMeetingLocationBag

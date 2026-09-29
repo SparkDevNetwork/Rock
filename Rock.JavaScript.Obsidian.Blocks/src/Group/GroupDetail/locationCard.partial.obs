@@ -12,7 +12,7 @@
         <div v-if="hasBody" class="location-card-body">
             <div v-if="polygonLabel" class="font-italic text-interface-medium">{{ polygonLabel }}</div>
             <div v-if="modelValue.address" class="location-card-address">{{ modelValue.address }}</div>
-            <div v-if="modelValue.scheduleText" class="location-card-schedule">{{ modelValue.scheduleText }}</div>
+            <div v-if="modelValue.scheduleText" class="location-card-schedule" v-html="modelValue.scheduleText"></div>
         </div>
     </component>
 </template>

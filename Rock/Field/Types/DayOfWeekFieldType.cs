@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -62,6 +62,21 @@ namespace Rock.Field.Types
         #endregion
 
         #region Filter Control
+
+        /// <inheritdoc/>
+        public override string GetPrivateFilterValue( ComparisonValue publicValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            if ( !publicValue.ComparisonType.HasValue )
+            {
+                publicValue = new ComparisonValue
+                {
+                    ComparisonType = Rock.Model.ComparisonType.EqualTo,
+                    Value = publicValue.Value
+                };
+            }
+
+            return base.GetPrivateFilterValue( publicValue, privateConfigurationValues );
+        }
 
         /// <summary>
         /// Converts the type of the value to property.

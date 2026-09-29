@@ -1,0 +1,48 @@
+// <copyright>
+// Copyright by the Spark Development Network
+//
+// Licensed under the Rock Community License (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.rockrms.com/license
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// </copyright>
+//
+
+using Rock.ViewModels.Utility;
+
+namespace Rock.ViewModels.Blocks.Administration.DataAutomationSettings
+{
+    /// <summary>
+    /// Represents a single "ignore campus change" rule that suppresses an
+    /// automated campus update from one campus to another, optionally scoped to
+    /// a specific criteria (giving or attendance).
+    /// </summary>
+    public class IgnoreCampusChangeBag
+    {
+        /// <summary>
+        /// Gets or sets the campus the update would be changing from. The value
+        /// is the campus unique identifier.
+        /// </summary>
+        public ListItemBag FromCampus { get; set; }
+
+        /// <summary>
+        /// Gets or sets the campus the update would be changing to. The value is
+        /// the campus unique identifier.
+        /// </summary>
+        public ListItemBag ToCampus { get; set; }
+
+        /// <summary>
+        /// Gets or sets the criteria the rule is based on. An empty value means
+        /// "either", otherwise it is the integer value of the campus criteria
+        /// (1 = giving, 2 = attendance).
+        /// </summary>
+        public string BasedOn { get; set; }
+    }
+}
