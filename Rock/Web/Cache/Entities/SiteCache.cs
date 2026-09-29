@@ -41,6 +41,15 @@ namespace Rock.Web.Cache
 
         #endregion
 
+        #region Private Fields
+
+        /// <summary>
+        /// The site's Allowed Redirect Domain(s), parsed from the attribute value on first use.
+        /// </summary>
+        private readonly Lazy<List<string>> _redirectDomains;
+
+        #endregion
+
         #region Properties
 
         /// <summary>
@@ -539,6 +548,17 @@ namespace Rock.Web.Cache
 
         #endregion
 
+        /// <summary>
+        /// Creates a new instance of <see cref="SiteCache"/>.
+        /// </summary>
+        public SiteCache()
+        {
+            // Value List entries are pipe-delimited.
+            _redirectDomains = new Lazy<List<string>>( () => GetAttributeValue( "AllowedRedirectDomains" )
+                .SplitDelimitedValues( "|", StringSplitOptions.RemoveEmptyEntries )
+                .ToList() );
+        }
+
         #region Public Methods
 
         /// <summary>
@@ -773,6 +793,27 @@ namespace Rock.Web.Cache
             context.ApplicationInstance.CompleteRequest();
         }
 
+        /// <summary>
+        /// Determines whether the browser may be redirected to <paramref name="redirectUrl"/>. Relative URLs are
+        /// allowed, as are the current request's host, the organization's website, the public application root and
+        /// this site's Allowed Redirect Domains.
+        /// </summary>
+        /// <param name="redirectUrl">The URL the browser would be redirected to.</param>
+        /// <param name="requestUri">The URI of the current request.</param>
+        /// <returns><c>true</c> if the browser may be redirected to <paramref name="redirectUrl"/>; otherwise, <c>false</c>.</returns>
+        public bool IsSafeRedirectUrl( string redirectUrl, Uri requestUri )
+        {
+            var globalAttributes = GlobalAttributesCache.Get();
+
+            return IsSafeRedirectUrl(
+                redirectUrl,
+                requestUri,
+                globalAttributes.GetValue( "OrganizationWebsite" ),
+                globalAttributes.GetValue( "PublicApplicationRoot" ),
+                _redirectDomains.Value
+            );
+        }
+
         #endregion
 
         #region Static Methods
@@ -817,6 +858,32 @@ namespace Rock.Web.Cache
         {
             return All()
                 .Where( site => site.IsActive );
+        }
+
+        /// <summary>
+        /// Determines whether the browser may be redirected to <paramref name="redirectUrl"/>. Relative URLs are
+        /// allowed, as are the current request's host, the organization's website, the public application root and
+        /// the allowed redirect domains.
+        /// </summary>
+        /// <param name="redirectUrl">The URL the browser would be redirected to.</param>
+        /// <param name="requestUri">The URI of the current request.</param>
+        /// <param name="organizationWebsite">The OrganizationWebsite global attribute value.</param>
+        /// <param name="publicApplicationRoot">The PublicApplicationRoot global attribute value.</param>
+        /// <param name="redirectDomains">The site's Allowed Redirect Domain(s).</param>
+        /// <returns><c>true</c> if the browser may be redirected to <paramref name="redirectUrl"/>; otherwise, <c>false</c>.</returns>
+        /// <remarks>This method is internal so that it can be used for unit testing.</remarks>
+        internal static bool IsSafeRedirectUrl( string redirectUrl, Uri requestUri, string organizationWebsite, string publicApplicationRoot, IEnumerable<string> redirectDomains )
+        {
+            var allowedHosts = new List<string>
+            {
+                requestUri?.Host,
+                organizationWebsite,
+                publicApplicationRoot
+            };
+
+            allowedHosts.AddRange( redirectDomains );
+
+            return redirectUrl.IsSafeRedirectUrl( allowedHosts );
         }
 
         #endregion
