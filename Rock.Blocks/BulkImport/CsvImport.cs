@@ -204,9 +204,49 @@ namespace Rock.Blocks.BulkImport
             return GetSlingshotPhysicalRootFolder().TrimEnd( '/' ).TrimEnd( '\\' ) + "/" + fileName.TrimStart( '/' ).TrimStart( '\\' );
         }
 
+        /// <summary>
+        /// Gets the physical path of an uploaded CSV file from the file name
+        /// posted back by the browser. The uploader only ever provides a plain
+        /// file name, so anything containing directory parts or resolving
+        /// outside of the upload folder is rejected.
+        /// </summary>
+        /// <param name="fileName">The name of the uploaded file.</param>
+        /// <returns>The physical path to the file, or <c>null</c> if the file name is not valid.</returns>
+        private string GetUploadedCsvFilePath( string fileName )
+        {
+            if ( fileName.IsNullOrWhiteSpace() )
+            {
+                return null;
+            }
+
+            // The invalid file name characters include the directory separators
+            // and the volume separator, so this rejects any directory parts.
+            var isFileNameOnly = fileName.IndexOfAny( Path.GetInvalidFileNameChars() ) < 0;
+
+            if ( !isFileNameOnly )
+            {
+                return null;
+            }
+
+            // This also catches names such as ".." that resolve outside of the folder.
+            var filePath = GetCsvFilePath( fileName );
+
+            if ( !Rock.Utility.FileUtilities.IsPathWithinFolder( filePath, GetSlingshotPhysicalRootFolder() ) )
+            {
+                return null;
+            }
+
+            return filePath;
+        }
+
         private void DeleteCsvFile( string fileName )
         {
-            var fullPath = GetCsvFilePath( fileName );
+            var fullPath = GetUploadedCsvFilePath( fileName );
+            if ( fullPath == null )
+            {
+                return;
+            }
+
             try
             {
                 if ( File.Exists( fullPath ) )
@@ -270,9 +310,9 @@ namespace Rock.Blocks.BulkImport
                 return ActionBadRequest( "Please select a valid CSV file." );
             }
 
-            var csvFileName = GetCsvFilePath( options.FileName );
+            var csvFileName = GetUploadedCsvFilePath( options.FileName );
 
-            if ( !File.Exists( csvFileName ) )
+            if ( csvFileName == null || !File.Exists( csvFileName ) )
             {
                 return ActionBadRequest( "CSV file not found." );
             }
@@ -360,7 +400,13 @@ namespace Rock.Blocks.BulkImport
             const string defaultDataType = "People";
             var columnMappings = options.ColumnMappings;
             var bulkImportType = options.AllowUpdatingExisting ? BulkImporter.ImportUpdateType.AlwaysUpdate : BulkImporter.ImportUpdateType.AddOnly;
-            var personCSVFileName = GetCsvFilePath( options.FileName );
+            var personCSVFileName = GetUploadedCsvFilePath( options.FileName );
+
+            if ( personCSVFileName == null || !File.Exists( personCSVFileName ) )
+            {
+                return ActionBadRequest( "CSV file not found." );
+            }
+
             string sourceDescription = options.SourceDescription;
 
             var taskChannelName = $"BulkImport:{personCSVFileName}";

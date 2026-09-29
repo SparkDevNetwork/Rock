@@ -145,6 +145,18 @@ namespace Rock.Blocks.Core
                     ( c.EntityTypeQualifierValue == null || validEntityTypeIds.Contains( c.EntityTypeQualifierValue ) ) );
         }
 
+        /// <summary>
+        /// Determines whether the category is one of the attribute categories
+        /// this block lists. Block actions use this so a tampered key can not
+        /// be used to edit or delete a category of some other type.
+        /// </summary>
+        /// <param name="category">The category to check.</param>
+        /// <returns><c>true</c> if the category is shown by this block; otherwise <c>false</c>.</returns>
+        private bool IsListedAttributeCategory( Category category )
+        {
+            return GetBaseQueryable( RockContext ).Any( c => c.Id == category.Id );
+        }
+
         /// <inheritdoc/>
         protected override IQueryable<Category> GetListQueryable( RockContext rockContext )
         {
@@ -323,7 +335,7 @@ namespace Rock.Blocks.Core
                 var entityService = new CategoryService( RockContext );
                 category = entityService.Get( key, !PageCache.Layout.Site.DisablePredictableIds );
 
-                if ( category == null )
+                if ( category == null || !IsListedAttributeCategory( category ) )
                 {
                     return ActionBadRequest( "Category not found." );
                 }
@@ -372,7 +384,7 @@ namespace Rock.Blocks.Core
             {
                 category = entityService.Get( bag.IdKey, !PageCache.Layout.Site.DisablePredictableIds );
 
-                if ( category == null )
+                if ( category == null || !IsListedAttributeCategory( category ) )
                 {
                     return ActionBadRequest( "Category not found." );
                 }
@@ -417,7 +429,7 @@ namespace Rock.Blocks.Core
             var entityService = new CategoryService( RockContext );
             var category = entityService.Get( key, !PageCache.Layout.Site.DisablePredictableIds );
 
-            if ( category == null )
+            if ( category == null || !IsListedAttributeCategory( category ) )
             {
                 return ActionBadRequest( "Category not found." );
             }

@@ -496,6 +496,16 @@ namespace Rock.Blocks.Finance
                 return false;
             }
 
+            // Existing requests inherit security from their benevolence type,
+            // so apply the same VIEW check that the initial page load uses.
+            // Otherwise a tampered key could read or modify a request the
+            // person is not allowed to see.
+            if ( entity.Id != 0 && !entity.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson ) )
+            {
+                error = ActionBadRequest( $"Not authorized to edit ${BenevolenceRequest.FriendlyTypeName}." );
+                return false;
+            }
+
             return true;
         }
 
@@ -1823,10 +1833,28 @@ namespace Rock.Blocks.Finance
                 return actionError;
             }
 
+            var originalBenevolenceTypeId = entity.BenevolenceTypeId;
+
             // Update the entity instance from the information in the bag.
             if ( !UpdateEntityFromBox( entity, box ) )
             {
                 return ActionBadRequest( "Invalid data." );
+            }
+
+            // The edit panel only offers active benevolence types, so a
+            // changed type must be one of those. An unchanged type is left
+            // alone so existing requests on inactive types can still be saved.
+            var isBenevolenceTypeChanged = entity.BenevolenceTypeId != originalBenevolenceTypeId;
+            if ( isBenevolenceTypeChanged )
+            {
+                var isBenevolenceTypeOffered = new BenevolenceTypeService( RockContext )
+                    .Queryable()
+                    .Any( type => type.Id == entity.BenevolenceTypeId && type.IsActive );
+
+                if ( !isBenevolenceTypeOffered )
+                {
+                    return ActionBadRequest( "Invalid benevolence type." );
+                }
             }
 
             // Ensure everything is valid before saving.

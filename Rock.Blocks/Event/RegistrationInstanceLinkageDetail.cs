@@ -315,17 +315,28 @@ namespace Rock.Blocks.Event
             var bag = box.Entity;
             if ( bag != null )
             {
+                var instance = RegistrationInstanceService.Get( PageParameter( PageParameterKey.RegistrationInstanceId ) );
                 var linkageId = bag.IdKey;
                 if ( !string.IsNullOrEmpty( linkageId ) )
                 {
                     linkage = service.Get( linkageId );
                 }
 
+                // This block only manages linkages of the registration instance
+                // the page is for, so do not allow an existing linkage from a
+                // different instance to be edited through a tampered IdKey.
+                var isLinkageFromOtherInstance = linkage != null
+                    && ( instance == null || linkage.RegistrationInstanceId != instance.Id );
+
+                if ( isLinkageFromOtherInstance )
+                {
+                    return ActionBadRequest( "Invalid linkage." );
+                }
+
                 if ( linkage == null )
                 {
                     linkage = new EventItemOccurrenceGroupMap();
 
-                    var instance = RegistrationInstanceService.Get( PageParameter( PageParameterKey.RegistrationInstanceId ) );
                     if ( instance != null )
                     {
                         linkage.RegistrationInstanceId = instance.Id;
