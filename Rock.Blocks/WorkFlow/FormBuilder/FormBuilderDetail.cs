@@ -726,6 +726,13 @@ namespace Rock.Blocks.Workflow.FormBuilder
                 return ActionBadRequest( "Specified workflow type is not a form builder." );
             }
 
+            // Make sure the person is allowed to edit this form, the same way
+            // the initialization code checks before sending the form.
+            if ( workflowType.Category?.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) != true )
+            {
+                return ActionBadRequest( "You are not authorized to edit this form." );
+            }
+
             // Find the action type that represents the form.
             var actionForm = workflowType.ActivityTypes
                 .SelectMany( a => a.ActionTypes )

@@ -327,6 +327,11 @@ namespace Rock.Blocks.Core
         [BlockAction]
         public BlockActionResult ReorderAttributes( string idKey, Guid guid, Guid? beforeGuid )
         {
+            if ( !BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
+            {
+                return ActionBadRequest( $"Not authorized to edit {AttributeMatrixTemplate.FriendlyTypeName}." );
+            }
+
             // Get the queryable and make sure it is ordered correctly.
             var id = Rock.Utility.IdHasher.Instance.GetId( idKey );
 
@@ -365,6 +370,13 @@ namespace Rock.Blocks.Core
             if ( !ValidateAttributeMatrixTemplate( entity, out var validationMessage ) )
             {
                 return ActionBadRequest( validationMessage );
+            }
+
+            // Make sure existing attributes can only be updated if they
+            // already belong to this template.
+            if ( !PublicAttributeHelper.AreAttributeEditsAllowed( box.Bag.TemplateAttributes, EntityTypeCache.GetId<AttributeMatrixItem>(), "AttributeMatrixTemplateId", entity.Id == 0 ? null : entity.Id.ToString(), RockContext ) )
+            {
+                return ActionBadRequest( "Invalid attribute." );
             }
 
             RockContext.WrapTransaction( () =>

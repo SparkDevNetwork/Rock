@@ -308,7 +308,21 @@ namespace Rock.Blocks.Lms
             }
 
             var learningClassService = new LearningClassService( RockContext );
-            var copiedEntity = learningClassService.Copy( key );
+
+            // Make sure the class exists and the person can edit it.
+            var entity = learningClassService.Get( key, !PageCache.Layout.Site.DisablePredictableIds );
+
+            if ( entity == null )
+            {
+                return ActionNotFound();
+            }
+
+            if ( !entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
+            {
+                return ActionBadRequest( $"Not authorized to copy {LearningClass.FriendlyTypeName}." );
+            }
+
+            var copiedEntity = learningClassService.Copy( entity );
             var currentPageParams = new Dictionary<string, string>
             {
                 [PageParameterKey.LearningProgramId] = PageParameter( PageParameterKey.LearningProgramId )

@@ -547,6 +547,11 @@ namespace Rock.Blocks.Finance
                 var binaryFileId = box.Bag.LogoBinaryFile.GetEntityId<BinaryFile>( RockContext );
                 if ( entity.LogoBinaryFileId != binaryFileId )
                 {
+                    if ( !new BinaryFileService( RockContext ).IsUploadedBinaryFileAllowedForPerson( binaryFileId, entity.LogoBinaryFileId, RequestContext.CurrentPerson ) )
+                    {
+                        return ActionBadRequest( "Invalid logo file." );
+                    }
+
                     MarkOldImageAsTemporary( entity.LogoBinaryFileId, binaryFileId );
                     entity.LogoBinaryFileId = binaryFileId;
                     // Ensure that the Image is not set as IsTemporary=True

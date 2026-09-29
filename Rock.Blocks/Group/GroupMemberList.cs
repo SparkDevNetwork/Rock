@@ -23,6 +23,7 @@ using System.Net;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
+using Rock.Security;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Blocks.Group
@@ -53,6 +54,14 @@ namespace Rock.Blocks.Group
         {
             using ( var rockContext = new RockContext() )
             {
+                // Ensure the current person is allowed to view the requested group.
+                var group = new GroupService( rockContext ).Get( groupId );
+
+                if ( group == null || !group.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson ) )
+                {
+                    return ActionForbidden( "You are not authorized to view the members of this group." );
+                }
+
                 var groupMemberService = new GroupMemberService( rockContext );
                 var query = groupMemberService.Queryable()
                     .AsNoTracking()

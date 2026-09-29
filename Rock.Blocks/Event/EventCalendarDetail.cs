@@ -431,6 +431,13 @@ namespace Rock.Blocks.Event
 
             var isNew = entity.Id == 0;
 
+            // Make sure the event attributes are either new or already belong
+            // to this calendar.
+            if ( !PublicAttributeHelper.AreAttributeEditsAllowed( box.Bag.EventAttributes?.ConvertAll( e => e.Attribute ), new EventCalendarItem().TypeId, "EventCalendarId", isNew ? null : entity.Id.ToString(), RockContext ) )
+            {
+                return ActionBadRequest( "Invalid attribute." );
+            }
+
             RockContext.WrapTransaction( () =>
             {
                 RockContext.SaveChanges();

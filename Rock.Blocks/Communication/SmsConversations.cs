@@ -222,32 +222,8 @@ namespace Rock.Blocks.Communication
         /// <returns>A list of <see cref="ListItemBag"/> representing the available phone numbers.</returns>
         private List<ListItemBag> LoadPhoneNumbers()
         {
-            // First load up all of the available numbers
-            var smsNumbers = SystemPhoneNumberCache.All( false )
-                .Where( spn => spn.IsAuthorized( Rock.Security.Authorization.VIEW, RequestContext.CurrentPerson ) )
-                .OrderBy( spn => spn.Order )
-                .ThenBy( spn => spn.Name )
-                .ThenBy( spn => spn.Id )
-                .ToList();
+            var smsNumbers = GetAllowedSystemPhoneNumbers();
             List<ListItemBag> systemPhoneNumbers = new List<ListItemBag>();
-
-            var selectedNumberGuids = GetAttributeValue( AttributeKey.AllowedSMSNumbers ).SplitDelimitedValues( true ).AsGuidList();
-            if ( selectedNumberGuids.Any() )
-            {
-                smsNumbers = smsNumbers.Where( spn => selectedNumberGuids.Contains( spn.Guid ) ).ToList();
-            }
-
-            // filter personal numbers (any that have a response recipient) if the hide personal option is enabled
-            if ( GetAttributeValue( AttributeKey.HidePersonalSmsNumbers ).AsBoolean() )
-            {
-                smsNumbers = smsNumbers.Where( spn => !spn.AssignedToPersonAliasId.HasValue ).ToList();
-            }
-
-            // Show only numbers 'tied to the current' individual...unless they have 'Admin rights'.
-            if ( GetAttributeValue( AttributeKey.ShowOnlyPersonalSmsNumber ).AsBoolean() && !BlockCache.IsAuthorized( Authorization.ADMINISTRATE, RequestContext.CurrentPerson ) )
-            {
-                smsNumbers = smsNumbers.Where( spn => RequestContext.CurrentPerson.Aliases.Any( a => a.Id == spn.AssignedToPersonAliasId ) ).ToList();
-            }
 
             // If the available SMS numbers do not contain the SelectedSystemPhoneNumber preference then reset the preference
             if ( !smsNumbers.Any( spn => spn.Guid == SelectedSystemPhoneNumber ) )
@@ -268,6 +244,60 @@ namespace Rock.Blocks.Communication
             }
 
             return systemPhoneNumbers;
+        }
+
+        /// <summary>
+        /// Gets the system phone numbers the current person is allowed to use
+        /// with this block, based on security and the block settings.
+        /// </summary>
+        /// <returns>A list of <see cref="SystemPhoneNumberCache"/> objects that are allowed.</returns>
+        private List<SystemPhoneNumberCache> GetAllowedSystemPhoneNumbers()
+        {
+            // First load up all of the available numbers
+            var smsNumbers = SystemPhoneNumberCache.All( false )
+                .Where( spn => spn.IsAuthorized( Rock.Security.Authorization.VIEW, RequestContext.CurrentPerson ) )
+                .OrderBy( spn => spn.Order )
+                .ThenBy( spn => spn.Name )
+                .ThenBy( spn => spn.Id )
+                .ToList();
+
+            var selectedNumberGuids = GetAttributeValue( AttributeKey.AllowedSMSNumbers ).SplitDelimitedValues( true ).AsGuidList();
+            if ( selectedNumberGuids.Any() )
+            {
+                smsNumbers = smsNumbers.Where( spn => selectedNumberGuids.Contains( spn.Guid ) ).ToList();
+            }
+
+            // filter personal numbers (any that have a response recipient) if the hide personal option is enabled
+            if ( GetAttributeValue( AttributeKey.HidePersonalSmsNumbers ).AsBoolean() )
+            {
+                smsNumbers = smsNumbers.Where( spn => !spn.AssignedToPersonAliasId.HasValue ).ToList();
+            }
+
+            // Show only numbers 'tied to the current' individual...unless they have 'Admin rights'.
+            if ( GetAttributeValue( AttributeKey.ShowOnlyPersonalSmsNumber ).AsBoolean() && !BlockCache.IsAuthorized( Authorization.ADMINISTRATE, RequestContext.CurrentPerson ) )
+            {
+                smsNumbers = smsNumbers.Where( spn => RequestContext.CurrentPerson?.Aliases.Any( a => a.Id == spn.AssignedToPersonAliasId ) == true ).ToList();
+            }
+
+            return smsNumbers;
+        }
+
+        /// <summary>
+        /// Gets the system phone number selected in the person preferences,
+        /// but only if it is one of the numbers the person is allowed to use.
+        /// </summary>
+        /// <returns>The selected <see cref="SystemPhoneNumberCache"/> or <c>null</c> if not selected or not allowed.</returns>
+        private SystemPhoneNumberCache GetSelectedSystemPhoneNumber()
+        {
+            var selectedSystemPhoneNumberGuid = SelectedSystemPhoneNumber;
+
+            if ( !selectedSystemPhoneNumberGuid.HasValue )
+            {
+                return null;
+            }
+
+            return GetAllowedSystemPhoneNumbers()
+                .FirstOrDefault( spn => spn.Guid == selectedSystemPhoneNumberGuid.Value );
         }
 
         /// <summary>
@@ -406,7 +436,9 @@ namespace Rock.Blocks.Communication
                 Conversations = new List<ConversationBag>()
             };
 
-            if ( !SelectedSystemPhoneNumber.HasValue )
+            var selectedSystemPhoneNumber = GetSelectedSystemPhoneNumber();
+
+            if ( selectedSystemPhoneNumber == null )
             {
                 return bag;
             }
@@ -425,7 +457,7 @@ namespace Rock.Blocks.Communication
 
                     var maxConversations = this.GetAttributeValue( AttributeKey.MaxConversations ).AsIntegerOrNull() ?? 1000;
                     var messageFilterOption = SelectedMessageFilter;
-                    var smsSystemPhoneNumberId = SystemPhoneNumberCache.Get( SelectedSystemPhoneNumber.Value ).Id;
+                    var smsSystemPhoneNumberId = selectedSystemPhoneNumber.Id;
 
                     var responseListItems = communicationResponseService.GetCommunicationAndResponseRecipients( smsSystemPhoneNumberId, startDateTime, maxConversations, messageFilterOption, personId );
                     var personService = new PersonService( rockContext );
@@ -515,9 +547,7 @@ namespace Rock.Blocks.Communication
             }
 
             // The sending phone is the selected one
-            var smsSystemPhoneNumber = SelectedSystemPhoneNumber.HasValue
-                ? SystemPhoneNumberCache.Get( SelectedSystemPhoneNumber.Value )
-                : null;
+            var smsSystemPhoneNumber = GetSelectedSystemPhoneNumber();
 
             if ( smsSystemPhoneNumber == null )
             {
@@ -674,9 +704,7 @@ namespace Rock.Blocks.Communication
         {
             bag.Messages = new List<MessageBag>();
 
-            var smsSystemPhoneNumber = SelectedSystemPhoneNumber.HasValue
-                ? SystemPhoneNumberCache.Get( SelectedSystemPhoneNumber.Value )
-                : null;
+            var smsSystemPhoneNumber = GetSelectedSystemPhoneNumber();
 
             if ( smsSystemPhoneNumber == null )
             {
@@ -783,9 +811,7 @@ namespace Rock.Blocks.Communication
         [BlockAction]
         public BlockActionResult SendMessageToNewRecipient( SendMessageBag bag )
         {
-            var smsSystemPhoneNumber = SelectedSystemPhoneNumber.HasValue
-                ? SystemPhoneNumberCache.Get( SelectedSystemPhoneNumber.Value )
-                : null;
+            var smsSystemPhoneNumber = GetSelectedSystemPhoneNumber();
 
             if ( !BlockCache.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson ) || smsSystemPhoneNumber?.IsAuthorized( Rock.Security.Authorization.VIEW, RequestContext.CurrentPerson ) == false )
             {
@@ -827,9 +853,7 @@ namespace Rock.Blocks.Communication
         [BlockAction]
         public BlockActionResult SendMessageToExistingRecipient( SendMessageBag bag )
         {
-            var smsSystemPhoneNumber = SelectedSystemPhoneNumber.HasValue
-                ? SystemPhoneNumberCache.Get( SelectedSystemPhoneNumber.Value )
-                : null;
+            var smsSystemPhoneNumber = GetSelectedSystemPhoneNumber();
 
             if ( !BlockCache.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson ) || smsSystemPhoneNumber?.IsAuthorized( Rock.Security.Authorization.VIEW, RequestContext.CurrentPerson ) == false )
             {
@@ -864,9 +888,7 @@ namespace Rock.Blocks.Communication
         [BlockAction]
         public BlockActionResult ToggleConversationReadStatus( ConversationBag bag )
         {
-            var smsSystemPhoneNumber = SelectedSystemPhoneNumber.HasValue
-                ? SystemPhoneNumberCache.Get( SelectedSystemPhoneNumber.Value )
-                : null;
+            var smsSystemPhoneNumber = GetSelectedSystemPhoneNumber();
 
             if ( !BlockCache.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson ) || smsSystemPhoneNumber?.IsAuthorized( Rock.Security.Authorization.VIEW, RequestContext.CurrentPerson ) == false )
             {

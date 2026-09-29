@@ -78,7 +78,7 @@ namespace Rock.Blocks.Crm
 
                 // Get the nameless person by their ID
                 var namelessPerson = personService.Get( namelessPersonId );
-                if ( namelessPerson == null )
+                if ( namelessPerson == null || !IsNamelessPerson( namelessPerson ) )
                 {
                     return ActionBadRequest( "Nameless person not found" );
                 }
@@ -108,7 +108,7 @@ namespace Rock.Blocks.Crm
                     .FirstOrDefault( p => p.PhoneNumbers.Any( n => n.Number == cleanMobilePhone ) );
 
                 var namelessPerson = personService.Get( namelessPersonId );
-                if ( namelessPerson == null )
+                if ( namelessPerson == null || !IsNamelessPerson( namelessPerson ) )
                 {
                     return ActionNotFound( "Nameless person not found." );
                 }
@@ -133,6 +133,18 @@ namespace Rock.Blocks.Crm
                 var mergePageUrl = string.Format( "/PersonMerge/{0}", mergeRequest.Id );
                 return new BlockActionResult( System.Net.HttpStatusCode.OK, mergePageUrl );
             }
+        }
+
+        /// <summary>
+        /// Determines whether the specified person is a nameless person record.
+        /// </summary>
+        /// <param name="person">The person to check.</param>
+        /// <returns><c>true</c> if the person is a nameless person record; otherwise, <c>false</c>.</returns>
+        private static bool IsNamelessPerson( Person person )
+        {
+            var namelessPersonRecordTypeId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_NAMELESS.AsGuid() )?.Id;
+
+            return namelessPersonRecordTypeId.HasValue && person.RecordTypeValueId == namelessPersonRecordTypeId.Value;
         }
 
         private void UpdatePersonFromEditorBag( Person person, PersonBasicEditorBag personBag, RockContext rockContext )

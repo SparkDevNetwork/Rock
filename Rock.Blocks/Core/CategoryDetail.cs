@@ -500,10 +500,32 @@ namespace Rock.Blocks.Core
                 return actionError;
             }
 
+            var originalParentCategoryId = entity.ParentCategoryId;
+
             // Update the entity instance from the information in the bag.
             if ( !UpdateEntityFromBox( entity, box ) )
             {
                 return ActionBadRequest( "Invalid data." );
+            }
+
+            // Make sure the selected parent category is valid if it was changed.
+            if ( entity.ParentCategoryId.HasValue && entity.ParentCategoryId != originalParentCategoryId )
+            {
+                var newParentCategory = entityService.Get( entity.ParentCategoryId.Value );
+
+                // The parent category must be for the same entity type.
+                if ( newParentCategory == null || newParentCategory.EntityTypeId != entity.EntityTypeId )
+                {
+                    return ActionBadRequest( "Invalid parent category." );
+                }
+
+                // Moving an existing category requires permission on the new parent.
+                if ( entity.Id != 0
+                    && !newParentCategory.IsAuthorized( Rock.Security.Authorization.EDIT, RequestContext.CurrentPerson )
+                    && !newParentCategory.IsAuthorized( Rock.Security.Authorization.ADMINISTRATE, RequestContext.CurrentPerson ) )
+                {
+                    return ActionBadRequest( "You are not authorized to add a category to the selected parent category." );
+                }
             }
 
             var isNew = entity.Id == 0;
@@ -691,6 +713,11 @@ namespace Rock.Blocks.Core
         {
             using ( var rockContext = new RockContext() )
             {
+                if ( !TryGetParentCategoryForChildAction( parentCategoryIdKey, rockContext, out var actionError ) )
+                {
+                    return actionError;
+                }
+
                 // Get the queryable and make sure it is ordered correctly.
                 var items = OrderedChildCategories( parentCategoryIdKey, rockContext );
 
@@ -742,7 +769,52 @@ namespace Rock.Blocks.Core
             var entityTypeGuid = GetAttributeValue( AttributeKey.EntityType ).AsGuid();
             var entityTypeId = EntityTypeCache.GetId( entityTypeGuid ).ToStringSafe();
 
+            // A new category does not have any child categories.
+            if ( idKey.IsNullOrWhiteSpace() )
+            {
+                return ActionOk( ChildCategoriesGridBuilder( entityTypeId ).Build( new List<Category>() ) );
+            }
+
+            if ( !TryGetParentCategoryForChildAction( idKey, RockContext, out var actionError ) )
+            {
+                return actionError;
+            }
+
             return ActionOk( ChildCategoriesGridBuilder( entityTypeId ).Build( OrderedChildCategories( idKey, RockContext ) ) );
+        }
+
+        /// <summary>
+        /// Makes sure the parent category used by a child category action
+        /// exists, is for the configured entity type and can be viewed by
+        /// the current person.
+        /// </summary>
+        /// <param name="idKey">The identifier of the parent category.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <param name="error">On return contains the error to be returned if the category can not be used.</param>
+        /// <returns><c>true</c> if the parent category can be used; otherwise <c>false</c>.</returns>
+        private bool TryGetParentCategoryForChildAction( string idKey, RockContext rockContext, out BlockActionResult error )
+        {
+            error = null;
+
+            var category = idKey.IsNotNullOrWhiteSpace()
+                ? new CategoryService( rockContext ).Get( idKey, !PageCache.Layout.Site.DisablePredictableIds )
+                : null;
+            var entityTypeGuid = GetAttributeValue( AttributeKey.EntityType ).AsGuidOrNull();
+            var entityTypeId = entityTypeGuid.HasValue ? EntityTypeCache.GetId( entityTypeGuid.Value ) : null;
+
+            if ( category == null || ( entityTypeId.HasValue && category.EntityTypeId != entityTypeId.Value ) )
+            {
+                error = ActionBadRequest( $"{Category.FriendlyTypeName} not found." );
+                return false;
+            }
+
+            if ( !category.IsAuthorized( Rock.Security.Authorization.VIEW, RequestContext.CurrentPerson ) )
+            {
+                error = ActionBadRequest( $"Not authorized to view {Category.FriendlyTypeName}." );
+                return false;
+            }
+
+            return true;
         }
 
         /// <summary>

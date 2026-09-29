@@ -119,6 +119,14 @@ namespace Rock.Blocks.Core
             }
             else
             {
+                // Adding new signals is only allowed for block editors.
+                if ( !BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
+                {
+                    entity = null;
+                    error = ActionBadRequest( "Not authorized to add signals." );
+                    return false;
+                }
+
                 entity = new PersonSignal();
                 entityService.Add( entity );
             }
@@ -147,12 +155,26 @@ namespace Rock.Blocks.Core
             {
                 return false;
             }
+
+            // Existing signals can only be edited for the person being viewed.
+            if ( entity.Id != 0 && entity.PersonId != person.Id )
+            {
+                return false;
+            }
+
             entity.PersonId = person.Id;
 
             var isSignalTypeValid = box.IfValidProperty( nameof( box.Bag.SignalType ), () =>
             {
                 var signalType = SignalTypeCache.Get( new Guid( box.Bag.SignalType.Value ) );
                 if ( signalType == null )
+                {
+                    return false;
+                }
+
+                // Only allow signal types the person is allowed to edit, unless
+                // the signal type is not being changed.
+                if ( signalType.Id != entity.SignalTypeId && !signalType.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
                 {
                     return false;
                 }

@@ -295,6 +295,17 @@ namespace Rock.Blocks.Event
                 return false;
             }
 
+            // Make sure a new photo is one the current person is allowed to use.
+            if ( box.IsValidProperty( nameof( box.Entity.Photo ) ) )
+            {
+                var photoId = box.Entity.Photo.GetEntityId<BinaryFile>( rockContext );
+
+                if ( !new BinaryFileService( rockContext ).IsUploadedBinaryFileAllowedForPerson( photoId, entity.PhotoId, RequestContext.CurrentPerson ) )
+                {
+                    return false;
+                }
+            }
+
             box.IfValidProperty( nameof( box.Entity.Description ),
                 () => entity.Description = box.Entity.Description );
 
@@ -314,7 +325,7 @@ namespace Rock.Blocks.Event
                 () => entity.Summary = box.Entity.Summary );
 
             box.IfValidProperty( nameof( box.Entity.IsApproved ),
-                () => SaveApprovalDetails( box, entity ) );
+                () => SaveApprovalDetails( box, entity, rockContext ) );
 
             box.IfValidProperty( nameof( box.Entity.Photo ),
                 () => SavePhoto( box, rockContext, entity ) );
@@ -505,6 +516,42 @@ namespace Rock.Blocks.Event
         }
 
         /// <summary>
+        /// Determines whether the current person is authorized to approve (or
+        /// unapprove) the event item. This requires block Administrate, Administrate
+        /// on the event item, or Approve/Administrate on the calendar from the page
+        /// or on one of the calendars the event item already belongs to.
+        /// </summary>
+        /// <param name="entity">The event item.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns><c>true</c> if the current person is authorized to approve the event item; otherwise <c>false</c>.</returns>
+        private bool IsAuthorizedToApprove( EventItem entity, RockContext rockContext )
+        {
+            var currentPerson = GetCurrentPerson();
+
+            if ( BlockCache.IsAuthorized( Authorization.ADMINISTRATE, currentPerson ) || entity.IsAuthorized( Authorization.ADMINISTRATE, currentPerson ) )
+            {
+                return true;
+            }
+
+            var idParam = PageParameter( PageParameterKey.EventCalendarId );
+            var pageCalendarId = IdHasher.Instance.GetId( idParam ) ?? idParam.AsIntegerOrNull();
+            var calendarIds = entity.EventCalendarItems
+                .Select( eci => eci.EventCalendarId )
+                .ToList();
+
+            if ( pageCalendarId.HasValue )
+            {
+                calendarIds.Add( pageCalendarId.Value );
+            }
+
+            return new EventCalendarService( rockContext )
+                .Queryable()
+                .Where( c => calendarIds.Contains( c.Id ) )
+                .ToList()
+                .Any( c => c.IsAuthorized( Authorization.APPROVE, currentPerson ) || c.IsAuthorized( Authorization.ADMINISTRATE, currentPerson ) );
+        }
+
+        /// <summary>
         /// Marks the old image as temporary.
         /// </summary>
         /// <param name="oldBinaryFileId">The binary file identifier.</param>
@@ -635,6 +682,12 @@ namespace Rock.Blocks.Event
 
             foreach ( var eventCalendar in eventCalendarService.GetByGuids( addCalendarsGuids ) )
             {
+                // Make sure user is authorized to add the calendar, the same check used to build the list of available calendars.
+                if ( !BlockCache.IsAuthorized( Authorization.EDIT, GetCurrentPerson() ) && !eventCalendar.IsAuthorized( Authorization.EDIT, GetCurrentPerson() ) )
+                {
+                    continue;
+                }
+
                 entity.EventCalendarItems.Add( new EventCalendarItem
                 {
                     EventCalendarId = eventCalendar.Id,
@@ -647,8 +700,15 @@ namespace Rock.Blocks.Event
         /// </summary>
         /// <param name="box">The box.</param>
         /// <param name="entity">The entity.</param>
-        private void SaveApprovalDetails( DetailBlockBox<EventItemBag, EventItemDetailOptionsBag> box, EventItem entity )
+        /// <param name="rockContext">The rock context.</param>
+        private void SaveApprovalDetails( DetailBlockBox<EventItemBag, EventItemDetailOptionsBag> box, EventItem entity, RockContext rockContext )
         {
+            // Only a person authorized to approve may change the approval state.
+            if ( entity.IsApproved != box.Entity.IsApproved && !IsAuthorizedToApprove( entity, rockContext ) )
+            {
+                return;
+            }
+
             if ( !entity.IsApproved && box.Entity.IsApproved )
             {
                 entity.ApprovedByPersonAliasId = GetCurrentPerson().PrimaryAliasId;
@@ -776,6 +836,13 @@ namespace Rock.Blocks.Event
                 if ( !ValidateEventItem( entity, rockContext, out var validationMessage ) )
                 {
                     return ActionBadRequest( validationMessage );
+                }
+
+                // Make sure the occurrence attributes are either new or already
+                // belong to this event item.
+                if ( !PublicAttributeHelper.AreAttributeEditsAllowed( box.Entity.EventOccurenceAttributes?.ConvertAll( e => e.Attribute ), new EventItemOccurrence().TypeId, "EventItemId", entity.Id == 0 ? null : entity.Id.ToString(), rockContext ) )
+                {
+                    return ActionBadRequest( "Invalid attribute." );
                 }
 
                 rockContext.WrapTransaction( () =>

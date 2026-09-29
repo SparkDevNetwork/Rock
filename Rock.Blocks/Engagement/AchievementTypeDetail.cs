@@ -843,20 +843,12 @@ namespace Rock.Blocks.Engagement
         public BlockActionResult Save( ValidPropertiesBox<AchievementTypeBag> box )
         {
             var entityService = new AchievementTypeService( RockContext );
-            AchievementType entity;
 
-            // Determine if we are editing an existing entity or creating a new one.
-            if ( box.Bag.IdKey.IsNotNullOrWhiteSpace() )
+            // Load the existing entity, or create a new one, and make sure
+            // the current person is authorized to edit it.
+            if ( !TryGetEntityForEditAction( box.Bag.IdKey, out var entity, out var actionError ) )
             {
-                // If editing an existing entity then load it and make sure it
-                // was found and can still be edited.
-                entity = entityService.Get( box.Bag.IdKey, !PageCache.Layout.Site.DisablePredictableIds );
-            }
-            else
-            {
-                // Create a new entity.
-                entity = new AchievementType();
-                entityService.Add( entity );
+                return actionError;
             }
 
             var isNew = entity.Id == 0;

@@ -244,8 +244,10 @@ namespace Rock.Blocks.Prayer
         {
             var entityService = new NoteService( RockContext );
             var entity = entityService.Get( key, !PageCache.Layout.Site.DisablePredictableIds );
+            var prayerCommentNoteTypeId = NoteTypeCache.GetId( Rock.SystemGuid.NoteType.PRAYER_COMMENT.AsGuid() );
 
-            if ( entity == null )
+            // Only allow prayer comments to be deleted by this block.
+            if ( entity == null || !prayerCommentNoteTypeId.HasValue || entity.NoteTypeId != prayerCommentNoteTypeId.Value )
             {
                 return ActionBadRequest( $"{Note.FriendlyTypeName} not found." );
             }

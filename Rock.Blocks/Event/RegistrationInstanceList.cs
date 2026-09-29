@@ -216,6 +216,13 @@ namespace Rock.Blocks.Event
                 return ActionBadRequest( $"Not authorized to delete ${RegistrationInstance.FriendlyTypeName}." );
             }
 
+            // The list only allows deleting when the person can edit the
+            // registration template, so check the instance's own template.
+            if ( registrationInstance.RegistrationTemplate?.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) != true )
+            {
+                return ActionBadRequest( $"Not authorized to delete {RegistrationInstance.FriendlyTypeName}." );
+            }
+
             if ( !entityService.CanDelete( registrationInstance, out var errorMessage ) )
             {
                 return ActionBadRequest( errorMessage );

@@ -521,6 +521,14 @@ namespace Rock.Blocks.Finance
                 {
                     foreach ( var batch in batchesToUpdate )
                     {
+                        // Changing the status is an edit, so require the same
+                        // permission the batch detail block requires.
+                        if ( !batch.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
+                        {
+                            message = $"You are not authorized to modify the batch '{batch.Name}'.";
+                            return false;
+                        }
+
                         var changes = new History.HistoryChangeList();
                         History.EvaluateChange( changes, "Status", batch.Status, newStatus );
 
