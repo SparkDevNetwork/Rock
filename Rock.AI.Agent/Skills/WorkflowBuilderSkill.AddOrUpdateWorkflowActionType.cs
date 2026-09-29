@@ -198,6 +198,13 @@ internal sealed partial class WorkflowBuilderSkill
             actionTypeService.Add( actionType );
         }
 
+        var editError = GetWorkflowTypeEditError( activityType?.WorkflowType );
+
+        if ( editError != null )
+        {
+            return Error( editError );
+        }
+
         var previousActionEntityTypeId = isNew ? ( int? ) null : actionType.EntityTypeId;
 
         if ( actionEntityTypeIdKey.IsNotNullOrWhiteSpace() )
