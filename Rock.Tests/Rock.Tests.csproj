@@ -332,6 +332,7 @@
     <Compile Include="Web\Cache\GroupTypeCacheTests.cs" />
     <Compile Include="Web\UI\Controls\KeyValueListTests.cs" />
     <Compile Include="Web\Cache\PageShortLinkCacheTests.cs" />
+    <Compile Include="Web\Cache\SiteCacheTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
