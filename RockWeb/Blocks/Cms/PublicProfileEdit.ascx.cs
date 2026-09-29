@@ -807,6 +807,30 @@ namespace RockWeb.Blocks.Cms
         }
 
         /// <summary>
+        /// Verifies that the given binary file can become a person's new photo: either no photo (removing it),
+        /// or a temporary file of the person image type, which is what a fresh upload through the photo editor creates.
+        /// </summary>
+        /// <param name="binaryFileId">The binary file identifier.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns>
+        ///   <c>true</c> if the binary file can be used as the new photo; otherwise, <c>false</c>.
+        /// </returns>
+        private bool IsValidNewPhoto( int? binaryFileId, RockContext rockContext )
+        {
+            if ( !binaryFileId.HasValue )
+            {
+                return true;
+            }
+
+            var personImageFileTypeGuid = Rock.SystemGuid.BinaryFiletype.PERSON_IMAGE.AsGuid();
+
+            return new BinaryFileService( rockContext ).Queryable()
+                .Any( bf => bf.Id == binaryFileId.Value
+                    && bf.IsTemporary
+                    && bf.BinaryFileType.Guid == personImageFileTypeGuid );
+        }
+
+        /// <summary>
         /// Displays or hides the selected elements based on the business rules
         /// </summary>
         private void SetElementVisibility()
@@ -1014,11 +1038,11 @@ namespace RockWeb.Blocks.Cms
                 {
                     // Disabling a control does not stop its value from arriving on the post, so the account owner
                     // restriction shown while editing is enforced here before any value is assigned.
-                    var isEmailLocked = person.Id != CurrentPerson.Id
+                    var isContactInfoLocked = person.Id != CurrentPerson.Id
                         && ( person.AccountProtectionProfile == AccountProtectionProfile.High
                             || person.AccountProtectionProfile == AccountProtectionProfile.Extreme );
 
-                    if ( isEmailLocked )
+                    if ( isContactInfoLocked )
                     {
                         var isEmailChanged = ( person.Email?.Trim() ?? string.Empty ) != tbEmail.Text.Trim();
                         var isEmailPreferenceChanged = person.EmailPreference != rblEmailPreference.SelectedValue.ConvertToEnum<EmailPreference>();
@@ -1030,8 +1054,11 @@ namespace RockWeb.Blocks.Cms
                         }
                     }
 
+                    // The photo's file id arrives from the client, so only accept a new photo that was just
+                    // uploaded as a person image. Otherwise any file could be attached to the person, and
+                    // then marked temporary (and so deleted by the cleanup job) when the photo is replaced.
                     int? orphanedPhotoId = null;
-                    if ( person.PhotoId != imgPhoto.BinaryFileId )
+                    if ( person.PhotoId != imgPhoto.BinaryFileId && IsValidNewPhoto( imgPhoto.BinaryFileId, rockContext ) )
                     {
                         orphanedPhotoId = person.PhotoId;
                         person.PhotoId = imgPhoto.BinaryFileId;
@@ -1100,7 +1127,9 @@ namespace RockWeb.Blocks.Cms
                         }
                     }
 
-                    if ( showPhoneNumbers )
+                    // Only the account owner can change the phone numbers of a protected account, so the
+                    // posted values are ignored for them, the same as the disabled fields shown while editing.
+                    if ( showPhoneNumbers && !isContactInfoLocked )
                     {
                         var phoneNumberTypeIds = new List<int>();
 
@@ -1499,7 +1528,6 @@ namespace RockWeb.Blocks.Cms
         /// <param name="personGuid">The person's global unique identifier.</param>
         private void ShowEditPersonDetails( Guid personGuid )
         {
-            lViewPersonContent.Visible = false;
             var childGuid = Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_CHILD.AsGuid();
 
             RockContext rockContext = new RockContext();
@@ -1531,6 +1559,16 @@ namespace RockWeb.Blocks.Cms
                 return;
             }
 
+            // The group and person arrive from the client (hfGroupId and the postback argument), so apply
+            // the same checks as the save: the group must be one of the current person's families, and the
+            // person being edited (or the current person, when adding) must be a member of it.
+            if ( !IsFamilyGroupForCurrentPerson( group, rockContext ) || !IsValidPersonForGroup( personGuid, CurrentPerson, group ) )
+            {
+                hfEditPersonGuid.Value = Guid.Empty.ToString();
+                return;
+            }
+
+            lViewPersonContent.Visible = false;
             hfEditPersonGuid.Value = personGuid.ToString();
             var person = new Person();
 
