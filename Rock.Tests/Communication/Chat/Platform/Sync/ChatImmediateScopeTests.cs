@@ -169,6 +169,41 @@ namespace Rock.Tests.Communication.Chat.Platform.Sync
             }
         }
 
+        [TestMethod]
+        public void AGroupSaveThatOnlyRenamesCannotChangeWhoIsInTheChannel()
+        {
+            Assert.IsFalse( ChatPlatformSyncHelper.IsGroupMembershipChangeInScope( GroupSave( group => group.Name = "Renamed" ) ),
+                "a rename leaves every member where they were, so its push reads the channel row alone" );
+        }
+
+        [TestMethod]
+        public void AGroupSaveThatChangesWhatDecidesTheChannelsMembersCouldChangeThem()
+        {
+            var changes = new Dictionary<string, Action<Group>>
+            {
+                [nameof( Group.IsChatEnabledOverride )] = group => group.IsChatEnabledOverride = false,
+                [nameof( Group.GroupTypeId )] = group => group.GroupTypeId = OtherGroupTypeId,
+                [nameof( Group.IsActive )] = group => group.IsActive = false,
+                [nameof( Group.IsArchived )] = group => group.IsArchived = true
+            };
+
+            foreach ( var change in changes )
+            {
+                Assert.IsTrue( ChatPlatformSyncHelper.IsGroupMembershipChangeInScope( GroupSave( change.Value ) ),
+                    $"a save changing {change.Key} can put members in the channel or take them out" );
+            }
+
+            foreach ( var state in new[] { EntityContextState.Added, EntityContextState.Deleted } )
+            {
+                var entry = GroupSave( group => { } );
+                entry.State = state;
+                entry.PreSaveState = state;
+
+                Assert.IsTrue( ChatPlatformSyncHelper.IsGroupMembershipChangeInScope( entry ),
+                    $"a group {state} brings its members with it or takes them away" );
+            }
+        }
+
         #endregion What passes
 
         #region Support
@@ -239,6 +274,42 @@ namespace Rock.Tests.Communication.Chat.Platform.Sync
                 OriginalValues = originalValues,
                 ModifiedProperties = new List<string> { nameof( Person.Email ) },
                 DataContext = rockContext,
+                State = EntityContextState.Modified,
+                PreSaveState = EntityContextState.Modified
+            };
+        }
+
+        /// <summary>
+        /// A modified group's save in a chat group, with one change applied over values that were
+        /// otherwise as saved.
+        /// </summary>
+        private static SaveEntry GroupSave( Action<Group> change )
+        {
+            var group = new Group
+            {
+                Id = GroupId,
+                GroupTypeId = ChatGroupTypeId,
+                Name = "Youth",
+                IsActive = true,
+                IsArchived = false,
+                IsChatEnabledOverride = null
+            };
+
+            var originalValues = new Dictionary<string, object>
+            {
+                [nameof( Group.GroupTypeId )] = ChatGroupTypeId,
+                [nameof( Group.Name )] = "Youth",
+                [nameof( Group.IsActive )] = true,
+                [nameof( Group.IsArchived )] = false,
+                [nameof( Group.IsChatEnabledOverride )] = null
+            };
+
+            change( group );
+
+            return new SaveEntry
+            {
+                Entity = group,
+                OriginalValues = originalValues,
                 State = EntityContextState.Modified,
                 PreSaveState = EntityContextState.Modified
             };

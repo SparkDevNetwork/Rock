@@ -1,6 +1,6 @@
 {
   "artifact": "chat-wire-contract",
-  "purpose": "The wire between Rock and the chat platform. The column lists are the positional order of the sync payload rows, the enum value lists are what each side mirrors as a typed vocabulary, the headers are what a submission carries, the claim names are what a person token carries, and the error codes are the one vocabulary every layer branches on. Generated from the database the migrations produce; never edited by hand.",
+  "purpose": "The wire between Rock and the chat platform. The column lists are the positional order of the sync payload rows, the enum value lists are what each side mirrors as a typed vocabulary, the headers are what a submission carries, the push is the key set of an immediate push body, the claim names are what a person token carries, and the error codes are the one vocabulary every layer branches on. Generated from the database the migrations produce; never edited by hand.",
   "hash_recipe": "SHA-256, lowercase hex, over the UTF-8 bytes of one line per table in the order the tables array gives: the table name, a colon, the wire column names joined by commas, each line closed by a line feed. The JSON is deliberately not what is hashed, so no key order, whitespace or string escaping rule has to be agreed between the languages that compute it. The hash covers the column lists and nothing else: it is compared at ingest, so anything it covered would refuse every submission from every church still on the previous Rock build the moment it changed, and an added enum value is meant to ship to the platform first and leave those churches working.",
   "wire_hash": "de1f06d0d8bc6d1cd3a1798d92e5a6a78be7774f952acae5ad3d02fea262d125",
   "jwt_claims": {
@@ -65,6 +65,45 @@
       "badges"
     ],
     "carries": "The body of a submission: one object with exactly these four keys, each holding an array of positional rows for the table of the same position in the tables array below. A row is an array of that table wire column values, in the order the column list gives and nothing else. Absent from an array means absent from the church, which is what makes a restatement a statement of existence rather than a set of changes."
+  },
+  "push": {
+    "shape": "object",
+    "sections": [
+      "aliases",
+      "channels",
+      "members",
+      "badges"
+    ],
+    "empty_sections": [
+      {
+        "section": "badges",
+        "reason": "A badge changes only when the church edits its badge settings or a Data View persists, and neither is a save the immediate sync sees, so badges travel in the full restatement alone and a push that carries a badge row is refused."
+      }
+    ],
+    "absent": {
+      "key": "absent",
+      "carries": "An object with exactly the sets listed here, each an array of keys. A push is never a restatement, so a row it does not mention is left as it is, and only a key listed here is stamped absent. A key both carried in a section and listed here is refused, since one push is one statement of truth at one time.",
+      "sets": [
+        {
+          "name": "channels",
+          "table": "chat_channels",
+          "key_columns": [
+            "channel_id"
+          ],
+          "carries": "Each channel Rock asked about that is no longer a chat channel, or no longer exists."
+        },
+        {
+          "name": "members",
+          "table": "chat_channel_members",
+          "key_columns": [
+            "channel_id",
+            "person_alias_guid"
+          ],
+          "carries": "Each membership Rock asked about that is no longer live, keyed by the channel and the person's primary alias, the same alias the membership row carries."
+        }
+      ]
+    },
+    "carries": "The body of an immediate push: one JSON object with exactly the four sections, positional rows as a submission carries them, and the absent key below. It is sent with the read-time and contract headers a submission carries, and the rows are applied under the same row clock."
   },
   "tables": [
     {

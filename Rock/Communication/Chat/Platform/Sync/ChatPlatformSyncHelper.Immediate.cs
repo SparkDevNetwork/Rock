@@ -46,23 +46,28 @@ namespace Rock.Communication.Chat.Platform.Sync
         #region Constants
 
         // A push reads a handful of keys, and the full sync repairs one that gives up, so it is
-        // never worth the full sync's long wait. Every figure here is an estimate.
+        // never worth the full sync's long wait. Every figure here is an estimate. A background
+        // push is two steps with a limit each, this read and then the request below, so the
+        // longest one takes is the two added: 20 seconds.
         private const int PushProjectionTimeoutSeconds = 10;
 
         // No save a person makes through Rock's screens comes near this, so a push past it is a bulk
         // write that reached the hooks, and the full sync carries it instead.
         internal const int PushRowCeiling = 5000;
 
+        // The request alone, sign-in included; the projection read before it has its own limit.
         internal static readonly TimeSpan BackgroundPushTimeout = TimeSpan.FromSeconds( 10 );
 
         // Within what a person waiting on a chat action is given.
         internal static readonly TimeSpan AwaitedPushBudget = TimeSpan.FromSeconds( 2 );
 
         // So a platform that is down for an hour leaves a handful of rows in the exception log
-        // rather than one for every save in that hour.
+        // rather than one for every save in that hour. An estimate.
         private static readonly TimeSpan FailureLogInterval = TimeSpan.FromMinutes( 1 );
 
-        // Chat People is added by a startup fix, so a save made before it ran must not hide it for good.
+        // Chat People is added by a startup fix, so a save made before it ran must not hide it for
+        // good. An estimate: often enough that the group is found soon after the fix, rarely enough
+        // that a missing group costs a cache read a minute, not one a save.
         private const int MissingSystemGroupRetryMilliseconds = 60000;
 
         private static ImmediateSyncOverride _override;
@@ -90,10 +95,16 @@ namespace Rock.Communication.Chat.Platform.Sync
             public HashSet<int> PersonIds { get; } = new HashSet<int>();
 
             /// <summary>
-            /// Groups whose channel or whole membership may have changed, by guid so a deleted
-            /// group can still be named.
+            /// Groups whose whole membership may have changed, with their channel, by guid so a
+            /// deleted group can still be named.
             /// </summary>
             public HashSet<Guid> GroupGuids { get; } = new HashSet<Guid>();
+
+            /// <summary>
+            /// Groups whose channel row alone may have changed: a save that left alone everything
+            /// that decides who is in the channel, such as a rename.
+            /// </summary>
+            public HashSet<Guid> ChannelGuids { get; } = new HashSet<Guid>();
 
             /// <summary>
             /// Single memberships that may have changed, as the group's guid and the person's id.
@@ -123,7 +134,7 @@ namespace Rock.Communication.Chat.Platform.Sync
             /// <summary>
             /// Whether nothing is recorded.
             /// </summary>
-            internal bool IsEmpty => PersonIds.Count == 0 && GroupGuids.Count == 0 && MemberKeys.Count == 0;
+            internal bool IsEmpty => PersonIds.Count == 0 && GroupGuids.Count == 0 && ChannelGuids.Count == 0 && MemberKeys.Count == 0;
 
             /// <summary>
             /// Moves the recorded keys into a new set, so the next save on the context records afresh.
@@ -134,10 +145,12 @@ namespace Rock.Communication.Chat.Platform.Sync
                 var keys = new ImmediateChanges();
                 keys.PersonIds.UnionWith( PersonIds );
                 keys.GroupGuids.UnionWith( GroupGuids );
+                keys.ChannelGuids.UnionWith( ChannelGuids );
                 keys.MemberKeys.UnionWith( MemberKeys );
 
                 PersonIds.Clear();
                 GroupGuids.Clear();
+                ChannelGuids.Clear();
                 MemberKeys.Clear();
 
                 return keys;
@@ -163,6 +176,11 @@ namespace Rock.Communication.Chat.Platform.Sync
             /// How many rows the sections carry.
             /// </summary>
             public int RowCount { get; set; }
+
+            /// <summary>
+            /// How many keys the push names absent.
+            /// </summary>
+            public int AbsentCount { get; set; }
         }
 
         /// <summary>
@@ -336,7 +354,22 @@ namespace Rock.Communication.Chat.Platform.Sync
                 return;
             }
 
-            ChangesFor( entry.DataContext as RockContext )?.GroupGuids.Add( group.Guid );
+            var changes = ChangesFor( entry.DataContext as RockContext );
+            if ( changes == null )
+            {
+                return;
+            }
+
+            // A rename of a group of thousands would otherwise push every member, past the row
+            // ceiling, and leave the new name waiting for the full sync.
+            if ( IsGroupMembershipChangeInScope( entry ) )
+            {
+                changes.GroupGuids.Add( group.Guid );
+            }
+            else
+            {
+                changes.ChannelGuids.Add( group.Guid );
+            }
         }
 
         /// <summary>
@@ -423,6 +456,31 @@ namespace Rock.Communication.Chat.Platform.Sync
                 || !IsUnchanged( original, nameof( Person.IsDeceased ), person.IsDeceased )
                 || !IsUnchanged( original, nameof( Person.IsChatProfilePublic ), person.IsChatProfilePublic )
                 || !IsUnchanged( original, nameof( Person.IsChatOpenDirectMessageAllowed ), person.IsChatOpenDirectMessageAllowed );
+        }
+
+        /// <summary>
+        /// Whether a group's save could have changed who is in its channel, read from the entry
+        /// alone so it reads and allocates nothing.
+        /// </summary>
+        /// <param name="entry">The save entry.</param>
+        /// <returns>True where the push must read the group's whole membership.</returns>
+        internal static bool IsGroupMembershipChangeInScope( IEntitySaveEntry entry )
+        {
+            var group = entry?.Entity as Group;
+
+            // A group added or deleted brings its members into chat or takes them out.
+            if ( group == null || entry.State != EntityContextState.Modified )
+            {
+                return true;
+            }
+
+            var original = entry.OriginalValues;
+
+            // What the projection reads to decide whether a group is a channel that takes members.
+            return !IsUnchanged( original, nameof( Group.IsChatEnabledOverride ), group.IsChatEnabledOverride )
+                || !IsUnchanged( original, nameof( Group.GroupTypeId ), group.GroupTypeId )
+                || !IsUnchanged( original, nameof( Group.IsActive ), group.IsActive )
+                || !IsUnchanged( original, nameof( Group.IsArchived ), group.IsArchived );
         }
 
         /// <summary>
@@ -582,7 +640,10 @@ namespace Rock.Communication.Chat.Platform.Sync
         /// <remarks>
         /// The read runs in the background too, so the save's thread returns at once, and a read
         /// made while the caller still holds a transaction waits for the commit on its own thread
-        /// rather than blocking the thread that holds the locks.
+        /// rather than blocking the thread that holds the locks. That wait assumes the database
+        /// reads committed data under locks, as SQL Server does by default: with read committed
+        /// snapshot on, the read does not wait, and sees the rows as they were before the caller's
+        /// transaction, which the next full sync then corrects.
         /// </remarks>
         private static void Flush( ImmediateChanges changes )
         {
@@ -623,9 +684,7 @@ namespace Rock.Communication.Chat.Platform.Sync
                     push = ProjectChanges( rockContext, configuration, keys );
                 }
 
-                var absent = push.Body["absent"];
-                var absentCount = ( ( JArray ) absent["channels"] ).Count + ( ( JArray ) absent["members"] ).Count;
-                if ( push.RowCount == 0 && absentCount == 0 )
+                if ( push.RowCount == 0 && push.AbsentCount == 0 )
                 {
                     return PushOutcome.Applied;
                 }
@@ -671,6 +730,10 @@ namespace Rock.Communication.Chat.Platform.Sync
             }
 
             // Two pushes racing to replace it each get a working client, and one of them is kept.
+            // The client is replaced only when the church's connection settings change (tenant,
+            // project address, publishable key, signing key), which happens once when chat is
+            // enabled and otherwise essentially never, so a replaced client is left for the
+            // runtime to collect rather than closed under a push that may still be using it.
             var created = new PlatformClient( configuration, handler );
             var previous = Interlocked.CompareExchange( ref _transport, created, current );
 
@@ -798,13 +861,16 @@ namespace Rock.Communication.Chat.Platform.Sync
 
             var parameters = ProjectionParameters( configuration );
 
-            // All three are sent even when empty, because any one of them set is what makes the
+            // All four are sent even when empty, because any one of them set is what makes the
             // call scoped, and an unscoped call reads the whole church.
             parameters["@ScopePersonIdsJson"] = new JArray( changes.PersonIds ).ToString( Formatting.None );
             parameters["@ScopeGroupGuidsJson"] = new JArray( changes.GroupGuids.Select( g => g.ToString() ) ).ToString( Formatting.None );
+            parameters["@ScopeChannelGuidsJson"] = new JArray( changes.ChannelGuids.Select( g => g.ToString() ) ).ToString( Formatting.None );
             parameters["@ScopeMemberKeysJson"] = new JArray( changes.MemberKeys.Select( k => new JArray( k.GroupGuid.ToString(), k.PersonId ) ) ).ToString( Formatting.None );
 
-            return ReadProjection( rockContext, parameters, PushProjectionTimeoutSeconds, ReadPushBody );
+            var contract = JObject.Parse( ChatWireContract.Json );
+
+            return ReadProjection( rockContext, parameters, PushProjectionTimeoutSeconds, reader => ReadPushBody( reader, contract ) );
         }
 
         /// <summary>
@@ -812,8 +878,9 @@ namespace Rock.Communication.Chat.Platform.Sync
         /// written by the full sync's own row writer, and the keys named absent.
         /// </summary>
         /// <param name="reader">The reader, on the procedure's first result set.</param>
+        /// <param name="contract">The parsed wire contract.</param>
         /// <returns>The push body.</returns>
-        private static PushBody ReadPushBody( DbDataReader reader )
+        internal static PushBody ReadPushBody( DbDataReader reader, JObject contract )
         {
             if ( !reader.Read() )
             {
@@ -822,79 +889,112 @@ namespace Rock.Communication.Chat.Platform.Sync
 
             var readAtUtc = DateTime.SpecifyKind( reader.GetDateTime( 0 ), DateTimeKind.Utc );
             var rowCounts = new Dictionary<string, int>();
+            // The platform refuses a push keyed any other way, so the names are read from the
+            // contract rather than typed here.
+            var push = contract["push"];
             JObject body;
 
             // The one row writer, so a push row can never differ from the same row in a restatement.
             using ( var writer = new JTokenWriter() )
             {
-                WriteSections( reader, JObject.Parse( ChatWireContract.Json ), writer, RockDateTime.OrgTimeZoneInfo, rowCounts );
+                WriteSections( reader, contract, writer, RockDateTime.OrgTimeZoneInfo, rowCounts );
                 body = ( JObject ) writer.Token;
             }
 
-            // The badges left out, which a scoped call leaves empty, since a push never carries badges.
+            // The badges left out, which only the whole restatement reports.
             if ( !reader.NextResult() )
             {
                 throw new InvalidOperationException( "the projection returned no result set for the badges it left out" );
             }
 
+            var absentCount = 0;
+
             using ( var writer = new JTokenWriter() )
             {
                 writer.WriteStartObject();
-                WriteAbsentKeys( reader, writer, "channels" );
-                WriteAbsentKeys( reader, writer, "members" );
+
+                foreach ( var set in push["absent"]["sets"] )
+                {
+                    absentCount += WriteAbsentKeys( reader, writer, set["name"].Value<string>(), set["key_columns"].Select( c => c.Value<string>() ).ToList() );
+                }
+
                 writer.WriteEndObject();
 
-                body["absent"] = writer.Token;
+                body[push["absent"]["key"].Value<string>()] = writer.Token;
             }
 
             return new PushBody
             {
                 ReadAtUtc = readAtUtc,
                 Body = body,
-                RowCount = rowCounts.Values.Sum()
+                RowCount = rowCounts.Values.Sum(),
+                AbsentCount = absentCount
             };
         }
 
         /// <summary>
-        /// Writes one of the scoped call's absent key sets: a single key per row as a value, and a
-        /// key of several parts as a positional array.
+        /// Writes one of the scoped call's absent key sets: a key of one column as that value, and a
+        /// key of several as a positional array in the contract's order.
         /// </summary>
         /// <param name="reader">The reader, on the result set before this one.</param>
         /// <param name="writer">Where the keys are written.</param>
-        /// <param name="kind">The name the push gives the set.</param>
-        private static void WriteAbsentKeys( DbDataReader reader, JsonWriter writer, string kind )
+        /// <param name="name">The name the contract gives the set.</param>
+        /// <param name="keyColumns">The wire columns the contract says the key is made of.</param>
+        /// <returns>How many keys were written.</returns>
+        private static int WriteAbsentKeys( DbDataReader reader, JsonWriter writer, string name, IList<string> keyColumns )
         {
             // Missing only when the call was not scoped, and then an empty set would say that
             // nothing left chat.
             if ( !reader.NextResult() )
             {
-                throw new InvalidOperationException( string.Format( "the projection returned no absent {0}, so it did not read a scope", kind ) );
+                throw new InvalidOperationException( string.Format( "the projection returned no absent {0}, so it did not read a scope", name ) );
             }
 
-            var section = "absent " + kind;
+            var section = "absent " + name;
 
-            writer.WritePropertyName( kind );
+            // Resolved by name, as a section's columns are, so a result set in another order or a
+            // contract naming another key fails here rather than sending a key nobody holds.
+            var ordinals = keyColumns.Select( column =>
+            {
+                for ( var i = 0; i < reader.FieldCount; i++ )
+                {
+                    if ( string.Equals( reader.GetName( i ), column, StringComparison.Ordinal ) )
+                    {
+                        return i;
+                    }
+                }
+
+                throw new InvalidOperationException( string.Format( "the projection's {0} result set has no {1} column", section, column ) );
+            } ).ToList();
+
+            var written = 0;
+
+            writer.WritePropertyName( name );
             writer.WriteStartArray();
 
             while ( reader.Read() )
             {
-                if ( reader.FieldCount == 1 )
+                written++;
+
+                if ( ordinals.Count == 1 )
                 {
-                    WriteValue( writer, reader.GetValue( 0 ), section );
+                    WriteValue( writer, reader.GetValue( ordinals[0] ), section );
                     continue;
                 }
 
                 writer.WriteStartArray();
 
-                for ( var i = 0; i < reader.FieldCount; i++ )
+                foreach ( var ordinal in ordinals )
                 {
-                    WriteValue( writer, reader.GetValue( i ), section );
+                    WriteValue( writer, reader.GetValue( ordinal ), section );
                 }
 
                 writer.WriteEndArray();
             }
 
             writer.WriteEndArray();
+
+            return written;
         }
 
         #endregion Methods

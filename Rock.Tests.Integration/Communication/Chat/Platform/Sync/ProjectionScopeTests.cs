@@ -168,6 +168,35 @@ namespace Rock.Tests.Integration.Communication.Chat.Platform.Sync
         }
 
         [TestMethod]
+        public void AChannelScopeCarriesTheChannelRowAloneAndNamesANonChannelAbsent()
+        {
+            using ( var fixture = new ChatSyncProjectionFixture() )
+            {
+                var channel = fixture.AddChannel( fixture.SharedGroupTypeId, "Channel scope channel" );
+                var notChannel = fixture.AddChannel( fixture.SharedGroupTypeId, "Not a channel", group => group.IsChatEnabledOverride = false );
+                var adaId = fixture.AddPerson( "Ada" );
+                fixture.AddMember( channel, adaId );
+                fixture.AddMember( notChannel, adaId );
+
+                var changes = new ChatPlatformSyncHelper.ImmediateChanges();
+                changes.ChannelGuids.Add( channel );
+                changes.ChannelGuids.Add( notChannel );
+
+                var push = fixture.ProjectChanges( changes );
+
+                CollectionAssert.AreEquivalent( new[] { channel }, Keys( push, "channels" ),
+                    "a channel scope carries the channel's own row" );
+                Assert.AreEqual( 0, Rows( push, "members" ).Count, "and none of its memberships" );
+                Assert.AreEqual( 0, Rows( push, "aliases" ).Count, "and no member's alias" );
+                Assert.AreEqual( 0, Absent( push, "members" ).Count, "and names no member absent, since it read none" );
+                CollectionAssert.AreEquivalent( new[] { notChannel }, Absent( push, "channels" ).Select( k => ( Guid ) k ).ToList(),
+                    "a group in the scope that is not a chat channel is named absent, as a whole group scope names it" );
+                Assert.IsNotNull( fixture.ChannelMark( channel ), "and the channel is marked, as any scoped read marks the groups it asks about" );
+                Assert.AreEqual( 1, push.RowCount );
+            }
+        }
+
+        [TestMethod]
         public void AGroupThatNoLongerExistsIsListedAbsentByItsGuid()
         {
             using ( var fixture = new ChatSyncProjectionFixture() )

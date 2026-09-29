@@ -331,6 +331,71 @@ namespace Rock.Tests.Integration.Communication.Chat.Platform.Sync
         }
 
         [TestMethod]
+        public void RenamingAChatGroupPushesItsChannelRowAndNoMemberships()
+        {
+            using ( var scene = new Scene() )
+            {
+                var fixture = scene.Fixture;
+                var channel = fixture.AddChannel( fixture.SharedGroupTypeId, "Before the rename" );
+                fixture.AddMember( channel, fixture.AddPerson( "Ada" ) );
+                fixture.AddMember( channel, fixture.AddPerson( "Bo" ) );
+                fixture.MarkChannelDirectly( channel );
+
+                using ( ChatSyncProjectionFixture.InsideRequest() )
+                using ( var rockContext = new RockContext() )
+                {
+                    new GroupService( rockContext ).Queryable().Single( g => g.Guid == channel ).Name = "After the rename";
+                    rockContext.SaveChanges();
+                }
+
+                var pushes = scene.WaitForPushes();
+
+                Assert.AreEqual( 1, pushes.Count );
+                AssertIsAPush( pushes[0] );
+
+                // A group of thousands would otherwise push every member on a rename, past the
+                // push's row ceiling, and wait for the full sync to show the new name.
+                CollectionAssert.AreEquivalent( new[] { channel }, Keys( pushes[0].Json, "channels" ), "the renamed channel's row" );
+                Assert.AreEqual( "After the rename", ( string ) Row( pushes[0].Json, "channels", channel )[ColumnIndex( "channels", "name" )] );
+                Assert.AreEqual( 0, Rows( pushes[0].Json, "members" ).Count, "a rename cannot change who is in the channel, so no membership is read" );
+                Assert.AreEqual( 0, Rows( pushes[0].Json, "aliases" ).Count, "and no member's alias with it" );
+                Assert.AreEqual( 0, Absent( pushes[0].Json, "members" ).Count, "and no member is named absent" );
+                Assert.AreEqual( 0, Absent( pushes[0].Json, "channels" ).Count );
+            }
+        }
+
+        [TestMethod]
+        public void TurningChatOnForAGroupPushesItsMembers()
+        {
+            using ( var scene = new Scene() )
+            {
+                var fixture = scene.Fixture;
+                var channel = fixture.AddChannel( fixture.SharedGroupTypeId, "Chat turned on", group => group.IsChatEnabledOverride = false );
+                var adaId = fixture.AddPerson( "Ada" );
+                var boId = fixture.AddPerson( "Bo" );
+                fixture.AddMember( channel, adaId );
+                fixture.AddMember( channel, boId );
+
+                using ( ChatSyncProjectionFixture.InsideRequest() )
+                using ( var rockContext = new RockContext() )
+                {
+                    new GroupService( rockContext ).Queryable().Single( g => g.Guid == channel ).IsChatEnabledOverride = true;
+                    rockContext.SaveChanges();
+                }
+
+                var pushes = scene.WaitForPushes();
+
+                Assert.AreEqual( 1, pushes.Count );
+                AssertIsAPush( pushes[0] );
+                CollectionAssert.AreEquivalent( new[] { channel }, Keys( pushes[0].Json, "channels" ), "the group is a channel now" );
+                CollectionAssert.AreEquivalent(
+                    new[] { fixture.PrimaryAliasGuid( adaId ), fixture.PrimaryAliasGuid( boId ) },
+                    Rows( pushes[0].Json, "members" ).Where( r => ( Guid ) r[0] == channel ).Select( r => ( Guid ) r[1] ).ToList(),
+                    "and every one of its members is in it, which no membership save told the platform" );
+            }
+        }
+
+        [TestMethod]
         public void DeletingAChannelPushesItUnderAbsentChannels()
         {
             using ( var scene = new Scene() )
@@ -431,10 +496,12 @@ namespace Rock.Tests.Integration.Communication.Chat.Platform.Sync
                 Assert.AreEqual( ChatPlatformSyncHelper.PushRowCeiling + 1, fixture.ProjectChanges( scope ).RowCount,
                     "the group's save projects one row more than the ceiling" );
 
+                // A save that turns chat on for the group, which could change who is in it, so the
+                // push reads the whole membership; a rename alone reads only the channel row.
                 using ( ChatSyncProjectionFixture.InsideRequest() )
                 using ( var rockContext = new RockContext() )
                 {
-                    new GroupService( rockContext ).Queryable().Single( g => g.Guid == channel ).Name = "Bulk channel renamed";
+                    new GroupService( rockContext ).Queryable().Single( g => g.Guid == channel ).IsChatEnabledOverride = true;
                     rockContext.SaveChanges();
                 }
 

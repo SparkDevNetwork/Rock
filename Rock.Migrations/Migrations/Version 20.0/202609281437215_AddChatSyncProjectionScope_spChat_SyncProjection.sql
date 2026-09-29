@@ -39,13 +39,14 @@
     <param name='ScopePersonIdsJson' datatype='nvarchar(max)'>Optional. People whose own rows a save touched, as a JSON array of person ids.</param>
     <param name='ScopeGroupGuidsJson' datatype='nvarchar(max)'>Optional. Groups whose channel and whole membership a save touched, as a JSON array of group guids. Guids rather than ids, so a deleted group can still be named.</param>
     <param name='ScopeMemberKeysJson' datatype='nvarchar(max)'>Optional. Single memberships a save touched, as a JSON array of [group guid, person id] pairs.</param>
+    <param name='ScopeChannelGuidsJson' datatype='nvarchar(max)'>Optional. Groups whose channel row alone a save touched, as a JSON array of group guids: a save that changed nothing deciding who is in the channel, such as a rename, so none of its memberships is read.</param>
 
     <remarks>
         This is not a pure read: the marking at the top writes. It only ever touches a group that
         is a chat channel and carries no mark yet, so a run in the steady state writes nothing.
         Call it outside a transaction, as the job does, so that the mark commits on its own.
 
-        With all three scopes null the call reads the whole church. With any of them set it is
+        With all four scopes null the call reads the whole church. With any of them set it is
         scoped: it marks only the requested groups, returns only the requested rows, and returns
         with each membership its channel row and its person's aliases, because the platform takes
         no membership whose channel or alias it does not hold. A scoped call returns no badges and
@@ -70,7 +71,8 @@ CREATE PROCEDURE [dbo].[spChat_SyncProjection]
     @PublicApplicationRoot NVARCHAR(4000),
     @ScopePersonIdsJson NVARCHAR(MAX) = NULL,
     @ScopeGroupGuidsJson NVARCHAR(MAX) = NULL,
-    @ScopeMemberKeysJson NVARCHAR(MAX) = NULL
+    @ScopeMemberKeysJson NVARCHAR(MAX) = NULL,
+    @ScopeChannelGuidsJson NVARCHAR(MAX) = NULL
 AS
 BEGIN
     SET NOCOUNT ON;
@@ -89,7 +91,7 @@ BEGIN
     -- cached plan, since the plan tests @IsScoped before it reads a row. The keys are staged once
     -- in small temporary tables, so no predicate parses JSON per row.
     DECLARE @IsScoped BIT = CASE
-        WHEN @ScopePersonIdsJson IS NULL AND @ScopeGroupGuidsJson IS NULL AND @ScopeMemberKeysJson IS NULL THEN 0
+        WHEN @ScopePersonIdsJson IS NULL AND @ScopeGroupGuidsJson IS NULL AND @ScopeMemberKeysJson IS NULL AND @ScopeChannelGuidsJson IS NULL THEN 0
         ELSE 1
     END;
 
@@ -107,10 +109,17 @@ BEGIN
     INTO #ScopeMemberKeys
     FROM OPENJSON( @ScopeMemberKeysJson ) AS [J];
 
-    -- Every group the call asks about: each group key, and the group of each membership key.
+    -- Every group the call asks about: each group key, each channel key, and the group of each
+    -- membership key. A channel key is staged here alone, which is what keeps its memberships
+    -- out: the members and the absent members read #ScopeGroupGuids instead. It is read straight
+    -- into this table rather than staged in one of its own, because each temporary table is one
+    -- more object every call creates, the whole restatement's included.
     SELECT [SGG].[GroupGuid]
     INTO #ScopeGroups
     FROM #ScopeGroupGuids AS [SGG]
+    UNION
+    SELECT CAST( [J].[value] AS UNIQUEIDENTIFIER )
+    FROM OPENJSON( @ScopeChannelGuidsJson ) AS [J]
     UNION
     SELECT [SMK].[GroupGuid]
     FROM #ScopeMemberKeys AS [SMK];
