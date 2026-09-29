@@ -278,6 +278,13 @@ namespace Rock.Blocks.Event
                 RegistrationTemplateDiscountWithUsage discount = null;
                 var registration = registrationGuid != null ? new RegistrationService( rockContext ).Get( registrationGuid.ToString() ) : null;
 
+                // Ignore a registration that is not for this instance or does
+                // not belong to the current person.
+                if ( registration != null && ( registration.RegistrationInstanceId != registrationInstanceId || !IsRegistrationOwnedByPerson( registration, GetCurrentPerson() ) ) )
+                {
+                    registration = null;
+                }
+
                 if ( isAutoApply && code.IsNullOrWhiteSpace() && ( registration == null || registration.DiscountCode.IsNullOrWhiteSpace() ) )
                 {
                     // if no code is provided and there is no code already saved in the registration check for an auto apply discount, if there are none discount will be null which returns ActionNotFound
@@ -784,15 +791,42 @@ namespace Rock.Blocks.Event
 
             using ( var rockContext = new RockContext() )
             {
+                var currentPerson = GetCurrentPerson();
+
+                // Only use an existing registration if it belongs to the current person.
+                Registration registration = null;
+                if ( args?.RegistrationGuid.HasValue == true )
+                {
+                    registration = new RegistrationService( rockContext ).Get( args.RegistrationGuid.Value );
+
+                    if ( registration != null && !IsRegistrationOwnedByPerson( registration, currentPerson ) )
+                    {
+                        registration = null;
+                    }
+                }
+
                 // A null person is okay here as default values can still be returned.
                 Person person = null;
                 if ( registrantInfo != null && registrantInfo.PersonGuid.HasValue )
                 {
                     person = new PersonService( rockContext ).Get( registrantInfo.PersonGuid.Value );
+
+                    // Only return values for the current person, their family
+                    // members or registrants of their own registration.
+                    if ( person != null && !IsPersonAvailableForDefaultValues( rockContext, person, currentPerson, registration ) )
+                    {
+                        person = null;
+                    }
                 }
 
                 // If we already have a saved registrant get it, otherwise a null registrant will get any default values.
                 var registrant = new RegistrationRegistrantService( rockContext ).Get( registrantGuid );
+
+                // Only use a saved registrant from the current person's registration.
+                if ( registrant != null && ( registration == null || registrant.RegistrationId != registration.Id ) )
+                {
+                    registrant = null;
+                }
 
                 // Load the group member for the registrant if there are any group member attribute form fields.
                 // If the group member is not found, the default field values will be used.
@@ -5116,6 +5150,56 @@ namespace Rock.Blocks.Event
         }
 
         /// <summary>
+        /// Determines whether the registration belongs to the person. The person
+        /// must be either the registrar or the person that created the registration.
+        /// </summary>
+        /// <param name="registration">The registration to check.</param>
+        /// <param name="person">The person to check, usually the current person.</param>
+        /// <returns><c>true</c> if the registration belongs to the person; otherwise <c>false</c>.</returns>
+        private static bool IsRegistrationOwnedByPerson( Registration registration, Person person )
+        {
+            if ( registration == null || person == null )
+            {
+                return false;
+            }
+
+            return registration.PersonAlias?.PersonId == person.Id
+                || registration.CreatedByPersonAlias?.PersonId == person.Id;
+        }
+
+        /// <summary>
+        /// Determines whether the person's current values may be returned to
+        /// the current person when getting default field values. The person
+        /// must be the current person, a member of their family or a registrant
+        /// of the current person's registration.
+        /// </summary>
+        /// <param name="rockContext">The Rock database context.</param>
+        /// <param name="person">The person whose values would be returned.</param>
+        /// <param name="currentPerson">The current person.</param>
+        /// <param name="registration">The existing registration that belongs to the current person, may be <c>null</c>.</param>
+        /// <returns><c>true</c> if the person's values may be returned; otherwise <c>false</c>.</returns>
+        private static bool IsPersonAvailableForDefaultValues( RockContext rockContext, Person person, Person currentPerson, Registration registration )
+        {
+            if ( registration != null && registration.Registrants.Any( r => r.PersonAlias?.PersonId == person.Id ) )
+            {
+                return true;
+            }
+
+            if ( currentPerson == null )
+            {
+                return false;
+            }
+
+            if ( currentPerson.Id == person.Id )
+            {
+                return true;
+            }
+
+            return currentPerson.GetFamilyMembers( true, rockContext )
+                .Any( gm => gm.PersonId == person.Id );
+        }
+
+        /// <summary>
         /// Gets the context.
         /// </summary>
         /// <param name="rockContext">The rock context.</param>
@@ -5151,6 +5235,14 @@ namespace Rock.Blocks.Event
             var context = registrationService.GetRegistrationContext( registrationInstanceId, args.RegistrationGuid, currentPerson, args.DiscountCode, out errorMessage );
             if ( context == null )
             {
+                return null;
+            }
+
+            // Make sure an existing registration belongs to the current person,
+            // the same way it is verified when the registration is first loaded.
+            if ( context.Registration != null && !IsRegistrationOwnedByPerson( context.Registration, currentPerson ) )
+            {
+                errorMessage = "Your existing registration was not found";
                 return null;
             }
 

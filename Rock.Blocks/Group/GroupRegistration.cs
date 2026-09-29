@@ -428,28 +428,7 @@ namespace Rock.Blocks.Group
 
                 if ( GetAttributeValue( AttributeKey.PreventOvercapacityRegistrations ).AsBoolean() )
                 {
-                    int openGroupSpots = 2;
-                    int openRoleSpots = 2;
-                    var defaultGroupRole = group.GroupType.DefaultGroupRole;
-
-                    // If the group has a GroupCapacity, check how far we are from hitting that.
-                    if ( group.GroupCapacity.HasValue )
-                    {
-                        openGroupSpots = group.GroupCapacity.Value - group.ActiveMembers().Count();
-                    }
-
-                    // When someone registers for a group on the front-end website, they automatically get added with the group's default
-                    // GroupTypeRole. If that role exists and has a MaxCount, check how far we are from hitting that.
-                    if ( defaultGroupRole != null && defaultGroupRole.MaxCount.HasValue )
-                    {
-                        openRoleSpots = defaultGroupRole.MaxCount.Value - group.Members
-                            .Where( m => m.GroupRoleId == defaultGroupRole.Id && m.GroupMemberStatus == GroupMemberStatus.Active )
-                            .Count();
-                    }
-
-                    // Between the group's GroupCapacity and DefaultGroupRole.MaxCount, grab the one we're closest to hitting, and how close we are to
-                    // hitting it.
-                    box.OpenSpots = Math.Min( openGroupSpots, openRoleSpots );
+                    box.OpenSpots = GetOpenSpots( group );
 
                     // If no spots are open, display a message that says so.
                     if ( box.OpenSpots <= 0 )
@@ -458,6 +437,39 @@ namespace Rock.Blocks.Group
                     }
                 }
             }
+        }
+
+        /// <summary>
+        /// Gets the number of open spots in the group, based on the group's capacity
+        /// and the maximum count of the group type's default role. A value of 2 means
+        /// there are at least two open spots.
+        /// </summary>
+        /// <param name="group">The group.</param>
+        /// <returns>The number of open spots.</returns>
+        private int GetOpenSpots( Rock.Model.Group group )
+        {
+            int openGroupSpots = 2;
+            int openRoleSpots = 2;
+            var defaultGroupRole = group.GroupType.DefaultGroupRole;
+
+            // If the group has a GroupCapacity, check how far we are from hitting that.
+            if ( group.GroupCapacity.HasValue )
+            {
+                openGroupSpots = group.GroupCapacity.Value - group.ActiveMembers().Count();
+            }
+
+            // When someone registers for a group on the front-end website, they automatically get added with the group's default
+            // GroupTypeRole. If that role exists and has a MaxCount, check how far we are from hitting that.
+            if ( defaultGroupRole != null && defaultGroupRole.MaxCount.HasValue )
+            {
+                openRoleSpots = defaultGroupRole.MaxCount.Value - group.Members
+                    .Where( m => m.GroupRoleId == defaultGroupRole.Id && m.GroupMemberStatus == GroupMemberStatus.Active )
+                    .Count();
+            }
+
+            // Between the group's GroupCapacity and DefaultGroupRole.MaxCount, grab the one we're closest to hitting, and how close we are to
+            // hitting it.
+            return Math.Min( openGroupSpots, openRoleSpots );
         }
 
         private void SetSmsOptInSettings( GroupRegistrationBlockBox box )
@@ -665,6 +677,12 @@ namespace Rock.Blocks.Group
                 if ( targetGroup.IsSecurityRole )
                 {
                     return ActionBadRequest( "The group is a restricted group type." );
+                }
+
+                // Enforce the same capacity check that is performed when the block is loaded.
+                if ( GetAttributeValue( AttributeKey.PreventOvercapacityRegistrations ).AsBoolean() && GetOpenSpots( targetGroup ) <= 0 )
+                {
+                    return ActionBadRequest( "This group is at or exceeds capacity." );
                 }
 
                 var isCurrentPerson = RequestContext.CurrentPerson != null

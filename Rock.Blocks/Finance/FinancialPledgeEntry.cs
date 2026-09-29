@@ -656,6 +656,48 @@ namespace Rock.Blocks.Finance
             return financialAccount;
         }
 
+        /// <summary>
+        /// Determines whether the group is one of the groups that would be
+        /// offered to the current person for selection.
+        /// </summary>
+        /// <param name="groupId">The group identifier.</param>
+        /// <returns><c>true</c> if the group can be associated with the pledge; otherwise, <c>false</c>.</returns>
+        private bool IsGroupAllowed( int groupId )
+        {
+            var groupTypeGuid = GetAttributeValue( AttributeKey.SelectGroupType ).AsGuidOrNull();
+            var currentPerson = GetCurrentPerson();
+
+            if ( !groupTypeGuid.HasValue || currentPerson == null )
+            {
+                return false;
+            }
+
+            return new GroupMemberService( RockContext )
+                .Queryable()
+                .Any( m => m.GroupId == groupId
+                    && m.Group.GroupType.Guid == groupTypeGuid.Value
+                    && m.PersonId == currentPerson.Id
+                    && m.GroupMemberStatus == GroupMemberStatus.Active
+                    && m.Group.IsActive && !m.Group.IsArchived );
+        }
+
+        /// <summary>
+        /// Determines whether the defined value is one of the pledge
+        /// frequencies that would be offered for selection.
+        /// </summary>
+        /// <param name="definedValueId">The defined value identifier.</param>
+        /// <returns><c>true</c> if the frequency is valid; otherwise, <c>false</c>.</returns>
+        private bool IsPledgeFrequencyAllowed( int definedValueId )
+        {
+            var frequencyType = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.FINANCIAL_FREQUENCY.AsGuid() );
+            var definedValue = DefinedValueCache.Get( definedValueId );
+
+            return frequencyType != null
+                && definedValue != null
+                && definedValue.DefinedTypeId == frequencyType.Id
+                && definedValue.IsActive;
+        }
+
         #endregion
 
         #region Block Actions
@@ -706,6 +748,17 @@ namespace Rock.Blocks.Finance
             if ( !UpdateEntityFromBox( entity, box ) )
             {
                 return ActionBadRequest( "Invalid data." );
+            }
+
+            // Only allow the groups and frequencies that were offered.
+            if ( entity.GroupId.HasValue && !IsGroupAllowed( entity.GroupId.Value ) )
+            {
+                return ActionBadRequest( "Invalid group." );
+            }
+
+            if ( entity.PledgeFrequencyValueId.HasValue && !IsPledgeFrequencyAllowed( entity.PledgeFrequencyValueId.Value ) )
+            {
+                return ActionBadRequest( "Invalid pledge frequency." );
             }
 
             entity.PersonAliasId = person.PrimaryAliasId;
