@@ -67,6 +67,13 @@ internal sealed partial class WorkflowBuilderSkill
                 .WithInstructions( $"Call the {nameof( GetWorkflowTypeConfiguration )} function to determine the available activities." );
         }
 
+        var editError = GetWorkflowTypeEditError( activityType.WorkflowType );
+
+        if ( editError != null )
+        {
+            return Error( editError );
+        }
+
         var activityName = activityType.Name;
         var workflowTypeId = activityType.WorkflowTypeId;
         var actionTypes = activityType.ActionTypes.ToList();
