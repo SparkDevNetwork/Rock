@@ -281,28 +281,7 @@ namespace Rock.Blocks.Core
                 options.CurrentSelectionText = GetAttributeValue( AttributeKey.NoCampusText );
             }
 
-            var includeInactive = GetAttributeValue( AttributeKey.IncludeInactiveCampuses ).AsBoolean();
-
-            var campusTypeIds = GetAttributeValues( AttributeKey.CampusTypes )
-                .AsGuidOrNullList()
-                .Where( g => g.HasValue )
-                .Select( g => DefinedValueCache.GetId( g.Value ) )
-                .Where( id => id.HasValue )
-                .Select( id => id.Value )
-                .ToList();
-
-            var campusStatusIds = GetAttributeValues( AttributeKey.CampusStatuses )
-                .AsGuidOrNullList()
-                .Where( g => g.HasValue )
-                .Select( g => DefinedValueCache.GetId( g.Value ) )
-                .Where( id => id.HasValue )
-                .Select( id => id.Value )
-                .ToList();
-
-            var campusList = CampusCache.All( includeInactive )
-                .Where( c => !campusTypeIds.Any() || ( c.CampusTypeValueId.HasValue && campusTypeIds.Contains( c.CampusTypeValueId.Value ) ) )
-                .Where( c => !campusStatusIds.Any() || ( c.CampusStatusValueId.HasValue && campusStatusIds.Contains( c.CampusStatusValueId.Value ) ) )
-                .ToListItemBagList();
+            var campusList = GetAvailableCampuses().ToListItemBagList();
 
             // Run lava on each campus.
             var dropdownItemTemplate = GetAttributeValue( AttributeKey.DropdownItemTemplate );
@@ -331,6 +310,38 @@ namespace Rock.Blocks.Core
             }
 
             options.Campuses = campusList;
+        }
+
+        /// <summary>
+        /// Gets the campuses that are offered to the individual in the
+        /// drop-down, filtered by the block settings. This is also used by
+        /// the block action to ensure only an offered campus can be selected.
+        /// </summary>
+        /// <returns>The list of campuses that may be selected.</returns>
+        private List<CampusCache> GetAvailableCampuses()
+        {
+            var includeInactive = GetAttributeValue( AttributeKey.IncludeInactiveCampuses ).AsBoolean();
+
+            var campusTypeIds = GetAttributeValues( AttributeKey.CampusTypes )
+                .AsGuidOrNullList()
+                .Where( g => g.HasValue )
+                .Select( g => DefinedValueCache.GetId( g.Value ) )
+                .Where( id => id.HasValue )
+                .Select( id => id.Value )
+                .ToList();
+
+            var campusStatusIds = GetAttributeValues( AttributeKey.CampusStatuses )
+                .AsGuidOrNullList()
+                .Where( g => g.HasValue )
+                .Select( g => DefinedValueCache.GetId( g.Value ) )
+                .Where( id => id.HasValue )
+                .Select( id => id.Value )
+                .ToList();
+
+            return CampusCache.All( includeInactive )
+                .Where( c => !campusTypeIds.Any() || ( c.CampusTypeValueId.HasValue && campusTypeIds.Contains( c.CampusTypeValueId.Value ) ) )
+                .Where( c => !campusStatusIds.Any() || ( c.CampusStatusValueId.HasValue && campusStatusIds.Contains( c.CampusStatusValueId.Value ) ) )
+                .ToList();
         }
 
         /// <summary>
@@ -432,8 +443,20 @@ namespace Rock.Blocks.Core
         [BlockAction]
         public BlockActionResult SetCampus( Guid campusGuid, string url )
         {
+            // Clearing the selection is only offered in the UI when the
+            // Clear Selection Text setting has a value.
+            var isClearSelectionOffered = GetAttributeValue( AttributeKey.ClearSelectionText ).IsNotNullOrWhiteSpace();
+
+            if ( campusGuid == Guid.Empty && !isClearSelectionOffered )
+            {
+                return ActionBadRequest( "Campus not found." );
+            }
+
+            // Only accept a campus from the same list that is offered in the
+            // drop-down, so hidden campuses (inactive, excluded types or
+            // statuses) cannot be selected by crafting a request.
             var campusId = campusGuid != Guid.Empty
-                ? CampusCache.Get( campusGuid, RockContext )?.Id
+                ? GetAvailableCampuses().FirstOrDefault( c => c.Guid == campusGuid )?.Id
                 : -1;
 
             if ( !campusId.HasValue )
