@@ -563,13 +563,18 @@ namespace RockWeb.Blocks.Security
             }
 
             var returnUrl = PageParameter( "returnUrl" );
-            if ( returnUrl.IsNullOrWhiteSpace() || returnUrl.RedirectUrlContainsXss() )
+            if ( returnUrl.IsNullOrWhiteSpace() )
             {
                 returnUrl = "/";
             }
             else
             {
                 returnUrl = Server.UrlDecode( returnUrl );
+
+                if ( !RockPage.Site.IsSafeRedirectUrl( returnUrl, Request.UrlProxySafe() ) )
+                {
+                    returnUrl = "/";
+                }
             }
 
             if ( qryParams.IsNotNullOrWhiteSpace() )
