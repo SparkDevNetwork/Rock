@@ -447,6 +447,13 @@ namespace RockWeb.Blocks.Security.Oidc
                 else
                 {
                     authClaim = authClaimService.Get( authClaimId );
+
+                    // The claim identifier comes from a hidden field, so make sure the
+                    // claim belongs to this scope and the person is allowed to edit it.
+                    if ( authClaim != null && ( authClaim.ScopeId != authScopeId.Value || !authClaim.IsAuthorized( Authorization.EDIT, CurrentPerson ) ) )
+                    {
+                        authClaim = null;
+                    }
                 }
 
                 if ( authClaim == null )

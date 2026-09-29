@@ -550,17 +550,11 @@ namespace RockWeb.Blocks.Cms
         {
             RockContext rockContext = new RockContext();
             var contentItemService = new ContentChannelItemService( rockContext );
-            ContentChannelItem contentItem = null;
 
-            int contentItemId = hfId.Value.AsInteger();
-            if ( contentItemId != 0 )
-            {
-                contentItem = contentItemService
-                    .Queryable( "ContentChannel,ContentChannelType" )
-                    .FirstOrDefault( t => t.Id == contentItemId );
-            }
+            // Use the item id from ViewState and make sure the delete button would have been shown.
+            ContentChannelItem contentItem = GetEditableContentItem( rockContext );
 
-            if ( contentItem != null )
+            if ( contentItem != null && GetAttributeValue( AttributeKey.ShowDeleteButton ).AsBoolean() )
             {
                 contentItemService.Delete( contentItem );
                 rockContext.SaveChanges();
@@ -739,7 +733,7 @@ namespace RockWeb.Blocks.Cms
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbAddExistingChildItem_Click( object sender, EventArgs e )
         {
-            int? itemId = hfId.Value.AsIntegerOrNull();
+            int? itemId = GetEditableContentItem( new RockContext() )?.Id;
             int? childItemId = ddlAddExistingItem.SelectedValueAsInt();
 
             if ( itemId.HasValue && childItemId.HasValue )
@@ -809,7 +803,7 @@ namespace RockWeb.Blocks.Cms
 
         protected void lbRemoveChildItem_Click( object sender, EventArgs e )
         {
-            int? itemId = hfId.Value.AsIntegerOrNull();
+            int? itemId = GetEditableContentItem( new RockContext() )?.Id;
             int? childItemId = hfRemoveChildItem.Value.AsIntegerOrNull();
 
             if ( itemId.HasValue && childItemId.HasValue )
@@ -844,7 +838,11 @@ namespace RockWeb.Blocks.Cms
 
                 var itemService = new ContentChannelItemService( rockContext );
 
-                var childItem = itemService.Get( childItemId );
+                // Only allow deleting an item that is a child of the item being edited.
+                var parentItem = GetEditableContentItem( new RockContext() );
+                var childItem = parentItem != null && parentItem.ChildItems.Any( a => a.ChildContentChannelItemId == childItemId )
+                    ? itemService.Get( childItemId )
+                    : null;
 
                 if ( childItem != null )
                 {
@@ -972,6 +970,25 @@ namespace RockWeb.Blocks.Cms
 
                     contentItemService.Add( contentItem );
                 }
+            }
+
+            return contentItem;
+        }
+
+        /// <summary>
+        /// Gets the existing content item being edited, using the identifier stored
+        /// in ViewState. Returns <c>null</c> if the item does not exist or the current
+        /// person is not authorized to edit it.
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns>The content item, or <c>null</c>.</returns>
+        private ContentChannelItem GetEditableContentItem( RockContext rockContext )
+        {
+            var contentItem = GetContentItem( rockContext );
+
+            if ( contentItem == null || contentItem.Id == 0 || !contentItem.IsAuthorized( Authorization.EDIT, CurrentPerson ) )
+            {
+                return null;
             }
 
             return contentItem;

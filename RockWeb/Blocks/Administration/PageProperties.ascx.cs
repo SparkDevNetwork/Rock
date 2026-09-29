@@ -480,6 +480,17 @@ namespace RockWeb.Blocks.Administration
         }
 
         /// <summary>
+        /// Determines whether the current person can edit the specified page. This
+        /// mirrors the check used by <see cref="ShowDetail(int, int?)"/>.
+        /// </summary>
+        /// <param name="page">The page.</param>
+        /// <returns><c>true</c> if the current person can edit the page; otherwise, <c>false</c>.</returns>
+        private bool CanEditPage( Rock.Model.Page page )
+        {
+            return page.IsAuthorized( Authorization.EDIT, CurrentPerson ) || this.IsUserAuthorized( Authorization.EDIT );
+        }
+
+        /// <summary>
         /// Shows the edit details.
         /// </summary>
         /// <param name="page">The page.</param>
@@ -651,6 +662,11 @@ namespace RockWeb.Blocks.Administration
             {
                 page = new Rock.Model.Page();
                 pageService.Add( page );
+            }
+            else if ( !CanEditPage( page ) )
+            {
+                nbEditModeMessage.Text = EditModeMessage.NotAuthorizedToEdit( Rock.Model.Page.FriendlyTypeName );
+                throw new Exception( "You are not authorized to edit this page." );
             }
 
             // validate/check for removed routes
@@ -1040,6 +1056,11 @@ namespace RockWeb.Blocks.Administration
         {
             PageService service = new PageService( new RockContext() );
             Rock.Model.Page page = service.Get( hfPageId.ValueAsInt() );
+            if ( page == null || !CanEditPage( page ) )
+            {
+                return;
+            }
+
             ShowEditDetails( page );
         }
 
@@ -1068,6 +1089,12 @@ namespace RockWeb.Blocks.Administration
             var page = pageService.Get( pageId );
             if ( page != null )
             {
+                if ( !CanEditPage( page ) )
+                {
+                    mdDeleteWarning.Show( EditModeMessage.NotAuthorizedToEdit( Rock.Model.Page.FriendlyTypeName ), ModalAlertType.Warning );
+                    return;
+                }
+
                 string errorMessage = string.Empty;
                 if ( !pageService.CanDelete( page, out errorMessage ) )
                 {

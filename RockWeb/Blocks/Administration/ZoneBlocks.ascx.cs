@@ -475,6 +475,16 @@ namespace RockWeb.Blocks.Administration
                 if ( blockId != 0 )
                 {
                     block = blockService.Get( blockId );
+
+                    // Only allow editing a block that is listed in one of this block's grids.
+                    if ( block == null || !IsBlockInZone( block ) )
+                    {
+                        BindGrids();
+
+                        pnlDetails.Visible = false;
+                        pnlLists.Visible = true;
+                        return;
+                    }
                 }
 
                 if ( block == null )
@@ -655,6 +665,24 @@ namespace RockWeb.Blocks.Administration
 
                 gPageBlocks.DataBind();
             }
+        }
+
+        /// <summary>
+        /// Determines whether the block is in the zone being edited on the page, layout
+        /// or site of the page being edited. These are the blocks shown in the grids.
+        /// </summary>
+        /// <param name="block">The block.</param>
+        /// <returns><c>true</c> if the block is in the zone being edited; otherwise, <c>false</c>.</returns>
+        private bool IsBlockInZone( Rock.Model.Block block )
+        {
+            if ( !string.Equals( block.Zone, _ZoneName, StringComparison.OrdinalIgnoreCase ) )
+            {
+                return false;
+            }
+
+            return ( block.PageId.HasValue && block.PageId.Value == _Page.Id )
+                || ( block.LayoutId.HasValue && block.LayoutId.Value == _Page.LayoutId )
+                || ( block.SiteId.HasValue && block.SiteId.Value == _Page.SiteId );
         }
 
         /// <summary>

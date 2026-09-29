@@ -284,6 +284,14 @@ This {{ Workflow.WorkflowType.WorkTerm }} does not currently require your attent
             var rockContext = new RockContext();
             var workflowType = new WorkflowTypeService( rockContext ).Get( hfWorkflowTypeId.Value.AsInteger() );
 
+            // The workflow type id comes from a hidden field, so re-check edit rights before showing the edit form.
+            if ( workflowType == null || !CanEditWorkflowType( workflowType ) )
+            {
+                nbEditModeMessage.Heading = "Information";
+                nbEditModeMessage.Text = EditModeMessage.ReadOnlyEditActionNotAllowed( WorkflowType.FriendlyTypeName );
+                return;
+            }
+
             LoadStateDetails( workflowType, rockContext );
             ShowEditDetails( workflowType, rockContext );
         }
@@ -327,6 +335,12 @@ This {{ Workflow.WorkflowType.WorkTerm }} does not currently require your attent
         {
             var rockContext = new RockContext();
             var workflowType = new WorkflowTypeService( rockContext ).Get( hfWorkflowTypeId.Value.AsInteger() );
+
+            // Only block editors can see the copy button, so re-check it here.
+            if ( !IsUserAuthorized( Authorization.EDIT ) )
+            {
+                return;
+            }
 
             if ( workflowType != null )
             {
@@ -602,6 +616,19 @@ This {{ Workflow.WorkflowType.WorkTerm }} does not currently require your attent
             if ( workflowTypeId.HasValue )
             {
                 workflowType = service.Get( workflowTypeId.Value );
+            }
+
+            // The workflow type id comes from a hidden field, so re-check edit rights on the existing
+            // workflow type, or the same rights ShowDetail() checks when adding a new one.
+            var canEdit = workflowType != null
+                ? CanEditWorkflowType( workflowType )
+                : CanEditWorkflowType( new WorkflowType { CategoryId = PageParameter( "ParentCategoryId" ).AsIntegerOrNull() } );
+
+            if ( !canEdit )
+            {
+                nbEditModeMessage.Heading = "Information";
+                nbEditModeMessage.Text = EditModeMessage.ReadOnlyEditActionNotAllowed( WorkflowType.FriendlyTypeName );
+                return;
             }
 
             if ( workflowType == null )
@@ -1295,6 +1322,24 @@ This {{ Workflow.WorkflowType.WorkTerm }} does not currently require your attent
         #endregion
 
         #region Show Details
+
+        /// <summary>
+        /// Determines whether the current person can edit the workflow type. This mirrors
+        /// the check in <see cref="ShowDetail()"/> that decides whether the edit button is shown.
+        /// </summary>
+        /// <param name="workflowType">The workflow type.</param>
+        /// <returns><c>true</c> if the current person can edit the workflow type; otherwise, <c>false</c>.</returns>
+        private bool CanEditWorkflowType( WorkflowType workflowType )
+        {
+            if ( workflowType.IsSystem )
+            {
+                return false;
+            }
+
+            return IsUserAuthorized( Authorization.EDIT )
+                || workflowType.IsAuthorized( Authorization.EDIT, CurrentPerson )
+                || workflowType.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson );
+        }
 
         /// <summary>
         /// Shows the detail.

@@ -214,6 +214,14 @@ namespace RockWeb.Blocks.Event
             {
                 var registrationInstance = new RegistrationInstanceService( rockContext ).Get( hfRegistrationInstanceId.Value.AsInteger() );
 
+                // The instance id comes from a hidden field, so re-check edit rights before showing the edit form.
+                if ( registrationInstance == null || !CanEditRegistrationInstance( registrationInstance ) )
+                {
+                    nbEditModeMessage.Heading = "Information";
+                    nbEditModeMessage.Text = EditModeMessage.NotAuthorizedToEdit( RegistrationInstance.FriendlyTypeName );
+                    return;
+                }
+
                 ShowEditDetails( registrationInstance, rockContext );
             }
         }
@@ -334,6 +342,14 @@ namespace RockWeb.Blocks.Event
                 if ( registrationInstanceId.HasValue )
                 {
                     registrationInstance = registrationInstanceService.Get( registrationInstanceId.Value );
+
+                    // The instance id comes from a hidden field, so re-check edit rights on the existing instance.
+                    if ( registrationInstance != null && !CanEditRegistrationInstance( registrationInstance ) )
+                    {
+                        nbEditModeMessage.Heading = "Information";
+                        nbEditModeMessage.Text = EditModeMessage.NotAuthorizedToEdit( RegistrationInstance.FriendlyTypeName );
+                        return;
+                    }
                 }
 
                 if ( registrationInstance == null )
@@ -495,6 +511,19 @@ namespace RockWeb.Blocks.Event
         private RegistrationInstance GetRegistrationInstance( int registrationInstanceId, RockContext rockContext = null )
         {
             return base.GetRegistrationInstance( registrationInstanceId, rockContext );
+        }
+
+        /// <summary>
+        /// Determines whether the current person can edit the registration instance. This is
+        /// the same check used by <see cref="ShowDetail()"/> to decide whether to show the edit button.
+        /// </summary>
+        /// <param name="registrationInstance">The registration instance.</param>
+        /// <returns><c>true</c> if the current person can edit the registration instance; otherwise, <c>false</c>.</returns>
+        private bool CanEditRegistrationInstance( RegistrationInstance registrationInstance )
+        {
+            return UserCanEdit
+                || registrationInstance.IsAuthorized( Authorization.EDIT, CurrentPerson )
+                || registrationInstance.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson );
         }
 
         /// <summary>

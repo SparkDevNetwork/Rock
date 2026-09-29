@@ -879,6 +879,14 @@ namespace RockWeb.Blocks.Steps
         {
             var stepProgram = GetStepProgram();
 
+            // The program id comes from a hidden field, so re-check EDIT before showing the edit form.
+            if ( stepProgram == null || !stepProgram.IsAuthorized( Authorization.EDIT, CurrentPerson ) )
+            {
+                nbEditModeMessage.Text = EditModeMessage.ReadOnlyEditActionNotAllowed( StepProgram.FriendlyTypeName );
+                nbEditModeMessage.Visible = true;
+                return;
+            }
+
             ShowEditDetails( stepProgram );
         }
 
@@ -965,6 +973,15 @@ namespace RockWeb.Blocks.Steps
                                                 .Include( x => x.StepWorkflowTriggers )
                                                 .Where( c => c.Id == stepProgramId )
                                                 .FirstOrDefault();
+
+                // The program id comes from a hidden field, so re-check EDIT on the existing program
+                // before applying any changes (and before the save grants any rights below).
+                if ( stepProgram == null || !stepProgram.IsAuthorized( Authorization.EDIT, CurrentPerson ) )
+                {
+                    nbEditModeMessage.Text = EditModeMessage.ReadOnlyEditActionNotAllowed( StepProgram.FriendlyTypeName );
+                    nbEditModeMessage.Visible = true;
+                    return;
+                }
             }
 
             // Step Statuses: Remove deleted Statuses
@@ -1285,7 +1302,8 @@ namespace RockWeb.Blocks.Steps
             var stepProgram = GetStepProgram();
             var template = GetAttributeValue( AttributeKey.KpiLava );
 
-            if ( template.IsNullOrWhiteSpace() || stepProgram == null )
+            // The program id comes from a hidden field, so re-check VIEW before showing any data.
+            if ( template.IsNullOrWhiteSpace() || stepProgram == null || !stepProgram.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
             {
                 return;
             }
@@ -1623,7 +1641,8 @@ namespace RockWeb.Blocks.Steps
         {
             var stepProgram = GetStepProgram();
 
-            if ( stepProgram == null )
+            // The program id comes from a hidden field, so re-check VIEW before showing any data.
+            if ( stepProgram == null || !stepProgram.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
             {
                 return;
             }

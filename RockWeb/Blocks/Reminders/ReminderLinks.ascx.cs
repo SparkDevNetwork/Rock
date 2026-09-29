@@ -417,6 +417,27 @@ namespace RockWeb.Blocks.Reminders
         }
 
         /// <summary>
+        /// Determines whether the reminder belongs to the current person.
+        /// </summary>
+        /// <param name="reminderId">The reminder identifier.</param>
+        /// <returns><c>true</c> if the reminder belongs to the current person; otherwise <c>false</c>.</returns>
+        private bool IsCurrentPersonReminder( int reminderId )
+        {
+            if ( !CurrentPersonId.HasValue )
+            {
+                return false;
+            }
+
+            using ( var rockContext = new RockContext() )
+            {
+                var currentPersonId = CurrentPersonId.Value;
+
+                return new ReminderService( rockContext ).Queryable()
+                    .Any( r => r.Id == reminderId && r.PersonAlias.PersonId == currentPersonId );
+            }
+        }
+
+        /// <summary>
         /// Resets the add reminder form to prepare it for a new use.
         /// </summary>
         /// <param name="contextEntity">The context entity.</param>
@@ -572,6 +593,12 @@ namespace RockWeb.Blocks.Reminders
             if ( reminderId == 0 )
             {
                 throw new Exception( "Unable to identify selected reminder." );
+            }
+
+            // Only allow the current person to act on their own reminders.
+            if ( !IsCurrentPersonReminder( reminderId ) )
+            {
+                return;
             }
 
             switch ( e.CommandName )

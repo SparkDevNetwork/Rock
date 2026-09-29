@@ -812,6 +812,11 @@ namespace RockWeb.Blocks.Connection
             ParseDeleteEventArgument( argument, out requestId );
             if ( requestId.HasValue )
             {
+                if ( !IsRequestInCurrentOpportunity( requestId.Value ) )
+                {
+                    return;
+                }
+
                 DeleteGridRequest( requestId.Value );
                 return;
             }
@@ -826,6 +831,13 @@ namespace RockWeb.Blocks.Connection
             }
 
             if ( !requestId.HasValue )
+            {
+                return;
+            }
+
+            // The request identifier comes from the client, so make sure it
+            // belongs to the opportunity currently being displayed.
+            if ( !IsRequestInCurrentOpportunity( requestId.Value ) )
             {
                 return;
             }
@@ -857,6 +869,27 @@ namespace RockWeb.Blocks.Connection
 
                 return;
             }
+        }
+
+        /// <summary>
+        /// Determines whether the connection request belongs to the currently
+        /// selected connection opportunity. The selected opportunity has already
+        /// been verified to be one the current person can view.
+        /// </summary>
+        /// <param name="connectionRequestId">The connection request identifier.</param>
+        /// <returns><c>true</c> if the request belongs to the current opportunity; otherwise <c>false</c>.</returns>
+        private bool IsRequestInCurrentOpportunity( int connectionRequestId )
+        {
+            var connectionOpportunity = GetConnectionOpportunity();
+
+            if ( connectionOpportunity == null )
+            {
+                return false;
+            }
+
+            return new ConnectionRequestService( new RockContext() ).Queryable()
+                .AsNoTracking()
+                .Any( cr => cr.Id == connectionRequestId && cr.ConnectionOpportunityId == connectionOpportunity.Id );
         }
 
         /// <summary>

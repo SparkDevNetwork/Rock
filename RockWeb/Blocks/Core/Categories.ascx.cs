@@ -158,7 +158,7 @@ namespace RockWeb.Blocks.Core
                 {
                     var rockContext = new RockContext();
                     Category category = new CategoryService( rockContext ).Get( hfIdValue.Value.AsInteger() );
-                    if ( category == null )
+                    if ( !IsCategoryInScope( category ) )
                     {
                         category = new Category
                         {
@@ -427,6 +427,16 @@ namespace RockWeb.Blocks.Core
             if ( categoryId != 0 )
             {
                 category = service.Get( categoryId );
+
+                // The category identifier is posted by the client, so make sure
+                // it is for the entity type this block is managing.
+                if ( category != null && !IsCategoryInScope( category ) )
+                {
+                    hfIdValue.Value = string.Empty;
+                    mdDetails.Hide();
+                    BindGrid();
+                    return;
+                }
             }
 
             // Add a new category.
@@ -505,6 +515,22 @@ namespace RockWeb.Blocks.Core
         #endregion
 
         #region Methods
+
+        /// <summary>
+        /// Determines whether the category belongs to the entity type this block
+        /// is managing. When no entity type is configured any category is allowed.
+        /// </summary>
+        /// <param name="category">The category.</param>
+        /// <returns><c>true</c> if the category exists and is in scope; otherwise <c>false</c>.</returns>
+        private bool IsCategoryInScope( Category category )
+        {
+            if ( category == null )
+            {
+                return false;
+            }
+
+            return _entityTypeId == 0 || category.EntityTypeId == _entityTypeId;
+        }
 
         /// <summary>
         /// Sets the display.

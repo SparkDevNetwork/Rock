@@ -1097,7 +1097,7 @@ namespace RockWeb.Blocks.Groups
             var rockContext = new RockContext();
             var groupMember = new GroupMemberService( rockContext ).Get( hfGroupMemberId.Value.AsInteger() );
 
-            if ( groupMember != null )
+            if ( groupMember != null && CanViewGroup( groupMember.Group ) )
             {
                 var selectedGroupRoleId = ddlGroupRole.SelectedValue.AsIntegerOrNull();
                 if ( selectedGroupRoleId.HasValue )
@@ -2289,7 +2289,7 @@ namespace RockWeb.Blocks.Groups
         {
             var rockContext = new RockContext();
             var groupMember = new GroupMemberService( rockContext ).Get( hfGroupMemberId.Value.AsInteger() );
-            if ( groupMember != null )
+            if ( groupMember != null && CanEditGroup( groupMember.Group ) )
             {
                 lCurrentGroup.Text = groupMember.Group.Name;
                 gpMoveGroupMember.SetValue( null );
@@ -2444,6 +2444,15 @@ namespace RockWeb.Blocks.Groups
                 destTempGroupMember.LoadAttributes( rockContext );
                 var destGroupMemberAttributes = destTempGroupMember.Attributes;
                 var groupMember = new GroupMemberService( rockContext ).Get( hfGroupMemberId.Value.AsInteger() );
+
+                // The group member id comes from a hidden field, so make sure the person can edit (and so move) this member.
+                if ( groupMember == null || !CanEditGroup( groupMember.Group ) )
+                {
+                    gpMoveGroupMember.SetValue( null );
+                    nbMoveGroupMemberWarning.Visible = false;
+                    grpMoveGroupMember.Visible = false;
+                    return;
+                }
 
                 groupMember.LoadAttributes();
                 var currentGroupMemberAttributes = groupMember.Attributes;

@@ -129,6 +129,14 @@ namespace RockWeb.Blocks.BulkImport
         protected void fupSlingshotFile_FileUploaded( object sender, EventArgs e )
         {
             pnlActions.Visible = hfMainSlingshotFileName.Value != string.Empty;
+
+            if ( !IsInUploadFolder( fupSlingshotFile.UploadedContentFilePath ) )
+            {
+                lSlingshotFileInfo.Text = "-";
+                lAdditionalSlingshotFilesInfo.Text = "";
+                return;
+            }
+
             var physicalSlingshotFile = this.Request.MapPath( fupSlingshotFile.UploadedContentFilePath );
             if ( File.Exists( physicalSlingshotFile ) )
             {
@@ -186,6 +194,31 @@ namespace RockWeb.Blocks.BulkImport
             hfMainSlingshotFileName.Value = "";
             lSlingshotFileInfo.Text = "";
             lAdditionalSlingshotFilesInfo.Text = "";
+        }
+
+        /// <summary>
+        /// Determines whether the virtual path refers to a file in the folder
+        /// that fupSlingshotFile saves uploaded files to. The file name is posted
+        /// back by the browser, so it must be checked before it is used.
+        /// </summary>
+        /// <param name="virtualPath">The virtual path of the file.</param>
+        /// <returns><c>true</c> if the file is within the upload folder; otherwise <c>false</c>.</returns>
+        private bool IsInUploadFolder( string virtualPath )
+        {
+            if ( virtualPath.IsNullOrWhiteSpace() )
+            {
+                return false;
+            }
+
+            try
+            {
+                return Rock.Utility.FileUtilities.IsPathWithinFolder( this.Request.MapPath( virtualPath ), this.Request.MapPath( fupSlingshotFile.RootFolder ) );
+            }
+            catch
+            {
+                // MapPath throws if the path is invalid or outside of the application.
+                return false;
+            }
         }
 
         /// <summary>
@@ -277,6 +310,11 @@ namespace RockWeb.Blocks.BulkImport
         /// <param name="importType">Type of the import.</param>
         private void StartImport( ImportType importType )
         {
+            if ( !IsInUploadFolder( hfMainSlingshotFileName.Value ) )
+            {
+                return;
+            }
+
             var physicalSlingshotFile = this.Request.MapPath( hfMainSlingshotFileName.Value );
             long totalMilliseconds = 0;
 

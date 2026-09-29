@@ -145,6 +145,14 @@ namespace RockWeb.Blocks.CheckIn.Config
         {
             GroupTypeService groupTypeService = new GroupTypeService( new RockContext() );
             GroupType groupType = groupTypeService.Get( int.Parse( hfGroupTypeId.Value ) );
+
+            // The group type id comes from a hidden field, so re-check edit rights before showing the edit form.
+            if ( groupType == null || !CanEditGroupType( groupType ) )
+            {
+                nbEditModeMessage.Text = EditModeMessage.ReadOnlyEditActionNotAllowed( GroupType.FriendlyTypeName );
+                return;
+            }
+
             var pageRef = new PageReference( CurrentPageReference.PageId, CurrentPageReference.RouteId );
             ShowEditDetails( groupType );
         }
@@ -162,6 +170,13 @@ namespace RockWeb.Blocks.CheckIn.Config
 
             if ( groupType != null )
             {
+                // The group type id comes from a hidden field, so re-check edit rights before deleting.
+                if ( !CanEditGroupType( groupType ) )
+                {
+                    mdDeleteWarning.Show( EditModeMessage.ReadOnlyEditActionNotAllowed( GroupType.FriendlyTypeName ), ModalAlertType.Information );
+                    return;
+                }
+
                 string errorMessage;
                 if ( !groupTypeService.CanDelete( groupType, out errorMessage ) )
                 {
@@ -207,12 +222,26 @@ namespace RockWeb.Blocks.CheckIn.Config
             if ( groupTypeId.HasValue && groupTypeId.Value > 0 )
             {
                 groupType = groupTypeService.Get( groupTypeId.Value );
+
+                // The group type id comes from a hidden field, so re-check edit rights before applying any changes.
+                if ( groupType != null && !CanEditGroupType( groupType ) )
+                {
+                    nbEditModeMessage.Text = EditModeMessage.ReadOnlyEditActionNotAllowed( GroupType.FriendlyTypeName );
+                    return;
+                }
             }
 
             bool newGroupType = false;
 
             if ( groupType == null )
             {
+                // Adding a new check-in type needs the same rights that ShowDetail() checks for a new one.
+                if ( !CanEditGroupType( new GroupType() ) )
+                {
+                    nbEditModeMessage.Text = EditModeMessage.ReadOnlyEditActionNotAllowed( GroupType.FriendlyTypeName );
+                    return;
+                }
+
                 groupType = new GroupType();
                 groupTypeService.Add( groupType );
 
@@ -449,6 +478,17 @@ namespace RockWeb.Blocks.CheckIn.Config
         #endregion
 
         #region Internal Methods
+
+        /// <summary>
+        /// Determines whether the current person can edit the check-in type. This mirrors
+        /// the check in <see cref="ShowDetail(int)"/> that decides whether the edit button is shown.
+        /// </summary>
+        /// <param name="groupType">The group type.</param>
+        /// <returns><c>true</c> if the current person can edit the group type; otherwise, <c>false</c>.</returns>
+        private bool CanEditGroupType( GroupType groupType )
+        {
+            return IsUserAuthorized( Authorization.EDIT ) && groupType.IsAuthorized( Authorization.EDIT, CurrentPerson );
+        }
 
         /// <summary>
         /// Shows the detail.

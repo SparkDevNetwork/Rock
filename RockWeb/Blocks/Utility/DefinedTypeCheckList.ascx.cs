@@ -85,6 +85,7 @@ $('.checklist-item label strong, .checklist-desc-toggle').on('click', function (
                 using ( var rockContext = new RockContext() )
                 {
                     var definedValueService = new DefinedValueService( rockContext );
+                    var definedType = DefinedTypeCache.Get( GetAttributeValue( "DefinedType" ).AsGuid() );
 
                     foreach ( RepeaterItem item in rptrValues.Items )
                     {
@@ -94,7 +95,10 @@ $('.checklist-item label strong, .checklist-desc-toggle').on('click', function (
                         if ( hfValue != null && cbValue != null )
                         {
                             var value = definedValueService.Get( hfValue.ValueAsInt() );
-                            if ( value != null )
+
+                            // The value identifier comes from a hidden field, so make sure
+                            // it belongs to the defined type configured for this block.
+                            if ( value != null && definedType != null && value.DefinedTypeId == definedType.Id )
                             {
                                 Helper.LoadAttributes( value );
                                 if ( value.GetAttributeValue( attributeKey ) != cbValue.Checked.ToString() )

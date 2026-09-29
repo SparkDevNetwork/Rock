@@ -1687,7 +1687,9 @@ namespace RockWeb.Blocks.Groups
                 var groupService = new GroupService( rockContext );
                 var groupMemberService = new GroupMemberService( rockContext );
                 var groupMember = groupMemberService.Get( hfPlaceElsewhereGroupMemberId.Value.AsInteger() );
-                if ( groupMember != null )
+
+                // The group member id comes from a hidden field, so make sure it is in this block's group.
+                if ( groupMember != null && _group != null && groupMember.GroupId == _group.Id )
                 {
                     string errorMessage;
                     if ( !groupMemberService.CanDelete( groupMember, out errorMessage ) )

@@ -273,7 +273,13 @@ namespace RockWeb.Blocks.Crm
                 var interactionService = new InteractionService( rockContext );
                 var personalDeviceService = new PersonalDeviceService( rockContext );
                 var personalDevice = personalDeviceService.Get( personalDeviceId );
-                if ( personalDevice != null )
+
+                // The device identifier comes from the client, so make sure the
+                // device belongs to the person being displayed.
+                if ( personalDevice != null
+                    && _person != null
+                    && personalDevice.PersonAlias != null
+                    && personalDevice.PersonAlias.PersonId == _person.Id )
                 {
                     var interactions = interactionService.Queryable( "PersonalDevice" )
                                     .Where( a => a.PersonalDeviceId == personalDeviceId )
