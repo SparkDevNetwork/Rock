@@ -179,6 +179,8 @@ namespace RockWeb.Blocks.CheckIn.Manager
             public const string CurrentLocationId = "CurrentLocationId";
             public const string CurrentScheduleId = "CurrentScheduleId";
             public const string CurrentStatusFilter = "CurrentStatusFilter";
+            public const string ConfirmCheckoutAttendeeAttendanceIds = "ConfirmCheckoutAttendeeAttendanceIds";
+            public const string ConfirmStayingAttendanceId = "ConfirmStayingAttendanceId";
         }
 
         #endregion ViewState Keys
@@ -198,6 +200,40 @@ namespace RockWeb.Blocks.CheckIn.Manager
             set
             {
                 ViewState[ViewStateKey.CurrentCampusId] = value;
+            }
+        }
+
+        /// <summary>
+        /// The attendance identifiers (comma delimited) of the attendee being confirmed for check-out.
+        /// This is kept in ViewState so it cannot be changed by the client.
+        /// </summary>
+        private string ConfirmCheckoutAttendeeAttendanceIds
+        {
+            get
+            {
+                return ViewState[ViewStateKey.ConfirmCheckoutAttendeeAttendanceIds] as string;
+            }
+
+            set
+            {
+                ViewState[ViewStateKey.ConfirmCheckoutAttendeeAttendanceIds] = value;
+            }
+        }
+
+        /// <summary>
+        /// The attendance identifier of the attendee being confirmed as staying.
+        /// This is kept in ViewState so it cannot be changed by the client.
+        /// </summary>
+        private int? ConfirmStayingAttendanceId
+        {
+            get
+            {
+                return ViewState[ViewStateKey.ConfirmStayingAttendanceId] as int?;
+            }
+
+            set
+            {
+                ViewState[ViewStateKey.ConfirmStayingAttendanceId] = value;
             }
         }
 
@@ -905,7 +941,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
             var scheduleIds = attendanceList.Select( a => a.Occurrence?.ScheduleId ?? 0 ).Distinct().ToList();
             if ( scheduleIds.Count > 1 )
             {
-                hfConfirmCheckoutAttendeeAttendanceIds.Value = attendanceIds.AsDelimited( "," );
+                ConfirmCheckoutAttendeeAttendanceIds = attendanceIds.AsDelimited( "," );
 
                 var personName = attendanceList.FirstOrDefault()?.PersonAlias?.Person.FullName;
                 lConfirmCheckoutAttendee.Text = $"Which schedules would you like to check {personName} out of?";
@@ -951,7 +987,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
             mdConfirmCheckoutAttendee.Hide();
             var rockContext = new RockContext();
 
-            var attendanceIds = hfConfirmCheckoutAttendeeAttendanceIds.Value?.SplitDelimitedValues().AsIntegerList() ?? new List<int>();
+            var attendanceIds = ConfirmCheckoutAttendeeAttendanceIds?.SplitDelimitedValues().AsIntegerList() ?? new List<int>();
 
             var selectedScheduleIds = cblSchedulesCheckoutAttendee.SelectedValuesAsInt;
 
@@ -1016,7 +1052,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
                 return;
             }
 
-            hfConfirmStayingAttendanceId.Value = attendanceInfo.Id.ToString();
+            ConfirmStayingAttendanceId = attendanceInfo.Id;
 
             // Limit Schedules to ones that available to this attendance's GroupId and LocationId.
             var groupLocationService = new GroupLocationService( rockContext );
@@ -1090,7 +1126,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void mdConfirmStaying_SaveClick( object sender, EventArgs e )
         {
-            var selectedAttendanceId = hfConfirmStayingAttendanceId.Value.AsInteger();
+            var selectedAttendanceId = ConfirmStayingAttendanceId ?? 0;
             mdConfirmStaying.Hide();
 
             var rockContext = new RockContext();

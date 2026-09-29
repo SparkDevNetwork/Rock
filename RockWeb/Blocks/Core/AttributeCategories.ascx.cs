@@ -283,6 +283,17 @@ namespace RockWeb.Blocks.Core
             if ( categoryId != 0 )
             {
                 category = service.Get( categoryId );
+
+                // The category identifier is posted by the client, so make sure
+                // it is an attribute category before changing it.
+                var attributeEntityTypeId = EntityTypeCache.Get( typeof( Rock.Model.Attribute ) ).Id;
+                if ( category != null && ( category.EntityTypeId != attributeEntityTypeId || category.EntityTypeQualifierColumn != "EntityTypeId" ) )
+                {
+                    hfIdValue.Value = string.Empty;
+                    modalDetails.Hide();
+                    BindGrid();
+                    return;
+                }
             }
 
             if ( category == null )

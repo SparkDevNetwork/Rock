@@ -379,6 +379,11 @@ namespace Rock.Blocks.WebFarm
         [BlockAction]
         public BlockActionResult Edit()
         {
+            if ( !BlockCache.IsAuthorized( Rock.Security.Authorization.EDIT, RequestContext.CurrentPerson ) )
+            {
+                return ActionBadRequest( "Not authorized to edit Web Farm Settings." );
+            }
+
             var box = new DetailBlockBox<WebFarmSettingsBag, WebFarmSettingsDetailOptionsBag>
             {
                 Entity = GetEntityBagForEdit(),
@@ -396,6 +401,11 @@ namespace Rock.Blocks.WebFarm
         [BlockAction]
         public BlockActionResult Save( DetailBlockBox<WebFarmSettingsBag, WebFarmSettingsDetailOptionsBag> box )
         {
+            if ( !BlockCache.IsAuthorized( Rock.Security.Authorization.EDIT, RequestContext.CurrentPerson ) )
+            {
+                return ActionBadRequest( "Not authorized to edit Web Farm Settings." );
+            }
+
             using ( var rockContext = new RockContext() )
             {
                 // Ensure everything is valid before saving.

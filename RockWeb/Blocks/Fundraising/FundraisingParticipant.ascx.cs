@@ -305,12 +305,19 @@ namespace RockWeb.Blocks.Fundraising
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnEditProfile_Click( object sender, EventArgs e )
         {
-            pnlMain.Visible = false;
-            pnlEditPreferences.Visible = true;
-
             var rockContext = new RockContext();
 
             var groupMember = new GroupMemberService( rockContext ).Get( hfGroupMemberId.Value.AsInteger() );
+
+            // Only the participant themselves can edit their profile.
+            if ( !IsCurrentPersonGroupMember( groupMember ) )
+            {
+                return;
+            }
+
+            pnlMain.Visible = false;
+            pnlEditPreferences.Visible = true;
+
             if ( groupMember != null )
             {
                 var person = groupMember.Person;
@@ -390,6 +397,13 @@ namespace RockWeb.Blocks.Fundraising
         {
             var rockContext = new RockContext();
             var groupMember = new GroupMemberService( rockContext ).Get( hfGroupMemberId.Value.AsInteger() );
+
+            // Only the participant themselves can edit their profile.
+            if ( !IsCurrentPersonGroupMember( groupMember ) )
+            {
+                return;
+            }
+
             var personService = new PersonService( rockContext );
             var person = personService.Get( groupMember.PersonId );
 
@@ -496,6 +510,17 @@ namespace RockWeb.Blocks.Fundraising
         #endregion
 
         #region Methods
+
+        /// <summary>
+        /// Determines whether the group member is the current person. This matches
+        /// the check used to show the Edit Profile button.
+        /// </summary>
+        /// <param name="groupMember">The group member.</param>
+        /// <returns><c>true</c> if the group member is the current person; otherwise <c>false</c>.</returns>
+        private bool IsCurrentPersonGroupMember( GroupMember groupMember )
+        {
+            return groupMember != null && this.CurrentPersonId.HasValue && groupMember.PersonId == this.CurrentPersonId.Value;
+        }
 
         /// <summary>
         /// Shows the view.

@@ -472,13 +472,19 @@ namespace RockWeb.Blocks.RSVP
                 using ( var rockContext = new RockContext() )
                 {
                     HiddenField hfOccurrenceDate = e.Row.FindControl( "hfOccurrenceDate" ) as HiddenField;
-                    HiddenField hfGroupId = e.Row.FindControl( "hfGroupId" ) as HiddenField;
                     HiddenField hfScheduleId = e.Row.FindControl( "hfScheduleId" ) as HiddenField;
                     HiddenField hfLocationId = e.Row.FindControl( "hfLocationId" ) as HiddenField;
 
                     DateTime occurrenceDate = DateTime.Parse( hfOccurrenceDate.Value );
 
-                    int? groupId = hfGroupId.Value.AsIntegerOrNull();
+                    // The grid only lists occurrences for the group in the page parameter, so use
+                    // that instead of the group identifier posted back from the grid row.
+                    int? groupId = PageParameter( PageParameterKey.GroupId ).AsIntegerOrNull();
+                    if ( !groupId.HasValue )
+                    {
+                        return occurrenceId;
+                    }
+
                     int? scheduleId = hfScheduleId.Value.AsIntegerOrNull();
                     int? locationId = hfLocationId.Value.AsIntegerOrNull();
 

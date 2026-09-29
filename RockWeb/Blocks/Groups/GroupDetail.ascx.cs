@@ -623,7 +623,16 @@ namespace RockWeb.Blocks.Groups
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void btnEdit_Click( object sender, EventArgs e )
         {
-            ShowEditDetails( GetGroup( hfGroupId.Value.AsInteger() ) );
+            var group = GetGroup( hfGroupId.Value.AsInteger() );
+
+            // The group id comes from a hidden field, so re-check EDIT on the group before showing the edit form.
+            if ( !IsAuthorizedToEditExistingGroup( group ) )
+            {
+                nbEditModeMessage.Text = EditModeMessage.ReadOnlyEditActionNotAllowed( Group.FriendlyTypeName );
+                return;
+            }
+
+            ShowEditDetails( group );
         }
 
         /// <summary>
@@ -797,6 +806,15 @@ namespace RockWeb.Blocks.Groups
             else
             {
                 group = groupService.Queryable( "Schedule,GroupLocations.Schedules" ).Where( g => g.Id == groupId ).FirstOrDefault();
+
+                // The group id comes from a hidden field, so check EDIT on the group as it is now,
+                // before any values from the UI (such as the parent group) are applied.
+                if ( !IsAuthorizedToEditExistingGroup( group ) )
+                {
+                    nbNotAllowedToEdit.Visible = true;
+                    return;
+                }
+
                 wasSecurityRole = group.IsActive && ( group.IsSecurityRole || group.GroupTypeId == roleGroupTypeId );
 
                 // Remove any locations that removed in the UI
@@ -2875,6 +2893,17 @@ namespace RockWeb.Blocks.Groups
         }
 
         /// <summary>
+        /// Determines whether the current person can edit the existing group, as it is
+        /// currently saved. Used to re-check a group id posted back from a hidden field.
+        /// </summary>
+        /// <param name="group">The group.</param>
+        /// <returns><c>true</c> if the group exists and the current person has EDIT on it; otherwise, <c>false</c>.</returns>
+        private bool IsAuthorizedToEditExistingGroup( Group group )
+        {
+            return group != null && group.IsAuthorized( Authorization.EDIT, CurrentPerson );
+        }
+
+        /// <summary>
         /// Gets the group.
         /// </summary>
         /// <param name="groupId">The group identifier.</param>
@@ -3494,7 +3523,9 @@ namespace RockWeb.Blocks.Groups
             if ( displayMemberTab )
             {
                 int groupId = hfGroupId.ValueAsInt();
-                if ( groupId != 0 )
+
+                // The group id comes from a hidden field, so only list member addresses for a group the person can edit.
+                if ( groupId != 0 && IsAuthorizedToEditExistingGroup( GetGroup( groupId, rockContext ) ) )
                 {
                     var personService = new PersonService( rockContext );
                     Guid previousLocationType = Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_PREVIOUS.AsGuid();

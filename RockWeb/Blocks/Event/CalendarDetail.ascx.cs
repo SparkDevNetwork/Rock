@@ -228,6 +228,13 @@ namespace RockWeb.Blocks.Event
             var rockContext = new RockContext();
             var eventCalendar = new EventCalendarService( rockContext ).Get( hfEventCalendarId.Value.AsInteger() );
 
+            // The calendar id comes from a hidden field, so re-check admin rights before showing the edit form.
+            if ( eventCalendar == null || !IsAdminAllowed( eventCalendar ) )
+            {
+                nbEditModeMessage.Text = EditModeMessage.ReadOnlyEditActionNotAllowed( EventCalendar.FriendlyTypeName );
+                return;
+            }
+
             LoadStateDetails( eventCalendar, rockContext );
             ShowEditDetails( eventCalendar, rockContext );
         }
@@ -296,6 +303,13 @@ namespace RockWeb.Blocks.Event
                 else
                 {
                     eventCalendar = eventCalendarService.Get( eventCalendarId );
+                }
+
+                // The calendar id comes from a hidden field, so re-check admin rights before applying any changes.
+                if ( eventCalendar == null || !IsAdminAllowed( eventCalendar ) )
+                {
+                    nbEditModeMessage.Text = EditModeMessage.ReadOnlyEditActionNotAllowed( EventCalendar.FriendlyTypeName );
+                    return;
                 }
 
                 eventCalendar.IsActive = cbActive.Checked;
@@ -604,6 +618,17 @@ namespace RockWeb.Blocks.Event
         #region Methods
 
         #region Main Form Methods
+
+        /// <summary>
+        /// Determines whether the current person can edit the calendar. Admin rights are needed
+        /// to edit a calendar, which is the same check used by <see cref="ShowDetail(int)"/>.
+        /// </summary>
+        /// <param name="eventCalendar">The event calendar.</param>
+        /// <returns><c>true</c> if the current person can edit the calendar; otherwise, <c>false</c>.</returns>
+        private bool IsAdminAllowed( EventCalendar eventCalendar )
+        {
+            return UserCanAdministrate || eventCalendar.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson );
+        }
 
         /// <summary>
         /// Shows the edit.

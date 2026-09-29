@@ -183,6 +183,15 @@ namespace RockWeb.Blocks.Communication
             else
             {
                 emailTemplate = emailTemplateService.Get( emailTemplateId );
+
+                // The identifier comes from a hidden field, so make sure the
+                // person is allowed to edit this system communication.
+                if ( emailTemplate == null || !emailTemplate.IsAuthorized( Authorization.EDIT, CurrentPerson ) )
+                {
+                    nbEditModeMessage.Text = EditModeMessage.NotAuthorizedToEdit( SystemCommunication.FriendlyTypeName );
+                    nbEditModeMessage.Visible = true;
+                    return;
+                }
             }
 
             emailTemplate.IsActive = cbIsActive.Checked;

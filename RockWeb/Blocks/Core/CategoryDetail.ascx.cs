@@ -179,7 +179,12 @@ namespace RockWeb.Blocks.Core
             {
                 // Cancelling on Edit.  Return to Details
                 CategoryService service = new CategoryService( new RockContext() );
-                Category category = service.Get( hfCategoryId.ValueAsInt() );
+                Category category = GetAuthorizedCategory( service, hfCategoryId.ValueAsInt(), Authorization.VIEW );
+                if ( category == null )
+                {
+                    return;
+                }
+
                 ShowReadonlyDetails( category );
             }
         }
@@ -192,7 +197,12 @@ namespace RockWeb.Blocks.Core
         protected void btnEdit_Click( object sender, EventArgs e )
         {
             CategoryService service = new CategoryService( new RockContext() );
-            Category category = service.Get( hfCategoryId.ValueAsInt() );
+            Category category = GetAuthorizedCategory( service, hfCategoryId.ValueAsInt(), Authorization.EDIT );
+            if ( category == null )
+            {
+                return;
+            }
+
             ShowEditDetails( category );
         }
 
@@ -207,7 +217,7 @@ namespace RockWeb.Blocks.Core
 
             var rockContext = new RockContext();
             var categoryService = new CategoryService( rockContext );
-            var category = categoryService.Get( int.Parse( hfCategoryId.Value ) );
+            var category = GetAuthorizedCategory( categoryService, hfCategoryId.ValueAsInt(), Authorization.EDIT );
 
             if ( category != null )
             {
@@ -275,12 +285,32 @@ namespace RockWeb.Blocks.Core
             }
             else
             {
-                category = categoryService.Get( categoryId );
+                category = GetAuthorizedCategory( categoryService, categoryId, Authorization.EDIT );
+                if ( category == null )
+                {
+                    cvCategory.IsValid = false;
+                    cvCategory.ErrorMessage = EditModeMessage.ReadOnlyEditActionNotAllowed( Category.FriendlyTypeName );
+                    return;
+                }
+            }
+
+            // The parent category is posted by the client, so make sure it is
+            // for the same entity type as the category being saved.
+            var parentCategoryId = cpParentCategory.SelectedValueAsInt();
+            if ( parentCategoryId.HasValue )
+            {
+                var parentCategory = CategoryCache.Get( parentCategoryId.Value );
+                if ( parentCategory == null || parentCategory.EntityTypeId != category.EntityTypeId )
+                {
+                    cvCategory.IsValid = false;
+                    cvCategory.ErrorMessage = "The selected parent category is not valid.";
+                    return;
+                }
             }
 
             category.Name = tbName.Text;
             category.Description = tbDescription.Text;
-            category.ParentCategoryId = cpParentCategory.SelectedValueAsInt();
+            category.ParentCategoryId = parentCategoryId;
             category.IconCssClass = tbIconCssClass.Text;
             category.HighlightColor = cpHightlightColor.Text;            
 
@@ -323,6 +353,36 @@ namespace RockWeb.Blocks.Core
         #endregion
 
         #region Internal Methods
+
+        /// <summary>
+        /// Gets the category with the specified identifier if it belongs to the
+        /// entity type configured for this block and the current person is
+        /// authorized to perform the action. This mirrors the checks in
+        /// <see cref="ShowDetail(int, int?)"/> and is used to re-validate the
+        /// category identifier posted in the hidden field.
+        /// </summary>
+        /// <param name="categoryService">The category service.</param>
+        /// <param name="categoryId">The category identifier.</param>
+        /// <param name="action">The security action, either VIEW or EDIT. VIEW is always required.</param>
+        /// <returns>The <see cref="Category"/> or <c>null</c> if not found or not authorized.</returns>
+        private Category GetAuthorizedCategory( CategoryService categoryService, int categoryId, string action )
+        {
+            var category = categoryService.Get( categoryId );
+
+            if ( category == null || category.EntityTypeId != entityTypeId || !category.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
+            {
+                return null;
+            }
+
+            if ( action == Authorization.EDIT
+                && !category.IsAuthorized( Authorization.EDIT, CurrentPerson )
+                && !this.IsUserAuthorized( Authorization.EDIT ) )
+            {
+                return null;
+            }
+
+            return category;
+        }
 
         /// <summary>
         /// Shows the detail.

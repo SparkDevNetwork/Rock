@@ -224,6 +224,13 @@ namespace RockWeb.Blocks.Communication
         private bool _pushTransportEnabled = false;
         private bool _isBulkCommunicationForced = false;
 
+        /// <summary>
+        /// Whether the current person is editing a communication that is pending
+        /// approval. This is calculated during OnLoad so it can be used by the
+        /// background send task, which can not access the request.
+        /// </summary>
+        private bool _isEditingApproved = false;
+
         #endregion
 
         #region Events
@@ -514,6 +521,8 @@ function onTaskCompleted( resultData )
         {
             this.OnPropertyChanged -= CommunicationEntryWizard_OnPropertyChanged;
             this.OnPropertyChanged += CommunicationEntryWizard_OnPropertyChanged;
+
+            _isEditingApproved = PageParameter( PageParameterKey.Edit ).AsBoolean() && IsUserAuthorized( "Approve" );
 
             // register navigation event to enable support for the back button
             var scriptManager = ScriptManager.GetCurrent( Page );
@@ -3764,6 +3773,29 @@ function onTaskCompleted( resultData )
         #endregion
 
         /// <summary>
+        /// Determines whether the current person is allowed to edit the specified
+        /// communication with this block. This mirrors the checks in <see cref="ShowDetail(int)"/>.
+        /// </summary>
+        /// <param name="communication">The communication.</param>
+        /// <returns><c>true</c> if the communication can be edited; otherwise <c>false</c>.</returns>
+        private bool CanEditCommunication( Rock.Model.Communication communication )
+        {
+            var editingApproved = _isEditingApproved;
+
+            CommunicationStatus[] editableStatuses = new CommunicationStatus[] { CommunicationStatus.Transient, CommunicationStatus.Draft, CommunicationStatus.Denied };
+            if ( !editableStatuses.Contains( communication.Status ) && !( communication.Status == CommunicationStatus.PendingApproval && editingApproved ) )
+            {
+                return false;
+            }
+
+            bool isAuthorizedEditor = communication.IsAuthorized( Rock.Security.Authorization.EDIT, CurrentPerson );
+            bool isCreator = communication.CreatedByPersonAlias != null && CurrentPersonId.HasValue && communication.CreatedByPersonAlias.PersonId == CurrentPersonId.Value;
+            bool isApprovalEditor = communication.Status == CommunicationStatus.PendingApproval && editingApproved;
+
+            return isAuthorizedEditor || isCreator || isApprovalEditor;
+        }
+
+        /// <summary>
         /// Create or update a Communication by applying the current selections and settings.
         /// </summary>
         /// <param name="rockContext"></param>
@@ -3775,6 +3807,19 @@ function onTaskCompleted( resultData )
             var settings = new CommunicationOperationsService.CommunicationProperties();
 
             settings.CommunicationId = hfCommunicationId.Value.AsInteger();
+
+            // The communication id comes from a hidden field, so make sure the
+            // current person is still allowed to edit that communication. If
+            // not, ignore the value and treat this as a new communication.
+            if ( settings.CommunicationId.Value > 0 )
+            {
+                var existingCommunication = new CommunicationService( rockContext ).Get( settings.CommunicationId.Value );
+
+                if ( existingCommunication == null || !CanEditCommunication( existingCommunication ) )
+                {
+                    settings.CommunicationId = 0;
+                }
+            }
 
             settings.SenderPersonAliasId = CurrentPersonAliasId;
             settings.EnabledLavaCommands = GetAttributeValue( AttributeKey.EnabledLavaCommands );

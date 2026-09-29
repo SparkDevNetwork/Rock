@@ -455,6 +455,12 @@ namespace Rock.Blocks.CheckIn
                 .Where( gl => groupLocationIds.Contains( gl.Id ) )
                 .ToList();
 
+            // Only the check-in group locations shown by this block may be changed.
+            var allowedGroupLocationIds = GetGroupLocationQuery( out _ )
+                .Where( gl => groupLocationIds.Contains( gl.Id ) )
+                .Select( gl => gl.Id )
+                .ToList();
+
             // Get the schedule IdKey values that are valid. This is used so we
             // don't delete a schedule that wasn't available for selection.
             var validScheduleIds = GetSchedules().Select( s => s.Value ).ToList();
@@ -464,7 +470,7 @@ namespace Rock.Blocks.CheckIn
             {
                 var groupLocation = groupLocations.FirstOrDefault( gl => gl.IdKey == scheduledLocation.GroupLocationId );
 
-                if ( groupLocation == null )
+                if ( groupLocation == null || !allowedGroupLocationIds.Contains( groupLocation.Id ) )
                 {
                     return ActionBadRequest( "Group or Location was not valid." );
                 }
@@ -481,7 +487,16 @@ namespace Rock.Blocks.CheckIn
 
                     if ( !groupLocation.Schedules.Any( s => s.Id == scheduleId ) )
                     {
-                        groupLocation.Schedules.Add( scheduleService.Get( scheduleId.Value ) );
+                        var schedule = scheduleService.Get( scheduleId.Value );
+
+                        // Only check-in schedules may be added, the same rule
+                        // used by the schedule list and the clone schedule option.
+                        if ( schedule == null || !schedule.CheckInStartOffsetMinutes.HasValue )
+                        {
+                            continue;
+                        }
+
+                        groupLocation.Schedules.Add( schedule );
                     }
                 }
 

@@ -769,6 +769,25 @@ namespace Rock.Blocks.Mobile.CheckIn
                 return ActionBadRequest( "This kiosk does not support family registration." );
             }
 
+            if ( RequestContext.CurrentPerson == null )
+            {
+                return ActionUnauthorized();
+            }
+
+            // The registration may only modify the current person's primary
+            // family, which is the family returned by GetFamilyMembers.
+            var familyIdKey = options.Family?.Bag?.Id;
+
+            if ( familyIdKey.IsNotNullOrWhiteSpace() )
+            {
+                var familyId = new GroupService( RockContext ).GetNoTracking( familyIdKey, false )?.Id;
+
+                if ( !familyId.HasValue || familyId.Value != RequestContext.CurrentPerson.PrimaryFamilyId )
+                {
+                    return ActionForbidden( "Not authorized to edit this family." );
+                }
+            }
+
             var registration = new Rock.CheckIn.v2.FamilyRegistration( RockContext, RequestContext.CurrentPerson, template );
             var existingRegistrants = registration.GetFamilyMemberBags( RequestContext.CurrentPerson.PrimaryFamily, null );
             var newRegistrants = options.People.Where( box => box.Bag.Id.IsNullOrWhiteSpace() );

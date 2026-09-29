@@ -358,9 +358,29 @@ namespace Rock.Blocks.Communication
             }
 
             var snippetType = GetSnippetType();
-            if ( !entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) && snippetType?.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) == false )
+
+            if ( entity.Id != 0 )
             {
-                error = ActionBadRequest( $"Not authorized to edit ${Snippet.FriendlyTypeName}." );
+                // Existing snippets must belong to the snippet type configured
+                // on this block.
+                if ( snippetType == null || entity.SnippetTypeId != snippetType.Id )
+                {
+                    error = ActionBadRequest( $"{Snippet.FriendlyTypeName} not found." );
+                    return false;
+                }
+
+                // Match the initialization logic, existing snippets require
+                // edit access to the snippet itself. This also prevents
+                // editing another person's personal snippet.
+                if ( !entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
+                {
+                    error = ActionBadRequest( $"Not authorized to edit {Snippet.FriendlyTypeName}." );
+                    return false;
+                }
+            }
+            else if ( !entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) && snippetType?.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) != true )
+            {
+                error = ActionBadRequest( $"Not authorized to edit {Snippet.FriendlyTypeName}." );
                 return false;
             }
 

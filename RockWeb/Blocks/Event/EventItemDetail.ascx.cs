@@ -284,6 +284,13 @@ namespace RockWeb.Blocks.Event
             var rockContext = new RockContext();
             var eventItem = new EventItemService( rockContext ).Get( hfEventItemId.Value.AsInteger() );
 
+            // The event item id comes from a hidden field, so re-check edit rights before showing the edit form.
+            if ( eventItem == null || !CanEditEventItem( eventItem ) )
+            {
+                nbEditModeMessage.Text = EditModeMessage.ReadOnlyEditActionNotAllowed( EventItem.FriendlyTypeName );
+                return;
+            }
+
             ShowEditDetails( eventItem );
         }
 
@@ -301,6 +308,13 @@ namespace RockWeb.Blocks.Event
 
                 if ( eventItem != null )
                 {
+                    // The event item id comes from a hidden field, so re-check edit rights before deleting.
+                    if ( !CanEditEventItem( eventItem ) )
+                    {
+                        mdDeleteWarning.Show( EditModeMessage.ReadOnlyEditActionNotAllowed( EventItem.FriendlyTypeName ), ModalAlertType.Information );
+                        return;
+                    }
+
                     string errorMessage;
                     if ( !eventItemService.CanDelete( eventItem, out errorMessage ) )
                     {
@@ -347,6 +361,14 @@ namespace RockWeb.Blocks.Event
                         .Queryable( "EventItemAudiences,EventItemOccurrences.Linkages,EventItemOccurrences" )
                         .Where( i => i.Id == eventItemId )
                         .FirstOrDefault();
+                }
+
+                // The event item id comes from a hidden field, so re-check edit rights on the
+                // existing item (or on the calendar for a new item) before applying any changes.
+                if ( ( eventItem == null && !_canEdit ) || ( eventItem != null && !CanEditEventItem( eventItem ) ) )
+                {
+                    nbEditModeMessage.Text = EditModeMessage.ReadOnlyEditActionNotAllowed( EventItem.FriendlyTypeName );
+                    return;
                 }
 
                 if ( eventItem == null )
@@ -639,6 +661,24 @@ namespace RockWeb.Blocks.Event
         #endregion
 
         #region Methods
+
+        /// <summary>
+        /// Determines whether the current person can edit the event item. This mirrors the
+        /// check in <see cref="ShowDetail(int)"/> that decides whether the edit button is shown.
+        /// </summary>
+        /// <param name="eventItem">The event item.</param>
+        /// <returns><c>true</c> if the current person can edit the event item; otherwise, <c>false</c>.</returns>
+        private bool CanEditEventItem( EventItem eventItem )
+        {
+            if ( !_canEdit )
+            {
+                return false;
+            }
+
+            var calendarId = _calendarId ?? 0;
+
+            return eventItem.Id == 0 || eventItem.EventCalendarItems.Any( i => i.EventCalendarId == calendarId );
+        }
 
         /// <summary>
         /// Shows the detail.

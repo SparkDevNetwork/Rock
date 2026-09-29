@@ -128,7 +128,7 @@ namespace RockWeb.Blocks.Fundraising
             }
 
             // only show if the current person is a Leader in the Group
-            if ( !group.Members.Any( a => a.PersonId == this.CurrentPersonId && a.GroupRole.IsLeader ) )
+            if ( !IsCurrentPersonGroupLeader( group ) )
             {
                 pnlView.Visible = false;
                 return;
@@ -167,6 +167,14 @@ namespace RockWeb.Blocks.Fundraising
             int groupId = hfGroupId.Value.AsInteger();
             var groupMembersQuery = new GroupMemberService( rockContext ).Queryable().Where( a => a.GroupId == groupId );
             var group = new GroupService( rockContext ).Get( groupId );
+
+            // only bind if the current person is a Leader in the Group
+            if ( !IsCurrentPersonGroupLeader( group ) )
+            {
+                pnlView.Visible = false;
+                return;
+            }
+
             group.LoadAttributes( rockContext );
             var defaultIndividualFundRaisingGoal = group.GetAttributeValue( "IndividualFundraisingGoal" ).AsDecimalOrNull();
 
@@ -215,6 +223,16 @@ namespace RockWeb.Blocks.Fundraising
 
             gGroupMembers.DataSource = groupMemberList;
             gGroupMembers.DataBind();
+        }
+
+        /// <summary>
+        /// Determines whether the current person is a leader in the specified group.
+        /// </summary>
+        /// <param name="group">The group.</param>
+        /// <returns><c>true</c> if the current person is a leader in the group; otherwise <c>false</c>.</returns>
+        private bool IsCurrentPersonGroupLeader( Group group )
+        {
+            return group != null && group.Members.Any( a => a.PersonId == this.CurrentPersonId && a.GroupRole.IsLeader );
         }
 
         #endregion

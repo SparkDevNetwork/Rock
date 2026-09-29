@@ -355,12 +355,25 @@ namespace RockWeb.Blocks.Reporting
             int? scheduleId = bddlService.SelectedValueAsInt();
             DateTime? weekend = bddlWeekend.SelectedValue.AsDateTime();
 
+            // The campus and service values are posted by the client, so make
+            // sure they are still one of the options this block would offer.
+            if ( campusId.HasValue && !GetCampuses().Any( c => c.Id == campusId.Value ) )
+            {
+                return;
+            }
+
+            if ( campusId.HasValue && scheduleId.HasValue && !GetServices( campusId ).Any( s => s.Id == scheduleId.Value ) )
+            {
+                return;
+            }
+
             if ( campusId.HasValue && scheduleId.HasValue && weekend.HasValue )
             {
                 using ( var rockContext = new RockContext() )
                 {
                     var metricService = new MetricService( rockContext );
                     var metricValueService = new MetricValueService( rockContext );
+                    var allowedMetricIds = GetConfiguredMetricIds( rockContext );
 
                     weekend = GetWeekendDate( scheduleId, weekend, rockContext );
 
@@ -380,6 +393,14 @@ namespace RockWeb.Blocks.Reporting
                             }
 
                             int metricId = hfMetricIId.ValueAsInt();
+
+                            // The metric identifier is posted by the client, only allow
+                            // metrics that are configured for this block.
+                            if ( !allowedMetricIds.Contains( metricId ) )
+                            {
+                                continue;
+                            }
+
                             var metric = new MetricService( rockContext ).Get( metricId );
 
                             if ( metric != null )
@@ -772,6 +793,17 @@ namespace RockWeb.Blocks.Reporting
         /// <returns></returns>
         private List<Schedule> GetServices()
         {
+            return GetServices( _selectedCampusId );
+        }
+
+        /// <summary>
+        /// Gets the services, filtered by the specified campus if the block is
+        /// configured to filter schedules by campus.
+        /// </summary>
+        /// <param name="campusId">The campus identifier.</param>
+        /// <returns></returns>
+        private List<Schedule> GetServices( int? campusId )
+        {
             var services = new List<Schedule>();
             var scheduleCategoryGuids = GetAttributeValue( AttributeKey.ScheduleCategory ).SplitDelimitedValues().AsGuidList();
             foreach ( var scheduleCategoryGuid in scheduleCategoryGuids )
@@ -798,11 +830,36 @@ namespace RockWeb.Blocks.Reporting
             var filterByCampus = GetAttributeValue( AttributeKey.FilterByCampus ).AsBoolean();
             if ( filterByCampus )
             {
-                var campus = CampusCache.Get( _selectedCampusId.Value );
+                var campus = CampusCache.Get( campusId.Value );
                 services = services.Where( s => campus.CampusScheduleIds.Contains( s.Id ) ).ToList();
             }
 
             return services;
+        }
+
+        /// <summary>
+        /// Gets the identifiers of the metrics configured for this block that
+        /// have both a campus and a schedule partition. This matches the metrics
+        /// displayed by <see cref="BindMetrics"/>.
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns>The metric identifiers.</returns>
+        private List<int> GetConfiguredMetricIds( RockContext rockContext )
+        {
+            int campusEntityTypeId = EntityTypeCache.Get( typeof( Rock.Model.Campus ) ).Id;
+            int scheduleEntityTypeId = EntityTypeCache.Get( typeof( Rock.Model.Schedule ) ).Id;
+
+            var metricCategories = MetricCategoriesFieldAttribute.GetValueAsGuidPairs( GetAttributeValue( AttributeKey.MetricCategories ) );
+            var metricGuids = metricCategories.Select( a => a.MetricGuid ).ToList();
+
+            return new MetricService( rockContext )
+                .GetByGuids( metricGuids )
+                .Where( m =>
+                    m.MetricPartitions.Count == 2 &&
+                    m.MetricPartitions.Any( p => p.EntityTypeId.HasValue && p.EntityTypeId.Value == campusEntityTypeId ) &&
+                    m.MetricPartitions.Any( p => p.EntityTypeId.HasValue && p.EntityTypeId.Value == scheduleEntityTypeId ) )
+                .Select( m => m.Id )
+                .ToList();
         }
 
         /// <summary>
@@ -820,6 +877,18 @@ namespace RockWeb.Blocks.Reporting
             DateTime? weekend = bddlWeekend.SelectedValue.AsDateTime();
 
             var notes = new List<string>();
+
+            // The campus and service values are posted by the client, so ignore
+            // them if they are not one of the options this block would offer.
+            if ( campusId.HasValue && !GetCampuses().Any( c => c.Id == campusId.Value ) )
+            {
+                campusId = null;
+            }
+
+            if ( campusId.HasValue && scheduleId.HasValue && !GetServices( campusId ).Any( s => s.Id == scheduleId.Value ) )
+            {
+                scheduleId = null;
+            }
 
             if ( campusId.HasValue && scheduleId.HasValue && weekend.HasValue )
             {

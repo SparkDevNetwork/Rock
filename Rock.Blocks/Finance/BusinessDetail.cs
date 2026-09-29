@@ -497,6 +497,13 @@ Because the contents of this setting will be rendered inside a menu element, it 
                 // If editing an existing entity then load it and make sure it
                 // was found and can still be edited.
                 entity = entityService.Get( idKey, !PageCache.Layout.Site.DisablePredictableIds );
+
+                // This block only works with businesses, never allow it to
+                // modify or delete a regular person record.
+                if ( entity != null && !entity.IsBusiness() )
+                {
+                    entity = null;
+                }
             }
             else
             {

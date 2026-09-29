@@ -258,7 +258,13 @@ namespace RockWeb.Blocks.Cms
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void lbEdit_Click( object sender, EventArgs e )
         {
-            ShowEditDetails( GetContentChannel( hfId.Value.AsInteger() ) );
+            var contentChannel = GetContentChannel( hfId.Value.AsInteger() );
+            if ( contentChannel == null || !CanEditContentChannel( contentChannel ) )
+            {
+                return;
+            }
+
+            ShowEditDetails( contentChannel );
         }
 
         /// <summary>
@@ -347,6 +353,12 @@ namespace RockWeb.Blocks.Cms
             else
             {
                 contentChannel = contentChannelService.Get( contentChannelId );
+            }
+
+            if ( contentChannel != null && !CanEditContentChannel( contentChannel ) )
+            {
+                nbEditModeMessage.Text = EditModeMessage.NotAuthorizedToEdit( ContentChannel.FriendlyTypeName );
+                return;
             }
 
             if ( contentChannel != null )
@@ -809,6 +821,22 @@ namespace RockWeb.Blocks.Cms
                 fieldsetViewSummary.Visible = false;
             }
 
+        }
+
+        /// <summary>
+        /// Determines whether the current person can edit the content channel. This
+        /// mirrors the check used by <see cref="ShowDetail(int)"/>.
+        /// </summary>
+        /// <param name="contentChannel">The content channel.</param>
+        /// <returns><c>true</c> if the current person can edit the content channel; otherwise, <c>false</c>.</returns>
+        private bool CanEditContentChannel( ContentChannel contentChannel )
+        {
+            if ( IsUserAuthorized( Authorization.EDIT ) )
+            {
+                return true;
+            }
+
+            return contentChannel.Id != 0 && contentChannel.IsAuthorized( Authorization.EDIT, CurrentPerson );
         }
 
         /// <summary>

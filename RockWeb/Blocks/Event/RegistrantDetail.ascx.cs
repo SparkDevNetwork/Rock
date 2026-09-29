@@ -362,11 +362,27 @@ namespace RockWeb.Blocks.Event
                     int? binaryFileId = fuSignedDocument.BinaryFileId;
                     if ( signatureDocumentId.HasValue )
                     {
-                        document = documentService.Get( signatureDocumentId.Value );
-                        if ( registrant.SignatureDocument == null )
+                        // The document id comes from a hidden field, so only accept the document already
+                        // linked to this registrant, or a document for this template and person, which
+                        // is how it was originally selected.
+                        var signatureDocumentTemplateId = this.RegistrationTemplate.RequiredSignatureDocumentTemplate.Id;
+                        var currentSignatureDocumentId = registrant.SignatureDocumentId;
+                        document = documentService.Queryable()
+                            .FirstOrDefault( d => d.Id == signatureDocumentId.Value
+                                && ( d.Id == currentSignatureDocumentId
+                                    || ( d.SignatureDocumentTemplateId == signatureDocumentTemplateId
+                                        && d.AppliesToPersonAlias.PersonId == personId.Value ) ) );
+
+                        if ( document != null && registrant.SignatureDocument == null )
                         {
                             registrant.SignatureDocument = document;
                         }
+                    }
+
+                    // Only accept the document's current file or a new upload, otherwise keep the current file.
+                    if ( !binaryFileService.IsUploadedBinaryFileAllowedForPerson( binaryFileId, document?.BinaryFileId, CurrentPerson ) )
+                    {
+                        binaryFileId = document?.BinaryFileId;
                     }
 
                     if ( document == null && binaryFileId.HasValue )

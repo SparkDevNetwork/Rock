@@ -824,6 +824,14 @@ namespace Rock.Blocks.Cms
 
             var isNew = entity.Id == 0;
 
+            // Make sure the item attributes are either new or already belong
+            // to this content channel.
+            var itemEntityTypeId = EntityTypeCache.Get( typeof( ContentChannelItem ) ).Id;
+            if ( !PublicAttributeHelper.AreAttributeEditsAllowed( box.Bag.ItemAttributes, itemEntityTypeId, "ContentChannelId", isNew ? null : entity.Id.ToString(), RockContext ) )
+            {
+                return ActionBadRequest( "Invalid attribute." );
+            }
+
             RockContext.WrapTransaction( () =>
             {
                 RockContext.SaveChanges();

@@ -209,15 +209,50 @@ namespace RockWeb.Blocks.BulkImport
 
         protected void fupCSVFile_FileUploaded( object sender, EventArgs e )
         {
+            if ( !IsInUploadFolder( fupCSVFile.UploadedContentFilePath ) )
+            {
+                hfCSVFileName.Value = string.Empty;
+                return;
+            }
+
             hfCSVFileName.Value = fupCSVFile.UploadedContentFilePath;
             nbErrorsInFile.Visible = false; // hide any error messages from the previous file upload if any.
         }
 
         protected void fupCSVFile_FileRemoved( object sender, EventArgs e )
         {
-            string filePath = Request.MapPath( hfCSVFileName.Value );
-            File.Delete( filePath );
+            if ( IsInUploadFolder( hfCSVFileName.Value ) )
+            {
+                string filePath = Request.MapPath( hfCSVFileName.Value );
+                File.Delete( filePath );
+            }
+
             hfCSVFileName.Value = ""; // nullify the file name to be processed.
+        }
+
+        /// <summary>
+        /// Determines whether the virtual path refers to a file in the folder
+        /// that fupCSVFile saves uploaded files to. The file name is posted back by
+        /// the browser, so it must be checked before it is used.
+        /// </summary>
+        /// <param name="virtualPath">The virtual path of the file.</param>
+        /// <returns><c>true</c> if the file is within the upload folder; otherwise <c>false</c>.</returns>
+        private bool IsInUploadFolder( string virtualPath )
+        {
+            if ( virtualPath.IsNullOrWhiteSpace() )
+            {
+                return false;
+            }
+
+            try
+            {
+                return Rock.Utility.FileUtilities.IsPathWithinFolder( this.Request.MapPath( virtualPath ), this.Request.MapPath( fupCSVFile.RootFolder ) );
+            }
+            catch
+            {
+                // MapPath throws if the path is invalid or outside of the application.
+                return false;
+            }
         }
 
         protected void rptCSVHeaders_ItemDataBound( object sender, RepeaterItemEventArgs e )
@@ -228,7 +263,7 @@ namespace RockWeb.Blocks.BulkImport
 
         protected void btnStart_Click( object sender, EventArgs e )
         {
-            if ( hfCSVFileName.Value.IsNullOrWhiteSpace() )
+            if ( !IsInUploadFolder( hfCSVFileName.Value ) )
             {
                 nbErrorsInFile.Text = $"A CSV file must be selected first.";
                 nbErrorsInFile.Visible = true;
@@ -309,6 +344,13 @@ namespace RockWeb.Blocks.BulkImport
             }
 
             var bulkImportType = cbAllowUpdatingExisting.Checked ? BulkImporter.ImportUpdateType.AlwaysUpdate : BulkImporter.ImportUpdateType.AddOnly;
+
+            if ( !IsInUploadFolder( fupCSVFile.UploadedContentFilePath ) )
+            {
+                nbErrorsInFile.Text = $"A CSV file must be selected first.";
+                nbErrorsInFile.Visible = true;
+                return;
+            }
 
             var personCSVFileName = this.Request.MapPath( fupCSVFile.UploadedContentFilePath );
             pnlProgress.Visible = true;

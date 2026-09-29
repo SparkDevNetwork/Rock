@@ -735,6 +735,7 @@ mission. We are so grateful for your commitment.</p>
             public const string AvailableAccountsJSON = "AvailableAccountsJSON";
             public const string SelectedAccountsJSON = "SelectedAccountsJSON";
             public const string CaptchaFailCount = "CaptchaFailCount";
+            public const string TransactionGuid = "TransactionGuid";
         }
 
         #endregion Block Keys
@@ -792,6 +793,16 @@ mission. We are so grateful for your commitment.</p>
         {
             get { return ViewState[ViewStateKey.ScheduleId] as int?; }
             set { ViewState[ViewStateKey.ScheduleId] = value; }
+        }
+
+        /// <summary>
+        /// Gets or sets the unique guid used for the transaction being processed.
+        /// This is kept in ViewState so it cannot be changed by the client.
+        /// </summary>
+        protected Guid TransactionGuid
+        {
+            get { return ViewState[ViewStateKey.TransactionGuid] as Guid? ?? Guid.Empty; }
+            set { ViewState[ViewStateKey.TransactionGuid] = value; }
         }
 
         protected bool DisplayPhone
@@ -1073,7 +1084,7 @@ mission. We are so grateful for your commitment.</p>
 
             if ( !Page.IsPostBack )
             {
-                hfTransactionGuid.Value = Guid.NewGuid().ToString();
+                TransactionGuid = Guid.NewGuid();
                 if ( this.Request.UrlReferrer != null )
                 {
                     lHistoryBackButton.HRef = this.Request.UrlReferrer.ToString();
@@ -1550,7 +1561,8 @@ mission. We are so grateful for your commitment.</p>
 
             DatabindAddAccountsButton( GetAttributeValue( AttributeKey.EnableAccountHierarchy ).AsBoolean() );
 
-            if ( accountId.HasValue )
+            // Only add the account if it was one of the available accounts offered to the individual.
+            if ( accountId.HasValue && selected.Any() )
             {
                 var selectableAccountIds = caapPromptForAccountAmounts.SelectableAccountIds.ToList();
                 selectableAccountIds.Add( accountId.Value );
@@ -1894,7 +1906,7 @@ mission. We are so grateful for your commitment.</p>
         {
             // They are hitting Confirm on the "Possible Duplicate" warning, so reset the TransactionCode and Transaction.Guid which would have preventing them from doing a duplicate
             TransactionCode = string.Empty;
-            hfTransactionGuid.Value = Guid.NewGuid().ToString();
+            TransactionGuid = Guid.NewGuid();
 
             string errorMessage = string.Empty;
             if ( ProcessTransaction( out errorMessage ) )
@@ -2289,9 +2301,9 @@ mission. We are so grateful for your commitment.</p>
 
                 mergeFields.Add( "AmountLimit", this.PageParameter( PageParameterKey.AmountLimit ).AsDecimalOrNull() );
 
-                if ( hfTransactionGuid.Value.AsGuidOrNull().HasValue )
+                if ( TransactionGuid != Guid.Empty )
                 {
-                    var financialTransaction = new FinancialTransactionService( rockContext ).Get( hfTransactionGuid.Value.AsGuid() );
+                    var financialTransaction = new FinancialTransactionService( rockContext ).Get( TransactionGuid );
                     mergeFields.Add( "FinancialTransaction", financialTransaction );
                 }
 
@@ -3435,7 +3447,7 @@ mission. We are so grateful for your commitment.</p>
             var rockContext = new RockContext();
             if ( string.IsNullOrWhiteSpace( TransactionCode ) )
             {
-                var transactionGuid = hfTransactionGuid.Value.AsGuid();
+                var transactionGuid = TransactionGuid;
 
                 var gateway = this.FinancialGatewayComponent;
                 var financialGateway = this.FinancialGateway;
@@ -3789,7 +3801,7 @@ mission. We are so grateful for your commitment.</p>
             IEntity transactionEntity = GetTransactionEntity();
             mergeFields.Add( "TransactionEntity", transactionEntity );
 
-            var transactionGuid = hfTransactionGuid.Value.AsGuid();
+            var transactionGuid = TransactionGuid;
 
             var rockContext = new RockContext();
 

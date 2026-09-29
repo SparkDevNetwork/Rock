@@ -444,7 +444,8 @@ namespace RockWeb.Blocks.Cms
             var rockContext = new RockContext();
             DataViewFilterService dataViewFilterService = new DataViewFilterService( rockContext );
 
-            int? dataViewFilterId = hfDataFilterId.Value.AsIntegerOrNull();
+            // Only delete the filter that is stored in this block's settings.
+            int? dataViewFilterId = GetAttributeValue( AttributeKey.FilterId ).AsIntegerOrNull();
             if ( dataViewFilterId.HasValue )
             {
                 var oldDataViewFilter = dataViewFilterService.Get( dataViewFilterId.Value );
@@ -1479,7 +1480,7 @@ $(document).ready(function() {
         /// </summary>
         public void ShowEdit()
         {
-            int? filterId = hfDataFilterId.Value.AsIntegerOrNull();
+            int? filterId = GetAttributeValue( AttributeKey.FilterId ).AsIntegerOrNull();
 
             if ( ChannelGuid.HasValue )
             {

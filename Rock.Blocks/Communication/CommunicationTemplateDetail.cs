@@ -335,7 +335,14 @@ namespace Rock.Blocks.Communication
 
                 if ( newImageFileGuid.HasValue )
                 {
-                    communicationTemplate.ImageFile = binaryFileService.Get( newImageFileGuid.Value );
+                    var newImageFile = binaryFileService.Get( newImageFileGuid.Value );
+
+                    if ( newImageFile != null && !binaryFileService.IsUploadedBinaryFileAllowedForPerson( newImageFile.Id, null, currentPerson ) )
+                    {
+                        return ActionBadRequest( "The template preview image is not valid." );
+                    }
+
+                    communicationTemplate.ImageFile = newImageFile;
                     communicationTemplate.ImageFileId = communicationTemplate.ImageFile?.Id;
                 }
                 else
@@ -358,7 +365,14 @@ namespace Rock.Blocks.Communication
             {
                 if ( newLogoBinaryFileGuid.HasValue )
                 {
-                    communicationTemplate.LogoBinaryFile = binaryFileService.Get( newLogoBinaryFileGuid.Value );
+                    var newLogoBinaryFile = binaryFileService.Get( newLogoBinaryFileGuid.Value );
+
+                    if ( newLogoBinaryFile != null && !binaryFileService.IsUploadedBinaryFileAllowedForPerson( newLogoBinaryFile.Id, null, currentPerson ) )
+                    {
+                        return ActionBadRequest( "The template logo is not valid." );
+                    }
+
+                    communicationTemplate.LogoBinaryFile = newLogoBinaryFile;
                     communicationTemplate.LogoBinaryFileId = communicationTemplate.LogoBinaryFile?.Id;
                 }
                 else
@@ -405,8 +419,18 @@ namespace Rock.Blocks.Communication
                 communicationTemplate.Message = bag.Message;
 
                 var binaryFileGuids = bag.Attachments?.Select( a => a.Value ).AsGuidList();
-                var binaryFileIds = binaryFileService.Queryable()
+                var binaryFiles = binaryFileService.Queryable()
                     .Where( b => binaryFileGuids.Contains( b.Guid ) )
+                    .ToList();
+
+                // Make sure any newly added attachments are files the person
+                // is allowed to use.
+                if ( binaryFiles.Any( b => communicationTemplate.Attachments.All( x => x.BinaryFileId != b.Id ) && !binaryFileService.IsUploadedBinaryFileAllowedForPerson( b.Id, null, currentPerson ) ) )
+                {
+                    return ActionBadRequest( "One or more attachments are not valid." );
+                }
+
+                var binaryFileIds = binaryFiles
                     .Select( b => b.Id )
                     .ToList();
 
