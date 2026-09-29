@@ -436,5 +436,29 @@ describe("createSession", () => {
 
         expect(ended).toBe(0);
     });
+
+    test("a platform token that arrives after the session stopped is not kept", async () => {
+        let answer!: (result: ExchangeResult) => void;
+        let calls = 0;
+        const f = fakes({
+            exchange: async (churchToken: string): Promise<ExchangeResult> => {
+                calls++;
+                if (calls === 1) {
+                    return { ok: true, accessToken: `platform-for-${churchToken}`, expiresInSeconds: 300 };
+                }
+                return new Promise(resolve => answer = resolve);
+            }
+        });
+        const session = createSession(f.dependencies);
+        await session.start();
+
+        const refreshing = session.refresh();
+        await settle();
+        session.stop();
+        answer({ ok: true, accessToken: "platform-late", expiresInSeconds: 300 });
+        await refreshing;
+
+        expect(session.currentToken()).toBe("platform-for-church-1");
+    });
 });
 

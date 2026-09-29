@@ -65,7 +65,7 @@ type LiveTopic = {
 function build(): {
     shell: ReturnType<typeof createChatShell>,
     history: Record<string, Deferred<RpcResult>[]>,
-    saves: Array<{ channelId: string, messageId: number, answer: Deferred<Response> }>,
+    saves: Array<{ channelId: string, messageId: number, answer: Deferred<Response>, token?: string | null }>,
     joined: string[],
     removed: string[],
     stored: Record<string, string>,
@@ -78,7 +78,7 @@ function build(): {
     const counts = { mints: 0, clients: 0, setAuths: 0, bootstraps: 0 };
     const mintGate = { value: "ok" };
     const history: Record<string, Deferred<RpcResult>[]> = {};
-    const saves: Array<{ channelId: string, messageId: number, answer: Deferred<Response> }> = [];
+    const saves: Array<{ channelId: string, messageId: number, answer: Deferred<Response>, token?: string | null }> = [];
     const joined: string[] = [];
     const removed: string[] = [];
     const stored: Record<string, string> = {};
@@ -140,7 +140,8 @@ function build(): {
             }
             const body = JSON.parse(init.body as string);
             const answer = deferred<Response>();
-            saves.push({ channelId: body.p_channel_id, messageId: body.p_message_id, answer });
+            const token = (init.headers as Record<string, string> | undefined)?.["Authorization"] ?? null;
+            saves.push({ channelId: body.p_channel_id, messageId: body.p_message_id, answer, token });
             return answer.promise;
         },
         storage: { getItem: k => stored[k] ?? null, setItem: (k, v) => stored[k] = v },
@@ -468,6 +469,22 @@ describe("the live cut", () => {
         await starting;
 
         expect(h.joined).toEqual([]);
+    });
+
+    test("closing stops refreshes before the last save, and the save still carries the token", async () => {
+        const h = await started();
+        h.shell.seen(10);
+        const before = h.counts.mints;
+
+        const stopping = h.shell.stop();
+        await settle();
+        personal(h, "session.recheck", {});
+        await settle();
+        h.saves.forEach(save => save.answer.resolve(fakeResponse(200, { read_cursor: save.messageId, last_message_id: save.messageId })));
+        await stopping;
+
+        expect(h.counts.mints).toBe(before);
+        expect(h.saves.map(save => save.token)).toEqual(["Bearer platform"]);
     });
 });
 
