@@ -60,6 +60,12 @@ namespace Rock.ViewModels.Blocks.Fundraising.FundraisingParticipant
         public FundraisingParticipantRequirementsBag Requirements { get; set; }
 
         /// <summary>
+        /// Gets or sets the security grant token used by controls on the block.
+        /// <c>null</c> when the viewer is not authorized to act on the participant's requirements.
+        /// </summary>
+        public string SecurityGrantToken { get; set; }
+
+        /// <summary>
         /// Gets or sets the profile-completeness tip shown to the participant (for example,
         /// to add a photo or a personal introduction). <c>null</c> when nothing is missing.
         /// </summary>
