@@ -2729,7 +2729,15 @@ namespace Rock.Blocks.Event
                     if ( familyMembers.Count() == 1 )
                     {
                         person = familyMembers.First();
-                        if ( !string.IsNullOrWhiteSpace( email ) )
+
+                        // The registrar may have been matched from the registrant details
+                        // and the email comes from the client, so only update it when the
+                        // current person is in the registrar's family.
+                        var currentPersonId = GetCurrentPerson()?.Id;
+                        var isCurrentPersonInRegistrarFamily = currentPersonId.HasValue
+                            && registrar.GetFamilyMembers( true, rockContext ).Any( m => m.PersonId == currentPersonId.Value );
+
+                        if ( !string.IsNullOrWhiteSpace( email ) && isCurrentPersonInRegistrarFamily )
                         {
                             person.Email = email;
                         }
