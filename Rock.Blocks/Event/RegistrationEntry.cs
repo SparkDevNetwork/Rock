@@ -3319,7 +3319,15 @@ namespace Rock.Blocks.Event
             {
                 // If the resolved person matches a single family member of the registar or logged in person,
                 // then update the person's email if the new email is not blank and the field is unlocked for editing.
-                var isSingleFamilyMemberMatch = resolveRegistrantPersonResult.IsSingleRegistrarFamilyMemberMatch
+                // The registrar may have been matched from the registrant details and the email comes from
+                // the client, so a registrar family member match only counts when the current person is in
+                // the registrar's family.
+                var loggedInPersonId = GetCurrentPerson()?.Id;
+                var isCurrentPersonInRegistrarFamily = loggedInPersonId.HasValue
+                    && registrar != null
+                    && registrar.GetFamilyMembers( true, rockContext ).Any( m => m.PersonId == loggedInPersonId.Value );
+
+                var isSingleFamilyMemberMatch = ( resolveRegistrantPersonResult.IsSingleRegistrarFamilyMemberMatch && isCurrentPersonInRegistrarFamily )
                     || resolveRegistrantPersonResult.IsSingleCurrentUserFamilyMemberMatch;
 
                 if ( isSingleFamilyMemberMatch
