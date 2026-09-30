@@ -461,6 +461,7 @@ namespace Rock.Blocks.Crm.PersonDetail
             var canEditRecordStatus = canAdministrate || BlockCache.IsAuthorized( SecurityActionKey.EditRecordStatus, RequestContext.CurrentPerson );
             var canEditRecordSource = canAdministrate;
             var canEditFinancials = canAdministrate || BlockCache.IsAuthorized( SecurityActionKey.EditFinancials, RequestContext.CurrentPerson );
+            var isPhotoInvalid = false;
 
             box.IfValidProperty( nameof( box.Bag.Title ),
                 () => entity.TitleValueId = GetDefinedValueId( box.Bag.Title ) );
@@ -485,6 +486,17 @@ namespace Rock.Blocks.Crm.PersonDetail
                 {
                     var newPhotoGuid = box.Bag.Photo?.Value.AsGuidOrNull();
                     var newPhotoBinaryFile = newPhotoGuid.HasValue ? new BinaryFileService( RockContext ).Get( newPhotoGuid.Value ) : null;
+
+                    // Only accept a photo the current person uploaded (or the one
+                    // already set). Otherwise a tampered Guid could attach any file
+                    // as the photo, and a later change would mark that file
+                    // temporary so cleanup deletes it.
+                    if ( newPhotoBinaryFile != null && !IsPhotoAllowedForPerson( newPhotoBinaryFile, entity.PhotoId ) )
+                    {
+                        isPhotoInvalid = true;
+                        return;
+                    }
+
                     entity.PhotoId = newPhotoBinaryFile?.Id;
 
                     // A newly uploaded photo starts out temporary; keep it now that it is in use.
@@ -681,7 +693,52 @@ namespace Rock.Blocks.Crm.PersonDetail
             box.IfValidProperty( nameof( box.Bag.SearchKeys ),
                 () => UpdateSearchKeys( entity, box.Bag.SearchKeys ) );
 
+            if ( isPhotoInvalid )
+            {
+                return false;
+            }
+
             return true;
+        }
+
+        /// <summary>
+        /// Determines whether the posted photo may be set as the person's photo.
+        /// </summary>
+        /// <param name="photoBinaryFile">The binary file posted as the new photo.</param>
+        /// <param name="currentPhotoId">The identifier of the person's current photo.</param>
+        /// <returns><c>true</c> if the photo may be used; otherwise <c>false</c>.</returns>
+        private bool IsPhotoAllowedForPerson( BinaryFile photoBinaryFile, int? currentPhotoId )
+        {
+            var currentPerson = RequestContext.CurrentPerson;
+
+            if ( new BinaryFileService( RockContext ).IsUploadedBinaryFileAllowedForPerson( photoBinaryFile.Id, currentPhotoId, currentPerson ) )
+            {
+                return true;
+            }
+
+            /*
+                9/30/26 - CLAUDE
+
+                The ImageEditor control used for the photo uploads with
+                isTemporary set to false, so the shared helper rejects a photo
+                that was just uploaded. Also accept a person image file that
+                was created by the current person, which is what the upload
+                handler records for that upload. Same rule as the Fundraising
+                Participant block.
+
+                Reason: ImageEditor uploads are not temporary files.
+            */
+            var personImageFileTypeId = BinaryFileTypeCache.GetId( Rock.SystemGuid.BinaryFiletype.PERSON_IMAGE.AsGuid() );
+            var isPersonImage = personImageFileTypeId.HasValue && photoBinaryFile.BinaryFileTypeId == personImageFileTypeId.Value;
+
+            if ( currentPerson == null || !isPersonImage || !photoBinaryFile.CreatedByPersonAliasId.HasValue )
+            {
+                return false;
+            }
+
+            var createdByPersonId = new PersonAliasService( RockContext ).GetPersonId( photoBinaryFile.CreatedByPersonAliasId.Value );
+
+            return createdByPersonId.HasValue && createdByPersonId.Value == currentPerson.Id;
         }
 
         /// <summary>

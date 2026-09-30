@@ -2096,6 +2096,13 @@ namespace Rock.Blocks.Group
                         .Include( m => m.Group )
                         .FirstOrDefault( m => m.GroupId == entity.GroupId && m.PersonId == signUpPerson.Id );
 
+                    // System members are read-only, and TryGetEntityForEditAction
+                    // only checked the new member, so check the swapped-in one too.
+                    if ( existingMember != null && existingMember.IsSystem )
+                    {
+                        return ActionBadRequest( $"Not authorized to edit {GroupMember.FriendlyTypeName}." );
+                    }
+
                     if ( existingMember != null )
                     {
                         // Discard the blank insert that TryGetEntityForEditAction added and edit the existing member.
@@ -2273,7 +2280,9 @@ namespace Rock.Blocks.Group
                 return ActionBadRequest( GroupArchivedMessage );
             }
 
-            if ( !IsAuthorizedToEdit( groupMember.Group ) )
+            // System members are read-only (the Move button is hidden for
+            // them), and moving deletes or archives the source member.
+            if ( groupMember.IsSystem || !IsAuthorizedToEdit( groupMember.Group ) )
             {
                 return ActionBadRequest( "Not authorized to move this group member." );
             }

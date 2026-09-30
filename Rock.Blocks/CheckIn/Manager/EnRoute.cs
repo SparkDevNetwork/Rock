@@ -185,8 +185,9 @@ namespace Rock.Blocks.CheckIn.Manager
                 } );
             }
 
-            var attendanceService = new AttendanceService( RockContext );
-            var attendances = attendanceService.Queryable()
+            // Only attendance the list could show (today, context campus) is
+            // loaded, so a tampered id cannot read another attendance.
+            var attendances = GetTodaysAttendanceQuery( RockContext )
                 .Include( a => a.Occurrence.Group )
                 .Include( a => a.Occurrence.Location )
                 .Include( a => a.Occurrence.Schedule )
@@ -235,8 +236,7 @@ namespace Rock.Blocks.CheckIn.Manager
         [BlockAction]
         public BlockActionResult RefreshMovePersonOptions( int attendanceId )
         {
-            var attendance = new AttendanceService( RockContext )
-                .Queryable()
+            var attendance = GetTodaysAttendanceQuery( RockContext )
                 .AsNoTracking()
                 .Include( a => a.Occurrence.Group )
                 .FirstOrDefault( a => a.Id == attendanceId );
@@ -271,7 +271,8 @@ namespace Rock.Blocks.CheckIn.Manager
 
             var attendanceService = new AttendanceService( RockContext );
             var attendanceOccurrenceService = new AttendanceOccurrenceService( RockContext );
-            var attendance = attendanceService.Get( request.AttendanceId );
+            var attendance = GetTodaysAttendanceQuery( RockContext )
+                .FirstOrDefault( a => a.Id == request.AttendanceId );
 
             if ( attendance == null )
             {
@@ -294,6 +295,14 @@ namespace Rock.Blocks.CheckIn.Manager
             if ( !request.GroupId.HasValue )
             {
                 return ActionOk( new EnRouteMovePersonResponseBag { ErrorMessage = "Group Not Found" } );
+            }
+
+            // Only the group, location and schedule combinations the Move
+            // Person modal offers are allowed. Otherwise a tampered request
+            // could move the person into any group or room.
+            if ( !IsMoveTargetAllowed( attendance, request.GroupId.Value, request.LocationId.Value, request.ScheduleId.Value ) )
+            {
+                return ActionOk( new EnRouteMovePersonResponseBag { ErrorMessage = "The selected group, location and schedule are not valid for this attendance." } );
             }
 
             var selectedOccurrenceDate = attendance.Occurrence.OccurrenceDate;
@@ -459,16 +468,19 @@ namespace Rock.Blocks.CheckIn.Manager
         }
 
         /// <summary>
-        /// Queries the attendance records for today, applying all of the
-        /// specified filter criteria, and maps the results to
-        /// <see cref="EnRouteAttendeeBag"/> rows for the grid.
+        /// Gets the base attendance query for the En Route list: attendance
+        /// for today that has a person, group, schedule and location, limited
+        /// to the context campus when there is one. The grid filters and the
+        /// move actions both start from this query, so a move can only target
+        /// attendance the list could show.
         /// </summary>
-        private List<EnRouteAttendeeBag> GetAttendees( RockContext rockContext, List<int> selectedScheduleIds, List<int> selectedGroupIds, bool includeChildGroups, string searchText )
+        /// <param name="rockContext">The database context.</param>
+        /// <returns>The attendance query.</returns>
+        private IQueryable<Attendance> GetTodaysAttendanceQuery( RockContext rockContext )
         {
             var startDateTime = RockDateTime.Today;
             var campusCache = GetCampusFromContext();
             var currentDateTime = campusCache != null ? campusCache.CurrentDateTime : RockDateTime.Now;
-            var showOnlyParentGroup = GetAttributeValue( AttributeKey.ShowOnlyParentGroup ).AsBoolean();
 
             // Base attendance query: today, did attend, has required occurrence fields.
             var attendanceQuery = new AttendanceService( rockContext ).Queryable().Where( a =>
@@ -486,6 +498,47 @@ namespace Rock.Blocks.CheckIn.Manager
                 var campusLocationIds = new LocationService( rockContext ).GetAllDescendentIds( campusCache.LocationId.Value ).ToList();
                 attendanceQuery = attendanceQuery.Where( a => campusLocationIds.Contains( a.Occurrence.LocationId.Value ) );
             }
+
+            return attendanceQuery;
+        }
+
+        /// <summary>
+        /// Determines whether the attendance can be moved to the specified
+        /// group, location and schedule. Only the combinations offered by the
+        /// Move Person modal, or the attendance's current one, are allowed.
+        /// </summary>
+        /// <param name="attendance">The attendance being moved.</param>
+        /// <param name="groupId">The target group identifier.</param>
+        /// <param name="locationId">The target location identifier.</param>
+        /// <param name="scheduleId">The target schedule identifier.</param>
+        /// <returns><c>true</c> if the move target is allowed; otherwise <c>false</c>.</returns>
+        private bool IsMoveTargetAllowed( Attendance attendance, int groupId, int locationId, int scheduleId )
+        {
+            var isCurrentTarget = attendance.Occurrence.GroupId == groupId
+                && attendance.Occurrence.LocationId == locationId
+                && attendance.Occurrence.ScheduleId == scheduleId;
+
+            if ( isCurrentTarget )
+            {
+                return true;
+            }
+
+            return CheckinManagerHelper.GetGroupLocationSchedulesForPersonMove( RockContext, attendance )
+                .Any( gls => gls.Group.Id == groupId && gls.Location.Id == locationId && gls.Schedule.Id == scheduleId );
+        }
+
+        /// <summary>
+        /// Queries the attendance records for today, applying all of the
+        /// specified filter criteria, and maps the results to
+        /// <see cref="EnRouteAttendeeBag"/> rows for the grid.
+        /// </summary>
+        private List<EnRouteAttendeeBag> GetAttendees( RockContext rockContext, List<int> selectedScheduleIds, List<int> selectedGroupIds, bool includeChildGroups, string searchText )
+        {
+            var campusCache = GetCampusFromContext();
+            var currentDateTime = campusCache != null ? campusCache.CurrentDateTime : RockDateTime.Now;
+            var showOnlyParentGroup = GetAttributeValue( AttributeKey.ShowOnlyParentGroup ).AsBoolean();
+
+            var attendanceQuery = GetTodaysAttendanceQuery( rockContext );
 
             // Schedule filter.
             if ( selectedScheduleIds.Any() )
