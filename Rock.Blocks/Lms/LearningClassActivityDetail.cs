@@ -734,6 +734,19 @@ namespace Rock.Blocks.Lms
                 return ActionNotFound();
             }
 
+            // Make sure the activity exists and the person can edit it.
+            var entity = new LearningClassActivityService( RockContext ).Get( key, !PageCache.Layout.Site.DisablePredictableIds );
+
+            if ( entity == null )
+            {
+                return ActionNotFound();
+            }
+
+            if ( !entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
+            {
+                return ActionBadRequest( $"Not authorized to copy {LearningClassActivity.FriendlyTypeName}." );
+            }
+
             var copiedEntity = new LearningClassActivityService( new RockContext() ).Copy( key );
 
             var queryParams = new Dictionary<string, string>

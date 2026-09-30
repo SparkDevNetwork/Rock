@@ -466,6 +466,13 @@ namespace Rock.Blocks.Core
                 return ActionBadRequest( validationMessage );
             }
 
+            // Make sure existing attributes can only be updated if they
+            // already belong to this file type.
+            if ( !PublicAttributeHelper.AreAttributeEditsAllowed( box.Bag.BinaryFileTypeAttributes, new BinaryFile().TypeId, "BinaryFileTypeId", entity.Id == 0 ? null : entity.Id.ToString(), RockContext ) )
+            {
+                return ActionBadRequest( "Invalid attribute." );
+            }
+
             RockContext.WrapTransaction( () =>
             {
                 RockContext.SaveChanges();

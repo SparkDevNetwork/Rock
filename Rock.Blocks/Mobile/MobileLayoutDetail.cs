@@ -250,6 +250,13 @@ namespace Rock.Blocks.Mobile
                 return false;
             }
 
+            // Ensure an existing layout is part of a mobile site.
+            if ( entity.Id != 0 && SiteCache.Get( entity.SiteId )?.SiteType != SiteType.Mobile )
+            {
+                error = ActionBadRequest( "This block can only edit mobile layouts." );
+                return false;
+            }
+
             if ( !BlockCache.IsAuthorized( Rock.Security.Authorization.EDIT, RequestContext.CurrentPerson ) )
             {
                 error = ActionBadRequest( $"Not authorized to edit ${Layout.FriendlyTypeName}." );
@@ -318,6 +325,12 @@ namespace Rock.Blocks.Mobile
                 if ( site == null )
                 {
                     return ActionBadRequest( "Site not found." );
+                }
+
+                // Ensure the new layout is being added to a mobile site.
+                if ( site.SiteType != SiteType.Mobile )
+                {
+                    return ActionBadRequest( "This block can only edit mobile layouts." );
                 }
 
                 entity.SiteId = site.Id;

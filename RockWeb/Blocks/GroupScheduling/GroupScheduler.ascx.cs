@@ -2324,6 +2324,22 @@ btnCopyToClipboard.ClientID );
         }
 
         /// <summary>
+        /// Determines whether the current person has EDIT or SCHEDULE permission on the group.
+        /// This is the same check used by <see cref="GetAuthorizedListedGroups"/>.
+        /// </summary>
+        /// <param name="group">The group.</param>
+        /// <returns><c>true</c> if the current person is authorized; otherwise, <c>false</c>.</returns>
+        private bool IsAuthorizedToScheduleGroup( Group group )
+        {
+            if ( group == null )
+            {
+                return false;
+            }
+
+            return group.IsAuthorized( Authorization.EDIT, this.CurrentPerson ) || group.IsAuthorized( Authorization.SCHEDULE, this.CurrentPerson );
+        }
+
+        /// <summary>
         /// Updates the group schedule assignment preference.
         /// </summary>
         /// <param name="attendanceId">The attendance identifier.</param>
@@ -2341,6 +2357,12 @@ btnCopyToClipboard.ClientID );
             var attendanceOccurrence = attendanceService.GetSelect( attendanceId, s => s.Occurrence );
 
             if ( attendanceOccurrence == null || groupMemberPerson == null )
+            {
+                return;
+            }
+
+            // The group member id comes from the postback argument, so make sure the current person can schedule the member's group.
+            if ( !IsAuthorizedToScheduleGroup( groupMemberPerson.Group ) )
             {
                 return;
             }
@@ -2525,6 +2547,12 @@ btnCopyToClipboard.ClientID );
             if ( groupMember == null )
             {
                 // shouldn't happen
+                return;
+            }
+
+            // The group member id comes from a hidden field, so make sure the current person can schedule the member's group.
+            if ( !IsAuthorizedToScheduleGroup( groupMember.Group ) )
+            {
                 return;
             }
 

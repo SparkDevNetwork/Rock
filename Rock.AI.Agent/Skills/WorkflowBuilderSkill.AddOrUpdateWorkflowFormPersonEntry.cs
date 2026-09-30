@@ -151,6 +151,13 @@ internal sealed partial class WorkflowBuilderSkill
             return Error( "That action is not attached to a workflow type." );
         }
 
+        var editError = GetWorkflowTypeEditError( activityType.WorkflowType );
+
+        if ( editError != null )
+        {
+            return Error( editError );
+        }
+
         // Same refusal as the form tool. A Form Builder template with person entry
         // enabled overrides the form's own settings entirely, so writing them here
         // would save cleanly and change nothing at run time.

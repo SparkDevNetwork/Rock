@@ -375,6 +375,38 @@ WHERE [RT].[Guid] = '" + SystemGuid.DefinedValue.PERSON_RECORD_TYPE_RESTUSER + "
         }
 
         /// <summary>
+        /// Determines whether the attendance record is one of the current
+        /// attendance records that can be reprinted, using the same rules as
+        /// <see cref="GetCurrentAttendanceForReprint(int?)"/>.
+        /// </summary>
+        /// <param name="attendanceId">The attendance identifier.</param>
+        /// <param name="campusId">The campus to limit the attendance records to and determine the current timestamp.</param>
+        /// <returns><c>true</c> if the attendance record can be reprinted; otherwise <c>false</c>.</returns>
+        private bool IsAttendanceAvailableForReprint( int attendanceId, int? campusId )
+        {
+            var now = RockDateTime.Now;
+
+            if ( campusId.HasValue )
+            {
+                var campus = CampusCache.Get( campusId.Value );
+
+                if ( campus != null )
+                {
+                    now = campus.CurrentDateTime;
+                }
+            }
+
+            var attendanceQry = CheckInDirector.GetDailyAttendanceQuery( now, RockContext );
+
+            if ( campusId.HasValue )
+            {
+                attendanceQry = attendanceQry.Where( a => a.CampusId.HasValue && a.CampusId.Value == campusId.Value );
+            }
+
+            return attendanceQry.Any( a => a.Id == attendanceId );
+        }
+
+        /// <summary>
         /// Gets the curent attendance to be used with calculation room counts.
         /// </summary>
         /// <param name="locationIds">The locations to query to get attendance.</param>
@@ -1277,6 +1309,16 @@ WHERE [RT].[Guid] = '" + SystemGuid.DefinedValue.PERSON_RECORD_TYPE_RESTUSER + "
                 return ActionBadRequest( "Location not found." );
             }
 
+            // Only allow changing the status of locations that are attached
+            // to a device, which is where the kiosk gets its list of locations.
+            var isDeviceLocation = DeviceCache.All( RockContext )
+                .Any( d => d.GetAllLocationIds().Contains( location.Id ) );
+
+            if ( !isDeviceLocation )
+            {
+                return ActionBadRequest( "Location not found." );
+            }
+
             location.IsActive = isOpen;
             RockContext.SaveChanges();
 
@@ -1348,6 +1390,13 @@ WHERE [RT].[Guid] = '" + SystemGuid.DefinedValue.PERSON_RECORD_TYPE_RESTUSER + "
             var attendanceIdNumber = IdHasher.Instance.GetId( attendanceId );
 
             if ( !attendanceIdNumber.HasValue )
+            {
+                return ActionBadRequest( "Invalid attendance." );
+            }
+
+            // Only allow printing attendance records that would be shown
+            // in the reprint list for this kiosk.
+            if ( !IsAttendanceAvailableForReprint( attendanceIdNumber.Value, kiosk.GetCampusId() ) )
             {
                 return ActionBadRequest( "Invalid attendance." );
             }
@@ -1675,6 +1724,14 @@ WHERE [RT].[Guid] = '" + SystemGuid.DefinedValue.PERSON_RECORD_TYPE_RESTUSER + "
             if ( options.FamilyId == null )
             {
                 return ActionBadRequest( "Missing family identifier." );
+            }
+
+            // Make the same kiosk check that BeginAddIndividual makes.
+            var addMode = kiosk.GetAttributeValue( SystemKey.DeviceAttributeKey.DEVICE_KIOSK_ALLOW_ADDING_INDIVIDUALS_TO_EXISTING_FAMILIES ).ConvertToEnum<AdultsOrChildrenSelectionMode>();
+
+            if ( addMode == AdultsOrChildrenSelectionMode.None )
+            {
+                return ActionBadRequest( "This kiosk does not support individual registration." );
             }
 
             var registration = new FamilyRegistration( RockContext, RequestContext.CurrentPerson, template );

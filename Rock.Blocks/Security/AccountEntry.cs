@@ -1219,10 +1219,7 @@ namespace Rock.Blocks.Security
 
             var decodedUrl = url.GetFullyUrlDecodedValue();
 
-            // Remove the http and https schemes before checking if URL contains XSS objects.
-            if ( decodedUrl.Replace( "https://", string.Empty )
-                .Replace( "http://", string.Empty )
-                .RedirectUrlContainsXss() )
+            if ( !PageCache.Layout.Site.IsSafeRedirectUrl( decodedUrl, RequestContext.RequestUri ) )
             {
                 return null;
             }

@@ -394,7 +394,8 @@ namespace Rock.Blocks.Workflow
             var entityService = new WorkflowService( RockContext );
             var entity = entityService.Get( key, !PageCache.Layout.Site.DisablePredictableIds );
 
-            if ( entity == null )
+            // Make sure the workflow belongs to the workflow type shown by this block.
+            if ( entity == null || entity.WorkflowTypeId != GetWorkflowType()?.Id )
             {
                 return ActionBadRequest( $"{Rock.Model.Workflow.FriendlyTypeName} not found." );
             }
@@ -442,8 +443,21 @@ namespace Rock.Blocks.Workflow
         [BlockAction]
         public BlockActionResult DeleteWorkflows( List<Guid> workflowGuids )
         {
+            var workflowType = GetWorkflowType();
+
+            if ( workflowType == null || !GetIsAddDeleteEnabled() )
+            {
+                return ActionBadRequest( $"Not authorized to delete {Rock.Model.Workflow.FriendlyTypeName}." );
+            }
+
             var entityService = new WorkflowService( RockContext );
-            var workflowIds = entityService.GetByGuids( workflowGuids ).Select( wf => wf.Id ).ToList();
+            var workflowTypeId = workflowType.Id;
+
+            // Only delete workflows of the workflow type shown by this block.
+            var workflowIds = entityService.GetByGuids( workflowGuids ?? new List<Guid>() )
+                .Where( wf => wf.WorkflowTypeId == workflowTypeId )
+                .Select( wf => wf.Id )
+                .ToList();
 
             var deleteWorkflowsMsg = new DeleteWorkflows.Message
             {

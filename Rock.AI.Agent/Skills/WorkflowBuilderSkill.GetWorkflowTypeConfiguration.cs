@@ -63,6 +63,13 @@ internal sealed partial class WorkflowBuilderSkill
                 .WithInstructions( $"Call the {nameof( WorkflowSkill.LookupWorkflowTypes )} function to determine the available workflow types." );
         }
 
+        var viewError = GetWorkflowTypeViewError( workflowType );
+
+        if ( viewError != null )
+        {
+            return Error( viewError );
+        }
+
         // Everything the tree needs, pulled in one query rather than letting each
         // collection load on demand. A thirty action workflow would otherwise cost
         // a round trip per action and per form.

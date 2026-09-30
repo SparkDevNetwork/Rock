@@ -1921,7 +1921,9 @@ namespace Rock.Blocks.Group.Scheduling
                  || !attendanceOccurrence.GroupId.HasValue
                  || !attendanceOccurrence.LocationId.HasValue
                  || !attendanceOccurrence.ScheduleId.HasValue
-                 || groupMemberPerson == null )
+                 || groupMemberPerson == null
+                 || groupMemberPerson.Group.Id != attendanceOccurrence.GroupId.Value
+                 || !IsAuthorizedToScheduleGroup( rockContext, attendanceOccurrence.GroupId.Value ) )
             {
                 preferences.ErrorMessage = "Unable to get preferences.";
                 return preferences;
@@ -2009,7 +2011,9 @@ namespace Rock.Blocks.Group.Scheduling
                  || !attendanceOccurrence.GroupId.HasValue
                  || !attendanceOccurrence.LocationId.HasValue
                  || !attendanceOccurrence.ScheduleId.HasValue
-                 || groupMember == null )
+                 || groupMember == null
+                 || groupMember.GroupId != attendanceOccurrence.GroupId.Value
+                 || !IsAuthorizedToScheduleGroup( rockContext, attendanceOccurrence.GroupId.Value ) )
             {
                 return;
             }
@@ -2075,6 +2079,23 @@ namespace Rock.Blocks.Group.Scheduling
             }
 
             rockContext.SaveChanges();
+        }
+
+        /// <summary>
+        /// Determines whether the current person has EDIT or SCHEDULE permission on the specified group.
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        /// <param name="groupId">The group identifier.</param>
+        /// <returns><c>true</c> if the current person is authorized to schedule the group; otherwise, <c>false</c>.</returns>
+        private bool IsAuthorizedToScheduleGroup( RockContext rockContext, int groupId )
+        {
+            var group = new GroupService( rockContext ).Get( groupId );
+
+            return group != null
+                && (
+                    group.IsAuthorized( Authorization.EDIT, this.RequestContext.CurrentPerson )
+                    || group.IsAuthorized( Authorization.SCHEDULE, this.RequestContext.CurrentPerson )
+                );
         }
 
         /// <summary>
@@ -2165,8 +2186,31 @@ namespace Rock.Blocks.Group.Scheduling
         [BlockAction]
         public BlockActionResult GetOrAddAttendanceOccurrence( GroupSchedulerOccurrenceBag bag )
         {
+            if ( bag == null )
+            {
+                return ActionBadRequest();
+            }
+
             using ( var rockContext = new RockContext() )
             {
+                if ( !bag.AttendanceOccurrenceId.HasValue )
+                {
+                    // Ensure the current person may schedule this group, and that the location and schedule
+                    // actually belong to this group, before creating an occurrence for them.
+                    var isGroupLocationSchedule = new GroupLocationService( rockContext )
+                        .Queryable()
+                        .Any( gl =>
+                            gl.GroupId == bag.GroupId
+                            && gl.LocationId == bag.LocationId
+                            && gl.Schedules.Any( s => s.Id == bag.ScheduleId )
+                        );
+
+                    if ( !isGroupLocationSchedule || !IsAuthorizedToScheduleGroup( rockContext, bag.GroupId ) )
+                    {
+                        return ActionForbidden( "You are not authorized to schedule this group." );
+                    }
+                }
+
                 GetOrAddAttendanceOccurrence( rockContext, bag );
 
                 return ActionOk( bag.AttendanceOccurrenceId );
