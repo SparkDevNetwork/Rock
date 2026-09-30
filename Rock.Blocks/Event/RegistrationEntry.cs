@@ -5264,6 +5264,27 @@ namespace Rock.Blocks.Event
                 return null;
             }
 
+            // The wait list flag comes from the client and registrants on the wait
+            // list are not charged. When the template has no wait list nobody new can
+            // be put on it, so clear the flag before any costs or spots are calculated.
+            // Registrants already saved on the wait list keep it, in case the wait list
+            // was turned off after they were added to it.
+            if ( !context.RegistrationSettings.IsWaitListEnabled )
+            {
+                var waitListedRegistrantGuids = context.Registration?.Registrants
+                    .Where( r => r.OnWaitList )
+                    .Select( r => r.Guid )
+                    .ToList() ?? new List<Guid>();
+
+                foreach ( var registrant in args.Registrants )
+                {
+                    if ( !waitListedRegistrantGuids.Contains( registrant.Guid ) )
+                    {
+                        registrant.IsOnWaitList = false;
+                    }
+                }
+            }
+
             // Validate the amount to pay today
             var amountDue = CalculateTotalAmountDue( rockContext, context, args );
 
