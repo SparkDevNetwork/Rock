@@ -1470,7 +1470,16 @@ namespace Rock.Blocks.Event
                     {
                         var person = new PersonAliasService( rockContext ).GetPerson( context.Registration.PersonAliasId.Value );
 
-                        if ( person != null )
+                        // The registrar may have been matched from the registrant details
+                        // and the email comes from the client, so only update it when the
+                        // registrar is the current person or in their family.
+                        var currentPersonId = currentPerson?.Id;
+                        var isCurrentPersonOrFamilyMember = person != null
+                            && currentPersonId.HasValue
+                            && ( person.Id == currentPersonId.Value
+                                || person.GetFamilies().ToList().Any( f => f.ActiveMembers().Any( m => m.PersonId == currentPersonId ) ) );
+
+                        if ( isCurrentPersonOrFamilyMember )
                         {
                             person.Email = context.Registration.ConfirmationEmail;
                             rockContext.SaveChanges();
@@ -2939,14 +2948,15 @@ namespace Rock.Blocks.Event
             }
             else if ( registrantInfo.PersonGuid.HasValue )
             {
-                // This can happen if the page has reloaded due to an error. The person was saved to the DB and we don't want to add them again.
+                // This can happen if the page has reloaded due to an error or the current
+                // person selected a family member. The PersonGuid comes from the client so it
+                // is only honored for people the current person is allowed to register. Anyone
+                // else falls through to the normal person matching below.
                 person = personService.Get( registrantInfo.PersonGuid.Value );
-            }
-            else
-            {
-                if ( registrantInfo.PersonGuid.HasValue && context.RegistrationSettings.AreCurrentFamilyMembersShown )
+
+                if ( person != null && !IsPersonAvailableForDefaultValues( rockContext, person, GetCurrentPerson(), context.Registration ) )
                 {
-                    person = personService.Get( registrantInfo.PersonGuid.Value );
+                    person = null;
                 }
             }
 
@@ -3190,7 +3200,9 @@ namespace Rock.Blocks.Event
                         case RegistrationPersonFieldType.Email:
                             // Only update the person's email if they are in the same family as the logged in person (not the registrar)
                             var currentPersonId = GetCurrentPerson()?.Id;
-                            var isFamilyMember = currentPersonId.HasValue && person.GetFamilies().ToList().Select( f => f.ActiveMembers().Where( m => m.PersonId == currentPersonId ) ).Any();
+                            var isFamilyMember = currentPersonId.HasValue
+                                && ( person.Id == currentPersonId.Value
+                                    || person.GetFamilies().ToList().Any( f => f.ActiveMembers().Any( m => m.PersonId == currentPersonId ) ) );
                             if ( isFamilyMember && IsFieldUnlockedForEditing( field, person.Email ) )
                             {
                                 var email = fieldValue.ToString().Trim();
@@ -5692,6 +5704,27 @@ namespace Rock.Blocks.Event
             {
                 errorMessage = "Your existing registration was not found";
                 return null;
+            }
+
+            // The wait list flag comes from the client and registrants on the wait
+            // list are not charged. When the template has no wait list nobody new can
+            // be put on it, so clear the flag before any costs or spots are calculated.
+            // Registrants already saved on the wait list keep it, in case the wait list
+            // was turned off after they were added to it.
+            if ( !context.RegistrationSettings.IsWaitListEnabled )
+            {
+                var waitListedRegistrantGuids = context.Registration?.Registrants
+                    .Where( r => r.OnWaitList )
+                    .Select( r => r.Guid )
+                    .ToList() ?? new List<Guid>();
+
+                foreach ( var registrant in args.Registrants )
+                {
+                    if ( !waitListedRegistrantGuids.Contains( registrant.Guid ) )
+                    {
+                        registrant.IsOnWaitList = false;
+                    }
+                }
             }
 
             // Validate the amount to pay today
