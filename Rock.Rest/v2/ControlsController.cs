@@ -2219,6 +2219,11 @@ namespace Rock.Rest.v2
         [Rock.SystemGuid.RestActionGuid( "D9840506-7251-4F41-A1B2-D3168FB3AFDA" )]
         public IActionResult BadgeControlGetBadge( [FromBody] BadgeControlGetBadgeOptionsBag options )
         {
+            if ( RockRequestContext.CurrentPerson == null )
+            {
+                return Unauthorized();
+            }
+
             using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var entityTypeCache = EntityTypeCache.Get( options.EntityTypeGuid, rockContext );
@@ -2232,7 +2237,7 @@ namespace Rock.Rest.v2
                 }
 
                 // Load the entity and verify we got one.
-                var entity = Rock.Reflection.GetIEntityForEntityType( entityType, options.EntityKey );
+                var entity = Rock.Reflection.GetIEntityForEntityType( entityType, options.EntityKey, false, rockContext );
 
                 if ( entity == null )
                 {
@@ -2281,6 +2286,7 @@ namespace Rock.Rest.v2
         /// <returns>A collection of <see cref="RenderedBadgeBag"/> objects.</returns>
         [HttpPost]
         [Route( "BadgeListGetBadges" )]
+        [Authenticate]
         [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [ProducesResponse( HttpStatusCode.OK, Type = typeof( RenderedBadgeBag ) )]
         [ProducesResponse( HttpStatusCode.BadRequest )]
@@ -2289,6 +2295,11 @@ namespace Rock.Rest.v2
         [Rock.SystemGuid.RestActionGuid( "34387B98-BF7E-4000-A28A-24EA08605285" )]
         public IActionResult BadgeListGetBadges( [FromBody] BadgeListGetBadgesOptionsBag options )
         {
+            if ( RockRequestContext.CurrentPerson == null )
+            {
+                return Unauthorized();
+            }
+
             using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var entityTypeCache = EntityTypeCache.Get( options.EntityTypeGuid, rockContext );
@@ -2302,7 +2313,7 @@ namespace Rock.Rest.v2
                 }
 
                 // Load the entity and verify we got one.
-                var entity = Rock.Reflection.GetIEntityForEntityType( entityType, options.EntityKey );
+                var entity = Rock.Reflection.GetIEntityForEntityType( entityType, options.EntityKey, false, rockContext );
 
                 if ( entity == null )
                 {
@@ -5003,10 +5014,16 @@ namespace Rock.Rest.v2
         [Authenticate]
         [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [ProducesResponse( HttpStatusCode.OK, Type = typeof( List<EntityTagListTagBag> ) )]
+        [ProducesResponse( HttpStatusCode.Unauthorized )]
         [ProducesResponse( HttpStatusCode.NotFound )]
         [Rock.SystemGuid.RestActionGuid( "7542D4B3-17DC-4640-ACBD-F02784130401" )]
         public IActionResult EntityTagListGetEntityTags( [FromBody] EntityTagListGetEntityTagsOptionsBag options )
         {
+            if ( RockRequestContext.CurrentPerson == null )
+            {
+                return Unauthorized();
+            }
+
             using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var entityTypeId = EntityTypeCache.GetId( options.EntityTypeGuid );
@@ -5041,10 +5058,16 @@ namespace Rock.Rest.v2
         [Authenticate]
         [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [ProducesResponse( HttpStatusCode.OK, Type = typeof( List<EntityTagListTagBag> ) )]
+        [ProducesResponse( HttpStatusCode.Unauthorized )]
         [ProducesResponse( HttpStatusCode.NotFound )]
         [Rock.SystemGuid.RestActionGuid( "91890D39-6E3E-4623-AAD7-F32E686C784E" )]
         public IActionResult EntityTagListGetAvailableTags( [FromBody] EntityTagListGetAvailableTagsOptionsBag options )
         {
+            if ( RockRequestContext.CurrentPerson == null )
+            {
+                return Unauthorized();
+            }
+
             using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var entityTypeId = EntityTypeCache.GetId( options.EntityTypeGuid );
@@ -5160,10 +5183,16 @@ namespace Rock.Rest.v2
         [Authenticate]
         [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [ProducesResponse( HttpStatusCode.OK, Type = typeof( EntityTagListTagBag ) )]
+        [ProducesResponse( HttpStatusCode.Unauthorized )]
         [ProducesResponse( HttpStatusCode.NotFound )]
         [Rock.SystemGuid.RestActionGuid( "C9CACC7F-68DE-4765-8967-B50EE2949062" )]
         public IActionResult EntityTagListAddEntityTag( [FromBody] EntityTagListAddEntityTagOptionsBag options )
         {
+            if ( RockRequestContext.CurrentPerson == null )
+            {
+                return Unauthorized();
+            }
+
             using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var entityType = EntityTypeCache.Get( options.EntityTypeGuid, rockContext );
@@ -5189,7 +5218,7 @@ namespace Rock.Rest.v2
                 var tagService = new TagService( rockContext );
                 var tag = tagService.Get( options.TagKey );
 
-                if ( tag == null || ( !tag.IsAuthorized( Security.Authorization.TAG, RockRequestContext.CurrentPerson ) && grant?.IsAccessGranted( tag, Security.Authorization.VIEW ) != true ) )
+                if ( tag == null || ( !tag.IsAuthorized( Security.Authorization.TAG, RockRequestContext.CurrentPerson ) && grant?.IsAccessGranted( tag, Security.Authorization.TAG ) != true ) )
                 {
                     return NotFound();
                 }
@@ -5226,33 +5255,50 @@ namespace Rock.Rest.v2
         [Authenticate]
         [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [ProducesResponse( HttpStatusCode.OK, Description = "The tag was removed." )]
+        [ProducesResponse( HttpStatusCode.Unauthorized )]
         [ProducesResponse( HttpStatusCode.NotFound )]
         [Rock.SystemGuid.RestActionGuid( "6A78D538-87DB-43FE-9150-4E9A3F276AFE" )]
         public IActionResult EntityTagListRemoveEntityTag( [FromBody] EntityTagListRemoveEntityTagOptionsBag options )
         {
+            if ( RockRequestContext.CurrentPerson == null )
+            {
+                return Unauthorized();
+            }
+
             using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
-                var entityTypeId = EntityTypeCache.GetId( options.EntityTypeGuid );
-                var entityGuid = Reflection.GetEntityGuidForEntityType( options.EntityTypeGuid, options.EntityKey, false, rockContext );
-                var grant = SecurityGrant.FromToken( options.SecurityGrantToken );
-                var tagService = new TagService( rockContext );
-                var taggedItemService = new TaggedItemService( rockContext );
+                var entityType = EntityTypeCache.Get( options.EntityTypeGuid, rockContext );
 
-                if ( !entityTypeId.HasValue || !entityGuid.HasValue )
+                if ( entityType == null )
                 {
                     return NotFound();
                 }
 
+                var entity = Reflection.GetIEntityForEntityType( entityType.GetEntityType(), options.EntityKey, false, rockContext );
+                var grant = SecurityGrant.FromToken( options.SecurityGrantToken );
+                var tagService = new TagService( rockContext );
+                var taggedItemService = new TaggedItemService( rockContext );
+
+                if ( entity == null )
+                {
+                    return NotFound();
+                }
+
+                if ( entity is ISecured secured && !secured.IsAuthorized( Authorization.VIEW, RockRequestContext.CurrentPerson ) )
+                {
+                    return Unauthorized();
+                }
+
                 var tag = tagService.Get( options.TagKey );
 
-                if ( tag == null || ( !tag.IsAuthorized( Security.Authorization.TAG, RockRequestContext.CurrentPerson ) && grant?.IsAccessGranted( tag, Security.Authorization.VIEW ) != true ) )
+                if ( tag == null || ( !tag.IsAuthorized( Security.Authorization.TAG, RockRequestContext.CurrentPerson ) && grant?.IsAccessGranted( tag, Security.Authorization.TAG ) != true ) )
                 {
                     return NotFound();
                 }
 
                 // If the entity is tagged, then untag it.
                 var taggedItem = taggedItemService.Queryable()
-                    .FirstOrDefault( ti => ti.TagId == tag.Id && ti.EntityGuid == entityGuid.Value );
+                    .FirstOrDefault( ti => ti.TagId == tag.Id && ti.EntityGuid == entity.Guid );
 
                 if ( taggedItem != null )
                 {
@@ -5276,9 +5322,15 @@ namespace Rock.Rest.v2
         [Authenticate]
         [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [ProducesResponse( HttpStatusCode.OK, Type = typeof( List<EntityTagListTagBag> ) )]
+        [ProducesResponse( HttpStatusCode.Unauthorized )]
         [Rock.SystemGuid.RestActionGuid( "02886e54-6088-40ea-98be-9157ec2a3369" )]
         public IActionResult EntityTagListSaveTagValues( [FromBody] EntityTagListSaveTagValuesOptionsBag options )
         {
+            if ( RockRequestContext.CurrentPerson == null )
+            {
+                return Unauthorized();
+            }
+
             using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 Person currentPerson = RockRequestContext.CurrentPerson;
