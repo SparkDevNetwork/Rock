@@ -725,6 +725,28 @@ namespace Rock.Blocks.Mobile.CheckIn
         [BlockAction]
         public BlockActionResult BeginAddIndividual( FamilyMembersOptionsBag options )
         {
+            if ( !GetAttributeValue( AttributeKey.AllowAddFamilyMember ).AsBoolean() )
+            {
+                return ActionBadRequest( "This kiosk does not support family registration." );
+            }
+
+            if ( RequestContext.CurrentPerson == null )
+            {
+                return ActionUnauthorized();
+            }
+
+            // Only the current person's primary family may be edited, which is
+            // the same rule used by SaveFamily.
+            if ( options.FamilyId.IsNotNullOrWhiteSpace() )
+            {
+                var familyId = new GroupService( RockContext ).GetNoTracking( options.FamilyId, false )?.Id;
+
+                if ( !familyId.HasValue || familyId.Value != RequestContext.CurrentPerson.PrimaryFamilyId )
+                {
+                    return ActionForbidden( "Not authorized to edit this family." );
+                }
+            }
+
             var response = Rock.Blocks.CheckIn.CheckInKiosk.TryGetEditFamilyResponseBag( RockContext,
                 person: RequestContext.CurrentPerson,
                 familyId: options.FamilyId,
@@ -768,6 +790,25 @@ namespace Rock.Blocks.Mobile.CheckIn
             if ( !GetAttributeValue( AttributeKey.AllowAddFamilyMember ).AsBoolean() )
             {
                 return ActionBadRequest( "This kiosk does not support family registration." );
+            }
+
+            if ( RequestContext.CurrentPerson == null )
+            {
+                return ActionUnauthorized();
+            }
+
+            // The registration may only modify the current person's primary
+            // family, which is the family returned by GetFamilyMembers.
+            var familyIdKey = options.Family?.Bag?.Id;
+
+            if ( familyIdKey.IsNotNullOrWhiteSpace() )
+            {
+                var familyId = new GroupService( RockContext ).GetNoTracking( familyIdKey, false )?.Id;
+
+                if ( !familyId.HasValue || familyId.Value != RequestContext.CurrentPerson.PrimaryFamilyId )
+                {
+                    return ActionForbidden( "Not authorized to edit this family." );
+                }
             }
 
             var registration = new Rock.CheckIn.v2.FamilyRegistration( RockContext, RequestContext.CurrentPerson, template );

@@ -587,6 +587,13 @@ namespace Rock.Blocks.Cms
 
             var isNew = entity.Id == 0;
 
+            // Make sure the adaptation attributes are either new or already
+            // belong to this adaptive message.
+            if ( !PublicAttributeHelper.AreAttributeEditsAllowed( box.Bag.AdaptationAttributes, new AdaptiveMessageAdaptation().TypeId, "AdaptiveMessageId", isNew ? null : entity.Id.ToString(), RockContext ) )
+            {
+                return ActionBadRequest( "Invalid attribute." );
+            }
+
             RockContext.WrapTransaction( () =>
             {
                 RockContext.SaveChanges();

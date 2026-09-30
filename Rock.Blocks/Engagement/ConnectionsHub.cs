@@ -2721,6 +2721,27 @@ namespace Rock.Blocks.Engagement
         /// <returns>True if the logged in user has edit permissions for all specified Connection Requests; otherwise false.</returns>
         private bool CanEditSpecifiedConnectionRequests( ConnectionTypeCache connectionType, List<string> connectionRequestIdKeys, out List<ConnectionRequest> connectionRequests, out BlockActionResult error, Func<IQueryable<ConnectionRequest>, IQueryable<ConnectionRequest>> queryModifier = null )
         {
+            if ( !TryGetSpecifiedConnectionRequests( connectionType, connectionRequestIdKeys, out connectionRequests, out error, queryModifier ) )
+            {
+                return false;
+            }
+
+            return CanEditSpecifiedConnectionRequests( connectionRequests, out error );
+        }
+
+        /// <summary>
+        /// Loads the Connection Requests identified by the IdKeys sent by the client. Every IdKey
+        /// must be valid and resolve to a request of the specified Connection Type, otherwise the
+        /// load fails so a crafted request cannot slip in a request from another Connection Type.
+        /// </summary>
+        /// <param name="connectionType">The Connection Type Cache that all of the Connection Requests must belong to.</param>
+        /// <param name="connectionRequestIdKeys">The list of IdKeys for the Connection Requests to load.</param>
+        /// <param name="connectionRequests">When this method returns, contains the resolved list of Connection Requests; empty if any IdKeys could not be decoded.</param>
+        /// <param name="error">When this method returns, contains a Block Action Result error if any requests could not be found; otherwise null.</param>
+        /// <param name="queryModifier">An optional function to apply additional filtering or modification to the Connection Request query before it is executed.</param>
+        /// <returns>True if every IdKey resolved to a Connection Request of the Connection Type; otherwise false.</returns>
+        private bool TryGetSpecifiedConnectionRequests( ConnectionTypeCache connectionType, List<string> connectionRequestIdKeys, out List<ConnectionRequest> connectionRequests, out BlockActionResult error, Func<IQueryable<ConnectionRequest>, IQueryable<ConnectionRequest>> queryModifier = null )
+        {
             error = null;
             var decodedIds = connectionRequestIdKeys.Select( key => Rock.Utility.IdHasher.Instance.GetId( key ) ).ToList();
 
@@ -2759,7 +2780,209 @@ namespace Rock.Blocks.Engagement
                 return false;
             }
 
-            return CanEditSpecifiedConnectionRequests( connectionRequests, out error );
+            return true;
+        }
+
+        /// <summary>
+        /// Determines if the logged in user can view the specified Connection Request. This mirrors
+        /// the single request actions of this block (for example GetConnectionRequestDetails) which
+        /// use the request's own VIEW authorization, and also allows anybody who can edit the request
+        /// (such as an active connector group member) since the hub lets those people act on it.
+        /// </summary>
+        /// <param name="connectionRequest">
+        /// The already-loaded Connection Request to check. The <see cref="ConnectionRequest.ConnectionOpportunity"/>,
+        /// its <see cref="ConnectionOpportunity.ConnectionType"/> and the <see cref="ConnectionRequest.ConnectorPersonAlias"/>
+        /// navigation properties should be loaded (or lazy loadable).
+        /// </param>
+        /// <returns>True if the logged in user can view the Connection Request; otherwise false.</returns>
+        private bool CanViewConnectionRequest( ConnectionRequest connectionRequest )
+        {
+            if ( connectionRequest == null )
+            {
+                return false;
+            }
+
+            if ( connectionRequest.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson ) )
+            {
+                return true;
+            }
+
+            return CanEditSpecifiedConnectionRequest( connectionRequest, out _ );
+        }
+
+        /// <summary>
+        /// Filters the specified Connection Request Ids down to the ones the logged in user can view.
+        /// Used by actions that receive request IdKeys from the client so a crafted request cannot
+        /// read data about Connection Requests the hub would never show the person.
+        /// </summary>
+        /// <param name="connectionRequestIds">The Connection Request Ids sent by the client.</param>
+        /// <returns>The subset of Connection Request Ids the logged in user can view.</returns>
+        private List<int> GetViewAuthorizedConnectionRequestIds( List<int> connectionRequestIds )
+        {
+            if ( connectionRequestIds == null || !connectionRequestIds.Any() )
+            {
+                return new List<int>();
+            }
+
+            var connectionRequests = new ConnectionRequestService( RockContext )
+                .GetByIds( connectionRequestIds.Distinct().ToList() )
+                .Include( cr => cr.ConnectionOpportunity.ConnectionType )
+                .Include( cr => cr.ConnectorPersonAlias )
+                .ToList();
+
+            return connectionRequests
+                .Where( cr => CanViewConnectionRequest( cr ) )
+                .Select( cr => cr.Id )
+                .ToList();
+        }
+
+        /// <summary>
+        /// Determines if the placement group and group member role assigned to the Connection Request
+        /// are ones the hub offers for the request's opportunity. The group must be one of the
+        /// opportunity's placement groups (the same list <see cref="GetPlacementGroupItems"/> builds for
+        /// the picker) and the role must be one of the opportunity's configured roles for that group's
+        /// type (the same list <see cref="FetchPlacementGroupDetails"/> returns). This prevents a crafted
+        /// request from placing the requester into an arbitrary group or role when the request is connected.
+        /// </summary>
+        /// <param name="connectionRequest">The Connection Request whose placement assignment should be validated.</param>
+        /// <returns>True if the placement group and role are offered for the request's opportunity; otherwise false.</returns>
+        private bool IsPlacementAssignmentAllowed( ConnectionRequest connectionRequest )
+        {
+            // Without a group nothing will be placed, so there is nothing to validate.
+            if ( !connectionRequest.AssignedGroupId.HasValue )
+            {
+                return true;
+            }
+
+            var connectionType = ConnectionTypeCache.Get( connectionRequest.ConnectionTypeId );
+            var isGroupPlacementEnabled = connectionType != null && connectionType.EnabledFeatures.HasFlag( EnabledFeatureFlags.GroupPlacement );
+
+            if ( !isGroupPlacementEnabled )
+            {
+                return false;
+            }
+
+            var assignedGroupId = connectionRequest.AssignedGroupId.Value;
+            var placementGroupTypeId = new ConnectionOpportunityService( RockContext )
+                .GetPlacementGroups( connectionRequest.ConnectionOpportunityId )
+                .Where( g => g.Id == assignedGroupId )
+                .Select( g => ( int? ) g.GroupTypeId )
+                .FirstOrDefault();
+
+            if ( !placementGroupTypeId.HasValue )
+            {
+                return false;
+            }
+
+            // Without a role the requester will not be placed, so the group alone is enough.
+            if ( !connectionRequest.AssignedGroupMemberRoleId.HasValue )
+            {
+                return true;
+            }
+
+            var assignedGroupMemberRoleId = connectionRequest.AssignedGroupMemberRoleId.Value;
+
+            return new ConnectionOpportunityGroupConfigService( RockContext ).Queryable()
+                .AsNoTracking()
+                .Any( c => c.ConnectionOpportunityId == connectionRequest.ConnectionOpportunityId
+                    && c.GroupTypeId == placementGroupTypeId.Value
+                    && c.GroupMemberRoleId == assignedGroupMemberRoleId );
+        }
+
+        /// <summary>
+        /// Gets the system phone numbers the person may send SMS messages from: the active numbers
+        /// they are authorized to view. The SMS modal is built from this list and sending checks
+        /// the selected number against it.
+        /// </summary>
+        /// <param name="person">The person sending the SMS message.</param>
+        /// <returns>The system phone numbers the person may send from.</returns>
+        private IEnumerable<SystemPhoneNumberCache> GetAvailableSmsFromSystemPhoneNumbers( Rock.Model.Person person )
+        {
+            return SystemPhoneNumberCache
+                .All( includeInactive: false )
+                .Where( spn => spn.IsAuthorized( Authorization.VIEW, person ) );
+        }
+
+        /// <summary>
+        /// Validates the client supplied values of a communication against what the send email and
+        /// send SMS modals offer. Recipients must be the requesters of Connection Requests the person
+        /// can view (the modals only list recipients returned by GetSmsConfiguration and
+        /// GetEmailConfiguration), the SMS number must be an active number the person is authorized
+        /// to view, and attachments must be temporary files uploaded by the person.
+        /// </summary>
+        /// <param name="bag">The communication bag sent by the client.</param>
+        /// <param name="error">When this method returns, contains a Block Action Result error if validation failed; otherwise null.</param>
+        /// <returns>True if the communication may be sent; otherwise false.</returns>
+        private bool TryValidateCommunicationBag( CommunicationBag bag, out BlockActionResult error )
+        {
+            error = null;
+            var currentPerson = RequestContext.CurrentPerson;
+
+            if ( bag == null || bag.CommunicationRecipients == null )
+            {
+                error = ActionBadRequest( "Request is required" );
+                return false;
+            }
+
+            var connectionRequestGuids = bag.CommunicationRecipients
+                .Select( r => r.ConnectionRequestGuid )
+                .Distinct()
+                .ToList();
+
+            // This WHERE IN query is expected to be small since it only contains the requests selected in the hub.
+            var connectionRequests = new ConnectionRequestService( RockContext ).Queryable()
+                .Include( cr => cr.PersonAlias )
+                .Include( cr => cr.ConnectionOpportunity.ConnectionType )
+                .Include( cr => cr.ConnectorPersonAlias )
+                .Where( cr => connectionRequestGuids.Contains( cr.Guid ) )
+                .ToList()
+                .ToDictionary( cr => cr.Guid );
+
+            // Each recipient must be the requester of a Connection Request the person can view.
+            var areRecipientsAllowed = bag.CommunicationRecipients.All( r =>
+            {
+                return connectionRequests.TryGetValue( r.ConnectionRequestGuid, out var connectionRequest )
+                    && connectionRequest.PersonAlias != null
+                    && connectionRequest.PersonAlias.Guid == r.PersonAliasGuid
+                    && CanViewConnectionRequest( connectionRequest );
+            } );
+
+            if ( !areRecipientsAllowed )
+            {
+                error = ActionForbidden( "You are not authorized to send a communication to one or more of the selected recipients." );
+                return false;
+            }
+
+            if ( bag.CommunicationType == Enums.Communication.CommunicationType.SMS )
+            {
+                var isSystemPhoneNumberAllowed = bag.SmsFromSystemPhoneNumberGuid.HasValue
+                    && GetAvailableSmsFromSystemPhoneNumbers( currentPerson ).Any( spn => spn.Guid == bag.SmsFromSystemPhoneNumberGuid.Value );
+
+                if ( !isSystemPhoneNumberAllowed )
+                {
+                    error = ActionBadRequest( "Invalid SMS From Number." );
+                    return false;
+                }
+            }
+
+            var attachments = bag.CommunicationType == Enums.Communication.CommunicationType.SMS
+                ? bag.SmsAttachments
+                : bag.EmailAttachments;
+
+            // The modals only let the person upload new files, so only temporary files they uploaded are allowed.
+            var binaryFileService = new BinaryFileService( RockContext );
+            var areAttachmentsAllowed = ( attachments ?? new List<ListItemBag>() )
+                .Select( a => a?.Value.AsGuidOrNull() )
+                .Where( g => g.HasValue )
+                .All( g => binaryFileService.IsUploadedBinaryFileAllowedForPerson( g, null, currentPerson ) );
+
+            if ( !areAttachmentsAllowed )
+            {
+                error = ActionBadRequest( "One or more attachments are invalid." );
+                return false;
+            }
+
+            return true;
         }
 
         /// <summary>
@@ -5052,6 +5275,10 @@ WHERE 1 = 1" );
                 .Select( id => id.Value )
                 .ToList();
 
+            // Only evaluate requests the person can view so a crafted request cannot learn the
+            // placement requirement status of requests the hub would not show them.
+            connectionRequestIds = GetViewAuthorizedConnectionRequestIds( connectionRequestIds );
+
             var idsNotMeeting = GetConnectionRequestIdsNotMeetingGroupRequirements( connectionRequestIds );
 
             var idKeysNotMeeting = idsNotMeeting.Select( id => IdHasher.Instance.GetHash( id ) ).ToList();
@@ -5073,6 +5300,13 @@ WHERE 1 = 1" );
             if ( !connectionRequestId.HasValue )
             {
                 return ActionBadRequest( "Connection Request not found." );
+            }
+
+            // Only evaluate a request the person can view so a crafted request cannot learn the
+            // placement requirement status of a request the hub would not show them.
+            if ( !GetViewAuthorizedConnectionRequestIds( new List<int> { connectionRequestId.Value } ).Any() )
+            {
+                return ActionBadRequest( "You are not authorized to view this Connection Request." );
             }
 
             var isMeetingRequirements = ConnectionRequestMeetsGroupRequirements( connectionRequestId.Value );
@@ -5591,7 +5825,19 @@ WHERE 1 = 1" );
 
             var connectionWorkflow = new ConnectionWorkflowService( RockContext ).GetInclude( bag.ConnectionWorkflowGuid.AsGuid(), w => w.WorkflowType );
 
-            if ( !connectionWorkflow.WorkflowTypeId.HasValue )
+            if ( connectionWorkflow == null || !connectionWorkflow.WorkflowTypeId.HasValue )
+            {
+                return ActionBadRequest( "Invalid Workflow." );
+            }
+
+            // The UI only offers the manual workflows of this Connection Type and of its
+            // opportunities (see GetOptions). An opportunity workflow only runs for requests in
+            // that opportunity (see IsEligibleForWorkflow) and the requests are limited to this
+            // Connection Type below, so only a Connection Type workflow needs checking here.
+            var isOtherConnectionTypeWorkflow = !connectionWorkflow.ConnectionOpportunityId.HasValue
+                && connectionWorkflow.ConnectionTypeId != connectionType.Id;
+
+            if ( isOtherConnectionTypeWorkflow )
             {
                 return ActionBadRequest( "Invalid Workflow." );
             }
@@ -5627,12 +5873,23 @@ WHERE 1 = 1" );
                 excludedDataViewValues = GetDataViewValues( connectionWorkflow.ExcludeDataViewId.Value );
             }
 
-            var decodedIds = bag.ConnectionRequestIdKeys.Select( key => Rock.Utility.IdHasher.Instance.GetId( key ) )
-                .Where( id => id.HasValue )
-                .Select( id => id.Value )
-                .ToList();
+            // The Launch Workflow button is offered to anybody who can see the request in the hub,
+            // so require view authorization for every request sent by the client.
+            var areRequestsLoaded = TryGetSpecifiedConnectionRequests( connectionType, bag.ConnectionRequestIdKeys, out var connectionRequests, out var actionError, q => q
+                .Include( r => r.PersonAlias.Person )
+                .Include( r => r.ConnectionOpportunity.ConnectionType )
+                .Include( r => r.ConnectorPersonAlias ) );
 
-            var connectionRequests = new ConnectionRequestService( RockContext ).GetByIds( decodedIds ).Include( r => r.PersonAlias.Person ).ToList();
+            if ( !areRequestsLoaded )
+            {
+                return actionError;
+            }
+
+            if ( !connectionRequests.All( r => CanViewConnectionRequest( r ) ) )
+            {
+                return ActionForbidden( "Not authorized to launch workflows for one or more of the selected Connection Requests." );
+            }
+
             var isSingleRequest = connectionRequests.Count == 1;
 
             var eligibleRequests = connectionRequests
@@ -5768,6 +6025,8 @@ WHERE 1 = 1" );
             }
 
             var isInEditMode = entity.Id != 0;
+            var originalAssignedGroupId = entity.AssignedGroupId;
+            var originalAssignedGroupMemberRoleId = entity.AssignedGroupMemberRoleId;
 
             // Update the entity instance from the information in the bag.
             if ( !UpdateEntityFromBox( entity, box ) )
@@ -5795,6 +6054,32 @@ WHERE 1 = 1" );
                 {
                     return ActionBadRequest( "The selected placement group is inactive and cannot be assigned." );
                 }
+            }
+
+            /*
+                9/29/26 - CLAUDE
+
+                ApplyDefaultGroupMemberRoleAndStatus fills in a missing role from the
+                opportunity's group config, so a defaulted role is always one the config
+                offers. Only a role sent by the client counts as a change here; otherwise
+                an older request with a group but no role would fail to save once its
+                group stopped being a placement group, without the user touching placement.
+
+                Reason: Do not reject saves because of a role the server defaulted.
+            */
+            var isRoleSentByClient = box.IsValidProperty( nameof( box.Bag.GroupMemberRoleGuid ) )
+                && box.Bag.GroupMemberRoleGuid.AsGuidOrNull().HasValue;
+
+            // The placement group and role are used to add the requester to the group when the
+            // request is connected, so they must be ones the UI offers for this opportunity. Only
+            // validate when they change so saving an existing request with an older assignment
+            // (for example one made before the opportunity's configuration changed) still works.
+            var isPlacementAssignmentChanged = entity.AssignedGroupId != originalAssignedGroupId
+                || ( isRoleSentByClient && entity.AssignedGroupMemberRoleId != originalAssignedGroupMemberRoleId );
+
+            if ( isPlacementAssignmentChanged && !IsPlacementAssignmentAllowed( entity ) )
+            {
+                return ActionBadRequest( "The selected placement group or group member role is not available for this opportunity." );
             }
 
             RockContext.WrapTransaction( () =>
@@ -6703,7 +6988,9 @@ WHERE 1 = 1" );
                 return ActionBadRequest( $"{Rock.Model.ConnectionOpportunity.FriendlyTypeName} not found." );
             }
 
-            if ( newOpportunity == null )
+            // The transfer UI (GetBulkTransferDetails) only offers opportunities of the same
+            // Connection Type, so reject any other target opportunity.
+            if ( newOpportunity == null || newOpportunity.ConnectionTypeId != connectionType.Id )
             {
                 return ActionBadRequest( $"{Rock.Model.ConnectionOpportunity.FriendlyTypeName} not found." );
             }
@@ -7048,7 +7335,9 @@ WHERE 1 = 1" );
 
             var newOpportunity = new ConnectionOpportunityService( RockContext ).Get( newOpportunityGuid.Value );
 
-            if ( newOpportunity == null )
+            // The transfer UI (GetTransferDetails) only offers opportunities of the request's own
+            // Connection Type, so reject any other target opportunity.
+            if ( newOpportunity == null || newOpportunity.ConnectionTypeId != connectionRequest.ConnectionTypeId )
             {
                 return ActionBadRequest( $"{Rock.Model.ConnectionOpportunity.FriendlyTypeName} not found." );
             }
@@ -7328,6 +7617,10 @@ WHERE 1 = 1" );
                 .Select( id => id.Value )
                 .ToList();
 
+            // Only return requester details for requests the person can view so a crafted request
+            // cannot read names and phone numbers the hub would not show them.
+            connectionRequestIds = GetViewAuthorizedConnectionRequestIds( connectionRequestIds );
+
             var connectionRequestService = new ConnectionRequestService( RockContext );
             var mobilePhoneDefinedValueId = DefinedValueCache.GetId( SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE.AsGuid() );
             var personalDeviceQuery = new PersonalDeviceService( RockContext ).Queryable().AsNoTracking();
@@ -7365,9 +7658,7 @@ WHERE 1 = 1" );
 
             var currentPerson = GetCurrentPerson();
             var currentPersonAliasIds = currentPerson?.Aliases?.Select( a => a.Id ).ToList() ?? new List<int>();
-            var smsFromSystemPhoneNumbers = SystemPhoneNumberCache
-                    .All( includeInactive: false )
-                    .Where( spn => spn.IsAuthorized( Authorization.VIEW, currentPerson ) )
+            var smsFromSystemPhoneNumbers = GetAvailableSmsFromSystemPhoneNumbers( currentPerson )
                     .OrderByDescending( spn => spn.AssignedToPersonAliasId.HasValue && currentPersonAliasIds.Contains( spn.AssignedToPersonAliasId.Value ) )
                     .ThenBy( spn => spn.Order )
                     .ThenBy( spn => spn.Name )
@@ -7444,6 +7735,10 @@ WHERE 1 = 1" );
                 .Select( id => id.Value )
                 .ToList();
 
+            // Only return requester details for requests the person can view so a crafted request
+            // cannot read names and email addresses the hub would not show them.
+            connectionRequestIds = GetViewAuthorizedConnectionRequestIds( connectionRequestIds );
+
             var connectionRequestService = new ConnectionRequestService( RockContext );
             var mobilePhoneDefinedValueId = DefinedValueCache.GetId( SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE.AsGuid() );
             //var personalDeviceQuery = new PersonalDeviceService( RockContext ).Queryable().AsNoTracking();
@@ -7518,6 +7813,12 @@ WHERE 1 = 1" );
         [BlockAction]
         public BlockActionResult SendCommunication( CommunicationBag bag )
         {
+            // Make sure the recipients, SMS number and attachments are ones the UI would offer.
+            if ( !TryValidateCommunicationBag( bag, out var error ) )
+            {
+                return error;
+            }
+
             var communication = CreateCommunication( bag );
 
             var msg = new ProcessSendCommunication.Message

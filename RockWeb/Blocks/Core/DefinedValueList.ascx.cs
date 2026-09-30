@@ -222,7 +222,7 @@ namespace RockWeb.Blocks.Core
 
             DefinedValue value = definedValueService.Get( e.RowKeyId );
 
-            if ( value != null )
+            if ( value != null && _definedType != null && value.DefinedTypeId == _definedType.Id )
             {
                 string errorMessage;
                 if ( !definedValueService.CanDelete( value, out errorMessage ) )
@@ -251,9 +251,16 @@ namespace RockWeb.Blocks.Core
 
             int definedValueId = hfDefinedValueId.ValueAsInt();
 
+            // Use the server determined defined type rather than the posted
+            // hidden field values so only values of this type can be saved.
+            if ( _definedType == null )
+            {
+                return;
+            }
+
             if ( definedValueId.Equals( 0 ) )
             {
-                int definedTypeId = hfDefinedTypeId.ValueAsInt();
+                int definedTypeId = _definedType.Id;
                 definedValue = new DefinedValue { Id = 0 };
                 definedValue.DefinedTypeId = definedTypeId;
                 definedValue.IsSystem = false;
@@ -268,6 +275,13 @@ namespace RockWeb.Blocks.Core
             else
             {
                 definedValue = definedValueService.Get( definedValueId );
+
+                if ( definedValue == null || definedValue.DefinedTypeId != _definedType.Id )
+                {
+                    hfDefinedValueId.Value = string.Empty;
+                    modalValue.Hide();
+                    return;
+                }
             }
 
             definedValue.Value = tbValueName.Text;
@@ -338,7 +352,13 @@ namespace RockWeb.Blocks.Core
         /// <param name="e">The <see cref="GridReorderEventArgs"/> instance containing the event data.</param>
         private void gDefinedValues_GridReorder( object sender, GridReorderEventArgs e )
         {
-            int definedTypeId = hfDefinedTypeId.ValueAsInt();
+            if ( _definedType == null )
+            {
+                return;
+            }
+
+            // Use the server determined defined type rather than the posted hidden field.
+            int definedTypeId = _definedType.Id;
 
             var rockContext = RockApp.Current.CreateRockContext();
             var definedValueService = new DefinedValueService( rockContext );
@@ -428,7 +448,7 @@ namespace RockWeb.Blocks.Core
 
         private void ShowDefinedValueEdit( int valueId )
         {
-            var definedType = DefinedTypeCache.Get( hfDefinedTypeId.ValueAsInt() );
+            var definedType = _definedType != null ? DefinedTypeCache.Get( _definedType.Id ) : null;
             DefinedValue definedValue;
 
             modalValue.SubTitle = String.Format( "Id: {0}", valueId );
@@ -444,7 +464,7 @@ namespace RockWeb.Blocks.Core
             else
             {
                 definedValue = new DefinedValue { Id = 0 };
-                definedValue.DefinedTypeId = hfDefinedTypeId.ValueAsInt();
+                definedValue.DefinedTypeId = definedType != null ? definedType.Id : 0;
                 if ( definedType != null )
                 {
                     lActionTitleDefinedValue.Text = ActionTitle.Add( "defined value for " + definedType.Name );

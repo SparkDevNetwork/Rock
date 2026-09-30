@@ -131,6 +131,27 @@ namespace Rock.Blocks.Crm
                 .AddField( "status", a => a.GroupMemberStatus );
         }
 
+        /// <summary>
+        /// Determines whether the group member is one that this block can act on.
+        /// This matches the members the grid can show: members of the photo
+        /// request group that are not archived and are either pending
+        /// verification or already verified.
+        /// </summary>
+        /// <param name="groupMember">The group member to check.</param>
+        /// <returns><c>true</c> if the group member can be verified or have its photo deleted; otherwise, <c>false</c>.</returns>
+        private static bool IsVerifiableMember( GroupMember groupMember )
+        {
+            var photoRequestGroupGuid = Rock.SystemGuid.Group.GROUP_PHOTO_REQUEST.AsGuid();
+
+            // Inactive members have opted out of photo requests and must not
+            // be changed here.
+            return groupMember.Group != null
+                && groupMember.Group.Guid == photoRequestGroupGuid
+                && !groupMember.IsArchived
+                && ( groupMember.GroupMemberStatus == GroupMemberStatus.Pending
+                    || groupMember.GroupMemberStatus == GroupMemberStatus.Active );
+        }
+
         #endregion
 
         #region Block Actions
@@ -146,7 +167,8 @@ namespace Rock.Blocks.Crm
             var groupMemberService = new GroupMemberService( RockContext );
             var groupMember = groupMemberService.Get( key );
 
-            if ( groupMember == null )
+            // Only allow members the grid can show to be processed.
+            if ( groupMember == null || !IsVerifiableMember( groupMember ) )
             {
                 return ActionBadRequest( $"Person not found." );
             }
@@ -176,7 +198,8 @@ namespace Rock.Blocks.Crm
                 foreach ( string currentGroupMemberIdKey in selectedGroupMembers )
                 {
                     GroupMember groupMember = groupMemberService.Get( currentGroupMemberIdKey );
-                    if ( groupMember != null )
+                    // Only allow members the grid can show to be verified.
+                    if ( groupMember != null && IsVerifiableMember( groupMember ) )
                     {
                         count++;
                         groupMember.GroupMemberStatus = GroupMemberStatus.Active;

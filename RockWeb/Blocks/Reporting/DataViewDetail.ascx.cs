@@ -251,7 +251,12 @@ $(document).ready(function() {
         protected void btnEdit_Click( object sender, EventArgs e )
         {
             var service = new DataViewService( RockApp.Current.CreateRockContext() );
-            var item = service.Get( hfDataViewId.Value, true );
+            var item = GetAuthorizedDataView( service, hfDataViewId.Value.AsInteger(), Authorization.EDIT );
+            if ( item == null )
+            {
+                return;
+            }
+
             BindReadOnlyContextControls( service.ReadOnlyContextEnabled, item.DisableUseOfReadOnlyContext );
             ShowEditDetails( item );
         }
@@ -264,9 +269,14 @@ $(document).ready(function() {
         protected void btnCopy_Click( object sender, EventArgs e )
         {
             // Create a new Data View using the current item as a template.
-            var id = int.Parse( hfDataViewId.Value );
+            var id = hfDataViewId.Value.AsInteger();
 
             var dataViewService = new DataViewService( RockApp.Current.CreateRockContext() );
+
+            if ( GetAuthorizedDataView( dataViewService, id, Authorization.VIEW ) == null )
+            {
+                return;
+            }
 
             var newItem = dataViewService.GetNewFromTemplate( id );
 
@@ -316,7 +326,14 @@ $(document).ready(function() {
             }
             else
             {
-                dataView = service.Get( dataViewId );
+                dataView = GetAuthorizedDataView( service, dataViewId, Authorization.EDIT );
+                if ( dataView == null )
+                {
+                    cvSecurityError.IsValid = false;
+                    cvSecurityError.ErrorMessage = "You are not authorized to edit this Data View.";
+                    return;
+                }
+
                 origDataViewFilterId = dataView.DataViewFilterId;
             }
 
@@ -538,7 +555,12 @@ $(document).ready(function() {
             {
                 // Canceling on Edit.  Return to Details
                 DataViewService service = new DataViewService( RockApp.Current.CreateRockContext() );
-                DataView item = service.Get( dataViewId );
+                DataView item = GetAuthorizedDataView( service, dataViewId, Authorization.VIEW );
+                if ( item == null )
+                {
+                    return;
+                }
+
                 ShowReadonlyDetails( item );
             }
         }
@@ -552,7 +574,7 @@ $(document).ready(function() {
         {
             var rockContext = RockApp.Current.CreateRockContext();
             var dataViewService = new DataViewService( rockContext );
-            var dataView = dataViewService.Get( hfDataViewId.Value, true );
+            var dataView = GetAuthorizedDataView( dataViewService, hfDataViewId.Value.AsInteger(), Authorization.EDIT );
             if ( dataView == null )
             {
                 return;
@@ -631,7 +653,7 @@ $(document).ready(function() {
 
             var rockContext = RockApp.Current.CreateRockContext();
             var dataViewService = new DataViewService( rockContext );
-            var dataView = dataViewService.Get( dataViewId );
+            var dataView = GetAuthorizedDataView( dataViewService, dataViewId, Authorization.EDIT );
 
             if ( dataView == null )
             {
@@ -647,6 +669,27 @@ $(document).ready(function() {
         #endregion
 
         #region Internal Methods
+
+        /// <summary>
+        /// Gets the data view with the specified identifier if the current person
+        /// is authorized to perform the action on it. The identifier comes from a
+        /// posted hidden field so it must be re-checked on every postback.
+        /// </summary>
+        /// <param name="dataViewService">The data view service.</param>
+        /// <param name="dataViewId">The data view identifier.</param>
+        /// <param name="action">The security action that is required.</param>
+        /// <returns>The <see cref="DataView"/> or <c>null</c> if not found or not authorized.</returns>
+        private DataView GetAuthorizedDataView( DataViewService dataViewService, int dataViewId, string action )
+        {
+            var dataView = dataViewService.Get( dataViewId );
+
+            if ( dataView == null || !dataView.IsAuthorized( action, CurrentPerson ) )
+            {
+                return null;
+            }
+
+            return dataView;
+        }
 
         /// <summary>
         /// Loads the drop downs.

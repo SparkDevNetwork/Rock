@@ -379,6 +379,12 @@ namespace RockWeb
             binaryFile.MimeType = uploadedFile.ContentType;
             binaryFile.FileSize = uploadedFile.ContentLength;
 
+            // Record who uploaded the file. The handler does not provide the
+            // current person to RockContext, so it would otherwise be left
+            // empty. Blocks use this to make sure a posted file was uploaded
+            // by the person saving it.
+            binaryFile.CreatedByPersonAliasId = currentPerson?.PrimaryAliasId;
+
             /*
 	            2020-02-11 BJW
 	            The ReplaceSpecialCharacters extension call was added to remove characters that are outside the legal character range.

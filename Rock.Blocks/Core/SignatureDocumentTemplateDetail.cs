@@ -573,6 +573,15 @@ namespace Rock.Blocks.Core
         [BlockAction]
         public BlockActionResult GetPdfPreviewUrl( GetPdfPreviewUrlRequestBag requestBag )
         {
+            // The preview is only available while editing a template, so make
+            // sure the person is allowed to edit the template being viewed.
+            var entity = GetInitialEntity();
+
+            if ( entity == null || !entity.IsAuthorized( Rock.Security.Authorization.EDIT, RequestContext.CurrentPerson ) )
+            {
+                return ActionBadRequest( $"Not authorized to edit {SignatureDocumentTemplate.FriendlyTypeName}." );
+            }
+
             using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 SignatureType signatureType = requestBag.SignatureType.IsNotNullOrWhiteSpace() ? requestBag.SignatureType.ConvertToEnum<SignatureType>() : SignatureType.Typed;

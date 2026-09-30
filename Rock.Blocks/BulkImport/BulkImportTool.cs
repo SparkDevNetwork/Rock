@@ -137,6 +137,13 @@ namespace Rock.Blocks.BulkImport
                 return ActionBadRequest( "Slingshot file path is required." );
             }
 
+            // The path is posted back by the browser, so only allow files in the
+            // folder that the uploader saves to and GetFileInfo() returns paths for.
+            if ( !Rock.Utility.FileUtilities.IsPathWithinFolder( physicalSlingshotFile, HostingEnvironment.MapPath( GetSlingshotRootFolder() ) ) )
+            {
+                return ActionBadRequest( "Slingshot file not found." );
+            }
+
             if ( !File.Exists( physicalSlingshotFile ) )
             {
                 return ActionBadRequest( "Slingshot file not found." );

@@ -172,7 +172,7 @@ namespace RockWeb.Blocks.Reporting
                 // Run the Report and show the results.
                 var reportServiceReadOnly = new ReportService( new RockContextReadOnly() );
 
-                var reportReadOnly = reportServiceReadOnly.Get( hfReportId.Value.AsInteger() );
+                var reportReadOnly = GetAuthorizedReport( reportServiceReadOnly, hfReportId.Value.AsInteger(), Authorization.VIEW );
 
                 if ( reportReadOnly == null )
                 {
@@ -396,7 +396,12 @@ namespace RockWeb.Blocks.Reporting
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void gReport_GridRebind( object sender, GridRebindEventArgs e )
         {
-            var reportReadOnly = new ReportService( new RockContextReadOnly() ).Get( hfReportId.ValueAsInt() );
+            var reportReadOnly = GetAuthorizedReport( new ReportService( new RockContextReadOnly() ), hfReportId.ValueAsInt(), Authorization.VIEW );
+            if ( reportReadOnly == null )
+            {
+                return;
+            }
+
             BindGrid( reportReadOnly, e.IsCommunication );
         }
 
@@ -542,7 +547,12 @@ namespace RockWeb.Blocks.Reporting
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void btnEdit_Click( object sender, EventArgs e )
         {
-            var item = new ReportService( RockApp.Current.CreateRockContext() ).Get( int.Parse( hfReportId.Value ) );
+            var item = GetAuthorizedReport( new ReportService( RockApp.Current.CreateRockContext() ), hfReportId.Value.AsInteger(), Authorization.EDIT );
+            if ( item == null )
+            {
+                return;
+            }
+
             ShowEditDetails( item );
         }
 
@@ -554,9 +564,14 @@ namespace RockWeb.Blocks.Reporting
         protected void btnCopy_Click( object sender, EventArgs e )
         {
             // Create a new Report using the current item as a template.
-            var id = int.Parse( hfReportId.Value );
+            var id = hfReportId.Value.AsInteger();
 
             var reportService = new ReportService( RockApp.Current.CreateRockContext() );
+
+            if ( GetAuthorizedReport( reportService, id, Authorization.VIEW ) == null )
+            {
+                return;
+            }
 
             var newItem = reportService.GetNewFromTemplate( id );
 
@@ -583,7 +598,7 @@ namespace RockWeb.Blocks.Reporting
             string categoryId = null;
             var rockContext = RockApp.Current.CreateRockContext();
             var reportService = new ReportService( rockContext );
-            var report = reportService.Get( hfReportId.Value.AsInteger() );
+            var report = GetAuthorizedReport( reportService, hfReportId.Value.AsInteger(), Authorization.EDIT );
 
             if ( report != null )
             {
@@ -645,7 +660,7 @@ namespace RockWeb.Blocks.Reporting
             ReportService service = new ReportService( rockContext );
             ReportFieldService reportFieldService = new ReportFieldService( rockContext );
 
-            int reportId = int.Parse( hfReportId.Value );
+            int reportId = hfReportId.Value.AsInteger();
 
             if ( reportId == 0 )
             {
@@ -654,7 +669,13 @@ namespace RockWeb.Blocks.Reporting
             }
             else
             {
-                report = service.Get( reportId );
+                report = GetAuthorizedReport( service, reportId, Authorization.EDIT );
+                if ( report == null )
+                {
+                    cvSecurityError.IsValid = false;
+                    cvSecurityError.ErrorMessage = "You are not authorized to edit this Report.";
+                    return;
+                }
             }
 
             report.Name = tbName.Text;
@@ -893,7 +914,12 @@ namespace RockWeb.Blocks.Reporting
             {
                 // Canceling on Edit.  Return to Details
                 ReportService serviceReadOnly = new ReportService( new RockContextReadOnly() );
-                Report itemReadOnly = serviceReadOnly.Get( reportId );
+                Report itemReadOnly = GetAuthorizedReport( serviceReadOnly, reportId, Authorization.VIEW );
+                if ( itemReadOnly == null )
+                {
+                    return;
+                }
+
                 ShowReadonlyDetails( itemReadOnly );
             }
         }
@@ -922,6 +948,27 @@ namespace RockWeb.Blocks.Reporting
             }
 
             return reportId;
+        }
+
+        /// <summary>
+        /// Gets the report with the specified identifier if the current person
+        /// is authorized to perform the action on it. The identifier comes from a
+        /// posted hidden field so it must be re-checked on every postback.
+        /// </summary>
+        /// <param name="reportService">The report service.</param>
+        /// <param name="reportId">The report identifier.</param>
+        /// <param name="action">The security action that is required.</param>
+        /// <returns>The <see cref="Report"/> or <c>null</c> if not found or not authorized.</returns>
+        private Report GetAuthorizedReport( ReportService reportService, int reportId, string action )
+        {
+            var report = reportService.Get( reportId );
+
+            if ( report == null || !report.IsAuthorized( action, CurrentPerson ) )
+            {
+                return null;
+            }
+
+            return report;
         }
 
         private int? GetIdFromPageParameter( string pageParameterKey )

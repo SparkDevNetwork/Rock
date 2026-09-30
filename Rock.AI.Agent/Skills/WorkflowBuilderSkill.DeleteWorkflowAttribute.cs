@@ -75,6 +75,13 @@ internal sealed partial class WorkflowBuilderSkill
             return helper.ErrorResult;
         }
 
+        var editError = GetWorkflowTypeEditError( owner.WorkflowType );
+
+        if ( editError != null )
+        {
+            return Error( editError );
+        }
+
         var attributeName = attribute.Name;
         var attributeKey = attribute.Key;
 

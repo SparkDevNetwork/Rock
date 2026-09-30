@@ -561,6 +561,7 @@ namespace RockWeb.Blocks.Finance
             public const string ScheduleId = "ScheduleId";
             public const string DisplayPhone = "DisplayPhone";
             public const string PersonId = "PersonId";
+            public const string TransactionGuid = "TransactionGuid";
         }
         #endregion Block Keys
 
@@ -671,6 +672,16 @@ namespace RockWeb.Blocks.Finance
         {
             get { return ViewState[ViewStateKey.ScheduleId] as int?; }
             set { ViewState[ViewStateKey.ScheduleId] = value; }
+        }
+
+        /// <summary>
+        /// Gets or sets the unique guid used for the transaction being processed.
+        /// This is kept in ViewState so it cannot be changed by the client.
+        /// </summary>
+        protected Guid TransactionGuid
+        {
+            get { return ViewState[ViewStateKey.TransactionGuid] as Guid? ?? Guid.Empty; }
+            set { ViewState[ViewStateKey.TransactionGuid] = value; }
         }
 
         // The URL for the Step-2 Iframe Url
@@ -907,7 +918,7 @@ namespace RockWeb.Blocks.Finance
 
             if ( !Page.IsPostBack )
             {
-                hfTransactionGuid.Value = Guid.NewGuid().ToString();
+                TransactionGuid = Guid.NewGuid();
                 if ( this.Request.UrlReferrer != null )
                 {
                     lHistoryBackButton.HRef = this.Request.UrlReferrer.ToString();
@@ -1244,7 +1255,7 @@ namespace RockWeb.Blocks.Finance
         {
             // They are hitting Confirm on the "Possible Duplicate" warning, so reset the TransactionCode and Transaction.Guid which would have preventing them from doing a duplicate
             TransactionCode = string.Empty;
-            hfTransactionGuid.Value = Guid.NewGuid().ToString();
+            TransactionGuid = Guid.NewGuid();
 
             string errorMessage = string.Empty;
             if ( ProcessConfirmation( out errorMessage ) )
@@ -1811,9 +1822,9 @@ namespace RockWeb.Blocks.Finance
                 mergeFields.Add( "AmountLimit", this.PageParameter( PageParameterKey.AmountLimit ).AsDecimalOrNull() );
 
 
-                if ( hfTransactionGuid.Value.AsGuidOrNull().HasValue )
+                if ( TransactionGuid != Guid.Empty )
                 {
-                    var financialTransaction = new FinancialTransactionService( rockContext ).Get( hfTransactionGuid.Value.AsGuid() );
+                    var financialTransaction = new FinancialTransactionService( rockContext ).Get( TransactionGuid );
                     mergeFields.Add( "FinancialTransaction", financialTransaction );
                 }
 
@@ -3025,7 +3036,7 @@ namespace RockWeb.Blocks.Finance
             var rockContext = RockApp.Current.CreateRockContext();
             if ( string.IsNullOrWhiteSpace( TransactionCode ) )
             {
-                var transactionGuid = hfTransactionGuid.Value.AsGuid();
+                var transactionGuid = TransactionGuid;
 
                 bool isACHTxn = hfPaymentTab.Value == "ACH";
                 var financialGateway = isACHTxn ? _achGateway : _ccGateway;
@@ -3133,7 +3144,7 @@ namespace RockWeb.Blocks.Finance
         {
             var rockContext = RockApp.Current.CreateRockContext();
 
-            var transactionGuid = hfTransactionGuid.Value.AsGuid();
+            var transactionGuid = TransactionGuid;
 
             bool isACHTxn = hfPaymentTab.Value == "ACH";
             var financialGateway = isACHTxn ? _achGateway : _ccGateway;

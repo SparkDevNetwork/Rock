@@ -397,7 +397,24 @@ namespace Rock.Blocks.Cms
                 return ActionBadRequest( "Error while saving the content back to file." );
             }
 
-            File.WriteAllText( bag.FilePath, bag.FileContents );
+            // The file path in the bag is posted back by the browser, so run the
+            // same relative path, existence and restricted extension checks
+            // that init used and write to the path derived from them instead.
+            if ( !IsRelativeFilePathGood( out var errorMessage ) )
+            {
+                return ActionBadRequest( errorMessage );
+            }
+
+            var filePath = RockApp.Current.MapPath( _fileRelativePath );
+            // Init sends this same mapped path down, so it must match exactly.
+            var isSameFileAsInit = string.Equals( bag.FilePath, filePath, StringComparison.OrdinalIgnoreCase );
+
+            if ( !isSameFileAsInit )
+            {
+                return ActionBadRequest( "Invalid relative file path." );
+            }
+
+            File.WriteAllText( filePath, bag.FileContents );
             return ActionOk();
         }
 

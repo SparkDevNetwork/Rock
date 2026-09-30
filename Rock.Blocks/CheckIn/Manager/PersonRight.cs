@@ -660,6 +660,26 @@ namespace Rock.Blocks.CheckIn.Manager
                 .ToList();
         }
 
+        /// <summary>
+        /// Filters the attendance identifiers to only those that belong to the specified person.
+        /// The identifiers come from the client, so they must not be trusted on their own.
+        /// </summary>
+        /// <param name="attendanceIds">The attendance identifiers.</param>
+        /// <param name="personId">The person identifier.</param>
+        /// <returns>The attendance identifiers that belong to the person.</returns>
+        private List<int> GetPersonAttendanceIds( List<int> attendanceIds, int personId )
+        {
+            if ( attendanceIds == null || !attendanceIds.Any() )
+            {
+                return new List<int>();
+            }
+
+            return new AttendanceService( RockContext ).Queryable()
+                .Where( a => attendanceIds.Contains( a.Id ) && a.PersonAlias.PersonId == personId )
+                .Select( a => a.Id )
+                .ToList();
+        }
+
         #endregion Methods
 
         #region Block Actions
@@ -688,7 +708,8 @@ namespace Rock.Blocks.CheckIn.Manager
                 } );
             }
 
-            var attendanceIds = ResolveAttendanceIds( attendanceIdKeys );
+            // Only allow re-printing labels from this person's attendance records.
+            var attendanceIds = GetPersonAttendanceIds( ResolveAttendanceIds( attendanceIdKeys ), personId.Value );
             if ( !attendanceIds.Any() )
             {
                 return ActionOk( new PersonRightReprintModalDataBag
@@ -783,7 +804,8 @@ namespace Rock.Blocks.CheckIn.Manager
                 return ActionBadRequest( "No person was found." );
             }
 
-            var attendanceIds = ResolveAttendanceIds( attendanceIdKeys );
+            // Only allow re-printing labels from this person's attendance records.
+            var attendanceIds = GetPersonAttendanceIds( ResolveAttendanceIds( attendanceIdKeys ), personId.Value );
 
             ReprintLabelOptions reprintLabelOptions;
             if ( bag.PrinterGuid.Value == Guid.Empty )
@@ -862,7 +884,14 @@ namespace Rock.Blocks.CheckIn.Manager
                 return ActionBadRequest( "Please select a printer." );
             }
 
-            var attendanceIds = ResolveAttendanceIds( attendanceIdKeys );
+            var personId = ResolvePersonIdForReprint();
+            if ( !personId.HasValue )
+            {
+                return ActionBadRequest( "No person was found." );
+            }
+
+            // Only allow re-printing labels from this person's attendance records.
+            var attendanceIds = GetPersonAttendanceIds( ResolveAttendanceIds( attendanceIdKeys ), personId.Value );
 
             var printer = DeviceCache.Get( bag.PrinterGuid.Value );
             var printFrom = printer != null ? PrintFrom.Server : PrintFrom.Client;

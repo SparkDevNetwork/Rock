@@ -185,9 +185,10 @@ namespace Rock.Security
         {
             var grantTokenEarliestDate = Rock.Web.SystemSettings.GetValue( Rock.SystemKey.SystemSetting.SECURITY_GRANT_TOKEN_EARLIEST_DATE ).AsDateTime();
 
-            if ( grantTokenEarliestDate.HasValue && ExpiresDateTime < grantTokenEarliestDate.Value )
+            // Any grant created before the earliest date has been revoked.
+            if ( grantTokenEarliestDate.HasValue && CreatedDateTime < grantTokenEarliestDate.Value )
             {
-                return false;
+                return true;
             }
 
             return RockDateTime.Now >= ExpiresDateTime;

@@ -793,6 +793,11 @@ namespace Rock.Blocks.Core
         {
             using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
+                if ( !TryGetParentCategoryForChildAction( parentCategoryIdKey, rockContext, out var actionError ) )
+                {
+                    return actionError;
+                }
+
                 // Get the queryable and make sure it is ordered correctly.
                 var items = OrderedChildCategories( parentCategoryIdKey, rockContext );
 
@@ -849,7 +854,53 @@ namespace Rock.Blocks.Core
             var entityTypeId = EntityTypeCache.GetId( entityTypeGuid ).ToStringSafe();
 
             var categoryService = new CategoryService( RockContext );
+
+            // A new category does not have any child categories.
+            if ( idKey.IsNullOrWhiteSpace() )
+            {
+                return ActionOk( ChildCategoriesGridBuilder( entityTypeId, categoryService ).Build( new List<Category>() ) );
+            }
+
+            if ( !TryGetParentCategoryForChildAction( idKey, RockContext, out var actionError ) )
+            {
+                return actionError;
+            }
+
             return ActionOk( ChildCategoriesGridBuilder( entityTypeId, categoryService ).Build( OrderedChildCategories( idKey, RockContext ) ) );
+        }
+
+        /// <summary>
+        /// Makes sure the parent category used by a child category action
+        /// exists, is for the configured entity type and can be viewed by
+        /// the current person.
+        /// </summary>
+        /// <param name="idKey">The identifier of the parent category.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <param name="error">On return contains the error to be returned if the category can not be used.</param>
+        /// <returns><c>true</c> if the parent category can be used; otherwise <c>false</c>.</returns>
+        private bool TryGetParentCategoryForChildAction( string idKey, RockContext rockContext, out BlockActionResult error )
+        {
+            error = null;
+
+            var category = idKey.IsNotNullOrWhiteSpace()
+                ? new CategoryService( rockContext ).Get( idKey, !PageCache.Layout.Site.DisablePredictableIds )
+                : null;
+            var entityTypeGuid = GetAttributeValue( AttributeKey.EntityType ).AsGuidOrNull();
+            var entityTypeId = entityTypeGuid.HasValue ? EntityTypeCache.GetId( entityTypeGuid.Value ) : null;
+
+            if ( category == null || ( entityTypeId.HasValue && category.EntityTypeId != entityTypeId.Value ) )
+            {
+                error = ActionBadRequest( $"{Category.FriendlyTypeName} not found." );
+                return false;
+            }
+
+            if ( !category.IsAuthorized( Rock.Security.Authorization.VIEW, RequestContext.CurrentPerson ) )
+            {
+                error = ActionBadRequest( $"Not authorized to view {Category.FriendlyTypeName}." );
+                return false;
+            }
+
+            return true;
         }
 
         /// <summary>

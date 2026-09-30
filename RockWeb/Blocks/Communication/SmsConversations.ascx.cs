@@ -207,31 +207,7 @@ namespace RockWeb.Blocks.Communication
         /// <returns></returns>
         private bool LoadPhoneNumbers()
         {
-            // First load up all of the available numbers
-            var smsNumbers = SystemPhoneNumberCache.All( false )
-                .Where( spn => spn.IsAuthorized( Rock.Security.Authorization.VIEW, CurrentPerson ) )
-                .OrderBy( spn => spn.Order )
-                .ThenBy( spn => spn.Name )
-                .ThenBy( spn => spn.Id )
-                .ToList();
-
-            var selectedNumberGuids = GetAttributeValue( AttributeKey.AllowedSMSNumbers ).SplitDelimitedValues( true ).AsGuidList();
-            if ( selectedNumberGuids.Any() )
-            {
-                smsNumbers = smsNumbers.Where( spn => selectedNumberGuids.Contains( spn.Guid ) ).ToList();
-            }
-
-            // filter personal numbers (any that have a response recipient) if the hide personal option is enabled
-            if ( GetAttributeValue( AttributeKey.HidePersonalSmsNumbers ).AsBoolean() )
-            {
-                smsNumbers = smsNumbers.Where( spn => !spn.AssignedToPersonAliasId.HasValue ).ToList();
-            }
-
-            // Show only numbers 'tied to the current' individual...unless they have 'Admin rights'.
-            if ( GetAttributeValue( AttributeKey.ShowOnlyPersonalSmsNumber ).AsBoolean() && !IsUserAuthorized( Authorization.ADMINISTRATE ) )
-            {
-                smsNumbers = smsNumbers.Where( spn => CurrentPerson.Aliases.Any( a => a.Id == spn.AssignedToPersonAliasId ) ).ToList();
-            }
+            var smsNumbers = GetAllowedSmsNumbers();
 
             if ( smsNumbers.Any() )
             {
@@ -276,6 +252,59 @@ namespace RockWeb.Blocks.Communication
             return true;
         }
 
+        /// <summary>
+        /// Gets the SMS numbers that the current person is allowed to use with this block.
+        /// </summary>
+        /// <returns>A list of <see cref="SystemPhoneNumberCache"/> objects.</returns>
+        private List<SystemPhoneNumberCache> GetAllowedSmsNumbers()
+        {
+            // First load up all of the available numbers
+            var smsNumbers = SystemPhoneNumberCache.All( false )
+                .Where( spn => spn.IsAuthorized( Rock.Security.Authorization.VIEW, CurrentPerson ) )
+                .OrderBy( spn => spn.Order )
+                .ThenBy( spn => spn.Name )
+                .ThenBy( spn => spn.Id )
+                .ToList();
+
+            var selectedNumberGuids = GetAttributeValue( AttributeKey.AllowedSMSNumbers ).SplitDelimitedValues( true ).AsGuidList();
+            if ( selectedNumberGuids.Any() )
+            {
+                smsNumbers = smsNumbers.Where( spn => selectedNumberGuids.Contains( spn.Guid ) ).ToList();
+            }
+
+            // filter personal numbers (any that have a response recipient) if the hide personal option is enabled
+            if ( GetAttributeValue( AttributeKey.HidePersonalSmsNumbers ).AsBoolean() )
+            {
+                smsNumbers = smsNumbers.Where( spn => !spn.AssignedToPersonAliasId.HasValue ).ToList();
+            }
+
+            // Show only numbers 'tied to the current' individual...unless they have 'Admin rights'.
+            if ( GetAttributeValue( AttributeKey.ShowOnlyPersonalSmsNumber ).AsBoolean() && !IsUserAuthorized( Authorization.ADMINISTRATE ) )
+            {
+                smsNumbers = smsNumbers.Where( spn => CurrentPerson.Aliases.Any( a => a.Id == spn.AssignedToPersonAliasId ) ).ToList();
+            }
+
+            return smsNumbers;
+        }
+
+        /// <summary>
+        /// Gets the selected SMS number identifier. The value comes from a hidden
+        /// field, so it is only returned if it is one of the numbers the current
+        /// person is allowed to use.
+        /// </summary>
+        /// <returns>The <see cref="SystemPhoneNumber"/> identifier or <c>0</c> if not valid.</returns>
+        private int GetSelectedSmsNumberId()
+        {
+            var smsSystemPhoneNumberId = hfSmsNumber.ValueAsInt();
+
+            if ( smsSystemPhoneNumberId == 0 || !GetAllowedSmsNumbers().Any( spn => spn.Id == smsSystemPhoneNumberId ) )
+            {
+                return 0;
+            }
+
+            return smsSystemPhoneNumberId;
+        }
+
         private void LoadResponseListing()
         {
             LoadResponseListing( null );
@@ -300,7 +329,7 @@ namespace RockWeb.Blocks.Communication
             lbShowImagePicker.Visible = false;
             noteEditor.Visible = false;
 
-            var smsSystemPhoneNumberId = hfSmsNumber.ValueAsInt();
+            var smsSystemPhoneNumberId = GetSelectedSmsNumberId();
             if ( smsSystemPhoneNumberId == 0 )
             {
                 return;
@@ -358,7 +387,7 @@ namespace RockWeb.Blocks.Communication
         /// <returns></returns>
         private string LoadResponsesForRecipientPerson( int recipientPersonId )
         {
-            var smsSystemPhoneNumberId = hfSmsNumber.ValueAsInt();
+            var smsSystemPhoneNumberId = GetSelectedSmsNumberId();
             var smsSystemPhoneNumber = smsSystemPhoneNumberId != 0
                 ? SystemPhoneNumberCache.Get( smsSystemPhoneNumberId )
                 : null;
@@ -476,7 +505,7 @@ namespace RockWeb.Blocks.Communication
             }
             else
             {
-                preferences.SetValue( "smsNumber", hfSmsNumber.Value.ToString() );
+                preferences.SetValue( "smsNumber", GetSelectedSmsNumberId().ToString() );
             }
 
             preferences.SetValue( "messageFilter", ddlMessageFilter.SelectedValue );
@@ -499,7 +528,12 @@ namespace RockWeb.Blocks.Communication
                 string fromPersonName = CurrentUser.Person.FullName;
 
                 // The sending phone is the selected one
-                var fromPhone = SystemPhoneNumberCache.Get( hfSmsNumber.ValueAsInt() );
+                var fromPhone = SystemPhoneNumberCache.Get( GetSelectedSmsNumberId() );
+
+                if ( fromPhone == null )
+                {
+                    return;
+                }
 
                 string responseCode = Rock.Communication.Medium.Sms.GenerateResponseCode( rockContext );
 
@@ -775,9 +809,9 @@ namespace RockWeb.Blocks.Communication
                 litMessagePart.Text = messagePart;
             }
 
-            var smsSystemPhoneNumberId = hfSmsNumber.Value.AsIntegerOrNull();
-            var smsSystemPhoneNumber = smsSystemPhoneNumberId.HasValue
-                ? SystemPhoneNumberCache.Get( smsSystemPhoneNumberId.Value )
+            var smsSystemPhoneNumberId = GetSelectedSmsNumberId();
+            var smsSystemPhoneNumber = smsSystemPhoneNumberId != 0
+                ? SystemPhoneNumberCache.Get( smsSystemPhoneNumberId )
                 : null;
 
             if ( smsSystemPhoneNumber != null && recipientPersonAliasId.HasValue )

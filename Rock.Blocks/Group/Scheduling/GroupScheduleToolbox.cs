@@ -2064,6 +2064,13 @@ namespace Rock.Blocks.Group.Scheduling
 
             if ( groupMemberAssignment != null )
             {
+                // Ensure the assignment belongs to the selected person.
+                if ( groupMemberAssignment.GroupMember?.PersonId != toolboxData.SelectedPerson.Id )
+                {
+                    errorMessage = "Unable to delete assignment";
+                    return;
+                }
+
                 if ( !groupMemberAssignmentService.CanDelete( groupMemberAssignment, out errorMessage ) )
                 {
                     // The error message will describe why this assignment cannot be deleted.

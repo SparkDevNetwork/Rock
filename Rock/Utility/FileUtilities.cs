@@ -34,6 +34,39 @@ namespace Rock.Utility
     public static class FileUtilities
     {
         /// <summary>
+        /// Determines whether the path is the folder itself or something inside
+        /// of it once both have been fully resolved. This should be used before
+        /// accessing any path that was built from untrusted input, such as a
+        /// file or folder name that was posted back by the browser.
+        /// </summary>
+        /// <param name="path">The path to be checked.</param>
+        /// <param name="folder">The folder that <paramref name="path"/> must be within.</param>
+        /// <returns><c>true</c> if <paramref name="path"/> is <paramref name="folder"/> or is within it; otherwise <c>false</c>.</returns>
+        public static bool IsPathWithinFolder( string path, string folder )
+        {
+            if ( path.IsNullOrWhiteSpace() || folder.IsNullOrWhiteSpace() )
+            {
+                return false;
+            }
+
+            try
+            {
+                var separators = new[] { Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar };
+                var fullFolder = Path.GetFullPath( folder ).TrimEnd( separators );
+                var fullPath = Path.GetFullPath( path ).TrimEnd( separators );
+
+                return fullPath.Equals( fullFolder, StringComparison.OrdinalIgnoreCase )
+                    || fullPath.StartsWith( fullFolder + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase );
+            }
+            catch
+            {
+                // Invalid paths (bad characters, unsupported formats, too long)
+                // are never considered to be within the folder.
+                return false;
+            }
+        }
+
+        /// <summary>
         /// Gets the file bytes.
         /// </summary>
         /// <param name="uploadedFile">The uploaded file.</param>

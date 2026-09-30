@@ -579,7 +579,8 @@ namespace RockWeb.Blocks.Cms
 
                 DataViewFilterService dataViewFilterService = new DataViewFilterService( rockContext );
 
-                int? dataViewFilterId = hfDataFilterId.Value.AsIntegerOrNull();
+                // Only delete the filter that is stored in this block's settings.
+                int? dataViewFilterId = GetAttributeValue( AttributeKey.FilterId ).AsIntegerOrNull();
                 if ( dataViewFilterId.HasValue )
                 {
                     var oldDataViewFilter = dataViewFilterService.Get( dataViewFilterId.Value );
@@ -788,6 +789,13 @@ namespace RockWeb.Blocks.Cms
             if ( contentChannelItemId != 0 )
             {
                 contentChannelItem = contentChannelItemService.Get( contentChannelItemId );
+
+                // Only allow editing items that belong to this block's content channel.
+                var blockContentChannel = this.GetContentChannel();
+                if ( contentChannelItem != null && ( blockContentChannel == null || contentChannelItem.ContentChannelId != blockContentChannel.Id ) )
+                {
+                    return;
+                }
             }
 
             if ( contentChannelItem == null )

@@ -27,6 +27,7 @@ using Rock.Enums.Core;
 using Rock.Model;
 using Rock.Net;
 using Rock.ViewModels.Core;
+using Rock.Utility;
 using Rock.Web.Cache;
 
 using Z.EntityFramework.Plus;
@@ -220,7 +221,7 @@ namespace Rock.Core.NotificationMessageTypes
         public override NotificationMessageMetadataBag GetMetadata( NotificationMessage message )
         {
             var messageData = message.ComponentDataJson.FromJsonOrNull<MessageData>();
-            var url = messageData != null ? $"~/GetAvatar.ashx?PersonId={messageData.PersonId}" : "~/GetAvatar.ashx?Style=Icon";
+            var url = messageData != null ? $"~/GetAvatar.ashx?PersonIdKey={IdHasher.Instance.GetHash( messageData.PersonId )}" : "~/GetAvatar.ashx?Style=Icon";
 
             return new NotificationMessageMetadataBag
             {

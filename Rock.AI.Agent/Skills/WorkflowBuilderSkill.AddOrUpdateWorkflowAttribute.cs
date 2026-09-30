@@ -221,6 +221,16 @@ internal sealed partial class WorkflowBuilderSkill
             attributeService.Add( attribute );
         }
 
+        // The workflow type is checked for both scopes, not the attribute itself.
+        // Attribute security controls who can see or change a value, which is a
+        // runtime concern and not what the workflow type block checks either.
+        var editError = GetWorkflowTypeEditError( workflowType );
+
+        if ( editError != null )
+        {
+            return Error( editError );
+        }
+
         if ( key.IsNotNullOrWhiteSpace() )
         {
             var scopeSiblings = scope == WorkflowAttributeScope.Activity

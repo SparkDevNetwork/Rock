@@ -78,6 +78,13 @@ internal sealed partial class WorkflowBuilderSkill
                 .WithInstructions( $"Call the {nameof( WorkflowSkill.LookupWorkflowTypes )} function to determine the available workflow types." );
         }
 
+        // Rock's own block makes system workflow types read only, which hides its
+        // delete button along with everything else.
+        if ( workflowType.IsSystem )
+        {
+            return Error( $"The workflow type '{workflowType.Name}' is a system workflow type and cannot be deleted." );
+        }
+
         // ADMINISTRATE rather than EDIT, matching what Rock's own workflow type
         // block requires. This is a strictly larger action than editing one.
         if ( !workflowType.IsAuthorized( Authorization.ADMINISTRATE, AgentRequestContext.CurrentPerson ) )

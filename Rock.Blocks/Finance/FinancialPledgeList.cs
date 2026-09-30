@@ -329,6 +329,13 @@ namespace Rock.Blocks.Finance
                     return ActionBadRequest( $"Not authorized to delete {FinancialPledge.FriendlyTypeName}." );
                 }
 
+                // Make sure the pledge is one this list would display, such
+                // as when limited to the current person's pledges.
+                if ( !GetListQueryable( rockContext ).Any( p => p.Id == entity.Id ) )
+                {
+                    return ActionBadRequest( $"{FinancialPledge.FriendlyTypeName} not found." );
+                }
+
                 if ( !entityService.CanDelete( entity, out var errorMessage ) )
                 {
                     return ActionBadRequest( errorMessage );
