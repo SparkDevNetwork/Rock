@@ -566,11 +566,16 @@ mission. We are so grateful for your commitment.</p>
             // If the block allows impersonation then just get the scheduled transaction, otherwise use the code below to filter by the current person
             if ( !GetAttributeValue( AttributeKey.AllowImpersonation ).AsBoolean() )
             {
+                if ( CurrentPerson == null )
+                {
+                    return null;
+                }
+
                 var personService = new PersonService( rockContext );
                 var validGivingIds = new List<string> { CurrentPerson.GivingId };
                 validGivingIds.AddRange( personService.GetBusinesses( CurrentPerson.Id ).Select( b => b.GivingId ) );
 
-                scheduledTransactionQuery.Where( t =>
+                scheduledTransactionQuery = scheduledTransactionQuery.Where( t =>
                      t.AuthorizedPersonAlias != null &&
                      t.AuthorizedPersonAlias.Person != null &&
                      validGivingIds.Contains( t.AuthorizedPersonAlias.Person.GivingId ) );
@@ -1054,8 +1059,17 @@ mission. We are so grateful for your commitment.</p>
 
             var financialScheduledTransactionService = new FinancialScheduledTransactionService( rockContext );
             var financialScheduledTransactionDetailService = new FinancialScheduledTransactionDetailService( rockContext );
-            Guid scheduledTransactionGuid = hfScheduledTransactionGuid.Value.AsGuid();
-            var financialScheduledTransaction = financialScheduledTransactionService.Get( scheduledTransactionGuid );
+
+            // Load through the same filtered lookup used on page load so a
+            // posted back scheduled transaction guid must belong to the current person.
+            var financialScheduledTransaction = GetFinancialScheduledTransaction( rockContext );
+
+            if ( financialScheduledTransaction == null )
+            {
+                nbUpdateScheduledPaymentWarning.Visible = true;
+                nbUpdateScheduledPaymentWarning.Text = "Scheduled Transaction not found.";
+                return;
+            }
 
             if ( IsEventRegistrationTransactionType( financialScheduledTransaction ) )
             {
@@ -1123,15 +1137,16 @@ mission. We are so grateful for your commitment.</p>
             else if ( useSavedAccount )
             {
                 var savedAccount = new FinancialPersonSavedAccountService( rockContext ).Get( existingPaymentOrPersonSavedAccountId );
-                if ( savedAccount != null )
+
+                // The saved account must belong to the person that owns the scheduled transaction.
+                if ( savedAccount == null || savedAccount.PersonAlias?.PersonId != financialScheduledTransaction.AuthorizedPersonAlias?.PersonId )
                 {
-                    referencePaymentInfo = savedAccount.GetReferencePayment();
+                    nbUpdateScheduledPaymentWarning.Visible = true;
+                    nbUpdateScheduledPaymentWarning.Text = "The selected payment method was not found.";
+                    return;
                 }
-                else
-                {
-                    // shouldn't happen
-                    throw new Exception( "Unable to determine Saved Account" );
-                }
+
+                referencePaymentInfo = savedAccount.GetReferencePayment();
             }
             else
             {
@@ -1227,7 +1242,7 @@ mission. We are so grateful for your commitment.</p>
                     SaveNewFinancialPersonSavedAccount( financialScheduledTransaction );
                 }
 
-                financialScheduledTransaction = new FinancialScheduledTransactionService( rockContextForSummary ).Get( scheduledTransactionGuid );
+                financialScheduledTransaction = new FinancialScheduledTransactionService( rockContextForSummary ).Get( financialScheduledTransaction.Guid );
 
                 mergeFields.Add( "Transaction", financialScheduledTransaction );
                 mergeFields.Add( "Person", financialScheduledTransaction.AuthorizedPersonAlias.Person );
