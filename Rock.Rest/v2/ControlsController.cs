@@ -5433,35 +5433,64 @@ namespace Rock.Rest.v2
         [Authenticate]
         [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [ProducesResponseType( HttpStatusCode.OK, Description = "An empty response indicates success." )]
+        [ProducesResponseType( HttpStatusCode.BadRequest )]
+        [ProducesResponseType( HttpStatusCode.Unauthorized )]
+        [ProducesResponseType( HttpStatusCode.NotFound )]
+        [ProducesResponseType( HttpStatusCode.Forbidden )]
         [Rock.SystemGuid.RestActionGuid( "AE5A418A-645C-4EA5-A870-AA74F7109354" )]
         public IActionResult GroupMemberRequirementCardMarkMetManually( [FromBody] GroupMemberRequirementCardMarkMetManuallyOptionsBag options )
         {
+            var currentPerson = RockRequestContext.CurrentPerson;
+
+            if ( currentPerson == null )
+            {
+                return Unauthorized();
+            }
+
             using ( var rockContext = new RockContext() )
             {
-                var groupMemberRequirementService = new GroupMemberRequirementService( rockContext );
-                var groupMemberRequirement = groupMemberRequirementService.Get( options.GroupMemberRequirementGuid );
-                if ( groupMemberRequirement == null && !options.GroupRequirementGuid.IsEmpty() && !options.GroupMemberGuid.IsEmpty() )
+                var groupRequirement = new GroupRequirementService( rockContext ).Get( options.GroupRequirementGuid );
+
+                if ( groupRequirement == null )
+                {
+                    return NotFound();
+                }
+
+                var (groupMember, groupMemberRequirement) = GroupMemberRequirementCardGetGroupMemberAndRequirement( options.GroupMemberRequirementGuid, options.GroupMemberGuid, groupRequirement, rockContext );
+
+                if ( groupMember == null )
+                {
+                    return NotFound();
+                }
+
+                // Marking a requirement met takes the same access as editing the member, and only manual requirements have a checkbox.
+                var canEditMember = groupMember.Group.IsAuthorized( Authorization.EDIT, currentPerson )
+                    || groupMember.Group.IsAuthorized( Authorization.MANAGE_MEMBERS, currentPerson )
+                    || SecurityGrant.FromToken( options.SecurityGrantToken )?.IsAccessGranted( groupMember, Authorization.EDIT ) == true;
+
+                if ( !canEditMember || !groupRequirement.GroupRequirementType.IsAuthorized( Authorization.VIEW, currentPerson ) )
+                {
+                    return StatusCode( HttpStatusCode.Forbidden );
+                }
+
+                if ( groupRequirement.GroupRequirementType.RequirementCheckType != RequirementCheckType.Manual )
+                {
+                    return BadRequest( "Only manual requirements can be marked as met." );
+                }
+
+                if ( groupMemberRequirement == null )
                 {
                     // Couldn't find the GroupMemberRequirement, so build a new one and mark it completed
-                    var groupRequirementService = new GroupRequirementService( rockContext );
-                    var groupRequirement = groupRequirementService.Get( options.GroupRequirementGuid );
-
-                    var groupMemberService = new GroupMemberService( rockContext );
-                    var groupMember = groupMemberService.Get( options.GroupMemberGuid );
-
-                    if ( groupRequirement != null && groupMember != null )
+                    groupMemberRequirement = new GroupMemberRequirement
                     {
-                        groupMemberRequirement = new GroupMemberRequirement
-                        {
-                            GroupRequirementId = groupRequirement.Id,
-                            GroupMemberId = groupMember.Id
-                        };
-                        groupMemberRequirementService.Add( groupMemberRequirement );
-                    }
+                        GroupRequirementId = groupRequirement.Id,
+                        GroupMemberId = groupMember.Id
+                    };
+                    new GroupMemberRequirementService( rockContext ).Add( groupMemberRequirement );
                 }
 
                 groupMemberRequirement.WasManuallyCompleted = true;
-                groupMemberRequirement.ManuallyCompletedByPersonAliasId = RockRequestContext.CurrentPerson?.PrimaryAliasId;
+                groupMemberRequirement.ManuallyCompletedByPersonAliasId = currentPerson.PrimaryAliasId;
                 groupMemberRequirement.ManuallyCompletedDateTime = RockDateTime.Now;
                 groupMemberRequirement.RequirementMetDateTime = RockDateTime.Now;
 
@@ -5481,25 +5510,38 @@ namespace Rock.Rest.v2
         [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [ProducesResponseType( HttpStatusCode.OK, Description = "An empty response indicates success." )]
         [ProducesResponseType( HttpStatusCode.Unauthorized )]
+        [ProducesResponseType( HttpStatusCode.Forbidden )]
+        [ProducesResponseType( HttpStatusCode.NotFound )]
         [Rock.SystemGuid.RestActionGuid( "DA54A9CE-840F-4629-B270-7FCBAC86312C" )]
         public IActionResult GroupMemberRequirementCardOverrideMarkMet( [FromBody] GroupMemberRequirementCardMarkMetManuallyOptionsBag options )
         {
+            var currentPerson = RockRequestContext.CurrentPerson;
+
+            // Determine if current person is authorized to override
+            if ( currentPerson == null )
+            {
+                return Unauthorized();
+            }
+
             using ( var rockContext = new RockContext() )
             {
-                var groupMemberRequirementService = new GroupMemberRequirementService( rockContext );
-                var groupMemberRequirement = groupMemberRequirementService.Get( options.GroupMemberRequirementGuid );
-                var groupRequirementService = new GroupRequirementService( rockContext );
-                var groupRequirement = groupRequirementService.Get( options.GroupRequirementGuid );
-                var currentPerson = RockRequestContext.CurrentPerson;
+                var groupRequirement = new GroupRequirementService( rockContext ).Get( options.GroupRequirementGuid );
 
-                // Determine if current person is authorized to override
-                if ( currentPerson == null )
+                if ( groupRequirement == null )
                 {
-                    return Unauthorized();
+                    return NotFound();
                 }
 
+                var (groupMember, groupMemberRequirement) = GroupMemberRequirementCardGetGroupMemberAndRequirement( options.GroupMemberRequirementGuid, options.GroupMemberGuid, groupRequirement, rockContext );
+
+                if ( groupMember == null )
+                {
+                    return NotFound();
+                }
+
+                // Group type requirements have no group of their own, so leadership is checked in the member's group.
                 var currentPersonIsLeaderOfCurrentGroup = new GroupMemberService( rockContext )
-                    .GetByGroupId( groupRequirement.Group.Id )
+                    .GetByGroupId( groupMember.GroupId )
                     .Where( m => m.GroupRole.IsLeader )
                     .Select( m => m.PersonId )
                     .Contains( currentPerson.Id );
@@ -5509,24 +5551,18 @@ namespace Rock.Rest.v2
 
                 if ( !( currentPersonCanOverride || hasPermissionToOverride ) )
                 {
-                    return Unauthorized();
+                    return StatusCode( HttpStatusCode.Forbidden );
                 }
 
-                if ( groupMemberRequirement == null && !options.GroupRequirementGuid.IsEmpty() && !options.GroupMemberGuid.IsEmpty() )
+                if ( groupMemberRequirement == null )
                 {
                     // Couldn't find the GroupMemberRequirement, so build a new one and mark it completed
-                    var groupMemberService = new GroupMemberService( rockContext );
-                    var groupMember = groupMemberService.Get( options.GroupMemberGuid );
-
-                    if ( groupRequirement != null && groupMember != null )
+                    groupMemberRequirement = new GroupMemberRequirement
                     {
-                        groupMemberRequirement = new GroupMemberRequirement
-                        {
-                            GroupRequirementId = groupRequirement.Id,
-                            GroupMemberId = groupMember.Id
-                        };
-                        groupMemberRequirementService.Add( groupMemberRequirement );
-                    }
+                        GroupRequirementId = groupRequirement.Id,
+                        GroupMemberId = groupMember.Id
+                    };
+                    new GroupMemberRequirementService( rockContext ).Add( groupMemberRequirement );
                 }
 
                 groupMemberRequirement.WasOverridden = true;
@@ -5550,14 +5586,47 @@ namespace Rock.Rest.v2
         [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [ProducesResponseType( HttpStatusCode.OK, Description = "Custom result data to indicate what is displayed next." )]
         [ProducesResponseType( HttpStatusCode.BadRequest )]
+        [ProducesResponseType( HttpStatusCode.Unauthorized )]
+        [ProducesResponseType( HttpStatusCode.NotFound )]
+        [ProducesResponseType( HttpStatusCode.Forbidden )]
         [Rock.SystemGuid.RestActionGuid( "A9202026-CAF8-4B68-BE95-263FAE77F92D" )]
         public IActionResult GroupMemberRequirementCardRunNotMetWorkflow( [FromBody] GroupMemberRequirementCardRunWorkflowOptionsBag options )
         {
+            var currentPerson = RockRequestContext.CurrentPerson;
+
+            if ( currentPerson == null )
+            {
+                return Unauthorized();
+            }
+
             using ( var rockContext = new RockContext() )
             {
+                var groupRequirement = new GroupRequirementService( rockContext ).Get( options.GroupRequirementGuid );
+
+                if ( groupRequirement == null )
+                {
+                    return NotFound();
+                }
+
                 var groupMemberRequirementService = new GroupMemberRequirementService( rockContext );
-                var groupMemberRequirement = groupMemberRequirementService.Get( options.GroupMemberRequirementGuid );
-                var groupRequirementType = groupMemberRequirement.GroupRequirement.GroupRequirementType;
+                var (groupMember, groupMemberRequirement) = GroupMemberRequirementCardGetGroupMemberAndRequirement( options.GroupMemberRequirementGuid, options.GroupMemberGuid, groupRequirement, rockContext );
+
+                if ( groupMember == null )
+                {
+                    return NotFound();
+                }
+
+                // Starting a workflow acts on the member's requirement, so it takes the same access as marking it met.
+                var canEditMember = groupMember.Group.IsAuthorized( Authorization.EDIT, currentPerson )
+                    || groupMember.Group.IsAuthorized( Authorization.MANAGE_MEMBERS, currentPerson )
+                    || SecurityGrant.FromToken( options.SecurityGrantToken )?.IsAccessGranted( groupMember, Authorization.EDIT ) == true;
+
+                if ( !canEditMember || !groupRequirement.GroupRequirementType.IsAuthorized( Authorization.VIEW, currentPerson ) )
+                {
+                    return StatusCode( HttpStatusCode.Forbidden );
+                }
+
+                var groupRequirementType = groupRequirement.GroupRequirementType;
 
                 if ( !groupRequirementType.DoesNotMeetWorkflowTypeId.HasValue )
                 {
@@ -5597,28 +5666,19 @@ namespace Rock.Rest.v2
                     }
                     else
                     {
-                        if ( groupMemberRequirement == null && !options.GroupRequirementGuid.IsEmpty() && !options.GroupMemberGuid.IsEmpty() )
+                        if ( groupMemberRequirement == null )
                         {
-                            // Couldn't find the GroupMemberRequirement, so build a new one and mark it completed
-                            var groupRequirementService = new GroupRequirementService( rockContext );
-                            var groupRequirement = groupRequirementService.Get( options.GroupRequirementGuid );
-
-                            var groupMemberService = new GroupMemberService( rockContext );
-                            var groupMember = groupMemberService.Get( options.GroupMemberGuid );
-
-                            if ( groupRequirement != null && groupMember != null )
+                            // Couldn't find the GroupMemberRequirement, so build a new one
+                            groupMemberRequirement = new GroupMemberRequirement
                             {
-                                groupMemberRequirement = new GroupMemberRequirement
-                                {
-                                    GroupRequirementId = groupRequirement.Id,
-                                    GroupMemberId = groupMember.Id
-                                };
-                                groupMemberRequirementService.Add( groupMemberRequirement );
-                            }
+                                GroupRequirementId = groupRequirement.Id,
+                                GroupMemberId = groupMember.Id
+                            };
+                            groupMemberRequirementService.Add( groupMemberRequirement );
                         }
 
                         workflow = Rock.Model.Workflow.Activate( workflowType, workflowType.Name );
-                        workflow.SetAttributeValue( "Person", groupMemberRequirement?.GroupMember.Person.PrimaryAlias.Guid );
+                        workflow.SetAttributeValue( "Person", groupMember.Person.PrimaryAlias.Guid );
                         var processed = new Rock.Model.WorkflowService( new RockContext() ).Process( workflow, groupMemberRequirement, out List<string> workflowErrors );
 
                         if ( processed )
@@ -5671,14 +5731,47 @@ namespace Rock.Rest.v2
         [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [ProducesResponseType( HttpStatusCode.OK, Description = "Custom result data to indicate what is displayed next." )]
         [ProducesResponseType( HttpStatusCode.BadRequest )]
+        [ProducesResponseType( HttpStatusCode.Unauthorized )]
+        [ProducesResponseType( HttpStatusCode.NotFound )]
+        [ProducesResponseType( HttpStatusCode.Forbidden )]
         [Rock.SystemGuid.RestActionGuid( "CD7F3FAF-975D-4BDA-8A2D-5E236E7942DD" )]
         public IActionResult GroupMemberRequirementCardRunWarningWorkflow( [FromBody] GroupMemberRequirementCardRunWorkflowOptionsBag options )
         {
+            var currentPerson = RockRequestContext.CurrentPerson;
+
+            if ( currentPerson == null )
+            {
+                return Unauthorized();
+            }
+
             using ( var rockContext = new RockContext() )
             {
+                var groupRequirement = new GroupRequirementService( rockContext ).Get( options.GroupRequirementGuid );
+
+                if ( groupRequirement == null )
+                {
+                    return NotFound();
+                }
+
                 var groupMemberRequirementService = new GroupMemberRequirementService( rockContext );
-                var groupMemberRequirement = groupMemberRequirementService.Get( options.GroupMemberRequirementGuid );
-                var groupRequirementType = groupMemberRequirement.GroupRequirement.GroupRequirementType;
+                var (groupMember, groupMemberRequirement) = GroupMemberRequirementCardGetGroupMemberAndRequirement( options.GroupMemberRequirementGuid, options.GroupMemberGuid, groupRequirement, rockContext );
+
+                if ( groupMember == null )
+                {
+                    return NotFound();
+                }
+
+                // Starting a workflow acts on the member's requirement, so it takes the same access as marking it met.
+                var canEditMember = groupMember.Group.IsAuthorized( Authorization.EDIT, currentPerson )
+                    || groupMember.Group.IsAuthorized( Authorization.MANAGE_MEMBERS, currentPerson )
+                    || SecurityGrant.FromToken( options.SecurityGrantToken )?.IsAccessGranted( groupMember, Authorization.EDIT ) == true;
+
+                if ( !canEditMember || !groupRequirement.GroupRequirementType.IsAuthorized( Authorization.VIEW, currentPerson ) )
+                {
+                    return StatusCode( HttpStatusCode.Forbidden );
+                }
+
+                var groupRequirementType = groupRequirement.GroupRequirementType;
 
                 if ( !groupRequirementType.WarningWorkflowTypeId.HasValue )
                 {
@@ -5718,28 +5811,19 @@ namespace Rock.Rest.v2
                     }
                     else
                     {
-                        if ( groupMemberRequirement == null && !options.GroupRequirementGuid.IsEmpty() && !options.GroupMemberGuid.IsEmpty() )
+                        if ( groupMemberRequirement == null )
                         {
-                            // Couldn't find the GroupMemberRequirement, so build a new one and mark it completed
-                            var groupRequirementService = new GroupRequirementService( rockContext );
-                            var groupRequirement = groupRequirementService.Get( options.GroupRequirementGuid );
-
-                            var groupMemberService = new GroupMemberService( rockContext );
-                            var groupMember = groupMemberService.Get( options.GroupMemberGuid );
-
-                            if ( groupRequirement != null && groupMember != null )
+                            // Couldn't find the GroupMemberRequirement, so build a new one
+                            groupMemberRequirement = new GroupMemberRequirement
                             {
-                                groupMemberRequirement = new GroupMemberRequirement
-                                {
-                                    GroupRequirementId = groupRequirement.Id,
-                                    GroupMemberId = groupMember.Id
-                                };
-                                groupMemberRequirementService.Add( groupMemberRequirement );
-                            }
+                                GroupRequirementId = groupRequirement.Id,
+                                GroupMemberId = groupMember.Id
+                            };
+                            groupMemberRequirementService.Add( groupMemberRequirement );
                         }
 
                         workflow = Rock.Model.Workflow.Activate( workflowType, workflowType.Name );
-                        workflow.SetAttributeValue( "Person", groupMemberRequirement?.GroupMember.Person.PrimaryAlias.Guid );
+                        workflow.SetAttributeValue( "Person", groupMember.Person.PrimaryAlias.Guid );
                         var processed = new Rock.Model.WorkflowService( new RockContext() ).Process( workflow, groupMemberRequirement, out List<string> workflowErrors );
 
                         if ( processed )
@@ -5782,6 +5866,52 @@ namespace Rock.Rest.v2
             }
         }
 
+        /// <summary>
+        /// Gets the group member and existing group member requirement that the identifiers describe for the group requirement.
+        /// </summary>
+        /// <param name="groupMemberRequirementGuid">The unique identifier of the group member requirement, or empty when no requirement record exists yet.</param>
+        /// <param name="groupMemberGuid">The unique identifier of the group member, used when no requirement record exists yet.</param>
+        /// <param name="groupRequirement">The group requirement that the group member requirement must belong to.</param>
+        /// <param name="rockContext">The context to load the records with.</param>
+        /// <returns>
+        /// The group member and their requirement record, which is <c>null</c> when one has not been created yet.
+        /// Both are <c>null</c> when the identifiers do not describe a group member that the group requirement applies to.
+        /// </returns>
+        private static (GroupMember groupMember, GroupMemberRequirement groupMemberRequirement) GroupMemberRequirementCardGetGroupMemberAndRequirement( Guid groupMemberRequirementGuid, Guid groupMemberGuid, GroupRequirement groupRequirement, RockContext rockContext )
+        {
+            var groupMemberRequirement = new GroupMemberRequirementService( rockContext ).Get( groupMemberRequirementGuid );
+
+            if ( groupMemberRequirement != null )
+            {
+                var isRequestedRequirement = groupMemberRequirement.GroupRequirementId == groupRequirement.Id
+                    && ( groupMemberGuid.IsEmpty() || groupMemberRequirement.GroupMember.Guid == groupMemberGuid );
+
+                if ( !isRequestedRequirement )
+                {
+                    return (null, null);
+                }
+
+                return (groupMemberRequirement.GroupMember, groupMemberRequirement);
+            }
+
+            var groupMember = new GroupMemberService( rockContext ).Get( groupMemberGuid );
+
+            // The requirement must apply to the member's group, either directly or through its group type.
+            if ( groupMember == null || ( groupRequirement.GroupId != groupMember.GroupId && groupRequirement.GroupTypeId != groupMember.Group.GroupTypeId ) )
+            {
+                return (null, null);
+            }
+
+            // Callers may not have the record's guid yet, so reuse an existing record rather than creating a duplicate.
+            var groupMemberId = groupMember.Id;
+            var groupRequirementId = groupRequirement.Id;
+            var existingGroupMemberRequirement = new GroupMemberRequirementService( rockContext )
+                .Queryable()
+                .FirstOrDefault( r => r.GroupMemberId == groupMemberId && r.GroupRequirementId == groupRequirementId );
+
+            return (groupMember, existingGroupMemberRequirement);
+        }
+
         #endregion
 
         #region Group Member Requirements Container
@@ -5796,9 +5926,19 @@ namespace Rock.Rest.v2
         [Authenticate]
         [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [ProducesResponseType( HttpStatusCode.OK, Type = typeof( GroupMemberRequirementContainerGetDataResultsBag ) )]
+        [ProducesResponseType( HttpStatusCode.Unauthorized )]
+        [ProducesResponseType( HttpStatusCode.NotFound )]
+        [ProducesResponseType( HttpStatusCode.Forbidden )]
         [Rock.SystemGuid.RestActionGuid( "B1F29337-BD8B-4F62-A68E-F67C32E8CFDE" )]
         public IActionResult GroupMemberRequirementContainerGetData( [FromBody] GroupMemberRequirementContainerGetDataOptionsBag options )
         {
+            var currentPerson = RockRequestContext.CurrentPerson;
+
+            if ( currentPerson == null )
+            {
+                return Unauthorized();
+            }
+
             var results = new GroupMemberRequirementContainerGetDataResultsBag
             {
                 Errors = new List<GroupMemberRequirementErrorBag>(),
@@ -5811,7 +5951,22 @@ namespace Rock.Rest.v2
                 var person = new PersonService( rockContext ).Get( options.PersonGuid );
                 var group = new GroupService( rockContext ).Get( options.GroupGuid );
 
-                var currentPerson = RockRequestContext.CurrentPerson;
+                if ( group == null || groupRole == null )
+                {
+                    return NotFound();
+                }
+
+                // Statuses are shown to the person themselves, to someone who can manage the group's members, or to viewers a block has granted access to the person.
+                var isOwnRequirements = person != null && person.Id == currentPerson.Id;
+                var canManageMembers = group.IsAuthorized( Authorization.EDIT, currentPerson )
+                    || group.IsAuthorized( Authorization.MANAGE_MEMBERS, currentPerson );
+                var isGranted = person != null
+                    && SecurityGrant.FromToken( options.SecurityGrantToken )?.IsAccessGranted( person, Authorization.VIEW ) == true;
+
+                if ( !isOwnRequirements && !canManageMembers && !isGranted )
+                {
+                    return StatusCode( HttpStatusCode.Forbidden );
+                }
 
                 // Determine whether the current person is a leader of the chosen group.
                 var groupMemberQuery = new GroupMemberService( rockContext ).GetByGroupGuid( options.GroupGuid );
@@ -5870,7 +6025,7 @@ namespace Rock.Rest.v2
                                 MeetsGroupRequirement = requirementStatus.MeetsGroupRequirement,
                                 GroupRequirementGuid = requirementStatus.GroupRequirement.Guid,
                                 GroupRequirementTypeGuid = requirementStatus.GroupRequirement.GroupRequirementType.Guid,
-                                GroupMemberRequirementGuid = groupMemberRequirement.Guid,
+                                GroupMemberRequirementGuid = groupMemberRequirement?.Guid ?? Guid.Empty,
                                 GroupMemberRequirementDueDate = requirementStatus.RequirementDueDate?.ToShortDateString(),
                                 CanOverride = leaderCanOverride || hasPermissionToOverride
                             };
