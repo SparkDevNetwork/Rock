@@ -61,6 +61,19 @@ namespace Rock.Model
         public bool IsSystem { get; set; }
 
         /// <summary>
+        /// Gets or sets a flag indicating if this Site is served to the shared (multitenant) mobile
+        /// application. When <c>true</c>, the shared shell may resolve this Site by its Guid, and
+        /// push notifications for it use the credential supplied by Spark instead of the push
+        /// transport's own service account JSON. Set by the Spark Connected Services enable and
+        /// disable actions; no admin screen edits it.
+        /// </summary>
+        /// <value>
+        /// A <see cref="System.Boolean"/> that is <c>true</c> if this Site is the shared mobile application; otherwise <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool IsMultitenantApp { get; set; }
+
+        /// <summary>
         /// Gets or sets the name of the Site. This property is required.
         /// </summary>
         /// <value>

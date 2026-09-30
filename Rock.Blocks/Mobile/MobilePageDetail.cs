@@ -97,6 +97,11 @@ namespace Rock.Blocks.Mobile
 
         #endregion Keys
 
+        /// <summary>
+        /// Message returned when a mutation is blocked because the application is platform-managed.
+        /// </summary>
+        private const string PlatformManagedMessage = "This mobile application is managed by the platform and cannot be edited here.";
+
         #region Methods
 
         /// <inheritdoc/>
@@ -128,7 +133,9 @@ namespace Rock.Blocks.Mobile
             // A missing page means we are creating a new one under the site.
             if ( page == null )
             {
-                box.IsEditable = site != null && site.IsAuthorized( Authorization.EDIT, currentPerson );
+                box.IsEditable = site != null
+                    && site.IsAuthorized( Authorization.EDIT, currentPerson )
+                    && !SiteService.IsSiteEditRestrict( site );
                 box.Entity = new MobilePageBag
                 {
                     Details = new MobilePageDetailsBag
@@ -148,7 +155,9 @@ namespace Rock.Blocks.Mobile
                 return;
             }
 
-            box.IsEditable = page.IsAuthorized( Authorization.EDIT, currentPerson );
+            // A platform-managed application's pages render read-only. See SiteService.IsSiteEditRestrict.
+            box.IsEditable = page.IsAuthorized( Authorization.EDIT, currentPerson )
+                && !IsPlatformManaged( page );
             box.Entity = new MobilePageBag
             {
                 Details = GetDetailsBag( page ),
@@ -171,6 +180,28 @@ namespace Rock.Blocks.Mobile
             }
 
             return PageCache.Get( pageKey, !PageCache.Layout.Site.DisablePredictableIds );
+        }
+
+        /*
+            9/29/26 - CLAUDE
+
+            The platform-managed mobile application is maintained only through the platform mobile app
+            builder, so its pages and their blocks are locked from admin-UI editing regardless of
+            permissions. The check uses the page's own Site rather than the SiteId page parameter, so a
+            mismatched SiteId cannot get around the lock.
+
+            Reason: Lock the platform-managed mobile application from all admin-UI editing.
+        */
+
+        /// <summary>
+        /// Determines whether the page belongs to the platform-managed mobile application,
+        /// which cannot be edited here. See <see cref="SiteService.IsSiteEditRestrict(SiteCache)"/>.
+        /// </summary>
+        /// <param name="page">The cached page to check.</param>
+        /// <returns><c>true</c> if the page is platform-managed; otherwise <c>false</c>.</returns>
+        private bool IsPlatformManaged( PageCache page )
+        {
+            return SiteService.IsSiteEditRestrict( page?.Layout?.Site );
         }
 
         /// <summary>
@@ -657,7 +688,9 @@ namespace Rock.Blocks.Mobile
             {
                 ApplicationName = site?.Name,
 
-                CanDeploy = site != null && site.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ),
+                CanDeploy = site != null
+                    && site.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson )
+                    && !SiteService.IsSiteEditRestrict( site ),
                 PageItems = LoadPages( site ),
                 LayoutItems = LoadLayouts( site ),
                 DisplayInNavWhenItems = typeof( DisplayInNavWhen ).ToEnumListItemBag(),
@@ -945,6 +978,11 @@ namespace Rock.Blocks.Mobile
                     return ActionBadRequest( "Not authorized to edit this page." );
                 }
 
+                if ( SiteService.IsSiteEditRestrict( site ) )
+                {
+                    return ActionBadRequest( PlatformManagedMessage );
+                }
+
                 var newBag = new MobilePageDetailsBag
                 {
                     DisplayInNavWhen = DisplayInNavWhen.Never,
@@ -978,6 +1016,11 @@ namespace Rock.Blocks.Mobile
             if ( !page.IsAuthorized( Authorization.EDIT, currentPerson ) )
             {
                 return ActionBadRequest( $"Not authorized to edit {Page.FriendlyTypeName}." );
+            }
+
+            if ( IsPlatformManaged( page ) )
+            {
+                return ActionBadRequest( PlatformManagedMessage );
             }
 
             var bag = GetDetailsBag( page );
@@ -1018,6 +1061,11 @@ namespace Rock.Blocks.Mobile
                     return ActionBadRequest( "Not authorized to edit this page." );
                 }
 
+                if ( SiteService.IsSiteEditRestrict( site ) )
+                {
+                    return ActionBadRequest( PlatformManagedMessage );
+                }
+
                 page = new Page();
                 pageService.Add( page );
 
@@ -1040,6 +1088,11 @@ namespace Rock.Blocks.Mobile
                 if ( !page.IsAuthorized( Authorization.EDIT, currentPerson ) )
                 {
                     return ActionBadRequest( $"Not authorized to edit { Page.FriendlyTypeName }." );
+                }
+
+                if ( IsPlatformManaged( PageCache.Get( page.Id ) ) )
+                {
+                    return ActionBadRequest( PlatformManagedMessage );
                 }
             }
 
@@ -1127,12 +1180,17 @@ namespace Rock.Blocks.Mobile
                 return ActionBadRequest( $"Not authorized to edit { Page.FriendlyTypeName }." );
             }
 
+            if ( IsPlatformManaged( page ) )
+            {
+                return ActionBadRequest( PlatformManagedMessage );
+            }
+
             if ( zoneName.IsNullOrWhiteSpace() )
             {
                 return ActionBadRequest( "A zone is required." );
             }
 
-            var blockType = BlockTypeCache.Get( blockTypeIdKey, !PageCache.Layout.Site.DisablePredictableIds );
+            var blockType =BlockTypeCache.Get( blockTypeIdKey, !PageCache.Layout.Site.DisablePredictableIds );
             var blockCompiledType = blockType?.GetCompiledType();
 
             // Only mobile-capable block types can be placed on a mobile page.
@@ -1205,12 +1263,17 @@ namespace Rock.Blocks.Mobile
                 return ActionBadRequest( $"Not authorized to edit { Page.FriendlyTypeName }." );
             }
 
+            if ( IsPlatformManaged( page ) )
+            {
+                return ActionBadRequest( PlatformManagedMessage );
+            }
+
             if ( zoneName.IsNullOrWhiteSpace() )
             {
                 return ActionBadRequest( "A zone is required." );
             }
 
-            var blockService = new BlockService( RockContext );
+            var blockService =new BlockService( RockContext );
             var block = blockService.Get( blockIdKey, !PageCache.Layout.Site.DisablePredictableIds );
 
             if ( block == null || block.PageId != page.Id )
@@ -1281,6 +1344,11 @@ namespace Rock.Blocks.Mobile
                 return ActionBadRequest( $"Not authorized to edit { Page.FriendlyTypeName }." );
             }
 
+            if ( IsPlatformManaged( page ) )
+            {
+                return ActionBadRequest( PlatformManagedMessage );
+            }
+
             var blockService = new BlockService( RockContext );
             var block = blockService.Get( key, !PageCache.Layout.Site.DisablePredictableIds );
 
@@ -1318,6 +1386,12 @@ namespace Rock.Blocks.Mobile
             if ( site == null || !site.IsAuthorized( Authorization.EDIT, currentPerson ) )
             {
                 return ActionBadRequest( "Not authorized to deploy this application." );
+            }
+
+            // The platform mobile app builder deploys the platform-managed application itself.
+            if ( SiteService.IsSiteEditRestrict( site ) )
+            {
+                return ActionBadRequest( PlatformManagedMessage );
             }
 
             // Build within a throwaway context: if the build fails it can leave

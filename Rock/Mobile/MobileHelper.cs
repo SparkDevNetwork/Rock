@@ -48,26 +48,64 @@ namespace Rock.Mobile
     public static class MobileHelper
     {
         /// <summary>
-        /// Get the current site as specified by the X-Rock-App-Id header and optionally
-        /// validate the X-Rock-Mobile-Api-Key against that site.
+        /// Get the current site as specified by the X-Rock-App-Guid header, or the X-Rock-App-Id
+        /// header when no Guid is sent, and optionally validate the X-Rock-Mobile-Api-Key against
+        /// that site.
         /// </summary>
+        /// <remarks>
+        /// The shared (multitenant) mobile shell sends X-Rock-App-Guid because it cannot know the
+        /// site's integer identifier before it has spoken to this Rock. Whenever the Guid is
+        /// present it wins and any X-Rock-App-Id header is ignored, and the site only resolves
+        /// while its <see cref="SiteCache.IsMultitenantApp"/> flag is set. Every other shell sends
+        /// only X-Rock-App-Id and is resolved exactly as before.
+        /// </remarks>
         /// <param name="validateApiKey"><c>true</c> if the X-Rock-Mobile-Api-Key header should be validated.</param>
         /// <param name="rockContext">The Rock context to use when accessing the database.</param>
         /// <returns>A SiteCache object or null if the request was not valid.</returns>
         public static SiteCache GetCurrentApplicationSite( bool validateApiKey = true, Data.RockContext rockContext = null )
         {
-            var appId = HttpContext.Current?.Request?.Headers?["X-Rock-App-Id"];
+            var headers = HttpContext.Current?.Request?.Headers;
+            var appGuid = headers?["X-Rock-App-Guid"].AsGuidOrNull();
+            SiteCache site;
 
-            if ( !appId.AsIntegerOrNull().HasValue )
+            if ( appGuid.HasValue )
             {
-                return null;
+                /*
+                    9/29/2026 - CLAUDE
+
+                    The shared (multitenant) shell identifies its site by Guid, the one value
+                    that is the same in every church's database. The Guid wins over any
+                    X-Rock-App-Id on the same request, because the integer the phone saved can
+                    be stale after a database restore. Once the church has left the shared app
+                    (IsMultitenantApp is false) no request carrying the Guid resolves a site,
+                    which is what stops installed shared shells. Branded apps on the same site
+                    send only the integer, so they are never affected by the flag.
+
+                    Reason: Resolve the shared app's site without knowing its integer id.
+                */
+                site = SiteCache.Get( appGuid.Value );
+
+                if ( site == null || !site.IsMultitenantApp )
+                {
+                    return null;
+                }
             }
-
-            // Lookup the site from the App Id.
-            var site = SiteCache.Get( appId.AsInteger() );
-            if ( site == null )
+            else
             {
-                return null;
+                var appId = headers?["X-Rock-App-Id"].AsIntegerOrNull();
+
+                if ( !appId.HasValue )
+                {
+                    return null;
+                }
+
+                // Lookup the site from the App Id.
+                site = SiteCache.Get( appId.Value );
+
+                if ( site == null )
+                {
+                    return null;
+                }
             }
 
             // If we have been requested to validate the Api Key then do so.

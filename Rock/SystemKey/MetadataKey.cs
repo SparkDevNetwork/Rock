@@ -36,5 +36,26 @@ namespace Rock.SystemKey
         /// a list of <see cref="int"/> values representing media element identifiers.
         /// </summary>
         public const string MediaElements = "core.mediaElements";
+
+        /// <summary>
+        /// The metadata key, on the platform mobile application Site, for the last builder
+        /// ladder version that completed, stored as a version string such as "21.0". Written
+        /// by <see cref="Mobile.PlatformMobileAppBuilder"/> inside each version's transaction.
+        /// </summary>
+        public const string PlatformMobileAppVersion = "core.platformMobileAppVersion";
+
+        /// <summary>
+        /// The metadata key, on the platform mobile application Site, for the JSON report of
+        /// the last Build, Update or Repair run, stored as a
+        /// <see cref="Mobile.PlatformMobileAppRunReport"/>.
+        /// </summary>
+        public const string PlatformMobileAppLastRun = "core.platformMobileAppLastRun";
+
+        /// <summary>
+        /// The metadata key, on the platform mobile application Site, for the hash of the
+        /// campus payload last published to the church directory. See
+        /// <see cref="Mobile.PlatformMobileAppCampusPayload"/>.
+        /// </summary>
+        public const string PlatformMobileAppCampusHash = "core.platformMobileAppCampusHash";
     }
 }

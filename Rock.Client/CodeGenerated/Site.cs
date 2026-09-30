@@ -127,6 +127,9 @@ namespace Rock.Client
         public bool IsIndexEnabled { get; set; }
 
         /// <summary />
+        public bool IsMultitenantApp { get; set; }
+
+        /// <summary />
         public bool IsSystem { get; set; }
 
         /// <summary />
@@ -247,6 +250,7 @@ namespace Rock.Client
             this.IndexStartingLocation = source.IndexStartingLocation;
             this.IsActive = source.IsActive;
             this.IsIndexEnabled = source.IsIndexEnabled;
+            this.IsMultitenantApp = source.IsMultitenantApp;
             this.IsSystem = source.IsSystem;
             this.LatestVersionDateTime = source.LatestVersionDateTime;
             this.LoginPageId = source.LoginPageId;

@@ -54,6 +54,16 @@ namespace Rock.Web.Cache
         public bool IsSystem { get; private set; }
 
         /// <summary>
+        /// Gets a value indicating whether this Site is served to the shared (multitenant) mobile
+        /// application. See <see cref="Site.IsMultitenantApp"/>.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this Site is the shared mobile application; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool IsMultitenantApp { get; private set; }
+
+        /// <summary>
         /// Gets or sets the name.
         /// </summary>
         /// <value>
@@ -557,6 +567,7 @@ namespace Rock.Web.Cache
             }
 
             IsSystem = site.IsSystem;
+            IsMultitenantApp = site.IsMultitenantApp;
             Name = site.Name;
             Description = site.Description;
             Theme = site.Theme;

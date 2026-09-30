@@ -37,8 +37,8 @@ namespace Rock.Model
     {
         /// <summary>
         /// The Guid of the platform-managed mobile application site. Editing of this site is blocked
-        /// through the entire admin UI/API because it is created and maintained exclusively by platform
-        /// plugin migrations. See <see cref="IsSiteEditRestrict(Site)"/>.
+        /// through the entire admin UI/API because it is created and maintained exclusively by the
+        /// platform mobile app builder. See <see cref="IsSiteEditRestrict(Site)"/>.
         /// </summary>
         private static readonly Guid PlatformMobileApplicationGuid = new Guid( Rock.SystemGuid.Site.PLATFORM_MOBILE_APPLICATION );
 

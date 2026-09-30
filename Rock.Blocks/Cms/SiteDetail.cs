@@ -80,6 +80,16 @@ namespace Rock.Blocks.Cms
 
         #endregion Keys
 
+        #region Fields
+
+        /// <summary>
+        /// Message returned when a mutation is blocked because the site is the platform-managed
+        /// mobile application.
+        /// </summary>
+        private const string PlatformManagedMessage = "This site is the platform-managed mobile application and cannot be edited here.";
+
+        #endregion Fields
+
         #region Methods
 
         /// <inheritdoc/>
@@ -152,8 +162,10 @@ namespace Rock.Blocks.Cms
                 return;
             }
 
+            // The platform-managed mobile application renders read-only. See SiteService.IsSiteEditRestrict.
             var isViewable = entity.IsAuthorized( Rock.Security.Authorization.VIEW, RequestContext.CurrentPerson );
-            box.IsEditable = entity.IsAuthorized( Rock.Security.Authorization.EDIT, RequestContext.CurrentPerson );
+            box.IsEditable = entity.IsAuthorized( Rock.Security.Authorization.EDIT, RequestContext.CurrentPerson )
+                && !SiteService.IsSiteEditRestrict( entity );
 
             entity.LoadAttributes( RockContext );
 
@@ -537,6 +549,25 @@ namespace Rock.Blocks.Cms
             if ( !entity.IsAuthorized( Rock.Security.Authorization.EDIT, RequestContext.CurrentPerson ) )
             {
                 error = ActionBadRequest( $"Not authorized to edit ${Site.FriendlyTypeName}." );
+                return false;
+            }
+
+            /*
+                9/29/2026 - CLAUDE
+
+                The platform-managed mobile application is maintained only by the platform
+                mobile app builder, never the admin UI. The Sites list here shows only web
+                sites, but this detail page reads the site from the URL, so without this
+                guard an administrator who typed in the platform site's Id could edit it or
+                delete it outright (Delete only checks IsSystem). Edit, Save and Delete all
+                come through this method, so one guard closes all three, matching the guard
+                in MobileApplicationDetail.
+
+                Reason: Lock the platform-managed mobile application from Site Detail too.
+            */
+            if ( SiteService.IsSiteEditRestrict( entity ) )
+            {
+                error = ActionBadRequest( PlatformManagedMessage );
                 return false;
             }
 

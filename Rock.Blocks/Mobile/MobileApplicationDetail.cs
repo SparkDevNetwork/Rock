@@ -656,7 +656,7 @@ namespace Rock.Blocks.Mobile
                 8/27/26 - CLAUDE
 
                 The platform-managed mobile application is created and maintained only through
-                plugin migrations, never the admin UI, so ordinary block permission is not enough
+                the platform mobile app builder, never the admin UI, so ordinary block permission is not enough
                 on its own. IsSiteEditRestrict identifies that application by its well-known Guid
                 and hard-blocks every mutation here regardless of the user's permissions. Every
                 mutating action in this block applies the same guard against the Site it targets.

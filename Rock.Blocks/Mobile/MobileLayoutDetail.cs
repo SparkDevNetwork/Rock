@@ -266,7 +266,7 @@ namespace Rock.Blocks.Mobile
             /*
                 8/27/26 - CLAUDE
 
-                The platform-managed mobile application is maintained only through plugin migrations,
+                The platform-managed mobile application is maintained only through the platform mobile app builder,
                 so its layouts are locked from admin-UI editing regardless of permissions. An existing
                 layout carries its Site; a brand-new layout has no Site yet, so resolve the target Site
                 from the page parameter. IsSiteEditRestrict hard-blocks the mutation for that Site.

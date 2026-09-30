@@ -1,0 +1,207 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Panel title="Platform Mobile Application" type="block">
+        <template #headerActions>
+            <span :class="['label', versionLabelClass]">{{ versionLabelText }}</span>
+
+            <RockButton v-if="buttonText"
+                        btnType="primary"
+                        btnSize="sm"
+                        class="ml-2"
+                        :isLoading="isRunning"
+                        loadingText="Running..."
+                        @click="onRunClick">
+                {{ buttonText }}
+            </RockButton>
+        </template>
+
+        <NotificationBox v-if="errorMessage" alertType="danger">
+            {{ errorMessage }}
+        </NotificationBox>
+
+        <NotificationBox v-if="state === PlatformMobileAppBuildState.AheadOfCode" alertType="warning">
+            <p><strong>Database is ahead of this Rock</strong></p>
+            <p>The platform mobile application is at version {{ stampVersion }}, but this Rock's builder only goes up to {{ currentDefinitionVersion }}. This happens after a Rock downgrade, or when a database from a newer Rock is restored onto an older one. Nothing can run until this Rock is on the version the database came from.</p>
+        </NotificationBox>
+
+        <p v-if="state === PlatformMobileAppBuildState.NotBuilt">
+            The platform mobile application has not been built in this Rock yet. Build App creates it from the definition that ships with this Rock.
+        </p>
+        <p v-else-if="state === PlatformMobileAppBuildState.UpdateAvailable">
+            This Rock carries a newer definition of the platform mobile application ({{ currentDefinitionVersion }}) than the one installed ({{ stampVersion }}). Update App applies the difference.
+        </p>
+        <p v-else-if="state === PlatformMobileAppBuildState.Current">
+            The platform mobile application is up to date. Repair App puts back anything that was changed outside this panel, and is safe to run at any time.
+        </p>
+
+        <div v-if="lastRun" class="mt-3">
+            <h5>
+                Last {{ lastRunModeText }}
+                <small v-if="lastRunCompletedText">{{ lastRunCompletedText }}</small>
+                <span :class="['label', 'ml-2', lastRun.isSuccess ? 'label-success' : 'label-danger']">{{ lastRun.isSuccess ? "Succeeded" : "Failed" }}</span>
+            </h5>
+
+            <p v-if="!hasAnyChanges && lastRun.isSuccess" class="text-muted">
+                Nothing needed changing.
+            </p>
+
+            <div v-for="version in lastRunVersions" :key="version.version ?? ''" class="mb-2">
+                <strong>Version {{ version.version }}</strong>
+
+                <NotificationBox v-if="version.error" alertType="danger" class="mt-1 mb-1">
+                    {{ version.error }}
+                </NotificationBox>
+
+                <ul v-if="version.created?.length" class="mb-1">
+                    <li v-for="item in version.created" :key="'c' + item">Created {{ item }}</li>
+                </ul>
+
+                <ul v-if="version.updated?.length" class="mb-1">
+                    <li v-for="item in version.updated" :key="'u' + item">Put back {{ item }}</li>
+                </ul>
+            </div>
+
+            <NotificationBox v-if="lastRun.deployError" alertType="danger">
+                <strong>Deploy failed:</strong> {{ lastRun.deployError }}
+            </NotificationBox>
+
+            <NotificationBox v-if="lastRun.unexpectedRecords?.length" alertType="warning">
+                <p><strong>Unexpected records</strong></p>
+                <p>These records are on the platform mobile application but are not part of its definition. They can only have been added outside the supported admin screens. They were left in place.</p>
+                <ul class="mb-0">
+                    <li v-for="item in lastRun.unexpectedRecords" :key="item">{{ item }}</li>
+                </ul>
+            </NotificationBox>
+        </div>
+    </Panel>
+</template>
+
+<script setup lang="ts">
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import Panel from "@Obsidian/Controls/panel.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import { PlatformMobileAppBuildState } from "@Obsidian/Enums/Mobile/platformMobileAppBuildState";
+    import { PlatformMobileAppRunModeDescription } from "@Obsidian/Enums/Mobile/platformMobileAppRunMode";
+    import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
+    import { PlatformMobileAppDetailInitializationBag } from "@Obsidian/ViewModels/Blocks/Mobile/PlatformMobileAppDetail/platformMobileAppDetailInitializationBag";
+    import { PlatformMobileAppRunReportBag } from "@Obsidian/ViewModels/Blocks/Mobile/PlatformMobileAppDetail/platformMobileAppRunReportBag";
+    import { PlatformMobileAppVersionReportBag } from "@Obsidian/ViewModels/Blocks/Mobile/PlatformMobileAppDetail/platformMobileAppVersionReportBag";
+    import { computed, ref } from "vue";
+
+    const config = useConfigurationValues<PlatformMobileAppDetailInitializationBag>();
+    const invokeBlockAction = useInvokeBlockAction();
+
+    // #region Values
+
+    const state = ref<PlatformMobileAppBuildState>(config.state);
+    const stampVersion = ref(config.stampVersion ?? null);
+    const currentDefinitionVersion = ref(config.currentDefinitionVersion ?? null);
+    const lastRun = ref<PlatformMobileAppRunReportBag | null>(config.lastRun ?? null);
+    const isRunning = ref(false);
+    const errorMessage = ref("");
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    /** The label on the one builder button, or null when no action is offered. */
+    const buttonText = computed((): string | null => {
+        if (!config.isEditable) {
+            return null;
+        }
+
+        switch (state.value) {
+            case PlatformMobileAppBuildState.NotBuilt:
+                return "Build App";
+
+            case PlatformMobileAppBuildState.UpdateAvailable:
+                return "Update App";
+
+            case PlatformMobileAppBuildState.Current:
+                return "Repair App";
+
+            default:
+                return null;
+        }
+    });
+
+    const versionLabelText = computed((): string => {
+        switch (state.value) {
+            case PlatformMobileAppBuildState.NotBuilt:
+                return "Not Built";
+
+            case PlatformMobileAppBuildState.UpdateAvailable:
+                return `Version ${stampVersion.value}, Update Available`;
+
+            case PlatformMobileAppBuildState.AheadOfCode:
+                return `Version ${stampVersion.value}, Ahead Of Rock`;
+
+            default:
+                return `Version ${stampVersion.value}`;
+        }
+    });
+
+    const versionLabelClass = computed((): string => {
+        switch (state.value) {
+            case PlatformMobileAppBuildState.UpdateAvailable:
+                return "label-info";
+
+            case PlatformMobileAppBuildState.AheadOfCode:
+                return "label-warning";
+
+            default:
+                return "label-default";
+        }
+    });
+
+    const lastRunModeText = computed((): string => {
+        return lastRun.value ? PlatformMobileAppRunModeDescription[lastRun.value.mode] : "";
+    });
+
+    const lastRunCompletedText = computed((): string => {
+        const value = lastRun.value?.completedDateTime ?? lastRun.value?.startedDateTime;
+
+        return value ? RockDateTime.parseISO(value)?.toASPString("g") ?? "" : "";
+    });
+
+    const lastRunVersions = computed((): PlatformMobileAppVersionReportBag[] => {
+        return lastRun.value?.versions ?? [];
+    });
+
+    const hasAnyChanges = computed((): boolean => {
+        return lastRunVersions.value.some(v => (v.created?.length ?? 0) > 0 || (v.updated?.length ?? 0) > 0);
+    });
+
+    // #endregion Computed Values
+
+    // #region Event Handlers
+
+    /**
+     * Runs the builder. Build, Update and Repair are all safe to repeat, so there is no
+     * confirmation step.
+     */
+    async function onRunClick(): Promise<void> {
+        errorMessage.value = "";
+        isRunning.value = true;
+
+        try {
+            const result = await invokeBlockAction<PlatformMobileAppDetailInitializationBag>("Run");
+
+            if (result.isSuccess && result.data) {
+                state.value = result.data.state;
+                stampVersion.value = result.data.stampVersion ?? null;
+                currentDefinitionVersion.value = result.data.currentDefinitionVersion ?? null;
+                lastRun.value = result.data.lastRun ?? null;
+            }
+            else {
+                errorMessage.value = result.errorMessage ?? "Unable to run the builder.";
+            }
+        }
+        finally {
+            isRunning.value = false;
+        }
+    }
+
+    // #endregion Event Handlers
+</script>

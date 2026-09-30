@@ -43,8 +43,9 @@ namespace Rock.SystemGuid
 
         /// <summary>
         /// The platform-managed mobile application site guid. This site is created and maintained
-        /// exclusively by platform plugin migrations, so it is the same in every church database and
-        /// is locked from all admin-UI editing. See <see cref="Rock.Model.SiteService.IsSiteEditRestrict(Rock.Model.Site)"/>.
+        /// exclusively by <see cref="Rock.Mobile.PlatformMobileAppBuilder"/>, so it is the same in every
+        /// church database and is locked from all admin-UI editing. See
+        /// <see cref="Rock.Model.SiteService.IsSiteEditRestrict(Rock.Model.Site)"/>.
         /// </summary>
         public const string PLATFORM_MOBILE_APPLICATION = "23B51BD6-912D-4269-B7F9-75A7B1ED7DB6";
     }
