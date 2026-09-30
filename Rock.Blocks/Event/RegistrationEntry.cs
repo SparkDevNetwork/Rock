@@ -2672,14 +2672,15 @@ namespace Rock.Blocks.Event
             }
             else if ( registrantInfo.PersonGuid.HasValue )
             {
-                // This can happen if the page has reloaded due to an error. The person was saved to the DB and we don't want to add them again.
+                // This can happen if the page has reloaded due to an error or the current
+                // person selected a family member. The PersonGuid comes from the client so it
+                // is only honored for people the current person is allowed to register. Anyone
+                // else falls through to the normal person matching below.
                 person = personService.Get( registrantInfo.PersonGuid.Value );
-            }
-            else
-            {
-                if ( registrantInfo.PersonGuid.HasValue && context.RegistrationSettings.AreCurrentFamilyMembersShown )
+
+                if ( person != null && !IsPersonAvailableForDefaultValues( rockContext, person, GetCurrentPerson(), context.Registration ) )
                 {
-                    person = personService.Get( registrantInfo.PersonGuid.Value );
+                    person = null;
                 }
             }
 
