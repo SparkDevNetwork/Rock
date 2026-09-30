@@ -1093,6 +1093,13 @@ namespace Rock.Blocks.Reporting
                 return ActionBadRequest();
             }
 
+            // Make sure the filter attribute is either new or already belongs
+            // to this block.
+            if ( !PublicAttributeHelper.AreAttributeEditsAllowed( new[] { bag }, this.BlockEntityTypeId, "Id", this.BlockId.ToString(), this.RockContext ) )
+            {
+                return ActionBadRequest( "Invalid attribute." );
+            }
+
             // Prevent duplicate key values.
             var filtersReservedKeyNames = GetFiltersReservedKeyNames( bag.Guid );
             if ( filtersReservedKeyNames.Contains( bag.Key.Trim(), StringComparer.CurrentCultureIgnoreCase ) )

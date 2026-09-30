@@ -706,6 +706,11 @@ namespace RockWeb.Blocks.Cms
         protected void gChildItems_Delete( object sender, RowEventArgs e )
         {
             hfRemoveChildItem.Value = e.RowKeyId.ToString();
+
+            // Deleting the child item requires edit rights on the child, so only offer it then.
+            var childItem = new ContentChannelItemService( new RockContext() ).Get( e.RowKeyId );
+            lbDeleteChildItem.Visible = childItem != null && childItem.IsAuthorized( Authorization.EDIT, CurrentPerson );
+
             ShowDialog( "RemoveChildItem", true );
         }
 
@@ -865,7 +870,8 @@ namespace RockWeb.Blocks.Cms
                     ? itemService.Get( childItemId )
                     : null;
 
-                if ( childItem != null )
+                // Deleting the child item itself also requires edit rights on the child.
+                if ( childItem != null && childItem.IsAuthorized( Authorization.EDIT, CurrentPerson ) )
                 {
                     // Delete child item.
                     itemService.Delete( childItem );

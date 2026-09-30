@@ -408,10 +408,18 @@ namespace RockWeb.Blocks.Fundraising
             var person = personService.Get( groupMember.PersonId );
 
             int? orphanedPhotoId = null;
-            if ( person.PhotoId != imgProfilePhoto.BinaryFileId )
+            var photoId = imgProfilePhoto.BinaryFileId;
+
+            // Only accept the person's current photo or a new upload, otherwise keep the current photo.
+            if ( !new BinaryFileService( rockContext ).IsUploadedBinaryFileAllowedForPerson( photoId, person.PhotoId, CurrentPerson ) )
+            {
+                photoId = person.PhotoId;
+            }
+
+            if ( person.PhotoId != photoId )
             {
                 orphanedPhotoId = person.PhotoId;
-                person.PhotoId = imgProfilePhoto.BinaryFileId;
+                person.PhotoId = photoId;
 
                 // add or update the Photo Verify group to have this person as Pending since the photo was changed or deleted
                 using ( var photoRequestRockContext = new RockContext() )
@@ -477,7 +485,9 @@ namespace RockWeb.Blocks.Fundraising
                 // if they used the ImageEditor, and cropped it, the uncropped file is still in BinaryFile. So clean it up
                 if ( imgProfilePhoto.CropBinaryFileId.HasValue )
                 {
-                    if ( imgProfilePhoto.CropBinaryFileId != person.PhotoId )
+                    // Only clean up the uncropped file if it is the person's own upload.
+                    if ( imgProfilePhoto.CropBinaryFileId != person.PhotoId
+                        && new BinaryFileService( rockContext ).IsUploadedBinaryFileAllowedForPerson( imgProfilePhoto.CropBinaryFileId, null, CurrentPerson ) )
                     {
                         BinaryFileService binaryFileService = new BinaryFileService( rockContext );
                         var binaryFile = binaryFileService.Get( imgProfilePhoto.CropBinaryFileId.Value );

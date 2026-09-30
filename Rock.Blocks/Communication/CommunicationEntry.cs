@@ -677,7 +677,13 @@ namespace Rock.Blocks.Communication
 
             using ( var rockContext = new RockContext() )
             {
-                var template = new CommunicationTemplateService( rockContext ).Get( templateGuid );
+                // Only allow templates the template picker would offer.
+                var template = GetAuthorizedTemplate( rockContext, templateGuid );
+
+                if ( template == null )
+                {
+                    return ActionNotFound();
+                }
 
                 // Copy the template to the bag.
                 var bag = new CommunicationEntryCommunicationBag();
@@ -700,6 +706,13 @@ namespace Rock.Blocks.Communication
 
             using ( var rockContext = new RockContext() )
             {
+                var errorResult = ValidateCommunicationRequest( rockContext, bag );
+
+                if ( errorResult != null )
+                {
+                    return errorResult;
+                }
+
                 var communication = UpdateCommunication( rockContext, bag );
 
                 if ( communication == null )
@@ -750,6 +763,16 @@ namespace Rock.Blocks.Communication
             if ( !primaryAliasId.HasValue )
             {
                 return ActionBadRequest( "You must be authenticated to send a test communication." );
+            }
+
+            using ( var rockContext = new RockContext() )
+            {
+                var errorResult = ValidateCommunicationRequest( rockContext, bag );
+
+                if ( errorResult != null )
+                {
+                    return errorResult;
+                }
             }
 
             // Get existing or new communication record.
@@ -861,6 +884,13 @@ namespace Rock.Blocks.Communication
 
             using ( var rockContext = new RockContext() )
             {
+                var errorResult = ValidateCommunicationRequest( rockContext, bag );
+
+                if ( errorResult != null )
+                {
+                    return errorResult;
+                }
+
                 var communication = UpdateCommunication( rockContext, bag );
 
                 if ( communication == null )
@@ -1048,6 +1078,107 @@ namespace Rock.Blocks.Communication
             }
 
             return communication;
+        }
+
+        /// <summary>
+        /// Validates that the current person is allowed to save, test or send
+        /// the communication described by the request. This re-applies the
+        /// checks used when the block is initialized.
+        /// </summary>
+        /// <param name="rockContext">The Rock context.</param>
+        /// <param name="bag">The bag that contains the communication details.</param>
+        /// <returns>A <see cref="BlockActionResult"/> describing the error or <see langword="null"/> if the request is allowed.</returns>
+        private BlockActionResult ValidateCommunicationRequest( RockContext rockContext, CommunicationEntryCommunicationBag bag )
+        {
+            var currentPerson = GetCurrentPerson();
+
+            if ( currentPerson == null )
+            {
+                return ActionUnauthorized();
+            }
+
+            // Apply the same check that init uses to decide if the block is shown.
+            var communication = LoadCommunication( rockContext );
+
+            if ( !GetAuthorization( currentPerson, communication ).CanViewBlock )
+            {
+                return ActionForbidden( "You are not authorized to edit this communication." );
+            }
+
+            if ( bag.SmsFromSystemPhoneNumberGuid.HasValue && !IsSmsFromNumberAllowed( rockContext, bag, communication, currentPerson ) )
+            {
+                return ActionBadRequest( "Invalid From Phone." );
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Determines whether the SMS from number in the request is one offered
+        /// by the SMS medium options, the number already stored on the
+        /// communication, or the number of the selected template.
+        /// </summary>
+        /// <param name="rockContext">The Rock context.</param>
+        /// <param name="bag">The bag that contains the communication details.</param>
+        /// <param name="communication">The existing communication or <see langword="null"/> for a new communication.</param>
+        /// <param name="currentPerson">The logged in person.</param>
+        /// <returns><c>true</c> if the SMS from number is allowed; otherwise <c>false</c>.</returns>
+        private bool IsSmsFromNumberAllowed( RockContext rockContext, CommunicationEntryCommunicationBag bag, Model.Communication communication, Person currentPerson )
+        {
+            var smsFromNumberGuid = bag.SmsFromSystemPhoneNumberGuid.Value;
+            var allowedSmsFromNumberGuids = this.AllowedSmsNumbers;
+
+            // Same filter used to build the SmsFromNumbers option list.
+            var isOffered = SystemPhoneNumberCache
+                .All( includeInactive: false )
+                .Any( spn => spn.Guid == smsFromNumberGuid
+                    && spn.IsAuthorized( Authorization.VIEW, currentPerson )
+                    && allowedSmsFromNumberGuids.ContainsOrEmpty( spn.Guid ) );
+
+            if ( isOffered )
+            {
+                return true;
+            }
+
+            if ( communication?.SmsFromSystemPhoneNumberId.HasValue == true
+                 && SystemPhoneNumberCache.GetGuid( communication.SmsFromSystemPhoneNumberId.Value ) == smsFromNumberGuid )
+            {
+                return true;
+            }
+
+            var template = GetAuthorizedTemplate( rockContext, bag.CommunicationTemplateGuid );
+
+            if ( template?.SmsFromSystemPhoneNumberId.HasValue == true
+                 && SystemPhoneNumberCache.GetGuid( template.SmsFromSystemPhoneNumberId.Value ) == smsFromNumberGuid )
+            {
+                return true;
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// Gets the communication template if it passes the same active and
+        /// VIEW filter used by the template picker.
+        /// </summary>
+        /// <param name="rockContext">The Rock context.</param>
+        /// <param name="templateGuid">The template unique identifier.</param>
+        /// <returns>The <see cref="CommunicationTemplate"/> or <see langword="null"/> if not found or not allowed.</returns>
+        private CommunicationTemplate GetAuthorizedTemplate( RockContext rockContext, Guid? templateGuid )
+        {
+            if ( !templateGuid.HasValue || templateGuid.Value.IsEmpty() )
+            {
+                return null;
+            }
+
+            var template = new CommunicationTemplateService( rockContext ).Get( templateGuid.Value );
+
+            if ( template == null || !template.IsActive || !template.IsAuthorized( Authorization.VIEW, GetCurrentPerson() ) )
+            {
+                return null;
+            }
+
+            return template;
         }
 
         /// <summary>
@@ -1961,10 +2092,43 @@ namespace Rock.Blocks.Communication
                         b.Guid
                     } )
                     .ToDictionary( a => a.Guid, a => a.Id );
+
+                // New attachments must come from the selected template or be
+                // files the current person uploaded.
+                var currentPerson = GetCurrentPerson();
+                var binaryFileService = new BinaryFileService( rockContext );
+                var template = GetAuthorizedTemplate( rockContext, bag.CommunicationTemplateGuid );
+                var templateBinaryFileIds = template != null
+                    ? ( template.EmailAttachmentBinaryFileIds ?? Enumerable.Empty<int>() )
+                        .Union( template.SMSAttachmentBinaryFileIds ?? Enumerable.Empty<int>() )
+                        .ToList()
+                    : new List<int>();
+
+                // Sending a test saves a copy of the communication, which marks
+                // its attachments as no longer temporary. So also allow files
+                // the current person created, or a test before the first save
+                // would cause the attachments to be dropped.
+                var attachmentBinaryFileIds = attachmentIdMap.Values.ToList();
+                var currentPersonId = currentPerson?.Id;
+                var createdByCurrentPersonBinaryFileIds = currentPersonId.HasValue
+                    ? binaryFileService.Queryable()
+                        .Where( b => attachmentBinaryFileIds.Contains( b.Id )
+                            && b.CreatedByPersonAlias.PersonId == currentPersonId.Value )
+                        .Select( b => b.Id )
+                        .ToList()
+                    : new List<int>();
+
                 foreach ( var attachmentBinaryFileId in attachmentIdMap )
                 {
                     if ( !communication.Attachments.Any( x => x.BinaryFileId == attachmentBinaryFileId.Value ) )
                     {
+                        if ( !templateBinaryFileIds.Contains( attachmentBinaryFileId.Value )
+                             && !createdByCurrentPersonBinaryFileIds.Contains( attachmentBinaryFileId.Value )
+                             && !binaryFileService.IsUploadedBinaryFileAllowedForPerson( attachmentBinaryFileId.Value, null, currentPerson ) )
+                        {
+                            continue;
+                        }
+
                         communication.AddAttachment( new CommunicationAttachment { BinaryFileId = attachmentBinaryFileId.Value }, communicationType );
                     }
                 }

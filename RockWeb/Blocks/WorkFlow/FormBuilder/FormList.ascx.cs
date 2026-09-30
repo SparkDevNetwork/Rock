@@ -245,10 +245,25 @@ namespace RockWeb.Blocks.WorkFlow.FormBuilder
             CategoryService categoryService = new CategoryService( rockContext );
 
             int categoryId = hfCategoryId.ValueAsInt();
+            var workflowTypeEntityTypeId = EntityTypeCache.GetId<WorkflowType>();
+
+            // The parent category comes from a hidden field, so it must be empty (root) or a
+            // workflow type category the person can view (the category tree's own filter).
+            var parentCategoryId = hfParentCategory.Value.AsIntegerOrNull();
+            if ( parentCategoryId.HasValue )
+            {
+                var parentCategory = categoryService.Get( parentCategoryId.Value );
+                if ( parentCategory == null || parentCategory.EntityTypeId != workflowTypeEntityTypeId || !parentCategory.IsAuthorized( Authorization.VIEW, this.CurrentPerson ) )
+                {
+                    cvCategory.IsValid = false;
+                    cvCategory.ErrorMessage = "Invalid parent category.";
+                    return;
+                }
+            }
 
             if ( categoryId == 0 )
             {
-                var entityTypeId = EntityTypeCache.GetId<WorkflowType>();
+                var entityTypeId = workflowTypeEntityTypeId;
                 category = new Category();
                 category.IsSystem = false;
                 category.EntityTypeId = entityTypeId.Value;
@@ -258,11 +273,20 @@ namespace RockWeb.Blocks.WorkFlow.FormBuilder
             else
             {
                 category = categoryService.Get( categoryId );
+
+                // The category id comes from a hidden field, so it must be a workflow type category
+                // the person can edit (the rule that shows the edit button).
+                if ( category == null || category.EntityTypeId != workflowTypeEntityTypeId || !category.IsAuthorized( Authorization.EDIT, this.CurrentPerson ) )
+                {
+                    cvCategory.IsValid = false;
+                    cvCategory.ErrorMessage = "You are not authorized to edit this category.";
+                    return;
+                }
             }
 
             category.Name = tbCategoryName.Text;
             category.Description = tbCategoryDescription.Text;
-            category.ParentCategoryId = hfParentCategory.Value.AsIntegerOrNull();
+            category.ParentCategoryId = parentCategoryId;
             category.IconCssClass = tbIconCssClass.Text;
             category.HighlightColor = cpHighlightColor.Text;
 

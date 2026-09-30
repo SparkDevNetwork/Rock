@@ -715,7 +715,7 @@ namespace RockWeb.Blocks.Core
                     attributeId = 0;
                 }
 
-                if ( attributeId != 0 && phEditControls.Controls.Count > 0 )
+                if ( attributeId != 0 && phEditControls.Controls.Count > 0 && IsAttributeValueEditAllowed( attributeId ) )
                 {
                     var attribute = Rock.Web.Cache.AttributeCache.Get( attributeId );
 
@@ -823,6 +823,46 @@ namespace RockWeb.Blocks.Core
         /// <returns></returns>
         private IQueryable<Rock.Model.Attribute> GetData( RockContext rockContext )
         {
+            var query = GetScopedData( rockContext );
+
+            if ( ddlAnalyticsEnabled.Visible )
+            {
+                var filterValue = ddlAnalyticsEnabled.SelectedValue.AsBooleanOrNull();
+                if ( filterValue.HasValue )
+                {
+                    query = query.Where( a => ( a.IsAnalytic || a.IsAnalyticHistory ) == filterValue );
+                }
+            }
+
+            if ( ddlActiveFilter.Visible )
+            {
+                var filterValue = ddlActiveFilter.SelectedValue.AsBooleanOrNull();
+                if ( filterValue.HasValue )
+                {
+                    query = query.Where( a => a.IsActive == filterValue );
+                }
+            }
+
+            var selectedCategoryIds = new List<int>();
+            rFilter.GetFilterPreference( "Categories" ).SplitDelimitedValues().ToList().ForEach( s => selectedCategoryIds.Add( int.Parse( s ) ) );
+            if ( selectedCategoryIds.Any() )
+            {
+                query = query.Where( a => a.Categories.Any( c => selectedCategoryIds.Contains( c.Id ) ) );
+            }
+
+            query = query.OrderBy( a => a.Order );
+
+            return query;
+        }
+
+        /// <summary>
+        /// Gets the attributes within the block's scope: the entity type, qualifier
+        /// and category filter settings, without the user's grid filters applied.
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns>The attributes the block displays.</returns>
+        private IQueryable<Rock.Model.Attribute> GetScopedData( RockContext rockContext )
+        {
             IQueryable<Rock.Model.Attribute> query = null;
 
             AttributeService attributeService = new AttributeService( rockContext );
@@ -857,33 +897,6 @@ namespace RockWeb.Blocks.Core
                 }
                 catch { }
             }
-
-            if ( ddlAnalyticsEnabled.Visible )
-            {
-                var filterValue = ddlAnalyticsEnabled.SelectedValue.AsBooleanOrNull();
-                if ( filterValue.HasValue )
-                {
-                    query = query.Where( a => ( a.IsAnalytic || a.IsAnalyticHistory ) == filterValue );
-                }
-            }
-
-            if ( ddlActiveFilter.Visible )
-            {
-                var filterValue = ddlActiveFilter.SelectedValue.AsBooleanOrNull();
-                if ( filterValue.HasValue )
-                {
-                    query = query.Where( a => a.IsActive == filterValue );
-                }
-            }
-
-            var selectedCategoryIds = new List<int>();
-            rFilter.GetFilterPreference( "Categories" ).SplitDelimitedValues().ToList().ForEach( s => selectedCategoryIds.Add( int.Parse( s ) ) );
-            if ( selectedCategoryIds.Any() )
-            {
-                query = query.Where( a => a.Categories.Any( c => selectedCategoryIds.Contains( c.Id ) ) );
-            }
-
-            query = query.OrderBy( a => a.Order );
 
             return query;
         }
@@ -986,6 +999,28 @@ namespace RockWeb.Blocks.Core
         }
 
         /// <summary>
+        /// Determines whether the current person can set the value of the specified attribute.
+        /// This uses the same check that enables row selection in <see cref="OnInit(EventArgs)"/>
+        /// and requires the attribute to be one the block displays.
+        /// </summary>
+        /// <param name="attributeId">The attribute identifier.</param>
+        /// <returns><c>true</c> if the attribute value can be edited; otherwise <c>false</c>.</returns>
+        private bool IsAttributeValueEditAllowed( int attributeId )
+        {
+            bool canEdit = IsUserAuthorized( Rock.Security.Authorization.EDIT );
+
+            if ( !( ( _displayValueEdit && canEdit ) || _canConfigure ) || !_entityTypeId.HasValue )
+            {
+                return false;
+            }
+
+            using ( var rockContext = new RockContext() )
+            {
+                return GetScopedData( rockContext ).Any( a => a.Id == attributeId );
+            }
+        }
+
+        /// <summary>
         /// Shows the edit value.
         /// </summary>
         /// <param name="attributeId">The attribute id.</param>
@@ -997,7 +1032,7 @@ namespace RockWeb.Blocks.Core
                 phEditControls.Controls.Clear();
 
                 var attribute = Rock.Web.Cache.AttributeCache.Get( attributeId );
-                if ( attribute != null )
+                if ( attribute != null && IsAttributeValueEditAllowed( attribute.Id ) )
                 {
                     mdAttributeValue.Title = attribute.Name + " Value";
 

@@ -377,6 +377,13 @@ namespace Rock.Blocks.Core
                 return false;
             }
 
+            // An existing file can only be edited if it is the file this page was loaded for.
+            if ( entity.Id != 0 && entity.Id != GetPageBinaryFileId() )
+            {
+                error = ActionBadRequest( $"{BinaryFile.FriendlyTypeName} not found." );
+                return false;
+            }
+
             if ( !BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
             {
                 error = ActionBadRequest( $"Not authorized to edit ${BinaryFile.FriendlyTypeName}." );
@@ -384,6 +391,41 @@ namespace Rock.Blocks.Core
             }
 
             return true;
+        }
+
+        /// <summary>
+        /// Gets the identifier of the existing binary file specified by the
+        /// page parameter.
+        /// </summary>
+        /// <returns>The binary file identifier or <c>null</c> if the page is not for an existing file.</returns>
+        private int? GetPageBinaryFileId()
+        {
+            var binaryFileKey = PageParameter( PageParameterKey.BinaryFileId );
+
+            if ( binaryFileKey.IsNullOrWhiteSpace() )
+            {
+                return null;
+            }
+
+            return new BinaryFileService( RockContext ).Get( binaryFileKey, !PageCache.Layout.Site.DisablePredictableIds )?.Id;
+        }
+
+        /// <summary>
+        /// Determines whether the identifier key refers to the file this page
+        /// was loaded for. An empty key refers to a new file.
+        /// </summary>
+        /// <param name="idKey">The identifier key sent by the client.</param>
+        /// <returns><c>true</c> if the key is empty or matches the page's file; otherwise <c>false</c>.</returns>
+        private bool IsPageBinaryFileOrNew( string idKey )
+        {
+            if ( idKey.IsNullOrWhiteSpace() )
+            {
+                return true;
+            }
+
+            var binaryFileId = GetId( idKey );
+
+            return binaryFileId.HasValue && binaryFileId == GetPageBinaryFileId();
         }
 
         /// <summary>
@@ -441,9 +483,24 @@ namespace Rock.Blocks.Core
         /// <param name="rockContext">The rock context.</param>
         private void DeleteOrphanedFiles( List<Guid> orphanedBinaryFileIdList, RockContext rockContext )
         {
-            var binaryFileService = new BinaryFileService( rockContext );
-            foreach ( var tempBinaryFile in binaryFileService.Queryable().Where( b => orphanedBinaryFileIdList.Contains( b.Guid ) && b.IsTemporary ) )
+            if ( orphanedBinaryFileIdList == null || !orphanedBinaryFileIdList.Any() )
             {
+                return;
+            }
+
+            var binaryFileService = new BinaryFileService( rockContext );
+            var tempBinaryFiles = binaryFileService.Queryable()
+                .Where( b => orphanedBinaryFileIdList.Contains( b.Guid ) && b.IsTemporary )
+                .ToList();
+
+            foreach ( var tempBinaryFile in tempBinaryFiles )
+            {
+                // Only delete temporary files that were uploaded by this person.
+                if ( !binaryFileService.IsUploadedBinaryFileAllowedForPerson( tempBinaryFile.Id, null, RequestContext.CurrentPerson ) )
+                {
+                    continue;
+                }
+
                 binaryFileService.Delete( tempBinaryFile );
             }
         }
@@ -507,6 +564,14 @@ namespace Rock.Blocks.Core
             }
 
             var prevBinaryFileTypeId = entity.BinaryFileTypeId;
+
+            // Make sure the uploaded file is either the current file or a
+            // temporary file that was uploaded by this person.
+            if ( box.IsValidProperty( nameof( box.Bag.File ) )
+                && !entityService.IsUploadedBinaryFileAllowedForPerson( box.Bag.File.GetEntityId<BinaryFile>( RockContext ), entity.Id, RequestContext.CurrentPerson ) )
+            {
+                return ActionBadRequest( "Invalid file." );
+            }
 
             // Update the entity instance from the information in the bag.
             if ( !UpdateEntityFromBox( entity, box ) )
@@ -619,11 +684,29 @@ namespace Rock.Blocks.Core
         [BlockAction]
         public BlockActionResult FileUploaded( BinaryFileBag bag )
         {
+            if ( !BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
+            {
+                return ActionBadRequest( $"Not authorized to edit {BinaryFile.FriendlyTypeName}." );
+            }
+
+            if ( bag == null || !IsPageBinaryFileOrNew( bag.IdKey ) )
+            {
+                return ActionBadRequest( $"{BinaryFile.FriendlyTypeName} not found." );
+            }
+
             using ( var rockContext = new RockContext() )
             {
                 var binaryFileService = new BinaryFileService( rockContext );
                 BinaryFile binaryFile = null;
                 var fileId = bag.File.GetEntityId<BinaryFile>( rockContext );
+
+                // Make sure the uploaded file is either the current file or a
+                // temporary file that was uploaded by this person.
+                if ( !binaryFileService.IsUploadedBinaryFileAllowedForPerson( fileId, GetPageBinaryFileId(), RequestContext.CurrentPerson ) )
+                {
+                    return ActionBadRequest( "Invalid file." );
+                }
+
                 if ( fileId.HasValue )
                 {
                     binaryFile = binaryFileService.Get( fileId.Value );
@@ -663,6 +746,16 @@ namespace Rock.Blocks.Core
         [BlockAction]
         public BlockActionResult RerunWorkflow( BinaryFileBag bag )
         {
+            if ( !BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
+            {
+                return ActionBadRequest( $"Not authorized to edit {BinaryFile.FriendlyTypeName}." );
+            }
+
+            if ( bag != null && !IsPageBinaryFileOrNew( bag.IdKey ) )
+            {
+                return ActionBadRequest( $"{BinaryFile.FriendlyTypeName} not found." );
+            }
+
             if ( bag != null )
             {
                 var binaryFileId = GetId( bag.IdKey );
@@ -703,6 +796,11 @@ namespace Rock.Blocks.Core
         [BlockAction]
         public BlockActionResult RemoveOrphanedFiles( List<Guid> orphanedBinaryFileIdList )
         {
+            if ( !BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
+            {
+                return ActionBadRequest( $"Not authorized to edit {BinaryFile.FriendlyTypeName}." );
+            }
+
             using ( var rockContext = new RockContext() )
             {
                 DeleteOrphanedFiles( orphanedBinaryFileIdList, rockContext );

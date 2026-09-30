@@ -177,6 +177,12 @@ namespace Rock.Blocks.Core
                 return ActionBadRequest( "REST action not found." );
             }
 
+            // Only allow editing actions that are shown in the list.
+            if ( !GetListQueryable( RockContext ).Any( a => a.Id == restAction.Id ) )
+            {
+                return ActionBadRequest( "REST action not found." );
+            }
+
             var cacheability = model.CacheControlHeaderSettings.ToCacheability();
 
             restAction.CacheControlHeaderSettings = cacheability?.ToJson();

@@ -399,7 +399,21 @@ namespace RockWeb.Blocks.Connection
                     connectionOpportunity = new ConnectionOpportunity();
                     connectionOpportunity.Name = string.Empty;
                     connectionOpportunity.ConnectionTypeId = PageParameter( "ConnectionTypeId" ).AsInteger();
+                    connectionOpportunity.ConnectionType = new ConnectionTypeService( rockContext ).Get( connectionOpportunity.ConnectionTypeId );
+
+                    if ( !IsEditAllowed( connectionOpportunity ) )
+                    {
+                        nbEditModeMessage.Text = EditModeMessage.ReadOnlyEditActionNotAllowed( ConnectionOpportunity.FriendlyTypeName );
+                        return;
+                    }
+
                     connectionOpportunityService.Add( connectionOpportunity );
+                }
+                else if ( !IsEditAllowed( connectionOpportunity ) )
+                {
+                    // The opportunity id comes from a hidden field, so apply the same rule ShowDetail used to show the edit panel.
+                    nbEditModeMessage.Text = EditModeMessage.ReadOnlyEditActionNotAllowed( ConnectionOpportunity.FriendlyTypeName );
+                    return;
                 }
 
                 connectionOpportunity.Name = tbName.Text;
@@ -413,12 +427,20 @@ namespace RockWeb.Blocks.Connection
                 connectionOpportunity.ShowStatusOnTransfer = cbShowStatusOnTransfer.Checked;
 
                 int? orphanedPhotoId = null;
-                if ( connectionOpportunity.PhotoId != imgupPhoto.BinaryFileId )
+                var photoId = imgupPhoto.BinaryFileId;
+
+                // Only accept the opportunity's current photo or a new upload, otherwise keep the current photo.
+                if ( !new BinaryFileService( rockContext ).IsUploadedBinaryFileAllowedForPerson( photoId, connectionOpportunity.PhotoId, CurrentPerson ) )
+                {
+                    photoId = connectionOpportunity.PhotoId;
+                }
+
+                if ( connectionOpportunity.PhotoId != photoId )
                 {
                     orphanedPhotoId = connectionOpportunity.PhotoId;
                 }
 
-                connectionOpportunity.PhotoId = imgupPhoto.BinaryFileId;
+                connectionOpportunity.PhotoId = photoId;
 
                 // remove any workflows that removed in the UI
                 var uiWorkflows = WorkflowsState.Where( w => w.ConnectionTypeId == null ).Select( l => l.Guid );
@@ -1778,6 +1800,23 @@ namespace RockWeb.Blocks.Connection
         #endregion
 
         #region Internal Methods
+
+        /// <summary>
+        /// Determines whether the current person can edit the connection opportunity, using the
+        /// same rule <see cref="ShowDetail(int)"/> uses to show the edit panel: block edit or
+        /// opportunity VIEW, and an existing opportunity must belong to the page's connection type.
+        /// </summary>
+        /// <param name="connectionOpportunity">The connection opportunity.</param>
+        /// <returns><c>true</c> if the current person can edit the opportunity; otherwise, <c>false</c>.</returns>
+        private bool IsEditAllowed( ConnectionOpportunity connectionOpportunity )
+        {
+            if ( !UserCanEdit && !connectionOpportunity.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
+            {
+                return false;
+            }
+
+            return connectionOpportunity.Id == 0 || connectionOpportunity.ConnectionTypeId == _connectionTypeId;
+        }
 
         /// <summary>
         /// Shows the detail.

@@ -299,7 +299,17 @@ namespace RockWeb.Blocks.Connection
             {
                 ConnectionTypeService connectionTypeService = new ConnectionTypeService( rockContext );
 
-                newConnectionTypeId = connectionTypeService.Copy( hfConnectionTypeId.Value.AsInteger() );
+                // Copy creates a new connection type, so it needs the same rights as adding or editing one,
+                // and the type copied must be the one this page is showing.
+                var connectionTypeId = hfConnectionTypeId.Value.AsInteger();
+                var connectionType = connectionTypeService.Get( connectionTypeId );
+                if ( connectionType == null || connectionTypeId != PageParameter( "ConnectionTypeId" ).AsInteger() || !IsAdminAllowed( connectionType ) )
+                {
+                    mdCopy.Show( "You are not authorized to copy this connection type.", ModalAlertType.Warning );
+                    return;
+                }
+
+                newConnectionTypeId = connectionTypeService.Copy( connectionTypeId );
 
                 var newConnectionType = connectionTypeService.Get( newConnectionTypeId );
                 if ( newConnectionType != null )
@@ -329,6 +339,12 @@ namespace RockWeb.Blocks.Connection
         {
             var rockContext = new RockContext();
             var connectionType = new ConnectionTypeService( rockContext ).Get( hfConnectionTypeId.Value.AsInteger() );
+
+            // The id comes from a hidden field, so apply the same rule ShowDetail used to show the edit button.
+            if ( connectionType == null || !IsAdminAllowed( connectionType ) )
+            {
+                return;
+            }
 
             LoadStateDetails( connectionType, rockContext );
             ShowEditDetails( connectionType );
@@ -451,11 +467,26 @@ namespace RockWeb.Blocks.Connection
                 if ( connectionTypeId == 0 )
                 {
                     connectionType = new ConnectionType();
+
+                    // Apply the same rule ShowDetail used to show the edit panel.
+                    if ( !IsAdminAllowed( connectionType ) )
+                    {
+                        nbEditModeMessage.Text = EditModeMessage.ReadOnlyEditActionNotAllowed( ConnectionType.FriendlyTypeName );
+                        return;
+                    }
+
                     connectionTypeService.Add( connectionType );
                 }
                 else
                 {
                     connectionType = connectionTypeService.Queryable( "ConnectionActivityTypes, ConnectionWorkflows" ).Where( c => c.Id == connectionTypeId ).FirstOrDefault();
+
+                    // The id comes from a hidden field, so apply the same rule ShowDetail used to show the edit panel.
+                    if ( connectionType == null || !IsAdminAllowed( connectionType ) )
+                    {
+                        nbEditModeMessage.Text = EditModeMessage.ReadOnlyEditActionNotAllowed( ConnectionType.FriendlyTypeName );
+                        return;
+                    }
 
                     var uiWorkflows = WorkflowsState.Select( l => l.Guid );
                     foreach ( var connectionWorkflow in connectionType.ConnectionWorkflows.Where( l => !uiWorkflows.Contains( l.Guid ) ).ToList() )
@@ -1942,6 +1973,17 @@ namespace RockWeb.Blocks.Connection
         #region Internal Methods
 
         /// <summary>
+        /// Determines whether the current person can administrate the connection type, the rule
+        /// <see cref="ShowDetail(int)"/> uses to allow editing.
+        /// </summary>
+        /// <param name="connectionType">The connection type.</param>
+        /// <returns><c>true</c> if the current person can administrate the connection type; otherwise, <c>false</c>.</returns>
+        private bool IsAdminAllowed( ConnectionType connectionType )
+        {
+            return UserCanAdministrate || connectionType.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson );
+        }
+
+        /// <summary>
         /// Shows the edit.
         /// </summary>
         /// <param name="connectionTypeId">The Connection Type Type identifier.</param>
@@ -1966,7 +2008,7 @@ namespace RockWeb.Blocks.Connection
                 }
 
                 // Admin rights are needed to edit a connection type ( Edit rights only allow adding/removing items )
-                bool adminAllowed = UserCanAdministrate || connectionType.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson );
+                bool adminAllowed = IsAdminAllowed( connectionType );
                 pnlDetails.Visible = true;
                 hfConnectionTypeId.Value = connectionType.Id.ToString();
                 lIcon.Text = string.Format( "<i class='{0}'></i>", connectionType.IconCssClass );
@@ -1984,6 +2026,7 @@ namespace RockWeb.Blocks.Connection
                     btnEdit.Visible = false;
                     btnDelete.Visible = false;
                     btnSecurity.Visible = false;
+                    btnCopy.Visible = false;
                     ShowReadonlyDetails( connectionType );
                 }
                 else
@@ -1991,6 +2034,7 @@ namespace RockWeb.Blocks.Connection
                     btnEdit.Visible = true;
                     btnDelete.Visible = true;
                     btnSecurity.Visible = true;
+                    btnCopy.Visible = true;
 
                     btnSecurity.Title = "Secure " + connectionType.Name;
                     btnSecurity.EntityId = connectionType.Id;

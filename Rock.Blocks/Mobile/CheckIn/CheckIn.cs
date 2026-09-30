@@ -327,6 +327,86 @@ namespace Rock.Blocks.Mobile.CheckIn
             return grades.ToList();
         }
 
+        /// <summary>
+        /// Gets the identifiers of the people that can be checked in for the
+        /// current person's primary family. This is the same family that
+        /// <see cref="GetFamilyMembers(MobileFamilyMembersOptionsBag)"/> loads.
+        /// </summary>
+        /// <param name="session">The check-in session.</param>
+        /// <returns>A set of person identifiers.</returns>
+        private HashSet<int> GetCurrentFamilyPersonIds( CheckInSession session )
+        {
+            var familyId = RequestContext.CurrentPerson?.PrimaryFamily?.IdKey;
+
+            if ( familyId.IsNullOrWhiteSpace() )
+            {
+                return new HashSet<int>();
+            }
+
+            return new HashSet<int>( session.GetGroupMembersQueryForFamily( familyId )
+                .Select( gm => gm.PersonId )
+                .ToList() );
+        }
+
+        /// <summary>
+        /// Determines whether the family identifier is either empty or the
+        /// current person's primary family.
+        /// </summary>
+        /// <param name="familyId">The family identifier key sent by the client.</param>
+        /// <returns><c>true</c> if the family identifier is allowed; otherwise <c>false</c>.</returns>
+        private bool IsCurrentFamilyOrEmpty( string familyId )
+        {
+            if ( familyId.IsNullOrWhiteSpace() )
+            {
+                return true;
+            }
+
+            var familyIdNumber = Rock.Utility.IdHasher.Instance.GetId( familyId );
+
+            return familyIdNumber.HasValue && familyIdNumber.Value == RequestContext.CurrentPerson?.PrimaryFamilyId;
+        }
+
+        /// <summary>
+        /// Determines whether all the person identifiers belong to the
+        /// current person's family.
+        /// </summary>
+        /// <param name="personIds">The person identifier keys sent by the client.</param>
+        /// <param name="familyPersonIds">The identifiers of the people in the current person's family.</param>
+        /// <returns><c>true</c> if all the people are in the family; otherwise <c>false</c>.</returns>
+        private static bool AreAllPeopleInFamily( IEnumerable<string> personIds, HashSet<int> familyPersonIds )
+        {
+            foreach ( var personId in personIds )
+            {
+                var personIdNumber = personId.IsNotNullOrWhiteSpace() ? Rock.Utility.IdHasher.Instance.GetId( personId ) : null;
+
+                if ( !personIdNumber.HasValue || !familyPersonIds.Contains( personIdNumber.Value ) )
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// Determines whether any existing attendance records in the check-in
+        /// session belong only to people in the current person's family.
+        /// </summary>
+        /// <param name="sessionGuid">The check-in session unique identifier.</param>
+        /// <param name="familyPersonIds">The identifiers of the people in the current person's family.</param>
+        /// <returns><c>true</c> if the session does not contain attendance for anybody else; otherwise <c>false</c>.</returns>
+        private bool IsSessionForFamily( Guid sessionGuid, HashSet<int> familyPersonIds )
+        {
+            var sessionPersonIds = new AttendanceService( RockContext ).Queryable()
+                .Where( a => a.AttendanceCheckInSession.Guid == sessionGuid
+                    && a.PersonAliasId.HasValue )
+                .Select( a => a.PersonAlias.PersonId )
+                .Distinct()
+                .ToList();
+
+            return sessionPersonIds.All( id => familyPersonIds.Contains( id ) );
+        }
+
         #endregion
 
         #region Check-in Flow Block Actions
@@ -408,6 +488,11 @@ namespace Rock.Blocks.Mobile.CheckIn
         [BlockAction]
         public BlockActionResult GetAttendeeOpportunities( MobileAttendeeOpportunitiesOptionsBag options )
         {
+            if ( RequestContext.CurrentPerson == null )
+            {
+                return ActionUnauthorized();
+            }
+
             var configuration = GroupTypeCache.GetByIdKey( options.ConfigurationTemplateId, RockContext )?.GetCheckInConfiguration( RockContext );
             var areas = options.AreaIds.Select( id => GroupTypeCache.GetByIdKey( id, RockContext ) ).ToList();
 
@@ -431,6 +516,14 @@ namespace Rock.Blocks.Mobile.CheckIn
             {
                 var director = new CheckInDirector( RockContext );
                 var session = director.CreateSession( configuration );
+
+                // Only allow people in the current person's family, which is
+                // the family returned by GetFamilyMembers.
+                if ( !IsCurrentFamilyOrEmpty( options.FamilyId )
+                    || !AreAllPeopleInFamily( new[] { options.PersonId }, GetCurrentFamilyPersonIds( session ) ) )
+                {
+                    return ActionBadRequest( "Individual was not found or is not available for check-in." );
+                }
 
                 var locations = options.LocationIds?.Select( id => NamedLocationCache.GetByIdKey( id ) ).ToList();
 
@@ -464,6 +557,11 @@ namespace Rock.Blocks.Mobile.CheckIn
         [BlockAction]
         public async Task<BlockActionResult> SaveAttendance( SaveAttendanceOptionsBag options )
         {
+            if ( RequestContext.CurrentPerson == null )
+            {
+                return ActionUnauthorized();
+            }
+
             var configuration = GroupTypeCache.GetByIdKey( options.TemplateId, RockContext )?.GetCheckInConfiguration( RockContext );
 
             if ( configuration == null )
@@ -487,6 +585,20 @@ namespace Rock.Blocks.Mobile.CheckIn
             {
                 var director = new CheckInDirector( RockContext );
                 var session = director.CreateSession( configuration );
+
+                // Only allow checking in people from the current person's
+                // family, which is the family returned by GetFamilyMembers.
+                var familyPersonIds = GetCurrentFamilyPersonIds( session );
+
+                if ( options.Session == null
+                    || options.Requests == null
+                    || !IsCurrentFamilyOrEmpty( options.Session.FamilyId )
+                    || !AreAllPeopleInFamily( options.Requests.Select( r => r?.PersonId ), familyPersonIds )
+                    || !IsSessionForFamily( options.Session.Guid, familyPersonIds ) )
+                {
+                    return ActionBadRequest( "Individual was not found or is not available for check-in." );
+                }
+
                 var sessionRequest = new AttendanceSessionRequest( options.Session )
                 {
                     PerformedByPersonId = RequestContext.CurrentPerson?.IdKey
@@ -538,6 +650,11 @@ namespace Rock.Blocks.Mobile.CheckIn
         [BlockAction]
         public async Task<BlockActionResult> ConfirmAttendance( ConfirmAttendanceOptionsBag options )
         {
+            if ( RequestContext.CurrentPerson == null )
+            {
+                return ActionUnauthorized();
+            }
+
             var configuration = GroupTypeCache.GetByIdKey( options.TemplateId, RockContext )?.GetCheckInConfiguration( RockContext );
 
             if ( configuration == null )
@@ -561,6 +678,12 @@ namespace Rock.Blocks.Mobile.CheckIn
             {
                 var director = new CheckInDirector( RockContext );
                 var session = director.CreateSession( configuration );
+
+                // Only allow confirming sessions for the current person's family.
+                if ( !IsSessionForFamily( options.SessionGuid, GetCurrentFamilyPersonIds( session ) ) )
+                {
+                    return ActionBadRequest( "Invalid session." );
+                }
 
                 var result = session.ConfirmAttendance( options.SessionGuid );
 
@@ -588,6 +711,11 @@ namespace Rock.Blocks.Mobile.CheckIn
         [BlockAction]
         public async Task<BlockActionResult> Checkout( CheckoutOptionsBag options )
         {
+            if ( RequestContext.CurrentPerson == null )
+            {
+                return ActionUnauthorized();
+            }
+
             var configuration = GroupTypeCache.GetByIdKey( options.TemplateId, RockContext )?.GetCheckInConfiguration( RockContext );
             DeviceCache kiosk = null;
 
@@ -610,6 +738,27 @@ namespace Rock.Blocks.Mobile.CheckIn
             {
                 var director = new CheckInDirector( RockContext );
                 var session = director.CreateSession( configuration );
+
+                // Only allow checking out attendance records of people from
+                // the current person's family.
+                var familyPersonIds = GetCurrentFamilyPersonIds( session );
+                var attendanceIdNumbers = ( options.AttendanceIds ?? new List<string>() )
+                    .Select( id => Rock.Utility.IdHasher.Instance.GetId( id ) )
+                    .Where( id => id.HasValue )
+                    .Select( id => id.Value )
+                    .ToList();
+                var attendancePersonIds = new AttendanceService( RockContext ).Queryable()
+                    .Where( a => attendanceIdNumbers.Contains( a.Id ) )
+                    .Select( a => a.PersonAlias != null ? ( int? ) a.PersonAlias.PersonId : null )
+                    .ToList();
+
+                if ( options.Session == null
+                    || !IsCurrentFamilyOrEmpty( options.Session.FamilyId )
+                    || attendancePersonIds.Any( id => !id.HasValue || !familyPersonIds.Contains( id.Value ) ) )
+                {
+                    return ActionBadRequest( "Invalid attendance." );
+                }
+
                 var sessionRequest = new AttendanceSessionRequest( options.Session );
 
                 var result = session.Checkout( sessionRequest, options.AttendanceIds, kiosk );

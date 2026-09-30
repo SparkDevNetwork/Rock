@@ -571,6 +571,12 @@ namespace RockWeb.Blocks.Reporting
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void mdSaveLocation_SaveClick( object sender, EventArgs e )
         {
+            // Saving a location is only offered when the Show Save Location setting is enabled.
+            if ( !this.GetAttributeValue( "ShowSaveLocation" ).AsBoolean() )
+            {
+                return;
+            }
+
             try
             {
                 DbGeography geoFence = null;

@@ -331,9 +331,21 @@ function ReviewFlag(elem) {
         /// </summary>
         private void FlagPrayerRequest( int prayerRequestId )
         {
+            if ( !GetAttributeValue( AttributeKey.EnablePrayerTeamFlagging ).AsBoolean() )
+            {
+                return;
+            }
+
             var rockContext = new RockContext();
             var service = new PrayerRequestService( rockContext );
             var flagLimit = GetAttributeValue( AttributeKey.FlagLimit ).AsIntegerOrNull() ?? 1;
+
+            // Only allow flagging a request that this block would display.
+            if ( !IsPrayerRequestInScope( prayerRequestId, rockContext ) )
+            {
+                return;
+            }
+
             PrayerRequest request = service.Get( prayerRequestId );
 
             if ( request != null )
@@ -358,6 +370,13 @@ function ReviewFlag(elem) {
             var rockContext = new RockContext();
             var service = new PrayerRequestService( rockContext );
             var flagLimit = GetAttributeValue( AttributeKey.FlagLimit ).AsIntegerOrNull() ?? 1;
+
+            // Only allow praying for a request that this block would display.
+            if ( !IsPrayerRequestInScope( prayerRequestId, rockContext ) )
+            {
+                return;
+            }
+
             PrayerRequest request = service.Get( prayerRequestId );
 
             if ( request != null )
@@ -437,6 +456,42 @@ function ReviewFlag(elem) {
         /// <returns>A list of <see cref="PrayerRequest"/> entities.</returns>
         private List<PrayerRequest> GetPrayerRequests( RockContext rockContext )
         {
+            IEnumerable<PrayerRequest> qryPrayerRequests = GetPrayerRequestsQuery( rockContext );
+
+            // Order by how the block has been configured.
+            var sortBy = GetAttributeValue( AttributeKey.Order ).ConvertToEnum<PrayerRequestOrder>( PrayerRequestOrder.LeastPrayedFor );
+            qryPrayerRequests = qryPrayerRequests.OrderBy( sortBy );
+
+            // Limit the maximum number of prayer requests.
+            int? maxResults = GetAttributeValue( AttributeKey.MaxResults ).AsIntegerOrNull();
+            if ( maxResults.HasValue && maxResults > 0 )
+            {
+                qryPrayerRequests = qryPrayerRequests.Take( maxResults.Value );
+            }
+
+            return qryPrayerRequests.ToList();
+        }
+
+        /// <summary>
+        /// Determines whether the prayer request is one that this block
+        /// would display, ignoring the order and maximum results settings.
+        /// </summary>
+        /// <param name="prayerRequestId">The prayer request identifier.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns><c>true</c> if the prayer request is in scope for this block; otherwise, <c>false</c>.</returns>
+        private bool IsPrayerRequestInScope( int prayerRequestId, RockContext rockContext )
+        {
+            return GetPrayerRequestsQuery( rockContext ).Any( r => r.Id == prayerRequestId );
+        }
+
+        /// <summary>
+        /// Gets the query of prayer requests that match the block's filters,
+        /// without any ordering or result limit applied.
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns>A queryable of <see cref="PrayerRequest"/> entities.</returns>
+        private IQueryable<PrayerRequest> GetPrayerRequestsQuery( RockContext rockContext )
+        {
             var prayerRequestService = new PrayerRequestService( rockContext );
 
             // Determine the category to filter to.
@@ -485,7 +540,7 @@ function ReviewFlag(elem) {
 
             var groupGuidQryString = PageParameter( PageParameterKey.GroupGuid ).AsGuidOrNull();
 
-            IEnumerable<PrayerRequest> qryPrayerRequests = prayerRequestService.GetPrayerRequests( new PrayerRequestQueryOptions
+            return prayerRequestService.GetPrayerRequests( new PrayerRequestQueryOptions
             {
                 IncludeEmptyCampus = true,
                 IncludeNonPublic = !GetAttributeValue( AttributeKey.PublicOnly ).AsBoolean(),
@@ -494,19 +549,6 @@ function ReviewFlag(elem) {
                 GroupGuids = groupGuidQryString.HasValue ? new List<Guid> { groupGuidQryString.Value } : null,
                 IncludeGroupRequests = !groupGuidQryString.HasValue
             } );
-
-            // Order by how the block has been configured.
-            var sortBy = GetAttributeValue( AttributeKey.Order ).ConvertToEnum<PrayerRequestOrder>( PrayerRequestOrder.LeastPrayedFor );
-            qryPrayerRequests = qryPrayerRequests.OrderBy( sortBy );
-
-            // Limit the maximum number of prayer requests.
-            int? maxResults = GetAttributeValue( AttributeKey.MaxResults ).AsIntegerOrNull();
-            if ( maxResults.HasValue && maxResults > 0 )
-            {
-                qryPrayerRequests = qryPrayerRequests.Take( maxResults.Value );
-            }
-
-            return qryPrayerRequests.ToList();
         }
 
         /// <summary>

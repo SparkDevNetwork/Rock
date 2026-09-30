@@ -1219,7 +1219,9 @@ namespace RockWeb.Blocks.Mobile
             page.DisplayInNavWhen = ddlMenuDisplayWhen.SelectedValue.ConvertToEnumOrNull<Rock.Model.DisplayInNavWhen>() ?? DisplayInNavWhen.Never;
             page.SetAdditionalSettings<AdditionalPageSettings>( additionalSettings );
             int? oldIconId = null;
-            if ( page.IconBinaryFileId != imgPageIcon.BinaryFileId )
+            // Only accept the page's current icon or a new upload, otherwise keep the current icon.
+            if ( page.IconBinaryFileId != imgPageIcon.BinaryFileId
+                && new BinaryFileService( rockContext ).IsUploadedBinaryFileAllowedForPerson( imgPageIcon.BinaryFileId, page.IconBinaryFileId, CurrentPerson ) )
             {
                 oldIconId = page.IconBinaryFileId;
                 page.IconBinaryFileId = imgPageIcon.BinaryFileId;

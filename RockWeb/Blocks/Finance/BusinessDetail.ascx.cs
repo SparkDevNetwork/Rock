@@ -262,6 +262,12 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
         {
             var rockContext = new RockContext();
             var business = new PersonService( rockContext ).Get( int.Parse( hfBusinessId.Value ) );
+            if ( business == null || !IsBusinessEditAllowed( business ) )
+            {
+                nbEditModeMessage.Text = EditModeMessage.NotAuthorizedToEdit( "Business" );
+                return;
+            }
+
             ShowEditDetails( business );
         }
 
@@ -280,11 +286,24 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
             if ( int.Parse( hfBusinessId.Value ) != 0 )
             {
                 business = personService.Get( int.Parse( hfBusinessId.Value ) );
+
+                if ( business == null || !IsBusinessEditAllowed( business ) )
+                {
+                    nbWarningMessage.Text = EditModeMessage.NotAuthorizedToEdit( "Business" );
+                    return;
+                }
             }
 
             if ( business == null )
             {
                 business = new Person();
+
+                if ( !IsBusinessEditAllowed( business ) )
+                {
+                    nbWarningMessage.Text = EditModeMessage.NotAuthorizedToEdit( "Business" );
+                    return;
+                }
+
                 personService.Add( business );
             }
 
@@ -602,6 +621,22 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
 
             lActions.Text = sbActions.ToString();
             pnlActionWrapper.Visible = hasCustomActions || hasWorkflowActions;
+        }
+
+        /// <summary>
+        /// Determines whether the current person can edit the specified business, using the
+        /// same rules that <see cref="ShowDetail(int)"/> uses. Existing records must also be businesses.
+        /// </summary>
+        /// <param name="business">The business, or a new <see cref="Person"/> when adding a business.</param>
+        /// <returns><c>true</c> if the business can be edited; otherwise <c>false</c>.</returns>
+        private bool IsBusinessEditAllowed( Person business )
+        {
+            if ( business.Id != 0 && !business.IsBusiness() )
+            {
+                return false;
+            }
+
+            return business.IsAuthorized( Authorization.EDIT, CurrentPerson ) && IsUserAuthorized( Authorization.EDIT );
         }
 
         /// <summary>

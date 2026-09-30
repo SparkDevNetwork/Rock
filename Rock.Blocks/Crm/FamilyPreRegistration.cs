@@ -935,6 +935,13 @@ namespace Rock.Blocks.Crm
                 } );
             }
 
+            // Make sure the family, people and photos in the request are the
+            // ones this block would have offered to the current person.
+            if ( !TryRestrictRequestToCurrentFamily( bag, out var restrictErrorMessage ) )
+            {
+                return ActionBadRequest( restrictErrorMessage );
+            }
+
             // Get some system values
             var familyGroupType = GroupTypeCache.Get( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid() );
             var adultRoleId = familyGroupType.Roles.FirstOrDefault( r => r.Guid == Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT.AsGuid() ).Id;
@@ -2157,6 +2164,84 @@ namespace Rock.Blocks.Crm
             }
 
             return relationshipTypes;
+        }
+
+        /// <summary>
+        /// Restricts the save request to the family, adults and children that
+        /// <see cref="GetCurrentOrNewFamily(RockContext, Person, Dictionary{int, ListItemBag})"/>
+        /// returns for the current person. Any other family is treated as a
+        /// new family and any other person is treated as a new person, which
+        /// then goes through the normal matching logic. Profile photos must be
+        /// the person's current photo or a temporary file uploaded by the
+        /// current person.
+        /// </summary>
+        /// <param name="bag">The save request bag, which will be updated.</param>
+        /// <param name="errorMessage">On <c>false</c> return, contains the error message.</param>
+        /// <returns><c>true</c> if the request can be saved; otherwise <c>false</c>.</returns>
+        private bool TryRestrictRequestToCurrentFamily( FamilyPreRegistrationSaveRequestBag bag, out string errorMessage )
+        {
+            errorMessage = null;
+
+            using ( var rockContext = new RockContext() )
+            {
+                var currentPerson = GetCurrentPerson();
+                var (allowedAdult1, allowedAdult2, allowedChildren, allowedFamily) = GetCurrentOrNewFamily( rockContext, currentPerson, GetChildRelationshipTypes() );
+
+                // Only the existing family offered to the current person may be updated.
+                if ( bag.FamilyGuid.HasValue && ( allowedFamily == null || allowedFamily.Id == 0 || allowedFamily.Guid != bag.FamilyGuid.Value ) )
+                {
+                    bag.FamilyGuid = null;
+                }
+
+                var allowedAdults = new[] { allowedAdult1, allowedAdult2 }
+                    .Where( p => p != null && p.Id != 0 )
+                    .ToList();
+                var allowedChildPeople = allowedChildren
+                    .Select( c => c.Person )
+                    .Where( p => p != null && p.Id != 0 )
+                    .ToList();
+
+                var binaryFileService = new BinaryFileService( rockContext );
+
+                // Validates a single person bag against the allowed people.
+                bool RestrictPersonBag( FamilyPreRegistrationPersonBag personBag, List<Person> allowedPeople )
+                {
+                    if ( personBag == null )
+                    {
+                        return true;
+                    }
+
+                    var existingPerson = allowedPeople.FirstOrDefault( p => p.Guid == personBag.Guid );
+
+                    // Anything other than an allowed person is a new person.
+                    if ( existingPerson == null )
+                    {
+                        personBag.Guid = Guid.NewGuid();
+                    }
+
+                    return binaryFileService.IsUploadedBinaryFileAllowedForPerson( personBag.ProfilePhotoGuid, existingPerson?.Photo?.Guid, currentPerson );
+                }
+
+                if ( !RestrictPersonBag( bag.Adult1, allowedAdults ) || !RestrictPersonBag( bag.Adult2, allowedAdults ) )
+                {
+                    errorMessage = "Invalid profile photo.";
+                    return false;
+                }
+
+                if ( bag.Children != null )
+                {
+                    foreach ( var child in bag.Children )
+                    {
+                        if ( !RestrictPersonBag( child, allowedChildPeople ) )
+                        {
+                            errorMessage = "Invalid profile photo.";
+                            return false;
+                        }
+                    }
+                }
+            }
+
+            return true;
         }
 
         /// <summary>
