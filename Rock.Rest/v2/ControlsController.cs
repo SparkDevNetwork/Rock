@@ -2221,6 +2221,11 @@ namespace Rock.Rest.v2
         [Rock.SystemGuid.RestActionGuid( "D9840506-7251-4F41-A1B2-D3168FB3AFDA" )]
         public IActionResult BadgeControlGetBadge( [FromBody] BadgeControlGetBadgeOptionsBag options )
         {
+            if ( RockRequestContext.CurrentPerson == null )
+            {
+                return Unauthorized();
+            }
+
             using ( var rockContext = new RockContext() )
             {
                 var entityTypeCache = EntityTypeCache.Get( options.EntityTypeGuid, rockContext );
@@ -2234,7 +2239,7 @@ namespace Rock.Rest.v2
                 }
 
                 // Load the entity and verify we got one.
-                var entity = Rock.Reflection.GetIEntityForEntityType( entityType, options.EntityKey );
+                var entity = Rock.Reflection.GetIEntityForEntityType( entityType, options.EntityKey, false, rockContext );
 
                 if ( entity == null )
                 {
@@ -2283,6 +2288,7 @@ namespace Rock.Rest.v2
         /// <returns>A collection of <see cref="RenderedBadgeBag"/> objects.</returns>
         [HttpPost]
         [Route( "BadgeListGetBadges" )]
+        [Authenticate]
         [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [ProducesResponseType( HttpStatusCode.OK, Type = typeof( RenderedBadgeBag ) )]
         [ProducesResponseType( HttpStatusCode.BadRequest )]
@@ -2291,6 +2297,11 @@ namespace Rock.Rest.v2
         [Rock.SystemGuid.RestActionGuid( "34387B98-BF7E-4000-A28A-24EA08605285" )]
         public IActionResult BadgeListGetBadges( [FromBody] BadgeListGetBadgesOptionsBag options )
         {
+            if ( RockRequestContext.CurrentPerson == null )
+            {
+                return Unauthorized();
+            }
+
             using ( var rockContext = new RockContext() )
             {
                 var entityTypeCache = EntityTypeCache.Get( options.EntityTypeGuid, rockContext );
@@ -2304,7 +2315,7 @@ namespace Rock.Rest.v2
                 }
 
                 // Load the entity and verify we got one.
-                var entity = Rock.Reflection.GetIEntityForEntityType( entityType, options.EntityKey );
+                var entity = Rock.Reflection.GetIEntityForEntityType( entityType, options.EntityKey, false, rockContext );
 
                 if ( entity == null )
                 {
