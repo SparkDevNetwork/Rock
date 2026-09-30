@@ -27,6 +27,8 @@ using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Obsidian.UI;
+using Rock.Security;
+using Rock.Security.SecurityGrantRules;
 using Rock.Utility;
 using Rock.ViewModels.Blocks.Fundraising.FundraisingParticipant;
 using Rock.ViewModels.Controls;
@@ -307,6 +309,7 @@ namespace Rock.Blocks.Fundraising
 
                     box.RequirementsHeaderHtml = GetAttributeValue( AttributeKey.RequirementsHeaderLavaTemplate ).ResolveMergeFields( mergeFields );
                     box.Requirements = GetRequirementsBag( group, groupMember );
+                    box.SecurityGrantToken = GetSecurityGrantToken( groupMember );
                 }
             }
 
@@ -386,6 +389,32 @@ namespace Rock.Blocks.Fundraising
             }
 
             return $"Edit your profile to add a {missingItems.AsDelimited( ", ", " and " )}.";
+        }
+
+        /// <summary>
+        /// Gets a security grant token that lets the viewer act on the participant's requirements.
+        /// </summary>
+        /// <param name="groupMember">The participant group member.</param>
+        /// <returns>A security grant token covering the participant's group member and person records.</returns>
+        private string GetSecurityGrantToken( GroupMember groupMember )
+        {
+            return new SecurityGrant()
+                .AddRule( new EntitySecurityGrantRule( groupMember.TypeId, groupMember.Id, Authorization.EDIT ) )
+                .AddRule( new EntitySecurityGrantRule( groupMember.Person.TypeId, groupMember.PersonId ) )
+                .ToToken();
+        }
+
+        /// <inheritdoc/>
+        protected override string RenewSecurityGrantToken()
+        {
+            var groupMember = GetGroupMember();
+
+            if ( groupMember == null || !IsViewerAuthorized() )
+            {
+                return string.Empty;
+            }
+
+            return GetSecurityGrantToken( groupMember );
         }
 
         /// <summary>

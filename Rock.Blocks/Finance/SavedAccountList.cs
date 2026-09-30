@@ -223,7 +223,11 @@ namespace Rock.Blocks.Finance
                 return ActionBadRequest( $"{FinancialPersonSavedAccount.FriendlyTypeName} not found." );
             }
 
-            if ( !BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
+            // Only allow deleting saved accounts owned by the current person, or by a
+            // person the current person is authorized to edit.
+            var owner = entity.PersonAlias?.Person;
+
+            if ( owner == null || ( owner.Id != currentPerson.Id && !owner.IsAuthorized( Authorization.EDIT, currentPerson ) ) )
             {
                 return ActionForbidden( "You are not authorized to delete this saved account." );
             }
