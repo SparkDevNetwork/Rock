@@ -1763,6 +1763,14 @@ WHERE [RT].[Guid] = '" + SystemGuid.DefinedValue.PERSON_RECORD_TYPE_RESTUSER + "
                 return ActionBadRequest( "This kiosk does not support individual registration." );
             }
 
+            // Adding an individual always creates (or matches) a new family
+            // member, so an existing person identifier is never sent. Without
+            // this check a posted identifier would update that person.
+            if ( options.Person?.Bag?.Id.IsNotNullOrWhiteSpace() == true )
+            {
+                return ActionBadRequest( "Invalid person." );
+            }
+
             var registration = new FamilyRegistration( RockContext, RequestContext.CurrentPerson, template );
             var result = registration.AddIndividual( options.FamilyId, options.Person, kiosk.GetCampusId() );
 
