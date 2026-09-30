@@ -971,12 +971,40 @@ namespace Rock.Blocks.Event
                 // instead of creating a duplicate. Mirrors the WebForms hfSignedDocumentId
                 // round-trip; falls back to the registrant's own document id if none was sent.
                 var existingDocumentId = entity.SignatureDocumentId;
+                var signatureDocumentService = new SignatureDocumentService( RockContext );
 
                 if ( box.Bag.SignatureDocumentIdKey.IsNotNullOrWhiteSpace() )
                 {
-                    existingDocumentId = new SignatureDocumentService( RockContext )
-                        .Get( box.Bag.SignatureDocumentIdKey, !PageCache.Layout.Site.DisablePredictableIds )?.Id
-                        ?? entity.SignatureDocumentId;
+                    var postedDocumentId = signatureDocumentService
+                        .Get( box.Bag.SignatureDocumentIdKey, !PageCache.Layout.Site.DisablePredictableIds )?.Id;
+
+                    // The form only shows the registrant's own document or a
+                    // valid document the person signed for this template, so
+                    // reject any other document. Otherwise a tampered key could
+                    // link this registrant to an unrelated document and replace
+                    // its file.
+                    if ( postedDocumentId.HasValue && !IsSignatureDocumentAllowed( entity, template, postedDocumentId.Value, originalPersonAliasId, newPerson.Id ) )
+                    {
+                        return ActionBadRequest( "Invalid signature document." );
+                    }
+
+                    existingDocumentId = postedDocumentId ?? entity.SignatureDocumentId;
+                }
+
+                // Make sure the uploaded file is either the document's current
+                // file or a file newly uploaded by this person. Otherwise a
+                // tampered value could attach an unrelated file.
+                var resolvedDocumentId = existingDocumentId ?? 0;
+                var currentSignatureBinaryFileGuid = existingDocumentId.HasValue
+                    ? signatureDocumentService.Queryable()
+                        .Where( d => d.Id == resolvedDocumentId && d.BinaryFile != null )
+                        .Select( d => ( Guid? ) d.BinaryFile.Guid )
+                        .FirstOrDefault()
+                    : null;
+
+                if ( !new BinaryFileService( RockContext ).IsUploadedBinaryFileAllowedForPerson( box.Bag.SignatureDocumentBinaryFileId, currentSignatureBinaryFileGuid, RequestContext.CurrentPerson ) )
+                {
+                    return ActionBadRequest( "Invalid file." );
                 }
 
                 HandleSignatureDocument( entity, template, newPerson.Id, existingDocumentId, box.Bag.SignatureDocumentBinaryFileId );
@@ -1227,6 +1255,43 @@ namespace Rock.Blocks.Event
                     binaryFile.IsTemporary = false;
                 }
             }
+        }
+
+        /// <summary>
+        /// Determines whether the signature document sent by the client is one the
+        /// form could have shown for this registrant. That is the registrant's own
+        /// linked document, or a still valid document of the template's required
+        /// signature document template signed by the registrant's original person
+        /// (what the form was loaded with) or by the newly selected person.
+        /// </summary>
+        /// <param name="entity">The registrant being saved.</param>
+        /// <param name="template">The registration template.</param>
+        /// <param name="documentId">The identifier of the signature document sent by the client.</param>
+        /// <param name="originalPersonAliasId">The registrant's person alias identifier before the edit was applied.</param>
+        /// <param name="newPersonId">The identifier of the person now selected for the registrant.</param>
+        /// <returns><c>true</c> if the document is allowed; otherwise <c>false</c>.</returns>
+        private bool IsSignatureDocumentAllowed( RegistrationRegistrant entity, RegistrationTemplate template, int documentId, int? originalPersonAliasId, int newPersonId )
+        {
+            if ( documentId == entity.SignatureDocumentId )
+            {
+                return true;
+            }
+
+            var personIds = new List<int> { newPersonId };
+            var originalPersonId = originalPersonAliasId.HasValue
+                ? new PersonAliasService( RockContext ).GetPersonId( originalPersonAliasId.Value )
+                : null;
+
+            if ( originalPersonId.HasValue && originalPersonId.Value != newPersonId )
+            {
+                personIds.Add( originalPersonId.Value );
+            }
+
+            var registrantService = new RegistrationRegistrantService( RockContext );
+
+            return personIds.Any( personId => registrantService
+                .GetValidSignatureDocument( personId, template.RequiredSignatureDocumentTemplate )
+                .Any( d => d.Id == documentId ) );
         }
 
         /// <summary>

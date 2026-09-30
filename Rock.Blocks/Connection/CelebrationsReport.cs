@@ -317,6 +317,16 @@ namespace Rock.Blocks.Connection
                     return ActionNotFound();
                 }
 
+                // Only celebration notes are listed by this block. Without this
+                // check a tampered key could rewrite any note whose EntityId
+                // happens to match a connection request the person can edit.
+                var celebrationNoteType = NoteTypeCache.Get( Rock.SystemGuid.NoteType.CELEBRATION_NOTE.AsGuid() );
+
+                if ( celebrationNoteType == null || note.NoteTypeId != celebrationNoteType.Id )
+                {
+                    return ActionNotFound();
+                }
+
                 // Enforce the same entity-level security the Connections Hub uses: edit rights come from
                 // the parent Connection Request (which inherits from its Opportunity/Type and grants the
                 // assigned connector edit when request security is enabled), not from the block itself.

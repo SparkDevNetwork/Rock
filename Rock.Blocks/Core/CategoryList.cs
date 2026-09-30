@@ -343,6 +343,19 @@ namespace Rock.Blocks.Core
             return queryable;
         }
 
+        /// <summary>
+        /// Determines whether the category is one of the categories this block
+        /// lists for the current scope. Block actions use this so a tampered
+        /// key can not be used to edit or delete a category of some other
+        /// entity type, qualifier or parent.
+        /// </summary>
+        /// <param name="category">The category to check.</param>
+        /// <returns><c>true</c> if the category is shown by this block; otherwise <c>false</c>.</returns>
+        private bool IsListedCategory( Category category )
+        {
+            return GetListQueryable( RockContext ).Any( c => c.Id == category.Id );
+        }
+
         /// <inheritdoc/>
         protected override IQueryable<Category> GetOrderedListQueryable( IQueryable<Category> queryable, RockContext rockContext )
         {
@@ -564,7 +577,7 @@ namespace Rock.Blocks.Core
             else
             {
                 category = new CategoryService( RockContext ).Get( key, !PageCache.Layout.Site.DisablePredictableIds );
-                if ( category == null )
+                if ( category == null || !IsListedCategory( category ) )
                 {
                     return ActionBadRequest( "Category not found." );
                 }
@@ -604,8 +617,11 @@ namespace Rock.Blocks.Core
             }
             else
             {
+                // Only categories in the current scope may be updated. This also
+                // keeps ApplyEntityTypeAssignment() from moving a category of
+                // another entity type into this block's entity type.
                 category = entityService.Get( bag.IdKey, !PageCache.Layout.Site.DisablePredictableIds );
-                if ( category == null )
+                if ( category == null || !IsListedCategory( category ) )
                 {
                     return ActionBadRequest( "Category not found." );
                 }
@@ -660,7 +676,7 @@ namespace Rock.Blocks.Core
             var entityService = new CategoryService( RockContext );
             var category = entityService.Get( key, !PageCache.Layout.Site.DisablePredictableIds );
 
-            if ( category == null )
+            if ( category == null || !IsListedCategory( category ) )
             {
                 return ActionBadRequest( "Category not found." );
             }

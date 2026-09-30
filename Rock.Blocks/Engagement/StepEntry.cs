@@ -377,6 +377,8 @@ namespace Rock.Blocks.Engagement
                     entity.EndDateTime = stepType?.HasEndDate == true ? box.Bag.EndDateTime.AsDateTime() : null;
                 } );
 
+            var isStepStatusInvalid = false;
+
             box.IfValidProperty( nameof( box.Bag.StepStatus ),
                 () =>
                 {
@@ -384,6 +386,18 @@ namespace Rock.Blocks.Engagement
                     {
                         var statusGuid = box.Bag.StepStatus.Value.AsGuid();
                         var status = new StepStatusService( RockContext ).Get( statusGuid );
+
+                        // The status picker only offers statuses of the step
+                        // type's program, so reject a status from any other
+                        // program. It could otherwise mark the step complete.
+                        var stepType = GetStepType( entity );
+
+                        if ( status != null && ( stepType == null || status.StepProgramId != stepType.StepProgramId ) )
+                        {
+                            isStepStatusInvalid = true;
+                            return;
+                        }
+
                         entity.StepStatusId = status?.Id;
                     }
                     else
@@ -391,6 +405,11 @@ namespace Rock.Blocks.Engagement
                         entity.StepStatusId = null;
                     }
                 } );
+
+            if ( isStepStatusInvalid )
+            {
+                return false;
+            }
 
             box.IfValidProperty( nameof( box.Bag.Note ),
                 () => entity.Note = box.Bag.Note );

@@ -638,6 +638,15 @@ namespace Rock.Blocks.Mobile
                 return false;
             }
 
+            // The initial page load refuses to show non-mobile sites, so apply
+            // the same rule here. Otherwise a tampered key could edit a web
+            // site as if it were a mobile application.
+            if ( entity.Id != 0 && entity.SiteType != SiteType.Mobile )
+            {
+                error = ActionBadRequest( "This block only supports mobile sites." );
+                return false;
+            }
+
             if ( !BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
             {
                 error = ActionBadRequest( EditModeMessage.NotAuthorizedToEdit( "mobile application" ) );
@@ -1091,10 +1100,13 @@ namespace Rock.Blocks.Mobile
                 return ActionBadRequest( EditModeMessage.NotAuthorizedToEdit( "mobile layout" ) );
             }
 
+            var site = ResolveSite();
             var layoutService = new LayoutService( RockContext );
             var layout = layoutService.Get( key, !PageCache.Layout.Site.DisablePredictableIds );
 
-            if ( layout == null )
+            // The layouts grid only lists layouts of the mobile application
+            // being viewed, so only those may be deleted.
+            if ( site == null || layout == null || layout.SiteId != site.Id )
             {
                 return ActionBadRequest( "Layout not found." );
             }
@@ -1121,10 +1133,13 @@ namespace Rock.Blocks.Mobile
                 return ActionBadRequest( EditModeMessage.NotAuthorizedToEdit( "mobile page" ) );
             }
 
+            var site = ResolveSite();
             var pageService = new PageService( RockContext );
             var page = pageService.Get( key, !PageCache.Layout.Site.DisablePredictableIds );
 
-            if ( page == null )
+            // The pages grid only lists pages of the mobile application being
+            // viewed, so only those may be deleted.
+            if ( site == null || page == null || page.Layout?.SiteId != site.Id )
             {
                 return ActionBadRequest( "Page not found." );
             }
@@ -1303,7 +1318,8 @@ namespace Rock.Blocks.Mobile
         /// <summary>
         /// Resolves the active Site from the SiteId page parameter, honoring
         /// the IdKey-vs-Id setting on the current site. Returns null when
-        /// the parameter is missing or the site does not exist.
+        /// the parameter is missing, the site does not exist, or the site is
+        /// not a mobile site.
         /// </summary>
         private Site ResolveSite()
         {
@@ -1314,7 +1330,16 @@ namespace Rock.Blocks.Mobile
                 return null;
             }
 
-            return new SiteService( RockContext ).Get( siteIdParam, !PageCache.Layout.Site.DisablePredictableIds );
+            var site = new SiteService( RockContext ).Get( siteIdParam, !PageCache.Layout.Site.DisablePredictableIds );
+
+            // The initial page load refuses to show non-mobile sites, so the
+            // actions that work on the page's site must not reach them either.
+            if ( site == null || site.SiteType != SiteType.Mobile )
+            {
+                return null;
+            }
+
+            return site;
         }
 
         /// <summary>

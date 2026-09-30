@@ -283,10 +283,23 @@ namespace Rock.Blocks.Event
         {
             var entityService = new RegistrationInstanceService( RockContext );
             var registrationInstance = entityService.Get( key, !PageCache.Layout.Site.DisablePredictableIds );
+            var template = GetRegistrationTemplate();
 
-            if ( registrationInstance == null )
+            // The grid only lists instances of the page's template, so any
+            // other instance is treated as not found. Otherwise a tampered
+            // key could delete any registration instance.
+            if ( registrationInstance == null || template == null || registrationInstance.RegistrationTemplateId != template.Id )
             {
                 return ActionBadRequest( $"{RegistrationInstance.FriendlyTypeName} not found." );
+            }
+
+            // Apply the same rules that show the list and its Delete button.
+            var isDeleteAllowed = template.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson )
+                && GetIsAddDeleteEnabled();
+
+            if ( !isDeleteAllowed )
+            {
+                return ActionBadRequest( $"Not authorized to delete {RegistrationInstance.FriendlyTypeName}." );
             }
 
             if ( !entityService.CanDelete( registrationInstance, out var errorMessage ) )

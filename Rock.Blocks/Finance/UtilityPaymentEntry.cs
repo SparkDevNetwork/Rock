@@ -1256,6 +1256,14 @@ namespace Rock.Blocks.Finance
 
             if ( existingTransaction != null )
             {
+                // Only a retry by the same giver may show the existing
+                // transaction as the receipt. Otherwise a tampered Guid would
+                // render someone else's gift details.
+                if ( existingTransaction.AuthorizedPersonAlias?.Person?.GivingId != person.GivingId )
+                {
+                    return ActionOk( ProcessError( "There was a problem processing the transaction." ) );
+                }
+
                 return ActionOk( BuildSuccessResponse( request, financialGateway, paymentInfo, existingTransaction.TransactionCode ) );
             }
 
@@ -3544,6 +3552,14 @@ namespace Rock.Blocks.Finance
 
             if ( existingSchedule != null )
             {
+                // Only a retry by the same giver may show the existing
+                // schedule as the receipt. Otherwise a tampered Guid would
+                // render someone else's scheduled gift details.
+                if ( existingSchedule.AuthorizedPersonAlias?.Person?.GivingId != person.GivingId )
+                {
+                    return ProcessError( "There was a problem scheduling the payment." );
+                }
+
                 return BuildScheduledSuccessResponse( request, financialGateway, paymentInfo );
             }
 
@@ -4153,7 +4169,13 @@ namespace Rock.Blocks.Finance
                 return null;
             }
 
-            var business = request.BusinessGuid.HasValue ? personService.Get( request.BusinessGuid.Value ) : null;
+            // The business picker only lists the contact's own businesses, so
+            // only honor a selected business from that same list. Otherwise a
+            // tampered Guid would overwrite the name, email, phone and address
+            // of any person record.
+            var business = request.BusinessGuid.HasValue
+                ? personService.GetBusinesses( contactPerson.Id ).FirstOrDefault( candidate => candidate.Guid == request.BusinessGuid.Value )
+                : null;
 
             // Fall back to the contact's single business whose name matches what was entered.
             if ( business == null )

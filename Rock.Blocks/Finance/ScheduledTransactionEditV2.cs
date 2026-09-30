@@ -1270,6 +1270,19 @@ namespace Rock.Blocks.Finance
             // Pay with the selected Saved Account Path
             if ( request.SavedAccountGuid.HasValue )
             {
+                // Only the target person's saved accounts for this gateway are offered
+                // as payment methods, so reject any other saved account. Otherwise a
+                // tampered Guid could charge someone else's card or bank account.
+                var savedAccountGuidValue = request.SavedAccountGuid.Value.ToString();
+                var isSavedAccountOffered = GetSavedAccounts( editContext.FinancialGateway, editContext.TargetPerson )
+                    .Any( a => a.Value == savedAccountGuidValue );
+
+                if ( !isSavedAccountOffered )
+                {
+                    errorMessage = "The selected saved account could not be found.";
+                    return null;
+                }
+
                 var savedAccount = new FinancialPersonSavedAccountService( RockContext ).Get( request.SavedAccountGuid.Value );
                 if ( savedAccount == null )
                 {
@@ -1282,6 +1295,88 @@ namespace Rock.Blocks.Finance
 
             errorMessage = "Unable to determine the payment method to use.";
             return null;
+        }
+
+        /// <summary>
+        /// Determines whether the requested accounts and campus are ones the edit form offered.
+        /// The offered accounts are rebuilt with the same logic as the initial load: the accounts
+        /// already on the transaction, plus the selectable and additional accounts that are active,
+        /// public and within their start and end dates (the same filter the account picker uses).
+        /// The campus must be active, or the campus the form was first shown with.
+        /// </summary>
+        /// <param name="request">The requested changes.</param>
+        /// <param name="editContext">The resolved transaction/gateway context.</param>
+        /// <param name="errorMessage">The failure message, or <c>null</c> when everything requested was offered.</param>
+        /// <returns><c>true</c> when every requested account and the campus were offered; otherwise <c>false</c>.</returns>
+        private bool AreRequestedAccountsAndCampusOffered( UpdateScheduledTransactionRequestBag request, ScheduledTransactionEditContext editContext, out string errorMessage )
+        {
+            errorMessage = null;
+
+            var offeredBag = new ScheduledTransactionEditV2Bag();
+            if ( !TryPopulateAccounts( editContext.ScheduledTransaction, offeredBag ) )
+            {
+                errorMessage = offeredBag.ErrorMessage;
+                return false;
+            }
+
+            // Accounts already on the transaction are always shown so their
+            // allocations stay editable, whatever their current status.
+            var currentAccountGuids = offeredBag.AccountAmounts
+                .Select( a => a.AccountGuid.AsGuid() )
+                .ToList();
+
+            var offeredAccountGuids = offeredBag.SelectableAccountGuids
+                .Select( g => g.AsGuid() )
+                .Union( offeredBag.AdditionalAccounts.Select( a => a.Value.AsGuid() ) )
+                .ToList();
+
+            var today = RockDateTime.Today;
+            var requestedAccountGuids = request.AccountAmounts?
+                .Where( a => a.Amount.HasValue && a.Amount.Value != 0 )
+                .Select( a => a.AccountGuid.AsGuid() )
+                .ToList() ?? new List<Guid>();
+
+            foreach ( var accountGuid in requestedAccountGuids )
+            {
+                if ( currentAccountGuids.Contains( accountGuid ) )
+                {
+                    continue;
+                }
+
+                var account = FinancialAccountCache.Get( accountGuid );
+                var isAccountOffered = account != null
+                    && offeredAccountGuids.Contains( accountGuid )
+                    && account.IsActive
+                    && account.IsPublic == true
+                    && ( !account.StartDate.HasValue || account.StartDate.Value <= today )
+                    && ( !account.EndDate.HasValue || account.EndDate.Value >= today );
+
+                if ( !isAccountOffered )
+                {
+                    errorMessage = "One or more of the selected accounts could not be found.";
+                    return false;
+                }
+            }
+
+            if ( request.CampusGuid.HasValue )
+            {
+                // The campus pickers only list active campuses, but the form may
+                // start with an inactive campus (the gift's mapped campus or the
+                // person's campus), so that one is also allowed.
+                var campus = CampusCache.Get( request.CampusGuid.Value );
+                var initialCampusGuid = offeredBag.Campus?.Value.AsGuidOrNull() ?? editContext.TargetPerson?.GetCampus()?.Guid;
+                var isCampusOffered = campus == null
+                    || campus.IsActive == true
+                    || campus.Guid == initialCampusGuid;
+
+                if ( !isCampusOffered )
+                {
+                    errorMessage = "The selected campus could not be found.";
+                    return false;
+                }
+            }
+
+            return true;
         }
 
         /// <summary>
@@ -1430,6 +1525,17 @@ namespace Rock.Blocks.Finance
                 {
                     IsSuccess = false,
                     ErrorMessage = validationErrorMessage
+                } );
+            }
+
+            // Re-apply the account and campus choices the form offered, since the
+            // posted Guids could otherwise name any account or campus.
+            if ( !AreRequestedAccountsAndCampusOffered( request, editContext, out var offeredErrorMessage ) )
+            {
+                return ActionOk( new UpdateScheduledTransactionResponseBag
+                {
+                    IsSuccess = false,
+                    ErrorMessage = offeredErrorMessage
                 } );
             }
 

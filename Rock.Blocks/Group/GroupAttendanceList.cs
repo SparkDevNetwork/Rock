@@ -657,7 +657,11 @@ namespace Rock.Blocks.Group
             var occurrenceService = new AttendanceOccurrenceService( RockContext );
             var occurrence = occurrenceService.Get( key, !PageCache.Layout.Site.DisablePredictableIds );
 
-            if ( occurrence == null )
+            // The grid only lists occurrences of the page's group, and the
+            // edit check above was made against that group. Reject any other
+            // occurrence so a tampered key cannot delete another group's
+            // attendance.
+            if ( occurrence == null || occurrence.GroupId != group.Id )
             {
                 return ActionBadRequest( "Attendance occurrence not found." );
             }

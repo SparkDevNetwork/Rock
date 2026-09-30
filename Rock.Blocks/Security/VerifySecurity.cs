@@ -163,6 +163,18 @@ namespace Rock.Blocks.Security
                 return ActionBadRequest( "Could not find the entity, maybe the wrong Id was specified." );
             }
 
+            // The grid only offers the unlock button on rows whose governing
+            // rule is a Deny found by walking this entity's authority chain for
+            // this person. Recompute those rows so a tampered rule key cannot
+            // flip or copy a rule from some unrelated entity or action.
+            var isAuthUnlockable = BuildSecurityRows( entity, person )
+                .Any( r => r.IsUnlockable && r.AuthIdKey == auth.IdKey );
+
+            if ( !isAuthUnlockable )
+            {
+                return ActionBadRequest( "The security rule could not be found." );
+            }
+
             /*
                 6/4/26 - MSE
 
