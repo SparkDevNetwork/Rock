@@ -1351,6 +1351,14 @@ namespace RockWeb.Blocks.Administration
                 .GetQueryableByKey( hfPageId.Value, !PageCache.Layout.Site.DisablePredictableIds )
                 .FirstOrDefault();
 
+            // The page key comes from a hidden field, so it must be the page this block is showing.
+            var displayedPageId = pageService.Get( PageParameter( PageParamKey.Page ), !PageCache.Layout.Site.DisablePredictableIds )?.Id;
+            if ( sourcePage == null || sourcePage.Id != displayedPageId )
+            {
+                mdCopyPage.Hide();
+                return;
+            }
+
             Guid? copiedPageGuid = pageService.CopyPage( sourcePage.Id, cbCopyPageIncludeChildPages.Checked, this.CurrentPersonAliasId );
             if ( copiedPageGuid.HasValue )
             {

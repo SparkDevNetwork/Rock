@@ -344,7 +344,7 @@ namespace RockWeb.Blocks.Finance
         {
             var rockContext = new RockContext();
             var txn = GetTransaction( hfTransactionId.Value.AsInteger(), rockContext );
-            if ( txn != null )
+            if ( txn != null && IsTransactionEditAllowed( txn ) )
             {
                 txn.LoadAttributes( rockContext );
                 if ( txn.FinancialPaymentDetail != null )
@@ -412,6 +412,14 @@ namespace RockWeb.Blocks.Finance
             if ( txnId.HasValue )
             {
                 txn = txnService.Get( txnId.Value );
+            }
+
+            if ( !IsTransactionEditAllowed( txn ) )
+            {
+                nbErrorMessage.Title = "Not Authorized";
+                nbErrorMessage.Text = string.Format( "<p>{0}</p>", EditModeMessage.NotAuthorizedToEdit( FinancialTransaction.FriendlyTypeName ) );
+                nbErrorMessage.Visible = true;
+                return;
             }
 
             if ( txn == null )
@@ -588,6 +596,12 @@ namespace RockWeb.Blocks.Finance
                     // Delete any transaction images that were removed
                     var orphanedBinaryFileIds = new List<int>();
                     var txnImagesInDB = txnImageService.Queryable().Where( a => a.TransactionId.Equals( txn.Id ) ).ToList();
+
+                    // Only accept images already on the transaction or new uploads.
+                    var existingImageBinaryFileIds = txnImagesInDB.Select( i => i.BinaryFileId ).ToList();
+                    TransactionImagesState = TransactionImagesState
+                        .Where( id => existingImageBinaryFileIds.Contains( id ) || binaryFileService.IsUploadedBinaryFileAllowedForPerson( id, null, CurrentPerson ) )
+                        .ToList();
                     foreach ( var txnImage in txnImagesInDB.Where( i => !TransactionImagesState.Contains( i.BinaryFileId ) ) )
                     {
                         orphanedBinaryFileIds.Add( txnImage.BinaryFileId );
@@ -1028,6 +1042,14 @@ namespace RockWeb.Blocks.Finance
                 var txnService = new FinancialTransactionService( rockContext );
                 var txn = txnService.Get( hfTransactionId.Value.AsInteger() );
 
+                if ( !IsTransactionRefundAllowed( txn ) )
+                {
+                    nbRefundError.Title = "Transaction Error";
+                    nbRefundError.Text = "<p>You are not authorized to refund this transaction.</p>";
+                    nbRefundError.Visible = true;
+                    return;
+                }
+
                 string errorMessage = string.Empty;
                 bool process = cbProcess.Visible && cbProcess.Checked;
 
@@ -1245,6 +1267,39 @@ namespace RockWeb.Blocks.Finance
                 .Where( t => t.Id == transactionId )
                 .FirstOrDefault();
             return txn;
+        }
+
+        /// <summary>
+        /// Determines whether the current person can save the specified transaction,
+        /// using the same edit and batch rules that <see cref="ShowDetail(int, int?)"/> applies.
+        /// </summary>
+        /// <param name="txn">The existing transaction, or <c>null</c> when adding a new transaction.</param>
+        /// <returns><c>true</c> if the transaction can be saved; otherwise <c>false</c>.</returns>
+        private bool IsTransactionEditAllowed( FinancialTransaction txn )
+        {
+            if ( txn == null || txn.Id == 0 )
+            {
+                return UserCanEdit;
+            }
+
+            var editAllowed = UserCanEdit || txn.IsAuthorized( Authorization.EDIT, CurrentPerson );
+            var batchEditAllowed = !( txn.Batch != null && ( txn.Batch.Status == BatchStatus.Closed || txn.Batch.IsAutomated ) );
+
+            return editAllowed && batchEditAllowed;
+        }
+
+        /// <summary>
+        /// Determines whether the current person can refund the specified transaction,
+        /// using the same rule that <see cref="ShowDetail(int, int?)"/> applies to the refund button.
+        /// </summary>
+        /// <param name="txn">The transaction.</param>
+        /// <returns><c>true</c> if the transaction can be refunded; otherwise <c>false</c>.</returns>
+        private bool IsTransactionRefundAllowed( FinancialTransaction txn )
+        {
+            return txn != null
+                && IsOrganizationCurrency( txn.ForeignCurrencyCodeValueId )
+                && txn.IsAuthorized( Authorization.REFUND, CurrentPerson )
+                && txn.RefundDetails == null;
         }
 
         /// <summary>

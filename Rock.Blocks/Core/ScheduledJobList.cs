@@ -295,6 +295,12 @@ namespace Rock.Blocks.Core
                 var entityService = new ServiceJobService( rockContext );
                 var entity = entityService.Get( key, !PageCache.Layout.Site.DisablePredictableIds );
 
+                // The Job Pulse job cannot be run manually, the UI does not offer it.
+                if ( entity != null && entity.Guid == Rock.SystemGuid.ServiceJob.JOB_PULSE.AsGuid() )
+                {
+                    return ActionBadRequest( $"The {entity.Name} job cannot be run manually." );
+                }
+
                 if ( entity != null )
                 {
                     new ProcessRunJobNow.Message { JobId = entity.Id }.Send();

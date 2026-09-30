@@ -370,6 +370,15 @@ namespace RockWeb.Blocks.Event
                     if ( existingRegistrationTemplateId.HasValue )
                     {
                         registrationInstance.RegistrationTemplateId = existingRegistrationTemplateId.Value;
+                        registrationInstance.RegistrationTemplate = new RegistrationTemplateService( rockContext ).Get( existingRegistrationTemplateId.Value );
+                    }
+
+                    // Instance security comes from the template, so check edit rights on the new instance.
+                    if ( !CanEditRegistrationInstance( registrationInstance ) )
+                    {
+                        nbEditModeMessage.Heading = "Information";
+                        nbEditModeMessage.Text = EditModeMessage.NotAuthorizedToEdit( RegistrationInstance.FriendlyTypeName );
+                        return;
                     }
 
                     registrationInstanceService.Add( registrationInstance );
@@ -476,8 +485,15 @@ namespace RockWeb.Blocks.Event
 
         protected void btnCopy_Click( object sender, EventArgs e )
         {
+            // The instance id comes from a hidden field, so it must match the instance on the page.
+            var registrationInstanceId = hfRegistrationInstanceId.Value.AsIntegerOrNull();
+            if ( !registrationInstanceId.HasValue || registrationInstanceId != PageParameter( PageParameterKey.RegistrationInstanceId ).AsIntegerOrNull() )
+            {
+                return;
+            }
+
             var rockContext = new RockContext();
-            var registrationInstance = new RegistrationInstanceService( rockContext ).Get( hfRegistrationInstanceId.Value.AsInteger() );
+            var registrationInstance = new RegistrationInstanceService( rockContext ).Get( registrationInstanceId.Value );
             if ( registrationInstance != null )
             {
                 // Clone the Registration Instance without the old Id.
@@ -493,8 +509,6 @@ namespace RockWeb.Blocks.Event
                 newRegistrationInstance.ReminderSent = false;
                 newRegistrationInstance.SendReminderDateTime = null;
 
-                hfRegistrationInstanceId.Value = newRegistrationInstance.Id.ToString();
-                hfRegistrationTemplateId.Value = newRegistrationInstance.RegistrationTemplateId.ToString();
                 newRegistrationInstance.Name = registrationInstance.Name + " - Copy";
                 newRegistrationInstance.IsActive = true;
 
@@ -502,6 +516,17 @@ namespace RockWeb.Blocks.Event
                 {
                     newRegistrationInstance.RegistrationTemplate = new RegistrationTemplateService( rockContext ).Get( newRegistrationInstance.RegistrationTemplateId );
                 }
+
+                // Copying creates a new instance, so require the same edit rights as adding one.
+                if ( !CanEditRegistrationInstance( newRegistrationInstance ) )
+                {
+                    nbEditModeMessage.Heading = "Information";
+                    nbEditModeMessage.Text = EditModeMessage.NotAuthorizedToEdit( RegistrationInstance.FriendlyTypeName );
+                    return;
+                }
+
+                hfRegistrationInstanceId.Value = newRegistrationInstance.Id.ToString();
+                hfRegistrationTemplateId.Value = newRegistrationInstance.RegistrationTemplateId.ToString();
 
                 registrationInstance.LoadAttributes();
                 newRegistrationInstance.CopyAttributesFrom( registrationInstance );
@@ -648,6 +673,7 @@ namespace RockWeb.Blocks.Event
                 {
                     btnEdit.Visible = false;
                     btnDelete.Visible = false;
+                    btnCopy.Visible = false;
 
                     ShowReadonlyDetails( registrationInstance, false );
                 }

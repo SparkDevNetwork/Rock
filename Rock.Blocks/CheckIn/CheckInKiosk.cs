@@ -1685,6 +1685,48 @@ WHERE [RT].[Guid] = '" + SystemGuid.DefinedValue.PERSON_RECORD_TYPE_RESTUSER + "
                 return ActionBadRequest( "This kiosk does not support family registration." );
             }
 
+            // Existing people may only be the ones that EditFamily returned
+            // for this family: the family members and the people that can
+            // check in with the family.
+            var allowedPersonIds = new HashSet<int>();
+
+            if ( familyId.IsNotNullOrWhiteSpace() )
+            {
+                var group = new GroupService( RockContext ).Get( familyId, false );
+
+                if ( group != null )
+                {
+                    allowedPersonIds.UnionWith( group.Members.Select( gm => gm.PersonId ) );
+
+                    var canCheckInPersonIds = new CheckInDirector( RockContext )
+                        .CreateSession( template )
+                        .SearchProvider
+                        .GetCanCheckInFamilyMembersQuery( group.IdKey )
+                        .Select( gm => gm.PersonId )
+                        .ToList();
+
+                    allowedPersonIds.UnionWith( canCheckInPersonIds );
+                }
+            }
+
+            var personService = new PersonService( RockContext );
+            var postedPersonIdKeys = ( options.People ?? new List<ValidPropertiesBox<RegistrationPersonBag>>() )
+                .Select( p => p?.Bag?.Id )
+                .Concat( options.RemovedPersonIds ?? new List<string>() )
+                .Where( id => id.IsNotNullOrWhiteSpace() )
+                .Distinct()
+                .ToList();
+
+            foreach ( var personIdKey in postedPersonIdKeys )
+            {
+                var personId = personService.Get( personIdKey, false )?.Id;
+
+                if ( personId.HasValue && !allowedPersonIds.Contains( personId.Value ) )
+                {
+                    return ActionBadRequest( "Invalid person." );
+                }
+            }
+
             var registration = new FamilyRegistration( RockContext, RequestContext.CurrentPerson, template );
             var result = registration.SaveRegistration( options.Family, options.People, kiosk.GetCampusId(), options.RemovedPersonIds );
 
@@ -1734,6 +1776,14 @@ WHERE [RT].[Guid] = '" + SystemGuid.DefinedValue.PERSON_RECORD_TYPE_RESTUSER + "
             if ( addMode == AdultsOrChildrenSelectionMode.None )
             {
                 return ActionBadRequest( "This kiosk does not support individual registration." );
+            }
+
+            // Adding an individual always creates (or matches) a new family
+            // member, so an existing person identifier is never sent. Without
+            // this check a posted identifier would update that person.
+            if ( options.Person?.Bag?.Id.IsNotNullOrWhiteSpace() == true )
+            {
+                return ActionBadRequest( "Invalid person." );
             }
 
             var registration = new FamilyRegistration( RockContext, RequestContext.CurrentPerson, template );
