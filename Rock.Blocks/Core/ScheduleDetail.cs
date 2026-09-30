@@ -449,14 +449,20 @@ namespace Rock.Blocks.Core
             else
             {
                 // Create a new entity.
+                /*
+                    9/30/26 - MSE
+
+                    New schedules intentionally keep the default Order of 0. Schedules are sorted
+                    by Order, then by next start time (see OrderByOrderAndNextScheduledDateTime),
+                    so leaving Order at 0 lets new schedules sort chronologically. Previously this
+                    assigned MAX(Order) + 1, which made schedules sort by creation order instead
+                    (e.g., in the Group Scheduler). The legacy WebForms block never set Order, and
+                    admins can still set a manual order via the Schedule List reorder column.
+
+                    Reason: New schedules were sorting by creation order instead of start time. (Fixes #7071)
+                */
                 entity = new Schedule();
                 entityService.Add( entity );
-
-                var maxOrder = entityService.Queryable()
-                    .Select( t => ( int? ) t.Order )
-                    .Max();
-
-                entity.Order = maxOrder.HasValue ? maxOrder.Value + 1 : 0;
             }
 
             if ( entity == null )
