@@ -325,11 +325,11 @@ namespace Rock.Tests.Utility.ExtensionMethods
         [DataRow( "https://rock.church.org/page/1" )]
         [DataRow( "https://app.partner.org/" )]                         // Wildcard subdomain.
         [DataRow( "%2Fpage%2F1" )]                                      // Encoded local path.
-        [DataTestMethod]
+        [TestMethod]
         public void IsSafeRedirectUrl_SafeInput( string input )
         {
             var output = input.IsSafeRedirectUrl( RedirectAllowedHosts );
-            Assert.That.AreEqual( true, output );
+            Assert.IsTrue( output );
         }
 
         [DataRow( "https://unsafe.com" )]                               // Unlisted host.
@@ -350,18 +350,18 @@ namespace Rock.Tests.Utility.ExtensionMethods
         [DataRow( "page/1" )]                                           // Relative path without a leading slash.
         [DataRow( "/page?x=<script>" )]                                 // Script injection in a local path.
         [DataRow( "https://rock.church.org/?q=<b>" )]                   // Script injection on an allowed host.
-        [DataTestMethod]
+        [TestMethod]
         public void IsSafeRedirectUrl_UnsafeInput( string input )
         {
             var output = input.IsSafeRedirectUrl( RedirectAllowedHosts );
-            Assert.That.AreEqual( false, output );
+            Assert.IsFalse( output );
         }
 
         [TestMethod]
         public void IsSafeRedirectUrl_EmptyEntryDoesNotAllowHostlessUrl()
         {
             var output = "javascript:alert(1)".IsSafeRedirectUrl( new[] { "https://" } );
-            Assert.That.AreEqual( false, output );
+            Assert.IsFalse( output );
         }
 
         #endregion IsSafeRedirectUrl

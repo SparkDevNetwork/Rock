@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -521,14 +521,14 @@ namespace Rock.Blocks.Event
 
                 if ( ResolveIdFromKey( PageParameter( PageParameterKey.GroupId ) ) == null )
                 {
-                    var groupId = GetRegistrationGroupId( rockContext, context?.Registration?.RegistrationInstanceId, allowParameterGroupId: false );
+                    var groupId = GetRegistrationGroupId( rockContext, context?.Registration?.RegistrationInstanceId );
                     if ( groupId.HasValue )
                     {
                         RequestContext.PageParameters.Add( PageParameterKey.GroupId, groupId.ToString() );
                     }
                 }
 
-                var session = UpsertSession( context, args, SessionStatus.PaymentPending, out errorMessage );
+                var session = UpsertSession( rockContext, context, args, SessionStatus.PaymentPending, out errorMessage );
 
                 if ( !errorMessage.IsNullOrWhiteSpace() )
                 {
@@ -581,7 +581,7 @@ namespace Rock.Blocks.Event
                 } );
             }
 
-            var session = UpsertSession( context, args, SessionStatus.PaymentPending, out errorMessage );
+            var session = UpsertSession( RockContext, context, args, SessionStatus.PaymentPending, out errorMessage );
 
             if ( !errorMessage.IsNullOrWhiteSpace() )
             {
@@ -847,7 +847,7 @@ namespace Rock.Blocks.Event
 
                 // Process the GroupMember so we have data for the Lava merge.
                 GroupMember groupMember = null;
-                var groupId = GetRegistrationGroupId( rockContext, context.Registration.RegistrationInstanceId, allowParameterGroupId: false );
+                var groupId = GetRegistrationGroupId( rockContext, context.Registration.RegistrationInstanceId );
 
                 if ( groupId.HasValue )
                 {
@@ -1012,7 +1012,7 @@ namespace Rock.Blocks.Event
                     // try getting the group member for the registrant person.
                     if ( groupMember == null && person != null )
                     {
-                        var groupId = GetRegistrationGroupId( rockContext, GetRegistrationInstanceId( rockContext ), allowParameterGroupId: false );
+                        var groupId = GetRegistrationGroupId( rockContext, GetRegistrationInstanceId( rockContext ) );
 
                         if ( groupId.HasValue )
                         {
@@ -1541,12 +1541,14 @@ namespace Rock.Blocks.Event
         /// <summary>
         /// Updates or Inserts the session.
         /// </summary>
+        /// <param name="rockContext">The rock context.</param>
         /// <param name="context">The context.</param>
         /// <param name="args">The arguments.</param>
         /// <param name="sessionStatus">The status to set the session to.</param>
         /// <param name="errorMessage">On exit will contain any error message.</param>
         /// <returns>The <see cref="RegistrationSession"/> or <c>null</c> if an error occurred.</returns>
         private RegistrationSession UpsertSession(
+            RockContext rockContext,
             RegistrationContext context,
             RegistrationEntryArgsBag args,
             SessionStatus sessionStatus,
@@ -1565,7 +1567,7 @@ namespace Rock.Blocks.Event
                 RegistrationGuid = context.Registration?.Guid,
                 RegistrationSessionGuid = args.RegistrationSessionGuid,
                 Slug = PageParameter( PageParameterKey.Slug ),
-                GroupId = ResolveIdFromKey( PageParameter( PageParameterKey.GroupId ) )
+                GroupId = GetRegistrationGroupId( rockContext, context.RegistrationSettings.RegistrationInstanceId )
             };
 
             var nonWaitlistRegistrantCount = args.Registrants.Count( r => !r.IsOnWaitList );
@@ -2469,7 +2471,7 @@ namespace Rock.Blocks.Event
         /// <param name="rockContext">The rock context.</param>
         /// <param name="registrationInstanceId">The registration instance identifier.</param>
         /// <returns>The <see cref="Group"/> identifier or <c>null</c> if one is not available.</returns>
-        private int? GetRegistrationGroupId( RockContext rockContext, int? registrationInstanceId, bool allowParameterGroupId = true )
+        private int? GetRegistrationGroupId( RockContext rockContext, int? registrationInstanceId )
         {
             var groupId = ResolveIdFromKey( PageParameter( PageParameterKey.GroupId ) );
             var registrationSlug = PageParameter( PageParameterKey.Slug );
@@ -2482,6 +2484,7 @@ namespace Rock.Blocks.Event
                     .Queryable().AsNoTracking()
                     .Where( l =>
                         l.UrlSlug == registrationSlug &&
+                        ( !registrationInstanceId.HasValue || l.RegistrationInstanceId == registrationInstanceId.Value ) &&
                         l.RegistrationInstance != null &&
                         l.RegistrationInstance.IsActive &&
                         l.RegistrationInstance.RegistrationTemplate != null &&
@@ -2505,12 +2508,20 @@ namespace Rock.Blocks.Event
                 return linkageGroupId;
             }
 
-            if ( allowParameterGroupId && groupId.HasValue )
+            // If there is no slug or event occurrence id then only trust the groupId
+            // in the query string if it is linked to this registration instance.
+            if ( groupId.HasValue && registrationInstanceId.HasValue )
             {
-                return groupId.Value;
+                var linkedGroupId = new EventItemOccurrenceGroupMapService( rockContext )
+                    .Queryable()
+                    .Where( l => l.RegistrationInstanceId == registrationInstanceId.Value
+                        && l.GroupId == groupId.Value )
+                    .Select( l => l.GroupId )
+                    .FirstOrDefault();
+
+                return linkedGroupId;
             }
 
-            // If there is no slug or event occurrence id then don't use/trust the groupId in the query string
             return null;
         }
 
@@ -2533,6 +2544,7 @@ namespace Rock.Blocks.Event
                     .Include( m => m.Campus )
                     .Where( l =>
                         l.UrlSlug == registrationSlug &&
+                        ( !registrationInstanceId.HasValue || l.RegistrationInstanceId == registrationInstanceId.Value ) &&
                         l.RegistrationInstance != null &&
                         l.RegistrationInstance.IsActive &&
                         l.RegistrationInstance.RegistrationTemplate != null &&
@@ -4002,9 +4014,12 @@ namespace Rock.Blocks.Event
             {
                 var group = new GroupService( rockContext ).Get( groupId.Value );
 
-                groupMember = BuildGroupMember( person, group, context.RegistrationSettings );
-                groupMember.LoadAttributes( rockContext );
-                UpdateGroupMemberAttributes( groupMember, registrantInfo, context.RegistrationSettings );
+                if ( group != null )
+                {
+                    groupMember = BuildGroupMember( person, group, context.RegistrationSettings );
+                    groupMember.LoadAttributes( rockContext );
+                    UpdateGroupMemberAttributes( groupMember, registrantInfo, context.RegistrationSettings );
+                }
             }
 
             // Prepare the merge fields.
@@ -5843,7 +5858,7 @@ namespace Rock.Blocks.Event
                 ActivePaymentPlan = activePaymentPlan?.AsRegistrationPaymentPlanBag(),
                 PreviouslyPaid = alreadyPaid,
                 Slug = PageParameter( PageParameterKey.Slug ),
-                GroupId = ResolveIdFromKey( PageParameter( PageParameterKey.GroupId ) )
+                GroupId = GetRegistrationGroupId( rockContext, registrationContext.RegistrationSettings.RegistrationInstanceId )
             };
 
             // Add attributes about the registration itself
@@ -6316,6 +6331,13 @@ namespace Rock.Blocks.Event
 
             if ( group is null )
             {
+                return;
+            }
+
+            // Never allow a registration to add people to a security role.
+            if ( group.IsSecurityRole || group.GroupTypeId == GroupTypeCache.GetSecurityRoleGroupType()?.Id )
+            {
+                ExceptionLogService.LogException( new Exception( $"Registrants of Registration {registration.Id} (Registration Instance {registration.RegistrationInstanceId}) were not added to Group {group.Id} because it is a security role." ) );
                 return;
             }
 
