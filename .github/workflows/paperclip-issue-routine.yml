@@ -1,0 +1,64 @@
+name: Paperclip Issue Routine
+
+# Fires a Paperclip routine (Spark organization) whenever an issue is opened or reopened.
+# Required repo secrets: PAPERCLIP_TRIGGER_ID, PAPERCLIP_API_BASE
+# Optional repo secret:  PAPERCLIP_API_KEY
+# If the required secrets are missing the job exits cleanly without doing anything.
+
+on:
+  issues:
+    types: [opened, reopened]
+
+permissions:
+  contents: read
+
+jobs:
+  fire-routine:
+    if: github.repository == 'SparkDevNetwork/Rock'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install Paperclip CLI
+        run: npm install -g paperclipai
+
+      - name: Fire Paperclip routine trigger
+        env:
+          PAPERCLIP_TRIGGER_ID: ${{ secrets.PAPERCLIP_TRIGGER_ID }}
+          PAPERCLIP_API_BASE: ${{ secrets.PAPERCLIP_API_BASE }}
+          PAPERCLIP_API_KEY: ${{ secrets.PAPERCLIP_API_KEY }}
+          EVENT_ACTION: ${{ github.event.action }}
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
+          ISSUE_TITLE: ${{ github.event.issue.title }}
+          ISSUE_BODY: ${{ github.event.issue.body }}
+          ISSUE_URL: ${{ github.event.issue.html_url }}
+          ISSUE_AUTHOR: ${{ github.event.issue.user.login }}
+          ISSUE_LABELS: ${{ toJSON(github.event.issue.labels.*.name) }}
+          REPO: ${{ github.repository }}
+        run: |
+          if [ -z "$PAPERCLIP_TRIGGER_ID" ] || [ -z "$PAPERCLIP_API_BASE" ]; then
+            echo "::notice::Paperclip secrets not configured, skipping."
+            exit 0
+          fi
+
+          payload=$(jq -n \
+            --arg source "github-issue" \
+            --arg action "$EVENT_ACTION" \
+            --arg repo "$REPO" \
+            --argjson number "$ISSUE_NUMBER" \
+            --arg title "$ISSUE_TITLE" \
+            --arg body "${ISSUE_BODY:0:4000}" \
+            --arg url "$ISSUE_URL" \
+            --arg author "$ISSUE_AUTHOR" \
+            --argjson labels "$ISSUE_LABELS" \
+            '{source:$source, action:$action, repo:$repo, issue:{number:$number, title:$title, body:$body, url:$url, author:$author, labels:$labels}}')
+
+          args=(routine trigger:fire "$PAPERCLIP_TRIGGER_ID" --api-base "$PAPERCLIP_API_BASE" --payload-json "$payload" --json)
+          if [ -n "$PAPERCLIP_API_KEY" ]; then
+            args+=(--api-key "$PAPERCLIP_API_KEY")
+          fi
+
+          paperclipai "${args[@]}"
