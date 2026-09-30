@@ -2923,7 +2923,9 @@ namespace Rock.Blocks.Event
                         case RegistrationPersonFieldType.Email:
                             // Only update the person's email if they are in the same family as the logged in person (not the registrar)
                             var currentPersonId = GetCurrentPerson()?.Id;
-                            var isFamilyMember = currentPersonId.HasValue && person.GetFamilies().ToList().Select( f => f.ActiveMembers().Where( m => m.PersonId == currentPersonId ) ).Any();
+                            var isFamilyMember = currentPersonId.HasValue
+                                && ( person.Id == currentPersonId.Value
+                                    || person.GetFamilies().ToList().Any( f => f.ActiveMembers().Any( m => m.PersonId == currentPersonId ) ) );
                             if ( isFamilyMember && IsFieldUnlockedForEditing( field, person.Email ) )
                             {
                                 var email = fieldValue.ToString().Trim();
