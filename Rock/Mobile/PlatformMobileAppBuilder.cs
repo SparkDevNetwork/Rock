@@ -112,6 +112,7 @@ namespace Rock.Mobile
     <Label Text=""Log in to use the Outreach Toolbox and Connections."" />
     <Button Text=""Log In"" StyleClass=""btn, btn-primary"" Command=""{Binding PushPage}"" CommandParameter=""" + SystemGuid.PlatformMobileApp.Page.LOGIN + @""" />
 {% endif %}
+    <Button Text=""Switch Church"" StyleClass=""btn, btn-link"" Command=""{Binding SwitchChurch}"" />
 </StackLayout>";
 
         /// <summary>
