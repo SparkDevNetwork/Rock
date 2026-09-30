@@ -182,6 +182,16 @@ namespace Rock.Blocks.Core
             var tagId = PageParameter( PageParameterKey.TagId );
             var tag = new TagService( RockContext ).Get( tagId );
 
+            if ( tag == null )
+            {
+                return ActionBadRequest( $"{Rock.Model.Tag.FriendlyTypeName} not found." );
+            }
+
+            if ( !tag.IsAuthorized( Rock.Security.Authorization.TAG, RequestContext.CurrentPerson ) )
+            {
+                return ActionBadRequest( $"Not authorized to add {TaggedItem.FriendlyTypeName}." );
+            }
+
             var personAliasGuid = personAlias.Value.AsGuid();
             var personAliasService = new PersonAliasService( RockContext );
             var personGuid = personAliasService.GetPerson( personAliasGuid ).Guid;
