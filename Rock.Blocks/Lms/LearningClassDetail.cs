@@ -646,7 +646,29 @@ namespace Rock.Blocks.Lms
                 return ActionNotFound();
             }
 
-            var copiedEntity = new LearningClassService( RockContext ).Copy( key );
+            // Only allow the class on this page to be copied, and only when
+            // the individual can edit it (the Copy button is only shown then).
+            var entity = GetInitialEntity();
+
+            if ( entity == null || entity.Id == 0 )
+            {
+                return ActionNotFound();
+            }
+
+            if ( !entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
+            {
+                return ActionBadRequest( $"Not authorized to edit {LearningClass.FriendlyTypeName}." );
+            }
+
+            var learningClassService = new LearningClassService( RockContext );
+            var keyClassId = learningClassService.GetSelect( key, c => c.Id, !PageCache.Layout.Site.DisablePredictableIds );
+
+            if ( keyClassId != entity.Id )
+            {
+                return ActionNotFound();
+            }
+
+            var copiedEntity = learningClassService.Copy( key );
 
             var queryParams = new Dictionary<string, string>
             {
@@ -1036,6 +1058,11 @@ namespace Rock.Blocks.Lms
                 return ActionBadRequest( $"The {LearningClass.FriendlyTypeName} was not found." );
             }
 
+            if ( !entity.IsAuthorized( Authorization.VIEW, GetCurrentPerson() ) )
+            {
+                return ActionBadRequest( $"Not authorized to view {LearningClass.FriendlyTypeName}." );
+            }
+
             var facilitators = new LearningParticipantService( RockContext )
                 .GetFacilitators( entity.Id )
                 .ToList()
@@ -1215,6 +1242,20 @@ namespace Rock.Blocks.Lms
                     return ActionBadRequest( $"The {LearningClass.FriendlyTypeName} was not found." );
                 }
 
+                // Reordering activities changes the class, so the individual
+                // must be able to edit the class on this page.
+                var learningClass = GetInitialEntity();
+
+                if ( learningClass == null || learningClass.Id == 0 )
+                {
+                    return ActionBadRequest( $"The {LearningClass.FriendlyTypeName} was not found." );
+                }
+
+                if ( !learningClass.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
+                {
+                    return ActionBadRequest( $"Not authorized to edit {LearningClass.FriendlyTypeName}." );
+                }
+
                 // Get the queryable and make sure it is ordered correctly.
                 var items = GetOrderedLearningPlan( rockContext, classId ).ToList();
 
@@ -1238,8 +1279,23 @@ namespace Rock.Blocks.Lms
         public BlockActionResult SaveParticipant( LearningParticipantBag participantBag )
         {
             var classService = new LearningClassService( RockContext );
-            var classIdKey = PageParameter( PageParameterKey.LearningClassId );
-            var classId = classService.GetSelect( classIdKey, p => p.Id );
+
+            // Participants can only be added or edited on the class on this
+            // page, and only when the individual can edit that class (the
+            // same check that determines if the block is editable).
+            var learningClass = GetInitialEntity();
+
+            if ( learningClass == null || learningClass.Id == 0 )
+            {
+                return ActionBadRequest( $"The {LearningClass.FriendlyTypeName} was not found." );
+            }
+
+            if ( !learningClass.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
+            {
+                return ActionBadRequest( $"Not authorized to edit {LearningClass.FriendlyTypeName}." );
+            }
+
+            var classId = learningClass.Id;
 
             var isNew = participantBag.IdKey.IsNullOrWhiteSpace();
             var disablePredictableIds = this.PageCache.Layout.Site.DisablePredictableIds;
@@ -1255,6 +1311,12 @@ namespace Rock.Blocks.Lms
             else
             {
                 entity = learningParticipantService.Get( participantBag.IdKey, !disablePredictableIds );
+
+                if ( entity == null || entity.LearningClassId != classId )
+                {
+                    return ActionBadRequest( $"{LearningParticipant.FriendlyTypeName} not found." );
+                }
+
                 entity.Note = participantBag.Note;
             }
 
@@ -1308,6 +1370,20 @@ namespace Rock.Blocks.Lms
         [BlockAction]
         public BlockActionResult UpdateActiveClassGradingSystems( Guid newGradingSystemGuid )
         {
+            // Changing the grading systems is part of editing the class on
+            // this page, so require the same EDIT permission as Save.
+            var entity = GetInitialEntity();
+
+            if ( entity == null )
+            {
+                return ActionBadRequest( $"{LearningClass.FriendlyTypeName} not found." );
+            }
+
+            if ( !entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
+            {
+                return ActionBadRequest( $"Not authorized to edit {LearningClass.FriendlyTypeName}." );
+            }
+
             var newGradingSystemId = new LearningGradingSystemService( RockContext ).GetId( newGradingSystemGuid ).ToIntSafe();
 
             if ( newGradingSystemId == 0 )

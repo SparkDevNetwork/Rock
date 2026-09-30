@@ -468,6 +468,12 @@ namespace Rock.Blocks.Communication
                 return ActionForbidden( "You don't have edit access to this communication." );
             }
 
+            var optionsErrorMessage = GetCommunicationOptionsErrorMessage( bag );
+            if ( optionsErrorMessage != null )
+            {
+                return ActionBadRequest( optionsErrorMessage );
+            }
+
             string errorMessage;
 
             using ( PersonTokenScope.RestrictTo( GetCurrentPerson() ) )
@@ -499,6 +505,12 @@ namespace Rock.Blocks.Communication
             if ( !CanEditCommunication( bag ) )
             {
                 return ActionForbidden( "You don't have edit access to this communication." );
+            }
+
+            var optionsErrorMessage = GetCommunicationOptionsErrorMessage( bag );
+            if ( optionsErrorMessage != null )
+            {
+                return ActionBadRequest( optionsErrorMessage );
             }
 
             var currentPerson = GetCurrentPerson();
@@ -589,6 +601,12 @@ namespace Rock.Blocks.Communication
                 return ActionBadRequest( validationResult.ErrorMessage );
             }
 
+            var optionsErrorMessage = GetCommunicationOptionsErrorMessage( bag );
+            if ( optionsErrorMessage != null )
+            {
+                return ActionBadRequest( optionsErrorMessage );
+            }
+
             var recipientBags = GetRecipientBags( this.RockContext, bag );
 
             return ActionOk( recipientBags );
@@ -677,6 +695,12 @@ namespace Rock.Blocks.Communication
                 return ActionForbidden( "You don't have edit access to this communication." );
             }
 
+            var optionsErrorMessage = GetCommunicationOptionsErrorMessage( bag );
+            if ( optionsErrorMessage != null )
+            {
+                return ActionBadRequest( optionsErrorMessage );
+            }
+
             ProcessCommunicationSend( bag );
 
             var responseBag = new CommunicationEntryWizardSendResponseBag
@@ -704,6 +728,12 @@ namespace Rock.Blocks.Communication
             if ( !CanEditCommunication( bag ) )
             {
                 return ActionForbidden( "You don't have edit access to this communication." );
+            }
+
+            var optionsErrorMessage = GetCommunicationOptionsErrorMessage( bag );
+            if ( optionsErrorMessage != null )
+            {
+                return ActionBadRequest( optionsErrorMessage );
             }
 
             var communication = SaveAsDraft( this.RockContext, bag );
@@ -2134,6 +2164,129 @@ namespace Rock.Blocks.Communication
         }
 
         /// <summary>
+        /// Gets the existing communication a request targets, using the same
+        /// lookup order as <see cref="CanEditCommunication(CommunicationEntryWizardCommunicationBag)"/>.
+        /// </summary>
+        /// <param name="rockContext">The database context used for querying data.</param>
+        /// <param name="bag">The communication request.</param>
+        /// <returns>The existing <see cref="Model.Communication"/> or <see langword="null"/> if the request is for a new communication.</returns>
+        private Model.Communication GetExistingCommunication( RockContext rockContext, CommunicationEntryWizardCommunicationBag bag )
+        {
+            var communicationService = new CommunicationService( rockContext );
+
+            if ( bag.CommunicationId.GetValueOrDefault( 0 ) > 0 )
+            {
+                return communicationService.Get( bag.CommunicationId.Value );
+            }
+            else if ( !bag.CommunicationGuid.IsEmpty() )
+            {
+                return communicationService.Get( bag.CommunicationGuid );
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Gets the template information for the template selected in the request,
+        /// if it passes the same active and VIEW filter used by the template list.
+        /// </summary>
+        /// <param name="rockContext">The database context used for querying data.</param>
+        /// <param name="communicationTemplateGuid">The communication template unique identifier.</param>
+        /// <returns>The <see cref="CommunicationEntryWizardTemplateInfo"/> or <see langword="null"/> if not found or not allowed.</returns>
+        private CommunicationEntryWizardTemplateInfo GetAuthorizedTemplateInfo( RockContext rockContext, Guid? communicationTemplateGuid )
+        {
+            if ( !communicationTemplateGuid.HasValue || communicationTemplateGuid.Value.IsEmpty() )
+            {
+                return null;
+            }
+
+            var templateGuid = communicationTemplateGuid.Value;
+
+            return GetCommunicationTemplateInfoList(
+                rockContext,
+                query => query.Where( t => t.Guid == templateGuid ).Take( 1 ) )
+                .FirstOrDefault();
+        }
+
+        /// <summary>
+        /// Validates the communication list and SMS from number in a request
+        /// against the options this block offers. The value already stored on
+        /// an editable communication (and, for the SMS number, the selected
+        /// template's number) is also allowed.
+        /// </summary>
+        /// <param name="bag">The communication request.</param>
+        /// <returns>An error message, or <see langword="null"/> if the request is valid.</returns>
+        private string GetCommunicationOptionsErrorMessage( CommunicationEntryWizardCommunicationBag bag )
+        {
+            var currentPerson = GetCurrentPerson();
+            var existingCommunication = GetExistingCommunication( this.RockContext, bag );
+
+            if ( existingCommunication != null && IsCommunicationHidden( existingCommunication, currentPerson ) )
+            {
+                // Values from a communication the person cannot edit are not trusted.
+                existingCommunication = null;
+            }
+
+            if ( bag.CommunicationListGroupGuid.HasValue && !bag.CommunicationListGroupGuid.Value.IsEmpty() )
+            {
+                var listGroupGuid = bag.CommunicationListGroupGuid.Value;
+                var isCurrentList = existingCommunication?.ListGroupId.HasValue == true
+                    && GroupCache.GetId( listGroupGuid ) == existingCommunication.ListGroupId;
+
+                if ( !isCurrentList )
+                {
+                    // Same filter as GetCommunicationListGroupBags.
+                    var communicationListGroupTypeId = GroupTypeCache.Get( SystemGuid.GroupType.GROUPTYPE_COMMUNICATIONLIST.AsGuid() ).Id;
+                    var listGroup = new GroupService( this.RockContext ).Get( listGroupGuid );
+
+                    if ( listGroup == null
+                         || listGroup.GroupTypeId != communicationListGroupTypeId
+                         || !listGroup.IsActive
+                         || !listGroup.IsAuthorized( Authorization.VIEW, currentPerson ) )
+                    {
+                        return "Invalid communication list.";
+                    }
+                }
+            }
+
+            if ( bag.SmsFromSystemPhoneNumberGuid.HasValue && !bag.SmsFromSystemPhoneNumberGuid.Value.IsEmpty() )
+            {
+                var smsFromNumberGuid = bag.SmsFromSystemPhoneNumberGuid.Value;
+                var isOffered = GetSmsFromNumberBags( currentPerson ).Any( n => n.Value.AsGuid() == smsFromNumberGuid );
+                var isCurrentNumber = existingCommunication?.SmsFromSystemPhoneNumberId.HasValue == true
+                    && SystemPhoneNumberCache.GetGuid( existingCommunication.SmsFromSystemPhoneNumberId.Value ) == smsFromNumberGuid;
+
+                if ( !isOffered && !isCurrentNumber )
+                {
+                    var templateInfo = GetAuthorizedTemplateInfo( this.RockContext, bag.CommunicationTemplateGuid );
+
+                    if ( templateInfo?.SmsFromSystemPhoneNumberGuid != smsFromNumberGuid )
+                    {
+                        return "Invalid SMS from number.";
+                    }
+                }
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Determines whether a binary file sent by the client may be attached to
+        /// the communication. It must already be on the communication, belong to
+        /// the selected template, or be a file the current person uploaded.
+        /// </summary>
+        /// <param name="binaryFileService">The binary file service.</param>
+        /// <param name="binaryFileId">The binary file identifier.</param>
+        /// <param name="allowedBinaryFileIds">The identifiers of files already on the communication or the template.</param>
+        /// <param name="currentPerson">The currently logged-in person.</param>
+        /// <returns><see langword="true"/> if the file may be attached; otherwise, <see langword="false"/>.</returns>
+        private static bool IsBinaryFileAllowed( BinaryFileService binaryFileService, int binaryFileId, ICollection<int> allowedBinaryFileIds, Person currentPerson )
+        {
+            return allowedBinaryFileIds.Contains( binaryFileId )
+                || binaryFileService.IsUploadedBinaryFileAllowedForPerson( binaryFileId, null, currentPerson );
+        }
+
+        /// <summary>
         /// Retrieves a list of SMS sender numbers available to the current person, filtered by authorization and allowed numbers.
         /// </summary>
         /// <param name="currentPerson">The currently logged-in person for authorization checks.</param>
@@ -2948,6 +3101,23 @@ namespace Rock.Blocks.Communication
 
             communicationInfo.ExcludeDuplicateRecipientAddress = bag.ExcludeDuplicateRecipientAddress;
 
+            // Attachments and the push image must already be on the communication,
+            // belong to the selected template, or be files the current person uploaded.
+            var binaryFileService = new BinaryFileService( rockContext );
+            var existingCommunication = GetExistingCommunication( rockContext, bag );
+            var templateInfo = GetAuthorizedTemplateInfo( rockContext, bag.CommunicationTemplateGuid );
+            var allowedBinaryFileIds = new HashSet<int>();
+
+            if ( existingCommunication != null )
+            {
+                allowedBinaryFileIds.UnionWith( existingCommunication.Attachments.Select( a => a.BinaryFileId ) );
+            }
+
+            if ( templateInfo?.CommunicationTemplate?.Attachments != null )
+            {
+                allowedBinaryFileIds.UnionWith( templateInfo.CommunicationTemplate.Attachments.Select( a => a.BinaryFileId ) );
+            }
+
             var emailAttachmentBinaryFileGuids = bag.EmailAttachmentBinaryFiles
                 ?.Select( b => b.Value.AsGuidOrNull() )
                 .Where( g => g.HasValue )
@@ -2957,6 +3127,8 @@ namespace Rock.Blocks.Communication
             {
                 communicationInfo.EmailBinaryFiles = new BinaryFileService( rockContext )
                     .GetByGuids( emailAttachmentBinaryFileGuids )
+                    .ToList()
+                    .Where( b => IsBinaryFileAllowed( binaryFileService, b.Id, allowedBinaryFileIds, currentPerson ) )
                     .ToList();
             }
 
@@ -2969,6 +3141,8 @@ namespace Rock.Blocks.Communication
             {
                 communicationInfo.SmsBinaryFiles = new BinaryFileService( rockContext )
                     .GetByGuids( smsAttachmentBinaryFileGuids )
+                    .ToList()
+                    .Where( b => IsBinaryFileAllowed( binaryFileService, b.Id, allowedBinaryFileIds, currentPerson ) )
                     .ToList();
             }
 
@@ -3014,6 +3188,19 @@ namespace Rock.Blocks.Communication
                     .GetQueryableByKey( bag.PushImageBinaryFileGuid.Value.ToString() )
                     .Select( b => b.Id )
                     .FirstOrDefault();
+
+                var pushImageBinaryFileId = details.PushImageBinaryFileId.Value;
+                var isCurrentPushImage = existingCommunication?.PushImageBinaryFileId == pushImageBinaryFileId;
+                var isTemplatePushImage = templateInfo?.CommunicationTemplate?.PushImageBinaryFileId == pushImageBinaryFileId;
+
+                if ( pushImageBinaryFileId != 0
+                     && !isCurrentPushImage
+                     && !isTemplatePushImage
+                     && !binaryFileService.IsUploadedBinaryFileAllowedForPerson( pushImageBinaryFileId, null, currentPerson ) )
+                {
+                    // Keep the current image instead of the posted one.
+                    details.PushImageBinaryFileId = existingCommunication?.PushImageBinaryFileId;
+                }
             }
 
             if ( bag.PushOpenAction.HasValue )

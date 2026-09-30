@@ -570,6 +570,11 @@ namespace Rock.Blocks.Lms
         {
             var entity = GetInitialEntity();
 
+            if ( !entity.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson ) )
+            {
+                return ActionBadRequest( EditModeMessage.NotAuthorizedToView( LearningProgram.FriendlyTypeName ) );
+            }
+
             // Reload attributes based on the new property values.
             entity.LoadAttributes( RockContext );
 
@@ -735,10 +740,14 @@ namespace Rock.Blocks.Lms
         [BlockAction]
         public BlockActionResult GetCompletions()
         {
-            var entityKey = PageParameter( PageParameterKey.LearningProgramId );
-            var program = new LearningProgramService( RockContext ).GetSelect( entityKey, p => new { p.ConfigurationMode, p.Id } );
+            var program = GetInitialEntity();
 
-            var queryable = program == null ? new List<LearningProgramCompletion>().AsQueryable() : GetCompletionListQueryable( program.Id );
+            if ( !program.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson ) )
+            {
+                return ActionBadRequest( EditModeMessage.NotAuthorizedToView( LearningProgram.FriendlyTypeName ) );
+            }
+
+            var queryable = program.Id == 0 ? new List<LearningProgramCompletion>().AsQueryable() : GetCompletionListQueryable( program.Id );
 
             var grid = new GridBuilder<LearningProgramCompletion>()
                  .WithBlock( this )
@@ -770,6 +779,13 @@ namespace Rock.Blocks.Lms
         [BlockAction]
         public BlockActionResult GetSemesters()
         {
+            var entity = GetInitialEntity();
+
+            if ( !entity.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson ) )
+            {
+                return ActionBadRequest( EditModeMessage.NotAuthorizedToView( LearningProgram.FriendlyTypeName ) );
+            }
+
             var gridBuilder = new GridBuilder<LearningSemester>()
                 .WithBlock( this )
                 .AddTextField( "idKey", a => a.IdKey )
@@ -779,7 +795,7 @@ namespace Rock.Blocks.Lms
                 .AddDateTimeField( "closeDate", a => a.EnrollmentCloseDate )
                 .AddField( "classCount", a => a.LearningClasses.Count() );
 
-            var semestersQueryable = GetSemesterListQueryable();
+            var semestersQueryable = GetSemesterListQueryable( entity.Id );
             return ActionOk( gridBuilder.Build( semestersQueryable ) );
         }
 
@@ -802,11 +818,10 @@ namespace Rock.Blocks.Lms
         /// <summary>
         /// Gets the Learning Semester Queryable for semesters grid.
         /// </summary>
+        /// <param name="entityId">The identifier of the learning program whose semesters should be returned.</param>
         /// <returns>A Queryable of LearningSemester.</returns>
-        private IQueryable<LearningSemester> GetSemesterListQueryable()
+        private IQueryable<LearningSemester> GetSemesterListQueryable( int entityId )
         {
-            var entityId = RequestContext.PageParameterAsId( PageParameterKey.LearningProgramId );
-
             // If a Learning Program has been specified then get the semesters for that.
             if ( entityId > 0 )
             {

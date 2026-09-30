@@ -10,7 +10,7 @@
           :onAddItem="config.isAddEnabled ? onAddItem : undefined"
           @selectItem="onSelectItem"
           :showLaunchWorkflow="false" >
-        <ReorderColumn :onOrderChanged=onOrderChanged />
+        <ReorderColumn v-if="config.isDeleteEnabled" :onOrderChanged=onOrderChanged />
         <TextColumn name="name"
                     title="Name"
                     field="name"

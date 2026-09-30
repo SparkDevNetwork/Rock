@@ -95,7 +95,7 @@
     const footerActions = computed((): PanelAction[] => {
         const actions: PanelAction[] = [];
 
-        if (panelMode.value === DetailPanelMode.View) {
+        if (panelMode.value === DetailPanelMode.View && isEditable.value) {
             actions.push({
                 type: "link",
                 title: deleteButtonText.value,

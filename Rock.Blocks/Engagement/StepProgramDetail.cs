@@ -1191,6 +1191,13 @@ namespace Rock.Blocks.Engagement
 
                 var isNew = entity.Id == 0;
 
+                // Make sure the step attributes are either new or already
+                // belong to this step program.
+                if ( !PublicAttributeHelper.AreAttributeEditsAllowed( box.Entity.StepProgramAttributes, new StepType().TypeId, "StepProgramId", isNew ? null : entity.Id.ToString(), rockContext ) )
+                {
+                    return ActionBadRequest( "Invalid attribute." );
+                }
+
                 rockContext.WrapTransaction( () =>
                 {
                     rockContext.SaveChanges();
@@ -1357,25 +1364,42 @@ namespace Rock.Blocks.Engagement
         [BlockAction]
         public BlockActionResult RefreshChart( string dateRange , StepProgram stepProgram )
         {
-            var showActivitySummary = ShowActivitySummary( stepProgram );
-            var chartDataJson = string.Empty;
-
-            if ( showActivitySummary )
+            // Ignore any posted step program and use the one on this page,
+            // with the same VIEW check that is used when the block loads.
+            using ( var rockContext = new RockContext() )
             {
-                // Get chart data and set visibility of related elements.
-                var chartFactory = GetChartJsFactory( dateRange, stepProgram );
+                stepProgram = GetInitialEntity( rockContext );
 
-                if ( chartFactory.HasData )
+                if ( stepProgram == null )
                 {
-                    var args = GetChartArgs();
-                    // Add client script to construct the chart.
-                    chartDataJson = chartFactory.GetChartDataJson( args );
+                    return ActionBadRequest( $"The {StepProgram.FriendlyTypeName} was not found." );
                 }
+
+                if ( !stepProgram.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson ) )
+                {
+                    return ActionBadRequest( EditModeMessage.NotAuthorizedToView( StepProgram.FriendlyTypeName ) );
+                }
+
+                var showActivitySummary = ShowActivitySummary( stepProgram );
+                var chartDataJson = string.Empty;
+
+                if ( showActivitySummary )
+                {
+                    // Get chart data and set visibility of related elements.
+                    var chartFactory = GetChartJsFactory( dateRange, stepProgram );
+
+                    if ( chartFactory.HasData )
+                    {
+                        var args = GetChartArgs();
+                        // Add client script to construct the chart.
+                        chartDataJson = chartFactory.GetChartDataJson( args );
+                    }
+                }
+
+                var kpi = GetKpi( dateRange, stepProgram );
+
+                return ActionOk( new StepProgramBag() { ChartData = chartDataJson, Kpi = kpi, ShowChart = showActivitySummary } );
             }
-
-            var kpi = GetKpi( dateRange, stepProgram );
-
-            return ActionOk( new StepProgramBag() { ChartData = chartDataJson, Kpi = kpi, ShowChart = showActivitySummary } );
         }
 
         #endregion

@@ -1151,6 +1151,13 @@ namespace Rock.Blocks.Engagement
 
                 var isNew = entity.Id == 0;
 
+                // Make sure the step attributes are either new or already
+                // belong to this step type.
+                if ( !PublicAttributeHelper.AreAttributeEditsAllowed( box.Entity.StepAttributes?.ConvertAll( e => e.Attribute ), new Step().TypeId, "StepTypeId", isNew ? null : entity.Id.ToString(), rockContext ) )
+                {
+                    return ActionBadRequest( "Invalid attribute." );
+                }
+
                 // Workflow Triggers: Remove deleted triggers.
                 var uiWorkflows = box.Entity.Workflows.Select( l => l.Guid );
                 var deletedTriggers = entity.StepWorkflowTriggers.Where( l => !uiWorkflows.Contains( l.Guid ) ).ToList();
