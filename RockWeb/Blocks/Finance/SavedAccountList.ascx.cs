@@ -84,8 +84,18 @@ namespace RockWeb.Blocks.Finance
             var savedAccount = service.Get( e.RowKeyId );
             string errorMessage;
 
-            if ( savedAccount == null )
+            if ( savedAccount == null || CurrentPerson == null )
             {
+                return;
+            }
+
+            // Only allow deleting saved accounts owned by the current person, or by a
+            // person the current person is authorized to edit.
+            var owner = savedAccount.PersonAlias?.Person;
+
+            if ( owner == null || ( owner.Id != CurrentPerson.Id && !owner.IsAuthorized( Authorization.EDIT, CurrentPerson ) ) )
+            {
+                mdGridWarning.Show( $"Not authorized to delete {FinancialPersonSavedAccount.FriendlyTypeName}.", ModalAlertType.Warning );
                 return;
             }
 
@@ -106,8 +116,7 @@ namespace RockWeb.Blocks.Finance
         /// </summary>
         private void BindGrid()
         {
-            var contextEntity = this.ContextEntity() as Person;
-            var personId = contextEntity?.Id ?? CurrentPerson?.Id;
+            var personId = GetAuthorizedPerson()?.Id;
 
             if ( personId.HasValue )
             {
@@ -130,6 +139,28 @@ namespace RockWeb.Blocks.Finance
                     .ToList();
                 gSavedAccounts.DataBind();
             }
+        }
+
+        /// <summary>
+        /// Gets the person whose saved accounts the current person is allowed to view or manage.
+        /// The context person is only honored when it is the current person or the current person
+        /// is authorized to edit the context person; otherwise the current person is used.
+        /// </summary>
+        /// <returns>The authorized owning person, or <c>null</c> if there is no current person.</returns>
+        private Person GetAuthorizedPerson()
+        {
+            if ( CurrentPerson == null )
+            {
+                return null;
+            }
+
+            var contextPerson = this.ContextEntity() as Person;
+            if ( contextPerson == null || contextPerson.Id == CurrentPerson.Id )
+            {
+                return CurrentPerson;
+            }
+
+            return contextPerson.IsAuthorized( Authorization.EDIT, CurrentPerson ) ? contextPerson : CurrentPerson;
         }
     }
 }
