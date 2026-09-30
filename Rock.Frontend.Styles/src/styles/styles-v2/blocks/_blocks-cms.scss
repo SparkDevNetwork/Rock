@@ -957,6 +957,14 @@ ul.activeusers {
     padding-left: 0px;
 }
 
+.panel-body .activeusers .recent i {
+  color: var(--color-success-strong);
+}
+
+.panel-body .activeusers .not-recent i {
+  color: var(--color-warning-strong);
+}
+
 // ==================== END ACTIVE USERS =====================
 
 // ===================== LIBRARY VIEWER =====================
