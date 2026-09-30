@@ -112,7 +112,7 @@ BEGIN
                 C.[NickName],
                 C.[LastName],
 				C.[Gender],
-                C.[Email],
+              C.[Email],
                 C.[GivingId],
                 C.[BirthDate],
                 C.[ConnectionStatusValueId],
