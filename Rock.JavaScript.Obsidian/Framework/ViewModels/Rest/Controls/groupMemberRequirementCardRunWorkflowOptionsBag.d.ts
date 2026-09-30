@@ -37,6 +37,12 @@ export type GroupMemberRequirementCardRunWorkflowOptionsBag = {
     /** Identifier for the GroupRequirement */
     groupRequirementGuid: Guid;
 
+    /**
+     * Gets or sets the security grant token to use when performing
+     * authorization checks.
+     */
+    securityGrantToken?: string | null;
+
     /** A URL or page identifier for the page where the workflow should be run */
     workflowEntryLinkedPageValue?: string | null;
 };
