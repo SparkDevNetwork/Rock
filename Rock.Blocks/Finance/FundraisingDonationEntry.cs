@@ -486,6 +486,25 @@ namespace Rock.Blocks.Finance
             return memberFundraisingGoal - individualContributionTotal;
         }
 
+        /// <summary>
+        /// Determines whether the fundraising opportunity is one this block offers to the donor,
+        /// either the opportunity supplied by the page parameters or one of the opportunities in
+        /// the selection list.
+        /// </summary>
+        /// <param name="group">The fundraising opportunity group posted back by the client.</param>
+        /// <returns><c>true</c> if the opportunity is offered; otherwise <c>false</c>.</returns>
+        private bool IsOpportunityOffered( Rock.Model.Group group )
+        {
+            // When the page parameters pick the opportunity, it is the only one the page offers.
+            var pageGroup = GetGroupFromParameters( out _ );
+            if ( pageGroup != null )
+            {
+                return pageGroup.Id == group.Id;
+            }
+
+            return BuildOpportunityOptions().Any( o => o.Value == group.IdKey );
+        }
+
         #endregion Methods
 
         #region Block Actions
@@ -504,6 +523,12 @@ namespace Rock.Blocks.Finance
                 return ActionOk( new List<ListItemBag>() );
             }
 
+            // Only list participants of the opportunities the block offered, not any group.
+            if ( !IsOpportunityOffered( group ) )
+            {
+                return ActionOk( new List<ListItemBag>() );
+            }
+
             return ActionOk( BuildParticipantOptions( group ) );
         }
 
@@ -517,6 +542,18 @@ namespace Rock.Blocks.Finance
         {
             var groupMember = new GroupMemberService( RockContext ).Get( participantKey, !PageCache.Layout.Site.DisablePredictableIds );
             if ( groupMember == null )
+            {
+                return ActionBadRequest( "The selected participant could not be found." );
+            }
+
+            // The participant must be one of the options the block offered for an offered
+            // opportunity, otherwise any group member's details could be requested.
+            var group = groupMember.Group;
+            var isParticipantOffered = group != null
+                && IsOpportunityOffered( group )
+                && BuildParticipantOptions( group ).Any( o => o.Value == groupMember.IdKey );
+
+            if ( !isParticipantOffered )
             {
                 return ActionBadRequest( "The selected participant could not be found." );
             }
