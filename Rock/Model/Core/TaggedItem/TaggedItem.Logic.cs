@@ -42,6 +42,12 @@ namespace Rock.Model
         /// </returns>
         public override bool IsAuthorized( string action, Person person )
         {
+            if ( this.Tag?.OwnerPersonAliasId != null && person == null )
+            {
+                // A personal tag is never available to an anonymous person.
+                return false;
+            }
+
             if ( this.Tag?.OwnerPersonAlias != null && person != null && this.Tag?.OwnerPersonAlias.PersonId == person.Id )
             {
                 // always allow people to do anything with their own tags
