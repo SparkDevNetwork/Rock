@@ -749,6 +749,37 @@ namespace Rock.Blocks.Mobile
         }
 
         /// <summary>
+        /// Determines whether the layout may be assigned to the page. The Layout
+        /// dropdown only offers layouts of the page's site (see
+        /// <see cref="LoadLayouts(SiteCache)"/>), so an existing page must keep a
+        /// layout of its current site and a new page must use a layout of the
+        /// site it is being created under.
+        /// </summary>
+        /// <param name="page">The page the layout would be assigned to, before any change.</param>
+        /// <param name="layoutId">The identifier of the layout sent by the client.</param>
+        /// <returns><c>true</c> if the layout belongs to the page's site; otherwise <c>false</c>.</returns>
+        private bool IsLayoutAllowedForPage( Page page, int layoutId )
+        {
+            int? siteId;
+
+            if ( page.Id != 0 )
+            {
+                siteId = page.Layout?.SiteId;
+            }
+            else
+            {
+                siteId = SiteCache.Get( PageParameter( PageParameterKey.SiteId ), !PageCache.Layout.Site.DisablePredictableIds )?.Id;
+            }
+
+            if ( !siteId.HasValue )
+            {
+                return false;
+            }
+
+            return LayoutCache.Get( layoutId )?.SiteId == siteId.Value;
+        }
+
+        /// <summary>
         /// Updates the page entity from the values in the box. Validates the
         /// page route for duplicates before any properties are applied.
         /// </summary>
@@ -776,7 +807,7 @@ namespace Rock.Blocks.Mobile
             {
                 var layoutId = box.Bag.Layout.GetEntityId<Layout>( RockContext );
 
-                if ( !layoutId.HasValue )
+                if ( !layoutId.HasValue || !IsLayoutAllowedForPage( page, layoutId.Value ) )
                 {
                     validationMessage = "A valid Layout must be selected.";
                     return false;
@@ -790,16 +821,29 @@ namespace Rock.Blocks.Mobile
 
 
 
-            box.IfValidProperty( nameof( box.Bag.PageIcon ), () =>
+            if ( box.IsValidProperty( nameof( box.Bag.PageIcon ) ) )
             {
                 var newIconBinaryFileId = box.Bag.PageIcon.GetEntityId<BinaryFile>( RockContext );
+
+                // The image uploader only sends the current icon or a newly
+                // uploaded temporary file. Anything else could be some other
+                // entity's file, which the save would then mark permanent and
+                // later flag as temporary (so cleanup deletes it) on a swap.
+                var isIconAllowed = new BinaryFileService( RockContext )
+                    .IsUploadedBinaryFileAllowedForPerson( newIconBinaryFileId, page.IconBinaryFileId, RequestContext.CurrentPerson );
+
+                if ( !isIconAllowed )
+                {
+                    validationMessage = "Invalid file.";
+                    return false;
+                }
 
                 if ( newIconBinaryFileId != page.IconBinaryFileId )
                 {
                     capturedOldIconBinaryFileId = page.IconBinaryFileId;
                     page.IconBinaryFileId = newIconBinaryFileId;
                 }
-            } );
+            }
 
             oldIconBinaryFileId = capturedOldIconBinaryFileId;
 
