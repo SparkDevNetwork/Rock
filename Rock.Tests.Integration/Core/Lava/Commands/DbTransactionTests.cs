@@ -21,7 +21,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rock.Configuration;
 using Rock.Lava;
 using Rock.Model;
-using Rock.Tests.Integration.TestFramework.Lava;
+using Rock.Tests.Lava.Shared;
 using Rock.Tests.Shared.Constants;
 
 namespace Rock.Tests.Integration.Core.Lava.Commands
@@ -56,10 +56,10 @@ namespace Rock.Tests.Integration.Core.Lava.Commands
 
             try
             {
-                TestHelper.ExecuteForActiveEngines( engine =>
+                LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
                 {
-                    TestHelper.GetTemplateOutput( engine, template,
-                        new LavaTestRenderOptions { EnabledCommands = "RockEntityModify" } );
+                    LavaRenderTestHelper.Render( engine, template,
+                        new LavaRenderOptions { EnabledCommands = "RockEntityModify" } );
 
                     var after = GetPersonValues( personId );
 
@@ -95,10 +95,10 @@ namespace Rock.Tests.Integration.Core.Lava.Commands
 
             try
             {
-                TestHelper.ExecuteForActiveEngines( engine =>
+                LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
                 {
-                    TestHelper.GetTemplateOutput( engine, template,
-                        new LavaTestRenderOptions { EnabledCommands = "RockEntityModify" } );
+                    LavaRenderTestHelper.Render( engine, template,
+                        new LavaRenderOptions { EnabledCommands = "RockEntityModify" } );
 
                     var after = GetPersonValues( personId );
 
