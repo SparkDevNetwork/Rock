@@ -90,6 +90,12 @@ namespace RockWeb.Blocks.Event
 
                 EventItemOccurrenceGroupMap linkage = null;
 
+                // The linkage id comes from a hidden field, so it must be the linkage on the page.
+                if ( !IsPostedLinkageIdValid() )
+                {
+                    return;
+                }
+
                 int? linkageId = hfLinkageId.Value.AsIntegerOrNull();
                 if ( linkageId.HasValue )
                 {
@@ -103,7 +109,18 @@ namespace RockWeb.Blocks.Event
                     service.Add( linkage );
                 }
 
-                linkage.EventItemOccurrenceId = hfLinkageEventItemOccurrenceId.Value.AsIntegerOrNull();
+                // The occurrence id also comes from a hidden field. Allow it only if it is unchanged
+                // or on a calendar the person can view, which is where the dialog offers them from.
+                int? eventItemOccurrenceId = hfLinkageEventItemOccurrenceId.Value.AsIntegerOrNull();
+                if ( eventItemOccurrenceId.HasValue
+                    && eventItemOccurrenceId != linkage.EventItemOccurrenceId
+                    && !IsOccurrenceOnViewableCalendar( eventItemOccurrenceId.Value, rockContext ) )
+                {
+                    NotificationBox1.Text = "The selected event occurrence is not available.";
+                    return;
+                }
+
+                linkage.EventItemOccurrenceId = eventItemOccurrenceId;
                 linkage.GroupId = gpLinkageGroup.SelectedValueAsInt();
                 linkage.PublicName = tbLinkagePublicName.Text;
                 linkage.UrlSlug = tbLinkageUrlSlug.Text;
@@ -141,6 +158,13 @@ namespace RockWeb.Blocks.Event
             using ( var rockContext = new RockContext() )
             {
                 var eventMapingService = new EventItemOccurrenceGroupMapService( rockContext );
+
+                if ( !IsPostedLinkageIdValid() )
+                {
+                    args.IsValid = false;
+                    return;
+                }
+
                 var linkageId = hfLinkageId.Value.AsIntegerOrNull();
 
                 var validationQuery = eventMapingService.Queryable().AsNoTracking().Where( m => m.UrlSlug == urlSlug );
@@ -327,6 +351,39 @@ namespace RockWeb.Blocks.Event
         #endregion
 
         #region Methods
+
+        /// <summary>
+        /// Determines whether the linkage id in the hidden field is the one <see cref="ShowDetail(int)"/>
+        /// loaded from the page parameter. A value of zero or empty means a new linkage.
+        /// </summary>
+        /// <returns><c>true</c> if the posted linkage id is valid; otherwise, <c>false</c>.</returns>
+        private bool IsPostedLinkageIdValid()
+        {
+            int linkageId = hfLinkageId.Value.AsInteger();
+
+            return linkageId == 0 || linkageId == PageParameter( "LinkageId" ).AsInteger();
+        }
+
+        /// <summary>
+        /// Determines whether the event item occurrence is on a calendar the current person can view.
+        /// This is the base filter the add occurrence dialog uses when listing calendars.
+        /// </summary>
+        /// <param name="eventItemOccurrenceId">The event item occurrence identifier.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns><c>true</c> if the occurrence is on a viewable calendar; otherwise, <c>false</c>.</returns>
+        private bool IsOccurrenceOnViewableCalendar( int eventItemOccurrenceId, RockContext rockContext )
+        {
+            var calendarIds = new EventItemOccurrenceService( rockContext )
+                .Queryable()
+                .AsNoTracking()
+                .Where( o => o.Id == eventItemOccurrenceId )
+                .SelectMany( o => o.EventItem.EventCalendarItems.Select( ci => ci.EventCalendarId ) )
+                .ToList();
+
+            return calendarIds
+                .Select( id => Rock.Web.Cache.EventCalendarCache.Get( id ) )
+                .Any( c => c != null && c.IsAuthorized( Authorization.VIEW, CurrentPerson ) );
+        }
 
         /// <summary>
         /// Navigates to the parent page with necessary query params.

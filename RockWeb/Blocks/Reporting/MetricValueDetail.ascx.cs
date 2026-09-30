@@ -77,29 +77,10 @@ namespace RockWeb.Blocks.Reporting
             {
                 int? metricValueId = PageParameter( PageParameterKey.MetricValueId ).AsIntegerOrNull();
 
-                // in case called with MetricId as the parent id parameter
-                int? metricId = PageParameter( PageParameterKey.MetricId ).AsIntegerOrNull();
+                int? metricId = GetMetricIdFromPageParameters();
 
                 // in case called with MetricCategoryId as the parent id parameter
                 int? metricCategoryId = PageParameter( PageParameterKey.MetricCategoryId ).AsIntegerOrNull();
-                MetricCategory metricCategory = null;
-                if ( metricCategoryId.HasValue )
-                {
-                    if ( metricCategoryId.Value > 0 )
-                    {
-                        // editing a metric, but get the metricId from the metricCategory
-                        metricCategory = new MetricCategoryService( new RockContext() ).Get( metricCategoryId.Value );
-                        if ( metricCategory != null )
-                        {
-                            metricId = metricCategory.MetricId;
-                        }
-                    }
-                    else
-                    {
-                        // adding a new metric. Block will (hopefully) not be shown
-                        metricId = 0;
-                    }
-                }
 
                 hfMetricCategoryId.Value = metricCategoryId.ToString();
 
@@ -114,6 +95,59 @@ namespace RockWeb.Blocks.Reporting
             }
 
             base.OnLoad( e );
+        }
+
+        /// <summary>
+        /// Gets the metric identifier from the MetricId or MetricCategoryId page parameters.
+        /// </summary>
+        /// <returns>The metric identifier, or <c>null</c> if neither page parameter was provided.</returns>
+        private int? GetMetricIdFromPageParameters()
+        {
+            // in case called with MetricId as the parent id parameter
+            int? metricId = PageParameter( PageParameterKey.MetricId ).AsIntegerOrNull();
+
+            // in case called with MetricCategoryId as the parent id parameter
+            int? metricCategoryId = PageParameter( PageParameterKey.MetricCategoryId ).AsIntegerOrNull();
+            if ( metricCategoryId.HasValue )
+            {
+                if ( metricCategoryId.Value > 0 )
+                {
+                    // editing a metric, but get the metricId from the metricCategory
+                    var metricCategory = new MetricCategoryService( new RockContext() ).Get( metricCategoryId.Value );
+                    if ( metricCategory != null )
+                    {
+                        metricId = metricCategory.MetricId;
+                    }
+                }
+                else
+                {
+                    // adding a new metric. Block will (hopefully) not be shown
+                    metricId = 0;
+                }
+            }
+
+            return metricId;
+        }
+
+        /// <summary>
+        /// Determines whether the current person can edit values of the specified metric.
+        /// This is the same check that <see cref="ShowDetail(int, int?)"/> uses.
+        /// </summary>
+        /// <param name="metricId">The metric identifier from the page parameters.</param>
+        /// <returns><c>true</c> if the person can edit metric values; otherwise <c>false</c>.</returns>
+        private bool CanEditMetricValues( int? metricId )
+        {
+            bool canEdit = UserCanEdit;
+            if ( !canEdit && metricId.HasValue && metricId.Value > 0 )
+            {
+                var metric = new MetricService( new RockContext() ).Get( metricId.Value );
+                if ( metric != null && metric.IsAuthorized( Authorization.EDIT, CurrentPerson ) )
+                {
+                    canEdit = true;
+                }
+            }
+
+            return canEdit;
         }
 
         /// <summary>
@@ -224,17 +258,39 @@ namespace RockWeb.Blocks.Reporting
 
             int metricValueId = int.Parse( hfMetricValueId.Value );
 
+            // Re-check the same edit permission that ShowDetail used, based on the page parameters.
+            int? metricId = GetMetricIdFromPageParameters();
+            if ( !CanEditMetricValues( metricId ) )
+            {
+                nbEditModeMessage.Text = EditModeMessage.NotAuthorizedToEdit( MetricValue.FriendlyTypeName );
+                return;
+            }
+
             if ( metricValueId == 0 )
             {
+                // New values can only be added to the metric in the page parameters.
+                if ( !metricId.HasValue || metricId.Value != hfMetricId.ValueAsInt() )
+                {
+                    nbEditModeMessage.Text = EditModeMessage.NotAuthorizedToEdit( MetricValue.FriendlyTypeName );
+                    return;
+                }
+
                 metricValue = new MetricValue();
                 metricValueService.Add( metricValue );
-                metricValue.MetricId = hfMetricId.ValueAsInt();
+                metricValue.MetricId = metricId.Value;
                 metricValue.Metric = metricValue.Metric ?? new MetricService( rockContext ).Get( metricValue.MetricId );
                 metricValue.MetricValuePartitions = new List<MetricValuePartition>();
             }
             else
             {
                 metricValue = metricValueService.Get( metricValueId );
+
+                // An existing value must belong to the metric in the page parameters, when one was provided.
+                if ( metricValue == null || ( metricId.HasValue && metricId.Value > 0 && metricValue.MetricId != metricId.Value ) )
+                {
+                    nbEditModeMessage.Text = EditModeMessage.NotAuthorizedToEdit( MetricValue.FriendlyTypeName );
+                    return;
+                }
             }
 
             metricValue.MetricValueType = ddlMetricValueType.SelectedValueAsEnum<MetricValueType>();

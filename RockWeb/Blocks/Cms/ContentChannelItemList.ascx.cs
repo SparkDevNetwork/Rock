@@ -779,6 +779,13 @@ namespace RockWeb.Blocks.Cms
                 {
                     var contentChannelItemId = hfItemId.Value.AsInteger();
                     var contentChannelItemService = new ContentChannelItemService( rockContext );
+
+                    // The item id comes from a hidden field, so make sure the Update button would be shown for it.
+                    if ( GetContentLibraryItem( contentChannelItemId, rockContext, i => i.IsUploadedToContentLibrary ) == null )
+                    {
+                        mdUpdateContentLibrary.Hide();
+                        return;
+                    }
                     contentChannelItemService.UploadToContentLibrary(
                         new ContentLibraryItemUploadOptions
                         {
@@ -805,6 +812,13 @@ namespace RockWeb.Blocks.Cms
                 {
                     var contentChannelItemId = hfItemId.Value.AsInteger();
                     var contentChannelItemService = new ContentChannelItemService( rockContext );
+
+                    // The item id comes from a hidden field, so make sure the Upload button would be shown for it.
+                    if ( GetContentLibraryItem( contentChannelItemId, rockContext, i => !i.IsUploadedToContentLibrary && !i.IsDownloadedFromContentLibrary && !i.ContentLibrarySourceIdentifier.HasValue ) == null )
+                    {
+                        mdUploadContentLibrary.Hide();
+                        return;
+                    }
                     contentChannelItemService.UploadToContentLibrary(
                         new ContentLibraryItemUploadOptions
                         {
@@ -857,7 +871,15 @@ namespace RockWeb.Blocks.Cms
                 var contentChannelItemId = hfItemId.Value.AsInteger();
                 var contentChannelItemService = new ContentChannelItemService( rockContext );
 
-                var contentLibraryItemGuid = contentChannelItemService.AsNoFilter().AsNoTracking().Where( i => i.Id == contentChannelItemId ).Select( i => i.ContentLibrarySourceIdentifier ).FirstOrDefault();
+                // The item id comes from a hidden field, so make sure the Re-download button would be shown for it.
+                var contentChannelItem = GetContentLibraryItem( contentChannelItemId, rockContext, i => !i.IsUploadedToContentLibrary && i.IsDownloadedFromContentLibrary );
+                if ( contentChannelItem == null || !contentChannelItem.ContentLibrarySourceIdentifier.HasValue )
+                {
+                    mdRedownloadContentLibrary.Hide();
+                    return;
+                }
+
+                var contentLibraryItemGuid = contentChannelItem.ContentLibrarySourceIdentifier;
                 var result = contentChannelItemService.AddFromContentLibrary( new Rock.Model.CMS.ContentChannelItem.Options.ContentLibraryItemDownloadOptions
                 {
                     ContentLibraryItemGuidToDownload = contentLibraryItemGuid.Value,
@@ -868,6 +890,35 @@ namespace RockWeb.Blocks.Cms
 
             BindGrid();
             mdRedownloadContentLibrary.Hide();
+        }
+
+        /// <summary>
+        /// Gets the content channel item for a content library action, but only if it is in
+        /// this block's channel, the channel has the content library enabled, the person can
+        /// view the item (the grid filter) and the item is in the state that shows the action's
+        /// button in <see cref="gItems_RowDataBound(object, GridViewRowEventArgs)"/>.
+        /// </summary>
+        /// <param name="contentChannelItemId">The content channel item identifier.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <param name="isButtonShown">Returns <c>true</c> if the action's button is shown for the item.</param>
+        /// <returns>The content channel item, or <c>null</c> if the action is not allowed.</returns>
+        private ContentChannelItem GetContentLibraryItem( int contentChannelItemId, RockContext rockContext, Func<ContentChannelItem, bool> isButtonShown )
+        {
+            if ( !_channelId.HasValue || ContentChannelCache.Get( _channelId.Value )?.ContentLibraryConfiguration?.IsEnabled != true )
+            {
+                return null;
+            }
+
+            var contentChannelItem = new ContentChannelItemService( rockContext ).Get( contentChannelItemId );
+            if ( contentChannelItem == null
+                || contentChannelItem.ContentChannelId != _channelId.Value
+                || !contentChannelItem.IsAuthorized( Rock.Security.Authorization.VIEW, CurrentPerson )
+                || !isButtonShown( contentChannelItem ) )
+            {
+                return null;
+            }
+
+            return contentChannelItem;
         }
 
         #region Helper Classes

@@ -218,7 +218,11 @@ namespace RockWeb.Blocks.Communication
             }
 
             emailTemplate.PushData = pushCommunication.PushData;
-            emailTemplate.PushImageBinaryFileId = pushCommunication.PushImageBinaryFileId;
+            // Only accept the current push image or a new upload, otherwise keep the current push image.
+            if ( new BinaryFileService( rockContext ).IsUploadedBinaryFileAllowedForPerson( pushCommunication.PushImageBinaryFileId, emailTemplate.PushImageBinaryFileId, CurrentPerson ) )
+            {
+                emailTemplate.PushImageBinaryFileId = pushCommunication.PushImageBinaryFileId;
+            }
             emailTemplate.PushMessage = pushCommunication.PushMessage;
             emailTemplate.PushOpenAction = pushCommunication.PushOpenAction;
             emailTemplate.PushOpenMessage = pushCommunication.PushOpenMessage;

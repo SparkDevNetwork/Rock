@@ -399,10 +399,18 @@ namespace RockWeb.Blocks.Event
                 eventItem.DetailsUrl = tbDetailUrl.Text;
 
                 int? orphanedImageId = null;
-                if ( eventItem.PhotoId != imgupPhoto.BinaryFileId )
+                var photoId = imgupPhoto.BinaryFileId;
+
+                // Only accept the event item's current photo or a new upload, otherwise keep the current photo.
+                if ( !new BinaryFileService( rockContext ).IsUploadedBinaryFileAllowedForPerson( photoId, eventItem.PhotoId, CurrentPerson ) )
+                {
+                    photoId = eventItem.PhotoId;
+                }
+
+                if ( eventItem.PhotoId != photoId )
                 {
                     orphanedImageId = eventItem.PhotoId;
-                    eventItem.PhotoId = imgupPhoto.BinaryFileId;
+                    eventItem.PhotoId = photoId;
                 }
 
                 // Remove any audiences that were removed in the UI

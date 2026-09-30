@@ -569,13 +569,26 @@ namespace RockWeb.Blocks.Streaks
 
             var binaryFileService = new BinaryFileService( rockContext );
 
-            MarkOldImageAsTemporary( achievementType.ImageBinaryFileId, binaryFileService );
-            achievementType.ImageBinaryFileId = imgupImageBinaryFile.BinaryFileId;
+            // Only accept the achievement type's current images or new uploads, otherwise keep the current images.
+            var imageBinaryFileId = imgupImageBinaryFile.BinaryFileId;
+            if ( !binaryFileService.IsUploadedBinaryFileAllowedForPerson( imageBinaryFileId, achievementType.ImageBinaryFileId, CurrentPerson ) )
+            {
+                imageBinaryFileId = achievementType.ImageBinaryFileId;
+            }
+
+            var alternateImageBinaryFileId = imgupAlternateImageBinaryFile.BinaryFileId;
+            if ( !binaryFileService.IsUploadedBinaryFileAllowedForPerson( alternateImageBinaryFileId, achievementType.AlternateImageBinaryFileId, CurrentPerson ) )
+            {
+                alternateImageBinaryFileId = achievementType.AlternateImageBinaryFileId;
+            }
+
+            MarkOldImageAsTemporary( achievementType.ImageBinaryFileId, imageBinaryFileId, binaryFileService );
+            achievementType.ImageBinaryFileId = imageBinaryFileId;
             // Ensure that the Image is not set as IsTemporary=True
             EnsureCurrentImageIsNotMarkedAsTemporary( achievementType.ImageBinaryFileId, binaryFileService );
 
-            MarkOldImageAsTemporary( achievementType.AlternateImageBinaryFileId, binaryFileService );
-            achievementType.AlternateImageBinaryFileId = imgupAlternateImageBinaryFile.BinaryFileId;
+            MarkOldImageAsTemporary( achievementType.AlternateImageBinaryFileId, alternateImageBinaryFileId, binaryFileService );
+            achievementType.AlternateImageBinaryFileId = alternateImageBinaryFileId;
             // Ensure that the Image is not set as IsTemporary=True
             EnsureCurrentImageIsNotMarkedAsTemporary( achievementType.AlternateImageBinaryFileId, binaryFileService );
 
@@ -712,9 +725,9 @@ namespace RockWeb.Blocks.Streaks
             }
         }
 
-        private void MarkOldImageAsTemporary( int? binaryFileId, BinaryFileService binaryFileService )
+        private void MarkOldImageAsTemporary( int? binaryFileId, int? newBinaryFileId, BinaryFileService binaryFileService )
         {
-            if ( binaryFileId != imgupImageBinaryFile.BinaryFileId )
+            if ( binaryFileId != newBinaryFileId )
             {
                 var oldImageTemplatePreview = binaryFileService.Get( binaryFileId ?? 0 );
                 if ( oldImageTemplatePreview != null )

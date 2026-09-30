@@ -233,6 +233,51 @@ namespace RockWeb.Blocks.Event
         #region Block Methods
 
         /// <summary>
+        /// Determines whether the current person can edit occurrences. This is the same
+        /// check used by <see cref="ShowDetail(int)"/> to decide whether to show the edit button.
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns><c>true</c> if the current person can edit occurrences; otherwise, <c>false</c>.</returns>
+        private bool CanEditOccurrence( RockContext rockContext )
+        {
+            if ( UserCanEdit )
+            {
+                return true;
+            }
+
+            int? calendarId = PageParameter( "EventCalendarId" ).AsIntegerOrNull();
+            if ( calendarId.HasValue )
+            {
+                var calendar = new EventCalendarService( rockContext ).Get( calendarId.Value );
+                if ( calendar != null )
+                {
+                    return calendar.IsAuthorized( Authorization.EDIT, CurrentPerson );
+                }
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// Determines whether the current person can edit, save or delete the occurrence in
+        /// the hidden field. The hidden field is client controlled, so an existing occurrence
+        /// must be the one in the page parameter, and the person must pass the same edit check
+        /// used to show the edit button.
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns><c>true</c> if the action is allowed; otherwise, <c>false</c>.</returns>
+        private bool IsOccurrenceActionAllowed( RockContext rockContext )
+        {
+            int eventItemOccurrenceId = hfEventItemOccurrenceId.ValueAsInt();
+            if ( eventItemOccurrenceId != 0 && eventItemOccurrenceId != PageParameter( "EventItemOccurrenceId" ).AsInteger() )
+            {
+                return false;
+            }
+
+            return CanEditOccurrence( rockContext );
+        }
+
+        /// <summary>
         /// Shows the detail.
         /// </summary>
         /// <param name="eventItemId">The eventItem identifier.</param>
@@ -243,8 +288,6 @@ namespace RockWeb.Blocks.Event
             EventItemOccurrence eventItemOccurrence = null;
 
             var rockContext = new RockContext();
-
-            bool canEdit = UserCanEdit;
 
             if ( !eventItemOccurrenceId.Equals( 0 ) )
             {
@@ -260,18 +303,7 @@ namespace RockWeb.Blocks.Event
                 pdAuditDetails.Visible = false;
             }
 
-            if ( !canEdit )
-            {
-                int? calendarId = PageParameter( "EventCalendarId" ).AsIntegerOrNull();
-                if ( calendarId.HasValue )
-                {
-                    var calendar = new EventCalendarService( rockContext ).Get( calendarId.Value );
-                    if ( calendar != null )
-                    {
-                        canEdit = calendar.IsAuthorized( Authorization.EDIT, CurrentPerson );
-                    }
-                }
-            }
+            bool canEdit = CanEditOccurrence( rockContext );
 
             bool readOnly = false;
 
@@ -681,6 +713,12 @@ namespace RockWeb.Blocks.Event
         protected void btnEdit_Click( object sender, EventArgs e )
         {
             var rockContext = new RockContext();
+
+            if ( !IsOccurrenceActionAllowed( rockContext ) )
+            {
+                return;
+            }
+
             var eventItemOccurrence = new EventItemOccurrenceService( rockContext ).Get( hfEventItemOccurrenceId.Value.AsInteger() );
             ShowEditDetails( eventItemOccurrence );
         }
@@ -694,6 +732,11 @@ namespace RockWeb.Blocks.Event
         {
             using ( var rockContext = new RockContext() )
             {
+                if ( !IsOccurrenceActionAllowed( rockContext ) )
+                {
+                    return;
+                }
+
                 EventItemOccurrenceService eventItemOccurrenceService = new EventItemOccurrenceService( rockContext );
                 EventItemOccurrence eventItemOccurrence = eventItemOccurrenceService.Get( hfEventItemOccurrenceId.Value.AsInteger() );
 
@@ -737,6 +780,12 @@ namespace RockWeb.Blocks.Event
                 var eventItemOccurrenceGroupMapService = new EventItemOccurrenceGroupMapService( rockContext );
                 var registrationInstanceService = new RegistrationInstanceService( rockContext );
                 var scheduleService = new ScheduleService( rockContext );
+
+                if ( !IsOccurrenceActionAllowed( rockContext ) )
+                {
+                    nbEditModeMessage.Text = EditModeMessage.ReadOnlyEditActionNotAllowed( EventItemOccurrence.FriendlyTypeName );
+                    return;
+                }
 
                 int eventItemOccurrenceId = hfEventItemOccurrenceId.ValueAsInt();
                 if ( eventItemOccurrenceId != 0 )

@@ -378,6 +378,12 @@ namespace RockWeb.Blocks.Finance
                     var orphanedBinaryFileIds = new List<int>();
                     var documentsInDb = documentsService.Queryable().Where( b => b.BenevolenceRequestId == benevolenceRequest.Id ).ToList();
 
+                    // Only accept documents already on the request or new uploads.
+                    var existingDocumentBinaryFileIds = documentsInDb.Select( d => d.BinaryFileId ).ToList();
+                    _documentsState = _documentsState
+                        .Where( id => existingDocumentBinaryFileIds.Contains( id ) || binaryFileService.IsUploadedBinaryFileAllowedForPerson( id, null, CurrentPerson ) )
+                        .ToList();
+
                     foreach ( var document in documentsInDb.Where( i => !_documentsState.Contains( i.BinaryFileId ) ) )
                     {
                         orphanedBinaryFileIds.Add( document.BinaryFileId );

@@ -436,6 +436,28 @@ namespace RockWeb.Blocks.Steps
 
             int stepTypeId = int.Parse( hfStepTypeId.Value );
             bool isNew = false;
+
+            // The step type id comes from a hidden field, so re-apply the edit rule OnInit uses:
+            // EDIT on the step type, or EDIT on the program when adding a new step type.
+            if ( stepTypeId == 0 )
+            {
+                var stepProgram = new StepProgramService( rockContext ).Get( _stepProgramId );
+                if ( stepProgram == null || !stepProgram.IsAuthorized( Authorization.EDIT, CurrentPerson ) )
+                {
+                    nbEditModeMessage.Text = EditModeMessage.ReadOnlyEditActionNotAllowed( StepType.FriendlyTypeName );
+                    return -1;
+                }
+            }
+            else
+            {
+                var existingStepType = stepTypeService.Get( stepTypeId );
+                if ( existingStepType == null || !existingStepType.IsAuthorized( Authorization.EDIT, CurrentPerson ) )
+                {
+                    nbEditModeMessage.Text = EditModeMessage.ReadOnlyEditActionNotAllowed( StepType.FriendlyTypeName );
+                    return -1;
+                }
+            }
+
             if ( stepTypeId == 0 )
             {
                 stepType = new StepType();

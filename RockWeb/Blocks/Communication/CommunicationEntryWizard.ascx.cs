@@ -2562,6 +2562,13 @@ function onTaskCompleted( resultData )
         /// <param name="e">The <see cref="FileUploaderEventArgs"/> instance containing the event data.</param>
         protected void fupEmailAttachments_FileUploaded( object sender, FileUploaderEventArgs e )
         {
+            // The uploaded file id comes from the client, so make sure it is
+            // a file that was just uploaded by the current person.
+            if ( !new BinaryFileService( new RockContext() ).IsUploadedBinaryFileAllowedForPerson( fupEmailAttachments.BinaryFileId, null, CurrentPerson ) )
+            {
+                fupEmailAttachments.BinaryFileId = null;
+            }
+
             UpdateEmailAttachedFiles( true );
         }
 
@@ -2695,6 +2702,14 @@ function onTaskCompleted( resultData )
         /// <param name="e">The <see cref="FileUploaderEventArgs"/> instance containing the event data.</param>
         protected void fupMobileAttachment_FileUploaded( object sender, FileUploaderEventArgs e )
         {
+            // The uploaded file id comes from the client, so make sure it is
+            // a file that was just uploaded by the current person before it
+            // is resized.
+            if ( !new BinaryFileService( new RockContext() ).IsUploadedBinaryFileAllowedForPerson( fupMobileAttachment.BinaryFileId, null, CurrentPerson ) )
+            {
+                fupMobileAttachment.BinaryFileId = null;
+            }
+
             UpdateMobileAttachedFiles( true );
         }
 
@@ -3704,6 +3719,46 @@ function onTaskCompleted( resultData )
         }
 
         /// <summary>
+        /// Gets the binary file identifiers that may be attached to the communication
+        /// without being a new upload: the files already attached to the existing
+        /// communication and the files attached to the selected template. The
+        /// template is only used if it passes the same active and VIEW filter
+        /// that the template picker uses.
+        /// </summary>
+        /// <param name="communicationId">The existing communication identifier, which has already been checked with <see cref="CanEditCommunication(Rock.Model.Communication)"/>.</param>
+        /// <param name="communicationTemplateId">The selected communication template identifier.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns>The set of binary file identifiers that are allowed.</returns>
+        private HashSet<int> GetAllowedAttachmentBinaryFileIds( int? communicationId, int? communicationTemplateId, RockContext rockContext )
+        {
+            var allowedBinaryFileIds = new HashSet<int>();
+
+            if ( communicationId.HasValue && communicationId.Value > 0 )
+            {
+                var communication = new CommunicationService( rockContext ).Get( communicationId.Value );
+
+                if ( communication != null )
+                {
+                    allowedBinaryFileIds.UnionWith( communication.Attachments.Select( a => a.BinaryFileId ) );
+                }
+            }
+
+            if ( communicationTemplateId.HasValue )
+            {
+                var communicationTemplate = new CommunicationTemplateService( rockContext ).Get( communicationTemplateId.Value );
+
+                if ( communicationTemplate != null
+                    && communicationTemplate.IsActive
+                    && communicationTemplate.IsAuthorized( Rock.Security.Authorization.VIEW, this.CurrentPerson ) )
+                {
+                    allowedBinaryFileIds.UnionWith( communicationTemplate.Attachments.Select( a => a.BinaryFileId ) );
+                }
+            }
+
+            return allowedBinaryFileIds;
+        }
+
+        /// <summary>
         /// Create or update a Communication by applying the current selections and settings.
         /// </summary>
         /// <param name="rockContext"></param>
@@ -3748,11 +3803,21 @@ function onTaskCompleted( resultData )
 
             settings.CommunicationTemplateId = hfSelectedCommunicationTemplateId.Value.AsIntegerOrNull();
 
-            settings.EmailBinaryFileIds = hfEmailAttachedBinaryFileIds.Value.SplitDelimitedValues().AsIntegerList();
+            // The attachment ids come from the client, so only keep the files
+            // that are already attached to the communication, belong to the
+            // selected template, or were uploaded by the current person.
+            var allowedAttachmentBinaryFileIds = GetAllowedAttachmentBinaryFileIds( settings.CommunicationId, settings.CommunicationTemplateId, rockContext );
+            var binaryFileService = new BinaryFileService( rockContext );
 
-            if ( fupMobileAttachment.BinaryFileId.HasValue )
+            settings.EmailBinaryFileIds = hfEmailAttachedBinaryFileIds.Value.SplitDelimitedValues().AsIntegerList()
+                .Where( id => allowedAttachmentBinaryFileIds.Contains( id ) || binaryFileService.IsUploadedBinaryFileAllowedForPerson( id, null, CurrentPerson ) )
+                .ToList();
+
+            var smsBinaryFileId = fupMobileAttachment.BinaryFileId;
+            if ( smsBinaryFileId.HasValue
+                && ( allowedAttachmentBinaryFileIds.Contains( smsBinaryFileId.Value ) || binaryFileService.IsUploadedBinaryFileAllowedForPerson( smsBinaryFileId, null, CurrentPerson ) ) )
             {
-                settings.SmsBinaryFileIds = new List<int> { fupMobileAttachment.BinaryFileId.Value };
+                settings.SmsBinaryFileIds = new List<int> { smsBinaryFileId.Value };
             }
 
             if ( chkSendImmediately.Checked )

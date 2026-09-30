@@ -1273,6 +1273,13 @@ namespace RockWeb.Blocks.Administration
             PageService pageService = new PageService( rockContext );
             int sourcePageId = hfPageId.ValueAsInt();
 
+            // The page id comes from a hidden field, so it must be the page this block is showing.
+            if ( sourcePageId != PageParameter( PageParamKey.Page ).AsInteger() )
+            {
+                mdCopyPage.Hide();
+                return;
+            }
+
             Guid? copiedPageGuid = pageService.CopyPage( sourcePageId, cbCopyPageIncludeChildPages.Checked, this.CurrentPersonAliasId );
             if ( copiedPageGuid.HasValue )
             {
