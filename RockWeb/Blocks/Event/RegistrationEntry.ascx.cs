@@ -1341,8 +1341,18 @@ namespace RockWeb.Blocks.Event
             CurrentRegistrantIndex = 0;
             CurrentFormIndex = 0;
 
+            // The number selected is posted by the client and its limits are only enforced
+            // in the browser, so apply the same limits here before creating registrants.
+            int max = MaxRegistrants;
+            if ( !RegistrationTemplate.WaitListEnabled && RegistrationState?.SlotsAvailable != null && RegistrationState.SlotsAvailable.Value < max )
+            {
+                max = RegistrationState.SlotsAvailable.Value;
+            }
+
+            var registrantCount = Math.Max( Math.Min( numHowMany.Value, max ), MinRegistrants );
+
             // Create registrants based on the number selected
-            SetRegistrantState( numHowMany.Value );
+            SetRegistrantState( registrantCount );
 
             SetProgressBarStepsCount();
 
@@ -2113,6 +2123,7 @@ namespace RockWeb.Blocks.Event
                         .Queryable().AsNoTracking()
                         .Where( l =>
                             l.UrlSlug == registrationSlug &&
+                            l.RegistrationInstanceId == registration.RegistrationInstanceId &&
                             l.RegistrationInstance != null &&
                             l.RegistrationInstance.IsActive &&
                             l.RegistrationInstance.RegistrationTemplate != null &&
@@ -3201,7 +3212,14 @@ namespace RockWeb.Blocks.Event
                             if ( familyMembers.Count() == 1 )
                             {
                                 registrantPerson = familyMembers.First();
-                                if ( !string.IsNullOrWhiteSpace( email ) )
+
+                                // The registrar may have been matched from what was entered and the
+                                // email comes from the form, so only update it when the current person
+                                // is in the registrar's family.
+                                var isCurrentPersonInRegistrarFamily = CurrentPersonId.HasValue
+                                    && registrar.GetFamilyMembers( true, rockContext ).Any( m => m.PersonId == CurrentPersonId.Value );
+
+                                if ( !string.IsNullOrWhiteSpace( email ) && isCurrentPersonInRegistrarFamily )
                                 {
                                     registrantPerson.Email = email;
                                 }
@@ -3298,7 +3316,9 @@ namespace RockWeb.Blocks.Event
                             {
                                 case RegistrationPersonFieldType.Email:
                                     // Only update the person's email if they are in the same family as the logged in person (not the registrar)
-                                    var isFamilyMember = CurrentPersonId.HasValue && registrantPerson.GetFamilies().ToList().Select( f => f.ActiveMembers().Where( m => m.PersonId == CurrentPerson.Id ) ).Any();
+                                    var isFamilyMember = CurrentPersonId.HasValue
+                                        && ( registrantPerson.Id == CurrentPersonId.Value
+                                            || registrantPerson.GetFamilies().ToList().Any( f => f.ActiveMembers().Any( m => m.PersonId == CurrentPersonId ) ) );
                                     if ( isFamilyMember )
                                     {
                                         email = fieldValue.ToString().Trim();
@@ -3948,6 +3968,13 @@ namespace RockWeb.Blocks.Event
                 var group = groupService.Get( registration.GroupId.Value );
                 if ( group != null )
                 {
+                    // Never allow a registration to add people to a security role.
+                    if ( group.IsSecurityRole || group.GroupTypeId == GroupTypeCache.GetSecurityRoleGroupType()?.Id )
+                    {
+                        ExceptionLogService.LogException( new Exception( $"Registrants of Registration {registration.Id} (Registration Instance {registration.RegistrationInstanceId}) were not added to Group {group.Id} because it is a security role." ) );
+                        return;
+                    }
+
                     foreach ( var registrant in registration.Registrants.Where( r => !r.OnWaitList && r.PersonAliasId.HasValue ).ToList() )
                     {
                         var personAlias = personAliasService.Get( registrant.PersonAliasId.Value );
