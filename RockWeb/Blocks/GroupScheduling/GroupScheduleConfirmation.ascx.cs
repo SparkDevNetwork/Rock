@@ -860,7 +860,7 @@ namespace RockWeb.Blocks.GroupScheduling
 
             var selectedPersonId = _selectedPerson.Id;
 
-            return new AttendanceService( new RockContext() ).Queryable()
+            return new AttendanceService( RockApp.Current.CreateRockContext() ).Queryable()
                 .AsNoTracking()
                 .Any( a => a.Id == attendanceId && a.PersonAlias.PersonId == selectedPersonId );
         }

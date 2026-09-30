@@ -571,7 +571,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
         /// <param name="e"></param>
         protected void mdReprintLabels_PrintClick( object sender, EventArgs e )
         {
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
 
             // Determine the person the same way the reprint button did instead of trusting the posted value.
             var personId = GetReprintPersonId( GetPersonGuid(), rockContext );

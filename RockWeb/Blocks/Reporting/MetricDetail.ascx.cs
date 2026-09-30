@@ -811,7 +811,7 @@ Example: Let's say you have a DataView called 'Small Group Attendance for Last W
         {
             mdManualRunConfirm.Hide();
 
-            var metric = new MetricService( new RockContext() ).Get( hfMetricId.Value, !PageCache.Layout.Site.DisablePredictableIds );
+            var metric = new MetricService( RockApp.Current.CreateRockContext() ).Get( hfMetricId.Value, !PageCache.Layout.Site.DisablePredictableIds );
             if ( !IsMetricAuthorized( metric, Authorization.ADMINISTRATE ) )
             {
                 return;
