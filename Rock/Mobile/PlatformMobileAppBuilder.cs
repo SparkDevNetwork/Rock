@@ -44,7 +44,8 @@ namespace Rock.Mobile
     /// </para>
     /// <para>
     /// Church owned values (the palette colors, the in-app logo, a block's church-picked
-    /// settings) are never written here. Seed-once values, such as the bootstrap API key, are
+    /// settings) are never written here; <see cref="PlatformMobileAppChurchSettings"/> holds
+    /// the list, and <c>EnsureBlock</c> refuses any key on it. Seed-once values, such as the bootstrap API key, are
     /// created when missing and never overwritten.
     /// </para>
     /// </remarks>
@@ -99,21 +100,29 @@ namespace Rock.Mobile
 
         /// <summary>
         /// The home page menu. Rendered on the server per request (Dynamic Content) so it can
-        /// show the log in button or the feature buttons depending on who is logged in.
+        /// show the log in button or the feature buttons depending on who is logged in. The
+        /// <c>{0}</c> placeholder takes the content button, which is left out when the church
+        /// has no content collection.
         /// </summary>
-        private const string HomeMenuXaml = @"<StackLayout Spacing=""12"" Padding=""16"">
-{% if CurrentPerson %}
-    <Label Text=""Hi {{ CurrentPerson.NickName | Escape }}"" StyleClass=""title1"" />
-    <Button Text=""Outreach Toolbox"" StyleClass=""btn, btn-primary"" Command=""{Binding PushPage}"" CommandParameter=""" + SystemGuid.PlatformMobileApp.Page.OUTREACH + @""" />
-    <Button Text=""Connections"" StyleClass=""btn, btn-primary"" Command=""{Binding PushPage}"" CommandParameter=""" + SystemGuid.PlatformMobileApp.Page.CONNECTIONS + @""" />
-    <Button Text=""Log Out"" StyleClass=""btn, btn-link"" Command=""{Binding Logout}"" />
-{% else %}
+        private const string HomeMenuXamlFormat = @"<StackLayout Spacing=""12"" Padding=""16"">
+{{% if CurrentPerson %}}
+    <Label Text=""Hi {{{{ CurrentPerson.NickName | Escape }}}}"" StyleClass=""title1"" />
+    <Button Text=""Outreach Toolbox"" StyleClass=""btn, btn-primary"" Command=""{{Binding PushPage}}"" CommandParameter=""" + SystemGuid.PlatformMobileApp.Page.OUTREACH + @""" />
+    <Button Text=""Connections"" StyleClass=""btn, btn-primary"" Command=""{{Binding PushPage}}"" CommandParameter=""" + SystemGuid.PlatformMobileApp.Page.CONNECTIONS + @""" />
+{0}    <Button Text=""Log Out"" StyleClass=""btn, btn-link"" Command=""{{Binding Logout}}"" />
+{{% else %}}
     <Label Text=""Welcome"" StyleClass=""title1"" />
     <Label Text=""Log in to use the Outreach Toolbox and Connections."" />
-    <Button Text=""Log In"" StyleClass=""btn, btn-primary"" Command=""{Binding PushPage}"" CommandParameter=""" + SystemGuid.PlatformMobileApp.Page.LOGIN + @""" />
-{% endif %}
-    <Button Text=""Switch Church"" StyleClass=""btn, btn-link"" Command=""{Binding SwitchChurch}"" />
+{0}    <Button Text=""Log In"" StyleClass=""btn, btn-primary"" Command=""{{Binding PushPage}}"" CommandParameter=""" + SystemGuid.PlatformMobileApp.Page.LOGIN + @""" />
+{{% endif %}}
+    <Button Text=""Switch Church"" StyleClass=""btn, btn-link"" Command=""{{Binding SwitchChurch}}"" />
 </StackLayout>";
+
+        /// <summary>
+        /// The home menu's content button, shown to everyone because content needs no login.
+        /// </summary>
+        private const string HomeMenuContentButtonXaml = @"    <Button Text=""Content"" StyleClass=""btn, btn-primary"" Command=""{Binding PushPage}"" CommandParameter=""" + SystemGuid.PlatformMobileApp.Page.CONTENT + @""" />
+";
 
         /// <summary>
         /// The block types the builder places. Their attributes are created before the ladder
@@ -132,7 +141,8 @@ namespace Rock.Mobile
             MobileConnectionOpportunityListBlockTypeGuid,
             MobileConnectionRequestListBlockTypeGuid,
             MobileConnectionRequestDetailBlockTypeGuid,
-            MobileAddConnectionRequestBlockTypeGuid
+            MobileAddConnectionRequestBlockTypeGuid,
+            ContentCollectionViewBlockTypeGuid
         };
 
         /*
@@ -179,6 +189,12 @@ namespace Rock.Mobile
         /// The mobile Add Connection Request block type (Rock.Blocks.Mobile.Connection).
         /// </summary>
         private const string MobileAddConnectionRequestBlockTypeGuid = "5A198A75-177C-4A2A-8558-BFB5A4EFCB30";
+
+        /// <summary>
+        /// The Content Collection View block type (Rock.Blocks.Cms), which serves both web
+        /// and mobile.
+        /// </summary>
+        private const string ContentCollectionViewBlockTypeGuid = "CC387575-3530-4CD6-97E0-1F449DCA1869";
 
         #endregion Fields
 
@@ -567,22 +583,27 @@ namespace Rock.Mobile
 
         /// <summary>
         /// Rock 21.0: the Site, its two layouts, the home page with its menu, the login page,
-        /// the Outreach Toolbox and Connections pages, and the service account with its
-        /// seed-once bootstrap API key.
+        /// the Outreach Toolbox, Connections and content pages, and the service account with
+        /// its seed-once bootstrap API key.
         /// </summary>
         /// <param name="context">The builder context.</param>
         private static void EnsureRock21_0( BuilderContext context )
         {
             var site = EnsureSite( context );
+            var churchOwnedSnapshot = PlatformMobileAppChurchSettings.GetSiteSnapshot( site );
 
             var homepageLayout = EnsureLayout( context, site, SystemGuid.PlatformMobileApp.Layout.HOMEPAGE, "Homepage", "Homepage.xaml", HomepageLayoutXaml );
             var fullLayout = EnsureLayout( context, site, SystemGuid.PlatformMobileApp.Layout.FULL, "Full", "Full.xaml", FullLayoutXaml );
 
             var homePage = EnsurePage( context, SystemGuid.PlatformMobileApp.Page.HOME, "Home", homepageLayout, null, 0, DisplayInNavWhen.WhenAllowed );
 
+            var hasContent = EnsureContentPage( context, fullLayout, homePage );
+
+            var homeMenuXaml = string.Format( HomeMenuXamlFormat, hasContent ? HomeMenuContentButtonXaml : string.Empty );
+
             var homeMenuBlock = EnsureBlock( context, SystemGuid.PlatformMobileApp.Block.HOME_MENU, "Home Menu", homePage, MobileContentBlockTypeGuid, 0, new Dictionary<string, string>
             {
-                ["Content"] = HomeMenuXaml,
+                ["Content"] = homeMenuXaml,
                 ["DynamicContent"] = "True"
             } );
 
@@ -609,6 +630,9 @@ namespace Rock.Mobile
             settings.OutreachToolboxTouchpointPageId = touchpointPage.Id;
             EnsureMobileStyleSettings( settings );
             SetAdditionalSettingsIfChanged( site, settings );
+
+            // The settings blob also holds the church's dark logo and colors; prove they survived.
+            PlatformMobileAppChurchSettings.EnsureSiteUnchanged( churchOwnedSnapshot, site );
 
             context.Save( site, "Site references" );
         }
@@ -687,6 +711,37 @@ namespace Rock.Mobile
 
             EnsureBlock( context, SystemGuid.PlatformMobileApp.Block.CONNECTION_REQUEST_DETAIL, "Connection Request Detail", requestDetailPage, MobileConnectionRequestDetailBlockTypeGuid, 0, null );
             EnsureBlock( context, SystemGuid.PlatformMobileApp.Block.ADD_CONNECTION_REQUEST, "Add Connection Request", addRequestPage, MobileAddConnectionRequestBlockTypeGuid, 0, null );
+        }
+
+        /// <summary>
+        /// Ensures the content page and its Content Collection View block. The block's
+        /// collection is church owned and starts empty; until the church picks one, the page
+        /// stays out of the navigation and the home menu leaves out its button.
+        /// </summary>
+        /// <param name="context">The builder context.</param>
+        /// <param name="fullLayout">The non-scrolling layout; the block scrolls its own results.</param>
+        /// <param name="homePage">The home page, the parent of the content page.</param>
+        /// <returns><c>true</c> if the church has picked a collection that still exists.</returns>
+        private static bool EnsureContentPage( BuilderContext context, Layout fullLayout, Page homePage )
+        {
+            // The builder only reads the church's pick, to decide what is platform owned around it.
+            // On a first Build the block does not exist yet, so there is no pick.
+            var collectionGuid = PlatformMobileAppChurchSettings.GetBlockValue(
+                SystemGuid.PlatformMobileApp.Block.CONTENT_COLLECTION_VIEW.AsGuid(),
+                PlatformMobileAppChurchSettings.BlockKey.ContentCollection,
+                context.RockContext ).AsGuidOrNull();
+            var hasContent = collectionGuid.HasValue && ContentCollectionCache.Get( collectionGuid.Value ) != null;
+
+            var displayInNavWhen = hasContent ? DisplayInNavWhen.WhenAllowed : DisplayInNavWhen.Never;
+            var contentPage = EnsurePage( context, SystemGuid.PlatformMobileApp.Page.CONTENT, "Content", fullLayout, homePage, 3, displayInNavWhen );
+
+            // Search on load, so the page opens on the collection's items instead of an empty search box.
+            EnsureBlock( context, SystemGuid.PlatformMobileApp.Block.CONTENT_COLLECTION_VIEW, "Content Collection View", contentPage, ContentCollectionViewBlockTypeGuid, 0, new Dictionary<string, string>
+            {
+                ["SearchOnLoad"] = "True"
+            } );
+
+            return hasContent;
         }
 
         #endregion Ladder Versions
@@ -862,6 +917,12 @@ namespace Rock.Mobile
 
             foreach ( var attributeValue in attributeValues )
             {
+                // The skip list is a hard rule: a church owned setting is never written here.
+                if ( PlatformMobileAppChurchSettings.IsChurchOwned( block.Guid, attributeValue.Key ) )
+                {
+                    throw new InvalidOperationException( $"Block '{name}' setting '{attributeValue.Key}' is church owned and cannot be written by the builder." );
+                }
+
                 // A missing attribute means the block type changed; fail loudly rather than skip the setting.
                 if ( !block.Attributes.ContainsKey( attributeValue.Key ) )
                 {

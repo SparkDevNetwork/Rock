@@ -15,7 +15,10 @@
 // </copyright>
 //
 
+using System.Collections.Generic;
+
 using Rock.Enums.Mobile;
+using Rock.ViewModels.Utility;
 
 namespace Rock.ViewModels.Blocks.Mobile.PlatformMobileAppDetail
 {
@@ -49,5 +52,15 @@ namespace Rock.ViewModels.Blocks.Mobile.PlatformMobileAppDetail
         /// Gets or sets the report of the last run, if there has been one.
         /// </summary>
         public PlatformMobileAppRunReportBag LastRun { get; set; }
+
+        /// <summary>
+        /// Gets or sets the church owned settings, or null if the app is not built yet.
+        /// </summary>
+        public PlatformMobileAppSettingsBag Settings { get; set; }
+
+        /// <summary>
+        /// Gets or sets the content collections the church can pick from.
+        /// </summary>
+        public List<ListItemBag> ContentCollectionOptions { get; set; }
     }
 }

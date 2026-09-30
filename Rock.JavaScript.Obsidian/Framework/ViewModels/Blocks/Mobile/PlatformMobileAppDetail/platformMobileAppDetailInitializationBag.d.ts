@@ -22,12 +22,17 @@
 //
 import { PlatformMobileAppBuildState } from "@Obsidian/Enums/Mobile/platformMobileAppBuildState";
 import { PlatformMobileAppRunReportBag } from "@Obsidian/ViewModels/Blocks/Mobile/PlatformMobileAppDetail/platformMobileAppRunReportBag";
+import { PlatformMobileAppSettingsBag } from "@Obsidian/ViewModels/Blocks/Mobile/PlatformMobileAppDetail/platformMobileAppSettingsBag";
+import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
 /**
  * The state the Platform Mobile App Detail block shows: where the platform mobile
  * application stands against this Rock's builder, and the last run's report.
  */
 export type PlatformMobileAppDetailInitializationBag = {
+    /** Gets or sets the content collections the church can pick from. */
+    contentCollectionOptions?: ListItemBag[] | null;
+
     /** Gets or sets the top of the builder ladder compiled into this Rock. */
     currentDefinitionVersion?: string | null;
 
@@ -36,6 +41,9 @@ export type PlatformMobileAppDetailInitializationBag = {
 
     /** Gets or sets the report of the last run, if there has been one. */
     lastRun?: PlatformMobileAppRunReportBag | null;
+
+    /** Gets or sets the church owned settings, or null if the app is not built yet. */
+    settings?: PlatformMobileAppSettingsBag | null;
 
     /** Gets or sets the version stamped on the platform Site, or null if it is not built. */
     stampVersion?: string | null;

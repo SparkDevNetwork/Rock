@@ -8,7 +8,8 @@
                         btnType="primary"
                         btnSize="sm"
                         class="ml-2"
-                        :isLoading="isRunning"
+                        :isLoading="isRunning && !isSavingSettings"
+                        :disabled="isSavingSettings"
                         loadingText="Running..."
                         @click="onRunClick">
                 {{ buttonText }}
@@ -33,6 +34,91 @@
         <p v-else-if="state === PlatformMobileAppBuildState.Current">
             The platform mobile application is up to date. Repair App puts back anything that was changed outside this panel, and is safe to run at any time.
         </p>
+
+        <div v-if="isSettingsSectionVisible" class="mt-3">
+            <h5>Settings</h5>
+
+            <template v-if="!isEditMode">
+                <ValueDetailList :modelValue="settingsValues" />
+
+                <RockButton v-if="config.isEditable"
+                            btnType="primary"
+                            btnSize="sm"
+                            :disabled="isRunning"
+                            @click="onEditClick">
+                    Edit
+                </RockButton>
+            </template>
+
+            <template v-else>
+                <div class="row">
+                    <div class="col-md-6">
+                        <ImageUploader v-model="editLightLogo"
+                                       label="Logo, Light Background"
+                                       help="The logo shown inside the app over a light navigation bar. Recommended height of 120px and minimum width of 560px."
+                                       :disabled="isRunning" />
+                    </div>
+
+                    <div class="col-md-6">
+                        <ImageUploader v-model="editDarkLogo"
+                                       label="Logo, Dark Background"
+                                       help="The logo shown inside the app over a dark navigation bar, in dark mode."
+                                       :disabled="isRunning" />
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <ColorPicker v-model="editColorStrong"
+                                     label="Color, Strong"
+                                     help="The main shade of the church's color, used for buttons and links. In dark mode the app swaps it with the soft shade."
+                                     rules="required"
+                                     :disabled="isRunning" />
+                    </div>
+
+                    <div class="col-md-6">
+                        <ColorPicker v-model="editColorSoft"
+                                     label="Color, Soft"
+                                     help="A light tint of the church's color, used for backgrounds behind it. It becomes the accent in dark mode."
+                                     rules="required"
+                                     :disabled="isRunning" />
+                    </div>
+                </div>
+
+                <DropDownList v-model="editContentCollection"
+                              label="Content Collection"
+                              help="The collection the app's Content page shows. Choose none to take the Content button off the home page."
+                              :items="contentCollectionOptions"
+                              :showBlankItem="true"
+                              blankValue=""
+                              :disabled="isRunning || !contentCollectionOptions.length"
+                              style="max-width: 360px;" />
+
+                <p v-if="!contentCollectionOptions.length" class="text-muted">
+                    There are no content collections in this Rock yet. Create one under CMS &gt; Content Collections first.
+                </p>
+
+                <p class="text-muted">
+                    Saving runs the builder right away, so the app is redeployed with the new settings.
+                </p>
+
+                <div class="actions">
+                    <RockButton btnType="primary"
+                                :isLoading="isSavingSettings"
+                                loadingText="Saving..."
+                                :disabled="isRunning && !isSavingSettings"
+                                @click="onSaveSettingsClick">
+                        Save
+                    </RockButton>
+
+                    <RockButton btnType="link"
+                                :disabled="isRunning"
+                                @click="onCancelClick">
+                        Cancel
+                    </RockButton>
+                </div>
+            </template>
+        </div>
 
         <div v-if="lastRun" class="mt-3">
             <h5>
@@ -77,16 +163,26 @@
 </template>
 
 <script setup lang="ts">
+    import ColorPicker from "@Obsidian/Controls/colorPicker.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import ImageUploader from "@Obsidian/Controls/imageUploader.obs";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import Panel from "@Obsidian/Controls/panel.obs";
     import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import ValueDetailList from "@Obsidian/Controls/valueDetailList.obs";
+    import { ValueDetailListItemBuilder } from "@Obsidian/Core/Controls/valueDetailListItemBuilder";
+    import { ValueDetailListItem } from "@Obsidian/Types/Controls/valueDetailListItem";
     import { PlatformMobileAppBuildState } from "@Obsidian/Enums/Mobile/platformMobileAppBuildState";
     import { PlatformMobileAppRunModeDescription } from "@Obsidian/Enums/Mobile/platformMobileAppRunMode";
     import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
     import { PlatformMobileAppDetailInitializationBag } from "@Obsidian/ViewModels/Blocks/Mobile/PlatformMobileAppDetail/platformMobileAppDetailInitializationBag";
     import { PlatformMobileAppRunReportBag } from "@Obsidian/ViewModels/Blocks/Mobile/PlatformMobileAppDetail/platformMobileAppRunReportBag";
+    import { PlatformMobileAppSettingsBag } from "@Obsidian/ViewModels/Blocks/Mobile/PlatformMobileAppDetail/platformMobileAppSettingsBag";
     import { PlatformMobileAppVersionReportBag } from "@Obsidian/ViewModels/Blocks/Mobile/PlatformMobileAppDetail/platformMobileAppVersionReportBag";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { areEqual, toGuidOrNull } from "@Obsidian/Utility/guid";
+    import { escapeHtml } from "@Obsidian/Utility/stringUtils";
     import { computed, ref } from "vue";
 
     const config = useConfigurationValues<PlatformMobileAppDetailInitializationBag>();
@@ -99,7 +195,18 @@
     const currentDefinitionVersion = ref(config.currentDefinitionVersion ?? null);
     const lastRun = ref<PlatformMobileAppRunReportBag | null>(config.lastRun ?? null);
     const isRunning = ref(false);
+    const isSavingSettings = ref(false);
+    const isEditMode = ref(false);
     const errorMessage = ref("");
+    const contentCollectionOptions = ref<ListItemBag[]>(config.contentCollectionOptions ?? []);
+    const settings = ref<PlatformMobileAppSettingsBag | null>(config.settings ?? null);
+
+    /** The content collection being edited, as the dropdown's string value. */
+    const editContentCollection = ref("");
+    const editLightLogo = ref<ListItemBag | undefined>(undefined);
+    const editDarkLogo = ref<ListItemBag | undefined>(undefined);
+    const editColorStrong = ref("");
+    const editColorSoft = ref("");
 
     // #endregion Values
 
@@ -169,6 +276,28 @@
         return lastRun.value?.versions ?? [];
     });
 
+    /** The settings live on the platform Site, so they are only offered once the app exists and can run. */
+    const isSettingsSectionVisible = computed((): boolean => {
+        return !!settings.value
+            && (state.value === PlatformMobileAppBuildState.Current
+                || state.value === PlatformMobileAppBuildState.UpdateAvailable);
+    });
+
+    /** The saved settings, shown read only until Edit is clicked. */
+    const settingsValues = computed((): ValueDetailListItem[] => {
+        const valueBuilder = new ValueDetailListItemBuilder();
+        const collectionGuid = settings.value?.contentCollectionGuid;
+        const collection = contentCollectionOptions.value.find(o => areEqual(o.value, collectionGuid));
+
+        addLogoValue(valueBuilder, "Logo, Light Background", settings.value?.lightLogo);
+        addLogoValue(valueBuilder, "Logo, Dark Background", settings.value?.darkLogo);
+        addColorValue(valueBuilder, "Color, Strong", settings.value?.colorStrong);
+        addColorValue(valueBuilder, "Color, Soft", settings.value?.colorSoft);
+        valueBuilder.addTextValue("Content Collection", collection?.text ?? "Not set. The app shows no Content page until one is picked.");
+
+        return valueBuilder.build();
+    });
+
     const hasAnyChanges = computed((): boolean => {
         return lastRunVersions.value.some(v => (v.created?.length ?? 0) > 0 || (v.updated?.length ?? 0) > 0);
     });
@@ -189,10 +318,7 @@
             const result = await invokeBlockAction<PlatformMobileAppDetailInitializationBag>("Run");
 
             if (result.isSuccess && result.data) {
-                state.value = result.data.state;
-                stampVersion.value = result.data.stampVersion ?? null;
-                currentDefinitionVersion.value = result.data.currentDefinitionVersion ?? null;
-                lastRun.value = result.data.lastRun ?? null;
+                applyBag(result.data);
             }
             else {
                 errorMessage.value = result.errorMessage ?? "Unable to run the builder.";
@@ -203,5 +329,117 @@
         }
     }
 
+    /** Switches the settings to edit mode, starting from what is saved. */
+    function onEditClick(): void {
+        errorMessage.value = "";
+        editContentCollection.value = settings.value?.contentCollectionGuid ?? "";
+        editLightLogo.value = settings.value?.lightLogo ?? undefined;
+        editDarkLogo.value = settings.value?.darkLogo ?? undefined;
+        editColorStrong.value = settings.value?.colorStrong ?? "";
+        editColorSoft.value = settings.value?.colorSoft ?? "";
+        isEditMode.value = true;
+    }
+
+    /** Leaves edit mode without saving. */
+    function onCancelClick(): void {
+        isEditMode.value = false;
+    }
+
+    /**
+     * Saves every setting at once. The server runs the builder right after, so the
+     * button shows as saving for the whole of it and the app is deployed only once.
+     */
+    async function onSaveSettingsClick(): Promise<void> {
+        errorMessage.value = "";
+        isRunning.value = true;
+        isSavingSettings.value = true;
+
+        const bag: PlatformMobileAppSettingsBag = {
+            contentCollectionGuid: toGuidOrNull(editContentCollection.value),
+            lightLogo: editLightLogo.value ?? null,
+            darkLogo: editDarkLogo.value ?? null,
+            colorStrong: editColorStrong.value,
+            colorSoft: editColorSoft.value
+        };
+
+        try {
+            const result = await invokeBlockAction<PlatformMobileAppDetailInitializationBag>("SaveSettings", { bag });
+
+            if (result.isSuccess && result.data) {
+                applyBag(result.data);
+                isEditMode.value = false;
+            }
+            else {
+                errorMessage.value = result.errorMessage ?? "Unable to save the settings.";
+            }
+        }
+        finally {
+            isRunning.value = false;
+            isSavingSettings.value = false;
+        }
+    }
+
     // #endregion Event Handlers
+
+    // #region Functions
+
+    /**
+     * Adds a logo to the view mode list as a small preview, or says it is not set.
+     *
+     * @param valueBuilder The list being built.
+     * @param title The label.
+     * @param logo The uploaded logo, if any.
+     */
+    function addLogoValue(valueBuilder: ValueDetailListItemBuilder, title: string, logo: ListItemBag | null | undefined): void {
+        const guid = toGuidOrNull(logo?.value);
+
+        if (!guid) {
+            valueBuilder.addTextValue(title, "Not set");
+            return;
+        }
+
+        valueBuilder.addHtmlValue(title, `<img src="/GetImage.ashx?guid=${guid}&maxHeight=60" alt="${escapeHtml(logo?.text ?? "")}" style="max-height: 60px;" />`);
+    }
+
+    /**
+     * Adds a color to the view mode list as a swatch beside its value.
+     *
+     * @param valueBuilder The list being built.
+     * @param title The label.
+     * @param color The color value, if any.
+     */
+    function addColorValue(valueBuilder: ValueDetailListItemBuilder, title: string, color: string | null | undefined): void {
+        if (!color) {
+            valueBuilder.addTextValue(title, "Not set");
+            return;
+        }
+
+        // Only a plain color value goes into the style attribute; anything else shows as text.
+        const isPlainColor = /^[#a-zA-Z0-9(),.%\s]+$/.test(color);
+
+        if (!isPlainColor) {
+            valueBuilder.addTextValue(title, color);
+            return;
+        }
+
+        const safeColor = escapeHtml(color);
+
+        valueBuilder.addHtmlValue(title, `<span style="display: inline-block; width: 16px; height: 16px; border-radius: 4px; vertical-align: middle; border: 1px solid rgba(0, 0, 0, 0.15); background: ${safeColor};"></span> ${safeColor}`);
+    }
+
+    /**
+     * Shows the state the server returned after a run.
+     *
+     * @param bag The refreshed initialization bag.
+     */
+    function applyBag(bag: PlatformMobileAppDetailInitializationBag): void {
+        state.value = bag.state;
+        stampVersion.value = bag.stampVersion ?? null;
+        currentDefinitionVersion.value = bag.currentDefinitionVersion ?? null;
+        lastRun.value = bag.lastRun ?? null;
+        contentCollectionOptions.value = bag.contentCollectionOptions ?? [];
+        settings.value = bag.settings ?? null;
+    }
+
+    // #endregion Functions
 </script>

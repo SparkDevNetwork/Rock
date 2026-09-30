@@ -120,6 +120,11 @@ namespace Rock.SystemGuid
             /// The add connection request page.
             /// </summary>
             public const string ADD_CONNECTION_REQUEST = "0B1A941E-ED0B-491E-B8F7-1A5903DCECEE";
+
+            /// <summary>
+            /// The content page, showing the church's chosen content collection.
+            /// </summary>
+            public const string CONTENT = "5FD60F5E-071C-467E-AF45-86345047B585";
         }
 
         /// <summary>
@@ -186,6 +191,11 @@ namespace Rock.SystemGuid
             /// The Add Connection Request block on the add connection request page.
             /// </summary>
             public const string ADD_CONNECTION_REQUEST = "78CC9E45-9606-4EAF-BCF6-AC1FE8FD29E1";
+
+            /// <summary>
+            /// The Content Collection View block on the content page.
+            /// </summary>
+            public const string CONTENT_COLLECTION_VIEW = "2667E449-A12F-4D26-BC35-A1922D05D63D";
         }
 
         /// <summary>

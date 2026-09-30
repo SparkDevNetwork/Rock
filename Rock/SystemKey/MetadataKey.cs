@@ -56,6 +56,5 @@ namespace Rock.SystemKey
         /// campus payload last published to the church directory. See
         /// <see cref="Mobile.PlatformMobileAppCampusPayload"/>.
         /// </summary>
-        public const string PlatformMobileAppCampusHash = "core.platformMobileAppCampusHash";
-    }
+        public const string PlatformMobileAppCampusHash = "core.platformMobileAppCampusHash";    }
 }
