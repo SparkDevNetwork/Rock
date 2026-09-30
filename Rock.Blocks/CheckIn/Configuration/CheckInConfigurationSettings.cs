@@ -520,6 +520,29 @@ namespace Rock.Blocks.CheckIn.Configuration
                 return false;
             }
 
+            // This block only manages check-in templates (the ones the check-in
+            // configuration list shows), so a key for any other group type is
+            // treated as not found.
+            if ( entity.Id != 0 )
+            {
+                var templatePurposeId = DefinedValueCache.GetId( Rock.SystemGuid.DefinedValue.GROUPTYPE_PURPOSE_CHECKIN_TEMPLATE.AsGuid() );
+
+                if ( !templatePurposeId.HasValue || entity.GroupTypePurposeValueId != templatePurposeId.Value )
+                {
+                    error = ActionBadRequest( $"{FRIENDLY_TYPE_NAME} not found." );
+                    return false;
+                }
+
+                // The initial view shows an error instead of the edit button
+                // when the person can not view the template, so require the
+                // same here.
+                if ( !entity.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson ) )
+                {
+                    error = ActionBadRequest( $"Not authorized to edit {FRIENDLY_TYPE_NAME}." );
+                    return false;
+                }
+            }
+
             if ( !BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
             {
                 error = ActionBadRequest( $"Not authorized to edit {FRIENDLY_TYPE_NAME}." );

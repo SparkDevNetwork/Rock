@@ -1391,10 +1391,41 @@ namespace Rock.Blocks.Group
             var oldChatChannelAvatarId = entity.ChatChannelAvatarBinaryFileId;
             var oldScheduleId = entity.ScheduleId;
 
+            // The schedule picker only offers named schedules, so a newly
+            // selected named schedule must have a name. Otherwise a tampered
+            // value could bind this group to another group's inline schedule,
+            // which a later Weekly or Custom edit here would then overwrite.
+            if ( !IsNamedScheduleSelectionAllowed( box, oldScheduleId ) )
+            {
+                return ActionBadRequest( "Invalid schedule." );
+            }
+
             // Apply scalar field assignments from the bag.
             if ( !UpdateEntityFromBox( entity, box ) )
             {
                 return ActionBadRequest( "Invalid data." );
+            }
+
+            // Make sure the photo and chat channel avatar are either the
+            // current files or files newly uploaded by this person. Otherwise
+            // a tampered value could attach an unrelated file, which would be
+            // marked temporary and cleaned up when it is later replaced.
+            var binaryFileService = new BinaryFileService( RockContext );
+            if ( !binaryFileService.IsUploadedBinaryFileAllowedForPerson( entity.PhotoId, oldPhotoId, RequestContext.CurrentPerson )
+                || !binaryFileService.IsUploadedBinaryFileAllowedForPerson( entity.ChatChannelAvatarBinaryFileId, oldChatChannelAvatarId, RequestContext.CurrentPerson ) )
+            {
+                return ActionBadRequest( "Invalid file." );
+            }
+
+            // Make sure the group member attributes are either new or already
+            // belong to this group, using the same qualifier that
+            // SaveGroupMemberAttributes() will save them with. Otherwise a
+            // tampered Guid could take over an unrelated attribute.
+            var groupMemberAttributeQualifierValue = isNew ? null : entity.Id.ToString();
+            if ( box.IsValidProperty( nameof( box.Bag.GroupMemberAttributes ) )
+                && !PublicAttributeHelper.AreAttributeEditsAllowed( box.Bag.GroupMemberAttributes, new GroupMember().TypeId, "GroupId", groupMemberAttributeQualifierValue, RockContext ) )
+            {
+                return ActionBadRequest( "Invalid attribute." );
             }
 
             if ( !ValidateGroup( entity, box.Bag, out var validationMessage ) )
@@ -2790,6 +2821,34 @@ namespace Rock.Blocks.Group
                 entity.ScheduleId = null;
                 entity.Schedule = null;
             }
+        }
+
+        /// <summary>
+        /// Determines whether the named schedule selection in the box is one
+        /// the schedule picker could have offered. The picker never lists
+        /// unnamed (inline) schedules, so a newly selected schedule must have
+        /// a name. Keeping the schedule the group already has is always allowed.
+        /// </summary>
+        /// <param name="box">The box that contains the data from the client.</param>
+        /// <param name="currentScheduleId">The identifier of the schedule currently attached to the group.</param>
+        /// <returns><c>true</c> if the selection is allowed; otherwise <c>false</c>.</returns>
+        private bool IsNamedScheduleSelectionAllowed( ValidPropertiesBox<GroupBag> box, int? currentScheduleId )
+        {
+            if ( !box.IsValidProperty( nameof( box.Bag.ScheduleType ) ) || box.Bag.ScheduleType != ScheduleType.Named )
+            {
+                return true;
+            }
+
+            var namedScheduleId = box.Bag.NamedSchedule?.GetEntityId<Schedule>( RockContext );
+            if ( !namedScheduleId.HasValue || namedScheduleId == currentScheduleId )
+            {
+                return true;
+            }
+
+            var scheduleId = namedScheduleId.Value;
+
+            return new ScheduleService( RockContext ).Queryable()
+                .Any( s => s.Id == scheduleId && s.Name != null && s.Name != string.Empty );
         }
 
         /// <summary>
