@@ -1418,7 +1418,16 @@ namespace Rock.Blocks.Event
                     {
                         var person = new PersonAliasService( rockContext ).GetPerson( context.Registration.PersonAliasId.Value );
 
-                        if ( person != null )
+                        // The registrar may have been matched from the registrant details
+                        // and the email comes from the client, so only update it when the
+                        // registrar is the current person or in their family.
+                        var currentPersonId = currentPerson?.Id;
+                        var isCurrentPersonOrFamilyMember = person != null
+                            && currentPersonId.HasValue
+                            && ( person.Id == currentPersonId.Value
+                                || person.GetFamilies().ToList().Any( f => f.ActiveMembers().Any( m => m.PersonId == currentPersonId ) ) );
+
+                        if ( isCurrentPersonOrFamilyMember )
                         {
                             person.Email = context.Registration.ConfirmationEmail;
                             rockContext.SaveChanges();
