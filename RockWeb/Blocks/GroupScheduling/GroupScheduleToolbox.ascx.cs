@@ -150,14 +150,22 @@ namespace RockWeb.Blocks.GroupScheduling
         {
             get
             {
-                return hfSelectedPersonId.Value.AsInteger();
+                // Use the value determined by SetSelectedPerson() on this request
+                // rather than the posted hidden field, which is client controlled.
+                return _selectedPersonId;
             }
 
             set
             {
+                _selectedPersonId = value;
                 hfSelectedPersonId.Value = value.ToString();
             }
         }
+
+        /// <summary>
+        /// The selected person identifier, set by <see cref="SetSelectedPerson" /> on every request.
+        /// </summary>
+        private int _selectedPersonId;
 
         /// <summary>
         /// Gets or sets the current tab in the ViewState
