@@ -443,9 +443,20 @@ namespace Rock.Blocks.Crm
                     assessment = assessmentService.Get( AssessmentId.Value );
                 }
 
+                var assessmentType = new AssessmentTypeService( RockContext ).Get( Rock.SystemGuid.AssessmentType.DISC.AsGuid() );
+
+                // Only use an existing assessment if it is the target person's
+                // DISC assessment, the same filter used when loading the block.
+                if ( assessment != null
+                    && ( assessment.PersonAlias == null
+                        || assessment.PersonAlias.PersonId != targetPerson.Id
+                        || assessment.AssessmentTypeId != assessmentType.Id ) )
+                {
+                    assessment = null;
+                }
+
                 if ( assessment == null )
                 {
-                    var assessmentType = new AssessmentTypeService( RockContext ).Get( Rock.SystemGuid.AssessmentType.DISC.AsGuid() );
                     assessment = new Assessment()
                     {
                         AssessmentTypeId = assessmentType.Id,
