@@ -171,6 +171,10 @@ export const ServiceJob = {
     DataMigrations171PopulateAttendanceRootGroupType: "e6755275-02ca-4159-af16-1e4cdcfa22d0",
     /** The job to run Post v17.1 Data Migrations to update an existing index on the CommunicationRecipient table. */
     DataMigrations171UpdateCommunicationrecipientIndex: "EB00BD84-D89C-44B4-8C0C-56322074C9C4",
+    /** The job to run Post v17.3 Data Migrations to remove a redundant index on the AttendanceOccurrence table. */
+    DataMigrations173UpdateAttendanceoccurrenceIndex: "FFF8E02C-9FAA-4E23-99EE-4B008549F088",
+    /** The job to run Post v17.3 Data Migrations to update the Nameless Schedules. */
+    DataMigrations173UpdateNamelessSchedules: "4C7CC0FC-12A7-4578-B9B1-FEF2732EB912",
     /**
      * The Post Update Data Migration Job to chop the Schedule Detail, Asset Storage Provider Detail, Page Short Link Detail, Streak Type Detail,
      * Following Event Type Detail, Financial Batch Detail
