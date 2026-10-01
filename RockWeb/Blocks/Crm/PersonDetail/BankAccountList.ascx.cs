@@ -99,16 +99,6 @@ namespace RockWeb.Blocks.Finance
 
             if ( financialPersonBankAccount != null )
             {
-                // Only allow deleting bank accounts owned by the current person, or by a
-                // person the current person is authorized to edit.
-                var owner = financialPersonBankAccount.PersonAlias?.Person;
-
-                if ( CurrentPerson == null || owner == null || ( owner.Id != CurrentPerson.Id && !owner.IsAuthorized( Authorization.EDIT, CurrentPerson ) ) )
-                {
-                    mdGridWarning.Show( $"Not authorized to delete {FinancialPersonBankAccount.FriendlyTypeName}.", ModalAlertType.Warning );
-                    return;
-                }
-
                 string errorMessage;
                 if ( !financialPersonBankAccountService.CanDelete( financialPersonBankAccount, out errorMessage ) )
                 {
@@ -145,11 +135,10 @@ namespace RockWeb.Blocks.Finance
             var rockContext = new RockContext();
             var financialPersonBankAccountService = new FinancialPersonBankAccountService( rockContext );
             var qry = financialPersonBankAccountService.Queryable();
-            var person = GetAuthorizedPerson();
 
-            if ( person != null )
+            if ( this.Person != null && this.Person.PrimaryAliasId.HasValue )
             {
-                qry = qry.Where( a => a.PersonAlias.PersonId == person.Id );
+                qry = qry.Where( a => a.PersonAliasId == this.Person.PrimaryAliasId.Value );
 
                 SortProperty sortProperty = gList.SortProperty;
 
@@ -164,29 +153,6 @@ namespace RockWeb.Blocks.Finance
 
                 gList.DataBind();
             }
-        }
-
-        /// <summary>
-        /// Gets the person whose bank accounts the current person is allowed to view or manage.
-        /// The person is only returned if they are the current person or the current person
-        /// is authorized to edit them.
-        /// </summary>
-        /// <returns>The authorized owning person, or <c>null</c> if there is no authorized person.</returns>
-        private Person GetAuthorizedPerson()
-        {
-            var person = this.Person;
-
-            if ( CurrentPerson == null || person == null || person.Id == 0 )
-            {
-                return null;
-            }
-
-            if ( person.Id != CurrentPerson.Id && !person.IsAuthorized( Authorization.EDIT, CurrentPerson ) )
-            {
-                return null;
-            }
-
-            return person;
         }
 
         /// <summary>

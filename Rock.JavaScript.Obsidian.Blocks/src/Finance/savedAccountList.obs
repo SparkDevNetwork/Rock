@@ -27,7 +27,7 @@
                     :filter="textValueFilter"
                     visiblePriority="xs" />
 
-        <DeleteColumn v-if="config.isDeleteEnabled" @click="onDeleteClick" />
+        <DeleteColumn @click="onDeleteClick" />
     </Grid>
 </template>
 

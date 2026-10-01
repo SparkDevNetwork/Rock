@@ -89,11 +89,11 @@ namespace RockWeb.Blocks.Finance
                 return;
             }
 
-            // Only allow deleting saved accounts owned by the current person, or by a
-            // person the current person is authorized to edit.
-            var owner = savedAccount.PersonAlias?.Person;
+            // Only the owner of the saved account, or someone authorized to edit
+            // the saved account itself, may delete it.
+            var isOwner = savedAccount.PersonAlias?.PersonId == CurrentPerson.Id;
 
-            if ( owner == null || ( owner.Id != CurrentPerson.Id && !owner.IsAuthorized( Authorization.EDIT, CurrentPerson ) ) )
+            if ( !isOwner && !savedAccount.IsAuthorized( Authorization.EDIT, CurrentPerson ) )
             {
                 mdGridWarning.Show( $"Not authorized to delete {FinancialPersonSavedAccount.FriendlyTypeName}.", ModalAlertType.Warning );
                 return;
@@ -142,9 +142,9 @@ namespace RockWeb.Blocks.Finance
         }
 
         /// <summary>
-        /// Gets the person whose saved accounts the current person is allowed to view or manage.
+        /// Gets the person whose saved accounts the current person is allowed to view.
         /// The context person is only honored when it is the current person or the current person
-        /// is authorized to edit the context person; otherwise the current person is used.
+        /// is authorized to edit the block; otherwise the current person is used.
         /// </summary>
         /// <returns>The authorized owning person, or <c>null</c> if there is no current person.</returns>
         private Person GetAuthorizedPerson()
@@ -160,7 +160,7 @@ namespace RockWeb.Blocks.Finance
                 return CurrentPerson;
             }
 
-            return contextPerson.IsAuthorized( Authorization.EDIT, CurrentPerson ) ? contextPerson : CurrentPerson;
+            return IsUserAuthorized( Authorization.EDIT ) ? contextPerson : CurrentPerson;
         }
     }
 }

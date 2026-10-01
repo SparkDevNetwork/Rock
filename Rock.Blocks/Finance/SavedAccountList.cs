@@ -114,7 +114,6 @@ namespace Rock.Blocks.Finance
             var builder = GetGridBuilder();
 
             box.IsAddEnabled = false;
-            box.IsDeleteEnabled = BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson );
             box.ExpectedRowCount = null;
             box.Options = GetBoxOptions();
             box.GridDefinition = builder.BuildDefinition();
@@ -134,9 +133,9 @@ namespace Rock.Blocks.Finance
         }
 
         /// <summary>
-        /// Gets the person whose saved accounts the current person is allowed to view or manage.
+        /// Gets the person whose saved accounts the current person is allowed to view.
         /// The context person is only honored when it is the current person or the current person
-        /// is authorized to edit the context person; otherwise the current person is used.
+        /// is authorized to edit the block; otherwise the current person is used.
         /// </summary>
         /// <returns>The authorized owning person, or <c>null</c> if there is no current person.</returns>
         private Person GetAuthorizedPerson()
@@ -153,7 +152,7 @@ namespace Rock.Blocks.Finance
                 return currentPerson;
             }
 
-            return contextPerson.IsAuthorized( Authorization.EDIT, currentPerson ) ? contextPerson : currentPerson;
+            return BlockCache.IsAuthorized( Authorization.EDIT, currentPerson ) ? contextPerson : currentPerson;
         }
 
         /// <inheritdoc/>
@@ -224,18 +223,13 @@ namespace Rock.Blocks.Finance
                 return ActionBadRequest( $"{FinancialPersonSavedAccount.FriendlyTypeName} not found." );
             }
 
-            if ( !BlockCache.IsAuthorized( Authorization.EDIT, currentPerson ) )
-            {
-                return ActionBadRequest( $"Not authorized to delete {FinancialPersonSavedAccount.FriendlyTypeName}." );
-            }
+            // Only the owner of the saved account, or someone authorized to edit
+            // the saved account itself, may delete it.
+            var isOwner = entity.PersonAlias?.PersonId == currentPerson.Id;
 
-            // Only allow deleting saved accounts owned by the current person, or by a
-            // person the current person is authorized to edit.
-            var owner = entity.PersonAlias?.Person;
-
-            if ( owner == null || ( owner.Id != currentPerson.Id && !owner.IsAuthorized( Authorization.EDIT, currentPerson ) ) )
+            if ( !isOwner && !entity.IsAuthorized( Authorization.EDIT, currentPerson ) )
             {
-                return ActionBadRequest( $"Not authorized to delete {FinancialPersonSavedAccount.FriendlyTypeName}." );
+                return ActionForbidden( "You are not authorized to delete this saved account." );
             }
 
             if ( !entityService.CanDelete( entity, out var errorMessage ) )
