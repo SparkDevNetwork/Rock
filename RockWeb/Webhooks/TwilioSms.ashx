@@ -140,6 +140,14 @@ class TwilioSmsResponseAsync : TwilioDefaultResponseAsync
                         {
                             string imageUrl = request.Params[string.Format( "MediaUrl{0}", i )];
                             string mimeType = request.Params[string.Format( "MediaContentType{0}", i )];
+
+                            // The Twilio credentials are sent with this request, so
+                            // only download media that is hosted by Twilio.
+                            if ( !IsTwilioMediaUrl( imageUrl ) )
+                            {
+                                continue;
+                            }
+
                             imageGuid = Guid.NewGuid();
 
                             var httpWebRequest = ( HttpWebRequest ) HttpWebRequest.Create( imageUrl );
@@ -210,5 +218,23 @@ class TwilioSmsResponseAsync : TwilioDefaultResponseAsync
         }
 
         return null;
+    }
+
+    /// <summary>
+    /// Determines whether the URL is an HTTPS URL on a Twilio host, such as
+    /// api.twilio.com or a regional Twilio API host.
+    /// </summary>
+    /// <param name="url">The media URL from the incoming message.</param>
+    /// <returns><c>true</c> if the URL is hosted by Twilio; otherwise <c>false</c>.</returns>
+    private static bool IsTwilioMediaUrl( string url )
+    {
+        Uri uri;
+        if ( !Uri.TryCreate( url, UriKind.Absolute, out uri ) || uri.Scheme != Uri.UriSchemeHttps )
+        {
+            return false;
+        }
+
+        return uri.Host.Equals( "api.twilio.com", StringComparison.OrdinalIgnoreCase )
+            || uri.Host.EndsWith( ".twilio.com", StringComparison.OrdinalIgnoreCase );
     }
 }
