@@ -19,6 +19,10 @@ using System;
 using System.Web;
 using System.Threading;
 
+using Microsoft.Extensions.Logging;
+
+using Rock.Logging;
+
 /// <summary>
 /// Text-to-workflow Webhook
 /// </summary>
@@ -77,6 +81,7 @@ class TextToWorkflowReponseAsync : IAsyncResult
     private readonly object _state;
     private readonly AsyncCallback _callback;
     private readonly HttpContext _context;
+    private readonly ILogger _logger;
 
     bool IAsyncResult.IsCompleted { get { return _completed; } }
     WaitHandle IAsyncResult.AsyncWaitHandle { get { return null; } }
@@ -96,6 +101,7 @@ class TextToWorkflowReponseAsync : IAsyncResult
         _context = context;
         _state = state;
         _completed = false;
+        _logger = RockLogger.LoggerFactory.CreateLogger( GetType().FullName );
     }
 
     /// <summary>
@@ -133,6 +139,15 @@ class TextToWorkflowReponseAsync : IAsyncResult
         if ( request.HttpMethod != "POST" )
         {
             response.Write( "Invalid request type. Please use POST." );
+        }
+        else if ( !TwilioDefaultResponseAsync.IsValidTwilioSignature( request, _logger ) )
+        {
+            // The From number is trusted as the sender's identity, so the
+            // request must be signed by Twilio regardless of the transport's
+            // "Enable Signature Validation" setting.
+            _logger.LogWarning( "Rejected Text To Workflow request with a missing or invalid Twilio signature." );
+            response.StatusCode = 403;
+            response.Write( "Invalid request signature." );
         }
         else
         {
