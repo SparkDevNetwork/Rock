@@ -6274,8 +6274,7 @@ namespace Rock.Rest.v2
 
                 // Marking a requirement met takes the same access as editing the member, and only manual requirements have a checkbox.
                 var canEditMember = groupMember.Group.IsAuthorized( Authorization.EDIT, currentPerson )
-                    || groupMember.Group.IsAuthorized( Authorization.MANAGE_MEMBERS, currentPerson )
-                    || SecurityGrant.FromToken( options.SecurityGrantToken )?.IsAccessGranted( groupMember, Authorization.EDIT ) == true;
+                    || groupMember.Group.IsAuthorized( Authorization.MANAGE_MEMBERS, currentPerson );
 
                 if ( !canEditMember || !groupRequirement.GroupRequirementType.IsAuthorized( Authorization.VIEW, currentPerson ) )
                 {
@@ -6427,8 +6426,7 @@ namespace Rock.Rest.v2
 
                 // Starting a workflow acts on the member's requirement, so it takes the same access as marking it met.
                 var canEditMember = groupMember.Group.IsAuthorized( Authorization.EDIT, currentPerson )
-                    || groupMember.Group.IsAuthorized( Authorization.MANAGE_MEMBERS, currentPerson )
-                    || SecurityGrant.FromToken( options.SecurityGrantToken )?.IsAccessGranted( groupMember, Authorization.EDIT ) == true;
+                    || groupMember.Group.IsAuthorized( Authorization.MANAGE_MEMBERS, currentPerson );
 
                 if ( !canEditMember || !groupRequirement.GroupRequirementType.IsAuthorized( Authorization.VIEW, currentPerson ) )
                 {
@@ -6572,8 +6570,7 @@ namespace Rock.Rest.v2
 
                 // Starting a workflow acts on the member's requirement, so it takes the same access as marking it met.
                 var canEditMember = groupMember.Group.IsAuthorized( Authorization.EDIT, currentPerson )
-                    || groupMember.Group.IsAuthorized( Authorization.MANAGE_MEMBERS, currentPerson )
-                    || SecurityGrant.FromToken( options.SecurityGrantToken )?.IsAccessGranted( groupMember, Authorization.EDIT ) == true;
+                    || groupMember.Group.IsAuthorized( Authorization.MANAGE_MEMBERS, currentPerson );
 
                 if ( !canEditMember || !groupRequirement.GroupRequirementType.IsAuthorized( Authorization.VIEW, currentPerson ) )
                 {
@@ -6765,14 +6762,12 @@ namespace Rock.Rest.v2
                     return NotFound();
                 }
 
-                // Statuses are shown to the person themselves, to someone who can manage the group's members, or to viewers a block has granted access to the person.
+                // Statuses are shown to the person themselves or to someone who can manage the group's members.
                 var isOwnRequirements = person != null && person.Id == currentPerson.Id;
                 var canManageMembers = group.IsAuthorized( Authorization.EDIT, currentPerson )
                     || group.IsAuthorized( Authorization.MANAGE_MEMBERS, currentPerson );
-                var isGranted = person != null
-                    && SecurityGrant.FromToken( options.SecurityGrantToken )?.IsAccessGranted( person, Authorization.VIEW ) == true;
 
-                if ( !isOwnRequirements && !canManageMembers && !isGranted )
+                if ( !isOwnRequirements && !canManageMembers )
                 {
                     return StatusCode( HttpStatusCode.Forbidden );
                 }
@@ -7942,14 +7937,23 @@ namespace Rock.Rest.v2
         [Authenticate]
         [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [ProducesResponse( HttpStatusCode.OK, Type = typeof( ListItemBag ) )]
+        [ProducesResponse( HttpStatusCode.BadRequest )]
+        [ProducesResponse( HttpStatusCode.Unauthorized )]
+        [ProducesResponse( HttpStatusCode.Forbidden )]
         [Rock.SystemGuid.RestActionGuid( "f8342fdb-3e19-4f17-804c-c14fdee87a2b" )]
         public IActionResult LocationListSaveNewLocation( LocationListSaveNewLocationOptionsBag options )
         {
+            var currentPerson = RockRequestContext.CurrentPerson;
+
+            if ( currentPerson == null )
+            {
+                return Unauthorized();
+            }
+
             using ( var rockContext = new RockContext() )
             {
                 var locationService = new LocationService( rockContext );
 
-                // Create and save new location with data from client
                 var location = new Location
                 {
                     Name = options.Name,
@@ -7967,10 +7971,19 @@ namespace Rock.Rest.v2
                     location.PostalCode = options.Address.PostalCode;
                 }
 
-                if ( options.ParentLocationGuid != null )
+                Location parentLocation = null;
+
+                if ( !options.ParentLocationGuid.IsEmpty() )
                 {
-                    Location parentLocation = locationService.Get( options.ParentLocationGuid );
+                    parentLocation = locationService.Get( options.ParentLocationGuid );
+
+                    if ( parentLocation == null )
+                    {
+                        return BadRequest( "Parent location not found." );
+                    }
+
                     location.ParentLocation = parentLocation;
+                    location.ParentLocationId = parentLocation.Id;
                 }
 
                 if ( options.LocationTypeValueGuid != null )
@@ -7985,12 +7998,17 @@ namespace Rock.Rest.v2
                     }
                 }
 
-                locationService.Add( location );
+                // An unnamed location does not inherit security from its parent, so the parent is checked on its own as well.
+                var canEditLocation = location.IsAuthorized( Authorization.EDIT, currentPerson );
+                var canEditParent = parentLocation == null
+                    || parentLocation.IsAuthorized( Authorization.EDIT, currentPerson );
 
-                rockContext.SaveChanges();
+                if ( !canEditLocation || !canEditParent )
+                {
+                    return StatusCode( HttpStatusCode.Forbidden );
+                }
 
-                // Load up the new location's attributes and save those
-                location.LoadAttributes();
+                location.LoadAttributes( rockContext );
 
                 foreach ( KeyValuePair<string, AttributeValueCache> attr in location.AttributeValues )
                 {
@@ -7999,10 +8017,16 @@ namespace Rock.Rest.v2
 
                 if ( !location.IsValid )
                 {
-                    return InternalServerError();
+                    return BadRequest( string.Join( ", ", location.ValidationResults.Select( r => r.ErrorMessage ) ) );
                 }
 
-                location.SaveAttributeValues( rockContext );
+                rockContext.WrapTransaction( () =>
+                {
+                    locationService.Add( location );
+                    rockContext.SaveChanges();
+
+                    location.SaveAttributeValues( rockContext );
+                } );
 
                 // Return a representation of the location so it can be used right away on the client
                 return Ok( new ListItemBag
