@@ -44,12 +44,5 @@ namespace Rock.ViewModels.Rest.Controls
         /// A URL or page identifier for the page where the workflow should be run
         /// </summary>
         public string WorkflowEntryLinkedPageValue { get; set; } = String.Empty;
-
-        /// <summary>
-        /// Gets or sets the security grant token to use when performing
-        /// authorization checks.
-        /// </summary>
-        /// <value>The security grant token.</value>
-        public string SecurityGrantToken { get; set; }
     }
 }

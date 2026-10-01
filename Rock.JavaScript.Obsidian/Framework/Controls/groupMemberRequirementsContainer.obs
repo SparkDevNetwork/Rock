@@ -29,7 +29,6 @@
 <script setup lang="ts">
     import { PropType, ref } from "vue";
     import { useHttp } from "@Obsidian/Utility/http";
-    import { useSecurityGrantToken } from "@Obsidian/Utility/block";
     import GroupMemberRequirementCard from "./Internal/groupMemberRequirementCard.obs";
     import NotificationBox from "./notificationBox.obs";
     import { GroupMemberRequirementContainerGetDataOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/groupMemberRequirementContainerGetDataOptionsBag";
@@ -72,7 +71,6 @@
     });
 
     const http = useHttp();
-    const securityGrantToken = useSecurityGrantToken();
 
     const errorBoxes = ref<GroupMemberRequirementErrorBag[]>([]);
     const categories = ref<GroupMemberRequirementCategoryBag[]>([]);
@@ -84,8 +82,7 @@
         const options: GroupMemberRequirementContainerGetDataOptionsBag = {
             groupGuid: props.groupGuid || emptyGuid,
             groupRoleGuid: props.groupRoleGuid || emptyGuid,
-            personGuid: props.personGuid || emptyGuid,
-            securityGrantToken: securityGrantToken.value
+            personGuid: props.personGuid || emptyGuid
         };
         const result = await http.post<GroupMemberRequirementContainerGetDataResultsBag>("/api/v2/Controls/GroupMemberRequirementContainerGetData", undefined, options);
 
