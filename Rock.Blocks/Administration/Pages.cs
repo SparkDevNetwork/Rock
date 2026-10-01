@@ -199,6 +199,21 @@ namespace Rock.Blocks.Administration
             return BlockCache.IsAuthorized( Authorization.ADMINISTRATE, RequestContext.CurrentPerson );
         }
 
+        /// <summary>
+        /// Determines whether the specified page is a direct child of the page being
+        /// configured, which is the set of pages <see cref="GetListQueryable(RockContext)"/>
+        /// lists in the grid. The configure permission is evaluated against that page,
+        /// so actions must not touch pages outside of it.
+        /// </summary>
+        /// <param name="page">The page to check.</param>
+        /// <returns><c>true</c> if the page is a child of the page being configured; otherwise <c>false</c>.</returns>
+        private bool IsChildOfEditPage( Rock.Model.Page page )
+        {
+            var parentPageId = GetEditPage()?.Id;
+
+            return page.ParentPageId == parentPageId;
+        }
+
         #endregion Methods
 
         #region Block Actions
@@ -217,6 +232,12 @@ namespace Rock.Blocks.Administration
             }
 
             var page = new PageService( RockContext ).Get( key, !PageCache.Layout.Site.DisablePredictableIds );
+
+            // Only allow editing a page that is listed in this block's grid.
+            if ( page != null && !IsChildOfEditPage( page ) )
+            {
+                return ActionBadRequest( $"{Rock.Model.Page.FriendlyTypeName} not found." );
+            }
 
             if ( page != null )
             {
@@ -258,13 +279,14 @@ namespace Rock.Blocks.Administration
                 return ActionBadRequest( "Invalid page data." );
             }
 
-            var layoutId = LayoutCache.Get( bag.Layout.AsGuid() )?.Id;
+            var layout = LayoutCache.Get( bag.Layout.AsGuid() );
 
-            if ( !layoutId.HasValue )
+            if ( layout == null )
             {
                 return ActionBadRequest( "A valid layout is required." );
             }
 
+            var layoutId = layout.Id;
             var pageService = new PageService( RockContext );
             var isNew = bag.IdKey.IsNullOrWhiteSpace();
             var editPage = GetEditPage();
@@ -300,12 +322,25 @@ namespace Rock.Blocks.Administration
                 page = pageService.Get( bag.IdKey, !PageCache.Layout.Site.DisablePredictableIds );
             }
 
-            if ( page == null )
+            // Only allow saving a page that is listed in this block's grid.
+            if ( page == null || !IsChildOfEditPage( page ) )
             {
                 return ActionBadRequest( $"{Rock.Model.Page.FriendlyTypeName} not found." );
             }
 
-            page.LayoutId = layoutId.Value;
+            // The layout picker only offers layouts from the edit page's site (see
+            // GetBoxOptions). An existing page may already use a layout from another
+            // site, so keep accepting the layout it already has.
+            var layoutSiteId = editPage?.SiteId ?? PageCache.SiteId;
+            var isLayoutAllowed = layout.SiteId == layoutSiteId
+                || ( !isNew && page.LayoutId == layoutId );
+
+            if ( !isLayoutAllowed )
+            {
+                return ActionBadRequest( "A valid layout is required." );
+            }
+
+            page.LayoutId = layoutId;
             page.InternalName = bag.InternalName;
 
             if ( !page.IsValid )
@@ -353,7 +388,8 @@ namespace Rock.Blocks.Administration
             var pageService = new PageService( RockContext );
             var page = pageService.Get( key, !PageCache.Layout.Site.DisablePredictableIds );
 
-            if ( page == null )
+            // Only allow acting on a page that is listed in this block's grid.
+            if ( page == null || !IsChildOfEditPage( page ) )
             {
                 return ActionBadRequest( $"{Rock.Model.Page.FriendlyTypeName} not found." );
             }
@@ -423,7 +459,8 @@ namespace Rock.Blocks.Administration
             var pageService = new PageService( RockContext );
             var page = pageService.Get( key, !PageCache.Layout.Site.DisablePredictableIds );
 
-            if ( page == null )
+            // Only allow acting on a page that is listed in this block's grid.
+            if ( page == null || !IsChildOfEditPage( page ) )
             {
                 return ActionBadRequest( $"{Rock.Model.Page.FriendlyTypeName} not found." );
             }

@@ -549,6 +549,15 @@ namespace Rock.Blocks.Crm
                     return ActionBadRequest( "Document not found." );
                 }
 
+                // Only documents the grid lists (those of the context entity with
+                // an allowed document type) may be edited, otherwise the save
+                // below would move the document to this context entity.
+                var documentId = document.Id;
+                if ( !GetListQueryable( RockContext ).Any( d => d.Id == documentId ) )
+                {
+                    return ActionBadRequest( "Document not found." );
+                }
+
                 if ( !CanEditDocument( document, currentPerson ) )
                 {
                     return ActionForbidden( "Not authorized to edit this document." );
@@ -565,7 +574,9 @@ namespace Rock.Blocks.Crm
                     return ActionBadRequest( "A valid document type is required." );
                 }
 
-                if ( !documentType.IsAuthorized( Authorization.EDIT, currentPerson ) )
+                // The type picker only offers the addable document types, so
+                // apply the same rule here.
+                if ( !GetAddableDocumentTypes().Any( t => t.Id == documentType.Id ) )
                 {
                     return ActionForbidden( "Not authorized to add a document of this type." );
                 }
@@ -576,6 +587,14 @@ namespace Rock.Blocks.Crm
                 };
 
                 documentService.Add( document );
+            }
+
+            // The file Guid is posted by the browser, so only accept the file the
+            // document already has or a new temporary upload by the current person.
+            // Otherwise any existing file could be re-parented to this document.
+            if ( !binaryFileService.IsUploadedBinaryFileAllowedForPerson( binaryFile.Id, document.BinaryFile?.Id, currentPerson ) )
+            {
+                return ActionBadRequest( "The uploaded file could not be found." );
             }
 
             document.EntityId = contextEntity.Id;

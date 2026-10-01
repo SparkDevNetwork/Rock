@@ -440,6 +440,13 @@ namespace Rock.Blocks.Rsvp
             var occurrence = GetOccurrence();
             var isNew = occurrence == null;
 
+            // The OccurrenceId and GroupId page parameters are independent, so make
+            // sure an existing occurrence really belongs to the page's group.
+            if ( !isNew && occurrence.GroupId != group.Id )
+            {
+                return ActionBadRequest( "The AttendanceOccurrence does not exist." );
+            }
+
             var locationId = ResolveLocationId( request.Location );
             var scheduleId = ResolveScheduleId( request.Schedule );
             var occurrenceDate = request.OccurrenceDate.Value.Date;
@@ -532,6 +539,13 @@ namespace Rock.Blocks.Rsvp
                 return ActionBadRequest( "The AttendanceOccurrence does not exist." );
             }
 
+            // The OccurrenceId and GroupId page parameters are independent, so make
+            // sure the occurrence really belongs to the page's group.
+            if ( occurrence.GroupId != group.Id )
+            {
+                return ActionBadRequest( "The AttendanceOccurrence does not exist." );
+            }
+
             var attendanceService = new AttendanceService( RockContext );
 
             var attendance = attendanceService.Queryable()
@@ -539,27 +553,12 @@ namespace Rock.Blocks.Rsvp
                 .Where( a => a.PersonAlias != null && a.PersonAlias.PersonId == personId.Value )
                 .FirstOrDefault();
 
+            // The grid only lists people who already have an attendance record for
+            // this occurrence (see LoadAttendees), so only those rows may be saved.
+            // Otherwise any person could be added, and on Accept joined to the group.
             if ( attendance == null )
             {
-                var primaryAliasId = new PersonAliasService( RockContext ).Queryable()
-                    .Where( pa => pa.PersonId == pa.AliasPersonId && pa.PersonId == personId.Value )
-                    .Select( pa => ( int? ) pa.Id )
-                    .FirstOrDefault();
-
-                if ( !primaryAliasId.HasValue )
-                {
-                    return ActionBadRequest( "Unable to resolve invitee's PersonAlias." );
-                }
-
-                attendance = new Attendance
-                {
-                    OccurrenceId = occurrence.Id,
-                    PersonAliasId = primaryAliasId.Value,
-                    StartDateTime = occurrence.Schedule != null && occurrence.Schedule.HasSchedule()
-                        ? occurrence.OccurrenceDate.Date.Add( occurrence.Schedule.StartTimeOfDay )
-                        : occurrence.OccurrenceDate
-                };
-                attendanceService.Add( attendance );
+                return ActionBadRequest( "A valid invitee is required." );
             }
 
             // The decline-reason lookup is only consulted by the Decline branch of

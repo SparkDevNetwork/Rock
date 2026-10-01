@@ -700,6 +700,22 @@ namespace Rock.Blocks.Communication
                 return ActionBadRequest( validationResult.ErrorMessage );
             }
 
+            // Apply the same check that init uses to decide if the block is
+            // shown, and only list members of a list the block offered.
+            // Otherwise any group's members could be listed by Guid.
+            var currentPerson = GetCurrentPerson();
+            var communication = LoadCommunication( RockContext );
+
+            if ( currentPerson == null || !GetAuthorization( currentPerson, communication ).CanViewBlock )
+            {
+                return ActionForbidden( "You are not authorized to view this communication." );
+            }
+
+            if ( !IsCommunicationListAllowed( RockContext, communicationListGroupGuid, communication, currentPerson ) )
+            {
+                return ActionBadRequest( "Invalid communication list." );
+            }
+
             var listGroupId = new GroupService( RockContext ).GetId( communicationListGroupGuid );
 
             if ( !listGroupId.HasValue )
@@ -1176,7 +1192,45 @@ namespace Rock.Blocks.Communication
                 return ActionBadRequest( "Invalid From Phone." );
             }
 
+            var isUsingCommunicationList = bag.CommunicationListGroupGuid.HasValue && !bag.CommunicationListGroupGuid.Value.IsEmpty();
+
+            if ( isUsingCommunicationList && !IsCommunicationListAllowed( rockContext, bag.CommunicationListGroupGuid.Value, communication, currentPerson ) )
+            {
+                return ActionBadRequest( "Invalid communication list." );
+            }
+
             return null;
+        }
+
+        /// <summary>
+        /// Determines whether the communication list is one the block offers:
+        /// the list already linked to the communication, or, when list
+        /// selection is enabled, one of the lists in the selection dropdown.
+        /// </summary>
+        /// <param name="rockContext">The Rock context.</param>
+        /// <param name="communicationListGroupGuid">The communication list group unique identifier sent by the client.</param>
+        /// <param name="communication">The existing communication or <see langword="null"/> for a new communication.</param>
+        /// <param name="currentPerson">The logged in person.</param>
+        /// <returns><c>true</c> if the communication list is allowed; otherwise <c>false</c>.</returns>
+        private bool IsCommunicationListAllowed( RockContext rockContext, Guid communicationListGroupGuid, Model.Communication communication, Person currentPerson )
+        {
+            // Init always shows the communication's current list, even when
+            // list selection is turned off, so it stays allowed.
+            if ( communication?.ListGroupId.HasValue == true && communication.ListGroup?.Guid == communicationListGroupGuid )
+            {
+                return true;
+            }
+
+            if ( !IsCommunicationListSelectionEnabled )
+            {
+                return false;
+            }
+
+            // Same filter used to build the communication list dropdown.
+            var communicationListGroupGuidValue = communicationListGroupGuid.ToString();
+
+            return GetCommunicationListGroupBags( rockContext, currentPerson )
+                .Any( g => g.Value.Equals( communicationListGroupGuidValue, StringComparison.OrdinalIgnoreCase ) );
         }
 
         /// <summary>

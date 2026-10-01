@@ -179,6 +179,21 @@ namespace Rock.Blocks.Reminders
                 return ActionBadRequest( "The specified reminder was not found." );
             }
 
+            // The reminder type comes from the client, so it must be one of the
+            // types the picker offers (those for the reminder's entity type that
+            // the person can view), or the type the reminder already has.
+            if ( reminderType.Id != reminder.ReminderTypeId )
+            {
+                var isReminderTypeAllowed = reminderTypeService
+                    .GetReminderTypesForEntityType( reminder.ReminderType.EntityTypeId, RequestContext.CurrentPerson )
+                    .Any( t => t.Id == reminderType.Id );
+
+                if ( !isReminderTypeAllowed )
+                {
+                    return ActionBadRequest( "The specified reminder type was not found." );
+                }
+            }
+
             reminder.ReminderTypeId = reminderType.Id;
             reminder.ReminderDate = reminderDate.Value;
             reminder.Note = bag.Note;

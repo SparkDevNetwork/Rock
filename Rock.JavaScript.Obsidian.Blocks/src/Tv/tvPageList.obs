@@ -14,7 +14,7 @@
           @selectItem="onSelectItem"
           v-if="showBlock">
 
-        <ReorderColumn @orderChanged="onOrderChanged" />
+        <ReorderColumn v-if="config.isAddEnabled" @orderChanged="onOrderChanged" />
 
         <TextColumn name="name"
                     title="Name"

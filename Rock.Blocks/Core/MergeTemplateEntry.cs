@@ -589,6 +589,28 @@ namespace Rock.Blocks.Core
             };
         }
 
+        /// <summary>
+        /// Determines whether the merge template can be used by the current person. This
+        /// matches the picker's <see cref="Rock.Enums.Controls.MergeTemplateOwnership.PersonalAndGlobal"/>
+        /// ownership: global templates, or personal templates owned by the current person.
+        /// The template Guid is posted by the browser, so it must be checked here too.
+        /// </summary>
+        /// <param name="mergeTemplate">The merge template.</param>
+        /// <returns><c>true</c> if the merge template can be used; otherwise <c>false</c>.</returns>
+        private bool IsMergeTemplateAllowed( MergeTemplate mergeTemplate )
+        {
+            if ( !mergeTemplate.PersonAliasId.HasValue )
+            {
+                return true;
+            }
+
+            var currentPerson = RequestContext.CurrentPerson;
+
+            return currentPerson != null
+                && mergeTemplate.PersonAlias != null
+                && mergeTemplate.PersonAlias.PersonId == currentPerson.Id;
+        }
+
         #endregion Methods
 
         #region Block Actions
@@ -612,7 +634,7 @@ namespace Rock.Blocks.Core
             var mergeTemplate = bag.MergeTemplateGuid.HasValue
                 ? new MergeTemplateService( RockContext ).Get( bag.MergeTemplateGuid.Value )
                 : null;
-            if ( mergeTemplate == null )
+            if ( mergeTemplate == null || !IsMergeTemplateAllowed( mergeTemplate ) )
             {
                 return ActionOk( new MergeTemplateEntryMergeResponseBag { ErrorMessage = "Unable to get merge template", IsErrorDanger = true } );
             }
@@ -714,6 +736,13 @@ namespace Rock.Blocks.Core
             var mergeTemplate = bag.MergeTemplateGuid.HasValue
                 ? new MergeTemplateService( RockContext ).Get( bag.MergeTemplateGuid.Value )
                 : null;
+
+            // Fall back to the default help for a template the picker would not offer.
+            if ( mergeTemplate != null && !IsMergeTemplateAllowed( mergeTemplate ) )
+            {
+                mergeTemplate = null;
+            }
+
             var mergeTemplateType = mergeTemplate?.GetMergeTemplateType();
 
             var lavaDebugHtml = mergeTemplateType != null
