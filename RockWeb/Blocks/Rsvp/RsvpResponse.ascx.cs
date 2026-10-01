@@ -346,11 +346,32 @@ $(document).ready(function () {
             if ( declineReason.HasValue )
             {
                 int occurrenceId = hfDeclineReason_OccurrenceId.Value.AsInteger();
+
+                // The occurrence must be the one specified in the query string.
+                var attendanceOccurrenceId = PageParameter( PageParameterKey.AttendanceOccurrenceId ).AsIntegerOrNull();
+                if ( attendanceOccurrenceId != occurrenceId && !GetMultipleOccurrenceIds().Contains( occurrenceId ) )
+                {
+                    return;
+                }
+
                 using ( var rockContext = new RockContext() )
                 {
                     var person = GetPerson();
+                    if ( person == null )
+                    {
+                        nbNotAuthorized.Visible = true;
+                        return;
+                    }
+
                     var attendanceOccurrenceService = new AttendanceOccurrenceService( rockContext );
                     var occurrence = attendanceOccurrenceService.Get( occurrenceId );
+
+                    // The same expiration rule that is applied when displaying the decline form.
+                    if ( occurrence == null || occurrence.OccurrenceDate.EndOfDay() < RockDateTime.Now )
+                    {
+                        return;
+                    }
+
                     person = new PersonService( rockContext ).Get( person.Guid );
                     UpdateOrCreateAttendanceRecord( occurrence, person, rockContext, Rock.Model.RSVP.No, null, declineReason.Value, rtbDeclineNote.Text );
                 }
@@ -1046,9 +1067,22 @@ $(document).ready(function () {
                 HiddenField hfOccurrenceId = item.FindControl( "hfOccurrenceId" ) as HiddenField;
                 PlaceHolder phOccurrenceAttributes = item.FindControl( "phOccurrenceAttributes" ) as PlaceHolder;
 
-                int occurrenceId = int.Parse( hfOccurrenceId.Value );
+                int occurrenceId = hfOccurrenceId.Value.AsInteger();
+
+                // The occurrence must be one of the occurrences specified in the query string.
+                if ( !GetMultipleOccurrenceIds().Contains( occurrenceId ) )
+                {
+                    return false;
+                }
+
                 var attendanceOccurrenceService = new AttendanceOccurrenceService( rockContext );
                 var occurrence = attendanceOccurrenceService.Get( occurrenceId );
+
+                // The same expiration rule that is applied when displaying the occurrences.
+                if ( occurrence == null || occurrence.OccurrenceDate.EndOfDay() < RockDateTime.Now )
+                {
+                    return false;
+                }
 
                 person = new PersonService( rockContext ).Get( person.Guid );
                 UpdateOrCreateAttendanceRecord( occurrence, person, rockContext, Rock.Model.RSVP.Yes, phOccurrenceAttributes );

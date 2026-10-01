@@ -327,11 +327,30 @@ namespace RockWeb.Blocks.Prayer
                 return;
             }
 
+            // The note being edited must be the one specified by the page parameter.
+            if ( noteId != PageParameter( PrayerCommentKeyParameter ).AsInteger() )
+            {
+                return;
+            }
+
             var rockContext = new RockContext();
             NoteService noteService = new NoteService( rockContext );
             Note note = noteService.Get( noteId );
             if ( note != null )
             {
+                // When there is a context entity, the note must be one that
+                // ShowNotes() would have displayed for editing.
+                if ( contextEntity != null )
+                {
+                    if ( noteType == null
+                        || note.NoteTypeId != noteType.Id
+                        || note.EntityId != contextEntity.Id
+                        || !note.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
+                    {
+                        return;
+                    }
+                }
+
                 note.Text = dtbText.Text;
                 note.Caption = dtbCaption.Text;
 

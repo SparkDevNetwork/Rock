@@ -862,6 +862,12 @@ namespace Rock.Blocks.Communication
                 return ActionBadRequest( $"Unable to find {CommunicationFriendlyName}." );
             }
 
+            // Make the same access check that is used when the block loads.
+            if ( !GetIsAuthorizedToView( communication ) )
+            {
+                return ActionUnauthorized( EditModeMessage.NotAuthorizedToView( CommunicationFriendlyName ) );
+            }
+
             string outcomeMessage;
             var shouldRemoveTabParam = false;
 

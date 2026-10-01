@@ -290,7 +290,7 @@ namespace RockWeb.Blocks.Groups
                     gGroupMembers.ShowConfirmDeleteDialog = false;
 
                     // make sure they have Auth to edit the block OR edit to the Group
-                    bool canEditBlock = IsUserAuthorized( Authorization.EDIT ) || _group.IsAuthorized( Authorization.EDIT, this.CurrentPerson ) || _group.IsAuthorized( Authorization.MANAGE_MEMBERS, this.CurrentPerson );
+                    bool canEditBlock = CanEditBlock();
                     gGroupMembers.Actions.ShowAdd = canEditBlock;
                     gGroupMembers.IsDeleteEnabled = canEditBlock;
 
@@ -1579,7 +1579,8 @@ namespace RockWeb.Blocks.Groups
             // Add Place Elsewhere column if the group or group type has any Place Elsewhere member triggers
             if ( _group != null && _group.GroupType != null )
             {
-                if ( _group.GetGroupMemberWorkflowTriggers().Where( a => a.TriggerType == GroupMemberWorkflowTriggerType.MemberPlacedElsewhere ).Any() )
+                // Place Elsewhere deletes the group member, so it follows the same rule as delete.
+                if ( CanEditBlock() && _group.GetGroupMemberWorkflowTriggers().Where( a => a.TriggerType == GroupMemberWorkflowTriggerType.MemberPlacedElsewhere ).Any() )
                 {
                     AddPlaceElsewhereColumn();
                 }
@@ -1594,6 +1595,17 @@ namespace RockWeb.Blocks.Groups
             _deleteField = new DeleteField();
             _deleteField.Click += DeleteOrArchiveGroupMember_Click;
             gGroupMembers.Columns.Add( _deleteField );
+        }
+
+        /// <summary>
+        /// Determines whether the current person can edit the block or the group's members
+        /// (block EDIT, group EDIT or group MANAGE_MEMBERS).
+        /// </summary>
+        /// <returns><c>true</c> if the current person can edit; otherwise, <c>false</c>.</returns>
+        private bool CanEditBlock()
+        {
+            return IsUserAuthorized( Authorization.EDIT )
+                || ( _group != null && ( _group.IsAuthorized( Authorization.EDIT, this.CurrentPerson ) || _group.IsAuthorized( Authorization.MANAGE_MEMBERS, this.CurrentPerson ) ) );
         }
 
         /// <summary>
@@ -1620,6 +1632,12 @@ namespace RockWeb.Blocks.Groups
         /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
         protected void btnPlaceElsewhere_Click( object sender, RowEventArgs e )
         {
+            // Place Elsewhere deletes the group member, so it follows the same rule as delete.
+            if ( !CanEditBlock() )
+            {
+                return;
+            }
+
             var rockContext = new RockContext();
 
             var groupMemberPerson = new GroupMemberService( rockContext ).GetPerson( e.RowKeyId );
@@ -1718,6 +1736,14 @@ namespace RockWeb.Blocks.Groups
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void mdPlaceElsewhere_SaveClick( object sender, EventArgs e )
         {
+            // Place Elsewhere deletes the group member, so it follows the same rule as delete.
+            if ( !CanEditBlock() )
+            {
+                mdPlaceElsewhere.Hide();
+                mdPlaceElsewhere.Visible = false;
+                return;
+            }
+
             using ( var rockContext = new RockContext() )
             {
                 var groupService = new GroupService( rockContext );

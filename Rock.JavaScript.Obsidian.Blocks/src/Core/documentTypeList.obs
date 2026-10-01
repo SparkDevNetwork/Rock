@@ -12,7 +12,7 @@
           :onAddItem="config.isAddEnabled ? onAddItem : undefined"
           @selectItem="onSelectItem">
 
-        <ReorderColumn @orderChanged="onOrderChanged" />
+        <ReorderColumn v-if="config.isAddEnabled" @orderChanged="onOrderChanged" />
 
         <Column name="icon"
                 field="icon"
