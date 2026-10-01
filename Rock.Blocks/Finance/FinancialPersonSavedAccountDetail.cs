@@ -121,7 +121,7 @@ namespace Rock.Blocks.Finance
                 return;
             }
 
-            var isViewable = IsAuthorizedForSavedAccount( entity );
+            var isViewable = IsOwnerOrAuthorized( entity );
             box.IsEditable = isViewable;
 
             if ( entity.Id != 0 )
@@ -304,18 +304,6 @@ namespace Rock.Blocks.Finance
                 // If editing an existing entity then load it and make sure it
                 // was found and can still be edited.
                 entity = entityService.Get( idKey, !PageCache.Layout.Site.DisablePredictableIds );
-
-                if ( entity.PersonAlias?.PersonId != RequestContext.CurrentPerson?.Id )
-                {
-                    error = ActionBadRequest( $"The {FinancialPersonSavedAccount.FriendlyTypeName} was not found." );
-                    return false;
-                }
-
-                if ( RequestContext.CurrentPerson == null )
-                {
-                    error = ActionBadRequest( "You must be logged in to edit saved accounts." );
-                    return false;
-                }
             }
             else
             {
@@ -330,7 +318,7 @@ namespace Rock.Blocks.Finance
                 return false;
             }
 
-            if ( !IsAuthorizedForSavedAccount( entity ) )
+            if ( !IsOwnerOrAuthorized( entity ) )
             {
                 error = ActionBadRequest( $"Not authorized to edit {FinancialPersonSavedAccount.FriendlyTypeName}." );
                 return false;
@@ -340,13 +328,12 @@ namespace Rock.Blocks.Finance
 
         /// <summary>
         /// Determines if the current person may view or edit the saved account.
-        /// An existing saved account may only be accessed by its owner, or by a
-        /// person authorized to edit the owner. A new saved account requires
-        /// EDIT access to the block.
+        /// Allowed when the current person owns the saved account or is authorized
+        /// to edit the saved account itself.
         /// </summary>
         /// <param name="entity">The saved account to check.</param>
         /// <returns><c>true</c> if the current person is authorized; otherwise <c>false</c>.</returns>
-        private bool IsAuthorizedForSavedAccount( FinancialPersonSavedAccount entity )
+        private bool IsOwnerOrAuthorized( FinancialPersonSavedAccount entity )
         {
             var currentPerson = RequestContext.CurrentPerson;
 
@@ -355,14 +342,9 @@ namespace Rock.Blocks.Finance
                 return false;
             }
 
-            if ( entity.Id == 0 )
-            {
-                return BlockCache.IsAuthorized( Authorization.EDIT, currentPerson );
-            }
+            var isOwner = entity.PersonAlias?.PersonId == currentPerson.Id;
 
-            var owner = entity.PersonAlias?.Person;
-
-            return owner != null && ( owner.Id == currentPerson.Id || owner.IsAuthorized( Authorization.EDIT, currentPerson ) );
+            return isOwner || entity.IsAuthorized( Authorization.EDIT, currentPerson );
         }
 
         #endregion
