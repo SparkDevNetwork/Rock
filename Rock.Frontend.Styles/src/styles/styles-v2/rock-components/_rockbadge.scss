@@ -688,11 +688,10 @@ $badge-baptism-color: #23a5c5;
   &::before {
     position:       absolute;
     display:        block;
-    font-family:    'FontAwesome';
-    font-size:      .6em;
+    font-family:    "tabler-icons";
     font-weight:    var(--font-weight-semibold);
     color:          var(--color-danger-strong);
-    content:        '\f715';
+    content:        '\f4f9';
   }
 
   &.rockbadge-disabled {
