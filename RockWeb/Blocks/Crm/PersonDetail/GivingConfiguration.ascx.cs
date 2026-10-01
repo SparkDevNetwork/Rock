@@ -27,7 +27,6 @@ using Rock.Attribute;
 using Rock.Data;
 using Rock.Financial;
 using Rock.Model;
-using Rock.Security;
 using Rock.Web;
 using Rock.Web.Cache;
 using Rock.Web.UI;
@@ -416,16 +415,6 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
             if ( financialPersonSavedAccount != null )
             {
-                // Only allow deleting saved accounts owned by the current person, or by a
-                // person the current person is authorized to edit.
-                var owner = financialPersonSavedAccount.PersonAlias?.Person;
-
-                if ( CurrentPerson == null || owner == null || ( owner.Id != CurrentPerson.Id && !owner.IsAuthorized( Authorization.EDIT, CurrentPerson ) ) )
-                {
-                    mdWarningAlert.Show( $"Not authorized to delete {FinancialPersonSavedAccount.FriendlyTypeName}.", ModalAlertType.Warning );
-                    return;
-                }
-
                 string errorMessage;
                 if ( !financialPersonSavedAccountService.CanDelete( financialPersonSavedAccount, out errorMessage ) )
                 {

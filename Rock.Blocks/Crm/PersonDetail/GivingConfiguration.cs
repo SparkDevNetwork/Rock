@@ -8,7 +8,6 @@ using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Financial;
-using Rock.Security;
 using Rock.ViewModels.Blocks.Crm.PersonDetail.GivingConfiguration;
 
 namespace Rock.Blocks.Crm.PersonDetail
@@ -693,16 +692,6 @@ namespace Rock.Blocks.Crm.PersonDetail
 
             if ( financialPersonSavedAccount != null )
             {
-                // Only allow deleting saved accounts owned by the current person, or by a
-                // person the current person is authorized to edit.
-                var currentPerson = RequestContext.CurrentPerson;
-                var owner = financialPersonSavedAccount.PersonAlias?.Person;
-
-                if ( currentPerson == null || owner == null || ( owner.Id != currentPerson.Id && !owner.IsAuthorized( Authorization.EDIT, currentPerson ) ) )
-                {
-                    return ActionBadRequest( $"Not authorized to delete {FinancialPersonSavedAccount.FriendlyTypeName}." );
-                }
-
                 string errorMessage;
                 if ( !financialPersonSavedAccountService.CanDelete( financialPersonSavedAccount, out errorMessage ) )
                 {
