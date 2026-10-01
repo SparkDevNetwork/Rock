@@ -31,7 +31,6 @@
 <script setup lang="ts">
     import { PropType, Ref, computed, ref, watch } from "vue";
     import { useHttp } from "@Obsidian/Utility/http";
-    import { useSecurityGrantToken } from "@Obsidian/Utility/block";
     import { GroupMemberRequirementCardGetConfigOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/groupMemberRequirementCardGetConfigOptionsBag";
     import { GroupMemberRequirementCardGetConfigResultsBag } from "@Obsidian/ViewModels/Rest/Controls/groupMemberRequirementCardGetConfigResultsBag";
     import { GroupMemberRequirementCardSubControlConfigBag } from "@Obsidian/ViewModels/Rest/Controls/groupMemberRequirementCardSubControlConfigBag";
@@ -99,7 +98,6 @@
     }>();
 
     const http = useHttp();
-    const securityGrantToken = useSecurityGrantToken();
     const message = ref("");
     const summary = ref("");
     const isOverridden = ref(false);
@@ -176,8 +174,7 @@
             const options: GroupMemberRequirementCardMarkMetManuallyOptionsBag = {
                 groupMemberRequirementGuid: props.groupMemberRequirementGuid,
                 groupRequirementGuid: props.groupRequirementGuid,
-                groupMemberGuid: props.groupMemberGuid || emptyGuid,
-                securityGrantToken: securityGrantToken.value
+                groupMemberGuid: props.groupMemberGuid || emptyGuid
             };
             const result = await http.post<void>("/api/v2/Controls/GroupMemberRequirementCardMarkMetManually", undefined, options);
 
@@ -229,8 +226,7 @@
                 groupMemberRequirementGuid: props.groupMemberRequirementGuid,
                 groupRequirementGuid: props.groupRequirementGuid,
                 groupMemberGuid: props.groupMemberGuid || emptyGuid,
-                workflowEntryLinkedPageValue: props.workflowEntryLinkedPageValue,
-                securityGrantToken: securityGrantToken.value
+                workflowEntryLinkedPageValue: props.workflowEntryLinkedPageValue
             };
             const result = await http.post<GroupMemberRequirementCardRunWorkflowResultsBag>(`/api/v2/Controls/GroupMemberRequirementCardRun${type}Workflow`, undefined, options);
 

@@ -5465,8 +5465,7 @@ namespace Rock.Rest.v2
 
                 // Marking a requirement met takes the same access as editing the member, and only manual requirements have a checkbox.
                 var canEditMember = groupMember.Group.IsAuthorized( Authorization.EDIT, currentPerson )
-                    || groupMember.Group.IsAuthorized( Authorization.MANAGE_MEMBERS, currentPerson )
-                    || SecurityGrant.FromToken( options.SecurityGrantToken )?.IsAccessGranted( groupMember, Authorization.EDIT ) == true;
+                    || groupMember.Group.IsAuthorized( Authorization.MANAGE_MEMBERS, currentPerson );
 
                 if ( !canEditMember || !groupRequirement.GroupRequirementType.IsAuthorized( Authorization.VIEW, currentPerson ) )
                 {
@@ -5618,8 +5617,7 @@ namespace Rock.Rest.v2
 
                 // Starting a workflow acts on the member's requirement, so it takes the same access as marking it met.
                 var canEditMember = groupMember.Group.IsAuthorized( Authorization.EDIT, currentPerson )
-                    || groupMember.Group.IsAuthorized( Authorization.MANAGE_MEMBERS, currentPerson )
-                    || SecurityGrant.FromToken( options.SecurityGrantToken )?.IsAccessGranted( groupMember, Authorization.EDIT ) == true;
+                    || groupMember.Group.IsAuthorized( Authorization.MANAGE_MEMBERS, currentPerson );
 
                 if ( !canEditMember || !groupRequirement.GroupRequirementType.IsAuthorized( Authorization.VIEW, currentPerson ) )
                 {
@@ -5763,8 +5761,7 @@ namespace Rock.Rest.v2
 
                 // Starting a workflow acts on the member's requirement, so it takes the same access as marking it met.
                 var canEditMember = groupMember.Group.IsAuthorized( Authorization.EDIT, currentPerson )
-                    || groupMember.Group.IsAuthorized( Authorization.MANAGE_MEMBERS, currentPerson )
-                    || SecurityGrant.FromToken( options.SecurityGrantToken )?.IsAccessGranted( groupMember, Authorization.EDIT ) == true;
+                    || groupMember.Group.IsAuthorized( Authorization.MANAGE_MEMBERS, currentPerson );
 
                 if ( !canEditMember || !groupRequirement.GroupRequirementType.IsAuthorized( Authorization.VIEW, currentPerson ) )
                 {
@@ -5956,14 +5953,12 @@ namespace Rock.Rest.v2
                     return NotFound();
                 }
 
-                // Statuses are shown to the person themselves, to someone who can manage the group's members, or to viewers a block has granted access to the person.
+                // Statuses are shown to the person themselves or to someone who can manage the group's members.
                 var isOwnRequirements = person != null && person.Id == currentPerson.Id;
                 var canManageMembers = group.IsAuthorized( Authorization.EDIT, currentPerson )
                     || group.IsAuthorized( Authorization.MANAGE_MEMBERS, currentPerson );
-                var isGranted = person != null
-                    && SecurityGrant.FromToken( options.SecurityGrantToken )?.IsAccessGranted( person, Authorization.VIEW ) == true;
 
-                if ( !isOwnRequirements && !canManageMembers && !isGranted )
+                if ( !isOwnRequirements && !canManageMembers )
                 {
                     return StatusCode( HttpStatusCode.Forbidden );
                 }

@@ -39,12 +39,5 @@ namespace Rock.ViewModels.Rest.Controls
         /// Identifier for the GroupRequirement
         /// </summary>
         public Guid GroupRequirementGuid { get; set; } = Guid.Empty;
-
-        /// <summary>
-        /// Gets or sets the security grant token to use when performing
-        /// authorization checks.
-        /// </summary>
-        /// <value>The security grant token.</value>
-        public string SecurityGrantToken { get; set; }
     }
 }

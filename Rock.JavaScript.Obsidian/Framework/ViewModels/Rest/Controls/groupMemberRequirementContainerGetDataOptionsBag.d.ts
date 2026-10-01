@@ -36,10 +36,4 @@ export type GroupMemberRequirementContainerGetDataOptionsBag = {
 
     /** Identifier for the Person who is the member */
     personGuid: Guid;
-
-    /**
-     * Gets or sets the security grant token to use when performing
-     * authorization checks.
-     */
-    securityGrantToken?: string | null;
 };
