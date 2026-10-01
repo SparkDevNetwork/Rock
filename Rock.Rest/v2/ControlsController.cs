@@ -8405,14 +8405,23 @@ namespace Rock.Rest.v2
         [Authenticate]
         [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [ProducesResponse( HttpStatusCode.OK, Type = typeof( ListItemBag ) )]
+        [ProducesResponse( HttpStatusCode.BadRequest )]
+        [ProducesResponse( HttpStatusCode.Unauthorized )]
+        [ProducesResponse( HttpStatusCode.Forbidden )]
         [Rock.SystemGuid.RestActionGuid( "f8342fdb-3e19-4f17-804c-c14fdee87a2b" )]
         public IActionResult LocationListSaveNewLocation( LocationListSaveNewLocationOptionsBag options )
         {
+            var currentPerson = RockRequestContext.CurrentPerson;
+
+            if ( currentPerson == null )
+            {
+                return Unauthorized();
+            }
+
             using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var locationService = new LocationService( rockContext );
 
-                // Create and save new location with data from client
                 var location = new Location
                 {
                     Name = options.Name,
@@ -8430,10 +8439,19 @@ namespace Rock.Rest.v2
                     location.PostalCode = options.Address.PostalCode;
                 }
 
-                if ( options.ParentLocationGuid != null )
+                Location parentLocation = null;
+
+                if ( !options.ParentLocationGuid.IsEmpty() )
                 {
-                    Location parentLocation = locationService.Get( options.ParentLocationGuid );
+                    parentLocation = locationService.Get( options.ParentLocationGuid );
+
+                    if ( parentLocation == null )
+                    {
+                        return BadRequest( "Parent location not found." );
+                    }
+
                     location.ParentLocation = parentLocation;
+                    location.ParentLocationId = parentLocation.Id;
                 }
 
                 if ( options.LocationTypeValueGuid != null )
@@ -8448,12 +8466,17 @@ namespace Rock.Rest.v2
                     }
                 }
 
-                locationService.Add( location );
+                // An unnamed location does not inherit security from its parent, so the parent is checked on its own as well.
+                var canEditLocation = location.IsAuthorized( Authorization.EDIT, currentPerson );
+                var canEditParent = parentLocation == null
+                    || parentLocation.IsAuthorized( Authorization.EDIT, currentPerson );
 
-                rockContext.SaveChanges();
+                if ( !canEditLocation || !canEditParent )
+                {
+                    return StatusCode( HttpStatusCode.Forbidden );
+                }
 
-                // Load up the new location's attributes and save those
-                location.LoadAttributes();
+                location.LoadAttributes( rockContext );
 
                 foreach ( KeyValuePair<string, AttributeValueCache> attr in location.AttributeValues )
                 {
@@ -8462,10 +8485,16 @@ namespace Rock.Rest.v2
 
                 if ( !location.IsValid )
                 {
-                    return InternalServerError();
+                    return BadRequest( string.Join( ", ", location.ValidationResults.Select( r => r.ErrorMessage ) ) );
                 }
 
-                location.SaveAttributeValues( rockContext );
+                rockContext.WrapTransaction( () =>
+                {
+                    locationService.Add( location );
+                    rockContext.SaveChanges();
+
+                    location.SaveAttributeValues( rockContext );
+                } );
 
                 // Return a representation of the location so it can be used right away on the client
                 return Ok( new ListItemBag
