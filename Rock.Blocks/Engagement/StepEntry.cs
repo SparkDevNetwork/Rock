@@ -873,6 +873,22 @@ namespace Rock.Blocks.Engagement
                 return ActionBadRequest( "The step must be saved before launching a workflow." );
             }
 
+            // The workflow buttons are only shown when the step can be viewed,
+            // so apply the same rule the block uses when it is initialized.
+            if ( !step.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson ) )
+            {
+                return ActionBadRequest( EditModeMessage.NotAuthorizedToView( Step.FriendlyTypeName ) );
+            }
+
+            // Only the triggers offered for this step's type (and program) may be launched.
+            var isTriggerAvailable = GetAvailableWorkflows( GetStepType( step ) )
+                .Any( w => w.Guid == guid );
+
+            if ( !isTriggerAvailable )
+            {
+                return ActionBadRequest( "The workflow trigger was not found." );
+            }
+
             var workflowTrigger = new StepWorkflowTriggerService( RockContext ).Get( guid );
 
             if ( workflowTrigger == null )

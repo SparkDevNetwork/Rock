@@ -360,6 +360,16 @@ namespace Rock.Blocks.Event
                     return ActionBadRequest( $"{EventCalendarItem.FriendlyTypeName} not found." );
                 }
 
+                // The grid only lists items on the page's event calendar, and the permission
+                // check below is evaluated against that calendar. Reject items from any other
+                // calendar so Edit rights on one calendar cannot delete items of another.
+                var eventCalendarId = GetEventCalendar()?.Id;
+
+                if ( !eventCalendarId.HasValue || entity.EventCalendarId != eventCalendarId.Value )
+                {
+                    return ActionBadRequest( $"{EventCalendarItem.FriendlyTypeName} not found." );
+                }
+
                 // Match the WebForms behavior: deleting is allowed by block-level Edit rights or
                 // Edit rights on the event calendar the item belongs to.
                 if ( !GetIsAddDeleteEnabled() )

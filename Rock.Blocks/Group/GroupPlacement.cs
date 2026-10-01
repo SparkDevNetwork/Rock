@@ -879,6 +879,119 @@ namespace Rock.Blocks.Group
         }
 
         /// <summary>
+        /// Determines whether the placement keys (and placement mode) sent by the client
+        /// match what <see cref="GetInitializationBox"/> builds from the page parameters
+        /// and block settings. The keys come from the client, so every action that uses
+        /// them must check them first. Any placement of the registration template may be
+        /// used (the placement can be changed on the page), and in template mode an
+        /// instance of the template may be sent (a group's instance when detaching it).
+        /// </summary>
+        /// <param name="groupPlacementKeys">The placement keys sent by the client.</param>
+        /// <param name="placementMode">The placement mode sent by the client, or <c>null</c> if the request does not include one.</param>
+        /// <returns><c>true</c> if the keys are valid for this page; otherwise <c>false</c>.</returns>
+        private bool ArePlacementKeysValid( GroupPlacementKeysBag groupPlacementKeys, PlacementMode? placementMode )
+        {
+            if ( groupPlacementKeys == null )
+            {
+                return false;
+            }
+
+            var postedRegistrationInstanceId = Rock.Utility.IdHasher.Instance.GetId( groupPlacementKeys.RegistrationInstanceIdKey );
+            var postedRegistrationTemplateId = Rock.Utility.IdHasher.Instance.GetId( groupPlacementKeys.RegistrationTemplateIdKey );
+            var postedRegistrationTemplatePlacementId = Rock.Utility.IdHasher.Instance.GetId( groupPlacementKeys.RegistrationTemplatePlacementIdKey );
+            var postedSourceGroupId = Rock.Utility.IdHasher.Instance.GetId( groupPlacementKeys.SourceGroupIdKey );
+            var postedSourceGroupTypeId = Rock.Utility.IdHasher.Instance.GetId( groupPlacementKeys.SourceGroupTypeIdKey );
+            var postedEntitySetId = Rock.Utility.IdHasher.Instance.GetId( groupPlacementKeys.EntitySetIdKey );
+            var postedDestinationGroupTypeId = Rock.Utility.IdHasher.Instance.GetId( groupPlacementKeys.DestinationGroupTypeIdKey );
+
+            var sourceGroupId = GetIdFromPageParameter( PageParameterKey.SourceGroup );
+            var entitySetId = GetIdFromPageParameter( PageParameterKey.EntitySet );
+
+            // Group and entity set placements.
+            if ( sourceGroupId.HasValue || entitySetId.HasValue )
+            {
+                if ( postedRegistrationInstanceId.HasValue || postedRegistrationTemplateId.HasValue || postedRegistrationTemplatePlacementId.HasValue )
+                {
+                    return false;
+                }
+
+                var destinationGroupTypeId = GetIdFromPageParameter( PageParameterKey.DestinationGroupType );
+
+                if ( sourceGroupId.HasValue )
+                {
+                    var sourceGroup = GroupCache.Get( sourceGroupId.Value );
+
+                    if ( sourceGroup == null
+                        || ( placementMode.HasValue && placementMode.Value != PlacementMode.GroupMode )
+                        || postedSourceGroupId != sourceGroupId
+                        || ( postedSourceGroupTypeId.HasValue && postedSourceGroupTypeId != sourceGroup.GroupTypeId )
+                        || postedEntitySetId.HasValue )
+                    {
+                        return false;
+                    }
+
+                    destinationGroupTypeId = destinationGroupTypeId ?? sourceGroup.GroupTypeId;
+                }
+                else if ( ( placementMode.HasValue && placementMode.Value != PlacementMode.EntitySetMode )
+                    || postedEntitySetId != entitySetId
+                    || postedSourceGroupId.HasValue )
+                {
+                    return false;
+                }
+
+                return destinationGroupTypeId.HasValue && postedDestinationGroupTypeId == destinationGroupTypeId;
+            }
+
+            // Registration placements, the same rules as GetBoxForRegistrationPlacement().
+            if ( postedSourceGroupId.HasValue || postedEntitySetId.HasValue )
+            {
+                return false;
+            }
+
+            var registrationInstanceService = new RegistrationInstanceService( RockContext );
+            var registrationTemplateGuid = GetAttributeValue( AttributeKey.RegistrationTemplate ).AsGuidOrNull();
+            var registrationTemplateId = registrationTemplateGuid.HasValue
+                ? new RegistrationTemplateService( RockContext ).GetId( registrationTemplateGuid.Value )
+                : GetIdFromPageParameter( PageParameterKey.RegistrationTemplateId );
+            var registrationInstanceId = GetIdFromPageParameter( PageParameterKey.RegistrationInstanceId );
+
+            if ( registrationInstanceId.HasValue )
+            {
+                registrationTemplateId = registrationInstanceService.GetSelect( registrationInstanceId.Value, i => ( int? ) i.RegistrationTemplateId );
+
+                if ( ( placementMode.HasValue && placementMode.Value != PlacementMode.InstanceMode )
+                    || postedRegistrationInstanceId != registrationInstanceId )
+                {
+                    return false;
+                }
+            }
+            else
+            {
+                if ( placementMode.HasValue && placementMode.Value != PlacementMode.TemplateMode )
+                {
+                    return false;
+                }
+
+                if ( postedRegistrationInstanceId.HasValue
+                    && !registrationInstanceService.Queryable().Any( i => i.Id == postedRegistrationInstanceId.Value && i.RegistrationTemplateId == registrationTemplateId ) )
+                {
+                    return false;
+                }
+            }
+
+            if ( !registrationTemplateId.HasValue || postedRegistrationTemplateId != registrationTemplateId || !postedRegistrationTemplatePlacementId.HasValue )
+            {
+                return false;
+            }
+
+            var registrationTemplatePlacement = new RegistrationTemplatePlacementService( RockContext ).Get( postedRegistrationTemplatePlacementId.Value );
+
+            return registrationTemplatePlacement != null
+                && registrationTemplatePlacement.RegistrationTemplateId == registrationTemplateId
+                && registrationTemplatePlacement.GroupTypeId == postedDestinationGroupTypeId;
+        }
+
+        /// <summary>
         /// Retrieves and parses the destination group IDs from the page parameter, converting hashed or plain string values into
         /// a comma-separated list of numeric group IDs.
         /// </summary>
@@ -1000,6 +1113,11 @@ namespace Rock.Blocks.Group
             var sourceGroupId = Rock.Utility.IdHasher.Instance.GetId( groupPlacementKeys?.SourceGroupIdKey );
             var entitySetId = Rock.Utility.IdHasher.Instance.GetId( groupPlacementKeys?.EntitySetIdKey );
             var destinationGroupTypeId = Rock.Utility.IdHasher.Instance.GetId( groupPlacementKeys?.DestinationGroupTypeIdKey );
+
+            if ( !ArePlacementKeysValid( groupPlacementKeys, placementMode ) )
+            {
+                return ActionBadRequest( "Invalid placement." );
+            }
 
             // If all of these ID's do not have a value than we cannot retrieve Placement People.
             if ( !registrationTemplateId.HasValue && !registrationInstanceId.HasValue && !sourceGroupId.HasValue && !entitySetId.HasValue )
@@ -1372,12 +1490,15 @@ namespace Rock.Blocks.Group
         }
 
         /// <summary>
-        /// Gets the Destination Groups for the specified Group Placement Keys and Placement Mode.
+        /// Gets the destination groups for the specified Group Placement Keys and Placement Mode,
+        /// the same groups that <see cref="GetDestinationGroups(GroupPlacementKeysBag, PlacementMode)"/> returns.
         /// </summary>
         /// <param name="groupPlacementKeys">A bag of Group Placement Keys</param>
         /// <param name="placementMode">The mode of placement being performed (TemplateMode, InstanceMode, GroupMode, EntitySetMode).</param>
-        [BlockAction]
-        public BlockActionResult GetDestinationGroups( GroupPlacementKeysBag groupPlacementKeys, PlacementMode placementMode )
+        /// <param name="destinationGroupResults">On return, contains the destination group results.</param>
+        /// <param name="error">On return, contains the error to send to the client if the groups could not be loaded.</param>
+        /// <returns><c>true</c> if the destination groups were loaded; otherwise <c>false</c>.</returns>
+        private bool TryGetDestinationGroupResults( GroupPlacementKeysBag groupPlacementKeys, PlacementMode placementMode, out List<DestinationGroupResult> destinationGroupResults, out BlockActionResult error )
         {
             int registrationTemplatePlacementEntityTypeId = EntityTypeCache.Get<Rock.Model.RegistrationTemplatePlacement>().Id;
             int registrationInstanceEntityTypeId = EntityTypeCache.Get<Rock.Model.RegistrationInstance>().Id;
@@ -1388,7 +1509,8 @@ namespace Rock.Blocks.Group
             string includedRegistrationInstanceIds = null;
             string registrationTemplatePurposeKey = RelatedEntityPurposeKey.RegistrationTemplateGroupPlacementTemplate;
             string registrationInstancePurposeKey = RelatedEntityPurposeKey.RegistrationInstanceGroupPlacement;
-            List<DestinationGroupResult> destinationGroupResults;
+            destinationGroupResults = null;
+            error = null;
 
             var registrationInstanceId = Rock.Utility.IdHasher.Instance.GetId( groupPlacementKeys?.RegistrationInstanceIdKey );
             var registrationTemplateId = Rock.Utility.IdHasher.Instance.GetId( groupPlacementKeys?.RegistrationTemplateIdKey );
@@ -1397,14 +1519,22 @@ namespace Rock.Blocks.Group
             var entitySetId = Rock.Utility.IdHasher.Instance.GetId( groupPlacementKeys?.EntitySetIdKey );
             var destinationGroupTypeId = Rock.Utility.IdHasher.Instance.GetId( groupPlacementKeys?.DestinationGroupTypeIdKey );
 
+            if ( !ArePlacementKeysValid( groupPlacementKeys, placementMode ) )
+            {
+                error = ActionBadRequest( "Invalid placement." );
+                return false;
+            }
+
             if ( !registrationTemplateId.HasValue && !registrationInstanceId.HasValue && !sourceGroupId.HasValue && !entitySetId.HasValue )
             {
-                return ActionNotFound( "Missing required keys to retrieve Destination Groups." );
+                error = ActionNotFound( "Missing required keys to retrieve Destination Groups." );
+                return false;
             }
 
             if ( !destinationGroupTypeId.HasValue )
             {
-                return ActionBadRequest( "Could not find Destination Group Type Id" );
+                error = ActionBadRequest( "Could not find Destination Group Type Id" );
+                return false;
             }
 
             var destinationGroupIds = GetIdsFromDestinationGroupParam();
@@ -1420,7 +1550,8 @@ namespace Rock.Blocks.Group
             {
                 if ( !registrationTemplatePlacementId.HasValue )
                 {
-                    return ActionBadRequest( "Could not find Registration Template Placement Id" );
+                    error = ActionBadRequest( "Could not find Registration Template Placement Id" );
+                    return false;
                 }
 
                 if ( placementMode == PlacementMode.TemplateMode )
@@ -1484,6 +1615,24 @@ namespace Rock.Blocks.Group
                 new SqlParameter( nameof( registrationTemplatePurposeKey ), registrationTemplatePurposeKey ),
                 new SqlParameter( nameof( registrationInstancePurposeKey ), registrationInstancePurposeKey )
             ).ToList();
+
+            return true;
+        }
+
+        /// <summary>
+        /// Gets the Destination Groups for the specified Group Placement Keys and Placement Mode.
+        /// </summary>
+        /// <param name="groupPlacementKeys">A bag of Group Placement Keys</param>
+        /// <param name="placementMode">The mode of placement being performed (TemplateMode, InstanceMode, GroupMode, EntitySetMode).</param>
+        [BlockAction]
+        public BlockActionResult GetDestinationGroups( GroupPlacementKeysBag groupPlacementKeys, PlacementMode placementMode )
+        {
+            if ( !TryGetDestinationGroupResults( groupPlacementKeys, placementMode, out var destinationGroupResults, out var error ) )
+            {
+                return error;
+            }
+
+            var placementConfiguration = GetPlacementConfiguration( groupPlacementKeys );
 
             List<int> displayedGroupAttributeIds = new List<int>();
             List<Rock.Model.Group> groups = new List<Rock.Model.Group>();
@@ -1710,6 +1859,14 @@ namespace Rock.Blocks.Group
                 return ActionNotFound( "Group Type Id not found." );
             }
 
+            // The placement keys come from the client, and the group type must be
+            // the destination group type of this placement.
+            if ( !ArePlacementKeysValid( addGroupBag.GroupPlacementKeys, null )
+                || groupTypeId != Rock.Utility.IdHasher.Instance.GetId( addGroupBag.GroupPlacementKeys.DestinationGroupTypeIdKey ) )
+            {
+                return ActionBadRequest( "Invalid placement." );
+            }
+
             if ( addGroupBag.SelectedGroupOption == "Add New Group" )
             {
                 var newPlacementGroup = new Rock.Model.Group
@@ -1882,7 +2039,38 @@ namespace Rock.Blocks.Group
             {
                 group = groupService.Get( groupId.Value );
             }
-            else if ( group == null )
+
+            if ( group == null )
+            {
+                return ActionNotFound( "Specified group not found." );
+            }
+
+            if ( !ArePlacementKeysValid( detachGroupBag.GroupPlacementKeys, detachGroupBag.PlacementMode ) )
+            {
+                return ActionBadRequest( "Invalid placement." );
+            }
+
+            // Only allow detaching a group that is shown for this placement. In template
+            // mode the keys carry the group's own registration instance, so look up the
+            // groups without it and match the instance instead.
+            var destinationGroupKeys = detachGroupBag.GroupPlacementKeys;
+            var detachRegistrationInstanceId = Rock.Utility.IdHasher.Instance.GetId( destinationGroupKeys.RegistrationInstanceIdKey );
+
+            if ( detachGroupBag.PlacementMode == PlacementMode.TemplateMode )
+            {
+                destinationGroupKeys = destinationGroupKeys.ToJson().FromJsonOrNull<GroupPlacementKeysBag>();
+                destinationGroupKeys.RegistrationInstanceIdKey = null;
+            }
+
+            if ( !TryGetDestinationGroupResults( destinationGroupKeys, detachGroupBag.PlacementMode, out var destinationGroupResults, out var destinationGroupError ) )
+            {
+                return destinationGroupError;
+            }
+
+            var isDestinationGroup = destinationGroupResults.Any( g => g.GroupId == group.Id
+                && ( detachGroupBag.PlacementMode != PlacementMode.TemplateMode || g.RegistrationInstanceId == detachRegistrationInstanceId ) );
+
+            if ( !isDestinationGroup )
             {
                 return ActionNotFound( "Specified group not found." );
             }
@@ -1989,6 +2177,11 @@ namespace Rock.Blocks.Group
         [BlockAction]
         public BlockActionResult PopulateAttributeFilters( GroupPlacementKeysBag groupPlacementKeys )
         {
+
+            if ( !ArePlacementKeysValid( groupPlacementKeys, null ) )
+            {
+                return ActionBadRequest( "Invalid placement." );
+            }
             var placementConfiguration = GetPlacementConfiguration( groupPlacementKeys );
             List<int> displayedSourceAttributeIds = new List<int>();
             List<int> groupAttributeIds = new List<int>();
@@ -2095,6 +2288,11 @@ namespace Rock.Blocks.Group
         [BlockAction]
         public BlockActionResult PopulateAttributes( SourceAndDestinationEntityKeysBag sourceAndDestinationEntityKeys )
         {
+
+            if ( !ArePlacementKeysValid( sourceAndDestinationEntityKeys?.GroupPlacementKeysBag, sourceAndDestinationEntityKeys?.PlacementMode ) )
+            {
+                return ActionBadRequest( "Invalid placement." );
+            }
             var resultBag = new SourceAndDestinationEntityAttributesBag
             {
                 SourceEntityAttributes = new Dictionary<string, AttributeDataBag>(),

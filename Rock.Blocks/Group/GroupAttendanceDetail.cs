@@ -2375,10 +2375,16 @@ namespace Rock.Blocks.Group
                     .Include( a => a.Location )
                     .Include( a => a.Attendees );
 
+                // Only allow a specific occurrence to be loaded if it belongs
+                // to the authorized group.
+                var authorizedGroupId = attendanceOccurrenceSearchParameters.Group.Id;
+
                 // Check if an occurrence guid was specified, and if so, query for it.
                 if ( attendanceOccurrenceSearchParameters.AttendanceOccurrenceGuid.HasValue )
                 {
-                    var query = baseQuery.Where( o => o.Guid == attendanceOccurrenceSearchParameters.AttendanceOccurrenceGuid );
+                    var query = baseQuery.Where( o => o.Guid == attendanceOccurrenceSearchParameters.AttendanceOccurrenceGuid
+                        && o.GroupId.HasValue
+                        && o.GroupId.Value == authorizedGroupId );
 
                     if ( !withTracking )
                     {
@@ -2398,7 +2404,9 @@ namespace Rock.Blocks.Group
                 // Check if an occurrence ID was specified on the query string, and if so, query for it.
                 if ( attendanceOccurrenceSearchParameters.AttendanceOccurrenceId.HasValue && attendanceOccurrenceSearchParameters.AttendanceOccurrenceId.Value > 0 )
                 {
-                    var query = baseQuery.Where( o => o.Id == attendanceOccurrenceSearchParameters.AttendanceOccurrenceId.Value );
+                    var query = baseQuery.Where( o => o.Id == attendanceOccurrenceSearchParameters.AttendanceOccurrenceId.Value
+                        && o.GroupId.HasValue
+                        && o.GroupId.Value == authorizedGroupId );
 
                     if ( !withTracking )
                     {

@@ -1379,7 +1379,9 @@ namespace Rock.Blocks.Finance
         [BlockAction]
         public BlockActionResult Delete( string key )
         {
-            if ( !CanEdit )
+            // The grid only offers delete when GetIsDeleteEnabled() is true (an open,
+            // non-automated context batch plus edit rights), so apply the same rule here.
+            if ( !GetIsDeleteEnabled() )
             {
                 return ActionBadRequest( $"Not authorized to delete {FinancialTransaction.FriendlyTypeName}." );
             }
@@ -1407,6 +1409,12 @@ namespace Rock.Blocks.Finance
             var transaction = transactionService.Get( key, allowIntegerId );
 
             if ( transaction == null )
+            {
+                return ActionBadRequest( $"{FinancialTransaction.FriendlyTypeName} not found." );
+            }
+
+            // Only transactions in the context batch are listed, so do not delete any other.
+            if ( transaction.BatchId != _batch.Id )
             {
                 return ActionBadRequest( $"{FinancialTransaction.FriendlyTypeName} not found." );
             }
@@ -1462,6 +1470,12 @@ namespace Rock.Blocks.Finance
             var transactionDetail = detailService.Get( key, allowIntegerId );
 
             if ( transactionDetail == null )
+            {
+                return ActionBadRequest( $"{FinancialTransactionDetail.FriendlyTypeName} not found." );
+            }
+
+            // Only details of transactions in the context batch are listed, so do not delete any other.
+            if ( transactionDetail.Transaction == null || transactionDetail.Transaction.BatchId != _batch.Id )
             {
                 return ActionBadRequest( $"{FinancialTransactionDetail.FriendlyTypeName} not found." );
             }
@@ -1538,16 +1552,25 @@ namespace Rock.Blocks.Finance
                 return ActionBadRequest( "The selected batch does not exist, or is no longer open." );
             }
 
+            // The destination must be one of the batches the Move to Batch picker offered.
+            var newBatchIdKey = IdHasher.Instance.GetHash( newBatch.Id );
+            if ( !GetMoveToBatchTargets().Any( b => b.Value == newBatchIdKey ) )
+            {
+                return ActionBadRequest( "The selected batch does not exist, or is no longer open." );
+            }
+
             var transactionIds = transactionKeys
                 .Select( key => IdHasher.Instance.GetId( key ) ?? ( allowIntegerId ? key.AsIntegerOrNull() : null ) )
                 .Where( id => id.HasValue )
                 .Select( id => id.Value )
                 .ToList();
 
+            // Only transactions in the context batch are listed, so ignore any others.
+            var contextBatchId = _batch.Id;
             var transactions = new FinancialTransactionService( RockContext )
                 .Queryable()
                 .Include( t => t.TransactionDetails )
-                .Where( t => transactionIds.Contains( t.Id ) )
+                .Where( t => transactionIds.Contains( t.Id ) && t.BatchId == contextBatchId )
                 .ToList();
 
             var oldControlAmount = oldBatch.ControlAmount;
@@ -1640,6 +1663,18 @@ namespace Rock.Blocks.Finance
             var transactionsToReassign = CurrentViewMode == ViewMode.Accounts
                 ? transactionService.Queryable().Where( t => t.TransactionDetails.Any( d => selectedIds.Contains( d.Id ) ) )
                 : transactionService.Queryable().Where( t => selectedIds.Contains( t.Id ) );
+
+            // Only the context person's giving unit transactions are listed (the same
+            // GivingId filter the grid uses), so ignore any others.
+            var givingId = _person.GivingId;
+            var personAliasQry = new PersonAliasService( RockContext )
+                .Queryable()
+                .Where( a => a.Person.GivingId == givingId )
+                .Select( a => a.Id );
+
+            transactionsToReassign = transactionsToReassign
+                .Where( t => t.AuthorizedPersonAliasId.HasValue
+                    && personAliasQry.Contains( t.AuthorizedPersonAliasId.Value ) );
 
             foreach ( var transaction in transactionsToReassign.ToList() )
             {

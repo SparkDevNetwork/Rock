@@ -539,16 +539,25 @@ namespace RockWeb.Blocks.Communication
 
                 BinaryFile binaryFile = null;
                 List<BinaryFile> photos = null;
+                var binaryFileService = new BinaryFileService( rockContext );
 
                 if ( !newMessage && ImageUploaderConversation.BinaryFileId.IsNotNullOrZero() )
                 {
                     // If this is a response using the conversation window and a photo file has been uploaded then add it
-                    binaryFile = new BinaryFileService( rockContext ).Get( ImageUploaderConversation.BinaryFileId.Value );
+                    // Only accept a new upload by the current person.
+                    if ( binaryFileService.IsUploadedBinaryFileAllowedForPerson( ImageUploaderConversation.BinaryFileId, null, CurrentPerson ) )
+                    {
+                        binaryFile = binaryFileService.Get( ImageUploaderConversation.BinaryFileId.Value );
+                    }
                 }
                 else if ( newMessage && ImageUploaderModal.BinaryFileId.IsNotNullOrZero() )
                 {
                     // If this is a new message using the modal and a photo file has been uploaded then add it
-                    binaryFile = new BinaryFileService( rockContext ).Get( ImageUploaderModal.BinaryFileId.Value );
+                    // Only accept a new upload by the current person.
+                    if ( binaryFileService.IsUploadedBinaryFileAllowedForPerson( ImageUploaderModal.BinaryFileId, null, CurrentPerson ) )
+                    {
+                        binaryFile = binaryFileService.Get( ImageUploaderModal.BinaryFileId.Value );
+                    }
                 }
 
                 photos = binaryFile != null ? new List<BinaryFile> { binaryFile } : null;
@@ -998,6 +1007,13 @@ namespace RockWeb.Blocks.Communication
                     return;
                 }
 
+                // Same rule gRecipients_RowSelected uses to show the Link button:
+                // only a nameless person that is not already part of a merge request.
+                if ( !namelessPerson.IsNameless() || namelessPerson.IsPartOfMergeRequest() )
+                {
+                    return;
+                }
+
                 EntitySet mergeRequest = null;
                 if ( pnlLinkToExistingPerson.Visible )
                 {
@@ -1008,6 +1024,11 @@ namespace RockWeb.Blocks.Communication
                     }
 
                     var existingPerson = personService.Get( existingPersonId.Value );
+                    if ( existingPerson == null )
+                    {
+                        return;
+                    }
+
                     mergeRequest = namelessPerson.CreateMergeRequest( existingPerson );
                     var entitySetService = new EntitySetService( rockContext );
                     entitySetService.Add( mergeRequest );
@@ -1067,6 +1088,12 @@ namespace RockWeb.Blocks.Communication
             {
                 var personAliasService = new PersonAliasService( rockContext );
                 var namelessPerson = personAliasService.GetPerson( namelessPersonAliasId );
+
+                // Same rule gRecipients_RowSelected uses to show the View Merge Request button.
+                if ( namelessPerson == null || !namelessPerson.IsNameless() || !namelessPerson.IsPartOfMergeRequest() )
+                {
+                    return;
+                }
 
                 var mergeRequest = namelessPerson.GetMergeRequest( rockContext );
 

@@ -203,6 +203,20 @@ namespace RockWeb.Blocks.Event
                                 .Select( m => m.EventItemOccurrence )
                                 .FirstOrDefault();
 
+            // Re-apply the campus and date window filter that LoadContent uses to list the occurrences.
+            if ( eventGroup != null )
+            {
+                int campusId = cpCampus.SelectedCampusId ?? person.GetFamilies().FirstOrDefault()?.CampusId ?? 1;
+                var fromDate = RockDateTime.Now;
+                var toDate = fromDate.AddDays( _daysInRange );
+
+                if ( ( eventGroup.CampusId.HasValue && eventGroup.CampusId != campusId )
+                    || !eventGroup.GetStartTimes( fromDate, toDate ).Any() )
+                {
+                    eventGroup = null;
+                }
+            }
+
             var registrationLinkage = eventGroup?.Linkages?.FirstOrDefault();
 
             if ( registrationLinkage == null )

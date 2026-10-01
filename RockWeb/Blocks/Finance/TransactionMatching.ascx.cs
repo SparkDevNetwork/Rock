@@ -777,24 +777,7 @@ namespace RockWeb.Blocks.Finance
                     badgeIndividualCount.InnerText = string.Empty;
 
                     // if this transaction has a CheckMicrParts, try to find matching person(s)
-                    string checkMicrHashed = null;
-
-                    if ( !string.IsNullOrWhiteSpace( transactionToMatch.CheckMicrParts ) )
-                    {
-                        try
-                        {
-                            var checkMicrClearText = Encryption.DecryptString( transactionToMatch.CheckMicrParts );
-                            var parts = checkMicrClearText.Split( '_' );
-                            if ( parts.Length >= 2 )
-                            {
-                                checkMicrHashed = FinancialPersonBankAccount.EncodeAccountNumber( parts[0], parts[1] );
-                            }
-                        }
-                        catch
-                        {
-                            // intentionally ignore exception when decripting CheckMicrParts since we'll be checking for null below
-                        }
-                    }
+                    string checkMicrHashed = GetCheckMicrHashed( transactionToMatch );
 
                     hfCheckMicrHashed.Value = checkMicrHashed;
 
@@ -1231,6 +1214,35 @@ namespace RockWeb.Blocks.Finance
         }
 
         /// <summary>
+        /// Gets the hashed check MICR account number of the transaction.
+        /// </summary>
+        /// <param name="transaction">The transaction.</param>
+        /// <returns>The hashed account number, or <c>null</c> if the transaction has no valid CheckMicrParts.</returns>
+        private string GetCheckMicrHashed( FinancialTransaction transaction )
+        {
+            string checkMicrHashed = null;
+
+            if ( transaction != null && !string.IsNullOrWhiteSpace( transaction.CheckMicrParts ) )
+            {
+                try
+                {
+                    var checkMicrClearText = Encryption.DecryptString( transaction.CheckMicrParts );
+                    var parts = checkMicrClearText.Split( '_' );
+                    if ( parts.Length >= 2 )
+                    {
+                        checkMicrHashed = FinancialPersonBankAccount.EncodeAccountNumber( parts[0], parts[1] );
+                    }
+                }
+                catch
+                {
+                    // intentionally ignore exception when decripting CheckMicrParts since we'll be checking for null
+                }
+            }
+
+            return checkMicrHashed;
+        }
+
+        /// <summary>
         /// Handles the Click event of the btnNext control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
@@ -1253,7 +1265,8 @@ namespace RockWeb.Blocks.Finance
             // set the AuthorizedPersonId (the person who wrote the check, for example) to the if the SelectNew person (if selected) or person selected in the drop down (if there is somebody selected)
             int? authorizedPersonId = ppSelectNew.PersonId ?? ddlIndividual.SelectedValue.AsIntegerOrNull();
 
-            var accountNumberSecured = hfCheckMicrHashed.Value;
+            // Compute the MICR hash from the transaction being saved rather than trusting the posted value.
+            var accountNumberSecured = GetCheckMicrHashed( financialTransaction );
 
 
             /* 07/24/2014 (added engineer note on 2020-09-23) MDP

@@ -373,6 +373,16 @@ namespace Rock.Blocks.Finance
                 return ActionBadRequest( $"Not authorized to delete {BenevolenceRequest.FriendlyTypeName}." );
             }
 
+            // Only allow deleting requests this block would display, which
+            // limits them to the context family and the configured types.
+            var entityId = entity.Id;
+            var isInList = GetListQueryable( RockContext ).Any( r => r.Id == entityId );
+
+            if ( !isInList || !entity.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson ) )
+            {
+                return ActionBadRequest( $"Not authorized to delete {BenevolenceRequest.FriendlyTypeName}." );
+            }
+
             if ( !entityService.CanDelete( entity, out var errorMessage ) )
             {
                 return ActionBadRequest( errorMessage );

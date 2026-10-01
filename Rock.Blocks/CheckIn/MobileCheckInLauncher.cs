@@ -710,6 +710,15 @@ namespace Rock.Blocks.CheckIn
                     return ActionForbidden( "Individual is not available for check-in." );
                 }
 
+                // The selections come from the client, so each one must be among the
+                // opportunities GetAttendeeOpportunities offers that person. Otherwise
+                // the area, group, location, schedule and ability level filters could
+                // be bypassed.
+                if ( !AreSelectionsAvailable( director, configuration, individual.PrimaryFamily.IdKey, kiosk, requests ) )
+                {
+                    return ActionBadRequest( "One or more selections are not available for check-in." );
+                }
+
                 session.AttendanceSourceValueId = DefinedValueCache.Get( SystemGuid.DefinedValue.ATTENDANCE_SOURCE_MOBILE.AsGuid(), RockContext )?.Id;
 
                 var sessionRequest = GetAttendanceSessionRequest( options.Session, individual );
@@ -1334,6 +1343,92 @@ namespace Rock.Blocks.CheckIn
             var personId = IdHasher.Instance.GetId( personIdKey );
 
             return personId.HasValue && allowedPersonIds.Contains( personId.Value );
+        }
+
+        /// <summary>
+        /// Gets whether every attendance request selects an opportunity that is
+        /// currently offered to that person. This re-runs the same opportunity
+        /// load and filtering that <see cref="GetAttendeeOpportunities(AttendeeOpportunitiesOptionsBag)"/>
+        /// uses, so only selections the check-in screens could have offered are accepted.
+        /// </summary>
+        /// <param name="director">The check-in director used to create the validation session.</param>
+        /// <param name="configuration">The check-in configuration used by this block.</param>
+        /// <param name="familyIdKey">The hashed identifier of the family being checked in.</param>
+        /// <param name="kiosk">The kiosk performing the check-in.</param>
+        /// <param name="requests">The attendance requests posted by the client.</param>
+        /// <returns><c>true</c> when every selection is available; otherwise <c>false</c>.</returns>
+        private bool AreSelectionsAvailable( CheckInDirector director, TemplateConfigurationData configuration, string familyIdKey, DeviceCache kiosk, List<AttendanceRequestBag> requests )
+        {
+            var areas = GetConfiguredAreas();
+
+            foreach ( var personRequests in requests.GroupBy( r => r.PersonId ) )
+            {
+                // A separate session is used for each person so the session that
+                // performs the save is not changed by the validation.
+                var validationSession = director.CreateSession( configuration );
+
+                validationSession.LoadAndPrepareAttendeesForPerson( personRequests.Key, familyIdKey, areas, kiosk, null );
+
+                var opportunities = validationSession.Attendees.FirstOrDefault()?.Opportunities;
+
+                if ( opportunities == null )
+                {
+                    return false;
+                }
+
+                if ( personRequests.Any( r => !IsSelectionAvailable( opportunities, r.Selection ) ) )
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// Gets whether a single selection matches the opportunities offered to
+        /// the person. The area, group and location and schedule pairing must
+        /// all be offered together, the same way the check-in screens narrow
+        /// each choice by the previous one.
+        /// </summary>
+        /// <param name="opportunities">The opportunities offered to the person.</param>
+        /// <param name="selection">The selection posted by the client.</param>
+        /// <returns><c>true</c> when the selection is available; otherwise <c>false</c>.</returns>
+        private static bool IsSelectionAvailable( OpportunityCollection opportunities, OpportunitySelectionBag selection )
+        {
+            if ( selection?.Area == null || selection.Group == null || selection.Location == null || selection.Schedule == null )
+            {
+                return false;
+            }
+
+            if ( !opportunities.Areas.Any( a => a.Id == selection.Area.Id ) )
+            {
+                return false;
+            }
+
+            var group = opportunities.Groups.FirstOrDefault( g => g.Id == selection.Group.Id && g.AreaId == selection.Area.Id );
+
+            if ( group?.Locations == null )
+            {
+                return false;
+            }
+
+            var isLocationScheduleOffered = group.Locations
+                .Any( l => l.LocationId == selection.Location.Id && l.ScheduleId == selection.Schedule.Id );
+
+            if ( !isLocationScheduleOffered )
+            {
+                return false;
+            }
+
+            // Ability levels are optional, but when one is sent it must be one
+            // of the ability levels offered.
+            if ( selection.AbilityLevel != null && !opportunities.AbilityLevels.Any( al => al.Id == selection.AbilityLevel.Id ) )
+            {
+                return false;
+            }
+
+            return true;
         }
 
         /// <summary>

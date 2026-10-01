@@ -435,7 +435,15 @@ namespace Rock.Blocks.Cms
                 }
             }
 
-            selectedEntityTypeIds = selectedEntityTypeIds ?? new List<int>();
+            // The selection comes from the client (or the Models page parameter),
+            // so only keep the entity types the model filter offers. Otherwise
+            // any indexed entity type could be searched, not just the ones
+            // this block has been configured to search.
+            var indexableEntityIds = GetIndexableEntities().Select( e => e.Id ).ToList();
+
+            selectedEntityTypeIds = ( selectedEntityTypeIds ?? new List<int>() )
+                .Where( id => indexableEntityIds.Contains( id ) )
+                .ToList();
 
             if ( selectedEntityTypeIds.Count > 0 )
             {

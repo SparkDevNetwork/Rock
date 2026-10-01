@@ -997,6 +997,21 @@ namespace Rock.Blocks.Engagement
                 // If editing an existing entity then load it and make sure it
                 // was found and can still be edited.
                 entity = entityService.Get( idKey, !PageCache.Layout.Site.DisablePredictableIds );
+
+                // The posted key must be the opportunity from the page parameter
+                // so the authorization check below applies to the same entity
+                // that was evaluated when the block was initialized.
+                var initialEntity = GetInitialEntity();
+                var isInitialEntity = entity != null
+                    && initialEntity != null
+                    && initialEntity.Id == entity.Id;
+
+                if ( !isInitialEntity )
+                {
+                    entity = null;
+                    error = ActionBadRequest( $"{ConnectionOpportunity.FriendlyTypeName} not found." );
+                    return false;
+                }
             }
             else
             {

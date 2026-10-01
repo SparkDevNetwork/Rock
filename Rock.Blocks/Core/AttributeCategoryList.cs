@@ -479,6 +479,13 @@ namespace Rock.Blocks.Core
         [BlockAction]
         public BlockActionResult ReorderItem( string key, string beforeKey )
         {
+            // Reordering changes the categories just like Edit, Save and Delete do, so
+            // require the same block Administrate permission those actions require.
+            if ( !GetIsAddDeleteEnabled() )
+            {
+                return ActionBadRequest( "Not authorized to reorder items." );
+            }
+
             var qry = GetListQueryable( RockContext );
             qry = GetOrderedListQueryable( qry, RockContext );
             var items = GetListItems( qry, RockContext );

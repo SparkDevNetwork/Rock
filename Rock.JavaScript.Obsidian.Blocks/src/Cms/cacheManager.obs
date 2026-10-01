@@ -4,7 +4,7 @@
            title="Cache Manager"
            titleIconCssClass="ti ti-brand-speedtest">
         <template #headerActions>
-            <button class="btn btn-primary btn-xs" @click="onClearCache">
+            <button v-if="config.options?.isEditAuthorized" class="btn btn-primary btn-xs" @click="onClearCache">
                 <i class="ti ti-repeat"></i> Clear Cache
             </button>
         </template>
@@ -51,7 +51,8 @@
                                   :filter="numberValueFilter"
                                   visiblePriority="md" />
 
-                    <ButtonColumn name="clearTag"
+                    <ButtonColumn v-if="config.options?.isEditAuthorized"
+                                  name="clearTag"
                                   @click="onClearTagCache"
                                   iconClass="ti ti-eraser"
                                   tooltip="Flushes all items from cache that are tied to this tag." />
@@ -63,7 +64,7 @@
                     <div class="col-md-6">
                         <h4 class="mt-0">Cache Statistics</h4>
                     </div>
-                    <div class="col-md-6 my-auto">
+                    <div v-if="config.options?.isEditAuthorized" class="col-md-6 my-auto">
                         <InlineCheckBox v-model="isStatisticsEnabled"
                                         label="Enable Statistics"
                                         @update:modelValue="onEnableStatisticsChanged" />

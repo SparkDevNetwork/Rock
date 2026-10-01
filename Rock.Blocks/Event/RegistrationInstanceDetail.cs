@@ -1082,10 +1082,32 @@ namespace Rock.Blocks.Event
         /// Used by the edit panel to auto-fill blank contact fields when the user
         /// picks a person.
         /// </summary>
+        /// <param name="key">The identifier key of the instance being edited, or <c>null</c> for a new instance.</param>
         /// <param name="personAliasGuid">The PersonAlias Guid emitted by the PersonPicker.</param>
         [BlockAction]
-        public BlockActionResult GetContactInfo( Guid personAliasGuid )
+        public BlockActionResult GetContactInfo( string key, Guid personAliasGuid )
         {
+            /*
+                10/1/26 - CLAUDE
+
+                Only the edit panel calls this, so require the same edit access as
+                Save. The key (and, for a new instance, the RegistrationTemplateId
+                page parameter) comes from the client, so this does not tie the
+                lookup to the instance being edited: anyone who can edit some
+                instance, or create one under some template, passes with that key,
+                and block EDIT holders pass with any key. That is intended, since
+                the contact person can be any person by design. What the check does
+                stop is a person who can only view this block (no edit rights on any
+                instance) from looking up any person's email and work phone by
+                PersonAlias Guid. Do not remove it because the key can be chosen.
+
+                Reason: Limit contact lookups to people who can edit an instance.
+            */
+            if ( !TryGetEntityForEditAction( key, out _, out var actionError ) )
+            {
+                return actionError;
+            }
+
             var personId = new PersonAliasService( RockContext ).GetPersonId( personAliasGuid );
             if ( !personId.HasValue )
             {

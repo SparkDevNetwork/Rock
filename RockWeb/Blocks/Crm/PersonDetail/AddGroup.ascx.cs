@@ -873,12 +873,22 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                                 bool isNewGroup = true;
                                 List<Guid> newGroupMemberPersonGuids = GroupMembers.Select( a => a.Person.Guid ).ToList();
 
+                                // The selected group comes from a hidden field, so it must be one of the groups
+                                // ShowGroupsAtAddress detects at the entered address (only offered when that setting is enabled).
+                                int? addToExistingGroupId = hfSelectedGroupAtAddressGroupId.Value.AsIntegerOrNull();
+                                if ( addToExistingGroupId.HasValue
+                                    && ( !this.GetAttributeValue( AttributeKey.DetectGroupsAlreadyAtTheAddress ).AsBoolean()
+                                        || !GetGroupIdsAtAddress( rockContext ).Contains( addToExistingGroupId.Value ) ) )
+                                {
+                                    cvGroupMember.IsValid = false;
+                                    cvGroupMember.ErrorMessage = string.Format( "The selected {0} is not at this address.", _groupType.GroupTerm.ToLower() );
+                                    return;
+                                }
+
                                 try
                                 {
                                     rockContext.WrapTransaction( () =>
                                     {
-                                        int? addToExistingGroupId = hfSelectedGroupAtAddressGroupId.Value.AsIntegerOrNull();
-
                                         // put them in the selected group if an existing group was selected in the "Detect Groups at Address" prompt
                                         if ( addToExistingGroupId.HasValue )
                                         {
@@ -1296,6 +1306,35 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             }
 
             ShowPage();
+        }
+
+        /// <summary>
+        /// Gets the ids of the groups at the entered address, using the same query as
+        /// <see cref="ShowGroupsAtAddress"/> (without its limit on how many are shown).
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns>The ids of the groups at the entered address.</returns>
+        private List<int> GetGroupIdsAtAddress( RockContext rockContext )
+        {
+            string locationKey = GetLocationKey();
+            if ( string.IsNullOrWhiteSpace( locationKey ) || !_verifiedLocations.ContainsKey( locationKey ) )
+            {
+                return new List<int>();
+            }
+
+            int? locationId = _verifiedLocations[locationKey];
+            if ( !locationId.HasValue )
+            {
+                return new List<int>();
+            }
+
+            return new GroupLocationService( rockContext ).Queryable().Where( a =>
+                    a.GroupLocationTypeValueId == _locationType.Id
+                    && a.Group.GroupTypeId == _groupType.Id
+                    && a.Group.IsActive
+                    && a.LocationId == locationId )
+                .Select( a => a.GroupId )
+                .ToList();
         }
 
         /// <summary>

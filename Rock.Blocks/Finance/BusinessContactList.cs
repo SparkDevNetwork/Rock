@@ -236,8 +236,13 @@ namespace Rock.Blocks.Finance
         [BlockAction]
         public BlockActionResult Save( BusinessContactBag bag )
         {
+            if ( !BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
+            {
+                return ActionBadRequest( "Not authorized to add a business contact." );
+            }
+
             var businessId = GetBusinessId();
-            var personGuid = bag.Contact.Value.AsGuidOrNull();
+            var personGuid = bag?.Contact?.Value.AsGuidOrNull();
 
             if ( !businessId.HasValue )
             {
@@ -251,6 +256,14 @@ namespace Rock.Blocks.Finance
 
             var personService = new PersonService( RockContext );
             var business = personService.Get( businessId.Value );
+            var businessRecordTypeValueId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_BUSINESS.AsGuid() )?.Id;
+
+            // Only allow contacts to be added to actual business records.
+            if ( business == null || !businessRecordTypeValueId.HasValue || business.RecordTypeValueId != businessRecordTypeValueId.Value )
+            {
+                return ActionBadRequest( "Invalid BusinessId." );
+            }
+
             var contactId = new PersonAliasService( RockContext ).GetSelect( personGuid.Value, p => p.PersonId );
 
             if ( contactId > 0 )

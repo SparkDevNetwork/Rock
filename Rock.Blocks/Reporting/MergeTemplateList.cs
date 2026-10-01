@@ -234,6 +234,39 @@ namespace Rock.Blocks.Reporting
             return this.GetAttributeValue( AttributeKey.MergeTemplatesOwnership ).ConvertToEnum<MergeTemplateOwnership>( MergeTemplateOwnership.Personal );
         }
 
+        /// <summary>
+        /// Determines whether the template is within the ownership and VIEW
+        /// scope that <see cref="GetListQueryable(RockContext)"/> and
+        /// <see cref="GetListItems(IQueryable{MergeTemplate}, RockContext)"/>
+        /// apply for the configured block mode.
+        /// </summary>
+        /// <param name="mergeTemplate">The merge template.</param>
+        /// <returns><c>true</c> if the template is within the list scope; otherwise <c>false</c>.</returns>
+        private bool IsTemplateInListScope( MergeTemplate mergeTemplate )
+        {
+            var mergeTemplateOwnership = GetTemplateOwnership();
+            var currentPerson = GetCurrentPerson();
+
+            if ( mergeTemplateOwnership == MergeTemplateOwnership.Personal )
+            {
+                var currentPersonId = currentPerson?.Id ?? 0;
+
+                return mergeTemplate.PersonAlias != null && mergeTemplate.PersonAlias.PersonId == currentPersonId;
+            }
+
+            if ( mergeTemplateOwnership == MergeTemplateOwnership.Global && mergeTemplate.PersonAliasId.HasValue )
+            {
+                return false;
+            }
+
+            if ( mergeTemplateOwnership == MergeTemplateOwnership.Global || mergeTemplateOwnership == MergeTemplateOwnership.PersonalAndGlobal )
+            {
+                return mergeTemplate.IsAuthorized( Authorization.VIEW, currentPerson );
+            }
+
+            return true;
+        }
+
         /// <inheritdoc/>
         protected override GridBuilder<MergeTemplate> GetGridBuilder()
         {
@@ -268,6 +301,13 @@ namespace Rock.Blocks.Reporting
             if ( !BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
             {
                 return ActionBadRequest( $"Not authorized to delete {MergeTemplate.FriendlyTypeName}." );
+            }
+
+            // Only allow deleting templates within the same ownership and
+            // security scope that the list displays for this block mode.
+            if ( !IsTemplateInListScope( entity ) )
+            {
+                return ActionBadRequest( $"{MergeTemplate.FriendlyTypeName} not found." );
             }
 
             if ( !entityService.CanDelete( entity, out var errorMessage ) )

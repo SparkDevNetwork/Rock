@@ -234,6 +234,11 @@ namespace Rock.Blocks.Core
         [BlockAction]
         public BlockActionResult ReorderItem( string key, string beforeKey )
         {
+            if ( !GetIsAddDeleteEnabled() )
+            {
+                return ActionBadRequest( "Not authorized to reorder items." );
+            }
+
             using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 // Get the queryable and make sure it is ordered correctly.
