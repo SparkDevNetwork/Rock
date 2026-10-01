@@ -974,15 +974,30 @@ namespace Rock.Blocks.Engagement
                     RequestStatusDueDateOffsetInDays = status.RequestStatusDueDateOffsetInDays,
                     RequestStatusDueSoonOffsetInDays = status.RequestStatusDueSoonOffsetInDays,
                     AutoFutureFollowUpPauseInDays = status.AutoFutureFollowUpPauseInDays,
-                    Automations = status.ConnectionStatusAutomations.Select( a => new ConnectionStatusAutomationBag
-                    {
-                        Guid = a.Guid,
-                        Order = a.Order,
-                        AutomationName = a.AutomationName,
-                        DataView = a.DataView?.ToListItemBag(),
-                        GroupRequirementsFilter = a.GroupRequirementsFilter,
-                        DestinationStatusGuid = localStatusIdToGuidMap[a.DestinationStatusId]
-                    } ).ToList()
+                    /*
+                        9/30/2026 - MSE
+
+                        Automations must be sorted by Order here. The client displays them in the
+                        order received, and the save sets each automation's Order from its position
+                        in that list. Without this sort, any save after a reload would revert a
+                        drag-and-drop reorder. The ThenBy matches the Connection Requests Automation
+                        job so the displayed order is the evaluated order.
+
+                        Reason: Preserve saved automation order across reloads and saves.
+                    */
+                    Automations = status.ConnectionStatusAutomations
+                        .OrderBy( a => a.Order )
+                        .ThenBy( a => a.AutomationName )
+                        .Select( a => new ConnectionStatusAutomationBag
+                        {
+                            Guid = a.Guid,
+                            Order = a.Order,
+                            AutomationName = a.AutomationName,
+                            DataView = a.DataView?.ToListItemBag(),
+                            GroupRequirementsFilter = a.GroupRequirementsFilter,
+                            DestinationStatusGuid = localStatusIdToGuidMap[a.DestinationStatusId]
+                        } )
+                        .ToList()
                 };
 
                 bags.Add( bag );
