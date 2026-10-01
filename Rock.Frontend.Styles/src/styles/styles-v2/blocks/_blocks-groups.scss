@@ -52,8 +52,8 @@
 
   /* The block surfaces requirement status in its own UI; the global
      "Group has requirements" badge is redundant chrome. */
-  .rockbadge[data-original-title="Group has requirements."] {
-    display: none;
+  .panel-sub-header-right .rockbadge {
+    font-size: var(--font-size-h3);
   }
 
   .alert {
