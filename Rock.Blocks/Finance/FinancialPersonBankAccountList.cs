@@ -155,35 +155,21 @@ namespace Rock.Blocks.Finance
         #region Methods
 
         /// <summary>
-        /// Gets the person object to use for rendering bank account lists. The
-        /// person is only returned if they are the current person or the current
-        /// person is authorized to edit them.
+        /// Gets the person object to use for rendering bank account lists.
         /// </summary>
         /// <returns>A <see cref="Person"/> object to use or <c>null</c> if we were unable to determine one.</returns>
         private Person GetPersonForBankAccountList( RockContext rockContext )
         {
-            var currentPerson = RequestContext.CurrentPerson;
-
-            if ( currentPerson == null )
-            {
-                return null;
-            }
-
             var person = RequestContext.GetContextEntity<Person>();
 
-            if ( person == null )
+            if ( person != null )
             {
-                var personKey = RequestContext.GetPageParameter( "personId" );
-
-                person = new PersonService( rockContext ).Get( personKey, !PageCache.Layout.Site.DisablePredictableIds );
+                return person;
             }
 
-            if ( person == null || ( person.Id != currentPerson.Id && !person.IsAuthorized( Authorization.EDIT, currentPerson ) ) )
-            {
-                return null;
-            }
+            var personKey = RequestContext.GetPageParameter( "personId" );
 
-            return person;
+            return new PersonService( rockContext ).Get( personKey, !PageCache.Layout.Site.DisablePredictableIds );
         }
 
         #endregion
