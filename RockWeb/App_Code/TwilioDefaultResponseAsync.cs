@@ -280,10 +280,26 @@ public abstract class TwilioDefaultResponseAsync : IAsyncResult
             }
         }
 
+        return IsValidTwilioSignature( request, _logger );
+    }
+
+    /// <summary>
+    /// Determines whether the request carries a valid X-Twilio-Signature for
+    /// the auth token configured on the Twilio transport. This check does not
+    /// consider the transport's "Enable Signature Validation" setting.
+    /// </summary>
+    /// <param name="request">The request to validate.</param>
+    /// <param name="logger">The logger to write validation failures to.</param>
+    /// <returns><c>true</c> if the signature is valid; otherwise <c>false</c>.</returns>
+    public static bool IsValidTwilioSignature( HttpRequest request, ILogger logger )
+    {
+        var twilioComponent = new Rock.Communication.Transport.Twilio();
+        twilioComponent.LoadAttributes();
+
         var signature = request.Headers["X-Twilio-Signature"];
         if ( signature.IsNullOrWhiteSpace() )
         {
-            _logger.LogDebug( "X-Twilio-Signature not found." );
+            logger.LogDebug( "X-Twilio-Signature not found." );
             return false;
         }
 
@@ -295,7 +311,7 @@ public abstract class TwilioDefaultResponseAsync : IAsyncResult
 
         if ( authToken.IsNullOrWhiteSpace() )
         {
-            _logger.LogDebug( "No auth token found." );
+            logger.LogDebug( "No auth token found." );
             return false;
         }
 
@@ -316,7 +332,7 @@ public abstract class TwilioDefaultResponseAsync : IAsyncResult
 
         if ( !isValid )
         {
-            _logger.LogDebug( "Authentication Failed: request.Url.AbsoluteUri: {0},  requestUrl: {1}  authToken: {2}", request.UrlProxySafe().AbsoluteUri, requestUrl, authToken );
+            logger.LogDebug( "Authentication Failed: request.Url.AbsoluteUri: {0},  requestUrl: {1}", request.UrlProxySafe().AbsoluteUri, requestUrl );
         }
 
         return isValid;
