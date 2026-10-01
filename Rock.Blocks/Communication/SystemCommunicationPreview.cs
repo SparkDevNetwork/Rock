@@ -367,9 +367,15 @@ namespace Rock.Blocks.Communication
             {
                 systemCommunication = systemCommunicationService.Get( systemCommunicationGuid );
             }
-            else if ( box.Id > 0 )
+            else
             {
-                systemCommunication = systemCommunicationService.Get( box.Id );
+                // Use the same page parameter that init uses, not the posted Id,
+                // and resolve it the same way (IdKey, Guid or allowed Id).
+                var systemCommunicationKey = RequestContext.GetPageParameter( PageParameterKey.SystemCommunicationId );
+                if ( systemCommunicationKey.IsNotNullOrWhiteSpace() )
+                {
+                    systemCommunication = systemCommunicationService.Get( systemCommunicationKey, !PageCache.Layout.Site.DisablePredictableIds );
+                }
             }
 
             if ( systemCommunication != null )
@@ -466,9 +472,15 @@ namespace Rock.Blocks.Communication
                 {
                     systemCommunication = systemCommunicationService.Get( systemCommunicationGuid );
                 }
-                else if ( box.Id > 0 )
+                else
                 {
-                    systemCommunication = systemCommunicationService.Get( box.Id );
+                    // Use the same page parameter that init uses, not the posted Id,
+                    // and resolve it the same way (IdKey, Guid or allowed Id).
+                    var systemCommunicationKey = RequestContext.GetPageParameter( PageParameterKey.SystemCommunicationId );
+                    if ( systemCommunicationKey.IsNotNullOrWhiteSpace() )
+                    {
+                        systemCommunication = systemCommunicationService.Get( systemCommunicationKey, !PageCache.Layout.Site.DisablePredictableIds );
+                    }
                 }
                 if ( systemCommunication == null )
                 {

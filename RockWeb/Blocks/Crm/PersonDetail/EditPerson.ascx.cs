@@ -451,10 +451,18 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
                         var person = personService.Get( Person.Id );
                         int? orphanedPhotoId = null;
-                        if ( person.PhotoId != imgPhoto.BinaryFileId )
+                        var photoId = imgPhoto.BinaryFileId;
+
+                        // Only accept the person's current photo or a new upload, otherwise keep the current photo.
+                        if ( !new BinaryFileService( rockContext ).IsUploadedBinaryFileAllowedForPerson( photoId, person.PhotoId, CurrentPerson ) )
+                        {
+                            photoId = person.PhotoId;
+                        }
+
+                        if ( person.PhotoId != photoId )
                         {
                             orphanedPhotoId = person.PhotoId;
-                            person.PhotoId = imgPhoto.BinaryFileId;
+                            person.PhotoId = photoId;
                         }
 
                         person.TitleValueId = dvpTitle.SelectedValueAsInt();
@@ -781,7 +789,9 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                                 // if they used the ImageEditor, and cropped it, the uncropped file is still in BinaryFile. So clean it up
                                 if ( imgPhoto.CropBinaryFileId.HasValue )
                                 {
-                                    if ( imgPhoto.CropBinaryFileId != person.PhotoId )
+                                    // Only clean up the uncropped file if it is the person's own upload.
+                                    if ( imgPhoto.CropBinaryFileId != person.PhotoId
+                                        && new BinaryFileService( rockContext ).IsUploadedBinaryFileAllowedForPerson( imgPhoto.CropBinaryFileId, null, CurrentPerson ) )
                                     {
                                         BinaryFileService binaryFileService = new BinaryFileService( rockContext );
                                         var binaryFile = binaryFileService.Get( imgPhoto.CropBinaryFileId.Value );

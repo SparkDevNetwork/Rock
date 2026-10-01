@@ -198,6 +198,34 @@ namespace Rock.Blocks.Core
             return entityId;
         }
 
+        /// <summary>
+        /// Determines whether the block is configured to a specific entity
+        /// type by the Entity block setting.
+        /// </summary>
+        /// <returns><c>true</c> if the Entity block setting is configured; otherwise <c>false</c>.</returns>
+        private bool IsEntityConfigured()
+        {
+            return GetAttributeValue( AttributeKey.Entity ).AsGuidOrNull().HasValue;
+        }
+
+        /// <summary>
+        /// Determines whether the attribute can be used by the block actions.
+        /// When the Entity block setting is configured, the attribute must be
+        /// one of the attributes shown in the list.
+        /// </summary>
+        /// <param name="attributeId">The attribute identifier.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns><c>true</c> if the attribute can be used; otherwise <c>false</c>.</returns>
+        private bool IsAttributeAllowed( int attributeId, RockContext rockContext )
+        {
+            if ( !IsEntityConfigured() )
+            {
+                return true;
+            }
+
+            return GetListQueryable( rockContext ).Any( a => a.Id == attributeId );
+        }
+
         /// <inheritdoc/>
         protected override IQueryable<Model.Attribute> GetListQueryable( RockContext rockContext )
         {
@@ -483,7 +511,7 @@ namespace Rock.Blocks.Core
 
             var attribute = Rock.Web.Cache.AttributeCache.Get( attributeGuid );
 
-            if ( attribute == null )
+            if ( attribute == null || !IsAttributeAllowed( attribute.Id, RockContext ) )
             {
                 return ActionBadRequest();
             }
@@ -516,7 +544,7 @@ namespace Rock.Blocks.Core
 
             var attribute = AttributeCache.Get( attributeGuid );
 
-            if ( attribute == null )
+            if ( attribute == null || !IsAttributeAllowed( attribute.Id, RockContext ) )
             {
                 return ActionBadRequest();
             }
@@ -570,7 +598,7 @@ namespace Rock.Blocks.Core
                 var attributeService = new AttributeService( rockContext );
                 var attribute = attributeService.Get( attributeGuid );
 
-                if ( attribute == null )
+                if ( attribute == null || !IsAttributeAllowed( attribute.Id, rockContext ) )
                 {
                     return ActionBadRequest();
                 }
@@ -634,6 +662,17 @@ namespace Rock.Blocks.Core
                         ? ( int? ) null
                         : EntityTypeCache.Get( blockEntityTypeGuid.Value ).Id;
 
+                    // Make sure the attribute is either new or already belongs
+                    // to the entity type and qualifier configured on the block.
+                    if ( !PublicAttributeHelper.AreAttributeEditsAllowed( new[] { attribute },
+                        entityTypeId,
+                        GetAttributeValue( AttributeKey.EntityQualifierColumn ),
+                        GetAttributeValue( AttributeKey.EntityQualifierValue ) ?? string.Empty,
+                        rockContext ) )
+                    {
+                        return ActionBadRequest( "Invalid attribute." );
+                    }
+
                     newAttr = Helper.SaveAttributeEdits( attribute,
                         entityTypeId,
                         GetAttributeValue( AttributeKey.EntityQualifierColumn ),
@@ -678,7 +717,7 @@ namespace Rock.Blocks.Core
                 var attributeService = new AttributeService( rockContext );
                 var attribute = attributeService.Get( attributeGuid );
 
-                if ( attribute == null )
+                if ( attribute == null || !IsAttributeAllowed( attribute.Id, rockContext ) )
                 {
                     return ActionBadRequest( "Attribute not found." );
                 }

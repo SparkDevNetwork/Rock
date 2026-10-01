@@ -291,6 +291,11 @@ namespace Rock.Blocks.Cms
         [BlockAction]
         public BlockActionResult ClearCacheForTag( string idKey )
         {
+            if ( !BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
+            {
+                return ActionForbidden( "You are not authorized to clear the cache." );
+            }
+
             var definedValue = DefinedValueCache.Get( idKey, !PageCache.Layout.Site.DisablePredictableIds );
             var cacheTagDefinedTypeId = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.CACHE_TAGS )?.Id;
 
@@ -325,6 +330,11 @@ namespace Rock.Blocks.Cms
         [BlockAction]
         public BlockActionResult ClearCache( string cacheType )
         {
+            if ( !BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
+            {
+                return ActionForbidden( "You are not authorized to clear the cache." );
+            }
+
             if ( cacheType == "all" )
             {
                 RockCache.ClearAllCachedItems();
@@ -346,6 +356,11 @@ namespace Rock.Blocks.Cms
         [BlockAction]
         public BlockActionResult SetEnableStatistics( bool enabled )
         {
+            if ( !BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
+            {
+                return ActionForbidden( "You are not authorized to change the cache statistics setting." );
+            }
+
             Rock.Web.SystemSettings.SetValueToWebConfig( Rock.SystemKey.SystemSetting.CACHE_MANAGER_ENABLE_STATISTICS, enabled.ToString() );
             return ActionOk();
         }

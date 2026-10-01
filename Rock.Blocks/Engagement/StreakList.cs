@@ -286,6 +286,16 @@ namespace Rock.Blocks.Engagement
                 return ActionBadRequest( $"{Streak.FriendlyTypeName} not found." );
             }
 
+            // The grid only lists streaks of the page's streak type, and the permission
+            // check below is evaluated against that streak type. Reject streaks of any
+            // other type so rights on one streak type cannot delete enrollments of another.
+            var streakType = GetStreakType();
+
+            if ( streakType == null || entity.StreakTypeId != streakType.Id )
+            {
+                return ActionBadRequest( $"{Streak.FriendlyTypeName} not found." );
+            }
+
             if ( !GetIsAddOrDeleteEnabled() )
             {
                 return ActionBadRequest( $"Not authorized to delete {Streak.FriendlyTypeName}." );

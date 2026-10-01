@@ -934,7 +934,15 @@ namespace RockWeb.Blocks.CheckIn.Manager
         {
             if ( imgSmsImage.BinaryFileId.IsNotNullOrZero() )
             {
-                var binaryFile = new BinaryFileService( new RockContext() ).Get( imgSmsImage.BinaryFileId.Value );
+                var binaryFileService = new BinaryFileService( new RockContext() );
+
+                // Only accept a new upload by the current person.
+                if ( !binaryFileService.IsUploadedBinaryFileAllowedForPerson( imgSmsImage.BinaryFileId, null, CurrentPerson ) )
+                {
+                    return null;
+                }
+
+                var binaryFile = binaryFileService.Get( imgSmsImage.BinaryFileId.Value );
                 return new List<BinaryFile> { binaryFile };
             }
 

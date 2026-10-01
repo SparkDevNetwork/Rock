@@ -296,6 +296,28 @@ namespace Rock.Blocks.Event
             return true;
         }
 
+        /// <summary>
+        /// Determines whether the event item occurrence belongs to an event item on at least
+        /// one calendar the current person is authorized to view. This is the base filter the
+        /// calendar item dialog uses when listing calendars; its date and status filters are
+        /// user choices and are intentionally not re-applied here.
+        /// </summary>
+        /// <param name="eventItemOccurrenceId">The event item occurrence identifier.</param>
+        /// <returns><c>true</c> if the occurrence is on a viewable calendar; otherwise, <c>false</c>.</returns>
+        private bool IsOccurrenceOnViewableCalendar( int eventItemOccurrenceId )
+        {
+            var calendarIds = new EventItemOccurrenceService( RockContext )
+                .Queryable()
+                .AsNoTracking()
+                .Where( o => o.Id == eventItemOccurrenceId )
+                .SelectMany( o => o.EventItem.EventCalendarItems.Select( ci => ci.EventCalendarId ) )
+                .ToList();
+
+            return calendarIds
+                .Select( id => EventCalendarCache.Get( id ) )
+                .Any( c => c != null && c.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson ) );
+        }
+
         #endregion
 
         #region Block Actions
@@ -359,6 +381,16 @@ namespace Rock.Blocks.Event
                         o.Guid == selectedOccurenceGuid
                     )
                     .FirstOrDefault();
+
+                // The occurrence Guid comes from the client. Allow it only if it is unchanged
+                // or on a calendar the person can view, which is where the dialog offers them from.
+                var isOccurrenceChanged = eventCalendarItem != null
+                    && eventCalendarItem.Id != linkage.EventItemOccurrenceId;
+
+                if ( isOccurrenceChanged && !IsOccurrenceOnViewableCalendar( eventCalendarItem.Id ) )
+                {
+                    return ActionBadRequest( "The selected event occurrence is not available." );
+                }
 
                 linkage.EventItemOccurrenceId = eventCalendarItem?.Id;
                 linkage.GroupId = GroupCache.Get( bag.Group.Value )?.Id;

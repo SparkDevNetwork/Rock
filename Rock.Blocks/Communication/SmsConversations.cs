@@ -1080,6 +1080,13 @@ namespace Rock.Blocks.Communication
                 return ActionBadRequest( "Nameless person not found" );
             }
 
+            // Only nameless people that are not already part of a merge request
+            // can be linked, the same rule GetConversationForRecipient uses.
+            if ( !namelessPerson.IsNameless() || namelessPerson.IsPartOfMergeRequest() )
+            {
+                return ActionBadRequest( "Nameless person not found" );
+            }
+
             // Create and save the merge request
             var mergeRequest = existingPerson.CreateMergeRequest( namelessPerson );
             var entitySetService = new EntitySetService( RockContext );
@@ -1118,6 +1125,13 @@ namespace Rock.Blocks.Communication
                 return ActionBadRequest( "Nameless person not found." );
             }
 
+            // Only nameless people that are not already part of a merge request
+            // can be linked, the same rule GetConversationForRecipient uses.
+            if ( !namelessPerson.IsNameless() || namelessPerson.IsPartOfMergeRequest() )
+            {
+                return ActionBadRequest( "Nameless person not found." );
+            }
+
             Person personToUpdate = existingPerson ?? new Person();
 
             if ( existingPerson == null )
@@ -1147,13 +1161,30 @@ namespace Rock.Blocks.Communication
         [BlockAction]
         public BlockActionResult ViewMergeRequest( string recipientPersonAliasIdKey )
         {
+            if ( !BlockCache.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson ) )
+            {
+                return ActionBadRequest( "You are not authorized to view the merge request." );
+            }
+
             var namelessPerson = FindRecipientFromPersonKey( recipientPersonAliasIdKey );
             if ( namelessPerson == null )
             {
                 return ActionBadRequest( "Nameless person not found." );
             }
 
+            // Only nameless people that are part of a merge request have one to
+            // view, the same rule GetConversationForRecipient uses.
+            if ( !namelessPerson.IsNameless() || !namelessPerson.IsPartOfMergeRequest() )
+            {
+                return ActionBadRequest( "Merge request not found." );
+            }
+
             var mergeRequest = namelessPerson.GetMergeRequest( RockContext );
+            if ( mergeRequest == null )
+            {
+                return ActionBadRequest( "Merge request not found." );
+            }
+
             var mergePageUrl = string.Format( "/PersonMerge/{0}", mergeRequest.Id );
             return ActionOk( mergePageUrl );
         }

@@ -760,7 +760,8 @@ namespace RockWeb.Blocks.Event
                     eventItem.Summary = tbEventSummary.Text;
                     eventItem.Description = htmlEventDescription.Text;
                     eventItem.IsActive = GetAttributeValue( AttributeKey.SetRegistrationInstanceActive ).AsBoolean();
-                    if ( imgupPhoto.BinaryFileId != null )
+                    // Only accept a new upload for the new event's photo.
+                    if ( imgupPhoto.BinaryFileId != null && new BinaryFileService( rockContext ).IsUploadedBinaryFileAllowedForPerson( imgupPhoto.BinaryFileId, null, CurrentPerson ) )
                     {
                         eventItem.PhotoId = imgupPhoto.BinaryFileId;
                     }

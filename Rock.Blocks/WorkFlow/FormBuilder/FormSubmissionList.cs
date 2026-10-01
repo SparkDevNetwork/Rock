@@ -322,6 +322,16 @@ namespace Rock.Blocks.WorkFlow.FormBuilder
                 return ActionBadRequest( $"{Rock.Model.Workflow.FriendlyTypeName} not found." );
             }
 
+            // The grid only lists submissions of the page's workflow type, and the Edit
+            // check above is evaluated against that type. Reject workflows of any other
+            // type so Edit rights on one form cannot delete workflows of another.
+            var workflowType = GetWorkflowType();
+
+            if ( workflowType == null || workflow.WorkflowTypeId != workflowType.Id )
+            {
+                return ActionBadRequest( $"{Rock.Model.Workflow.FriendlyTypeName} not found." );
+            }
+
             if ( !workflowService.CanDelete( workflow, out var errorMessage ) )
             {
                 return ActionBadRequest( errorMessage );
