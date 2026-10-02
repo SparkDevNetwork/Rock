@@ -556,6 +556,15 @@ namespace RockWeb.Blocks.Communication
                         _person = CurrentPerson;
                     }
                 }
+
+                // Only honor a person other than the current person if the
+                // current person is authorized to edit this block.
+                if ( _person != null
+                    && _person.Id != CurrentPersonId
+                    && !IsUserAuthorized( Rock.Security.Authorization.EDIT ) )
+                {
+                    _person = CurrentPerson;
+                }
             }
 
             return _person;
