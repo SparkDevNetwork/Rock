@@ -82,7 +82,7 @@ BEGIN
         ,g.CampusId [CampusId]
         ,(
             SELECT TOP 1 (
-                    CASE 
+                    CASE
                         WHEN dv.Value IS NULL
                             THEN ''
                         ELSE dv.Value
@@ -93,7 +93,7 @@ BEGIN
             JOIN [DefinedValue] dv ON p.ConnectionStatusValueId = dv.Id
             WHERE gm.GroupId = g.Id
             ORDER BY dv.[Order]
-            ) [ConnectionStatus] -- ConnectionStatus of “Most Connected family member” (based on DefinedValue.Order where First is most connected)
+            ) [ConnectionStatus] -- ConnectionStatus of â€œMost Connected family memberâ€ (based on DefinedValue.Order where First is most connected)
         ,(
             SELECT CASE count(*)
                     WHEN 0
@@ -119,9 +119,9 @@ BEGIN
             ) [ChildCount]
         ,hhpc.Id [HeadOfHouseholdPersonKey]
         ,(
-            SELECT CASE max(convert(INT, CASE 
+            SELECT CASE max(convert(INT, CASE
      WHEN av.ValueAsBoolean IS NULL
-                         THEN 0
+                THEN 0
                                 ELSE av.ValueAsBoolean
                                 END))
                     WHEN 1
@@ -186,7 +186,7 @@ BEGIN
             WHERE CurrentRowIndicator = 0
                 AND [ExpireDate] = @EtlDate
             )
-	
+
 	-- Insert Families that don't have a "CurrentRowIndicator" Row yet (either it was marked as history, or they are a new family)
     INSERT INTO AnalyticsSourceFamilyHistorical (
         [FamilyId]
