@@ -93,7 +93,7 @@ BEGIN
             JOIN [DefinedValue] dv ON p.ConnectionStatusValueId = dv.Id
             WHERE gm.GroupId = g.Id
             ORDER BY dv.[Order]
-            ) [ConnectionStatus] -- ConnectionStatus of “Most Connected family member” (based on DefinedValue.Order where First is most connected)
+            ) [ConnectionStatus] -- ConnectionStatus of â€œMost Connected family memberâ€ (based on DefinedValue.Order where First is most connected)
         ,(
             SELECT CASE count(*)
                     WHEN 0
