@@ -124,6 +124,14 @@ namespace RockWeb.Blocks.Finance
                 var targetPerson = this.ContextEntity<Person>();
                 if ( targetPerson != null )
                 {
+                    // Don't show the summary if the current person is not
+                    // allowed to view the context person's giving.
+                    if ( !IsAuthorizedForPerson( targetPerson ) )
+                    {
+                        lLavaOutput.Text = string.Empty;
+                        return;
+                    }
+
                     qry = qry.Where( t => t.Transaction.AuthorizedPersonAlias.Person.GivingId == targetPerson.GivingId );
                 }
 
@@ -184,6 +192,34 @@ namespace RockWeb.Blocks.Finance
         #endregion
 
         #region Internal Methods
+
+        /// <summary>
+        /// Determines whether the current person is allowed to view the giving of
+        /// the specified person. This is allowed if they share the same giving unit,
+        /// the person is one of the current person's businesses, or the current
+        /// person is authorized to edit this block.
+        /// </summary>
+        /// <param name="person">The person whose giving will be displayed.</param>
+        /// <returns><c>true</c> if the current person is allowed to view the giving; otherwise, <c>false</c>.</returns>
+        private bool IsAuthorizedForPerson( Person person )
+        {
+            if ( IsUserAuthorized( Authorization.EDIT ) )
+            {
+                return true;
+            }
+
+            var currentPerson = CurrentPerson;
+
+            if ( currentPerson == null )
+            {
+                return false;
+            }
+
+            var isInGivingUnit = person.GivingId.IsNotNullOrWhiteSpace()
+                && person.GivingId == currentPerson.GivingId;
+
+            return isInGivingUnit || currentPerson.GetBusinesses().Any( b => b.Id == person.Id );
+        }
 
         /// <summary>
         /// Hook so that other blocks can set the visibility of all ISecondaryBlocks on it's page
