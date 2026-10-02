@@ -1430,7 +1430,11 @@ namespace RockWeb.Blocks.Cms
                         {
                             queryString = redirectUrl.Split( '?' ).Last();
                         }
-                        Context.Response.Redirect( redirectUrl );
+
+                        if ( RockPage.Site.IsSafeRedirectUrl( redirectUrl, Request.UrlProxySafe() ) )
+                        {
+                            Context.Response.Redirect( redirectUrl );
+                        }
                     }
 
                     hlblSuccess.Visible = true;
