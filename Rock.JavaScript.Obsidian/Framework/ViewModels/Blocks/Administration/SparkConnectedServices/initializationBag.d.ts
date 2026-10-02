@@ -22,6 +22,7 @@
 //
 
 import { CreditCardSummaryBag } from "@Obsidian/ViewModels/Blocks/Administration/SparkConnectedServices/creditCardSummaryBag";
+import { MobileAppConfigurationBag } from "@Obsidian/ViewModels/Blocks/Administration/SparkConnectedServices/mobileAppConfigurationBag";
 import { RockIntelligenceConfigurationBag } from "@Obsidian/ViewModels/Blocks/Administration/SparkConnectedServices/rockIntelligenceConfigurationBag";
 
 /**
@@ -63,6 +64,13 @@ export type InitializationBag = {
      * DateTimeOffset in the Rock organization time zone.
      */
     manifestLastRefreshedDateTime?: string | null;
+
+    /**
+     * The church's enrollment in the shared mobile application, or
+     * null when the card should not be shown because Spark is not
+     * offering the service.
+     */
+    mobileApp?: MobileAppConfigurationBag | null;
 
     /**
      * Indicates the unique identifier of the organization, which is used

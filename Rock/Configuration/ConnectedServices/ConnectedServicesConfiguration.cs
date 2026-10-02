@@ -38,5 +38,12 @@ namespace Rock.Configuration.ConnectedServices
         /// be <c>null</c> if the service is not configured or available.
         /// </summary>
         public KnowledgeBase.ServiceConfiguration KnowledgeBase { get; set; }
+
+        /// <summary>
+        /// The church's enrollment in the shared mobile application. May be
+        /// <c>null</c> if the church has never enabled it. Not read from the
+        /// manifest, so a manifest refresh leaves it alone.
+        /// </summary>
+        public MobileApp.ServiceConfiguration MobileApp { get; set; }
     }
 }

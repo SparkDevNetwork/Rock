@@ -1,0 +1,273 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div style="border: 1px solid var(--color-interface-soft); border-radius: var(--rounded-xsmall)">
+        <DisplayCard iconCssClass="ti ti-device-mobile"
+                     title="Multitenant Mobile App"
+                     description="Put your church in the shared Rock app so people can find it by name, by code, or by scanning your QR poster.">
+            <template #rightMiddleSection>
+                <div class="service-code-details">
+                    <span v-if="configuration.isEnrolled && configuration.churchCode"
+                          class="badge badge-info">{{ configuration.churchCode }}</span>
+
+                    <RockButton btnType="link"
+                                :disabled="!isEnableAvailable"
+                                @click="onUpdateClick">
+                        {{ configuration.isEnrolled ? "Update" : "Enable" }}
+                    </RockButton>
+                </div>
+            </template>
+        </DisplayCard>
+
+        <div v-if="notices.length > 0 || isPosterVisible" style="padding: var(--spacing-large) var(--spacing-large) 0;">
+            <NotificationBox v-for="notice in notices"
+                             :key="notice.text"
+                             :alertType="notice.alertType">
+                {{ notice.text }}
+            </NotificationBox>
+
+            <div v-if="isPosterVisible" class="mobile-app-poster">
+                <img :src="qrCodeUrl"
+                     alt="QR code for your church's poster"
+                     width="120"
+                     height="120" />
+
+                <div>
+                    <p><strong>Church code:</strong> {{ configuration.churchCode }}</p>
+                    <p>
+                        <strong>Poster link:</strong>&nbsp;<a :href="configuration.link ?? ''" target="_blank" rel="noopener noreferrer">{{ configuration.link }}</a>
+                        <CopyButton class="ml-2"
+                                    :value="configuration.link ?? ''"
+                                    tooltip="Copy Link"
+                                    btnSize="xs" />
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <TransitionVerticalCollapse>
+            <div v-if="isConfiguring">
+                <div style="padding: var(--spacing-large);">
+                    <RockForm ref="editForm"
+                              @submit="onSaveConfiguration">
+                        <TextBox v-model="editName"
+                                 label="Name"
+                                 help="The name people see for your church in the app's directory."
+                                 rules="required"
+                                 :maxLength="100"
+                                 showCountDown />
+
+                        <ColorPicker v-model="editBrandColor"
+                                     label="Brand Color"
+                                     help="The color shown next to your church in the app's directory. This is not the app's own color, which is set in the mobile app control panel."
+                                     rules="required" />
+
+                        <ImageUploader v-model="editLogo"
+                                       label="Logo"
+                                       help="Shown next to your church in the app's directory. A square logo that works on light and dark backgrounds looks best." />
+
+                        <StaticFormControl :modelValue="configuration.apiUrl ?? ''"
+                                           label="API URL"
+                                           help="Comes from the Public Application Root global attribute. If this is wrong, fix it there." />
+
+                        <p v-if="!configuration.isEnrolled">
+                            By enabling, you publish your church's name, branding and campus locations to the app's directory.
+                        </p>
+
+                        <div class="service-actions">
+                            <div class="primary-actions">
+                                <RockButton btnType="primary"
+                                            autoDisable
+                                            autoLoading
+                                            @click="editForm?.submitForm">
+                                    {{ configuration.isEnrolled ? "Save" : "Enable" }}
+                                </RockButton>
+
+                                <RockButton type="button"
+                                            btnType="link"
+                                            @click="onCancelConfigurationClick">
+                                    Cancel
+                                </RockButton>
+                            </div>
+
+                            <div class="secondary-actions">
+                                <RockButton v-if="configuration.isEnrolled"
+                                            type="button"
+                                            btnType="warning"
+                                            autoDisable
+                                            autoLoading
+                                            @click="onDisableConfigurationClick">
+                                    Disable
+                                </RockButton>
+                            </div>
+                        </div>
+                    </RockForm>
+                </div>
+            </div>
+        </TransitionVerticalCollapse>
+    </div>
+</template>
+
+<style scoped>
+.mobile-app-poster {
+    display: flex;
+    gap: var(--spacing-large);
+    align-items: center;
+}
+
+.mobile-app-poster p {
+    margin-bottom: var(--spacing-tiny);
+}
+</style>
+
+<script setup lang="ts">
+    import ColorPicker from "@Obsidian/Controls/colorPicker.obs";
+    import CopyButton from "@Obsidian/Controls/copyButton.obs";
+    import DisplayCard from "@Obsidian/Controls/displayCard.obs";
+    import ImageUploader from "@Obsidian/Controls/imageUploader.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import RockForm from "@Obsidian/Controls/rockForm.obs";
+    import StaticFormControl from "@Obsidian/Controls/staticFormControl.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import TransitionVerticalCollapse from "@Obsidian/Controls/transitionVerticalCollapse.obs";
+    import { useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { alert, confirm } from "@Obsidian/Utility/dialogs";
+    import { computed, PropType, ref } from "vue";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { MobileAppConfigurationBag } from "@Obsidian/ViewModels/Blocks/Administration/SparkConnectedServices/mobileAppConfigurationBag";
+    import { SaveMobileAppResponseBag } from "@Obsidian/ViewModels/Blocks/Administration/SparkConnectedServices/saveMobileAppResponseBag";
+
+    // #region Types
+
+    type Notice = {
+        alertType: "info" | "warning";
+        text: string;
+    };
+
+    // #endregion Types
+
+    const props = defineProps({
+        configuration: {
+            type: Object as PropType<MobileAppConfigurationBag>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:configuration", value: MobileAppConfigurationBag): void;
+    }>();
+
+    const invokeBlockAction = useInvokeBlockAction();
+
+    // #region Values
+
+    const editForm = ref<InstanceType<typeof RockForm> | null>(null);
+
+    const isConfiguring = ref(false);
+    const editName = ref("");
+    const editBrandColor = ref("");
+    const editLogo = ref<ListItemBag | null>(null);
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    /** Enable and Update stay off until the app is built and while Spark reports an issue. */
+    const isEnableAvailable = computed((): boolean => {
+        return props.configuration.isPlatformSiteBuilt && !props.configuration.manifestIssue;
+    });
+
+    /** The code, link and QR image are shown only while the church is listed. */
+    const isPosterVisible = computed((): boolean => {
+        return props.configuration.isEnrolled && !!props.configuration.churchCode && !!props.configuration.link;
+    });
+
+    const qrCodeUrl = computed((): string => {
+        return `/GetQRCode.ashx?data=${encodeURIComponent(props.configuration.link ?? "")}&pixelsPerModule=6`;
+    });
+
+    const notices = computed((): Notice[] => {
+        const list: Notice[] = [];
+
+        // ARGUS-LIVE: Remove this notice with the fake gateway.
+        if (props.configuration.isFakeGateway) {
+            list.push({
+                alertType: "info",
+                text: "Development machine: enrolling uses a fake gateway on this server. Nothing is sent to Spark and the church code and link are made up."
+            });
+        }
+
+        if (props.configuration.manifestIssue) {
+            list.push({
+                alertType: "warning",
+                text: props.configuration.manifestIssue
+            });
+        }
+        else if (!props.configuration.isPlatformSiteBuilt) {
+            list.push({
+                alertType: "warning",
+                text: "Run Build App in the mobile app control panel to enable this."
+            });
+        }
+
+        if (!props.configuration.isEnrolled && props.configuration.churchCode) {
+            list.push({
+                alertType: "info",
+                text: `Your church code is ${props.configuration.churchCode}. Re-enable to bring your QR posters back to life.`
+            });
+        }
+
+        return list;
+    });
+
+    // #endregion Computed Values
+
+    // #region Event Handlers
+
+    function onUpdateClick(): void {
+        editName.value = props.configuration.name ?? "";
+        editBrandColor.value = props.configuration.brandColor ?? "";
+        editLogo.value = props.configuration.logo ?? null;
+        isConfiguring.value = true;
+    }
+
+    function onCancelConfigurationClick(): void {
+        isConfiguring.value = false;
+    }
+
+    async function onSaveConfiguration(): Promise<void> {
+        const data = {
+            name: editName.value,
+            brandColor: editBrandColor.value,
+            logo: editLogo.value
+        };
+
+        const result = await invokeBlockAction<SaveMobileAppResponseBag>("SaveMobileApp", data);
+
+        if (!result.isSuccess || !result.data?.configuration) {
+            await alert(result.errorMessage || "An unknown error occurred trying to save the mobile app configuration.");
+            return;
+        }
+
+        emit("update:configuration", result.data.configuration);
+        isConfiguring.value = false;
+    }
+
+    async function onDisableConfigurationClick(): Promise<void> {
+        if (!await confirm("Every installed copy of the shared app will stop working for your church at its next launch, and your church will disappear from the app's directory. Your QR posters will work again if you re-enable. Disable?")) {
+            return;
+        }
+
+        const result = await invokeBlockAction<SaveMobileAppResponseBag>("DisableMobileApp");
+
+        if (!result.isSuccess || !result.data?.configuration) {
+            await alert(result.errorMessage || "An unknown error occurred trying to disable the mobile app.");
+            return;
+        }
+
+        emit("update:configuration", result.data.configuration);
+        isConfiguring.value = false;
+    }
+
+    // #endregion Event Handlers
+</script>

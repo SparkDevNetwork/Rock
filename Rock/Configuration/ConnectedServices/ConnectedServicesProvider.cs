@@ -62,6 +62,15 @@ namespace Rock.Configuration.ConnectedServices
         private const string RockIntelligenceServiceId = "rock-iq";
 
         /// <summary>
+        /// The service identifier for the shared (multitenant) mobile application.
+        /// </summary>
+        /// <remarks>
+        /// ARGUS-LIVE: A placeholder until Spark names the service (card impl spec, section 3).
+        /// Change it here, and in the routes below, to whatever the gateway answers on.
+        /// </remarks>
+        internal const string MobileAppServiceId = "mobile-app";
+
+        /// <summary>
         /// The cache key used to store the connected services configuration in
         /// the system settings.
         /// </summary>
@@ -1027,6 +1036,104 @@ namespace Rock.Configuration.ConnectedServices
         internal Task<GetServiceBundlesResponse> GetRockIntelligenceBundlesAsync( CancellationToken cancellationToken )
         {
             return GetServiceBundlesAsync( RockIntelligenceServiceId, cancellationToken );
+        }
+
+        #endregion
+
+        #region Mobile App
+
+        /// <summary>
+        /// Gets the manifest entry for the shared mobile application service, or
+        /// <c>null</c> if Spark is not offering it to this organization.
+        /// </summary>
+        /// <returns>The service entry or <c>null</c>.</returns>
+        internal ServiceEntry GetMobileAppServiceEntry()
+        {
+            return GetManifest()
+                ?.Services
+                ?.FirstOrDefault( se => se.ServiceId == MobileAppServiceId );
+        }
+
+        /// <summary>
+        /// Saves the church's enrollment in the shared mobile application. Unlike
+        /// the Rock Intelligence values this is Rock's own record, not a copy of
+        /// the manifest.
+        /// </summary>
+        /// <param name="mobileApp">The enrollment to save.</param>
+        internal void SaveMobileAppConfiguration( MobileApp.ServiceConfiguration mobileApp )
+        {
+            UpdateConfiguration( configuration =>
+            {
+                configuration.MobileApp = mobileApp;
+
+                return true;
+            } );
+        }
+
+        /// <summary>
+        /// Turns the shared mobile application service on or off for the church
+        /// with the gateway's generic per-service enable.
+        /// </summary>
+        /// <param name="enabled">A value indicating whether the service should be enabled.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>A <see cref="ConfigurationResult"/> indicating the success or failure of the operation.</returns>
+        internal Task<ConfigurationResult<SetEnabledResponse>> SetMobileAppEnabledAsync( bool enabled, CancellationToken cancellationToken )
+        {
+            return SetEnabled( MobileAppServiceId, enabled, cancellationToken );
+        }
+
+        /// <summary>
+        /// Writes the church's directory details for the shared mobile
+        /// application. The directory creates the listing on the first call and
+        /// overwrites it on every later one.
+        /// </summary>
+        /// <param name="request">The church's details.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>A <see cref="ConfigurationResult"/> carrying the church code and poster link.</returns>
+        internal async Task<ConfigurationResult<MobileApp.DataTransferObjects.MobileAppConfigurationResponse>> SetMobileAppConfigurationAsync( MobileApp.DataTransferObjects.MobileAppConfigurationRequest request, CancellationToken cancellationToken )
+        {
+            if ( _deploymentEnvironment == DeploymentEnvironment.Demo )
+            {
+                throw new InvalidOperationException( "Connected services are not available in the demo environment." );
+            }
+
+            var apiKey = GetAuthToken();
+
+            if ( apiKey.IsNullOrWhiteSpace() )
+            {
+                throw new InvalidOperationException( "Connected Services API Key is not configured." );
+            }
+
+            try
+            {
+                // ARGUS-LIVE: The config route is a proposal (card impl spec, section 5, and its
+                // open question 1). Confirm the path with Spark's gateway team, and once the
+                // gateway is live, check how it reports Argus's 400 validation_failed body so the
+                // card can show which field failed instead of the bare status code.
+                var httpRequest = new HttpRequestMessage( HttpMethod.Put, $"svcs/v1/{MobileAppServiceId}/config" );
+                httpRequest.Headers.Add( "X-Gateway-Api-Key", apiKey );
+                httpRequest.Content = new StringContent( Serialize( request ), Encoding.UTF8, "application/json" );
+
+                var response = await _httpClient.SendAsync( httpRequest, cancellationToken );
+                response.EnsureSuccessStatusCode();
+
+                var responseJson = await response.Content.ReadAsStringAsync();
+                var responseData = Deserialize<MobileApp.DataTransferObjects.MobileAppConfigurationResponse>( responseJson );
+
+                return new ConfigurationResult<MobileApp.DataTransferObjects.MobileAppConfigurationResponse>
+                {
+                    IsSuccess = true,
+                    Data = responseData,
+                };
+            }
+            catch ( HttpRequestException ex )
+            {
+                return new ConfigurationResult<MobileApp.DataTransferObjects.MobileAppConfigurationResponse>
+                {
+                    IsSuccess = false,
+                    ErrorMessage = $"Failed to save the mobile app configuration: {ex.InnerException?.Message ?? ex.Message}"
+                };
+            }
         }
 
         #endregion

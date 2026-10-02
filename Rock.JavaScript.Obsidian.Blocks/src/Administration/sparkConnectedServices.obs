@@ -93,7 +93,16 @@
 
             <RockIntelligence v-if="isRockIntelligenceVisible"
                               v-model:configuration="rockIntelligenceConfiguration" />
+
+            <!-- Not gated on the credit card: the service is free. -->
+            <MobileApp v-if="mobileAppConfiguration"
+                       v-model:configuration="mobileAppConfiguration"
+                       style="margin-top: var(--spacing-medium);" />
         </template>
+
+        <!-- ARGUS-LIVE: Only the fake gateway sends the card for an unlinked organization. Remove with the fake. -->
+        <MobileApp v-if="config.isOrganizationInvalid && mobileAppConfiguration"
+                   v-model:configuration="mobileAppConfiguration" />
     </Panel>
 </template>
 
@@ -125,6 +134,7 @@
     import DisplayCard from "@Obsidian/Controls/displayCard.obs";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import Panel from "@Obsidian/Controls/panel.obs";
+    import MobileApp from "./SparkConnectedServices/mobileApp.partial.obs";
     import RockIntelligence from "./SparkConnectedServices/rockIntelligence.partial.obs";
     import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { alert } from "@Obsidian/Utility/dialogs";
@@ -141,6 +151,7 @@
     // #region Values
 
     const rockIntelligenceConfiguration = ref(config.rockIntelligence ?? null);
+    const mobileAppConfiguration = ref(config.mobileApp ?? null);
     const linkOrganizationUrl = `/link-organization?returnUrl=${encodeURIComponent(window.location.href)}`;
     const manifestLastRefreshedDateTime = ref(config.manifestLastRefreshedDateTime ?? null);
     const isManifestRefreshing = ref(false);

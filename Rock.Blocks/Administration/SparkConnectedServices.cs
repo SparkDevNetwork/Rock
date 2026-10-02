@@ -28,9 +28,12 @@ using Rock.Attribute;
 using Rock.Configuration;
 using Rock.Configuration.ConnectedServices;
 using Rock.Configuration.ConnectedServices.DataTransferObjects;
+using Rock.Configuration.ConnectedServices.MobileApp;
+using Rock.Mobile;
 using Rock.Model;
 using Rock.ViewModels.Blocks.Administration.SparkConnectedServices;
 using Rock.ViewModels.Utility;
+using Rock.Web.Cache;
 
 namespace Rock.Blocks.Administration
 {
@@ -49,12 +52,20 @@ namespace Rock.Blocks.Administration
         public override async Task<object> GetObsidianBlockInitializationAsync()
         {
             var provider = RockApp.Current.GetRequiredService<ConnectedServicesProvider>();
+            var mobileAppGateway = MobileAppGatewayFactory.Create( provider );
             var initializationBag = new InitializationBag();
 
             if ( !provider.IsOrganizationLinked() )
             {
                 initializationBag.IsOrganizationInvalid = true;
                 initializationBag.IsUpgradePossible = provider.IsLegacyOrganizationLinked();
+
+                // ARGUS-LIVE: The fake gateway needs no linked organization, so a development
+                // machine can try the card without linking. Remove this line with the fake.
+                if ( mobileAppGateway.IsFake )
+                {
+                    initializationBag.MobileApp = GetMobileAppConfiguration( provider, mobileAppGateway );
+                }
 
                 return initializationBag;
             }
@@ -66,6 +77,7 @@ namespace Rock.Blocks.Administration
                 initializationBag.OrganizationIdentifier = provider.GetLegacyOrganizationIdentifier();
                 initializationBag.CreditCardSummary = await GetCreditCardSummaryBagAsync( provider );
                 initializationBag.RockIntelligence = await GetRockIntelligenceConfigurationAsync( provider );
+                initializationBag.MobileApp = GetMobileAppConfiguration( provider, mobileAppGateway );
                 initializationBag.ManifestLastRefreshedDateTime = GetManifestLastRefreshedDateTime( provider );
             }
             catch ( Exception ex )
@@ -177,6 +189,76 @@ namespace Rock.Blocks.Administration
             }
 
             return bag;
+        }
+
+        /// <summary>
+        /// Gets the church's enrollment in the shared mobile application for the card.
+        /// </summary>
+        /// <param name="provider">The connected services provider.</param>
+        /// <param name="gateway">The gateway the card enrolls through.</param>
+        /// <returns>The bag, or <c>null</c> when Spark's manifest does not offer the service.</returns>
+        private MobileAppConfigurationBag GetMobileAppConfiguration( ConnectedServicesProvider provider, IMobileAppGateway gateway )
+        {
+            var serviceEntry = provider.GetMobileAppServiceEntry();
+
+            // ARGUS-LIVE: The fake shows the card with no manifest entry. Once Spark lists the
+            // service, the manifest is the only gate (card impl spec, section 11).
+            if ( serviceEntry == null && !gateway.IsFake )
+            {
+                return null;
+            }
+
+            var stored = provider.GetConfiguration()?.MobileApp;
+            var manifestIssue = serviceEntry?.Status == ServiceStatus.Error
+                ? serviceEntry.Issue.IfEmpty( "The service is not available right now." )
+                : null;
+
+            return new MobileAppConfigurationBag
+            {
+                IsPlatformSiteBuilt = MultitenantEnrollment.GetPlatformSite( RockContext ) != null,
+                IsEnrolled = stored?.IsEnrolled == true,
+                IsFakeGateway = gateway.IsFake,
+                Name = stored?.Name ?? GlobalAttributesCache.Value( "OrganizationName" ),
+                BrandColor = stored?.BrandColor,
+                Logo = GetBinaryFileListItemBag( stored?.LogoBinaryFileGuid ),
+                ApiUrl = MultitenantEnrollment.GetApiUrl(),
+                ChurchCode = stored?.ChurchCode,
+                Link = stored?.Link,
+                ManifestIssue = manifestIssue
+            };
+        }
+
+        /// <summary>
+        /// Builds the list item an image uploader shows for a binary file.
+        /// </summary>
+        /// <param name="binaryFileGuid">The binary file Guid, or <c>null</c>.</param>
+        /// <returns>The list item, or <c>null</c> if there is no file.</returns>
+        private ListItemBag GetBinaryFileListItemBag( Guid? binaryFileGuid )
+        {
+            if ( !binaryFileGuid.HasValue )
+            {
+                return null;
+            }
+
+            var fileName = new BinaryFileService( RockContext ).GetSelect( binaryFileGuid.Value, b => b.FileName );
+
+            return fileName == null
+                ? null
+                : new ListItemBag { Value = binaryFileGuid.Value.ToString(), Text = fileName };
+        }
+
+        /// <summary>
+        /// Builds the response sent after an enrollment change.
+        /// </summary>
+        /// <param name="provider">The connected services provider.</param>
+        /// <param name="gateway">The gateway the card enrolls through.</param>
+        /// <returns>The response bag.</returns>
+        private SaveMobileAppResponseBag GetSaveMobileAppResponse( ConnectedServicesProvider provider, IMobileAppGateway gateway )
+        {
+            return new SaveMobileAppResponseBag
+            {
+                Configuration = GetMobileAppConfiguration( provider, gateway )
+            };
         }
 
         #region Block Actions
@@ -292,6 +374,83 @@ namespace Rock.Blocks.Administration
                 BoostStatus = boostResult?.Status.ConvertToInt() ?? 0,
                 BoostMessage = boostResult?.Message
             } );
+        }
+
+        /// <summary>
+        /// Enables the shared mobile application for the church, or updates its
+        /// directory listing when it is already enabled.
+        /// </summary>
+        /// <param name="name">The church name shown in the directory.</param>
+        /// <param name="brandColor">The directory color, <c>#RRGGBB</c>.</param>
+        /// <param name="logo">The directory logo, or <c>null</c> for none.</param>
+        /// <returns>The refreshed enrollment.</returns>
+        [BlockAction]
+        public async Task<BlockActionResult> SaveMobileApp( string name, string brandColor, ListItemBag logo )
+        {
+            var provider = RockApp.Current.GetRequiredService<ConnectedServicesProvider>();
+            var gateway = MobileAppGatewayFactory.Create( provider );
+
+            if ( !gateway.IsFake && provider.GetMobileAppServiceEntry()?.Status == ServiceStatus.Error )
+            {
+                return ActionBadRequest( "Spark reports an issue with this service, so it cannot be enabled right now." );
+            }
+
+            var options = new MultitenantEnrollmentOptions
+            {
+                Name = name,
+                BrandColor = brandColor,
+                LogoBinaryFileGuid = logo?.Value.AsGuidOrNull()
+            };
+
+            MultitenantEnrollmentResult result;
+
+            try
+            {
+                result = await MultitenantEnrollment.SaveAsync( options, gateway, provider, RockContext, CancellationToken.None );
+            }
+            catch ( InvalidOperationException ex )
+            {
+                // The provider throws when the organization is not linked or in the demo environment.
+                return ActionBadRequest( ex.Message );
+            }
+
+            if ( !result.IsSuccess )
+            {
+                return ActionBadRequest( result.ErrorMessage );
+            }
+
+            return ActionOk( GetSaveMobileAppResponse( provider, gateway ) );
+        }
+
+        /// <summary>
+        /// Takes the church out of the shared mobile application. Installed copies
+        /// stop at their next launch and the church leaves the directory; the church
+        /// code and its posters come back if it enables again.
+        /// </summary>
+        /// <returns>The refreshed enrollment.</returns>
+        [BlockAction]
+        public async Task<BlockActionResult> DisableMobileApp()
+        {
+            var provider = RockApp.Current.GetRequiredService<ConnectedServicesProvider>();
+            var gateway = MobileAppGatewayFactory.Create( provider );
+
+            MultitenantEnrollmentResult result;
+
+            try
+            {
+                result = await MultitenantEnrollment.DisableAsync( gateway, provider, RockContext, CancellationToken.None );
+            }
+            catch ( InvalidOperationException ex )
+            {
+                return ActionBadRequest( ex.Message );
+            }
+
+            if ( !result.IsSuccess )
+            {
+                return ActionBadRequest( result.ErrorMessage );
+            }
+
+            return ActionOk( GetSaveMobileAppResponse( provider, gateway ) );
         }
 
         #endregion

@@ -1459,6 +1459,103 @@ namespace Rock.Tests.Configuration.ConnectedServices
 
         #endregion
 
+        #region Mobile App
+
+        [TestMethod]
+        public async Task SetMobileAppConfigurationAsync_WithoutAuthToken_ThrowsInvalidOperation()
+        {
+            using ( var ctx = CreateTestContext() )
+            {
+                await Assert.ThrowsExactlyAsync<InvalidOperationException>( () =>
+                    ctx.Provider.SetMobileAppConfigurationAsync( new Rock.Configuration.ConnectedServices.MobileApp.DataTransferObjects.MobileAppConfigurationRequest(), CancellationToken.None ) );
+
+                Assert.IsEmpty( ctx.Handler.Requests );
+            }
+        }
+
+        [TestMethod]
+        public async Task SetMobileAppConfigurationAsync_WithSuccessResponse_ReturnsChurchCodeAndLink()
+        {
+            using ( var ctx = CreateTestContext() )
+            {
+                SeedAuthToken( "token" );
+
+                var responseJson = @"{ ""churchCode"": ""KX7M2PQR"", ""link"": ""https://argus.example/c/KX7M2PQR"", ""isActive"": true, ""name"": ""Grace"" }";
+                ctx.Handler.SetResponse( HttpMethod.Put, $"/svcs/v1/{ConnectedServicesProvider.MobileAppServiceId}/config", HttpStatusCode.OK, responseJson );
+
+                var request = new Rock.Configuration.ConnectedServices.MobileApp.DataTransferObjects.MobileAppConfigurationRequest { Name = "Grace" };
+                var result = await ctx.Provider.SetMobileAppConfigurationAsync( request, CancellationToken.None );
+
+                Assert.IsTrue( result.IsSuccess );
+                Assert.AreEqual( "KX7M2PQR", result.Data.ChurchCode );
+                Assert.AreEqual( "https://argus.example/c/KX7M2PQR", result.Data.Link );
+                Assert.AreEqual( "token", GetSentAuthHeader( ctx.Handler ) );
+                StringAssert.Contains( GetSentRequestBody( ctx.Handler ), "\"name\":\"Grace\"" );
+            }
+        }
+
+        [TestMethod]
+        public async Task SetMobileAppConfigurationAsync_WithServerError_ReturnsFailureResult()
+        {
+            using ( var ctx = CreateTestContext() )
+            {
+                SeedAuthToken( "token" );
+
+                ctx.Handler.SetResponse( HttpMethod.Put, $"/svcs/v1/{ConnectedServicesProvider.MobileAppServiceId}/config", HttpStatusCode.BadRequest, @"{ ""error"": ""validation_failed"" }" );
+
+                var result = await ctx.Provider.SetMobileAppConfigurationAsync( new Rock.Configuration.ConnectedServices.MobileApp.DataTransferObjects.MobileAppConfigurationRequest(), CancellationToken.None );
+
+                Assert.IsFalse( result.IsSuccess );
+                Assert.IsFalse( result.ErrorMessage.IsNullOrWhiteSpace() );
+            }
+        }
+
+        [TestMethod]
+        public async Task SetMobileAppEnabledAsync_PostsToGenericEnable()
+        {
+            using ( var ctx = CreateTestContext() )
+            {
+                SeedAuthToken( "token" );
+
+                ctx.Handler.SetResponse( HttpMethod.Post, $"/svcs/v1/{ConnectedServicesProvider.MobileAppServiceId}/enabled", HttpStatusCode.OK, @"{ ""enabled"": true, ""newlyProvisioned"": true }" );
+
+                var result = await ctx.Provider.SetMobileAppEnabledAsync( true, CancellationToken.None );
+
+                Assert.IsTrue( result.IsSuccess );
+                Assert.IsTrue( result.Data.Enabled );
+                StringAssert.Contains( GetSentRequestBody( ctx.Handler ), "\"enabled\":true" );
+            }
+        }
+
+        [TestMethod]
+        public async Task UpdateManifestAsync_KeepsMobileAppEnrollment()
+        {
+            using ( var ctx = CreateTestContext() )
+            {
+                SeedConfiguration( new ConnectedServicesConfiguration
+                {
+                    AuthToken = "token",
+                    MobileApp = new Rock.Configuration.ConnectedServices.MobileApp.ServiceConfiguration
+                    {
+                        IsEnrolled = true,
+                        ChurchCode = "KX7M2PQR"
+                    }
+                } );
+
+                ctx.Handler.SetResponse( HttpMethod.Get, "/api/v1/config/manifest", HttpStatusCode.OK, "{\"services\":[]}" );
+
+                await ctx.Provider.UpdateManifestAsync( CancellationToken.None );
+
+                // The enrollment is Rock's own record, so a manifest refresh must not wipe it.
+                var persisted = ReadPersistedConfiguration();
+                Assert.IsNotNull( persisted?.MobileApp );
+                Assert.IsTrue( persisted.MobileApp.IsEnrolled );
+                Assert.AreEqual( "KX7M2PQR", persisted.MobileApp.ChurchCode );
+            }
+        }
+
+        #endregion
+
         #region Support Types
 
         /// <summary>

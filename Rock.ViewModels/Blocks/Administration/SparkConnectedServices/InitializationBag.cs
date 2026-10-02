@@ -68,6 +68,13 @@ namespace Rock.ViewModels.Blocks.Administration.SparkConnectedServices
         public RockIntelligenceConfigurationBag RockIntelligence { get; set; }
 
         /// <summary>
+        /// The church's enrollment in the shared mobile application, or
+        /// <c>null</c> when the card should not be shown because Spark is not
+        /// offering the service.
+        /// </summary>
+        public MobileAppConfigurationBag MobileApp { get; set; }
+
+        /// <summary>
         /// The date and time the manifest was last refreshed, as a
         /// DateTimeOffset in the Rock organization time zone.
         /// </summary>
