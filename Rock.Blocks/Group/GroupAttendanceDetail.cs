@@ -1700,7 +1700,7 @@ namespace Rock.Blocks.Group
             // that prevented it from being used for it's normal purpose. So
             // it was decided to treat it like a normal "returnUrl" parameter
             // and just redirect to this URL when the back button is clicked.
-            if ( returnUrl.IsNotNullOrWhiteSpace() )
+            if ( this.PageCache.Layout.Site.IsSafeRedirectUrl( returnUrl, this.RequestContext.RequestUri ) )
             {
                 return returnUrl;
             }

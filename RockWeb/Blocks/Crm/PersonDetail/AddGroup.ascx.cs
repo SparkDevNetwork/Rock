@@ -952,10 +952,10 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
                                     var personDetailUrl = LinkedPageUrl( AttributeKey.PersonDetailPage, queryParams );
 
-                                    if ( PageParameter( "ReturnUrl" ).IsNotNullOrWhiteSpace() )
-                                    {
-                                        string redirectUrl = Server.UrlDecode( PageParameter( "ReturnUrl" ) );
+                                    string redirectUrl = Server.UrlDecode( PageParameter( "ReturnUrl" ) );
 
+                                    if ( RockPage.Site.IsSafeRedirectUrl( redirectUrl, Request.UrlProxySafe() ) )
+                                    {
                                         string queryString = string.Empty;
                                         if ( redirectUrl.Contains( "?" ) )
                                         {
