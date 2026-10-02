@@ -318,9 +318,6 @@ namespace Rock.Blocks.Event
             box.IfValidProperty( nameof( box.Entity.Name ),
                 () => entity.Name = box.Entity.Name );
 
-            box.IfValidProperty( nameof( box.Entity.Photo ),
-                () => entity.PhotoId = box.Entity.Photo.GetEntityId<BinaryFile>( rockContext ) );
-
             box.IfValidProperty( nameof( box.Entity.Summary ),
                 () => entity.Summary = box.Entity.Summary );
 
@@ -732,16 +729,13 @@ namespace Rock.Blocks.Event
         /// <param name="entity">The entity.</param>
         private void SavePhoto( DetailBlockBox<EventItemBag, EventItemDetailOptionsBag> box, RockContext rockContext, EventItem entity )
         {
-            if ( box.Entity.Photo != null )
+            var binaryFileId = box.Entity.Photo?.GetEntityId<BinaryFile>( rockContext );
+            if ( entity.PhotoId != binaryFileId )
             {
-                var binaryFileId = box.Entity.Photo.GetEntityId<BinaryFile>( rockContext );
-                if ( entity.PhotoId != binaryFileId )
-                {
-                    MarkOldImageAsTemporary( entity.PhotoId, binaryFileId, rockContext );
-                    entity.PhotoId = binaryFileId;
-                    // Ensure that the Image is not set as IsTemporary=True
-                    EnsureCurrentImageIsNotMarkedAsTemporary( entity.PhotoId, rockContext );
-                }
+                MarkOldImageAsTemporary( entity.PhotoId, binaryFileId, rockContext );
+                entity.PhotoId = binaryFileId;
+                // Ensure that the Image is not set as IsTemporary=True
+                EnsureCurrentImageIsNotMarkedAsTemporary( entity.PhotoId, rockContext );
             }
         }
 
