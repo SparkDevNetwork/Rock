@@ -18,6 +18,8 @@
 using System;
 using System.Collections.Generic;
 
+using Rock.ViewModels.Utility;
+
 namespace Rock.ViewModels.Blocks.Cms.PageBuilder
 {
     /// <summary>
@@ -35,6 +37,16 @@ namespace Rock.ViewModels.Blocks.Cms.PageBuilder
         /// own blocks are addressed by.
         /// </summary>
         public Guid? TargetPageGuid { get; set; }
+
+        /// <summary>
+        /// Gets or sets the internal name of the page the builder frames.
+        /// </summary>
+        public string TargetPageName { get; set; }
+
+        /// <summary>
+        /// Gets or sets the interaction intents the page the builder frames is tagged with.
+        /// </summary>
+        public List<ListItemBag> TargetPageIntents { get; set; }
 
         /// <summary>
         /// Gets or sets the message to display instead of the builder when it cannot run.

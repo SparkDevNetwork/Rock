@@ -1,0 +1,293 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="page-builder-top-bar">
+        <div class="page-builder-top-bar-start">
+            <RockButton class="page-builder-top-bar-button" @click="onPageClick">
+                <i class="ti ti-file"></i>
+                <span class="page-builder-top-bar-text">Page: {{ pageName }}</span>
+                <i class="ti ti-chevron-down"></i>
+            </RockButton>
+
+            <span class="page-builder-top-bar-divider"></span>
+
+            <RockButton class="page-builder-top-bar-button page-builder-top-bar-chip" @click="onIntentsClick">
+                Intents:
+                <span class="page-builder-top-bar-text" :class="{ 'is-empty': !intents.length }">{{ intentsText }}</span>
+                <i class="ti ti-circle-plus page-builder-top-bar-chip-icon"></i>
+            </RockButton>
+        </div>
+
+        <div class="btn-group page-builder-top-bar-devices" role="group" aria-label="Preview width">
+            <RockButton v-for="device in previewDevices"
+                        :key="device.value"
+                        :btnType="device.value === previewDevice ? BtnType.Primary : BtnType.Default"
+                        :title="device.text"
+                        :aria-label="device.text"
+                        :aria-pressed="device.value === previewDevice"
+                        @click="emit('update:previewDevice', device.value)">
+                <i :class="device.iconCssClass"></i>
+            </RockButton>
+        </div>
+
+        <div class="page-builder-top-bar-end">
+            <RockButton class="page-builder-top-bar-button" @click="emit('viewPageRequested')">
+                <i class="ti ti-external-link"></i>
+                View Page
+            </RockButton>
+
+            <RockButton class="page-builder-top-bar-button" @click="emit('propertiesRequested')">
+                <i class="ti ti-settings"></i>
+                Properties
+            </RockButton>
+        </div>
+
+        <Modal v-model="isPageModalShown"
+               title="Edit Page"
+               saveText="Edit"
+               :isSaveButtonDisabled="!isOtherPageSelected"
+               @save="onPageModalSave">
+            <TreeList v-model="selectedPageValues" :provider="pageTreeProvider" />
+        </Modal>
+
+        <Modal v-model="isIntentsModalShown"
+               title="Edit Page Intent"
+               saveText="Done"
+               :isSaveButtonDisabled="isIntentsSaving"
+               @save="onIntentsModalSave">
+            <NotificationBox v-if="intentsErrorMessage" alertType="danger">
+                {{ intentsErrorMessage }}
+            </NotificationBox>
+
+            <DefinedValuePicker v-model="editedIntents"
+                                label="Page Intents"
+                                help="Helps classify the purpose of the page. This is written to interactions as individuals view the page. You can provide options here by editing the Interaction Intent Defined Type."
+                                :multiple="true"
+                                :definedTypeGuid="DefinedType.InteractionIntent" />
+        </Modal>
+    </div>
+</template>
+
+<style scoped>
+.page-builder-top-bar {
+    display: grid;
+    /* Equal side columns keep the device buttons centered on the window. */
+    grid-template-columns: 1fr auto 1fr;
+    gap: var(--spacing-medium);
+    align-items: center;
+    padding: var(--spacing-small) var(--spacing-medium);
+    border-bottom: 1px solid var(--color-interface-soft);
+}
+
+.page-builder-top-bar-start,
+.page-builder-top-bar-end {
+    display: flex;
+    gap: var(--spacing-small);
+    align-items: center;
+    min-width: 0;
+}
+
+.page-builder-top-bar-end {
+    justify-content: flex-end;
+}
+
+.page-builder-top-bar-button {
+    display: inline-flex;
+    gap: var(--spacing-xsmall);
+    align-items: center;
+    min-width: 0;
+}
+
+.page-builder-top-bar-text {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.page-builder-top-bar-text.is-empty {
+    font-style: italic;
+    color: var(--color-interface-medium);
+}
+
+.page-builder-top-bar-divider {
+    align-self: stretch;
+    width: 1px;
+    background-color: var(--color-interface-soft);
+}
+
+.page-builder-top-bar-chip {
+    border-style: dashed;
+}
+
+.page-builder-top-bar-chip-icon {
+    color: var(--color-info-strong);
+}
+
+@media (max-width: 767px) {
+    .page-builder-top-bar {
+        grid-template-columns: 1fr auto;
+        overflow-x: auto;
+    }
+
+    /* A preview wider than the phone showing it would not fit. */
+    .page-builder-top-bar-devices {
+        display: none;
+    }
+}
+</style>
+
+<script setup lang="ts">
+    import { computed, PropType, ref } from "vue";
+    import DefinedValuePicker from "@Obsidian/Controls/definedValuePicker.obs";
+    import Modal from "@Obsidian/Controls/modal.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import TreeList from "@Obsidian/Controls/treeList.obs";
+    import { SiteType } from "@Obsidian/Enums/Cms/siteType";
+    import { BtnType } from "@Obsidian/Enums/Controls/btnType";
+    import { DefinedType } from "@Obsidian/SystemGuids/definedType";
+    import { Guid } from "@Obsidian/Types";
+    import { useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { areEqual, toGuidOrNull } from "@Obsidian/Utility/guid";
+    import { PageTreeItemProvider } from "@Obsidian/Utility/treeItemProviders";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { PreviewDevice } from "./types.partial";
+
+    // #region Types
+
+    /** A device button in the top bar. */
+    type PreviewDeviceOption = {
+        value: PreviewDevice;
+        text: string;
+        iconCssClass: string;
+    };
+
+    // #endregion Types
+
+    const props = defineProps({
+        /** The internal name of the page being built. */
+        pageName: {
+            type: String as PropType<string>,
+            required: true
+        },
+
+        /** The unique identifier of the page being built. */
+        pageGuid: {
+            type: String as PropType<Guid>,
+            required: true
+        },
+
+        /** The interaction intents the page is tagged with. */
+        intents: {
+            type: Array as PropType<ListItemBag[]>,
+            required: true
+        },
+
+        /** The kind of device whose screen width the page is previewed at. */
+        previewDevice: {
+            type: String as PropType<PreviewDevice>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:intents", value: ListItemBag[]): void;
+        (e: "update:previewDevice", value: PreviewDevice): void;
+        (e: "pageSelected", pageGuid: Guid): void;
+        (e: "viewPageRequested"): void;
+        (e: "propertiesRequested"): void;
+    }>();
+
+    const invokeBlockAction = useInvokeBlockAction();
+
+    // #region Values
+
+    const previewDevices: PreviewDeviceOption[] = [
+        { value: "desktop", text: "Desktop", iconCssClass: "ti ti-device-desktop" },
+        { value: "tablet", text: "Tablet", iconCssClass: "ti ti-device-tablet" },
+        { value: "phone", text: "Phone", iconCssClass: "ti ti-device-mobile" }
+    ];
+
+    const pageTreeProvider = new PageTreeItemProvider();
+    pageTreeProvider.siteType = SiteType.Web;
+
+    const isPageModalShown = ref(false);
+    const selectedPageValues = ref<string[]>([]);
+    const isIntentsModalShown = ref(false);
+    const editedIntents = ref<ListItemBag[]>([]);
+    const isIntentsSaving = ref(false);
+    const intentsErrorMessage = ref("");
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    const intentsText = computed((): string => props.intents.length ? props.intents.map(intent => intent.text).join(", ") : "None");
+
+    /** Whether a page other than the one being built is selected in the page tree. */
+    const isOtherPageSelected = computed((): boolean => {
+        const selectedPageGuid = toGuidOrNull(selectedPageValues.value[0]);
+
+        return !!selectedPageGuid && !areEqual(selectedPageGuid, props.pageGuid);
+    });
+
+    // #endregion Computed Values
+
+    // #region Event Handlers
+
+    /**
+     * Opens the page tree with the page being built selected.
+     */
+    function onPageClick(): void {
+        selectedPageValues.value = [props.pageGuid];
+        isPageModalShown.value = true;
+    }
+
+    /**
+     * Hands the page selected in the page tree to the builder to open.
+     */
+    function onPageModalSave(): void {
+        const selectedPageGuid = toGuidOrNull(selectedPageValues.value[0]);
+
+        if (!selectedPageGuid || !isOtherPageSelected.value) {
+            return;
+        }
+
+        isPageModalShown.value = false;
+        emit("pageSelected", selectedPageGuid);
+    }
+
+    /**
+     * Opens the intent picker on the page's current intents.
+     */
+    function onIntentsClick(): void {
+        editedIntents.value = [...props.intents];
+        intentsErrorMessage.value = "";
+        isIntentsModalShown.value = true;
+    }
+
+    /**
+     * Saves the intents picked for the page, then closes the picker.
+     */
+    async function onIntentsModalSave(): Promise<void> {
+        const intentValueGuids = editedIntents.value
+            .map(intent => toGuidOrNull(intent.value))
+            .filter((intentValueGuid): intentValueGuid is Guid => intentValueGuid !== null);
+
+        intentsErrorMessage.value = "";
+        isIntentsSaving.value = true;
+
+        const result = await invokeBlockAction<ListItemBag[]>("SavePageIntents", { intentValueGuids });
+
+        isIntentsSaving.value = false;
+
+        if (!result.isSuccess) {
+            intentsErrorMessage.value = result.errorMessage || "The page's intents could not be saved.";
+            return;
+        }
+
+        emit("update:intents", result.data ?? []);
+        isIntentsModalShown.value = false;
+    }
+
+    // #endregion Event Handlers
+</script>

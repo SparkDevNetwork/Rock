@@ -23,6 +23,7 @@
 
 import { Guid } from "@Obsidian/Types";
 import { PageBuilderModuleTypeBag } from "@Obsidian/ViewModels/Blocks/Cms/PageBuilder/pageBuilderModuleTypeBag";
+import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
 /** The top-level initialization object returned by the Page Builder block. */
 export type PageBuilderInitializationBox = {
@@ -37,6 +38,12 @@ export type PageBuilderInitializationBox = {
      * own blocks are addressed by.
      */
     targetPageGuid?: Guid | null;
+
+    /** Gets or sets the interaction intents the page the builder frames is tagged with. */
+    targetPageIntents?: ListItemBag[] | null;
+
+    /** Gets or sets the internal name of the page the builder frames. */
+    targetPageName?: string | null;
 
     /** Gets or sets the URL of the page the builder frames for composing. */
     targetPageUrl?: string | null;

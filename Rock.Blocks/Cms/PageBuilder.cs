@@ -15,6 +15,8 @@
 // </copyright>
 //
 
+using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
@@ -24,6 +26,7 @@ using Rock.Attribute;
 using Rock.Model;
 using Rock.Security;
 using Rock.ViewModels.Blocks.Cms.PageBuilder;
+using Rock.ViewModels.Utility;
 using Rock.Web;
 using Rock.Web.Cache;
 
@@ -43,7 +46,7 @@ namespace Rock.Blocks.Cms
 
     [LinkedPage(
         "Target Page",
-        Description = "The page to compose. Only zones that opt in to the Page Builder accept modules.",
+        Description = "The page the builder opens to. Only zones that opt in to the Page Builder accept modules.",
         IsRequired = true,
         DefaultValue = "83FC4394-ED09-461D-B865-68C1F5AFB34E", // Page Builder Sample
         Order = 0,
@@ -62,6 +65,11 @@ namespace Rock.Blocks.Cms
             public const string TargetPage = "TargetPage";
         }
 
+        private static class PageParameterKey
+        {
+            public const string Page = "Page";
+        }
+
         #endregion Keys
 
         #region Methods
@@ -69,46 +77,86 @@ namespace Rock.Blocks.Cms
         /// <inheritdoc/>
         public override object GetObsidianBlockInitialization()
         {
-            var targetPageUrl = this.GetLinkedPageUrl( AttributeKey.TargetPage );
+            var targetPage = GetTargetPage();
 
-            if ( targetPageUrl.IsNullOrWhiteSpace() )
+            if ( targetPage == null )
             {
                 return new PageBuilderInitializationBox
                 {
-                    ErrorMessage = "No target page is configured."
+                    ErrorMessage = PageParameter( PageParameterKey.Page ).IsNotNullOrWhiteSpace()
+                        ? "The page could not be found."
+                        : "No target page is configured."
                 };
             }
 
-            var moduleTypes = new ModuleTypeService( RockContext )
+            // The target page is still sent with an error, so the top bar can switch to another page.
+            var box = new PageBuilderInitializationBox
+            {
+                TargetPageUrl = new PageReference( targetPage.Id ).BuildUrl(),
+                TargetPageGuid = targetPage.Guid,
+                TargetPageName = targetPage.InternalName,
+                TargetPageIntents = GetPageIntents( targetPage.Id )
+            };
+
+            if ( targetPage.Id == PageCache.Id )
+            {
+                box.ErrorMessage = "The Page Builder cannot build its own page.";
+                return box;
+            }
+
+            if ( !targetPage.IsAuthorized( Authorization.ADMINISTRATE, RequestContext.CurrentPerson ) )
+            {
+                box.ErrorMessage = "You are not authorized to edit the modules on this page.";
+                return box;
+            }
+
+            box.ModuleTypes = new ModuleTypeService( RockContext )
                 .Queryable()
                 .AsNoTracking()
                 .OrderBy( moduleType => moduleType.Name )
+                .ToList()
+                .Select( moduleType => new PageBuilderModuleTypeBag
+                {
+                    Key = moduleType.IdKey,
+                    Name = moduleType.Name,
+                    IconCssClass = moduleType.IconCssClass
+                } )
                 .ToList();
 
-            return new PageBuilderInitializationBox
-            {
-                TargetPageUrl = targetPageUrl,
-                TargetPageGuid = GetTargetPage()?.Guid,
-                ModuleTypes = moduleTypes
-                    .Select( moduleType => new PageBuilderModuleTypeBag
-                    {
-                        Key = moduleType.IdKey,
-                        Name = moduleType.Name,
-                        IconCssClass = moduleType.IconCssClass
-                    } )
-                    .ToList()
-            };
+            return box;
         }
 
         /// <summary>
-        /// Gets the page being composed.
+        /// Gets the page being composed, which is the page chosen in the builder or else the Target Page setting.
         /// </summary>
-        /// <returns>The target page, or <c>null</c> if none is configured.</returns>
+        /// <returns>The target page, or <c>null</c> if the chosen page does not exist or none is configured.</returns>
         private PageCache GetTargetPage()
         {
+            // Obsidian sends the page's parameters with every block action, so actions compose the same page the builder shows.
+            var pageKey = PageParameter( PageParameterKey.Page );
+
+            if ( pageKey.IsNotNullOrWhiteSpace() )
+            {
+                return PageCache.Get( pageKey, !PageCache.Layout.Site.DisablePredictableIds );
+            }
+
             var pageReference = new PageReference( GetAttributeValue( AttributeKey.TargetPage ) );
 
             return pageReference.PageId > 0 ? PageCache.Get( pageReference.PageId ) : null;
+        }
+
+        /// <summary>
+        /// Gets the interaction intents a page is tagged with.
+        /// </summary>
+        /// <param name="pageId">The identifier of the page.</param>
+        /// <returns>The page's intents as Interaction Intent defined values.</returns>
+        private List<ListItemBag> GetPageIntents( int pageId )
+        {
+            return new EntityIntentService( RockContext )
+                .GetIntentValueIds<Page>( pageId )
+                .Select( intentValueId => DefinedValueCache.Get( intentValueId )?.ToListItemBag() )
+                .Where( intent => intent != null )
+                .ToList();
         }
 
         /// <summary>
@@ -455,6 +503,42 @@ namespace Rock.Blocks.Cms
             PageCache.Remove( pageId );
 
             return ActionOk();
+        }
+
+        /// <summary>
+        /// Replaces the interaction intents the target page is tagged with.
+        /// </summary>
+        /// <param name="intentValueGuids">The unique identifiers of the Interaction Intent defined values to tag the page with.</param>
+        /// <returns>The page's intents once saved, or an error.</returns>
+        [BlockAction]
+        public BlockActionResult SavePageIntents( List<Guid> intentValueGuids )
+        {
+            var targetPage = GetTargetPage();
+
+            if ( targetPage == null )
+            {
+                return ActionNotFound( "The target page could not be found." );
+            }
+
+            if ( !targetPage.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
+            {
+                return ActionUnauthorized( "You are not authorized to edit this page." );
+            }
+
+            var intentDefinedTypeId = DefinedTypeCache.GetId( Rock.SystemGuid.DefinedType.INTERACTION_INTENT.AsGuid() );
+            var intentValueIds = ( intentValueGuids ?? new List<Guid>() )
+                .Select( intentValueGuid => DefinedValueCache.Get( intentValueGuid ) )
+                .Where( intentValue => intentValue != null && intentValue.DefinedTypeId == intentDefinedTypeId )
+                .Select( intentValue => intentValue.Id )
+                .ToList();
+
+            new EntityIntentService( RockContext ).SetIntents<Page>( targetPage.Id, intentValueIds );
+            RockContext.SaveChanges();
+
+            // A cached page reads its intents only once, and they are written to the interactions of its visits.
+            PageCache.Remove( targetPage.Id );
+
+            return ActionOk( GetPageIntents( targetPage.Id ) );
         }
 
         #endregion Block Actions

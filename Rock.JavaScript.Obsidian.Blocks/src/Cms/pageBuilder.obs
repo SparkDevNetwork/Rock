@@ -1,131 +1,156 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <NotificationBox v-if="errorMessage" alertType="warning">
-        {{ errorMessage }}
-    </NotificationBox>
+    <div class="page-builder">
+        <TopBar v-if="targetPageGuid"
+                v-model:intents="targetPageIntents"
+                v-model:previewDevice="previewDevice"
+                :pageName="targetPageName"
+                :pageGuid="targetPageGuid"
+                @pageSelected="onPageSelected"
+                @viewPageRequested="onViewPageRequested"
+                @propertiesRequested="onPropertiesRequested" />
 
-    <div v-else class="page-builder">
-        <aside class="page-builder-sidebar">
-            <h5 class="page-builder-sidebar-title">Modules</h5>
+        <NotificationBox v-if="errorMessage" class="page-builder-error" alertType="warning">
+            {{ errorMessage }}
+        </NotificationBox>
 
-            <div class="page-builder-module-types">
-                <div v-for="moduleType in moduleTypes"
-                     :key="moduleType.key ?? ''"
-                     class="page-builder-module-type"
-                     @pointerdown="onModuleTypeDragStart($event, moduleType)">
-                    <i :class="moduleType.iconCssClass"></i>
-                    <span>{{ moduleType.name }}</span>
+        <div v-else ref="bodyElement" class="page-builder-body">
+            <aside class="page-builder-sidebar">
+                <h5 class="page-builder-sidebar-title">Modules</h5>
+
+                <div class="page-builder-module-types">
+                    <div v-for="moduleType in moduleTypes"
+                         :key="moduleType.key ?? ''"
+                         class="page-builder-module-type"
+                         @pointerdown="onModuleTypeDragStart($event, moduleType)">
+                        <i :class="moduleType.iconCssClass"></i>
+                        <span>{{ moduleType.name }}</span>
+                    </div>
+                </div>
+            </aside>
+
+            <div class="page-builder-stage">
+                <div ref="frameContainerElement" class="page-builder-frame-container" :style="frameContainerStyle">
+                    <PageFrame :src="targetPageUrl"
+                               :moduleTypes="moduleTypes"
+                               :dragStartRequest="dragStartRequest"
+                               :dragOverRequest="dragOverRequest"
+                               :dropRequest="dropRequest"
+                               :dragLeaveRequest="dragLeaveRequest"
+                               :dragEndRequest="dragEndRequest"
+                               :reloadRequest="reloadRequest"
+                               :selectRequest="selectRequest"
+                               :moduleAddedRequest="moduleAddedRequest"
+                               :moduleAddFailedRequest="moduleAddFailedRequest"
+                               :moduleContentRequest="moduleContentRequest"
+                               :moduleRemoveRequest="moduleRemoveRequest"
+                               :moduleMoveFailedRequest="moduleMoveFailedRequest"
+                               :pendingBlockId="pendingBlockId"
+                               :isBusy="isBuilderBusy"
+                               @moduleDropped="onModuleDropped"
+                               @moduleMoved="onModuleMoved"
+                               @moduleSelected="onModuleSelected"
+                               @moduleEditRequested="onModuleEditRequested"
+                               @moduleDeleteRequested="onModuleDeleteRequested" />
+
+                    <NotificationBox v-if="blockActionErrorMessage"
+                                     class="page-builder-alert"
+                                     alertType="danger"
+                                     dismissible
+                                     @dismiss="blockActionErrorMessage = ''">
+                        {{ blockActionErrorMessage }}
+                    </NotificationBox>
+
+                    <Overlay :isVisible="isOverlayShown"
+                             backgroundColor="transparent"
+                             targetSelector=".page-builder-frame-container" />
                 </div>
             </div>
-        </aside>
 
-        <div class="page-builder-stage">
-            <div ref="frameContainerElement" class="page-builder-frame-container">
-                <PageFrame :src="targetPageUrl"
-                           :moduleTypes="moduleTypes"
-                           :dragStartRequest="dragStartRequest"
-                           :dragOverRequest="dragOverRequest"
-                           :dropRequest="dropRequest"
-                           :dragLeaveRequest="dragLeaveRequest"
-                           :dragEndRequest="dragEndRequest"
-                           :reloadRequest="reloadRequest"
-                           :selectRequest="selectRequest"
-                           :moduleAddedRequest="moduleAddedRequest"
-                           :moduleAddFailedRequest="moduleAddFailedRequest"
-                           :moduleContentRequest="moduleContentRequest"
-                           :moduleRemoveRequest="moduleRemoveRequest"
-                           :moduleMoveFailedRequest="moduleMoveFailedRequest"
-                           :pendingBlockId="pendingBlockId"
-                           :isBusy="isBuilderBusy"
-                           @moduleDropped="onModuleDropped"
-                           @moduleMoved="onModuleMoved"
-                           @moduleSelected="onModuleSelected"
-                           @moduleEditRequested="onModuleEditRequested"
-                           @moduleDeleteRequested="onModuleDeleteRequested" />
-
-                <NotificationBox v-if="blockActionErrorMessage"
-                                 class="page-builder-alert"
-                                 alertType="danger"
-                                 dismissible
-                                 @dismiss="blockActionErrorMessage = ''">
-                    {{ blockActionErrorMessage }}
+            <Sheet v-model="isModuleSheetShown"
+                   title="Edit Module"
+                   :initialTopInset="sheetTopInset"
+                   :beforeClose="canCloseModuleSheet">
+                <NotificationBox v-if="moduleSheetErrorMessage" alertType="danger">
+                    {{ moduleSheetErrorMessage }}
                 </NotificationBox>
 
-                <Overlay :isVisible="isOverlayShown"
-                         backgroundColor="transparent"
-                         targetSelector=".page-builder-frame-container" />
-            </div>
+                <LoadingIndicator v-if="isModuleSettingsLoading" />
+
+                <template v-else-if="isModuleSettingsLoaded">
+                    <Panel v-model="isModuleSettingsExpanded" hasCollapse>
+                        <template #title>
+                            <span class="page-builder-section-icon"><i class="ti ti-binary-tree"></i></span>
+                            Module Settings
+                        </template>
+
+                        <RockForm v-model:submit="submitModuleSettings" @submit="onModuleSettingsSubmit">
+                            <AttributeValuesContainer v-if="hasModuleAttributes"
+                                                      v-model="moduleAttributeValues"
+                                                      :attributes="moduleAttributes"
+                                                      :disabled="isModuleSaving"
+                                                      isEditMode
+                                                      :showCategoryLabel="false"
+                                                      :numberOfColumns="1" />
+
+                            <p v-else class="text-muted mb-0">This module has no settings.</p>
+                        </RockForm>
+                    </Panel>
+
+                    <Panel v-model="isModuleItemsExpanded" hasCollapse>
+                        <template #title>
+                            <span class="page-builder-section-icon"><i class="ti ti-file-text"></i></span>
+                            Module Items
+                        </template>
+
+                        <p class="text-muted mb-0">No item settings are available for this module.</p>
+                    </Panel>
+
+                    <Panel v-model="isDisplaySettingsExpanded" hasCollapse>
+                        <template #title>
+                            <span class="page-builder-section-icon"><i class="ti ti-settings"></i></span>
+                            Display Settings
+                        </template>
+
+                        <p class="text-muted mb-0">No display settings are available for this module.</p>
+                    </Panel>
+                </template>
+
+                <template #footer>
+                    <RockButton :btnType="BtnType.Default"
+                                :disabled="!isModuleSettingsLoaded || isModuleSaving"
+                                :isLoading="isModuleSaving && !isClosingAfterSave"
+                                @click="onModuleSaveClick(false)">
+                        Save
+                    </RockButton>
+
+                    <RockButton :btnType="BtnType.Primary"
+                                :disabled="!isModuleSettingsLoaded || isModuleSaving"
+                                :isLoading="isModuleSaving && isClosingAfterSave"
+                                @click="onModuleSaveClick(true)">
+                        Save and Close
+                    </RockButton>
+                </template>
+            </Sheet>
         </div>
-
-        <Sheet v-model="isModuleSheetShown" title="Edit Module" :beforeClose="canCloseModuleSheet">
-            <NotificationBox v-if="moduleSheetErrorMessage" alertType="danger">
-                {{ moduleSheetErrorMessage }}
-            </NotificationBox>
-
-            <LoadingIndicator v-if="isModuleSettingsLoading" />
-
-            <template v-else-if="isModuleSettingsLoaded">
-                <Panel v-model="isModuleSettingsExpanded" hasCollapse>
-                    <template #title>
-                        <span class="page-builder-section-icon"><i class="ti ti-binary-tree"></i></span>
-                        Module Settings
-                    </template>
-
-                    <RockForm v-model:submit="submitModuleSettings" @submit="onModuleSettingsSubmit">
-                        <AttributeValuesContainer v-if="hasModuleAttributes"
-                                                  v-model="moduleAttributeValues"
-                                                  :attributes="moduleAttributes"
-                                                  :disabled="isModuleSaving"
-                                                  isEditMode
-                                                  :showCategoryLabel="false"
-                                                  :numberOfColumns="1" />
-
-                        <p v-else class="text-muted mb-0">This module has no settings.</p>
-                    </RockForm>
-                </Panel>
-
-                <Panel v-model="isModuleItemsExpanded" hasCollapse>
-                    <template #title>
-                        <span class="page-builder-section-icon"><i class="ti ti-file-text"></i></span>
-                        Module Items
-                    </template>
-
-                    <p class="text-muted mb-0">No item settings are available for this module.</p>
-                </Panel>
-
-                <Panel v-model="isDisplaySettingsExpanded" hasCollapse>
-                    <template #title>
-                        <span class="page-builder-section-icon"><i class="ti ti-settings"></i></span>
-                        Display Settings
-                    </template>
-
-                    <p class="text-muted mb-0">No display settings are available for this module.</p>
-                </Panel>
-            </template>
-
-            <template #footer>
-                <RockButton :btnType="BtnType.Default"
-                            :disabled="!isModuleSettingsLoaded || isModuleSaving"
-                            :isLoading="isModuleSaving && !isClosingAfterSave"
-                            @click="onModuleSaveClick(false)">
-                    Save
-                </RockButton>
-
-                <RockButton :btnType="BtnType.Primary"
-                            :disabled="!isModuleSettingsLoaded || isModuleSaving"
-                            :isLoading="isModuleSaving && isClosingAfterSave"
-                            @click="onModuleSaveClick(true)">
-                    Save and Close
-                </RockButton>
-            </template>
-        </Sheet>
     </div>
 </template>
 
 <style scoped>
 .page-builder {
     display: flex;
+    flex-direction: column;
     height: 100%;
+}
+
+.page-builder-body {
+    display: flex;
+    flex: 1 1 auto;
+    min-height: 0;
+}
+
+.page-builder-error {
+    margin: var(--spacing-large);
 }
 
 .page-builder-sidebar {
@@ -198,6 +223,9 @@
     /* Relatively position so the overlay can cover the frame exactly. */
     position: relative;
     height: 100%;
+    max-width: 100%;
+    margin: 0 auto;
+    transition: max-width 0.2s ease-in-out;
 }
 
 .page-builder-alert {
@@ -220,7 +248,7 @@
 }
 
 @media (max-width: 767px) {
-    .page-builder {
+    .page-builder-body {
         flex-direction: column;
     }
 
@@ -255,7 +283,7 @@
 </style>
 
 <script setup lang="ts">
-    import { computed, nextTick, ref } from "vue";
+    import { computed, nextTick, onMounted, ref } from "vue";
     import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
     import LoadingIndicator from "@Obsidian/Controls/loadingIndicator.obs";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
@@ -278,8 +306,10 @@
     import { PageBuilderModuleTypeBag } from "@Obsidian/ViewModels/Blocks/Cms/PageBuilder/pageBuilderModuleTypeBag";
     import { PageBuilderMoveModuleBag } from "@Obsidian/ViewModels/Blocks/Cms/PageBuilder/pageBuilderMoveModuleBag";
     import { ObsidianBlockConfigBag } from "@Obsidian/ViewModels/Cms/obsidianBlockConfigBag";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
     import PageFrame from "./pageBuilder/pageFrame.partial.obs";
+    import TopBar from "./pageBuilder/topBar.partial.obs";
     import {
         ModuleAddedRequest,
         ModuleAddFailedRequest,
@@ -294,7 +324,8 @@
         ModuleTypeDragOverRequest,
         ModuleTypeDragStartRequest,
         ModuleTypeDropRequest,
-        PageFrameReloadRequest
+        PageFrameReloadRequest,
+        PreviewDevice
     } from "./pageBuilder/types.partial";
 
     const config = useConfigurationValues<PageBuilderInitializationBox>();
@@ -306,7 +337,23 @@
     const errorMessage = config.errorMessage ?? "";
     const targetPageUrl = config.targetPageUrl ?? "";
     const targetPageGuid = config.targetPageGuid ?? null;
+    const targetPageName = config.targetPageName ?? "";
     const moduleTypes = config.moduleTypes ?? [];
+
+    /**
+     * The widths the page frame previews the page at.
+     * Tablet and phone are the widest at which the theme's tablet and phone layouts apply.
+     */
+    const previewDeviceWidths: Record<PreviewDevice, string> = {
+        desktop: "100%",
+        tablet: "991px",
+        phone: "767px"
+    };
+
+    const targetPageIntents = ref<ListItemBag[]>(config.targetPageIntents ?? []);
+    const previewDevice = ref<PreviewDevice>("desktop");
+    const bodyElement = ref<HTMLElement | undefined>();
+    const sheetTopInset = ref(0);
 
     const frameContainerElement = ref<HTMLElement | undefined>();
     const isOverlayShown = ref(false);
@@ -353,6 +400,8 @@
 
     /** Whether a change to the page is waiting on the server, which locks the builder until it is confirmed. */
     const isBuilderBusy = computed((): boolean => pendingBlockId.value !== null || isAddingModule.value);
+
+    const frameContainerStyle = computed((): Record<string, string> => ({ maxWidth: previewDeviceWidths[previewDevice.value] }));
 
     // #endregion Computed Values
 
@@ -652,6 +701,46 @@
         }
     }
 
+    /**
+     * Opens the builder on the page chosen in the top bar, asking first when
+     * that would discard unsaved changes to a module.
+     */
+    async function onPageSelected(pageGuid: Guid): Promise<void> {
+        if (!await canLeaveEditedModule("switch pages")) {
+            return;
+        }
+
+        const builderUrl = new URL(window.location.href);
+
+        builderUrl.searchParams.set("Page", pageGuid);
+        window.location.href = builderUrl.toString();
+    }
+
+    /**
+     * Leaves the builder for the page it frames, asking first when that would
+     * discard unsaved changes to a module.
+     */
+    async function onViewPageRequested(): Promise<void> {
+        if (await canLeaveEditedModule("leave")) {
+            window.location.href = targetPageUrl;
+        }
+    }
+
+    /**
+     * Opens Rock's Page Properties dialog on the page, asking first when that
+     * would discard unsaved changes to a module.
+     */
+    async function onPropertiesRequested(): Promise<void> {
+        if (!targetPageGuid || !await canLeaveEditedModule("edit the page properties")) {
+            return;
+        }
+
+        // Saving in the dialog reloads the builder, and the dialog would otherwise open beneath the sheet's layer.
+        isModuleSheetShown.value = false;
+
+        Rock.controls.modal.show(undefined, `/PageProperties/${targetPageGuid}?t=Page Properties`);
+    }
+
     // #endregion Event Handlers
 
     // #region Functions
@@ -795,6 +884,15 @@
     }
 
     // #endregion Functions
+
+    // #region Lifecycle Hooks
+
+    onMounted(() => {
+        // The top bar ends where the builder's body starts, and the sheet first opens below it.
+        sheetTopInset.value = bodyElement.value?.getBoundingClientRect().top ?? 0;
+    });
+
+    // #endregion Lifecycle Hooks
 
     onConfigurationValuesChanged(useReloadBlock());
 </script>

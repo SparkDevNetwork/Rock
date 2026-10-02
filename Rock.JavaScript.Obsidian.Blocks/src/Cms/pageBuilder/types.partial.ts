@@ -113,3 +113,6 @@ export type ModuleMove = {
     /** The identifier of the block it was dropped in front of, or null to place it last in the zone. */
     beforeBlockId: number | null;
 };
+
+/** The kind of device whose screen width the page frame previews the page at. */
+export type PreviewDevice = "desktop" | "tablet" | "phone";
