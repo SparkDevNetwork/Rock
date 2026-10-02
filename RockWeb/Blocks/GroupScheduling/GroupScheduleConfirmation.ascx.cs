@@ -781,7 +781,7 @@ namespace RockWeb.Blocks.GroupScheduling
                     }
                 }
 
-                var mergeFields = MergeFields( attendanceList, this.ContextEntity<Person>() );
+                var mergeFields = MergeFields( attendanceList, GetAuthorizedContextPerson() );
                 ShowDeclineMessageAfterSubmit( attendanceIds, mergeFields );
 
                 pnlDeclineReason.Visible = false;
@@ -794,11 +794,33 @@ namespace RockWeb.Blocks.GroupScheduling
         }
 
         /// <summary>
+        /// Gets the context person, but only if it is the current person or the
+        /// current person is authorized to edit this block.
+        /// </summary>
+        /// <returns>The context person, or <c>null</c> if there is none or it is not allowed.</returns>
+        private Person GetAuthorizedContextPerson()
+        {
+            var contextPerson = this.ContextEntity<Person>();
+
+            if ( contextPerson == null )
+            {
+                return null;
+            }
+
+            if ( contextPerson.Id == this.CurrentPersonId || IsUserAuthorized( Rock.Security.Authorization.EDIT ) )
+            {
+                return contextPerson;
+            }
+
+            return null;
+        }
+
+        /// <summary>
         /// Sets the person _selectedPerson.
         /// </summary>
         private void SetSelectedPersonId()
         {
-            var targetPerson = this.ContextEntity<Person>();
+            var targetPerson = GetAuthorizedContextPerson();
             if ( targetPerson != null )
             {
                 _selectedPerson = targetPerson;
@@ -833,7 +855,7 @@ namespace RockWeb.Blocks.GroupScheduling
         /// <returns>The selected person identifier, or <c>null</c> if there is none.</returns>
         private int? GetSelectedPersonIdForBinding()
         {
-            if ( this.ContextEntity<Person>() != null )
+            if ( GetAuthorizedContextPerson() != null )
             {
                 return null;
             }
