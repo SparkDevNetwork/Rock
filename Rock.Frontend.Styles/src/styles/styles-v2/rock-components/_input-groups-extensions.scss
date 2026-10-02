@@ -91,3 +91,12 @@
 }
 
 // ===================== END INPUT-GROUP WITH SELECT =====================
+
+// ===================== INPUT GROUP WITH CLEAR BUTTON =====================
+
+.input-group:has(.clear-icon.clear-position-with-slots) .form-control {
+  border-top-right-radius: var(--rounded-xsmall);
+  border-bottom-right-radius: var(--rounded-xsmall);
+}
+
+// ===================== END INPUT GROUP WITH CLEAR BUTTON =====================
