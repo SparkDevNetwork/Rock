@@ -606,10 +606,10 @@ a.warning {
 .input-lg {
   // .input-size(38px-large; var(--spacing-xsmall); var(--spacing-medium); var(--font-size-medium); var(--line-height-normal); var(--rounded-xsmall));
   height:         38px;
-  padding:        var(--spacing-xsmall) var(--spacing-medium);
-  font-size:      var(--font-size-medium);
+  padding:        var(--spacing-small) var(--spacing-medium);
+  font-size:      var(--font-size-h5);
   line-height:    var(--line-height-normal);
-  border-radius:  var(--rounded-normal);
+  border-radius:  var(--rounded-small);
 
   select & {
     height: 38px;
