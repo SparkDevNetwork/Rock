@@ -249,6 +249,12 @@
             default: 480
         },
 
+        /** The distance in pixels from the top of the window that the sheet stays below when it first opens, such as a toolbar's height. */
+        initialTopInset: {
+            type: Number as PropType<number>,
+            default: 0
+        },
+
         /**
          * Async guard called before the close button closes the sheet. A
          * `false` result keeps it open, which is useful for asking about
@@ -470,17 +476,18 @@
     }
 
     /**
-     * Gets where the sheet opens the first time: against the right edge of the window, at its full height.
+     * Gets where the sheet opens the first time: against the right edge of the window, filling its height below the top inset.
      */
     function getInitialRect(): SheetRect {
         const width = Math.min(props.initialWidth, window.innerWidth - windowMargin * 2);
+        const top = props.initialTopInset + windowMargin;
 
-        return {
+        return fitRectToWindow({
             left: window.innerWidth - width - windowMargin,
-            top: windowMargin,
+            top,
             width,
-            height: window.innerHeight - windowMargin * 2
-        };
+            height: Math.max(window.innerHeight - top - windowMargin, minimumHeight)
+        });
     }
 
     /**
