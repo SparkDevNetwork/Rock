@@ -252,11 +252,43 @@ namespace RockWeb.Blocks.Security.Oidc
                 }.SaveAfterDelay();
             }
 
+            // An unknown client or unregistered redirect URI must not be redirected to (RFC 6749 section 4.1.2.1).
+            var redirectUri = GetValidatedRedirectUri( authClient );
+            if ( redirectUri == null )
+            {
+                pnlPanel.Visible = false;
+                ShowError( "The application requesting access could not be verified." );
+                return;
+            }
+
             // Notify the client that the authorization grant has been denied by the resource owner.
-            var owinContext = Context.GetOwinContext();
-            var redirectUri = owinContext.Request.Query["redirect_uri"];
             Response.Redirect( redirectUri + $"?error=access_denied&error_description={errorDescription.Replace( ' ', '+' )}", true );
             ApplicationInstance.CompleteRequest();
+        }
+
+        /// <summary>
+        /// Gets the redirect URI registered for the auth client.
+        /// </summary>
+        /// <param name="authClient">The <see cref="AuthClient"/> for which authorization is being requested.</param>
+        /// <returns>
+        /// The registered redirect URI, or <c>null</c> if the client is unknown or the request's <c>redirect_uri</c>
+        /// doesn't match the registered one.
+        /// </returns>
+        private string GetValidatedRedirectUri( AuthClient authClient )
+        {
+            if ( authClient == null || authClient.RedirectUri.IsNullOrWhiteSpace() )
+            {
+                return null;
+            }
+
+            var requestedRedirectUri = Context.GetOwinContext().Request.Query["redirect_uri"];
+            if ( requestedRedirectUri.IsNotNullOrWhiteSpace()
+                && !string.Equals( requestedRedirectUri, authClient.RedirectUri, StringComparison.OrdinalIgnoreCase ) )
+            {
+                return null;
+            }
+
+            return authClient.RedirectUri;
         }
 
         /// <summary>
