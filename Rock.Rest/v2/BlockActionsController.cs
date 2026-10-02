@@ -198,6 +198,16 @@ namespace Rock.Rest.v2
                     return new NotFoundResult( controller );
                 }
 
+                // Matches how PageCache.Blocks gathers page, layout and site blocks.
+                var isBlockOnPage = blockCache.PageId == pageCache.Id
+                    || ( blockCache.LayoutId.HasValue && blockCache.LayoutId.Value == pageCache.LayoutId )
+                    || ( blockCache.SiteId.HasValue && blockCache.SiteId.Value == pageCache.SiteId );
+
+                if ( !isBlockOnPage )
+                {
+                    return new NotFoundResult( controller );
+                }
+
                 //
                 // Get the authenticated person and make sure it's cached.
                 //
