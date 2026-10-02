@@ -62,6 +62,14 @@ The budget is 40 goal hours, 50 approved.
   with no builder decoration.
 - A builder-enabled zone MUST identify itself in the rendered DOM so the parent frame can
   resolve drop targets without asking the server.
+- The builder MUST show a top bar above the sidebar and the frame with:
+  - the page being built, which opens a page tree for switching to another page;
+  - the page's interaction intents, which open a picker that saves them;
+  - desktop, tablet, and phone preview widths for the frame;
+  - Properties, which opens Rock's Page Properties dialog for the page;
+  - View Page, which leaves the builder for the page.
+- Switching pages, leaving, or opening Page Properties while a module has unsaved settings MUST
+  ask first.
 
 ### Drag and drop
 
@@ -129,6 +137,44 @@ new **Page Builder** layout with one builder-enabled zone (Builder) and one ordi
 (Aside). The internal site runs the RockNextGen theme, so both layouts are authored in
 `Rock.Frontend.Styles/src/themes/RockNextGen/Layouts/` and copied into `RockWeb/Themes` by
 the build. The Page Builder block's Target Page setting defaults to the sample page.
+
+### Top bar
+
+The top bar runs across the builder above the sidebar and the frame, in a `topBar` partial.
+It follows the mockup's top bar except where noted below.
+
+**Page.** The Page button shows the target page's internal name and opens a page tree, a
+`TreeList` with the `PageTreeItemProvider` limited to web sites, with the current page
+selected. Choosing another page reloads the builder with a `Page` page parameter, which takes
+precedence over the Target Page setting, so the setting is now the page the builder opens to.
+Obsidian sends the page's parameters with every block action, so the actions compose the page
+the builder shows without being told. The builder refuses to build its own page, and shows an
+error in place of the sidebar and frame when the person cannot administrate the chosen page.
+The top bar stays in both cases, so another page can be chosen.
+
+**Intents.** The Intents chip lists the page's interaction intents, or None, and opens the
+same Interaction Intent picker Page Properties uses. Saving calls `SavePageIntents`, which
+requires Edit on the page as Page Properties does, writes the intents with
+`EntityIntentService.SetIntents<Page>`, and removes the page from the cache. A cached page reads
+its intents only once, and writes them to the interactions of its visits.
+
+**Device preview.** The device buttons narrow the frame to 991 pixels for a tablet and 767
+pixels for a phone, the widest widths at which the theme's tablet and phone layouts apply.
+Hit testing measures the pointer against the frame's own position, so drag and drop works at
+any width. On phones, the top bar scrolls sideways and hides the device buttons.
+
+**Properties.** Properties opens Rock's own Page Properties dialog through
+`Rock.controls.modal.show`, as the admin toolbar and the Layout Block List do. Saving in the
+dialog reloads the builder, which picks up any change to the page. The Sheet closes first,
+because the dialog would open beneath the Sheet's layer.
+
+**View Page.** Neither the requirements nor the mockup had a way out of the builder, so View
+Page goes to the target page.
+
+Switching pages, leaving, and opening Page Properties go through the same unsaved changes
+prompt as the Sheet: "Are you sure you want to switch pages without saving?", "...leave
+without saving?", and "...edit the page properties without saving?". The Sheet takes an
+`initialTopInset`, so it first opens below the top bar rather than over its buttons.
 
 ### Module types and instances
 
@@ -381,11 +427,13 @@ C# side, and graduates out of `Internal/` once a second consumer confirms the sh
 | `v-model` | Shows or hides the Sheet. |
 | `title` | The header text. |
 | `initialWidth` | The width in pixels the first time it opens, 480 by default. |
+| `initialTopInset` | The distance in pixels from the top of the window that it first opens below, such as a toolbar's height. 0 by default. |
 | `beforeClose` | An async guard the close button awaits. `false` keeps the Sheet open. Closing through `v-model` bypasses it. |
 | Default slot | The scrolling body. |
 | `footer` slot | A footer pinned below the body, such as Save buttons. |
 
-The first time it opens, the Sheet sits against the right edge of the window at full height.
+The first time it opens, the Sheet sits against the right edge of the window, filling its
+height below `initialTopInset`.
 Dragging the header moves it, dragging any edge or corner resizes it, and it always stays
 inside the window. It keeps its position and size while it stays mounted, so a consumer keeps
 it mounted and toggles `v-model`. Closing and reopening it then returns it to where it was,
@@ -593,6 +641,10 @@ the WebForms configuration trigger, which also runs an async postback of the who
 - Deleting the module instance when its Canvas is deleted from Rock's block configuration bar.
   Only the builder's delete removes the instance.
 - Standard / Block mode and Elements mode.
+- The top bar's Standard and Advanced builder modes. Advanced mode edits the layout's zones.
+- Page topics. Rock has nowhere to store a page's topics yet; Content Library topics and campus
+  topics are separate.
+- Reorganizing the page hierarchy from the top bar's page tree.
 - The admin footer toolbar replacement and the drawer that replaces it on every page.
 - Module Presets. Pulled in only if the budget allows once the two named deliverables land.
 - Content Channel as an item source for Module Items.
