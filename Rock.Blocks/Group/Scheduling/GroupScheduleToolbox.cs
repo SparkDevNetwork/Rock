@@ -599,6 +599,24 @@ namespace Rock.Blocks.Group.Scheduling
         }
 
         /// <summary>
+        /// Determines whether the specified person is a member of the current person's family.
+        /// </summary>
+        /// <param name="personId">The person identifier to check.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns><c>true</c> if the person is in the current person's family; otherwise, <c>false</c>.</returns>
+        private bool IsFamilyMemberOfCurrentPerson( int personId, RockContext rockContext )
+        {
+            if ( this.CurrentPerson == null )
+            {
+                return false;
+            }
+
+            return this.CurrentPerson
+                .GetFamilyMembers( false, rockContext )
+                .Any( gm => gm.PersonId == personId );
+        }
+
+        /// <summary>
         /// Sets the toolbox person and their family members from the request context or the current person.
         /// The selected person and primary person alias will then be set; these could represent the toolbox
         /// person themself or one of their family members.
@@ -609,6 +627,18 @@ namespace Rock.Blocks.Group.Scheduling
         private void SetToolboxPeople( RockContext rockContext, ToolboxData toolboxData, Guid? selectedPersonGuidOverride )
         {
             toolboxData.ToolboxPerson = this.RequestContext.GetContextEntity<Person>();
+
+            // Only honor a context person other than the current person if they
+            // are a member of the current person's family or the current person
+            // is authorized to edit this block.
+            if ( toolboxData.ToolboxPerson != null
+                && toolboxData.ToolboxPerson.Id != this.CurrentPerson?.Id
+                && !BlockCache.IsAuthorized( Rock.Security.Authorization.EDIT, this.CurrentPerson )
+                && !IsFamilyMemberOfCurrentPerson( toolboxData.ToolboxPerson.Id, rockContext ) )
+            {
+                toolboxData.ToolboxPerson = null;
+            }
+
             if ( toolboxData.ToolboxPerson == null )
             {
                 toolboxData.ToolboxPerson = this.CurrentPerson;

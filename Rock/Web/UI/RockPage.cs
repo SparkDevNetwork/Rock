@@ -1879,10 +1879,10 @@ Obsidian.init({{ debug: true, fingerprint: ""v={_obsidianFingerprint}"" }});
                     continue; // Couldn't load EntityType.
                 }
 
-                int? contextId = parts[1].AsIntegerOrNull();
-                if ( contextId == null )
+                var contextKey = parts[1];
+                if ( contextKey.IsNullOrWhiteSpace() )
                 {
-                    continue;  // Invalid Entity Id.
+                    continue;  // Invalid Entity key.
                 }
 
                 var contextModelType = contextModelEntityType.GetEntityType();
@@ -1898,13 +1898,15 @@ Obsidian.init({{ debug: true, fingerprint: ""v={_obsidianFingerprint}"" }});
                     continue; // Couldn't load Entity service.
                 }
 
-                MethodInfo getMethod = contextService.GetType().GetMethod( "Get", new Type[] { typeof( int ) } );
+                // Load by Id, Guid or IdKey. Integer Ids are only allowed if the
+                // site has not disabled predictable Ids.
+                MethodInfo getMethod = contextService.GetType().GetMethod( "Get", new Type[] { typeof( string ), typeof( bool ) } );
                 if ( getMethod == null )
                 {
                     continue;  // Couldn't find method to fetch Entity.
                 }
 
-                var getResult = getMethod.Invoke( contextService, new object[] { contextId.Value } );
+                var getResult = getMethod.Invoke( contextService, new object[] { contextKey, !Site.DisablePredictableIds } );
                 var contextEntity = getResult as IEntity;
                 if ( contextEntity == null )
                 {
@@ -3409,6 +3411,13 @@ Sys.Application.add_load(function () {
                         Attribute.Helper.LoadAttributes( keyModel.Entity as IHasAttributes );
                     }
 
+                }
+
+                // Don't provide a context entity the current person isn't
+                // allowed to view.
+                if ( keyModel.Entity is ISecured securedEntity && !securedEntity.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
+                {
+                    return null;
                 }
 
                 return keyModel.Entity;

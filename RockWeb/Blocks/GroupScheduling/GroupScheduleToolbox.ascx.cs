@@ -278,11 +278,40 @@ $('#{0}').tooltip();
         }
 
         /// <summary>
+        /// Determines whether the specified person is a member of the current person's family.
+        /// </summary>
+        /// <param name="personId">The person identifier to check.</param>
+        /// <returns><c>true</c> if the person is in the current person's family; otherwise, <c>false</c>.</returns>
+        private bool IsFamilyMemberOfCurrentPerson( int personId )
+        {
+            if ( this.CurrentPerson == null )
+            {
+                return false;
+            }
+
+            return this.CurrentPerson
+                .GetFamilyMembers( false, new RockContext() )
+                .Any( gm => gm.PersonId == personId );
+        }
+
+        /// <summary>
         /// Sets the selected person.
         /// </summary>
         private void SetSelectedPerson()
         {
             var targetPerson = this.ContextEntity<Person>();
+
+            // Only honor a context person other than the current person if they
+            // are a member of the current person's family or the current person
+            // is authorized to edit this block.
+            if ( targetPerson != null
+                && targetPerson.Id != this.CurrentPersonId
+                && !IsUserAuthorized( Rock.Security.Authorization.EDIT )
+                && !IsFamilyMemberOfCurrentPerson( targetPerson.Id ) )
+            {
+                targetPerson = null;
+            }
+
             if ( targetPerson != null )
             {
                 lTitle.Text = "Schedule Toolbox - " + targetPerson.FullName;
