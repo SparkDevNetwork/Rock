@@ -58,6 +58,31 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Returns the PersonIds of people who have a phone number that exactly matches the given
+        /// country code and number. Unlike <see cref="GetPersonIdsByNumber(string)"/>, this never
+        /// performs a partial match.
+        /// </summary>
+        /// <param name="countryCode">The country code the number must have. A stored phone number with no country code is treated as having the default country code.</param>
+        /// <param name="number">The number (digits only, without the country code) that must match exactly.</param>
+        /// <returns>A queryable list of <see cref="System.Int32"/> PersonIds.</returns>
+        internal IQueryable<int> GetPersonIdsByExactNumber( string countryCode, string number )
+        {
+            if ( string.IsNullOrWhiteSpace( countryCode ) || string.IsNullOrWhiteSpace( number ) )
+            {
+                return Queryable().Where( n => n.Id == -1 ).Select( n => n.PersonId );
+            }
+
+            var isDefaultCountryCode = countryCode == PhoneNumber.DefaultCountryCode();
+
+            return Queryable()
+                .Where( n => n.Number == number )
+                .Where( n => n.CountryCode == countryCode
+                    || ( isDefaultCountryCode && ( n.CountryCode == null || n.CountryCode == string.Empty ) ) )
+                .Select( n => n.PersonId )
+                .Distinct();
+        }
+
+        /// <summary>
         /// Returns a queryable set of <see cref="Rock.Model.PhoneNumber">Phone Numbers</see> that match the given search term.
         /// </summary>
         /// <param name="searchterm">A partial phone number search string (everything but digits will be removed before attempting the search).</param>
