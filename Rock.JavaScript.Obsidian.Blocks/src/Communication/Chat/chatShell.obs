@@ -265,7 +265,7 @@
         };
     }
 
-    /** The one Firebase app, made once per page: a second initializeApp under a name in use throws. */
+    /** The block's one Firebase app, made on the first token and reused for every later one. */
     function firebaseApp(firebase: typeof import("@Obsidian/Libs/firebase"), web: Record<string, unknown>): ReturnType<typeof firebase.initializeApp> {
         firebaseAppInstance ??= firebase.initializeApp(web, "rock-chat");
         return firebaseAppInstance as ReturnType<typeof firebase.initializeApp>;
@@ -285,7 +285,13 @@
 
     // #region Watchers
 
-    watch(mentionBadge, count => {
+    // From the first sidebar the page loads, a count of none included, so a badge a mention push
+    // left behind is cleared once the person has read it.
+    watch([mentionBadge, (): string => shell.value.state.phase], ([count, phase]) => {
+        if (phase !== "ready") {
+            return;
+        }
+
         // Only where the site is installed as an app does the browser draw it; elsewhere a no-op.
         const badging = navigator as Navigator & { setAppBadge?: (count?: number) => Promise<void>, clearAppBadge?: () => Promise<void> };
         const done = count > 0 ? badging.setAppBadge?.(count) : badging.clearAppBadge?.();

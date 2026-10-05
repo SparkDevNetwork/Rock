@@ -475,15 +475,14 @@ describe("createSession", () => {
 });
 
 describe("settings from the token exchange", () => {
-    // Cast while red: the settings type gains push at green.
-    const defaults = {
+    const defaults: ChatSettings = {
         service: { state: "normal", banner: null },
         client: { update_required: false },
         routes: { send: "direct" },
         limits: { reconnect_base_ms: 1000, reconnect_cap_ms: 30000, catch_up_page: 100, catch_up_max: 500 },
         flags: {},
         push: { web: null, vapid_key: null, prompt: "after_send" }
-    } as unknown as ChatSettings;
+    };
 
     function exchangeWith(...settings: unknown[]): Partial<SessionDependencies> {
         let calls = 0;
@@ -512,7 +511,7 @@ describe("settings from the token exchange", () => {
     // Push is offered only when the platform sent both Firebase values; a church's prompt timing
     // this client does not know is read as the default, after the person's first send.
     test("push is available only with a web config and a key, and its prompt falls back to after a send", () => {
-        const push = (raw: unknown): unknown => (readSettings(raw) as unknown as { push: unknown }).push;
+        const push = (raw: unknown): unknown => readSettings(raw).push;
         const web = { apiKey: "k", projectId: "p", messagingSenderId: "1", appId: "1:1:web:1" };
 
         expect(push({ push: { web, vapid_key: "v", prompt: "offer" } })).toEqual({ web, vapid_key: "v", prompt: "offer" });

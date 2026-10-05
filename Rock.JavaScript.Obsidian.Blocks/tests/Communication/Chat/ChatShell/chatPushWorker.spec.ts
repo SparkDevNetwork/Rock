@@ -93,7 +93,7 @@ function loadWorker(options: { windows?: FakeWindow[], hasBadge?: boolean, page?
     }
 
     const self = {
-        location: { href: `https://church.example/Scripts/Rock/Chat/chatPushWorker.js?page=${encodeURIComponent(page)}` },
+        location: { href: `https://church.example/Scripts/Rock/Chat/chatPushWorker.js?page=${encodeURIComponent(page)}`, origin: "https://church.example" },
         navigator,
         addEventListener: (type: string, listener: Listener) => {
             listeners[type] = listener;
@@ -279,6 +279,14 @@ describe("the push worker", () => {
         expect(chat.posted).toEqual([{ type: "chat.push.open", channel_id: "6f1c2a9e-0000-4000-8000-000000000001" }]);
         expect(other.focus).not.toHaveBeenCalled();
         expect(worker.opened).toEqual([]);
+    });
+
+    test("a chat page off the site is never opened; the tap opens the site's root instead", async () => {
+        const worker = loadWorker({ page: "//elsewhere.example/phish" });
+
+        await worker.fire("notificationclick", { notification: { close: jest.fn(), data: payload({}).data } });
+
+        expect(worker.opened).toEqual(["/?ChannelGuid=6f1c2a9e-0000-4000-8000-000000000001"]);
     });
 
     test("a tap with no chat window open opens the chat page on that channel", async () => {

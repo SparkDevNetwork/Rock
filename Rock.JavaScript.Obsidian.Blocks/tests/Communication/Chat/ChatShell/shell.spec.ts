@@ -613,12 +613,9 @@ describe("what the page tells push", () => {
         jest.restoreAllMocks();
     });
 
-    // Cast while red: the shell gains both at green.
-    type PushFacing = { isChannelOnScreen: (channelId: string) => boolean, mentionBadge: () => number };
-
     test("a channel is on screen only when it is the open one and the page is visible", async () => {
         const h = await started();
-        const shell = h.shell as unknown as PushFacing;
+        const shell = h.shell;
 
         expect(shell.isChannelOnScreen(channelA)).toBe(true);
         expect(shell.isChannelOnScreen("another-channel")).toBe(false);
@@ -628,7 +625,7 @@ describe("what the page tells push", () => {
         const h = await started();
         h.pageDocument.visibilityState = "hidden";
 
-        expect((h.shell as unknown as PushFacing).isChannelOnScreen(channelA)).toBe(false);
+        expect(h.shell.isChannelOnScreen(channelA)).toBe(false);
     });
 
     test("the badge is the sidebar's unread mentions, never its unread messages", async () => {
@@ -646,6 +643,6 @@ describe("what the page tells push", () => {
         await starting;
         await settle();
 
-        expect((h.shell as unknown as PushFacing).mentionBadge()).toBe(3);
+        expect(h.shell.mentionBadge()).toBe(3);
     });
 });

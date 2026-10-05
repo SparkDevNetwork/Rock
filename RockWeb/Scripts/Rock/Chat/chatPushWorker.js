@@ -27,8 +27,19 @@
     /** How long a focused window has to say a channel is on screen, in ms; an estimate. */
     var onScreenWaitMs = 250;
 
-    /** The chat page this worker opens on a tap, from the query string it was registered with. */
-    var chatPage = new URL(self.location.href).searchParams.get("page") || "/";
+    /**
+     * The chat page this worker opens on a tap, from the query string it was registered with. Only
+     * a path on this site is kept, so a tap can never open a page somewhere else.
+     */
+    var chatPage = (function () {
+        try {
+            var page = new URL(new URL(self.location.href).searchParams.get("page") || "/", self.location.origin);
+            return page.origin === self.location.origin ? page.pathname : "/";
+        }
+        catch (e) {
+            return "/";
+        }
+    })();
 
     self.addEventListener("install", function () {
         self.skipWaiting();

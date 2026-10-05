@@ -17,4 +17,4 @@
 // What chat's web push needs from Firebase: the app and the messaging token a browser registers
 // with. Only the page loads it, and only once push is on; the push worker itself needs none of it.
 export { initializeApp } from "@firebase/app";
-export { getMessaging, getToken, deleteToken } from "@firebase/messaging";
+export { getMessaging, getToken } from "@firebase/messaging";
