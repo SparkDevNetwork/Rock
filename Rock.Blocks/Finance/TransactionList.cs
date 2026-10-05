@@ -628,6 +628,16 @@ namespace Rock.Blocks.Finance
         /// <returns>A boolean value that indicates if delete should be enabled.</returns>
         private bool GetIsDeleteEnabled()
         {
+            /*
+                10/5/26 - CLAUDE
+
+                The context batch is only resolved lazily, so when this is called first from a
+                block action (such as Delete) _batch is still null and every delete was rejected.
+
+                Reason: Resolve the context entities before checking _batch.
+            */
+            InitializeContextEntities();
+
             return _batch != null && CanEdit && IsBatchEditable;
         }
 
