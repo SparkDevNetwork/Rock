@@ -22,6 +22,7 @@ using System.Linq;
 
 using Rock.Data;
 using Rock.Field;
+using Rock.Security;
 using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 
@@ -137,7 +138,7 @@ namespace Rock.Attribute
         {
             var fieldType = _fieldTypes.GetOrAdd( attribute.FieldType.Guid, GetFieldType );
 
-            return new PublicAttributeBag
+            var bag = new PublicAttributeBag
             {
                 FieldTypeGuid = attribute.FieldType.ControlFieldTypeGuid,
                 AttributeGuid = attribute.Guid,
@@ -154,8 +155,26 @@ namespace Rock.Attribute
                 Description = attribute.Description,
                 ConfigurationValues = fieldType.GetPublicConfigurationValues( attribute.ConfigurationValues, ConfigurationValueUsage.Edit, null ),
                 PreHtml = attribute.PreHtml,
-                PostHtml = attribute.PostHtml
+                PostHtml = attribute.PostHtml,
             };
+
+            if ( fieldType is ISecurityGrantFieldType securityGrantFieldType )
+            {
+                var securityGrant = new SecurityGrant();
+
+                securityGrantFieldType.AddRulesToSecurityGrant( securityGrant, attribute.ConfigurationValues );
+
+                if ( securityGrant.Rules.Count > 0 )
+                {
+                    // Force attribute security grants to be valid for 1 day.
+                    // This way if we change the default we don't suddenly make
+                    // field types difficult to work with.
+                    securityGrant.SetLifetime( TimeSpan.FromDays( 1 ) );
+                    bag.SecurityGrantToken = securityGrant.ToToken();
+                }
+            }
+
+            return bag;
         }
 
         /// <summary>

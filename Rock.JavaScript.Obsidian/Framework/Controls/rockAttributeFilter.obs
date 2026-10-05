@@ -8,13 +8,15 @@
 </template>
 
 <script setup lang="ts">
-    import { computed, PropType } from "vue";
+    import { computed, PropType, ref, watch } from "vue";
     import { getFieldType } from "@Obsidian/Utility/fieldTypes";
     import { ComparisonValue } from "@Obsidian/Types/Reporting/comparisonValue";
     import { FilterMode } from "@Obsidian/Core/Reporting/filterMode";
     import { useVModelPassthrough } from "@Obsidian/Utility/component";
     import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
     import { emptyGuid, toGuidOrNull } from "@Obsidian/Utility/guid";
+    import { provideSecurityGrant, useSecurityGrantToken } from "@Obsidian/Utility/block";
+    import { SecurityGrant } from "@Obsidian/Types/Utility/block";
 
     const props = defineProps({
         modelValue: {
@@ -42,6 +44,17 @@
     /** The internal value used by the filter component. */
     const internalValue = useVModelPassthrough(props, "modelValue", emit);
 
+    // The security grant token might come from the attribute itself. But if it
+    // doesn't then we need to get it from the parent context.
+    const parentSecurityGrantToken = useSecurityGrantToken();
+    const currentSecurityGrantToken = ref(props.attribute.securityGrantToken ?? parentSecurityGrantToken.value);
+    const securityGrant: SecurityGrant = {
+        token: currentSecurityGrantToken,
+        updateToken(newToken: string | null | undefined) {
+            currentSecurityGrantToken.value = newToken || null;
+        },
+    };
+
     /** The field type instance being edited. */
     const field = computed(() => {
         return getFieldType(toGuidOrNull(props.attribute.fieldTypeGuid) ?? emptyGuid);
@@ -52,4 +65,13 @@
 
     /** The configuration values for the editor component. */
     const configurationValues = computed(() => props.attribute.configurationValues ?? {});
+
+    watch([() => props.attribute, parentSecurityGrantToken], () => {
+        // If a change happens to either the attribute or the parent security
+        // grant token then we need to update our current security grant token
+        // to make sure it is correct.
+        securityGrant.updateToken(props.attribute.securityGrantToken ?? parentSecurityGrantToken.value);
+    });
+
+    provideSecurityGrant(securityGrant);
 </script>
