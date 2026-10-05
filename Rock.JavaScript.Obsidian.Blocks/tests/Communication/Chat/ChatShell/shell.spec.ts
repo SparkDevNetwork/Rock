@@ -72,11 +72,13 @@ function build(): {
     fireBlur: () => void,
     topics: LiveTopic[],
     counts: { mints: number, clients: number, setAuths: number, bootstraps: number },
-    mintGate: { value: string }
+    mintGate: { value: string },
+    bootstrap: { value: unknown }
 } {
     const topics: LiveTopic[] = [];
     const counts = { mints: 0, clients: 0, setAuths: 0, bootstraps: 0 };
     const mintGate = { value: "ok" };
+    const bootstrap: { value: unknown } = { value: [] };
     const history: Record<string, Deferred<RpcResult>[]> = {};
     const saves: Array<{ channelId: string, messageId: number, answer: Deferred<Response>, token?: string | null }> = [];
     const joined: string[] = [];
@@ -114,7 +116,7 @@ function build(): {
         rpc: (name, args) => {
             if (name === "chat_get_bootstrap") {
                 counts.bootstraps++;
-                return Promise.resolve({ data: [], error: null, status: 200 });
+                return Promise.resolve({ data: bootstrap.value, error: null, status: 200 });
             }
             const answer = deferred<RpcResult>();
             (history[args.p_channel_id as string] ??= []).push(answer);
@@ -156,7 +158,7 @@ function build(): {
     });
 
     return {
-        shell, history, saves, joined, removed, stored, topics, counts, mintGate,
+        shell, history, saves, joined, removed, stored, topics, counts, mintGate, bootstrap,
         fireBlur: () => (windowListeners["blur"] ?? []).forEach(l => l())
     };
 }
@@ -488,3 +490,75 @@ describe("the live cut", () => {
     });
 });
 
+describe("what the platform may send a released client", () => {
+    afterEach(() => {
+        jest.restoreAllMocks();
+    });
+
+    test("the sidebar arrives as an object holding its rows", async () => {
+        const row = { channel_id: channelA, name: "General" };
+        const h = build();
+        h.bootstrap.value = { channels: [row] };
+        const starting = h.shell.start();
+        await settle();
+        answerHistory(h, channelA, 10);
+        await starting;
+        await settle();
+
+        expect(h.shell.channels.rows).toEqual([row]);
+    });
+
+    test("an event name it does not know is ignored on either topic", async () => {
+        const h = await started();
+        const before = { ...h.counts };
+
+        personal(h, "something.new", { id: 1 });
+        topicOf(h, channelTopic(tenant, channelA)).listeners["broadcast"]?.({ event: "something.else", payload: { id: 2 } });
+        await settle();
+
+        expect(h.counts).toEqual(before);
+        expect(h.shell.state.errors).toEqual([]);
+    });
+
+    test.each(["personal", "channel"])("a resync on the %s topic reloads the sidebar and the open channel", async where => {
+        const h = await started();
+        const before = { ...h.counts };
+        const pendingBefore = h.history[channelA]?.length ?? 0;
+
+        if (where === "personal") {
+            personal(h, "resync", {});
+        }
+        else {
+            topicOf(h, channelTopic(tenant, channelA)).listeners["broadcast"]?.({ event: "resync", payload: {} });
+        }
+        await settle();
+
+        expect(h.counts.bootstraps).toBe(before.bootstraps + 1);
+        expect(h.history[channelA]?.length ?? 0).toBe(pendingBefore + 1);
+        expect(h.counts.mints).toBe(before.mints);
+    });
+
+    test("a Realtime error it cannot classify fetches a new token, reloads the sidebar and so rechecks access", async () => {
+        const h = await started();
+        const before = { ...h.counts };
+
+        topicOf(h, channelTopic(tenant, channelA)).listeners["system"]?.({ status: "error", message: "PolicyChanged: you may not read this any more" });
+        await settle();
+
+        expect(h.counts.mints).toBe(before.mints + 1);
+        expect(h.counts.setAuths).toBe(before.setAuths + 1);
+        expect(h.counts.bootstraps).toBe(before.bootstraps + 1);
+    });
+
+    test("that refresh is shared with a recheck already asked for", async () => {
+        const h = await started();
+        const before = { ...h.counts };
+
+        personal(h, "session.recheck", {});
+        topicOf(h, channelTopic(tenant, channelA)).listeners["system"]?.({ status: "error", message: "PolicyChanged: you may not read this any more" });
+        await settle();
+
+        expect(h.counts.mints).toBe(before.mints + 1);
+        expect(h.counts.bootstraps).toBe(before.bootstraps + 1);
+    });
+});

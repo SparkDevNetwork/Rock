@@ -25,6 +25,7 @@ import {
     RealtimeChannelLike,
     RealtimeClientLike
 } from "../../../../../src/Communication/Chat/ChatShell/composables/useRealtimeHub.partial";
+import * as hubModule from "../../../../../src/Communication/Chat/ChatShell/composables/useRealtimeHub.partial";
 
 const tenant = "10000000-0000-4000-8000-00000000000A";
 const alias = "A0000001-0000-4000-8000-00000000000B";
@@ -279,3 +280,80 @@ describe("createRealtimeHub", () => {
     });
 });
 
+describe("the realtime client's options", () => {
+    // The protocol is pinned so a library update cannot change it under a released client, and
+    // reconnects are random and grow so every church does not come back in the same second.
+    type Limits = { reconnect_base_ms: number, reconnect_cap_ms: number };
+    const { realtimeOptions } = hubModule as unknown as {
+        realtimeOptions: (limits: Limits, random: () => number) => { vsn: string, reconnectAfterMs: (tries: number) => number }
+    };
+
+    test("pins the protocol version", () => {
+        expect(realtimeOptions({ reconnect_base_ms: 1000, reconnect_cap_ms: 30000 }, () => 0.5).vsn).toBe("2.0.0");
+    });
+
+    test("reconnects after a random, growing wait from the settings' base, never past their cap", () => {
+        const options = realtimeOptions({ reconnect_base_ms: 1000, reconnect_cap_ms: 30000 }, () => 0);
+
+        expect(options.reconnectAfterMs(1)).toBe(500);
+        expect(options.reconnectAfterMs(2)).toBe(1000);
+        expect(options.reconnectAfterMs(3)).toBe(2000);
+        expect(options.reconnectAfterMs(40)).toBe(15000);
+        expect(realtimeOptions({ reconnect_base_ms: 1000, reconnect_cap_ms: 30000 }, () => 0.999).reconnectAfterMs(40)).toBeLessThanOrEqual(30000);
+        expect(realtimeOptions({ reconnect_base_ms: 4000, reconnect_cap_ms: 30000 }, () => 0).reconnectAfterMs(1)).toBe(2000);
+    });
+});
+
+describe("a Realtime error the client cannot classify", () => {
+    // Realtime can reword its errors in any upgrade. Words the client does not know are treated
+    // as possibly a lost read, so the shell is told to check access again.
+    function hubWithUnknown(client: RealtimeClientLike): { hub: ReturnType<typeof createRealtimeHub>, unknown: number[] } {
+        const unknown: number[] = [];
+        const dependencies = {
+            client,
+            tenantId: tenant,
+            personAliasGuid: alias,
+            onChannelEvent: () => undefined,
+            onPersonalEvent: () => undefined,
+            onJoined: () => undefined,
+            onStatus: () => undefined,
+            onUnknownError: () => unknown.push(1)
+        };
+        return { hub: createRealtimeHub(dependencies), unknown };
+    }
+
+    test("words it does not know about the open channel ask the shell to check access again", async () => {
+        const f = fakeClient();
+        const { hub, unknown } = hubWithUnknown(f.client);
+        await hub.start();
+        hub.openChannel(channelOne);
+        f.channels[1].status?.("SUBSCRIBED");
+
+        f.channels[1].system?.({ status: "error", message: "PolicyChanged: you may not read this any more" } as never);
+
+        expect(unknown).toHaveLength(1);
+    });
+
+    test("a join refused with words it does not know asks the same", async () => {
+        const f = fakeClient();
+        const { hub, unknown } = hubWithUnknown(f.client);
+        await hub.start();
+        hub.openChannel(channelOne);
+
+        f.channels[1].status?.("CHANNEL_ERROR", new Error("Unauthorized: a sentence never seen before"));
+
+        expect(unknown).toHaveLength(1);
+    });
+
+    test("words it knows do not", async () => {
+        const f = fakeClient();
+        const { hub, unknown } = hubWithUnknown(f.client);
+        await hub.start();
+        hub.openChannel(channelOne);
+        f.channels[1].status?.("SUBSCRIBED");
+
+        f.channels[1].system?.({ status: "error", message: "Token has expired 1 seconds ago" } as never);
+
+        expect(unknown).toHaveLength(0);
+    });
+});

@@ -17,12 +17,17 @@
 // Every failure the shell meets becomes a stable code and a severity. The platform puts its own
 // code in the error's message (authz.not_readable and the rest), so that is what is read; a
 // message that is not one of our codes is never shown or branched on.
+import * as errors from "../../../../src/Communication/Chat/ChatShell/errors.partial";
 import {
     classifyActionFailure,
     classifyPlatformError,
     classifyRealtimeMessage,
     classifyRealtimeStatus
 } from "../../../../src/Communication/Chat/ChatShell/errors.partial";
+import { ChatError } from "../../../../src/Communication/Chat/ChatShell/types.partial";
+
+/** What the person is told for a failure, which the classifier module also owns. */
+const { messageForError } = errors as unknown as { messageForError: (error: ChatError & { text?: string | null }) => string };
 
 describe("classifyPlatformError", () => {
     test("a refusal carrying one of our codes keeps that code", () => {
@@ -133,5 +138,42 @@ describe("classifyRealtimeMessage", () => {
 
     test("words it does not know are unknown, never passed through", () => {
         expect(classifyRealtimeMessage("Something Realtime has never said", true)).toEqual({ code: "rt.unknown", severity: "unknown" });
+    });
+});
+
+describe("codes a released client was not built with", () => {
+    // A Rock release that ships chat is in use for years while the platform keeps adding codes,
+    // so a code from any family is kept, and the server's own sentence is what the person reads.
+    test("a refusal keeps the server's sentence for it", () => {
+        expect(classifyPlatformError({ message: "rpc.idempotency_mismatch", code: "PT409", hint: "That message was already sent with different text." }))
+            .toEqual({ code: "rpc.idempotency_mismatch", severity: "failed", text: "That message was already sent with different text." });
+    });
+
+    test("a code from a family this client does not know is kept, not turned into rpc.unknown", () => {
+        expect(classifyPlatformError({ message: "billing.over_quota", code: "PT402", hint: "This church's chat plan is full." }))
+            .toEqual({ code: "billing.over_quota", severity: "unknown", text: "This church's chat plan is full." });
+    });
+
+    test("something that is not a code at all is still never passed through", () => {
+        expect(classifyPlatformError({ message: "Duplicate Key", code: "23505", hint: "vendor words" }).code).toBe("rpc.unknown");
+    });
+
+    test("a code the client has no sentence of its own for shows the server's sentence", () => {
+        expect(messageForError({ code: "billing.over_quota", severity: "unknown", text: "This church's chat plan is full." }))
+            .toBe("This church's chat plan is full.");
+        expect(messageForError({ code: "rpc.idempotency_mismatch", severity: "failed", text: "That message was already sent with different text." }))
+            .toBe("That message was already sent with different text.");
+    });
+
+    test("a code the client handles itself keeps its own sentence", () => {
+        expect(messageForError({ code: "rt.read_revoked", severity: "permission", text: "server words" }))
+            .toBe("You no longer have access to this channel.");
+        expect(messageForError({ code: "auth.expired", severity: "session", text: "server words" }))
+            .toBe("Your chat session has ended. Refresh the page to continue.");
+    });
+
+    test("with no sentence from the server the severity's sentence is shown", () => {
+        expect(messageForError({ code: "rpc.something_new", severity: "failed" }))
+            .toBe("Something went wrong in chat. Try again in a moment.");
     });
 });

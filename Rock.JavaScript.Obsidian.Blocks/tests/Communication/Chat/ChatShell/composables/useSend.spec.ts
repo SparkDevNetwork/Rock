@@ -17,6 +17,7 @@
 // Sending: a pending row at once, a timeline message once confirmed, and a failed send that
 // keeps its text so it can be sent again.
 import { createSender, SendResult } from "../../../../../src/Communication/Chat/ChatShell/composables/useSend.partial";
+import * as sendModule from "../../../../../src/Communication/Chat/ChatShell/composables/useSend.partial";
 import { createTimelines } from "../../../../../src/Communication/Chat/ChatShell/composables/useHistory.partial";
 
 const channel = "c0000001-0000-4000-8000-000000000000";
@@ -156,5 +157,62 @@ describe("createSender", () => {
         await sender.send(channel, "here");
 
         expect(sender.pending("c0000002-0000-4000-8000-000000000000")).toEqual([]);
+    });
+});
+
+describe("a send the platform can recognise again", () => {
+    // A confirmation can be lost after the platform committed the message, so a retry carries
+    // the same key as the first try, and the platform answers the first message instead of
+    // posting a second.
+    test("a send carries its row's key, and a retry carries the same key", async () => {
+        const keys: Array<string | undefined> = [];
+        const answers: SendResult[] = [
+            { ok: false, error: { code: "rpc.transport", severity: "failed" } },
+            { ok: true, id: 45, createdAt: "2026-10-05T10:00:00Z" }
+        ];
+        const timelines = createTimelines({ fetchPage: async () => ({ messages: [], read_cursor: null, unread_count: 0, has_more: false }) });
+        await timelines.loadNewest(channel);
+        const sender = createSender({
+            send: (_c: string, _body: string, key?: string) => {
+                keys.push(key);
+                return Promise.resolve(answers.shift() as SendResult);
+            },
+            timelines,
+            personAliasGuid: me,
+            newLocalId: () => "3f0c7a52-8a4e-4c5e-9d1a-2b7f6e0c1d22"
+        });
+
+        await sender.send(channel, "once");
+        await sender.retry("3f0c7a52-8a4e-4c5e-9d1a-2b7f6e0c1d22");
+
+        expect(keys).toEqual(["3f0c7a52-8a4e-4c5e-9d1a-2b7f6e0c1d22", "3f0c7a52-8a4e-4c5e-9d1a-2b7f6e0c1d22"]);
+    });
+
+    test("a notice the server sends with the confirmation stays with the person's message", async () => {
+        const { sender, timelines } = await setup([{ ok: true, id: 46, createdAt: "2026-10-05T10:00:00Z", notice: "Your message is waiting for review." } as SendResult]);
+
+        await sender.send(channel, "please look");
+
+        const [confirmed] = timelines.state(channel).messages;
+        expect((confirmed as Record<string, unknown>).notice).toBe("Your message is waiting for review.");
+    });
+
+    test("a confirmation with no notice leaves none", async () => {
+        const { sender, timelines } = await setup([{ ok: true, id: 47, createdAt: "2026-10-05T10:00:00Z", notice: null } as SendResult]);
+
+        await sender.send(channel, "plain");
+
+        expect((timelines.state(channel).messages[0] as Record<string, unknown>).notice ?? null).toBeNull();
+    });
+});
+
+describe("the composer and the service state", () => {
+    const { isComposerOpen } = sendModule as unknown as { isComposerOpen: (serviceState: string) => boolean };
+
+    test("read only and maintenance close the composer; normal and degraded leave it open", () => {
+        expect(isComposerOpen("read_only")).toBe(false);
+        expect(isComposerOpen("maintenance")).toBe(false);
+        expect(isComposerOpen("normal")).toBe(true);
+        expect(isComposerOpen("degraded")).toBe(true);
     });
 });

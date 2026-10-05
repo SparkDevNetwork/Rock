@@ -457,6 +457,28 @@ namespace Rock.Tests.Communication.Chat.Platform.Session
             Assert.AreEqual( config.Configuration.TenantId.ToString(), token.Subject );
         }
 
+        [TestMethod]
+        public void TryMintChurchToken_ValidPerson_CarriesRockVersion()
+        {
+            // The platform tells an outdated Rock to update from this claim. It is advisory only,
+            // so the test pins what is signed rather than how the platform reads it.
+            var result = ChatSessionHelper.TryMintChurchToken( Adult(), SigningConfig(), _rockContext );
+
+            var token = new JwtSecurityTokenHandler().ReadJwtToken( result.ChurchToken );
+            Assert.IsTrue( token.Payload.ContainsKey( "cv" ), "a person token carries the Rock version" );
+            Assert.AreEqual( global::Rock.VersionInfo.VersionInfo.GetRockSemanticVersionNumber(), token.Payload["cv"].ToString() );
+        }
+
+        [TestMethod]
+        public void TryMintSyncToken_ValidConfig_CarriesRockVersion()
+        {
+            var result = ChatSessionHelper.TryMintSyncToken( SigningConfig() );
+
+            var token = new JwtSecurityTokenHandler().ReadJwtToken( result.ChurchToken );
+            Assert.IsTrue( token.Payload.ContainsKey( "cv" ), "a sync token carries the Rock version" );
+            Assert.AreEqual( global::Rock.VersionInfo.VersionInfo.GetRockSemanticVersionNumber(), token.Payload["cv"].ToString() );
+        }
+
         #endregion
 
         #region Enrolment

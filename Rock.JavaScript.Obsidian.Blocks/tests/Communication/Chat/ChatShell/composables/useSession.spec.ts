@@ -25,6 +25,29 @@ import {
     ExchangeResult,
     SessionDependencies
 } from "../../../../../src/Communication/Chat/ChatShell/composables/useSession.partial";
+import * as sessionModule from "../../../../../src/Communication/Chat/ChatShell/composables/useSession.partial";
+import { ChatError } from "../../../../../src/Communication/Chat/ChatShell/types.partial";
+
+/** The settings the token exchange answers beside the token, every key filled. */
+type ChatSettings = {
+    service: { state: string, banner: string | null };
+    client: { update_required: boolean };
+    routes: { send: string };
+    limits: { reconnect_base_ms: number, reconnect_cap_ms: number, catch_up_page: number, catch_up_max: number };
+    flags: Record<string, unknown>;
+};
+
+/** What the session module offers for the settings, beside the session itself. */
+const { readSettings, serviceBanner } = sessionModule as unknown as {
+    readSettings: (raw: unknown) => ChatSettings,
+    serviceBanner: (settings: ChatSettings) => string | null
+};
+
+/** The session with the settings it holds. */
+type SettingsSession = ReturnType<typeof createSession> & {
+    settings: () => ChatSettings,
+    applyServiceRefusal: (error: ChatError & { text?: string | null }) => void
+};
 
 type Timer = { callback: () => void, milliseconds: number, cleared: boolean };
 
@@ -177,7 +200,9 @@ describe("createSession", () => {
         expect(session.currentToken()).toBe("platform-for-church-1");
         const retry = f.timers[f.timers.length - 1];
         expect(retry.cleared).toBe(false);
-        expect(retry.milliseconds).toBe(300_000 * 0.05);
+        // The first retry waits between half and all of the default one second base, here at the
+        // middle of it, rather than a fixed share of the token's life that every client shares.
+        expect(retry.milliseconds).toBe(750);
 
         retry.callback();
         await settle();
@@ -202,7 +227,7 @@ describe("createSession", () => {
 
         expect(session.currentToken()).toBe("platform-for-church-1");
         expect(f.timers[f.timers.length - 1].cleared).toBe(false);
-        expect(f.timers[f.timers.length - 1].milliseconds).toBe(300_000 * 0.05);
+        expect(f.timers[f.timers.length - 1].milliseconds).toBe(750);
     });
 
     test("a refresh the platform refuses outright ends the session rather than asking again", async () => {
@@ -462,3 +487,140 @@ describe("createSession", () => {
     });
 });
 
+describe("settings from the token exchange", () => {
+    const defaults: ChatSettings = {
+        service: { state: "normal", banner: null },
+        client: { update_required: false },
+        routes: { send: "direct" },
+        limits: { reconnect_base_ms: 1000, reconnect_cap_ms: 30000, catch_up_page: 100, catch_up_max: 500 },
+        flags: {}
+    };
+
+    function exchangeWith(...settings: unknown[]): Partial<SessionDependencies> {
+        let calls = 0;
+        return {
+            exchange: async (churchToken: string): Promise<ExchangeResult> => {
+                const answer = settings[Math.min(calls++, settings.length - 1)];
+                return { ok: true, accessToken: `platform-for-${churchToken}`, expiresInSeconds: 300, settings: answer } as ExchangeResult;
+            }
+        };
+    }
+
+    test("a missing key, or no settings at all, falls back to the built-in default", () => {
+        expect(readSettings(undefined)).toEqual(defaults);
+        expect(readSettings({})).toEqual(defaults);
+        expect(readSettings("not an object")).toEqual(defaults);
+        expect(readSettings({ limits: { reconnect_cap_ms: 60000 } }).limits).toEqual({ ...defaults.limits, reconnect_cap_ms: 60000 });
+    });
+
+    test("a route or a state this client does not know is read as the safe default", () => {
+        expect(readSettings({ routes: { send: "carrier_pigeon" } }).routes.send).toBe("direct");
+        expect(readSettings({ service: { state: "something_new", banner: "x" } }).service).toEqual({ state: "normal", banner: "x" });
+    });
+
+    test("the settings are read at sign-in", async () => {
+        const f = fakes(exchangeWith({ service: { state: "degraded", banner: "Chat is slow today." }, routes: { send: "edge" } }));
+        const session = createSession(f.dependencies) as SettingsSession;
+
+        await session.start();
+
+        expect(session.settings().service).toEqual({ state: "degraded", banner: "Chat is slow today." });
+        expect(session.settings().routes.send).toBe("edge");
+    });
+
+    test("every refresh reads them again", async () => {
+        const f = fakes(exchangeWith({ service: { state: "normal" } }, { service: { state: "read_only", banner: "Read only tonight." } }));
+        const session = createSession(f.dependencies) as SettingsSession;
+        await session.start();
+
+        await session.refresh();
+
+        expect(session.settings().service).toEqual({ state: "read_only", banner: "Read only tonight." });
+    });
+
+    test("a refusal for read only or maintenance takes its banner from the refusal's sentence", async () => {
+        const f = fakes();
+        const session = createSession(f.dependencies) as SettingsSession;
+        await session.start();
+
+        session.applyServiceRefusal({ code: "rpc.read_only", severity: "failed", text: "Chat is read only for maintenance tonight." });
+        expect(session.settings().service).toEqual({ state: "read_only", banner: "Chat is read only for maintenance tonight." });
+
+        session.applyServiceRefusal({ code: "rpc.maintenance", severity: "failed", text: "Chat is down for maintenance." });
+        expect(session.settings().service).toEqual({ state: "maintenance", banner: "Chat is down for maintenance." });
+
+        session.applyServiceRefusal({ code: "rpc.bad_body", severity: "failed", text: "Write something first." });
+        expect(session.settings().service.state).toBe("maintenance");
+    });
+
+    test("a Rock older than the platform's minimum is asked to update", () => {
+        expect(serviceBanner(readSettings({ client: { update_required: true } }))).toMatch(/update Rock/);
+        expect(serviceBanner(readSettings({}))).toBeNull();
+    });
+
+    test("a service state other than normal shows its banner, or a sentence of the client's own", () => {
+        expect(serviceBanner(readSettings({ service: { state: "read_only", banner: "Read only tonight." } }))).toBe("Read only tonight.");
+        expect(serviceBanner(readSettings({ service: { state: "maintenance" } }))).not.toBeNull();
+        expect(serviceBanner(readSettings({ service: { state: "normal", banner: "ignored" } }))).toBeNull();
+    });
+});
+
+describe("retrying a refresh that could not complete", () => {
+    function failingOnce(failure: ExchangeResult): Partial<SessionDependencies> {
+        let exchanges = 0;
+        return {
+            exchange: async (churchToken: string): Promise<ExchangeResult> => {
+                exchanges++;
+                return exchanges === 2
+                    ? failure
+                    : { ok: true, accessToken: `platform-for-${churchToken}`, expiresInSeconds: 300 };
+            }
+        };
+    }
+
+    test("a platform that says when to come back is asked again then", async () => {
+        const f = fakes(failingOnce({ ok: false, status: 503, code: "rpc.unavailable", retryAfterSeconds: 7 } as ExchangeResult));
+        const session = createSession(f.dependencies);
+        await session.start();
+
+        await session.refresh();
+
+        expect(f.timers[f.timers.length - 1].milliseconds).toBe(7000);
+    });
+
+    test("without that, each failed try waits longer, from the base the settings name", async () => {
+        let exchanges = 0;
+        const f = fakes({
+            exchange: async (churchToken: string): Promise<ExchangeResult> => {
+                exchanges++;
+                return exchanges === 1
+                    ? { ok: true, accessToken: `platform-for-${churchToken}`, expiresInSeconds: 300, settings: { limits: { reconnect_base_ms: 2000 } } } as ExchangeResult
+                    : { ok: false, status: 0, code: "rpc.transport" };
+            }
+        });
+        const session = createSession(f.dependencies);
+        await session.start();
+
+        await session.refresh();
+        const first = f.timers[f.timers.length - 1].milliseconds;
+        f.timers[f.timers.length - 1].callback();
+        await settle();
+        const second = f.timers[f.timers.length - 1].milliseconds;
+
+        expect(first).toBe(1500);
+        expect(second).toBe(3000);
+    });
+
+    test("the wait is random, so clients that failed together do not all ask again together", async () => {
+        const waits: number[] = [];
+        for (const draw of [0.1, 0.9]) {
+            const f = fakes({ ...failingOnce({ ok: false, status: 0, code: "rpc.transport" }), random: () => draw });
+            const session = createSession(f.dependencies);
+            await session.start();
+            await session.refresh();
+            waits.push(f.timers[f.timers.length - 1].milliseconds);
+        }
+
+        expect(waits[0]).not.toBe(waits[1]);
+    });
+});
