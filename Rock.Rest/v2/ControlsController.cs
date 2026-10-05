@@ -4981,7 +4981,7 @@ namespace Rock.Rest.v2
             // blocks. The caller supplies arbitrary configuration values and
             // the field type turns them into public edit data, so it must
             // never be available to anonymous or non-staff callers.
-            if ( !IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_READ ) )
+            if ( RockRequestContext.CurrentPerson == null || !IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_READ ) )
             {
                 return Unauthorized();
             }
