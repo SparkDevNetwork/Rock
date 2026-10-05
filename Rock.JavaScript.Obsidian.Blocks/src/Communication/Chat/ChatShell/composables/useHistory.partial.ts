@@ -195,6 +195,17 @@ export function createTimelines(dependencies: TimelineDependencies): Timelines {
         }
     }
 
+    /**
+     * Lets go of everything a channel holds and where its catch-up resumes, so the next newest
+     * page starts it again as opening it does. What is held is always one unbroken run of
+     * messages; a page that cannot be joined to it replaces it rather than leaving a gap.
+     */
+    function forget(channelId: string): void {
+        const messages = state(channelId).messages;
+        messages.splice(0, messages.length);
+        receivedThrough.delete(channelId);
+    }
+
     /** The timeline of a channel, created empty on first ask. */
     function state(channelId: string): TimelineState {
         let timeline = states.get(channelId);
@@ -320,8 +331,7 @@ export function createTimelines(dependencies: TimelineDependencies): Timelines {
             && oldest !== undefined
             && oldest > (receivedThrough.get(channelId) ?? 0);
         if (isDetached) {
-            timeline.messages.splice(0, timeline.messages.length);
-            receivedThrough.delete(channelId);
+            forget(channelId);
         }
 
         mergePage(channelId, page);
@@ -359,7 +369,6 @@ export function createTimelines(dependencies: TimelineDependencies): Timelines {
         onJoined: async (channelId: string): Promise<void> => {
             const { page: pageSize, max } = dependencies.catchUp?.() ?? defaultCatchUp;
             const timeline = state(channelId);
-            const messages = timeline.messages;
             // A channel whose first page came back empty has received nothing, so it pages from
             // the very start; reading only its newest page would strand anything older.
             let afterId = receivedThrough.get(channelId) ?? (timeline.isLoaded ? 0 : undefined);
@@ -384,8 +393,7 @@ export function createTimelines(dependencies: TimelineDependencies): Timelines {
                 // Paging through more than this would keep the person waiting for history they
                 // will mostly scroll past, so the channel opens fresh at its newest instead.
                 if (fetched >= max) {
-                    messages.splice(0, messages.length);
-                    receivedThrough.delete(channelId);
+                    forget(channelId);
                     takeNewest(channelId, await dependencies.fetchPage(channelId, { limit: firstPageSize }));
                     return;
                 }
