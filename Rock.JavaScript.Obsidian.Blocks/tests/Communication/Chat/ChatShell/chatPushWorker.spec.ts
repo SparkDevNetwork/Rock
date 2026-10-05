@@ -283,7 +283,7 @@ describe("the push worker", () => {
 
     test("a chat page off the site is never opened; the tap opens the site's root instead", async () => {
         // a path that starts with two slashes opens as another host, however it was spelled
-        for (const page of ["//elsewhere.example/phish", "/.//elsewhere.example/phish", String.raw`/\elsewhere.example/phish`,"https://elsewhere.example/phish"]) {
+        for (const page of ["//elsewhere.example/phish", "/.//elsewhere.example/phish", "/..//elsewhere.example/phish", "https://church.example//elsewhere.example/phish", String.raw`/\elsewhere.example/phish`,"https://elsewhere.example/phish"]) {
             const worker = loadWorker({ page });
 
             await worker.fire("notificationclick", { notification: { close: jest.fn(), data: payload({}).data } });
