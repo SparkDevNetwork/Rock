@@ -455,39 +455,76 @@ namespace Rock.Communication.Chat.Platform.Session
         }
 
         /// <summary>
-        /// Takes the browser that is signing out of Rock out of push, after the sign-out has
-        /// answered. The Chat block is not on the page that signs out, so Rock makes the call the
-        /// browser cannot, with the token the block kept in this browser's cookie.
+        /// Takes the browser that is signing out of Rock out of push. The Chat block is not on the
+        /// page that signs out, so Rock makes the call the browser cannot, with the token the block
+        /// kept in this browser's cookie; the platform calls run after the sign-out has answered.
+        /// Never throws.
         /// </summary>
-        /// <param name="personId">The person signing out.</param>
-        /// <param name="deviceToken">The push token from this browser's cookie, or null.</param>
-        public static void UnregisterPushDeviceInBackground( int? personId, string deviceToken )
+        /// <param name="personId">The person signing out, or null when nobody is signed in.</param>
+        /// <param name="cookieValue">The push cookie's value as the browser sent it, or null.</param>
+        /// <returns>True where the browser sent the cookie, which the caller then expires.</returns>
+        public static bool UnregisterPushDeviceAtSignOut( int? personId, string cookieValue )
         {
-            if ( !personId.HasValue || deviceToken.IsNullOrWhiteSpace() )
+            return UnregisterPushDeviceAtSignOut( personId, cookieValue, UnregisterPushDeviceInBackground );
+        }
+
+        /// <summary>
+        /// Takes the browser that is signing out of Rock out of push, starting the unregister
+        /// through the given action. Never throws.
+        /// </summary>
+        /// <param name="personId">The person signing out, or null when nobody is signed in.</param>
+        /// <param name="cookieValue">The push cookie's value as the browser sent it, or null.</param>
+        /// <param name="start">Starts the unregister for the person and the decoded token.</param>
+        /// <returns>True where the browser sent the cookie, which the caller then expires.</returns>
+        internal static bool UnregisterPushDeviceAtSignOut( int? personId, string cookieValue, Action<int, string> start )
+        {
+            if ( cookieValue.IsNullOrWhiteSpace() )
             {
-                return;
+                return false;
             }
 
-            // Off the sign-out's clock: two calls to the platform should never slow it, and a
-            // device left behind still drops out when the next person signs in on this browser
-            // or FCM reports the token gone.
-            System.Threading.Tasks.Task.Run( () =>
+            try
             {
-                try
+                // The block writes the token URL-encoded, since an FCM token carries a colon.
+                var deviceToken = Uri.UnescapeDataString( cookieValue );
+                if ( personId.HasValue && deviceToken.IsNotNullOrWhiteSpace() )
                 {
-                    using ( var rockContext = new RockContext() )
-                    {
-                        var person = new PersonService( rockContext ).Get( personId.Value );
-                        var context = new ChatSessionContext { Configuration = ChatPlatformConfigurationService.Read() };
+                    start( personId.Value, deviceToken );
+                }
+            }
+            catch ( Exception exception )
+            {
+                // Push is extra; nothing here may stop a person signing out.
+                ExceptionLogService.LogException( exception );
+            }
 
-                        UnregisterPushDevice( person, deviceToken, context, rockContext );
-                    }
-                }
-                catch ( Exception exception )
+            return true;
+        }
+
+        /// <summary>
+        /// Unregisters one push token for a person, reading the person and the church's settings
+        /// itself, as the background half of sign-out does. Never throws.
+        /// </summary>
+        /// <param name="personId">The person signing out.</param>
+        /// <param name="deviceToken">The browser's push token.</param>
+        /// <returns>What happened.</returns>
+        internal static ChatPushUnregisterOutcome UnregisterPushDeviceForPerson( int personId, string deviceToken )
+        {
+            try
+            {
+                using ( var rockContext = new RockContext() )
                 {
-                    ExceptionLogService.LogException( exception );
+                    var person = new PersonService( rockContext ).Get( personId );
+                    var context = new ChatSessionContext { Configuration = ChatPlatformConfigurationService.Read() };
+
+                    return UnregisterPushDevice( person, deviceToken, context, rockContext );
                 }
-            } );
+            }
+            catch ( Exception exception )
+            {
+                ExceptionLogService.LogException( exception );
+                return ChatPushUnregisterOutcome.Failed;
+            }
         }
 
         /// <summary>
@@ -550,6 +587,18 @@ namespace Rock.Communication.Chat.Platform.Session
         #endregion Methods
 
         #region Private Methods
+
+        /// <summary>
+        /// Unregisters on the thread pool, so two calls to the platform never slow the sign-out; a
+        /// device left behind still drops out when the next person signs in on this browser or FCM
+        /// reports the token gone.
+        /// </summary>
+        /// <param name="personId">The person signing out.</param>
+        /// <param name="deviceToken">The browser's push token.</param>
+        private static void UnregisterPushDeviceInBackground( int personId, string deviceToken )
+        {
+            System.Threading.Tasks.Task.Run( () => UnregisterPushDeviceForPerson( personId, deviceToken ) );
+        }
 
         /// <summary>
         /// True when the person's record status is Inactive, false when it is not, and null

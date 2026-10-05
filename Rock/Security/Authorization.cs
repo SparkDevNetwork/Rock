@@ -1048,13 +1048,16 @@ namespace Rock.Security
             try
             {
                 var cookie = HttpContext.Current?.Request.Cookies[Rock.Communication.Chat.Platform.Session.ChatSessionHelper.PushCookieName];
-                if ( cookie == null || cookie.Value.IsNullOrWhiteSpace() )
+                if ( cookie == null )
                 {
                     return;
                 }
 
                 var personId = UserLoginService.GetCurrentUser( false )?.PersonId;
-                Rock.Communication.Chat.Platform.Session.ChatSessionHelper.UnregisterPushDeviceInBackground( personId, HttpUtility.UrlDecode( cookie.Value ) );
+                if ( !Rock.Communication.Chat.Platform.Session.ChatSessionHelper.UnregisterPushDeviceAtSignOut( personId, cookie.Value ) )
+                {
+                    return;
+                }
 
                 RockPage.AddOrUpdateCookie( new HttpCookie( Rock.Communication.Chat.Platform.Session.ChatSessionHelper.PushCookieName )
                 {

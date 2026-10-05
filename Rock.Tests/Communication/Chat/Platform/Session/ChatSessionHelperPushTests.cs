@@ -150,6 +150,61 @@ namespace Rock.Tests.Communication.Chat.Platform.Session
             Assert.AreEqual( ChatPushUnregisterOutcome.Failed, outcome );
         }
 
+        [TestMethod]
+        public void UnregisterPushDeviceAtSignOut_WithTheCookie_StartsTheUnregisterForThePersonWithTheDecodedToken()
+        {
+            var started = new List<Tuple<int, string>>();
+
+            var hasCookie = ChatSessionHelper.UnregisterPushDeviceAtSignOut( PersonId, "fcm%3AAPA91b-token_1", ( id, token ) => started.Add( Tuple.Create( id, token ) ) );
+
+            Assert.IsTrue( hasCookie, "a browser that sent the cookie has it expired" );
+            Assert.AreEqual( 1, started.Count );
+            Assert.AreEqual( PersonId, started[0].Item1 );
+            Assert.AreEqual( "fcm:APA91b-token_1", started[0].Item2, "the browser wrote the token URL-encoded" );
+        }
+
+        [TestMethod]
+        public void UnregisterPushDeviceAtSignOut_NoCookie_StartsNothing()
+        {
+            var started = 0;
+
+            foreach ( var cookie in new[] { null, "", "   " } )
+            {
+                Assert.IsFalse( ChatSessionHelper.UnregisterPushDeviceAtSignOut( PersonId, cookie, ( id, token ) => started++ ) );
+            }
+
+            Assert.AreEqual( 0, started );
+        }
+
+        [TestMethod]
+        public void UnregisterPushDeviceAtSignOut_NobodySignedIn_StartsNothingAndStillExpiresTheCookie()
+        {
+            var started = 0;
+
+            var hasCookie = ChatSessionHelper.UnregisterPushDeviceAtSignOut( null, "fcm-token-1", ( id, token ) => started++ );
+
+            Assert.IsTrue( hasCookie );
+            Assert.AreEqual( 0, started );
+        }
+
+        [TestMethod]
+        public void UnregisterPushDeviceAtSignOut_AStartThatThrows_NeverFailsTheSignOut()
+        {
+            var hasCookie = ChatSessionHelper.UnregisterPushDeviceAtSignOut( PersonId, "fcm-token-1", ( id, token ) => throw new InvalidOperationException( "the thread pool refused" ) );
+
+            Assert.IsTrue( hasCookie, "the cookie is still expired" );
+        }
+
+        [TestMethod]
+        public void UnregisterPushDeviceAtSignOut_ACookieThatIsNotValidEncoding_NeverFailsTheSignOut()
+        {
+            var started = new List<string>();
+
+            var hasCookie = ChatSessionHelper.UnregisterPushDeviceAtSignOut( PersonId, "%E0%A4%A", ( id, token ) => started.Add( token ) );
+
+            Assert.IsTrue( hasCookie );
+        }
+
         #region Support
 
         private static HttpResponseMessage Json( HttpStatusCode code, string body )

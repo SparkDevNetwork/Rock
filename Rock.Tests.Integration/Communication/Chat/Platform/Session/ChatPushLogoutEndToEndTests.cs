@@ -92,11 +92,13 @@ namespace Rock.Tests.Integration.Communication.Chat.Platform.Session
                     Register( platformToken, browserToken, configuration.ProjectUrl, configuration.PublishableKey );
                     Register( platformToken, otherDevice, configuration.ProjectUrl, configuration.PublishableKey );
 
-                    Assert.AreEqual( ChatPushUnregisterOutcome.Removed, ChatSessionHelper.UnregisterPushDevice( person, browserToken, context, rockContext ) );
+                    // The path sign-out runs in the background, which reads the person and the
+                    // church's settings itself.
+                    Assert.AreEqual( ChatPushUnregisterOutcome.Removed, ChatSessionHelper.UnregisterPushDeviceForPerson( personId, browserToken ) );
 
                     // Asked again, the platform no longer holds it; the person's other device stays.
-                    Assert.AreEqual( ChatPushUnregisterOutcome.NotHeld, ChatSessionHelper.UnregisterPushDevice( person, browserToken, context, rockContext ) );
-                    Assert.AreEqual( ChatPushUnregisterOutcome.Removed, ChatSessionHelper.UnregisterPushDevice( person, otherDevice, context, rockContext ) );
+                    Assert.AreEqual( ChatPushUnregisterOutcome.NotHeld, ChatSessionHelper.UnregisterPushDeviceForPerson( personId, browserToken ) );
+                    Assert.AreEqual( ChatPushUnregisterOutcome.Removed, ChatSessionHelper.UnregisterPushDeviceForPerson( personId, otherDevice ) );
                 }
             }
         }
