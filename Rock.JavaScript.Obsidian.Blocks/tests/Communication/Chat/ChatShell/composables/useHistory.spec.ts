@@ -16,7 +16,7 @@
 //
 // A channel's timeline. History and the live join start together, so live events can arrive
 // before the first page, and a message committed between the page's read and the join reaches
-// neither; the newest page is fetched again on every confirmed join and merged by id.
+// neither; every confirmed join pages forward from what a fetched page proved is held.
 import {
     createTimelines,
     firstPageSize,
@@ -333,10 +333,12 @@ describe("catching up after a rejoin", () => {
         await timelines.onJoined(channel);
 
         const state = timelines.state(channel);
+        // the fresh page is read before anything is let go, and paging goes on from it
         expect(fetches.slice(1)).toEqual([
             { limit: 25, afterId: 3 },
             { limit: 25, afterId: 28 },
-            { limit: firstPageSize }
+            { limit: firstPageSize },
+            { limit: 25, afterId: 1000 }
         ]);
         expect(ids(state.messages)).toEqual(Array.from({ length: firstPageSize }, (_, i) => 1000 - firstPageSize + 1 + i));
         expect(state.hasMore).toBe(true);
@@ -480,4 +482,394 @@ describe("what the server adds later", () => {
         await timelines.loadNewest(channel);
         expect(messageDisplay(timelines.state(channel).messages[0])).toEqual({ kind: "message", text: "back again" });
     });
+});
+
+describe("catching up when fetches fail or are overtaken", () => {
+    // A stand-in for the platform's history: messages by id, ids drawn from one sequence shared by
+    // every channel, so this channel's ids skip. A page is read when it is asked for, as the
+    // database reads it, so a page asked for before a change does not carry it.
+    type Fetch = { limit: number, beforeId?: number, afterId?: number };
+
+    function server(initial: number[]) {
+        const rows = new Map<number, TimelineMessage>();
+        for (const id of initial) {
+            rows.set(id, { ...message(id), visibility: "visible" });
+        }
+
+        function sorted(): number[] {
+            return [...rows.keys()].sort((a, b) => a - b);
+        }
+
+        return {
+            rows,
+            add: (id: number): TimelineMessage => {
+                const row = { ...message(id), visibility: "visible" };
+                rows.set(id, row);
+                return row;
+            },
+            ids: sorted,
+            read: (options: Fetch): HistoryPage => {
+                const all = sorted();
+                let chosen: number[];
+                let hasMore: boolean;
+                if (options.afterId !== undefined) {
+                    const newer = all.filter(id => id > (options.afterId as number));
+                    chosen = newer.slice(0, options.limit);
+                    hasMore = newer.length > options.limit;
+                }
+                else if (options.beforeId !== undefined) {
+                    const older = all.filter(id => id < (options.beforeId as number));
+                    chosen = older.slice(-options.limit);
+                    hasMore = older.length > options.limit;
+                }
+                else {
+                    chosen = all.slice(-options.limit);
+                    hasMore = all.length > options.limit;
+                }
+                const messages = chosen.map(id => ({ ...(rows.get(id) as TimelineMessage) }));
+                // The newest page comes newest first; a page after an id comes oldest first.
+                if (options.afterId === undefined) {
+                    messages.reverse();
+                }
+                return { messages, read_cursor: null, unread_count: 0, has_more: hasMore };
+            }
+        };
+    }
+
+    // A fetch the test answers by hand: the page is read when asked, and handed over (or refused)
+    // when the test says so.
+    type Pending = { options: Fetch, answer: () => void, refuse: (error?: unknown) => void };
+
+    function controlled(platform: ReturnType<typeof server>, holdWhen: (options: Fetch) => boolean) {
+        const pending: Pending[] = [];
+        const asked: Fetch[] = [];
+        let inFlight = 0;
+        let mostInFlight = 0;
+
+        const fetchPage = (_c: string, options: Fetch): Promise<HistoryPage> => {
+            asked.push(options);
+            const read = platform.read(options);
+            if (!holdWhen(options)) {
+                return Promise.resolve(read);
+            }
+            inFlight++;
+            mostInFlight = Math.max(mostInFlight, inFlight);
+            return new Promise<HistoryPage>((resolve, reject) => {
+                pending.push({
+                    options,
+                    answer: () => {
+                        inFlight--;
+                        resolve(read);
+                    },
+                    refuse: error => {
+                        inFlight--;
+                        reject(error ?? { code: "rpc.unavailable", severity: "failed" });
+                    }
+                });
+            });
+        };
+
+        return { fetchPage, pending, asked, mostInFlight: (): number => mostInFlight };
+    }
+
+    // Waits stand in for the retry's backoff; each resolves when the test lets it.
+    function waits() {
+        const list: Array<Deferred<void>> = [];
+        return {
+            list,
+            sleep: (): Promise<void> => {
+                const wait = deferred<void>();
+                list.push(wait);
+                return wait.promise;
+            }
+        };
+    }
+
+    async function settle(): Promise<void> {
+        for (let i = 0; i < 20; i++) {
+            await new Promise(r => setTimeout(r, 0));
+        }
+    }
+
+    function live(row: TimelineMessage): Record<string, unknown> {
+        return { ...row, channel_id: channel, parent_id: null, shown_in_channel: false };
+    }
+
+    // Everything from the first message held up to the newest the server has is held: one run,
+    // nothing missing in the middle, and older ones reachable when it does not start at the first.
+    function expectCaughtUp(state: { messages: TimelineMessage[], hasMore: boolean }, serverIds: number[]): void {
+        const held = ids(state.messages);
+        const from = held[0];
+        expect(held).toEqual(serverIds.filter(id => id >= from));
+        expect(from === serverIds[0] || state.hasMore).toBe(true);
+    }
+
+    test("a catch-up page that fails is tried again, and a live message meanwhile cannot carry it past the gap", async () => {
+        const platform = server([1, 2, 3]);
+        const fetches = controlled(platform, options => options.afterId !== undefined);
+        const backoff = waits();
+        const timelines = createTimelines({ fetchPage: fetches.fetchPage, sleep: backoff.sleep });
+        await timelines.loadNewest(channel);
+
+        for (let id = 4; id <= 30; id++) {
+            platform.add(id);
+        }
+        const joining = timelines.onJoined(channel);
+        await settle();
+        fetches.pending.shift()?.refuse();
+        await settle();
+        expect(timelines.state(channel).isBehind).toBe(true);
+
+        // a live copy lands while the retry waits
+        timelines.applyEvent(channel, "message.created", live(platform.add(31)));
+        backoff.list.shift()?.resolve();
+        await settle();
+        fetches.pending.shift()?.answer();
+        await joining;
+
+        expectCaughtUp(timelines.state(channel), platform.ids());
+        expect(timelines.state(channel).isBehind).toBe(false);
+    });
+
+    test("an older page asked for before the channel was reloaded is dropped when it arrives", async () => {
+        const platform = server(Array.from({ length: 200 }, (_, i) => i + 1));
+        const fetches = controlled(platform, options => options.beforeId !== undefined);
+        const timelines = createTimelines({ fetchPage: fetches.fetchPage, catchUp: () => ({ page: 25, max: 50 }) });
+        await timelines.loadNewest(channel);
+
+        const older = timelines.loadOlder(channel);
+        await settle();
+        for (let id = 201; id <= 1000; id++) {
+            platform.add(id);
+        }
+        await timelines.onJoined(channel);
+        fetches.pending.shift()?.answer();
+        await older;
+
+        expectCaughtUp(timelines.state(channel), platform.ids());
+        expect(ids(timelines.state(channel).messages)[0]).toBe(1000 - firstPageSize + 1);
+    });
+
+    test("when the reload past the bound fails, what was on screen stays", async () => {
+        const platform = server([1, 2, 3]);
+        const fetches = controlled(platform, options => options.afterId === undefined && options.beforeId === undefined && platform.ids().length > 3);
+        const backoff = waits();
+        const timelines = createTimelines({ fetchPage: fetches.fetchPage, sleep: backoff.sleep, catchUp: () => ({ page: 25, max: 50 }) });
+        await timelines.loadNewest(channel);
+
+        for (let id = 4; id <= 1000; id++) {
+            platform.add(id);
+        }
+        void timelines.onJoined(channel);
+        await settle();
+        fetches.pending.shift()?.refuse();
+        await settle();
+
+        const held = ids(timelines.state(channel).messages);
+        expect(held.length).toBeGreaterThan(0);
+        expect(held[0]).toBe(1);
+        expect(timelines.state(channel).isBehind).toBe(true);
+        timelines.leave(channel);
+    });
+
+    test("a rejoin shows the edits, deletes and hides made while the socket was down", async () => {
+        const platform = server([1, 2, 3, 4, 5]);
+        const timelines = createTimelines({ fetchPage: async (_c, options) => platform.read(options as Fetch) });
+        await timelines.loadNewest(channel);
+        await timelines.onJoined(channel);
+
+        // the socket is down: none of these arrive live
+        Object.assign(platform.rows.get(2) as TimelineMessage, { body: "edited", edited_at: "2026-09-23T11:00:00Z" });
+        Object.assign(platform.rows.get(3) as TimelineMessage, { body: null, deleted_at: "2026-09-23T11:01:00Z" });
+        Object.assign(platform.rows.get(4) as TimelineMessage, { body: null, visibility: "hidden", visibility_notice: "Hidden while it is reviewed." });
+
+        await timelines.onJoined(channel);
+
+        const [, two, three, four] = timelines.state(channel).messages;
+        expect(two.body).toBe("edited");
+        expect(three.deleted_at).toBe("2026-09-23T11:01:00Z");
+        expect(four.body).toBeNull();
+        expect(messageDisplay(four)).toEqual({ kind: "notice", text: "Hidden while it is reviewed." });
+    });
+
+    test("a channel opened again replaces a stale run even when a live message arrives before its newest page", async () => {
+        const platform = server([1, 2, 3]);
+        const fetches = controlled(platform, options => options.afterId === undefined && options.beforeId === undefined && platform.ids().length > 3);
+        const timelines = createTimelines({ fetchPage: fetches.fetchPage, catchUp: () => ({ page: 25, max: 500 }) });
+        await timelines.loadNewest(channel);
+        await timelines.onJoined(channel);
+
+        for (let id = 4; id <= 63; id++) {
+            platform.add(id);
+        }
+        const reopening = timelines.loadNewest(channel);
+        await settle();
+        timelines.applyEvent(channel, "message.created", live(platform.add(64)));
+        fetches.pending.shift()?.answer();
+        await reopening;
+
+        expectCaughtUp(timelines.state(channel), platform.ids());
+    });
+
+    test("a join confirmed while a channel is being opened again catches up from the fresh page, not under it", async () => {
+        const platform = server([1, 2, 3]);
+        const fetches = controlled(platform, options => options.afterId === undefined && options.beforeId === undefined && platform.ids().length > 3);
+        const timelines = createTimelines({ fetchPage: fetches.fetchPage, catchUp: () => ({ page: 5, max: 500 }) });
+        await timelines.loadNewest(channel);
+        await timelines.onJoined(channel);
+
+        for (let id = 4; id <= 63; id++) {
+            platform.add(id);
+        }
+        const reopening = timelines.loadNewest(channel);
+        const joining = timelines.onJoined(channel);
+        await settle();
+        fetches.pending.shift()?.answer();
+        await reopening;
+        await joining;
+
+        expect(ids(timelines.state(channel).messages)[0]).toBe(63 - firstPageSize + 1);
+        expectCaughtUp(timelines.state(channel), platform.ids());
+    });
+
+    test("a page asked for before a live hide does not bring the hidden body back", async () => {
+        const platform = server([1, 2, 3]);
+        const fetches = controlled(platform, options => options.afterId === undefined && options.beforeId === undefined && fetches.asked.length > 1);
+        const timelines = createTimelines({ fetchPage: fetches.fetchPage });
+        await timelines.loadNewest(channel);
+
+        const resyncing = timelines.loadNewest(channel);
+        await settle();
+        Object.assign(platform.rows.get(2) as TimelineMessage, { body: null, visibility: "hidden", visibility_notice: "Hidden." });
+        timelines.applyEvent(channel, "message.visibility", { id: 2, channel_id: channel, state: "hidden", notice: "Hidden." });
+        fetches.pending.shift()?.answer();
+        await resyncing;
+
+        const two = timelines.state(channel).messages[1];
+        expect(two.body).toBeNull();
+        expect(two.visibility).toBe("hidden");
+    });
+
+    test("joins in quick succession run one catch-up at a time, and one more after it", async () => {
+        const platform = server([1, 2, 3]);
+        const fetches = controlled(platform, options => options.afterId !== undefined);
+        const timelines = createTimelines({ fetchPage: fetches.fetchPage });
+        await timelines.loadNewest(channel);
+
+        const first = timelines.onJoined(channel);
+        const second = timelines.onJoined(channel);
+        const third = timelines.onJoined(channel);
+        await settle();
+        while (fetches.pending.length > 0) {
+            fetches.pending.shift()?.answer();
+            await settle();
+        }
+        await Promise.all([first, second, third]);
+
+        expect(fetches.mostInFlight()).toBe(1);
+        expect(fetches.asked.filter(f => f.afterId !== undefined)).toHaveLength(2);
+    });
+
+    test("leaving a channel stops a catch-up waiting to try again", async () => {
+        const platform = server([1, 2, 3]);
+        const fetches = controlled(platform, options => options.afterId !== undefined);
+        const backoff = waits();
+        const timelines = createTimelines({ fetchPage: fetches.fetchPage, sleep: backoff.sleep });
+        await timelines.loadNewest(channel);
+
+        const joining = timelines.onJoined(channel);
+        await settle();
+        fetches.pending.shift()?.refuse();
+        await settle();
+        const askedBefore = fetches.asked.length;
+
+        timelines.leave(channel);
+        backoff.list.shift()?.resolve();
+        await joining;
+        await settle();
+
+        expect(fetches.asked).toHaveLength(askedBefore);
+    });
+
+    test("a message committed late under a lower id than one held is picked up by the next rejoin", async () => {
+        const platform = server([1, 2, 3, 5]);
+        const timelines = createTimelines({ fetchPage: async (_c, options) => platform.read(options as Fetch) });
+        await timelines.loadNewest(channel);
+        await timelines.onJoined(channel);
+
+        // 4 was taken before 5 but committed after it
+        platform.add(4);
+        await timelines.onJoined(channel);
+
+        expect(ids(timelines.state(channel).messages)).toEqual([1, 2, 3, 4, 5]);
+    });
+
+    test("any mix of failures, delays, drops and rejoins ends caught up once the network is back", async () => {
+        for (let seed = 1; seed <= 25; seed++) {
+            let state = seed;
+            const random = (): number => {
+                state = (state * 1103515245 + 12345) % 2147483648;
+                return state / 2147483648;
+            };
+
+            const platform = server([]);
+            let nextId = 1;
+            const grow = (): TimelineMessage => {
+                // other channels take ids too, so this channel's skip
+                nextId += 1 + Math.floor(random() * 3);
+                return platform.add(nextId);
+            };
+            for (let i = 0; i < 40; i++) {
+                grow();
+            }
+
+            let failRate = 0.3;
+            const timelines = createTimelines({
+                fetchPage: async (_c, options) => {
+                    const read = platform.read(options as Fetch);
+                    for (let i = Math.floor(random() * 4); i > 0; i--) {
+                        await Promise.resolve();
+                    }
+                    if (random() < failRate) {
+                        throw { code: "rpc.unavailable", severity: "failed" };
+                    }
+                    return read;
+                },
+                sleep: () => Promise.resolve(),
+                catchUp: () => ({ page: 10, max: 60 })
+            });
+
+            const running: Array<Promise<unknown>> = [];
+            for (let step = 0; step < 60; step++) {
+                const roll = random();
+                if (roll < 0.4) {
+                    const row = grow();
+                    // a live copy is sometimes lost
+                    if (random() < 0.6) {
+                        timelines.applyEvent(channel, "message.created", live(row));
+                    }
+                }
+                else if (roll < 0.6) {
+                    running.push(timelines.onJoined(channel).catch(() => undefined));
+                }
+                else if (roll < 0.75) {
+                    running.push(timelines.loadNewest(channel).catch(() => undefined));
+                }
+                else if (roll < 0.85) {
+                    running.push(timelines.loadOlder(channel).catch(() => undefined));
+                }
+                await Promise.resolve();
+            }
+
+            // the network is back and the socket rejoins
+            failRate = 0;
+            await Promise.all(running);
+            await timelines.loadNewest(channel).catch(() => undefined);
+            await timelines.onJoined(channel);
+            await settle();
+
+            expectCaughtUp(timelines.state(channel), platform.ids());
+        }
+    // 25 interleavings take several seconds; each is still a few hundred steps
+    }, 30000);
 });
