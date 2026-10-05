@@ -4763,12 +4763,22 @@ namespace Rock.Rest.v2
         [HttpPost]
         [Route( "FieldTypeEditorUpdateAttributeConfiguration" )]
         [Authenticate]
-        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [ProducesResponseType( HttpStatusCode.OK, Type = typeof( FieldTypeEditorUpdateAttributeConfigurationResultBag ) )]
         [ProducesResponseType( HttpStatusCode.BadRequest )]
+        [ProducesResponseType( HttpStatusCode.Unauthorized )]
         [Rock.SystemGuid.RestActionGuid( "AFDF0EC4-5D17-4278-9FA6-3F859F38E3B5" )]
         public IActionResult FieldTypeEditorUpdateAttributeConfiguration( [FromBody] FieldTypeEditorUpdateAttributeConfigurationOptionsBag options )
         {
+            // This is only used by the attribute editor on administrative
+            // blocks. The caller supplies arbitrary configuration values and
+            // the field type turns them into public edit data, so it must
+            // never be available to anonymous or non-staff callers.
+            if ( !IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_READ ) )
+            {
+                return Unauthorized();
+            }
+
             var fieldType = Rock.Web.Cache.FieldTypeCache.Get( options.FieldTypeGuid )?.Field;
 
             if ( fieldType == null )
