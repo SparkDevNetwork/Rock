@@ -59,6 +59,11 @@ namespace Rock.Communication.Chat.Platform.Session
         /// </summary>
         public const string SyncScope = "sync";
 
+        /// <summary>
+        /// The cookie the Chat block keeps this browser's push token in, which sign-out reads.
+        /// </summary>
+        public const string PushCookieName = "rock_chat_push";
+
         #endregion Constants
 
         #region Methods
@@ -449,6 +454,99 @@ namespace Rock.Communication.Chat.Platform.Session
             return System.Text.RegularExpressions.Regex.Replace( gate.ToString(), "(?<=[a-z0-9])([A-Z])", "_$1" ).ToLowerInvariant();
         }
 
+        /// <summary>
+        /// Takes the browser that is signing out of Rock out of push, after the sign-out has
+        /// answered. The Chat block is not on the page that signs out, so Rock makes the call the
+        /// browser cannot, with the token the block kept in this browser's cookie.
+        /// </summary>
+        /// <param name="personId">The person signing out.</param>
+        /// <param name="deviceToken">The push token from this browser's cookie, or null.</param>
+        public static void UnregisterPushDeviceInBackground( int? personId, string deviceToken )
+        {
+            if ( !personId.HasValue || deviceToken.IsNullOrWhiteSpace() )
+            {
+                return;
+            }
+
+            // Off the sign-out's clock: two calls to the platform should never slow it, and a
+            // device left behind still drops out when the next person signs in on this browser
+            // or FCM reports the token gone.
+            System.Threading.Tasks.Task.Run( () =>
+            {
+                try
+                {
+                    using ( var rockContext = new RockContext() )
+                    {
+                        var person = new PersonService( rockContext ).Get( personId.Value );
+                        var context = new ChatSessionContext { Configuration = ChatPlatformConfigurationService.Read() };
+
+                        UnregisterPushDevice( person, deviceToken, context, rockContext );
+                    }
+                }
+                catch ( Exception exception )
+                {
+                    ExceptionLogService.LogException( exception );
+                }
+            } );
+        }
+
+        /// <summary>
+        /// Unregisters one push token for the person: signs the person's church token, exchanges
+        /// it, and calls the platform's unregister under the person's own token, which removes the
+        /// token only where the person holds it. Never throws.
+        /// </summary>
+        /// <param name="person">The person signing out, or null.</param>
+        /// <param name="deviceToken">The browser's push token.</param>
+        /// <param name="context">The church settings.</param>
+        /// <param name="rockContext">Used by the gates.</param>
+        /// <param name="handler">The transport, or null for the ordinary one.</param>
+        /// <param name="wait">How the client waits between attempts, or null for a real wait.</param>
+        /// <returns>What happened.</returns>
+        internal static ChatPushUnregisterOutcome UnregisterPushDevice( Person person, string deviceToken, ChatSessionContext context, RockContext rockContext, System.Net.Http.HttpMessageHandler handler = null, Action<TimeSpan> wait = null )
+        {
+            if ( deviceToken.IsNullOrWhiteSpace() )
+            {
+                return ChatPushUnregisterOutcome.NoToken;
+            }
+
+            // A person the gates refuse has no token to sign with; the platform no longer sends to
+            // a banned or inactive person, and the token drops out when FCM reports it gone.
+            var minted = TryMintChurchToken( person, context, rockContext );
+            if ( !minted.Success )
+            {
+                return ChatPushUnregisterOutcome.Refused;
+            }
+
+            try
+            {
+                using ( var client = new Sync.ChatPlatformSyncHelper.PlatformClient( context.Configuration, handler ) )
+                {
+                    if ( wait != null )
+                    {
+                        client.Wait = wait;
+                    }
+
+                    if ( !client.Exchange( minted.ChurchToken, out _ ) )
+                    {
+                        return ChatPushUnregisterOutcome.Failed;
+                    }
+
+                    var removed = client.UnregisterDevice( deviceToken );
+                    if ( !removed.HasValue )
+                    {
+                        return ChatPushUnregisterOutcome.Failed;
+                    }
+
+                    return removed.Value ? ChatPushUnregisterOutcome.Removed : ChatPushUnregisterOutcome.NotHeld;
+                }
+            }
+            catch ( Exception exception )
+            {
+                ExceptionLogService.LogException( exception );
+                return ChatPushUnregisterOutcome.Failed;
+            }
+        }
+
         #endregion Methods
 
         #region Private Methods
@@ -658,6 +756,37 @@ namespace Rock.Communication.Chat.Platform.Session
         /// Nobody is signed in.
         /// </summary>
         public const string SignInRequired = "sign_in_required";
+    }
+
+    /// <summary>
+    /// What became of a browser's push token at sign-out.
+    /// </summary>
+    internal enum ChatPushUnregisterOutcome
+    {
+        /// <summary>
+        /// The browser kept no token, so there was nothing to remove.
+        /// </summary>
+        NoToken,
+
+        /// <summary>
+        /// Nobody was signed in, or the gates refused the person, so nothing was called.
+        /// </summary>
+        Refused,
+
+        /// <summary>
+        /// The platform removed the token.
+        /// </summary>
+        Removed,
+
+        /// <summary>
+        /// The platform held no such token for the person.
+        /// </summary>
+        NotHeld,
+
+        /// <summary>
+        /// The platform could not be reached or refused the call.
+        /// </summary>
+        Failed
     }
 
     /// <summary>

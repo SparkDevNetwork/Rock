@@ -1009,6 +1009,7 @@ namespace Rock.Security
         /// </summary>
         public static void SignOut()
         {
+            UnregisterChatPushDevice();
             ExpireUnsecuredPersonIdentifierCookie();
 
             var domainCookieName = $"{FormsAuthentication.FormsCookieName}_DOMAIN";
@@ -1034,6 +1035,37 @@ namespace Rock.Security
             else
             {
                 FormsAuthentication.SignOut();
+            }
+        }
+
+        /// <summary>
+        /// Takes this browser out of chat push for the person signing out. The Chat block keeps
+        /// the browser's push token in a cookie because it is not on the page that signs out; the
+        /// platform calls run in the background, so sign-out never waits on them or fails by them.
+        /// </summary>
+        private static void UnregisterChatPushDevice()
+        {
+            try
+            {
+                var cookie = HttpContext.Current?.Request.Cookies[Rock.Communication.Chat.Platform.Session.ChatSessionHelper.PushCookieName];
+                if ( cookie == null || cookie.Value.IsNullOrWhiteSpace() )
+                {
+                    return;
+                }
+
+                var personId = UserLoginService.GetCurrentUser( false )?.PersonId;
+                Rock.Communication.Chat.Platform.Session.ChatSessionHelper.UnregisterPushDeviceInBackground( personId, HttpUtility.UrlDecode( cookie.Value ) );
+
+                RockPage.AddOrUpdateCookie( new HttpCookie( Rock.Communication.Chat.Platform.Session.ChatSessionHelper.PushCookieName )
+                {
+                    Path = "/",
+                    Expires = RockDateTime.SystemDateTime.AddDays( -1d )
+                } );
+            }
+            catch ( Exception exception )
+            {
+                // Push is extra; a failure here must never stop a person signing out.
+                ExceptionLogService.LogException( exception );
             }
         }
 

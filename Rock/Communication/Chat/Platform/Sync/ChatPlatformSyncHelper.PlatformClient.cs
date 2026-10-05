@@ -61,6 +61,8 @@ namespace Rock.Communication.Chat.Platform.Sync
 
             private const string ExchangePath = "/functions/v1/token-exchange";
 
+            private const string UnregisterDevicePath = "/rest/v1/rpc/chat_unregister_device";
+
             // Estimates, revisited when the platform is measured at full scale.
             internal const int TransportAttempts = 3;
 
@@ -160,7 +162,7 @@ namespace Rock.Communication.Chat.Platform.Sync
             /// <summary>
             /// Exchanges a church token for a platform token.
             /// </summary>
-            /// <param name="churchToken">The church's sync token.</param>
+            /// <param name="churchToken">The church's sync token, or a person's token for a call made as that person.</param>
             /// <param name="failure">Why there is no token, when there is none.</param>
             /// <returns>True where the client now holds a platform token.</returns>
             public bool Exchange( string churchToken, out string failure )
@@ -195,6 +197,31 @@ namespace Rock.Communication.Chat.Platform.Sync
 
                 failure = unreached == null ? refusal : "the chat platform could not be reached to exchange this church's credential: " + unreached;
                 return PlatformToken != null;
+            }
+
+            /// <summary>
+            /// Takes one push token out of push, under the person's platform token this client
+            /// exchanged for, so the platform removes it only where that person holds it.
+            /// </summary>
+            /// <param name="deviceToken">The push token.</param>
+            /// <returns>True where it was removed, false where the person held no such token, null where the call failed.</returns>
+            public bool? UnregisterDevice( string deviceToken )
+            {
+                bool? removed = null;
+                var body = new JObject { ["p_token"] = deviceToken }.ToString( Formatting.None );
+
+                // Safe to repeat: a second unregister of the same token removes nothing.
+                SendWithRetry(
+                    () => BuildDataRequest( UnregisterDevicePath, new StringContent( body, Encoding.UTF8, "application/json" ) ),
+                    ( response, statusCode, answer ) =>
+                    {
+                        if ( response.IsSuccessStatusCode && answer?["removed"]?.Type == JTokenType.Boolean )
+                        {
+                            removed = ( bool ) answer["removed"];
+                        }
+                    } );
+
+                return removed;
             }
 
             /// <summary>
