@@ -84,6 +84,9 @@ namespace Rock.Migrations
             sqlFile = EfMapPath( sqlFile );
 
             string script = File.ReadAllText( sqlFile );
+            // The DI system may not be fully in place when migrations are run,
+            // so we need to create a RockContext here instead of using DI.
+            // This is especially true when running migrations from EF command line.
             using ( var rockContext = new RockContext() )
             {
                 Sql( script );

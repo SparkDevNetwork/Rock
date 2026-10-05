@@ -427,7 +427,7 @@ namespace RockWeb
 
                 if ( settings.PersonId.HasValue )
                 {
-                    person = new PersonService( new RockContext() ).Get( settings.PersonId.Value );
+                    person = new PersonService( RockApp.Current.CreateRockContext() ).Get( settings.PersonId.Value );
                 }
             }
 
@@ -462,7 +462,7 @@ namespace RockWeb
 
                 if ( personAliasId.HasValue )
                 {
-                    person = new PersonAliasService( new RockContext() ).GetPerson( personAliasId.Value );
+                    person = new PersonAliasService( RockApp.Current.CreateRockContext() ).GetPerson( personAliasId.Value );
                     settings.PersonId = person?.Id;
                 }
             }

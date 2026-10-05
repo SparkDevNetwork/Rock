@@ -167,7 +167,7 @@ namespace Rock.WebStartup
             // This will help reduce the chances of multiple RockWeb instances causing problems,
             // like creating duplicate attributes, or running the same migration in parallel.
             LogStartupMessage( "Initializing RockContext" );
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 new AttributeService( rockContext ).Get( 0 );
                 ShowDebugTimingMessage( "Initialize RockContext" );
@@ -211,7 +211,7 @@ namespace Rock.WebStartup
             // Configure the values for RockDateTime.
             // To avoid the overhead of initializing the GlobalAttributesCache prior to LoadCacheObjects(), load these from the database instead.
             LogStartupMessage( "Configuring Date Settings" );
-            RockDateTime.FirstDayOfWeek = new AttributeService( new RockContext() ).GetSystemSettingValue( Rock.SystemKey.SystemSetting.START_DAY_OF_WEEK ).ConvertToEnumOrNull<DayOfWeek>() ?? RockDateTime.DefaultFirstDayOfWeek;
+            RockDateTime.FirstDayOfWeek = new AttributeService( RockApp.Current.CreateRockContext() ).GetSystemSettingValue( Rock.SystemKey.SystemSetting.START_DAY_OF_WEEK ).ConvertToEnumOrNull<DayOfWeek>() ?? RockDateTime.DefaultFirstDayOfWeek;
 
             ShowDebugTimingMessage( "Initialize RockDateTime" );
 
@@ -248,7 +248,7 @@ namespace Rock.WebStartup
             LogStartupMessage( "Reloading Cache" );
             RockCache.ClearAllCachedItems( false );
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 LogStartupMessage( "Loading Cache From Database" );
                 LoadEarlyCacheObjects( rockContext );
@@ -568,7 +568,7 @@ namespace Rock.WebStartup
         {
             try
             {
-                using ( var rockContext = new RockContext() )
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
                     Rock.Utility.SparkLinkHelper.SendToSpark( rockContext );
                 }
@@ -877,7 +877,7 @@ namespace Rock.WebStartup
         /// <returns></returns>
         private static bool UpdateThemes()
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var themeService = new ThemeService( rockContext );
 
@@ -947,7 +947,7 @@ namespace Rock.WebStartup
             }
 
             // Create EF service for plugin migrations
-            var rockContext = new RockContext();
+            var rockContext = RockApp.Current.CreateRockContext();
             var pluginMigrationService = new PluginMigrationService( rockContext );
 
             // Get the versions that have already been installed
@@ -1082,7 +1082,7 @@ namespace Rock.WebStartup
                     && t.GetCustomAttribute<HasQueryableAttributesAttribute>() != null )
                 .ToList();
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var entityTypeService = new EntityTypeService( rockContext );
                 var knownViews = new List<string>();
