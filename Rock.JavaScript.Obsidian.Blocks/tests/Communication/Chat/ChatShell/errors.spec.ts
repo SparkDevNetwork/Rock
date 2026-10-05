@@ -17,17 +17,13 @@
 // Every failure the shell meets becomes a stable code and a severity. The platform puts its own
 // code in the error's message (authz.not_readable and the rest), so that is what is read; a
 // message that is not one of our codes is never shown or branched on.
-import * as errors from "../../../../src/Communication/Chat/ChatShell/errors.partial";
 import {
     classifyActionFailure,
     classifyPlatformError,
     classifyRealtimeMessage,
-    classifyRealtimeStatus
+    classifyRealtimeStatus,
+    messageForError
 } from "../../../../src/Communication/Chat/ChatShell/errors.partial";
-import { ChatError } from "../../../../src/Communication/Chat/ChatShell/types.partial";
-
-/** What the person is told for a failure, which the classifier module also owns. */
-const { messageForError } = errors as unknown as { messageForError: (error: ChatError & { text?: string | null }) => string };
 
 describe("classifyPlatformError", () => {
     test("a refusal carrying one of our codes keeps that code", () => {

@@ -4,6 +4,7 @@
         <span class="chat-header-title">{{ title }}</span>
         <span v-if="connection" class="label label-warning" data-testid="connection-badge">Reconnecting…</span>
     </header>
+    <div v-if="banner" class="alert alert-warning chat-header-banner" data-testid="service-banner">{{ banner }}</div>
 </template>
 
 <style scoped>
@@ -18,6 +19,11 @@
 
 .chat-header-title {
     font-weight: 600;
+}
+
+.chat-header-banner {
+    margin: 0;
+    border-radius: 0;
 }
 </style>
 
@@ -34,6 +40,12 @@
         /** The live connection's trouble, or null when it is healthy. */
         connection: {
             type: Object as PropType<ChatError | null>,
+            default: null
+        },
+
+        /** The platform's sentence about the service, or about this Rock being too old; null for none. */
+        banner: {
+            type: String as PropType<string | null>,
             default: null
         }
     });

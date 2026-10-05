@@ -17,10 +17,10 @@
 // A channel's timeline. History and the live join start together, so live events can arrive
 // before the first page, and a message committed between the page's read and the join reaches
 // neither; the newest page is fetched again on every confirmed join and merged by id.
-import * as historyModule from "../../../../../src/Communication/Chat/ChatShell/composables/useHistory.partial";
 import {
     createTimelines,
-    firstPageSize
+    firstPageSize,
+    messageDisplay
 } from "../../../../../src/Communication/Chat/ChatShell/composables/useHistory.partial";
 import { HistoryPage, TimelineMessage } from "../../../../../src/Communication/Chat/ChatShell/types.partial";
 
@@ -309,11 +309,6 @@ describe("catching up after a rejoin", () => {
 });
 
 describe("what the server adds later", () => {
-    /** What the row shows for a message: its kind, and the text it draws. */
-    const { messageDisplay } = historyModule as unknown as {
-        messageDisplay: (message: TimelineMessage) => { kind: string, text: string | null }
-    };
-
     test("a live message keeps every field its payload carries, including ones this client does not know", async () => {
         const timelines = createTimelines({ fetchPage: async () => page([1]) });
         await timelines.loadNewest(channel);

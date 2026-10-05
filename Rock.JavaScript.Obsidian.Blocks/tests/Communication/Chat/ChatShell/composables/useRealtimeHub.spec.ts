@@ -23,9 +23,9 @@ import {
     createRealtimeHub,
     personalTopic,
     RealtimeChannelLike,
-    RealtimeClientLike
+    RealtimeClientLike,
+    realtimeOptions
 } from "../../../../../src/Communication/Chat/ChatShell/composables/useRealtimeHub.partial";
-import * as hubModule from "../../../../../src/Communication/Chat/ChatShell/composables/useRealtimeHub.partial";
 
 const tenant = "10000000-0000-4000-8000-00000000000A";
 const alias = "A0000001-0000-4000-8000-00000000000B";
@@ -283,10 +283,6 @@ describe("createRealtimeHub", () => {
 describe("the realtime client's options", () => {
     // The protocol is pinned so a library update cannot change it under a released client, and
     // reconnects are random and grow so every church does not come back in the same second.
-    type Limits = { reconnect_base_ms: number, reconnect_cap_ms: number };
-    const { realtimeOptions } = hubModule as unknown as {
-        realtimeOptions: (limits: Limits, random: () => number) => { vsn: string, reconnectAfterMs: (tries: number) => number }
-    };
 
     test("pins the protocol version", () => {
         expect(realtimeOptions({ reconnect_base_ms: 1000, reconnect_cap_ms: 30000 }, () => 0.5).vsn).toBe("2.0.0");

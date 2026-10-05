@@ -16,22 +16,36 @@
 //
 // Sending. A message shows at once as the person's own pending row and becomes a timeline
 // message when the platform confirms it with its id. A failed send keeps its text on the row so
-// the person can send it again; nothing typed is lost to a failure. The platform does not
-// deduplicate a retried send, so a retry after a lost confirmation can post twice, and the
-// person deletes the copy; the live echo of a confirmed send is matched by its id.
+// the person can send it again; nothing typed is lost to a failure. Each row's identifier goes
+// with every try as the send's key, so a retry after a lost confirmation is answered with the
+// message the first try posted rather than posting it twice; the live echo of a confirmed send
+// is matched by its id.
 import { reactive } from "vue";
 import { ChatError, PendingMessage } from "../types.partial";
 import { Timelines } from "./useHistory.partial";
 
 /** What the platform's send answers. */
 export type SendResult =
-    | { ok: true, id: number, createdAt: string }
+    | { ok: true, id: number, createdAt: string, notice?: string | null }
     | { ok: false, error: ChatError };
+
+/**
+ * Whether the composer takes a message in this service state. The database refuses a write in
+ * read only and maintenance whatever the client does; closing the composer only saves the
+ * person typing something that cannot be sent.
+ *
+ * @param serviceState The service state from the settings.
+ *
+ * @returns True when a message can be written.
+ */
+export function isComposerOpen(serviceState: string): boolean {
+    return serviceState !== "read_only" && serviceState !== "maintenance";
+}
 
 /** What the sender reaches outside itself. */
 export type SenderDependencies = {
-    /** Sends a text message to a channel. */
-    send: (channelId: string, body: string) => Promise<SendResult>;
+    /** Sends a text message to a channel, with the key that makes a retry safe. */
+    send: (channelId: string, body: string, key?: string) => Promise<SendResult>;
 
     /** The timelines a confirmed message is put into. */
     timelines: Pick<Timelines, "upsert">;
@@ -39,7 +53,7 @@ export type SenderDependencies = {
     /** The person sending, as the platform knows them. */
     personAliasGuid: string;
 
-    /** A fresh identifier for a pending row. */
+    /** A fresh identifier for a pending row, a UUID, since it is also the send's key. */
     newLocalId: () => string;
 };
 
@@ -73,7 +87,7 @@ export function createSender(dependencies: SenderDependencies): Sender {
         row.status = "sending";
         row.errorCode = null;
 
-        const result = await dependencies.send(row.channelId, row.body);
+        const result = await dependencies.send(row.channelId, row.body, row.localId);
 
         if (!result.ok) {
             row.status = "failed";
@@ -89,7 +103,8 @@ export function createSender(dependencies: SenderDependencies): Sender {
             sender_listed: true,
             message_type: "text",
             body: row.body,
-            created_at: result.createdAt
+            created_at: result.createdAt,
+            notice: result.notice ?? null
         });
 
         const index = rows.indexOf(row);

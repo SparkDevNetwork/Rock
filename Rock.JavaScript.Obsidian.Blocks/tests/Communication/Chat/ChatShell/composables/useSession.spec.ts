@@ -20,28 +20,15 @@
 // than opening a new one, because a new token on the open connection is what makes the platform
 // re-check which channels the person may still hear.
 import {
+    ChatSettings,
     ChurchTokenResult,
     createSession,
     ExchangeResult,
+    readSettings,
+    serviceBanner,
     SessionDependencies
 } from "../../../../../src/Communication/Chat/ChatShell/composables/useSession.partial";
-import * as sessionModule from "../../../../../src/Communication/Chat/ChatShell/composables/useSession.partial";
 import { ChatError } from "../../../../../src/Communication/Chat/ChatShell/types.partial";
-
-/** The settings the token exchange answers beside the token, every key filled. */
-type ChatSettings = {
-    service: { state: string, banner: string | null };
-    client: { update_required: boolean };
-    routes: { send: string };
-    limits: { reconnect_base_ms: number, reconnect_cap_ms: number, catch_up_page: number, catch_up_max: number };
-    flags: Record<string, unknown>;
-};
-
-/** What the session module offers for the settings, beside the session itself. */
-const { readSettings, serviceBanner } = sessionModule as unknown as {
-    readSettings: (raw: unknown) => ChatSettings,
-    serviceBanner: (settings: ChatSettings) => string | null
-};
 
 /** The session with the settings it holds. */
 type SettingsSession = ReturnType<typeof createSession> & {

@@ -23,11 +23,12 @@
 // message on screen can be split into the steps that make it up.
 import { reactive } from "vue";
 import { classifyActionFailure, classifyPlatformError } from "./errors.partial";
+import { CallResult, createPlatformCall, exchangeChurchToken } from "./platformCall.partial";
 import { createTimelines, Timelines } from "./composables/useHistory.partial";
 import { createKeepaliveSave, createReadTracker, PageEventTargets, ReadTracker } from "./composables/useMarkRead.partial";
-import { createRealtimeHub, RealtimeClientLike, RealtimeHub } from "./composables/useRealtimeHub.partial";
-import { createSender, Sender } from "./composables/useSend.partial";
-import { ChatSession, ChurchTokenResult, createSession, ExchangeResult } from "./composables/useSession.partial";
+import { createRealtimeHub, RealtimeClientLike, RealtimeHub, realtimeOptions } from "./composables/useRealtimeHub.partial";
+import { createSender, isComposerOpen, Sender } from "./composables/useSend.partial";
+import { ChatSession, ChurchTokenResult, createSession, ExchangeResult, serviceBanner } from "./composables/useSession.partial";
 import {
     openChannel,
     OpenOutcome,
@@ -38,19 +39,16 @@ import {
     writeRememberedChannel
 } from "./pageLoad.partial";
 import { ChannelStore, createChannelStore } from "./stores/channelStore.partial";
-import { ChannelUnreadEvent, ChatError, HistoryPage, SidebarRow, TokenExchangeResponse } from "./types.partial";
+import { ChannelUnreadEvent, ChatError, HistoryPage, SendAnswer, SidebarRow } from "./types.partial";
 
-/** What a platform call answers, as the platform client returns it. */
-export type RpcResult = {
-    data: unknown;
-    error: { message?: string | null, code?: string | null, details?: string | null } | null;
-    status?: number;
-};
+/**
+ * The part of the platform client the shell uses: its live connection. Every call goes through
+ * the shell's one call path instead, so the server can route it.
+ */
+export type PlatformClientLike = RealtimeClientLike;
 
-/** The part of the platform client the shell uses. */
-export type PlatformClientLike = RealtimeClientLike & {
-    rpc: (name: string, args: Record<string, unknown>) => PromiseLike<RpcResult>;
-};
+/** The realtime client's options: the pinned protocol and the reconnect waits. */
+export type RealtimeOptions = ReturnType<typeof realtimeOptions>;
 
 /** What the Rock token action answered. */
 export type MintActionResult = {
@@ -77,7 +75,7 @@ export type ShellOptions = {
     mintChurchToken: () => Promise<MintActionResult>;
 
     /** Creates the platform client, whose every request reads the token through the callback. */
-    createPlatformClient: (url: string, key: string, accessToken: () => Promise<string>) => PlatformClientLike;
+    createPlatformClient: (url: string, key: string, accessToken: () => Promise<string>, realtime: RealtimeOptions) => PlatformClientLike;
 
     fetch: (url: string, init: RequestInit) => Promise<Response>;
     storage: StorageLike | null;
@@ -101,6 +99,12 @@ export type ShellState = {
 
     /** The channel on screen. */
     activeChannelId: string | null;
+
+    /** The platform's banner for the service state, or null when there is none to show. */
+    banner: string | null;
+
+    /** Whether the composer takes a message in the service state the platform last named. */
+    isComposerOpen: boolean;
 };
 
 /** The shell a block holds. */
@@ -202,6 +206,23 @@ export function churchTokenFromAction(result: MintActionResult): ChurchTokenResu
 }
 
 /**
+ * A fresh identifier for a pending row. It is also the send's key, which the platform stores as
+ * a UUID, so a browser without randomUUID still gets one of that shape.
+ *
+ * @returns A version 4 UUID.
+ */
+function newLocalId(): string {
+    if (typeof globalThis.crypto?.randomUUID === "function") {
+        return globalThis.crypto.randomUUID();
+    }
+
+    return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, c => {
+        const value = Math.floor(Math.random() * 16);
+        return (c === "x" ? value : (value & 0x3) | 0x8).toString(16);
+    });
+}
+
+/**
  * Creates the shell.
  *
  * @param options Everything the shell reaches outside itself.
@@ -209,7 +230,15 @@ export function churchTokenFromAction(result: MintActionResult): ChurchTokenResu
  * @returns The shell.
  */
 export function createChatShell(options: ShellOptions): ChatShell {
-    const state = reactive<ShellState>({ phase: "starting", gate: options.session.gate ?? null, connection: null, errors: [], activeChannelId: null }) as ShellState;
+    const state = reactive<ShellState>({
+        phase: "starting",
+        gate: options.session.gate ?? null,
+        connection: null,
+        errors: [],
+        activeChannelId: null,
+        banner: null,
+        isComposerOpen: true
+    }) as ShellState;
     const projectUrl = (options.session.projectUrl ?? "").replace(/\/+$/, "");
     const publishableKey = options.session.publishableKey ?? "";
     const tenantId = options.session.tenantId ?? "";
@@ -240,6 +269,7 @@ export function createChatShell(options: ShellOptions): ChatShell {
         },
         exchange: (churchToken: string) => exchange(churchToken),
         pushTokenToConnection: async (): Promise<void> => {
+            showSettings();
             await client?.realtime.setAuth();
         },
         random: Math.random,
@@ -254,6 +284,13 @@ export function createChatShell(options: ShellOptions): ChatShell {
      * requests at Rock and their join checks at Realtime.
      */
     const channelChangedWaitMs = 5_000;
+
+    /** Puts the session's latest settings on the page: the banner and whether the composer is open. */
+    function showSettings(): void {
+        const settings = session.settings();
+        state.banner = serviceBanner(settings);
+        state.isComposerOpen = isComposerOpen(settings.service.state);
+    }
 
     /** The pending wait before a recheck, so a stopped or ended shell can cancel it. */
     let recheckTimer: ReturnType<typeof setTimeout> | null = null;
@@ -291,48 +328,60 @@ export function createChatShell(options: ShellOptions): ChatShell {
         await hub?.stop();
     }
 
-    /** Exchanges a church token for a platform token. */
+    /** Exchanges a church token for a platform token and the settings beside it. */
     async function exchange(churchToken: string): Promise<ExchangeResult> {
-        try {
-            const response = await options.fetch(`${projectUrl}/functions/v1/token-exchange`, {
-                method: "POST",
-                headers: { "Authorization": `Bearer ${churchToken}`, "apikey": publishableKey }
-            });
-            const body = await response.json().catch(() => null) as TokenExchangeResponse | null;
-            options.mark("chat:exchange");
+        const answer = await exchangeChurchToken(options.fetch, projectUrl, publishableKey, churchToken);
+        options.mark("chat:exchange");
 
-            if (response.ok && body?.access_token && typeof body.expires_in === "number") {
-                return { ok: true, accessToken: body.access_token, expiresInSeconds: body.expires_in };
-            }
-
-            return { ok: false, status: response.status, code: body?.error?.code ?? "auth.invalid_token" };
-        }
-        catch {
-            return { ok: false, status: 0, code: "rpc.transport" };
-        }
+        return answer;
     }
 
-    /** Calls a platform function, refreshing once if the platform says the token has expired. */
-    async function call(name: string, args: Record<string, unknown>): Promise<RpcResult> {
-        if (!client) {
-            return { data: null, error: { message: "auth.expired" } };
+    const platform = createPlatformCall({
+        fetch: options.fetch,
+        projectUrl,
+        publishableKey,
+        currentToken: session.currentToken,
+        routes: () => session.settings().routes
+    });
+
+    /**
+     * Calls a platform function, refreshing once if the platform says the token has expired. A
+     * refusal for read only or maintenance puts its banner on the page at once, since the state
+     * changed after the last exchange.
+     */
+    async function call(name: string, args: Record<string, unknown>): Promise<CallResult> {
+        const result = await session.withFreshToken(
+            () => platform.call(name, args),
+            answer => !answer.ok && answer.error.code === "auth.expired"
+        );
+
+        if (!result.ok && (result.error.code === "rpc.read_only" || result.error.code === "rpc.maintenance")) {
+            session.applyServiceRefusal(result.error);
+            showSettings();
         }
 
-        const platform = client;
-        return session.withFreshToken(
-            async () => await platform.rpc(name, args),
-            result => !!result.error && classifyPlatformError({ ...result.error, status: result.status }).code === "auth.expired"
-        );
+        return result;
+    }
+
+    /** A refusal in the shape the classifier reads, for callers that throw it on. */
+    function thrown(result: Extract<CallResult, { ok: false }>): unknown {
+        return { message: result.error.code, hint: result.error.text, status: result.status };
     }
 
     const timelines = createTimelines({
         fetchPage: async (channelId, page): Promise<HistoryPage> => {
-            const result = await call("chat_get_history", { p_channel_id: channelId, p_limit: page.limit, p_before_id: page.beforeId ?? null });
-            if (result.error) {
-                throw { ...result.error, status: result.status };
+            const result = await call("chat_get_history", {
+                p_channel_id: channelId,
+                p_limit: page.limit,
+                p_before_id: page.beforeId ?? null,
+                p_after_id: page.afterId ?? null
+            });
+            if (!result.ok) {
+                throw thrown(result);
             }
             return result.data as HistoryPage;
-        }
+        },
+        catchUp: () => ({ page: session.settings().limits.catch_up_page, max: session.settings().limits.catch_up_max })
     });
 
     const channels = createChannelStore({ reloadSidebar: () => void loadSidebar() });
@@ -342,18 +391,18 @@ export function createChatShell(options: ShellOptions): ChatShell {
         onSaved: (channelId, result) => channels.applyMarkRead(channelId, result)
     });
 
-    let localIds = 0;
     const sender = createSender({
-        send: async (channelId, body) => {
-            const result = await call("chat_send_message", { p_channel_id: channelId, p_body: body });
-            if (result.error) {
-                return { ok: false, error: classifyPlatformError({ ...result.error, status: result.status }) };
+        send: async (channelId, body, key) => {
+            const result = await call("chat_send_message", { p_channel_id: channelId, p_body: body, p_client_key: key ?? null });
+            if (!result.ok) {
+                return { ok: false, error: result.error };
             }
-            return { ok: true, id: result.data as number, createdAt: new Date().toISOString() };
+            const sent = (result.data ?? {}) as Partial<SendAnswer>;
+            return { ok: true, id: sent.id as number, createdAt: sent.created_at ?? new Date().toISOString(), notice: sent.notice ?? null };
         },
         timelines,
         personAliasGuid,
-        newLocalId: () => `pending-${++localIds}`
+        newLocalId
     });
 
     /** Fetches the sidebar and replaces the rows with it. */
@@ -361,14 +410,26 @@ export function createChatShell(options: ShellOptions): ChatShell {
         const result = await call("chat_get_bootstrap", {});
         options.mark("chat:sidebar");
 
-        if (result.error) {
-            report(classifyPlatformError({ ...result.error, status: result.status }));
-            throw result.error;
+        if (!result.ok) {
+            report(result.error);
+            throw thrown(result);
         }
 
-        const rows = (result.data as SidebarRow[]) ?? [];
+        const rows = (result.data as { channels?: SidebarRow[] } | null)?.channels ?? [];
         channels.setSidebar(rows);
         return rows;
+    }
+
+    /**
+     * The platform says what this client holds may be out of date in a way no other event
+     * describes, so the sidebar and the open channel are read again. Nothing is reminted: what the
+     * person may read has not changed, only what is on screen.
+     */
+    function resync(): void {
+        void loadSidebar().catch(() => undefined);
+        if (state.activeChannelId) {
+            void timelines.loadNewest(state.activeChannelId).catch(error => report(classifyPlatformError(error)));
+        }
     }
 
     const storageKey = rememberedChannelKey(tenantId, personAliasGuid);
@@ -445,13 +506,19 @@ export function createChatShell(options: ShellOptions): ChatShell {
                 return;
             }
 
-            client = options.createPlatformClient(projectUrl, publishableKey, async () => session.currentToken() ?? "");
+            showSettings();
+            client = options.createPlatformClient(projectUrl, publishableKey, async () => session.currentToken() ?? "",
+                realtimeOptions(session.settings().limits, Math.random));
 
             hub = createRealtimeHub({
                 client,
                 tenantId,
                 personAliasGuid,
                 onChannelEvent: (channelId, event, payload) => {
+                    if (event === "resync") {
+                        resync();
+                        return;
+                    }
                     if (event === "channel.changed") {
                         if (channelId === state.activeChannelId) {
                             cancelRecheck();
@@ -462,6 +529,10 @@ export function createChatShell(options: ShellOptions): ChatShell {
                     timelines.applyEvent(channelId, event, payload);
                 },
                 onPersonalEvent: (event, payload) => {
+                    if (event === "resync") {
+                        resync();
+                        return;
+                    }
                     channels.applyPersonalEvent(event, payload);
 
                     // Only the channel on screen is joined, so only a change to it can need a cut.
@@ -473,6 +544,14 @@ export function createChatShell(options: ShellOptions): ChatShell {
                 onJoined: channelId => {
                     options.mark("chat:join");
                     timelines.onJoined(channelId).catch(error => report(classifyPlatformError(error)));
+                },
+                onUnknownError: () => {
+                    // Realtime words this client does not know may be a lost read it was not built
+                    // to recognise. A new token makes Realtime decide again, and the sidebar read
+                    // again shows what the person may still see; the refresh is shared with any
+                    // already running.
+                    recheck();
+                    void loadSidebar().catch(() => undefined);
                 },
                 onStatus: error => {
                     // The hub has already left a channel whose read was revoked; the person is told,

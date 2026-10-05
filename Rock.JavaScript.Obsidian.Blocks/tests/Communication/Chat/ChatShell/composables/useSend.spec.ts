@@ -16,8 +16,7 @@
 //
 // Sending: a pending row at once, a timeline message once confirmed, and a failed send that
 // keeps its text so it can be sent again.
-import { createSender, SendResult } from "../../../../../src/Communication/Chat/ChatShell/composables/useSend.partial";
-import * as sendModule from "../../../../../src/Communication/Chat/ChatShell/composables/useSend.partial";
+import { createSender, isComposerOpen, SendResult } from "../../../../../src/Communication/Chat/ChatShell/composables/useSend.partial";
 import { createTimelines } from "../../../../../src/Communication/Chat/ChatShell/composables/useHistory.partial";
 
 const channel = "c0000001-0000-4000-8000-000000000000";
@@ -207,8 +206,6 @@ describe("a send the platform can recognise again", () => {
 });
 
 describe("the composer and the service state", () => {
-    const { isComposerOpen } = sendModule as unknown as { isComposerOpen: (serviceState: string) => boolean };
-
     test("read only and maintenance close the composer; normal and degraded leave it open", () => {
         expect(isComposerOpen("read_only")).toBe(false);
         expect(isComposerOpen("maintenance")).toBe(false);

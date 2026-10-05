@@ -17,6 +17,116 @@
 // The person's session on the chat platform. Rock signs a short church token after running its
 // gates; the platform exchanges it for its own token; the platform token is refreshed the same
 // way before it expires, so every refresh passes through Rock's gates again.
+//
+// Every exchange also answers the platform's settings for this church, which is how a client
+// released years ago still learns the service state, the route of the send and its limits: it is
+// the one call every client already makes at load and every few minutes.
+import { computeBackoff } from "../platformCall.partial";
+import { ChatError } from "../types.partial";
+
+/** The settings the token exchange answers, every key filled. Names are the platform's own. */
+/* eslint-disable @typescript-eslint/naming-convention */
+export type ChatSettings = {
+    service: { state: string, banner: string | null };
+    client: { update_required: boolean };
+    routes: { send: string };
+    limits: { reconnect_base_ms: number, reconnect_cap_ms: number, catch_up_page: number, catch_up_max: number };
+    flags: Record<string, unknown>;
+};
+/* eslint-enable @typescript-eslint/naming-convention */
+
+/** The service states this client knows; any other is read as normal. */
+const serviceStates = ["normal", "degraded", "read_only", "maintenance"];
+
+/** The routes this client can take; any other is read as direct, the route every release has. */
+const sendRoutes = ["direct", "edge"];
+
+/**
+ * The defaults when the platform sends nothing for a key. The reconnect and catch-up figures are
+ * estimates, not measurements; the platform can change them without a release.
+ */
+const defaultLimits: ChatSettings["limits"] = {
+    reconnect_base_ms: 1000,
+    reconnect_cap_ms: 30000,
+    catch_up_page: 100,
+    catch_up_max: 500
+};
+
+/** An object's own value for a key, or undefined when the value is not an object. */
+function section(value: unknown, key: string): Record<string, unknown> {
+    const outer = value && typeof value === "object" ? (value as Record<string, unknown>)[key] : undefined;
+
+    return outer && typeof outer === "object" && !Array.isArray(outer) ? outer as Record<string, unknown> : {};
+}
+
+/**
+ * Reads the settings the exchange answered. Every key may be missing or of a shape this client
+ * does not know, since the platform keeps changing after a release; each falls back to its
+ * default on its own, so one bad key never costs the rest.
+ *
+ * @param raw The settings as the exchange answered them.
+ *
+ * @returns The settings with every key filled.
+ */
+export function readSettings(raw: unknown): ChatSettings {
+    const service = section(raw, "service");
+    const client = section(raw, "client");
+    const routes = section(raw, "routes");
+    const limits = section(raw, "limits");
+    const flags = section(raw, "flags");
+
+    const limit = (key: keyof ChatSettings["limits"]): number => {
+        const value = limits[key];
+        return typeof value === "number" && value > 0 ? value : defaultLimits[key];
+    };
+
+    return {
+        service: {
+            state: typeof service.state === "string" && serviceStates.includes(service.state) ? service.state : "normal",
+            banner: typeof service.banner === "string" ? service.banner : null
+        },
+        client: { update_required: client.update_required === true },
+        routes: { send: typeof routes.send === "string" && sendRoutes.includes(routes.send) ? routes.send : "direct" },
+        limits: {
+            reconnect_base_ms: limit("reconnect_base_ms"),
+            reconnect_cap_ms: limit("reconnect_cap_ms"),
+            catch_up_page: limit("catch_up_page"),
+            catch_up_max: limit("catch_up_max")
+        },
+        flags: { ...flags }
+    };
+}
+
+/**
+ * The banner the page shows, or null for none. The platform's own sentence wins; this client's
+ * sentence is only for a state the platform sent without one.
+ *
+ * @param settings The settings.
+ *
+ * @returns The sentence, or null.
+ */
+export function serviceBanner(settings: ChatSettings): string | null {
+    if (settings.client.update_required) {
+        return "This version of Rock is too old for chat. Please ask your church to update Rock.";
+    }
+
+    if (settings.service.state === "normal") {
+        return null;
+    }
+
+    if (settings.service.banner) {
+        return settings.service.banner;
+    }
+
+    switch (settings.service.state) {
+        case "read_only":
+            return "Chat is read only for now. You can read messages but not send them.";
+        case "maintenance":
+            return "Chat is down for maintenance. Try again later.";
+        default:
+            return "Chat is running slowly right now.";
+    }
+}
 
 /** What the Rock token action answers. */
 export type ChurchTokenResult = {
@@ -32,8 +142,8 @@ export type ChurchTokenResult = {
 
 /** What the platform's token exchange answers. */
 export type ExchangeResult =
-    | { ok: true, accessToken: string, expiresInSeconds: number }
-    | { ok: false, status: number, code: string };
+    | { ok: true, accessToken: string, expiresInSeconds: number, settings?: unknown }
+    | { ok: false, status: number, code: string, retryAfterSeconds?: number | null };
 
 /** Everything the session reaches outside itself, so a test can stand in for each. */
 export type SessionDependencies = {
@@ -94,6 +204,16 @@ export type ChatSession = {
     /** Stops the session for good: no refresh runs, is scheduled or is handed over after this. */
     stop: () => void;
 
+    /** The settings the latest exchange answered. */
+    settings: () => ChatSettings;
+
+    /**
+     * A refusal for read only or maintenance means the service state changed since the last
+     * exchange, and its sentence is the banner, so the page shows it without waiting for the
+     * next refresh.
+     */
+    applyServiceRefusal: (error: ChatError) => void;
+
     /** Why the session is not running. */
     state: SessionState;
 };
@@ -104,12 +224,6 @@ export const refreshWindowStart = 0.5;
 /** The latest point in a token's life at which it is refreshed. */
 export const refreshWindowEnd = 0.9;
 
-/**
- * How long after a failed refresh the next is tried, as a share of the token's life: fifteen
- * seconds of a five-minute token, an estimate, so a refresh at the latest point still has room
- * for a second try before the token expires.
- */
-export const refreshRetryFraction = 0.05;
 
 /**
  * Creates the session.
@@ -122,8 +236,13 @@ export function createSession(dependencies: SessionDependencies): ChatSession {
     const state: SessionState = { gate: null, errorCode: null };
     let token: string | null = null;
     let timer: unknown = null;
-    let lifeSeconds = 0;
     let expiresAt = 0;
+    let settings = readSettings(undefined);
+
+    // Failed refreshes in a row, which sets how long the next wait is, and how long the platform
+    // asked to be left alone after the last one, when it said.
+    let failures = 0;
+    let retryAfterSeconds: number | null = null;
     let refreshing: Promise<boolean> | null = null;
     let isStopped = false;
     const now = dependencies.now ?? ((): number => Date.now());
@@ -161,14 +280,16 @@ export function createSession(dependencies: SessionDependencies): ChatSession {
             }
             if (exchanged.ok) {
                 token = exchanged.accessToken;
-                lifeSeconds = exchanged.expiresInSeconds;
                 expiresAt = now() + exchanged.expiresInSeconds * 1000;
+                settings = readSettings(exchanged.settings);
                 state.errorCode = null;
+                failures = 0;
                 schedule(exchanged.expiresInSeconds);
                 return "ok";
             }
 
             state.errorCode = exchanged.code;
+            retryAfterSeconds = exchanged.retryAfterSeconds ?? null;
 
             // A stale church token only means Rock signed it too long ago; a fresh one is
             // worth one more try at once.
@@ -230,13 +351,21 @@ export function createSession(dependencies: SessionDependencies): ChatSession {
         timer = dependencies.setTimer(() => void refresh(), expiresInSeconds * 1000 * fraction);
     }
 
-    /** Schedules another refresh after a failed one, a twentieth of the token's life later. */
+    /**
+     * Schedules another refresh after a failed one: when the platform said to come back, or else
+     * after a random wait that grows with each failure in a row, so the clients of every church
+     * that failed together do not all ask again in the same second.
+     */
     function retryLater(): void {
         clear();
         if (isStopped) {
             return;
         }
-        timer = dependencies.setTimer(() => void refresh(), lifeSeconds * 1000 * refreshRetryFraction);
+        const wait = retryAfterSeconds !== null
+            ? retryAfterSeconds * 1000
+            : computeBackoff(failures, settings.limits.reconnect_base_ms, settings.limits.reconnect_cap_ms, dependencies.random);
+        failures++;
+        timer = dependencies.setTimer(() => void refresh(), wait);
     }
 
     /** Stops the pending refresh, if there is one. */
@@ -286,6 +415,12 @@ export function createSession(dependencies: SessionDependencies): ChatSession {
         stop: (): void => {
             isStopped = true;
             clear();
+        },
+        settings: () => settings,
+        applyServiceRefusal: (error: ChatError): void => {
+            if (error.code === "rpc.read_only" || error.code === "rpc.maintenance") {
+                settings = { ...settings, service: { state: error.code.slice("rpc.".length), banner: error.text ?? null } };
+            }
         },
         state
     };

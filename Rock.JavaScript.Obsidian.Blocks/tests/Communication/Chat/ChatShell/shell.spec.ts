@@ -18,7 +18,7 @@
 // channels faster than the platform answers: the channel chosen last is the one on screen, its
 // topic is the one joined, it is the one remembered, and what is seen in it is saved against it,
 // however the earlier opens and saves settle.
-import { churchTokenFromAction, createChatShell, PlatformClientLike, refusalMessage, RpcResult } from "../../../../src/Communication/Chat/ChatShell/shell.partial";
+import { churchTokenFromAction, createChatShell, PlatformClientLike, refusalMessage } from "../../../../src/Communication/Chat/ChatShell/shell.partial";
 import { channelTopic, personalTopic } from "../../../../src/Communication/Chat/ChatShell/composables/useRealtimeHub.partial";
 import { HistoryPage } from "../../../../src/Communication/Chat/ChatShell/types.partial";
 
@@ -52,7 +52,7 @@ function page(id: number): HistoryPage {
 }
 
 function fakeResponse(status: number, body: unknown): Response {
-    return { ok: status >= 200 && status < 300, status, json: async () => body } as unknown as Response;
+    return { ok: status >= 200 && status < 300, status, headers: { get: () => null }, json: async () => body } as unknown as Response;
 }
 
 /** A topic the fake client joined, with the listeners the shell gave it. */
@@ -64,7 +64,7 @@ type LiveTopic = {
 
 function build(): {
     shell: ReturnType<typeof createChatShell>,
-    history: Record<string, Deferred<RpcResult>[]>,
+    history: Record<string, Deferred<Response>[]>,
     saves: Array<{ channelId: string, messageId: number, answer: Deferred<Response>, token?: string | null }>,
     joined: string[],
     removed: string[],
@@ -79,7 +79,7 @@ function build(): {
     const counts = { mints: 0, clients: 0, setAuths: 0, bootstraps: 0 };
     const mintGate = { value: "ok" };
     const bootstrap: { value: unknown } = { value: [] };
-    const history: Record<string, Deferred<RpcResult>[]> = {};
+    const history: Record<string, Deferred<Response>[]> = {};
     const saves: Array<{ channelId: string, messageId: number, answer: Deferred<Response>, token?: string | null }> = [];
     const joined: string[] = [];
     const removed: string[] = [];
@@ -112,15 +112,6 @@ function build(): {
         removeChannel: async (channel) => {
             removed.push((channel as unknown as { topic: string }).topic);
             return "ok";
-        },
-        rpc: (name, args) => {
-            if (name === "chat_get_bootstrap") {
-                counts.bootstraps++;
-                return Promise.resolve({ data: bootstrap.value, error: null, status: 200 });
-            }
-            const answer = deferred<RpcResult>();
-            (history[args.p_channel_id as string] ??= []).push(answer);
-            return answer.promise;
         }
     };
 
@@ -141,6 +132,16 @@ function build(): {
                 return fakeResponse(200, { access_token: "platform", expires_in: 300 });
             }
             const body = JSON.parse(init.body as string);
+            // Every platform call is a POST through the shell's one call path.
+            if (url.endsWith("/rest/v1/rpc/chat_get_bootstrap")) {
+                counts.bootstraps++;
+                return fakeResponse(200, bootstrap.value);
+            }
+            if (url.endsWith("/rest/v1/rpc/chat_get_history")) {
+                const pending = deferred<Response>();
+                (history[body.p_channel_id as string] ??= []).push(pending);
+                return pending.promise;
+            }
             const answer = deferred<Response>();
             const token = (init.headers as Record<string, string> | undefined)?.["Authorization"] ?? null;
             saves.push({ channelId: body.p_channel_id, messageId: body.p_message_id, answer, token });
@@ -169,7 +170,7 @@ function answerHistory(h: ReturnType<typeof build>, channelId: string, id: numbe
     if (!pending) {
         throw new Error(`no history call pending for ${channelId}`);
     }
-    pending.resolve({ data: page(id), error: null, status: 200 });
+    pending.resolve(fakeResponse(200, page(id)));
 }
 
 describe("churchTokenFromAction", () => {

@@ -68,7 +68,9 @@ namespace Rock.Tests.Integration.Communication.Chat.Platform.Session
 
             var settings = answer["settings"] as JObject;
             Assert.IsNotNull( settings, "the exchange answers settings beside the token" );
-            Assert.IsNotNull( settings["service"]?["state"], "the settings carry the service state" );
+            // Every stored key is optional and a church provisioned here stores none, so the one key
+            // always present is the one the exchange works out from the version Rock signed.
+            Assert.IsNotNull( settings["client"]?["update_required"], "the settings say whether this Rock must update" );
 
             // Read, not verified: the platform verified it, and this only checks what it copied.
             var payload = JObject.Parse( Base64UrlEncoder.Decode( answer["access_token"].ToString().Split( '.' )[1] ) );

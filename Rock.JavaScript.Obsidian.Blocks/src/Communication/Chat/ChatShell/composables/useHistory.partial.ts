@@ -19,16 +19,45 @@
 //
 // History and the live join start together, so either can finish first. Live events that arrive
 // before the first page are held and applied after it. A message committed between the page's
-// read and the join's confirmation reaches neither, so every confirmed join, a rejoin after a
-// drop included, fetches the newest page again and merges it by id.
+// read and the join's confirmation reaches neither, and a live copy can be lost outright, so every
+// confirmed join, a rejoin after a drop included, pages forward from the newest message held until
+// nothing newer is left. A socket gone for hours can miss more than is worth paging through, so
+// past a bound the channel is opened fresh at its newest page instead.
 import { reactive } from "vue";
-import { HistoryPage, MessageCreatedEvent, MessageDeletedEvent, MessageEditedEvent, TimelineMessage } from "../types.partial";
+import { HistoryPage, MessageCreatedEvent, MessageDeletedEvent, MessageEditedEvent, MessageVisibilityEvent, TimelineMessage } from "../types.partial";
 
 /** How many messages the first page of a channel holds. */
 export const firstPageSize = 50;
 
-/** How many of the newest messages are fetched again when a join is confirmed. */
-export const rejoinPageSize = 20;
+/** How catch-up pages forward, when the settings name nothing else: estimates, not measurements. */
+export const defaultCatchUp = { page: 100, max: 500 };
+
+/** What a message row draws: what kind of row, and its text. */
+export type MessageDisplay = {
+    kind: "message" | "system" | "deleted" | "notice";
+    text: string | null;
+};
+
+/**
+ * What a row shows for a message. The server decides when a message is hidden or removed and
+ * writes the sentence shown in its place, and a message type this client was not built with is
+ * drawn by its text, so a released client still shows what later releases of the platform send.
+ *
+ * @param message The message.
+ *
+ * @returns The kind of row and its text.
+ */
+export function messageDisplay(message: TimelineMessage): MessageDisplay {
+    if (message.deleted_at) {
+        return { kind: "deleted", text: "This message was deleted." };
+    }
+
+    if (message.visibility === "hidden" || message.visibility === "removed") {
+        return { kind: "notice", text: message.visibility_notice ?? "This message is not shown." };
+    }
+
+    return { kind: message.message_type === "system" ? "system" : "message", text: message.body };
+}
 
 /** A channel's timeline. */
 export type TimelineState = {
@@ -50,8 +79,11 @@ export type TimelineState = {
 
 /** What the timeline reaches outside itself. */
 export type TimelineDependencies = {
-    /** Fetches a page: the newest, or the page before an id. */
-    fetchPage: (channelId: string, options: { limit: number, beforeId?: number }) => Promise<HistoryPage>;
+    /** Fetches a page: the newest, the page before an id, or the page after one. */
+    fetchPage: (channelId: string, options: { limit: number, beforeId?: number, afterId?: number }) => Promise<HistoryPage>;
+
+    /** How catch-up pages forward on a rejoin, read from the settings each time. */
+    catchUp?: () => { page: number, max: number };
 };
 
 /** The timelines a shell holds. */
@@ -65,7 +97,7 @@ export type Timelines = {
     /** Fetches the page before the oldest message held. */
     loadOlder: (channelId: string) => Promise<void>;
 
-    /** The channel's live topic was joined: fetches the newest messages again and merges them. */
+    /** The channel's live topic was joined: pages forward from the newest held until caught up. */
     onJoined: (channelId: string) => Promise<void>;
 
     /** A live event on the channel's topic. */
@@ -210,19 +242,15 @@ export function createTimelines(dependencies: TimelineDependencies): Timelines {
                     }
                 }
 
+                // Every field the payload carries is kept, not a list of the ones known today, so
+                // whatever the platform adds to a message later reaches the row unchanged.
                 upsert(channelId, {
-                    id: created.id,
-                    parent_id: created.parent_id,
-                    shown_in_channel: created.shown_in_channel,
-                    person_alias_guid: created.person_alias_guid,
+                    ...created,
                     sender_nick_name: sender?.sender_nick_name,
                     sender_last_name: sender?.sender_last_name,
                     sender_avatar_url: sender?.sender_avatar_url,
-                    sender_listed: sender?.sender_listed,
-                    message_type: created.message_type,
-                    body: created.body,
-                    created_at: created.created_at
-                });
+                    sender_listed: sender?.sender_listed
+                } as TimelineMessage);
             }
         }
         else if (event === "message.edited") {
@@ -242,20 +270,39 @@ export function createTimelines(dependencies: TimelineDependencies): Timelines {
                 message.metadata = null;
             }
         }
+        else if (event === "message.visibility") {
+            const changed = payload as MessageVisibilityEvent;
+            const message = find(channelId, changed.id);
+            if (message) {
+                message.visibility = changed.state;
+                message.visibility_notice = changed.notice;
+
+                // A hidden or removed body must not stay on screen. One shown again comes back with
+                // the next page, since the event carries no body.
+                if (changed.state !== "visible") {
+                    message.body = null;
+                    message.metadata = null;
+                }
+            }
+        }
+    }
+
+    /** Sets a timeline from its newest page, as opening the channel does. */
+    function takeNewest(channelId: string, page: HistoryPage): void {
+        const timeline = state(channelId);
+
+        mergePage(channelId, page);
+        timeline.hasMore = page.has_more;
+        timeline.readCursor = page.read_cursor;
+        timeline.unreadCount = page.unread_count;
+        timeline.isLoaded = true;
     }
 
     return {
         state,
 
         loadNewest: async (channelId: string): Promise<void> => {
-            const page = await dependencies.fetchPage(channelId, { limit: firstPageSize });
-            const timeline = state(channelId);
-
-            mergePage(channelId, page);
-            timeline.hasMore = page.has_more;
-            timeline.readCursor = page.read_cursor;
-            timeline.unreadCount = page.unread_count;
-            timeline.isLoaded = true;
+            takeNewest(channelId, await dependencies.fetchPage(channelId, { limit: firstPageSize }));
 
             const waiting = held.get(channelId) ?? [];
             held.delete(channelId);
@@ -277,7 +324,37 @@ export function createTimelines(dependencies: TimelineDependencies): Timelines {
         },
 
         onJoined: async (channelId: string): Promise<void> => {
-            mergePage(channelId, await dependencies.fetchPage(channelId, { limit: rejoinPageSize }));
+            const { page: pageSize, max } = dependencies.catchUp?.() ?? defaultCatchUp;
+            const messages = state(channelId).messages;
+            let afterId = messages.length > 0 ? messages[messages.length - 1].id : undefined;
+
+            // Nothing held yet, because the first page is still on its way: there is no newest to
+            // page from, so the newest messages are read and merged, which catches one that
+            // landed between the first page's read and this join.
+            if (afterId === undefined) {
+                mergePage(channelId, await dependencies.fetchPage(channelId, { limit: pageSize }));
+                return;
+            }
+
+            for (let fetched = 0; ;) {
+                const page = await dependencies.fetchPage(channelId, { limit: pageSize, afterId });
+                mergePage(channelId, page);
+                fetched += page.messages.length;
+
+                if (!page.has_more || page.messages.length === 0) {
+                    return;
+                }
+
+                // Paging through more than this would keep the person waiting for history they
+                // will mostly scroll past, so the channel opens fresh at its newest instead.
+                if (fetched >= max) {
+                    messages.splice(0, messages.length);
+                    takeNewest(channelId, await dependencies.fetchPage(channelId, { limit: firstPageSize }));
+                    return;
+                }
+
+                afterId = page.messages[page.messages.length - 1].id;
+            }
         },
 
         applyEvent: (channelId: string, event: string, payload: unknown): void => {

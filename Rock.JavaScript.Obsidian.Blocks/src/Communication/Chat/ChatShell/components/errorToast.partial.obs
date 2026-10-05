@@ -2,7 +2,7 @@
 <template>
     <div v-if="shown.length > 0" class="chat-error-toast" data-testid="error-toast">
         <div v-for="error in shown" :key="error.code" class="alert alert-warning chat-error-toast-item" :data-code="error.code">
-            <span>{{ messageFor(error) }}</span>
+            <span>{{ messageForError(error) }}</span>
             <button type="button" class="close" aria-label="Dismiss" @click="emit('dismiss', error.code)">&times;</button>
         </div>
     </div>
@@ -22,6 +22,7 @@
 
 <script setup lang="ts">
     import { computed, PropType } from "vue";
+    import { messageForError } from "../errors.partial";
     import { ChatError } from "../types.partial";
 
     const props = defineProps({
@@ -41,24 +42,4 @@
     const shown = computed((): ChatError[] => props.errors.filter(e => e.severity !== "degraded"));
 
     // #endregion Computed Values
-
-    // #region Functions
-
-    /** What the person is told for a failure, by how bad it is. */
-    function messageFor(error: ChatError): string {
-        if (error.code === "rt.read_revoked") {
-            return "You no longer have access to this channel.";
-        }
-
-        switch (error.severity) {
-            case "session":
-                return "Your chat session has ended. Refresh the page to continue.";
-            case "permission":
-                return "You do not have access to that.";
-            default:
-                return "Something went wrong in chat. Try again in a moment.";
-        }
-    }
-
-    // #endregion Functions
 </script>

@@ -16,18 +16,26 @@
 //
 // One place that turns every kind of failure into a stable code and a severity, so the rest of
 // the shell branches on codes and never on a vendor's message text.
+//
+// A released client is in use for years while the platform keeps adding codes, so a code from
+// any family is kept, and the sentence the server writes for it travels with it: a code this
+// client was never built to know still reaches the person as something they can read.
 import { ChatError } from "./types.partial";
 
-/** An error as the platform's API returns it: our code in message, the reason in details. */
+/**
+ * An error as the platform's API returns it: our code in message, the reason in details, and the
+ * sentence a person can read in hint.
+ */
 export type PlatformErrorLike = {
     message?: string | null;
     code?: string | null;
     details?: string | null;
+    hint?: string | null;
     status?: number | null;
 };
 
 /** The shape every one of our codes has: a family, a dot, a snake_case name. */
-const ourCode = /^(auth|authz|rpc|sync|rt|push|door)\.[a-z][a-z0-9_]*$/;
+const ourCode = /^[a-z][a-z0-9_]*\.[a-z][a-z0-9_]*$/;
 
 /** How bad each family's refusals are, where the family alone decides it. */
 const severityByFamily: Record<string, ChatError["severity"]> = {
@@ -62,7 +70,11 @@ export function classifyPlatformError(error: PlatformErrorLike | unknown): ChatE
 
     if (ourCode.test(message)) {
         const family = message.slice(0, message.indexOf("."));
-        return { code: message, severity: severityByFamily[family] ?? "unknown" };
+        const classified: ChatError = { code: message, severity: severityByFamily[family] ?? "unknown" };
+        if (platformError.hint) {
+            classified.text = platformError.hint;
+        }
+        return classified;
     }
 
     // The API gateway refuses an expired or unreadable token before our code runs, so it has
@@ -72,6 +84,33 @@ export function classifyPlatformError(error: PlatformErrorLike | unknown): ChatE
     }
 
     return { code: "rpc.unknown", severity: "unknown" };
+}
+
+/**
+ * What the person is told for a failure. The few codes this client acts on itself keep its own
+ * sentence, since the client knows what it did about them; any other code shows the server's
+ * sentence when it sent one, so a code added after this release still says something useful.
+ *
+ * @param error The classified failure.
+ *
+ * @returns The sentence.
+ */
+export function messageForError(error: ChatError): string {
+    if (error.code === "rt.read_revoked") {
+        return "You no longer have access to this channel.";
+    }
+
+    if (error.severity === "session") {
+        return "Your chat session has ended. Refresh the page to continue.";
+    }
+
+    if (error.text) {
+        return error.text;
+    }
+
+    return error.severity === "permission"
+        ? "You do not have access to that."
+        : "Something went wrong in chat. Try again in a moment.";
 }
 
 /**

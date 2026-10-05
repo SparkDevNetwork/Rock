@@ -18,7 +18,30 @@
 // for the whole session, which carries short signals and never a message body, and the topic
 // of the channel they have open, which carries that channel's messages.
 import { classifyRealtimeMessage, classifyRealtimeStatus } from "../errors.partial";
+import { computeBackoff } from "../platformCall.partial";
 import { ChatError } from "../types.partial";
+import { ChatSettings } from "./useSession.partial";
+
+/** The Realtime protocol this client speaks, pinned so a library update cannot change it. */
+export const realtimeProtocolVersion = "2.0.0";
+
+/**
+ * The realtime client's options: the pinned protocol, and reconnect waits that are random and
+ * grow under a cap, so every church does not reconnect in the same second after an outage.
+ *
+ * @param limits The reconnect base and cap from the settings.
+ * @param random A number from 0 up to 1.
+ *
+ * @returns The options for the realtime client.
+ */
+export function realtimeOptions(limits: Pick<ChatSettings["limits"], "reconnect_base_ms" | "reconnect_cap_ms">, random: () => number): { vsn: string, reconnectAfterMs: (tries: number) => number } {
+    return {
+        vsn: realtimeProtocolVersion,
+
+        // The library counts its first reconnect as try one.
+        reconnectAfterMs: (tries: number): number => computeBackoff(Math.max(0, tries - 1), limits.reconnect_base_ms, limits.reconnect_cap_ms, random)
+    };
+}
 
 /**
  * What a channel listener is handed: a broadcast's event and payload, or Realtime's own message
@@ -64,6 +87,12 @@ export type RealtimeHubDependencies = {
      * revoked from the open channel arrives here as rt.read_revoked, after the hub has left it.
      */
     onStatus: (error: ChatError | null) => void;
+
+    /**
+     * Realtime refused or closed a channel in words this client does not know. They may mean a
+     * lost read the client was not built to recognise, so the shell checks access again.
+     */
+    onUnknownError?: () => void;
 };
 
 /** The live connection a shell holds. */
@@ -133,6 +162,9 @@ export function createRealtimeHub(dependencies: RealtimeHubDependencies): Realti
         }
 
         const words = error instanceof Error ? classifyRealtimeMessage(error.message, false) : null;
+        if (words?.code === "rt.unknown") {
+            dependencies.onUnknownError?.();
+        }
         isDegraded = true;
         dependencies.onStatus(words && words.code !== "rt.unknown" ? words : classifyRealtimeStatus(status));
     }
@@ -155,6 +187,10 @@ export function createRealtimeHub(dependencies: RealtimeHubDependencies): Realti
         if (isOpen && error.code === "rt.read_revoked") {
             open = null;
             void client.removeChannel(channel);
+        }
+
+        if (error.code === "rt.unknown") {
+            dependencies.onUnknownError?.();
         }
 
         isDegraded = true;

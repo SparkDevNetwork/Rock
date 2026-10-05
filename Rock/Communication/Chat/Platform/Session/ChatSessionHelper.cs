@@ -529,11 +529,14 @@ namespace Rock.Communication.Chat.Platform.Session
                 var now = DateTime.UtcNow;
                 var expires = now.AddMinutes( ChurchTokenLifetimeMinutes );
 
+                // The Rock version rides in every church token so the platform can tell a Rock
+                // too old for it to update. It is advisory only and never decides access.
                 var claims = new List<Claim>
                 {
                     new Claim( "tid", config.TenantId.Value.ToString() ),
                     new Claim( "kid", kid ),
-                    new Claim( "scp", scope )
+                    new Claim( "scp", scope ),
+                    new Claim( "cv", VersionInfo.VersionInfo.GetRockSemanticVersionNumber() )
                 };
 
                 if ( subject.HasValue )

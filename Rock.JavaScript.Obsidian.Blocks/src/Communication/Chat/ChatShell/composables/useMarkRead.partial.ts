@@ -22,6 +22,7 @@
 //
 // The save goes out with fetch and keepalive so that one made as the page closes still arrives;
 // a beacon cannot carry the person's token.
+import { createPlatformCall } from "../platformCall.partial";
 import { MarkReadResult } from "../types.partial";
 
 /** What the tracker reaches outside itself. */
@@ -180,37 +181,24 @@ export type KeepaliveSaveOptions = {
  * @returns The save.
  */
 export function createKeepaliveSave(options: KeepaliveSaveOptions): ReadTrackerDependencies["save"] {
-    const url = `${options.projectUrl.replace(/\/+$/, "")}/rest/v1/rpc/chat_mark_read`;
+    // The same call path as every other platform call; the save has only the one route.
+    const platform = createPlatformCall({ ...options, routes: () => ({ send: "direct" }) });
 
     return async (channelId: string, messageId: number): Promise<MarkReadResult | null> => {
-        const token = options.currentToken();
-        if (!token) {
+        if (!options.currentToken()) {
             return null;
         }
 
-        try {
-            const response = await options.fetch(url, {
-                method: "POST",
-                keepalive: true,
-                headers: {
-                    "Authorization": `Bearer ${token}`,
-                    "apikey": options.publishableKey,
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify({ p_channel_id: channelId, p_message_id: messageId })
-            });
+        const result = await platform.call("chat_mark_read", { p_channel_id: channelId, p_message_id: messageId }, { keepalive: true });
 
-            if (!response.ok) {
-                return null;
-            }
-
-            const body = await response.json() as Partial<MarkReadResult>;
-            return { read_cursor: body.read_cursor ?? null, last_message_id: body.last_message_id ?? null };
-        }
-        catch {
-            // A save that never arrived is tried again by the next event; nothing to show.
+        // A save that never arrived, or was refused, is tried again by the next event; nothing
+        // to show.
+        if (!result.ok || !result.data || typeof result.data !== "object") {
             return null;
         }
+
+        const body = result.data as Partial<MarkReadResult>;
+        return { read_cursor: body.read_cursor ?? null, last_message_id: body.last_message_id ?? null };
     };
 }
 

@@ -1,17 +1,15 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
     <div class="chat-message"
-         :class="{ 'is-own': isOwn, 'is-system': message.message_type === 'system', 'is-deleted': !!message.deleted_at }"
+         :class="{ 'is-own': isOwn, 'is-system': display.kind === 'system', 'is-deleted': display.kind === 'deleted' || display.kind === 'notice' }"
          data-testid="message-row">
-        <div v-if="message.message_type !== 'system'" class="chat-message-meta">
+        <div v-if="display.kind !== 'system'" class="chat-message-meta">
             <span class="chat-message-sender">{{ senderName }}</span>
             <span class="chat-message-time">{{ time }}</span>
-            <span v-if="message.edited_at && !message.deleted_at" class="chat-message-edited">(edited)</span>
+            <span v-if="message.edited_at && display.kind === 'message'" class="chat-message-edited">(edited)</span>
         </div>
-        <div class="chat-message-body">
-            <template v-if="message.deleted_at">This message was deleted.</template>
-            <template v-else>{{ message.body }}</template>
-        </div>
+        <div class="chat-message-body">{{ display.text }}</div>
+        <div v-if="isOwn && message.notice" class="chat-message-notice" data-testid="message-notice">{{ message.notice }}</div>
     </div>
 </template>
 
@@ -55,10 +53,16 @@
     white-space: pre-wrap;
     word-break: break-word;
 }
+
+.chat-message-notice {
+    font-size: 12px;
+    color: var(--color-interface-medium, #6c757d);
+}
 </style>
 
 <script setup lang="ts">
     import { computed, PropType } from "vue";
+    import { MessageDisplay, messageDisplay } from "../composables/useHistory.partial";
     import { TimelineMessage } from "../types.partial";
 
     const props = defineProps({
@@ -74,6 +78,9 @@
     });
 
     // #region Computed Values
+
+    /** What the row draws, as the server decided it: a message type this client does not know is its text. */
+    const display = computed((): MessageDisplay => messageDisplay(props.message));
 
     const senderName = computed((): string => {
         if (props.isOwn) {

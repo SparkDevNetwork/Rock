@@ -16,7 +16,7 @@
                             @select="onSelect" />
 
             <div class="chat-shell-main">
-                <ChatHeader :title="activeTitle" :connection="shell.state.connection" />
+                <ChatHeader :title="activeTitle" :connection="shell.state.connection" :banner="shell.state.banner" />
 
                 <MessageFeed v-if="activeChannelId"
                              :key="activeChannelId"
@@ -32,7 +32,7 @@
                     {{ shell.state.phase === "starting" ? "Opening chat…" : "Choose a channel." }}
                 </div>
 
-                <Composer :isDisabled="!activeChannelId" @send="shell.send" />
+                <Composer :isDisabled="!activeChannelId || !shell.state.isComposerOpen" @send="shell.send" />
             </div>
         </div>
 
@@ -175,7 +175,7 @@
                 const result = await invokeBlockAction<ChatChurchTokenBag>("MintChurchToken");
                 return { isSuccess: result.isSuccess, statusCode: result.statusCode, data: result.data };
             },
-            createPlatformClient: (url, key, accessToken) => createClient(url, key, { accessToken }) as unknown as PlatformClientLike,
+            createPlatformClient: (url, key, accessToken, realtime) => createClient(url, key, { accessToken, realtime }) as unknown as PlatformClientLike,
             fetch: (url, init) => window.fetch(url, init),
             storage: safeLocalStorage(),
             pageTargets: { document, window },

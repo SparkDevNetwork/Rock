@@ -67,6 +67,15 @@ export type TimelineMessage = {
     created_at: string;
     edited_at?: string | null;
     deleted_at?: string | null;
+
+    /** visible, hidden or removed; the platform decides, and a hidden or removed body is withheld. */
+    visibility?: string;
+
+    /** The server's sentence shown in place of a hidden or removed message. */
+    visibility_notice?: string | null;
+
+    /** The server's sentence about the person's own send, shown under it. */
+    notice?: string | null;
 };
 
 /** A page of history, as chat_get_history returns it. */
@@ -75,6 +84,13 @@ export type HistoryPage = {
     read_cursor: number | null;
     unread_count: number;
     has_more: boolean;
+};
+
+/** What chat_send_message returns: the stored message, and the server's sentence about it. */
+export type SendAnswer = {
+    id: number;
+    created_at: string;
+    notice: string | null;
 };
 
 /** What chat_mark_read returns: the position as stored, and the channel's last message. */
@@ -110,6 +126,14 @@ export type MessageDeletedEvent = {
     deleted_at: string;
 };
 
+/** A message hidden, removed or shown again, on a channel topic. It carries no body. */
+export type MessageVisibilityEvent = {
+    id: number;
+    channel_id: string;
+    state: string;
+    notice: string | null;
+};
+
 /** The person's own "something new here" signal, on their personal topic. */
 export type ChannelUnreadEvent = {
     channel_id: string;
@@ -120,14 +144,18 @@ export type ChannelUnreadEvent = {
 export type TokenExchangeResponse = {
     access_token?: string;
     expires_in?: number;
-    error?: { code?: string };
+
+    /** The settings beside the token; any key may be missing, and the client has a default. */
+    settings?: unknown;
+    error?: { code?: string, message?: string };
 };
 
 /** Any event a channel topic carries, by its event name. */
 export type ChannelTopicEvent =
     | { event: "message.created", payload: MessageCreatedEvent }
     | { event: "message.edited", payload: MessageEditedEvent }
-    | { event: "message.deleted", payload: MessageDeletedEvent };
+    | { event: "message.deleted", payload: MessageDeletedEvent }
+    | { event: "message.visibility", payload: MessageVisibilityEvent };
 
 /** A person's own message that has not been confirmed yet, or whose send failed. */
 export type PendingMessage = {
@@ -144,8 +172,9 @@ export type PendingMessage = {
  */
 export type ChatErrorSeverity = "session" | "permission" | "failed" | "degraded" | "quota" | "unknown";
 
-/** A failure after classification: a stable code and how bad it is. */
+/** A failure after classification: a stable code, how bad it is, and the server's sentence. */
 export type ChatError = {
     code: string;
     severity: ChatErrorSeverity;
+    text?: string | null;
 };
