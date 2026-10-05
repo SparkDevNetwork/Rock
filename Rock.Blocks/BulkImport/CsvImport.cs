@@ -479,12 +479,14 @@ namespace Rock.Blocks.BulkImport
 
             } );
 
-            var task = new Task( async () =>
+            // Use Task.Run( async () => ... ) instead of new Task( async () => ... )
+            // because the latter compiles to async void, where any unhandled exception crashes the app pool.
+            Task.Run( async () =>
             {
-                await topic.Channels.AddToChannelAsync( options.SessionId, taskChannelName );
-
                 try
                 {
+                    await topic.Channels.AddToChannelAsync( options.SessionId, taskChannelName );
+
                     csvSlingshotImporter.CreateIntermediateCSVFiles( columnMappings, ( sender, readLineCount ) =>
                     {
                         progressReporter.UpdateTaskProgress( new CsvImportActivityProgressStatusBag
@@ -528,6 +530,8 @@ namespace Rock.Blocks.BulkImport
                 }
                 catch ( Exception exception )
                 {
+                    ExceptionLogService.LogException( exception );
+
                     await progressReporter.TaskErrored( new CsvImportActivityProgressStatusBag
                     {
                         TaskName = "import",
@@ -539,8 +543,6 @@ namespace Rock.Blocks.BulkImport
                     csvSlingshotImporter.ClearRedundantFilesAfterImport();
                 }
             } );
-
-            task.Start();
 
             var rootFolder = GetSlingshotPhysicalRootFolder();
             var errorCsvFolderName = csvSlingshotImporter.ErrorCSVfilename.Replace( rootFolder, "" ).Replace( ERROR_CSV_FILENAME , "");
