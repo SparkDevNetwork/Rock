@@ -3386,13 +3386,13 @@ namespace Rock.Rest.v2
         [HttpPost]
         [Route( "DefinedValueEditorGetAttributes" )]
         [Authenticate]
-        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [ProducesResponseType( HttpStatusCode.OK, Type = typeof( DefinedValueEditorGetAttributesResultsBag ) )]
         [ProducesResponseType( HttpStatusCode.Unauthorized )]
         [Rock.SystemGuid.RestActionGuid( "E2601583-94D5-4C21-96FA-309B9FB7E11F" )]
         public IActionResult DefinedValueEditorGetAttributes( DefinedValueEditorGetAttributesOptionsBag options )
         {
-            if ( RockRequestContext.CurrentPerson == null )
+            if ( RockRequestContext.CurrentPerson == null || options == null )
             {
                 return Unauthorized();
             }
@@ -3409,6 +3409,17 @@ namespace Rock.Rest.v2
                 Id = 0,
                 DefinedTypeId = definedType.Id
             };
+
+            // The attributes are only needed when adding a new value, so
+            // require the same access that is required to save the new value.
+            // Otherwise the REST action permission is required.
+            var securityGrant = SecurityGrant.FromToken( options.SecurityGrantToken );
+
+            if ( !IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_READ )
+                && securityGrant?.IsAccessGranted( definedValue, Authorization.EDIT ) != true )
+            {
+                return Unauthorized();
+            }
 
             definedValue.LoadAttributes();
 
