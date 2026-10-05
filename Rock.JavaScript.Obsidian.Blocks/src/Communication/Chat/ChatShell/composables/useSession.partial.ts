@@ -32,6 +32,7 @@ export type ChatSettings = {
     routes: { send: string };
     limits: { reconnect_base_ms: number, reconnect_cap_ms: number, catch_up_page: number, catch_up_max: number };
     flags: Record<string, unknown>;
+    push: { web: Record<string, unknown> | null, vapid_key: string | null, prompt: string };
 };
 /* eslint-enable @typescript-eslint/naming-convention */
 
@@ -40,6 +41,12 @@ const serviceStates = ["normal", "degraded", "read_only", "maintenance"];
 
 /** The routes this client can take; any other is read as direct, the route every release has. */
 const sendRoutes = ["direct", "edge"];
+
+/**
+ * When the "Turn on notifications" button shows; any other value is read as after a send, the
+ * moment a person has shown they mean to use chat.
+ */
+const pushPrompts = ["off", "offer", "after_send"];
 
 /**
  * The defaults when the platform sends nothing for a key. The reconnect and catch-up figures are
@@ -74,6 +81,10 @@ export function readSettings(raw: unknown): ChatSettings {
     const routes = section(raw, "routes");
     const limits = section(raw, "limits");
     const flags = section(raw, "flags");
+    const push = section(raw, "push");
+    const web = push.web && typeof push.web === "object" && !Array.isArray(push.web) ? push.web as Record<string, unknown> : null;
+    // Firebase needs both, so one without the other is push off
+    const hasPush = web !== null && typeof push.vapid_key === "string" && push.vapid_key !== "";
 
     const limit = (key: keyof ChatSettings["limits"]): number => {
         const value = limits[key];
@@ -95,7 +106,12 @@ export function readSettings(raw: unknown): ChatSettings {
             catch_up_page: Math.min(100, Math.max(1, Math.round(limit("catch_up_page")))),
             catch_up_max: limit("catch_up_max")
         },
-        flags: { ...flags }
+        flags: { ...flags },
+        push: {
+            web: hasPush ? web : null,
+            vapid_key: hasPush ? push.vapid_key as string : null,
+            prompt: typeof push.prompt === "string" && pushPrompts.includes(push.prompt) ? push.prompt : "after_send"
+        }
     };
 }
 

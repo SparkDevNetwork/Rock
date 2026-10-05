@@ -4,6 +4,7 @@
         <span class="chat-header-title">{{ title }}</span>
         <span v-if="connection" class="label label-warning" data-testid="connection-badge">Reconnecting…</span>
         <span v-else-if="isBehind" class="label label-default" data-testid="catching-up-badge">Catching up…</span>
+        <button v-if="isPushOffered" type="button" class="btn btn-xs btn-default" data-testid="push-offer" @click="emit('turnOnPush')">Turn on notifications</button>
     </header>
     <div v-if="banner" class="alert alert-warning chat-header-banner" data-testid="service-banner">{{ banner }}</div>
 </template>
@@ -32,6 +33,10 @@
     import { PropType } from "vue";
     import { ChatError } from "../types.partial";
 
+    const emit = defineEmits<{
+        (e: "turnOnPush"): void
+    }>();
+
     defineProps({
         title: {
             type: String,
@@ -52,6 +57,12 @@
 
         /** Whether the channel's catch-up failed and is trying again, so messages may be missing. */
         isBehind: {
+            type: Boolean,
+            default: false
+        },
+
+        /** Whether to offer "Turn on notifications"; the click is what asks the browser. */
+        isPushOffered: {
             type: Boolean,
             default: false
         }

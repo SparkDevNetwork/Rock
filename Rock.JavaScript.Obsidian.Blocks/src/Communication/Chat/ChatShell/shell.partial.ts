@@ -27,6 +27,7 @@ import { CallResult, createPlatformCall, exchangeChurchToken } from "./platformC
 import { createTimelines, Timelines } from "./composables/useHistory.partial";
 import { createKeepaliveSave, createReadTracker, PageEventTargets, ReadTracker } from "./composables/useMarkRead.partial";
 import { createRealtimeHub, RealtimeClientLike, RealtimeHub, realtimeOptions } from "./composables/useRealtimeHub.partial";
+import { createPushRegistration, PushDependencies, PushRegistration } from "./composables/usePush.partial";
 import { createSender, isComposerOpen, Sender } from "./composables/useSend.partial";
 import { ChatSession, ChurchTokenResult, createSession, ExchangeResult, serviceBanner } from "./composables/useSession.partial";
 import {
@@ -81,6 +82,9 @@ export type ShellOptions = {
     storage: StorageLike | null;
     pageTargets: PageEventTargets;
     mark: (name: string) => void;
+
+    /** The browser's push, or nothing where this browser has none. */
+    push?: Omit<PushDependencies, "settings" | "call">;
 };
 
 /** What the page shows. */
@@ -105,6 +109,9 @@ export type ShellState = {
 
     /** Whether the composer takes a message in the service state the platform last named. */
     isComposerOpen: boolean;
+
+    /** Whether the "Turn on notifications" button shows. */
+    isPushOffered: boolean;
 };
 
 /** The shell a block holds. */
@@ -128,6 +135,15 @@ export type ChatShell = {
 
     /** Sends a message to the open channel. */
     send: (body: string) => Promise<void>;
+
+    /** The person clicked "Turn on notifications". */
+    turnOnPush: () => Promise<void>;
+
+    /** Whether a channel is the one on screen while the page is visible, for the push worker. */
+    isChannelOnScreen: (channelId: string) => boolean;
+
+    /** The unread mentions in the rooms the sidebar lists, for the app badge. */
+    mentionBadge: () => number;
 
     /** Fetches older messages of the open channel. */
     loadOlder: () => Promise<void>;
@@ -237,7 +253,8 @@ export function createChatShell(options: ShellOptions): ChatShell {
         errors: [],
         activeChannelId: null,
         banner: null,
-        isComposerOpen: true
+        isComposerOpen: true,
+        isPushOffered: false
     }) as ShellState;
     const projectUrl = (options.session.projectUrl ?? "").replace(/\/+$/, "");
     const publishableKey = options.session.publishableKey ?? "";
@@ -247,6 +264,7 @@ export function createChatShell(options: ShellOptions): ChatShell {
     let client: PlatformClientLike | null = null;
     let hub: RealtimeHub | null = null;
     let detachPage: (() => void) | null = null;
+    let push: PushRegistration | null = null;
     let isFirstMessageMarked = false;
 
     /** Tells the person about a failure, once per code until it is dismissed. */
@@ -600,6 +618,18 @@ export function createChatShell(options: ShellOptions): ChatShell {
                 loadSidebar,
                 open
             });
+
+            // After the first channel is on screen, so push never delays it; a stop during the
+            // page load leaves it unstarted.
+            if (options.push && !isStopped) {
+                push = createPushRegistration({
+                    ...options.push,
+                    settings: () => session.settings().push,
+                    call: (name, args) => platform.call(name, args)
+                });
+                await push.start();
+                state.isPushOffered = push.isOffered();
+            }
         },
 
         selectChannel: async (channelId: string): Promise<void> => {
@@ -620,8 +650,23 @@ export function createChatShell(options: ShellOptions): ChatShell {
         send: async (body: string): Promise<void> => {
             if (state.activeChannelId) {
                 await sender.send(state.activeChannelId, body);
+                push?.noteSend();
+                state.isPushOffered = push?.isOffered() ?? false;
             }
         },
+
+        turnOnPush: async (): Promise<void> => {
+            await push?.turnOn();
+            state.isPushOffered = push?.isOffered() ?? false;
+        },
+
+        isChannelOnScreen: (channelId: string): boolean => {
+            return channelId === state.activeChannelId && options.pageTargets.document.visibilityState === "visible";
+        },
+
+        // Mentions, never messages: the icon counts what was meant for the person, as the
+        // platform's mention push does, and the sidebar lists the same rooms that push counts.
+        mentionBadge: (): number => channels.rows.reduce((sum, row) => sum + (row.mention_count ?? 0), 0),
 
         loadOlder: async (): Promise<void> => {
             if (state.activeChannelId) {
@@ -638,6 +683,8 @@ export function createChatShell(options: ShellOptions): ChatShell {
 
         stop: async (): Promise<void> => {
             isStopped = true;
+            push?.stop();
+            state.isPushOffered = false;
             cancelRecheck();
             timelines.stop();
 

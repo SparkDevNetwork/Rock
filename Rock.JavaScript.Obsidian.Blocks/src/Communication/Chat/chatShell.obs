@@ -16,7 +16,12 @@
                             @select="onSelect" />
 
             <div class="chat-shell-main">
-                <ChatHeader :title="activeTitle" :connection="shell.state.connection" :banner="shell.state.banner" :isBehind="isActiveBehind" />
+                <ChatHeader :title="activeTitle"
+                            :connection="shell.state.connection"
+                            :banner="shell.state.banner"
+                            :isBehind="isActiveBehind"
+                            :isPushOffered="shell.state.isPushOffered"
+                            @turnOnPush="onTurnOnPush" />
 
                 <MessageFeed v-if="activeChannelId"
                              :key="activeChannelId"
@@ -73,7 +78,7 @@
 </style>
 
 <script setup lang="ts">
-    import { computed, onBeforeUnmount, onMounted, ref, shallowRef } from "vue";
+    import { computed, onBeforeUnmount, onMounted, ref, shallowRef, watch } from "vue";
     import { createClient } from "@Obsidian/Libs/supabase";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import { AlertType } from "@Obsidian/Enums/Controls/alertType";
@@ -91,6 +96,14 @@
     import MessageFeed from "./ChatShell/components/messageFeed.partial.obs";
     import { createChatShell, PlatformClientLike, refusalMessage, ShellOptions } from "./ChatShell/shell.partial";
 
+    // #region Types
+
+    /** What the push worker posts to a window of the site, in the worker's own names. */
+    /* eslint-disable-next-line @typescript-eslint/naming-convention */
+    type WorkerMessage = { type?: string, channel_id?: string };
+
+    // #endregion Types
+
     const config = useConfigurationValues<ChatShellInitializationBox>();
     const invokeBlockAction = useInvokeBlockAction();
 
@@ -105,11 +118,19 @@
     const birthdateMessage = ref<string | null>(null);
     const isSavingBirthdate = ref(false);
 
+    /** The cookie Rock reads at sign-out to take this browser out of push. */
+    const pushCookieName = "rock_chat_push";
+
+    let firebaseAppInstance: unknown = null;
+
     // #endregion Values
 
     // #region Computed Values
 
     const activeChannelId = computed((): string | null => shell.value.state.activeChannelId);
+
+    /** The unread mentions on the app icon, from the sidebar, so reading a mention clears it. */
+    const mentionBadge = computed((): number => shell.value.mentionBadge());
 
     /** Whether the open channel's catch-up failed and is trying again, so messages may be missing. */
     const isActiveBehind = computed((): boolean => !!activeChannelId.value && shell.value.timelines.state(activeChannelId.value).isBehind);
@@ -134,6 +155,25 @@
 
     function onSelect(channelId: string): void {
         void shell.value.selectChannel(channelId);
+    }
+
+    function onTurnOnPush(): void {
+        void shell.value.turnOnPush();
+    }
+
+    /**
+     * The push worker asks whether a push's channel is on screen, so it can leave the banner out,
+     * and after a tap tells this window which channel to open.
+     */
+    function onWorkerMessage(event: MessageEvent): void {
+        const message = (event.data ?? {}) as WorkerMessage;
+
+        if (message.type === "chat.push.is-open") {
+            event.ports[0]?.postMessage({ open: !!message.channel_id && shell.value.isChannelOnScreen(message.channel_id) });
+        }
+        else if (message.type === "chat.push.open" && message.channel_id) {
+            void shell.value.selectChannel(message.channel_id.toLowerCase());
+        }
     }
 
     function onRetry(localId: string): void {
@@ -182,6 +222,7 @@
             fetch: (url, init) => window.fetch(url, init),
             storage: safeLocalStorage(),
             pageTargets: { document, window },
+            push: browserPush(),
             mark: name => {
                 try {
                     performance.mark(name);
@@ -191,6 +232,43 @@
                 }
             }
         });
+    }
+
+    /** This browser's web push, or undefined where it has none. */
+    function browserPush(): ShellOptions["push"] {
+        if (!("serviceWorker" in navigator) || !("Notification" in window) || !("PushManager" in window)) {
+            return undefined;
+        }
+
+        return {
+            pagePath: window.location.pathname,
+            permission: () => Notification.permission,
+            requestPermission: () => Notification.requestPermission(),
+            // Its own folder as its scope, so it never takes the site root from a worker a
+            // church's theme registers there.
+            registerWorker: pagePath => navigator.serviceWorker.register(
+                `/Scripts/Rock/Chat/chatPushWorker.js?page=${encodeURIComponent(pagePath)}`,
+                { scope: "/Scripts/Rock/Chat/" }),
+            getToken: async (web, vapidKey, registration) => {
+                const firebase = await import("@Obsidian/Libs/firebase");
+                return firebase.getToken(firebase.getMessaging(firebaseApp(firebase, web)), {
+                    vapidKey,
+                    serviceWorkerRegistration: registration as ServiceWorkerRegistration
+                });
+            },
+            writeCookie: token => {
+                const secure = window.location.protocol === "https:" ? "; Secure" : "";
+                document.cookie = token
+                    ? `${pushCookieName}=${encodeURIComponent(token)}; path=/; max-age=31536000; SameSite=Lax${secure}`
+                    : `${pushCookieName}=; path=/; max-age=0; SameSite=Lax${secure}`;
+            }
+        };
+    }
+
+    /** The one Firebase app, made once per page: a second initializeApp under a name in use throws. */
+    function firebaseApp(firebase: typeof import("@Obsidian/Libs/firebase"), web: Record<string, unknown>): ReturnType<typeof firebase.initializeApp> {
+        firebaseAppInstance ??= firebase.initializeApp(web, "rock-chat");
+        return firebaseAppInstance as ReturnType<typeof firebase.initializeApp>;
     }
 
     /** The browser's local storage, or null where the browser blocks it. */
@@ -205,13 +283,26 @@
 
     // #endregion Functions
 
+    // #region Watchers
+
+    watch(mentionBadge, count => {
+        // Only where the site is installed as an app does the browser draw it; elsewhere a no-op.
+        const badging = navigator as Navigator & { setAppBadge?: (count?: number) => Promise<void>, clearAppBadge?: () => Promise<void> };
+        const done = count > 0 ? badging.setAppBadge?.(count) : badging.clearAppBadge?.();
+        void done?.catch(() => undefined);
+    });
+
+    // #endregion Watchers
+
     // #region Lifecycle Hooks
 
     onMounted(() => {
+        navigator.serviceWorker?.addEventListener("message", onWorkerMessage);
         void shell.value.start();
     });
 
     onBeforeUnmount(() => {
+        navigator.serviceWorker?.removeEventListener("message", onWorkerMessage);
         void shell.value.stop();
     });
 

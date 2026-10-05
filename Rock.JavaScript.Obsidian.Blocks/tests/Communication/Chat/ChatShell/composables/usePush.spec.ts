@@ -69,7 +69,10 @@ function dependencies(overrides: Partial<PushDependencies> & { prompt?: string, 
         }
     };
 
-    return { deps: { ...base, ...overrides } as PushDependencies, calls, cookies, setPermission: (value: string) => { permission = value; } };
+    // prompt and permission seed the fakes above; only real dependencies replace the base ones
+    const { prompt: _prompt, permission: _permission, ...replacements } = overrides;
+
+    return { deps: { ...base, ...replacements } as PushDependencies, calls, cookies, setPermission: (value: string) => { permission = value; } };
 }
 
 describe("web push on this browser", () => {
