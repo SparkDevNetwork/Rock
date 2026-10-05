@@ -503,5 +503,10 @@ namespace Rock.SystemGuid
         /// The job to run Post v17.3 Data Migrations to update the Nameless Schedules.
         /// </summary>
         public const string DATA_MIGRATIONS_173_UPDATE_NAMELESS_SCHEDULES = "4C7CC0FC-12A7-4578-B9B1-FEF2732EB912";
+
+        /// <summary>
+        /// The job to run Post v17.10 Data Migrations to fix the mime type of check images uploaded by the Check Scanner.
+        /// </summary>
+        public const string DATA_MIGRATIONS_1710_FIX_TRANSACTION_IMAGE_MIME_TYPES = "B954DAC7-D30C-45CF-9CD4-872E8F9856DE";
     }
 }
