@@ -29,6 +29,7 @@
 // is behind meanwhile. A socket gone for hours can miss more than is worth paging through, so past
 // a bound the channel is opened fresh at its newest page.
 import { reactive } from "vue";
+import { classifyPlatformError } from "../errors.partial";
 import { computeBackoff } from "../platformCall.partial";
 import { HistoryPage, MessageCreatedEvent, MessageDeletedEvent, MessageEditedEvent, MessageVisibilityEvent, TimelineMessage } from "../types.partial";
 
@@ -87,6 +88,13 @@ export type TimelineState = {
 
     /** Whether a catch-up failed and is waiting to try again, so messages may be missing. */
     isBehind: boolean;
+
+    /**
+     * Every timeline message from the oldest held up to this id is held. Only a page fetched
+     * from the platform moves it, never a live copy or the person's own send, because a live copy
+     * cannot prove that nothing before it was lost. Null until a first page arrives.
+     */
+    verifiedThrough: number | null;
 };
 
 /** What the timeline reaches outside itself. */
@@ -199,27 +207,19 @@ function positionOf(messages: TimelineMessage[], id: number): number {
     return low;
 }
 
-/** Whether a failed fetch is worth trying again: a refusal of access or of the sign-in is not. */
+/**
+ * Whether a failed fetch is worth trying again. A refusal of access, or of a sign-in the call path
+ * already tried to renew, will not change by waiting; anything else (an unreachable platform, an
+ * overloaded one, a limit) may. Read through the same classifier the rest of the client uses, so
+ * the decision follows the error the shell actually throws.
+ */
 function isTransient(error: unknown): boolean {
-    const code = (error as { code?: unknown } | null)?.code;
-    const severity = (error as { severity?: unknown } | null)?.severity;
-
-    if (typeof code === "string" && (code.startsWith("auth.") || code.startsWith("authz."))) {
-        return false;
-    }
-
+    const severity = classifyPlatformError(error).severity;
     return severity !== "permission" && severity !== "session";
 }
 
 /** What the timelines keep for a channel beyond what the screen draws. */
 type ChannelSync = {
-    /**
-     * Every timeline message from the oldest held up to this id is held: only a page fetched
-     * from the platform moves it, never a live copy or the person's own send, because a live
-     * copy cannot prove that nothing before it was lost. Undefined until a first page arrives.
-     */
-    verifiedThrough: number | undefined;
-
     /** Bumped whenever what is held is replaced or the channel is left, so a late answer is dropped. */
     epoch: number;
 
@@ -230,7 +230,11 @@ type ChannelSync = {
     running: Promise<void> | null;
     isRerunAsked: boolean;
 
-    /** Whether a join has been caught up since the last newest page: the next one is a rejoin. */
+    /**
+     * Whether a join has been caught up on what is held: the next one is a rejoin and reads the
+     * held run again. Only a newest page that replaced what was held clears it, since only then is
+     * there nothing held to read again.
+     */
     hasJoined: boolean;
 
     /** Whether a newest page is being read; a join confirmed meanwhile is caught up after it. */
@@ -252,17 +256,30 @@ export function createTimelines(dependencies: TimelineDependencies): Timelines {
     const sleep = dependencies.sleep ?? ((ms: number): Promise<void> => new Promise(resolve => setTimeout(resolve, ms)));
     const random = dependencies.random ?? Math.random;
 
-    // When each message was last changed by a live event, on one counter for every channel, so a
-    // page read before that change cannot undo it.
-    const touched = new Map<number, number>();
-    let liveSeq = 0;
+    // One counter for every page read and every live change, across channels, so each can be told
+    // apart in time: a page read before a change, or before another page, must not undo it.
+    let seq = 0;
+    let isStopped = false;
+
+    // The last live change to each message, held or not yet held, so a page read before it that
+    // lands after it gets the change laid over it rather than undoing it.
+    const liveChanges = new Map<number, { seq: number, fields: Partial<TimelineMessage> }>();
+
+    // When the page that last set each message was read, so an older page cannot overwrite it.
+    const pageReadAt = new Map<number, number>();
+
+    /** Records a live change to a message, whether or not it is held yet. */
+    function recordLive(id: number, fields: Partial<TimelineMessage>): void {
+        const previous = liveChanges.get(id);
+        liveChanges.set(id, { seq: ++seq, fields: { ...previous?.fields, ...fields } });
+    }
 
     /** The timeline of a channel, created empty on first ask. */
     function state(channelId: string): TimelineState {
         let timeline = states.get(channelId);
 
         if (!timeline) {
-            timeline = reactive<TimelineState>({ messages: [], isLoaded: false, hasMore: false, readCursor: null, unreadCount: 0, isBehind: false }) as TimelineState;
+            timeline = reactive<TimelineState>({ messages: [], isLoaded: false, hasMore: false, readCursor: null, unreadCount: 0, isBehind: false, verifiedThrough: null }) as TimelineState;
             states.set(channelId, timeline);
         }
 
@@ -274,7 +291,7 @@ export function createTimelines(dependencies: TimelineDependencies): Timelines {
         let channelSync = syncs.get(channelId);
 
         if (!channelSync) {
-            channelSync = { verifiedThrough: undefined, epoch: 0, runToken: 0, running: null, isRerunAsked: false, hasJoined: false, isLoading: false, isJoinPending: false };
+            channelSync = { epoch: 0, runToken: 0, running: null, isRerunAsked: false, hasJoined: false, isLoading: false, isJoinPending: false };
             syncs.set(channelId, channelSync);
         }
 
@@ -295,25 +312,31 @@ export function createTimelines(dependencies: TimelineDependencies): Timelines {
     }
 
     /**
-     * Merges a page read when the live counter stood at readAt. A message changed live after
-     * that keeps what the live change set: the page was read before it and would undo it.
+     * Merges a page read when the counter stood at readAt. A message a newer page already set is
+     * left as that page set it; one changed live after this read gets the change laid over it, so
+     * neither an edit, a delete nor a hide is undone by a page read before it. A deleted, hidden or
+     * removed message never carries its body.
      */
     function mergePage(channelId: string, page: HistoryPage, readAt: number): void {
         for (const message of page.messages) {
-            const held = find(channelId, message.id);
-            const isChangedSince = !!held && (touched.get(message.id) ?? 0) > readAt;
+            if ((pageReadAt.get(message.id) ?? 0) > readAt && find(channelId, message.id)) {
+                continue;
+            }
+            pageReadAt.set(message.id, readAt);
 
-            upsert(channelId, isChangedSince && held
-                ? {
-                    ...message,
-                    body: held.body,
-                    metadata: held.metadata,
-                    edited_at: held.edited_at,
-                    deleted_at: held.deleted_at,
-                    visibility: held.visibility,
-                    visibility_notice: held.visibility_notice
+            const change = liveChanges.get(message.id);
+            let incoming: TimelineMessage = message;
+            if (change && change.seq > readAt) {
+                incoming = { ...message, ...change.fields };
+                if (change.fields.deleted_at === undefined && message.deleted_at) {
+                    incoming.deleted_at = message.deleted_at;
                 }
-                : message);
+            }
+            if (incoming.deleted_at || (incoming.visibility !== undefined && incoming.visibility !== "visible")) {
+                incoming = { ...incoming, body: null, metadata: null };
+            }
+
+            upsert(channelId, incoming);
         }
     }
 
@@ -363,7 +386,7 @@ export function createTimelines(dependencies: TimelineDependencies): Timelines {
                     sender_avatar_url: sender?.sender_avatar_url,
                     sender_listed: sender?.sender_listed
                 } as TimelineMessage);
-                touched.set(created.id, ++liveSeq);
+                recordLive(created.id, {});
             }
         }
         else if (event === "message.edited") {
@@ -372,8 +395,8 @@ export function createTimelines(dependencies: TimelineDependencies): Timelines {
             if (message && !message.deleted_at) {
                 message.body = edited.body;
                 message.edited_at = edited.edited_at;
-                touched.set(edited.id, ++liveSeq);
             }
+            recordLive(edited.id, { body: edited.body, edited_at: edited.edited_at });
         }
         else if (event === "message.deleted") {
             const deleted = payload as MessageDeletedEvent;
@@ -382,8 +405,8 @@ export function createTimelines(dependencies: TimelineDependencies): Timelines {
                 message.deleted_at = deleted.deleted_at;
                 message.body = null;
                 message.metadata = null;
-                touched.set(deleted.id, ++liveSeq);
             }
+            recordLive(deleted.id, { deleted_at: deleted.deleted_at, body: null, metadata: null });
         }
         else if (event === "message.visibility") {
             const changed = payload as MessageVisibilityEvent;
@@ -401,8 +424,13 @@ export function createTimelines(dependencies: TimelineDependencies): Timelines {
                 else if (typeof changed.body === "string" && !message.deleted_at) {
                     message.body = changed.body;
                 }
-                touched.set(changed.id, ++liveSeq);
             }
+            const shown = changed.state === "visible";
+            recordLive(changed.id, {
+                visibility: changed.state,
+                visibility_notice: changed.notice,
+                ...(shown ? (typeof changed.body === "string" ? { body: changed.body } : {}) : { body: null, metadata: null })
+            });
         }
     }
 
@@ -413,12 +441,12 @@ export function createTimelines(dependencies: TimelineDependencies): Timelines {
      * no gap is left in the middle. Messages above the page, a live copy or the person's own send
      * that landed after it was read, stay.
      */
-    function takeNewest(channelId: string, page: HistoryPage, readAt: number): void {
+    function takeNewest(channelId: string, page: HistoryPage, readAt: number): boolean {
         const timeline = state(channelId);
         const channelSync = sync(channelId);
         const range = bounds(page);
-        const verified = channelSync.verifiedThrough;
-        const isJoined = verified !== undefined && (!page.has_more || (range !== null && range.oldest <= verified));
+        const verified = timeline.verifiedThrough;
+        const isJoined = verified !== null && (!page.has_more || (range !== null && range.oldest <= verified));
 
         if (isJoined) {
             mergePage(channelId, page, readAt);
@@ -437,14 +465,15 @@ export function createTimelines(dependencies: TimelineDependencies): Timelines {
             }
             mergePage(channelId, page, readAt);
             channelSync.epoch++;
-            channelSync.verifiedThrough = undefined;
+            timeline.verifiedThrough = null;
         }
 
-        channelSync.verifiedThrough = Math.max(channelSync.verifiedThrough ?? 0, range?.newest ?? 0);
+        timeline.verifiedThrough = Math.max(timeline.verifiedThrough ?? 0, range?.newest ?? 0);
         timeline.hasMore = page.has_more;
         timeline.readCursor = page.read_cursor;
         timeline.unreadCount = page.unread_count;
         timeline.isLoaded = true;
+        return !isJoined;
     }
 
     /**
@@ -453,7 +482,7 @@ export function createTimelines(dependencies: TimelineDependencies): Timelines {
      */
     async function fetchCurrent(channelId: string, options: { limit: number, beforeId?: number, afterId?: number }): Promise<{ page: HistoryPage, readAt: number } | null> {
         const epoch = sync(channelId).epoch;
-        const readAt = liveSeq;
+        const readAt = ++seq;
         const page = await dependencies.fetchPage(channelId, options);
 
         return sync(channelId).epoch === epoch ? { page, readAt } : null;
@@ -475,7 +504,7 @@ export function createTimelines(dependencies: TimelineDependencies): Timelines {
         const isRejoin = channelSync.hasJoined;
         channelSync.hasJoined = true;
 
-        const verified = channelSync.verifiedThrough ?? 0;
+        const verified = timeline.verifiedThrough ?? 0;
         const settled = timeline.messages.filter(m => m.id <= verified);
         let afterId = isRejoin && settled.length > 0
             ? settled[Math.max(0, settled.length - max)].id - 1
@@ -508,7 +537,7 @@ export function createTimelines(dependencies: TimelineDependencies): Timelines {
             // The channel was replaced while this page was on its way: start again from what is
             // verified now rather than merge a page that no longer joins anything.
             if (!answer) {
-                afterId = channelSync.verifiedThrough ?? 0;
+                afterId = timeline.verifiedThrough ?? 0;
                 continue;
             }
             if (!isOwner()) {
@@ -521,15 +550,15 @@ export function createTimelines(dependencies: TimelineDependencies): Timelines {
                 // will mostly scroll past, so the channel opens fresh at its newest instead, and
                 // only once the fresh page is in hand.
                 takeNewest(channelId, answer.page, answer.readAt);
-                afterId = channelSync.verifiedThrough ?? 0;
+                afterId = timeline.verifiedThrough ?? 0;
                 fetched = 0;
                 continue;
             }
 
             mergePage(channelId, answer.page, answer.readAt);
             const range = bounds(answer.page);
-            if (range && afterId <= (channelSync.verifiedThrough ?? 0)) {
-                channelSync.verifiedThrough = Math.max(channelSync.verifiedThrough ?? 0, range.newest);
+            if (range && afterId <= (timeline.verifiedThrough ?? 0)) {
+                timeline.verifiedThrough = Math.max(timeline.verifiedThrough ?? 0, range.newest);
             }
             fetched += answer.page.messages.filter(m => m.id > verified).length;
 
@@ -546,6 +575,9 @@ export function createTimelines(dependencies: TimelineDependencies): Timelines {
      * more pass, so every confirmed join is caught up after it without two runs racing.
      */
     function requestCatchUp(channelId: string): Promise<void> {
+        if (isStopped) {
+            return Promise.resolve();
+        }
         const channelSync = sync(channelId);
         channelSync.isRerunAsked = true;
 
@@ -582,37 +614,59 @@ export function createTimelines(dependencies: TimelineDependencies): Timelines {
         channelSync.isRerunAsked = false;
         channelSync.isJoinPending = false;
         state(channelId).isBehind = false;
+        // events queued for a first page that never came would replay over a later, newer one
+        held.delete(channelId);
     }
 
     return {
         state,
 
         loadNewest: async (channelId: string): Promise<void> => {
+            if (isStopped) {
+                return;
+            }
             const channelSync = sync(channelId);
             channelSync.isLoading = true;
+            let failure: { error: unknown } | null = null;
 
             try {
                 const answer = await fetchCurrent(channelId, { limit: firstPageSize });
-                if (!answer) {
-                    return;
-                }
-                takeNewest(channelId, answer.page, answer.readAt);
-                channelSync.hasJoined = false;
+                if (answer && !isStopped) {
+                    if (takeNewest(channelId, answer.page, answer.readAt)) {
+                        channelSync.hasJoined = false;
+                    }
 
-                const waiting = held.get(channelId) ?? [];
-                held.delete(channelId);
-                for (const { event, payload } of waiting) {
-                    apply(channelId, event, payload);
+                    const waiting = held.get(channelId) ?? [];
+                    held.delete(channelId);
+                    for (const { event, payload } of waiting) {
+                        apply(channelId, event, payload);
+                    }
                 }
+            }
+            catch (error) {
+                failure = { error };
             }
             finally {
                 channelSync.isLoading = false;
             }
 
-            // A join confirmed while this page was read is caught up from it now, so catch-up
-            // starts from the page on screen and not from what it replaced.
-            if (channelSync.isJoinPending) {
+            // A join confirmed while this page was read is caught up now, however the read ended:
+            // from the page when it landed, and from what was already held when it failed or was
+            // overtaken, so a reload that fails never strands a rejoin. A channel left meanwhile
+            // has no join pending, and one with nothing on screen keeps it for its first page.
+            const isCatchUpDue = channelSync.isJoinPending && state(channelId).isLoaded;
+            if (isCatchUpDue) {
                 channelSync.isJoinPending = false;
+            }
+            if (failure) {
+                if (isCatchUpDue) {
+                    // the reload's own failure is what the caller reports; this catch-up retries
+                    // on its own and a refusal it meets is the one the reload already met
+                    void requestCatchUp(channelId).catch(() => undefined);
+                }
+                throw failure.error;
+            }
+            if (isCatchUpDue) {
                 await requestCatchUp(channelId);
             }
         },
@@ -634,6 +688,9 @@ export function createTimelines(dependencies: TimelineDependencies): Timelines {
         },
 
         onJoined: async (channelId: string): Promise<void> => {
+            if (isStopped) {
+                return;
+            }
             const channelSync = sync(channelId);
 
             // Nothing on screen yet, or a newest page on its way that may replace it: the join is
@@ -659,12 +716,14 @@ export function createTimelines(dependencies: TimelineDependencies): Timelines {
 
         upsert: (channelId: string, message: TimelineMessage): void => {
             upsert(channelId, message);
-            touched.set(message.id, ++liveSeq);
+            recordLive(message.id, {});
         },
 
         leave,
 
         stop: (): void => {
+            // for good: a join or a reload that fires while the session ends starts nothing
+            isStopped = true;
             for (const channelId of syncs.keys()) {
                 leave(channelId);
             }

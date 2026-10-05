@@ -429,8 +429,15 @@ export function createChatShell(options: ShellOptions): ChatShell {
      */
     function resync(): void {
         void loadSidebar().catch(() => undefined);
-        if (state.activeChannelId) {
-            void timelines.loadNewest(state.activeChannelId).catch(error => report(classifyPlatformError(error)));
+        const channelId = state.activeChannelId;
+        if (channelId) {
+            // The newest page alone redraws only the latest messages, so the channel then catches up
+            // from it, reading again what it holds, as a rejoin does.
+            // Only while it is still the channel on screen: one left, or whose access was revoked,
+            // while its page was on the way has nobody to catch up for.
+            void timelines.loadNewest(channelId)
+                .then(() => state.activeChannelId === channelId ? timelines.onJoined(channelId) : undefined)
+                .catch(error => report(classifyPlatformError(error)));
         }
     }
 
