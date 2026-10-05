@@ -334,6 +334,15 @@
     },
     {
       "schema": "public",
+      "name": "chat_message_visibility",
+      "values": [
+        "visible",
+        "hidden",
+        "removed"
+      ]
+    },
+    {
+      "schema": "public",
       "name": "chat_notify_mode",
       "values": [
         "all",
@@ -380,7 +389,32 @@
       "sync.bad_row",
       "sync.apply_timeout",
       "sync.busy",
-      "sync.superseded"
+      "sync.superseded",
+      "auth.expired",
+      "authz.no_announcement_right",
+      "authz.no_mention_all_right",
+      "authz.no_roster_right",
+      "authz.not_author",
+      "authz.not_eligible",
+      "authz.not_live_person",
+      "authz.not_member",
+      "authz.not_readable",
+      "authz.sender_not_allowed",
+      "rpc.bad_body",
+      "rpc.bad_message_type",
+      "rpc.bad_parent",
+      "rpc.channel_not_found",
+      "rpc.idempotency_mismatch",
+      "rpc.maintenance",
+      "rpc.message_deleted",
+      "rpc.message_hidden",
+      "rpc.message_not_found",
+      "rpc.rate_limited",
+      "rpc.read_only",
+      "rpc.system_author_missing",
+      "push.dispatch_failed",
+      "push.no_credential",
+      "push.provider_failed"
     ]
   }
 }
