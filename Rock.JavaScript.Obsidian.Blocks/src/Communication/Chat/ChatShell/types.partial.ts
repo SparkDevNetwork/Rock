@@ -126,12 +126,16 @@ export type MessageDeletedEvent = {
     deleted_at: string;
 };
 
-/** A message hidden, removed or shown again, on a channel topic. It carries no body. */
+/**
+ * A message hidden, removed or shown again, on a channel topic. It carries the body only when the
+ * message is shown again, so a hidden body never travels.
+ */
 export type MessageVisibilityEvent = {
     id: number;
     channel_id: string;
     state: string;
     notice: string | null;
+    body?: string;
 };
 
 /** The person's own "something new here" signal, on their personal topic. */

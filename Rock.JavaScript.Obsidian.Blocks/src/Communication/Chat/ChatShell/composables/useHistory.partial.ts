@@ -20,9 +20,11 @@
 // History and the live join start together, so either can finish first. Live events that arrive
 // before the first page are held and applied after it. A message committed between the page's
 // read and the join's confirmation reaches neither, and a live copy can be lost outright, so every
-// confirmed join, a rejoin after a drop included, pages forward from the newest message held until
-// nothing newer is left. A socket gone for hours can miss more than is worth paging through, so
-// past a bound the channel is opened fresh at its newest page instead.
+// confirmed join, a rejoin after a drop included, pages forward until nothing newer is left. It
+// pages from the newest message the channel itself delivered, by a page or a live copy, not the
+// newest on screen: the person's own send is confirmed over HTTP even while the socket is down, and
+// paging from it would skip whatever others sent before it. A socket gone for hours can miss more
+// than is worth paging through, so past a bound the channel is opened fresh at its newest page.
 import { reactive } from "vue";
 import { HistoryPage, MessageCreatedEvent, MessageDeletedEvent, MessageEditedEvent, MessageVisibilityEvent, TimelineMessage } from "../types.partial";
 
@@ -182,6 +184,16 @@ function positionOf(messages: TimelineMessage[], id: number): number {
 export function createTimelines(dependencies: TimelineDependencies): Timelines {
     const states = new Map<string, TimelineState>();
     const held = new Map<string, Array<{ event: string, payload: unknown }>>();
+    // The newest timeline message each channel has delivered, by a page or a live copy, which is
+    // where catch-up resumes; a send confirmed to this person never moves it.
+    const receivedThrough = new Map<string, number>();
+
+    /** Moves where catch-up resumes forward past a message the channel delivered. */
+    function received(channelId: string, id: number): void {
+        if (id > (receivedThrough.get(channelId) ?? 0)) {
+            receivedThrough.set(channelId, id);
+        }
+    }
 
     /** The timeline of a channel, created empty on first ask. */
     function state(channelId: string): TimelineState {
@@ -212,6 +224,7 @@ export function createTimelines(dependencies: TimelineDependencies): Timelines {
     function mergePage(channelId: string, page: HistoryPage): void {
         for (const message of page.messages) {
             upsert(channelId, message);
+            received(channelId, message.id);
         }
     }
 
@@ -251,6 +264,7 @@ export function createTimelines(dependencies: TimelineDependencies): Timelines {
                     sender_avatar_url: sender?.sender_avatar_url,
                     sender_listed: sender?.sender_listed
                 } as TimelineMessage);
+                received(channelId, created.id);
             }
         }
         else if (event === "message.edited") {
@@ -277,11 +291,14 @@ export function createTimelines(dependencies: TimelineDependencies): Timelines {
                 message.visibility = changed.state;
                 message.visibility_notice = changed.notice;
 
-                // A hidden or removed body must not stay on screen. One shown again comes back with
-                // the next page, since the event carries no body.
+                // A hidden or removed body must not stay on screen. One shown again carries its
+                // body back, so the row draws it without waiting for a page.
                 if (changed.state !== "visible") {
                     message.body = null;
                     message.metadata = null;
+                }
+                else if (typeof changed.body === "string" && !message.deleted_at) {
+                    message.body = changed.body;
                 }
             }
         }
@@ -326,7 +343,7 @@ export function createTimelines(dependencies: TimelineDependencies): Timelines {
         onJoined: async (channelId: string): Promise<void> => {
             const { page: pageSize, max } = dependencies.catchUp?.() ?? defaultCatchUp;
             const messages = state(channelId).messages;
-            let afterId = messages.length > 0 ? messages[messages.length - 1].id : undefined;
+            let afterId = receivedThrough.get(channelId);
 
             // Nothing held yet, because the first page is still on its way: there is no newest to
             // page from, so the newest messages are read and merged, which catches one that
@@ -349,6 +366,7 @@ export function createTimelines(dependencies: TimelineDependencies): Timelines {
                 // will mostly scroll past, so the channel opens fresh at its newest instead.
                 if (fetched >= max) {
                     messages.splice(0, messages.length);
+                    receivedThrough.delete(channelId);
                     takeNewest(channelId, await dependencies.fetchPage(channelId, { limit: firstPageSize }));
                     return;
                 }

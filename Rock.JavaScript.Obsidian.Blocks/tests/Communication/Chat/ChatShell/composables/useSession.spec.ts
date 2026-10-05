@@ -500,6 +500,13 @@ describe("settings from the token exchange", () => {
         expect(readSettings({ limits: { reconnect_cap_ms: 60000 } }).limits).toEqual({ ...defaults.limits, reconnect_cap_ms: 60000 });
     });
 
+    test("a catch-up page is never larger than history will serve", () => {
+        // history refuses a page of more than 100, so a larger setting would fail every catch-up
+        expect(readSettings({ limits: { catch_up_page: 500 } }).limits.catch_up_page).toBe(100);
+        expect(readSettings({ limits: { catch_up_page: 0.5 } }).limits.catch_up_page).toBe(1);
+        expect(readSettings({ limits: { catch_up_page: 40 } }).limits.catch_up_page).toBe(40);
+    });
+
     test("a route or a state this client does not know is read as the safe default", () => {
         expect(readSettings({ routes: { send: "carrier_pigeon" } }).routes.send).toBe("direct");
         expect(readSettings({ service: { state: "something_new", banner: "x" } }).service).toEqual({ state: "normal", banner: "x" });

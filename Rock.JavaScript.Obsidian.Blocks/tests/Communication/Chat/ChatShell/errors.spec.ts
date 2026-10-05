@@ -168,6 +168,16 @@ describe("codes a released client was not built with", () => {
             .toBe("Your chat session has ended. Refresh the page to continue.");
     });
 
+    test("a server sentence that is only the code itself, or blank, counts as no sentence", () => {
+        // An Edge refusal whose message repeats its code would otherwise show the person "rpc.unavailable".
+        expect(classifyPlatformError({ message: "rpc.unavailable", hint: "rpc.unavailable", status: 503 }))
+            .toEqual({ code: "rpc.unavailable", severity: "failed" });
+        expect(classifyPlatformError({ message: "rpc.bad_request", hint: "   ", status: 400 }))
+            .toEqual({ code: "rpc.bad_request", severity: "failed" });
+        expect(messageForError({ code: "rpc.unavailable", severity: "failed", text: "rpc.unavailable" }))
+            .toBe("Something went wrong in chat. Try again in a moment.");
+    });
+
     test("with no sentence from the server the severity's sentence is shown", () => {
         expect(messageForError({ code: "rpc.something_new", severity: "failed" }))
             .toBe("Something went wrong in chat. Try again in a moment.");

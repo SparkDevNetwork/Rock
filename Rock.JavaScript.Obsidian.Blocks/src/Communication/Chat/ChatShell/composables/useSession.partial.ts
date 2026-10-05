@@ -90,7 +90,9 @@ export function readSettings(raw: unknown): ChatSettings {
         limits: {
             reconnect_base_ms: limit("reconnect_base_ms"),
             reconnect_cap_ms: limit("reconnect_cap_ms"),
-            catch_up_page: limit("catch_up_page"),
+            // history serves 1 to 100 messages a page and refuses anything else, so a setting
+            // outside that would fail every catch-up
+            catch_up_page: Math.min(100, Math.max(1, Math.round(limit("catch_up_page")))),
             catch_up_max: limit("catch_up_max")
         },
         flags: { ...flags }

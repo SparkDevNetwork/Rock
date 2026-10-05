@@ -49,6 +49,14 @@ const severityByFamily: Record<string, ChatError["severity"]> = {
 };
 
 /**
+ * Whether server text is a sentence worth showing: blank text, or text that only repeats the code,
+ * would show the person a bare code, so the client's own sentence is used instead.
+ */
+function isSentence(text: string | null | undefined, code: string): text is string {
+    return typeof text === "string" && text.trim().length > 0 && text.trim() !== code;
+}
+
+/**
  * Classifies a refusal or failure from a platform call.
  *
  * @param error The error the platform client returned, or what a fetch threw.
@@ -71,7 +79,7 @@ export function classifyPlatformError(error: PlatformErrorLike | unknown): ChatE
     if (ourCode.test(message)) {
         const family = message.slice(0, message.indexOf("."));
         const classified: ChatError = { code: message, severity: severityByFamily[family] ?? "unknown" };
-        if (platformError.hint) {
+        if (isSentence(platformError.hint, message)) {
             classified.text = platformError.hint;
         }
         return classified;
@@ -104,7 +112,7 @@ export function messageForError(error: ChatError): string {
         return "Your chat session has ended. Refresh the page to continue.";
     }
 
-    if (error.text) {
+    if (isSentence(error.text, error.code)) {
         return error.text;
     }
 

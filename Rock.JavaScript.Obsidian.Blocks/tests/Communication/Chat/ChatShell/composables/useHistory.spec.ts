@@ -281,6 +281,30 @@ describe("catching up after a rejoin", () => {
         expect(ids(timelines.state(channel).messages)).toEqual(Array.from({ length: 63 }, (_, i) => i + 1));
     });
 
+    test("a person's own send while the socket was down does not hide the messages others sent before it", async () => {
+        let newest = 100;
+        const fetches: Fetch[] = [];
+        const dependencies: CatchUpDependencies = {
+            fetchPage: async (_c, options) => {
+                fetches.push(options as Fetch);
+                return history(newest)(options as Fetch);
+            },
+            catchUp: () => ({ page: 25, max: 500 })
+        };
+        const timelines = createTimelines(dependencies);
+        await timelines.loadNewest(channel);
+
+        // The socket drops; others post 101 to 105, which no live copy brings. The person's own
+        // send still goes through over HTTP and its confirmation puts 106 on screen.
+        newest = 106;
+        timelines.upsert(channel, message(106, "my own"));
+
+        await timelines.onJoined(channel);
+
+        expect(fetches[fetches.length - 1]).toEqual({ limit: 25, afterId: 100 });
+        expect(ids(timelines.state(channel).messages).slice(-6)).toEqual([101, 102, 103, 104, 105, 106]);
+    });
+
     test("past the bound it drops what it held and opens the channel fresh at the newest page", async () => {
         let newest = 3;
         const fetches: Fetch[] = [];
@@ -339,6 +363,17 @@ describe("what the server adds later", () => {
         const [, two] = timelines.state(channel).messages;
         expect(two.body).toBeNull();
         expect(messageDisplay(two)).toEqual({ kind: "notice", text: "This message is under review." });
+    });
+
+    test("a message hidden live and then shown again live draws its body again", async () => {
+        const timelines = createTimelines({ fetchPage: async () => page([1, 2]) });
+        await timelines.loadNewest(channel);
+
+        timelines.applyEvent(channel, "message.visibility", { id: 2, channel_id: channel, state: "hidden", notice: "Under review." });
+        timelines.applyEvent(channel, "message.visibility", { id: 2, channel_id: channel, state: "visible", notice: null, body: "m2" });
+
+        const [, two] = timelines.state(channel).messages;
+        expect(messageDisplay(two)).toEqual({ kind: "message", text: "m2" });
     });
 
     test("a message history returns as removed shows the server's sentence, and one shown again shows its body", async () => {
