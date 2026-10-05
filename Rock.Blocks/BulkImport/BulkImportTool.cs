@@ -149,92 +149,97 @@ namespace Rock.Blocks.BulkImport
                 return ActionBadRequest( "Slingshot file not found." );
             }
 
-            var importTask = new Task( async () =>
+            // Use Task.Run( async () => ... ) instead of new Task( async () => ... )
+            // because the latter compiles to async void, where any unhandled exception crashes the app pool.
+            Task.Run( async () =>
             {
                 // Wait a little so the browser can render and start listening to events
-                Task.Delay( 1000 ).Wait();
+                await Task.Delay( 1000 );
 
-                var stopwatch = Stopwatch.StartNew();
-                long totalMilliseconds = 0;
-
-                BulkImporter.ImportUpdateType importUpdateType;
-
-                switch ( request.ImportUpdateType )
-                {
-                    case "AddOnly":
-                        importUpdateType = BulkImporter.ImportUpdateType.AddOnly;
-                        break;
-                    case "MostRecentWins":
-                        importUpdateType = BulkImporter.ImportUpdateType.MostRecentWins;
-                        break;
-                    default:
-                        importUpdateType = BulkImporter.ImportUpdateType.AlwaysUpdate;
-                        break;
-                }
-
-                var taskChannelName = $"BulkImport:{physicalSlingshotFile}";
-
-                var topic = RealTimeHelper.GetTopicContext<ITaskActivityProgress>();
-
-                await topic.Channels.AddToChannelAsync( request.SessionId, taskChannelName );
-
-                var progressReporter = topic.Clients.Channel( taskChannelName );
-                var progress = new TaskActivityProgress( progressReporter, "Bulk Import" );
-                progress.StartTask( "Starting import..." );
-
-                var slingshotImporter = new SlingshotImporter( physicalSlingshotFile, request.ForeignSystemKey, importUpdateType, ( sender, e ) =>
-                {
-                    var importer = sender as SlingshotImporter;
-                    string progressMessage = string.Empty;
-                    var progressResults = new DescriptionList();
-
-                    if ( e is string )
-                    {
-                        progressMessage = e.ToString();
-                    }
-
-                    var exceptionsCopy = importer.Exceptions.ToArray();
-                    if ( exceptionsCopy.Any() )
-                    {
-                        if ( exceptionsCopy.Count() > 50 )
-                        {
-                            var exceptionsSummary = exceptionsCopy.GroupBy( a => a.GetBaseException().Message ).Select( a => a.Key + "(" + a.Count().ToString() + ")" );
-                            progressResults.Add( "Exceptions", string.Join( Environment.NewLine, exceptionsSummary ) );
-                        }
-                        else
-                        {
-                            progressResults.Add( "Exception", string.Join( Environment.NewLine, exceptionsCopy.Select( a => a.Message ).ToArray() ) );
-                        }
-                    }
-
-                    var resultsCopy = importer.Results.ToArray();
-                    foreach ( var result in resultsCopy )
-                    {
-                        progressResults.Add( result.Key, result.Value );
-                    }
-
-                    progressReporter.UpdateTaskProgress( new TaskActivityProgressUpdateBag { Message = progressMessage } );
-
-                    if ( !string.IsNullOrEmpty( progressResults.Html ) )
-                    {
-                        progress.LogMessage( progressResults.Html );
-                    }
-                } );
-
-                var personChunkSize = GetAttributeValue( AttributeKey.PersonRecordImportBatchSize ).AsInteger();
-                var financialTransactionChunkSize = GetAttributeValue( AttributeKey.FinancialRecordImportBatchSize ).AsInteger();
-
-                if ( personChunkSize > 0 )
-                {
-                    slingshotImporter.PersonChunkSize = personChunkSize;
-                }
-                if ( financialTransactionChunkSize > 0 )
-                {
-                    slingshotImporter.FinancialTransactionChunkSize = financialTransactionChunkSize;
-                }
+                TaskActivityProgress progress = null;
+                SlingshotImporter slingshotImporter = null;
 
                 try
                 {
+                    var stopwatch = Stopwatch.StartNew();
+                    long totalMilliseconds = 0;
+
+                    BulkImporter.ImportUpdateType importUpdateType;
+
+                    switch ( request.ImportUpdateType )
+                    {
+                        case "AddOnly":
+                            importUpdateType = BulkImporter.ImportUpdateType.AddOnly;
+                            break;
+                        case "MostRecentWins":
+                            importUpdateType = BulkImporter.ImportUpdateType.MostRecentWins;
+                            break;
+                        default:
+                            importUpdateType = BulkImporter.ImportUpdateType.AlwaysUpdate;
+                            break;
+                    }
+
+                    var taskChannelName = $"BulkImport:{physicalSlingshotFile}";
+
+                    var topic = RealTimeHelper.GetTopicContext<ITaskActivityProgress>();
+
+                    await topic.Channels.AddToChannelAsync( request.SessionId, taskChannelName );
+
+                    var progressReporter = topic.Clients.Channel( taskChannelName );
+                    progress = new TaskActivityProgress( progressReporter, "Bulk Import" );
+                    progress.StartTask( "Starting import..." );
+
+                    slingshotImporter = new SlingshotImporter( physicalSlingshotFile, request.ForeignSystemKey, importUpdateType, ( sender, e ) =>
+                    {
+                        var importer = sender as SlingshotImporter;
+                        string progressMessage = string.Empty;
+                        var progressResults = new DescriptionList();
+
+                        if ( e is string )
+                        {
+                            progressMessage = e.ToString();
+                        }
+
+                        var exceptionsCopy = importer.Exceptions.ToArray();
+                        if ( exceptionsCopy.Any() )
+                        {
+                            if ( exceptionsCopy.Count() > 50 )
+                            {
+                                var exceptionsSummary = exceptionsCopy.GroupBy( a => a.GetBaseException().Message ).Select( a => a.Key + "(" + a.Count().ToString() + ")" );
+                                progressResults.Add( "Exceptions", string.Join( Environment.NewLine, exceptionsSummary ) );
+                            }
+                            else
+                            {
+                                progressResults.Add( "Exception", string.Join( Environment.NewLine, exceptionsCopy.Select( a => a.Message ).ToArray() ) );
+                            }
+                        }
+
+                        var resultsCopy = importer.Results.ToArray();
+                        foreach ( var result in resultsCopy )
+                        {
+                            progressResults.Add( result.Key, result.Value );
+                        }
+
+                        progressReporter.UpdateTaskProgress( new TaskActivityProgressUpdateBag { Message = progressMessage } );
+
+                        if ( !string.IsNullOrEmpty( progressResults.Html ) )
+                        {
+                            progress.LogMessage( progressResults.Html );
+                        }
+                    } );
+
+                    var personChunkSize = GetAttributeValue( AttributeKey.PersonRecordImportBatchSize ).AsInteger();
+                    var financialTransactionChunkSize = GetAttributeValue( AttributeKey.FinancialRecordImportBatchSize ).AsInteger();
+
+                    if ( personChunkSize > 0 )
+                    {
+                        slingshotImporter.PersonChunkSize = personChunkSize;
+                    }
+                    if ( financialTransactionChunkSize > 0 )
+                    {
+                        slingshotImporter.FinancialTransactionChunkSize = financialTransactionChunkSize;
+                    }
+
                     switch ( request.ImportType )
                     {
                         case "Photos":
@@ -267,28 +272,16 @@ namespace Rock.Blocks.BulkImport
                 catch ( Exception ex )
                 {
                     ExceptionLogService.LogException( ex );
-                    if ( slingshotImporter.Exceptions != null )
-                    {
-                        slingshotImporter.Exceptions.Add( ex.GetBaseException() );
-                    }
-                    progress.StopTask( "ERROR: " + ex.Message, new[] { ex.Message } );
-                    throw;
+                    slingshotImporter?.Exceptions?.Add( ex.GetBaseException() );
+                    progress?.StopTask( "ERROR: " + ex.Message, new[] { ex.Message } );
                 }
                 finally
                 {
-                    progress.Dispose();
+                    progress?.Dispose();
                 }
             } );
 
-            try
-            {
-                importTask.Start();
-                return ActionOk();
-            }
-            catch ( Exception ex )
-            {
-                return ActionBadRequest( ex.Message );
-            }
+            return ActionOk();
         }
 
         /// <summary>
