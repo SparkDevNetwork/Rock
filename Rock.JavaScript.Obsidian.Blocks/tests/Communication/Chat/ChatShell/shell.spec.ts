@@ -73,7 +73,8 @@ function build(): {
     topics: LiveTopic[],
     counts: { mints: number, clients: number, setAuths: number, bootstraps: number },
     mintGate: { value: string },
-    bootstrap: { value: unknown }
+    bootstrap: { value: unknown },
+    pageDocument: { visibilityState: string }
 } {
     const topics: LiveTopic[] = [];
     const counts = { mints: 0, clients: 0, setAuths: 0, bootstraps: 0 };
@@ -85,6 +86,7 @@ function build(): {
     const removed: string[] = [];
     const stored: Record<string, string> = {};
     const windowListeners: Record<string, Array<() => void>> = {};
+    const pageDocument = { visibilityState: "visible", addEventListener: () => undefined, removeEventListener: () => undefined };
 
     const client: PlatformClientLike = {
         realtime: {
@@ -149,7 +151,7 @@ function build(): {
         },
         storage: { getItem: k => stored[k] ?? null, setItem: (k, v) => stored[k] = v },
         pageTargets: {
-            document: { visibilityState: "visible", addEventListener: () => undefined, removeEventListener: () => undefined },
+            document: pageDocument,
             window: {
                 addEventListener: (type, listener) => (windowListeners[type] ??= []).push(listener),
                 removeEventListener: () => undefined
@@ -159,7 +161,7 @@ function build(): {
     });
 
     return {
-        shell, history, saves, joined, removed, stored, topics, counts, mintGate, bootstrap,
+        shell, history, saves, joined, removed, stored, topics, counts, mintGate, bootstrap, pageDocument,
         fireBlur: () => (windowListeners["blur"] ?? []).forEach(l => l())
     };
 }
@@ -600,5 +602,50 @@ describe("what the platform may send a released client", () => {
 
         expect(h.counts.mints).toBe(before.mints + 1);
         expect(h.counts.bootstraps).toBe(before.bootstraps + 1);
+    });
+});
+
+// The push worker asks a focused window whether the channel a push is for is already on screen,
+// and hides the banner when it is; the app badge counts unread mentions in the rooms the sidebar
+// lists, as the platform's mention push does, so reading a mention takes it off the icon.
+describe("what the page tells push", () => {
+    afterEach(() => {
+        jest.restoreAllMocks();
+    });
+
+    // Cast while red: the shell gains both at green.
+    type PushFacing = { isChannelOnScreen: (channelId: string) => boolean, mentionBadge: () => number };
+
+    test("a channel is on screen only when it is the open one and the page is visible", async () => {
+        const h = await started();
+        const shell = h.shell as unknown as PushFacing;
+
+        expect(shell.isChannelOnScreen(channelA)).toBe(true);
+        expect(shell.isChannelOnScreen("another-channel")).toBe(false);
+    });
+
+    test("a hidden page has nothing on screen", async () => {
+        const h = await started();
+        h.pageDocument.visibilityState = "hidden";
+
+        expect((h.shell as unknown as PushFacing).isChannelOnScreen(channelA)).toBe(false);
+    });
+
+    test("the badge is the sidebar's unread mentions, never its unread messages", async () => {
+        const h = build();
+        h.bootstrap.value = {
+            channels: [
+                { channel_id: channelA, name: "General", unread_count: 40, mention_count: 2 },
+                { channel_id: "another-channel", name: "Youth", unread_count: 7, mention_count: 1 },
+                { channel_id: "third-channel", name: "Staff", unread_count: 3, mention_count: 0 }
+            ]
+        };
+        const starting = h.shell.start();
+        await settle();
+        answerHistory(h, channelA, 10);
+        await starting;
+        await settle();
+
+        expect((h.shell as unknown as PushFacing).mentionBadge()).toBe(3);
     });
 });

@@ -475,13 +475,15 @@ describe("createSession", () => {
 });
 
 describe("settings from the token exchange", () => {
-    const defaults: ChatSettings = {
+    // Cast while red: the settings type gains push at green.
+    const defaults = {
         service: { state: "normal", banner: null },
         client: { update_required: false },
         routes: { send: "direct" },
         limits: { reconnect_base_ms: 1000, reconnect_cap_ms: 30000, catch_up_page: 100, catch_up_max: 500 },
-        flags: {}
-    };
+        flags: {},
+        push: { web: null, vapid_key: null, prompt: "after_send" }
+    } as unknown as ChatSettings;
 
     function exchangeWith(...settings: unknown[]): Partial<SessionDependencies> {
         let calls = 0;
@@ -505,6 +507,19 @@ describe("settings from the token exchange", () => {
         expect(readSettings({ limits: { catch_up_page: 500 } }).limits.catch_up_page).toBe(100);
         expect(readSettings({ limits: { catch_up_page: 0.5 } }).limits.catch_up_page).toBe(1);
         expect(readSettings({ limits: { catch_up_page: 40 } }).limits.catch_up_page).toBe(40);
+    });
+
+    // Push is offered only when the platform sent both Firebase values; a church's prompt timing
+    // this client does not know is read as the default, after the person's first send.
+    test("push is available only with a web config and a key, and its prompt falls back to after a send", () => {
+        const push = (raw: unknown): unknown => (readSettings(raw) as unknown as { push: unknown }).push;
+        const web = { apiKey: "k", projectId: "p", messagingSenderId: "1", appId: "1:1:web:1" };
+
+        expect(push({ push: { web, vapid_key: "v", prompt: "offer" } })).toEqual({ web, vapid_key: "v", prompt: "offer" });
+        expect(push({ push: { web, vapid_key: "v", prompt: "off" } })).toEqual({ web, vapid_key: "v", prompt: "off" });
+        expect(push({ push: { web, prompt: "offer" } })).toEqual({ web: null, vapid_key: null, prompt: "offer" });
+        expect(push({ push: { web: "not an object", vapid_key: "v" } })).toEqual({ web: null, vapid_key: null, prompt: "after_send" });
+        expect(push({ push: { web, vapid_key: "v", prompt: "when_the_moon_is_full" } })).toEqual({ web, vapid_key: "v", prompt: "after_send" });
     });
 
     test("a route or a state this client does not know is read as the safe default", () => {
