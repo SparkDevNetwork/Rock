@@ -94,14 +94,22 @@ namespace Rock.Rest.v2
         [HttpPost]
         [Route( "AccountPickerGetChildren" )]
         [Authenticate]
-        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [ProducesResponseType( HttpStatusCode.OK, Type = typeof( List<TreeItemBag> ) )]
+        [ProducesResponseType( HttpStatusCode.BadRequest )]
         [Rock.SystemGuid.RestActionGuid( "5052e4a9-8cc3-4937-a2d3-9cfec07ed070" )]
         public IActionResult AccountPickerGetChildren( [FromBody] AccountPickerGetChildrenOptionsBag options )
         {
+            if ( options == null )
+            {
+                return BadRequest();
+            }
+
+            var isPublicView = IsAccountPickerPublicView();
+
             using ( var rockContext = new RockContext() )
             {
-                return Ok( AccountPickerGetChildrenData( options, rockContext ) );
+                return Ok( AccountPickerGetChildrenData( options, isPublicView, rockContext ) );
             }
         }
 
@@ -109,41 +117,59 @@ namespace Rock.Rest.v2
         /// Gets the accounts that can be displayed in the account picker.
         /// </summary>
         /// <param name="options">The options that describe which items to load.</param>
+        /// <param name="isPublicView">If <c>true</c> then only the public view of the accounts is returned.</param>
         /// <param name="rockContext">DB context.</param>
         /// <returns>A List of <see cref="TreeItemBag"/> objects that represent the accounts.</returns>
-        private List<TreeItemBag> AccountPickerGetChildrenData( AccountPickerGetChildrenOptionsBag options, RockContext rockContext )
+        private List<TreeItemBag> AccountPickerGetChildrenData( AccountPickerGetChildrenOptionsBag options, bool isPublicView, RockContext rockContext )
         {
             var financialAccountService = new FinancialAccountService( rockContext );
+            var includeInactive = options.IncludeInactive && !isPublicView;
 
             IQueryable<FinancialAccount> qry;
 
             if ( options.ParentGuid == Guid.Empty )
             {
-                qry = financialAccountService.Queryable().AsNoTracking()
-                    .Where( f => f.ParentAccountId.HasValue == false );
+                if ( isPublicView )
+                {
+                    // A public account whose parent is not part of the public
+                    // view is shown at the top level, otherwise it could
+                    // never be selected.
+                    qry = financialAccountService.Queryable().AsNoTracking()
+                        .Where( f => f.ParentAccountId.HasValue == false
+                            || f.ParentAccount.IsPublic != true
+                            || f.ParentAccount.IsActive == false );
+                }
+                else
+                {
+                    qry = financialAccountService.Queryable().AsNoTracking()
+                        .Where( f => f.ParentAccountId.HasValue == false );
+                }
             }
             else
             {
+                if ( isPublicView )
+                {
+                    var parentAccount = FinancialAccountCache.Get( options.ParentGuid );
+
+                    if ( parentAccount == null || !IsAccountInPublicView( parentAccount.IsPublic, parentAccount.IsActive ) )
+                    {
+                        return new List<TreeItemBag>();
+                    }
+                }
+
                 qry = financialAccountService.Queryable().AsNoTracking()
                     .Where( f => f.ParentAccount != null && f.ParentAccount.Guid == options.ParentGuid );
             }
 
-            if ( !options.IncludeInactive )
-            {
-                qry = qry
-                    .Where( f => f.IsActive == true );
-            }
+            qry = FilterAccountPickerQuery( qry, isPublicView, includeInactive );
 
-            var accountList = qry
-                .OrderBy( f => f.Order )
-                .ThenBy( f => f.Name )
-                .ToList();
+            var accountList = OrderAccountPickerResults( qry, isPublicView );
 
             var accountTreeViewItems = accountList
                 .Select( a => new TreeItemBag
                 {
                     Value = a.Guid.ToString(),
-                    Text = options.DisplayPublicName ? a.PublicName : a.Name,
+                    Text = GetAccountPickerText( a.Name, a.PublicName, options.DisplayPublicName, isPublicView ),
                     IsActive = a.IsActive,
                     IconCssClass = "fa fa-file-o"
                 } ).ToList();
@@ -162,7 +188,7 @@ namespace Rock.Rest.v2
                         ParentGuid = new Guid( accountTreeViewItem.Value ),
                         SecurityGrantToken = options.SecurityGrantToken
                     };
-                    accountTreeViewItem.Children = AccountPickerGetChildrenData( newOptions, rockContext );
+                    accountTreeViewItem.Children = AccountPickerGetChildrenData( newOptions, isPublicView, rockContext );
                     int childrenCount = accountTreeViewItem.Children.Count;
 
                     accountTreeViewItem.HasChildren = childrenCount > 0;
@@ -182,10 +208,7 @@ namespace Rock.Rest.v2
                     f.ParentAccountId.HasValue && resultIds.Contains( f.ParentAccountId.Value )
                     );
 
-                if ( !options.IncludeInactive )
-                {
-                    childQry = childQry.Where( f => f.IsActive == true );
-                }
+                childQry = FilterAccountPickerQuery( childQry, isPublicView, includeInactive );
 
                 var childrenList = childQry.Select( f => f.ParentAccount.Guid.ToString() )
                     .ToList();
@@ -216,22 +239,45 @@ namespace Rock.Rest.v2
         [HttpPost]
         [Route( "AccountPickerGetParentGuids" )]
         [Authenticate]
-        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [ProducesResponseType( HttpStatusCode.OK, Type = typeof( HashSet<Guid> ) )]
+        [ProducesResponseType( HttpStatusCode.BadRequest )]
         [Rock.SystemGuid.RestActionGuid( "007512c6-0147-4683-a3fe-3fdd1da275c2" )]
         public IActionResult AccountPickerGetParentGuids( [FromBody] AccountPickerGetParentGuidsOptionsBag options )
         {
+            if ( options?.Guids == null )
+            {
+                return BadRequest();
+            }
+
+            var isPublicView = IsAccountPickerPublicView();
             var results = new HashSet<Guid>();
 
             foreach ( var guid in options.Guids )
             {
-                var result = FinancialAccountCache.Get( guid )?
-                    .GetAncestorFinancialAccounts()?
-                    .OrderBy( a => 0 )?
-                    .Reverse()?
-                    .Select( a => a.Guid );
+                var account = FinancialAccountCache.Get( guid );
 
-                foreach ( var resultGuid in result )
+                if ( account == null )
+                {
+                    continue;
+                }
+
+                IEnumerable<FinancialAccountCache> ancestors = account.GetAncestorFinancialAccounts();
+
+                if ( isPublicView )
+                {
+                    if ( !IsAccountInPublicView( account.IsPublic, account.IsActive ) )
+                    {
+                        continue;
+                    }
+
+                    // Only include the ancestors that are part of the path
+                    // shown in the public view. The path stops at the first
+                    // ancestor that is not in the public view.
+                    ancestors = ancestors.TakeWhile( a => IsAccountInPublicView( a.IsPublic, a.IsActive ) );
+                }
+
+                foreach ( var resultGuid in ancestors.Reverse().Select( a => a.Guid ) )
                 {
                     results.Add( resultGuid );
                 }
@@ -248,7 +294,7 @@ namespace Rock.Rest.v2
         [HttpPost]
         [Route( "AccountPickerGetSearchedAccounts" )]
         [Authenticate]
-        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [ProducesResponseType( HttpStatusCode.OK, Type = typeof( List<ListItemBag> ) )]
         [ProducesResponseType( HttpStatusCode.BadRequest )]
         [Rock.SystemGuid.RestActionGuid( "69fd94cc-f049-4cee-85d1-13e573e30586" )]
@@ -256,30 +302,43 @@ namespace Rock.Rest.v2
         {
             IQueryable<FinancialAccount> qry;
 
-            if ( options.SearchTerm.IsNullOrWhiteSpace() )
+            if ( options == null || options.SearchTerm.IsNullOrWhiteSpace() )
             {
                 return BadRequest( "Search Term is required" );
             }
 
+            var isPublicView = IsAccountPickerPublicView();
+            var includeInactive = options.IncludeInactive && !isPublicView;
+
             using ( var rockContext = new RockContext() )
             {
                 var financialAccountService = new FinancialAccountService( rockContext );
-                qry = financialAccountService.GetAccountsBySearchTerm( options.SearchTerm );
 
-                if ( !options.IncludeInactive )
+                if ( isPublicView )
                 {
-                    qry = qry.Where( f => f.IsActive == true );
+                    // Only match on the text that is displayed in the public
+                    // view, so the search can't be used to discover internal
+                    // names or GL codes.
+                    var searchTerm = options.SearchTerm;
+
+                    qry = financialAccountService.Queryable()
+                        .Where( f => ( f.PublicName != null && f.PublicName.Trim() != string.Empty && f.PublicName.Contains( searchTerm ) )
+                            || ( ( f.PublicName == null || f.PublicName.Trim() == string.Empty ) && f.Name != null && f.Name.Contains( searchTerm ) ) );
+                }
+                else
+                {
+                    qry = financialAccountService.GetAccountsBySearchTerm( options.SearchTerm );
                 }
 
-                var accountList = qry
-                    .OrderBy( f => f.Order )
-                    .ThenBy( f => f.Name )
-                    .ToList()
+                qry = FilterAccountPickerQuery( qry, isPublicView, includeInactive );
+
+                var accountList = OrderAccountPickerResults( qry, isPublicView )
                     .Select( a => new ListItemBag
                     {
                         Value = a.Guid.ToString(),
-                        Text = ( options.DisplayPublicName ? a.PublicName : a.Name ) + ( a.GlCode.IsNotNullOrWhiteSpace() ? $" ({a.GlCode})" : "" ),
-                        Category = financialAccountService.GetDelimitedAccountHierarchy( a, FinancialAccountService.AccountHierarchyDirection.CurrentAccountToParent )
+                        Text = GetAccountPickerText( a.Name, a.PublicName, options.DisplayPublicName, isPublicView )
+                            + ( !isPublicView && a.GlCode.IsNotNullOrWhiteSpace() ? $" ({a.GlCode})" : "" ),
+                        Category = GetAccountPickerHierarchy( a, isPublicView, financialAccountService )
                     } )
                     .ToList();
 
@@ -295,17 +354,19 @@ namespace Rock.Rest.v2
         [HttpPost]
         [Route( "AccountPickerGetPreviewItems" )]
         [Authenticate]
-        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [ProducesResponseType( HttpStatusCode.OK, Type = typeof( List<ListItemBag> ) )]
         [Rock.SystemGuid.RestActionGuid( "b080e9d6-207a-412d-acf5-d811fdec30a3" )]
         public IActionResult AccountPickerGetPreviewItems( [FromBody] AccountPickerGetPreviewItemsOptionsBag options )
         {
             IQueryable<FinancialAccount> qry;
 
-            if ( options.SelectedGuids.Count == 0 )
+            if ( options?.SelectedGuids == null || options.SelectedGuids.Count == 0 )
             {
                 return Ok( new List<ListItemBag>() );
             }
+
+            var isPublicView = IsAccountPickerPublicView();
 
             using ( var rockContext = new RockContext() )
             {
@@ -313,15 +374,16 @@ namespace Rock.Rest.v2
                 qry = financialAccountService.Queryable().AsNoTracking()
                     .Where( f => options.SelectedGuids.Contains( f.Guid ) );
 
-                var accountList = qry
-                    .OrderBy( f => f.Order )
-                    .ThenBy( f => f.Name )
-                    .ToList()
+                // Selected accounts are shown even if they have since become
+                // inactive, the same as before.
+                qry = FilterAccountPickerQuery( qry, isPublicView, true );
+
+                var accountList = OrderAccountPickerResults( qry, isPublicView )
                     .Select( a => new ListItemBag
                     {
                         Value = a.Guid.ToString(),
-                        Text = options.DisplayPublicName ? a.PublicName : a.Name,
-                        Category = financialAccountService.GetDelimitedAccountHierarchy( a, FinancialAccountService.AccountHierarchyDirection.CurrentAccountToParent )
+                        Text = GetAccountPickerText( a.Name, a.PublicName, options.DisplayPublicName, isPublicView ),
+                        Category = GetAccountPickerHierarchy( a, isPublicView, financialAccountService )
                     } )
                     .ToList();
 
@@ -336,7 +398,7 @@ namespace Rock.Rest.v2
         [HttpPost]
         [Route( "AccountPickerGetAllowSelectAll" )]
         [Authenticate]
-        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [ProducesResponseType( HttpStatusCode.OK, Type = typeof( bool ) )]
         [Rock.SystemGuid.RestActionGuid( "4a13b6ea-3031-48c2-9cdb-be183ccad9a2" )]
         public IActionResult AccountPickerGetAllowSelectAll()
@@ -344,10 +406,144 @@ namespace Rock.Rest.v2
             using ( var rockContext = new RockContext() )
             {
                 var financialAccountService = new FinancialAccountService( rockContext );
-                var count = financialAccountService.Queryable().Count();
+                var count = FilterAccountPickerQuery( financialAccountService.Queryable(), IsAccountPickerPublicView(), true ).Count();
 
                 return Ok( count < 1500 );
             }
+        }
+
+        /// <summary>
+        /// Determines if the current request should only see the public view
+        /// of the account picker. People with the REST action permission, or
+        /// with permission to view financial accounts (such as the finance
+        /// security roles), see all accounts.
+        /// </summary>
+        /// <returns><c>true</c> if only the public view should be returned; otherwise <c>false</c>.</returns>
+        private bool IsAccountPickerPublicView()
+        {
+            if ( IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_READ ) )
+            {
+                return false;
+            }
+
+            var currentPerson = RockRequestContext.CurrentPerson;
+
+            // Check the financial account entity type security, which only
+            // allows the finance security roles to view accounts by default.
+            // If those rules are changed then the account picker follows
+            // whatever the site has configured for viewing accounts.
+            if ( currentPerson != null && new FinancialAccount().IsAuthorized( Security.Authorization.VIEW, currentPerson ) )
+            {
+                return false;
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// Orders the accounts for the account picker. The public view is
+        /// ordered by the text that is displayed so the order does not reveal
+        /// anything about the internal account names.
+        /// </summary>
+        /// <param name="qry">The account query.</param>
+        /// <param name="isPublicView">If <c>true</c> then only the public view of the accounts is returned.</param>
+        /// <returns>The ordered list of accounts.</returns>
+        private static List<FinancialAccount> OrderAccountPickerResults( IQueryable<FinancialAccount> qry, bool isPublicView )
+        {
+            if ( !isPublicView )
+            {
+                return qry
+                    .OrderBy( f => f.Order )
+                    .ThenBy( f => f.Name )
+                    .ToList();
+            }
+
+            return qry
+                .ToList()
+                .OrderBy( f => f.Order )
+                .ThenBy( f => GetAccountPickerText( f.Name, f.PublicName, true, true ) )
+                .ToList();
+        }
+
+        /// <summary>
+        /// Determines if an account is part of the public view of the account
+        /// picker. Callers without the REST action permission only see the
+        /// public view, which is active accounts that are marked as public.
+        /// </summary>
+        /// <param name="isPublic">The account's public flag.</param>
+        /// <param name="isActive">The account's active flag.</param>
+        /// <returns><c>true</c> if the account is part of the public view; otherwise <c>false</c>.</returns>
+        private static bool IsAccountInPublicView( bool? isPublic, bool isActive )
+        {
+            return isPublic == true && isActive;
+        }
+
+        /// <summary>
+        /// Limits the account query to the accounts that can be returned.
+        /// </summary>
+        /// <param name="qry">The account query.</param>
+        /// <param name="isPublicView">If <c>true</c> then only the public view of the accounts is returned.</param>
+        /// <param name="includeInactive">If <c>true</c> then inactive accounts are included. Ignored for the public view.</param>
+        /// <returns>The filtered query.</returns>
+        private static IQueryable<FinancialAccount> FilterAccountPickerQuery( IQueryable<FinancialAccount> qry, bool isPublicView, bool includeInactive )
+        {
+            if ( isPublicView )
+            {
+                return qry.Where( f => f.IsPublic == true && f.IsActive == true );
+            }
+
+            if ( !includeInactive )
+            {
+                qry = qry.Where( f => f.IsActive == true );
+            }
+
+            return qry;
+        }
+
+        /// <summary>
+        /// Gets the text to display for an account in the account picker.
+        /// </summary>
+        /// <param name="name">The account name.</param>
+        /// <param name="publicName">The account public name.</param>
+        /// <param name="displayPublicName">If <c>true</c> then the caller requested the public name.</param>
+        /// <param name="isPublicView">If <c>true</c> then only the public view of the accounts is returned.</param>
+        /// <returns>The text to display.</returns>
+        private static string GetAccountPickerText( string name, string publicName, bool displayPublicName, bool isPublicView )
+        {
+            if ( !isPublicView )
+            {
+                return displayPublicName ? publicName : name;
+            }
+
+            // The public view only contains public accounts, so the name can
+            // be used when the account does not have a public name.
+            return publicName.IsNotNullOrWhiteSpace() ? publicName : name;
+        }
+
+        /// <summary>
+        /// Gets the '^' delimited names of the account's ancestors.
+        /// </summary>
+        /// <param name="account">The account.</param>
+        /// <param name="isPublicView">If <c>true</c> then only the public view of the accounts is returned.</param>
+        /// <param name="financialAccountService">The financial account service.</param>
+        /// <returns>The delimited account hierarchy.</returns>
+        private static string GetAccountPickerHierarchy( FinancialAccount account, bool isPublicView, FinancialAccountService financialAccountService )
+        {
+            if ( !isPublicView )
+            {
+                return financialAccountService.GetDelimitedAccountHierarchy( account, FinancialAccountService.AccountHierarchyDirection.CurrentAccountToParent );
+            }
+
+            var ancestors = FinancialAccountCache.Get( account.Id )?.GetAncestorFinancialAccounts() ?? new FinancialAccountCache[0];
+
+            // Only include the ancestors that are part of the path shown in
+            // the public view. The path stops at the first ancestor that is
+            // not in the public view.
+            return ancestors
+                .TakeWhile( a => IsAccountInPublicView( a.IsPublic, a.IsActive ) )
+                .OrderBy( a => a.Id )
+                .Select( a => System.Net.WebUtility.HtmlEncode( GetAccountPickerText( a.Name, a.PublicName, true, true ) ) )
+                .JoinStrings( "^" );
         }
 
         #endregion
