@@ -258,6 +258,7 @@
             },
             writeCookie: token => {
                 const secure = window.location.protocol === "https:" ? "; Secure" : "";
+                // a year, a choice: the block writes it again on every load while push is on
                 document.cookie = token
                     ? `${pushCookieName}=${encodeURIComponent(token)}; path=/; max-age=31536000; SameSite=Lax${secure}`
                     : `${pushCookieName}=; path=/; max-age=0; SameSite=Lax${secure}`;

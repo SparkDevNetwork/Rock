@@ -196,13 +196,15 @@ namespace Rock.Tests.Communication.Chat.Platform.Session
         }
 
         [TestMethod]
-        public void UnregisterPushDeviceAtSignOut_ACookieThatIsNotValidEncoding_NeverFailsTheSignOut()
+        public void UnregisterPushDeviceAtSignOut_ACookieThatIsNotValidEncoding_IsPassedOnAsItCame()
         {
             var started = new List<string>();
 
             var hasCookie = ChatSessionHelper.UnregisterPushDeviceAtSignOut( PersonId, "%E0%A4%A", ( id, token ) => started.Add( token ) );
 
+            // a broken escape is left as it is, so the platform finds no such token and removes nothing
             Assert.IsTrue( hasCookie );
+            CollectionAssert.AreEqual( new[] { "%E0%A4%A" }, started );
         }
 
         #region Support

@@ -34,7 +34,10 @@
     var chatPage = (function () {
         try {
             var page = new URL(new URL(self.location.href).searchParams.get("page") || "/", self.location.origin);
-            return page.origin === self.location.origin ? page.pathname : "/";
+            // A path that starts with two slashes, however the page spelled it (/.//host, /\host),
+            // opens as another host, so it is refused like another origin.
+            var isOnSite = page.origin === self.location.origin && page.pathname.indexOf("//") !== 0;
+            return isOnSite ? page.pathname : "/";
         }
         catch (e) {
             return "/";

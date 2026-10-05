@@ -282,11 +282,14 @@ describe("the push worker", () => {
     });
 
     test("a chat page off the site is never opened; the tap opens the site's root instead", async () => {
-        const worker = loadWorker({ page: "//elsewhere.example/phish" });
+        // a path that starts with two slashes opens as another host, however it was spelled
+        for (const page of ["//elsewhere.example/phish", "/.//elsewhere.example/phish", String.raw`/\elsewhere.example/phish`,"https://elsewhere.example/phish"]) {
+            const worker = loadWorker({ page });
 
-        await worker.fire("notificationclick", { notification: { close: jest.fn(), data: payload({}).data } });
+            await worker.fire("notificationclick", { notification: { close: jest.fn(), data: payload({}).data } });
 
-        expect(worker.opened).toEqual(["/?ChannelGuid=6f1c2a9e-0000-4000-8000-000000000001"]);
+            expect([page, worker.opened]).toEqual([page, ["/?ChannelGuid=6f1c2a9e-0000-4000-8000-000000000001"]]);
+        }
     });
 
     test("a tap with no chat window open opens the chat page on that channel", async () => {
