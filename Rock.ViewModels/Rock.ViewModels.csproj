@@ -994,6 +994,7 @@
     <Compile Include="Rest\Controls\GroupRolePickerGetAllForGroupRoleResultsBag.cs" />
     <Compile Include="Rest\Controls\GroupRolePickerGetAllForGroupRoleOptionsBag.cs" />
     <Compile Include="Rest\Controls\GroupRolePickerGetGroupRolesOptionsBag.cs" />
+    <Compile Include="Rest\Controls\GroupRolePickerGetGroupTypesOptionsBag.cs" />
     <Compile Include="Rest\Controls\CategorizedValuePickerGetTreeResultsBag.cs" />
     <Compile Include="Rest\Controls\CategorizedValuePickerGetChildrenOptionsBag.cs" />
     <Compile Include="Rest\Controls\CategorizedValuePickerNodeBag.cs" />

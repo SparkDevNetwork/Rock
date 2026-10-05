@@ -9,6 +9,7 @@
     import { Guid } from "@Obsidian/Types";
     import { standardAsyncPickerProps, useStandardAsyncPickerProps, useVModelPassthrough } from "@Obsidian/Utility/component";
     import { useHttp } from "@Obsidian/Utility/http";
+    import { useSecurityGrantToken } from "@Obsidian/Utility/block";
     import { GroupMemberPickerGetGroupMembersOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/groupMemberPickerGetGroupMembersOptionsBag";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { computed, PropType, ref, watch } from "vue";
@@ -38,6 +39,7 @@
     const internalValue = useVModelPassthrough(props, "modelValue", emit);
     const standardProps = useStandardAsyncPickerProps(props);
     const http = useHttp();
+    const securityGrantToken = useSecurityGrantToken();
     const loadedItems = ref<ListItemBag[] | null>(null);
 
     // #endregion
@@ -61,7 +63,8 @@
      */
     const loadOptions = async (): Promise<ListItemBag[]> => {
         const options: GroupMemberPickerGetGroupMembersOptionsBag = {
-            groupGuid: toGuidOrNull(props.groupGuid)
+            groupGuid: toGuidOrNull(props.groupGuid),
+            securityGrantToken: securityGrantToken.value
         };
         const result = await http.post<ListItemBag[]>("/api/v2/Controls/GroupMemberPickerGetGroupMembers", undefined, options);
 
