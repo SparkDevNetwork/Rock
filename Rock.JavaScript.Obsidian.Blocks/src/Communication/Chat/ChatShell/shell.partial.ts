@@ -322,6 +322,7 @@ export function createChatShell(options: ShellOptions): ChatShell {
     async function end(): Promise<void> {
         isStopped = true;
         cancelRecheck();
+        timelines.stop();
         session.stop();
         state.gate = session.state.gate;
         state.phase = session.state.gate === "ok" ? "failed" : "refused";
@@ -381,7 +382,8 @@ export function createChatShell(options: ShellOptions): ChatShell {
             }
             return result.data as HistoryPage;
         },
-        catchUp: () => ({ page: session.settings().limits.catch_up_page, max: session.settings().limits.catch_up_max })
+        catchUp: () => ({ page: session.settings().limits.catch_up_page, max: session.settings().limits.catch_up_max }),
+        retryDelay: () => ({ baseMs: session.settings().limits.reconnect_base_ms, capMs: session.settings().limits.reconnect_cap_ms })
     });
 
     const channels = createChannelStore({ reloadSidebar: () => void loadSidebar() });
@@ -449,6 +451,8 @@ export function createChatShell(options: ShellOptions): ChatShell {
 
         if (state.activeChannelId && state.activeChannelId !== channelId) {
             void tracker.leave();
+            // its catch-up stops and its answers still on the way are dropped
+            timelines.leave(state.activeChannelId);
         }
 
         state.activeChannelId = channelId;
@@ -562,6 +566,9 @@ export function createChatShell(options: ShellOptions): ChatShell {
                         // An open of it still loading is superseded, so it cannot take it back.
                         openCount++;
                         void tracker.leave();
+                        if (state.activeChannelId) {
+                            timelines.leave(state.activeChannelId);
+                        }
                         state.activeChannelId = null;
                         channels.setActive(null);
                         report(error);
@@ -625,6 +632,7 @@ export function createChatShell(options: ShellOptions): ChatShell {
         stop: async (): Promise<void> => {
             isStopped = true;
             cancelRecheck();
+            timelines.stop();
 
             // Stopped before the last save, so no refresh starts while it goes out; the token is
             // kept, and the save still carries it.

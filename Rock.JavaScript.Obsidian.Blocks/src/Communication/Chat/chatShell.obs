@@ -16,7 +16,7 @@
                             @select="onSelect" />
 
             <div class="chat-shell-main">
-                <ChatHeader :title="activeTitle" :connection="shell.state.connection" :banner="shell.state.banner" />
+                <ChatHeader :title="activeTitle" :connection="shell.state.connection" :banner="shell.state.banner" :isBehind="isActiveBehind" />
 
                 <MessageFeed v-if="activeChannelId"
                              :key="activeChannelId"
@@ -110,6 +110,9 @@
     // #region Computed Values
 
     const activeChannelId = computed((): string | null => shell.value.state.activeChannelId);
+
+    /** Whether the open channel's catch-up failed and is trying again, so messages may be missing. */
+    const isActiveBehind = computed((): boolean => !!activeChannelId.value && shell.value.timelines.state(activeChannelId.value).isBehind);
 
     const isPromptShown = computed((): boolean => isBirthdatePromptShown(shell.value.state.phase, shell.value.state.gate));
 

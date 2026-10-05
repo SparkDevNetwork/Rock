@@ -3,6 +3,7 @@
     <header class="chat-header">
         <span class="chat-header-title">{{ title }}</span>
         <span v-if="connection" class="label label-warning" data-testid="connection-badge">Reconnecting…</span>
+        <span v-else-if="isBehind" class="label label-default" data-testid="catching-up-badge">Catching up…</span>
     </header>
     <div v-if="banner" class="alert alert-warning chat-header-banner" data-testid="service-banner">{{ banner }}</div>
 </template>
@@ -47,6 +48,12 @@
         banner: {
             type: String as PropType<string | null>,
             default: null
+        },
+
+        /** Whether the channel's catch-up failed and is trying again, so messages may be missing. */
+        isBehind: {
+            type: Boolean,
+            default: false
         }
     });
 </script>
