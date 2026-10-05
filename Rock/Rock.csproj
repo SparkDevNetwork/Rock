@@ -794,6 +794,7 @@
     <Compile Include="Jobs\PostUpdateJobs\PostV171AddCommunicationRecipientIndex.cs" />
     <Compile Include="Jobs\PostUpdateJobs\PostV173UpdateNamelessSchedules.cs" />
     <Compile Include="Jobs\PostUpdateJobs\PostV1710FixTransactionImageMimeTypes.cs" />
+    <Compile Include="Jobs\PostUpdateJobs\PostV1711CleanSocialMediaAccountValues.cs" />
     <Compile Include="Jobs\RunLava.cs" />
     <Compile Include="Model\CRM\UserLogin\UpdateLastLoginArgs.cs" />
     <Compile Include="Data\AttributeValueExpressionVisitor.cs" />
@@ -1839,6 +1840,7 @@
     <Compile Include="Plugin\HotFixes\291_HardenCoreWorkflowSecurity.cs" />
     <Compile Include="Plugin\HotFixes\325_AddVersionSecurityNoticeBlock.cs" />
     <Compile Include="Plugin\HotFixes\326_FixCheckScannerTransactionImages.cs" />
+    <Compile Include="Plugin\HotFixes\327_CleanSocialMediaAccountValues.cs" />
     <Compile Include="Plugin\HotFixes\HotFixMigrationResource.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>

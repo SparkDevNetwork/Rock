@@ -258,6 +258,7 @@
     <Compile Include="Configuration\RockAppExtensionsTests.cs" />
     <Compile Include="Core\EntitySearch\EntitySearchTests.cs" />
     <Compile Include="Field\Types\BooleanFieldTypeTests.cs" />
+    <Compile Include="Field\Types\SocialMediaAccountFieldTypeTests.cs" />
     <Compile Include="Field\Types\StructureContentEditorFieldTypeTests.cs" />
     <Compile Include="Lava\Filters\ConversionFilterTests.cs" />
     <Compile Include="Lava\Filters\StructuredContentFilterTests.cs" />
@@ -289,6 +290,7 @@
     <Compile Include="Observability\ObservabilityHelperTests.cs" />
     <Compile Include="Security\EncryptionTests.cs" />
     <Compile Include="Security\PersonTokenScopeTests.cs" />
+    <Compile Include="Security\StringValueValidatorTests.cs" />
     <Compile Include="Slingshot\PersonCsvMapperTest.cs" />
     <Compile Include="Slingshot\PersonPhoneCsvMapperTest.cs" />
     <Compile Include="UnitTestInitializer.cs" />

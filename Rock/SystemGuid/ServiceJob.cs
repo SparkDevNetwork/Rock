@@ -508,5 +508,10 @@ namespace Rock.SystemGuid
         /// The job to run Post v17.10 Data Migrations to fix the mime type of check images uploaded by the Check Scanner.
         /// </summary>
         public const string DATA_MIGRATIONS_1710_FIX_TRANSACTION_IMAGE_MIME_TYPES = "B954DAC7-D30C-45CF-9CD4-872E8F9856DE";
+
+        /// <summary>
+        /// The job to run Post v17.11 Data Migrations to clean up unsafe Social Media Account attribute values.
+        /// </summary>
+        public const string DATA_MIGRATIONS_1711_CLEAN_SOCIAL_MEDIA_ACCOUNT_VALUES = "230F32E9-68A9-4741-BEA2-5B5C020A761E";
     }
 }
