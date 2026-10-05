@@ -330,6 +330,67 @@ describe("catching up after a rejoin", () => {
         expect(ids(state.messages)).toEqual(Array.from({ length: firstPageSize }, (_, i) => 1000 - firstPageSize + 1 + i));
         expect(state.hasMore).toBe(true);
     });
+
+    // What is on screen is always one run of messages with nothing missing in the middle: either
+    // everything back to the first message, or a run whose older end says there is more to load.
+    function expectNoHole(state: { messages: TimelineMessage[], hasMore: boolean }, newest: number): void {
+        const held = ids(state.messages);
+        expect(held[held.length - 1]).toBe(newest);
+        expect(held).toEqual(Array.from({ length: held.length }, (_, i) => held[0] + i));
+        expect(held[0] === 1 || state.hasMore).toBe(true);
+    }
+
+    test("reopening a channel after 60 new messages leaves no hole in what it holds", async () => {
+        let newest = 3;
+        const dependencies: CatchUpDependencies = {
+            fetchPage: async (_c, options) => history(newest)(options as Fetch),
+            catchUp: () => ({ page: 25, max: 500 })
+        };
+        const timelines = createTimelines(dependencies);
+        await timelines.loadNewest(channel);
+
+        // the person left the channel; 60 arrive; opening it again reads its newest page
+        newest = 63;
+        await timelines.loadNewest(channel);
+        await timelines.onJoined(channel);
+
+        expectNoHole(timelines.state(channel), 63);
+    });
+
+    test("a resync after 70 messages it never heard live leaves no hole either", async () => {
+        let newest = 3;
+        const dependencies: CatchUpDependencies = {
+            fetchPage: async (_c, options) => history(newest)(options as Fetch),
+            catchUp: () => ({ page: 25, max: 500 })
+        };
+        const timelines = createTimelines(dependencies);
+        await timelines.loadNewest(channel);
+        newest = 5;
+        timelines.applyEvent(channel, "message.created", { ...message(4) });
+        timelines.applyEvent(channel, "message.created", { ...message(5) });
+
+        // the server asks for a resync, which reads the newest page again
+        newest = 75;
+        await timelines.loadNewest(channel);
+        await timelines.onJoined(channel);
+
+        expectNoHole(timelines.state(channel), 75);
+    });
+
+    test("a channel whose first page was empty still reaches every message a rejoin finds", async () => {
+        let newest = 0;
+        const dependencies: CatchUpDependencies = {
+            fetchPage: async (_c, options) => history(newest)(options as Fetch),
+            catchUp: () => ({ page: 25, max: 500 })
+        };
+        const timelines = createTimelines(dependencies);
+        await timelines.loadNewest(channel);
+
+        newest = 80;
+        await timelines.onJoined(channel);
+
+        expectNoHole(timelines.state(channel), 80);
+    });
 });
 
 describe("what the server adds later", () => {

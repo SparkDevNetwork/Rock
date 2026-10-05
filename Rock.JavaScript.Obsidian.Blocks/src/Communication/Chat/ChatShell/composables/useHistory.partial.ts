@@ -308,6 +308,22 @@ export function createTimelines(dependencies: TimelineDependencies): Timelines {
     function takeNewest(channelId: string, page: HistoryPage): void {
         const timeline = state(channelId);
 
+        // A channel opened again, or reloaded by a resync, may have missed more than one page
+        // since what it holds. Merging the newest page onto that would leave a gap in the middle
+        // and move where catch-up resumes past it, so nothing would ever fill it. When the page
+        // has older messages and does not overlap what was received (ids are shared across
+        // channels, so only an overlap proves nothing lies between), what is held goes and the
+        // channel shows the newest page, with older ones loading on scroll as on first open.
+        const oldest = page.messages.length > 0 ? Math.min(...page.messages.map(m => m.id)) : undefined;
+        const isDetached = timeline.messages.length > 0
+            && page.has_more
+            && oldest !== undefined
+            && oldest > (receivedThrough.get(channelId) ?? 0);
+        if (isDetached) {
+            timeline.messages.splice(0, timeline.messages.length);
+            receivedThrough.delete(channelId);
+        }
+
         mergePage(channelId, page);
         timeline.hasMore = page.has_more;
         timeline.readCursor = page.read_cursor;
@@ -342,8 +358,11 @@ export function createTimelines(dependencies: TimelineDependencies): Timelines {
 
         onJoined: async (channelId: string): Promise<void> => {
             const { page: pageSize, max } = dependencies.catchUp?.() ?? defaultCatchUp;
-            const messages = state(channelId).messages;
-            let afterId = receivedThrough.get(channelId);
+            const timeline = state(channelId);
+            const messages = timeline.messages;
+            // A channel whose first page came back empty has received nothing, so it pages from
+            // the very start; reading only its newest page would strand anything older.
+            let afterId = receivedThrough.get(channelId) ?? (timeline.isLoaded ? 0 : undefined);
 
             // Nothing held yet, because the first page is still on its way: there is no newest to
             // page from, so the newest messages are read and merged, which catches one that
