@@ -256,7 +256,7 @@ namespace RockWeb.Blocks.Security.Oidc
             var redirectUri = GetValidatedRedirectUri( authClient );
             if ( redirectUri == null )
             {
-                pnlPanel.Visible = false;
+                divContent.Visible = false;
                 ShowError( "The application requesting access could not be verified." );
                 return;
             }
