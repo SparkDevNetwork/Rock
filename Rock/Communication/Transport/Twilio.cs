@@ -62,7 +62,7 @@ namespace Rock.Communication.Transport
         Order = 2,
         Key = TwilioAttributeKey.LongCodeThrottling )]
     [BooleanField( "Enable Signature Validation",
-        Description = "The Auth Token will be validated with each request to the Twilio web hooks. If enabled, the Public Application Root must be used as the Webhook URL of your configuration in Twilio otherwise your incoming messages will not validate (be accepted).  Also, if you change your AuthToken or create a secondary AuthToken in Twilio, your incoming Twilio messages would not validate until the Token has been promoted to your primary AuthToken.",
+        Description = "This setting is no longer used. The Auth Token is always validated with each request to the Twilio web hooks, so the Public Application Root must be used as the Webhook URL of your configuration in Twilio otherwise your incoming messages will not validate (be accepted).  Also, if you change your AuthToken or create a secondary AuthToken in Twilio, your incoming Twilio messages would not validate until the Token has been promoted to your primary AuthToken.",
         Order = 3,
         Key = TwilioAttributeKey.EnableValidation )]
     [IntegerField( "Concurrent Send Workers",
