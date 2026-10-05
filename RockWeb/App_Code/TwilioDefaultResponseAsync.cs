@@ -148,7 +148,10 @@ public abstract class TwilioDefaultResponseAsync : IAsyncResult
 
         if ( !IsValidRequest( request ) )
         {
-            response.Write( "Invalid request type." );
+            // Return 403 so Twilio records the failure in its debugger
+            // instead of treating the response as a successful reply.
+            response.StatusCode = 403;
+            response.Write( "Invalid request." );
         }
         else
         {
@@ -265,27 +268,21 @@ public abstract class TwilioDefaultResponseAsync : IAsyncResult
             return false;
         }
 
-        // TODO Only check if enabled in TwilioComponent config
-        // otherwise return true;
-        var twilioComponent = new Rock.Communication.Transport.Twilio();
-        twilioComponent.LoadAttributes();
-
-        if ( twilioComponent.AttributeValues.ContainsKey( TwilioAttributeKey.EnableValidation ) )
+        // The From number is trusted as the sender's identity, so the request
+        // must always be signed by Twilio. The transport's "Enable Signature
+        // Validation" setting is no longer used to skip this check.
+        if ( !IsValidTwilioSignature( request, _logger ) )
         {
-            var continueValidation = twilioComponent.AttributeValues[TwilioAttributeKey.EnableValidation].Value.AsBoolean();
-            if ( !continueValidation )
-            {
-                return true;
-            }
+            _logger.LogWarning( "Rejected Twilio webhook request with a missing or invalid Twilio signature." );
+            return false;
         }
 
-        return IsValidTwilioSignature( request, _logger );
+        return true;
     }
 
     /// <summary>
     /// Determines whether the request carries a valid X-Twilio-Signature for
-    /// the auth token configured on the Twilio transport. This check does not
-    /// consider the transport's "Enable Signature Validation" setting.
+    /// the auth token configured on the Twilio transport.
     /// </summary>
     /// <param name="request">The request to validate.</param>
     /// <param name="logger">The logger to write validation failures to.</param>
