@@ -158,7 +158,11 @@ namespace Rock.Attribute
                 PostHtml = attribute.PostHtml,
             };
 
-            if ( fieldType is ISecurityGrantFieldType securityGrantFieldType )
+            // Only field types whose rules are safe to give to anyone that can
+            // see the edit control get their own security grant. Other field
+            // types may include rules that allow changes, such as the asset
+            // manager, so they must rely on a security grant from the block.
+            if ( fieldType is IPublicSecurityGrantFieldType securityGrantFieldType )
             {
                 var securityGrant = new SecurityGrant();
 

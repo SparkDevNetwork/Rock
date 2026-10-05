@@ -1968,6 +1968,7 @@
     <Compile Include="ElectronicSignature\GetSignatureInformationHtmlOptions.cs" />
     <Compile Include="Field\ConfigurationValueUsage.cs" />
     <Compile Include="Field\FieldTypeUsage.cs" />
+    <Compile Include="Field\IPublicSecurityGrantFieldType.cs" />
     <Compile Include="Field\ISecurityGrantFieldType.cs" />
     <Compile Include="Field\Types\CategorizedDefinedValueFieldType.cs" />
     <Compile Include="Field\Types\BenevolenceTypeFieldType.cs" />
