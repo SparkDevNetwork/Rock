@@ -3341,9 +3341,19 @@ namespace Rock.Utility
         /// <returns>Id of the binaryFile</returns>
         private BinaryFile SaveImage( string imageUrl, BinaryFileType binaryFileType, string binaryFileTypeSettings, RockContext context )
         {
-            // always create a new BinaryFile record of IsTemporary when a file is uploaded
+            /*
+                10/5/26 - CLAUDE
+
+                Every caller attaches the returned file immediately (check images to a
+                FinancialTransactionImage, photos to a Person), so it is never actually
+                temporary. Normally the FinancialTransactionImage and Person save hooks
+                would clear IsTemporary, but sample data is saved with
+                disablePrePostProcessing: true, so those hooks never run.
+
+                Reason: Save hooks are bypassed, so the file must be created as non-temporary.
+            */
             BinaryFile binaryFile = new BinaryFile();
-            binaryFile.IsTemporary = true;
+            binaryFile.IsTemporary = false;
             binaryFile.BinaryFileTypeId = binaryFileType.Id;
             binaryFile.FileName = Path.GetFileName( imageUrl );
             Stopwatch stopwatch = Stopwatch.StartNew();
