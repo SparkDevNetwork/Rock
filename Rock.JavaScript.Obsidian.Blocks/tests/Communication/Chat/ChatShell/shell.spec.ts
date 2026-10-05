@@ -539,6 +539,45 @@ describe("what the platform may send a released client", () => {
         expect(h.counts.mints).toBe(before.mints);
     });
 
+    test("after a resync reloads the open channel, it catches up from that page", async () => {
+        const h = await started();
+        // the join's own catch-up first
+        while (h.history[channelA]?.length) {
+            answerHistory(h, channelA, 10);
+            await settle();
+        }
+
+        personal(h, "resync", {});
+        await settle();
+        answerHistory(h, channelA, 10);
+        await settle();
+
+        expect(h.history[channelA]?.length ?? 0).toBe(1);
+    });
+
+    test("a resync whose channel was left while its page was on the way catches nothing up for it", async () => {
+        const h = await started();
+        while (h.history[channelA]?.length) {
+            answerHistory(h, channelA, 10);
+            await settle();
+        }
+
+        personal(h, "resync", {});
+        await settle();
+        // the person moves to another channel before the reload of the first one answers
+        const toB = h.shell.selectChannel(channelB);
+        await settle();
+        answerHistory(h, channelA, 10);
+        await settle();
+
+        expect(h.history[channelA]?.length ?? 0).toBe(0);
+        while (h.history[channelB]?.length) {
+            answerHistory(h, channelB, 20);
+            await settle();
+        }
+        await toB;
+    });
+
     test("a Realtime error it cannot classify fetches a new token, reloads the sidebar and so rechecks access", async () => {
         const h = await started();
         const before = { ...h.counts };
