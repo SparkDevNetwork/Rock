@@ -302,6 +302,76 @@ namespace RockWeb
         };
 
         /// <summary>
+        /// The generic mime type that indicates the client did not know the type of the file.
+        /// </summary>
+        private const string UnknownMimeType = "application/octet-stream";
+
+        /// <summary>
+        /// The image mime types that can be inferred from the file name when the client did not
+        /// supply a usable mime type.
+        /// </summary>
+        private static readonly HashSet<string> _inferableMimeTypes = new HashSet<string>( StringComparer.OrdinalIgnoreCase )
+        {
+            "image/png",
+            "image/jpeg",
+            "image/gif",
+            "image/bmp",
+            "image/tiff"
+        };
+
+        /// <summary>
+        /// Gets the mime type to use for the uploaded file. If the client did not supply a
+        /// specific mime type then an attempt is made to infer an image type from the file
+        /// name.
+        /// </summary>
+        /// <param name="uploadedFile">The uploaded file.</param>
+        /// <param name="isInferred">Set to <c>true</c> if the returned mime type was inferred rather than supplied by the client.</param>
+        /// <returns>The mime type to use for the uploaded file.</returns>
+        private static string GetUploadedFileMimeType( HttpPostedFile uploadedFile, out bool isInferred )
+        {
+            /*
+                10/5/2026 - DSH
+
+                RFC 7578 (section 4.4) says a file part should be labeled with an appropriate
+                media type if known, or "application/octet-stream". So octet-stream means the
+                client did not know the type, not that the file is a specific type. RFC 2046
+                (section 4.5.1) defines it as arbitrary binary data. A missing type is treated
+                the same way.
+
+                The Check Scanner (via RestSharp) uploads its PNG images this way, which stores
+                them with a mime type that GetImage.ashx refuses to serve. In that case we infer
+                the type from the file name, but only for raster image types. Active types such
+                as text/html or image/svg+xml are never inferred.
+
+                Do not remove this once the Check Scanner is updated to send a content type.
+                Older scanner installs will keep uploading this way, and any other client may
+                legitimately send octet-stream for a file whose type it does not know. This is
+                general handling of an unknown type, not a workaround for the scanner alone.
+
+                Reason: Issue #7083
+            */
+            isInferred = false;
+
+            var mimeType = uploadedFile.ContentType;
+
+            if ( mimeType.IsNotNullOrWhiteSpace() && !mimeType.Equals( UnknownMimeType, StringComparison.OrdinalIgnoreCase ) )
+            {
+                return mimeType;
+            }
+
+            var inferredMimeType = MimeMapping.GetMimeMapping( uploadedFile.FileName );
+
+            if ( _inferableMimeTypes.Contains( inferredMimeType ) )
+            {
+                isInferred = true;
+
+                return inferredMimeType;
+            }
+
+            return UnknownMimeType;
+        }
+
+        /// <summary>
         /// Processes the binary file.
         /// </summary>
         /// <param name="context">The context.</param>
@@ -326,6 +396,8 @@ namespace RockWeb
                 throw new Rock.Web.FileUploadException( "Not authorized to upload this type of file.", System.Net.HttpStatusCode.Forbidden );
             }
 
+            var mimeType = GetUploadedFileMimeType( uploadedFile, out var isMimeTypeInferred );
+
             if ( binaryFileType.PreferredRequired )
             {
                 // Check Max Size
@@ -337,21 +409,37 @@ namespace RockWeb
                 }
 
                 // Check Max Width/Height for images
-                if ( uploadedFile.ContentType.StartsWith( "image/" ) )
+                if ( mimeType.StartsWith( "image/" ) )
                 {
-                    using ( var image = System.Drawing.Image.FromStream( uploadedFile.InputStream ) )
+                    System.Drawing.Image image = null;
+
+                    try
                     {
-                        if ( binaryFileType.MaxWidth.HasValue && binaryFileType.MaxWidth > 0 && image.Width > binaryFileType.MaxWidth.Value )
+                        image = System.Drawing.Image.FromStream( uploadedFile.InputStream );
+                    }
+                    catch ( ArgumentException ) when ( isMimeTypeInferred )
+                    {
+                        // The inferred image type could not be decoded, so store the
+                        // file as an unknown type rather than failing the upload.
+                        mimeType = UnknownMimeType;
+                    }
+
+                    if ( image != null )
+                    {
+                        using ( image )
                         {
-                            throw new Rock.Web.FileUploadException(
-                                $"The maximum width for file type \"{binaryFileType.Name}\" is {binaryFileType.MaxWidth.Value} pixels", System.Net.HttpStatusCode.Forbidden
-                                );
-                        }
-                        if ( binaryFileType.MaxHeight.HasValue && binaryFileType.MaxHeight > 0 && image.Height > binaryFileType.MaxHeight.Value )
-                        {
-                            throw new Rock.Web.FileUploadException(
-                                $"The maximum height for file type \"{binaryFileType.Name}\" is {binaryFileType.MaxHeight.Value} pixels", System.Net.HttpStatusCode.Forbidden
-                                );
+                            if ( binaryFileType.MaxWidth.HasValue && binaryFileType.MaxWidth > 0 && image.Width > binaryFileType.MaxWidth.Value )
+                            {
+                                throw new Rock.Web.FileUploadException(
+                                    $"The maximum width for file type \"{binaryFileType.Name}\" is {binaryFileType.MaxWidth.Value} pixels", System.Net.HttpStatusCode.Forbidden
+                                    );
+                            }
+                            if ( binaryFileType.MaxHeight.HasValue && binaryFileType.MaxHeight > 0 && image.Height > binaryFileType.MaxHeight.Value )
+                            {
+                                throw new Rock.Web.FileUploadException(
+                                    $"The maximum height for file type \"{binaryFileType.Name}\" is {binaryFileType.MaxHeight.Value} pixels", System.Net.HttpStatusCode.Forbidden
+                                    );
+                            }
                         }
                     }
                 }
@@ -374,7 +462,7 @@ namespace RockWeb
             binaryFile.ParentEntityTypeId = context.Request.QueryString[ParameterKey.ParentEntityTypeId].AsIntegerOrNull();
             binaryFile.ParentEntityId = context.Request.QueryString[ParameterKey.ParentEntityId].AsIntegerOrNull();
             binaryFile.BinaryFileTypeId = binaryFileType.Id;
-            binaryFile.MimeType = uploadedFile.ContentType;
+            binaryFile.MimeType = mimeType;
             binaryFile.FileSize = uploadedFile.ContentLength;
 
             // Record who uploaded the file. The handler does not provide the
