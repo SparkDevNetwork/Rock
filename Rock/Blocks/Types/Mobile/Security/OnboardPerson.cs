@@ -1494,10 +1494,27 @@ namespace Rock.Blocks.Types.Mobile.Security
         /// <param name="rockContext">The rock context.</param>
         private void UpdatePersonInterests( Person person, IEnumerable<Guid> topicGuids, RockContext rockContext )
         {
+            // The topic guids come from the client and cannot be trusted.
+            // Only allow the communication lists we would offer the
+            // individual to pick from.
+            var allowedGroupGuids = new HashSet<Guid>( GetInterests( rockContext ).Select( a => a.Key.AsGuid() ) );
+            var communicationListGroupTypeId = GroupTypeCache.GetId( SystemGuid.GroupType.GROUPTYPE_COMMUNICATIONLIST.AsGuid() );
+
             foreach ( var groupGuid in topicGuids )
             {
+                if ( !allowedGroupGuids.Contains( groupGuid ) )
+                {
+                    continue;
+                }
+
                 var groupMemberService = new GroupMemberService( rockContext );
                 var group = new GroupService( rockContext ).Get( groupGuid );
+
+                if ( group == null || group.GroupTypeId != communicationListGroupTypeId || group.IsSecurityRoleOrSecurityGroupType() )
+                {
+                    continue;
+                }
+
                 var groupMemberRecordsForPerson = groupMemberService.Queryable()
                     .Where( a => a.GroupId == group.Id && a.PersonId == person.Id ).ToList();
 
