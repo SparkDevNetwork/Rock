@@ -257,6 +257,15 @@ describe("catching up after a rejoin", () => {
         };
     }
 
+    // What is on screen is always one run of messages with nothing missing in the middle: either
+    // everything back to the first message, or a run whose older end says there is more to load.
+    function expectNoHole(state: { messages: TimelineMessage[], hasMore: boolean }, newest: number): void {
+        const held = ids(state.messages);
+        expect(held[held.length - 1]).toBe(newest);
+        expect(held).toEqual(Array.from({ length: held.length }, (_, i) => held[0] + i));
+        expect(held[0] === 1 || state.hasMore).toBe(true);
+    }
+
     test("a rejoin pages forward with after until caught up, filling a gap of 60", async () => {
         let newest = 3;
         const fetches: Fetch[] = [];
@@ -279,6 +288,7 @@ describe("catching up after a rejoin", () => {
             { limit: 25, afterId: 53 }
         ]);
         expect(ids(timelines.state(channel).messages)).toEqual(Array.from({ length: 63 }, (_, i) => i + 1));
+        expectNoHole(timelines.state(channel), 63);
     });
 
     test("a person's own send while the socket was down does not hide the messages others sent before it", async () => {
@@ -303,6 +313,7 @@ describe("catching up after a rejoin", () => {
 
         expect(fetches[fetches.length - 1]).toEqual({ limit: 25, afterId: 100 });
         expect(ids(timelines.state(channel).messages).slice(-6)).toEqual([101, 102, 103, 104, 105, 106]);
+        expectNoHole(timelines.state(channel), 106);
     });
 
     test("past the bound it drops what it held and opens the channel fresh at the newest page", async () => {
@@ -329,16 +340,34 @@ describe("catching up after a rejoin", () => {
         ]);
         expect(ids(state.messages)).toEqual(Array.from({ length: firstPageSize }, (_, i) => 1000 - firstPageSize + 1 + i));
         expect(state.hasMore).toBe(true);
+        expectNoHole(state, 1000);
     });
 
-    // What is on screen is always one run of messages with nothing missing in the middle: either
-    // everything back to the first message, or a run whose older end says there is more to load.
-    function expectNoHole(state: { messages: TimelineMessage[], hasMore: boolean }, newest: number): void {
-        const held = ids(state.messages);
-        expect(held[held.length - 1]).toBe(newest);
-        expect(held).toEqual(Array.from({ length: held.length }, (_, i) => held[0] + i));
-        expect(held[0] === 1 || state.hasMore).toBe(true);
-    }
+    test("loading older messages after a fresh reload keeps one run back to the first message", async () => {
+        let newest = 3;
+        const dependencies: CatchUpDependencies = {
+            fetchPage: async (_c, options) => {
+                const fetch = options as Fetch;
+                if (fetch.beforeId !== undefined) {
+                    const to = fetch.beforeId - 1;
+                    const from = Math.max(1, to - fetch.limit + 1);
+                    return page(Array.from({ length: to - from + 1 }, (_, i) => from + i), { has_more: from > 1 });
+                }
+                return history(newest)(fetch);
+            },
+            catchUp: () => ({ page: 25, max: 50 })
+        };
+        const timelines = createTimelines(dependencies);
+        await timelines.loadNewest(channel);
+        newest = 200;
+        await timelines.onJoined(channel);
+
+        while (timelines.state(channel).hasMore) {
+            await timelines.loadOlder(channel);
+            expectNoHole(timelines.state(channel), 200);
+        }
+        expect(ids(timelines.state(channel).messages)[0]).toBe(1);
+    });
 
     test("reopening a channel after 60 new messages leaves no hole in what it holds", async () => {
         let newest = 3;
