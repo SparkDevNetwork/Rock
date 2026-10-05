@@ -605,6 +605,12 @@ namespace Rock.Blocks.Communication
 
         #region Methods
 
+        /// <inheritdoc/>
+        protected override string RenewSecurityGrantToken()
+        {
+            return GetSecurityGrantToken();
+        }
+
         /// <summary>
         /// Gets the security grant token that will be used by UI controls on
         /// this block to ensure they have the proper permissions.
@@ -618,6 +624,9 @@ namespace Rock.Blocks.Communication
             securityGrant.AddRule( new AssetAndFileManagerSecurityGrantRule( Authorization.EDIT ) );
             securityGrant.AddRule( new AssetAndFileManagerSecurityGrantRule( Authorization.DELETE ) );
             securityGrant.AddRule( new EmailEditorSecurityGrantRule() );
+
+            // Allow the group picker used by the RSVP email component.
+            securityGrant.AddRule( new GroupPickerSecurityGrantRule() );
 
             return securityGrant.ToToken();
         }

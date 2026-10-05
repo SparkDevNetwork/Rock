@@ -2068,13 +2068,21 @@ namespace Rock.Blocks.Group.Scheduling
                 );
         }
 
+        /// <inheritdoc/>
+        protected override string RenewSecurityGrantToken()
+        {
+            return GetSecurityGrantToken();
+        }
+
         /// <summary>
         /// Gets the security grant token that will be used by UI controls on this block to ensure they have the proper permissions.
         /// </summary>
         /// <returns>A string that represents the security grant token.</returns>
         private string GetSecurityGrantToken()
         {
-            return new Rock.Security.SecurityGrant().ToToken();
+            return new Rock.Security.SecurityGrant()
+                .AddRule( new Rock.Security.SecurityGrantRules.GroupPickerSecurityGrantRule() )
+                .ToToken();
         }
 
         #endregion
