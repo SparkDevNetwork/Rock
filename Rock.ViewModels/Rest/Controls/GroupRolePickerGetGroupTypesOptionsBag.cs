@@ -14,22 +14,14 @@
 // limitations under the License.
 // </copyright>
 //
-using System;
-using System.Collections.Generic;
-
 namespace Rock.ViewModels.Rest.Controls
 {
     /// <summary>
-    /// The options that can be passed to the GetRoles API action of
-    /// the GroupAndRolePicker control.
+    /// The options that can be passed to the GetGroupTypes API action of
+    /// the GroupRolePicker control.
     /// </summary>
-    public class GroupAndRolePickerGetRolesOptionsBag
+    public class GroupRolePickerGetGroupTypesOptionsBag
     {
-        /// <summary>
-        /// GUID of the group type we want to filter roles by
-        /// </summary>
-        public Guid GroupTypeGuid { get; set; } = Guid.Empty;
-
         /// <summary>
         /// Gets or sets the security grant token to use when performing
         /// authorization checks.

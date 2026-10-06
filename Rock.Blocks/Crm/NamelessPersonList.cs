@@ -24,6 +24,8 @@ using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Obsidian.UI;
+using Rock.Security;
+using Rock.Security.SecurityGrantRules;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Crm.NamelessPersonList;
 using Rock.ViewModels.Rest.Controls;
@@ -242,8 +244,35 @@ namespace Rock.Blocks.Crm
             box.ExpectedRowCount = null;
             box.Options = GetBoxOptions();
             box.GridDefinition = builder.BuildDefinition();
+            box.SecurityGrantToken = GetSecurityGrantToken();
 
             return box;
+        }
+
+        /// <inheritdoc/>
+        protected override string RenewSecurityGrantToken()
+        {
+            return GetSecurityGrantToken();
+        }
+
+        /// <summary>
+        /// Gets the security grant token that will be used by UI controls on
+        /// this block to ensure they have the proper permissions.
+        /// </summary>
+        /// <returns>A string that represents the security grant token.</returns>
+        private string GetSecurityGrantToken()
+        {
+            var securityGrant = new SecurityGrant();
+
+            // Allow the family role picker used when creating a new person.
+            var familyGroupType = GroupTypeCache.GetFamilyGroupType();
+
+            if ( familyGroupType != null )
+            {
+                securityGrant.AddRule( new GroupRolePickerSecurityGrantRule( familyGroupType.Id ) );
+            }
+
+            return securityGrant.ToToken();
         }
 
         /// <summary>

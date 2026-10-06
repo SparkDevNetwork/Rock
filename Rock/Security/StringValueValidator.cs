@@ -88,10 +88,15 @@ namespace Rock.Security
 
         private static readonly Regex ScriptTagPattern = new Regex( @"<script\b", IgnoreCase );
 
+        // Only catches javascript: inside an HTML attribute or CSS url() context,
+        // such as href="javascript:...". A bare value of "javascript:..." is not
+        // matched, so anything that outputs a value as a URL must check the
+        // scheme itself.
         private static readonly Regex JavascriptProtocolPattern = new Regex( @"[=""'(]\s*javascript\s*:", IgnoreCase );
 
         // Build from the HTML Living Standard's enumerated event-handler
-        // attribute names. Adjust as needed.
+        // attribute names, plus handlers from other specifications that
+        // browsers support as attributes. Adjust as needed.
         private static readonly Regex EventHandlerPattern =
             new Regex(
                 @"\bon(?:" +
@@ -110,7 +115,20 @@ namespace Rock.Security
                 @"afterprint|beforeprint|beforeunload|hashchange|" +
                 @"languagechange|message|messageerror|offline|online|" +
                 @"pagehide|pageshow|popstate|rejectionhandled|storage|" +
-                @"unhandledrejection|unload" +
+                @"unhandledrejection|unload|" +
+                // Handlers from other specifications and vendor prefixes.
+                @"animationcancel|animationend|animationiteration|animationstart|" +
+                @"beforecopy|beforecut|beforepaste|command|" +
+                @"contentvisibilityautostatechange|focusin|focusout|" +
+                @"fullscreenchange|fullscreenerror|gotpointercapture|" +
+                @"lostpointercapture|mousewheel|pagereveal|pageswap|" +
+                @"pointercancel|pointerdown|pointerenter|pointerleave|" +
+                @"pointermove|pointerout|pointerover|pointerrawupdate|pointerup|" +
+                @"scrollend|search|selectionchange|selectstart|" +
+                @"touchcancel|touchend|touchmove|touchstart|" +
+                @"transitioncancel|transitionend|transitionrun|transitionstart|" +
+                @"webkitanimationend|webkitanimationiteration|webkitanimationstart|" +
+                @"webkittransitionend" +
                 @")\s*=",
                 IgnoreCase );
 
