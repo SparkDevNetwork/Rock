@@ -33,39 +33,44 @@ export function isUrl(val: unknown): boolean {
 }
 
 /**
- * Make the URL safe to use for redirects. Basically, this strips off any
- * protocol and hostname from the URL and ensures it's not a javascript:
- * url or anything like that.
+ * Make the URL safe to use for redirects.
  *
- * @param url The URL to be made safe to use with a redirect.
+ * - A URL on this site is returned unchanged.
+ * - A URL on another site keeps its path and query, but on this site.
+ * - Anything else (e.g. javascript:, or a URL that can't be parsed) is "/".
  *
- * @returns A string that is safe to assign to window.location.href.
+ * Allowed Redirect Domain(s) aren't checked here. To redirect to another
+ * site, validate the URL on the server with SiteCache.IsSafeRedirectUrl()
+ * instead.
+ *
+ * @param url The URL to redirect to.
+ *
+ * @returns A URL that is safe to assign to window.location.href.
  */
 export function makeUrlRedirectSafe(url: string): string {
+    let u: URL;
+
     try {
-        // If this can't be parsed as a url, such as "/page/123" it will throw
-        // an error which will be handled by the next section.
-        const u = new URL(url);
-
-        // If the protocol isn't an HTTP or HTTPS, then it is most likely
-        // a dangerous URL.
-        if (u.protocol !== "http:" && u.protocol !== "https:") {
-            return "/";
-        }
-
-        // Try again incase they did something like "http:javascript:alert('hi')".
-        return makeUrlRedirectSafe(`${u.pathname}${u.search}`);
+        // Resolve the URL exactly as the browser will when it's assigned to
+        // window.location.href.
+        u = new URL(url, document.baseURI);
     }
     catch {
-        // If the URL contains a : but could not be parsed as a URL then it
-        // is not valid, so return "/" so they get redirected to home page.
-        if (url.indexOf(":") !== -1) {
-            return "/";
-        }
+        return "/";
+    }
 
-        // Otherwise consider it safe to use.
+    // Only web pages are safe; this rejects javascript:, data:, etc.
+    if (u.protocol !== "http:" && u.protocol !== "https:") {
+        return "/";
+    }
+
+    if (u.origin === window.location.origin) {
         return url;
     }
+
+    // Keep the path but stay on this site. Prefixing the origin keeps a path
+    // like "//unsafe.com" from being read as another site.
+    return `${window.location.origin}${u.pathname}${u.search}`;
 }
 
 /**
