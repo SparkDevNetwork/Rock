@@ -470,7 +470,99 @@ namespace Rock.Tests.Integration.Communication.Chat.Platform.Doors
             }
         }
 
+        [TestMethod]
+        public void AWorkflowCannotMessageSomeoneUnderTheMinimumAge()
+        {
+            using ( var scene = new Scene( minimumAge: 18 ) )
+            {
+                var sender = scene.AddChatPerson( "Sender" );
+                scene.SetAge( sender, 40 );
+                var child = scene.AddChatPerson( "Child", isOpenDmAllowed: true );
+                scene.SetAge( child, 12 );
+
+                var outcome = scene.SendWorkflowDirectMessage( sender, child, "Hello" );
+
+                Assert.AreEqual( "door.target_not_eligible", outcome.Code, "chat itself would refuse this person a session, so a workflow cannot reach them" );
+                Assert.AreEqual( 0, scene.DirectMessagesWithExactly( sender, child ).Count, "and no conversation was made" );
+                Assert.AreEqual( 0, scene.Platform.Posts, "and nothing was posted" );
+            }
+        }
+
+        [TestMethod]
+        public void AWorkflowCannotMessageSomeoneWithNoBirthdateWhenThereIsAMinimumAge()
+        {
+            using ( var scene = new Scene( minimumAge: 18 ) )
+            {
+                var sender = scene.AddChatPerson( "Sender" );
+                scene.SetAge( sender, 40 );
+                var unknown = scene.AddChatPerson( "Unknown", isOpenDmAllowed: true );
+
+                var outcome = scene.SendWorkflowDirectMessage( sender, unknown, "Hello" );
+
+                Assert.AreEqual( "door.target_not_eligible", outcome.Code, "an unknown age is refused, as chat refuses it" );
+                Assert.AreEqual( 0, scene.DirectMessagesWithExactly( sender, unknown ).Count );
+                Assert.AreEqual( 0, scene.Platform.Posts );
+            }
+        }
+
+        [TestMethod]
+        public void AWorkflowCannotSendAsSomeoneUnderTheMinimumAge()
+        {
+            using ( var scene = new Scene( minimumAge: 18 ) )
+            {
+                var child = scene.AddChatPerson( "Child" );
+                scene.SetAge( child, 12 );
+                var recipient = scene.AddChatPerson( "Recipient", isOpenDmAllowed: true );
+                scene.SetAge( recipient, 40 );
+
+                var outcome = scene.SendWorkflowDirectMessage( child, recipient, "Hello" );
+
+                Assert.AreEqual( "door.target_not_eligible", outcome.Code, "nor put a message under the name of someone chat keeps out" );
+                Assert.AreEqual( 0, scene.DirectMessagesWithExactly( child, recipient ).Count );
+                Assert.AreEqual( 0, scene.Platform.Posts );
+            }
+        }
+
+        [TestMethod]
+        public void AWorkflowStillMessagesSomeoneAtOrOverTheMinimumAge()
+        {
+            using ( var scene = new Scene( minimumAge: 18 ) )
+            {
+                // Open DM off on both, so only the age gates stand between them and the message.
+                var sender = scene.AddChatPerson( "Sender", isOpenDmAllowed: false );
+                scene.SetAge( sender, 40 );
+                var recipient = scene.AddChatPerson( "Recipient", isOpenDmAllowed: false );
+                scene.SetAge( recipient, 18 );
+
+                var outcome = scene.SendWorkflowDirectMessage( sender, recipient, "Welcome" );
+
+                Assert.AreEqual( "ok", outcome.Code, outcome.Message );
+                Assert.AreEqual( 1, scene.DirectMessagesWithExactly( sender, recipient ).Count );
+                Assert.AreEqual( 1, scene.Platform.Posts, "a person exactly the minimum age may be messaged" );
+            }
+        }
+
         #endregion A workflow's direct message
+
+        #region A workflow's channel post
+
+        [TestMethod]
+        public void AWorkflowCannotPostInAChannelAsSomeoneUnderTheMinimumAge()
+        {
+            using ( var scene = new Scene( minimumAge: 18 ) )
+            {
+                var room = scene.Fixture.AddChannel( scene.Fixture.SharedGroupTypeId, "Announcements" );
+                var child = scene.AddChatPerson( "Child" );
+                scene.SetAge( child, 12 );
+
+                var outcome = scene.SendWorkflowChannelMessage( room, child, "Hello" );
+
+                Assert.AreEqual( "door.target_not_eligible", outcome.Code, "a named sender chat keeps out cannot post through a workflow" );
+                Assert.AreEqual( 0, scene.Platform.Posts, "and nothing was posted" );
+            }
+        }
+
+        #endregion A workflow's channel post
 
         #region Support
 
@@ -486,7 +578,7 @@ namespace Rock.Tests.Integration.Communication.Chat.Platform.Doors
 
             private readonly object _sync = new object();
 
-            public Scene( Guid? directMessageAccess = null )
+            public Scene( Guid? directMessageAccess = null, int? minimumAge = null )
             {
                 Fixture = new ChatSyncProjectionFixture();
 
@@ -501,6 +593,7 @@ namespace Rock.Tests.Integration.Communication.Chat.Platform.Doors
                     AreChatProfilesVisible = true,
                     IsOpenDirectMessagingAllowed = false,
                     DirectMessageAccessDataViewGuid = directMessageAccess,
+                    MinimumAge = minimumAge,
                     ChatBadgeDataViewGuids = new List<Guid>()
                 };
                 Fixture.StoreConfiguration( Configuration );
@@ -562,6 +655,19 @@ namespace Rock.Tests.Integration.Communication.Chat.Platform.Doors
                 }
             }
 
+            /// <summary>
+            /// Gives a person a birthdate that makes them exactly this many years old today.
+            /// </summary>
+            public void SetAge( int personId, int years )
+            {
+                using ( var rockContext = new RockContext() )
+                {
+                    var person = new PersonService( rockContext ).Get( personId );
+                    person.SetBirthDate( RockDateTime.Today.AddYears( -years ) );
+                    rockContext.SaveChanges();
+                }
+            }
+
             public Guid Alias( int personId )
             {
                 return Fixture.PrimaryAliasGuid( personId );
@@ -610,6 +716,14 @@ namespace Rock.Tests.Integration.Communication.Chat.Platform.Doors
                 }
 
                 return outcome;
+            }
+
+            /// <summary>
+            /// Posts a workflow's message into a channel outside any request, as the workflow engine does.
+            /// </summary>
+            public ChatDoorOutcome SendWorkflowChannelMessage( Guid groupGuid, int? senderId, string body )
+            {
+                return ChatDoorHelper.SendWorkflowChannelMessage( groupGuid, senderId, body, Configuration );
             }
 
             public Group Group( Guid groupGuid )

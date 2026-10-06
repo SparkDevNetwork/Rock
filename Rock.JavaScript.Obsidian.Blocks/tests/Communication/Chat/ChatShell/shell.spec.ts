@@ -21,6 +21,7 @@
 import { churchTokenFromAction, createChatShell, PlatformClientLike, refusalMessage } from "../../../../src/Communication/Chat/ChatShell/shell.partial";
 import { channelTopic, personalTopic } from "../../../../src/Communication/Chat/ChatShell/composables/useRealtimeHub.partial";
 import { HistoryPage } from "../../../../src/Communication/Chat/ChatShell/types.partial";
+import { DoorResult } from "../../../../src/Communication/Chat/ChatShell/composables/useDirectMessage.partial";
 
 const tenant = "10000000-0000-4000-8000-000000000001";
 const person = "a0000007-0000-4000-8000-000000000000";
@@ -62,7 +63,7 @@ type LiveTopic = {
     status: ((status: string, error?: unknown) => void) | null;
 };
 
-function build(): {
+function build(options: { startDirectMessage?: (personAliasGuids: string[]) => Promise<DoorResult> } = {}): {
     shell: ReturnType<typeof createChatShell>,
     history: Record<string, Deferred<Response>[]>,
     saves: Array<{ channelId: string, messageId: number, answer: Deferred<Response>, token?: string | null }>,
@@ -74,7 +75,8 @@ function build(): {
     counts: { mints: number, clients: number, setAuths: number, bootstraps: number },
     mintGate: { value: string },
     bootstrap: { value: unknown },
-    pageDocument: { visibilityState: string }
+    pageDocument: { visibilityState: string },
+    sent: Array<{ channelId: string, body: string }>
 } {
     const topics: LiveTopic[] = [];
     const counts = { mints: 0, clients: 0, setAuths: 0, bootstraps: 0 };
@@ -85,6 +87,7 @@ function build(): {
     const joined: string[] = [];
     const removed: string[] = [];
     const stored: Record<string, string> = {};
+    const sent: Array<{ channelId: string, body: string }> = [];
     const windowListeners: Record<string, Array<() => void>> = {};
     const pageDocument = { visibilityState: "visible", addEventListener: () => undefined, removeEventListener: () => undefined };
 
@@ -144,6 +147,13 @@ function build(): {
                 (history[body.p_channel_id as string] ??= []).push(pending);
                 return pending.promise;
             }
+            if (url.endsWith("/rest/v1/rpc/chat_find_dm")) {
+                return fakeResponse(200, { channel_id: null });
+            }
+            if (url.endsWith("/rest/v1/rpc/chat_send_message")) {
+                sent.push({ channelId: body.p_channel_id, body: body.p_body });
+                return fakeResponse(200, { id: 900 + sent.length, created_at: "2026-10-06T10:00:00Z", notice: null });
+            }
             const answer = deferred<Response>();
             const token = (init.headers as Record<string, string> | undefined)?.["Authorization"] ?? null;
             saves.push({ channelId: body.p_channel_id, messageId: body.p_message_id, answer, token });
@@ -157,11 +167,12 @@ function build(): {
                 removeEventListener: () => undefined
             }
         },
-        mark: () => undefined
+        mark: () => undefined,
+        startDirectMessage: options.startDirectMessage
     });
 
     return {
-        shell, history, saves, joined, removed, stored, topics, counts, mintGate, bootstrap, pageDocument,
+        shell, history, saves, joined, removed, stored, topics, counts, mintGate, bootstrap, pageDocument, sent,
         fireBlur: () => (windowListeners["blur"] ?? []).forEach(l => l())
     };
 }
@@ -281,8 +292,8 @@ function topicOf(h: ReturnType<typeof build>, topic: string): LiveTopic {
 }
 
 /** Starts the shell with channel A open and joined. */
-async function started(): Promise<ReturnType<typeof build>> {
-    const h = build();
+async function started(options: Parameters<typeof build>[0] = {}): Promise<ReturnType<typeof build>> {
+    const h = build(options);
     const starting = h.shell.start();
     await settle();
     answerHistory(h, channelA, 10);
@@ -644,5 +655,59 @@ describe("what the page tells push", () => {
         await settle();
 
         expect(h.shell.mentionBadge()).toBe(3);
+    });
+});
+
+describe("a direct message's first message", () => {
+    const created = "c0000009-0000-4000-8000-000000000000";
+    const other = { person_alias_guid: "a0000002-0000-4000-8000-000000000000", nick_name: "Bo", last_name: "Picked", avatar_url: null };
+
+    test("is still sent once its conversation is ready, after the person has opened another channel", async () => {
+        const starts: string[][] = [];
+        const h = await started({
+            startDirectMessage: async people => {
+                starts.push(people);
+                return { code: "ok", channelGuid: created, isPending: true, message: null, personAliasGuid: null };
+            }
+        });
+
+        h.shell.directMessages.choose(other);
+        await h.shell.openDirectMessage();
+        await h.shell.send("hello");
+        await settle();
+
+        const toB = h.shell.selectChannel(channelB);
+        await settle();
+        answerHistory(h, channelB, 20);
+        await toB;
+
+        personal(h, "membership.changed", { channel_id: created });
+        await settle();
+
+        expect(starts.length).toBe(1);
+        expect(h.sent).toEqual([{ channelId: created, body: "hello" }]);
+        expect(h.shell.state.activeChannelId).toBe(channelB);
+    });
+
+    test("a draft nothing was sent from is dropped when another channel is chosen", async () => {
+        const starts: string[][] = [];
+        const h = await started({
+            startDirectMessage: async people => {
+                starts.push(people);
+                return { code: "ok", channelGuid: created, isPending: false, message: null, personAliasGuid: null };
+            }
+        });
+
+        h.shell.directMessages.choose(other);
+        await h.shell.openDirectMessage();
+        const toB = h.shell.selectChannel(channelB);
+        await settle();
+        answerHistory(h, channelB, 20);
+        await toB;
+        await settle();
+
+        expect(h.shell.directMessages.draft).toBeNull();
+        expect(starts).toEqual([]);
+        expect(h.sent).toEqual([]);
     });
 });
