@@ -1700,7 +1700,7 @@ namespace Rock.Blocks.Cms
             if ( contentChannel.RootImageDirectory.IsNotNullOrWhiteSpace() )
             {
                 // The HTML editor wants encrypted roots; both image and document use the same path.
-                var encryptedRoot = Encryption.EncryptString( contentChannel.RootImageDirectory );
+                var encryptedRoot = Encryption.EncryptRootFolder( contentChannel.RootImageDirectory );
                 state.EncryptedImageRootFolder = encryptedRoot;
                 state.EncryptedDocumentRootFolder = encryptedRoot;
             }
