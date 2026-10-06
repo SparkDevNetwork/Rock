@@ -21,6 +21,7 @@ using Rock.AI.Agent.Classes.Common;
 using Rock.AI.Agent.Classes.Skills.StepSkill;
 using Rock.Configuration;
 using Rock.Model;
+using Rock.Security;
 using Rock.SystemGuid;
 
 namespace Rock.AI.Agent.Skills;
@@ -34,8 +35,12 @@ internal sealed partial class StepSkill
     public AgentToolResult AddOrUpdateStep(
         string stepIdKey = null,
 
+        [Description( "Only valid and required when adding a new step." )]
         string stepTypeIdKey = null,
+
+        [Description( "Only valid and required when adding a new step." )]
         string personIdKey = null,
+
         string stepStatusIdKey = null,
         string campusIdKey = null,
         DateTime? startDateTime = null,
@@ -43,16 +48,54 @@ internal sealed partial class StepSkill
     {
         using var rockContext = RockApp.Current.CreateRockContext();
         var helper = new AgentToolHelper( rockContext, AgentRequestContext, _logger );
+        var currentPerson = AgentRequestContext.CurrentPerson;
 
         Step step;
+        Model.StepType stepType;
 
         if ( stepIdKey.IsNotNullOrWhiteSpace() )
         {
             step = helper.GetRequiredEntity<Step>( stepIdKey );
+            stepType = step?.StepType;
+
+            // The step entry block does not allow the step type or person to
+            // be changed once the step exists, so we match that behavior.
+            if ( stepTypeIdKey.IsNotNullOrWhiteSpace() )
+            {
+                helper.AddError( $"A step cannot be moved to a new step type, do not provide a {nameof( stepTypeIdKey )} when editing." );
+            }
+
+            if ( personIdKey.IsNotNullOrWhiteSpace() )
+            {
+                helper.AddError( $"A step cannot be moved to a new person, do not provide a {nameof( personIdKey )} when editing." );
+            }
+
+            // Step.IsAuthorized() also grants EDIT to anybody with EDIT or
+            // MANAGE_STEPS on the step type.
+            if ( step != null && !step.IsAuthorized( Authorization.EDIT, currentPerson ) )
+            {
+                helper.AddError( "You are not authorized to edit this step." );
+            }
         }
         else
         {
             step = rockContext.Set<Step>().Create();
+            stepType = helper.GetRequiredEntity<Model.StepType>( stepTypeIdKey );
+
+            if ( stepType != null && !stepType.IsActive )
+            {
+                helper.AddError( "Steps cannot be added to an inactive step type." );
+            }
+
+            if ( stepType != null && !IsAuthorizedToAddStep( stepType, currentPerson ) )
+            {
+                helper.AddError( "You are not authorized to add a step of this type." );
+            }
+        }
+
+        if ( stepType != null && !stepType.AllowManualEditing )
+        {
+            helper.AddError( "Steps of this type cannot be manually added or edited." );
         }
 
         if ( helper.HasErrors )
@@ -60,20 +103,27 @@ internal sealed partial class StepSkill
             return helper.ErrorResult;
         }
 
-        helper.UpdateNavigationProperty( step, s => s.StepType, stepTypeIdKey );
-        helper.UpdateNavigationProperty( step, s => s.PersonAlias, personIdKey );
+        if ( step.Id == 0 )
+        {
+            step.StepType = stepType;
+            step.StepTypeId = stepType.Id;
+            helper.UpdateNavigationProperty( step, s => s.PersonAlias, personIdKey );
+        }
+
         helper.UpdateNavigationProperty( step, s => s.StepStatus, stepStatusIdKey );
         helper.UpdateNavigationProperty( step, s => s.Campus, campusIdKey );
         helper.UpdateProperty( step, s => s.StartDateTime, startDateTime );
         helper.UpdateProperty( step, s => s.EndDateTime, endDateTime );
 
+        // Statuses belong to the program, so make sure the selected status
+        // is one that is valid for this step type.
+        if ( stepStatusIdKey.IsNotNullOrWhiteSpace() && step.StepStatus != null && step.StepStatus.StepProgramId != stepType.StepProgramId )
+        {
+            helper.AddError( $"The {nameof( stepStatusIdKey )} is not valid for this step type." );
+        }
+
         if ( step.Id == 0 )
         {
-            if ( step.StepTypeId == 0 )
-            {
-                helper.AddError( $"{nameof( stepTypeIdKey )} is required when creating a new step." );
-            }
-
             if ( step.PersonAliasId == 0 )
             {
                 helper.AddError( $"{nameof( personIdKey )} is required when creating a new step." );
@@ -89,13 +139,20 @@ internal sealed partial class StepSkill
                 step.StartDateTime = RockDateTime.Now;
             }
 
+            // StepService.Add() throws if the step is not valid, so return
+            // any errors before calling it.
+            if ( helper.HasErrors )
+            {
+                return helper.ErrorResult;
+            }
+
             // Unlike the normal pattern, this must be here because there is
             // logic in the Add method that makes sure all the properties
             // have been correctly configured.
             new StepService( rockContext ).Add( step );
         }
 
-        if ( stepStatusIdKey.IsNotNullOrWhiteSpace() )
+        if ( stepStatusIdKey.IsNotNullOrWhiteSpace() && step.StepStatus != null )
         {
             if ( step.StepStatus.IsCompleteStatus && !step.CompletedDateTime.HasValue )
             {
@@ -136,6 +193,23 @@ internal sealed partial class StepSkill
                 Id = step.Id,
             } )
             .WithInstructions( $"The step has been {( isNew ? "added" : "updated" )}." );
+    }
+
+    #endregion
+
+    #region Methods
+
+    /// <summary>
+    /// Determines if the person is allowed to add new steps of the specified
+    /// type. This matches the logic used by the step entry block.
+    /// </summary>
+    /// <param name="stepType">The step type the new step will belong to.</param>
+    /// <param name="person">The person that is adding the step.</param>
+    /// <returns><c>true</c> if the person can add a step of this type; otherwise <c>false</c>.</returns>
+    private static bool IsAuthorizedToAddStep( Model.StepType stepType, Model.Person person )
+    {
+        return stepType.IsAuthorized( Authorization.EDIT, person )
+            || stepType.IsAuthorized( Authorization.MANAGE_STEPS, person );
     }
 
     #endregion

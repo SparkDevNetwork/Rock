@@ -19,6 +19,10 @@
             else {
                 // note rootFolder is encrypted to prevent direct access to filesystem via the URL
                 wsUrl += '&rootFolder=' + (encodeURIComponent(options.rootFolder) || '');
+
+                if (options.securityGrantToken) {
+                    wsUrl += '&SecurityGrantToken=' + encodeURIComponent(options.securityGrantToken);
+                }
             }
 
             if (options.isTemporary === 'F') {
