@@ -386,7 +386,7 @@ namespace Rock.Blocks.Types.Mobile.Connection
         /// <returns>A list of editable attribute values.</returns>
         private List<ClientEditableAttributeValueViewModel> GetPublicEditableAttributeValues( IHasAttributes request )
         {
-            var attributes = request.GetPublicAttributesForEdit( RequestContext.CurrentPerson, enforceSecurity: false )
+            var attributes = request.GetPublicAttributesForEdit( RequestContext.CurrentPerson, enforceSecurity: true )
                 .ToDictionary( kvp => kvp.Key, kvp => new ClientEditableAttributeValueViewModel
                 {
                     AttributeGuid = kvp.Value.AttributeGuid,
@@ -401,7 +401,7 @@ namespace Rock.Blocks.Types.Mobile.Connection
                     Value = ""
                 } );
 
-            request.GetPublicAttributeValuesForEdit( RequestContext.CurrentPerson, enforceSecurity: false )
+            request.GetPublicAttributeValuesForEdit( RequestContext.CurrentPerson, enforceSecurity: true )
                 .ToList()
                 .ForEach( kvp =>
                 {
@@ -512,35 +512,133 @@ namespace Rock.Blocks.Types.Mobile.Connection
         }
 
         /// <summary>
+        /// Determines whether the current person may add a request to the
+        /// connection opportunity. They must have EDIT on the opportunity (or
+        /// on a request of that opportunity when the connection type uses
+        /// request security), or be an active member of one of the
+        /// opportunity's active connector groups.
+        /// </summary>
+        /// <param name="opportunity">The opportunity, with its connection type loaded.</param>
+        /// <param name="rockContext">The Rock database context.</param>
+        /// <returns><c>true</c> if the current person may add a request to the opportunity.</returns>
+        private bool CanAddRequest( ConnectionOpportunity opportunity, RockContext rockContext )
+        {
+            var currentPerson = RequestContext.CurrentPerson;
+
+            if ( opportunity?.ConnectionType == null || currentPerson == null )
+            {
+                return false;
+            }
+
+            ISecured authorizationTarget = opportunity;
+
+            if ( opportunity.ConnectionType.EnableRequestSecurity )
+            {
+                authorizationTarget = new ConnectionRequest
+                {
+                    ConnectionTypeId = opportunity.ConnectionTypeId,
+                    ConnectionOpportunityId = opportunity.Id,
+                    ConnectionOpportunity = opportunity
+                };
+            }
+
+            if ( authorizationTarget.IsAuthorized( Authorization.EDIT, currentPerson ) )
+            {
+                return true;
+            }
+
+            var currentPersonId = currentPerson.Id;
+
+            return new ConnectionOpportunityConnectorGroupService( rockContext )
+                .Queryable()
+                .AsNoTracking()
+                .Any( cg => cg.ConnectionOpportunityId == opportunity.Id
+                    && cg.ConnectorGroup != null
+                    && cg.ConnectorGroup.IsActive
+                    && !cg.ConnectorGroup.IsArchived
+                    && cg.ConnectorGroup.Members.Any( m => m.PersonId == currentPersonId
+                        && m.GroupMemberStatus == GroupMemberStatus.Active
+                        && !m.IsArchived ) );
+        }
+
+        /// <summary>
         /// Saves a new connection request.
         /// </summary>
         /// <param name="bag"></param>
         /// <param name="rockContext"></param>
+        /// <param name="errorResult">The result to return when the request is not valid.</param>
         /// <returns>The IdKey of the new Connection Request.</returns>
-        private string SaveConnectionRequest( SaveConnectionRequestRequestBag bag, RockContext rockContext )
+        private string SaveConnectionRequest( SaveConnectionRequestRequestBag bag, RockContext rockContext, out BlockActionResult errorResult )
         {
+            errorResult = null;
+
             var connectionRequestService = new ConnectionRequestService( rockContext );
             var personService = new PersonService( rockContext );
             var connectionOpportunityService = new ConnectionOpportunityService( rockContext );
             var connectionTypeService = new ConnectionTypeService( rockContext );
+            var allowIntegerIdentifier = !PageCache.Layout.Site.DisablePredictableIds;
 
             // Structure the data for the connection request.
-            var requesterId = personService.Get( bag.RequesterId )?.PrimaryAliasId;
+            var requesterId = personService.Get( bag.RequesterId, allowIntegerIdentifier )?.PrimaryAliasId;
 
             if ( !requesterId.HasValue )
             {
                 return string.Empty;
             }
 
-            var typeId = connectionTypeService.Get( bag.ConnectionTypeId ).Id;
-            var opportunityId = connectionOpportunityService.Get( bag.ConnectionOpportunityId ).Id;
+            var opportunity = connectionOpportunityService.Get( bag.ConnectionOpportunityId, allowIntegerIdentifier );
+
+            if ( opportunity?.ConnectionType == null )
+            {
+                errorResult = ActionNotFound( "The connection opportunity was not found." );
+                return string.Empty;
+            }
+
+            if ( bag.ConnectionTypeId.IsNotNullOrWhiteSpace()
+                && connectionTypeService.Get( bag.ConnectionTypeId, allowIntegerIdentifier )?.Id != opportunity.ConnectionTypeId )
+            {
+                errorResult = ActionBadRequest( "The connection type does not match the connection opportunity." );
+                return string.Empty;
+            }
+
+            if ( !CanAddRequest( opportunity, rockContext ) )
+            {
+                errorResult = ActionForbidden( "You are not authorized to add a request to this connection opportunity." );
+                return string.Empty;
+            }
+
+            var typeId = opportunity.ConnectionTypeId;
+            var opportunityId = opportunity.Id;
             var campusId = CampusCache.Get( bag.CampusId, false )?.Id;
-            var statusId = DefinedValueCache.Get( bag.StatusId, false ).Id;
+
+            // The status list items use the ConnectionStatus IdKey, so look it
+            // up from the statuses of this connection type.
+            var statusId = opportunity.ConnectionType.ConnectionStatuses
+                .FirstOrDefault( s => s.IdKey == bag.StatusId )?.Id;
+
+            if ( !statusId.HasValue )
+            {
+                errorResult = ActionBadRequest( "Invalid connection status." );
+                return string.Empty;
+            }
 
             int? connectorId = null;
             if ( bag.ConnectorId.IsNotNullOrWhiteSpace() )
             {
-                connectorId = personService.Get( bag.ConnectorId )?.PrimaryAliasId;
+                // The connector must be one the block offers: a connector group
+                // member, the current person, or a campus default connector.
+                var isConnectorAvailable = GetAvailableConnectors( opportunityId, rockContext )
+                    .Any( c => c.Value == bag.ConnectorId )
+                    || GetDefaultConnectorsForOpportunity( opportunity, rockContext )
+                        .Any( c => c.Value == bag.ConnectorId );
+
+                if ( !isConnectorAvailable )
+                {
+                    errorResult = ActionBadRequest( "Invalid connector." );
+                    return string.Empty;
+                }
+
+                connectorId = personService.Get( bag.ConnectorId, false )?.PrimaryAliasId;
             }
 
             int? placementGroupId = null;
@@ -549,14 +647,39 @@ namespace Rock.Blocks.Types.Mobile.Connection
 
             if ( bag.PlacementGroupId.IsNotNullOrWhiteSpace() )
             {
-                placementGroupId = new GroupService( rockContext ).Get( bag.PlacementGroupId )?.Id;
+                var placementRequest = new ConnectionRequest
+                {
+                    ConnectionTypeId = typeId,
+                    ConnectionOpportunityId = opportunityId,
+                    ConnectionOpportunity = opportunity
+                };
+
+                var placementGroup = GetPlacementGroups( placementRequest, rockContext )
+                    .FirstOrDefault( g => g.Value == bag.PlacementGroupId );
+
+                if ( placementGroup == null )
+                {
+                    errorResult = ActionBadRequest( "Invalid placement group selection." );
+                    return string.Empty;
+                }
+
+                placementGroupId = new GroupService( rockContext ).Get( placementGroup.Value, false )?.Id;
+                placementGroupMemberStatus = ( Rock.Model.GroupMemberStatus ) bag.PlacementGroupMemberStatusValue;
 
                 if ( placementGroupId.HasValue && bag.PlacementGroupMemberRoleId.IsNotNullOrWhiteSpace() )
                 {
-                    placementGroupMemberRoleId = new GroupTypeRoleService( rockContext ).Get( bag.PlacementGroupMemberRoleId )?.Id;
-                }
+                    var statusValue = ( ( int ) placementGroupMemberStatus.Value ).ToString();
+                    var placementRole = placementGroup.Roles?.FirstOrDefault( r => r.Value == bag.PlacementGroupMemberRoleId );
+                    var isRoleStatusValid = placementRole?.Statuses?.Any( s => s.Value == statusValue ) == true;
 
-                placementGroupMemberStatus = ( Rock.Model.GroupMemberStatus ) bag.PlacementGroupMemberStatusValue;
+                    if ( !isRoleStatusValid )
+                    {
+                        errorResult = ActionBadRequest( "Invalid placement group selection." );
+                        return string.Empty;
+                    }
+
+                    placementGroupMemberRoleId = new GroupTypeRoleService( rockContext ).Get( placementRole.Value, false )?.Id;
+                }
             }
 
             var connectionState = bag.State.ToNative();
@@ -569,7 +692,7 @@ namespace Rock.Blocks.Types.Mobile.Connection
                 CampusId = campusId,
                 Comments = comments,
                 ConnectionState = connectionState,
-                ConnectionStatusId = statusId,
+                ConnectionStatusId = statusId.Value,
                 ConnectorPersonAliasId = connectorId,
                 PersonAliasId = requesterId.Value,
             };
@@ -593,7 +716,7 @@ namespace Rock.Blocks.Types.Mobile.Connection
             if ( bag.AttributeValues != null )
             {
                 connectionRequest.LoadAttributes();
-                connectionRequest.SetPublicAttributeValues( bag.AttributeValues, RequestContext.CurrentPerson, enforceSecurity: false );
+                connectionRequest.SetPublicAttributeValues( bag.AttributeValues, RequestContext.CurrentPerson, enforceSecurity: true );
             }
 
             // Add an activity that the connector was assigned or changed.
@@ -668,6 +791,15 @@ namespace Rock.Blocks.Types.Mobile.Connection
             var noteType = NoteTypeCache.Get( linkedNoteTypeGuid );
 
             if ( note == null || noteType == null )
+            {
+                return;
+            }
+
+            // The note and note type come from page parameters, so only move
+            // a note the person can edit into a connection request note type.
+            var isConnectionRequestNoteType = noteType.EntityTypeId == EntityTypeCache.GetId<ConnectionRequest>();
+
+            if ( !isConnectionRequestNoteType || !note.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
             {
                 return;
             }
@@ -824,9 +956,19 @@ namespace Rock.Blocks.Types.Mobile.Connection
         [BlockAction]
         public BlockActionResult SaveConnectionRequest( SaveConnectionRequestRequestBag requestBag )
         {
+            if ( RequestContext.CurrentPerson == null )
+            {
+                return ActionUnauthorized();
+            }
+
             using ( var rockContext = new RockContext() )
             {
-                var saveResult = SaveConnectionRequest( requestBag, rockContext );
+                var saveResult = SaveConnectionRequest( requestBag, rockContext, out var errorResult );
+
+                if ( errorResult != null )
+                {
+                    return errorResult;
+                }
 
                 if ( saveResult.IsNullOrWhiteSpace() )
                 {
