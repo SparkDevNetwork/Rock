@@ -22,6 +22,7 @@ import {
     DirectMessageDependencies,
     DoorResult,
     isNewMessageShown,
+    isTextKeptOnSend,
     maxOthers,
     PersonRow
 } from "../../../../../src/Communication/Chat/ChatShell/composables/useDirectMessage.partial";
@@ -263,6 +264,30 @@ describe("the draft's first message", () => {
 
         expect(calls).toEqual(["start 1", `open ${created}`, `send ${created} hello`]);
     });
+
+    test("the composer keeps a draft's first message in its box, and empties it for an ordinary send", async () => {
+        const { dependencies } = setup();
+        const dm = await draftOf(dependencies);
+
+        // A refused first message has no failed row in a feed to keep it on, so the box keeps it
+        // until the draft goes away; an ordinary send's failure stays on its own row.
+        expect(isTextKeptOnSend(dm.draft)).toBe(true);
+        expect(isTextKeptOnSend(null)).toBe(false);
+    });
+
+    test("the same text refused twice is still the draft's text after the second refusal", async () => {
+        const { dependencies } = setup({
+            startConversation: async () => ({ code: "door.unavailable", channelGuid: null, isPending: false, message: "Try again.", personAliasGuid: null })
+        });
+        const dm = await draftOf(dependencies);
+
+        expect(await dm.sendFirst("hello")).toBe(false);
+        expect(await dm.sendFirst("hello")).toBe(false);
+
+        expect(dm.draft?.body).toBe("hello");
+        expect(dm.draft?.status).toBe("draft");
+        expect(isTextKeptOnSend(dm.draft)).toBe(true);
+    });
 });
 
 // Waits stand in for the retry's backoff; each resolves when the test lets it, and each records
@@ -387,6 +412,60 @@ describe("a first message the platform has not taken yet", () => {
         await settle();
         expect(sends(calls).length).toBe(5);
         expect(starts(calls)).toEqual(["start 1"]);
+    });
+
+    test("keeps the draft on screen, opening nothing, until a retried send is confirmed, then opens the conversation", async () => {
+        const backoff = waits();
+        let attempts = 0;
+        const { calls, dependencies } = setup({
+            ...backoff,
+            send: async (channelId, body) => {
+                calls.push(`send ${channelId} ${body}`);
+                return ++attempts > 1;
+            }
+        });
+        dependencies.startConversation = pendingDoor(calls);
+        const dm = await pendingDraft(dependencies);
+        await settle();
+
+        expect(dm.draft?.status).toBe("starting");
+        expect(calls).not.toContain(`open ${created}`);
+
+        // the platform refused the first try, so opening it would have been refused too
+        backoff.list.shift()?.resolve();
+        await settle();
+        expect(sends(calls).length).toBe(1);
+        expect(calls).not.toContain(`open ${created}`);
+        expect(dm.draft?.status).toBe("starting");
+        expect(dm.draft?.body).toBe("hello");
+
+        backoff.list.shift()?.resolve();
+        await settle();
+        expect(calls.slice(-2)).toEqual([`send ${created} hello`, `open ${created}`]);
+        expect(dm.draft).toBeNull();
+    });
+
+    test("opens the conversation after the last retried send fails, where the failed message is", async () => {
+        const backoff = waits();
+        const { calls, dependencies } = setup({
+            ...backoff,
+            send: async (channelId, body) => {
+                calls.push(`send ${channelId} ${body}`);
+                return false;
+            }
+        });
+        dependencies.startConversation = pendingDoor(calls);
+        const dm = await pendingDraft(dependencies);
+        await settle();
+
+        for (let attempt = 1; attempt <= 5; attempt++) {
+            backoff.list.shift()?.resolve();
+            await settle();
+        }
+
+        expect(calls.slice(-2)).toEqual([`send ${created} hello`, `open ${created}`]);
+        expect(calls.filter(c => c.startsWith("open "))).toEqual([`open ${created}`]);
+        expect(dm.draft).toBeNull();
     });
 
     test("a membership signal while it waits sends it once, and the wait ending sends nothing more", async () => {
@@ -605,6 +684,23 @@ describe("a refusal after the person left the draft", () => {
 
         expect(dm.draft?.people).toEqual([person(1)]);
         expect(dm.draft?.body).toBe("hello");
+    });
+
+    test("a refusal arriving after the shell stopped tells nobody and keeps nothing", async () => {
+        const { calls, reports, answer, dm, first } = await waitingOnRock();
+
+        dm.close();
+        dm.stop();
+        answer.resolve(refusal);
+        expect(await first).toBe(false);
+        await settle();
+
+        expect(reports).toEqual([]);
+        expect(sends(calls)).toEqual([]);
+
+        dm.choose(person(1));
+        await dm.open();
+        expect(dm.draft?.body).toBe("");
     });
 
     test("a refusal while the draft is still showing goes on the draft, not to the toast", async () => {

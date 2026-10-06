@@ -203,6 +203,59 @@ namespace Rock.Tests.Integration.Communication.Chat.Platform.Doors
             }
         }
 
+        [TestMethod]
+        public void AnInactiveGroupHoldingTheDerivedGuidWithTheSamePeopleLeavesItAloneAndMakesANewOne()
+        {
+            AssertADeadHolderIsLeftAlone( "[IsActive] = 0" );
+        }
+
+        [TestMethod]
+        public void AnArchivedGroupHoldingTheDerivedGuidWithTheSamePeopleLeavesItAloneAndMakesANewOne()
+        {
+            AssertADeadHolderIsLeftAlone( "[IsArchived] = 1" );
+        }
+
+        /// <summary>
+        /// Starts Ada and Bo's conversation while the group holding its derived Guid, with exactly
+        /// them as active members, is one the platform does not hold as live.
+        /// </summary>
+        /// <param name="ending">The column assignment that ends the group.</param>
+        private static void AssertADeadHolderIsLeftAlone( string ending )
+        {
+            using ( var scene = new Scene() )
+            {
+                var ada = scene.AddChatPerson( "Ada" );
+                var bo = scene.AddChatPerson( "Bo", isOpenDmAllowed: true );
+
+                var derived = ChatDoorHelper.DirectMessageGuid( scene.TenantId, new[] { ada, bo } );
+                scene.Fixture.AddChannel( scene.Fixture.DirectMessageGroupTypeId, "Chat Direct Message", g => g.Guid = derived );
+                scene.Fixture.AddMember( derived, ada );
+                scene.Fixture.AddMember( derived, bo );
+
+                // Ended in SQL, past the save hook that would end its members too: the group's own
+                // state is what the platform reads, whatever its members still say.
+                using ( var rockContext = new RockContext() )
+                {
+                    rockContext.Database.ExecuteSqlCommand( $"UPDATE [Group] SET {ending} WHERE [Guid] = @p0", derived );
+                }
+
+                var before = scene.AnyGroup( derived );
+
+                var result = scene.Start( ada, scene.Alias( bo ) );
+
+                Assert.AreEqual( "ok", result.Code, result.Message );
+                Assert.AreNotEqual( derived, result.ChannelGuid, "a new conversation, since the platform holds the old one as gone" );
+                Assert.IsTrue( scene.Group( result.ChannelGuid.Value ).IsActive, "the new conversation is live" );
+                CollectionAssert.AreEquivalent( new[] { ada, bo }, scene.ActiveMembers( result.ChannelGuid.Value ) );
+
+                var after = scene.AnyGroup( derived );
+                Assert.AreEqual( before.IsActive, after.IsActive, "the old group is untouched" );
+                Assert.AreEqual( before.IsArchived, after.IsArchived, "the old group is untouched" );
+                Assert.AreEqual( before.ModifiedDateTime, after.ModifiedDateTime, "the old group is untouched" );
+                CollectionAssert.AreEquivalent( new[] { ada, bo }, scene.ActiveMembers( derived ), "its members are untouched" );
+            }
+        }
+
         #endregion Create
 
         #region Reuse
@@ -731,6 +784,17 @@ namespace Rock.Tests.Integration.Communication.Chat.Platform.Doors
                 using ( var rockContext = new RockContext() )
                 {
                     return new GroupService( rockContext ).Queryable().AsNoTracking().Single( g => g.Guid == groupGuid );
+                }
+            }
+
+            /// <summary>
+            /// The group by its Guid, archived or not.
+            /// </summary>
+            public Group AnyGroup( Guid groupGuid )
+            {
+                using ( var rockContext = new RockContext() )
+                {
+                    return new GroupService( rockContext ).AsNoFilter().AsNoTracking().Single( g => g.Guid == groupGuid );
                 }
             }
 
