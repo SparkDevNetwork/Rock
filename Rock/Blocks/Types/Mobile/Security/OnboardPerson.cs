@@ -751,6 +751,12 @@ namespace Rock.Blocks.Types.Mobile.Security
         public int VerificationTimeLimit => GetAttributeValue( AttributeKeys.VerificationTimeLimit ).AsInteger();
 
         /// <summary>
+        /// The number of minutes the individual has to finish onboarding
+        /// after their code has been verified.
+        /// </summary>
+        private const int CompleteOnboardingTimeLimit = 60;
+
+        /// <summary>
         /// Gets the per-IP throttle limit.
         /// </summary>
         /// <value>
@@ -1494,10 +1500,27 @@ namespace Rock.Blocks.Types.Mobile.Security
         /// <param name="rockContext">The rock context.</param>
         private void UpdatePersonInterests( Person person, IEnumerable<Guid> topicGuids, RockContext rockContext )
         {
+            // The topic guids come from the client and cannot be trusted.
+            // Only allow the communication lists we would offer the
+            // individual to pick from.
+            var allowedGroupGuids = new HashSet<Guid>( GetInterests( rockContext ).Select( a => a.Key.AsGuid() ) );
+            var communicationListGroupTypeId = GroupTypeCache.GetId( SystemGuid.GroupType.GROUPTYPE_COMMUNICATIONLIST.AsGuid() );
+
             foreach ( var groupGuid in topicGuids )
             {
+                if ( !allowedGroupGuids.Contains( groupGuid ) )
+                {
+                    continue;
+                }
+
                 var groupMemberService = new GroupMemberService( rockContext );
                 var group = new GroupService( rockContext ).Get( groupGuid );
+
+                if ( group == null || group.GroupTypeId != communicationListGroupTypeId || group.IsSecurityRoleOrSecurityGroupType() )
+                {
+                    continue;
+                }
+
                 var groupMemberRecordsForPerson = groupMemberService.Queryable()
                     .Where( a => a.GroupId == group.Id && a.PersonId == person.Id ).ToList();
 
@@ -1844,6 +1867,10 @@ namespace Rock.Blocks.Types.Mobile.Security
                     person = new PersonService( rockContext ).Get( state.MatchedPersonId.Value );
                 }
 
+                // Mark the state as verified so CreatePerson knows the
+                // code step was completed.
+                state.VerifiedDateTime = RockDateTime.Now;
+
                 return ActionOk( new VerifyCodeResponse
                 {
                     State = Rock.Security.Encryption.EncryptString( state.ToJson() ),
@@ -1891,6 +1918,16 @@ namespace Rock.Blocks.Types.Mobile.Security
                 var siteCache = PageCache.Layout.Site;
                 var personService = new PersonService( rockContext );
                 var state = Rock.Security.Encryption.DecryptString( request.State ).FromJsonOrThrow<EncryptedState>();
+
+                // Make sure the code was verified and the individual has not
+                // taken too long to finish onboarding.
+                if ( !state.VerifiedDateTime.HasValue || state.VerifiedDateTime.Value.AddMinutes( CompleteOnboardingTimeLimit ) < RockDateTime.Now )
+                {
+                    return new BlockActionResult( System.Net.HttpStatusCode.Unauthorized )
+                    {
+                        Error = "Your verification has expired, please try again."
+                    };
+                }
 
                 if ( state.MatchedPersonId.HasValue )
                 {
@@ -2171,6 +2208,15 @@ namespace Rock.Blocks.Types.Mobile.Security
             /// The matched person identifier.
             /// </value>
             public int? MatchedPersonId { get; set; }
+
+            /// <summary>
+            /// Gets or sets the date and time the verification code was
+            /// successfully verified. This is only set by VerifyCode.
+            /// </summary>
+            /// <value>
+            /// The date and time the code was verified or <c>null</c>.
+            /// </value>
+            public DateTime? VerifiedDateTime { get; set; }
         }
 
         #endregion
