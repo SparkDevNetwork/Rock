@@ -641,8 +641,8 @@ namespace Rock.Blocks.Cms
                 IsApprovalRequired = IsApprovalRequired,
                 IsCurrentPersonApprover = IsCurrentPersonAuthorized( Authorization.APPROVE ),
                 IsCodeEditorDefault = GetAttributeValue( AttributeKey.UseCodeEditor ).AsBoolean(),
-                EncryptedDocumentRootFolder = Encryption.EncryptString( GetAttributeValue( AttributeKey.DocumentRootFolder ) ),
-                EncryptedImageRootFolder = Encryption.EncryptString( GetAttributeValue( AttributeKey.ImageRootFolder ) ),
+                EncryptedDocumentRootFolder = Encryption.EncryptRootFolder( GetAttributeValue( AttributeKey.DocumentRootFolder ) ),
+                EncryptedImageRootFolder = Encryption.EncryptRootFolder( GetAttributeValue( AttributeKey.ImageRootFolder ) ),
                 IsUserSpecificRoot = GetAttributeValue( AttributeKey.UserSpecificFolders ).AsBoolean(),
                 MergeFields = GetEditorMergeFields()
             };
