@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.Data.Common;
+using System.Globalization;
 using System.Linq;
 using System.Net.Http;
 using System.Threading;
@@ -181,6 +182,56 @@ namespace Rock.Communication.Chat.Platform.Sync
             /// How many keys the push names absent.
             /// </summary>
             public int AbsentCount { get; set; }
+        }
+
+        /// <summary>
+        /// A scoped projection read back into the rows a caller decides from, rather than sent:
+        /// the people asked for, the live channels and their memberships.
+        /// </summary>
+        internal sealed class ScopedProjection
+        {
+            /// <summary>
+            /// Each person asked for by id, with their primary alias row, or null where the
+            /// projection leaves them out of chat.
+            /// </summary>
+            public Dictionary<int, ProjectedAlias> People { get; } = new Dictionary<int, ProjectedAlias>();
+
+            /// <summary>
+            /// Each live channel by its Guid, and whether it is public.
+            /// </summary>
+            public Dictionary<Guid, bool> Channels { get; } = new Dictionary<Guid, bool>();
+
+            /// <summary>
+            /// Each membership of a live channel: the person when they are one of those asked for,
+            /// and whether a ban on it is in force now.
+            /// </summary>
+            public List<(Guid ChannelGuid, int? PersonId, bool IsBanned)> Members { get; } = new List<(Guid ChannelGuid, int? PersonId, bool IsBanned)>();
+        }
+
+        /// <summary>
+        /// One alias row as the projection resolved it.
+        /// </summary>
+        internal sealed class ProjectedAlias
+        {
+            /// <summary>
+            /// The person's primary alias, whose row alone carries the person's values.
+            /// </summary>
+            public Guid PrimaryAliasGuid { get; set; }
+
+            /// <summary>
+            /// Whether the person takes new direct messages from anyone.
+            /// </summary>
+            public bool IsOpenDmAllowed { get; set; }
+
+            /// <summary>
+            /// Whether the person is on chat's Ban List.
+            /// </summary>
+            public bool IsGloballyBanned { get; set; }
+
+            /// <summary>
+            /// Whether the person's record is inactive.
+            /// </summary>
+            public bool IsInactive { get; set; }
         }
 
         /// <summary>
@@ -920,6 +971,105 @@ namespace Rock.Communication.Chat.Platform.Sync
             var contract = JObject.Parse( ChatWireContract.Json );
 
             return ReadProjection( rockContext, parameters, PushProjectionTimeoutSeconds, reader => ReadPushBody( reader, contract ) );
+        }
+
+        /// <summary>
+        /// Reads the rows the projection states for some keys, for a caller that decides from them
+        /// in Rock rather than pushing them.
+        /// </summary>
+        /// <param name="rockContext">The context read in.</param>
+        /// <param name="configuration">The church's chat settings.</param>
+        /// <param name="changes">The keys to read.</param>
+        /// <returns>The people asked for, the live channels and their memberships.</returns>
+        internal static ScopedProjection ReadScopedProjection( RockContext rockContext, ChatPlatformConfiguration configuration, ImmediateChanges changes )
+        {
+            // The push body itself, so a decision made here reads exactly what the platform is sent.
+            var body = ProjectChanges( rockContext, configuration, changes ).Body;
+            var contract = JObject.Parse( ChatWireContract.Json );
+            var read = new ScopedProjection();
+            var aliases = new Dictionary<Guid, ProjectedAlias>();
+            var nowUtc = DateTime.UtcNow;
+
+            foreach ( var row in SectionRows( body, contract, "aliases", "chat_aliases", out var column ) )
+            {
+                aliases[GuidAt( row, column["person_alias_guid"] )] = new ProjectedAlias
+                {
+                    PrimaryAliasGuid = GuidAt( row, column["primary_person_alias_guid"] ),
+                    IsOpenDmAllowed = FlagAt( row, column["is_open_dm_allowed"] ),
+                    IsGloballyBanned = FlagAt( row, column["is_globally_banned"] ),
+                    IsInactive = FlagAt( row, column["is_inactive"] )
+                };
+            }
+
+            // Any alias of a person leads to their primary row, which alone carries their values.
+            var personIds = changes.PersonIds.ToList();
+            var aliasGuids = new PersonAliasService( rockContext ).Queryable()
+                .Where( a => personIds.Contains( a.PersonId ) )
+                .Select( a => new { a.PersonId, a.Guid } )
+                .ToList();
+
+            foreach ( var personId in personIds )
+            {
+                var anyRow = aliasGuids.Where( a => a.PersonId == personId && aliases.ContainsKey( a.Guid ) ).Select( a => aliases[a.Guid] ).FirstOrDefault();
+                read.People[personId] = anyRow != null && aliases.TryGetValue( anyRow.PrimaryAliasGuid, out var primary ) ? primary : null;
+            }
+
+            // The platform keys a membership by primary alias, so that is how each is matched back.
+            var personByAlias = read.People.Where( p => p.Value != null ).ToDictionary( p => p.Value.PrimaryAliasGuid, p => p.Key );
+
+            foreach ( var row in SectionRows( body, contract, "channels", "chat_channels", out var column ) )
+            {
+                read.Channels[GuidAt( row, column["channel_id"] )] = FlagAt( row, column["is_public"] );
+            }
+
+            foreach ( var row in SectionRows( body, contract, "members", "chat_channel_members", out var column ) )
+            {
+                // A ban with an end that has passed no longer counts, as the platform reads one.
+                var expiresAt = ( string ) row[column["ban_expires_at"]];
+                var isBanInForce = expiresAt.IsNullOrWhiteSpace()
+                    || DateTime.Parse( expiresAt, CultureInfo.InvariantCulture, DateTimeStyles.AdjustToUniversal ) > nowUtc;
+
+                var personId = personByAlias.TryGetValue( GuidAt( row, column["person_alias_guid"] ), out var id ) ? id : ( int? ) null;
+
+                read.Members.Add( (GuidAt( row, column["channel_id"] ), personId, FlagAt( row, column["is_banned"] ) && isBanInForce) );
+            }
+
+            return read;
+        }
+
+        /// <summary>
+        /// A section's rows from a push body, with where each of its columns sits.
+        /// </summary>
+        /// <param name="body">The push body.</param>
+        /// <param name="contract">The parsed wire contract.</param>
+        /// <param name="section">The section's key in the body.</param>
+        /// <param name="table">The contract's table the section's rows are of.</param>
+        /// <param name="column">Each column's position in a row.</param>
+        /// <returns>The rows.</returns>
+        private static IEnumerable<JArray> SectionRows( JObject body, JObject contract, string section, string table, out Dictionary<string, int> column )
+        {
+            // Rows are positional, so a column's place is read from the contract, never assumed.
+            column = contract["tables"].First( t => ( string ) t["name"] == table )["columns"]
+                .Select( ( c, i ) => new { Name = ( string ) c, Index = i } )
+                .ToDictionary( c => c.Name, c => c.Index );
+
+            return ( body[section] as JArray ?? new JArray() ).Cast<JArray>().ToList();
+        }
+
+        /// <summary>
+        /// A Guid cell of a projected row.
+        /// </summary>
+        private static Guid GuidAt( JArray row, int index )
+        {
+            return Guid.Parse( ( string ) row[index] );
+        }
+
+        /// <summary>
+        /// A flag cell of a projected row, where a null reads as false.
+        /// </summary>
+        private static bool FlagAt( JArray row, int index )
+        {
+            return row[index].Value<bool?>() == true;
         }
 
         /// <summary>

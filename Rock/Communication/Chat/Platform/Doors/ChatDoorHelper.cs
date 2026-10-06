@@ -24,10 +24,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-using Newtonsoft.Json.Linq;
-
 using Rock.Communication.Chat.Platform.Configuration;
-using Rock.Communication.Chat.Platform.Contract;
 using Rock.Communication.Chat.Platform.Session;
 using Rock.Communication.Chat.Platform.Sync;
 using Rock.Data;
@@ -83,6 +80,7 @@ namespace Rock.Communication.Chat.Platform.Doors
         /// <returns>The conversation, or why there is none.</returns>
         internal static async Task<ChatDirectMessageResultBag> StartDirectMessageAsync( Person caller, IEnumerable<Guid> personAliasGuids, ChatSessionContext context, RockContext rockContext )
         {
+            // The same gates a session obeys, so the door is never a way into chat around them.
             var gate = ChatSessionHelper.Evaluate( caller, context, rockContext );
             if ( !gate.Success )
             {
@@ -125,6 +123,8 @@ namespace Rock.Communication.Chat.Platform.Doors
 
             foreach ( var other in others )
             {
+                // Someone the projection leaves out has no row on the platform to put in a
+                // conversation, and chat's own author is not a person to talk to.
                 var person = read.People[other.PersonId];
                 var isOutOfReach = person == null || person.IsGloballyBanned || person.IsInactive || other.Guid == Rock.SystemGuid.Person.CHAT_SYSTEM_AUTHOR.AsGuid();
 
@@ -154,9 +154,11 @@ namespace Rock.Communication.Chat.Platform.Doors
                 return NotEligible( unreachable.Guid, unreachable.NickName, unreachable.LastName );
             }
 
+            // This door enrols nobody, so no person's own row needs pushing with the conversation.
             var channelGuid = CreateDirectMessage( rockContext, context.Configuration.TenantId.Value, personIds, Enumerable.Empty<int>() );
             var push = await ChatPlatformSyncHelper.FlushAsync( rockContext ).ConfigureAwait( false );
 
+            // A push still on its way is no failure: the client waits for the conversation to arrive.
             return new ChatDirectMessageResultBag
             {
                 Code = OkCode,
@@ -178,6 +180,7 @@ namespace Rock.Communication.Chat.Platform.Doors
             // The separator keeps ids 1 and 23 apart from ids 12 and 3.
             var name = tenantId.ToString( "D" ) + ":" + string.Join( ",", personIds.Distinct().OrderBy( id => id ) );
 
+            // RFC 4122 hashes the namespace in network order, which is not how .NET lays out a Guid.
             var namespaceBytes = ToNetworkOrder( DirectMessageNamespace.ToByteArray() );
             var nameBytes = Encoding.UTF8.GetBytes( name );
 
@@ -213,9 +216,61 @@ namespace Rock.Communication.Chat.Platform.Doors
         /// <returns>The message posted, or the code and text of why it was not.</returns>
         internal static ChatDoorOutcome SendWorkflowDirectMessage( int senderPersonId, int recipientPersonId, string body, ChatPlatformConfiguration configuration )
         {
-            // A workflow runs on a thread of its own with no request around it, so the awaits run on
-            // the pool rather than deadlocking on a context nobody pumps.
-            return Task.Run( () => SendWorkflowDirectMessageAsync( senderPersonId, recipientPersonId, body, configuration ) ).GetAwaiter().GetResult();
+            return RunWorkflowPost( configuration, async stopwatch =>
+            {
+                if ( senderPersonId == recipientPersonId )
+                {
+                    return Outcome( "door.self", "A direct message needs a sender and a different recipient." );
+                }
+
+                using ( var rockContext = new RockContext() )
+                {
+                    var personService = new PersonService( rockContext );
+                    var people = new[] { personService.Get( senderPersonId ), personService.Get( recipientPersonId ) };
+
+                    if ( people.Any( p => p == null ) )
+                    {
+                        return Outcome( "door.not_found", "The sender or the recipient could not be found." );
+                    }
+
+                    var refused = RefusedByGates( people, configuration, rockContext );
+                    if ( refused != null )
+                    {
+                        return refused;
+                    }
+
+                    // Open DM and shared rooms are not asked, so the sharing read is skipped.
+                    var personIds = people.Select( p => p.Id ).ToList();
+                    var read = ReadDirectMessage( rockContext, configuration, senderPersonId, personIds, false );
+
+                    // The administrator's act still does not step around a ban in the conversation.
+                    if ( read.Existing.HasValue && read.BannedPersonIds.Any() )
+                    {
+                        return Outcome( "door.target_not_eligible", "Someone in this conversation is banned from it." );
+                    }
+
+                    // The workflow saves outside any request, which the save hooks do not push, so the
+                    // conversation and both people are named for this context's commit.
+                    Guid channelGuid;
+                    if ( read.Existing.HasValue )
+                    {
+                        channelGuid = read.Existing.Value;
+                        ChatPlatformSyncHelper.RecordGroupChange( rockContext, channelGuid );
+                        personIds.ForEach( id => ChatPlatformSyncHelper.RecordPersonChange( rockContext, id ) );
+                        rockContext.SaveChanges();
+                    }
+                    else
+                    {
+                        channelGuid = CreateDirectMessage( rockContext, configuration.TenantId.Value, personIds, personIds );
+                    }
+
+                    // A push still pending is not checked: the post that follows names the reason
+                    // the platform gives if the conversation has not reached it.
+                    await ChatPlatformSyncHelper.FlushAsync( rockContext, Remaining( stopwatch ) ).ConfigureAwait( false );
+
+                    return await PostAsync( configuration, channelGuid, body, people[0].PrimaryAliasGuid, stopwatch ).ConfigureAwait( false );
+                }
+            } );
         }
 
         /// <summary>
@@ -229,109 +284,54 @@ namespace Rock.Communication.Chat.Platform.Doors
         /// <returns>The message posted, or the code and text of why it was not.</returns>
         internal static ChatDoorOutcome SendWorkflowChannelMessage( Guid groupGuid, int? senderPersonId, string body, ChatPlatformConfiguration configuration )
         {
-            return Task.Run( () => SendWorkflowChannelMessageAsync( groupGuid, senderPersonId, body, configuration ) ).GetAwaiter().GetResult();
-        }
-
-        /// <summary>
-        /// The workflow direct message, on the pool.
-        /// </summary>
-        private static async Task<ChatDoorOutcome> SendWorkflowDirectMessageAsync( int senderPersonId, int recipientPersonId, string body, ChatPlatformConfiguration configuration )
-        {
-            var stopwatch = Stopwatch.StartNew();
-
-            if ( configuration == null || !configuration.IsConfigured )
+            return RunWorkflowPost( configuration, async stopwatch =>
             {
-                return Outcome( ChatSessionHelper.ToGateCode( ChatMintGate.NotConfigured ), "Chat is not set up for this church." );
-            }
-
-            if ( senderPersonId == recipientPersonId )
-            {
-                return Outcome( "door.self", "A direct message needs a sender and a different recipient." );
-            }
-
-            using ( var rockContext = new RockContext() )
-            {
-                var personService = new PersonService( rockContext );
-                var people = new[] { personService.Get( senderPersonId ), personService.Get( recipientPersonId ) };
-
-                if ( people.Any( p => p == null ) )
+                // A system line is under nobody, so there is no one to gate or enrol.
+                if ( !senderPersonId.HasValue )
                 {
-                    return Outcome( "door.not_found", "The sender or the recipient could not be found." );
+                    return await PostAsync( configuration, groupGuid, body, null, stopwatch ).ConfigureAwait( false );
                 }
 
-                var refused = RefusedByGates( people, configuration, rockContext );
-                if ( refused != null )
+                using ( var rockContext = new RockContext() )
                 {
-                    return refused;
-                }
+                    var sender = new PersonService( rockContext ).Get( senderPersonId.Value );
+                    if ( sender == null )
+                    {
+                        return Outcome( "door.not_found", "The sender could not be found." );
+                    }
 
-                var personIds = people.Select( p => p.Id ).ToList();
-                var read = ReadDirectMessage( rockContext, configuration, senderPersonId, personIds, false );
+                    var refused = RefusedByGates( new[] { sender }, configuration, rockContext );
+                    if ( refused != null )
+                    {
+                        return refused;
+                    }
 
-                if ( read.Existing.HasValue && read.BannedPersonIds.Any() )
-                {
-                    return Outcome( "door.target_not_eligible", "Someone in this conversation is banned from it." );
-                }
-
-                // The workflow saves outside any request, which the save hooks do not push, so the
-                // conversation and both people are named for this context's commit.
-                Guid channelGuid;
-                if ( read.Existing.HasValue )
-                {
-                    channelGuid = read.Existing.Value;
-                    ChatPlatformSyncHelper.RecordGroupChange( rockContext, channelGuid );
-                    personIds.ForEach( id => ChatPlatformSyncHelper.RecordPersonChange( rockContext, id ) );
+                    // A sender who has never opened chat has no row on the platform to post under.
+                    ChatPlatformSyncHelper.RecordPersonChange( rockContext, sender.Id );
                     rockContext.SaveChanges();
-                }
-                else
-                {
-                    channelGuid = CreateDirectMessage( rockContext, configuration.TenantId.Value, personIds, personIds );
-                }
+                    await ChatPlatformSyncHelper.FlushAsync( rockContext, Remaining( stopwatch ) ).ConfigureAwait( false );
 
-                await ChatPlatformSyncHelper.FlushAsync( rockContext, Remaining( stopwatch ) ).ConfigureAwait( false );
-
-                return await PostAsync( configuration, channelGuid, body, people[0].PrimaryAliasGuid, stopwatch ).ConfigureAwait( false );
-            }
+                    return await PostAsync( configuration, groupGuid, body, sender.PrimaryAliasGuid, stopwatch ).ConfigureAwait( false );
+                }
+            } );
         }
 
         /// <summary>
-        /// The workflow channel post, on the pool.
+        /// Runs a workflow post once chat is set up, under one wait for the whole of it.
         /// </summary>
-        private static async Task<ChatDoorOutcome> SendWorkflowChannelMessageAsync( Guid groupGuid, int? senderPersonId, string body, ChatPlatformConfiguration configuration )
+        /// <param name="configuration">The church's chat settings.</param>
+        /// <param name="post">The post, given the stopwatch its wait is measured on.</param>
+        /// <returns>The post's outcome, or why chat could not take it.</returns>
+        private static ChatDoorOutcome RunWorkflowPost( ChatPlatformConfiguration configuration, Func<Stopwatch, Task<ChatDoorOutcome>> post )
         {
-            var stopwatch = Stopwatch.StartNew();
-
             if ( configuration == null || !configuration.IsConfigured )
             {
                 return Outcome( ChatSessionHelper.ToGateCode( ChatMintGate.NotConfigured ), "Chat is not set up for this church." );
             }
 
-            if ( !senderPersonId.HasValue )
-            {
-                return await PostAsync( configuration, groupGuid, body, null, stopwatch ).ConfigureAwait( false );
-            }
-
-            using ( var rockContext = new RockContext() )
-            {
-                var sender = new PersonService( rockContext ).Get( senderPersonId.Value );
-                if ( sender == null )
-                {
-                    return Outcome( "door.not_found", "The sender could not be found." );
-                }
-
-                var refused = RefusedByGates( new[] { sender }, configuration, rockContext );
-                if ( refused != null )
-                {
-                    return refused;
-                }
-
-                // A sender who has never opened chat has no row on the platform to post under.
-                ChatPlatformSyncHelper.RecordPersonChange( rockContext, sender.Id );
-                rockContext.SaveChanges();
-                await ChatPlatformSyncHelper.FlushAsync( rockContext, Remaining( stopwatch ) ).ConfigureAwait( false );
-
-                return await PostAsync( configuration, groupGuid, body, sender.PrimaryAliasGuid, stopwatch ).ConfigureAwait( false );
-            }
+            // A workflow runs on a thread of its own with no request around it, so the awaits run on
+            // the pool rather than deadlocking on a context nobody pumps.
+            return Task.Run( () => post( Stopwatch.StartNew() ) ).GetAwaiter().GetResult();
         }
 
         /// <summary>
@@ -340,6 +340,7 @@ namespace Rock.Communication.Chat.Platform.Doors
         /// <returns>The refusal, or null where everyone may be messaged.</returns>
         private static ChatDoorOutcome RefusedByGates( IList<Person> people, ChatPlatformConfiguration configuration, RockContext rockContext )
         {
+            // A workflow has no session of its own, so only the church's settings frame the gates.
             var context = new ChatSessionContext { Configuration = configuration };
 
             // Every person is checked before anyone is enrolled, so a refusal enrols nobody.
@@ -373,6 +374,7 @@ namespace Rock.Communication.Chat.Platform.Doors
             {
                 var answer = await ChatPlatformSyncHelper.SendSystemMessageAsync( configuration, channelGuid, body, senderAliasGuid, timeout.Token ).ConfigureAwait( false );
 
+                // The platform's own code and sentence pass through, so the workflow log says why.
                 if ( !answer.Id.HasValue )
                 {
                     return new ChatDoorOutcome { Code = answer.Code, Message = answer.Message, ChannelGuid = channelGuid };
@@ -392,27 +394,13 @@ namespace Rock.Communication.Chat.Platform.Doors
         /// </summary>
         private sealed class DirectMessageRead
         {
-            public Dictionary<int, ProjectedPerson> People { get; } = new Dictionary<int, ProjectedPerson>();
+            public Dictionary<int, ChatPlatformSyncHelper.ProjectedAlias> People { get; set; }
 
             public Guid? Existing { get; set; }
 
             public HashSet<int> BannedPersonIds { get; } = new HashSet<int>();
 
             public HashSet<int> SharedPersonIds { get; } = new HashSet<int>();
-        }
-
-        /// <summary>
-        /// One person's primary alias row as the projection resolved it.
-        /// </summary>
-        private sealed class ProjectedPerson
-        {
-            public Guid PrimaryAliasGuid { get; set; }
-
-            public bool IsOpenDmAllowed { get; set; }
-
-            public bool IsGloballyBanned { get; set; }
-
-            public bool IsInactive { get; set; }
         }
 
         /// <summary>
@@ -445,6 +433,8 @@ namespace Rock.Communication.Chat.Platform.Doors
                 .Select( g => g.Guid )
                 .ToList();
 
+            // Rock's membership only proposes; the projection decides which candidate is live and
+            // who in it is banned, as the platform will see them.
             var changes = new ChatPlatformSyncHelper.ImmediateChanges();
             changes.PersonIds.UnionWith( personIds );
             changes.GroupGuids.UnionWith( candidates );
@@ -468,67 +458,15 @@ namespace Rock.Communication.Chat.Platform.Doors
                 }
             }
 
-            var body = ChatPlatformSyncHelper.ProjectChanges( rockContext, configuration, changes ).Body;
-
-            return ReadProjectedSections( rockContext, body, callerId, personIds, candidates );
-        }
-
-        /// <summary>
-        /// Reads the people, the live exact-set conversation and the shared private rooms out of a
-        /// scoped projection's sections.
-        /// </summary>
-        private static DirectMessageRead ReadProjectedSections( RockContext rockContext, JObject body, int callerId, IList<int> personIds, IList<Guid> candidates )
-        {
-            var contract = JObject.Parse( ChatWireContract.Json );
-            var aliases = Section( body, contract, "aliases", "chat_aliases" );
-            var channels = Section( body, contract, "channels", "chat_channels" );
-            var members = Section( body, contract, "members", "chat_channel_members" );
-            var read = new DirectMessageRead();
-
-            var aliasRows = aliases.Rows.ToDictionary( r => aliases.ReadGuid( r, "person_alias_guid" ) );
-
-            // Any alias of a person leads to their primary row, which alone carries their values.
-            var people = personIds.ToList();
-            var aliasGuids = new PersonAliasService( rockContext ).Queryable()
-                .Where( a => people.Contains( a.PersonId ) )
-                .Select( a => new { a.PersonId, a.Guid } )
-                .ToList();
-
-            foreach ( var personId in personIds )
-            {
-                var anyRow = aliasGuids.Where( a => a.PersonId == personId && aliasRows.ContainsKey( a.Guid ) ).Select( a => aliasRows[a.Guid] ).FirstOrDefault();
-                var primary = anyRow == null ? ( Guid? ) null : aliases.ReadGuid( anyRow, "primary_person_alias_guid" );
-
-                read.People[personId] = primary.HasValue && aliasRows.TryGetValue( primary.Value, out var row )
-                    ? new ProjectedPerson
-                    {
-                        PrimaryAliasGuid = primary.Value,
-                        IsOpenDmAllowed = aliases.Flag( row, "is_open_dm_allowed" ),
-                        IsGloballyBanned = aliases.Flag( row, "is_globally_banned" ),
-                        IsInactive = aliases.Flag( row, "is_inactive" )
-                    }
-                    : null;
-            }
-
-            var personByAlias = read.People.Where( p => p.Value != null ).ToDictionary( p => p.Value.PrimaryAliasGuid, p => p.Key );
-            var now = DateTime.UtcNow;
-
-            // Members come only from live channels, so a channel with members here is live.
-            var liveMembers = members.Rows
-                .Select( r => new
-                {
-                    Channel = members.ReadGuid( r, "channel_id" ),
-                    PersonId = personByAlias.TryGetValue( members.ReadGuid( r, "person_alias_guid" ), out var id ) ? id : ( int? ) null,
-                    IsBanned = members.Flag( r, "is_banned" ) && IsBanInForce( r[members.Index( "ban_expires_at" )], now )
-                } )
-                .ToList();
-
-            var channelRows = channels.Rows.ToDictionary( r => channels.ReadGuid( r, "channel_id" ) );
+            var projection = ChatPlatformSyncHelper.ReadScopedProjection( rockContext, configuration, changes );
+            var read = new DirectMessageRead { People = projection.People };
 
             foreach ( var candidate in candidates )
             {
-                var inIt = liveMembers.Where( m => m.Channel == candidate ).ToList();
-                var isExact = channelRows.ContainsKey( candidate )
+                // Members come only from live channels, and a member who is not one of these people
+                // makes it a different conversation.
+                var inIt = projection.Members.Where( m => m.ChannelGuid == candidate ).ToList();
+                var isExact = projection.Channels.ContainsKey( candidate )
                     && inIt.All( m => m.PersonId.HasValue )
                     && new HashSet<int>( inIt.Select( m => m.PersonId.Value ) ).SetEquals( personIds );
 
@@ -541,10 +479,10 @@ namespace Rock.Communication.Chat.Platform.Doors
             }
 
             // A private room counts when the caller and the person are both unbanned members of it.
-            var privateRooms = channelRows.Where( c => !channels.Flag( c.Value, "is_public" ) ).Select( c => c.Key ).ToList();
+            var privateRooms = projection.Channels.Where( c => !c.Value ).Select( c => c.Key ).ToList();
             foreach ( var room in privateRooms )
             {
-                var unbanned = liveMembers.Where( m => m.Channel == room && !m.IsBanned && m.PersonId.HasValue ).Select( m => m.PersonId.Value ).ToList();
+                var unbanned = projection.Members.Where( m => m.ChannelGuid == room && !m.IsBanned && m.PersonId.HasValue ).Select( m => m.PersonId.Value ).ToList();
                 if ( unbanned.Contains( callerId ) )
                 {
                     read.SharedPersonIds.UnionWith( unbanned.Where( id => id != callerId ) );
@@ -576,6 +514,8 @@ namespace Rock.Communication.Chat.Platform.Doors
 
             var group = AddDirectMessageGroup( rockContext, derived, personIds );
 
+            // The unique index on a group's Guid is the lock: two people starting the same
+            // conversation at once both try, and exactly one save wins.
             try
             {
                 rockContext.SaveChanges();
@@ -583,7 +523,13 @@ namespace Rock.Communication.Chat.Platform.Doors
             }
             catch ( Exception exception ) when ( Rock.SystemGuid.DuplicateSystemGuidException.CatchDuplicateSystemGuidException( exception, DirectMessageName ) != null )
             {
-                Detach( rockContext, group );
+                // Taken back out of the context, so the next save does not try them again.
+                foreach ( var member in group.Members.ToList() )
+                {
+                    rockContext.Entry( member ).State = EntityState.Detached;
+                }
+
+                rockContext.Entry( group ).State = EntityState.Detached;
             }
 
             var holder = new GroupMemberService( rockContext ).Queryable().AsNoTracking()
@@ -642,76 +588,9 @@ namespace Rock.Communication.Chat.Platform.Doors
             return group;
         }
 
-        /// <summary>
-        /// Takes a refused group and its memberships out of the context, so the next save does not
-        /// try them again.
-        /// </summary>
-        private static void Detach( RockContext rockContext, Group group )
-        {
-            foreach ( var member in group.Members.ToList() )
-            {
-                rockContext.Entry( member ).State = EntityState.Detached;
-            }
-
-            rockContext.Entry( group ).State = EntityState.Detached;
-        }
-
         #endregion The read and the create
 
         #region Support
-
-        /// <summary>
-        /// One section of a push body with its column positions from the wire contract.
-        /// </summary>
-        private sealed class ProjectedSection
-        {
-            public IList<string> Columns { get; set; }
-
-            public IList<JArray> Rows { get; set; }
-
-            public int Index( string column )
-            {
-                return Columns.IndexOf( column );
-            }
-
-            public Guid ReadGuid( JArray row, string column )
-            {
-                return Guid.Parse( ( string ) row[Index( column )] );
-            }
-
-            public bool Flag( JArray row, string column )
-            {
-                return row[Index( column )].Value<bool?>() == true;
-            }
-        }
-
-        /// <summary>
-        /// A section of the push body, its rows positional in the contract's column order.
-        /// </summary>
-        private static ProjectedSection Section( JObject body, JObject contract, string section, string table )
-        {
-            var columns = contract["tables"].First( t => ( string ) t["name"] == table )["columns"].Select( c => ( string ) c ).ToList();
-
-            return new ProjectedSection
-            {
-                Columns = columns,
-                Rows = ( body[section] as JArray ?? new JArray() ).Cast<JArray>().ToList()
-            };
-        }
-
-        /// <summary>
-        /// Whether a channel ban is still in force, as the platform reads one: no end, or an end to come.
-        /// </summary>
-        private static bool IsBanInForce( JToken expiresAt, DateTime nowUtc )
-        {
-            var text = ( string ) expiresAt;
-            if ( text.IsNullOrWhiteSpace() )
-            {
-                return true;
-            }
-
-            return DateTime.Parse( text, System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.AdjustToUniversal ) > nowUtc;
-        }
 
         /// <summary>
         /// Swaps a Guid's first three fields between .NET's little-endian layout and the network
