@@ -173,6 +173,19 @@ export function isNewMessageShown(session: { canStartDm?: boolean | null }): boo
 }
 
 /**
+ * Whether the composer keeps the text in its box when it hands it over. A draft's first message
+ * that Rock refuses has no failed row in a feed to keep it on, so the box keeps it until the draft
+ * goes away; an ordinary send's failure stays on its own row with a retry.
+ *
+ * @param draft The draft on screen, or null.
+ *
+ * @returns True while a draft is on screen.
+ */
+export function isTextKeptOnSend(draft: DirectMessageDraft | null): boolean {
+    return draft !== null;
+}
+
+/**
  * Creates the direct messages.
  *
  * @param dependencies What they reach outside themselves.
@@ -224,8 +237,12 @@ export function createDirectMessages(dependencies: DirectMessageDependencies): D
         await dependencies.openChannel(channelId);
     }
 
-    /** Sends a waiting message once, unless it is done or a try is already on its way. */
-    async function tryWaiting(message: WaitingMessage): Promise<void> {
+    /**
+     * Sends a waiting message once, unless it is done or a try is already on its way. Its draft
+     * stays on screen until the platform has the conversation, since opening it before then can be
+     * refused and is not tried again: a membership signal says it has, and so does a confirmed send.
+     */
+    async function tryWaiting(message: WaitingMessage, isSignalled: boolean): Promise<void> {
         if (message.isDone || message.isSending || isStopped) {
             return;
         }
@@ -235,14 +252,22 @@ export function createDirectMessages(dependencies: DirectMessageDependencies): D
         message.tries++;
         const isLast = message.tries >= maxRetriedSends;
 
-        await leaveDraftFor(message.draft, message.channelId);
+        if (isSignalled) {
+            await leaveDraftFor(message.draft, message.channelId);
+        }
+
         const isSent = await dependencies.send(message.channelId, message.body, { localId: message.localId, isLast });
         message.isSending = false;
 
-        // The last failure stays with the sender as an ordinary failed row to retry or discard.
+        // The last failure stays with the sender as an ordinary failed row to retry or discard,
+        // and that row is in the conversation, so it opens then too.
         if (isSent || isLast) {
             message.isDone = true;
             waiting.delete(message);
+
+            if (!isStopped) {
+                await leaveDraftFor(message.draft, message.channelId);
+            }
         }
     }
 
@@ -256,7 +281,7 @@ export function createDirectMessages(dependencies: DirectMessageDependencies): D
         while (!message.isDone && !isStopped) {
             const delay = dependencies.retryDelay?.() ?? defaultRetryDelay;
             await sleep(computeBackoff(attempt++, delay.baseMs, delay.capMs, random));
-            await tryWaiting(message);
+            await tryWaiting(message, false);
         }
     }
 
@@ -343,6 +368,11 @@ export function createDirectMessages(dependencies: DirectMessageDependencies): D
                 arrived.clear();
             }
 
+            // The shell is going away, so there is nobody left to tell or to keep the text for.
+            if (isStopped) {
+                return false;
+            }
+
             // A refusal is Rock's answer and no wait changes it. A person still on the draft is
             // told there. One who left it has no draft to show it on, so they are told elsewhere
             // and the text waits for their next draft to the same people.
@@ -361,10 +391,6 @@ export function createDirectMessages(dependencies: DirectMessageDependencies): D
                         text: `Your message to ${names} could not be sent. ${reason}`
                     });
                 }
-                return false;
-            }
-
-            if (isStopped) {
                 return false;
             }
 
@@ -400,7 +426,7 @@ export function createDirectMessages(dependencies: DirectMessageDependencies): D
 
             // A signal for another conversation says nothing about a waiting one.
             const ready = [...waiting].filter(m => !changed || changed === m.channelId);
-            await Promise.all(ready.map(tryWaiting));
+            await Promise.all(ready.map(m => tryWaiting(m, true)));
         },
 
         close: (): void => {

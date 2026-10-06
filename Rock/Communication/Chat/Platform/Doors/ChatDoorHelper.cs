@@ -440,7 +440,8 @@ namespace Rock.Communication.Chat.Platform.Doors
             changes.GroupGuids.UnionWith( candidates );
 
             // Only the caller's and each person's own memberships of the groups they share are read,
-            // so a room of thousands costs two rows, not its roster.
+            // so a room of thousands costs two rows, not its roster. The chat-allowed filter only
+            // narrows the candidates; the projection decides which of them is a chat channel.
             if ( isSharingRead )
             {
                 var callerGroupIds = activeMembers.Where( m => m.PersonId == callerId ).Select( m => m.GroupId );
@@ -532,21 +533,30 @@ namespace Rock.Communication.Chat.Platform.Doors
                 rockContext.Entry( group ).State = EntityState.Detached;
             }
 
-            var holder = new GroupMemberService( rockContext ).Queryable().AsNoTracking()
-                .Where( m => m.Group.Guid == derived && m.GroupMemberStatus == GroupMemberStatus.Active && !m.IsArchived )
-                .Select( m => m.PersonId )
-                .ToList();
+            // Read without the archived filter, so an archived holder is seen and passed over rather
+            // than missed and mistaken for one with nobody in it.
+            var directMessageTypeId = group.GroupTypeId;
+            var holder = new GroupService( rockContext ).AsNoFilter().AsNoTracking()
+                .Where( g => g.Guid == derived )
+                .Select( g => new
+                {
+                    IsLive = g.IsActive && !g.IsArchived && g.GroupTypeId == directMessageTypeId,
+                    PersonIds = g.Members.Where( m => m.GroupMemberStatus == GroupMemberStatus.Active && !m.IsArchived ).Select( m => m.PersonId )
+                } )
+                .FirstOrDefault();
 
             // The other half of a race made it: the empty save pushes it again, so this caller is
-            // answered only once the platform holds it too.
-            if ( new HashSet<int>( holder ).SetEquals( personIds ) )
+            // answered only once the platform holds it too. An ended holder is never handed back,
+            // because the platform holds it as gone and every send to it would fail.
+            var isRaceWon = holder != null && holder.IsLive && new HashSet<int>( holder.PersonIds ).SetEquals( personIds );
+            if ( isRaceWon )
             {
                 rockContext.SaveChanges();
                 return derived;
             }
 
-            // The group holding the Guid has since gained or lost people, so it is a different
-            // conversation and this one gets a Guid of its own.
+            // The group holding the Guid has since gained or lost people, or has ended, so it is a
+            // different conversation and this one gets a Guid of its own.
             var fallback = Guid.NewGuid();
             ChatPlatformSyncHelper.RecordGroupChange( rockContext, fallback );
             AddDirectMessageGroup( rockContext, fallback, personIds );

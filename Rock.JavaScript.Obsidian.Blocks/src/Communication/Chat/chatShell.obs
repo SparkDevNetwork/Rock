@@ -43,7 +43,7 @@
                     {{ shell.state.phase === "starting" ? "Opening chat…" : "Choose a channel." }}
                 </div>
 
-                <Composer :isDisabled="isComposerDisabled" :heldText="draft?.body ?? ''" @send="shell.send" />
+                <Composer :isDisabled="isComposerDisabled" :heldText="draft?.body ?? ''" :isTextKeptOnSend="isTextKeptOnSend(draft)" @send="shell.send" />
             </div>
         </div>
 
@@ -112,7 +112,7 @@
     import ChatHeader from "./ChatShell/components/chatHeader.partial.obs";
     import Composer from "./ChatShell/components/composer.partial.obs";
     import DirectMessagePicker from "./ChatShell/components/directMessagePicker.partial.obs";
-    import { DirectMessageDraft, DoorResult } from "./ChatShell/composables/useDirectMessage.partial";
+    import { DirectMessageDraft, DoorResult, isTextKeptOnSend } from "./ChatShell/composables/useDirectMessage.partial";
     import ErrorToast from "./ChatShell/components/errorToast.partial.obs";
     import MessageFeed from "./ChatShell/components/messageFeed.partial.obs";
     import { createChatShell, PlatformClientLike, refusalMessage, ShellOptions } from "./ChatShell/shell.partial";
