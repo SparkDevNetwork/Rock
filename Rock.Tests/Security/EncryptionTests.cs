@@ -131,5 +131,108 @@ namespace Rock.Tests.Security
             // The decrypted string should not contain part of the original plain text
             Assert.DoesNotContain( lastEightCharacters, decryptedStringWithMethod.ToStringSafe() );
         }
+
+        #region Purpose Encryption
+
+        private const string _purpose1 = "Rock.Tests.Purpose1";
+        private const string _purpose2 = "Rock.Tests.Purpose2";
+
+        [TestMethod]
+        public void DecryptStringForPurposeWithSamePurposeReturnsPlainText()
+        {
+            var encrypted = Encryption.EncryptStringForPurpose( _plainText3, _purpose1 );
+
+            Assert.AreEqual( _plainText3, Encryption.DecryptStringForPurpose( encrypted, _purpose1 ) );
+        }
+
+        [TestMethod]
+        public void DecryptStringForPurposeWithDifferentPurposeReturnsNull()
+        {
+            var encrypted = Encryption.EncryptStringForPurpose( _plainText1, _purpose1 );
+
+            Assert.IsNull( Encryption.DecryptStringForPurpose( encrypted, _purpose2 ) );
+        }
+
+        [TestMethod]
+        public void DecryptStringForPurposeRejectsTextEncryptedWithoutPurpose()
+        {
+            var encrypted = Encryption.EncryptString( _plainText1 );
+
+            Assert.IsNull( Encryption.DecryptStringForPurpose( encrypted, _purpose1 ) );
+
+            // Also reject it when something that looks like an authentication
+            // code has been added to it.
+            var fakeCode = System.Convert.ToBase64String( new byte[32] );
+
+            Assert.IsNull( Encryption.DecryptStringForPurpose( $"{encrypted}.{fakeCode}", _purpose1 ) );
+        }
+
+        [TestMethod]
+        public void DecryptStringDoesNotReturnTextEncryptedForPurpose()
+        {
+            var encrypted = Encryption.EncryptStringForPurpose( _plainText1, _purpose1 );
+
+            // Remove the authentication code so only the encrypted text is
+            // given to DecryptString, which uses the general key.
+            var encryptedText = encrypted.Substring( 0, encrypted.LastIndexOf( '.' ) );
+
+            Assert.AreNotEqual( _plainText1, Encryption.DecryptString( encryptedText ) );
+        }
+
+        [TestMethod]
+        public void EncryptStringForPurposeProducesDifferentTextEachTime()
+        {
+            var encrypted1 = Encryption.EncryptStringForPurpose( _plainText1, _purpose1 );
+            var encrypted2 = Encryption.EncryptStringForPurpose( _plainText1, _purpose1 );
+
+            Assert.AreNotEqual( encrypted1, encrypted2 );
+        }
+
+        [TestMethod]
+        public void DecryptStringForPurposeRejectsModifiedEncryptedText()
+        {
+            var encrypted = Encryption.EncryptStringForPurpose( _plainText3, _purpose1 );
+
+            Assert.IsNull( Encryption.DecryptStringForPurpose( ChangeCharacter( encrypted, 5 ), _purpose1 ) );
+        }
+
+        [TestMethod]
+        public void DecryptStringForPurposeRejectsModifiedAuthenticationCode()
+        {
+            var encrypted = Encryption.EncryptStringForPurpose( _plainText3, _purpose1 );
+
+            Assert.IsNull( Encryption.DecryptStringForPurpose( ChangeCharacter( encrypted, encrypted.Length - 3 ), _purpose1 ) );
+        }
+
+        [TestMethod]
+        public void DecryptStringForPurposeRejectsMissingAuthenticationCode()
+        {
+            var encrypted = Encryption.EncryptStringForPurpose( _plainText3, _purpose1 );
+            var withoutCode = encrypted.Substring( 0, encrypted.LastIndexOf( '.' ) );
+
+            Assert.IsNull( Encryption.DecryptStringForPurpose( withoutCode, _purpose1 ) );
+            Assert.IsNull( Encryption.DecryptStringForPurpose( withoutCode + ".", _purpose1 ) );
+        }
+
+        [TestMethod]
+        public void DecryptStringForPurposeReturnsNullForEmptyText()
+        {
+            Assert.IsNull( Encryption.DecryptStringForPurpose( null, _purpose1 ) );
+            Assert.IsNull( Encryption.DecryptStringForPurpose( string.Empty, _purpose1 ) );
+            Assert.IsNull( Encryption.DecryptStringForPurpose( ".", _purpose1 ) );
+        }
+
+        /// <summary>
+        /// Changes the character at the specified index to a different valid
+        /// Base64 character.
+        /// </summary>
+        private static string ChangeCharacter( string text, int index )
+        {
+            var replacement = text[index] == 'A' ? 'B' : 'A';
+
+            return text.Substring( 0, index ) + replacement + text.Substring( index + 1 );
+        }
+
+        #endregion
     }
 }

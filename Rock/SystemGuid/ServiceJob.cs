@@ -578,5 +578,10 @@ namespace Rock.SystemGuid
         /// The job to run Post v18.3 Data Migrations to fix any possible broken achievement types.
         /// </summary>
         public const string DATA_MIGRATIONS_183_FIX_BROKEN_ACHIEVEMENT_TYPES = "2463AB43-8CB2-400E-BAAF-F96FC3E1A43D";
+
+        /// <summary>
+        /// The job to run Post v17.11 Data Migrations to clean up unsafe Social Media Account attribute values.
+        /// </summary>
+        public const string DATA_MIGRATIONS_1711_CLEAN_SOCIAL_MEDIA_ACCOUNT_VALUES = "230F32E9-68A9-4741-BEA2-5B5C020A761E";
     }
 }

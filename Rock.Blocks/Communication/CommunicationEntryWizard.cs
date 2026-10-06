@@ -1263,6 +1263,9 @@ namespace Rock.Blocks.Communication
             securityGrant.AddRule( new AssetAndFileManagerSecurityGrantRule( Authorization.DELETE ) );
             securityGrant.AddRule( new EmailEditorSecurityGrantRule() );
 
+            // Allow the group picker used by the RSVP email component.
+            securityGrant.AddRule( new GroupPickerSecurityGrantRule() );
+
             if ( GetAttributeValue( AttributeKey.AllowUnrestrictedUploads ).AsBoolean() )
             {
                 // Enable uploading communication attachments without the normal permission restrictions

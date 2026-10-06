@@ -33,6 +33,12 @@ namespace Rock.Security
         #region Fields
 
         /// <summary>
+        /// The purpose used to derive the encryption key for security grant
+        /// tokens. Changing this invalidates all existing tokens.
+        /// </summary>
+        private const string TokenEncryptionPurpose = "Rock.Security.SecurityGrant";
+
+        /// <summary>
         /// The rules that make up this security grant.
         /// </summary>
         private List<SecurityGrantRule> _rules;
@@ -105,7 +111,7 @@ namespace Rock.Security
             {
                 var segments = token.Split( ';' );
 
-                var json = Encryption.DecryptString( segments.Length >= 3 ? segments[2] : segments[0] );
+                var json = Encryption.DecryptStringForPurpose( segments.Length >= 3 ? segments[2] : segments[0], TokenEncryptionPurpose );
 
                 return JsonConvert.DeserializeObject<SecurityGrant>( json );
             }
@@ -139,9 +145,22 @@ namespace Rock.Security
         {
             var json = JsonConvert.SerializeObject( this );
 
+            // Tokens use their own encryption key so that text encrypted for
+            // any other reason can never be used as a security grant token.
+            var encryptedJson = Encryption.EncryptStringForPurpose( json, TokenEncryptionPurpose );
+
             return rawToken
-                ? Encryption.EncryptString( json )
-                : $"{Version};{ExpiresDateTime.ToRockDateTimeOffset():O};{Encryption.EncryptString( json )}";
+                ? encryptedJson
+                : $"{Version};{ExpiresDateTime.ToRockDateTimeOffset():O};{encryptedJson}";
+        }
+
+        /// <summary>
+        /// Sets the amount of time that this security grant should be valid for.
+        /// </summary>
+        /// <param name="duration">The duration from the date and time the grant was created.</param>
+        internal void SetLifetime( TimeSpan duration )
+        {
+            ExpiresDateTime = CreatedDateTime.Add( duration );
         }
 
         /// <summary>
