@@ -781,7 +781,7 @@ namespace Rock.Communication.SmsActions
             }
 
             var personActionIdentifier = context.LavaMergeFields.GetValueOrNull( LavaMergeFieldKeys.PersonActionIdentifier ).ToStringSafe();
-            if ( !personToken.IsNullOrWhiteSpace() )
+            if ( !personActionIdentifier.IsNullOrWhiteSpace() )
             {
                 setupPage.Parameters["rckid"] = personActionIdentifier;
             }
@@ -833,7 +833,19 @@ namespace Rock.Communication.SmsActions
             // create a limited-use person key that will last long enough for them to go through all the postbacks while posting a transaction.
             const int expiresInMinutes = 30;
             var expiresDateTime = RockDateTime.Now.AddMinutes( expiresInMinutes );
-            var personKey = person.GetImpersonationToken( expiresDateTime, null, null );
+
+            /*
+                10/6/2026 - MSE
+
+                The token is only used by the setup page, so it is tied to that page.
+                If the setup page can't be found, no token is created.
+
+                Reason: Tie the token to the page that uses it.
+            */
+            var setupPageId = GetSetupPageId( context );
+            var personKey = setupPageId.HasValue
+                ? person.GetImpersonationToken( expiresDateTime, null, setupPageId.Value )
+                : null;
             if ( !personKey.IsNullOrWhiteSpace() )
             {
                 context.LavaMergeFields[LavaMergeFieldKeys.PersonToken] = personKey;
@@ -854,6 +866,28 @@ namespace Rock.Communication.SmsActions
             {
                 context.LavaMergeFields[LavaMergeFieldKeys.PersonActionIdentifier] = string.Empty;
             }
+        }
+
+        /// <summary>
+        /// Gets the identifier of the configured setup page.
+        /// </summary>
+        /// <param name="context">The context.</param>
+        /// <returns>The setup page identifier, or <c>null</c> if the setup page is not configured or can't be found.</returns>
+        private int? GetSetupPageId( SmsGiveContext context )
+        {
+            var setupPageAttribute = context.SmsActionCache.GetAttributeValue( AttributeKeys.SetupPage );
+            if ( setupPageAttribute.IsNullOrWhiteSpace() )
+            {
+                return null;
+            }
+
+            var setupPage = new Rock.Web.PageReference( setupPageAttribute );
+            if ( !setupPage.IsValid )
+            {
+                return null;
+            }
+
+            return setupPage.PageId;
         }
 
         #endregion Giving Attribute Getters

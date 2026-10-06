@@ -552,7 +552,7 @@ namespace Rock.Blocks.Communication
                     box.AreEmailMetricsReminderOptionsShown = this.AreEmailMetricsReminderOptionsShown;
                     box.IsDuplicatePreventionOptionShown = this.IsDuplicatePreventionOptionShown;
                     box.Authorization = authorization;
-                    box.EnableAssetManager = this.EnableAssetManager;
+                    box.EnableAssetManager = EnableAssetManager && IsAssetManagerAuthorized();
                     box.IsCcBccEntryAllowed = this.IsCcBccEntryAllowed;
                     box.IsHidden = false;
                     box.IsEditMode = this.EditPageParameter;
@@ -2035,22 +2035,29 @@ namespace Rock.Blocks.Communication
         {
             var securityGrant = new Rock.Security.SecurityGrant();
 
-            /*
-                9/18/2025 - JMH
-
-                Always add the security grant rules for Asset and File Manager, even if the EnableAssetManager setting is turned off.
-                Previously, these rules were only added when the toolbar button for the Asset Manager was shown.
-                But the File Browser and Image Browser also rely on these same security grants to work correctly,
-                so they broke when the rules were skipped. The setting now only controls the visibility of the toolbar button.
-
-                Reason: File Browser and Image Browser require these grants to function correctly, even if the Asset Manager button is hidden.
-                https://github.com/SparkDevNetwork/Rock/issues/6447
-            */
-            securityGrant.AddRule( new AssetAndFileManagerSecurityGrantRule( Authorization.VIEW ) );
-            securityGrant.AddRule( new AssetAndFileManagerSecurityGrantRule( Authorization.EDIT ) );
-            securityGrant.AddRule( new AssetAndFileManagerSecurityGrantRule( Authorization.DELETE ) );
+            // The asset manager endpoints trust this token alone, so only
+            // grant access to people with EDIT on the block.
+            if ( IsAssetManagerAuthorized() )
+            {
+                securityGrant.AddRule( new AssetAndFileManagerSecurityGrantRule( Rock.Security.Authorization.VIEW ) );
+                securityGrant.AddRule( new AssetAndFileManagerSecurityGrantRule( Rock.Security.Authorization.EDIT ) );
+                securityGrant.AddRule( new AssetAndFileManagerSecurityGrantRule( Rock.Security.Authorization.DELETE ) );
+            }
 
             return securityGrant.ToToken();
+        }
+
+        /// <summary>
+        /// Determines whether the current person has EDIT access to the block
+        /// and may therefore use the asset manager.
+        /// </summary>
+        /// <returns><c>true</c> if the current person may use the asset manager; otherwise <c>false</c>.</returns>
+        private bool IsAssetManagerAuthorized()
+        {
+            var currentPerson = GetCurrentPerson();
+
+            return currentPerson != null
+                && BlockCache.IsAuthorized( Authorization.EDIT, currentPerson );
         }
 
         /// <summary>
