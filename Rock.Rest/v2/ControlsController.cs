@@ -1983,7 +1983,7 @@ namespace Rock.Rest.v2
                 string fileName = Path.GetFileName( filePath ).Replace( "'", "&#39;" );
                 string relativeFilePath = filePath.Replace( physicalRootFolder, string.Empty );
                 string rootRelativePath = asset.Root.TrimEnd( '/', '\\' ) + "/" + relativeFilePath.TrimStart( '/', '\\' ).Replace( "\\", "/" );
-                string thumbUrl = RockApp.Current.ResolveRockUrl( "~/api/FileBrowser/GetFileThumbnail?relativeFilePath=" + System.Web.HttpUtility.UrlEncode( rootRelativePath ) );
+                string thumbUrl = RockApp.Current.ResolveRockUrl( "~/api/FileBrowser/GetFileThumbnail?relativeFilePath=" + System.Web.HttpUtility.UrlEncode( rootRelativePath ) + "&rootFolder=" + System.Web.HttpUtility.UrlEncode( asset.EncryptedRoot ) );
                 string downloadUrl = RockApp.Current.ResolveRockUrl( rootRelativePath );
 
                 file = new Asset

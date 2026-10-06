@@ -532,7 +532,7 @@ namespace RockWeb.Blocks.Utility
                     string fileName = Path.GetFileName( filePath ).Replace( "'", "&#39;" );
                     string relativeFilePath = filePath.Replace( physicalRootFolder, string.Empty );
                     string imagePath = rootFolder.TrimEnd( '/', '\\' ) + "/" + relativeFilePath.TrimStart( '/', '\\' ).Replace( "\\", "/" );
-                    string imageUrl = this.ResolveUrl( "~/api/FileBrowser/GetFileThumbnail?relativeFilePath=" + HttpUtility.UrlEncode( imagePath ) );
+                    string imageUrl = this.ResolveUrl( "~/api/FileBrowser/GetFileThumbnail?relativeFilePath=" + HttpUtility.UrlEncode( imagePath ) + "&rootFolder=" + HttpUtility.UrlEncode( PageParameter( PageParameterKey.RootFolderEncrypted ) ) );
 
                     string editHtml = string.Empty;
                     if ( !RestrictedFileExtension.Any( a => ext.Equals( a, StringComparison.OrdinalIgnoreCase ) ) && !string.IsNullOrWhiteSpace( editFilePage ) )
