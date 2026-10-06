@@ -283,11 +283,29 @@ namespace Rock.Blocks.Event
         {
             var grant = base.GetSecurityGrant( entity );
 
-            grant.AddRule( new AssetAndFileManagerSecurityGrantRule( Authorization.VIEW ) );
-            grant.AddRule( new AssetAndFileManagerSecurityGrantRule( Authorization.EDIT ) );
-            grant.AddRule( new AssetAndFileManagerSecurityGrantRule( Authorization.DELETE ) );
+            // The asset manager endpoints trust this token alone, so only
+            // grant access to people with EDIT on the block.
+            if ( IsAssetManagerAuthorized() )
+            {
+                grant.AddRule( new AssetAndFileManagerSecurityGrantRule( Authorization.VIEW ) );
+                grant.AddRule( new AssetAndFileManagerSecurityGrantRule( Authorization.EDIT ) );
+                grant.AddRule( new AssetAndFileManagerSecurityGrantRule( Authorization.DELETE ) );
+            }
 
             return grant;
+        }
+
+        /// <summary>
+        /// Determines whether the current person has EDIT access to the block
+        /// and may therefore use the asset manager.
+        /// </summary>
+        /// <returns><c>true</c> if the current person may use the asset manager; otherwise <c>false</c>.</returns>
+        private bool IsAssetManagerAuthorized()
+        {
+            var currentPerson = GetCurrentPerson();
+
+            return currentPerson != null
+                && BlockCache.IsAuthorized( Authorization.EDIT, currentPerson );
         }
 
         /// <summary>
