@@ -369,6 +369,12 @@ namespace Rock.Blocks.Communication
                 .ToList();
         }
 
+        /// <inheritdoc/>
+        protected override string RenewSecurityGrantToken()
+        {
+            return GetSecurityGrantToken();
+        }
+
         /// <summary>
         /// Gets the security grant token that will be used by UI controls on
         /// this block to ensure they have the proper permissions.
@@ -377,6 +383,14 @@ namespace Rock.Blocks.Communication
         private string GetSecurityGrantToken()
         {
             var securityGrant = new Rock.Security.SecurityGrant();
+
+            // Allow the family role picker used when linking a new person.
+            var familyGroupType = GroupTypeCache.GetFamilyGroupType();
+
+            if ( familyGroupType != null )
+            {
+                securityGrant.AddRule( new GroupRolePickerSecurityGrantRule( familyGroupType.Id ) );
+            }
 
             if ( GetAttributeValue( AttributeKey.AllowUnrestrictedUploads ).AsBoolean() )
             {

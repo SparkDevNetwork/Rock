@@ -335,7 +335,7 @@
 
 <script setup lang="ts">
     import { computed, ref } from "vue";
-    import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { getSecurityGrant, provideSecurityGrant, useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
     import Grid, { TextColumn, textValueFilter, ButtonColumn, DateColumn, DateTimeColumn } from "@Obsidian/Controls/grid";
     import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
     import { NamelessPersonListOptionsBag } from "@Obsidian/ViewModels/Blocks/Crm/NamelessPersonList/namelessPersonListOptionsBag";
@@ -353,6 +353,7 @@
     // #region Values
     const config = useConfigurationValues<ListBlockBox<NamelessPersonListOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
+    const securityGrant = getSecurityGrant(config.securityGrantToken);
     const gridDataSource = ref<Promise<GridDataBag>>();
     let gridData: GridDataBag | undefined;
     const selectedPhoneNumber = ref<string | unknown>("");
@@ -533,6 +534,8 @@
         }
     }
     // #endregion
+
+    provideSecurityGrant(securityGrant);
 
     gridDataSource.value = loadGridData();
 </script>
