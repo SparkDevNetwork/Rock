@@ -444,9 +444,9 @@ export function createChatShell(options: ShellOptions): ChatShell {
         startConversation: async personAliasGuids => options.startDirectMessage
             ? options.startDirectMessage(personAliasGuids)
             : { code: "door.unavailable", channelGuid: null, isPending: false, message: "A conversation cannot be started here.", personAliasGuid: null },
-        openChannel: async channelId => {
-            await open(channelId);
-        },
+        // Only an open that put the conversation on screen lets a draft go; a refused one keeps
+        // the person on the draft with their text.
+        openChannel: async channelId => (await open(channelId)) === "opened",
         send: async (channelId, body, attempt) => {
             const isSent = await sender.send(channelId, body, attempt);
             notePushSend();

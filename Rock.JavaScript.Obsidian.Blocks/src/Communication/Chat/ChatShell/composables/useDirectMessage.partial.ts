@@ -16,12 +16,18 @@
 //
 // Starting a direct message. The person picks people from the platform's search; people who
 // already share a conversation open it, and otherwise a draft opens. A draft is only on this
-// page: nothing exists anywhere until its first message, which asks Rock for the conversation,
-// opens it and sends. Rock is the only one that creates a conversation, so a person cannot start
-// one with somebody Rock would not let them reach. Once Rock has made it the message is the
-// person's, so it is sent even if they leave the draft, and a platform slow to take the
-// conversation is tried again with growing waits a few times before the message is left failed.
-import { reactive } from "vue";
+// page: nothing exists anywhere until its first message, which asks Rock for the conversation.
+// Rock is the only one that creates a conversation, so a person cannot start one with somebody
+// Rock would not let them reach.
+//
+// Each first message moves through one phase at a time: Rock is asked once; a refusal is final;
+// a conversation the platform does not hold yet is waited for, tried on the person's membership
+// signal or after growing waits, under one row and one send key so it posts once. The draft stays
+// on screen holding the text until its conversation is: a draft goes only when an open succeeds
+// or the message is posted. A first message that ends failed is never left where the person
+// cannot see it: in its conversation as a failed row, on its draft with a sentence, or in the
+// error toast with the text kept for their next draft to the same people.
+import { reactive, toRaw } from "vue";
 import { computeBackoff } from "../platformCall.partial";
 import { ChatError, PersonRow } from "../types.partial";
 import { defaultRetryDelay } from "./useHistory.partial";
@@ -38,6 +44,9 @@ export const maxOthers = 8;
  * about to take it, and the person decides with the ordinary failed message.
  */
 const maxRetriedSends = 5;
+
+/** Shown on a draft whose message could not be sent because the platform does not hold its conversation. */
+const notReadySentence = "The conversation is not ready yet, so your message was not sent. Send it again in a moment.";
 
 /** What Rock's door answers when asked for a conversation. */
 export type DoorResult = {
@@ -61,13 +70,13 @@ export type DoorResult = {
 export type DirectMessageDraft = {
     people: PersonRow[];
 
-    /** The first message, kept while Rock answers and after a refusal. */
+    /** The first message, kept while it is on its way and after it is refused or fails. */
     body: string;
 
-    /** "starting" from the first send until the message is on its way. */
+    /** "starting" from a send until the message is posted, refused or failed. */
     status: "draft" | "starting";
 
-    /** The conversation Rock answered, while the platform has not taken it yet. */
+    /** The conversation Rock answered, while the platform has not shown it to the person yet. */
     channelGuid: string | null;
 };
 
@@ -82,12 +91,12 @@ export type DirectMessageDependencies = {
     /** Rock's door, which finds or creates the conversation. */
     startConversation: (personAliasGuids: string[]) => Promise<DoorResult>;
 
-    /** Opens a channel on screen. */
-    openChannel: (channelId: string) => void | Promise<void>;
+    /** Opens a channel on screen. False when the platform refused it or it could not load. */
+    openChannel: (channelId: string) => boolean | Promise<boolean>;
 
     /**
-     * The ordinary send. Resolves true when the platform confirmed it. A first message tried
-     * again on its own passes its try, which names the same row every time.
+     * The ordinary send. Resolves true when the platform confirmed it. A first message passes its
+     * try, which names the same row every time.
      */
     send: (channelId: string, body: string, attempt?: SendTry) => Promise<boolean>;
 
@@ -136,28 +145,40 @@ export type DirectMessages = {
     /** Closes the draft and forgets the picked people. A first message Rock has a conversation for is still sent. */
     close: () => void;
 
-    /** Stops trying first messages again, because the shell is going away. */
+    /** Stops everything a first message would still do, because the shell is going away. */
     stop: () => void;
 };
 
-/** A first message whose conversation Rock made before the platform took it. */
-type WaitingMessage = {
-    /** The draft it came from, opened on its first try only while it is still on screen. */
-    draft: DirectMessageDraft;
+/**
+ * Where a first message is. Asking: Rock has not answered. Waiting: Rock made the conversation
+ * and the platform has not taken it, so a try comes on a signal or a wait. Trying: a send is on
+ * its way. Sent, refused and failed are where it ends, though a failed one is sent again from its
+ * draft as its retry.
+ */
+type FirstMessagePhase = "asking" | "waiting" | "trying" | "sent" | "refused" | "failed";
 
-    channelId: string;
+/** One first message, from the send that asks Rock to where it ends. */
+type FirstMessage = {
+    phase: FirstMessagePhase;
+
+    people: PersonRow[];
 
     body: string;
 
     /** The row its tries share, so they carry one key and show as one message. */
     localId: string;
 
+    /** The conversation Rock answered, once it has. */
+    channelId: string | null;
+
+    /** Retried sends made while waiting for the platform. */
     tries: number;
 
-    isSending: boolean;
+    /** The draft it shows on, which is on screen only while it is the shell's draft. */
+    draft: DirectMessageDraft | null;
 
-    /** Sent, or left to the sender as failed. */
-    isDone: boolean;
+    /** True once its conversation replaced its draft, so its row is in front of the person. */
+    isShown: boolean;
 };
 
 /**
@@ -208,81 +229,251 @@ export function createDirectMessages(dependencies: DirectMessageDependencies): D
     /** Asks of Rock still on their way; arrivals are kept only while there is one. */
     let startsInFlight = 0;
 
-    /** First messages waiting for the platform to take their conversation. */
-    const waiting = new Set<WaitingMessage>();
+    /** First messages waiting for the platform to take their conversation, or being tried. */
+    const waiting = new Set<FirstMessage>();
 
-    let isStopped = false;
+    /** The first message each draft carries, by the draft's raw object, since the state hands out proxies. */
+    const carriedBy = new WeakMap<DirectMessageDraft, FirstMessage>();
 
     /**
-     * First messages Rock refused after the person left their draft, by the people they were
-     * for, so the next draft to those people opens holding the text instead of losing it.
+     * First messages the person could not see end, by the people they were for, so the next draft
+     * to those people opens holding the text, and a failed one its row, instead of losing them.
      */
-    const refusedBodies = new Map<string, string>();
+    const kept = new Map<string, FirstMessage>();
+
+    let isStopped = false;
 
     /** The same key for the same people in any order. */
     function peopleKey(people: PersonRow[]): string {
         return people.map(p => p.person_alias_guid.toLowerCase()).sort().join(",");
     }
 
-    /**
-     * Takes a draft still on screen off it and opens its conversation. A draft the person left
-     * is not brought back: they chose to be somewhere else.
-     */
-    async function leaveDraftFor(draft: DirectMessageDraft, channelId: string): Promise<void> {
-        if (state.draft !== draft) {
-            return;
-        }
+    /** Whether a first message's draft is the one on screen. */
+    function isOnScreen(message: FirstMessage): boolean {
+        return message.draft !== null && state.draft !== null && toRaw(state.draft) === toRaw(message.draft);
+    }
 
-        state.draft = null;
-        await dependencies.openChannel(channelId);
+    /** Ties a first message to a draft, so a send from that draft finds it. */
+    function carry(draft: DirectMessageDraft, message: FirstMessage): void {
+        carriedBy.set(toRaw(draft), message);
+        message.draft = draft;
+    }
+
+    /** Tells the person in the toast about a first message whose draft they had left. */
+    function reportLeft(message: FirstMessage, error: Omit<ChatError, "text">, reason: string): void {
+        kept.set(peopleKey(message.people), message);
+        const names = message.people.map(p => p.nick_name).join(", ");
+        dependencies.report?.({ ...error, text: `Your message to ${names} could not be sent. ${reason}` });
     }
 
     /**
-     * Sends a waiting message once, unless it is done or a try is already on its way. Its draft
-     * stays on screen until the platform has the conversation, since opening it before then can be
-     * refused and is not tried again: a membership signal says it has, and so does a confirmed send.
+     * Takes the draft off the screen. A failed first message the person read on it still has its
+     * text and its row, so they wait for the next draft to the same people; a first message on its
+     * way carries on alone; a plain draft, or one Rock refused in front of the person, is dropped.
      */
-    async function tryWaiting(message: WaitingMessage, isSignalled: boolean): Promise<void> {
-        if (message.isDone || message.isSending || isStopped) {
+    function leaveDraft(): void {
+        const draft = state.draft;
+        if (!draft) {
+            return;
+        }
+
+        const message = carriedBy.get(toRaw(draft));
+        if (message?.phase === "failed") {
+            kept.set(peopleKey(message.people), message);
+        }
+
+        state.draft = null;
+    }
+
+    /**
+     * Opens a first message's conversation in place of its draft. The draft goes only once the
+     * conversation is on screen, so a refused open leaves the person on the draft with the text.
+     *
+     * @returns True when the conversation replaced the draft.
+     */
+    async function showConversation(message: FirstMessage): Promise<boolean> {
+        const isOpened = await dependencies.openChannel(message.channelId as string);
+        if (isStopped) {
+            return false;
+        }
+
+        // An open the person replaced by going elsewhere leaves nothing to take off the screen.
+        if (isOpened && isOnScreen(message)) {
+            state.draft = null;
+            message.isShown = true;
+        }
+
+        return message.isShown;
+    }
+
+    /** Settles a first message whose send has answered, so the person can see where it ended. */
+    async function finish(message: FirstMessage, isSent: boolean): Promise<void> {
+        waiting.delete(message);
+
+        if (isSent) {
+            message.phase = "sent";
+
+            // Posted, so the draft goes whatever the open answers: kept, it would offer to send
+            // the message a second time.
+            if (isOnScreen(message)) {
+                await showConversation(message);
+                if (!isStopped && isOnScreen(message)) {
+                    state.draft = null;
+                }
+            }
+            return;
+        }
+
+        message.phase = "failed";
+
+        // Its failed row, with its Retry, is in the conversation the person was taken to.
+        if (message.isShown) {
+            return;
+        }
+
+        if (isOnScreen(message)) {
+            const isShown = await showConversation(message);
+            if (isStopped || isShown) {
+                return;
+            }
+
+            // The platform still does not hold it: the draft keeps the text and is its retry.
+            if (isOnScreen(message) && message.draft) {
+                message.draft.status = "draft";
+                state.error = notReadySentence;
+                return;
+            }
+        }
+
+        reportLeft(message, { code: "door.first_message_failed", severity: "failed" }, "The conversation is not ready yet. Your text is kept for your next message to them.");
+    }
+
+    /**
+     * Tries a waiting first message once, unless a try is already on its way or it has ended.
+     * A held conversation, one the membership signal says the platform has, opens before the send
+     * so the row shows sending in it; a refused open leaves the draft and the try goes on.
+     */
+    async function tryWaiting(message: FirstMessage, isHeld: boolean): Promise<void> {
+        if (message.phase !== "waiting" || isStopped) {
             return;
         }
 
         // Marked before any await, so a signal and a wait ending together send it once.
-        message.isSending = true;
+        message.phase = "trying";
         message.tries++;
         const isLast = message.tries >= maxRetriedSends;
 
-        if (isSignalled) {
-            await leaveDraftFor(message.draft, message.channelId);
+        if (isHeld && isOnScreen(message)) {
+            await showConversation(message);
+            if (isStopped) {
+                return;
+            }
         }
 
-        const isSent = await dependencies.send(message.channelId, message.body, { localId: message.localId, isLast });
-        message.isSending = false;
+        const isSent = await dependencies.send(message.channelId as string, message.body, { localId: message.localId, isLast });
+        if (isStopped) {
+            return;
+        }
 
-        // The last failure stays with the sender as an ordinary failed row to retry or discard,
-        // and that row is in the conversation, so it opens then too.
         if (isSent || isLast) {
-            message.isDone = true;
-            waiting.delete(message);
-
-            if (!isStopped) {
-                await leaveDraftFor(message.draft, message.channelId);
-            }
+            await finish(message, isSent);
+        }
+        else {
+            message.phase = "waiting";
         }
     }
 
     /**
-     * Tries a waiting message after each of a run of growing waits until it is done. A membership
-     * signal tries it sooner, and the wait ending then finds it done.
+     * Waits for the platform to take a first message's conversation: a try after each of a run of
+     * growing waits until it ends. A membership signal tries it sooner, and the wait ending then
+     * finds it ended or on its way.
      */
-    async function retryUntilDone(message: WaitingMessage): Promise<void> {
-        let attempt = 0;
+    async function waitForConversation(message: FirstMessage): Promise<void> {
+        message.phase = "waiting";
+        waiting.add(message);
 
-        while (!message.isDone && !isStopped) {
+        let attempt = 0;
+        while ((message.phase === "waiting" || message.phase === "trying") && !isStopped) {
             const delay = dependencies.retryDelay?.() ?? defaultRetryDelay;
             await sleep(computeBackoff(attempt++, delay.baseMs, delay.capMs, random));
             await tryWaiting(message, false);
         }
+    }
+
+    /** Sends a first message once, as an ordinary send of its row, and settles it by the answer. */
+    async function sendOnce(message: FirstMessage): Promise<boolean> {
+        message.phase = "trying";
+        const isSent = await dependencies.send(message.channelId as string, message.body, { localId: message.localId, isLast: true });
+        if (isStopped) {
+            return false;
+        }
+
+        await finish(message, isSent);
+        return isSent;
+    }
+
+    /** Asks Rock for a first message's conversation and takes it from there by the answer. */
+    async function start(draft: DirectMessageDraft, message: FirstMessage): Promise<boolean> {
+        startsInFlight++;
+        let answer: DoorResult;
+        try {
+            answer = await dependencies.startConversation(message.people.map(p => p.person_alias_guid));
+        }
+        finally {
+            startsInFlight--;
+        }
+
+        const channelId = answer.code === "ok" && answer.channelGuid ? answer.channelGuid.toLowerCase() : null;
+        const hasArrived = channelId !== null && arrived.has(channelId);
+        if (startsInFlight === 0) {
+            arrived.clear();
+        }
+
+        // The shell is going away, so there is nobody left to tell or to keep the text for.
+        if (isStopped) {
+            return false;
+        }
+
+        // A refusal is Rock's answer and no wait changes it. A person still on the draft is told
+        // there; one who left it is told in the toast, and the text waits for their next draft.
+        if (!channelId) {
+            message.phase = "refused";
+            const reason = answer.message ?? "The conversation could not be started. Try again.";
+            if (isOnScreen(message)) {
+                draft.status = "draft";
+                state.error = reason;
+            }
+            else {
+                reportLeft(message, { code: "door.first_message_refused", severity: "permission" }, reason);
+            }
+            return false;
+        }
+
+        message.channelId = channelId;
+        draft.channelGuid = channelId;
+
+        // Not held yet: a send now would be refused. The membership signal says when it is,
+        // unless it came while Rock answered; the waits try anyway, since a signal can be lost.
+        if (answer.isPending && !hasArrived) {
+            void waitForConversation(message);
+            return false;
+        }
+
+        // Held, so it opens first and the row shows sending in it. An open refused all the same
+        // means the platform does not hold it for this person yet, so it is waited for like one
+        // Rock answered pending, rather than sent into a conversation that is not on screen.
+        if (isOnScreen(message)) {
+            const isShown = await showConversation(message);
+            if (isStopped) {
+                return false;
+            }
+            if (!isShown && isOnScreen(message)) {
+                void waitForConversation(message);
+                return false;
+            }
+        }
+
+        return sendOnce(message);
     }
 
     return Object.assign(state, {
@@ -326,18 +517,25 @@ export function createDirectMessages(dependencies: DirectMessageDependencies): D
             }
 
             state.chosen = [];
+            leaveDraft();
+
+            // Kept text for these people goes either way: into their new draft, or, when they
+            // share a conversation now, it is dropped since a failed row there carries it.
+            const key = peopleKey(people);
+            const keptMessage = kept.get(key);
+            kept.delete(key);
 
             // Asking Rock now would create a conversation nobody has written in, so people with
             // none get a draft and Rock is asked only once there is a message to send.
             if (result.channelId) {
-                state.draft = null;
                 await dependencies.openChannel(result.channelId);
+                return;
             }
-            else {
-                const key = peopleKey(people);
-                const body = refusedBodies.get(key) ?? "";
-                refusedBodies.delete(key);
-                state.draft = { people, body, status: "draft", channelGuid: null };
+
+            const channelGuid = keptMessage?.phase === "failed" ? keptMessage.channelId : null;
+            state.draft = { people, body: keptMessage?.body ?? "", status: "draft", channelGuid };
+            if (keptMessage) {
+                carry(state.draft, keptMessage);
             }
         },
 
@@ -353,68 +551,27 @@ export function createDirectMessages(dependencies: DirectMessageDependencies): D
             draft.status = "starting";
             state.error = null;
 
-            startsInFlight++;
-            let answer: DoorResult;
-            try {
-                answer = await dependencies.startConversation(draft.people.map(p => p.person_alias_guid));
-            }
-            finally {
-                startsInFlight--;
-            }
-
-            const channelId = answer.code === "ok" && answer.channelGuid ? answer.channelGuid.toLowerCase() : null;
-            const hasArrived = channelId !== null && arrived.has(channelId);
-            if (startsInFlight === 0) {
-                arrived.clear();
+            // A failed first message's draft is its retry: the same row and key to the
+            // conversation Rock already made, so it posts once and Rock is not asked again.
+            const carried = carriedBy.get(toRaw(draft));
+            if (carried?.phase === "failed") {
+                carried.body = body;
+                return sendOnce(carried);
             }
 
-            // The shell is going away, so there is nobody left to tell or to keep the text for.
-            if (isStopped) {
-                return false;
-            }
+            const message: FirstMessage = {
+                phase: "asking",
+                people: draft.people,
+                body,
+                localId: newLocalId(),
+                channelId: null,
+                tries: 0,
+                draft: null,
+                isShown: false
+            };
+            carry(draft, message);
 
-            // A refusal is Rock's answer and no wait changes it. A person still on the draft is
-            // told there. One who left it has no draft to show it on, so they are told elsewhere
-            // and the text waits for their next draft to the same people.
-            if (!channelId) {
-                const reason = answer.message ?? "The conversation could not be started. Try again.";
-                if (state.draft === draft) {
-                    draft.status = "draft";
-                    state.error = reason;
-                }
-                else {
-                    refusedBodies.set(peopleKey(draft.people), draft.body);
-                    const names = draft.people.map(p => p.nick_name).join(", ");
-                    dependencies.report?.({
-                        code: "door.first_message_refused",
-                        severity: "permission",
-                        text: `Your message to ${names} could not be sent. ${reason}`
-                    });
-                }
-                return false;
-            }
-
-            // The platform has not taken the conversation yet, so a send now would be refused.
-            // The person's membership signal says when it has, unless it came while Rock
-            // answered; the waits try anyway, since a signal can be lost.
-            if (answer.isPending && !hasArrived) {
-                draft.channelGuid = channelId;
-                const message: WaitingMessage = {
-                    draft,
-                    channelId,
-                    body: draft.body,
-                    localId: newLocalId(),
-                    tries: 0,
-                    isSending: false,
-                    isDone: false
-                };
-                waiting.add(message);
-                void retryUntilDone(message);
-                return false;
-            }
-
-            await leaveDraftFor(draft, channelId);
-            return dependencies.send(channelId, draft.body);
+            return start(draft, message);
         },
 
         membershipChanged: async (channelId?: string | null): Promise<void> => {
@@ -430,7 +587,7 @@ export function createDirectMessages(dependencies: DirectMessageDependencies): D
         },
 
         close: (): void => {
-            state.draft = null;
+            leaveDraft();
             state.chosen = [];
             state.error = null;
         },

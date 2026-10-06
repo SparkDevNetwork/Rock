@@ -34,6 +34,7 @@
 
 <script setup lang="ts">
     import { ref, watch } from "vue";
+    import { textAfterSend } from "../composables/useSend.partial";
 
     const props = defineProps({
         isDisabled: {
@@ -83,9 +84,7 @@
         }
 
         emit("send", text.value);
-        if (!props.isTextKeptOnSend) {
-            text.value = "";
-        }
+        text.value = textAfterSend(text.value, props.isTextKeptOnSend);
     }
 
     /** Enter sends; Shift and Enter starts a new line. */

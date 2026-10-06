@@ -43,6 +43,20 @@ export function isComposerOpen(serviceState: string): boolean {
 }
 
 /**
+ * What the composer's box holds after it hands its text over. A failed ordinary send keeps its
+ * text on its own row with a retry, so the box empties; a draft's first message has no row in a
+ * feed yet, so the box keeps it while the shell says so.
+ *
+ * @param text The text handed over.
+ * @param isTextKept Whether the shell keeps it in the box.
+ *
+ * @returns The text left in the box.
+ */
+export function textAfterSend(text: string, isTextKept: boolean): string {
+    return isTextKept ? text : "";
+}
+
+/**
  * A fresh identifier for a pending row. It is also the send's key, which the platform stores as
  * a UUID, so a browser without randomUUID still gets one of that shape.
  *
@@ -156,10 +170,12 @@ export function createSender(dependencies: SenderDependencies): Sender {
                 return false;
             }
 
-            // A later try sends the same row again; a row the person discarded or sent from in
-            // the meantime is gone, and its key still keeps a repeat from posting twice.
+            // A later try sends the same row again, with the text it is given, since a person
+            // retrying from a draft may have changed it; a row the person discarded or sent from
+            // in the meantime is gone, and its key still keeps a repeat from posting twice.
             const earlier = attempt ? rows.find(r => r.localId === attempt.localId) : undefined;
             if (earlier) {
+                earlier.body = body;
                 return deliver(earlier, attempt?.isLast);
             }
 
