@@ -638,6 +638,40 @@ DROP TABLE #Seeded;",
         }
 
         /// <summary>
+        /// Adds the Chat People group, as the plugin migration that ships it does, when this
+        /// database does not have it. Taken away again when disposed if it was added here.
+        /// </summary>
+        /// <remarks>
+        /// The test database is built from the EF migrations alone and never runs the plugin
+        /// migrations, so the group that marks a person enrolled in chat is missing there, and
+        /// anything that enrols someone writes no marker.
+        /// </remarks>
+        public void EnsureChatPeopleGroup()
+        {
+            var chatPeople = Rock.SystemGuid.Group.GROUP_CHAT_PEOPLE.AsGuid();
+
+            using ( var rockContext = new RockContext() )
+            {
+                var exists = rockContext.Database.SqlQuery<int>( "SELECT COUNT(*) FROM [Group] WHERE [Guid] = @p0", chatPeople ).First() > 0;
+                if ( exists )
+                {
+                    return;
+                }
+
+                rockContext.Database.ExecuteSqlCommand(
+                    "INSERT INTO [Group] ( [IsSystem], [GroupTypeId], [Name], [IsSecurityRole], [IsActive], [Order], [IsChatEnabledOverride], [Guid] ) "
+                    + "SELECT 1, [Id], N'Chat People', 0, 1, 0, 0, @p0 FROM [GroupType] WHERE [Guid] = @p1",
+                    chatPeople,
+                    Rock.SystemGuid.GroupType.GROUPTYPE_APPLICATION_GROUP.AsGuid() );
+            }
+
+            _restores.Add( context => context.Database.ExecuteSqlCommand(
+                "DELETE FROM [GroupMember] WHERE [GroupId] IN ( SELECT [Id] FROM [Group] WHERE [Guid] = @p0 );"
+                + "DELETE FROM [Group] WHERE [Guid] = @p0;",
+                chatPeople ) );
+        }
+
+        /// <summary>
         /// Writes a channel mark on an existing group, as a run before a rule changed could have
         /// left it. Put back when disposed.
         /// </summary>

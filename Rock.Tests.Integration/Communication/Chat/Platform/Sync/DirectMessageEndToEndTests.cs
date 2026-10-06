@@ -204,6 +204,7 @@ namespace Rock.Tests.Integration.Communication.Chat.Platform.Sync
                 Fixture = new ChatSyncProjectionFixture();
                 Configuration = Platform.ProvisionChurch();
                 Fixture.StoreConfiguration( Configuration );
+                Fixture.EnsureChatPeopleGroup();
                 _override = ChatPlatformSyncHelper.OverrideImmediateSync( new HttpClientHandler() );
                 _lobby = Fixture.AddChannel( Fixture.SharedGroupTypeId, "Lobby" );
             }

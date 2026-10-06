@@ -16,6 +16,7 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Data.Entity;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -641,6 +642,7 @@ namespace Rock.Tests.Integration.Communication.Chat.Platform.Doors
             public List<Guid> DirectMessagesWithExactly( params int[] personIds )
             {
                 var directMessageTypeId = Fixture.DirectMessageGroupTypeId;
+                var personCount = personIds.Length;
 
                 using ( var rockContext = new RockContext() )
                 {
@@ -651,7 +653,7 @@ namespace Rock.Tests.Integration.Communication.Chat.Platform.Doors
                             g.Guid,
                             People = g.Members.Where( m => m.GroupMemberStatus == GroupMemberStatus.Active && !m.IsArchived ).Select( m => m.PersonId )
                         } )
-                        .Where( g => g.People.Count() == personIds.Length && g.People.All( p => personIds.Contains( p ) ) )
+                        .Where( g => g.People.Count() == personCount && g.People.All( p => personIds.Contains( p ) ) )
                         .Select( g => g.Guid )
                         .ToList();
                 }
