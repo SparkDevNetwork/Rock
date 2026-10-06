@@ -81,6 +81,7 @@ function setup(overrides: Partial<DirectMessageDependencies & Waiting> = {}): {
         },
         openChannel: channelId => {
             calls.push(`open ${channelId}`);
+            return true;
         },
         send: async (channelId, body) => {
             calls.push(`send ${channelId} ${body}`);
@@ -713,5 +714,244 @@ describe("a refusal after the person left the draft", () => {
         expect(reports).toEqual([]);
         expect(dm.error).toBe("Person1 can't be messaged.");
         expect(dm.draft?.body).toBe("hello");
+    });
+});
+
+describe("a first message whose conversation cannot be shown yet", () => {
+    /** An open the platform refuses, because it does not hold the conversation for the person yet. */
+    const refusedOpen = (calls: string[]) => (channelId: string): boolean => {
+        calls.push(`open ${channelId}`);
+        return false;
+    };
+
+    /** A send that fails until it is let through, recording the row each try names. */
+    function gatedSend(calls: string[]): { send: DirectMessageDependencies["send"], rows: Array<string | undefined>, letThrough: () => void } {
+        const rows: Array<string | undefined> = [];
+        let isLetThrough = false;
+        return {
+            rows,
+            letThrough: () => isLetThrough = true,
+            send: async (channelId, body, attempt) => {
+                calls.push(`send ${channelId} ${body}`);
+                rows.push(attempt?.localId);
+                return isLetThrough;
+            }
+        };
+    }
+
+    /** A draft for person 1 whose first message Rock answered pending, every call in one list. */
+    async function pendingWith(calls: string[], overrides: Partial<DirectMessageDependencies> = {}): Promise<{
+        reports: ChatError[],
+        backoff: ReturnType<typeof waits>,
+        dm: ReturnType<typeof createDirectMessages>
+    }> {
+        const backoff = waits();
+        const reports: ChatError[] = [];
+        const { dependencies } = setup(backoff);
+        const dm = createDirectMessages({
+            ...dependencies,
+            findConversation: async people => {
+                calls.push(`find ${people.length}`);
+                return { ok: true, channelId: null };
+            },
+            openChannel: channelId => {
+                calls.push(`open ${channelId}`);
+                return true;
+            },
+            startConversation: pendingDoor(calls),
+            report: (error: ChatError) => reports.push(error),
+            ...overrides
+        } as DirectMessageDependencies);
+        dm.choose(person(1));
+        await dm.open();
+        expect(await dm.sendFirst("hello")).toBe(false);
+        await settle();
+        return { reports, backoff, dm };
+    }
+
+    async function failFiveTimes(backoff: ReturnType<typeof waits>): Promise<void> {
+        for (let attempt = 1; attempt <= 5; attempt++) {
+            backoff.list.shift()?.resolve();
+            await settle();
+        }
+    }
+
+    test("a membership signal whose open is refused keeps the draft, its text and its status while the send is tried", async () => {
+        const calls: string[] = [];
+        const gate = gatedSend(calls);
+        const h = await pendingWith(calls, { send: gate.send, openChannel: refusedOpen(calls) });
+
+        await h.dm.membershipChanged(created);
+        await settle();
+
+        expect(sends(calls)).toEqual([`send ${created} hello`]);
+        expect(h.dm.draft?.status).toBe("starting");
+        expect(h.dm.draft?.body).toBe("hello");
+    });
+
+    test("after the fifth failure, a refused open keeps the draft on screen with its text and an error, ready to send again", async () => {
+        const calls: string[] = [];
+        const gate = gatedSend(calls);
+        const h = await pendingWith(calls, { send: gate.send, openChannel: refusedOpen(calls) });
+
+        await failFiveTimes(h.backoff);
+
+        expect(sends(calls).length).toBe(5);
+        expect(calls).toContain(`open ${created}`);
+        expect(h.dm.draft?.body).toBe("hello");
+        expect(h.dm.draft?.status).toBe("draft");
+        expect(h.dm.draft?.channelGuid).toBe(created);
+        expect(h.dm.error).toEqual(expect.any(String));
+        expect(h.reports).toEqual([]);
+    });
+
+    test("a send from that draft tries the same row again under the same key, without asking Rock, then opens the conversation", async () => {
+        const calls: string[] = [];
+        const gate = gatedSend(calls);
+        let isOpenable = false;
+        const h = await pendingWith(calls, {
+            send: gate.send,
+            openChannel: channelId => {
+                calls.push(`open ${channelId}`);
+                return isOpenable;
+            }
+        });
+        await failFiveTimes(h.backoff);
+
+        gate.letThrough();
+        isOpenable = true;
+        expect(await h.dm.sendFirst("hello")).toBe(true);
+
+        expect(starts(calls)).toEqual(["start 1"]);
+        expect(gate.rows.length).toBe(6);
+        expect(new Set(gate.rows).size).toBe(1);
+        expect(gate.rows[0]).toEqual(expect.any(String));
+        expect(calls.slice(-2)).toEqual([`send ${created} hello`, `open ${created}`]);
+        expect(h.dm.draft).toBeNull();
+        expect(h.dm.error).toBeNull();
+    });
+
+    test("after the fifth failure with the person gone, the toast names the people, nothing opens, and their next draft holds the text and its row", async () => {
+        const calls: string[] = [];
+        const gate = gatedSend(calls);
+        const h = await pendingWith(calls, { send: gate.send });
+        h.dm.close();
+
+        await failFiveTimes(h.backoff);
+
+        expect(h.reports.length).toBe(1);
+        expect(h.reports[0].text).toContain("Person1");
+        expect(h.reports[0].text).toContain("could not be sent");
+        expect(calls).not.toContain(`open ${created}`);
+
+        h.dm.choose(person(1));
+        await h.dm.open();
+        expect(h.dm.draft?.body).toBe("hello");
+
+        gate.letThrough();
+        expect(await h.dm.sendFirst("hello")).toBe(true);
+        expect(starts(calls)).toEqual(["start 1"]);
+        expect(new Set(gate.rows).size).toBe(1);
+    });
+
+    test("a failed draft the person leaves keeps its text for their next draft to the same people", async () => {
+        const calls: string[] = [];
+        const gate = gatedSend(calls);
+        const h = await pendingWith(calls, { send: gate.send, openChannel: refusedOpen(calls) });
+        await failFiveTimes(h.backoff);
+
+        h.dm.close();
+        h.dm.choose(person(1));
+        await h.dm.open();
+
+        expect(h.dm.draft?.body).toBe("hello");
+        expect(h.dm.draft?.channelGuid).toBe(created);
+        expect(h.dm.error).toBeNull();
+    });
+
+    test("kept text is dropped once the people's conversation can be opened, where its failed row is", async () => {
+        const calls: string[] = [];
+        const gate = gatedSend(calls);
+        let shared: string | null = null;
+        const h = await pendingWith(calls, {
+            send: gate.send,
+            findConversation: async people => {
+                calls.push(`find ${people.length}`);
+                return { ok: true, channelId: shared };
+            }
+        });
+        h.dm.close();
+        await failFiveTimes(h.backoff);
+
+        shared = created;
+        h.dm.choose(person(1));
+        await h.dm.open();
+        expect(calls.slice(-1)).toEqual([`open ${created}`]);
+
+        shared = null;
+        h.dm.choose(person(1));
+        await h.dm.open();
+        expect(h.dm.draft?.body).toBe("");
+    });
+
+    test("a held answer whose open is refused keeps the draft and waits, sending nothing into a conversation not on screen", async () => {
+        const backoff = waits();
+        const { calls, dependencies } = setup({ ...backoff });
+        dependencies.openChannel = refusedOpen(calls);
+        const dm = createDirectMessages(dependencies);
+        dm.choose(person(1));
+        await dm.open();
+
+        expect(await dm.sendFirst("hello")).toBe(false);
+        await settle();
+
+        expect(calls).toContain(`open ${created}`);
+        expect(sends(calls)).toEqual([]);
+        expect(dm.draft?.status).toBe("starting");
+        expect(dm.draft?.body).toBe("hello");
+        expect(backoff.list.length).toBe(1);
+    });
+
+    test("a stop while a held answer's conversation opens sends nothing", async () => {
+        const opening = deferred<boolean>();
+        const { calls, dependencies } = setup({ ...waits() });
+        dependencies.openChannel = channelId => {
+            calls.push(`open ${channelId}`);
+            return opening.promise;
+        };
+        const dm = createDirectMessages(dependencies);
+        dm.choose(person(1));
+        await dm.open();
+
+        const first = dm.sendFirst("hello");
+        await settle();
+        dm.stop();
+        opening.resolve(true);
+        expect(await first).toBe(false);
+        await settle();
+
+        expect(sends(calls)).toEqual([]);
+    });
+
+    test("a stop while the last failure's conversation opens changes nothing on screen and tells nobody", async () => {
+        const calls: string[] = [];
+        const gate = gatedSend(calls);
+        const opening = deferred<boolean>();
+        const h = await pendingWith(calls, {
+            send: gate.send,
+            openChannel: channelId => {
+                calls.push(`open ${channelId}`);
+                return opening.promise;
+            }
+        });
+
+        await failFiveTimes(h.backoff);
+        h.dm.stop();
+        opening.resolve(false);
+        await settle();
+
+        expect(h.dm.draft?.status).toBe("starting");
+        expect(h.dm.error).toBeNull();
+        expect(h.reports).toEqual([]);
     });
 });

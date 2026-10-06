@@ -689,6 +689,27 @@ describe("a direct message's first message", () => {
         expect(h.shell.state.activeChannelId).toBe(channelB);
     });
 
+    test("a conversation the platform refuses to open keeps the draft and its text, and nothing is sent into it", async () => {
+        const h = await started({
+            startDirectMessage: async () => ({ code: "ok", channelGuid: created, isPending: false, message: null, personAliasGuid: null })
+        });
+
+        h.shell.directMessages.choose(other);
+        await h.shell.openDirectMessage();
+        const sending = h.shell.send("hello");
+        await settle();
+
+        h.history[created]?.shift()?.resolve(fakeResponse(403, { code: "42501", message: "authz.not_readable" }));
+        await sending;
+        await settle();
+
+        expect(h.shell.state.activeChannelId).toBeNull();
+        expect(h.shell.directMessages.draft?.body).toBe("hello");
+        expect(h.shell.directMessages.draft?.status).toBe("starting");
+        expect(h.sent).toEqual([]);
+        await h.shell.stop();
+    });
+
     test("a draft nothing was sent from is dropped when another channel is chosen", async () => {
         const starts: string[][] = [];
         const h = await started({

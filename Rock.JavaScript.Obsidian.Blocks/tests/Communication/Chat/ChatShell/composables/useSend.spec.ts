@@ -16,7 +16,7 @@
 //
 // Sending: a pending row at once, a timeline message once confirmed, and a failed send that
 // keeps its text so it can be sent again.
-import { createSender, isComposerOpen, SendResult } from "../../../../../src/Communication/Chat/ChatShell/composables/useSend.partial";
+import { createSender, isComposerOpen, SendResult, textAfterSend } from "../../../../../src/Communication/Chat/ChatShell/composables/useSend.partial";
 import { createTimelines } from "../../../../../src/Communication/Chat/ChatShell/composables/useHistory.partial";
 
 const channel = "c0000001-0000-4000-8000-000000000000";
@@ -187,6 +187,20 @@ describe("a send the platform can recognise again", () => {
         expect(keys).toEqual(["3f0c7a52-8a4e-4c5e-9d1a-2b7f6e0c1d22", "3f0c7a52-8a4e-4c5e-9d1a-2b7f6e0c1d22"]);
     });
 
+    test("a later try of a row sends the text it is given, under the row's key, as the one row", async () => {
+        const { sender, sent } = await setup([
+            { ok: false, error: { code: "rpc.transport", severity: "failed" } },
+            { ok: true, id: 48, createdAt: "2026-10-06T10:00:00Z" }
+        ]);
+
+        await sender.send(channel, "first words", { localId: "local-9", isLast: true });
+        expect(await sender.send(channel, "edited words", { localId: "local-9", isLast: true })).toBe(true);
+
+        // the person changed the text before trying again; the try sends what they see
+        expect(sent).toEqual(["first words", "edited words"]);
+        expect(sender.pending(channel)).toEqual([]);
+    });
+
     test("a notice the server sends with the confirmation stays with the person's message", async () => {
         const { sender, timelines } = await setup([{ ok: true, id: 46, createdAt: "2026-10-05T10:00:00Z", notice: "Your message is waiting for review." } as SendResult]);
 
@@ -211,5 +225,12 @@ describe("the composer and the service state", () => {
         expect(isComposerOpen("maintenance")).toBe(false);
         expect(isComposerOpen("normal")).toBe(true);
         expect(isComposerOpen("degraded")).toBe(true);
+    });
+});
+
+describe("the composer's text after a send", () => {
+    test("is kept when the shell keeps it, and emptied otherwise", () => {
+        expect(textAfterSend("hello", true)).toBe("hello");
+        expect(textAfterSend("hello", false)).toBe("");
     });
 });
