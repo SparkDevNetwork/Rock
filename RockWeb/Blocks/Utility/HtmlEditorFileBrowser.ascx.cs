@@ -944,6 +944,12 @@ namespace RockWeb.Blocks.Utility
                                     continue;
                                 }
 
+                                // Skip any file type that can't be uploaded directly.
+                                if ( !Rock.Utility.FileUtilities.IsFileTypeAllowed( file.Name ) )
+                                {
+                                    continue;
+                                }
+
                                 file.ExtractToFile( completeFileName, true );
                             }
                         }
