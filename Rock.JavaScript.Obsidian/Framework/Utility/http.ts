@@ -344,7 +344,12 @@ async function uploadFile(url: string, data: FormData, progress: UploadProgressC
  * @returns A ListItemBag that contains the scrubbed filename that was uploaded.
  */
 export async function uploadContentFile(file: File, encryptedRootFolder: string, folderPath: string, options?: UploadOptions): Promise<ListItemBag> {
-    const url = `${options?.baseUrl ?? "/FileUploader.ashx"}?rootFolder=${encodeURIComponent(encryptedRootFolder)}`;
+    let url = `${options?.baseUrl ?? "/FileUploader.ashx"}?rootFolder=${encodeURIComponent(encryptedRootFolder)}`;
+
+    if (options?.securityGrantToken) {
+        url += "&SecurityGrantToken=" + encodeURIComponent(options.securityGrantToken);
+    }
+
     const formData = new FormData();
 
     formData.append("file", file);
@@ -372,7 +377,12 @@ export async function uploadContentFile(file: File, encryptedRootFolder: string,
  * @returns A ListItemBag that contains the scrubbed filename that was uploaded.
  */
 export async function uploadAssetProviderFile(file: File, folderPath: string, assetStorageId: string, options?: UploadOptions): Promise<ListItemBag> {
-    const url = `${options?.baseUrl ?? "/FileUploader.ashx"}?rootFolder=`;
+    let url = `${options?.baseUrl ?? "/FileUploader.ashx"}?rootFolder=`;
+
+    if (options?.securityGrantToken) {
+        url += "&SecurityGrantToken=" + encodeURIComponent(options.securityGrantToken);
+    }
+
     const formData = new FormData();
 
     if (!assetStorageId) {

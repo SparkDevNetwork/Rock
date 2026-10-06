@@ -1942,6 +1942,7 @@
     <Compile Include="Security\SecurityGrantRules\AssetAndFileManagerSecurityGrantRule.cs" />
     <Compile Include="Security\SecurityGrantRules\ConnectionRequestPickerSecurityGrantRule.cs" />
     <Compile Include="Security\SecurityGrantRules\EmailEditorSecurityGrantRule.cs" />
+    <Compile Include="Security\SecurityGrantRules\FileUploadSecurityGrantRule.cs" />
     <Compile Include="Security\SecurityGrantRules\GroupListPickerSecurityGrantRule.cs" />
     <Compile Include="Security\SecurityGrantRules\GroupMemberPickerSecurityGrantRule.cs" />
     <Compile Include="Security\SecurityGrantRules\GroupPickerSecurityGrantRule.cs" />

@@ -862,6 +862,11 @@ namespace Rock.Web.UI.Controls
             var postBackRemovedScript = this.FileRemoved != null ? this.Page.ClientScript.GetPostBackEventReference( new PostBackOptions( this, "FileRemoved" ), true ) : "";
             postBackRemovedScript = postBackRemovedScript.Replace( '\'', '"' );
 
+            // Content files need a grant that allows uploads to the root folder.
+            var securityGrantToken = !this.IsBinaryFile
+                ? new Rock.Security.SecurityGrant().AddRule( new Rock.Security.SecurityGrantRules.FileUploadSecurityGrantRule( this.RootFolder ) ).ToToken()
+                : string.Empty;
+
             var script = $@"
                 Rock.controls.fileUploader.initialize({{
                     controlId: '{_fileUpload.ClientID}',
@@ -875,6 +880,7 @@ namespace Rock.Web.UI.Controls
                     isBinaryFile: '{(this.IsBinaryFile ? "T" : "F")}',
                     rootFolder: '{Rock.Security.Encryption.EncryptString( this.RootFolder )}',
                     uploadUrl: '{this.UploadUrl}',
+                    securityGrantToken: '{securityGrantToken}',
                     disablePredictableIds: {disablePredictableIds.ToString().ToLower()},
                     submitFunction: function (e, data) {{
                         {this.SubmitFunctionClientScript}
