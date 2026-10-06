@@ -1,6 +1,13 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
     <nav class="chat-sidebar" data-testid="channel-sidebar">
+        <button v-if="isNewMessageShown"
+                type="button"
+                class="btn btn-default btn-sm chat-sidebar-new"
+                data-testid="new-message"
+                @click="emit('newMessage')">
+            New message
+        </button>
         <button v-for="row in rows"
                 :key="row.channel_id"
                 type="button"
@@ -24,6 +31,10 @@
     flex-direction: column;
     overflow-y: auto;
     border-right: 1px solid var(--color-interface-soft, #dfe0e1);
+}
+
+.chat-sidebar-new {
+    margin: 8px 12px;
 }
 
 .chat-sidebar-row {
@@ -63,11 +74,17 @@
         activeChannelId: {
             type: String as PropType<string | null>,
             default: null
+        },
+
+        isNewMessageShown: {
+            type: Boolean,
+            default: false
         }
     });
 
     const emit = defineEmits<{
-        (e: "select", channelId: string): void
+        (e: "select", channelId: string): void,
+        (e: "newMessage"): void
     }>();
 
     // #region Functions

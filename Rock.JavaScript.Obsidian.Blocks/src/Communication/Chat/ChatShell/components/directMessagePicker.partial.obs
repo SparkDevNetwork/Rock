@@ -1,0 +1,198 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Modal :modelValue="modelValue"
+           title="New message"
+           saveText="Open"
+           :isSaveButtonDisabled="chosen.length === 0"
+           @update:modelValue="emit('update:modelValue', $event)"
+           @save="onSave">
+        <div class="chat-picker-chosen" data-testid="picker-chosen">
+            <span v-for="person in chosen" :key="person.person_alias_guid" class="label label-default chat-picker-chip">
+                {{ nameOf(person) }}
+                <button type="button" class="chat-picker-remove" :aria-label="`Remove ${nameOf(person)}`" @click="emit('unchoose', person.person_alias_guid)">&times;</button>
+            </span>
+        </div>
+
+        <input v-model="query"
+               type="text"
+               class="form-control"
+               placeholder="Search by name"
+               data-testid="picker-search"
+               :disabled="isFull" />
+        <p v-if="isFull" class="help-block">A conversation can have up to {{ maxOthers }} other people.</p>
+
+        <div class="chat-picker-results" data-testid="picker-results">
+            <button v-for="person in shownResults"
+                    :key="person.person_alias_guid"
+                    type="button"
+                    class="chat-picker-row"
+                    data-testid="picker-row"
+                    @click="onChoose(person)">
+                {{ nameOf(person) }}
+            </button>
+        </div>
+
+        <div v-if="error" class="alert alert-warning" data-testid="picker-error">{{ error }}</div>
+    </Modal>
+</template>
+
+<style scoped>
+.chat-picker-chosen {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    margin-bottom: 8px;
+}
+
+.chat-picker-remove {
+    padding: 0 0 0 4px;
+    color: inherit;
+    background: none;
+    border: 0;
+}
+
+.chat-picker-results {
+    display: flex;
+    flex-direction: column;
+    max-height: 240px;
+    margin-top: 8px;
+    overflow-y: auto;
+}
+
+.chat-picker-row {
+    padding: 6px 8px;
+    text-align: left;
+    background: none;
+    border: 0;
+}
+
+.chat-picker-row:hover {
+    background: var(--color-interface-softer, #f4f5f6);
+}
+</style>
+
+<script setup lang="ts">
+    import { computed, onBeforeUnmount, PropType, ref, watch } from "vue";
+    import Modal from "@Obsidian/Controls/modal.obs";
+    import { maxOthers, PersonRow } from "../composables/useDirectMessage.partial";
+
+    const props = defineProps({
+        modelValue: {
+            type: Boolean,
+            default: false
+        },
+
+        chosen: {
+            type: Array as PropType<PersonRow[]>,
+            required: true
+        },
+
+        search: {
+            type: Function as PropType<(query: string) => Promise<PersonRow[]>>,
+            required: true
+        },
+
+        error: {
+            type: String as PropType<string | null>,
+            default: null
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: boolean): void,
+        (e: "choose", person: PersonRow): void,
+        (e: "unchoose", personAliasGuid: string): void,
+        (e: "open"): void
+    }>();
+
+    // #region Values
+
+    /**
+     * How long typing must pause before the search goes out, an estimate. A search per keystroke
+     * would cost the platform a query for every letter of every name typed.
+     */
+    const searchPauseMs = 250;
+
+    const query = ref("");
+    const results = ref<PersonRow[]>([]);
+
+    let searchTimer: ReturnType<typeof setTimeout> | null = null;
+
+    /** Counts searches, so an answer to text the person has since changed is dropped. */
+    let searchCount = 0;
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    const isFull = computed((): boolean => props.chosen.length >= maxOthers);
+
+    /** The results, less the people already picked. */
+    const shownResults = computed((): PersonRow[] => results.value
+        .filter(r => !props.chosen.some(c => c.person_alias_guid === r.person_alias_guid)));
+
+    // #endregion Computed Values
+
+    // #region Event Handlers
+
+    function onSave(): void {
+        emit("open");
+    }
+
+    function onChoose(person: PersonRow): void {
+        emit("choose", person);
+        query.value = "";
+    }
+
+    // #endregion Event Handlers
+
+    // #region Functions
+
+    function nameOf(person: PersonRow): string {
+        return `${person.nick_name} ${person.last_name}`;
+    }
+
+    function cancelSearch(): void {
+        if (searchTimer !== null) {
+            clearTimeout(searchTimer);
+            searchTimer = null;
+        }
+    }
+
+    // #endregion Functions
+
+    // #region Watchers
+
+    watch(query, text => {
+        cancelSearch();
+        const thisSearch = ++searchCount;
+        const trimmed = text.trim();
+
+        if (trimmed === "") {
+            results.value = [];
+            return;
+        }
+
+        searchTimer = setTimeout(async () => {
+            const rows = await props.search(trimmed);
+            if (thisSearch === searchCount) {
+                results.value = rows;
+            }
+        }, searchPauseMs);
+    });
+
+    // A reopened picker starts empty rather than showing the last search.
+    watch(() => props.modelValue, isShown => {
+        if (!isShown) {
+            query.value = "";
+        }
+    });
+
+    // #endregion Watchers
+
+    // #region Lifecycle Hooks
+
+    onBeforeUnmount(cancelSearch);
+
+    // #endregion Lifecycle Hooks
+</script>

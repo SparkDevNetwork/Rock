@@ -295,6 +295,10 @@ namespace Rock.Communication.Chat.Platform.Sync
 
                 // The client was built over this override's transport, so the next push builds its own.
                 Interlocked.Exchange( ref _transport, null );
+
+                // The holder may have added chat's groups to a database the next caller does not
+                // share, where those ids can belong to an ordinary group.
+                Interlocked.Exchange( ref _systemGroups, null );
             }
         }
 
@@ -541,6 +545,21 @@ namespace Rock.Communication.Chat.Platform.Sync
         }
 
         /// <summary>
+        /// Records that a group's channel and whole membership changed, so they are pushed after
+        /// the context's next commit whether or not a request made the save.
+        /// </summary>
+        /// <param name="rockContext">The context whose commit the push follows.</param>
+        /// <param name="groupGuid">The group.</param>
+        /// <remarks>
+        /// The save hooks push only from a request, so a workflow that must see its conversation on
+        /// the platform before it posts names the group here.
+        /// </remarks>
+        internal static void RecordGroupChange( RockContext rockContext, Guid groupGuid )
+        {
+            ChangesFor( rockContext )?.GroupGuids.Add( groupGuid );
+        }
+
+        /// <summary>
         /// Waits, within the awaited budget, for the push the context's last save began.
         /// </summary>
         /// <param name="rockContext">The context the block action saved with.</param>
@@ -549,7 +568,18 @@ namespace Rock.Communication.Chat.Platform.Sync
         /// A push that outlasts the budget is abandoned, not cancelled: it may still land, and the
         /// full sync carries the change if it does not.
         /// </remarks>
-        internal static async Task<PushOutcome> FlushAsync( RockContext rockContext )
+        internal static Task<PushOutcome> FlushAsync( RockContext rockContext )
+        {
+            return FlushAsync( rockContext, AwaitedPushBudget );
+        }
+
+        /// <summary>
+        /// Waits, within a budget of the caller's, for the push the context's last save began.
+        /// </summary>
+        /// <param name="rockContext">The context the caller saved with.</param>
+        /// <param name="budget">How long to wait; a workflow, with nobody watching, waits longer than a person would.</param>
+        /// <returns>Applied where the platform took the push or there was nothing to push, and Pending otherwise. Never throws.</returns>
+        internal static async Task<PushOutcome> FlushAsync( RockContext rockContext, TimeSpan budget )
         {
             var push = rockContext?.GetOptions<ImmediateChanges>()?.LastPush;
 
@@ -561,7 +591,7 @@ namespace Rock.Communication.Chat.Platform.Sync
 
             try
             {
-                var finished = await Task.WhenAny( push, Task.Delay( AwaitedPushBudget ) ).ConfigureAwait( false );
+                var finished = await Task.WhenAny( push, Task.Delay( budget ) ).ConfigureAwait( false );
 
                 return finished == push ? await push.ConfigureAwait( false ) : PushOutcome.Pending;
             }
@@ -571,6 +601,21 @@ namespace Rock.Communication.Chat.Platform.Sync
                 LogPushFailure( exception );
                 return PushOutcome.Pending;
             }
+        }
+
+        /// <summary>
+        /// Posts into a channel under the church's sync credential, through the client the pushes
+        /// use, so a post made just after a push reuses its sign-in.
+        /// </summary>
+        /// <param name="configuration">The church's chat settings.</param>
+        /// <param name="channelGuid">The channel, which is the chat group's Guid.</param>
+        /// <param name="body">The message.</param>
+        /// <param name="senderAliasGuid">The primary alias the message is under, or null for a system line.</param>
+        /// <param name="cancellationToken">Ends the post when its time is up.</param>
+        /// <returns>The message's id, or the platform's code and sentence for why there is none.</returns>
+        internal static Task<(long? Id, string Code, string Message)> SendSystemMessageAsync( ChatPlatformConfiguration configuration, Guid channelGuid, string body, Guid? senderAliasGuid, CancellationToken cancellationToken )
+        {
+            return TransportFor( configuration ).SendSystemMessageAsync( channelGuid, body, senderAliasGuid, cancellationToken );
         }
 
         /// <summary>
@@ -590,6 +635,10 @@ namespace Rock.Communication.Chat.Platform.Sync
 
             // Dropped so the first push under the override signs in through it.
             Interlocked.Exchange( ref _transport, null );
+
+            // Each holder may run against a fresh database, where chat's groups are missing or have
+            // other ids, and an id kept from before would hide an ordinary group's members.
+            Interlocked.Exchange( ref _systemGroups, null );
 
             return replacement;
         }

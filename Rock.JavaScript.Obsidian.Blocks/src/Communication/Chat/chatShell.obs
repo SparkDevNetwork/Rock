@@ -13,7 +13,9 @@
         <div v-else class="chat-shell-layout">
             <ChannelSidebar :rows="shell.channels.rows"
                             :activeChannelId="shell.state.activeChannelId"
-                            @select="onSelect" />
+                            :isNewMessageShown="shell.isNewMessageShown"
+                            @select="onSelect"
+                            @newMessage="isPickerShown = true" />
 
             <div class="chat-shell-main">
                 <ChatHeader :title="activeTitle"
@@ -33,13 +35,25 @@
                              @retry="onRetry"
                              @discard="shell.sender.discard"
                              @loadOlder="shell.loadOlder" />
+                <div v-else-if="draft" class="chat-shell-empty chat-shell-draft" data-testid="dm-draft" :data-status="draft.status">
+                    {{ draft.status === "starting" ? "Starting the conversation…" : "Your first message starts the conversation." }}
+                    <div v-if="shell.directMessages.error" class="alert alert-warning" data-testid="dm-error">{{ shell.directMessages.error }}</div>
+                </div>
                 <div v-else class="chat-shell-empty">
                     {{ shell.state.phase === "starting" ? "Opening chat…" : "Choose a channel." }}
                 </div>
 
-                <Composer :isDisabled="!activeChannelId || !shell.state.isComposerOpen" @send="shell.send" />
+                <Composer :isDisabled="isComposerDisabled" :heldText="draft?.body ?? ''" @send="shell.send" />
             </div>
         </div>
+
+        <DirectMessagePicker v-model="isPickerShown"
+                             :chosen="shell.directMessages.chosen"
+                             :search="shell.directMessages.search"
+                             :error="shell.directMessages.error"
+                             @choose="shell.directMessages.choose"
+                             @unchoose="shell.directMessages.unchoose"
+                             @open="onOpenDirectMessage" />
 
         <ErrorToast :errors="shell.state.errors" @dismiss="shell.dismissError" />
     </div>
@@ -75,6 +89,11 @@
     justify-content: center;
     color: var(--color-interface-medium, #6c757d);
 }
+
+.chat-shell-draft {
+    flex-direction: column;
+    gap: 8px;
+}
 </style>
 
 <script setup lang="ts">
@@ -92,6 +111,8 @@
     import ChannelSidebar from "./ChatShell/components/channelSidebar.partial.obs";
     import ChatHeader from "./ChatShell/components/chatHeader.partial.obs";
     import Composer from "./ChatShell/components/composer.partial.obs";
+    import DirectMessagePicker from "./ChatShell/components/directMessagePicker.partial.obs";
+    import { DirectMessageDraft, DoorResult } from "./ChatShell/composables/useDirectMessage.partial";
     import ErrorToast from "./ChatShell/components/errorToast.partial.obs";
     import MessageFeed from "./ChatShell/components/messageFeed.partial.obs";
     import { createChatShell, PlatformClientLike, refusalMessage, ShellOptions } from "./ChatShell/shell.partial";
@@ -118,6 +139,8 @@
     const birthdateMessage = ref<string | null>(null);
     const isSavingBirthdate = ref(false);
 
+    const isPickerShown = ref(false);
+
     /** The cookie Rock reads at sign-out to take this browser out of push. */
     const pushCookieName = "rock_chat_push";
 
@@ -141,7 +164,18 @@
 
     const refusal = computed((): string => refusalMessage(shell.value.state.phase, shell.value.state.gate));
 
+    const draft = computed((): DirectMessageDraft | null => shell.value.directMessages.draft);
+
+    /** Closed with nothing to write into, in read only or maintenance, and while a draft's first message is on its way. */
+    const isComposerDisabled = computed((): boolean => (!activeChannelId.value && !draft.value)
+        || !shell.value.state.isComposerOpen
+        || draft.value?.status === "starting");
+
     const activeTitle = computed((): string => {
+        if (draft.value) {
+            return draft.value.people.map(p => `${p.nick_name} ${p.last_name}`).join(", ");
+        }
+
         const row = shell.value.channels.rows.find(r => r.channel_id === shell.value.state.activeChannelId);
         if (!row) {
             return "";
@@ -155,6 +189,14 @@
 
     function onSelect(channelId: string): void {
         void shell.value.selectChannel(channelId);
+    }
+
+    /** The picker closes once a conversation or a draft is open, and stays to show a failure. */
+    async function onOpenDirectMessage(): Promise<void> {
+        await shell.value.openDirectMessage();
+        if (!shell.value.directMessages.error) {
+            isPickerShown.value = false;
+        }
     }
 
     function onTurnOnPush(): void {
@@ -217,6 +259,22 @@
             mintChurchToken: async () => {
                 const result = await invokeBlockAction<ChatChurchTokenBag>("MintChurchToken");
                 return { isSuccess: result.isSuccess, statusCode: result.statusCode, data: result.data };
+            },
+            startDirectMessage: async personAliasGuids => {
+                const result = await invokeBlockAction<DoorResult>("StartDirectMessage", { personAliasGuids });
+                if (result.isSuccess && result.data) {
+                    return result.data;
+                }
+
+                // Rock did not answer with a door result at all, so there is no sentence of its
+                // own to show and the draft stays for the person to try again.
+                return {
+                    code: "door.unavailable",
+                    channelGuid: null,
+                    isPending: false,
+                    message: result.errorMessage ?? "The conversation could not be started. Try again.",
+                    personAliasGuid: null
+                };
             },
             createPlatformClient: (url, key, accessToken, realtime) => createClient(url, key, { accessToken, realtime }) as unknown as PlatformClientLike,
             fetch: (url, init) => window.fetch(url, init),

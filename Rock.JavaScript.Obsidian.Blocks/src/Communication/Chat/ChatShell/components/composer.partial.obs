@@ -33,12 +33,21 @@
 </style>
 
 <script setup lang="ts">
-    import { ref } from "vue";
+    import { ref, watch } from "vue";
 
-    defineProps({
+    const props = defineProps({
         isDisabled: {
             type: Boolean,
             default: false
+        },
+
+        /**
+         * Text the shell holds for the person, put back in the box whenever it changes. A draft's
+         * first message has no row in a feed to keep it on, so the draft holds it here instead.
+         */
+        heldText: {
+            type: String,
+            default: ""
         }
     });
 
@@ -76,4 +85,12 @@
     }
 
     // #endregion Event Handlers
+
+    // #region Watchers
+
+    watch(() => props.heldText, held => {
+        text.value = held;
+    });
+
+    // #endregion Watchers
 </script>

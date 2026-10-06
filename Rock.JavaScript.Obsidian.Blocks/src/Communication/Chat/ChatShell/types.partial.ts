@@ -99,6 +99,24 @@ export type MarkReadResult = {
     last_message_id: number | null;
 };
 
+/** One person chat_search_people answers. */
+export type PersonRow = {
+    person_alias_guid: string;
+    nick_name: string;
+    last_name: string;
+    avatar_url: string | null;
+};
+
+/** What chat_search_people returns. */
+export type PeopleSearchAnswer = {
+    people: PersonRow[];
+};
+
+/** What chat_find_dm returns: the conversation those people already share, or null. */
+export type FindDmAnswer = {
+    channel_id: string | null;
+};
+
 /** A new message on a channel topic. */
 export type MessageCreatedEvent = {
     id: number;

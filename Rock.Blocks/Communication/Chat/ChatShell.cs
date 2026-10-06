@@ -14,9 +14,14 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
+using System.Collections.Generic;
 using System.ComponentModel;
+using System.Threading.Tasks;
 
 using Rock.Attribute;
+using Rock.Communication.Chat.Platform.Configuration;
+using Rock.Communication.Chat.Platform.Doors;
 using Rock.Communication.Chat.Platform.Session;
 using Rock.ViewModels.Blocks.Communication.Chat.ChatShell;
 using Rock.ViewModels.Controls;
@@ -92,6 +97,22 @@ namespace Rock.Blocks.Communication.Chat
             var date = birthDate ?? new DatePartsPickerValueBag();
 
             return ActionOk( ChatSessionHelper.SaveBirthdate( GetCurrentPerson(), date.Year, date.Month, date.Day, RockContext ) );
+        }
+
+        /// <summary>
+        /// Starts a direct message with the people chosen, or reopens the one they already have,
+        /// as the first message sent to a draft asks. Only people cross: the conversation is
+        /// worked out by Rock, never named by the browser.
+        /// </summary>
+        /// <param name="personAliasGuids">The other people, one to eight, by any of their aliases.</param>
+        /// <returns>The conversation, or why there is none.</returns>
+        [BlockAction]
+        public async Task<BlockActionResult> StartDirectMessage( List<Guid> personAliasGuids )
+        {
+            var person = GetCurrentPerson();
+            var context = ChatSessionHelper.BuildSessionContext( person, ChatPlatformConfigurationService.Read(), RockContext );
+
+            return ActionOk( await ChatDoorHelper.StartDirectMessageAsync( person, personAliasGuids, context, RockContext ) );
         }
 
         #endregion Block Actions

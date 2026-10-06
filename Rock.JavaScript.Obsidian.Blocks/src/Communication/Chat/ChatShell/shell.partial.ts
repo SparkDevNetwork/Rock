@@ -24,6 +24,7 @@
 import { reactive } from "vue";
 import { classifyActionFailure, classifyPlatformError } from "./errors.partial";
 import { CallResult, createPlatformCall, exchangeChurchToken } from "./platformCall.partial";
+import { createDirectMessages, DirectMessages, DoorResult, isNewMessageShown } from "./composables/useDirectMessage.partial";
 import { createTimelines, Timelines } from "./composables/useHistory.partial";
 import { createKeepaliveSave, createReadTracker, PageEventTargets, ReadTracker } from "./composables/useMarkRead.partial";
 import { createRealtimeHub, RealtimeClientLike, RealtimeHub, realtimeOptions } from "./composables/useRealtimeHub.partial";
@@ -40,7 +41,7 @@ import {
     writeRememberedChannel
 } from "./pageLoad.partial";
 import { ChannelStore, createChannelStore } from "./stores/channelStore.partial";
-import { ChannelUnreadEvent, ChatError, HistoryPage, SendAnswer, SidebarRow } from "./types.partial";
+import { ChannelUnreadEvent, ChatError, FindDmAnswer, HistoryPage, PeopleSearchAnswer, SendAnswer, SidebarRow } from "./types.partial";
 
 /**
  * The part of the platform client the shell uses: its live connection. Every call goes through
@@ -67,6 +68,7 @@ export type ShellOptions = {
         publishableKey?: string | null;
         tenantId?: string | null;
         personAliasGuid?: string | null;
+        canStartDm?: boolean | null;
     };
 
     /** The channel a link named, or null. */
@@ -74,6 +76,9 @@ export type ShellOptions = {
 
     /** Asks Rock for a church token. */
     mintChurchToken: () => Promise<MintActionResult>;
+
+    /** Asks Rock's door for the conversation with these people; without it, none can start. */
+    startDirectMessage?: (personAliasGuids: string[]) => Promise<DoorResult>;
 
     /** Creates the platform client, whose every request reads the token through the callback. */
     createPlatformClient: (url: string, key: string, accessToken: () => Promise<string>, realtime: RealtimeOptions) => PlatformClientLike;
@@ -120,6 +125,13 @@ export type ChatShell = {
     channels: ChannelStore;
     timelines: Timelines;
     sender: Sender;
+    directMessages: DirectMessages;
+
+    /** Whether the sidebar shows the New message button. */
+    isNewMessageShown: boolean;
+
+    /** Opens the conversation the picked people share, or a draft for them in place of the open channel. */
+    openDirectMessage: () => Promise<void>;
 
     /** Signs in and runs the page load. */
     start: () => Promise<void>;
@@ -133,7 +145,7 @@ export type ChatShell = {
     /** The first message of the page load reached the screen. */
     firstMessageShown: () => void;
 
-    /** Sends a message to the open channel. */
+    /** Sends a message to the open channel, or a draft's first message. */
     send: (body: string) => Promise<void>;
 
     /** The person clicked "Turn on notifications". */
@@ -425,6 +437,38 @@ export function createChatShell(options: ShellOptions): ChatShell {
         newLocalId
     });
 
+    /** Counts a send toward offering notifications, which waits for the person's first send. */
+    function notePushSend(): void {
+        push?.noteSend();
+        state.isPushOffered = push?.isOffered() ?? false;
+    }
+
+    const directMessages = createDirectMessages({
+        search: async query => {
+            const result = await call("chat_search_people", { p_query: query, p_limit: 10 });
+            return result.ok
+                ? { ok: true, people: (result.data as Partial<PeopleSearchAnswer> | null)?.people ?? [] }
+                : { ok: false, error: result.error };
+        },
+        findConversation: async personAliasGuids => {
+            const result = await call("chat_find_dm", { p_person_alias_guids: personAliasGuids });
+            return result.ok
+                ? { ok: true, channelId: (result.data as Partial<FindDmAnswer> | null)?.channel_id ?? null }
+                : { ok: false, error: result.error };
+        },
+        startConversation: async personAliasGuids => options.startDirectMessage
+            ? options.startDirectMessage(personAliasGuids)
+            : { code: "door.unavailable", channelGuid: null, isPending: false, message: "A conversation cannot be started here.", personAliasGuid: null },
+        openChannel: async channelId => {
+            await open(channelId);
+        },
+        send: async (channelId, body) => {
+            const isSent = await sender.send(channelId, body);
+            notePushSend();
+            return isSent;
+        }
+    });
+
     /** Fetches the sidebar and replaces the rows with it. */
     async function loadSidebar(): Promise<SidebarRow[]> {
         const result = await call("chat_get_bootstrap", {});
@@ -460,6 +504,20 @@ export function createChatShell(options: ShellOptions): ChatShell {
     }
 
     const storageKey = rememberedChannelKey(tenantId, personAliasGuid);
+
+    /**
+     * Takes the open channel off the screen: its position is saved, its catch-up stops, and an
+     * open of it still loading is superseded, so it cannot take the screen back.
+     */
+    function closeActive(): void {
+        openCount++;
+        void tracker.leave();
+        if (state.activeChannelId) {
+            timelines.leave(state.activeChannelId);
+        }
+        state.activeChannelId = null;
+        channels.setActive(null);
+    }
 
     /** Counts opens, so an open that a later one has replaced stops touching anything. */
     let openCount = 0;
@@ -517,6 +575,15 @@ export function createChatShell(options: ShellOptions): ChatShell {
         channels,
         timelines,
         sender,
+        directMessages,
+        isNewMessageShown: isNewMessageShown(options.session),
+
+        openDirectMessage: async (): Promise<void> => {
+            await directMessages.open();
+            if (directMessages.draft) {
+                closeActive();
+            }
+        },
 
         start: async (): Promise<void> => {
             if (state.gate !== "ok") {
@@ -566,6 +633,11 @@ export function createChatShell(options: ShellOptions): ChatShell {
 
                     // Only the channel on screen is joined, so only a change to it can need a cut.
                     const changed = (payload as Partial<Record<keyof ChannelUnreadEvent, unknown>> | null)?.channel_id;
+
+                    // A conversation Rock made before the platform had taken it may have arrived.
+                    if (event === "membership.changed") {
+                        void directMessages.membershipChanged(typeof changed === "string" ? changed : null);
+                    }
                     if (event === "session.recheck" || (event === "membership.changed" && changed === state.activeChannelId)) {
                         recheck();
                     }
@@ -588,14 +660,7 @@ export function createChatShell(options: ShellOptions): ChatShell {
                     if (error?.code === "rt.read_revoked") {
                         // Nothing is open any more, so choosing the channel again, once the
                         // person may read it, opens it afresh.
-                        // An open of it still loading is superseded, so it cannot take it back.
-                        openCount++;
-                        void tracker.leave();
-                        if (state.activeChannelId) {
-                            timelines.leave(state.activeChannelId);
-                        }
-                        state.activeChannelId = null;
-                        channels.setActive(null);
+                        closeActive();
                         report(error);
                         void loadSidebar();
                         return;
@@ -633,6 +698,7 @@ export function createChatShell(options: ShellOptions): ChatShell {
         },
 
         selectChannel: async (channelId: string): Promise<void> => {
+            directMessages.close();
             if (channelId !== state.activeChannelId) {
                 await open(channelId);
             }
@@ -648,10 +714,12 @@ export function createChatShell(options: ShellOptions): ChatShell {
         },
 
         send: async (body: string): Promise<void> => {
-            if (state.activeChannelId) {
+            if (directMessages.draft) {
+                await directMessages.sendFirst(body);
+            }
+            else if (state.activeChannelId) {
                 await sender.send(state.activeChannelId, body);
-                push?.noteSend();
-                state.isPushOffered = push?.isOffered() ?? false;
+                notePushSend();
             }
         },
 

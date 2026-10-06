@@ -63,6 +63,8 @@ namespace Rock.Communication.Chat.Platform.Sync
 
             private const string UnregisterDevicePath = "/rest/v1/rpc/chat_unregister_device";
 
+            private const string SystemMessagePath = "/rest/v1/rpc/chat_send_system_message";
+
             // Estimates, revisited when the platform is measured at full scale.
             internal const int TransportAttempts = 3;
 
@@ -556,6 +558,59 @@ namespace Rock.Communication.Chat.Platform.Sync
                 {
                     LogPushFailure( exception );
                     return PushOutcome.Pending;
+                }
+            }
+
+            /// <summary>
+            /// Posts into a channel under the church's sync credential: a text message under a named
+            /// person, or a system line when none is named. Once, since a post repeated after a lost
+            /// answer would show twice.
+            /// </summary>
+            /// <param name="channelGuid">The channel, which is the chat group's Guid.</param>
+            /// <param name="body">The message.</param>
+            /// <param name="senderAliasGuid">The primary alias the message is under, or null for a system line.</param>
+            /// <param name="cancellationToken">Ends the post when its time is up.</param>
+            /// <returns>The message's id, or the platform's code and sentence for why there is none. Never an exception.</returns>
+            public async Task<(long? Id, string Code, string Message)> SendSystemMessageAsync( Guid channelGuid, string body, Guid? senderAliasGuid, CancellationToken cancellationToken )
+            {
+                try
+                {
+                    if ( !await EnsureSignedInAsync( cancellationToken ).ConfigureAwait( false ) )
+                    {
+                        return (null, "rpc.unavailable", "this church could not sign in to the chat platform");
+                    }
+
+                    var request = new JObject
+                    {
+                        ["p_channel_id"] = channelGuid.ToString( "D" ),
+                        ["p_body"] = body,
+                        ["p_sender_alias"] = senderAliasGuid.HasValue ? senderAliasGuid.Value.ToString( "D" ) : null
+                    };
+
+                    var content = new StringContent( request.ToString( Formatting.None ), Encoding.UTF8, "application/json" );
+
+                    using ( var message = BuildDataRequest( SystemMessagePath, content ) )
+                    using ( var response = await _httpClient.SendAsync( message, cancellationToken ).ConfigureAwait( false ) )
+                    {
+                        var answer = await ReadBodyAsync( response ).ConfigureAwait( false );
+                        var id = answer?["id"];
+
+                        if ( response.IsSuccessStatusCode && id != null && id.Type == JTokenType.Integer )
+                        {
+                            return (( long ) id, null, null);
+                        }
+
+                        // A refusal names its code in the message, its sentence in the hint and the
+                        // text for a log in the details, as the data API reports a raise.
+                        var code = ( string ) answer?["message"] ?? "HTTP " + ( int ) response.StatusCode;
+                        var sentence = ( string ) answer?["hint"] ?? ( string ) answer?["details"] ?? "the chat platform refused the post";
+
+                        return (null, code, sentence);
+                    }
+                }
+                catch ( Exception exception )
+                {
+                    return (null, "rpc.unavailable", "the chat platform could not be reached: " + exception.GetBaseException().Message);
                 }
             }
 
