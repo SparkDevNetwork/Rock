@@ -22,6 +22,7 @@ using Rock.AI.Agent.Classes;
 using Rock.AI.Agent.Classes.Common;
 using Rock.AI.Agent.Classes.Skills.CmsSkill;
 using Rock.Configuration;
+using Rock.Security;
 using Rock.SystemGuid;
 using Rock.Web.Cache;
 
@@ -58,12 +59,19 @@ internal sealed partial class CmsSkill
 
         var helper = new AgentToolHelper( rockContext, AgentRequestContext, _logger );
 
-        var segment = helper.GetRequiredEntity<Model.PersonalizationSegment>( personalizationSegmentIdKey, checkSecurity: false );
+        var segment = helper.GetRequiredEntity<Model.PersonalizationSegment>( personalizationSegmentIdKey );
 
         if ( segment == null )
         {
             return helper.ErrorResult
                 .WithInstructions( "Call the LookupPersonalizationSegments function to determine the available segments." );
+        }
+
+        // Matches the personalization segment detail block, which requires
+        // EDIT on the segment itself to save changes.
+        if ( !segment.IsAuthorized( Authorization.EDIT, AgentRequestContext.CurrentPerson ) )
+        {
+            return Error( $"You do not have permission to edit the personalization segment '{segment.Name}'." );
         }
 
         helper.UpdateProperty( segment, s => s.Name, name );

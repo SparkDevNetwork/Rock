@@ -19,6 +19,7 @@ using System.Linq;
 
 using Rock.AI.Agent.Annotations;
 using Rock.AI.Agent.Classes.Skills.CmsSkill;
+using Rock.Security;
 using Rock.SystemGuid;
 using Rock.Web.Cache;
 
@@ -40,7 +41,10 @@ internal sealed partial class CmsSkill
     [AgentToolGuid( "4C291DD0-82C2-4883-AFEF-559B492DC715" )]
     public AgentToolResult LookupPersonalizationSegments()
     {
+        // Matches the personalization segment list block, which only shows
+        // segments the person can view.
         var results = PersonalizationSegmentCache.All( AgentRequestContext.RockContext )
+            .Where( s => s.IsAuthorized( Authorization.VIEW, AgentRequestContext.CurrentPerson ) )
             .OrderBy( s => s.Name )
             .Select( s => new PersonalizationSegmentResult
             {
