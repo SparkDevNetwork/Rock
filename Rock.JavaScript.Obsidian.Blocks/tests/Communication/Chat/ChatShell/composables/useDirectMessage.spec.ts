@@ -25,6 +25,7 @@ import {
     maxOthers,
     PersonRow
 } from "../../../../../src/Communication/Chat/ChatShell/composables/useDirectMessage.partial";
+import { ChatError } from "../../../../../src/Communication/Chat/ChatShell/types.partial";
 
 type Deferred<T> = { promise: Promise<T>, resolve: (value: T) => void };
 
@@ -521,5 +522,100 @@ describe("leaving a draft", () => {
         expect(dm.draft?.people).toEqual([person(2)]);
         expect(dm.draft?.status).toBe("draft");
         expect(dm.draft?.body).toBe("");
+    });
+});
+
+describe("a refusal after the person left the draft", () => {
+    const refusal: DoorResult = {
+        code: "door.target_not_eligible",
+        channelGuid: null,
+        isPending: false,
+        message: "Person1 can't be messaged.",
+        personAliasGuid: person(1).person_alias_guid
+    };
+
+    /** A draft for person 1 whose first message is waiting on Rock's answer, with every report kept. */
+    async function waitingOnRock(): Promise<{
+        calls: string[],
+        reports: ChatError[],
+        answer: Deferred<DoorResult>,
+        dm: ReturnType<typeof createDirectMessages>,
+        first: Promise<boolean>
+    }> {
+        const answer = deferred<DoorResult>();
+        const reports: ChatError[] = [];
+        const { calls, dependencies } = setup({
+            ...waits(),
+            startConversation: people => {
+                calls.push(`start ${people.length}`);
+                return answer.promise;
+            }
+        });
+        const dm = createDirectMessages({ ...dependencies, report: (error: ChatError) => reports.push(error) } as DirectMessageDependencies);
+        dm.choose(person(1));
+        await dm.open();
+        calls.length = 0;
+        const first = dm.sendFirst("hello");
+        return { calls, reports, answer, dm, first };
+    }
+
+    test("tells the person once, with Rock's sentence, and sends nothing", async () => {
+        const { calls, reports, answer, dm, first } = await waitingOnRock();
+
+        dm.close();
+        answer.resolve(refusal);
+        expect(await first).toBe(false);
+        await settle();
+
+        expect(reports.length).toBe(1);
+        expect(reports[0].text).toContain("Person1");
+        expect(reports[0].text).toContain("could not be sent");
+        expect(reports[0].text).toContain("Person1 can't be messaged.");
+        expect(sends(calls)).toEqual([]);
+        expect(dm.error).toBeNull();
+    });
+
+    test("tells the person when a new draft for other people is on screen, and leaves that draft alone", async () => {
+        const { calls, reports, answer, dm, first } = await waitingOnRock();
+
+        dm.choose(person(2));
+        await dm.open();
+        answer.resolve(refusal);
+        await first;
+        await settle();
+
+        expect(reports.length).toBe(1);
+        expect(reports[0].text).toContain("Person1 can't be messaged.");
+        expect(dm.draft?.people).toEqual([person(2)]);
+        expect(dm.draft?.body).toBe("");
+        expect(dm.error).toBeNull();
+        expect(sends(calls)).toEqual([]);
+    });
+
+    test("keeps the text: the next draft for the same people opens with it", async () => {
+        const { answer, dm, first } = await waitingOnRock();
+
+        dm.close();
+        answer.resolve(refusal);
+        await first;
+        await settle();
+
+        dm.choose(person(1));
+        await dm.open();
+
+        expect(dm.draft?.people).toEqual([person(1)]);
+        expect(dm.draft?.body).toBe("hello");
+    });
+
+    test("a refusal while the draft is still showing goes on the draft, not to the toast", async () => {
+        const { reports, answer, dm, first } = await waitingOnRock();
+
+        answer.resolve(refusal);
+        await first;
+        await settle();
+
+        expect(reports).toEqual([]);
+        expect(dm.error).toBe("Person1 can't be messaged.");
+        expect(dm.draft?.body).toBe("hello");
     });
 });

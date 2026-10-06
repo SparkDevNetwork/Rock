@@ -710,4 +710,28 @@ describe("a direct message's first message", () => {
         expect(starts).toEqual([]);
         expect(h.sent).toEqual([]);
     });
+
+    test("a refusal that arrives after the person opened another channel shows in the error toast with Rock's sentence", async () => {
+        let answer!: (result: DoorResult) => void;
+        const h = await started({
+            startDirectMessage: () => new Promise<DoorResult>(resolve => answer = resolve)
+        });
+
+        h.shell.directMessages.choose(other);
+        await h.shell.openDirectMessage();
+        const sending = h.shell.send("hello");
+        await settle();
+
+        const toB = h.shell.selectChannel(channelB);
+        await settle();
+        answerHistory(h, channelB, 20);
+        await toB;
+
+        answer({ code: "door.target_not_eligible", channelGuid: null, isPending: false, message: "Bo can't be messaged.", personAliasGuid: other.person_alias_guid });
+        await sending;
+        await settle();
+
+        expect(h.shell.state.errors.filter(e => e.text?.includes("Bo can't be messaged.")).length).toBe(1);
+        expect(h.sent).toEqual([]);
+    });
 });
