@@ -179,11 +179,29 @@ namespace Rock.Blocks.Cms
         {
             var securityGrant = new Rock.Security.SecurityGrant();
 
-            securityGrant.AddRule( new AssetAndFileManagerSecurityGrantRule( Rock.Security.Authorization.VIEW ) );
-            securityGrant.AddRule( new AssetAndFileManagerSecurityGrantRule( Rock.Security.Authorization.EDIT ) );
-            securityGrant.AddRule( new AssetAndFileManagerSecurityGrantRule( Rock.Security.Authorization.DELETE ) );
+            // The asset manager endpoints trust this token alone, so only
+            // grant access to people with EDIT on the block.
+            if ( IsAssetManagerAuthorized() )
+            {
+                securityGrant.AddRule( new AssetAndFileManagerSecurityGrantRule( Rock.Security.Authorization.VIEW ) );
+                securityGrant.AddRule( new AssetAndFileManagerSecurityGrantRule( Rock.Security.Authorization.EDIT ) );
+                securityGrant.AddRule( new AssetAndFileManagerSecurityGrantRule( Rock.Security.Authorization.DELETE ) );
+            }
 
             return securityGrant.ToToken();
+        }
+
+        /// <summary>
+        /// Determines whether the current person has EDIT access to the block
+        /// and may therefore use the asset manager.
+        /// </summary>
+        /// <returns><c>true</c> if the current person may use the asset manager; otherwise <c>false</c>.</returns>
+        private bool IsAssetManagerAuthorized()
+        {
+            var currentPerson = GetCurrentPerson();
+
+            return currentPerson != null
+                && BlockCache.IsAuthorized( Rock.Security.Authorization.EDIT, currentPerson );
         }
 
         #endregion

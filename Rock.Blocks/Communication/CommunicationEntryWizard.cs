@@ -1295,9 +1295,15 @@ namespace Rock.Blocks.Communication
         {
             var securityGrant = new SecurityGrant();
 
-            securityGrant.AddRule( new AssetAndFileManagerSecurityGrantRule( Authorization.VIEW ) );
-            securityGrant.AddRule( new AssetAndFileManagerSecurityGrantRule( Authorization.EDIT ) );
-            securityGrant.AddRule( new AssetAndFileManagerSecurityGrantRule( Authorization.DELETE ) );
+            // The asset manager endpoints trust this token alone, so only
+            // grant access to people with EDIT on the block.
+            if ( IsAssetManagerAuthorized() )
+            {
+                securityGrant.AddRule( new AssetAndFileManagerSecurityGrantRule( Authorization.VIEW ) );
+                securityGrant.AddRule( new AssetAndFileManagerSecurityGrantRule( Authorization.EDIT ) );
+                securityGrant.AddRule( new AssetAndFileManagerSecurityGrantRule( Authorization.DELETE ) );
+            }
+
             securityGrant.AddRule( new EmailEditorSecurityGrantRule() );
 
             // Allow the group picker used by the RSVP email component.
@@ -1311,6 +1317,19 @@ namespace Rock.Blocks.Communication
             }
 
             return securityGrant.ToToken();
+        }
+
+        /// <summary>
+        /// Determines whether the current person has EDIT access to the block
+        /// and may therefore use the asset manager.
+        /// </summary>
+        /// <returns><c>true</c> if the current person may use the asset manager; otherwise <c>false</c>.</returns>
+        private bool IsAssetManagerAuthorized()
+        {
+            var currentPerson = GetCurrentPerson();
+
+            return currentPerson != null
+                && BlockCache.IsAuthorized( Authorization.EDIT, currentPerson );
         }
 
         /// <summary>
