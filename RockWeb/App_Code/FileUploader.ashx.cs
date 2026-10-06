@@ -29,6 +29,7 @@ using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
+using Rock.Security.SecurityGrantRules;
 using Rock.Web.Cache;
 using Rock.Web.Cache.Entities;
 
@@ -141,7 +142,14 @@ namespace RockWeb
                     }
                     else
                     {
-                        if ( context.Request.Form[ParameterKey.IsAssetStorageProviderAsset].AsBoolean() )
+                        var isAssetStorageProviderAsset = context.Request.Form[ParameterKey.IsAssetStorageProviderAsset].AsBoolean();
+
+                        if ( !IsContentUploadAuthorized( context, isAssetStorageProviderAsset ) )
+                        {
+                            throw new Rock.Web.FileUploadException( "Not authorized to upload this file.", System.Net.HttpStatusCode.Forbidden );
+                        }
+
+                        if ( isAssetStorageProviderAsset )
                         {
                             ProcessAssetStorageProviderAsset( context, uploadedFile );
                         }
@@ -165,6 +173,47 @@ namespace RockWeb
                 context.Response.StatusCode = ( int ) System.Net.HttpStatusCode.InternalServerError;
                 context.Response.Write( "error: " + ex.Message );
             }
+        }
+
+        /// <summary>
+        /// Determines whether the request is allowed to upload a content file
+        /// or an asset storage provider file.
+        /// </summary>
+        /// <param name="context">The context.</param>
+        /// <param name="isAssetStorageProviderAsset"><c>true</c> if the file is being uploaded to an asset storage provider.</param>
+        /// <returns><c>true</c> if the upload is allowed; otherwise, <c>false</c>.</returns>
+        private bool IsContentUploadAuthorized( HttpContext context, bool isAssetStorageProviderAsset )
+        {
+            /*
+                10/6/2026 - MSE
+
+                Content uploads require a security grant from the control that
+                rendered the uploader. The grant is checked against the root
+                folder the upload is going to. Asset storage provider uploads
+                don't use a root folder, so they require a grant that was not
+                limited to a specific root folder.
+
+                Reason: Uploads should only be allowed by the control that is
+                configured to accept them.
+            */
+            var grant = SecurityGrant.FromToken( context.Request.QueryString[ParameterKey.SecurityGrantToken] );
+
+            if ( grant == null )
+            {
+                return false;
+            }
+
+            var rootFolder = string.Empty;
+            var encryptedRootFolder = context.Request.QueryString[ParameterKey.RootFolder];
+
+            if ( !isAssetStorageProviderAsset && encryptedRootFolder.IsNotNullOrWhiteSpace() )
+            {
+                rootFolder = Encryption.DecryptRootFolder( encryptedRootFolder );
+            }
+
+            var access = new FileUploadSecurityGrantRule.FileUploadAccess( rootFolder );
+
+            return grant.IsAccessGranted( access, Authorization.EDIT );
         }
 
         /// <summary>
@@ -225,7 +274,7 @@ namespace RockWeb
             // If a rootFolder was specified in the URL, try decrypting it (It is encrypted to help prevent direct access to file system).
             if ( !string.IsNullOrWhiteSpace( encryptedRootFolder ) )
             {
-                trustedRootFolder = Encryption.DecryptString( encryptedRootFolder, false );
+                trustedRootFolder = Encryption.DecryptRootFolder( encryptedRootFolder );
             }
 
             // If we don't have a rootFolder, default to the ~/Content folder.
@@ -393,7 +442,16 @@ namespace RockWeb
                 throw new Rock.Web.FileUploadException( "Binary file type must be specified.", System.Net.HttpStatusCode.Forbidden );
             }
 
-            if ( !binaryFileType.AllowAnonymous && !binaryFileType.IsAuthorized( Authorization.EDIT, currentPerson ) && grant?.IsAccessGranted( binaryFileType, Authorization.EDIT ) == false )
+            /*
+                10/6/2026 - MSE
+
+                A security grant is an additional way to be allowed to upload.
+                When no grant is provided, the person must be allowed by the
+                file type itself.
+
+                Reason: Keep the upload check the same as before grants were supported.
+            */
+            if ( !binaryFileType.AllowAnonymous && !binaryFileType.IsAuthorized( Authorization.EDIT, currentPerson ) && grant?.IsAccessGranted( binaryFileType, Authorization.EDIT ) != true )
             {
                 throw new Rock.Web.FileUploadException( "Not authorized to upload this type of file.", System.Net.HttpStatusCode.Forbidden );
             }

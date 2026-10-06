@@ -159,6 +159,24 @@ namespace Rock.Blocks.BulkImport
             return HostingEnvironment.MapPath( GetSlingshotRootFolder() );
         }
 
+        /// <inheritdoc/>
+        protected override string RenewSecurityGrantToken()
+        {
+            return GetSecurityGrantToken();
+        }
+
+        /// <summary>
+        /// Gets the security grant token that allows the file uploader to
+        /// upload slingshot files to the root folder.
+        /// </summary>
+        /// <returns>A string that represents the security grant token.</returns>
+        private string GetSecurityGrantToken()
+        {
+            return new Rock.Security.SecurityGrant()
+                .AddRule( new Rock.Security.SecurityGrantRules.FileUploadSecurityGrantRule( GetSlingshotRootFolder() ) )
+                .ToToken();
+        }
+
         /// <summary>
         /// Gets the box options required for the component to render the view.
         /// </summary>
@@ -167,7 +185,8 @@ namespace Rock.Blocks.BulkImport
         {
             var box = new CsvImportBox();
 
-            box.RootFolder = Rock.Security.Encryption.EncryptString( GetSlingshotRootFolder() );
+            box.RootFolder = Rock.Security.Encryption.EncryptRootFolder( GetSlingshotRootFolder() );
+            box.SecurityGrantToken = GetSecurityGrantToken();
             box.Sources = new PersonService( this.RockContext )
                     .GetForeignKeys()
                     .Select( foreignKey => new ListItemBag { Text = foreignKey, Value = foreignKey } )

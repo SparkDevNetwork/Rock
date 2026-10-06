@@ -61,6 +61,13 @@ internal sealed partial class ContentChannelSkill
         {
             contentChannelItem = helper.GetRequiredEntity<ContentChannelItem>( contentChannelItemIdKey, checkSecurity: true );
 
+            // Item security falls back to the content channel, this matches
+            // the check used by the content channel item detail block.
+            if ( contentChannelItem != null && !contentChannelItem.IsAuthorized( Authorization.EDIT, AgentRequestContext.CurrentPerson ) )
+            {
+                helper.AddError( "You are not authorized to edit this content channel item." );
+            }
+
             if ( contentChannelIdKey.IsNotNullOrWhiteSpace() )
             {
                 helper.AddError( $"A content channel item cannot be moved to a new content channel, do not provide a {nameof( contentChannelIdKey )} when editing." );
@@ -73,7 +80,11 @@ internal sealed partial class ContentChannelSkill
 
             var contentChannel = helper.GetOptionalEntity<ContentChannel>( contentChannelIdKey, checkSecurity: true );
 
-            if ( contentChannel != null )
+            if ( contentChannel != null && !contentChannel.IsAuthorized( Authorization.EDIT, AgentRequestContext.CurrentPerson ) )
+            {
+                helper.AddError( "You are not authorized to add items to this content channel." );
+            }
+            else if ( contentChannel != null )
             {
                 contentChannelItem.ContentChannel = contentChannel;
                 contentChannelItem.ContentChannelId = contentChannel.Id;

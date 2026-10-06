@@ -1013,6 +1013,11 @@ namespace Rock.Rest.v2
             {
                 var (folder, expandedFileFolders) = GetRootFolder( options.RootFolder, expandedFolders, selectedFolder, options.UserSpecificRoot );
 
+                if ( folder == null )
+                {
+                    return BadRequest( "Invalid root folder." );
+                }
+
                 tree.Add( folder );
                 if ( expandedFileFolders != null )
                 {
@@ -1780,7 +1785,12 @@ namespace Rock.Rest.v2
 
             try
             {
-                var root = Rock.Security.Encryption.DecryptString( options.EncryptedRoot, false );
+                var root = Rock.Security.Encryption.DecryptRootFolder( options.EncryptedRoot );
+
+                if ( root.IsNullOrWhiteSpace() )
+                {
+                    return BadRequest();
+                }
 
                 if ( options.UserSpecificRoot )
                 {
@@ -1839,7 +1849,25 @@ namespace Rock.Rest.v2
                 {
                     assetStorageProviderId = assetParts[0].AsInteger();
                     var encryptedRoot = assetParts[1].Trim();
-                    var root = Rock.Security.Encryption.DecryptString( encryptedRoot, false );
+                    string root;
+
+                    // Asset storage providers can have an empty root, which
+                    // is never encrypted. Local roots must always decrypt.
+                    if ( encryptedRoot == string.Empty && assetStorageProviderId != 0 )
+                    {
+                        root = string.Empty;
+                    }
+                    else
+                    {
+                        root = assetStorageProviderId == 0
+                            ? Rock.Security.Encryption.DecryptRootFolder( encryptedRoot )
+                            : DecryptAssetStorageProviderRoot( assetStorageProviderId, encryptedRoot );
+
+                        if ( root.IsNullOrWhiteSpace() )
+                        {
+                            return null;
+                        }
+                    }
 
                     // Verify all local roots start with "~/"
                     if ( assetStorageProviderId == 0 && !root.StartsWith( "~/" ) )
@@ -1889,6 +1917,49 @@ namespace Rock.Rest.v2
         }
 
         /// <summary>
+        /// The purpose used when encrypting asset storage provider root folders.
+        /// </summary>
+        private const string AssetStorageProviderRootPurpose = "Rock.AssetStorageProviderRoot";
+
+        /// <summary>
+        /// Encrypts the root folder of an asset storage provider so that it
+        /// can only be used with that provider.
+        /// </summary>
+        /// <param name="assetStorageProviderId">The asset storage provider identifier.</param>
+        /// <param name="rootFolder">The root folder of the provider.</param>
+        /// <returns>The encrypted root folder, or an empty string if <paramref name="rootFolder"/> is empty.</returns>
+        private static string EncryptAssetStorageProviderRoot( int assetStorageProviderId, string rootFolder )
+        {
+            if ( string.IsNullOrEmpty( rootFolder ) )
+            {
+                return string.Empty;
+            }
+
+            return Rock.Security.Encryption.EncryptStringForPurpose( rootFolder, $"{AssetStorageProviderRootPurpose}.{assetStorageProviderId}" );
+        }
+
+        /// <summary>
+        /// Decrypts the root folder of an asset storage provider that was
+        /// encrypted by <see cref="EncryptAssetStorageProviderRoot(int, string)"/>.
+        /// </summary>
+        /// <param name="assetStorageProviderId">The asset storage provider identifier.</param>
+        /// <param name="encryptedRootFolder">The encrypted root folder.</param>
+        /// <returns>The root folder; otherwise <c>null</c>.</returns>
+        private static string DecryptAssetStorageProviderRoot( int assetStorageProviderId, string encryptedRootFolder )
+        {
+            /*
+                10/6/2026 - MSE
+
+                Provider root folders are encrypted separately from local root
+                folders and include the provider identifier.
+
+                Reason: A provider's root folder should only be usable with
+                that provider.
+            */
+            return Rock.Security.Encryption.DecryptStringForPurpose( encryptedRootFolder, $"{AssetStorageProviderRootPurpose}.{assetStorageProviderId}" );
+        }
+
+        /// <summary>
         /// Decrypts and normalizes the root folder of a local asset.
         /// </summary>
         /// <param name="encryptedRoot">The encrypted root folder.</param>
@@ -1902,7 +1973,7 @@ namespace Rock.Rest.v2
 
             try
             {
-                var root = Rock.Security.Encryption.DecryptString( encryptedRoot, false );
+                var root = Rock.Security.Encryption.DecryptRootFolder( encryptedRoot );
 
                 if ( root.IsNullOrWhiteSpace() )
                 {
@@ -2090,7 +2161,7 @@ namespace Rock.Rest.v2
             if ( encryptedRootFolder.IsNullOrWhiteSpace() )
             {
                 // Set root to default
-                encryptedRootFolder = Rock.Security.Encryption.EncryptString( "~/Content/" );
+                encryptedRootFolder = Rock.Security.Encryption.EncryptRootFolder( "~/Content/" );
             }
 
             var rootAssetKey = $"0,{encryptedRootFolder},,True";
@@ -2111,7 +2182,7 @@ namespace Rock.Rest.v2
             {
                 var username = RockRequestContext.CurrentUser.UserName;
                 parsedAsset.Root = parsedAsset.Root.EnsureTrailingForwardslash() + username.EnsureTrailingForwardslash();
-                encryptedRootFolder = Rock.Security.Encryption.EncryptString( parsedAsset.Root );
+                encryptedRootFolder = Rock.Security.Encryption.EncryptRootFolder( parsedAsset.Root );
                 parsedAsset.EncryptedRoot = encryptedRootFolder;
             }
 
@@ -2342,7 +2413,7 @@ namespace Rock.Rest.v2
             {
                 var component = provider.AssetStorageComponent;
                 var rootFolder = component.GetRootFolder( provider.ToEntity() );
-                var encryptedRootFolder = Rock.Security.Encryption.EncryptString( rootFolder );
+                var encryptedRootFolder = EncryptAssetStorageProviderRoot( provider.Id, rootFolder );
 
                 // If the selected folder is using this asset provider, then use its existing encrypted folder value instead or re-encrypting
                 if ( selectedFolder != null && selectedFolder.ProviderId == provider.Id && selectedFolder.Root == rootFolder )

@@ -102,6 +102,11 @@ internal partial class CommunicationSkill
                 helper.AddError( "This draft is not in a transient state. It has likely already been sent." );
                 helper.AddInstructions( "Ask the user if they would prefer you create a new draft." );
             }
+            else if ( draftCommunication != null && !IsAuthorizedToEditDraft( draftCommunication, currentPerson ) )
+            {
+                helper.AddError( "You are not authorized to edit this draft." );
+                helper.AddInstructions( "Ask the user if they would prefer you create a new draft." );
+            }
         }
 
         if ( helper.HasErrors )

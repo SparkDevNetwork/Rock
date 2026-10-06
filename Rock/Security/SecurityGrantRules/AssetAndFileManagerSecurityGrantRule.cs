@@ -51,7 +51,9 @@ namespace Rock.Security.SecurityGrantRules
         {
             // Only the asset manager API endpoints will pass an instance of
             // the AssetAndFileManagerAccess class. In that case we authorize.
-            return obj is AssetAndFileManagerAccess;
+            // The asset manager also uploads files, so allow that too.
+            return obj is AssetAndFileManagerAccess
+                || obj is FileUploadSecurityGrantRule.FileUploadAccess;
         }
 
         #endregion
