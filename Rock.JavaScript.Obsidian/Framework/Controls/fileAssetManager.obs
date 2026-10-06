@@ -904,12 +904,13 @@
 
         try {
             isFilePaneActionLoading.value = true;
-            const { providerId } = parseFolderName(selectedFolder.value ?? "");
+            const { providerId, encryptedRoot } = parseFolderName(selectedFolder.value ?? "");
 
             const url = "/api/v2/Controls/AssetManagerRenameFile";
             const options: AssetManagerRenameFileOptionsBag = {
                 file: file.key,
                 assetStorageProviderId: Number(providerId),
+                encryptedRoot,
                 newFileName: renameFileName.value + Path.getExtension(file.name),
                 securityGrantToken: securityGrantToken.value
             };
@@ -920,7 +921,7 @@
                 hideRenameFileForm();
             }
             else {
-                throw response.errorMessage;
+                throw new Error(response.errorMessage ?? "");
             }
         }
         catch (e) {
@@ -1030,12 +1031,13 @@
 
             try {
                 isFilePaneActionLoading.value = true;
-                const { providerId } = parseFolderName(selectedFolder.value ?? "");
+                const { providerId, encryptedRoot } = parseFolderName(selectedFolder.value ?? "");
 
                 const url = "/api/v2/Controls/AssetManagerDeleteFiles";
                 const options: AssetManagerDeleteFilesOptionsBag = {
                     files,
                     assetStorageProviderId: Number(providerId),
+                    encryptedRoot,
                     securityGrantToken: securityGrantToken.value
                 };
 
@@ -1045,7 +1047,7 @@
                     // Empty: Nothing to do, except what's already being done in the `finally` block
                 }
                 else {
-                    throw response.errorMessage;
+                    throw new Error(response.errorMessage ?? "");
                 }
             }
             catch (e) {
@@ -1116,7 +1118,8 @@
             type: "default",
             handler: () => {
                 // Since this returns a download stream, we never actually navigate away from the page
-                window.location.href = `/api/v2/Controls/AssetManagerDownloadFile?file=${encodeURIComponent(file.key)}&assetStorageProviderId=${parseFolderName(selectedFolder.value ?? "").providerId}&securityGrantToken=${encodeURIComponent(securityGrantToken.value ?? "")}`;
+                const { providerId, encryptedRoot } = parseFolderName(selectedFolder.value ?? "");
+                window.location.href = `/api/v2/Controls/AssetManagerDownloadFile?file=${encodeURIComponent(file.key)}&assetStorageProviderId=${providerId}&encryptedRoot=${encodeURIComponent(encryptedRoot)}&securityGrantToken=${encodeURIComponent(securityGrantToken.value ?? "")}`;
             }
         }, {
             title: "Rename",

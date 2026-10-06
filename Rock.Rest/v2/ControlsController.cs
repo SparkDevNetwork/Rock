@@ -1184,6 +1184,12 @@ namespace Rock.Rest.v2
 
             if ( asset.IsLocalAsset )
             {
+                // The root folder and restricted folders can't be deleted.
+                if ( IsLocalRootFolder( asset ) || IsRestrictedLocalFolder( System.Web.HttpContext.Current.Server.MapPath( asset.FullPath ) ) )
+                {
+                    return BadRequest();
+                }
+
                 try
                 {
                     var physicalFolder = System.Web.HttpContext.Current.Server.MapPath( asset.FullPath );
@@ -1233,7 +1239,7 @@ namespace Rock.Rest.v2
                 return Unauthorized();
             }
 
-            if ( !IsValidAssetFolderName( options.NewFolderName ) || options.NewFolderName.IsNullOrWhiteSpace() )
+            if ( options.NewFolderName.IsNullOrWhiteSpace() || !IsValidAssetFolderName( options.NewFolderName ) )
             {
                 return null;
             }
@@ -1320,11 +1326,30 @@ namespace Rock.Rest.v2
                 return Unauthorized();
             }
 
+            if ( options.NewFolderName.IsNullOrWhiteSpace() || !IsValidAssetFolderName( options.NewFolderName ) )
+            {
+                return BadRequest( "Invalid folder name." );
+            }
+
             try
             {
                 var asset = ParseAssetKey( options.AssetFolderId );
+
+                // Only local folders inside the root can be renamed, and not
+                // the root folder or restricted folders.
+                if ( asset == null || !asset.IsLocalAsset || IsLocalRootFolder( asset ) || IsRestrictedLocalFolder( System.Web.HttpContext.Current.Server.MapPath( asset.FullPath ) ) )
+                {
+                    return BadRequest();
+                }
+
                 var physicalPath = System.Web.HttpContext.Current.Server.MapPath( asset.FullPath );
                 var renamedPath = Path.Combine( Path.GetDirectoryName( physicalPath.TrimEnd( '/', '\\' ) ), options.NewFolderName );
+
+                if ( !IsPhysicalPathWithinRoot( renamedPath, asset.Root ) || IsUploadRestrictedLocalPath( renamedPath ) )
+                {
+                    return BadRequest();
+                }
+
                 Directory.Move( physicalPath, renamedPath );
 
                 var newKey = $"0,{asset.EncryptedRoot},{Path.Combine( Path.GetDirectoryName( asset.SubPath.TrimEnd( '/', '\\' ) ), options.NewFolderName ).Replace( "\\", "/" ).TrimEnd( '/', '\\' ) + "/"}";
@@ -1362,10 +1387,23 @@ namespace Rock.Rest.v2
             try
             {
                 var asset = ParseAssetKey( options.AssetFolderId );
+
+                // Only local folders inside the root can be moved, and not
+                // the root folder or restricted folders.
+                if ( asset == null || !asset.IsLocalAsset || options.TargetFolder == null || IsLocalRootFolder( asset ) || IsRestrictedLocalFolder( System.Web.HttpContext.Current.Server.MapPath( asset.FullPath ) ) )
+                {
+                    return BadRequest();
+                }
+
                 var baseFolderName = Path.GetFileName( asset.FullPath.TrimEnd( '/', '\\' ) );
                 var currentPhysicalPath = System.Web.HttpContext.Current.Server.MapPath( asset.FullPath );
                 var targetRootRelativePath = Path.Combine( asset.Root, options.TargetFolder.TrimStart( '/', '\\' ), baseFolderName );
                 var targetPhyicalPath = System.Web.HttpContext.Current.Server.MapPath( targetRootRelativePath );
+
+                if ( !IsPhysicalPathWithinRoot( targetPhyicalPath, asset.Root ) || IsUploadRestrictedLocalPath( targetPhyicalPath ) )
+                {
+                    return BadRequest( "Invalid target location." );
+                }
 
                 if ( !Directory.Exists( targetPhyicalPath ) && !File.Exists( targetPhyicalPath ) )
                 {
@@ -1412,6 +1450,14 @@ namespace Rock.Rest.v2
             {
                 if ( options.AssetStorageProviderId == 0 )
                 {
+                    var root = GetLocalAssetRoot( options.EncryptedRoot );
+
+                    // Every file must be inside the root folder before any are deleted.
+                    if ( root == null || options.Files == null || !options.Files.All( f => f.IsNotNullOrWhiteSpace() && IsLocalPathWithinRoot( f, root ) ) )
+                    {
+                        return BadRequest();
+                    }
+
                     foreach ( string file in options.Files )
                     {
                         var physicalPath = System.Web.HttpContext.Current.Server.MapPath( file );
@@ -1470,9 +1516,16 @@ namespace Rock.Rest.v2
             {
                 if ( options.AssetStorageProviderId == 0 )
                 {
+                    var root = GetLocalAssetRoot( options.EncryptedRoot );
+
+                    if ( root == null || options.File.IsNullOrWhiteSpace() || !IsLocalPathWithinRoot( options.File, root ) )
+                    {
+                        return BadRequest( "Invalid file." );
+                    }
+
                     var physicalPath = System.Web.HttpContext.Current.Server.MapPath( options.File );
                     fileName = Path.GetFileName( physicalPath );
-                    stream = File.Open( physicalPath, FileMode.Open );
+                    stream = File.Open( physicalPath, FileMode.Open, FileAccess.Read );
                 }
                 else
                 {
@@ -1538,8 +1591,27 @@ namespace Rock.Rest.v2
             {
                 if ( options.AssetStorageProviderId == 0 )
                 {
+                    var root = GetLocalAssetRoot( options.EncryptedRoot );
+
+                    if ( root == null || options.File.IsNullOrWhiteSpace() || !IsLocalPathWithinRoot( options.File, root ) )
+                    {
+                        return BadRequest( "Invalid file." );
+                    }
+
+                    // The new name can't include a folder and must be an allowed file type.
+                    if ( !IsValidAssetFileName( options.NewFileName ) )
+                    {
+                        return BadRequest( "Invalid file name." );
+                    }
+
                     var physicalPath = System.Web.HttpContext.Current.Server.MapPath( options.File );
                     var renamedPath = Path.Combine( Path.GetDirectoryName( physicalPath ), options.NewFileName );
+
+                    if ( !IsPhysicalPathWithinRoot( renamedPath, root ) )
+                    {
+                        return BadRequest( "Invalid file name." );
+                    }
+
                     File.Move( physicalPath, renamedPath );
 
                     return Ok( true );
@@ -1551,6 +1623,11 @@ namespace Rock.Rest.v2
                     if ( provider == null || component == null || options.File.IsNullOrWhiteSpace() || options.NewFileName.IsNullOrWhiteSpace() )
                     {
                         return BadRequest();
+                    }
+
+                    if ( !IsValidAssetFileName( options.NewFileName ) )
+                    {
+                        return BadRequest( "Invalid file name." );
                     }
 
                     return Ok( component.RenameAsset( provider.ToEntity(), new Asset { Key = options.File, Type = AssetType.File }, options.NewFileName ) );
@@ -1589,9 +1666,31 @@ namespace Rock.Rest.v2
                 return BadRequest();
             }
 
-            var root = Rock.Security.Encryption.DecryptString( options.EncryptedRoot, false );
-            var fullPath = Path.Combine( root, options.FileName );
-            var physicalZipFile = System.Web.HttpContext.Current.Server.MapPath( fullPath );
+            var root = GetLocalAssetRoot( options.EncryptedRoot );
+
+            if ( root == null )
+            {
+                return BadRequest();
+            }
+
+            string physicalZipFile;
+
+            try
+            {
+                physicalZipFile = System.Web.HttpContext.Current.Server.MapPath( Path.Combine( root, options.FileName ) );
+            }
+            catch ( Exception )
+            {
+                return BadRequest();
+            }
+
+            // The zip file must be inside the root folder. Nothing outside of
+            // the root is touched, including the delete in the catch below.
+            if ( !IsPhysicalPathWithinRoot( physicalZipFile, root ) )
+            {
+                return BadRequest();
+            }
+
             var directoryPath = Path.GetDirectoryName( physicalZipFile );
 
             try
@@ -1606,10 +1705,23 @@ namespace Rock.Rest.v2
                             foreach ( ZipArchiveEntry file in archive.Entries )
                             {
                                 string completeFileName = Path.Combine( directoryPath, file.FullName );
+
+                                // Skip any entry that would extract outside of the folder.
+                                if ( !Rock.Utility.FileUtilities.IsPathWithinFolder( completeFileName, directoryPath ) )
+                                {
+                                    continue;
+                                }
+
                                 if ( file.Name == string.Empty )
                                 {
                                     // Assuming Empty for Directory
                                     Directory.CreateDirectory( Path.GetDirectoryName( completeFileName ) );
+                                    continue;
+                                }
+
+                                // Skip any file type that can't be uploaded directly.
+                                if ( !Rock.Utility.FileUtilities.IsFileTypeAllowed( file.Name ) )
+                                {
                                     continue;
                                 }
 
@@ -1745,19 +1857,227 @@ namespace Rock.Rest.v2
                         partialPath = partialPath.TrimStart( '/', '\\' ).EnsureTrailingForwardslash();
                     }
 
-                    return new AssetManagerAsset
+                    var asset = new AssetManagerAsset
                     {
                         ProviderId = assetStorageProviderId,
                         EncryptedRoot = encryptedRoot,
                         Root = root,
                         SubPath = partialPath
                     };
+
+                    /*
+                        10/6/2026 - MSE
+
+                        Local folders must resolve to a location inside the root
+                        folder that was issued with the key.
+
+                        Reason: Keep the file manager inside its root folder.
+                    */
+                    if ( asset.IsLocalAsset && !IsLocalPathWithinRoot( asset.FullPath, asset.Root ) )
+                    {
+                        return null;
+                    }
+
+                    return asset;
                 }
             }
             catch ( Exception )
             {
                 return null;
             }
+        }
+
+        /// <summary>
+        /// Decrypts and normalizes the root folder of a local asset.
+        /// </summary>
+        /// <param name="encryptedRoot">The encrypted root folder.</param>
+        /// <returns>The root folder in the form "~/Folder/", or <c>null</c> if it is not valid.</returns>
+        private string GetLocalAssetRoot( string encryptedRoot )
+        {
+            if ( encryptedRoot.IsNullOrWhiteSpace() )
+            {
+                return null;
+            }
+
+            try
+            {
+                var root = Rock.Security.Encryption.DecryptString( encryptedRoot, false );
+
+                if ( root.IsNullOrWhiteSpace() )
+                {
+                    return null;
+                }
+
+                if ( !root.StartsWith( "~/" ) )
+                {
+                    root = "~/" + root;
+                }
+
+                return root.EnsureTrailingForwardslash();
+            }
+            catch ( Exception )
+            {
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// Determines whether a virtual path resolves to a location inside the
+        /// virtual root folder.
+        /// </summary>
+        /// <param name="path">The virtual path to check.</param>
+        /// <param name="root">The virtual root folder.</param>
+        /// <returns><c>true</c> if the path is the root folder or inside it; otherwise <c>false</c>.</returns>
+        private bool IsLocalPathWithinRoot( string path, string root )
+        {
+            try
+            {
+                var physicalPath = System.Web.HttpContext.Current.Server.MapPath( path );
+
+                return IsPhysicalPathWithinRoot( physicalPath, root );
+            }
+            catch ( Exception )
+            {
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Determines whether a physical path is inside the virtual root folder.
+        /// </summary>
+        /// <param name="physicalPath">The physical path to check.</param>
+        /// <param name="root">The virtual root folder.</param>
+        /// <returns><c>true</c> if the path is the root folder or inside it; otherwise <c>false</c>.</returns>
+        private bool IsPhysicalPathWithinRoot( string physicalPath, string root )
+        {
+            if ( root.IsNullOrWhiteSpace() )
+            {
+                return false;
+            }
+
+            try
+            {
+                var physicalRoot = System.Web.HttpContext.Current.Server.MapPath( root );
+
+                return Rock.Utility.FileUtilities.IsPathWithinFolder( physicalPath, physicalRoot );
+            }
+            catch ( Exception )
+            {
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Gets the path of a local file or folder relative to the web root,
+        /// after the path has been fully resolved.
+        /// </summary>
+        /// <param name="physicalPath">The physical path.</param>
+        /// <returns>The resolved path relative to the web root, or <c>null</c> if it is not inside the web root.</returns>
+        private string GetResolvedWebRootRelativePath( string physicalPath )
+        {
+            try
+            {
+                var physicalWebRoot = Path.GetFullPath( System.Web.HttpContext.Current.Server.MapPath( "~/" ) ).TrimEnd( '/', '\\' );
+                var fullPath = Path.GetFullPath( physicalPath ).TrimEnd( '/', '\\' );
+
+                if ( !Rock.Utility.FileUtilities.IsPathWithinFolder( fullPath, physicalWebRoot ) )
+                {
+                    return null;
+                }
+
+                return fullPath.Substring( physicalWebRoot.Length ).TrimStart( '/', '\\' );
+            }
+            catch ( Exception )
+            {
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// Determines whether the resolved local folder is a restricted folder.
+        /// </summary>
+        /// <param name="physicalPath">The physical path of the folder.</param>
+        /// <returns><c>true</c> if the folder is restricted; otherwise <c>false</c>.</returns>
+        private bool IsRestrictedLocalFolder( string physicalPath )
+        {
+            var relativePath = GetResolvedWebRootRelativePath( physicalPath );
+
+            if ( relativePath == null )
+            {
+                return false;
+            }
+
+            // Short (8.3) folder names contain "~" and would not match the
+            // restricted folder names, so treat them as restricted.
+            return relativePath.Contains( "~" ) || IsRestrictedFolder( relativePath );
+        }
+
+        /// <summary>
+        /// Determines whether the resolved local path is in a folder that
+        /// files and folders can't be placed in.
+        /// </summary>
+        /// <param name="physicalPath">The physical path.</param>
+        /// <returns><c>true</c> if the path is upload restricted; otherwise <c>false</c>.</returns>
+        private bool IsUploadRestrictedLocalPath( string physicalPath )
+        {
+            var relativePath = GetResolvedWebRootRelativePath( physicalPath );
+
+            if ( relativePath == null )
+            {
+                return false;
+            }
+
+            // Short (8.3) folder names contain "~" and would not match the
+            // restricted folder names, so treat them as restricted.
+            if ( relativePath.Contains( "~" ) )
+            {
+                return true;
+            }
+
+            return new[] { "Bin", "App_Code" }.Any( a => relativePath.Equals( a, StringComparison.OrdinalIgnoreCase )
+                || relativePath.StartsWith( a + "\\", StringComparison.OrdinalIgnoreCase ) );
+        }
+
+        /// <summary>
+        /// Determines whether the local asset is the root folder itself.
+        /// </summary>
+        /// <param name="asset">The local asset.</param>
+        /// <returns><c>true</c> if the asset resolves to its root folder or the path can't be resolved; otherwise <c>false</c>.</returns>
+        private bool IsLocalRootFolder( AssetManagerAsset asset )
+        {
+            try
+            {
+                var physicalPath = System.Web.HttpContext.Current.Server.MapPath( asset.FullPath );
+                var physicalRoot = System.Web.HttpContext.Current.Server.MapPath( asset.Root );
+
+                return Rock.Utility.FileUtilities.IsPathWithinFolder( physicalRoot, physicalPath );
+            }
+            catch ( Exception )
+            {
+                return true;
+            }
+        }
+
+        /// <summary>
+        /// Determines whether the name is a valid name for a file in the file
+        /// manager. The name cannot include a folder and its type must be
+        /// allowed for content files.
+        /// </summary>
+        /// <param name="fileName">The name of the file.</param>
+        /// <returns><c>true</c> if the name is valid; otherwise <c>false</c>.</returns>
+        private bool IsValidAssetFileName( string fileName )
+        {
+            if ( fileName.IsNullOrWhiteSpace() || fileName == "." || fileName == ".." )
+            {
+                return false;
+            }
+
+            if ( fileName.IndexOfAny( Path.GetInvalidFileNameChars() ) >= 0 )
+            {
+                return false;
+            }
+
+            return Rock.Utility.FileUtilities.IsFileTypeAllowed( fileName );
         }
 
         /// <summary>
