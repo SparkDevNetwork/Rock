@@ -101,14 +101,22 @@ namespace Rock.Rest.v2
         [HttpPost]
         [Route( "AccountPickerGetChildren" )]
         [Authenticate]
-        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [ProducesResponse( HttpStatusCode.OK, Type = typeof( List<TreeItemBag> ) )]
+        [ProducesResponse( HttpStatusCode.BadRequest )]
         [Rock.SystemGuid.RestActionGuid( "5052e4a9-8cc3-4937-a2d3-9cfec07ed070" )]
         public IActionResult AccountPickerGetChildren( [FromBody] AccountPickerGetChildrenOptionsBag options )
         {
+            if ( options == null )
+            {
+                return BadRequest();
+            }
+
+            var isPublicView = IsAccountPickerPublicView();
+
             using ( var rockContext = new RockContext() )
             {
-                return Ok( AccountPickerGetChildrenData( options, rockContext ) );
+                return Ok( AccountPickerGetChildrenData( options, isPublicView, rockContext ) );
             }
         }
 
@@ -116,41 +124,59 @@ namespace Rock.Rest.v2
         /// Gets the accounts that can be displayed in the account picker.
         /// </summary>
         /// <param name="options">The options that describe which items to load.</param>
+        /// <param name="isPublicView">If <c>true</c> then only the public view of the accounts is returned.</param>
         /// <param name="rockContext">DB context.</param>
         /// <returns>A List of <see cref="TreeItemBag"/> objects that represent the accounts.</returns>
-        private List<TreeItemBag> AccountPickerGetChildrenData( AccountPickerGetChildrenOptionsBag options, RockContext rockContext )
+        private List<TreeItemBag> AccountPickerGetChildrenData( AccountPickerGetChildrenOptionsBag options, bool isPublicView, RockContext rockContext )
         {
             var financialAccountService = new FinancialAccountService( rockContext );
+            var includeInactive = options.IncludeInactive && !isPublicView;
 
             IQueryable<FinancialAccount> qry;
 
             if ( options.ParentGuid == Guid.Empty )
             {
-                qry = financialAccountService.Queryable().AsNoTracking()
-                    .Where( f => f.ParentAccountId.HasValue == false );
+                if ( isPublicView )
+                {
+                    // A public account whose parent is not part of the public
+                    // view is shown at the top level, otherwise it could
+                    // never be selected.
+                    qry = financialAccountService.Queryable().AsNoTracking()
+                        .Where( f => f.ParentAccountId.HasValue == false
+                            || f.ParentAccount.IsPublic != true
+                            || f.ParentAccount.IsActive == false );
+                }
+                else
+                {
+                    qry = financialAccountService.Queryable().AsNoTracking()
+                        .Where( f => f.ParentAccountId.HasValue == false );
+                }
             }
             else
             {
+                if ( isPublicView )
+                {
+                    var parentAccount = FinancialAccountCache.Get( options.ParentGuid );
+
+                    if ( parentAccount == null || !IsAccountInPublicView( parentAccount.IsPublic, parentAccount.IsActive ) )
+                    {
+                        return new List<TreeItemBag>();
+                    }
+                }
+
                 qry = financialAccountService.Queryable().AsNoTracking()
                     .Where( f => f.ParentAccount != null && f.ParentAccount.Guid == options.ParentGuid );
             }
 
-            if ( !options.IncludeInactive )
-            {
-                qry = qry
-                    .Where( f => f.IsActive == true );
-            }
+            qry = FilterAccountPickerQuery( qry, isPublicView, includeInactive );
 
-            var accountList = qry
-                .OrderBy( f => f.Order )
-                .ThenBy( f => f.Name )
-                .ToList();
+            var accountList = OrderAccountPickerResults( qry, isPublicView );
 
             var accountTreeViewItems = accountList
                 .Select( a => new TreeItemBag
                 {
                     Value = a.Guid.ToString(),
-                    Text = options.DisplayPublicName ? a.PublicName : a.Name,
+                    Text = GetAccountPickerText( a.Name, a.PublicName, options.DisplayPublicName, isPublicView ),
                     IsActive = a.IsActive,
                     IconCssClass = "ti ti-file"
                 } ).ToList();
@@ -169,7 +195,7 @@ namespace Rock.Rest.v2
                         ParentGuid = new Guid( accountTreeViewItem.Value ),
                         SecurityGrantToken = options.SecurityGrantToken
                     };
-                    accountTreeViewItem.Children = AccountPickerGetChildrenData( newOptions, rockContext );
+                    accountTreeViewItem.Children = AccountPickerGetChildrenData( newOptions, isPublicView, rockContext );
                     int childrenCount = accountTreeViewItem.Children.Count;
 
                     accountTreeViewItem.HasChildren = childrenCount > 0;
@@ -189,10 +215,7 @@ namespace Rock.Rest.v2
                     f.ParentAccountId.HasValue && resultIds.Contains( f.ParentAccountId.Value )
                     );
 
-                if ( !options.IncludeInactive )
-                {
-                    childQry = childQry.Where( f => f.IsActive == true );
-                }
+                childQry = FilterAccountPickerQuery( childQry, isPublicView, includeInactive );
 
                 var childrenList = childQry.Select( f => f.ParentAccount.Guid.ToString() )
                     .ToList();
@@ -223,22 +246,45 @@ namespace Rock.Rest.v2
         [HttpPost]
         [Route( "AccountPickerGetParentGuids" )]
         [Authenticate]
-        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [ProducesResponse( HttpStatusCode.OK, Type = typeof( HashSet<Guid> ) )]
+        [ProducesResponse( HttpStatusCode.BadRequest )]
         [Rock.SystemGuid.RestActionGuid( "007512c6-0147-4683-a3fe-3fdd1da275c2" )]
         public IActionResult AccountPickerGetParentGuids( [FromBody] AccountPickerGetParentGuidsOptionsBag options )
         {
+            if ( options?.Guids == null )
+            {
+                return BadRequest();
+            }
+
+            var isPublicView = IsAccountPickerPublicView();
             var results = new HashSet<Guid>();
 
             foreach ( var guid in options.Guids )
             {
-                var result = FinancialAccountCache.Get( guid )?
-                    .GetAncestorFinancialAccounts()?
-                    .OrderBy( a => 0 )?
-                    .Reverse()?
-                    .Select( a => a.Guid );
+                var account = FinancialAccountCache.Get( guid );
 
-                foreach ( var resultGuid in result )
+                if ( account == null )
+                {
+                    continue;
+                }
+
+                IEnumerable<FinancialAccountCache> ancestors = account.GetAncestorFinancialAccounts();
+
+                if ( isPublicView )
+                {
+                    if ( !IsAccountInPublicView( account.IsPublic, account.IsActive ) )
+                    {
+                        continue;
+                    }
+
+                    // Only include the ancestors that are part of the path
+                    // shown in the public view. The path stops at the first
+                    // ancestor that is not in the public view.
+                    ancestors = ancestors.TakeWhile( a => IsAccountInPublicView( a.IsPublic, a.IsActive ) );
+                }
+
+                foreach ( var resultGuid in ancestors.Reverse().Select( a => a.Guid ) )
                 {
                     results.Add( resultGuid );
                 }
@@ -255,7 +301,7 @@ namespace Rock.Rest.v2
         [HttpPost]
         [Route( "AccountPickerGetSearchedAccounts" )]
         [Authenticate]
-        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [ProducesResponse( HttpStatusCode.OK, Type = typeof( List<ListItemBag> ) )]
         [ProducesResponse( HttpStatusCode.BadRequest )]
         [Rock.SystemGuid.RestActionGuid( "69fd94cc-f049-4cee-85d1-13e573e30586" )]
@@ -263,30 +309,43 @@ namespace Rock.Rest.v2
         {
             IQueryable<FinancialAccount> qry;
 
-            if ( options.SearchTerm.IsNullOrWhiteSpace() )
+            if ( options == null || options.SearchTerm.IsNullOrWhiteSpace() )
             {
                 return BadRequest( "Search Term is required" );
             }
 
+            var isPublicView = IsAccountPickerPublicView();
+            var includeInactive = options.IncludeInactive && !isPublicView;
+
             using ( var rockContext = new RockContext() )
             {
                 var financialAccountService = new FinancialAccountService( rockContext );
-                qry = financialAccountService.GetAccountsBySearchTerm( options.SearchTerm );
 
-                if ( !options.IncludeInactive )
+                if ( isPublicView )
                 {
-                    qry = qry.Where( f => f.IsActive == true );
+                    // Only match on the text that is displayed in the public
+                    // view, so the search can't be used to discover internal
+                    // names or GL codes.
+                    var searchTerm = options.SearchTerm;
+
+                    qry = financialAccountService.Queryable()
+                        .Where( f => ( f.PublicName != null && f.PublicName.Trim() != string.Empty && f.PublicName.Contains( searchTerm ) )
+                            || ( ( f.PublicName == null || f.PublicName.Trim() == string.Empty ) && f.Name != null && f.Name.Contains( searchTerm ) ) );
+                }
+                else
+                {
+                    qry = financialAccountService.GetAccountsBySearchTerm( options.SearchTerm );
                 }
 
-                var accountList = qry
-                    .OrderBy( f => f.Order )
-                    .ThenBy( f => f.Name )
-                    .ToList()
+                qry = FilterAccountPickerQuery( qry, isPublicView, includeInactive );
+
+                var accountList = OrderAccountPickerResults( qry, isPublicView )
                     .Select( a => new ListItemBag
                     {
                         Value = a.Guid.ToString(),
-                        Text = ( options.DisplayPublicName ? a.PublicName : a.Name ) + ( a.GlCode.IsNotNullOrWhiteSpace() ? $" ({a.GlCode})" : "" ),
-                        Category = financialAccountService.GetDelimitedAccountHierarchy( a, FinancialAccountService.AccountHierarchyDirection.CurrentAccountToParent )
+                        Text = GetAccountPickerText( a.Name, a.PublicName, options.DisplayPublicName, isPublicView )
+                            + ( !isPublicView && a.GlCode.IsNotNullOrWhiteSpace() ? $" ({a.GlCode})" : "" ),
+                        Category = GetAccountPickerHierarchy( a, isPublicView, financialAccountService )
                     } )
                     .ToList();
 
@@ -302,17 +361,19 @@ namespace Rock.Rest.v2
         [HttpPost]
         [Route( "AccountPickerGetPreviewItems" )]
         [Authenticate]
-        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [ProducesResponse( HttpStatusCode.OK, Type = typeof( List<ListItemBag> ) )]
         [Rock.SystemGuid.RestActionGuid( "b080e9d6-207a-412d-acf5-d811fdec30a3" )]
         public IActionResult AccountPickerGetPreviewItems( [FromBody] AccountPickerGetPreviewItemsOptionsBag options )
         {
             IQueryable<FinancialAccount> qry;
 
-            if ( options.SelectedGuids.Count == 0 )
+            if ( options?.SelectedGuids == null || options.SelectedGuids.Count == 0 )
             {
                 return Ok( new List<ListItemBag>() );
             }
+
+            var isPublicView = IsAccountPickerPublicView();
 
             using ( var rockContext = new RockContext() )
             {
@@ -320,15 +381,16 @@ namespace Rock.Rest.v2
                 qry = financialAccountService.Queryable().AsNoTracking()
                     .Where( f => options.SelectedGuids.Contains( f.Guid ) );
 
-                var accountList = qry
-                    .OrderBy( f => f.Order )
-                    .ThenBy( f => f.Name )
-                    .ToList()
+                // Selected accounts are shown even if they have since become
+                // inactive, the same as before.
+                qry = FilterAccountPickerQuery( qry, isPublicView, true );
+
+                var accountList = OrderAccountPickerResults( qry, isPublicView )
                     .Select( a => new ListItemBag
                     {
                         Value = a.Guid.ToString(),
-                        Text = options.DisplayPublicName ? a.PublicName : a.Name,
-                        Category = financialAccountService.GetDelimitedAccountHierarchy( a, FinancialAccountService.AccountHierarchyDirection.CurrentAccountToParent )
+                        Text = GetAccountPickerText( a.Name, a.PublicName, options.DisplayPublicName, isPublicView ),
+                        Category = GetAccountPickerHierarchy( a, isPublicView, financialAccountService )
                     } )
                     .ToList();
 
@@ -343,7 +405,7 @@ namespace Rock.Rest.v2
         [HttpPost]
         [Route( "AccountPickerGetAllowSelectAll" )]
         [Authenticate]
-        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [ProducesResponse( HttpStatusCode.OK, Type = typeof( bool ) )]
         [Rock.SystemGuid.RestActionGuid( "4a13b6ea-3031-48c2-9cdb-be183ccad9a2" )]
         public IActionResult AccountPickerGetAllowSelectAll()
@@ -351,10 +413,144 @@ namespace Rock.Rest.v2
             using ( var rockContext = new RockContext() )
             {
                 var financialAccountService = new FinancialAccountService( rockContext );
-                var count = financialAccountService.Queryable().Count();
+                var count = FilterAccountPickerQuery( financialAccountService.Queryable(), IsAccountPickerPublicView(), true ).Count();
 
                 return Ok( count < 1500 );
             }
+        }
+
+        /// <summary>
+        /// Determines if the current request should only see the public view
+        /// of the account picker. People with the REST action permission, or
+        /// with permission to view financial accounts (such as the finance
+        /// security roles), see all accounts.
+        /// </summary>
+        /// <returns><c>true</c> if only the public view should be returned; otherwise <c>false</c>.</returns>
+        private bool IsAccountPickerPublicView()
+        {
+            if ( IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_READ ) )
+            {
+                return false;
+            }
+
+            var currentPerson = RockRequestContext.CurrentPerson;
+
+            // Check the financial account entity type security, which only
+            // allows the finance security roles to view accounts by default.
+            // If those rules are changed then the account picker follows
+            // whatever the site has configured for viewing accounts.
+            if ( currentPerson != null && new FinancialAccount().IsAuthorized( Security.Authorization.VIEW, currentPerson ) )
+            {
+                return false;
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// Orders the accounts for the account picker. The public view is
+        /// ordered by the text that is displayed so the order does not reveal
+        /// anything about the internal account names.
+        /// </summary>
+        /// <param name="qry">The account query.</param>
+        /// <param name="isPublicView">If <c>true</c> then only the public view of the accounts is returned.</param>
+        /// <returns>The ordered list of accounts.</returns>
+        private static List<FinancialAccount> OrderAccountPickerResults( IQueryable<FinancialAccount> qry, bool isPublicView )
+        {
+            if ( !isPublicView )
+            {
+                return qry
+                    .OrderBy( f => f.Order )
+                    .ThenBy( f => f.Name )
+                    .ToList();
+            }
+
+            return qry
+                .ToList()
+                .OrderBy( f => f.Order )
+                .ThenBy( f => GetAccountPickerText( f.Name, f.PublicName, true, true ) )
+                .ToList();
+        }
+
+        /// <summary>
+        /// Determines if an account is part of the public view of the account
+        /// picker. Callers without the REST action permission only see the
+        /// public view, which is active accounts that are marked as public.
+        /// </summary>
+        /// <param name="isPublic">The account's public flag.</param>
+        /// <param name="isActive">The account's active flag.</param>
+        /// <returns><c>true</c> if the account is part of the public view; otherwise <c>false</c>.</returns>
+        private static bool IsAccountInPublicView( bool? isPublic, bool isActive )
+        {
+            return isPublic == true && isActive;
+        }
+
+        /// <summary>
+        /// Limits the account query to the accounts that can be returned.
+        /// </summary>
+        /// <param name="qry">The account query.</param>
+        /// <param name="isPublicView">If <c>true</c> then only the public view of the accounts is returned.</param>
+        /// <param name="includeInactive">If <c>true</c> then inactive accounts are included. Ignored for the public view.</param>
+        /// <returns>The filtered query.</returns>
+        private static IQueryable<FinancialAccount> FilterAccountPickerQuery( IQueryable<FinancialAccount> qry, bool isPublicView, bool includeInactive )
+        {
+            if ( isPublicView )
+            {
+                return qry.Where( f => f.IsPublic == true && f.IsActive == true );
+            }
+
+            if ( !includeInactive )
+            {
+                qry = qry.Where( f => f.IsActive == true );
+            }
+
+            return qry;
+        }
+
+        /// <summary>
+        /// Gets the text to display for an account in the account picker.
+        /// </summary>
+        /// <param name="name">The account name.</param>
+        /// <param name="publicName">The account public name.</param>
+        /// <param name="displayPublicName">If <c>true</c> then the caller requested the public name.</param>
+        /// <param name="isPublicView">If <c>true</c> then only the public view of the accounts is returned.</param>
+        /// <returns>The text to display.</returns>
+        private static string GetAccountPickerText( string name, string publicName, bool displayPublicName, bool isPublicView )
+        {
+            if ( !isPublicView )
+            {
+                return displayPublicName ? publicName : name;
+            }
+
+            // The public view only contains public accounts, so the name can
+            // be used when the account does not have a public name.
+            return publicName.IsNotNullOrWhiteSpace() ? publicName : name;
+        }
+
+        /// <summary>
+        /// Gets the '^' delimited names of the account's ancestors.
+        /// </summary>
+        /// <param name="account">The account.</param>
+        /// <param name="isPublicView">If <c>true</c> then only the public view of the accounts is returned.</param>
+        /// <param name="financialAccountService">The financial account service.</param>
+        /// <returns>The delimited account hierarchy.</returns>
+        private static string GetAccountPickerHierarchy( FinancialAccount account, bool isPublicView, FinancialAccountService financialAccountService )
+        {
+            if ( !isPublicView )
+            {
+                return financialAccountService.GetDelimitedAccountHierarchy( account, FinancialAccountService.AccountHierarchyDirection.CurrentAccountToParent );
+            }
+
+            var ancestors = FinancialAccountCache.Get( account.Id )?.GetAncestorFinancialAccounts() ?? new FinancialAccountCache[0];
+
+            // Only include the ancestors that are part of the path shown in
+            // the public view. The path stops at the first ancestor that is
+            // not in the public view.
+            return ancestors
+                .TakeWhile( a => IsAccountInPublicView( a.IsPublic, a.IsActive ) )
+                .OrderBy( a => a.Id )
+                .Select( a => System.Net.WebUtility.HtmlEncode( GetAccountPickerText( a.Name, a.PublicName, true, true ) ) )
+                .JoinStrings( "^" );
         }
 
         #endregion
@@ -5794,12 +5990,22 @@ namespace Rock.Rest.v2
         [HttpPost]
         [Route( "FieldTypeEditorUpdateAttributeConfiguration" )]
         [Authenticate]
-        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [ProducesResponse( HttpStatusCode.OK, Type = typeof( FieldTypeEditorUpdateAttributeConfigurationResultBag ) )]
         [ProducesResponse( HttpStatusCode.BadRequest )]
+        [ProducesResponse( HttpStatusCode.Unauthorized )]
         [Rock.SystemGuid.RestActionGuid( "AFDF0EC4-5D17-4278-9FA6-3F859F38E3B5" )]
         public IActionResult FieldTypeEditorUpdateAttributeConfiguration( [FromBody] FieldTypeEditorUpdateAttributeConfigurationOptionsBag options )
         {
+            // This is only used by the attribute editor on administrative
+            // blocks. The caller supplies arbitrary configuration values and
+            // the field type turns them into public edit data, so it must
+            // never be available to anonymous or non-staff callers.
+            if ( RockRequestContext.CurrentPerson == null || !IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_READ ) )
+            {
+                return Unauthorized();
+            }
+
             var fieldType = Rock.Web.Cache.FieldTypeCache.Get( options.FieldTypeGuid )?.Field;
 
             if ( fieldType == null )
@@ -6287,15 +6493,28 @@ namespace Rock.Rest.v2
         [HttpPost]
         [Route( "GroupAndRolePickerGetRoles" )]
         [Authenticate]
-        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [ProducesResponse( HttpStatusCode.OK, Type = typeof( List<ListItemBag> ) )]
+        [ProducesResponse( HttpStatusCode.Unauthorized )]
         [Rock.SystemGuid.RestActionGuid( "285de6f4-0bf0-47e4-bda5-bcaa5a18b990" )]
         public IActionResult GroupAndRolePickerGetRoles( [FromBody] GroupAndRolePickerGetRolesOptionsBag options )
         {
+            if ( options == null )
+            {
+                return BadRequest();
+            }
+
+            if ( !IsGroupListPickerAuthorized( options.SecurityGrantToken, out var isGrantOnly ) )
+            {
+                return Unauthorized();
+            }
+
             using ( var rockContext = new RockContext() )
             {
                 var groupRoles = new List<ListItemBag>();
-                if ( options.GroupTypeGuid != Guid.Empty )
+                var groupType = GroupTypeCache.Get( options.GroupTypeGuid );
+
+                if ( groupType != null && IsGroupTypeAllowedForGroupListPicker( groupType, isGrantOnly ) )
                 {
                     var groupTypeRoleService = new Rock.Model.GroupTypeRoleService( rockContext );
                     groupRoles = groupTypeRoleService.Queryable()
@@ -6322,40 +6541,76 @@ namespace Rock.Rest.v2
         [HttpPost]
         [Route( "GroupMemberPickerGetGroupMembers" )]
         [Authenticate]
-        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [ProducesResponse( HttpStatusCode.OK, Type = typeof( List<ListItemBag> ) )]
         [ProducesResponse( HttpStatusCode.NotFound )]
+        [ProducesResponse( HttpStatusCode.Unauthorized )]
         [Rock.SystemGuid.RestActionGuid( "E0A893FD-0275-4251-BA6E-F669F110D179" )]
         public IActionResult GroupMemberPickerGetGroupMembers( [FromBody] GroupMemberPickerGetGroupMembersOptionsBag options )
         {
-            Rock.Model.Group group;
+            var hasRestAccess = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_READ );
+            var grant = SecurityGrant.FromToken( options?.SecurityGrantToken );
 
-            if ( !options.GroupGuid.HasValue )
+            // Reject callers that have no possible way to be authorized before
+            // looking anything up so we don't reveal which groups exist.
+            if ( !hasRestAccess && grant == null )
+            {
+                return Unauthorized();
+            }
+
+            if ( options?.GroupGuid.HasValue != true )
             {
                 return NotFound();
             }
 
-            group = new GroupService( new RockContext() ).Get( options.GroupGuid.Value );
-
-            if ( group == null || !group.Members.Any() )
+            using ( var rockContext = new RockContext() )
             {
-                return NotFound();
-            }
+                var group = new GroupService( rockContext ).Get( options.GroupGuid.Value );
 
-            var list = new List<ListItemBag>();
-
-            foreach ( var groupMember in group.Members.OrderBy( m => m.Person.FullName ) )
-            {
-                var li = new ListItemBag
+                if ( group == null )
                 {
-                    Text = groupMember.Person.FullName,
-                    Value = groupMember.Guid.ToString()
-                };
+                    return hasRestAccess ? ( IActionResult ) NotFound() : Unauthorized();
+                }
 
-                list.Add( li );
+                // Access requires either the REST action permission along with
+                // VIEW access to the group, or a security grant that allows
+                // the members of this specific group to be listed.
+                var isAuthorized = ( hasRestAccess && group.IsAuthorized( Security.Authorization.VIEW, RockRequestContext.CurrentPerson ) )
+                    || grant?.IsAccessGranted( new GroupMemberPickerSecurityGrantRule.Access( group.Id ), Security.Authorization.VIEW ) == true;
+
+                if ( !isAuthorized )
+                {
+                    return Unauthorized();
+                }
+
+                var list = new GroupMemberService( rockContext )
+                    .Queryable()
+                    .AsNoTracking()
+                    .Where( m => m.GroupId == group.Id )
+                    .Select( m => new
+                    {
+                        m.Guid,
+                        m.Person.NickName,
+                        m.Person.LastName,
+                        m.Person.SuffixValueId,
+                        m.Person.RecordTypeValueId
+                    } )
+                    .ToList()
+                    .Select( m => new ListItemBag
+                    {
+                        Text = Person.FormatFullName( m.NickName, m.LastName, m.SuffixValueId, m.RecordTypeValueId ),
+                        Value = m.Guid.ToString()
+                    } )
+                    .OrderBy( m => m.Text )
+                    .ToList();
+
+                if ( !list.Any() )
+                {
+                    return NotFound();
+                }
+
+                return Ok( list );
             }
-
-            return Ok( list );
         }
 
         #endregion
@@ -7114,20 +7369,48 @@ namespace Rock.Rest.v2
         [HttpPost]
         [Route( "GroupTypeGroupPickerGetGroups" )]
         [Authenticate]
-        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [ProducesResponse( HttpStatusCode.OK, Type = typeof( List<ListItemBag> ) )]
+        [ProducesResponse( HttpStatusCode.Unauthorized )]
         [Rock.SystemGuid.RestActionGuid( "f07ac6f8-128c-4881-a4ec-c245b8f10f9e" )]
         public IActionResult GroupTypeGroupPickerGetGroups( [FromBody] GroupTypeGroupPickerGetGroupsOptionsBag options )
         {
-            var groups = new List<ListItemBag>();
-            if ( options.GroupTypeGuid != Guid.Empty )
+            if ( !IsGroupListPickerAuthorized( options?.SecurityGrantToken, out var isGrantOnly ) )
             {
-                var groupService = new Rock.Model.GroupService( new RockContext() );
-                groups = groupService.Queryable()
-                    .Where( g => g.GroupType.Guid == options.GroupTypeGuid )
-                    .OrderBy( g => g.Name )
-                    .Select( g => new ListItemBag { Text = g.Name, Value = g.Guid.ToString() } )
-                    .ToList();
+                return Unauthorized();
+            }
+
+            var groups = new List<ListItemBag>();
+            var groupType = GroupTypeCache.Get( options?.GroupTypeGuid ?? Guid.Empty );
+
+            if ( groupType != null && IsGroupTypeAllowedForGroupListPicker( groupType, isGrantOnly ) )
+            {
+                using ( var rockContext = new RockContext() )
+                {
+                    var currentPerson = RockRequestContext.CurrentPerson;
+                    var qry = new GroupService( rockContext ).Queryable()
+                        .Where( g => g.GroupTypeId == groupType.Id )
+                        .OrderBy( g => g.Name );
+
+                    if ( isGrantOnly )
+                    {
+                        // The security grant authorizes listing the groups of
+                        // group types shown in the group list. This matches the
+                        // groups offered by the picker on public forms.
+                        groups = qry
+                            .Select( g => new ListItemBag { Text = g.Name, Value = g.Guid.ToString() } )
+                            .ToList();
+                    }
+                    else
+                    {
+                        groups = qry
+                            .Include( g => g.ParentGroup )
+                            .ToList()
+                            .Where( g => g.IsAuthorized( Security.Authorization.VIEW, currentPerson ) )
+                            .Select( g => new ListItemBag { Text = g.Name, Value = g.Guid.ToString() } )
+                            .ToList();
+                    }
+                }
             }
 
             return Ok( groups );
@@ -7141,26 +7424,91 @@ namespace Rock.Rest.v2
         [HttpPost]
         [Route( "GroupTypeGroupPickerGetGroupTypeOfGroup" )]
         [Authenticate]
-        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [ProducesResponse( HttpStatusCode.OK, Type = typeof( List<ListItemBag> ) )]
         [ProducesResponse( HttpStatusCode.NotFound )]
+        [ProducesResponse( HttpStatusCode.Unauthorized )]
         [Rock.SystemGuid.RestActionGuid( "984ce064-6073-4b8d-b670-338a3049e13b" )]
         public IActionResult GroupTypeGroupPickerGetGroupTypeOfGroup( [FromBody] GroupTypeGroupPickerGetGroupTypeOfGroupOptionsBag options )
         {
-            if ( options.GroupGuid != Guid.Empty )
+            if ( !IsGroupListPickerAuthorized( options?.SecurityGrantToken, out var isGrantOnly ) )
             {
-                var groupService = new Rock.Model.GroupService( new RockContext() );
-                var group = groupService.Get( options.GroupGuid );
+                return Unauthorized();
+            }
 
-                if ( group == null )
+            if ( options != null && options.GroupGuid != Guid.Empty )
+            {
+                using ( var rockContext = new RockContext() )
                 {
-                    return NotFound();
-                }
+                    var group = new GroupService( rockContext ).Get( options.GroupGuid );
+                    var groupType = group != null ? GroupTypeCache.Get( group.GroupTypeId ) : null;
 
-                return Ok( new ListItemBag { Text = group.GroupType.Name, Value = group.GroupType.Guid.ToString() } );
+                    // Treat groups the caller is not allowed to see the same
+                    // as groups that do not exist.
+                    if ( group == null
+                        || groupType == null
+                        || !IsGroupTypeAllowedForGroupListPicker( groupType, isGrantOnly )
+                        || ( !isGrantOnly && !group.IsAuthorized( Security.Authorization.VIEW, RockRequestContext.CurrentPerson ) ) )
+                    {
+                        return NotFound();
+                    }
+
+                    return Ok( new ListItemBag { Text = groupType.Name, Value = groupType.Guid.ToString() } );
+                }
             }
 
             return NotFound();
+        }
+
+        /// <summary>
+        /// Determines if the current request is allowed to use the group list
+        /// pickers (Group Type Group Picker and Group and Role Picker). This
+        /// requires either the EXECUTE_READ permission on the REST action or
+        /// a security grant for the group list pickers.
+        /// </summary>
+        /// <param name="securityGrantToken">The security grant token provided in the request.</param>
+        /// <param name="isGrantOnly">On return, contains <c>true</c> if access was only allowed by the security grant.</param>
+        /// <returns><c>true</c> if the request is allowed; otherwise <c>false</c>.</returns>
+        private bool IsGroupListPickerAuthorized( string securityGrantToken, out bool isGrantOnly )
+        {
+            isGrantOnly = false;
+
+            if ( IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_READ ) )
+            {
+                return true;
+            }
+
+            var grant = SecurityGrant.FromToken( securityGrantToken );
+
+            if ( grant?.IsAccessGranted( GroupListPickerSecurityGrantRule.AccessInstance, Security.Authorization.VIEW ) == true )
+            {
+                isGrantOnly = true;
+                return true;
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// Determines if the group type can be used by the group list pickers.
+        /// When access was only allowed by a security grant then the group type
+        /// must be configured to show in the group list, which matches the
+        /// group types offered by the picker. The grant itself authorizes
+        /// access, since group types are not viewable by most people by
+        /// default. Otherwise the current person must be able to view the
+        /// group type.
+        /// </summary>
+        /// <param name="groupType">The group type to check.</param>
+        /// <param name="isGrantOnly"><c>true</c> if access was only allowed by a security grant.</param>
+        /// <returns><c>true</c> if the group type can be used; otherwise <c>false</c>.</returns>
+        private bool IsGroupTypeAllowedForGroupListPicker( GroupTypeCache groupType, bool isGrantOnly )
+        {
+            if ( isGrantOnly )
+            {
+                return groupType.ShowInGroupList;
+            }
+
+            return groupType.IsAuthorized( Security.Authorization.VIEW, RockRequestContext.CurrentPerson );
         }
 
         #endregion
@@ -7175,11 +7523,25 @@ namespace Rock.Rest.v2
         [HttpPost]
         [Route( "GroupTypePickerGetGroupTypes" )]
         [Authenticate]
-        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [ProducesResponse( HttpStatusCode.OK, Type = typeof( List<ListItemBag> ) )]
+        [ProducesResponse( HttpStatusCode.Unauthorized )]
         [Rock.SystemGuid.RestActionGuid( "b0e07419-0e3c-4235-b5d4-4262fd63e050" )]
         public IActionResult GroupTypePickerGetGroupTypes( [FromBody] GroupTypePickerGetGroupTypesOptionsBag options )
         {
+            if ( options == null )
+            {
+                return BadRequest();
+            }
+
+            // The group list security grant is accepted here because the
+            // Group Type Group Picker and Group and Role Picker use this
+            // picker to select the group type.
+            if ( !IsGroupListPickerAuthorized( options.SecurityGrantToken, out var isGrantOnly ) )
+            {
+                return Unauthorized();
+            }
+
             var groupTypes = new List<GroupTypeCache>();
             var results = new List<ListItemBag>();
 
@@ -7192,7 +7554,11 @@ namespace Rock.Rest.v2
                 foreach ( var groupTypeGuid in options.GroupTypes )
                 {
                     var groupType = GroupTypeCache.Get( groupTypeGuid );
-                    groupTypes.Add( groupType );
+
+                    if ( groupType != null )
+                    {
+                        groupTypes.Add( groupType );
+                    }
                 }
             }
 
@@ -7200,6 +7566,10 @@ namespace Rock.Rest.v2
             {
                 groupTypes = groupTypes.Where( gt => !options.ExcludeGroupTypes.Contains( gt.Guid ) ).ToList();
             }
+
+            groupTypes = groupTypes
+                .Where( gt => IsGroupTypeAllowedForGroupListPicker( gt, isGrantOnly ) )
+                .ToList();
 
             if ( options.OnlyGroupListItems )
             {
@@ -7236,11 +7606,33 @@ namespace Rock.Rest.v2
         [HttpPost]
         [Route( "GroupPickerGetChildren" )]
         [Authenticate]
-        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [ProducesResponse( HttpStatusCode.OK, Type = typeof( List<TreeItemBag> ) )]
+        [ProducesResponse( HttpStatusCode.Unauthorized )]
         [Rock.SystemGuid.RestActionGuid( "c4f5432a-eb1e-4235-a5cd-bde37cc324f7" )]
         public IActionResult GroupPickerGetChildren( GroupPickerGetChildrenOptionsBag options )
         {
+            if ( options == null )
+            {
+                return BadRequest();
+            }
+
+            // Access requires either the REST action permission or a security
+            // grant for the group picker.
+            var isGrantOnly = false;
+
+            if ( !IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_READ ) )
+            {
+                var grant = SecurityGrant.FromToken( options.SecurityGrantToken );
+
+                if ( grant?.IsAccessGranted( GroupPickerSecurityGrantRule.AccessInstance, Security.Authorization.VIEW ) != true )
+                {
+                    return Unauthorized();
+                }
+
+                isGrantOnly = true;
+            }
+
             using ( var rockContext = new RockContext() )
             {
                 var groupService = new GroupService( rockContext );
@@ -7267,19 +7659,40 @@ namespace Rock.Rest.v2
                     campusId = CampusCache.Get( options.CampusGuid.Value )?.Id ?? 0;
                 }
 
+                if ( isGrantOnly )
+                {
+                    // When access was only allowed by a security grant, ignore any
+                    // requested group types so that the results are limited to
+                    // groups whose group type is shown in navigation.
+                    includedGroupTypeIds = new List<int>();
+
+                    // Callers using a security grant can only browse into groups
+                    // that they would have been able to see in the tree.
+                    var parentGroup = groupService.GetByGuid( options.Guid ?? Guid.Empty );
+                    var rootGroup = groupService.GetByGuid( options.RootGroupGuid ?? Guid.Empty );
+
+                    if ( !IsGroupVisibleToGroupPickerGrant( parentGroup ) || !IsGroupVisibleToGroupPickerGrant( rootGroup ) )
+                    {
+                        return Ok( new List<TreeItemBag>() );
+                    }
+                }
+
+                // Inactive groups and counts are only available to callers with
+                // the REST action permission.
                 var groupNameList = GroupPickerGetChildrenInternal(
                     options.Guid,
                     options.RootGroupGuid,
                     includedGroupTypeIds,
                     excludedGroupTypeIds,
-                    options.IncludeInactiveGroups,
+                    options.IncludeInactiveGroups && !isGrantOnly,
                     options.LimitToSchedulingEnabled,
                     options.LimitToRSVPEnabled,
                     options.LimitToSecurityRoleGroups,
                     campusId,
                     options.IncludeNoCampus,
                     options.LimitToPublic,
-                    options.CountsType,
+                    isGrantOnly ? 0 : options.CountsType,
+                    isGrantOnly,
                     groupService,
                     GroupPickerGetAutoExpandGuids( options.ExpandToValues ),
                     grant,
@@ -7340,6 +7753,7 @@ namespace Rock.Rest.v2
         /// <param name="includeNoCampus">When campus filtering, whether to include groups with no campus.</param>
         /// <param name="limitToPublic">Whether to limit to public groups only.</param>
         /// <param name="countsType">0 = None, 1 = Child Groups, 2 = Group Members.</param>
+        /// <param name="isGrantOnly">Whether the caller is only authorized by a security grant.</param>
         /// <param name="groupService">The service to use when accessing the database.</param>
         /// <param name="autoExpandGuids">The unique identifiers of the items to automatically expand.</param>
         /// <param name="grant">Optional security grant used to elevate VIEW beyond the person's normal rights.</param>
@@ -7358,6 +7772,7 @@ namespace Rock.Rest.v2
             bool includeNoCampus,
             bool limitToPublic,
             int countsType,
+            bool isGrantOnly,
             GroupService groupService,
             List<Guid> autoExpandGuids,
             SecurityGrant grant,
@@ -7521,6 +7936,7 @@ namespace Rock.Rest.v2
                         includeNoCampus,
                         limitToPublic,
                         countsType,
+                        isGrantOnly,
                         groupService,
                         autoExpandGuids,
                         grant,
@@ -7594,6 +8010,13 @@ namespace Rock.Rest.v2
             if ( limitToShowInNavigation )
             {
                 structuralChildrenQry = structuralChildrenQry.Where( a => a.GroupType.ShowInNavigation == true );
+            }
+
+            // Make sure callers using a security grant only see that a
+            // group has children if those children could be shown to them.
+            if ( isGrantOnly )
+            {
+                structuralChildrenQry = structuralChildrenQry.Where( a => a.IsActive && a.GroupType.ShowInNavigation );
             }
 
             /*
@@ -7722,6 +8145,29 @@ namespace Rock.Rest.v2
             return groupTreeItems;
         }
 
+        /// <summary>
+        /// Determines if the group could be displayed by the group picker to
+        /// a caller that is only authorized by a security grant. A
+        /// <c>null</c> group is considered visible since it means the top
+        /// level of the tree.
+        /// </summary>
+        /// <param name="group">The group to check.</param>
+        /// <returns><c>true</c> if the group is visible; otherwise <c>false</c>.</returns>
+        private bool IsGroupVisibleToGroupPickerGrant( Rock.Model.Group group )
+        {
+            if ( group == null )
+            {
+                return true;
+            }
+
+            var groupType = GroupTypeCache.Get( group.GroupTypeId );
+
+            return group.IsActive
+                && groupType != null
+                && groupType.ShowInNavigation
+                && group.IsAuthorized( Security.Authorization.VIEW, RockRequestContext.CurrentPerson );
+        }
+
         #endregion
 
         #region Group Role Picker
@@ -7733,11 +8179,22 @@ namespace Rock.Rest.v2
         [HttpPost]
         [Route( "GroupRolePickerGetGroupTypes" )]
         [Authenticate]
-        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [ProducesResponse( HttpStatusCode.OK, Type = typeof( List<ListItemBag> ) )]
+        [ProducesResponse( HttpStatusCode.Unauthorized )]
         [Rock.SystemGuid.RestActionGuid( "56891c9b-f714-4083-8252-4c73b358aa02" )]
-        public IActionResult GroupRolePickerGetGroupTypes()
+        public IActionResult GroupRolePickerGetGroupTypes( [FromBody] GroupRolePickerGetGroupTypesOptionsBag options )
         {
+            if ( !IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_READ ) )
+            {
+                var grant = SecurityGrant.FromToken( options?.SecurityGrantToken );
+
+                if ( grant?.IsAccessGranted( GroupRolePickerSecurityGrantRule.GroupTypeListInstance, Security.Authorization.VIEW ) != true )
+                {
+                    return Unauthorized();
+                }
+            }
+
             using ( var rockContext = new RockContext() )
             {
                 var groupTypeService = new Rock.Model.GroupTypeService( rockContext );
@@ -7762,11 +8219,24 @@ namespace Rock.Rest.v2
         [HttpPost]
         [Route( "GroupRolePickerGetGroupRoles" )]
         [Authenticate]
-        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [ProducesResponse( HttpStatusCode.OK, Type = typeof( List<ListItemBag> ) )]
+        [ProducesResponse( HttpStatusCode.Unauthorized )]
         [Rock.SystemGuid.RestActionGuid( "968033ab-2596-4b0c-b06e-2c9cf59949c5" )]
         public IActionResult GroupRolePickerGetGroupRoles( [FromBody] GroupRolePickerGetGroupRolesOptionsBag options )
         {
+            if ( options == null )
+            {
+                return BadRequest();
+            }
+
+            var groupType = GroupTypeCache.Get( options.GroupTypeGuid );
+
+            if ( !IsGroupRolePickerAuthorized( groupType, options.SecurityGrantToken ) )
+            {
+                return Unauthorized();
+            }
+
             return Ok( GroupRolePickerGetGroupRolesForGroupType( options.GroupTypeGuid, options.ExcludeGroupRoles ) );
         }
 
@@ -7778,11 +8248,18 @@ namespace Rock.Rest.v2
         [HttpPost]
         [Route( "GroupRolePickerGetAllForGroupRole" )]
         [Authenticate]
-        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [ProducesResponse( HttpStatusCode.OK, Type = typeof( GroupRolePickerGetAllForGroupRoleResultsBag ) )]
+        [ProducesResponse( HttpStatusCode.NotFound )]
+        [ProducesResponse( HttpStatusCode.Unauthorized )]
         [Rock.SystemGuid.RestActionGuid( "e55374dd-7715-4392-a162-c40f09d25fc9" )]
         public IActionResult GroupRolePickerGetAllForGroupRole( [FromBody] GroupRolePickerGetAllForGroupRoleOptionsBag options )
         {
+            if ( options == null )
+            {
+                return BadRequest();
+            }
+
             using ( var rockContext = new RockContext() )
             {
                 List<Guid> excludeGroupRoles = options.ExcludeGroupRoles;
@@ -7790,9 +8267,26 @@ namespace Rock.Rest.v2
                 var groupRoleService = new Rock.Model.GroupTypeRoleService( rockContext );
                 var groupRole = groupRoleService.Queryable()
                     .Where( r => r.Guid == options.GroupRoleGuid )
-                    .First();
+                    .FirstOrDefault();
+
+                if ( groupRole == null )
+                {
+                    // Don't reveal which roles exist to callers without the
+                    // REST action permission.
+                    return IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_READ ) ? ( IActionResult ) NotFound() : Unauthorized();
+                }
+
+                if ( !IsGroupRolePickerAuthorized( GroupTypeCache.Get( groupRole.GroupTypeId ?? 0 ), options.SecurityGrantToken ) )
+                {
+                    return Unauthorized();
+                }
 
                 var groupType = groupRole.GroupType;
+
+                if ( groupType == null )
+                {
+                    return NotFound();
+                }
 
                 var groupRoles = GroupRolePickerGetGroupRolesForGroupType( groupType.Guid, excludeGroupRoles, rockContext );
 
@@ -7839,6 +8333,32 @@ namespace Rock.Rest.v2
                 .ToList();
 
             return groupRoles;
+        }
+
+        /// <summary>
+        /// Determines if the current request is allowed to load the roles of
+        /// the group type in the group role picker. This requires either the
+        /// EXECUTE_READ permission on the REST action or a security grant for
+        /// the group role picker that covers the group type.
+        /// </summary>
+        /// <param name="groupType">The group type whose roles will be loaded.</param>
+        /// <param name="securityGrantToken">The security grant token provided in the request.</param>
+        /// <returns><c>true</c> if the request is allowed; otherwise <c>false</c>.</returns>
+        private bool IsGroupRolePickerAuthorized( GroupTypeCache groupType, string securityGrantToken )
+        {
+            if ( IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_READ ) )
+            {
+                return true;
+            }
+
+            if ( groupType == null )
+            {
+                return false;
+            }
+
+            var grant = SecurityGrant.FromToken( securityGrantToken );
+
+            return grant?.IsAccessGranted( new GroupRolePickerSecurityGrantRule.Access( groupType.Id ), Security.Authorization.VIEW ) == true;
         }
 
         #endregion

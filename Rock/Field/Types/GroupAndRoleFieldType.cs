@@ -23,6 +23,8 @@ using System.Web.UI;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
+using Rock.Security;
+using Rock.Security.SecurityGrantRules;
 using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
@@ -36,7 +38,7 @@ namespace Rock.Field.Types
     [FieldTypeUsage( FieldTypeUsage.Administrative )]
     [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.GROUP_AND_ROLE )]
-    public class GroupAndRoleFieldType : FieldType, IEntityReferenceFieldType
+    public class GroupAndRoleFieldType : FieldType, IEntityReferenceFieldType, IPublicSecurityGrantFieldType
     {
         #region Configuration
 
@@ -254,6 +256,17 @@ namespace Rock.Field.Types
         }
 
         #endregion
+
+        #region IPublicSecurityGrantFieldType
+
+        /// <inheritdoc/>
+        public void AddRulesToSecurityGrant( SecurityGrant grant, Dictionary<string, string> privateConfigurationValues )
+        {
+            grant.AddRule( new GroupListPickerSecurityGrantRule() );
+        }
+
+        #endregion
+
         #region WebForms
 #if WEBFORMS
 
