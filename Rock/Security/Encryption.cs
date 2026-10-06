@@ -567,7 +567,7 @@ namespace Rock.Security
 
                 Reason: Root folders should only come from Rock.
             */
-            rootFolder = DecryptString( encryptedRootFolder );
+            rootFolder = DecryptString( encryptedRootFolder, false );
 
             return IsLegacyRootFolderAllowed( rootFolder ) ? rootFolder : null;
         }

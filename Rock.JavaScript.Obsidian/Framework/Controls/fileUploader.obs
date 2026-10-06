@@ -201,7 +201,8 @@
                 const result = await uploadContentFile(file, props.rootFolder, props.uploadPath, {
                     progress: (progress, total, percent) => {
                         uploadProgressText.value = `${percent}%`;
-                    }
+                    },
+                    securityGrantToken: securityGrantToken.value
                 });
 
                 result.value = newGuid();
