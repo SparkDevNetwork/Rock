@@ -437,7 +437,7 @@ namespace Rock.Blocks.Communication
                     box.AreEmailMetricsReminderOptionsShown = this.AreEmailMetricsReminderOptionsShown;
                     box.IsDuplicatePreventionOptionShown = this.IsDuplicatePreventionOptionShown;
                     box.Authorization = authorization;
-                    box.EnableAssetManager = this.EnableAssetManager;
+                    box.EnableAssetManager = IsAssetManagerAuthorized();
                     box.IsCcBccEntryAllowed = this.IsCcBccEntryAllowed;
                     box.IsHidden = false;
                     box.IsEditMode = this.EditPageParameter;
@@ -1764,7 +1764,9 @@ namespace Rock.Blocks.Communication
         {
             var securityGrant = new Rock.Security.SecurityGrant();
 
-            if ( EnableAssetManager )
+            // The asset manager endpoints trust this token alone, so only
+            // grant access to people with EDIT on the block.
+            if ( IsAssetManagerAuthorized() )
             {
                 securityGrant.AddRule( new AssetAndFileManagerSecurityGrantRule( Rock.Security.Authorization.VIEW ) );
                 securityGrant.AddRule( new AssetAndFileManagerSecurityGrantRule( Rock.Security.Authorization.EDIT ) );
@@ -1772,6 +1774,20 @@ namespace Rock.Blocks.Communication
             }
 
             return securityGrant.ToToken();
+        }
+
+        /// <summary>
+        /// Determines whether the asset manager is enabled and the current
+        /// person has EDIT access to the block.
+        /// </summary>
+        /// <returns><c>true</c> if the current person may use the asset manager; otherwise <c>false</c>.</returns>
+        private bool IsAssetManagerAuthorized()
+        {
+            var currentPerson = GetCurrentPerson();
+
+            return EnableAssetManager
+                && currentPerson != null
+                && BlockCache.IsAuthorized( Authorization.EDIT, currentPerson );
         }
 
         /// <summary>
