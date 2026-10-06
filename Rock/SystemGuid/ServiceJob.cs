@@ -613,5 +613,10 @@ namespace Rock.SystemGuid
         /// The job to run Post v19.0 Data Migrations to backfill the newly-added [ConnectionRequest].[ConnectedDateTime] and [WasCompletedOnTime] fields from the History table for requests that were already in the Connected state prior to v19.
         /// </summary>
         public const string DATA_MIGRATIONS_190_BACKFILL_CONNECTION_REQUEST_CONNECTED_DATETIME = "3B6F52DF-E6AB-47F2-9719-1365718410A3";
+
+        /// <summary>
+        /// The job to run Post v17.11 Data Migrations to clean up unsafe Social Media Account attribute values.
+        /// </summary>
+        public const string DATA_MIGRATIONS_1711_CLEAN_SOCIAL_MEDIA_ACCOUNT_VALUES = "230F32E9-68A9-4741-BEA2-5B5C020A761E";
     }
 }

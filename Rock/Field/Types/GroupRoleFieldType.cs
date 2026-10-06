@@ -25,6 +25,8 @@ using System.Web.UI.WebControls;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
+using Rock.Security;
+using Rock.Security.SecurityGrantRules;
 using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
@@ -38,7 +40,7 @@ namespace Rock.Field.Types
     [FieldTypeUsage( FieldTypeUsage.Administrative )]
     [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.GROUP_ROLE )]
-    public class GroupRoleFieldType : FieldType, IEntityFieldType, IEntityReferenceFieldType
+    public class GroupRoleFieldType : FieldType, IEntityFieldType, IEntityReferenceFieldType, IPublicSecurityGrantFieldType
     {
         #region Configuration
 
@@ -227,6 +229,27 @@ namespace Rock.Field.Types
             {
                 new ReferencedProperty( EntityTypeCache.GetId<GroupTypeRole>().Value, nameof( GroupTypeRole.Name ) )
             };
+        }
+
+        #endregion
+
+        #region IPublicSecurityGrantFieldType
+
+        /// <inheritdoc/>
+        public void AddRulesToSecurityGrant( SecurityGrant grant, Dictionary<string, string> privateConfigurationValues )
+        {
+            // Limit the roles to the configured group type, if there is one.
+            int? groupTypeId = null;
+
+            if ( privateConfigurationValues != null
+                && privateConfigurationValues.TryGetValue( GROUP_TYPE_KEY, out var groupTypeIdValue )
+                && int.TryParse( groupTypeIdValue, out var configuredGroupTypeId )
+                && configuredGroupTypeId > 0 )
+            {
+                groupTypeId = configuredGroupTypeId;
+            }
+
+            grant.AddRule( new GroupRolePickerSecurityGrantRule( groupTypeId ) );
         }
 
         #endregion

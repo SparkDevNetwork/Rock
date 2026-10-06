@@ -195,21 +195,15 @@ $(document).ready(function () {
             {
                 bool isAccept = ( PageParameter( PageParameterKey.IsAccept ) == "1" );
                 bool isDecline = ( PageParameter( PageParameterKey.IsAccept ) == "0" );
-                var attendanceOccurrenceId = PageParameter( PageParameterKey.AttendanceOccurrenceId ).AsIntegerOrNull();
+                var attendanceOccurrenceId = GetSingleOccurrenceId();
                 var attendanceOccurrenceIdList = GetMultipleOccurrenceIds();
-
-                if ( ( attendanceOccurrenceId == null ) && ( attendanceOccurrenceIdList.Count == 1 ) )
-                {
-                    // If only one occurrence ID is specified in the list, move it to the individual occurrence ID and treat it as a single RSVP response.
-                    attendanceOccurrenceId = attendanceOccurrenceIdList.First();
-                }
 
                 if ( attendanceOccurrenceId != null )
                 {
                     // Using a single occurrece.
                     if ( isAccept )
                     {
-                        if ( GroupHasAttributes() )
+                        if ( GroupHasAttributes( attendanceOccurrenceId.Value, person ) )
                         {
                             // If the group has GroupMember attributes, write the RSVP but show the decision form.
                             WriteEmailAcceptResponse( attendanceOccurrenceId.Value, person );
@@ -245,15 +239,19 @@ $(document).ready(function () {
             }
             else
             {
-                var attendanceOccurrenceId = PageParameter( PageParameterKey.AttendanceOccurrenceId ).AsIntegerOrNull();
+                // Rebuild the same mode that was displayed on the initial load.
+                var attendanceOccurrenceId = GetSingleOccurrenceId();
                 if ( attendanceOccurrenceId != null )
                 {
-                    BuildAttributeControls();
+                    BuildAttributeControls( attendanceOccurrenceId.Value, person );
                 }
-                var attendanceOccurrenceIdList = GetMultipleOccurrenceIds();
-                if ( attendanceOccurrenceIdList.Any() )
+                else
                 {
-                    RebuildMultipleOccurrenceDataItems( attendanceOccurrenceIdList, person );
+                    var attendanceOccurrenceIdList = GetMultipleOccurrenceIds();
+                    if ( attendanceOccurrenceIdList.Any() )
+                    {
+                        RebuildMultipleOccurrenceDataItems( attendanceOccurrenceIdList, person );
+                    }
                 }
             }
         }
@@ -290,7 +288,7 @@ $(document).ready(function () {
         protected void lbAccept_Single_Click( object sender, EventArgs e )
         {
             var person = GetPerson();
-            var attendanceOccurrenceId = PageParameter( PageParameterKey.AttendanceOccurrenceId ).AsIntegerOrNull();
+            var attendanceOccurrenceId = GetSingleOccurrenceId();
             if ( person == null || attendanceOccurrenceId == null )
             {
                 // Invalid person action identifier.
@@ -309,7 +307,7 @@ $(document).ready(function () {
         protected void lbDecline_Single_Click( object sender, EventArgs e )
         {
             var person = GetPerson();
-            var attendanceOccurrenceId = PageParameter( PageParameterKey.AttendanceOccurrenceId ).AsIntegerOrNull();
+            var attendanceOccurrenceId = GetSingleOccurrenceId();
             if ( person == null || attendanceOccurrenceId == null )
             {
                 // Invalid person action identifier.
@@ -393,9 +391,36 @@ $(document).ready(function () {
             using ( var rockContext = new RockContext() )
             {
                 var occurrence = new AttendanceOccurrenceService( rockContext ).Get( occurrenceId );
+
+                // The same expiration rule that is applied when displaying the choice form.
+                if ( occurrence == null || occurrence.OccurrenceDate.EndOfDay() < RockDateTime.Now )
+                {
+                    return;
+                }
+
                 person = new PersonService( rockContext ).Get( person.Guid );
                 UpdateOrCreateAttendanceRecord( occurrence, person, rockContext, Rock.Model.RSVP.Yes );
             }
+        }
+
+        /// <summary>
+        /// Gets the single Occurrence ID from the query string. This is the AttendanceOccurrenceId
+        /// parameter or, if that is not specified, the only ID in the AttendanceOccurrenceIds list.
+        /// </summary>
+        private int? GetSingleOccurrenceId()
+        {
+            var attendanceOccurrenceId = PageParameter( PageParameterKey.AttendanceOccurrenceId ).AsIntegerOrNull();
+            if ( attendanceOccurrenceId == null )
+            {
+                var attendanceOccurrenceIdList = GetMultipleOccurrenceIds();
+                if ( attendanceOccurrenceIdList.Count == 1 )
+                {
+                    // If only one occurrence ID is specified in the list, treat it as a single RSVP response.
+                    attendanceOccurrenceId = attendanceOccurrenceIdList.First();
+                }
+            }
+
+            return attendanceOccurrenceId;
         }
 
         /// <summary>
@@ -584,13 +609,18 @@ $(document).ready(function () {
         /// <summary>
         /// Rebuilds the dynamic attribute value controls (for single occurrence mode) after a postback.
         /// </summary>
-        private void BuildAttributeControls()
+        /// <param name="occurrenceId">The ID of the AttendanceOccurrence.</param>
+        /// <param name="person">The Person record of the respondent.</param>
+        private void BuildAttributeControls( int occurrenceId, Person person )
         {
             using ( var rockContext = new RockContext() )
             {
-                var person = GetPerson();
-                var occurrenceId = PageParameter( PageParameterKey.AttendanceOccurrenceId ).AsInteger();
                 var occurrence = new AttendanceOccurrenceService( rockContext ).Get( occurrenceId );
+                if ( occurrence == null )
+                {
+                    return;
+                }
+
                 var groupMember = occurrence.Group.Members.Where( gm => gm.PersonId == person.Id ).FirstOrDefault();
                 if ( groupMember == null )
                 {
@@ -610,14 +640,19 @@ $(document).ready(function () {
         /// <summary>
         /// Tests the group to see if there are any GroupMember attributes.
         /// </summary>
+        /// <param name="occurrenceId">The ID of the AttendanceOccurrence.</param>
+        /// <param name="person">The Person record of the respondent.</param>
         /// <returns></returns>
-        private bool GroupHasAttributes()
+        private bool GroupHasAttributes( int occurrenceId, Person person )
         {
             using ( var rockContext = new RockContext() )
             {
-                var person = GetPerson();
-                var occurrenceId = PageParameter( PageParameterKey.AttendanceOccurrenceId ).AsInteger();
                 var occurrence = new AttendanceOccurrenceService( rockContext ).Get( occurrenceId );
+                if ( occurrence == null )
+                {
+                    return false;
+                }
+
                 var groupMember = occurrence.Group.Members.Where( gm => gm.PersonId == person.Id ).FirstOrDefault();
                 if ( groupMember == null )
                 {
