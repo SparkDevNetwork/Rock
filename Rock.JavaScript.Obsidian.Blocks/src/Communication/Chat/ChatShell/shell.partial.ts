@@ -29,7 +29,7 @@ import { createTimelines, Timelines } from "./composables/useHistory.partial";
 import { createKeepaliveSave, createReadTracker, PageEventTargets, ReadTracker } from "./composables/useMarkRead.partial";
 import { createRealtimeHub, RealtimeClientLike, RealtimeHub, realtimeOptions } from "./composables/useRealtimeHub.partial";
 import { createPushRegistration, PushDependencies, PushRegistration } from "./composables/usePush.partial";
-import { createSender, isComposerOpen, Sender } from "./composables/useSend.partial";
+import { createSender, isComposerOpen, newLocalId, Sender } from "./composables/useSend.partial";
 import { ChatSession, ChurchTokenResult, createSession, ExchangeResult, serviceBanner } from "./composables/useSession.partial";
 import {
     openChannel,
@@ -231,23 +231,6 @@ export function churchTokenFromAction(result: MintActionResult): ChurchTokenResu
     return isPassing
         ? { gate: "gate_unavailable", churchToken: null, isUnreachable: true }
         : { gate: "gate_unavailable", churchToken: null };
-}
-
-/**
- * A fresh identifier for a pending row. It is also the send's key, which the platform stores as
- * a UUID, so a browser without randomUUID still gets one of that shape.
- *
- * @returns A version 4 UUID.
- */
-function newLocalId(): string {
-    if (typeof globalThis.crypto?.randomUUID === "function") {
-        return globalThis.crypto.randomUUID();
-    }
-
-    return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, c => {
-        const value = Math.floor(Math.random() * 16);
-        return (c === "x" ? value : (value & 0x3) | 0x8).toString(16);
-    });
 }
 
 /**
@@ -462,11 +445,12 @@ export function createChatShell(options: ShellOptions): ChatShell {
         openChannel: async channelId => {
             await open(channelId);
         },
-        send: async (channelId, body) => {
-            const isSent = await sender.send(channelId, body);
+        send: async (channelId, body, attempt) => {
+            const isSent = await sender.send(channelId, body, attempt);
             notePushSend();
             return isSent;
-        }
+        },
+        retryDelay: () => ({ baseMs: session.settings().limits.reconnect_base_ms, capMs: session.settings().limits.reconnect_cap_ms })
     });
 
     /** Fetches the sidebar and replaces the rows with it. */
@@ -755,6 +739,7 @@ export function createChatShell(options: ShellOptions): ChatShell {
             state.isPushOffered = false;
             cancelRecheck();
             timelines.stop();
+            directMessages.stop();
 
             // Stopped before the last save, so no refresh starts while it goes out; the token is
             // kept, and the save still carries it.

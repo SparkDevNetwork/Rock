@@ -32,9 +32,10 @@ namespace Rock.Workflow.Action.Communications
     /// </summary>
     /// <remarks>
     /// The administrator who built the workflow is the one acting, so the recipient's Open DM
-    /// setting and the sender's right to start conversations are not asked; someone on the Ban
-    /// List or inactive is still refused. The action waits for the message to land and fails with
-    /// the chat platform's reason when it does not.
+    /// setting and the sender's right to start conversations are not asked; anyone chat itself
+    /// keeps out, such as someone on the Ban List, inactive or under the minimum age, is still
+    /// refused. The action waits for the message to land and fails with the chat platform's
+    /// reason when it does not.
     /// </remarks>
     [ActionCategory( "Communications" )]
     [Description( "Sends a direct message in chat from one person to another, making the conversation when they have none." )]

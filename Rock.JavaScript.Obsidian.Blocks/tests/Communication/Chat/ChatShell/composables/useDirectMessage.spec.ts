@@ -357,6 +357,37 @@ describe("a first message the platform has not taken yet", () => {
         expect(backoff.list.length).toBe(0);
     });
 
+    test("stops after five retried sends fail, with no sixth, and leaves the text to the sender as failed", async () => {
+        const backoff = waits();
+        const lastTries: boolean[] = [];
+        const { calls, dependencies } = setup({
+            ...backoff,
+            send: async (channelId, body, retry?: { isLast: boolean }) => {
+                calls.push(`send ${channelId} ${body}`);
+                lastTries.push(retry?.isLast === true);
+                return false;
+            }
+        });
+        dependencies.startConversation = pendingDoor(calls);
+        await pendingDraft(dependencies);
+        await settle();
+
+        for (let attempt = 1; attempt <= 5; attempt++) {
+            expect(backoff.list.length).toBe(1);
+            backoff.list.shift()?.resolve();
+            await settle();
+            expect(sends(calls).length).toBe(attempt);
+        }
+
+        // no sixth wait and no sixth send: the fifth try told the sender it was the last, so its
+        // row stays as an ordinary failed message the person can send again or discard
+        expect(backoff.list.length).toBe(0);
+        expect(lastTries).toEqual([false, false, false, false, true]);
+        await settle();
+        expect(sends(calls).length).toBe(5);
+        expect(starts(calls)).toEqual(["start 1"]);
+    });
+
     test("a membership signal while it waits sends it once, and the wait ending sends nothing more", async () => {
         const backoff = waits();
         const { calls, dependencies } = setup(backoff);

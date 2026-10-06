@@ -335,7 +335,7 @@ namespace Rock.Communication.Chat.Platform.Doors
         }
 
         /// <summary>
-        /// Refuses a sender or recipient chat's gates keep out for good, and enrols the rest.
+        /// Refuses a sender or recipient chat's gates keep out of a session, and enrols the rest.
         /// </summary>
         /// <returns>The refusal, or null where everyone may be messaged.</returns>
         private static ChatDoorOutcome RefusedByGates( IList<Person> people, ChatPlatformConfiguration configuration, RockContext rockContext )
@@ -347,9 +347,9 @@ namespace Rock.Communication.Chat.Platform.Doors
             {
                 var gate = ChatSessionHelper.Evaluate( person, context, rockContext ).Gate;
 
-                // The age gates decide who may open chat, not who a workflow may write to.
-                var isRefused = gate != ChatMintGate.Ok && gate != ChatMintGate.AgeVerificationRequired && gate != ChatMintGate.AgeRestricted;
-                if ( isRefused )
+                // Every gate a session obeys, the minimum age included, or a workflow becomes the
+                // way around them: a person chat keeps out is neither written to nor written as.
+                if ( gate != ChatMintGate.Ok )
                 {
                     return Outcome( "door.target_not_eligible", string.Format( "{0} cannot be messaged in chat ({1}).", person.FullName, ChatSessionHelper.ToGateCode( gate ) ) );
                 }

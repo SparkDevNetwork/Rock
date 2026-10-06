@@ -42,6 +42,23 @@ export function isComposerOpen(serviceState: string): boolean {
     return serviceState !== "read_only" && serviceState !== "maintenance";
 }
 
+/**
+ * A fresh identifier for a pending row. It is also the send's key, which the platform stores as
+ * a UUID, so a browser without randomUUID still gets one of that shape.
+ *
+ * @returns A version 4 UUID.
+ */
+export function newLocalId(): string {
+    if (typeof globalThis.crypto?.randomUUID === "function") {
+        return globalThis.crypto.randomUUID();
+    }
+
+    return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, c => {
+        const value = Math.floor(Math.random() * 16);
+        return (c === "x" ? value : (value & 0x3) | 0x8).toString(16);
+    });
+}
+
 /** What the sender reaches outside itself. */
 export type SenderDependencies = {
     /** Sends a text message to a channel, with the key that makes a retry safe. */
@@ -57,13 +74,25 @@ export type SenderDependencies = {
     newLocalId: () => string;
 };
 
+/** How one try of a message that is tried again on its own is sent. */
+export type SendTry = {
+    /** The row every try shares, so they carry one key and the person sees one message. */
+    localId: string;
+
+    /** False while another try is still to come, so a failure keeps the row sending. */
+    isLast: boolean;
+};
+
 /** The sender a shell holds. */
 export type Sender = {
     /** The person's pending and failed rows in a channel, oldest first. */
     pending: (channelId: string) => PendingMessage[];
 
-    /** Sends a message. Resolves true when the platform confirmed it. Blank text sends nothing. */
-    send: (channelId: string, body: string) => Promise<boolean>;
+    /**
+     * Sends a message. Resolves true when the platform confirmed it. Blank text sends nothing.
+     * A try names the row it shares with the message's other tries.
+     */
+    send: (channelId: string, body: string, attempt?: SendTry) => Promise<boolean>;
 
     /** Sends a failed row's text again. */
     retry: (localId: string) => Promise<boolean>;
@@ -83,13 +112,17 @@ export function createSender(dependencies: SenderDependencies): Sender {
     const rows = reactive<PendingMessage[]>([]) as PendingMessage[];
 
     /** Sends a row's text and settles the row by the answer. */
-    async function deliver(row: PendingMessage): Promise<boolean> {
+    async function deliver(row: PendingMessage, isLast = true): Promise<boolean> {
         row.status = "sending";
         row.errorCode = null;
 
         const result = await dependencies.send(row.channelId, row.body, row.localId);
 
         if (!result.ok) {
+            // Another try is coming on its own, so the row is not offered for a retry yet.
+            if (!isLast) {
+                return false;
+            }
             row.status = "failed";
             row.errorCode = result.error.code;
             return false;
@@ -118,16 +151,23 @@ export function createSender(dependencies: SenderDependencies): Sender {
     return {
         pending: (channelId: string): PendingMessage[] => rows.filter(row => row.channelId === channelId),
 
-        send: async (channelId: string, body: string): Promise<boolean> => {
+        send: async (channelId: string, body: string, attempt?: SendTry): Promise<boolean> => {
             if (body.trim() === "") {
                 return false;
             }
 
-            rows.push({ localId: dependencies.newLocalId(), channelId, body, status: "sending", errorCode: null });
+            // A later try sends the same row again; a row the person discarded or sent from in
+            // the meantime is gone, and its key still keeps a repeat from posting twice.
+            const earlier = attempt ? rows.find(r => r.localId === attempt.localId) : undefined;
+            if (earlier) {
+                return deliver(earlier, attempt?.isLast);
+            }
+
+            rows.push({ localId: attempt?.localId ?? dependencies.newLocalId(), channelId, body, status: "sending", errorCode: null });
 
             // The row read back from the list is the reactive one, so the status the person
             // sees follows every change made to it.
-            return deliver(rows[rows.length - 1]);
+            return deliver(rows[rows.length - 1], attempt?.isLast);
         },
 
         retry: async (localId: string): Promise<boolean> => {

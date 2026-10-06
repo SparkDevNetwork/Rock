@@ -18,14 +18,26 @@
 // already share a conversation open it, and otherwise a draft opens. A draft is only on this
 // page: nothing exists anywhere until its first message, which asks Rock for the conversation,
 // opens it and sends. Rock is the only one that creates a conversation, so a person cannot start
-// one with somebody Rock would not let them reach.
+// one with somebody Rock would not let them reach. Once Rock has made it the message is the
+// person's, so it is sent even if they leave the draft, and a platform slow to take the
+// conversation is tried again with growing waits a few times before the message is left failed.
 import { reactive } from "vue";
+import { computeBackoff } from "../platformCall.partial";
 import { ChatError, PersonRow } from "../types.partial";
+import { defaultRetryDelay } from "./useHistory.partial";
+import { newLocalId, SendTry } from "./useSend.partial";
 
 export type { PersonRow };
 
 /** The most people a person can start a conversation with, besides themselves. */
 export const maxOthers = 8;
+
+/**
+ * How many times a first message is tried after Rock made its conversation and the platform had
+ * not taken it. Each wait doubles, so five reach the reconnect cap; past that the platform is not
+ * about to take it, and the person decides with the ordinary failed message.
+ */
+const maxRetriedSends = 5;
 
 /** What Rock's door answers when asked for a conversation. */
 export type DoorResult = {
@@ -73,8 +85,20 @@ export type DirectMessageDependencies = {
     /** Opens a channel on screen. */
     openChannel: (channelId: string) => void | Promise<void>;
 
-    /** The ordinary send. Resolves true when the platform confirmed the message. */
-    send: (channelId: string, body: string) => Promise<boolean>;
+    /**
+     * The ordinary send. Resolves true when the platform confirmed it. A first message tried
+     * again on its own passes its try, which names the same row every time.
+     */
+    send: (channelId: string, body: string, attempt?: SendTry) => Promise<boolean>;
+
+    /** The first wait before a try and the longest; the history's by default. */
+    retryDelay?: () => { baseMs: number, capMs: number };
+
+    /** Waits; a timer by default. */
+    sleep?: (ms: number) => Promise<void>;
+
+    /** Spreads the waits of many clients apart; Math.random by default. */
+    random?: () => number;
 };
 
 /** The direct messages a shell holds. */
@@ -106,8 +130,31 @@ export type DirectMessages = {
     /** The person's membership changed; a conversation Rock made may now be on the platform. */
     membershipChanged: (channelId?: string | null) => Promise<void>;
 
-    /** Closes the draft and forgets the picked people. */
+    /** Closes the draft and forgets the picked people. A first message Rock has a conversation for is still sent. */
     close: () => void;
+
+    /** Stops trying first messages again, because the shell is going away. */
+    stop: () => void;
+};
+
+/** A first message whose conversation Rock made before the platform took it. */
+type WaitingMessage = {
+    /** The draft it came from, opened on its first try only while it is still on screen. */
+    draft: DirectMessageDraft;
+
+    channelId: string;
+
+    body: string;
+
+    /** The row its tries share, so they carry one key and show as one message. */
+    localId: string;
+
+    tries: number;
+
+    isSending: boolean;
+
+    /** Sent, or left to the sender as failed. */
+    isDone: boolean;
 };
 
 /**
@@ -136,17 +183,67 @@ export function createDirectMessages(dependencies: DirectMessageDependencies): D
         error: null as string | null
     });
 
+    const sleep = dependencies.sleep ?? ((ms: number): Promise<void> => new Promise(resolve => setTimeout(resolve, ms)));
+    const random = dependencies.random ?? Math.random;
+
     /** Conversations the person was added to while Rock had not answered yet. */
     const arrived = new Set<string>();
 
-    /** Opens the conversation Rock made and sends the draft's message into it. */
-    async function finish(channelId: string, body: string): Promise<boolean> {
-        // Out of the draft first, so a second signal cannot send it twice.
-        state.draft = null;
-        arrived.clear();
-        await dependencies.openChannel(channelId);
+    /** Asks of Rock still on their way; arrivals are kept only while there is one. */
+    let startsInFlight = 0;
 
-        return dependencies.send(channelId, body);
+    /** First messages waiting for the platform to take their conversation. */
+    const waiting = new Set<WaitingMessage>();
+
+    let isStopped = false;
+
+    /**
+     * Takes a draft still on screen off it and opens its conversation. A draft the person left
+     * is not brought back: they chose to be somewhere else.
+     */
+    async function leaveDraftFor(draft: DirectMessageDraft, channelId: string): Promise<void> {
+        if (state.draft !== draft) {
+            return;
+        }
+
+        state.draft = null;
+        await dependencies.openChannel(channelId);
+    }
+
+    /** Sends a waiting message once, unless it is done or a try is already on its way. */
+    async function tryWaiting(message: WaitingMessage): Promise<void> {
+        if (message.isDone || message.isSending || isStopped) {
+            return;
+        }
+
+        // Marked before any await, so a signal and a wait ending together send it once.
+        message.isSending = true;
+        message.tries++;
+        const isLast = message.tries >= maxRetriedSends;
+
+        await leaveDraftFor(message.draft, message.channelId);
+        const isSent = await dependencies.send(message.channelId, message.body, { localId: message.localId, isLast });
+        message.isSending = false;
+
+        // The last failure stays with the sender as an ordinary failed row to retry or discard.
+        if (isSent || isLast) {
+            message.isDone = true;
+            waiting.delete(message);
+        }
+    }
+
+    /**
+     * Tries a waiting message after each of a run of growing waits until it is done. A membership
+     * signal tries it sooner, and the wait ending then finds it done.
+     */
+    async function retryUntilDone(message: WaitingMessage): Promise<void> {
+        let attempt = 0;
+
+        while (!message.isDone && !isStopped) {
+            const delay = dependencies.retryDelay?.() ?? defaultRetryDelay;
+            await sleep(computeBackoff(attempt++, delay.baseMs, delay.capMs, random));
+            await tryWaiting(message);
+        }
     }
 
     return Object.assign(state, {
@@ -214,59 +311,79 @@ export function createDirectMessages(dependencies: DirectMessageDependencies): D
             draft.status = "starting";
             state.error = null;
 
-            const answer = await dependencies.startConversation(draft.people.map(p => p.person_alias_guid));
+            startsInFlight++;
+            let answer: DoorResult;
+            try {
+                answer = await dependencies.startConversation(draft.people.map(p => p.person_alias_guid));
+            }
+            finally {
+                startsInFlight--;
+            }
 
-            // Closed or replaced while Rock answered; nothing is sent into a draft left behind.
-            if (state.draft !== draft) {
+            const channelId = answer.code === "ok" && answer.channelGuid ? answer.channelGuid.toLowerCase() : null;
+            const hasArrived = channelId !== null && arrived.has(channelId);
+            if (startsInFlight === 0) {
+                arrived.clear();
+            }
+
+            // A refusal is Rock's answer and no wait changes it. A person still on the draft is
+            // told; one who left it before Rock answered has nothing to send into.
+            if (!channelId) {
+                if (state.draft === draft) {
+                    draft.status = "draft";
+                    state.error = answer.message ?? "The conversation could not be started. Try again.";
+                }
                 return false;
             }
 
-            if (answer.code !== "ok" || !answer.channelGuid) {
-                draft.status = "draft";
-                state.error = answer.message ?? "The conversation could not be started. Try again.";
+            if (isStopped) {
                 return false;
             }
-
-            const channelId = answer.channelGuid.toLowerCase();
 
             // The platform has not taken the conversation yet, so a send now would be refused.
-            // The person's membership signal says when it has, unless it came while Rock answered.
-            if (answer.isPending && !arrived.has(channelId)) {
+            // The person's membership signal says when it has, unless it came while Rock
+            // answered; the waits try anyway, since a signal can be lost.
+            if (answer.isPending && !hasArrived) {
                 draft.channelGuid = channelId;
+                const message: WaitingMessage = {
+                    draft,
+                    channelId,
+                    body: draft.body,
+                    localId: newLocalId(),
+                    tries: 0,
+                    isSending: false,
+                    isDone: false
+                };
+                waiting.add(message);
+                void retryUntilDone(message);
                 return false;
             }
 
-            return finish(channelId, draft.body);
+            await leaveDraftFor(draft, channelId);
+            return dependencies.send(channelId, draft.body);
         },
 
         membershipChanged: async (channelId?: string | null): Promise<void> => {
-            const draft = state.draft;
-            if (!draft || draft.status !== "starting") {
-                return;
-            }
-
             const changed = channelId?.toLowerCase() ?? null;
 
-            if (!draft.channelGuid) {
-                if (changed) {
-                    arrived.add(changed);
-                }
-                return;
+            if (changed && startsInFlight > 0) {
+                arrived.add(changed);
             }
 
-            // A signal for another conversation says nothing about this one.
-            if (changed && changed !== draft.channelGuid) {
-                return;
-            }
-
-            await finish(draft.channelGuid, draft.body);
+            // A signal for another conversation says nothing about a waiting one.
+            const ready = [...waiting].filter(m => !changed || changed === m.channelId);
+            await Promise.all(ready.map(tryWaiting));
         },
 
         close: (): void => {
             state.draft = null;
             state.chosen = [];
             state.error = null;
-            arrived.clear();
+        },
+
+        stop: (): void => {
+            isStopped = true;
+            waiting.clear();
         }
     });
 }
