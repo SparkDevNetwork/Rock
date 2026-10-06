@@ -391,7 +391,16 @@ namespace RockWeb
                 throw new Rock.Web.FileUploadException( "Binary file type must be specified.", System.Net.HttpStatusCode.Forbidden );
             }
 
-            if ( !binaryFileType.AllowAnonymous && !binaryFileType.IsAuthorized( Authorization.EDIT, currentPerson ) && grant?.IsAccessGranted( binaryFileType, Authorization.EDIT ) == false )
+            /*
+                10/6/2026 - MSE
+
+                A security grant is an additional way to be allowed to upload.
+                When no grant is provided, the person must be allowed by the
+                file type itself.
+
+                Reason: Keep the upload check the same as before grants were supported.
+            */
+            if ( !binaryFileType.AllowAnonymous && !binaryFileType.IsAuthorized( Authorization.EDIT, currentPerson ) && grant?.IsAccessGranted( binaryFileType, Authorization.EDIT ) != true )
             {
                 throw new Rock.Web.FileUploadException( "Not authorized to upload this type of file.", System.Net.HttpStatusCode.Forbidden );
             }
