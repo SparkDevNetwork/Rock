@@ -521,6 +521,82 @@ namespace Rock.Security
         }
 
         /// <summary>
+        /// Encrypts a root folder path, such as "~/Content", so that it can be
+        /// sent to the browser and later trusted by <see cref="DecryptRootFolder(string)"/>.
+        /// Root folders must always be encrypted with this method so that they
+        /// can't be produced by any other use of encryption.
+        /// </summary>
+        /// <param name="rootFolder">The root folder path.</param>
+        /// <returns>The encrypted root folder, or an empty string if <paramref name="rootFolder"/> is empty.</returns>
+        public static string EncryptRootFolder( string rootFolder )
+        {
+            if ( string.IsNullOrEmpty( rootFolder ) )
+            {
+                return string.Empty;
+            }
+
+            return EncryptStringForPurpose( rootFolder, RootFolderEncryptionPurpose );
+        }
+
+        /// <summary>
+        /// Decrypts a root folder that was encrypted by <see cref="EncryptRootFolder(string)"/>.
+        /// </summary>
+        /// <param name="encryptedRootFolder">The encrypted root folder.</param>
+        /// <returns>The root folder path; otherwise <c>null</c>.</returns>
+        public static string DecryptRootFolder( string encryptedRootFolder )
+        {
+            if ( string.IsNullOrWhiteSpace( encryptedRootFolder ) )
+            {
+                return null;
+            }
+
+            var rootFolder = DecryptStringForPurpose( encryptedRootFolder, RootFolderEncryptionPurpose );
+
+            if ( rootFolder != null )
+            {
+                return rootFolder;
+            }
+
+            /*
+                10/6/2026 - MSE
+
+                Root folders used to be encrypted with EncryptString(). Values
+                in that format are still accepted, but only for the content
+                folder, which is the default root folder anyway. This keeps
+                existing links and custom code working.
+
+                Reason: Root folders should only come from Rock.
+            */
+            rootFolder = DecryptString( encryptedRootFolder );
+
+            return IsLegacyRootFolderAllowed( rootFolder ) ? rootFolder : null;
+        }
+
+        /// <summary>
+        /// Determines whether a root folder that was encrypted with
+        /// <see cref="EncryptString(string)"/> can still be used. Only the
+        /// content folder and folders inside of it are allowed.
+        /// </summary>
+        /// <param name="rootFolder">The root folder path.</param>
+        /// <returns><c>true</c> if the root folder can be used; otherwise <c>false</c>.</returns>
+        private static bool IsLegacyRootFolderAllowed( string rootFolder )
+        {
+            if ( string.IsNullOrWhiteSpace( rootFolder ) )
+            {
+                return false;
+            }
+
+            var segments = rootFolder.Trim().Replace( '\\', '/' ).TrimEnd( '/' ).Split( '/' );
+
+            if ( segments.Length < 2 || segments[0] != "~" || !segments[1].Equals( LegacyRootFolderName, StringComparison.OrdinalIgnoreCase ) )
+            {
+                return false;
+            }
+
+            return segments.Skip( 1 ).All( s => s.Length > 0 && s.Trim( '.', ' ' ).Length > 0 && s.IndexOfAny( Path.GetInvalidFileNameChars() ) < 0 );
+        }
+
+        /// <summary>
         /// Verifies the authentication code and then decrypts the text using
         /// the keys derived from a single data encryption key.
         /// </summary>
@@ -624,6 +700,17 @@ namespace Rock.Security
         private const string PurposeAuthenticationKeyUse = "Authentication";
 
         private static readonly ConcurrentDictionary<string, byte[]> _purposeKeyBytes = new ConcurrentDictionary<string, byte[]>();
+
+        /// <summary>
+        /// The purpose used when encrypting root folders.
+        /// </summary>
+        private const string RootFolderEncryptionPurpose = "Rock.RootFolder";
+
+        /// <summary>
+        /// The only top level folder that root folders in the old format
+        /// can be in.
+        /// </summary>
+        private const string LegacyRootFolderName = "Content";
 
         /// <summary>
         /// Decrypts the string.

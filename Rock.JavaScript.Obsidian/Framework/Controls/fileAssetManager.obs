@@ -955,12 +955,18 @@
                 const file = fileInputElement.value.files[0];
                 if (isFolderLocal.value) {
                     const { encryptedRoot, subPath } = parseFolderName(selectedFolder.value ?? "");
-                    await uploadContentFile(file, encryptedRoot, subPath);
+                    await uploadContentFile(file, encryptedRoot, subPath, {
+                        securityGrantToken: securityGrantToken.value,
+                        progress: () => { }
+                    });
                 }
                 else {
                     const { providerId, folderPath } = parseFolderName(selectedFolder.value ?? "");
 
-                    await uploadAssetProviderFile(file, folderPath, providerId);
+                    await uploadAssetProviderFile(file, folderPath, providerId, {
+                        securityGrantToken: securityGrantToken.value,
+                        progress: () => { }
+                    });
                 }
                 refreshFiles();
             }
@@ -988,7 +994,10 @@
 
             const file = zipFileInputElement.value.files[0];
             const { encryptedRoot, subPath } = parseFolderName(selectedFolder.value ?? "");
-            const { text: fileName } = await uploadContentFile(file, encryptedRoot, subPath);
+            const { text: fileName } = await uploadContentFile(file, encryptedRoot, subPath, {
+                securityGrantToken: securityGrantToken.value,
+                progress: () => { }
+            });
 
             if (!fileName) {
                 throw new Error("Cannot extract file because of an issue with the upload.");

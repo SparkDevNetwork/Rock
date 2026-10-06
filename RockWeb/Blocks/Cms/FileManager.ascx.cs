@@ -139,7 +139,7 @@ namespace RockWeb.Blocks.Cms
                 browseMode = "doc";
             }
 
-            iframeUrl += "?RootFolder=" + HttpUtility.UrlEncode( Encryption.EncryptString( rootFolder ) );
+            iframeUrl += "?RootFolder=" + HttpUtility.UrlEncode( Encryption.EncryptRootFolder( rootFolder ) );
 
             if ( zipUploaderEnabled )
             {
