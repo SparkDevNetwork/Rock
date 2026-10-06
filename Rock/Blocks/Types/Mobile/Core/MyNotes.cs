@@ -756,6 +756,11 @@ namespace Rock.Blocks.Types.Mobile.Core
         [BlockAction]
         public BlockActionResult LinkToPerson( LinkToPersonRequestBag options )
         {
+            if ( RequestContext.CurrentPerson == null )
+            {
+                return ActionUnauthorized();
+            }
+
             var noteService = new NoteService( RockContext );
             var personService = new PersonService( RockContext );
 
@@ -766,6 +771,26 @@ namespace Rock.Blocks.Types.Mobile.Core
             if ( note == null || person == null || noteType == null )
             {
                 return ActionNotFound();
+            }
+
+            // Check the note as it exists now, before any fields are changed,
+            // since a note's security is inherited from its note type.
+            if ( !note.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
+            {
+                return ActionForbidden( "You are not authorized to edit this note." );
+            }
+
+            if ( !person.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson ) )
+            {
+                return ActionForbidden( "You are not authorized to view this person." );
+            }
+
+            // Only allow the person note types this block is configured for.
+            var isNoteTypeAllowed = GetLinkToPersonNoteTypes().Any( nt => nt.Id == noteType.Id );
+
+            if ( !isNoteTypeAllowed || !noteType.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
+            {
+                return ActionForbidden( "You are not authorized to use this note type." );
             }
 
             note.EntityId = person.Id;
