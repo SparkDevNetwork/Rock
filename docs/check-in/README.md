@@ -13,5 +13,6 @@ If you are new, start with [check-in-overview.md](check-in-overview.md). Sub-top
 | [Label Designer and Printing](label-designer-and-printing.md) | Visual label designer, field-data-source pattern, formatters, cloud-print serialization for shared printers. |
 | [Mobile Check-in](mobile-check-in.md) | Same v2 engine on mobile, cloud-print label routing, `SourceTypeValueId` for entry-channel distinction. |
 | [Next-Gen Check-in (v2) vs Legacy](v2-vs-legacy.md) | Two engines comparison, why v2 exists, migration considerations. |
+| [Check-in Security](security.md) | Site/page auth, the REST key for anonymous kiosks, `[Secured]` on the v2 API, and PIN authentication for supervisor functions. |
 | [Opportunity Filters](opportunity-filters.md) | The filter chain, built-in filters (age/grade/gender/etc.), authoring custom filters, ordering decisions. |
 | [Skip Screen Behavior](skip-screen-behavior.md) | Tri-state per-kiosk setting controlling when the area "skip" screen is shown during check-in. |
