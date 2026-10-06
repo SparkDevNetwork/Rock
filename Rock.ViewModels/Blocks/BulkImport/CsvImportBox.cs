@@ -71,5 +71,10 @@ namespace Rock.ViewModels.Blocks.BulkImport
         /// Gets or sets the available Record Status options for this Rock instance.
         /// </summary>
         public string RecordStatusOptions { get; set; }
+
+        /// <summary>
+        /// Gets or sets the security grant token.
+        /// </summary>
+        public string SecurityGrantToken { get; set; }
     }
 }
