@@ -205,6 +205,63 @@ namespace Rock.Tests.Integration.Communication.Chat.Platform.Sync
         }
 
         /// <summary>
+        /// Reads a channel row until it satisfies a condition, or null when it never does.
+        /// </summary>
+        /// <param name="tenantId">The church.</param>
+        /// <param name="channelId">The channel, which is the chat group's Guid.</param>
+        /// <param name="isReady">Whether the row read is the one waited for; given null for no row.</param>
+        /// <returns>The row, or null.</returns>
+        public JObject WaitForChannel( Guid tenantId, Guid channelId, Func<JObject, bool> isReady )
+        {
+            return WaitFor(
+                $"chat_channels?select=channel_type,absent_since&tenant_id=eq.{tenantId}&channel_id=eq.{channelId}",
+                isReady );
+        }
+
+        /// <summary>
+        /// One message as the platform stored it, or null where there is none.
+        /// </summary>
+        /// <param name="tenantId">The church.</param>
+        /// <param name="messageId">The id the post answered.</param>
+        /// <returns>The row, or null.</returns>
+        public JObject ReadMessage( Guid tenantId, long messageId )
+        {
+            return Read( $"messages?select=channel_id,person_alias_guid,message_type,body&tenant_id=eq.{tenantId}&id=eq.{messageId}" );
+        }
+
+        /// <summary>
+        /// Puts the Rock system chat person in a church's mirror, as the church's first full sync
+        /// does, so a system line has an author without running a whole sync.
+        /// </summary>
+        /// <param name="tenantId">The church.</param>
+        public void AddSystemAuthor( Guid tenantId )
+        {
+            var author = Rock.SystemGuid.Person.CHAT_SYSTEM_AUTHOR.AsGuid();
+            var row = new JObject
+            {
+                ["tenant_id"] = tenantId.ToString(),
+                ["person_alias_guid"] = author.ToString(),
+                ["primary_person_alias_guid"] = author.ToString(),
+                ["nick_name"] = "Rock",
+                ["last_name"] = "Chat",
+                ["synced_at"] = "2026-01-01T00:00:00Z"
+            };
+
+            using ( var request = new HttpRequestMessage( HttpMethod.Post, _url + "/rest/v1/chat_aliases" ) )
+            {
+                request.Headers.TryAddWithoutValidation( "apikey", _serviceRoleKey );
+                request.Headers.TryAddWithoutValidation( "Authorization", "Bearer " + _serviceRoleKey );
+                request.Content = new StringContent( row.ToString( Formatting.None ), Encoding.UTF8, "application/json" );
+
+                using ( var response = _http.SendAsync( request ).GetAwaiter().GetResult() )
+                {
+                    var text = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+                    Assert.IsTrue( response.IsSuccessStatusCode, $"the system person could not be written: HTTP {( int ) response.StatusCode} {text}" );
+                }
+            }
+        }
+
+        /// <summary>
         /// Reads one row again and again until it satisfies a condition or the wait runs out.
         /// </summary>
         /// <param name="query">The data API path and query.</param>
