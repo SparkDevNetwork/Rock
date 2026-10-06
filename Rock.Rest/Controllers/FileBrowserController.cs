@@ -27,6 +27,7 @@ using System.Web.Http;
 using ImageResizer;
 
 using Rock.Data;
+using Rock.Rest.Filters;
 
 namespace Rock.Rest.Controllers
 {
@@ -42,37 +43,56 @@ namespace Rock.Rest.Controllers
         /// <param name="relativeFilePath">The relative file path.</param>
         /// <param name="width">The width.</param>
         /// <param name="height">The height.</param>
+        /// <param name="rootFolder">The encrypted root folder that the file must be in.</param>
         /// <returns></returns>
         /// <example>
-        ///   <![CDATA[ <img src='api/FileBrowser/GetFileThumbnail?relativeFilePath=External+Site%5cMarketing%5cFunnyCat.gif&width=100&height=100 ]]>
+        ///   <![CDATA[ <img src='api/FileBrowser/GetFileThumbnail?relativeFilePath=External+Site%5cMarketing%5cFunnyCat.gif&width=100&height=100&rootFolder=EAAAA... ]]>
         /// </example>
         [HttpGet]
+        [Authenticate, Secured]
         [System.Web.Http.Route( "api/FileBrowser/GetFileThumbnail" )]
         [Rock.SystemGuid.RestActionGuid( "11495FA9-A0E6-4439-80C6-BF804CB0A584" )]
-        public HttpResponseMessage GetFileThumbnail( string relativeFilePath, int? width = 100, int? height = 100 )
+        public HttpResponseMessage GetFileThumbnail( string relativeFilePath, int? width = 100, int? height = 100, string rootFolder = null )
         {
-            string physicalFilePath = HttpContext.Current.Request.MapPath( relativeFilePath );
-            string fullPath = physicalFilePath;
+            /*
+                10/6/2026 - MSE
+
+                Thumbnails require a signed-in person, the same as the file browser.
+
+                The thumbnail is only returned for files inside the root folder
+                that the file browser was opened with. The root folder is passed
+                encrypted, the same way the file browser receives it.
+
+                A file that doesn't exist gets the same file type icon as a file
+                that isn't an image.
+
+                Reason: Keep thumbnails consistent with what the file browser shows.
+            */
+            if ( ApiControllerBase.GetPerson( this, null ) == null )
+            {
+                throw new HttpResponseException( HttpStatusCode.Unauthorized );
+            }
+
+            string fullPath = GetPhysicalFilePath( relativeFilePath, rootFolder );
+
+            if ( fullPath == null )
+            {
+                throw new HttpResponseException( new System.Net.Http.HttpResponseMessage( HttpStatusCode.NotFound ) );
+            }
 
             // default width/height to 100 if they specified a zero or negative param
             width = width <= 0 ? 100 : width;
             height = height <= 0 ? 100 : height;
 
-            // return a 404 if the file doesn't exist
-            if ( !File.Exists( fullPath ) )
-            {
-                throw new HttpResponseException( new System.Net.Http.HttpResponseMessage( HttpStatusCode.NotFound ) );
-            }
-
-            string mimeType = System.Web.MimeMapping.GetMimeMapping( physicalFilePath );
-            if ( mimeType.StartsWith( "image/" ) )
+            string mimeType = System.Web.MimeMapping.GetMimeMapping( fullPath );
+            if ( mimeType.StartsWith( "image/" ) && File.Exists( fullPath ) )
             {
                 return ResizeAndSendImage( width, height, fullPath );
             }
             else
             {
                 // figure out the extension of the file
-                string fileExtension = Path.GetExtension( relativeFilePath ).TrimStart( '.' );
+                string fileExtension = Path.GetExtension( fullPath ).TrimStart( '.' );
                 string virtualThumbnailFilePath = string.Format( "~/Assets/Icons/FileTypes/{0}.png", fileExtension );
                 string thumbnailFilePath = HttpContext.Current.Request.MapPath( virtualThumbnailFilePath );
                 if ( !File.Exists( thumbnailFilePath ) )
@@ -82,6 +102,51 @@ namespace Rock.Rest.Controllers
                 }
 
                 return ResizeAndSendImage( width, height, thumbnailFilePath );
+            }
+        }
+
+        /// <summary>
+        /// Gets the physical path of the file if it is inside the root folder.
+        /// </summary>
+        /// <param name="relativeFilePath">The relative file path.</param>
+        /// <param name="encryptedRootFolder">The encrypted root folder.</param>
+        /// <returns>The physical file path, or <c>null</c> if the file is not inside the root folder.</returns>
+        private static string GetPhysicalFilePath( string relativeFilePath, string encryptedRootFolder )
+        {
+            if ( relativeFilePath.IsNullOrWhiteSpace() || encryptedRootFolder.IsNullOrWhiteSpace() )
+            {
+                return null;
+            }
+
+            try
+            {
+                var rootFolder = Rock.Security.Encryption.DecryptString( encryptedRootFolder, false );
+
+                if ( rootFolder.IsNullOrWhiteSpace() )
+                {
+                    return null;
+                }
+
+                if ( !rootFolder.StartsWith( "~/" ) )
+                {
+                    rootFolder = "~/" + rootFolder.TrimStart( '/', '\\' );
+                }
+
+                var physicalRootFolder = Path.GetFullPath( HttpContext.Current.Request.MapPath( rootFolder ) )
+                    .TrimEnd( Path.DirectorySeparatorChar ) + Path.DirectorySeparatorChar;
+                var physicalFilePath = Path.GetFullPath( HttpContext.Current.Request.MapPath( relativeFilePath ) );
+
+                if ( !physicalFilePath.StartsWith( physicalRootFolder, StringComparison.OrdinalIgnoreCase ) )
+                {
+                    return null;
+                }
+
+                return physicalFilePath;
+            }
+            catch
+            {
+                // An invalid root folder or path is treated the same as a path outside the root folder.
+                return null;
             }
         }
 
