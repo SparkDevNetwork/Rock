@@ -67,6 +67,53 @@ namespace Rock.Utility
         }
 
         /// <summary>
+        /// Determines whether the file name's extension is allowed by the
+        /// ContentFiletypeBlacklist and ContentFiletypeWhitelist global
+        /// attributes. These are the same lists used when content files are
+        /// uploaded.
+        /// </summary>
+        /// <param name="fileName">The name of the file, which may include a path.</param>
+        /// <returns><c>true</c> if the file type is allowed; otherwise <c>false</c>.</returns>
+        public static bool IsFileTypeAllowed( string fileName )
+        {
+            if ( fileName.IsNullOrWhiteSpace() )
+            {
+                return false;
+            }
+
+            // Windows removes trailing dots and spaces from file names, so
+            // they could be used to hide the real extension.
+            if ( fileName.EndsWith( "." ) || fileName != fileName.TrimEnd() )
+            {
+                return false;
+            }
+
+            var fileExtension = Path.GetExtension( fileName ).ToLower().TrimStart( '.' ).Trim();
+            var globalAttributesCache = Rock.Web.Cache.GlobalAttributesCache.Get();
+
+            var blackList = ( globalAttributesCache.GetValue( "ContentFiletypeBlacklist" ) ?? string.Empty )
+                .Split( new char[] { ',', ';' }, StringSplitOptions.RemoveEmptyEntries )
+                .Select( a => a.ToLower().TrimStart( '.', ' ' ).Trim() );
+
+            if ( blackList.Contains( fileExtension ) )
+            {
+                return false;
+            }
+
+            var whiteList = ( globalAttributesCache.GetValue( "ContentFiletypeWhitelist" ) ?? string.Empty )
+                .Split( new char[] { ',', ';' }, StringSplitOptions.RemoveEmptyEntries )
+                .Select( a => a.ToLower().TrimStart( '.', ' ' ).Trim() )
+                .ToList();
+
+            if ( whiteList.Any() && !whiteList.Contains( fileExtension ) )
+            {
+                return false;
+            }
+
+            return true;
+        }
+
+        /// <summary>
         /// Gets the file bytes.
         /// </summary>
         /// <param name="uploadedFile">The uploaded file.</param>
