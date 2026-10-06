@@ -756,8 +756,8 @@ $(document).ready( function() {{
 
         rockFileBrowserOptions: {{
             enabled: {rockFileBrowserEnabled.ToTrueFalse().ToLower()},
-            documentFolderRoot: '{Rock.Security.Encryption.EncryptString( documentFolderRoot )}',
-            imageFolderRoot: '{Rock.Security.Encryption.EncryptString( imageFolderRoot )}'
+            documentFolderRoot: '{Rock.Security.Encryption.EncryptRootFolder( documentFolderRoot )}',
+            imageFolderRoot: '{Rock.Security.Encryption.EncryptRootFolder( imageFolderRoot )}'
         }},
 
         rockAssetManagerOptions: {{

@@ -66,8 +66,8 @@ namespace Rock.Field.Types
             var publicConfig = new Dictionary<string, string>( privateConfigurationValues );
 
             publicConfig.AddOrReplace( CONDENSED_HTML, GetCondensedHtmlValue( value, privateConfigurationValues ) );
-            publicConfig.AddOrReplace( ENCRYPTED_DOCUMENT_FOLDER_ROOT, Rock.Security.Encryption.EncryptString( publicConfig.GetValueOrDefault( DOCUMENT_FOLDER_ROOT, "" ) ) );
-            publicConfig.AddOrReplace( ENCRYPTED_IMAGE_FOLDER_ROOT, Rock.Security.Encryption.EncryptString( publicConfig.GetValueOrDefault( IMAGE_FOLDER_ROOT, "" ) ) );
+            publicConfig.AddOrReplace( ENCRYPTED_DOCUMENT_FOLDER_ROOT, Rock.Security.Encryption.EncryptRootFolder( publicConfig.GetValueOrDefault( DOCUMENT_FOLDER_ROOT, "" ) ) );
+            publicConfig.AddOrReplace( ENCRYPTED_IMAGE_FOLDER_ROOT, Rock.Security.Encryption.EncryptRootFolder( publicConfig.GetValueOrDefault( IMAGE_FOLDER_ROOT, "" ) ) );
 
             return publicConfig;
         }

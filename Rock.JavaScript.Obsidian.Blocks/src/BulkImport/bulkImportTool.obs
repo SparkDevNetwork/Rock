@@ -133,7 +133,7 @@
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import RadioButton from "@Obsidian/Controls/radioButton.obs";
     import TextBox from "@Obsidian/Controls/textBox.obs";
-    import { useConfigurationValues, useInvokeBlockAction, useBlockActionUrl } from "@Obsidian/Utility/block";
+    import { getSecurityGrant, provideSecurityGrant, useConfigurationValues, useInvokeBlockAction, useBlockActionUrl } from "@Obsidian/Utility/block";
     import { BulkImportToolBox } from "@Obsidian/ViewModels/Blocks/BulkImport/bulkImportToolBox";
     import Panel from "@Obsidian/Controls/panel.obs";
     import { BtnType } from "@Obsidian/Enums/Controls/btnType";
@@ -145,6 +145,9 @@
 
     const config = useConfigurationValues<BulkImportToolBox>();
     const invokeBlockAction = useInvokeBlockAction();
+    const securityGrant = getSecurityGrant(config.securityGrantToken);
+
+    provideSecurityGrant(securityGrant);
 
     // #region Values
 
