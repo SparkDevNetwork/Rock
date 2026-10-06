@@ -66,7 +66,7 @@ namespace Rock.Security.SecurityGrantRules
 
         #region Methods
 
-        /// <inhewhat ritdoc/>
+        /// <inheritdoc/>
         public override bool IsAccessGranted( object obj, string action )
         {
             if ( obj is FileUploadAccess access )
