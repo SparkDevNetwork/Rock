@@ -22,7 +22,9 @@ using Rock.AI.Agent.Classes;
 using Rock.AI.Agent.Classes.Common;
 using Rock.AI.Agent.Classes.Entity;
 using Rock.Configuration;
+using Rock.Data;
 using Rock.Model;
+using Rock.Security;
 using Rock.SystemGuid;
 
 namespace Rock.AI.Agent.Skills;
@@ -50,19 +52,40 @@ internal sealed partial class ConnectionSkill
         SetOrClear<string> placementGroupIdKey = null,
         List<AttributeValueResult> attributeValues = null )
     {
+        var currentPerson = AgentRequestContext.CurrentPerson;
+
+        if ( currentPerson == null )
+        {
+            return Error( "You must be logged in to add or update a connection request." );
+        }
+
         using var rockContext = RockApp.Current.CreateRockContext();
         var helper = new AgentToolHelper( rockContext, AgentRequestContext, _logger );
+        var connectionRequestService = new ConnectionRequestService( rockContext );
 
         ConnectionRequest connectionRequest;
 
         if ( connectionRequestIdKey.IsNotNullOrWhiteSpace() )
         {
             connectionRequest = helper.GetRequiredEntity<ConnectionRequest>( connectionRequestIdKey, checkSecurity: true );
+
+            // This handles opportunity EDIT, connector groups, the assigned
+            // connector and request security the same way the connection
+            // blocks do.
+            if ( connectionRequest != null && !connectionRequestService.IsAuthorizedToEdit( connectionRequest, currentPerson ) )
+            {
+                helper.AddError( "You are not authorized to edit this connection request." );
+            }
+
+            if ( personIdKey.IsNotNullOrWhiteSpace() )
+            {
+                helper.AddError( $"A connection request cannot be moved to a new person, do not provide a {nameof( personIdKey )} when editing." );
+            }
         }
         else
         {
             connectionRequest = rockContext.Set<ConnectionRequest>().Create();
-            new ConnectionRequestService( rockContext ).Add( connectionRequest );
+            connectionRequestService.Add( connectionRequest );
 
             var connectionOpportunity = helper.GetOptionalEntity<ConnectionOpportunity>( connectionOpportunityIdKey, checkSecurity: true );
 
@@ -71,6 +94,11 @@ internal sealed partial class ConnectionSkill
                 connectionRequest.ConnectionOpportunity = connectionOpportunity;
                 connectionRequest.ConnectionOpportunityId = connectionOpportunity.Id;
                 connectionRequest.ConnectionTypeId = connectionOpportunity.ConnectionTypeId;
+
+                if ( !IsAuthorizedToAddRequest( connectionRequest, currentPerson, rockContext ) )
+                {
+                    helper.AddError( "You are not authorized to add requests to this connection opportunity." );
+                }
             }
             else
             {
@@ -140,6 +168,35 @@ internal sealed partial class ConnectionSkill
 
 
     #endregion
+
+    /// <summary>
+    /// Determines if the person is allowed to add a new request to the
+    /// opportunity of <paramref name="connectionRequest"/>. This follows the
+    /// connection request detail block, which allows anybody with EDIT on
+    /// the opportunity or in any of its connector groups. A new request does
+    /// not have a campus yet, so the campus of the connector group is not
+    /// considered.
+    /// </summary>
+    /// <param name="connectionRequest">The new connection request, which must have its opportunity set.</param>
+    /// <param name="person">The person that is adding the request.</param>
+    /// <param name="rockContext">The context to use when checking connector groups.</param>
+    /// <returns><c>true</c> if the person can add the request; otherwise <c>false</c>.</returns>
+    private static bool IsAuthorizedToAddRequest( ConnectionRequest connectionRequest, Model.Person person, RockContext rockContext )
+    {
+        // With no connector assigned yet this checks EDIT on the opportunity.
+        if ( connectionRequest.IsAuthorized( Authorization.EDIT, person ) )
+        {
+            return true;
+        }
+
+        var connectionOpportunityId = connectionRequest.ConnectionOpportunityId;
+
+        return new ConnectionOpportunityConnectorGroupService( rockContext )
+            .Queryable()
+            .Where( cocg => cocg.ConnectionOpportunityId == connectionOpportunityId
+                && cocg.ConnectorGroup.Members.Any( m => m.PersonId == person.Id && m.GroupMemberStatus == GroupMemberStatus.Active ) )
+            .Any();
+    }
 
     private static ConnectionStatus GetConnectionStatusOrDefault( AgentToolHelper helper, string statusIdKey, ConnectionOpportunity opportunity )
     {
