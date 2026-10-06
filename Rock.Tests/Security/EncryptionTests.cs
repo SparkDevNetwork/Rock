@@ -201,5 +201,106 @@ namespace Rock.Tests.Security
         }
 
         #endregion
+
+        #region Root Folder Encryption
+
+        [TestMethod]
+        [DataRow( "~/Content" )]
+        [DataRow( "~/App_Data/TemporaryFiles" )]
+        [DataRow( "~/Content/Themes/Rock/" )]
+        public void DecryptRootFolderReturnsRootFolderEncryptedForRootFolders( string rootFolder )
+        {
+            var encrypted = Encryption.EncryptRootFolder( rootFolder );
+
+            Assert.AreEqual( rootFolder, Encryption.DecryptRootFolder( encrypted ) );
+        }
+
+        [TestMethod]
+        public void EncryptRootFolderReturnsEmptyStringForEmptyRootFolder()
+        {
+            Assert.AreEqual( string.Empty, Encryption.EncryptRootFolder( null ) );
+            Assert.AreEqual( string.Empty, Encryption.EncryptRootFolder( string.Empty ) );
+        }
+
+        [TestMethod]
+        public void DecryptRootFolderReturnsNullForEmptyText()
+        {
+            Assert.IsNull( Encryption.DecryptRootFolder( null ) );
+            Assert.IsNull( Encryption.DecryptRootFolder( string.Empty ) );
+            Assert.IsNull( Encryption.DecryptRootFolder( " " ) );
+        }
+
+        [TestMethod]
+        [DataRow( "~/Content" )]
+        [DataRow( "~/Content/" )]
+        [DataRow( "~/content/Images" )]
+        [DataRow( "~/Content/Themes/Rock/Assets" )]
+        public void DecryptRootFolderAllowsContentFolderEncryptedWithoutPurpose( string rootFolder )
+        {
+            var encrypted = Encryption.EncryptString( rootFolder );
+
+            Assert.AreEqual( rootFolder, Encryption.DecryptRootFolder( encrypted ) );
+        }
+
+        [TestMethod]
+        [DataRow( "~/" )]
+        [DataRow( "~" )]
+        [DataRow( "~/App_Data" )]
+        [DataRow( "~/Bin" )]
+        [DataRow( "~/App_Code/" )]
+        [DataRow( "~/Content/.." )]
+        [DataRow( "~/Content/../Bin" )]
+        [DataRow( "~/Content/./../App_Data" )]
+        [DataRow( "~\\Content\\..\\App_Data" )]
+        [DataRow( "~/Content/ /.." )]
+        [DataRow( "~/Content/.../x" )]
+        [DataRow( "~/ContentX" )]
+        [DataRow( "~/CONTEN~1" )]
+        [DataRow( "~/Content/x:stream" )]
+        [DataRow( "Content" )]
+        [DataRow( "/Content" )]
+        [DataRow( "C:\\inetpub\\wwwroot\\Content" )]
+        public void DecryptRootFolderRejectsOtherFoldersEncryptedWithoutPurpose( string rootFolder )
+        {
+            var encrypted = Encryption.EncryptString( rootFolder );
+
+            Assert.IsNull( Encryption.DecryptRootFolder( encrypted ) );
+        }
+
+        [TestMethod]
+        public void DecryptRootFolderRejectsTextEncryptedForOtherPurpose()
+        {
+            var encrypted = Encryption.EncryptStringForPurpose( "~/App_Data", _purpose1 );
+
+            Assert.IsNull( Encryption.DecryptRootFolder( encrypted ) );
+        }
+
+        [TestMethod]
+        public void DecryptRootFolderRejectsModifiedEncryptedText()
+        {
+            var encrypted = Encryption.EncryptRootFolder( "~/App_Data/TemporaryFiles" );
+
+            Assert.IsNull( Encryption.DecryptRootFolder( ChangeCharacter( encrypted, 5 ) ) );
+            Assert.IsNull( Encryption.DecryptRootFolder( ChangeCharacter( encrypted, encrypted.Length - 3 ) ) );
+        }
+
+        [TestMethod]
+        public void DecryptStringDoesNotReturnRootFolder()
+        {
+            var encrypted = Encryption.EncryptRootFolder( "~/App_Data/TemporaryFiles" );
+
+            Assert.AreNotEqual( "~/App_Data/TemporaryFiles", Encryption.DecryptString( encrypted ) );
+        }
+
+        [TestMethod]
+        public void EncryptRootFolderProducesDifferentTextEachTime()
+        {
+            var encrypted1 = Encryption.EncryptRootFolder( "~/Content" );
+            var encrypted2 = Encryption.EncryptRootFolder( "~/Content" );
+
+            Assert.AreNotEqual( encrypted1, encrypted2 );
+        }
+
+        #endregion
     }
 }
