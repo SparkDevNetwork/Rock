@@ -99,6 +99,9 @@ export type DirectMessageDependencies = {
 
     /** Spreads the waits of many clients apart; Math.random by default. */
     random?: () => number;
+
+    /** Tells the person about a failure that has no draft on screen to show it. */
+    report?: (error: ChatError) => void;
 };
 
 /** The direct messages a shell holds. */
@@ -198,6 +201,17 @@ export function createDirectMessages(dependencies: DirectMessageDependencies): D
     let isStopped = false;
 
     /**
+     * First messages Rock refused after the person left their draft, by the people they were
+     * for, so the next draft to those people opens holding the text instead of losing it.
+     */
+    const refusedBodies = new Map<string, string>();
+
+    /** The same key for the same people in any order. */
+    function peopleKey(people: PersonRow[]): string {
+        return people.map(p => p.person_alias_guid.toLowerCase()).sort().join(",");
+    }
+
+    /**
      * Takes a draft still on screen off it and opens its conversation. A draft the person left
      * is not brought back: they chose to be somewhere else.
      */
@@ -295,7 +309,10 @@ export function createDirectMessages(dependencies: DirectMessageDependencies): D
                 await dependencies.openChannel(result.channelId);
             }
             else {
-                state.draft = { people, body: "", status: "draft", channelGuid: null };
+                const key = peopleKey(people);
+                const body = refusedBodies.get(key) ?? "";
+                refusedBodies.delete(key);
+                state.draft = { people, body, status: "draft", channelGuid: null };
             }
         },
 
@@ -327,11 +344,22 @@ export function createDirectMessages(dependencies: DirectMessageDependencies): D
             }
 
             // A refusal is Rock's answer and no wait changes it. A person still on the draft is
-            // told; one who left it before Rock answered has nothing to send into.
+            // told there. One who left it has no draft to show it on, so they are told elsewhere
+            // and the text waits for their next draft to the same people.
             if (!channelId) {
+                const reason = answer.message ?? "The conversation could not be started. Try again.";
                 if (state.draft === draft) {
                     draft.status = "draft";
-                    state.error = answer.message ?? "The conversation could not be started. Try again.";
+                    state.error = reason;
+                }
+                else {
+                    refusedBodies.set(peopleKey(draft.people), draft.body);
+                    const names = draft.people.map(p => p.nick_name).join(", ");
+                    dependencies.report?.({
+                        code: "door.first_message_refused",
+                        severity: "permission",
+                        text: `Your message to ${names} could not be sent. ${reason}`
+                    });
                 }
                 return false;
             }

@@ -264,7 +264,9 @@ export function createChatShell(options: ShellOptions): ChatShell {
 
     /** Tells the person about a failure, once per code until it is dismissed. */
     function report(error: ChatError): void {
-        if (!state.errors.some(e => e.code === error.code)) {
+        // The same failure twice shows once; two refused messages under one code are two
+        // different sentences, so the text is part of what makes an error the same one.
+        if (!state.errors.some(e => e.code === error.code && e.text === error.text)) {
             state.errors.push(error);
         }
     }
@@ -450,7 +452,8 @@ export function createChatShell(options: ShellOptions): ChatShell {
             notePushSend();
             return isSent;
         },
-        retryDelay: () => ({ baseMs: session.settings().limits.reconnect_base_ms, capMs: session.settings().limits.reconnect_cap_ms })
+        retryDelay: () => ({ baseMs: session.settings().limits.reconnect_base_ms, capMs: session.settings().limits.reconnect_cap_ms }),
+        report
     });
 
     /** Fetches the sidebar and replaces the rows with it. */

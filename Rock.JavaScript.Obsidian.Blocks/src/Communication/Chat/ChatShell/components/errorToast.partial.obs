@@ -1,7 +1,7 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
     <div v-if="shown.length > 0" class="chat-error-toast" data-testid="error-toast">
-        <div v-for="error in shown" :key="error.code" class="alert alert-warning chat-error-toast-item" :data-code="error.code">
+        <div v-for="error in shown" :key="`${error.code} ${error.text ?? ''}`" class="alert alert-warning chat-error-toast-item" :data-code="error.code">
             <span>{{ messageForError(error) }}</span>
             <button type="button" class="close" aria-label="Dismiss" @click="emit('dismiss', error.code)">&times;</button>
         </div>
