@@ -1,6 +1,6 @@
 ---
 title: Check-in Domain Overview
-last_updated: 2026-06-03
+last_updated: 2026-10-06
 related_specs:
   - specs/completed/check-in/260506-check-in-areas-and-groups-obsidian-conversion.md
 related_files:
@@ -71,6 +71,8 @@ The legacy engine modeled this as a stateful workflow with `CheckInState` carryi
 
 **`Display Address on Families` is per-template (`42659c7705`, 2025-10-16).** Hide, optional, or required. Affects family edit screens during check-in. Required-mode blocks completing check-in until an address is entered.
 
+**Check-in Manager is tablet-only; phones are not a supported use case.** The Check-in Manager portal (Room Roster, Room List, Search, En Route, Attendance Detail; blocks in `Rock.Blocks/CheckIn/Manager/`) targets tablets (iPad class) at **1024px wide or more**. Phone-size layouts are intentionally not supported: the blocks need more screen space than a phone has to show the required information, and supporting both would mean building and maintaining two separate layouts and behaviors. Issues reporting that the roster or manager toolbar is not responsive on a phone are working as designed and should be closed with that explanation (maintainer answer on [SparkDevNetwork/Rock#6915](https://github.com/SparkDevNetwork/Rock/issues/6915)). Layout problems at 1024px or wider (for example landscape iPad) are still valid bugs.
+
 **Label printing uses cloud-print sockets in v2.** `Rock/CheckIn/v2/CloudPrintLabelConsumer.cs` is the consumer side. Multiple kiosks printing to the same physical printer must serialize through the cloud-print socket; pre-fix interleaving (`cd43d120de`) is resolved.
 
 **Label Designer rectangles are width-aware.** Commit `ecc4115a7b` (Fixes #6354) fixed a Label Designer bug where vertical rectangles (taller than wide) rendered at the wrong size, preventing vertical-bar layouts.
@@ -130,6 +132,10 @@ Rejected. Rollout risk is too high; legacy stays available until adoption is hig
 ### Real-time capacity recomputation in the kiosk UI
 
 Rejected. The kiosk's 6-second budget per family does not allow live recomputation. Capacity is computed at session start and re-validated at save; mid-session optimistic display is acceptable.
+
+### Phone-size layouts for Check-in Manager
+
+Making the Room Roster and the rest of the Check-in Manager responsive down to phone width. Rejected: a phone cannot show the information the roster needs, and supporting phone and tablet layouts would require writing and maintaining two different layout and functionality patterns. Minimum supported size is a 1024px-wide tablet (see [SparkDevNetwork/Rock#6915](https://github.com/SparkDevNetwork/Rock/issues/6915)).
 
 ### Stateless label rendering
 
