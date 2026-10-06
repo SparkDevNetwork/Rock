@@ -22,6 +22,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rock.Configuration;
 using Rock.Enums.AI.Agent;
 using Rock.Model;
+using Rock.Security;
 using Rock.Tests.Shared.TestAccess.AI.Agent;
 using Rock.Tests.Shared.TestFramework;
 using Rock.Utility;
@@ -84,6 +85,22 @@ public partial class CmsSkillTests
         var skill = CreateSkill( scope.App, CreateRequestContext( rockContext ) );
 
         var result = skill.GetPersonalizationSegment( IdHasher.Instance.GetHash( 999 ) );
+
+        Assert.AreEqual( ToolStatus.Error, result.GetStatus() );
+    }
+
+    [TestMethod]
+    public void GetPersonalizationSegment_WithoutViewAuthorization_ReturnsError()
+    {
+        using var scope = TestHelper.CreateScopedRockApp();
+        var rockContext = scope.App.CreateRockContext();
+
+        var segment = SeedPersonalizationSegment( rockContext, 500, "First-time Visitors", "FIRST_TIME" );
+        MockAuthorizationHelper.DenyAllUsers<PersonalizationSegment>( rockContext, Authorization.VIEW, segment.Id );
+
+        var skill = CreateSkill( scope.App, CreateRequestContext( rockContext ) );
+
+        var result = skill.GetPersonalizationSegment( IdHasher.Instance.GetHash( segment.Id ) );
 
         Assert.AreEqual( ToolStatus.Error, result.GetStatus() );
     }
