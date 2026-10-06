@@ -1258,11 +1258,17 @@ namespace Rock.Blocks.Communication
         {
             var securityGrant = new SecurityGrant();
 
-            // The asset manager endpoints trust this token alone, so only
-            // grant access to people with EDIT on the block.
-            if ( IsAssetManagerAuthorized() )
+            // The asset manager endpoints trust this token alone. Anyone who
+            // can view the block may browse and select existing files within
+            // the block's root folder. Only block editors may upload, rename,
+            // move or delete files and folders.
+            if ( IsAssetManagerViewAuthorized() )
             {
                 securityGrant.AddRule( new AssetAndFileManagerSecurityGrantRule( Authorization.VIEW ) );
+            }
+
+            if ( IsAssetManagerEditAuthorized() )
+            {
                 securityGrant.AddRule( new AssetAndFileManagerSecurityGrantRule( Authorization.EDIT ) );
                 securityGrant.AddRule( new AssetAndFileManagerSecurityGrantRule( Authorization.DELETE ) );
             }
@@ -1283,16 +1289,33 @@ namespace Rock.Blocks.Communication
         }
 
         /// <summary>
-        /// Determines whether the current person has EDIT access to the block
-        /// and may therefore use the asset manager.
+        /// Determines whether the current person may browse and select
+        /// existing files with the asset manager. Requires VIEW, EDIT or
+        /// ADMINISTRATE on the block.
         /// </summary>
-        /// <returns><c>true</c> if the current person may use the asset manager; otherwise <c>false</c>.</returns>
-        private bool IsAssetManagerAuthorized()
+        /// <returns><c>true</c> if the current person may browse the asset manager; otherwise <c>false</c>.</returns>
+        private bool IsAssetManagerViewAuthorized()
         {
             var currentPerson = GetCurrentPerson();
 
             return currentPerson != null
-                && BlockCache.IsAuthorized( Authorization.EDIT, currentPerson );
+                && ( BlockCache.IsAuthorized( Authorization.VIEW, currentPerson )
+                    || IsAssetManagerEditAuthorized() );
+        }
+
+        /// <summary>
+        /// Determines whether the current person may upload, rename, move
+        /// and delete files and folders with the asset manager. Requires EDIT
+        /// or ADMINISTRATE on the block.
+        /// </summary>
+        /// <returns><c>true</c> if the current person may manage files in the asset manager; otherwise <c>false</c>.</returns>
+        private bool IsAssetManagerEditAuthorized()
+        {
+            var currentPerson = GetCurrentPerson();
+
+            return currentPerson != null
+                && ( BlockCache.IsAuthorized( Authorization.EDIT, currentPerson )
+                    || BlockCache.IsAuthorized( Authorization.ADMINISTRATE, currentPerson ) );
         }
 
         /// <summary>
