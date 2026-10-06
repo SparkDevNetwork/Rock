@@ -60,3 +60,6 @@ Dev Tools/Scripts/obsidian-backend-watch/logs/
 # ASP.NET precompile output. Rock.sln builds RockWeb as a website project and
 # the ASP.NET compiler writes here, so a solution build produces it every time.
 PrecompiledWeb/
+
+# Verification plans and local settings (verify-plan / verify-run skills)
+.verification/
