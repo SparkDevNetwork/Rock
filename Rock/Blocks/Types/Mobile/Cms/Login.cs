@@ -15,7 +15,9 @@
 // </copyright>
 //
 using System;
+using System.Collections.Concurrent;
 using System.ComponentModel;
+using System.IdentityModel.Tokens.Jwt;
 using System.Net;
 using System.Threading.Tasks;
 
@@ -383,6 +385,12 @@ namespace Rock.Blocks.Types.Mobile.Cms
         #region External Authentication
 
         /// <summary>
+        /// The tenant identifiers that configured Entra tenant domain names resolve to.
+        /// A tenant's identifier never changes, so these never need to expire.
+        /// </summary>
+        private static readonly ConcurrentDictionary<string, Guid> _entraTenantGuidCache = new ConcurrentDictionary<string, Guid>( StringComparer.OrdinalIgnoreCase );
+
+        /// <summary>
         /// The keys to utilize when converting data returned from an external authentication provider.
         /// </summary>
         private static class ExternalAuthenticationPayloadKeys
@@ -538,8 +546,30 @@ namespace Rock.Blocks.Types.Mobile.Cms
         {
             const string graphMeEndpoint = "https://graph.microsoft.com/v1.0/me";
 
+            var additionalSettings = this.PageCache.Layout.Site.AdditionalSettings.FromJsonOrNull<AdditionalSiteSettings>();
+
             try
             {
+                /*
+                    10/6/26 - PS
+
+                    Microsoft Graph accepts access tokens issued by any Entra tenant
+                    for any application, so a successful call to /me only proves the
+                    token is genuine. It does not prove the person belongs to this
+                    organization. Without this check, anyone could create their own
+                    tenant, set a user's mail to a staff member's email address, and
+                    sign in as that staff member.
+
+                    Graph accepting the token below is what proves these claims were
+                    issued by Microsoft, so both checks must pass.
+
+                    Reason: Prevent account takeover with tokens from other tenants.
+                */
+                if ( !await IsEntraAccessTokenForConfiguredApplicationAsync( accessToken, additionalSettings ) )
+                {
+                    return null;
+                }
+
                 using ( var httpClient = new HttpClient() )
                 {
                     httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue( "Bearer", accessToken );
@@ -564,6 +594,114 @@ namespace Rock.Blocks.Types.Mobile.Cms
             catch ( Exception )
             {
                 return null;
+            }
+        }
+
+        /// <summary>
+        /// Determines whether the Entra access token was issued by the tenant and
+        /// for the application that are configured on this mobile application.
+        /// </summary>
+        /// <param name="accessToken">The access token provided by the mobile shell.</param>
+        /// <param name="additionalSettings">The additional settings of the mobile application site.</param>
+        /// <returns><c>true</c> if the token belongs to the configured tenant and application; otherwise <c>false</c>.</returns>
+        private async Task<bool> IsEntraAccessTokenForConfiguredApplicationAsync( string accessToken, AdditionalSiteSettings additionalSettings )
+        {
+            if ( additionalSettings == null || additionalSettings.EntraTenantId.IsNullOrWhiteSpace() || additionalSettings.EntraClientId.IsNullOrWhiteSpace() )
+            {
+                Logger.LogError( "Entra authentication requires the Entra Tenant Id and Entra Client Id to be configured on the mobile application." );
+                return false;
+            }
+
+            var tokenHandler = new JwtSecurityTokenHandler();
+
+            if ( !tokenHandler.CanReadToken( accessToken ) )
+            {
+                Logger.LogWarning( "Entra authentication was rejected because the access token could not be read." );
+                return false;
+            }
+
+            var token = tokenHandler.ReadJwtToken( accessToken );
+            var tokenTenantId = token.Claims.FirstOrDefault( c => c.Type == "tid" )?.Value.AsGuidOrNull();
+
+            // Version 1.0 access tokens (which Graph issues) identify the requesting
+            // application with "appid", version 2.0 tokens use "azp".
+            var tokenClientId = token.Claims.FirstOrDefault( c => c.Type == "appid" || c.Type == "azp" )?.Value;
+
+            var configuredTenantId = await GetEntraTenantGuidAsync( additionalSettings.EntraTenantId );
+
+            if ( !configuredTenantId.HasValue )
+            {
+                Logger.LogError( "Entra authentication was rejected because the configured Entra Tenant Id could not be resolved to a single tenant." );
+                return false;
+            }
+
+            var isConfiguredTenant = tokenTenantId.HasValue && tokenTenantId.Value == configuredTenantId.Value;
+            var isConfiguredClient = tokenClientId.IsNotNullOrWhiteSpace()
+                && tokenClientId.Trim().Equals( additionalSettings.EntraClientId.Trim(), StringComparison.OrdinalIgnoreCase );
+
+            if ( !isConfiguredTenant || !isConfiguredClient )
+            {
+                Logger.LogWarning( "Entra authentication was rejected because the access token was not issued for the configured tenant and application." );
+                return false;
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// Gets the tenant identifier for the configured Entra tenant. The setting may
+        /// hold the tenant GUID or one of the tenant's domain names, so domain names
+        /// are resolved through the tenant's OpenID configuration.
+        /// </summary>
+        /// <param name="tenant">The configured tenant GUID or domain name.</param>
+        /// <returns>The tenant identifier, or <c>null</c> if it does not identify a single tenant.</returns>
+        private static async Task<Guid?> GetEntraTenantGuidAsync( string tenant )
+        {
+            tenant = tenant.Trim();
+
+            var tenantGuid = tenant.AsGuidOrNull();
+
+            if ( tenantGuid.HasValue )
+            {
+                return tenantGuid;
+            }
+
+            if ( _entraTenantGuidCache.TryGetValue( tenant, out var cachedTenantGuid ) )
+            {
+                return cachedTenantGuid;
+            }
+
+            using ( var httpClient = new HttpClient() )
+            {
+                var response = await httpClient.GetAsync( $"https://login.microsoftonline.com/{Uri.EscapeDataString( tenant )}/v2.0/.well-known/openid-configuration" );
+
+                if ( !response.IsSuccessStatusCode )
+                {
+                    return null;
+                }
+
+                var json = await response.Content.ReadAsStringAsync();
+                var payload = JsonConvert.DeserializeObject<Dictionary<string, object>>( json );
+                var issuer = payload?.GetValueOrNull( "issuer" )?.ToString();
+
+                // The issuer is "https://login.microsoftonline.com/{tenant guid}/v2.0".
+                // Multi-tenant values such as "common" return a "{tenantid}" placeholder
+                // instead of a GUID, so they do not resolve and are rejected.
+                if ( !Uri.TryCreate( issuer, UriKind.Absolute, out var issuerUri ) )
+                {
+                    return null;
+                }
+
+                var resolvedTenantGuid = issuerUri.Segments
+                    .Select( segment => segment.Trim( '/' ).AsGuidOrNull() )
+                    .FirstOrDefault( segmentGuid => segmentGuid.HasValue );
+
+                if ( resolvedTenantGuid.HasValue )
+                {
+                    _entraTenantGuidCache.TryAdd( tenant, resolvedTenantGuid.Value );
+                }
+
+                return resolvedTenantGuid;
             }
         }
 
