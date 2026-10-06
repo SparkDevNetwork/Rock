@@ -119,7 +119,7 @@ namespace Rock.Rest.Controllers
 
             try
             {
-                var rootFolder = Rock.Security.Encryption.DecryptString( encryptedRootFolder );
+                var rootFolder = Rock.Security.Encryption.DecryptRootFolder( encryptedRootFolder );
 
                 if ( rootFolder.IsNullOrWhiteSpace() )
                 {

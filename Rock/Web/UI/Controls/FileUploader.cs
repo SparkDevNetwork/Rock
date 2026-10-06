@@ -878,7 +878,7 @@ namespace Rock.Web.UI.Controls
                     postbackScript: '{postBackScript}',
                     fileType: 'file',
                     isBinaryFile: '{(this.IsBinaryFile ? "T" : "F")}',
-                    rootFolder: '{Rock.Security.Encryption.EncryptString( this.RootFolder )}',
+                    rootFolder: '{Rock.Security.Encryption.EncryptRootFolder( this.RootFolder )}',
                     uploadUrl: '{this.UploadUrl}',
                     securityGrantToken: '{securityGrantToken}',
                     disablePredictableIds: {disablePredictableIds.ToString().ToLower()},

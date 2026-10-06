@@ -789,7 +789,7 @@ Rock.controls.imageUploader.initialize({{
     postbackScript: '{postBackScript}',
     fileType: 'image',
     isBinaryFile: '{( this.IsBinaryFile ? "T" : "F" )}',
-    rootFolder: '{Rock.Security.Encryption.EncryptString( this.RootFolder )}',
+    rootFolder: '{Rock.Security.Encryption.EncryptRootFolder( this.RootFolder )}',
     securityGrantToken: '{securityGrantToken}',
     noPictureUrl: '{this.NoPictureUrl}',
     disablePredictableIds: {disablePredictableIds.ToString().ToLower()},

@@ -207,7 +207,7 @@ namespace RockWeb
 
             if ( !isAssetStorageProviderAsset && encryptedRootFolder.IsNotNullOrWhiteSpace() )
             {
-                rootFolder = Encryption.DecryptString( encryptedRootFolder );
+                rootFolder = Encryption.DecryptRootFolder( encryptedRootFolder );
             }
 
             var access = new FileUploadSecurityGrantRule.FileUploadAccess( rootFolder );
@@ -273,7 +273,7 @@ namespace RockWeb
             // If a rootFolder was specified in the URL, try decrypting it (It is encrypted to help prevent direct access to file system).
             if ( !string.IsNullOrWhiteSpace( encryptedRootFolder ) )
             {
-                trustedRootFolder = Encryption.DecryptString( encryptedRootFolder );
+                trustedRootFolder = Encryption.DecryptRootFolder( encryptedRootFolder );
             }
 
             // If we don't have a rootFolder, default to the ~/Content folder.

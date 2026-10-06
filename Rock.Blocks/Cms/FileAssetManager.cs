@@ -152,7 +152,7 @@ namespace Rock.Blocks.Cms
                 EnableFileManager = GetAttributeValue( AttributeKey.EnableFileManager ).AsBoolean(),
                 IsStaticHeight = GetAttributeValue( AttributeKey.IsStaticHeight ).AsBoolean(),
                 Height = GetAttributeValue( AttributeKey.Height ),
-                RootFolder = Rock.Security.Encryption.EncryptString( GetAttributeValue( AttributeKey.RootFolder ) ),
+                RootFolder = Rock.Security.Encryption.EncryptRootFolder( GetAttributeValue( AttributeKey.RootFolder ) ),
                 BrowseMode = GetAttributeValue( AttributeKey.BrowseMode ),
                 FileEditorPage = this.GetLinkedPageUrl( AttributeKey.FileEditorPage ),
                 EnableZipUploader = GetAttributeValue( AttributeKey.ZipUploaderEnabled ).AsBoolean(),
