@@ -33,7 +33,7 @@
 </style>
 
 <script setup lang="ts">
-    import { ref, watch } from "vue";
+    import { PropType, ref, watch } from "vue";
     import { textAfterSend } from "../composables/useSend.partial";
 
     const props = defineProps({
@@ -52,6 +52,16 @@
         },
 
         /**
+         * What holds the text, such as the draft on screen. The box takes the held text again
+         * whenever this changes, even when the text is the same, so a new empty draft does not
+         * open showing what was typed in a channel.
+         */
+        heldBy: {
+            type: Object as PropType<object | null>,
+            default: null
+        },
+
+        /**
          * Whether the box keeps its text when it hands it over. A draft's first message Rock
          * refuses has no row in a feed to keep it on, and the same text refused twice leaves the
          * held text unchanged, so only the box itself can keep it.
@@ -63,7 +73,8 @@
     });
 
     const emit = defineEmits<{
-        (e: "send", body: string): void
+        (e: "send", body: string): void;
+        (e: "edit", body: string): void
     }>();
 
     // #region Values
@@ -99,8 +110,14 @@
 
     // #region Watchers
 
-    watch(() => props.heldText, held => {
+    watch([() => props.heldText, () => props.heldBy], ([held]) => {
         text.value = held;
+    });
+
+    // The shell keeps a failed draft's text when the person leaves it, so it is told what the
+    // box holds now, not only what was last sent.
+    watch(text, value => {
+        emit("edit", value);
     });
 
     // #endregion Watchers

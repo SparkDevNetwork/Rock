@@ -3,7 +3,7 @@
     <div v-if="shown.length > 0" class="chat-error-toast" data-testid="error-toast">
         <div v-for="error in shown" :key="`${error.code} ${error.text ?? ''}`" class="alert alert-warning chat-error-toast-item" :data-code="error.code">
             <span>{{ messageForError(error) }}</span>
-            <button type="button" class="close" aria-label="Dismiss" @click="emit('dismiss', error.code)">&times;</button>
+            <button type="button" class="close" aria-label="Dismiss" @click="emit('dismiss', error)">&times;</button>
         </div>
     </div>
 </template>
@@ -33,7 +33,7 @@
     });
 
     const emit = defineEmits<{
-        (e: "dismiss", code: string): void
+        (e: "dismiss", error: ChatError): void
     }>();
 
     // #region Computed Values

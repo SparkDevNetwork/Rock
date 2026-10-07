@@ -43,7 +43,7 @@
                     {{ shell.state.phase === "starting" ? "Opening chat…" : "Choose a channel." }}
                 </div>
 
-                <Composer :isDisabled="isComposerDisabled" :heldText="draft?.body ?? ''" :isTextKeptOnSend="isTextKeptOnSend(draft)" @send="shell.send" />
+                <Composer :isDisabled="isComposerDisabled" :heldText="draft?.body ?? held?.body ?? ''" :heldBy="draft ?? held" :isTextKeptOnSend="isTextKeptOnSend(draft)" @send="shell.send" @edit="shell.directMessages.edit" />
             </div>
         </div>
 
@@ -165,6 +165,9 @@
     const refusal = computed((): string => refusalMessage(shell.value.state.phase, shell.value.state.gate));
 
     const draft = computed((): DirectMessageDraft | null => shell.value.directMessages.draft);
+
+    /** Text Rock refused earlier, for the box of the conversation the same people now share. */
+    const held = computed((): { body: string } | null => shell.value.directMessages.held);
 
     /** Closed with nothing to write into, in read only or maintenance, and while a draft's first message is on its way. */
     const isComposerDisabled = computed((): boolean => (!activeChannelId.value && !draft.value)

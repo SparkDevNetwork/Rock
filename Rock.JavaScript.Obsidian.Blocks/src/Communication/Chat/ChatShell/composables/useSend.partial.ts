@@ -130,7 +130,15 @@ export function createSender(dependencies: SenderDependencies): Sender {
         row.status = "sending";
         row.errorCode = null;
 
-        const result = await dependencies.send(row.channelId, row.body, row.localId);
+        // A send that rejects is a failure like any other, so its row ends failed with a Retry
+        // and a Discard rather than sending for good.
+        let result: SendResult;
+        try {
+            result = await dependencies.send(row.channelId, row.body, row.localId);
+        }
+        catch {
+            result = { ok: false, error: { code: "rpc.transport", severity: "failed" } };
+        }
 
         if (!result.ok) {
             // Another try is coming on its own, so the row is not offered for a retry yet.

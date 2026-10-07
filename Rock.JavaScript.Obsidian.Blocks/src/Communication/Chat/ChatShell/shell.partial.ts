@@ -160,8 +160,8 @@ export type ChatShell = {
     /** Fetches older messages of the open channel. */
     loadOlder: () => Promise<void>;
 
-    /** Dismisses a failure. */
-    dismissError: (code: string) => void;
+    /** Dismisses the failure the person closed. */
+    dismissError: (error: ChatError) => void;
 
     /** Saves the read position and leaves every topic. */
     stop: () => Promise<void>;
@@ -729,8 +729,10 @@ export function createChatShell(options: ShellOptions): ChatShell {
             }
         },
 
-        dismissError: (code: string): void => {
-            const index = state.errors.findIndex(e => e.code === code);
+        // Two failures can share a code with different sentences, so the one closed is matched
+        // the way the toast keys it, by code and text, never by the code alone.
+        dismissError: (error: ChatError): void => {
+            const index = state.errors.findIndex(e => e.code === error.code && e.text === error.text);
             if (index >= 0) {
                 state.errors.splice(index, 1);
             }
