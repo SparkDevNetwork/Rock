@@ -457,8 +457,14 @@ namespace Rock.Blocks.Cms
 
             foreach ( var emailAddress in recipientEmails )
             {
-                var email = emailAddress.ResolveMergeFields( mergeFields, enabledLavaCommands );
-                
+                var email = emailAddress.ResolveMergeFields( mergeFields, enabledLavaCommands ).Trim();
+
+                // Only send to a single valid email address.
+                if ( email.IsNullOrWhiteSpace() || email.IsLavaTemplate() || !EmailAddressFieldValidator.IsValid( email ) )
+                {
+                    continue;
+                }
+
                 RockEmailMessageRecipient recipient;
                 if ( saveCommunicationHistory )
                 {
@@ -482,10 +488,20 @@ namespace Rock.Blocks.Cms
 
             message.CCEmails = GetAttributeValue( AttributeKey.CCEmail ).ResolveMergeFields( mergeFields, enabledLavaCommands ).Split( ',' ).ToList();
             message.BCCEmails = GetAttributeValue( AttributeKey.BCCEmail ).ResolveMergeFields( mergeFields, enabledLavaCommands ).Split( ',' ).ToList();
-            message.FromEmail = GetAttributeValue( AttributeKey.FromEmail ).ResolveMergeFields( mergeFields, enabledLavaCommands );
-            message.FromName = GetAttributeValue( AttributeKey.FromName ).ResolveMergeFields( mergeFields, enabledLavaCommands );
-            message.Subject = GetAttributeValue( AttributeKey.Subject ).ResolveMergeFields( mergeFields, enabledLavaCommands );
-            message.Message = GetAttributeValue( AttributeKey.MessageBody ).ResolveMergeFields( mergeFields, enabledLavaCommands );
+
+            /*
+                10/7/2026 - MSE
+
+                From Email, From Name, Subject and Message Body are passed as
+                templates. The transport resolves them once with the recipient
+                merge fields.
+
+                Reason: Keep all email templates resolved in one place.
+            */
+            message.FromEmail = GetAttributeValue( AttributeKey.FromEmail );
+            message.FromName = GetAttributeValue( AttributeKey.FromName );
+            message.Subject = GetAttributeValue( AttributeKey.Subject );
+            message.Message = GetAttributeValue( AttributeKey.MessageBody );
 
             message.AppRoot = RequestContext.RootUrlPath.EnsureTrailingForwardslash();
             message.ThemeRoot = RequestContext.RootUrlPath + RequestContext.ResolveRockUrl( "~~/" );
