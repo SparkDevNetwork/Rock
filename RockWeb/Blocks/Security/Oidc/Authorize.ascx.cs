@@ -282,8 +282,9 @@ namespace RockWeb.Blocks.Security.Oidc
         /// </summary>
         /// <param name="authClient">The <see cref="AuthClient"/> for which authorization is being requested.</param>
         /// <returns>
-        /// The registered redirect URI, or <c>null</c> if the client is unknown or the request's <c>redirect_uri</c>
-        /// doesn't match the registered one.
+        /// The request's <c>redirect_uri</c> if it's registered for the client, the client's redirect URI if the
+        /// request has none, or <c>null</c> if the client is unknown or the request's <c>redirect_uri</c> isn't
+        /// registered.
         /// </returns>
         private string GetValidatedRedirectUri( AuthClient authClient )
         {
@@ -293,13 +294,17 @@ namespace RockWeb.Blocks.Security.Oidc
             }
 
             var requestedRedirectUri = Context.GetOwinContext().Request.Query["redirect_uri"];
-            if ( requestedRedirectUri.IsNotNullOrWhiteSpace()
-                && !string.Equals( requestedRedirectUri, authClient.RedirectUri, StringComparison.OrdinalIgnoreCase ) )
+            if ( requestedRedirectUri.IsNullOrWhiteSpace() )
+            {
+                return authClient.RedirectUri;
+            }
+
+            if ( !AuthClientService.IsRedirectUriAllowed( authClient, requestedRedirectUri ) )
             {
                 return null;
             }
 
-            return authClient.RedirectUri;
+            return requestedRedirectUri;
         }
 
         /// <summary>
