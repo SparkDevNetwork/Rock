@@ -1367,6 +1367,10 @@ namespace Rock.Blocks.Communication
                 .AddRule( new AssetAndFileManagerSecurityGrantRule( Authorization.VIEW ) )
                 .AddRule( new AssetAndFileManagerSecurityGrantRule( Authorization.EDIT ) )
                 .AddRule( new AssetAndFileManagerSecurityGrantRule( Authorization.DELETE ) )
+                // Uploads are checked separately from the asset manager, so
+                // allow uploads to the default folder and to providers.
+                .AddRule( new FileUploadSecurityGrantRule( "~/Content" ) )
+                .AddRule( FileUploadSecurityGrantRule.ForAssetStorageProviders() )
                 .AddRule( new EmailEditorSecurityGrantRule() )
                 .ToToken();
         }

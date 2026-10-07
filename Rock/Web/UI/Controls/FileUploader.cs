@@ -476,6 +476,32 @@ namespace Rock.Web.UI.Controls
             }
         }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether non-binary files are
+        /// uploaded to an asset storage provider instead of the root folder.
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if non-binary files are uploaded to an asset storage provider; otherwise, <c>false</c>.
+        /// </value>
+        [
+        Bindable( true ),
+        Category( "Behavior" ),
+        DefaultValue( "false" ),
+        Description( "Determines if NonBinaryFile files will be uploaded to an asset storage provider instead of the RootFolder" )
+        ]
+        public bool IsAssetStorageProviderUpload
+        {
+            get
+            {
+                return ViewState["IsAssetStorageProviderUpload"] as bool? ?? false;
+            }
+
+            set
+            {
+                ViewState["IsAssetStorageProviderUpload"] = value;
+            }
+        }
+
 
         /// <summary>
         /// Gets or sets the upload URL.
@@ -862,10 +888,18 @@ namespace Rock.Web.UI.Controls
             var postBackRemovedScript = this.FileRemoved != null ? this.Page.ClientScript.GetPostBackEventReference( new PostBackOptions( this, "FileRemoved" ), true ) : "";
             postBackRemovedScript = postBackRemovedScript.Replace( '\'', '"' );
 
-            // Content files need a grant that allows uploads to the root folder.
-            var securityGrantToken = !this.IsBinaryFile
-                ? new Rock.Security.SecurityGrant().AddRule( new Rock.Security.SecurityGrantRules.FileUploadSecurityGrantRule( this.RootFolder ) ).ToToken()
-                : string.Empty;
+            // Content files need a grant that allows uploads to the root folder
+            // or to asset storage providers.
+            var securityGrantToken = string.Empty;
+
+            if ( !this.IsBinaryFile )
+            {
+                var uploadRule = this.IsAssetStorageProviderUpload
+                    ? Rock.Security.SecurityGrantRules.FileUploadSecurityGrantRule.ForAssetStorageProviders()
+                    : new Rock.Security.SecurityGrantRules.FileUploadSecurityGrantRule( this.RootFolder );
+
+                securityGrantToken = new Rock.Security.SecurityGrant().AddRule( uploadRule ).ToToken();
+            }
 
             var script = $@"
                 Rock.controls.fileUploader.initialize({{
