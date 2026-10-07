@@ -16,25 +16,16 @@
 //
 using System;
 using System.Collections.Generic;
-using System.Data.Entity;
 using System.Linq;
-using System.Net;
-using System.Net.Http;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-using Rock.Communication.Chat.Platform.Configuration;
 using Rock.Communication.Chat.Platform.Doors;
-using Rock.Communication.Chat.Platform.Session;
-using Rock.Communication.Chat.Platform.Sync;
 using Rock.Data;
 using Rock.Model;
-using Rock.Tests.Integration.Communication.Chat.Platform.Sync;
 using Rock.Tests.Integration.TestFramework.Database;
-using Rock.ViewModels.Blocks.Communication.Chat.ChatShell;
 using Rock.Web.Cache;
 
 namespace Rock.Tests.Integration.Communication.Chat.Platform.Doors
@@ -60,20 +51,6 @@ namespace Rock.Tests.Integration.Communication.Chat.Platform.Doors
     [TestClass]
     public class ChatDoorHelperTests : DatabaseTestsBase
     {
-        #region Constants
-
-        private const string ProjectUrl = "https://example.supabase.co";
-
-        private const string PushPath = "/rest/v1/rpc/sync_push";
-
-        private const string ExchangePath = "/functions/v1/token-exchange";
-
-        private const string SystemPostPath = "/rest/v1/rpc/chat_send_system_message";
-
-        private static readonly TimeSpan PushWait = TimeSpan.FromSeconds( 30 );
-
-        #endregion Constants
-
         #region Only people cross the door
 
         [TestMethod]
@@ -93,7 +70,7 @@ namespace Rock.Tests.Integration.Communication.Chat.Platform.Doors
         [TestMethod]
         public void AGroupGuidPassedAsAPersonFindsNobodyAndAddsNobodyToThatGroup()
         {
-            using ( var scene = new Scene() )
+            using ( var scene = new ChatDoorScene() )
             {
                 var caller = scene.AddChatPerson( "Caller" );
                 var room = scene.Fixture.AddChannel( scene.Fixture.SharedGroupTypeId, "Somebody else's room", g => g.IsChatChannelPublicOverride = false );
@@ -115,7 +92,7 @@ namespace Rock.Tests.Integration.Communication.Chat.Platform.Doors
         [TestMethod]
         public void ANewOneToOneIsOneGroupWithTheDerivedGuidAndBothPeople()
         {
-            using ( var scene = new Scene() )
+            using ( var scene = new ChatDoorScene() )
             {
                 var caller = scene.AddChatPerson( "Caller" );
                 var other = scene.AddChatPerson( "Other", isOpenDmAllowed: true );
@@ -138,7 +115,7 @@ namespace Rock.Tests.Integration.Communication.Chat.Platform.Doors
         [TestMethod]
         public void ANewGroupConversationHoldsEveryoneChosen()
         {
-            using ( var scene = new Scene() )
+            using ( var scene = new ChatDoorScene() )
             {
                 var caller = scene.AddChatPerson( "Caller" );
                 var people = Enumerable.Range( 1, 8 ).Select( i => scene.AddChatPerson( "Other" + i, isOpenDmAllowed: true ) ).ToList();
@@ -154,7 +131,7 @@ namespace Rock.Tests.Integration.Communication.Chat.Platform.Doors
         [TestMethod]
         public void TwoStartingTheSameConversationAtOnceMakeOneGroup()
         {
-            using ( var scene = new Scene() )
+            using ( var scene = new ChatDoorScene() )
             {
                 var ada = scene.AddChatPerson( "Ada", isOpenDmAllowed: true );
                 var bo = scene.AddChatPerson( "Bo", isOpenDmAllowed: true );
@@ -181,7 +158,7 @@ namespace Rock.Tests.Integration.Communication.Chat.Platform.Doors
         [TestMethod]
         public void AGroupHoldingTheDerivedGuidWhosePeopleChangedLeavesItAloneAndMakesANewOne()
         {
-            using ( var scene = new Scene() )
+            using ( var scene = new ChatDoorScene() )
             {
                 var ada = scene.AddChatPerson( "Ada" );
                 var bo = scene.AddChatPerson( "Bo", isOpenDmAllowed: true );
@@ -222,7 +199,7 @@ namespace Rock.Tests.Integration.Communication.Chat.Platform.Doors
         /// <param name="ending">The column assignment that ends the group.</param>
         private static void AssertADeadHolderIsLeftAlone( string ending )
         {
-            using ( var scene = new Scene() )
+            using ( var scene = new ChatDoorScene() )
             {
                 var ada = scene.AddChatPerson( "Ada" );
                 var bo = scene.AddChatPerson( "Bo", isOpenDmAllowed: true );
@@ -263,7 +240,7 @@ namespace Rock.Tests.Integration.Communication.Chat.Platform.Doors
         [TestMethod]
         public void AnExistingConversationIsReopenedWhateverItsGuid()
         {
-            using ( var scene = new Scene() )
+            using ( var scene = new ChatDoorScene() )
             {
                 var ada = scene.AddChatPerson( "Ada" );
                 var bo = scene.AddChatPerson( "Bo", isOpenDmAllowed: true );
@@ -284,7 +261,7 @@ namespace Rock.Tests.Integration.Communication.Chat.Platform.Doors
         [TestMethod]
         public void AGroupConversationIsReopenedByItsExactPeopleInAnyOrder()
         {
-            using ( var scene = new Scene() )
+            using ( var scene = new ChatDoorScene() )
             {
                 var ada = scene.AddChatPerson( "Ada" );
                 var bo = scene.AddChatPerson( "Bo", isOpenDmAllowed: true );
@@ -310,7 +287,7 @@ namespace Rock.Tests.Integration.Communication.Chat.Platform.Doors
         [TestMethod]
         public void APersonChosenByAnotherOfTheirAliasesIsTheSamePerson()
         {
-            using ( var scene = new Scene() )
+            using ( var scene = new ChatDoorScene() )
             {
                 var ada = scene.AddChatPerson( "Ada" );
                 var bo = scene.AddChatPerson( "Bo", isOpenDmAllowed: true );
@@ -329,7 +306,7 @@ namespace Rock.Tests.Integration.Communication.Chat.Platform.Doors
         [TestMethod]
         public void AConversationCarriesOnAfterTheOtherPersonTurnsOpenDmOff()
         {
-            using ( var scene = new Scene() )
+            using ( var scene = new ChatDoorScene() )
             {
                 var ada = scene.AddChatPerson( "Ada" );
                 var bo = scene.AddChatPerson( "Bo", isOpenDmAllowed: false );
@@ -352,7 +329,7 @@ namespace Rock.Tests.Integration.Communication.Chat.Platform.Doors
         [TestMethod]
         public void OpenDmOffAndAPrivateRoomSharedIsAllowed()
         {
-            using ( var scene = new Scene() )
+            using ( var scene = new ChatDoorScene() )
             {
                 var ada = scene.AddChatPerson( "Ada" );
                 var bo = scene.AddChatPerson( "Bo", isOpenDmAllowed: false );
@@ -367,7 +344,7 @@ namespace Rock.Tests.Integration.Communication.Chat.Platform.Doors
         [TestMethod]
         public void OpenDmOffWithNothingPrivateSharedIsRefusedNamingThatPerson()
         {
-            using ( var scene = new Scene() )
+            using ( var scene = new ChatDoorScene() )
             {
                 var ada = scene.AddChatPerson( "Ada" );
                 var bo = scene.AddChatPerson( "Bo", isOpenDmAllowed: true );
@@ -386,7 +363,7 @@ namespace Rock.Tests.Integration.Communication.Chat.Platform.Doors
         [TestMethod]
         public void NobodyOnTheBanListInactiveOrOutsideChatCanBePutInAConversation()
         {
-            using ( var scene = new Scene() )
+            using ( var scene = new ChatDoorScene() )
             {
                 var ada = scene.AddChatPerson( "Ada" );
                 var banned = scene.AddChatPerson( "Banned", isOpenDmAllowed: true );
@@ -409,7 +386,7 @@ namespace Rock.Tests.Integration.Communication.Chat.Platform.Doors
         [TestMethod]
         public void AConversationWhereSomeoneIsBannedIsNotReopenedOrStartedAgain()
         {
-            using ( var scene = new Scene() )
+            using ( var scene = new ChatDoorScene() )
             {
                 var ada = scene.AddChatPerson( "Ada" );
                 var bo = scene.AddChatPerson( "Bo", isOpenDmAllowed: true );
@@ -429,7 +406,7 @@ namespace Rock.Tests.Integration.Communication.Chat.Platform.Doors
         public void ACallerWithoutTheRightToStartConversationsIsRefused()
         {
             // A Direct Message Access data view that no longer exists admits nobody.
-            using ( var scene = new Scene( directMessageAccess: Guid.NewGuid() ) )
+            using ( var scene = new ChatDoorScene( directMessageAccess: Guid.NewGuid() ) )
             {
                 var ada = scene.AddChatPerson( "Ada" );
                 var bo = scene.AddChatPerson( "Bo", isOpenDmAllowed: true );
@@ -441,7 +418,7 @@ namespace Rock.Tests.Integration.Communication.Chat.Platform.Doors
         [TestMethod]
         public void TheShapeOfTheRequestIsChecked()
         {
-            using ( var scene = new Scene() )
+            using ( var scene = new ChatDoorScene() )
             {
                 var ada = scene.AddChatPerson( "Ada" );
                 var nine = Enumerable.Range( 1, 9 ).Select( i => scene.Alias( scene.AddChatPerson( "Other" + i, isOpenDmAllowed: true ) ) ).ToArray();
@@ -460,7 +437,7 @@ namespace Rock.Tests.Integration.Communication.Chat.Platform.Doors
         [TestMethod]
         public void APushThatMissesItsBudgetAnswersPendingAndTheGroupStands()
         {
-            using ( var scene = new Scene() )
+            using ( var scene = new ChatDoorScene() )
             {
                 var ada = scene.AddChatPerson( "Ada" );
                 var bo = scene.AddChatPerson( "Bo", isOpenDmAllowed: true );
@@ -496,7 +473,7 @@ namespace Rock.Tests.Integration.Communication.Chat.Platform.Doors
         [TestMethod]
         public void SavingOneSettingWritesItAndLeavesTheOtherAtTheChurchDefault()
         {
-            using ( var scene = new Scene() )
+            using ( var scene = new ChatDoorScene() )
             {
                 var ada = scene.AddChatPerson( "Ada" );
 
@@ -513,7 +490,7 @@ namespace Rock.Tests.Integration.Communication.Chat.Platform.Doors
         [TestMethod]
         public void ASavedSettingIsPushedBeforeTheDoorAnswers()
         {
-            using ( var scene = new Scene() )
+            using ( var scene = new ChatDoorScene() )
             {
                 var ada = scene.AddChatPerson( "Ada" );
                 scene.WaitForPushes();
@@ -532,7 +509,7 @@ namespace Rock.Tests.Integration.Communication.Chat.Platform.Doors
         [TestMethod]
         public void ASettingWhosePushMissesItsBudgetAnswersPendingAndStaysSaved()
         {
-            using ( var scene = new Scene() )
+            using ( var scene = new ChatDoorScene() )
             {
                 var ada = scene.AddChatPerson( "Ada" );
                 scene.Platform.PushDelay = TimeSpan.FromSeconds( 4 );
@@ -548,7 +525,7 @@ namespace Rock.Tests.Integration.Communication.Chat.Platform.Doors
         [TestMethod]
         public void AnUnknownSettingIsRefusedAndNothingIsWritten()
         {
-            using ( var scene = new Scene() )
+            using ( var scene = new ChatDoorScene() )
             {
                 var ada = scene.AddChatPerson( "Ada" );
 
@@ -562,7 +539,7 @@ namespace Rock.Tests.Integration.Communication.Chat.Platform.Doors
         [TestMethod]
         public void ACallerTheSessionGatesRefuseChangesNothing()
         {
-            using ( var scene = new Scene( minimumAge: 13 ) )
+            using ( var scene = new ChatDoorScene( minimumAge: 13 ) )
             {
                 var banned = scene.AddChatPerson( "Banned" );
                 scene.SetAge( banned, 40 );
@@ -584,7 +561,7 @@ namespace Rock.Tests.Integration.Communication.Chat.Platform.Doors
         [TestMethod]
         public void AWorkflowMessagesSomeoneWithOpenDmOffBecauseTheAdminIsTheOneActing()
         {
-            using ( var scene = new Scene( directMessageAccess: Guid.NewGuid() ) )
+            using ( var scene = new ChatDoorScene( directMessageAccess: Guid.NewGuid() ) )
             {
                 // Neither has opened chat, the sender may not start conversations, and the
                 // recipient has Open DM off with nothing shared.
@@ -604,7 +581,7 @@ namespace Rock.Tests.Integration.Communication.Chat.Platform.Doors
         [TestMethod]
         public void AWorkflowCannotMessageSomeoneOnTheBanListOrInactive()
         {
-            using ( var scene = new Scene() )
+            using ( var scene = new ChatDoorScene() )
             {
                 var sender = scene.AddChatPerson( "Sender" );
                 var banned = scene.AddChatPerson( "Banned", isOpenDmAllowed: true );
@@ -629,7 +606,7 @@ namespace Rock.Tests.Integration.Communication.Chat.Platform.Doors
         [TestMethod]
         public void AWorkflowCannotMessageSomeoneUnderTheMinimumAge()
         {
-            using ( var scene = new Scene( minimumAge: 18 ) )
+            using ( var scene = new ChatDoorScene( minimumAge: 18 ) )
             {
                 var sender = scene.AddChatPerson( "Sender" );
                 scene.SetAge( sender, 40 );
@@ -647,7 +624,7 @@ namespace Rock.Tests.Integration.Communication.Chat.Platform.Doors
         [TestMethod]
         public void AWorkflowCannotMessageSomeoneWithNoBirthdateWhenThereIsAMinimumAge()
         {
-            using ( var scene = new Scene( minimumAge: 18 ) )
+            using ( var scene = new ChatDoorScene( minimumAge: 18 ) )
             {
                 var sender = scene.AddChatPerson( "Sender" );
                 scene.SetAge( sender, 40 );
@@ -664,7 +641,7 @@ namespace Rock.Tests.Integration.Communication.Chat.Platform.Doors
         [TestMethod]
         public void AWorkflowCannotSendAsSomeoneUnderTheMinimumAge()
         {
-            using ( var scene = new Scene( minimumAge: 18 ) )
+            using ( var scene = new ChatDoorScene( minimumAge: 18 ) )
             {
                 var child = scene.AddChatPerson( "Child" );
                 scene.SetAge( child, 12 );
@@ -682,7 +659,7 @@ namespace Rock.Tests.Integration.Communication.Chat.Platform.Doors
         [TestMethod]
         public void AWorkflowStillMessagesSomeoneAtOrOverTheMinimumAge()
         {
-            using ( var scene = new Scene( minimumAge: 18 ) )
+            using ( var scene = new ChatDoorScene( minimumAge: 18 ) )
             {
                 // Open DM off on both, so only the age gates stand between them and the message.
                 var sender = scene.AddChatPerson( "Sender", isOpenDmAllowed: false );
@@ -705,7 +682,7 @@ namespace Rock.Tests.Integration.Communication.Chat.Platform.Doors
         [TestMethod]
         public void AWorkflowCannotPostInAChannelAsSomeoneUnderTheMinimumAge()
         {
-            using ( var scene = new Scene( minimumAge: 18 ) )
+            using ( var scene = new ChatDoorScene( minimumAge: 18 ) )
             {
                 var room = scene.Fixture.AddChannel( scene.Fixture.SharedGroupTypeId, "Announcements" );
                 var child = scene.AddChatPerson( "Child" );
@@ -720,368 +697,5 @@ namespace Rock.Tests.Integration.Communication.Chat.Platform.Doors
 
         #endregion A workflow's channel post
 
-        #region Support
-
-        /// <summary>
-        /// A church with chat set up, a lobby that enrols each person in chat without sharing a
-        /// private room, and the immediate sync sending to a stand-in.
-        /// </summary>
-        private sealed class Scene : IDisposable
-        {
-            private readonly Guid _lobby;
-
-            private readonly List<Guid> _made = new List<Guid>();
-
-            private readonly object _sync = new object();
-
-            public Scene( Guid? directMessageAccess = null, int? minimumAge = null )
-            {
-                Fixture = new ChatSyncProjectionFixture();
-
-                const string kid = "kid-door-test";
-                Configuration = new ChatPlatformConfiguration
-                {
-                    TenantId = Guid.NewGuid(),
-                    ProjectUrl = ProjectUrl,
-                    PublishableKey = "sb_publishable_test",
-                    Kid = kid,
-                    PrivateKey = ChatSyncProjectionFixture.CreateSigningKey( kid ).PrivateJwk,
-                    AreChatProfilesVisible = true,
-                    IsOpenDirectMessagingAllowed = false,
-                    DirectMessageAccessDataViewGuid = directMessageAccess,
-                    MinimumAge = minimumAge,
-                    ChatBadgeDataViewGuids = new List<Guid>()
-                };
-                Fixture.StoreConfiguration( Configuration );
-
-                Platform = new PlatformStandIn();
-                Override = ChatPlatformSyncHelper.OverrideImmediateSync( Platform );
-
-                // The fixture's shared type is public, so a lobby of it enrols without sharing.
-                _lobby = Fixture.AddChannel( Fixture.SharedGroupTypeId, "Lobby" );
-            }
-
-            public ChatSyncProjectionFixture Fixture { get; }
-
-            public ChatPlatformConfiguration Configuration { get; }
-
-            public Guid TenantId => Configuration.TenantId.Value;
-
-            public PlatformStandIn Platform { get; }
-
-            public ChatPlatformSyncHelper.ImmediateSyncOverride Override { get; }
-
-            /// <summary>
-            /// A person enrolled in chat through the public lobby, with their Open DM setting.
-            /// </summary>
-            public int AddChatPerson( string lastName, bool? isOpenDmAllowed = null )
-            {
-                var personId = Fixture.AddPerson( lastName );
-                Fixture.AddMember( _lobby, personId );
-
-                if ( isOpenDmAllowed.HasValue )
-                {
-                    SetOpenDm( personId, isOpenDmAllowed.Value );
-                }
-
-                return personId;
-            }
-
-            public void SetOpenDm( int personId, bool isOpenDmAllowed )
-            {
-                using ( var rockContext = new RockContext() )
-                {
-                    rockContext.Database.ExecuteSqlCommand(
-                        "UPDATE [Person] SET [IsChatOpenDirectMessageAllowed] = @p1 WHERE [Id] = @p0", personId, isOpenDmAllowed );
-                }
-            }
-
-            public void AddToBanList( int personId )
-            {
-                Fixture.AddMember( Rock.SystemGuid.Group.GROUP_CHAT_BAN_LIST.AsGuid(), personId );
-            }
-
-            public void MakeInactive( int personId )
-            {
-                var inactive = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE.AsGuid() ).Id;
-
-                using ( var rockContext = new RockContext() )
-                {
-                    rockContext.Database.ExecuteSqlCommand( "UPDATE [Person] SET [RecordStatusValueId] = @p1 WHERE [Id] = @p0", personId, inactive );
-                }
-            }
-
-            /// <summary>
-            /// Gives a person a birthdate that makes them exactly this many years old today.
-            /// </summary>
-            public void SetAge( int personId, int years )
-            {
-                using ( var rockContext = new RockContext() )
-                {
-                    var person = new PersonService( rockContext ).Get( personId );
-                    person.SetBirthDate( RockDateTime.Today.AddYears( -years ) );
-                    rockContext.SaveChanges();
-                }
-            }
-
-            public Guid Alias( int personId )
-            {
-                return Fixture.PrimaryAliasGuid( personId );
-            }
-
-            public Person Person( int personId )
-            {
-                using ( var rockContext = new RockContext() )
-                {
-                    return new PersonService( rockContext ).Queryable().AsNoTracking().Single( p => p.Id == personId );
-                }
-            }
-
-            /// <summary>
-            /// Saves one of the caller's own settings inside a request of its own, as the block does.
-            /// </summary>
-            public ChatPersonSettingResultBag SaveSetting( int callerId, string setting, bool value )
-            {
-                using ( ChatSyncProjectionFixture.InsideRequest() )
-                using ( var rockContext = new RockContext() )
-                {
-                    var caller = new PersonService( rockContext ).Get( callerId );
-                    var context = ChatSessionHelper.BuildSessionContext( caller, Configuration, rockContext );
-
-                    return ChatDoorHelper.SavePersonSettingAsync( caller, setting, value, context, rockContext ).GetAwaiter().GetResult();
-                }
-            }
-
-            /// <summary>
-            /// Starts a conversation as the caller, inside a request of its own, as the block does.
-            /// </summary>
-            public ChatDirectMessageResultBag Start( int callerId, params Guid[] personAliasGuids )
-            {
-                ChatDirectMessageResultBag result;
-
-                using ( ChatSyncProjectionFixture.InsideRequest() )
-                using ( var rockContext = new RockContext() )
-                {
-                    var caller = new PersonService( rockContext ).Get( callerId );
-                    var context = ChatSessionHelper.BuildSessionContext( caller, Configuration, rockContext );
-
-                    result = ChatDoorHelper.StartDirectMessageAsync( caller, personAliasGuids, context, rockContext ).GetAwaiter().GetResult();
-                }
-
-                if ( result.ChannelGuid.HasValue )
-                {
-                    lock ( _sync )
-                    {
-                        _made.Add( result.ChannelGuid.Value );
-                    }
-                }
-
-                return result;
-            }
-
-            /// <summary>
-            /// Sends a workflow's direct message outside any request, as the workflow engine does.
-            /// </summary>
-            public ChatDoorOutcome SendWorkflowDirectMessage( int senderId, int recipientId, string body )
-            {
-                var outcome = ChatDoorHelper.SendWorkflowDirectMessage( senderId, recipientId, body, Configuration );
-
-                if ( outcome.ChannelGuid.HasValue )
-                {
-                    lock ( _sync )
-                    {
-                        _made.Add( outcome.ChannelGuid.Value );
-                    }
-                }
-
-                return outcome;
-            }
-
-            /// <summary>
-            /// Posts a workflow's message into a channel outside any request, as the workflow engine does.
-            /// </summary>
-            public ChatDoorOutcome SendWorkflowChannelMessage( Guid groupGuid, int? senderId, string body )
-            {
-                return ChatDoorHelper.SendWorkflowChannelMessage( groupGuid, senderId, body, Configuration );
-            }
-
-            public Group Group( Guid groupGuid )
-            {
-                using ( var rockContext = new RockContext() )
-                {
-                    return new GroupService( rockContext ).Queryable().AsNoTracking().Single( g => g.Guid == groupGuid );
-                }
-            }
-
-            /// <summary>
-            /// The group by its Guid, archived or not.
-            /// </summary>
-            public Group AnyGroup( Guid groupGuid )
-            {
-                using ( var rockContext = new RockContext() )
-                {
-                    return new GroupService( rockContext ).AsNoFilter().AsNoTracking().Single( g => g.Guid == groupGuid );
-                }
-            }
-
-            public List<int> ActiveMembers( Guid groupGuid )
-            {
-                using ( var rockContext = new RockContext() )
-                {
-                    return new GroupMemberService( rockContext ).Queryable()
-                        .Where( m => m.Group.Guid == groupGuid && m.GroupMemberStatus == GroupMemberStatus.Active && !m.IsArchived )
-                        .Select( m => m.PersonId )
-                        .ToList();
-                }
-            }
-
-            public int ActiveMemberCount( Guid groupGuid )
-            {
-                return ActiveMembers( groupGuid ).Count;
-            }
-
-            /// <summary>
-            /// The direct message groups whose active members are exactly these people.
-            /// </summary>
-            public List<Guid> DirectMessagesWithExactly( params int[] personIds )
-            {
-                var directMessageTypeId = Fixture.DirectMessageGroupTypeId;
-                var personCount = personIds.Length;
-
-                using ( var rockContext = new RockContext() )
-                {
-                    return new GroupService( rockContext ).Queryable()
-                        .Where( g => g.GroupTypeId == directMessageTypeId )
-                        .Select( g => new
-                        {
-                            g.Guid,
-                            People = g.Members.Where( m => m.GroupMemberStatus == GroupMemberStatus.Active && !m.IsArchived ).Select( m => m.PersonId )
-                        } )
-                        .Where( g => g.People.Count() == personCount && g.People.All( p => personIds.Contains( p ) ) )
-                        .Select( g => g.Guid )
-                        .ToList();
-                }
-            }
-
-            public List<RecordedPush> WaitForPushes()
-            {
-                Assert.IsTrue( Override.WaitForPushes( PushWait ), "a push was still running when its wait ran out" );
-
-                return Platform.Pushes;
-            }
-
-            public void Dispose()
-            {
-                Override.WaitForPushes( PushWait );
-                Override.Dispose();
-                Platform.Dispose();
-
-                // The groups the door made carry no fixture mark, so they are taken away by Guid.
-                using ( var rockContext = new RockContext() )
-                {
-                    foreach ( var guid in _made.Distinct() )
-                    {
-                        rockContext.Database.ExecuteSqlCommand(
-                            "DELETE FROM [GroupMember] WHERE [GroupId] IN ( SELECT [Id] FROM [Group] WHERE [Guid] = @p0 );"
-                            + "DELETE FROM [Group] WHERE [Guid] = @p0;",
-                            guid );
-                    }
-                }
-
-                Fixture.Dispose();
-            }
-        }
-
-        /// <summary>
-        /// One push as the stand-in received it: the channels and the people it carried.
-        /// </summary>
-        private sealed class RecordedPush
-        {
-            public List<Guid> ChannelGuids { get; set; }
-
-            public List<Newtonsoft.Json.Linq.JArray> Aliases { get; set; }
-        }
-
-        /// <summary>
-        /// Answers the exchange and the push as the platform would, after a delay a test may set.
-        /// </summary>
-        private sealed class PlatformStandIn : HttpMessageHandler
-        {
-            private readonly object _sync = new object();
-
-            private readonly List<RecordedPush> _pushes = new List<RecordedPush>();
-
-            public TimeSpan PushDelay { get; set; } = TimeSpan.Zero;
-
-            /// <summary>
-            /// How many posts Rock has made through the system post.
-            /// </summary>
-            public int Posts { get; private set; }
-
-            public List<RecordedPush> Pushes
-            {
-                get
-                {
-                    lock ( _sync )
-                    {
-                        return _pushes.ToList();
-                    }
-                }
-            }
-
-            protected override async Task<HttpResponseMessage> SendAsync( HttpRequestMessage request, CancellationToken cancellationToken )
-            {
-                var path = request.RequestUri.AbsolutePath;
-
-                if ( path == ExchangePath )
-                {
-                    return Answer( "{\"access_token\":\"exchanged.platform.token\",\"token_type\":\"bearer\",\"expires_in\":300}" );
-                }
-
-                if ( path == SystemPostPath )
-                {
-                    lock ( _sync )
-                    {
-                        Posts++;
-                    }
-
-                    return Answer( "{\"id\":1,\"created_at\":\"2026-10-06T00:00:00.000000+00:00\"}" );
-                }
-
-                if ( path != PushPath )
-                {
-                    return new HttpResponseMessage( HttpStatusCode.NotFound );
-                }
-
-                var body = Newtonsoft.Json.Linq.JObject.Parse( await request.Content.ReadAsStringAsync() );
-                lock ( _sync )
-                {
-                    _pushes.Add( new RecordedPush
-                    {
-                        ChannelGuids = body["channels"].Select( r => ( Guid ) r[0] ).ToList(),
-                        Aliases = body["aliases"].Cast<Newtonsoft.Json.Linq.JArray>().ToList()
-                    } );
-                }
-
-                if ( PushDelay > TimeSpan.Zero )
-                {
-                    await Task.Delay( PushDelay, cancellationToken );
-                }
-
-                var counters = "{\"inserted\":0,\"updated\":0,\"suppressed\":0,\"skipped_stale\":0,\"absent\":0}";
-
-                return Answer( "{\"aliases\":" + counters + ",\"channels\":" + counters + ",\"members\":" + counters + "}" );
-            }
-
-            private static HttpResponseMessage Answer( string json )
-            {
-                return new HttpResponseMessage( HttpStatusCode.OK )
-                {
-                    Content = new StringContent( json, Encoding.UTF8, "application/json" )
-                };
-            }
-        }
-
-        #endregion Support
     }
 }
