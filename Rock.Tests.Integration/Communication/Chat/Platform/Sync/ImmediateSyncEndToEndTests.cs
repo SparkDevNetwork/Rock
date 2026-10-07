@@ -210,6 +210,36 @@ namespace Rock.Tests.Integration.Communication.Chat.Platform.Sync
 
                 var row = platform.WaitForAlias( configuration.TenantId.Value, alias, r => r != null && ( bool? ) r["is_open_dm_allowed"] == true );
                 Assert.IsNotNull( row, "the setting saved through the door never reached the platform" );
+
+                // How long the door holds a person while it waits for the platform: twenty more
+                // saves, alternating, each timed from the call to its answer.
+                var elapsed = new List<double>();
+                var pending = 0;
+                for ( var i = 0; i < 20; i++ )
+                {
+                    using ( ChatSyncProjectionFixture.InsideRequest() )
+                    using ( var rockContext = new RockContext() )
+                    {
+                        var person = new PersonService( rockContext ).Get( personId );
+                        var context = Rock.Communication.Chat.Platform.Session.ChatSessionHelper.BuildSessionContext( person, configuration, rockContext );
+                        var stopwatch = Stopwatch.StartNew();
+
+                        var answer = Rock.Communication.Chat.Platform.Doors.ChatDoorHelper
+                            .SavePersonSettingAsync( person, "open_dm", i % 2 == 0 ? false : true, context, rockContext ).GetAwaiter().GetResult();
+
+                        elapsed.Add( stopwatch.Elapsed.TotalMilliseconds );
+                        pending += answer.IsPending ? 1 : 0;
+                        Assert.AreEqual( "ok", answer.Code, answer.Message );
+                    }
+                }
+
+                elapsed.Sort();
+
+                TestContext.WriteLine( string.Join( Environment.NewLine,
+                    $"door saves timed: {elapsed.Count}, from the call to its answer, the awaited push included; pending: {pending}",
+                    $"p50 ms: {Percentile( elapsed, 0.50 ):F1}",
+                    $"p95 ms: {Percentile( elapsed, 0.95 ):F1}",
+                    $"max ms: {elapsed.Last():F1}" ) );
             }
         }
 
