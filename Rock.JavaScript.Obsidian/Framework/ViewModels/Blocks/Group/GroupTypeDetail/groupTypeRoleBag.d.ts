@@ -39,6 +39,12 @@ export type GroupTypeRoleBag = {
     /** Gets or sets a value indicating whether members in this role can manage group members. */
     canManageMembers: boolean;
 
+    /** Gets or sets a value indicating whether members in this role may mention everyone in a chat channel at once. */
+    canMentionAll: boolean;
+
+    /** Gets or sets a value indicating whether members in this role may post announcements in a chat channel. */
+    canPostAnnouncements: boolean;
+
     /** Gets or sets a value indicating whether members in this role can take attendance. */
     canTakeAttendance: boolean;
 

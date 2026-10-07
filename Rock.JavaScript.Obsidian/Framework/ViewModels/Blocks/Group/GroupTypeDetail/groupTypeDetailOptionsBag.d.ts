@@ -50,6 +50,12 @@ export type GroupTypeDetailOptionsBag = {
     /** Gets or sets a value indicating whether the indexing option is available. */
     isIndexingOptionAvailable: boolean;
 
+    /**
+     * Gets or sets whether chat runs on the Stream chat provider here, the only chat that
+     * reads a role's default chat role.
+     */
+    isStreamChatEnabled: boolean;
+
     /** Gets or sets the RSVP system communication options. */
     rsvpSystemCommunicationOptions?: ListItemBag[] | null;
 

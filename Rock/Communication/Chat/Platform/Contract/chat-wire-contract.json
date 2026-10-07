@@ -2,7 +2,7 @@
   "artifact": "chat-wire-contract",
   "purpose": "The wire between Rock and the chat platform. The column lists are the positional order of the sync payload rows, the enum value lists are what each side mirrors as a typed vocabulary, the headers are what a submission carries, the push is the key set of an immediate push body, the claim names are what a person token carries, and the error codes are the one vocabulary every layer branches on. Generated from the database the migrations produce; never edited by hand.",
   "hash_recipe": "SHA-256, lowercase hex, over the UTF-8 bytes of one line per table in the order the tables array gives: the table name, a colon, the wire column names joined by commas, each line closed by a line feed. The JSON is deliberately not what is hashed, so no key order, whitespace or string escaping rule has to be agreed between the languages that compute it. The hash covers the column lists and nothing else: it is compared at ingest, so anything it covered would refuse every submission from every church still on the previous Rock build the moment it changed, and an added enum value is meant to ship to the platform first and leave those churches working.",
-  "wire_hash": "de1f06d0d8bc6d1cd3a1798d92e5a6a78be7774f952acae5ad3d02fea262d125",
+  "wire_hash": "1e1eafd336dac6f774ad45d559e7ef4a7dc769fb19ee9e16a0e7e1985e9c44de",
   "jwt_claims": {
     "tenant": "tenant_id",
     "person": "sub"
@@ -187,6 +187,8 @@
         "channel_id",
         "person_alias_guid",
         "is_leader",
+        "can_mention_all",
+        "can_post_announcements",
         "is_banned",
         "ban_expires_at"
       ],
@@ -194,14 +196,6 @@
         {
           "column": "tenant_id",
           "reason": "The church comes from the credential the submission is made with, never from a row."
-        },
-        {
-          "column": "can_mention_all",
-          "reason": "Not a Rock role field. Written by the platform, and a restatement must not overwrite it."
-        },
-        {
-          "column": "can_post_announcements",
-          "reason": "Not a Rock role field. Written by the platform, and a restatement must not overwrite it."
         },
         {
           "column": "notify_mode",

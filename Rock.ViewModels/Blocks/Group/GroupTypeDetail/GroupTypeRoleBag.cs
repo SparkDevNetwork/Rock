@@ -103,6 +103,16 @@ namespace Rock.ViewModels.Blocks.Group.GroupTypeDetail
         public ChatRole ChatRole { get; set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether members in this role may mention everyone in a chat channel at once.
+        /// </summary>
+        public bool CanMentionAll { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether members in this role may post announcements in a chat channel.
+        /// </summary>
+        public bool CanPostAnnouncements { get; set; }
+
+        /// <summary>
         /// Gets or sets a value indicating whether members in this role can take attendance.
         /// </summary>
         public bool CanTakeAttendance { get; set; }

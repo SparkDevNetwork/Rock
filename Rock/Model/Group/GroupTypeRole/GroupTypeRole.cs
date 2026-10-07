@@ -191,6 +191,26 @@ namespace Rock.Model
         public ChatRole ChatRole { get; set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether a person in this role may mention everyone
+        /// in a chat channel at once.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if a person in this role may mention everyone; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool CanMentionAll { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether a person in this role may post announcements
+        /// in a chat channel.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if a person in this role may post announcements; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool CanPostAnnouncements { get; set; }
+
+        /// <summary>
         /// Determines if this role is intended to be used and displayed on public
         /// facing sites and features.
         /// </summary>

@@ -43,6 +43,12 @@ namespace Rock.ViewModels.Blocks.Group.GroupTypeDetail
         public bool IsChatPlatformConfigured { get; set; }
 
         /// <summary>
+        /// Gets or sets whether chat runs on the Stream chat provider here, the only chat that
+        /// reads a role's default chat role.
+        /// </summary>
+        public bool IsStreamChatEnabled { get; set; }
+
+        /// <summary>
         /// Gets or sets the group requirement types.
         /// </summary>
         public List<GroupRequirementTypeBag> GroupRequirementTypeOptions { get; set; }

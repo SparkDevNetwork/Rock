@@ -176,6 +176,8 @@ namespace Rock.Model
             target.Id = source.Id;
             target.CanEdit = source.CanEdit;
             target.CanManageMembers = source.CanManageMembers;
+            target.CanMentionAll = source.CanMentionAll;
+            target.CanPostAnnouncements = source.CanPostAnnouncements;
             target.CanTakeAttendance = source.CanTakeAttendance;
             target.CanView = source.CanView;
             target.ChatRole = source.ChatRole;

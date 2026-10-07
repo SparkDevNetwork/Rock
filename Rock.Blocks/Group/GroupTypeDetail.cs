@@ -123,6 +123,7 @@ namespace Rock.Blocks.Group
                 EnableGroupViewLavaTemplate = GetAttributeValue( AttributeKey.EnableGroupViewLavaTemplate ).AsBoolean(),
                 IsChatEnabledSystem = IsChatSettingsEnabled( chatPlatformConfiguration ),
                 IsChatPlatformConfigured = chatPlatformConfiguration.IsConfigured,
+                IsStreamChatEnabled = ChatHelper.IsChatEnabled,
                 GroupRequirementTypeOptions = new GroupRequirementTypeService( RockContext ).Queryable()
                     .OrderBy( req => req.Name )
                     .Select( req => new GroupRequirementTypeBag
@@ -1082,6 +1083,8 @@ namespace Rock.Blocks.Group
                     MaxCount = role.MaxCount,
                     MinCount = role.MinCount,
                     IsLeader = role.IsLeader,
+                    CanMentionAll = role.CanMentionAll,
+                    CanPostAnnouncements = role.CanPostAnnouncements,
                     CanView = role.CanView,
                     CanEdit = role.CanEdit,
                     ReceiveRequirementsNotifications = role.ReceiveRequirementsNotifications,
@@ -1567,6 +1570,8 @@ namespace Rock.Blocks.Group
                             role.MaxCount = bag.MaxCount;
                             role.MinCount = bag.MinCount;
                             role.IsLeader = bag.IsLeader;
+                            role.CanMentionAll = bag.CanMentionAll;
+                            role.CanPostAnnouncements = bag.CanPostAnnouncements;
                             role.ReceiveRequirementsNotifications = bag.ReceiveRequirementsNotifications;
                             role.CanView = bag.CanView;
                             role.CanEdit = bag.CanEdit;

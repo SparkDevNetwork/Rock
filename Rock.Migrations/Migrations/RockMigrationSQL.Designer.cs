@@ -2255,6 +2255,15 @@ namespace Rock.Migrations.Migrations {
         }
 
         /// <summary>
+        ///   Looks up a localized string similar to the [spChat_SyncProjection] stored procedure carrying the role chat capabilities..
+        /// </summary>
+        public static string _202610061400000_AddGroupTypeRoleChatCapabilities_spChat_SyncProjection {
+            get {
+                return ResourceManager.GetString("_202610061400000_AddGroupTypeRoleChatCapabilities_spChat_SyncProjection", resourceCulture);
+            }
+        }
+
+        /// <summary>
         ///   Looks up a localized resource of type System.Byte[].
         /// </summary>
         public static byte[] lms_header_min {

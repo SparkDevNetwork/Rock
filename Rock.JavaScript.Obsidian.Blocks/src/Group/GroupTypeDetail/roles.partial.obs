@@ -87,7 +87,15 @@
                         <InlineCheckBox label="Make Role Public" v-model="theRole.isPublic" help="When enabled, this role is visible in all contexts. When disabled, the role is hidden in certain areas to help prevent exposure of sensitive information." />
                     </div>
 
-                    <RadioButtonList v-if="isChatAllowed" label="Default Chat Role" v-model="chatRoleValue"
+                    <div v-if="isChatAllowed && isChatPlatformConfigured" class="form-group">
+                        <InlineCheckBox label="Can Mention All" v-model="theRole.canMentionAll" help="When enabled, individuals with this role can mention everyone in a chat channel at once. A change reaches chat at the next Chat Platform Sync, or when Sync Now is pressed on this group type." />
+                    </div>
+
+                    <div v-if="isChatAllowed && isChatPlatformConfigured" class="form-group">
+                        <InlineCheckBox label="Can Post Announcements" v-model="theRole.canPostAnnouncements" help="When enabled, individuals with this role can post announcements in a chat channel. A change reaches chat at the next Chat Platform Sync, or when Sync Now is pressed on this group type." />
+                    </div>
+
+                    <RadioButtonList v-if="isChatAllowed && isStreamChatEnabled" label="Default Chat Role" v-model="chatRoleValue"
                                      :items="chatRoleOptions"
                                      help="Specifies the chat role assigned to individuals with this group role for synchronization with the external chat system." />
 
@@ -148,6 +156,22 @@
         isChatAllowed: {
             type: Boolean as PropType<boolean>,
             required: true
+        },
+
+        /**
+         * If true, chat runs on Spark's chat platform, so the role's chat capabilities are shown.
+         */
+        isChatPlatformConfigured: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        /**
+         * If true, chat runs on the Stream chat provider, the only chat that reads the default chat role.
+         */
+        isStreamChatEnabled: {
+            type: Boolean as PropType<boolean>,
+            default: false
         },
 
         /**
@@ -283,6 +307,8 @@
             canEdit: false,
             canManageMembers: false,
             canTakeAttendance: false,
+            canMentionAll: false,
+            canPostAnnouncements: false,
             receiveRequirementsNotifications: false,
             chatRole: ChatRole.User,
             minCount: null,

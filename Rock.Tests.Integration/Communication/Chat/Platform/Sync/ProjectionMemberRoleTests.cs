@@ -23,6 +23,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Newtonsoft.Json.Linq;
 
 using Rock.Data;
+using Rock.Model;
 using Rock.Tests.Integration.TestFramework.Database;
 
 namespace Rock.Tests.Integration.Communication.Chat.Platform.Sync
@@ -213,6 +214,35 @@ namespace Rock.Tests.Integration.Communication.Chat.Platform.Sync
                     Assert.IsFalse( ( bool ) withdrawn.Value( "members", row, "can_mention_all" ), "a member kept mentioning everyone after the role lost it" );
                     Assert.IsFalse( ( bool ) withdrawn.Value( "members", row, "can_post_announcements" ), "a member kept posting announcements after the role lost it" );
                 }
+            }
+        }
+
+        [TestMethod]
+        public void ARolesCapabilitiesSavedAsAnEntity_AreOnTheNextReading()
+        {
+            using ( var fixture = new ChatSyncProjectionFixture() )
+            {
+                var roleId = fixture.AddRole( fixture.SharedGroupTypeId, "Saved through the model", false );
+                var channelGuid = fixture.AddChannel( fixture.SharedGroupTypeId, "Saved role channel" );
+                var personId = fixture.AddPerson( "SavedRole" );
+
+                fixture.AddMember( channelGuid, personId, member => member.GroupRoleId = roleId );
+
+                // Group Type Detail saves a role through its service, so this is the path that has
+                // to reach the column, not only a direct write to it.
+                using ( var rockContext = new RockContext() )
+                {
+                    var role = new GroupTypeRoleService( rockContext ).Get( roleId );
+                    role.CanMentionAll = true;
+                    role.CanPostAnnouncements = true;
+                    rockContext.SaveChanges();
+                }
+
+                var payload = fixture.Project();
+                var membership = SingleMembership( payload, channelGuid );
+
+                Assert.IsTrue( ( bool ) payload.Value( "members", membership, "can_mention_all" ), "a role saved as able to mention everyone did not reach the reading" );
+                Assert.IsTrue( ( bool ) payload.Value( "members", membership, "can_post_announcements" ), "a role saved as able to post announcements did not reach the reading" );
             }
         }
 

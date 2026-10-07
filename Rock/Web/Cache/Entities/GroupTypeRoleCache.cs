@@ -140,6 +140,14 @@ namespace Rock.Web.Cache
         [DataMember]
         public ChatRole ChatRole { get; set; }
 
+        /// <inheritdoc cref="GroupTypeRole.CanMentionAll"/>
+        [DataMember]
+        public bool CanMentionAll { get; private set; }
+
+        /// <inheritdoc cref="GroupTypeRole.CanPostAnnouncements"/>
+        [DataMember]
+        public bool CanPostAnnouncements { get; private set; }
+
         /// <inheritdoc cref="GroupTypeRole.IsPublic"/>
         [DataMember]
         public bool IsPublic { get; set; }
@@ -202,6 +210,8 @@ namespace Rock.Web.Cache
             IsExcludedFromPeerNetwork = role.IsExcludedFromPeerNetwork;
             IsCheckInAllowed = role.IsCheckInAllowed;
             ChatRole = role.ChatRole;
+            CanMentionAll = role.CanMentionAll;
+            CanPostAnnouncements = role.CanPostAnnouncements;
             IsPublic = role.IsPublic;
         }
 
