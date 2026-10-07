@@ -110,6 +110,39 @@ namespace Rock.Tests.Integration.Communication.Chat.Platform.Sync
         }
 
         [TestMethod]
+        public void AMemberWhoseRoleMayMentionEveryoneAndPostAnnouncementsCarriesBothOnThePlatform()
+        {
+            var platform = LocalChatPlatform.FromEnvironment();
+
+            using ( var fixture = new ChatSyncProjectionFixture() )
+            using ( var recorder = new PushRecorder() )
+            using ( ChatPlatformSyncHelper.OverrideImmediateSync( recorder ) )
+            {
+                var configuration = platform.ProvisionChurch();
+                fixture.StoreConfiguration( configuration );
+
+                var roleId = fixture.AddRole( fixture.SharedGroupTypeId, "Announcer", false );
+                fixture.SetRoleCapabilitiesDirectly( roleId, true, true );
+
+                var channel = fixture.AddChannel( fixture.SharedGroupTypeId, "Capable channel" );
+                var personId = fixture.AddPerson( "Capable" );
+                var alias = fixture.PrimaryAliasGuid( personId );
+
+                using ( ChatSyncProjectionFixture.InsideRequest() )
+                using ( var rockContext = new RockContext() )
+                {
+                    AddMember( rockContext, channel, personId, roleId );
+                    rockContext.SaveChanges();
+                }
+
+                var row = platform.WaitForMember( configuration.TenantId.Value, channel, alias, r => r != null );
+                Assert.IsNotNull( row, "the membership saved in Rock never reached the platform" );
+                Assert.IsTrue( ( bool ) row["can_mention_all"], "the platform did not store that the member's role may mention everyone" );
+                Assert.IsTrue( ( bool ) row["can_post_announcements"], "the platform did not store that the member's role may post announcements" );
+            }
+        }
+
+        [TestMethod]
         public void ABanListAddSetsTheGloballyBannedFlagOnThePlatform()
         {
             var platform = LocalChatPlatform.FromEnvironment();
@@ -194,6 +227,14 @@ namespace Rock.Tests.Integration.Communication.Chat.Platform.Sync
 
         private static void AddMember( RockContext rockContext, Guid groupGuid, int personId )
         {
+            AddMember( rockContext, groupGuid, personId, null );
+        }
+
+        /// <summary>
+        /// Adds a person to a group in a role, or in the group type's default role when none is given.
+        /// </summary>
+        private static void AddMember( RockContext rockContext, Guid groupGuid, int personId, int? roleId )
+        {
             var group = new GroupService( rockContext ).Queryable( "GroupType" ).Single( g => g.Guid == groupGuid );
 
             new GroupMemberService( rockContext ).Add( new GroupMember
@@ -202,7 +243,7 @@ namespace Rock.Tests.Integration.Communication.Chat.Platform.Sync
                 GroupId = group.Id,
                 GroupTypeId = group.GroupTypeId,
                 PersonId = personId,
-                GroupRoleId = group.GroupType.DefaultGroupRoleId.Value,
+                GroupRoleId = roleId ?? group.GroupType.DefaultGroupRoleId.Value,
                 GroupMemberStatus = GroupMemberStatus.Active
             } );
         }

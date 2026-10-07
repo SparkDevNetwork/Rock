@@ -224,6 +224,28 @@ namespace Rock.Tests.Integration.Communication.Chat.Platform.Sync
         }
 
         /// <summary>
+        /// Writes a role's two chat capabilities as its row, the form the projection reads them in.
+        /// </summary>
+        /// <param name="roleId">The role, which must be one this fixture made.</param>
+        /// <param name="canMentionAll">Whether holding the role lets a person mention everyone in a channel.</param>
+        /// <param name="canPostAnnouncements">Whether holding the role lets a person post announcements.</param>
+        /// <remarks>
+        /// Nothing runs when a role is saved, so the row is the whole of what a change in Group Type
+        /// Detail leaves behind for the next reading.
+        /// </remarks>
+        public void SetRoleCapabilitiesDirectly( int roleId, bool canMentionAll, bool canPostAnnouncements )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                rockContext.Database.ExecuteSqlCommand(
+                    "UPDATE [GroupTypeRole] SET [CanMentionAll] = @p1, [CanPostAnnouncements] = @p2 WHERE [Id] = @p0",
+                    roleId,
+                    canMentionAll,
+                    canPostAnnouncements );
+            }
+        }
+
+        /// <summary>
         /// Puts a person in a group.
         /// </summary>
         /// <param name="channelGuid">The group.</param>

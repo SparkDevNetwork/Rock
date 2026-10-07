@@ -186,7 +186,7 @@ namespace Rock.Tests.Integration.Communication.Chat.Platform.Sync
         public JObject WaitForMember( Guid tenantId, Guid channelId, Guid aliasGuid, Func<JObject, bool> isReady )
         {
             return WaitFor(
-                $"chat_channel_members?select=synced_at,absent_since&tenant_id=eq.{tenantId}&channel_id=eq.{channelId}&person_alias_guid=eq.{aliasGuid}",
+                $"chat_channel_members?select=synced_at,absent_since,can_mention_all,can_post_announcements&tenant_id=eq.{tenantId}&channel_id=eq.{channelId}&person_alias_guid=eq.{aliasGuid}",
                 isReady );
         }
 
