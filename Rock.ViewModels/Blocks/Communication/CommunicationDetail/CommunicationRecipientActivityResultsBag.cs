@@ -17,12 +17,12 @@
 
 using System.Collections.Generic;
 
-namespace Rock.ViewModels.Rest.Controls
+namespace Rock.ViewModels.Blocks.Communication.CommunicationDetail
 {
     /// <summary>
     /// A bag that contains activity information for a communication recipient.
     /// </summary>
-    public class CommunicationRecipientGetActivityResultsBag
+    public class CommunicationRecipientActivityResultsBag
     {
         /// <summary>
         /// Gets or sets the recipient person's hashed identifier key.

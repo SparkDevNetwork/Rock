@@ -191,7 +191,7 @@
     import { BtnType } from "@Obsidian/Enums/Controls/btnType";
     import { CommunicationType, CommunicationTypeDescription } from "@Obsidian/Enums/Communication/communicationType";
     import { InferredCommunicationStatus, InferredCommunicationStatusDescription } from "@Obsidian/Enums/Communication/inferredCommunicationStatus";
-    import { getSecurityGrant, onConfigurationValuesChanged, provideSecurityGrant, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
+    import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
     import { alert } from "@Obsidian/Utility/dialogs";
     import { asFormattedString, toNumber } from "@Obsidian/Utility/numberUtils";
     import { pluralize } from "@Obsidian/Utility/stringUtils";
@@ -204,7 +204,6 @@
     import { CreatePersonalTemplateRequestBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationDetail/createPersonalTemplateRequestBag";
 
     const config = useConfigurationValues<CommunicationDetailInitializationBox>();
-    const securityGrant = getSecurityGrant(config.securityGrantToken);
     const invokeBlockAction = useInvokeBlockAction();
 
     onConfigurationValuesChanged(useReloadBlock());
@@ -564,7 +563,6 @@
 
     // #endregion Event Handlers
 
-    provideSecurityGrant(securityGrant);
     provideCommunicationDetail(communicationDetail);
     provideMediumFilter(mediumFilter);
     provideSelectedTab(selectedTab);

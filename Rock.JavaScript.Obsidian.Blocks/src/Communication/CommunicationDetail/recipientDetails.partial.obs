@@ -222,13 +222,13 @@
 
 <script setup lang="ts">
     import { computed, PropType, reactive, ref, watch } from "vue";
+    import CommunicationRecipientActivity from "./recipientActivity.partial.obs";
     import RecipientGridSettingsModal from "./recipientGridSettingsModal.partial.obs";
     import { GridSettingsOptions, PersonPropertyName } from "./types.partial";
     import MediumCell from "./mediumCell.partial.obs";
     import { PreferenceKey, RecipientGridRow } from "./types.partial";
     import Grid, { AttributeColumns, BooleanColumn, booleanValueFilter, Column, DateColumn, DateTimeColumn, dateValueFilter, NumberColumn, numberValueFilter, PersonColumn, pickExistingValueFilter, SelectColumn, TextColumn, textValueFilter } from "@Obsidian/Controls/grid";
     import HighlightLabel from "@Obsidian/Controls/highlightLabel.obs";
-    import CommunicationRecipientActivity from "@Obsidian/Controls/Internal/CommunicationRecipientActivity.obs";
     import RockButton from "@Obsidian/Controls/rockButton.obs";
     import { CommunicationRecipientStatus } from "@Obsidian/Enums/Communication/communicationRecipientStatus";
     import { CommunicationType, CommunicationTypeDescription } from "@Obsidian/Enums/Communication/communicationType";
