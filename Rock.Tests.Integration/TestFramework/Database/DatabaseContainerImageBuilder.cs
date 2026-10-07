@@ -5,6 +5,7 @@ using System.Data.Entity.Infrastructure;
 using System.Data.SqlClient;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Threading.Tasks;
 
 using Docker.DotNet;
@@ -13,6 +14,7 @@ using Docker.DotNet.Models;
 using DotNet.Testcontainers.Containers;
 
 using Rock;
+using Rock.Configuration;
 using Rock.Jobs;
 using Rock.Migrations.RockStartup;
 using Rock.Model;
@@ -21,6 +23,8 @@ using Rock.Tests.Shared.TestFramework;
 using Rock.Tests.Shared.Utility;
 using Rock.Utility;
 using Rock.Web;
+using Rock.Web.Cache;
+using Rock.WebStartup;
 
 using Testcontainers.MsSql;
 
@@ -53,11 +57,22 @@ namespace Rock.Tests.Integration.TestFramework.Database
                 } );
 
                 var currentMigrationNumber = long.Parse( GetTargetMigration().Truncate( 15, false ) );
+                var currentHotFixMigrationNumber = GetTargetHotFixMigrationNumber();
 
+                // An image can be upgraded if it is behind on EF migrations, or
+                // has the same EF migrations and is behind on hotfix migrations.
+                // An image that is ahead on either one (for example, one built
+                // from a newer branch) cannot be rolled back, so it is skipped.
                 var latestImage = images.SelectMany( img => img.RepoTags )
                     .Where( t => t.StartsWith( $"{RepositoryName}:" ) )
-                    .Where( t => long.TryParse( t.Substring( 26 ), out var migrationNumber ) && migrationNumber <= currentMigrationNumber )
-                    .OrderByDescending( t => t )
+                    .Select( t => TryParseImageTag( t.Substring( RepositoryName.Length + 1 ), out var migrationNumber, out var hotFixMigrationNumber )
+                        ? new { RepositoryAndTag = t, MigrationNumber = migrationNumber, HotFixMigrationNumber = hotFixMigrationNumber }
+                        : null )
+                    .Where( t => t != null )
+                    .Where( t => t.MigrationNumber < currentMigrationNumber
+                        || ( t.MigrationNumber == currentMigrationNumber && t.HotFixMigrationNumber <= currentHotFixMigrationNumber ) )
+                    .OrderByDescending( t => t.MigrationNumber )
+                    .ThenByDescending( t => t.HotFixMigrationNumber )
                     .FirstOrDefault();
 
                 var containerBuilder = new MsSqlBuilder();
@@ -65,9 +80,9 @@ namespace Rock.Tests.Integration.TestFramework.Database
                 // Check if we are within 10 migrations of the last image. If
                 // so we will re-use that image as a starting point to save
                 // time.
-                if ( latestImage != null && long.Parse( latestImage.Substring( 26 ) ) >= long.Parse( GetRecentMigration( 10 ).Truncate( 15, false ) ) )
+                if ( latestImage != null && latestImage.MigrationNumber >= long.Parse( GetRecentMigration( 10 ).Truncate( 15, false ) ) )
                 {
-                    containerBuilder = containerBuilder.WithImage( latestImage );
+                    containerBuilder = containerBuilder.WithImage( latestImage.RepositoryAndTag );
                     upgrade = true;
                 }
 
@@ -119,7 +134,7 @@ namespace Rock.Tests.Integration.TestFramework.Database
                 {
                     ContainerID = container.Id,
                     RepositoryName = RepositoryName,
-                    Tag = GetTargetMigration().Truncate( 15, false ),
+                    Tag = GetImageTag(),
                     Changes = new List<string>
                     {
                         $"LABEL {ResourceReaper.ResourceReaperSessionLabel}="
@@ -161,6 +176,8 @@ namespace Rock.Tests.Integration.TestFramework.Database
                 TestHelper.ConfigureRockApp( csb.ConnectionString );
 
                 MigrateDatabase( csb.ConnectionString );
+
+                MigrateHotFixes();
 
                 RockDateTimeHelper.SynchronizeTimeZoneConfiguration( RockDateTime.OrgTimeZoneInfo.Id );
 
@@ -260,6 +277,98 @@ ALTER DATABASE [{dbName}] SET RECOVERY SIMPLE";
             {
                 throw new Exception( "Test Database migration failed. Verify that the database connection string specified in the test project is valid. You may need to manually synchronize the database or configure the test environment to force-create a new database.", ex );
             }
+        }
+
+        /// <summary>
+        /// Runs the core hotfix migrations in Rock/Plugin/HotFixes the same
+        /// way Rock does on startup, then verifies every one of them was applied.
+        /// </summary>
+        private static void MigrateHotFixes()
+        {
+            LogHelper.Log( $"HotFix Migrations: running... [Target={GetTargetHotFixMigrationNumber()}]" );
+
+            var rockAssembly = typeof( Rock.Plugin.Migration ).Assembly;
+            var rockAssemblyName = rockAssembly.GetName().Name;
+            var lastExceptionLogId = new ExceptionLogService( RockApp.Current.CreateRockContext() ).Queryable()
+                .Select( e => ( int? ) e.Id )
+                .Max() ?? 0;
+
+            /*
+                10/7/26 - CLAUDE
+
+                Hotfix migrations ship security and data fixes that a real
+                install receives on startup. Without them the test database
+                does not match production. For example, the Auth rules that
+                let finance roles link check images were added only by a
+                hotfix migration.
+
+                RunPluginMigrations is the method Rock itself uses, so the
+                test database gets the same migrations, in the same order,
+                with the same minimum version filter. That method logs a
+                failure to the ExceptionLog table and stops instead of
+                throwing, so the result is checked here and the build fails
+                with the logged errors rather than producing an image that is
+                silently missing migrations.
+
+                Reason: The test database must include hotfix migrations.
+            */
+            RockApplicationStartupHelper.RunPluginMigrations( rockAssembly );
+
+            // Hotfixes update data with direct SQL, so anything already
+            // cached could be stale. Rock clears the cache here on startup too.
+            RockCache.ClearAllCachedItems( false );
+
+            var rockContext = RockApp.Current.CreateRockContext();
+            var installedMigrationNumbers = new PluginMigrationService( rockContext ).Queryable()
+                .Where( m => m.PluginAssemblyName == rockAssemblyName )
+                .Select( m => m.MigrationNumber )
+                .ToList();
+
+            var missingMigrationNumbers = GetHotFixMigrationNumbers()
+                .Except( installedMigrationNumbers )
+                .OrderBy( n => n )
+                .ToList();
+
+            if ( missingMigrationNumbers.Any() )
+            {
+                var errors = new ExceptionLogService( rockContext ).Queryable()
+                    .Where( e => e.Id > lastExceptionLogId )
+                    .OrderBy( e => e.Id )
+                    .Select( e => e.Description )
+                    .ToList();
+
+                throw new Exception( $"Test Database hotfix migrations failed. Not applied: {missingMigrationNumbers.AsDelimited( ", " )}. Logged errors: {errors.AsDelimited( " | " )}" );
+            }
+
+            LogHelper.Log( $"HotFix Migrations: complete." );
+        }
+
+        /// <summary>
+        /// Gets the numbers of the core hotfix migrations that Rock would run
+        /// for the current Rock version.
+        /// </summary>
+        /// <returns>The migration numbers.</returns>
+        private static List<int> GetHotFixMigrationNumbers()
+        {
+            var rockVersion = new System.Version( Rock.VersionInfo.VersionInfo.GetRockProductVersionNumber() );
+
+            return Rock.Reflection.SearchAssembly( typeof( Rock.Plugin.Migration ).Assembly, typeof( Rock.Plugin.Migration ) )
+                .Select( a => a.Value.GetCustomAttribute<Rock.Plugin.MigrationNumberAttribute>() )
+                .Where( a => a != null && new System.Version( a.MinimumRockVersion ).CompareTo( rockVersion ) <= 0 )
+                .Select( a => a.Number )
+                .ToList();
+        }
+
+        /// <summary>
+        /// Gets the highest core hotfix migration number that Rock would run
+        /// for the current Rock version.
+        /// </summary>
+        /// <returns>The migration number, or 0 if there are none.</returns>
+        private static int GetTargetHotFixMigrationNumber()
+        {
+            return GetHotFixMigrationNumbers()
+                .DefaultIfEmpty( 0 )
+                .Max();
         }
 
         /// <summary>
@@ -380,7 +489,44 @@ ALTER DATABASE [{dbName}] SET RECOVERY SIMPLE";
         /// <returns></returns>
         public static string GetRepositoryAndTag()
         {
-            return $"{RepositoryName}:{GetTargetMigration().Truncate( 15, false )}";
+            return $"{RepositoryName}:{GetImageTag()}";
+        }
+
+        /// <summary>
+        /// Gets the image tag for the current migration targets. The tag is
+        /// the EF migration number followed by the hotfix migration number,
+        /// such as "202609222138362-327". Including the hotfix number means a
+        /// new hotfix migration produces a new image even when there is no
+        /// new EF migration.
+        /// </summary>
+        /// <returns>The image tag.</returns>
+        private static string GetImageTag()
+        {
+            return $"{GetTargetMigration().Truncate( 15, false )}-{GetTargetHotFixMigrationNumber()}";
+        }
+
+        /// <summary>
+        /// Parses an image tag created by <see cref="GetImageTag"/>. Tags from
+        /// before hotfix migrations were included have no hotfix number, and
+        /// those images contain no hotfix migrations, so they parse as 0.
+        /// </summary>
+        /// <param name="tag">The image tag, without the repository name.</param>
+        /// <param name="migrationNumber">On return, contains the EF migration number.</param>
+        /// <param name="hotFixMigrationNumber">On return, contains the hotfix migration number.</param>
+        /// <returns><c>true</c> if the tag was parsed; otherwise <c>false</c>.</returns>
+        private static bool TryParseImageTag( string tag, out long migrationNumber, out int hotFixMigrationNumber )
+        {
+            var parts = tag.Split( '-' );
+
+            hotFixMigrationNumber = 0;
+
+            if ( parts.Length > 2 || !long.TryParse( parts[0], out migrationNumber ) )
+            {
+                migrationNumber = 0;
+                return false;
+            }
+
+            return parts.Length == 1 || int.TryParse( parts[1], out hotFixMigrationNumber );
         }
 
         /// <summary>
