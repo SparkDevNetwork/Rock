@@ -494,8 +494,14 @@ namespace RockWeb.Blocks.Cms
 
                 foreach ( var emailAddress in recipientEmails )
                 {
-                    string email = emailAddress.ResolveMergeFields( mergeFields, GetAttributeValue( AttributeKey.EnabledLavaCommands ) );
-                    
+                    string email = emailAddress.ResolveMergeFields( mergeFields, GetAttributeValue( AttributeKey.EnabledLavaCommands ) ).Trim();
+
+                    // Only send to a single valid email address.
+                    if ( email.IsNullOrWhiteSpace() || email.IsLavaTemplate() || !EmailAddressFieldValidator.IsValid( email ) )
+                    {
+                        continue;
+                    }
+
                     RockEmailMessageRecipient recipient;
                     if ( saveCommunicationHistory )
                     {
