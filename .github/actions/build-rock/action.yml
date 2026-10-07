@@ -1,0 +1,31 @@
+name: Build Rock
+description: Installs the build toolchain and builds Rock.sln. Shared by the mirror's PR build and the Ship it verify build.
+
+inputs:
+  working-directory:
+    description: Folder that contains Rock.sln.
+    required: false
+    default: "."
+
+runs:
+  using: composite
+  steps:
+    - name: Set up Node
+      uses: actions/setup-node@v6
+      with:
+        node-version: '22.17.1'
+
+    - name: Set up MSBuild
+      uses: microsoft/setup-msbuild@v2
+
+    - name: Set up NuGet
+      uses: NuGet/setup-nuget@v2
+
+    - name: Build Rock.sln
+      shell: pwsh
+      working-directory: ${{ inputs.working-directory }}
+      run: |
+        nuget restore Rock.sln
+        if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+        msbuild Rock.sln -m -restore -p:Configuration=Debug -v:minimal
+        if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
