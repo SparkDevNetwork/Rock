@@ -129,10 +129,16 @@
 
         var options = {
             body: notification.body || "",
-            // the message id, so an edit's mention push replaces the first banner
-            tag: data.message_id,
+            // The push's own tag when it carries one, else the message id, so an edit's mention push
+            // replaces the first banner. The platform chooses, so a new kind of push needs no new worker.
+            tag: data.tag || data.message_id,
             data: data
         };
+
+        // A replaced banner is silent unless asked otherwise; a push that is news each time asks.
+        if (data.renotify === "true") {
+            options.renotify = true;
+        }
 
         if (data.face) {
             options.icon = data.face;
