@@ -915,7 +915,7 @@ namespace Rock.Blocks.CheckIn
                 return RequestContext.CurrentPerson;
             }
 
-            var personAliasGuid = RequestContext.GetCookieValue( Authorization.COOKIE_UNSECURED_PERSON_IDENTIFIER ).AsGuidOrNull();
+            var personAliasGuid = Authorization.GetUnsecurePersonIdentifier( RequestContext.GetCookieValue( Authorization.COOKIE_UNSECURED_PERSON_IDENTIFIER ) );
 
             if ( !personAliasGuid.HasValue )
             {

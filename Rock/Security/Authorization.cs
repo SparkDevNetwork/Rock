@@ -1165,12 +1165,24 @@ namespace Rock.Security
         {
             var httpCookie = HttpContext.Current?.Request.Cookies[Rock.Security.Authorization.COOKIE_UNSECURED_PERSON_IDENTIFIER];
 
-            if ( httpCookie == null || httpCookie.Value.IsNullOrWhiteSpace() )
+            return GetUnsecurePersonIdentifier( httpCookie?.Value );
+        }
+
+        /// <summary>
+        /// Gets the person alias unique identifier from a value of the unsecure
+        /// person identifier (COOKIE_UNSECURED_PERSON_IDENTIFIER) cookie that
+        /// was set by <see cref="SetUnsecurePersonIdentifier(Guid)"/>.
+        /// </summary>
+        /// <param name="cookieValue">The value of the cookie.</param>
+        /// <returns>The person alias unique identifier, or <c>null</c> if the value is missing or not valid.</returns>
+        internal static Guid? GetUnsecurePersonIdentifier( string cookieValue )
+        {
+            if ( cookieValue.IsNullOrWhiteSpace() )
             {
                 return null;
             }
 
-            return Encryption.DecryptStringForPurpose( httpCookie.Value, UNSECURE_PERSON_IDENTIFIER_ENCRYPTION_PURPOSE ).AsGuidOrNull();
+            return Encryption.DecryptStringForPurpose( cookieValue, UNSECURE_PERSON_IDENTIFIER_ENCRYPTION_PURPOSE ).AsGuidOrNull();
         }
 
         #endregion
