@@ -1,0 +1,65 @@
+name: Private AI Review
+
+# Runs AI reviewers on every PR in the private mirror. Findings are posted as
+# PR comments, which are only visible to people with access to the mirror.
+#
+# This file also exists in the public repo (the mirror copies develop), but the
+# repository check below keeps it from ever running there.
+#
+# Required in the private repo:
+#   secrets.ANTHROPIC_API_KEY
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
+  id-token: write
+
+jobs:
+  review:
+    if: github.repository == 'SparkStealth/Rock-Mirror' && !github.event.pull_request.draft
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: code
+            prompt: |
+              Review this pull request for correctness bugs, missing edge cases, and
+              violations of the Rock conventions in CLAUDE.md and .claude/rules/.
+              Only report issues you are confident are real. Use inline comments on
+              the exact lines, then post one summary comment.
+          - name: security
+            prompt: |
+              Use the sentinel subagent (.claude/agents/sentinel.md) to run a security
+              review of the changes in this pull request. This repository is private,
+              so include enough detail for the author to understand and fix each
+              finding. Use inline comments on the exact lines, then post one summary
+              comment titled "Sentinel security review".
+    concurrency:
+      group: ai-review-${{ matrix.name }}-${{ github.event.pull_request.number }}
+      cancel-in-progress: true
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 1
+
+      - name: Run ${{ matrix.name }} review
+        uses: anthropics/claude-code-action@v1
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          track_progress: true
+          prompt: |
+            REPO: ${{ github.repository }}
+            PR NUMBER: ${{ github.event.pull_request.number }}
+
+            ${{ matrix.prompt }}
+          claude_args: |
+            --model claude-opus-5-5
+            --allowedTools "mcp__github_inline_comment__create_inline_comment,Bash(gh pr comment:*),Bash(gh pr diff:*),Bash(gh pr view:*)"
