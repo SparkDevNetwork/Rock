@@ -16,6 +16,9 @@
 //
 
 using System;
+using System.Collections.Generic;
+using Rock.Data;
+using Rock.Drawing.Avatar;
 using Rock.Model;
 using Rock.Security;
 using Rock.SystemGuid;
@@ -216,7 +219,7 @@ namespace Rock.Utility
         /// <returns></returns>
         public static string GetAvatarUrl( int binaryFileId, GetAvatarUrlOptions options = null )
         {
-            return GetAvatarUrlInternal( GetFileIdentifierParameter( binaryFileId ), options );
+            return GetAvatarUrlInternal( binaryFileId, options );
         }
 
         /// <summary>
@@ -227,35 +230,40 @@ namespace Rock.Utility
         /// <returns></returns>
         public static string GetAvatarUrl( Guid binaryFileGuid, GetAvatarUrlOptions options = null )
         {
-            return GetAvatarUrlInternal( GetFileIdentifierParameter( binaryFileGuid ), options );
+            int? binaryFileId;
+
+            using ( var rockContext = new RockContext() )
+            {
+                binaryFileId = new BinaryFileService( rockContext ).GetId( binaryFileGuid );
+            }
+
+            return GetAvatarUrlInternal( binaryFileId, options );
         }
 
         /// <summary>
-        /// Internal method used to get the URL for an avatar given its file identifier parameter
+        /// Gets a signed avatar URL for a binary file.
         /// </summary>
-        /// <param name="fileIdentifierParameter"></param>
-        /// <param name="options"></param>
-        /// <returns></returns>
-        private static string GetAvatarUrlInternal( string fileIdentifierParameter, GetAvatarUrlOptions options = null )
+        /// <param name="binaryFileId">The binary file identifier of the photo, or <c>null</c> when it wasn't found.</param>
+        /// <param name="options">The avatar options.</param>
+        /// <returns>The signed avatar URL.</returns>
+        private static string GetAvatarUrlInternal( int? binaryFileId, GetAvatarUrlOptions options = null )
         {
             options = options ?? new GetAvatarUrlOptions();
-            var urlBuilder = new System.Text.StringBuilder();
 
-            urlBuilder.Append( $"{System.Web.VirtualPathUtility.ToAbsolute( "~" )}GetAvatar.ashx?{fileIdentifierParameter}" );
-
-            if ( options.Width.HasValue )
+            // GetAvatar.ashx only reads fileIdKey and only shows the photo for a signed, unexpired URL.
+            var parameters = new List<KeyValuePair<string, string>>
             {
-                urlBuilder.Append( $"&width={options.Width.Value}" );
-            }
+                new KeyValuePair<string, string>( "fileIdKey", binaryFileId.HasValue ? IdHasher.Instance.GetHash( binaryFileId.Value ) : null ),
+                new KeyValuePair<string, string>( "AgeClassification", options.AgeClassification?.ToString() ),
+                new KeyValuePair<string, string>( "Gender", options.Gender?.ToString() ),
+                new KeyValuePair<string, string>( "Text", options.Text ),
+                new KeyValuePair<string, string>( "width", options.Width?.ToString() ),
+                new KeyValuePair<string, string>( "height", options.Height?.ToString() )
+            };
 
-            if ( options.Height.HasValue )
-            {
-                urlBuilder.Append( $"&height={options.Height.Value}" );
-            }
+            var url = $"{System.Web.VirtualPathUtility.ToAbsolute( "~" )}GetAvatar.ashx?{AvatarUrlSignature.GetSignedQueryString( parameters )}";
 
-            // TODO: Add other avatar-specific parameters here
-
-            return options.PublicAppRoot != null ? options.PublicAppRoot + urlBuilder.ToString() : urlBuilder.ToString();
+            return options.PublicAppRoot != null ? options.PublicAppRoot + url : url;
         }
 
         #endregion

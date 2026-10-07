@@ -178,7 +178,21 @@ namespace Rock.Core.NotificationMessageTypes
         public override NotificationMessageMetadataBag GetMetadata( NotificationMessage message )
         {
             var messageData = message.ComponentDataJson.FromJsonOrNull<MessageData>();
-            var url = messageData != null ? $"~/GetAvatar.ashx?PersonAliasIdKey={IdHasher.Instance.GetHash( messageData.PersonAliasId )}" : "~/GetAvatar.ashx?Style=Icon";
+            var url = "~/GetAvatar.ashx?Style=Icon";
+
+            // The shared URL builder signs the avatar URL, which GetAvatar.ashx requires before it shows a photo.
+            if ( messageData != null )
+            {
+                using ( var rockContext = new RockContext() )
+                {
+                    var person = new PersonAliasService( rockContext ).GetPerson( messageData.PersonAliasId );
+
+                    if ( person != null )
+                    {
+                        url = Person.GetPersonPhotoUrl( person );
+                    }
+                }
+            }
 
             return new NotificationMessageMetadataBag
             {

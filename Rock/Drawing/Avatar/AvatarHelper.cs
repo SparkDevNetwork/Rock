@@ -128,6 +128,28 @@ namespace Rock.Drawing.Avatar
         }
 
         /// <summary>
+        /// Determines whether the current viewer may see the photo when the Person Image binary file type requires view security.
+        /// </summary>
+        /// <param name="photoId">The binary file identifier of the photo.</param>
+        /// <returns><c>true</c> if the Person Image type has no view security or the viewer passes it; otherwise <c>false</c>.</returns>
+        /// <remarks>
+        /// Without view security this makes no database call, so cached avatars stay cheap to serve.
+        /// The Person Image file type itself is still enforced when the photo is loaded.
+        /// </remarks>
+        [Rock.Attribute.RockInternal( "20.1" )]
+        public static bool IsPhotoViewAllowed( int photoId )
+        {
+            var personImageType = BinaryFileTypeCache.Get( Rock.SystemGuid.BinaryFiletype.PERSON_IMAGE.AsGuid() );
+
+            if ( personImageType == null || !personImageType.RequiresViewSecurity )
+            {
+                return true;
+            }
+
+            return RockImage.IsPersonImageViewable( photoId );
+        }
+
+        /// <summary>
         /// Creates the avatar based on the provided settings
         /// </summary>
         /// <param name="settings"></param>
@@ -135,6 +157,7 @@ namespace Rock.Drawing.Avatar
         public static Stream CreateAvatar( AvatarSettings settings )
         {
             Image avatar = null;
+            var isCacheable = true;
 
             // If there is a photo in the settings we will always use that
             if ( settings.PhotoId.HasValue )
@@ -146,7 +169,10 @@ namespace Rock.Drawing.Avatar
                 }
                 catch ( Exception )
                 {
-                    return null;
+                    // The file isn't a viewable Person Image, so fall through to the initials or icon avatar.
+                    // It isn't cached because the cache key names the photo and another viewer may be allowed to see it.
+                    avatar = null;
+                    isCacheable = false;
                 }
 
                 // Resize image
@@ -190,11 +216,14 @@ namespace Rock.Drawing.Avatar
 
 
             // Cache the image to the file system
-            try
+            if ( isCacheable )
             {
-                avatar.SaveAsPng( $"{settings.CachePath}{settings.CacheKey}.png" );
+                try
+                {
+                    avatar.SaveAsPng( $"{settings.CachePath}{settings.CacheKey}.png" );
+                }
+                catch ( Exception ) { }
             }
-            catch ( Exception ) { }
 
             var outputStream = new MemoryStream();
             avatar.SaveAsPng( outputStream );
