@@ -1,0 +1,66 @@
+name: Mirror to Private
+
+# Copies the shared branches and tags from the public repo into the private
+# mirror (SparkStealth/Rock-Mirror). Sync is one way: public to private.
+#
+# Runs in the public repo so it uses free Actions minutes. It only moves
+# commits that are already public, so its logs reveal nothing.
+#
+# Required in this repo:
+#   vars.MIRROR_APP_ID              App ID of the "Rock Mirror Sync" GitHub App
+#   secrets.MIRROR_APP_PRIVATE_KEY  Private key of that App
+# The App is installed ONLY on Rock-Mirror with Contents and Workflows write.
+#
+# No force pushes: if the mirror ever diverges, this job fails loudly instead
+# of overwriting anything.
+
+on:
+  push:
+    branches:
+      - develop
+      - "release-*"
+      - "hotfix-*"
+    tags:
+      - "*"
+  schedule:
+    # Hourly safety net in case a push-triggered run is ever missed.
+    - cron: "17 * * * *"
+  workflow_dispatch:
+
+concurrency:
+  group: mirror-to-private
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  mirror:
+    if: github.repository == 'SparkDevNetwork/Rock'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Create mirror token
+        id: app
+        uses: actions/create-github-app-token@v2
+        with:
+          app-id: ${{ vars.MIRROR_APP_ID }}
+          private-key: ${{ secrets.MIRROR_APP_PRIVATE_KEY }}
+          owner: SparkStealth
+          repositories: Rock-Mirror
+
+      - name: Checkout all branches and tags
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Push shared branches and tags to the mirror
+        env:
+          TOKEN: ${{ steps.app.outputs.token }}
+        run: |
+          git push "https://x-access-token:${TOKEN}@github.com/SparkStealth/Rock-Mirror.git" \
+            "refs/remotes/origin/develop:refs/heads/develop" \
+            "refs/remotes/origin/release-*:refs/heads/release-*" \
+            "refs/remotes/origin/hotfix-*:refs/heads/hotfix-*" \
+            "refs/tags/*:refs/tags/*"

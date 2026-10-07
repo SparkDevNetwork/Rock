@@ -692,6 +692,13 @@ namespace RockWeb.Blocks.Reporting
 
             if ( !report.IsValid )
             {
+                var queryHintError = report.ValidationResults.FirstOrDefault( r => r.MemberNames.Contains( nameof( Report.QueryHint ) ) );
+                if ( queryHintError != null )
+                {
+                    cvQueryHint.IsValid = false;
+                    cvQueryHint.ErrorMessage = queryHintError.ErrorMessage;
+                }
+
                 // Controls will render the error messages
                 return;
             }

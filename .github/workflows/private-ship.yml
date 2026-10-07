@@ -1,0 +1,215 @@
+name: Ship to Public
+
+# The "Ship it" button. Adding the `ship` label to a PR in the private mirror:
+#   1. Checks the PR is approved and its PR build passed on its latest commit.
+#   2. Rebases the PR onto the LIVE public branch (not the mirror's copy).
+#   3. Checks commit messages use the release-note format (+ or -).
+#   4. Pushes to the public branch. Git rejects the push if public moved, so
+#      nothing on public can ever be overwritten.
+#   5. Comments with the public commit link and closes the PR.
+# On any failure it comments the reason and removes the label.
+#
+# Shipping does NOT rebuild, so it takes about a minute. The PR build already
+# passed. A separate verify job then builds the exact commit that shipped and
+# comments on the PR if it broke, which catches the rare case where two
+# changes break each other without a git conflict.
+#
+# This file also exists in the public repo (the mirror copies develop), but the
+# repository checks below keep it from ever running there.
+#
+# Required in the private repo:
+#   vars.SHIP_APP_ID              App ID of the "Rock Ship Bot" GitHub App
+#   secrets.SHIP_APP_PRIVATE_KEY  Private key of that App
+# The App is installed on SparkDevNetwork/Rock with Contents and Workflows write,
+# and is allowed to bypass any rules on the public shippable branches.
+#
+# Build runner for the verify job (optional):
+#   vars.BUILD_RUNNER  Same variable as private-build.yml.
+
+on:
+  pull_request:
+    types: [labeled]
+
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
+  checks: read
+
+jobs:
+  ship:
+    if: github.repository == 'SparkStealth/Rock-Mirror' && github.event.label.name == 'ship'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    # One ship at a time per target branch, so two ships never race each other.
+    # Scoped to this job only, so a running verify build doesn't hold up the next ship.
+    concurrency:
+      group: ship-${{ github.event.pull_request.base.ref }}
+      cancel-in-progress: false
+    outputs:
+      sha: ${{ steps.push.outputs.sha }}
+    env:
+      GH_TOKEN: ${{ github.token }}
+      PR: ${{ github.event.pull_request.number }}
+      BASE: ${{ github.event.pull_request.base.ref }}
+      HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+      ACTOR: ${{ github.actor }}
+    steps:
+      - name: Check the target branch
+        run: |
+          case "$BASE" in
+            develop|release-*|hotfix-*) ;;
+            *)
+              echo "SHIP_FAIL=Only PRs targeting develop, release-* or hotfix-* can ship. This one targets \`$BASE\`." >> "$GITHUB_ENV"
+              exit 1 ;;
+          esac
+
+      - name: Check the PR is approved
+        run: |
+          # Reads reviews directly instead of GitHub's reviewDecision, which is
+          # only set when a ruleset requires reviews. Works on Free and Team.
+          # Each reviewer's latest approve / request-changes / dismiss counts.
+          decision=$(gh api "repos/$GITHUB_REPOSITORY/pulls/$PR/reviews?per_page=100" -q '
+            [.[] | select(.state == "APPROVED" or .state == "CHANGES_REQUESTED" or .state == "DISMISSED")]
+            | group_by(.user.login) | map(last.state)
+            | if any(. == "CHANGES_REQUESTED") then "CHANGES_REQUESTED"
+              elif any(. == "APPROVED") then "APPROVED"
+              else "NONE" end')
+
+          if [ "$decision" != "APPROVED" ]; then
+            echo "SHIP_FAIL=This PR is not approved (review status: $decision)." >> "$GITHUB_ENV"
+            exit 1
+          fi
+
+      - name: Check the PR build passed on the latest commit
+        run: |
+          result=$(gh api "repos/$GITHUB_REPOSITORY/commits/$HEAD_SHA/check-runs?check_name=build" \
+            -q '.check_runs | sort_by(.started_at) | last | (.status + "/" + (.conclusion // ""))')
+
+          if [ "$result" != "completed/success" ]; then
+            echo "SHIP_FAIL=The PR build hasn't passed on the latest commit (\`${HEAD_SHA:0:7}\`, status: ${result:-not run}). Wait for it to finish green, then add the \`ship\` label again." >> "$GITHUB_ENV"
+            exit 1
+          fi
+
+      - name: Create ship token
+        id: app
+        uses: actions/create-github-app-token@v2
+        with:
+          app-id: ${{ vars.SHIP_APP_ID }}
+          private-key: ${{ secrets.SHIP_APP_PRIVATE_KEY }}
+          owner: SparkDevNetwork
+          repositories: Rock
+
+      - name: Checkout PR branch
+        uses: actions/checkout@v5
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Rebase onto live public branch
+        env:
+          TOKEN: ${{ steps.app.outputs.token }}
+        run: |
+          git config user.name "$ACTOR"
+          git config user.email "$ACTOR@users.noreply.github.com"
+
+          # Fetch by URL instead of adding a remote, so the token is never
+          # written to .git/config.
+          git fetch "https://x-access-token:${TOKEN}@github.com/SparkDevNetwork/Rock.git" \
+            "+refs/heads/$BASE:refs/remotes/public/$BASE"
+
+          if ! git rebase "public/$BASE"; then
+            files=$(git diff --name-only --diff-filter=U | sed 's/^/- `/; s/$/`/')
+            git rebase --abort
+            {
+              echo "SHIP_FAIL<<EOF"
+              echo "Rebasing onto public \`$BASE\` hit conflicts in:"
+              echo "$files"
+              echo ""
+              echo "Run \`git fetch origin\` and \`git rebase origin/$BASE\` locally, resolve, push to this branch, wait for the build, then add the \`ship\` label again."
+              echo "EOF"
+            } >> "$GITHUB_ENV"
+            exit 1
+          fi
+
+      - name: Check commit messages
+        run: |
+          bad=$(git log "public/$BASE..HEAD" --format='%s' | grep -vE '^[+-] ' || true)
+          if [ -n "$bad" ]; then
+            {
+              echo "SHIP_FAIL<<EOF"
+              echo "These commit messages don't use the release-note format (\`+ (Domain) ...\` or \`- ...\`). Reword or squash them, then add the \`ship\` label again:"
+              echo "$bad" | sed 's/^/- /'
+              echo "EOF"
+            } >> "$GITHUB_ENV"
+            exit 1
+          fi
+
+      - name: Push to public
+        id: push
+        env:
+          TOKEN: ${{ steps.app.outputs.token }}
+        run: |
+          if ! git push "https://x-access-token:${TOKEN}@github.com/SparkDevNetwork/Rock.git" "HEAD:refs/heads/$BASE"; then
+            echo "SHIP_FAIL=Public \`$BASE\` changed during the ship. Add the \`ship\` label again to retry." >> "$GITHUB_ENV"
+            exit 1
+          fi
+          sha=$(git rev-parse HEAD)
+          echo "sha=$sha" >> "$GITHUB_OUTPUT"
+          echo "SHIPPED_SHA=$sha" >> "$GITHUB_ENV"
+
+      - name: Close the PR
+        run: |
+          gh pr close "$PR" -R "$GITHUB_REPOSITORY" \
+            -c "Shipped to public \`$BASE\` by @$ACTOR as https://github.com/SparkDevNetwork/Rock/commit/$SHIPPED_SHA
+
+          A verify build of that exact commit is running now. You'll get a comment here if it fails."
+
+      - name: Report failure
+        if: failure()
+        run: |
+          reason="${SHIP_FAIL:-Something unexpected failed. See the workflow log.}"
+          gh pr comment "$PR" -R "$GITHUB_REPOSITORY" \
+            -b "**Ship failed.** $reason
+
+          [Workflow log]($GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID)"
+          gh api -X DELETE "repos/$GITHUB_REPOSITORY/issues/$PR/labels/ship" || true
+
+  verify:
+    # Builds the exact commit that just landed on public. If it fails, two
+    # changes broke each other without a git conflict and develop needs a fix.
+    needs: ship
+    if: needs.ship.outputs.sha != ''
+    runs-on: ${{ fromJSON(vars.BUILD_RUNNER || '"windows-latest"') }}
+    timeout-minutes: 60
+    steps:
+      - name: Checkout the shipped commit
+        uses: actions/checkout@v5
+        with:
+          repository: SparkDevNetwork/Rock
+          ref: ${{ needs.ship.outputs.sha }}
+          # Separate folder, so a self-hosted runner keeps its mirror clone intact.
+          path: shipped
+          fetch-depth: 1
+          persist-credentials: false
+
+      - name: Build
+        uses: ./shipped/.github/actions/build-rock
+        with:
+          working-directory: shipped
+
+      - name: Report a broken build
+        if: failure()
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR: ${{ github.event.pull_request.number }}
+          BASE: ${{ github.event.pull_request.base.ref }}
+          SHA: ${{ needs.ship.outputs.sha }}
+          ACTOR: ${{ github.actor }}
+        run: |
+          gh pr comment "$PR" -R "$GITHUB_REPOSITORY" \
+            -b "**Public \`$BASE\` is broken after this ship.** @$ACTOR, commit https://github.com/SparkDevNetwork/Rock/commit/$SHA doesn't build. This usually means another change that landed first conflicts with this one without a git conflict. Please push a fix to public \`$BASE\` right away.
+
+          [Build log]($GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID)"
