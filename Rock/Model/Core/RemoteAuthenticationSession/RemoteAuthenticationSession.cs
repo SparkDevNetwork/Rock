@@ -45,9 +45,19 @@ namespace Rock.Model
         /// <value>
         /// The code.
         /// </value>
+        /*
+            10/7/2026 - MSE
+
+            The code is a secret that must only reach the individual it was
+            sent to, so it is never serialized or shown in reporting.
+
+            Reason: Keep one-time passcodes private.
+        */
         [Required]
         [MaxLength( 20 )]
-        [DataMember( IsRequired = true )]
+        [IgnoreDataMember]
+        [Newtonsoft.Json.JsonIgnore]
+        [HideFromReporting]
         [StringValidation( StringValidationProfile.PlainText )]
         public string Code { get; set; }
 

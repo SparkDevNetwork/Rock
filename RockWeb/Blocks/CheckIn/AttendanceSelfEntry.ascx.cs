@@ -737,7 +737,16 @@ ORDER BY [Text]",
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void btnAccountNext_Click( object sender, EventArgs e )
         {
-            var isAccountRequired = txtUserName.Text.IsNotNullOrWhiteSpace() || txtPassword.Text.IsNotNullOrWhiteSpace();
+            /*
+                10/7/2026 - MSE
+
+                An account can only be created for a person that this block
+                creates. Existing people must log in or use forgot password.
+
+                Reason: Only the owner of a record may add a login to it.
+            */
+            var isExistingPerson = PrimaryWatcher.Id != default( int );
+            var isAccountRequired = !isExistingPerson && ( txtUserName.Text.IsNotNullOrWhiteSpace() || txtPassword.Text.IsNotNullOrWhiteSpace() );
             var rockContext = RockApp.Current.CreateRockContext();
 
             if ( isAccountRequired )
@@ -853,30 +862,11 @@ ORDER BY [Text]",
 
             if ( isAccountRequired )
             {
-                /*
-                    10/20/2023 - JMH
-
-                    If 2FA is required for the person's protection profile,
-                    then 2FA will need to be bypassed here by hard-coding a true value in their auth cookie.
-
-                    If 2FA is not required, then the auth cookie will be created without bypassing 2FA
-                    since there is no need to bypass it.
-
-                    Reason: Two-Factor Authentication
-                 */
-                var isTwoFactorAuthenticated = false;
-                var securitySettings = new SecuritySettingsService().SecuritySettings;
-
-                if ( securitySettings.RequireTwoFactorAuthenticationForAccountProtectionProfiles?.Contains( person.AccountProtectionProfile ) == true )
-                {
-                    isTwoFactorAuthenticated = true;
-                }
-
                 Authorization.SetAuthCookie(
                     txtUserName.Text,
                     isPersisted: false,
                     isImpersonated: false,
-                    isTwoFactorAuthenticated );
+                    isTwoFactorAuthenticated: false );
             }
 
             pnlAccount.Visible = false;
@@ -1544,6 +1534,12 @@ ORDER BY [Text]",
         {
             lPanel3Title.Text = GetAttributeValue( AttributeKey.UnknownIndividualPanel3Title );
             lPanel3Text.Text = GetAttributeValue( AttributeKey.UnknownIndividualPanel3IntroText );
+
+            // Accounts can only be created for new people.
+            var isExistingPerson = PrimaryWatcher.Id != default( int );
+            pnlAccountInfo.Visible = !isExistingPerson;
+            nbExistingPersonAccount.Visible = isExistingPerson;
+
             pnlAccount.Visible = true;
         }
 
@@ -1554,12 +1550,7 @@ ORDER BY [Text]",
         /// </summary>
         private Guid? GetUnsecuredPersonIdentifier()
         {
-            if ( Request.Cookies[Rock.Security.Authorization.COOKIE_UNSECURED_PERSON_IDENTIFIER] != null )
-            {
-                return Request.Cookies[Rock.Security.Authorization.COOKIE_UNSECURED_PERSON_IDENTIFIER].Value.AsGuidOrNull();
-            }
-
-            return null;
+            return Rock.Security.Authorization.GetUnsecurePersonIdentifier();
         }
 
         /// <summary>
