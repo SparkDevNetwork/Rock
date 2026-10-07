@@ -397,6 +397,8 @@
       "rpc.bad_body",
       "rpc.bad_message_type",
       "rpc.bad_parent",
+      "rpc.bad_quote",
+      "rpc.bad_reaction",
       "rpc.channel_not_found",
       "rpc.idempotency_mismatch",
       "rpc.maintenance",
