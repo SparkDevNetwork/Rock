@@ -115,6 +115,22 @@ namespace Rock.Blocks.Communication.Chat
             return ActionOk( await ChatDoorHelper.StartDirectMessageAsync( person, personAliasGuids, context, RockContext ) );
         }
 
+        /// <summary>
+        /// Saves one of the person's own chat settings, show my profile details or let anyone
+        /// message me, and pushes it to chat before answering. Only the setting named is written.
+        /// </summary>
+        /// <param name="setting">"profile_details" or "open_dm".</param>
+        /// <param name="value">On or off.</param>
+        /// <returns>Whether it was saved, and whether chat had taken it yet.</returns>
+        [BlockAction]
+        public async Task<BlockActionResult> SavePersonSetting( string setting, bool value )
+        {
+            var person = GetCurrentPerson();
+            var context = ChatSessionHelper.BuildSessionContext( person, ChatPlatformConfigurationService.Read(), RockContext );
+
+            return ActionOk( await ChatDoorHelper.SavePersonSettingAsync( person, setting, value, context, RockContext ) );
+        }
+
         #endregion Block Actions
     }
 }

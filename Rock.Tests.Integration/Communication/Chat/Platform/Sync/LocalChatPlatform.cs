@@ -200,7 +200,7 @@ namespace Rock.Tests.Integration.Communication.Chat.Platform.Sync
         public JObject WaitForAlias( Guid tenantId, Guid aliasGuid, Func<JObject, bool> isReady )
         {
             return WaitFor(
-                $"chat_aliases?select=synced_at,is_globally_banned&tenant_id=eq.{tenantId}&person_alias_guid=eq.{aliasGuid}",
+                $"chat_aliases?select=synced_at,is_globally_banned,is_open_dm_allowed&tenant_id=eq.{tenantId}&person_alias_guid=eq.{aliasGuid}",
                 isReady );
         }
 

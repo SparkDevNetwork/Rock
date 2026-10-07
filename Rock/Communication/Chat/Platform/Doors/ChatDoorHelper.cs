@@ -200,6 +200,54 @@ namespace Rock.Communication.Chat.Platform.Doors
             return new Guid( ToNetworkOrder( bytes ) );
         }
 
+        /// <summary>
+        /// Saves one of the caller's own chat settings, show my profile details or let anyone
+        /// message me, and pushes it before answering.
+        /// </summary>
+        /// <param name="caller">The person changing their own setting.</param>
+        /// <param name="setting">"profile_details" or "open_dm".</param>
+        /// <param name="value">On or off.</param>
+        /// <param name="context">The church's settings, for the session gates.</param>
+        /// <param name="rockContext">The context the person is saved in.</param>
+        /// <returns>Whether it was saved, and whether the platform had taken it yet.</returns>
+        internal static async Task<ChatPersonSettingResultBag> SavePersonSettingAsync( Person caller, string setting, bool value, ChatSessionContext context, RockContext rockContext )
+        {
+            // The same gates a session obeys, so nobody chat refuses can change how chat shows them.
+            var gate = ChatSessionHelper.Evaluate( caller, context, rockContext );
+            if ( !gate.Success )
+            {
+                return new ChatPersonSettingResultBag { Code = ChatSessionHelper.ToGateCode( gate.Gate ), Message = "Chat is not available to you right now." };
+            }
+
+            var isProfileDetails = setting == "profile_details";
+            if ( !isProfileDetails && setting != "open_dm" )
+            {
+                return new ChatPersonSettingResultBag { Code = "door.bad_request", Message = "That setting can't be changed here." };
+            }
+
+            // Only the setting named is written: the other may be null, meaning it follows the
+            // church's default, and writing both would turn that into a fixed value.
+            var person = new PersonService( rockContext ).Get( caller.Id );
+            if ( isProfileDetails )
+            {
+                person.IsChatProfilePublic = value;
+            }
+            else
+            {
+                person.IsChatOpenDirectMessageAllowed = value;
+            }
+
+            // The person's save hook records the change for the immediate sync, and this waits for it.
+            rockContext.SaveChanges();
+            var push = await ChatPlatformSyncHelper.FlushAsync( rockContext ).ConfigureAwait( false );
+
+            return new ChatPersonSettingResultBag
+            {
+                Code = OkCode,
+                IsPending = push == ChatPlatformSyncHelper.PushOutcome.Pending
+            };
+        }
+
         #endregion The door
 
         #region Workflow posts
