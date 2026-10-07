@@ -2049,6 +2049,16 @@ namespace Rock.Blocks.Communication
             {
                 securityGrant.AddRule( new AssetAndFileManagerSecurityGrantRule( Rock.Security.Authorization.EDIT ) );
                 securityGrant.AddRule( new AssetAndFileManagerSecurityGrantRule( Rock.Security.Authorization.DELETE ) );
+
+                // Uploads are checked separately from the asset manager, so
+                // allow uploads to the folders and providers this block shows.
+                securityGrant.AddRule( new FileUploadSecurityGrantRule( ImageFolderRoot ) );
+                securityGrant.AddRule( new FileUploadSecurityGrantRule( DocumentRootFolder ) );
+
+                if ( EnableAssetManager )
+                {
+                    securityGrant.AddRule( FileUploadSecurityGrantRule.ForAssetStorageProviders() );
+                }
             }
 
             return securityGrant.ToToken();

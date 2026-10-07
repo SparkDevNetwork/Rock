@@ -169,6 +169,10 @@ namespace Rock.Blocks.Event
             {
                 securityGrant.AddRule( new AssetAndFileManagerSecurityGrantRule( Authorization.EDIT ) );
                 securityGrant.AddRule( new AssetAndFileManagerSecurityGrantRule( Authorization.DELETE ) );
+
+                // Uploads are checked separately from the asset manager, so
+                // allow uploads to the default folder the editors use.
+                securityGrant.AddRule( new FileUploadSecurityGrantRule( "~/Content" ) );
             }
 
             return securityGrant.ToToken();

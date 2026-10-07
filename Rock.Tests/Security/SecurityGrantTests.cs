@@ -91,5 +91,126 @@ namespace Rock.Tests.Security
             Assert.IsNull( SecurityGrant.FromToken( null ) );
             Assert.IsNull( SecurityGrant.FromToken( string.Empty ) );
         }
+
+        #region File Upload Rule
+
+        private static bool IsUploadAllowed( SecurityGrantRule rule, string rootFolder )
+        {
+            return new SecurityGrant()
+                .AddRule( rule )
+                .IsAccessGranted( new FileUploadSecurityGrantRule.FileUploadAccess( rootFolder ), Authorization.EDIT );
+        }
+
+        private static bool IsProviderUploadAllowed( SecurityGrantRule rule )
+        {
+            return new SecurityGrant()
+                .AddRule( rule )
+                .IsAccessGranted( FileUploadSecurityGrantRule.FileUploadAccess.AssetStorageProvider, Authorization.EDIT );
+        }
+
+        [TestMethod]
+        [DataRow( "~/Content/Uploads" )]
+        [DataRow( "~/Content/Uploads/" )]
+        [DataRow( "~/content/uploads" )]
+        [DataRow( "Content/Uploads" )]
+        [DataRow( "~\\Content\\Uploads\\" )]
+        public void FileUploadRuleAllowsSameRootFolder( string rootFolder )
+        {
+            Assert.IsTrue( IsUploadAllowed( new FileUploadSecurityGrantRule( "~/Content/Uploads/" ), rootFolder ) );
+        }
+
+        [TestMethod]
+        public void FileUploadRuleAllowsFolderInsideRootFolder()
+        {
+            Assert.IsTrue( IsUploadAllowed( new FileUploadSecurityGrantRule( "~/Content/Uploads" ), "~/Content/Uploads/ted/" ) );
+        }
+
+        [TestMethod]
+        [DataRow( "~/Content" )]
+        [DataRow( "~/Content/UploadsOther" )]
+        [DataRow( "~/Content/Uploads/../Other" )]
+        [DataRow( "~/Content/Uploads/./" )]
+        [DataRow( "~/App_Data" )]
+        public void FileUploadRuleDeniesOtherFolders( string rootFolder )
+        {
+            Assert.IsFalse( IsUploadAllowed( new FileUploadSecurityGrantRule( "~/Content/Uploads" ), rootFolder ) );
+        }
+
+        [TestMethod]
+        public void FileUploadRuleTreatsEmptyRootFolderAsContentFolder()
+        {
+            Assert.IsTrue( IsUploadAllowed( new FileUploadSecurityGrantRule( null ), "~/Content/" ) );
+            Assert.IsTrue( IsUploadAllowed( new FileUploadSecurityGrantRule( "~/Content" ), null ) );
+            Assert.IsFalse( IsUploadAllowed( new FileUploadSecurityGrantRule( null ), "~/App_Data" ) );
+        }
+
+        [TestMethod]
+        public void FileUploadRuleForSiteRootAllowsAllFolders()
+        {
+            Assert.IsTrue( IsUploadAllowed( new FileUploadSecurityGrantRule( "~/" ), "~/" ) );
+            Assert.IsTrue( IsUploadAllowed( new FileUploadSecurityGrantRule( "~/" ), "~/Themes/Custom" ) );
+            Assert.IsTrue( IsUploadAllowed( new FileUploadSecurityGrantRule( "~/" ), null ) );
+            Assert.IsFalse( IsUploadAllowed( new FileUploadSecurityGrantRule( "~/" ), "~/Content/../App_Data" ) );
+            Assert.IsFalse( IsUploadAllowed( new FileUploadSecurityGrantRule( "~/Content" ), "~/" ) );
+            Assert.IsFalse( IsUploadAllowed( new FileUploadSecurityGrantRule( null ), "~/" ) );
+            Assert.IsFalse( IsProviderUploadAllowed( new FileUploadSecurityGrantRule( "~/" ) ) );
+        }
+
+        [TestMethod]
+        [DataRow( null )]
+        [DataRow( "" )]
+        [DataRow( "~/Content" )]
+        public void FileUploadRuleForRootFolderDeniesProviderUploads( string rootFolder )
+        {
+            Assert.IsFalse( IsProviderUploadAllowed( new FileUploadSecurityGrantRule( rootFolder ) ) );
+        }
+
+        [TestMethod]
+        public void FileUploadRuleForProvidersAllowsOnlyProviderUploads()
+        {
+            var rule = FileUploadSecurityGrantRule.ForAssetStorageProviders();
+
+            Assert.IsTrue( IsProviderUploadAllowed( rule ) );
+            Assert.IsFalse( IsUploadAllowed( rule, null ) );
+            Assert.IsFalse( IsUploadAllowed( rule, "~/Content" ) );
+        }
+
+        [TestMethod]
+        public void FileUploadRuleSurvivesTokenRoundTrip()
+        {
+            var token = new SecurityGrant()
+                .AddRule( new FileUploadSecurityGrantRule( "~/Content/Uploads" ) )
+                .AddRule( FileUploadSecurityGrantRule.ForAssetStorageProviders() )
+                .ToToken();
+
+            var grant = SecurityGrant.FromToken( token );
+
+            Assert.IsNotNull( grant );
+            Assert.IsTrue( grant.IsAccessGranted( new FileUploadSecurityGrantRule.FileUploadAccess( "~/Content/Uploads" ), Authorization.EDIT ) );
+            Assert.IsTrue( grant.IsAccessGranted( FileUploadSecurityGrantRule.FileUploadAccess.AssetStorageProvider, Authorization.EDIT ) );
+            Assert.IsFalse( grant.IsAccessGranted( new FileUploadSecurityGrantRule.FileUploadAccess( "~/Content/Other" ), Authorization.EDIT ) );
+        }
+
+        [TestMethod]
+        public void AssetManagerRuleDoesNotAllowUploads()
+        {
+            var rule = new AssetAndFileManagerSecurityGrantRule( Authorization.EDIT );
+
+            Assert.IsFalse( IsUploadAllowed( rule, "~/Content" ) );
+            Assert.IsFalse( IsProviderUploadAllowed( rule ) );
+        }
+
+        [TestMethod]
+        public void FileUploadRuleDoesNotAllowAssetManager()
+        {
+            var grant = new SecurityGrant()
+                .AddRule( new FileUploadSecurityGrantRule( "~/Content" ) )
+                .AddRule( FileUploadSecurityGrantRule.ForAssetStorageProviders() );
+
+            Assert.IsFalse( grant.IsAccessGranted( AssetAndFileManagerSecurityGrantRule.AssetAndFileManagerAccess.Instance, Authorization.EDIT ) );
+            Assert.IsFalse( grant.IsAccessGranted( AssetAndFileManagerSecurityGrantRule.AssetAndFileManagerAccess.Instance, Authorization.VIEW ) );
+        }
+
+        #endregion
     }
 }

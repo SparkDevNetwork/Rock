@@ -296,6 +296,10 @@ namespace Rock.Field.Types
             grant.AddRule( new AssetAndFileManagerSecurityGrantRule( Rock.Security.Authorization.VIEW ) );
             grant.AddRule( new AssetAndFileManagerSecurityGrantRule( Rock.Security.Authorization.EDIT ) );
             grant.AddRule( new AssetAndFileManagerSecurityGrantRule( Rock.Security.Authorization.DELETE ) );
+
+            // Uploads are checked separately from the asset manager. The asset
+            // picker only shows asset storage providers.
+            grant.AddRule( FileUploadSecurityGrantRule.ForAssetStorageProviders() );
         }
     }
 }
