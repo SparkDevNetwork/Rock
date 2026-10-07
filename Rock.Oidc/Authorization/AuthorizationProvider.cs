@@ -287,9 +287,7 @@ namespace Rock.Oidc.Authorization
             {
                 // Verify that the redirect URI is one of the URIs registered for
                 // this client application.
-                var validRedirectUris = authClient.RedirectUri?.SplitDelimitedValues( "," ) ?? new string[0];
-
-                if ( !validRedirectUris.Contains( context.RedirectUri, StringComparer.Ordinal ) )
+                if ( !AuthClientService.IsRedirectUriAllowed( authClient, context.RedirectUri ) )
                 {
                     context.Reject(
                         error: OpenIdConnectConstants.Errors.InvalidRequest,

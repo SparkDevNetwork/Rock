@@ -20,10 +20,12 @@ using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
 using System.Net.Http;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 using Newtonsoft.Json;
 
+using Rock.Attribute;
 using Rock.Security;
 using Rock.Utility;
 using Rock.Web.Cache;
@@ -44,6 +46,16 @@ namespace Rock.Model
         {
             "mcp:invoke",
         };
+
+        /// <summary>
+        /// Matches the port of an http or https loopback URI (<c>localhost</c>, <c>127.x.x.x</c> or <c>[::1]</c>),
+        /// so it can be removed. Only a port directly after a loopback host at the start of the URI matches.
+        /// The port must be followed by "/", "?" or the end; redirect URIs can't have a fragment
+        /// (https://www.rfc-editor.org/rfc/rfc6749#section-3.1.2).
+        /// </summary>
+        private static readonly Regex LoopbackPortRegex = new Regex(
+            @"^(?<origin>https?://(?:localhost|127\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}|\[::1\])):[0-9]+(?=[/?]|$)",
+            RegexOptions.IgnoreCase | RegexOptions.CultureInvariant | RegexOptions.Compiled );
 
         /// <summary>
         /// Gets the by client identifier.
@@ -193,6 +205,36 @@ namespace Rock.Model
                 : authClient.ClientId.XxHash();
 
             return $"{ScopeCookiePrefix}{clientHash}-{IdHasher.Instance.GetHash( userLogin.Id )}";
+        }
+
+        /// <summary>
+        /// Determines whether a redirect URI is one of the client's registered redirect URIs. URIs must match exactly,
+        /// except that the port is ignored when both are loopback addresses, since native apps listen on a port they
+        /// pick at startup (RFC 8252 section 7.3: https://www.rfc-editor.org/rfc/rfc8252#section-7.3).
+        /// </summary>
+        /// <param name="authClient">The <see cref="AuthClient"/> whose comma-separated redirect URIs are checked.</param>
+        /// <param name="redirectUri">The <c>redirect_uri</c> from the authorization request.</param>
+        /// <returns><c>true</c> if <paramref name="redirectUri"/> is registered for the client; otherwise, <c>false</c>.</returns>
+        [RockInternal( "19.7", true )]
+        public static bool IsRedirectUriAllowed( AuthClient authClient, string redirectUri )
+        {
+            if ( authClient == null || authClient.RedirectUri.IsNullOrWhiteSpace() || redirectUri.IsNullOrWhiteSpace() )
+            {
+                return false;
+            }
+
+            var registeredRedirectUris = authClient.RedirectUri.SplitDelimitedValues( "," );
+
+            if ( registeredRedirectUris.Contains( redirectUri, StringComparer.Ordinal ) )
+            {
+                return true;
+            }
+
+            // Only a loopback port is removed, so everything else must still match exactly.
+            var redirectUriWithoutPort = LoopbackPortRegex.Replace( redirectUri, "${origin}" );
+
+            return registeredRedirectUris
+                .Any( registeredRedirectUri => LoopbackPortRegex.Replace( registeredRedirectUri, "${origin}" ) == redirectUriWithoutPort );
         }
 
         /// <summary>
