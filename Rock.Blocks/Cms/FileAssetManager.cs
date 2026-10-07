@@ -190,6 +190,18 @@ namespace Rock.Blocks.Cms
             {
                 securityGrant.AddRule( new AssetAndFileManagerSecurityGrantRule( Rock.Security.Authorization.EDIT ) );
                 securityGrant.AddRule( new AssetAndFileManagerSecurityGrantRule( Rock.Security.Authorization.DELETE ) );
+
+                // Uploads are checked separately from the asset manager, so
+                // allow uploads to the folders and providers this block shows.
+                if ( GetAttributeValue( AttributeKey.EnableFileManager ).AsBoolean() )
+                {
+                    securityGrant.AddRule( new FileUploadSecurityGrantRule( GetAttributeValue( AttributeKey.RootFolder ) ) );
+                }
+
+                if ( GetAttributeValue( AttributeKey.EnableAssetProviders ).AsBoolean() )
+                {
+                    securityGrant.AddRule( FileUploadSecurityGrantRule.ForAssetStorageProviders() );
+                }
             }
 
             return securityGrant.ToToken();

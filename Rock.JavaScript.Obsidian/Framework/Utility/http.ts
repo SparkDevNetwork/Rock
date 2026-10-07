@@ -285,6 +285,20 @@ export type UploadOptions = {
 };
 
 /**
+ * Adds the security grant token to the form data. The token is sent in the
+ * request body instead of the URL so that it is not written to server logs.
+ * This is an internal function and should not be exported.
+ *
+ * @param data The form data to send in the request body.
+ * @param options The options used for the upload.
+ */
+function appendSecurityGrantToken(data: FormData, options: UploadOptions | undefined): void {
+    if (options?.securityGrantToken) {
+        data.append("SecurityGrantToken", options.securityGrantToken);
+    }
+}
+
+/**
  * Uploads a file in the form data into Rock. This is an internal function and
  * should not be exported.
  *
@@ -344,11 +358,7 @@ async function uploadFile(url: string, data: FormData, progress: UploadProgressC
  * @returns A ListItemBag that contains the scrubbed filename that was uploaded.
  */
 export async function uploadContentFile(file: File, encryptedRootFolder: string, folderPath: string, options?: UploadOptions): Promise<ListItemBag> {
-    let url = `${options?.baseUrl ?? "/FileUploader.ashx"}?rootFolder=${encodeURIComponent(encryptedRootFolder)}`;
-
-    if (options?.securityGrantToken) {
-        url += "&SecurityGrantToken=" + encodeURIComponent(options.securityGrantToken);
-    }
+    const url = `${options?.baseUrl ?? "/FileUploader.ashx"}?rootFolder=${encodeURIComponent(encryptedRootFolder)}`;
 
     const formData = new FormData();
 
@@ -357,6 +367,8 @@ export async function uploadContentFile(file: File, encryptedRootFolder: string,
     if (folderPath) {
         formData.append("folderPath", folderPath);
     }
+
+    appendSecurityGrantToken(formData, options);
 
     const result = await uploadFile(url, formData, options?.progress);
 
@@ -377,11 +389,7 @@ export async function uploadContentFile(file: File, encryptedRootFolder: string,
  * @returns A ListItemBag that contains the scrubbed filename that was uploaded.
  */
 export async function uploadAssetProviderFile(file: File, folderPath: string, assetStorageId: string, options?: UploadOptions): Promise<ListItemBag> {
-    let url = `${options?.baseUrl ?? "/FileUploader.ashx"}?rootFolder=`;
-
-    if (options?.securityGrantToken) {
-        url += "&SecurityGrantToken=" + encodeURIComponent(options.securityGrantToken);
-    }
+    const url = `${options?.baseUrl ?? "/FileUploader.ashx"}?rootFolder=`;
 
     const formData = new FormData();
 
@@ -393,6 +401,7 @@ export async function uploadAssetProviderFile(file: File, folderPath: string, as
     formData.append("StorageId", assetStorageId);
     formData.append("Key", folderPath);
     formData.append("IsAssetStorageProviderAsset", "true");
+    appendSecurityGrantToken(formData, options);
 
     const result = await uploadFile(url, formData, options?.progress);
 
@@ -432,12 +441,9 @@ export async function uploadBinaryFile(file: File, binaryFileTypeGuid: Guid, opt
         url += "&ParentEntityId=" + options.parentEntityId;
     }
 
-    if (options?.securityGrantToken) {
-        url += "&SecurityGrantToken=" + encodeURIComponent(options.securityGrantToken);
-    }
-
     const formData = new FormData();
     formData.append("file", file);
+    appendSecurityGrantToken(formData, options);
 
     const result = await uploadFile(url, formData, options?.progress);
 

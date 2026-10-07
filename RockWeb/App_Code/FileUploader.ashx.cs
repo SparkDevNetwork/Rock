@@ -189,23 +189,28 @@ namespace RockWeb
                 Content uploads require a security grant from the control that
                 rendered the uploader. The grant is checked against the root
                 folder the upload is going to. Asset storage provider uploads
-                don't use a root folder, so they require a grant that was not
-                limited to a specific root folder.
+                don't use a root folder, so they require a grant that was
+                issued for asset storage provider uploads.
 
                 Reason: Uploads should only be allowed by the control that is
                 configured to accept them.
             */
-            var grant = SecurityGrant.FromToken( context.Request.QueryString[ParameterKey.SecurityGrantToken] );
+            var grant = SecurityGrant.FromToken( GetSecurityGrantToken( context ) );
 
             if ( grant == null )
             {
                 return false;
             }
 
+            if ( isAssetStorageProviderAsset )
+            {
+                return grant.IsAccessGranted( FileUploadSecurityGrantRule.FileUploadAccess.AssetStorageProvider, Authorization.EDIT );
+            }
+
             var rootFolder = string.Empty;
             var encryptedRootFolder = context.Request.QueryString[ParameterKey.RootFolder];
 
-            if ( !isAssetStorageProviderAsset && encryptedRootFolder.IsNotNullOrWhiteSpace() )
+            if ( encryptedRootFolder.IsNotNullOrWhiteSpace() )
             {
                 rootFolder = Encryption.DecryptRootFolder( encryptedRootFolder );
             }
@@ -213,6 +218,30 @@ namespace RockWeb
             var access = new FileUploadSecurityGrantRule.FileUploadAccess( rootFolder );
 
             return grant.IsAccessGranted( access, Authorization.EDIT );
+        }
+
+        /// <summary>
+        /// Gets the security grant token sent with the upload request.
+        /// </summary>
+        /// <param name="context">The context.</param>
+        /// <returns>The security grant token or <c>null</c> if one was not provided.</returns>
+        private static string GetSecurityGrantToken( HttpContext context )
+        {
+            /*
+                10/6/2026 - MSE
+
+                The token should be sent as a form field so it doesn't end up
+                in server or proxy logs. The query string is still checked so
+                that existing callers keep working.
+            */
+            var token = context.Request.Form[ParameterKey.SecurityGrantToken];
+
+            if ( token.IsNullOrWhiteSpace() )
+            {
+                token = context.Request.QueryString[ParameterKey.SecurityGrantToken];
+            }
+
+            return token;
         }
 
         /// <summary>
@@ -295,8 +324,10 @@ namespace RockWeb
             // Combine the root and folder paths to get the real physical location.
             string untrustedPhysicalFolderPath = Path.GetFullPath( Path.Combine( trustedPhysicalRootFolder, untrustedRelativeFolderPath ) );
 
-            // Make sure the physical location is valid.
-            if ( !untrustedPhysicalFolderPath.StartsWith( trustedPhysicalRootFolder ) )
+            // Make sure the physical location is valid. This compares whole
+            // folder names so a sibling folder that starts with the same
+            // name as the root is not allowed.
+            if ( !Rock.Utility.FileUtilities.IsPathWithinFolder( untrustedPhysicalFolderPath, trustedPhysicalRootFolder ) )
             {
                 // If the untrusted folder is outside our trusted root folder, something's fishy.
                 throw new Rock.Web.FileUploadException( "Invalid folder path.", System.Net.HttpStatusCode.BadRequest );
@@ -433,7 +464,7 @@ namespace RockWeb
             RockContext rockContext = new RockContext();
             BinaryFileType binaryFileType = new BinaryFileTypeService( rockContext ).Get( fileTypeGuid );
 
-            var grant = SecurityGrant.FromToken( context.Request.QueryString[ParameterKey.SecurityGrantToken] );
+            var grant = SecurityGrant.FromToken( GetSecurityGrantToken( context ) );
 
             if ( binaryFileType == null )
             {

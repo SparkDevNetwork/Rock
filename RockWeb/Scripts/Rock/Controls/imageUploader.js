@@ -4,6 +4,21 @@
     Rock.controls = Rock.controls || {};
 
     Rock.controls.imageUploader = (function () {
+        // Adds the security grant token to the form data that is posted with
+        // the file. The token is sent in the request body instead of the URL
+        // so that it is not written to server logs.
+        var addSecurityGrantToken = function (formData, securityGrantToken) {
+            if (!securityGrantToken || typeof formData === 'function') {
+                return formData;
+            }
+
+            if ($.isArray(formData)) {
+                return formData.concat([{ name: 'SecurityGrantToken', value: securityGrantToken }]);
+            }
+
+            return $.extend({}, formData, { SecurityGrantToken: securityGrantToken });
+        };
+
         var _configure = function (options) {
             options.isBinaryFile = options.isBinaryFile || 'T';
 
@@ -26,10 +41,6 @@
             else {
                 // note rootFolder is encrypted to prevent direct access to filesystem via the URL
                 wsUrl += '&rootFolder=' + (encodeURIComponent(options.rootFolder) || '');
-
-                if (options.securityGrantToken) {
-                    wsUrl += '&SecurityGrantToken=' + encodeURIComponent(options.securityGrantToken);
-                }
             }
 
             if (options.isTemporary == 'F') {
@@ -42,7 +53,20 @@
                 dataType: 'json',
                 dropZone: $('#' + options.controlId).closest('.imageupload-dropzone'),
                 autoUpload: true,
-                submit: options.submitFunction,
+                formData: function (form) {
+                    return addSecurityGrantToken(form.serializeArray(), options.securityGrantToken);
+                },
+                submit: function (e, data) {
+                    var result = options.submitFunction ? options.submitFunction.call(this, e, data) : undefined;
+
+                    // The submit function may replace the form data, so make
+                    // sure the security grant token is still included.
+                    if (data.formData) {
+                        data.formData = addSecurityGrantToken(data.formData, options.securityGrantToken);
+                    }
+
+                    return result;
+                },
                 start: function (e, data) {
                     var $el = $('#' + options.controlId).closest('.imageupload-group');
                     $el.find('.js-upload-progress').rockFadeIn();
