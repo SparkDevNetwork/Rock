@@ -166,6 +166,28 @@ describe("the push worker", () => {
         }]);
     });
 
+    test("takes the tag from a push that carries one and alerts again when it asks to, so each reactor's banner sounds", async () => {
+        const worker = loadWorker();
+
+        await worker.push(payload(
+            { reason: "reaction", tag: "reaction:981", renotify: "true", face: "https://church.example/ted.jpg" },
+            { title: "Ted Decker reacted 👍", body: "see you at 6" }));
+
+        expect(worker.shown).toEqual([{
+            title: "Ted Decker reacted 👍",
+            options: expect.objectContaining({ body: "see you at 6", tag: "reaction:981", renotify: true })
+        }]);
+    });
+
+    test("a push with no tag of its own is tagged by its message and does not ask to alert again", async () => {
+        const worker = loadWorker();
+
+        await worker.push(payload({}));
+
+        expect(worker.shown[0].options.tag).toBe("981");
+        expect(worker.shown[0].options.renotify).toBeUndefined();
+    });
+
     test("with no window of the site in front, shows at once without asking anything", async () => {
         const background = chatWindow("https://church.example/chat", false, () => ({ open: true }));
         const worker = loadWorker({ windows: [background] });
