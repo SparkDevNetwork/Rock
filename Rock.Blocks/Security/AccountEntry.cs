@@ -1597,9 +1597,14 @@ namespace Rock.Blocks.Security
                 return ActionBadRequest( "Invalid Person" );
             }
 
-            UpdatePerson( person, box.PersonInfo, rockContext );
-
             var isFromPasswordlessAuthentication = IsFromPasswordlessAuthentication( box, out var passwordlessAuthenticationState );
+
+            // Passwordless updates the person only after the code is verified.
+            if ( !isFromPasswordlessAuthentication )
+            {
+                UpdatePerson( person, box.PersonInfo, rockContext );
+            }
+
             if ( !isFromPasswordlessAuthentication && CanPersonAuthenticateWithExistingUserLogin( person, rockContext ) )
             {
                 return ActionOk( new AccountEntryRegisterResponseBox
@@ -1617,66 +1622,12 @@ namespace Rock.Blocks.Security
             if ( isFromPasswordlessAuthentication )
             {
                 var remoteAuthenticationSessionService = new RemoteAuthenticationSessionService( rockContext );
-                RemoteAuthenticationSession remoteAuthenticationSession;
 
-                /*
-                     1/23/2023 - JMH
-
-                     The individual used passwordless authentication
-                     and entered a mobile number that didn't match an existing Person.
-
-                     (mobile number verified at this point)
-
-                     They were redirected to the registration page.
-
-                     The registration data they added matches an existing Person's email
-                     and the individual opted to authenticate as the existing Person.
-
-                     Now we are here.
-
-                     We need to send a new one-time passcode (OTP) to the existing Person's email
-                     to verify that the individual has access to it before we can authenticate them.
-
-                     The Code field is what holds this second OTP value.
-                     If box.Code == null, then we need to email the OTP
-                     so the individual can supply the emailed code in another registration request.
-
-                     Reason: Passwordless Authentication
-                 */
-                if ( box.Code.IsNullOrWhiteSpace() )
-                {
-                    remoteAuthenticationSession = remoteAuthenticationSessionService.VerifyRemoteAuthenticationSession(
-                        passwordlessAuthenticationState.UniqueIdentifier,
-                        passwordlessAuthenticationState.Code,
-                        passwordlessAuthenticationState.CodeIssueDate,
-                        passwordlessAuthenticationState.CodeLifetime );
-
-                    if ( remoteAuthenticationSession == null )
-                    {
-                        return ActionBadRequest( "Code invalid or expired" );
-                    }
-
-                    // Overwrite the OTP since we are going to have the individual verify they have access to the existing person's email.
-                    remoteAuthenticationSession.Code = remoteAuthenticationSessionService.GenerateUsableCode( passwordlessAuthenticationState.CodeIssueDate, passwordlessAuthenticationState.CodeLifetime );
-                    passwordlessAuthenticationState.Code = remoteAuthenticationSession.Code;
-                    rockContext.SaveChanges();
-
-                    SendPasswordlessAccountConfirmationEmail( person, remoteAuthenticationSession.Code );
-
-                    return ActionOk( new AccountEntryRegisterResponseBox
-                    {
-                        Step = AccountEntryStep.PasswordlessConfirmationSent,
-                        PasswordlessConfirmationSentStepBag = new AccountEntryPasswordlessConfirmationSentStepBag
-                        {
-                            Caption = GetAttributeValue( AttributeKey.ConfirmCaptionPasswordless ),
-                            State = PasswordlessAuthentication.GetEncryptedAuthenticationState( passwordlessAuthenticationState )
-                        }
-                    } );
-                }
-
-                remoteAuthenticationSession = remoteAuthenticationSessionService.VerifyRemoteAuthenticationSession(
+                // The original code proves the individual has access to the
+                // mobile number or email they started passwordless sign in with.
+                var remoteAuthenticationSession = remoteAuthenticationSessionService.VerifyRemoteAuthenticationSession(
                     passwordlessAuthenticationState.UniqueIdentifier,
-                    box.Code,
+                    passwordlessAuthenticationState.Code,
                     passwordlessAuthenticationState.CodeIssueDate,
                     passwordlessAuthenticationState.CodeLifetime );
 
@@ -1684,6 +1635,70 @@ namespace Rock.Blocks.Security
                 {
                     return ActionBadRequest( "Code invalid or expired" );
                 }
+
+                if ( !PasswordlessAuthentication.IsPasswordlessAuthenticationAllowedForProtectionProfile( person ) )
+                {
+                    return ActionBadRequest( new SecuritySettingsService().SecuritySettings.MessageForDisabledPasswordlessSignIn );
+                }
+
+                /*
+                    10/7/2026 - MSE
+
+                    The individual used passwordless authentication and the
+                    registration data they added matches an existing Person
+                    who they opted to authenticate as.
+
+                    If the mobile number or email they already verified
+                    belongs to the existing Person, they can be linked now.
+                    Otherwise a new one-time passcode (OTP) is emailed to the
+                    existing Person and the individual must supply it in
+                    another registration request. That OTP gets its own
+                    remote authentication session for the existing Person's
+                    email so that only the emailed code is accepted.
+
+                    Reason: Passwordless Authentication
+                */
+                RemoteAuthenticationSession confirmationRemoteAuthenticationSession = null;
+
+                if ( !IsPasswordlessIdentifierForPerson( person, passwordlessAuthenticationState.UniqueIdentifier ) )
+                {
+                    if ( person.Email.IsNullOrWhiteSpace() )
+                    {
+                        // There is no way to confirm the individual has
+                        // access to the existing Person so create a new one.
+                        return RegisterNewPerson( box, config, rockContext );
+                    }
+
+                    if ( box.Code.IsNullOrWhiteSpace() )
+                    {
+                        return SendPasswordlessAccountConfirmation( person, passwordlessAuthenticationState, rockContext );
+                    }
+
+                    // The code must be the one that was emailed for this
+                    // person, not just any code for the person's email.
+                    var isConfirmationForPerson = passwordlessAuthenticationState.ConfirmationPersonId == person.Id
+                        && passwordlessAuthenticationState.ConfirmationCodeIssueDate.HasValue
+                        && passwordlessAuthenticationState.ConfirmationCode.IsNotNullOrWhiteSpace()
+                        && string.Equals( box.Code.Trim(), passwordlessAuthenticationState.ConfirmationCode, StringComparison.OrdinalIgnoreCase );
+
+                    if ( !isConfirmationForPerson )
+                    {
+                        return ActionBadRequest( "Code invalid or expired" );
+                    }
+
+                    confirmationRemoteAuthenticationSession = remoteAuthenticationSessionService.VerifyRemoteAuthenticationSession(
+                        person.Email,
+                        passwordlessAuthenticationState.ConfirmationCode,
+                        passwordlessAuthenticationState.ConfirmationCodeIssueDate.Value,
+                        passwordlessAuthenticationState.CodeLifetime );
+
+                    if ( confirmationRemoteAuthenticationSession == null )
+                    {
+                        return ActionBadRequest( "Code invalid or expired" );
+                    }
+                }
+
+                UpdatePerson( person, box.PersonInfo, rockContext );
 
                 var userLoginService = new UserLoginService( rockContext );
                 var username = PasswordlessAuthentication.GetUsername( passwordlessAuthenticationState.UniqueIdentifier );
@@ -1711,6 +1726,11 @@ namespace Rock.Blocks.Security
                 }
 
                 FinalizePasswordlessAuthentication( person, remoteAuthenticationSession, rockContext );
+
+                if ( confirmationRemoteAuthenticationSession != null )
+                {
+                    FinalizePasswordlessAuthentication( person, confirmationRemoteAuthenticationSession, rockContext );
+                }
             }
             else
             {
@@ -1901,6 +1921,84 @@ namespace Rock.Blocks.Security
             {
                 ExceptionLogService.LogException( ex );
             }
+        }
+
+        /// <summary>
+        /// Determines whether the verified passwordless identifier (a mobile
+        /// number or an email) belongs to the person.
+        /// </summary>
+        /// <param name="person">The person.</param>
+        /// <param name="uniqueIdentifier">The verified passwordless identifier.</param>
+        /// <returns><c>true</c> if the identifier is the person's email or one of their phone numbers; otherwise, <c>false</c>.</returns>
+        private static bool IsPasswordlessIdentifierForPerson( Person person, string uniqueIdentifier )
+        {
+            if ( uniqueIdentifier.IsNullOrWhiteSpace() )
+            {
+                return false;
+            }
+
+            // Email sessions use the email as the identifier.
+            if ( person.Email.IsNotNullOrWhiteSpace() && person.Email.Trim().Equals( uniqueIdentifier.Trim(), StringComparison.OrdinalIgnoreCase ) )
+            {
+                return true;
+            }
+
+            // SMS sessions use the cleaned mobile number as the identifier,
+            // which may or may not include the country code.
+            return person.PhoneNumbers.Any( pn =>
+            {
+                var number = PhoneNumber.CleanNumber( pn.Number );
+
+                return number.IsNotNullOrWhiteSpace()
+                    && ( number == uniqueIdentifier || PhoneNumber.CleanNumber( pn.CountryCode ) + number == uniqueIdentifier );
+            } );
+        }
+
+        /// <summary>
+        /// Starts a new remote authentication session for the existing
+        /// person's email and emails the one-time passcode to them.
+        /// </summary>
+        /// <param name="person">The existing person.</param>
+        /// <param name="passwordlessAuthenticationState">The passwordless authentication state.</param>
+        /// <param name="rockContext">The Rock context.</param>
+        /// <returns>The response that shows the "Passwordless Confirmation Sent" step.</returns>
+        private BlockActionResult SendPasswordlessAccountConfirmation( Person person, PasswordlessAuthenticationState passwordlessAuthenticationState, RockContext rockContext )
+        {
+            var remoteAuthenticationSessionService = new RemoteAuthenticationSessionService( rockContext );
+            var codeIssueDate = RockDateTime.Now;
+            RemoteAuthenticationSession remoteAuthenticationSession;
+
+            try
+            {
+                remoteAuthenticationSession = remoteAuthenticationSessionService.StartRemoteAuthenticationSession(
+                    RequestContext.ClientInformation.IpAddress,
+                    new SecuritySettingsService().SecuritySettings.PasswordlessSignInDailyIpThrottle,
+                    person.Email,
+                    codeIssueDate,
+                    passwordlessAuthenticationState.CodeLifetime );
+
+                rockContext.SaveChanges();
+            }
+            catch ( RemoteAuthenticationIpLimitReachedException )
+            {
+                return ActionBadRequest( "Unable to send a confirmation code. Please try again later." );
+            }
+
+            passwordlessAuthenticationState.ConfirmationPersonId = person.Id;
+            passwordlessAuthenticationState.ConfirmationCode = remoteAuthenticationSession.Code;
+            passwordlessAuthenticationState.ConfirmationCodeIssueDate = codeIssueDate;
+
+            SendPasswordlessAccountConfirmationEmail( person, remoteAuthenticationSession.Code );
+
+            return ActionOk( new AccountEntryRegisterResponseBox
+            {
+                Step = AccountEntryStep.PasswordlessConfirmationSent,
+                PasswordlessConfirmationSentStepBag = new AccountEntryPasswordlessConfirmationSentStepBag
+                {
+                    Caption = GetAttributeValue( AttributeKey.ConfirmCaptionPasswordless ),
+                    State = PasswordlessAuthentication.GetEncryptedAuthenticationState( passwordlessAuthenticationState )
+                }
+            } );
         }
 
         /// <summary>
