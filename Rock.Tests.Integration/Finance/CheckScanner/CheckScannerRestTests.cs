@@ -84,6 +84,7 @@ namespace Rock.Tests.Integration.Finance.CheckScanner
             ( typeof( FinancialBatchesController ), nameof( FinancialBatchesController.Put ), HttpMethod.Put ),
             ( typeof( FinancialBatchesController ), nameof( FinancialBatchesController.Delete ), HttpMethod.Delete ),
             ( typeof( FinancialPaymentDetailsController ), nameof( FinancialPaymentDetailsController.Post ), HttpMethod.Post ),
+            ( typeof( FinancialTransactionsController ), nameof( FinancialTransactionsController.AlreadyScanned ), HttpMethod.Post ),
             ( typeof( FinancialTransactionsController ), nameof( FinancialTransactionsController.PostScanned ), HttpMethod.Post ),
             ( typeof( FinancialTransactionsController ), nameof( FinancialTransactionsController.Post ), HttpMethod.Post ),
             ( typeof( FinancialTransactionsController ), nameof( FinancialTransactionsController.Delete ), HttpMethod.Delete ),
