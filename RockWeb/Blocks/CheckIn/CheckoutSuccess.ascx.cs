@@ -234,16 +234,13 @@ namespace RockWeb.Blocks.CheckIn
             }
 
             int? personAliasId = null;
-            if ( Request.Cookies[Rock.Security.Authorization.COOKIE_UNSECURED_PERSON_IDENTIFIER] != null )
+            var personAliasGuid = Rock.Security.Authorization.GetUnsecurePersonIdentifier();
+            if ( personAliasGuid.HasValue )
             {
-                var personAliasGuid = Request.Cookies[Rock.Security.Authorization.COOKIE_UNSECURED_PERSON_IDENTIFIER].Value.AsGuidOrNull();
-                if ( personAliasGuid.HasValue )
+                var personAlias = new PersonAliasService( new RockContext() ).GetByAliasGuid( personAliasGuid.Value );
+                if ( personAlias != null )
                 {
-                    var personAlias = new PersonAliasService( new RockContext() ).GetByAliasGuid( personAliasGuid.Value );
-                    if ( personAlias != null )
-                    {
-                        personAliasId = personAlias.Id;
-                    }
+                    personAliasId = personAlias.Id;
                 }
             }
 

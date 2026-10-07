@@ -1456,8 +1456,14 @@ namespace Rock.Rest.v2
                 {
                     var root = GetLocalAssetRoot( options.EncryptedRoot );
 
-                    // Every file must be inside the root folder before any are deleted.
+                    // Every file must be inside the root folder and outside the
+                    // restricted folders before any are deleted.
                     if ( root == null || options.Files == null || !options.Files.All( f => f.IsNotNullOrWhiteSpace() && IsLocalPathWithinRoot( f, root ) ) )
+                    {
+                        return BadRequest();
+                    }
+
+                    if ( options.Files.Any( f => IsUploadRestrictedLocalPath( System.Web.HttpContext.Current.Server.MapPath( f ) ) ) )
                     {
                         return BadRequest();
                     }
@@ -1611,7 +1617,7 @@ namespace Rock.Rest.v2
                     var physicalPath = System.Web.HttpContext.Current.Server.MapPath( options.File );
                     var renamedPath = Path.Combine( Path.GetDirectoryName( physicalPath ), options.NewFileName );
 
-                    if ( !IsPhysicalPathWithinRoot( renamedPath, root ) )
+                    if ( !IsPhysicalPathWithinRoot( renamedPath, root ) || IsUploadRestrictedLocalPath( renamedPath ) )
                     {
                         return BadRequest( "Invalid file name." );
                     }
@@ -1710,8 +1716,9 @@ namespace Rock.Rest.v2
                             {
                                 string completeFileName = Path.Combine( directoryPath, file.FullName );
 
-                                // Skip any entry that would extract outside of the folder.
-                                if ( !Rock.Utility.FileUtilities.IsPathWithinFolder( completeFileName, directoryPath ) )
+                                // Skip any entry that would extract outside of the
+                                // folder or into a restricted folder.
+                                if ( !Rock.Utility.FileUtilities.IsPathWithinFolder( completeFileName, directoryPath ) || IsUploadRestrictedLocalPath( completeFileName ) )
                                 {
                                     continue;
                                 }
@@ -1783,9 +1790,9 @@ namespace Rock.Rest.v2
 
             try
             {
-                var root = Rock.Security.Encryption.DecryptRootFolder( options.EncryptedRoot );
+                var root = GetLocalAssetRoot( options.EncryptedRoot );
 
-                if ( root.IsNullOrWhiteSpace() )
+                if ( root == null )
                 {
                     return BadRequest();
                 }
@@ -1796,8 +1803,27 @@ namespace Rock.Rest.v2
                     root = root.EnsureTrailingForwardslash() + username.EnsureTrailingForwardslash();
                 }
 
+                // The selected folder is the root followed by a sub path. Only
+                // the sub path is used, resolved against the decrypted root.
+                // Both are normalized the same way because the client also
+                // normalizes the root it was given.
+                var normalizedRoot = NormalizeVirtualPath( root ).EnsureTrailingForwardslash();
+                var selectedFolder = NormalizeVirtualPath( options.SelectedFolder ).EnsureTrailingForwardslash();
+
+                if ( !selectedFolder.StartsWith( normalizedRoot, StringComparison.OrdinalIgnoreCase ) )
+                {
+                    return BadRequest();
+                }
+
+                var selectedSubPath = selectedFolder.Substring( normalizedRoot.Length ).TrimStart( '/' );
                 var physicalRootFolder = System.Web.HttpContext.Current.Server.MapPath( root );
-                var physicalSelectedFolder = System.Web.HttpContext.Current.Server.MapPath( options.SelectedFolder ).TrimEnd( '/', '\\' );
+                var physicalSelectedFolder = Path.GetFullPath( Path.Combine( physicalRootFolder, selectedSubPath.Replace( '/', Path.DirectorySeparatorChar ) ) ).TrimEnd( '/', '\\' );
+
+                if ( !Rock.Utility.FileUtilities.IsPathWithinFolder( physicalSelectedFolder, physicalRootFolder ) )
+                {
+                    return BadRequest();
+                }
+
                 var folders = GetRecursiveFolders( physicalRootFolder, physicalRootFolder, physicalSelectedFolder );
 
                 if ( folders != null )
@@ -2532,6 +2558,22 @@ namespace Rock.Rest.v2
         /// <param name="physicalRootFolder">The root folder where this list was started from.</param>
         /// <param name="excludedFolder">The name of a folder that should be excluded from the list (and its children).</param>
         /// <returns>A list of <see cref="ListItemBag"/> items of each child directory.</returns>
+        /// <summary>
+        /// Normalizes a virtual path so that equivalent paths can be compared.
+        /// Backslashes become forward slashes, and repeated slashes and "./"
+        /// segments are removed.
+        /// </summary>
+        /// <param name="path">The virtual path.</param>
+        /// <returns>The normalized virtual path.</returns>
+        private static string NormalizeVirtualPath( string path )
+        {
+            var segments = path.Replace( '\\', '/' )
+                .Split( new[] { '/' }, StringSplitOptions.RemoveEmptyEntries )
+                .Where( s => s != "." );
+
+            return string.Join( "/", segments );
+        }
+
         private List<string> GetRecursiveFolders( string directoryPath, string physicalRootFolder, string excludedFolder )
         {
             // If this is a hidden folder, don't show it.
