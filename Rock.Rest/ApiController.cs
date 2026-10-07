@@ -348,6 +348,10 @@ namespace Rock.Rest
 
             Service.SetValues( value, targetModel );
 
+            // The check above authorized the record as it is stored. Authorize it again with the
+            // posted values applied, since they may change who is allowed to edit it.
+            CheckCanEditAfterUpdate( targetModel );
+
             if ( targetModel.IsValid )
             {
                 System.Web.HttpContext.Current.AddOrReplaceItem( "CurrentPerson", GetPerson() );
@@ -437,7 +441,7 @@ namespace Rock.Rest
                                 try
                                 {
                                     var int32 = Convert.ToInt32( currentValue );
-                                
+
                                     if ( !propertyType.IsEnum )
                                     {
                                         property.SetValue( targetModel, int32 );
@@ -489,6 +493,10 @@ namespace Rock.Rest
                     throw new HttpResponseException( response );
                 }
             }
+
+            // The check above authorized the record as it is stored. Authorize it again with the
+            // patched values applied, since they may change who is allowed to edit it.
+            CheckCanEditAfterUpdate( targetModel );
 
             // Verify model is valid before saving
             if ( targetModel.IsValid )
@@ -1003,6 +1011,38 @@ namespace Rock.Rest
 
             // Not an ISecured model, so there is nothing to authorize.
             return true;
+        }
+
+        /// <summary>
+        /// Checks that the current person can still EDIT the entity after the caller's values have been applied.
+        /// </summary>
+        /// <param name="entity">The tracked entity with the caller's values applied.</param>
+        /// <exception cref="System.Web.Http.HttpResponseException"></exception>
+        protected virtual void CheckCanEditAfterUpdate( T entity )
+        {
+            if ( !( entity is ISecured ) )
+            {
+                return;
+            }
+
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
+            {
+                rockContext.Configuration.ProxyCreationEnabled = true;
+
+                // Use a fresh copy so the parent authority and any related records load from the new
+                // foreign keys, not the ones already loaded on the tracked model. This context is never saved.
+                var service = ( Service<T> ) Activator.CreateInstance( Service.GetType(), rockContext );
+                var updatedModel = service.Get( entity.Id );
+                if ( updatedModel == null )
+                {
+                    throw new HttpResponseException( HttpStatusCode.Unauthorized );
+                }
+
+                service.SetValues( entity, updatedModel );
+
+                // Must run while this context is open so related records can lazy-load.
+                CheckCanEdit( ( ISecured ) updatedModel );
+            }
         }
 
         /// <summary>
