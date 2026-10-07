@@ -15,21 +15,35 @@
 // </copyright>
 //
 
-namespace Rock.ViewModels.Rest.Controls
+using System;
+
+using Rock.Enums.Communication;
+
+namespace Rock.ViewModels.Blocks.Communication.CommunicationDetail
 {
     /// <summary>
-    /// A bag that contains information needed to get activity for a communication recipient.
+    /// A bag that contains information about a specific activity for a communication recipient.
     /// </summary>
-    public class CommunicationRecipientGetActivityOptionsBag
+    public class CommunicationRecipientActivityBag
     {
         /// <summary>
-        /// Gets or sets the communication recipient's hashed identifier key.
+        /// The activity that took place.
         /// </summary>
-        public string CommunicationRecipientIdKey { get; set; }
+        public CommunicationRecipientActivity Activity { get; set; }
 
         /// <summary>
-        /// Gets or sets the security grant token to use when performing authorization checks.
+        /// The activity datetime.
         /// </summary>
-        public string SecurityGrantToken { get; set; }
+        public DateTime ActivityDateTime { get; set; }
+
+        /// <summary>
+        /// A description of the activity.
+        /// </summary>
+        public string Description { get; set; }
+
+        /// <summary>
+        /// A tooltip containing more information about the activity.
+        /// </summary>
+        public string Tooltip { get; set; }
     }
 }
