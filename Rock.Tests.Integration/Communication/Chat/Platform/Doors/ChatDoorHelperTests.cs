@@ -476,6 +476,109 @@ namespace Rock.Tests.Integration.Communication.Chat.Platform.Doors
 
         #endregion The push
 
+        #region A person's own settings
+
+        [TestMethod]
+        public void TheSettingsActionTakesOneSettingAndOneValue()
+        {
+            var action = typeof( Rock.Blocks.Communication.Chat.ChatShell ).GetMethod( "SavePersonSetting" );
+
+            Assert.IsNotNull( action, "the Chat block has a SavePersonSetting action" );
+
+            var parameters = action.GetParameters();
+            Assert.AreEqual( 2, parameters.Length, "the action takes two arguments" );
+            Assert.AreEqual( "setting", parameters[0].Name );
+            Assert.AreEqual( typeof( string ), parameters[0].ParameterType );
+            Assert.AreEqual( "value", parameters[1].Name );
+            Assert.AreEqual( typeof( bool ), parameters[1].ParameterType, "on or off, never a person or a default" );
+        }
+
+        [TestMethod]
+        public void SavingOneSettingWritesItAndLeavesTheOtherAtTheChurchDefault()
+        {
+            using ( var scene = new Scene() )
+            {
+                var ada = scene.AddChatPerson( "Ada" );
+
+                Assert.AreEqual( "ok", scene.SaveSetting( ada, "open_dm", true ).Code );
+                Assert.AreEqual( true, scene.Person( ada ).IsChatOpenDirectMessageAllowed );
+                Assert.IsNull( scene.Person( ada ).IsChatProfilePublic, "the setting not named still follows the church" );
+
+                Assert.AreEqual( "ok", scene.SaveSetting( ada, "profile_details", false ).Code );
+                Assert.AreEqual( false, scene.Person( ada ).IsChatProfilePublic );
+                Assert.AreEqual( true, scene.Person( ada ).IsChatOpenDirectMessageAllowed, "and the first is kept" );
+            }
+        }
+
+        [TestMethod]
+        public void ASavedSettingIsPushedBeforeTheDoorAnswers()
+        {
+            using ( var scene = new Scene() )
+            {
+                var ada = scene.AddChatPerson( "Ada" );
+                scene.WaitForPushes();
+
+                var result = scene.SaveSetting( ada, "open_dm", true );
+
+                Assert.AreEqual( "ok", result.Code, result.Message );
+                Assert.IsFalse( result.IsPending, "the stand-in answered the push at once" );
+
+                var row = scene.WaitForPushes().SelectMany( p => p.Aliases ).LastOrDefault( r => ( Guid ) r[0] == scene.Alias( ada ) );
+                Assert.IsNotNull( row, "the person was pushed" );
+                Assert.AreEqual( true, ( bool ) row[8], "carrying Open DM on" );
+            }
+        }
+
+        [TestMethod]
+        public void ASettingWhosePushMissesItsBudgetAnswersPendingAndStaysSaved()
+        {
+            using ( var scene = new Scene() )
+            {
+                var ada = scene.AddChatPerson( "Ada" );
+                scene.Platform.PushDelay = TimeSpan.FromSeconds( 4 );
+
+                var result = scene.SaveSetting( ada, "profile_details", false );
+
+                Assert.AreEqual( "ok", result.Code, "Rock saved the setting, so the door succeeded" );
+                Assert.IsTrue( result.IsPending, "but the platform had not taken it yet" );
+                Assert.AreEqual( false, scene.Person( ada ).IsChatProfilePublic );
+            }
+        }
+
+        [TestMethod]
+        public void AnUnknownSettingIsRefusedAndNothingIsWritten()
+        {
+            using ( var scene = new Scene() )
+            {
+                var ada = scene.AddChatPerson( "Ada" );
+
+                Assert.AreEqual( "door.bad_request", scene.SaveSetting( ada, "is_favorite", true ).Code );
+                Assert.AreEqual( "door.bad_request", scene.SaveSetting( ada, null, true ).Code );
+                Assert.IsNull( scene.Person( ada ).IsChatProfilePublic );
+                Assert.IsNull( scene.Person( ada ).IsChatOpenDirectMessageAllowed );
+            }
+        }
+
+        [TestMethod]
+        public void ACallerTheSessionGatesRefuseChangesNothing()
+        {
+            using ( var scene = new Scene( minimumAge: 13 ) )
+            {
+                var banned = scene.AddChatPerson( "Banned" );
+                scene.SetAge( banned, 40 );
+                scene.AddToBanList( banned );
+                var child = scene.AddChatPerson( "Child" );
+                scene.SetAge( child, 12 );
+
+                Assert.AreEqual( "banned", scene.SaveSetting( banned, "open_dm", true ).Code );
+                Assert.AreEqual( "age_restricted", scene.SaveSetting( child, "open_dm", true ).Code );
+                Assert.IsNull( scene.Person( banned ).IsChatOpenDirectMessageAllowed );
+                Assert.IsNull( scene.Person( child ).IsChatOpenDirectMessageAllowed );
+            }
+        }
+
+        #endregion A person's own settings
+
         #region A workflow's direct message
 
         [TestMethod]
@@ -726,6 +829,29 @@ namespace Rock.Tests.Integration.Communication.Chat.Platform.Doors
                 return Fixture.PrimaryAliasGuid( personId );
             }
 
+            public Person Person( int personId )
+            {
+                using ( var rockContext = new RockContext() )
+                {
+                    return new PersonService( rockContext ).Queryable().AsNoTracking().Single( p => p.Id == personId );
+                }
+            }
+
+            /// <summary>
+            /// Saves one of the caller's own settings inside a request of its own, as the block does.
+            /// </summary>
+            public ChatPersonSettingResultBag SaveSetting( int callerId, string setting, bool value )
+            {
+                using ( ChatSyncProjectionFixture.InsideRequest() )
+                using ( var rockContext = new RockContext() )
+                {
+                    var caller = new PersonService( rockContext ).Get( callerId );
+                    var context = ChatSessionHelper.BuildSessionContext( caller, Configuration, rockContext );
+
+                    return ChatDoorHelper.SavePersonSettingAsync( caller, setting, value, context, rockContext ).GetAwaiter().GetResult();
+                }
+            }
+
             /// <summary>
             /// Starts a conversation as the caller, inside a request of its own, as the block does.
             /// </summary>
@@ -867,11 +993,13 @@ namespace Rock.Tests.Integration.Communication.Chat.Platform.Doors
         }
 
         /// <summary>
-        /// One push as the stand-in received it: the channels it carried.
+        /// One push as the stand-in received it: the channels and the people it carried.
         /// </summary>
         private sealed class RecordedPush
         {
             public List<Guid> ChannelGuids { get; set; }
+
+            public List<Newtonsoft.Json.Linq.JArray> Aliases { get; set; }
         }
 
         /// <summary>
@@ -930,7 +1058,8 @@ namespace Rock.Tests.Integration.Communication.Chat.Platform.Doors
                 {
                     _pushes.Add( new RecordedPush
                     {
-                        ChannelGuids = body["channels"].Select( r => ( Guid ) r[0] ).ToList()
+                        ChannelGuids = body["channels"].Select( r => ( Guid ) r[0] ).ToList(),
+                        Aliases = body["aliases"].Cast<Newtonsoft.Json.Linq.JArray>().ToList()
                     } );
                 }
 

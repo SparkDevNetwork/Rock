@@ -170,6 +170,50 @@ namespace Rock.Tests.Integration.Communication.Chat.Platform.Sync
         }
 
         [TestMethod]
+        public void APersonsOwnOpenDmSettingSavedThroughTheDoorReachesThePlatform()
+        {
+            var platform = LocalChatPlatform.FromEnvironment();
+
+            using ( var fixture = new ChatSyncProjectionFixture() )
+            using ( var recorder = new PushRecorder() )
+            using ( ChatPlatformSyncHelper.OverrideImmediateSync( recorder ) )
+            {
+                var configuration = platform.ProvisionChurch();
+                fixture.StoreConfiguration( configuration );
+
+                var channel = fixture.AddChannel( fixture.SharedGroupTypeId, "Settings channel" );
+                var personId = fixture.AddPerson( "Settings" );
+                var alias = fixture.PrimaryAliasGuid( personId );
+
+                using ( ChatSyncProjectionFixture.InsideRequest() )
+                using ( var rockContext = new RockContext() )
+                {
+                    AddMember( rockContext, channel, personId );
+                    rockContext.SaveChanges();
+                }
+
+                Assert.IsNotNull( platform.WaitForAlias( configuration.TenantId.Value, alias, r => r != null ),
+                    "the person never reached the platform" );
+
+                Rock.ViewModels.Blocks.Communication.Chat.ChatShell.ChatPersonSettingResultBag result;
+                using ( ChatSyncProjectionFixture.InsideRequest() )
+                using ( var rockContext = new RockContext() )
+                {
+                    var person = new PersonService( rockContext ).Get( personId );
+                    var context = Rock.Communication.Chat.Platform.Session.ChatSessionHelper.BuildSessionContext( person, configuration, rockContext );
+
+                    result = Rock.Communication.Chat.Platform.Doors.ChatDoorHelper
+                        .SavePersonSettingAsync( person, "open_dm", true, context, rockContext ).GetAwaiter().GetResult();
+                }
+
+                Assert.AreEqual( "ok", result.Code, result.Message );
+
+                var row = platform.WaitForAlias( configuration.TenantId.Value, alias, r => r != null && ( bool? ) r["is_open_dm_allowed"] == true );
+                Assert.IsNotNull( row, "the setting saved through the door never reached the platform" );
+            }
+        }
+
+        [TestMethod]
         public void TwentySavesAreTimedFromTheSaveToTheRowOnThePlatform()
         {
             var platform = LocalChatPlatform.FromEnvironment();
