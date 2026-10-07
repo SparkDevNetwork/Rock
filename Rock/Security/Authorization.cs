@@ -93,6 +93,11 @@ namespace Rock.Security
         private const string CACHE_KEY = "Rock.Security.Authorization";
 
         /// <summary>
+        /// The purpose used when encrypting the unsecure person identifier cookie.
+        /// </summary>
+        private const string UNSECURE_PERSON_IDENTIFIER_ENCRYPTION_PURPOSE = "Rock.Security.UnsecurePersonIdentifier";
+
+        /// <summary>
         /// Authorization to view object
         /// </summary>
         public const string VIEW = "View";
@@ -1102,10 +1107,37 @@ namespace Rock.Security
         /// <param name="personAliasGuid">The person alias unique identifier.</param>
         public static void SetUnsecurePersonIdentifier( Guid personAliasGuid )
         {
+            /*
+                10/7/2026 - MSE
+
+                The cookie value is encrypted with a key that is only used for
+                this cookie. Read it with GetUnsecurePersonIdentifier().
+
+                Reason: Make sure the cookie value was set by Rock.
+            */
             HttpCookie httpcookie = new HttpCookie( Rock.Security.Authorization.COOKIE_UNSECURED_PERSON_IDENTIFIER );
-            httpcookie.Value = personAliasGuid.ToString();
+            httpcookie.Value = Encryption.EncryptStringForPurpose( personAliasGuid.ToString(), UNSECURE_PERSON_IDENTIFIER_ENCRYPTION_PURPOSE );
             httpcookie.Expires = RockDateTime.SystemDateTime.AddYears( 1 );
             RockPage.AddOrUpdateCookie( httpcookie );
+        }
+
+        /// <summary>
+        /// Gets the person alias unique identifier from the unsecure person
+        /// identifier (COOKIE_UNSECURED_PERSON_IDENTIFIER) cookie that was set
+        /// by <see cref="SetUnsecurePersonIdentifier(Guid)"/>.
+        /// </summary>
+        /// <returns>The person alias unique identifier, or <c>null</c> if the cookie is missing or not valid.</returns>
+        [Rock.Attribute.RockInternal( "17.11", true )]
+        public static Guid? GetUnsecurePersonIdentifier()
+        {
+            var httpCookie = HttpContext.Current?.Request.Cookies[Rock.Security.Authorization.COOKIE_UNSECURED_PERSON_IDENTIFIER];
+
+            if ( httpCookie == null || httpCookie.Value.IsNullOrWhiteSpace() )
+            {
+                return null;
+            }
+
+            return Encryption.DecryptStringForPurpose( httpCookie.Value, UNSECURE_PERSON_IDENTIFIER_ENCRYPTION_PURPOSE ).AsGuidOrNull();
         }
 
         #endregion
