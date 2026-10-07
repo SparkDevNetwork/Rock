@@ -95,8 +95,7 @@ namespace Rock.Drawing
             // Constrain to the well-known Person Image BinaryFileType. This endpoint is only
             // intended to serve person photos; any other file type must be ignored so that
             // the avatar handler cannot be used to read arbitrary image/BinaryFiles.
-            var personImageTypeId = BinaryFileTypeCache.GetId( Rock.SystemGuid.BinaryFiletype.PERSON_IMAGE.AsGuid() );
-            if ( personImageTypeId == null || binaryFile.BinaryFileTypeId != personImageTypeId.Value )
+            if ( !IsPersonImageType( binaryFile ) )
             {
                 throw new Exception( "Not Allowed" );
             }
@@ -120,6 +119,30 @@ namespace Rock.Drawing
 
             // There was a problem with the content in the binary file so return a blank image
             return null;
+        }
+
+        /// <summary>
+        /// Determines whether a binary file is a Person Image that the current user may view.
+        /// </summary>
+        /// <param name="photoId">The binary file identifier of the photo.</param>
+        /// <returns><c>true</c> if the file exists, is a Person Image, and passes its view security; otherwise <c>false</c>.</returns>
+        internal static bool IsPersonImageViewable( int photoId )
+        {
+            var binaryFile = new BinaryFileService( new RockContext() ).Get( photoId );
+
+            return binaryFile != null && IsPersonImageType( binaryFile ) && IsAuthorized( binaryFile );
+        }
+
+        /// <summary>
+        /// Determines whether a binary file uses the Person Image binary file type.
+        /// </summary>
+        /// <param name="binaryFile">The binary file to check.</param>
+        /// <returns><c>true</c> if the file is a Person Image; otherwise <c>false</c>.</returns>
+        private static bool IsPersonImageType( BinaryFile binaryFile )
+        {
+            var personImageTypeId = BinaryFileTypeCache.GetId( Rock.SystemGuid.BinaryFiletype.PERSON_IMAGE.AsGuid() );
+
+            return personImageTypeId != null && binaryFile.BinaryFileTypeId == personImageTypeId.Value;
         }
 
         /// <summary>

@@ -84,6 +84,26 @@ namespace RockWeb
             // Read query string parameters
             var settings = ReadSettingsFromRequest( context.Request );
 
+            /*
+                10/06/26 - JMH
+
+                Only a URL that Rock signed, and that hasn't expired, can show a person's photo.
+                Every other request gets the initials or icon avatar. This runs before the cache
+                key is built, so a rejected request lands on the initials cache entry and can never
+                be served a photo that was cached for someone else.
+
+                Reason: Avatar URLs must not be guessable, editable, or usable forever.
+            */
+            var expiresDateTime = DateTime.MinValue;
+            var isPhotoAllowed = settings.PhotoId.HasValue
+                && AvatarUrlSignature.TryValidate( context.Request.QueryString, out expiresDateTime )
+                && AvatarHelper.IsPhotoViewAllowed( settings.PhotoId.Value );
+
+            if ( !isPhotoAllowed )
+            {
+                settings.PhotoId = null;
+            }
+
             string cacheFolder = context.Request.MapPath( $"~/App_Data/Avatar/Cache/" );
             string cachedFilePath = $"{cacheFolder}{settings.CacheKey}.png";
 
@@ -126,9 +146,19 @@ namespace RockWeb
                 context.Response.AddHeader( "Last-Modified", DateTime.Now.ToUniversalTime().ToString( "R" ) );
                 context.Response.AddHeader( "ETag", DateTime.Now.ToString().XxHash() );
 
-                // Configure client to cache image locally for 1 week
+                // A photo is cached no longer than its URL stays valid. Initials are cached briefly so a
+                // newly signed URL for the same settings shows the photo right away.
+                var maxAge = TimeSpan.FromHours( 1 );
+
+                if ( isPhotoAllowed )
+                {
+                    // Safe to subtract: the signed expiration and RockDateTime.Now are both in the organization's time zone.
+                    var untilExpiration = expiresDateTime - RockDateTime.Now;
+                    maxAge = untilExpiration < TimeSpan.FromDays( 7 ) ? untilExpiration : TimeSpan.FromDays( 7 );
+                }
+
                 context.Response.Cache.SetCacheability( HttpCacheability.Public );
-                context.Response.Cache.SetMaxAge( new TimeSpan( 7, 0, 0, 0, 0 ) );
+                context.Response.Cache.SetMaxAge( maxAge );
 
                 context.Response.ContentType = "image/png";
 
@@ -252,23 +282,13 @@ namespace RockWeb
             // Calculate the physical path to store the cached files to
             settings.CachePath = request.MapPath( $"~/App_Data/Avatar/Cache/" );
 
-            // Use IdHash instead of predictable IDs if the setting is enabled
             var disablePredictableIds = _securitySettingsService.SecuritySettings.DisablePredictableIds;
 
-            if ( disablePredictableIds )
+            // The photo is identified only by fileIdKey, whatever the predictable IDs setting, so a
+            // plain PhotoId can't be counted up to find other people's photos.
+            if ( request.QueryString["fileIdKey"] != null )
             {
-                if ( request.QueryString["fileIdKey"] != null )
-                {
-                    var photoIdKey = request.QueryString["fileIdKey"];
-                    settings.PhotoId = IdHasher.Instance.GetId( photoIdKey );
-                }
-            }
-            else
-            {
-                if ( request.QueryString["PhotoId"] != null )
-                {
-                    settings.PhotoId = request.QueryString["PhotoId"].AsIntegerOrNull();
-                }
+                settings.PhotoId = IdHasher.Instance.GetId( request.QueryString["fileIdKey"] );
             }
 
             // Colors
@@ -467,14 +487,14 @@ namespace RockWeb
                 }
             }
 
-            // Load configuration from the person object
+            // Load configuration from the person object. A person lookup never supplies the photo,
+            // because these identifiers aren't signed and could otherwise reach anyone's photo.
             if ( person != null )
             {
                 settings.RecordTypeId = person.RecordStatusValueId;
                 settings.Gender = person.Gender;
                 settings.Text = person.Initials;
                 settings.AgeClassification = person.AgeClassification;
-                settings.PhotoId = person.PhotoId;
             }
 
             return settings;

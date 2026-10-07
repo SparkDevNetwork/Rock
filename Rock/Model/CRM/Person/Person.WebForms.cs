@@ -16,6 +16,7 @@
 //
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Web;
@@ -24,6 +25,7 @@ using DocumentFormat.OpenXml.Drawing.Charts;
 
 using Rock.Configuration;
 using Rock.Data;
+using Rock.Drawing.Avatar;
 using Rock.Security;
 using Rock.Utility;
 using Rock.Web.Cache;
@@ -127,49 +129,33 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets the person photo URL.
+        /// Gets a signed avatar URL that shows the photo until the URL expires and the initials or icon avatar after that.
         /// </summary>
-        /// <param name="initials"></param>
-        /// <param name="photoId"></param>
-        /// <param name="age"></param>
-        /// <param name="gender"></param>
-        /// <param name="recordTypeValueId"></param>
-        /// <param name="ageClassification"></param>
-        /// <param name="size"></param>
-        /// <returns></returns>
+        /// <param name="initials">The initials to show when there is no photo; when blank, the icon avatar is used.</param>
+        /// <param name="photoId">The binary file identifier of the person's photo, if any.</param>
+        /// <param name="age">The person's age. Not used by the avatar.</param>
+        /// <param name="gender">The gender used to pick the icon avatar.</param>
+        /// <param name="recordTypeValueId">The person's record type value identifier.</param>
+        /// <param name="ageClassification">The age classification used to pick the icon avatar.</param>
+        /// <param name="size">The avatar's width and height in pixels.</param>
+        /// <returns>The avatar URL, application-relative when there is an HTTP context and virtual (starting with <c>~/</c>) otherwise.</returns>
+        /// <remarks>The URL stops showing the photo seven days after the start of the day it was created.</remarks>
         public static string GetPersonPhotoUrl( string initials, int? photoId, int? age, Gender gender, int? recordTypeValueId, AgeClassification? ageClassification, int? size = null )
         {
-            var virtualPath = string.Empty;
-
-            // If there are no initials provided we'll change the style of the avatar to be an icon
-            var stylingOverride = string.Empty;
-
-            SecuritySettingsService securitySettingsService = new SecuritySettingsService();
-
-            // Determine if we need to provide a size
-            var sizeParamter = string.Empty;
-
-            if ( size.HasValue )
+            // The photo is always identified by its IdKey, and the URL is signed with an expiration,
+            // because GetAvatar.ashx only shows the photo for a signed URL that hasn't expired.
+            var parameters = new List<KeyValuePair<string, string>>
             {
-                sizeParamter = $"&Size={size}";
-            }
+                new KeyValuePair<string, string>( "fileIdKey", photoId.HasValue ? IdHasher.Instance.GetHash( photoId.Value ) : null ),
+                new KeyValuePair<string, string>( "AgeClassification", ageClassification?.ToString() ),
+                new KeyValuePair<string, string>( "Gender", gender.ToString() ),
+                new KeyValuePair<string, string>( "RecordTypeId", recordTypeValueId?.ToString() ),
+                new KeyValuePair<string, string>( "Text", initials ),
+                new KeyValuePair<string, string>( "Style", initials.IsNullOrWhiteSpace() ? "icon" : null ),
+                new KeyValuePair<string, string>( "Size", size?.ToString() )
+            };
 
-            if ( initials.IsNullOrWhiteSpace() )
-            {
-                stylingOverride = "&Style=icon";
-            }
-
-            var disablePredictableIds = securitySettingsService.SecuritySettings.DisablePredictableIds;
-
-            if ( disablePredictableIds && photoId.HasValue )
-            {
-                var photoIdHash = IdHasher.Instance.GetHash( photoId.Value );
-                virtualPath = $"~/GetAvatar.ashx?fileIdKey={photoIdHash}&AgeClassification={ageClassification}&Gender={gender}&RecordTypeId={recordTypeValueId}&Text={initials}{stylingOverride}{sizeParamter}";
-            }
-            else
-            {
-                virtualPath = $"~/GetAvatar.ashx?PhotoId={photoId}&AgeClassification={ageClassification}&Gender={gender}&RecordTypeId={recordTypeValueId}&Text={initials}{stylingOverride}{sizeParamter}";
-            }
+            var virtualPath = $"~/GetAvatar.ashx?{AvatarUrlSignature.GetSignedQueryString( parameters )}";
 
             if ( System.Web.HttpContext.Current == null )
             {

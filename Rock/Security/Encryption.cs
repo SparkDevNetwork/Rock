@@ -1118,6 +1118,22 @@ namespace Rock.Security
         }
 
         /// <summary>
+        /// Computes an HMAC-SHA256 signature of the data with a key derived from the data encryption key for the given purposes.
+        /// </summary>
+        /// <param name="data">The data to sign.</param>
+        /// <param name="purposes">The purposes that scope the derived key, so a signature made for one purpose never validates for another.</param>
+        /// <returns>The 32-byte signature.</returns>
+        /// <remarks>
+        /// The signature changes whenever the data encryption key changes, so it suits short-lived tokens rather than long-term storage.
+        /// </remarks>
+        internal static byte[] ComputePurposeHmacSha256( byte[] data, string[] purposes )
+        {
+            DeriveKeys( _dataEncryptionKeyBytes, BuildPurposeContext( purposes ), out _, out var macKey );
+
+            return ComputeHmacSha256( macKey, data );
+        }
+
+        /// <summary>
         /// converts a hexadecimal string to byte.
         /// </summary>
         /// <param name="hexString">The hexadecimal string.</param>
@@ -1271,7 +1287,14 @@ namespace Rock.Security
                 return hmac.ComputeHash( data );
             }
         }
-        private static bool ConstantTimeEquals( byte[] a, byte[] b )
+
+        /// <summary>
+        /// Compares two byte arrays in time that does not depend on where they differ.
+        /// </summary>
+        /// <param name="a">The first array.</param>
+        /// <param name="b">The second array.</param>
+        /// <returns><c>true</c> if both arrays are non-null and contain the same bytes; otherwise <c>false</c>.</returns>
+        internal static bool ConstantTimeEquals( byte[] a, byte[] b )
         {
             if ( a == null || b == null || a.Length != b.Length )
             {
