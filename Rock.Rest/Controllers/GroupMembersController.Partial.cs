@@ -98,6 +98,34 @@ namespace Rock.Rest.Controllers
         }
 
         /// <summary>
+        /// Blocks PUT and PATCH from moving a member into or out of a security role.
+        /// </summary>
+        /// <param name="entity">The tracked GroupMember with the caller's values applied.</param>
+        protected override void CheckCanEditAfterUpdate( GroupMember entity )
+        {
+            base.CheckCanEditAfterUpdate( entity );
+
+            var originalGroupId = Service.Context.Entry( entity ).Property( m => m.GroupId ).OriginalValue;
+
+            using ( var rockContext = new RockContext() )
+            {
+                var groupService = new GroupService( rockContext );
+
+                foreach ( var groupId in new[] { originalGroupId, entity.GroupId }.Distinct() )
+                {
+                    var group = groupService.Get( groupId );
+                    if ( group != null && group.IsSecurityRoleOrSecurityGroupType() )
+                    {
+                        var response = ControllerContext.Request.CreateErrorResponse(
+                            HttpStatusCode.Forbidden,
+                            "Security role membership cannot be managed through this endpoint." );
+                        throw new HttpResponseException( response );
+                    }
+                }
+            }
+        }
+
+        /// <summary>
         /// Gets the group placement group members.
         /// </summary>
         /// <param name="options">The options.</param>
