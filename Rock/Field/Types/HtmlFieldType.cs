@@ -407,6 +407,12 @@ namespace Rock.Field.Types
                 grant.AddRule( new AssetAndFileManagerSecurityGrantRule( Rock.Security.Authorization.VIEW ) );
                 grant.AddRule( new AssetAndFileManagerSecurityGrantRule( Rock.Security.Authorization.EDIT ) );
                 grant.AddRule( new AssetAndFileManagerSecurityGrantRule( Rock.Security.Authorization.DELETE ) );
+
+                // Uploads are checked separately from the asset manager, so
+                // allow uploads to the configured folders and to providers.
+                grant.AddRule( new FileUploadSecurityGrantRule( privateConfigurationValues.GetValueOrDefault( DOCUMENT_FOLDER_ROOT, "" ) ) );
+                grant.AddRule( new FileUploadSecurityGrantRule( privateConfigurationValues.GetValueOrDefault( IMAGE_FOLDER_ROOT, "" ) ) );
+                grant.AddRule( FileUploadSecurityGrantRule.ForAssetStorageProviders() );
             }
         }
     }
