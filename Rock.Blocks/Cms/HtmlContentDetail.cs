@@ -684,6 +684,11 @@ namespace Rock.Blocks.Cms
                 securityGrant.AddRule( new AssetAndFileManagerSecurityGrantRule( Authorization.VIEW ) );
                 securityGrant.AddRule( new AssetAndFileManagerSecurityGrantRule( Authorization.EDIT ) );
                 securityGrant.AddRule( new AssetAndFileManagerSecurityGrantRule( Authorization.DELETE ) );
+
+                // Uploads are checked separately from the asset manager, so
+                // allow uploads to the folders the editor uses.
+                securityGrant.AddRule( new FileUploadSecurityGrantRule( GetAttributeValue( AttributeKey.DocumentRootFolder ) ) );
+                securityGrant.AddRule( new FileUploadSecurityGrantRule( GetAttributeValue( AttributeKey.ImageRootFolder ) ) );
             }
 
             return securityGrant.ToToken();
