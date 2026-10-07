@@ -1,0 +1,178 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <fieldset>
+        <NotificationBox v-if="modelValue.readOnlyMessage" alertType="info">{{ modelValue.readOnlyMessage }}</NotificationBox>
+        <NotificationBox v-if="actionErrorMessage" alertType="danger">{{ actionErrorMessage }}</NotificationBox>
+
+        <div class="row">
+            <div class="col-md-6">
+                <RockLiteral label="Registered By">
+                    <a v-if="modelValue.registrarProfileUrl" :href="modelValue.registrarProfileUrl">{{ modelValue.registrarName }}</a>
+                    <template v-else>{{ modelValue.registrarName }}</template>
+                </RockLiteral>
+
+                <template v-if="modelValue.confirmationEmail">
+                    <RockLiteral label="Confirmation Email">{{ modelValue.confirmationEmail }}</RockLiteral>
+
+                    <RockButton v-if="isEditable"
+                                btnType="default"
+                                btnSize="xs"
+                                class="margin-b-sm"
+                                autoDisable
+                                @click="onResendConfirmationClick">Resend Confirmation</RockButton>
+
+                    <NotificationBox v-if="confirmationMessage" alertType="success" dismissible @dismiss="confirmationMessage = ''">
+                        {{ confirmationMessage }}
+                    </NotificationBox>
+                </template>
+
+                <RockLiteral v-if="modelValue.groupName" label="Target Group">
+                    <a v-if="modelValue.groupUrl" :href="modelValue.groupUrl">{{ modelValue.groupName }}</a>
+                    <template v-else>{{ modelValue.groupName }}</template>
+                </RockLiteral>
+
+                <AttributeValuesContainer :modelValue="attributeValues"
+                                          :attributes="attributes"
+                                          :showCategoryLabel="false"
+                                          :numberOfColumns="1" />
+            </div>
+
+            <div class="col-md-6">
+                <RockLiteral v-if="modelValue.discountCode" label="Discount Code">{{ modelValue.discountCode }}</RockLiteral>
+                <RockLiteral v-if="modelValue.discountPercentageText" label="Discount Percentage">{{ modelValue.discountPercentageText }}</RockLiteral>
+                <RockLiteral v-if="modelValue.discountAmountText" label="Discount Amount">{{ modelValue.discountAmountText }}</RockLiteral>
+
+                <AccountTabs :registration="modelValue"
+                             :selectedTab="selectedTab"
+                             :transactionDetailPageUrl="transactionDetailPageUrl"
+                             :isProcessPaymentBlocked="isProcessPaymentBlocked"
+                             @update:selectedTab="onSelectedTabUpdated"
+                             @updated="onRegistrationUpdated"
+                             @chargedNotRecorded="onChargedNotRecorded" />
+            </div>
+        </div>
+    </fieldset>
+</template>
+
+<script setup lang="ts">
+    import { computed, PropType, ref } from "vue";
+    import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import RockLiteral from "@Obsidian/Controls/rockLiteral.obs";
+    import { useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
+    import { RegistrationActionResultBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationDetail/registrationActionResultBag";
+    import { RegistrationBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationDetail/registrationBag";
+    import AccountTabs from "./accountTabs.partial.obs";
+    import { AccountTab } from "./types.partial";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<RegistrationBag>,
+            required: true
+        },
+
+        isEditable: {
+            type: Boolean,
+            default: false
+        },
+
+        selectedTab: {
+            type: String as PropType<AccountTab>,
+            default: AccountTab.Account
+        },
+
+        transactionDetailPageUrl: {
+            type: String,
+            default: ""
+        },
+
+        isProcessPaymentBlocked: {
+            type: Boolean,
+            default: false
+        },
+
+        actionErrorMessage: {
+            type: String,
+            default: ""
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:selectedTab", value: AccountTab): void,
+        (e: "updated", registration: RegistrationBag, tab: AccountTab): void,
+        (e: "chargedNotRecorded", message: string): void,
+        (e: "error", message: string): void
+    }>();
+
+    const invokeBlockAction = useInvokeBlockAction();
+
+    // #region Values
+
+    const confirmationMessage = ref("");
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    const attributes = computed((): Record<string, PublicAttributeBag> => {
+        return props.modelValue.attributes ?? {};
+    });
+
+    const attributeValues = computed((): Record<string, string> => {
+        return props.modelValue.attributeValues ?? {};
+    });
+
+    // #endregion Computed Values
+
+    // #region Event Handlers
+
+    /**
+     * Sends the confirmation email again.
+     */
+    async function onResendConfirmationClick(): Promise<void> {
+        confirmationMessage.value = "";
+
+        const result = await invokeBlockAction<RegistrationActionResultBag>("ResendConfirmation", {
+            key: props.modelValue.idKey
+        });
+
+        if (result.isSuccess) {
+            confirmationMessage.value = result.data?.successMessage ?? "A new confirmation email has been sent.";
+            return;
+        }
+
+        emit("error", result.errorMessage ?? "Unknown error while trying to send the confirmation.");
+    }
+
+    /**
+     * Passes on the selected account tab.
+     *
+     * @param value The selected tab.
+     */
+    function onSelectedTabUpdated(value: AccountTab): void {
+        emit("update:selectedTab", value);
+    }
+
+    /**
+     * Passes on a rebuilt registration.
+     *
+     * @param registration The rebuilt registration.
+     * @param tab The account tab to show.
+     */
+    function onRegistrationUpdated(registration: RegistrationBag, tab: AccountTab): void {
+        emit("updated", registration, tab);
+    }
+
+    /**
+     * Passes on a payment that was charged but not recorded.
+     *
+     * @param message The message describing what happened.
+     */
+    function onChargedNotRecorded(message: string): void {
+        emit("chargedNotRecorded", message);
+    }
+
+    // #endregion Event Handlers
+</script>

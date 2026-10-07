@@ -1,0 +1,395 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="well">
+        <h4>Payment Information</h4>
+
+        <NotificationBox v-if="errorMessage" alertType="danger">{{ errorMessage }}</NotificationBox>
+
+        <LoadingIndicator v-if="isLoading" />
+
+        <RockForm v-else @submit="onSubmit">
+            <PersonPicker v-model="payer"
+                          label="Payer"
+                          help="The person who is making the payment."
+                          rules="required" />
+
+            <CurrencyBox v-model="amount"
+                         label="Payment Amount"
+                         rules="required" />
+
+            <TextBox v-model="comments"
+                     label="Comments"
+                     textMode="multiline"
+                     :rows="2" />
+
+            <template v-if="isManual">
+                <DefinedValuePicker v-model="currencyType"
+                                    label="Currency Type"
+                                    :definedTypeGuid="currencyTypeDefinedTypeGuid"
+                                    showBlankItem />
+
+                <DefinedValuePicker v-if="isCreditCard"
+                                    v-model="creditCardType"
+                                    label="Credit Card Type"
+                                    :definedTypeGuid="creditCardTypeDefinedTypeGuid"
+                                    showBlankItem />
+
+                <TextBox v-model="transactionCode"
+                         label="Transaction Code"
+                         :maxLength="50" />
+            </template>
+
+            <template v-else-if="gatewayControl">
+                <div class="hosted-payment-control">
+                    <GatewayControl :key="gatewayControlKey"
+                                    :gatewayControlModel="gatewayControl"
+                                    :amountToPay="amount ?? 0"
+                                    @success="onGatewayControlSuccess"
+                                    @error="onGatewayControlError"
+                                    @validation="onGatewayControlValidation" />
+                </div>
+
+                <NotificationBox v-if="tokenErrorMessage" alertType="validation">{{ tokenErrorMessage }}</NotificationBox>
+
+                <AddressControl v-model="billingAddress"
+                                :showAddressLine2="false"
+                                rules="required" />
+            </template>
+
+            <div class="actions">
+                <RockButton btnType="link" :disabled="isProcessing" @click="onCancelClick">Cancel</RockButton>
+                <RockButton type="submit"
+                            btnType="primary"
+                            :disabled="isSubmitDisabled"
+                            :isLoading="isProcessing"
+                            loadingText="Processing...">Submit</RockButton>
+            </div>
+        </RockForm>
+    </div>
+</template>
+
+<script setup lang="ts">
+    import { computed, onMounted, PropType, ref } from "vue";
+    import AddressControl from "@Obsidian/Controls/addressControl.obs";
+    import CurrencyBox from "@Obsidian/Controls/currencyBox.obs";
+    import DefinedValuePicker from "@Obsidian/Controls/definedValuePicker.obs";
+    import GatewayControl from "@Obsidian/Controls/gatewayControl.obs";
+    import LoadingIndicator from "@Obsidian/Controls/loadingIndicator.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import PersonPicker from "@Obsidian/Controls/personPicker.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import RockForm from "@Obsidian/Controls/rockForm.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import { provideSubmitPayment, usePaymentEvents } from "@Obsidian/Core/Controls/financialGateway";
+    import { DefinedType } from "@Obsidian/SystemGuids/definedType";
+    import { DefinedValue } from "@Obsidian/SystemGuids/definedValue";
+    import { FormError } from "@Obsidian/Utility/form";
+    import { areEqual, newGuid } from "@Obsidian/Utility/guid";
+    import { useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { AddressControlBag } from "@Obsidian/ViewModels/Controls/addressControlBag";
+    import { GatewayControlBag } from "@Obsidian/ViewModels/Controls/gatewayControlBag";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { ManualPaymentRequestBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationDetail/manualPaymentRequestBag";
+    import { ProcessPaymentOptionsBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationDetail/processPaymentOptionsBag";
+    import { ProcessPaymentRequestBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationDetail/processPaymentRequestBag";
+    import { RegistrationActionResultBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationDetail/registrationActionResultBag";
+    import { RegistrationBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationDetail/registrationBag";
+    import { PaymentFormMode } from "./types.partial";
+
+    const props = defineProps({
+        mode: {
+            type: String as PropType<PaymentFormMode>,
+            required: true
+        },
+
+        registrationKey: {
+            type: String as PropType<string | null>,
+            default: null
+        },
+
+        defaultPayer: {
+            type: Object as PropType<ListItemBag | null>,
+            default: null
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "saved", registration: RegistrationBag): void,
+        (e: "cancel"): void,
+        (e: "chargedNotRecorded", message: string): void
+    }>();
+
+    const invokeBlockAction = useInvokeBlockAction();
+    const submitPayment = provideSubmitPayment();
+    usePaymentEvents();
+
+    // #region Values
+
+    /** The status code returned when a payment was charged but could not be recorded. */
+    const chargedNotRecordedStatusCode = 409;
+
+    const currencyTypeDefinedTypeGuid = DefinedType.FinancialCurrencyType;
+    const creditCardTypeDefinedTypeGuid = DefinedType.FinancialCreditCardType;
+
+    const isLoading = ref(false);
+    const isProcessing = ref(false);
+    const errorMessage = ref("");
+    const tokenErrorMessage = ref("");
+
+    const payer = ref<ListItemBag | undefined>(props.defaultPayer ?? undefined);
+    const amount = ref<number | null>(null);
+    const comments = ref("");
+    const currencyType = ref<ListItemBag | null>(null);
+    const creditCardType = ref<ListItemBag | null>(null);
+    const transactionCode = ref("");
+
+    const gatewayControl = ref<GatewayControlBag | null>(null);
+    const gatewayControlKey = ref(0);
+    const billingAddress = ref<AddressControlBag>(toFullAddress(null));
+
+    /**
+     * Identifies this payment. It is created when the form opens and sent with
+     * every retry, so a retry of a payment that was already recorded is never
+     * charged or recorded again.
+     */
+    const transactionGuid = newGuid();
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    const isManual = computed((): boolean => {
+        return props.mode === PaymentFormMode.Manual;
+    });
+
+    const isSubmitDisabled = computed((): boolean => {
+        return isProcessing.value || isLoading.value || (!isManual.value && !gatewayControl.value);
+    });
+
+    const isCreditCard = computed((): boolean => {
+        return areEqual(currencyType.value?.value, DefinedValue.CurrencyTypeCreditCard);
+    });
+
+    // #endregion Computed Values
+
+    // #region Event Handlers
+
+    /**
+     * Records the manual payment, or asks the gateway control for a payment
+     * token when charging through the gateway.
+     */
+    async function onSubmit(): Promise<void> {
+        if (isProcessing.value) {
+            return;
+        }
+
+        errorMessage.value = "";
+        tokenErrorMessage.value = "";
+
+        if (isManual.value) {
+            await saveManualPayment();
+            return;
+        }
+
+        if (!gatewayControl.value) {
+            return;
+        }
+
+        isProcessing.value = true;
+
+        try {
+            submitPayment();
+        }
+        catch {
+            isProcessing.value = false;
+            errorMessage.value = "The payment gateway is not ready yet. Please try again.";
+        }
+    }
+
+    /**
+     * Cancels the payment.
+     */
+    function onCancelClick(): void {
+        emit("cancel");
+    }
+
+    /**
+     * Charges the payment with the token from the gateway control.
+     *
+     * @param token The payment token.
+     */
+    async function onGatewayControlSuccess(token: string): Promise<void> {
+        await processPayment(token);
+    }
+
+    /**
+     * Shows an error reported by the gateway control.
+     *
+     * @param message The error message.
+     */
+    function onGatewayControlError(message: string): void {
+        // A remounting gateway can report an empty error; that must not clear
+        // an error already shown.
+        if (!message) {
+            return;
+        }
+
+        isProcessing.value = false;
+        tokenErrorMessage.value = message;
+    }
+
+    /**
+     * Shows the payment fields the gateway control reported as invalid.
+     *
+     * @param invalidFields The invalid fields.
+     */
+    function onGatewayControlValidation(invalidFields: FormError[]): void {
+        // A remounting gateway can report an empty set; that must not clear an
+        // error already shown.
+        if (invalidFields.length === 0) {
+            return;
+        }
+
+        isProcessing.value = false;
+        tokenErrorMessage.value = invalidFields.map(f => f.text).join(" ");
+    }
+
+    // #endregion Event Handlers
+
+    // #region Functions
+
+    /**
+     * Expands a partial address into an address with every field present, so
+     * the address control does not keep values from a previous address.
+     *
+     * @param partial The partial address.
+     *
+     * @returns The full address.
+     */
+    function toFullAddress(partial: AddressControlBag | null | undefined): AddressControlBag {
+        return {
+            street1: partial?.street1 ?? "",
+            street2: partial?.street2 ?? "",
+            city: partial?.city ?? "",
+            state: partial?.state ?? "",
+            postalCode: partial?.postalCode ?? "",
+            country: partial?.country ?? "",
+            locality: partial?.locality ?? ""
+        };
+    }
+
+    /**
+     * Records the manual payment.
+     */
+    async function saveManualPayment(): Promise<void> {
+        isProcessing.value = true;
+
+        try {
+            const request: ManualPaymentRequestBag = {
+                payerPersonAliasGuid: payer.value?.value ?? null,
+                amount: amount.value ?? 0,
+                comments: comments.value,
+                currencyTypeValueGuid: currencyType.value?.value ?? null,
+                creditCardTypeValueGuid: isCreditCard.value ? creditCardType.value?.value ?? null : null,
+                transactionCode: transactionCode.value
+            };
+
+            const result = await invokeBlockAction<RegistrationActionResultBag>("SaveManualPayment", {
+                key: props.registrationKey,
+                request
+            });
+
+            if (result.isSuccess && result.data?.registration) {
+                emit("saved", result.data.registration);
+                return;
+            }
+
+            errorMessage.value = result.errorMessage ?? "Unknown error while trying to save the payment.";
+        }
+        finally {
+            isProcessing.value = false;
+        }
+    }
+
+    /**
+     * Charges the payment through the gateway and records it.
+     *
+     * @param token The payment token from the gateway control.
+     */
+    async function processPayment(token: string): Promise<void> {
+        isProcessing.value = true;
+
+        try {
+            const request: ProcessPaymentRequestBag = {
+                transactionGuid,
+                gatewayToken: token,
+                amount: amount.value ?? 0,
+                payerPersonAliasGuid: payer.value?.value ?? null,
+                comments: comments.value,
+                billingAddress: billingAddress.value
+            };
+
+            const result = await invokeBlockAction<RegistrationActionResultBag>("ProcessPayment", {
+                key: props.registrationKey,
+                request
+            });
+
+            if (result.isSuccess && result.data?.registration) {
+                emit("saved", result.data.registration);
+                return;
+            }
+
+            if (result.statusCode === chargedNotRecordedStatusCode) {
+                emit("chargedNotRecorded", result.errorMessage ?? "The payment was charged but could not be recorded. Do not resubmit; contact your finance team.");
+                return;
+            }
+
+            errorMessage.value = result.errorMessage ?? "Unknown error while trying to process the payment.";
+
+            // Payment tokens can only be used once, so the gateway control is
+            // reloaded to collect the payment method again.
+            gatewayControlKey.value++;
+        }
+        finally {
+            isProcessing.value = false;
+        }
+    }
+
+    /**
+     * Loads the gateway control and the default payment values.
+     */
+    async function loadProcessPaymentOptions(): Promise<void> {
+        isLoading.value = true;
+
+        try {
+            const result = await invokeBlockAction<ProcessPaymentOptionsBag>("GetProcessPaymentOptions", {
+                key: props.registrationKey
+            });
+
+            if (!result.isSuccess || !result.data) {
+                errorMessage.value = result.errorMessage ?? "Unknown error while trying to load the payment gateway.";
+                return;
+            }
+
+            gatewayControl.value = result.data.gatewayControl ?? null;
+            amount.value = result.data.amount;
+            payer.value = result.data.payer ?? payer.value;
+            billingAddress.value = toFullAddress(result.data.billingAddress);
+        }
+        finally {
+            isLoading.value = false;
+        }
+    }
+
+    // #endregion Functions
+
+    // #region Lifecycle Hooks
+
+    onMounted(() => {
+        if (props.mode === PaymentFormMode.Hosted) {
+            void loadProcessPaymentOptions();
+        }
+    });
+
+    // #endregion Lifecycle Hooks
+</script>

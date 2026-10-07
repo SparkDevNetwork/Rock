@@ -358,9 +358,13 @@
             }
         }
 
-        const result = await invokeBlockAction<string>("Delete", { key });
+        const result = await invokeBlockAction<string | null>("Delete", { key });
 
         if (result.isSuccess) {
+            if (result.data) {
+                await alert(result.data);
+            }
+
             if (gridData && gridData.rows) {
                 const index = gridData.rows.findIndex(r => r["idKey"] === key);
 

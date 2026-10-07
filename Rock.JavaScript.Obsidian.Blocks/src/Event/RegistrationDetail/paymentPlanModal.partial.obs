@@ -1,0 +1,285 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Modal v-model="isVisible"
+           title="Update Payment Plan"
+           saveText="Save"
+           :isSaveButtonDisabled="isSaveDisabled"
+           :onSave="onSave">
+        <NotificationBox v-if="errorMessage" alertType="danger" class="margin-t-md">{{ errorMessage }}</NotificationBox>
+        <NotificationBox v-if="warningMessage" alertType="warning" class="margin-t-md">{{ warningMessage }}</NotificationBox>
+
+        <LoadingIndicator v-if="isLoading" />
+
+        <template v-else-if="configuration">
+            <p>{{ configuration.balanceDueMessage }}</p>
+
+            <div class="row">
+                <div class="col-md-7">
+                    <DropDownList :modelValue="frequencyGuid"
+                                  label="Desired Payment Frequency"
+                                  :items="configuration.frequencies ?? []"
+                                  showBlankItem
+                                  rules="required"
+                                  @update:modelValue="onFrequencyUpdated" />
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-4">
+                    <DatePicker :modelValue="startDate"
+                                label="Start Date"
+                                disallowPastDateSelection
+                                rules="required"
+                                @update:modelValue="onStartDateUpdated" />
+                </div>
+                <div class="col-md-4">
+                    <NumberBox :modelValue="numberOfPayments"
+                               label="Number of Payments"
+                               :minimumValue="configuration.minNumberOfPayments"
+                               :decimalCount="0"
+                               rules="required"
+                               @update:modelValue="onNumberOfPaymentsUpdated" />
+                </div>
+            </div>
+
+            <div v-if="configuration.isSummaryVisible">
+                <label class="control-label">Plan Summary</label>
+                <div class="row">
+                    <div class="col-md-8">
+                        <RockLiteral label="Payment Amount">{{ configuration.summaryText }}</RockLiteral>
+                    </div>
+                </div>
+            </div>
+        </template>
+    </Modal>
+</template>
+
+<script setup lang="ts">
+    import { computed, PropType, ref, watch } from "vue";
+    import DatePicker from "@Obsidian/Controls/datePicker.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import LoadingIndicator from "@Obsidian/Controls/loadingIndicator.obs";
+    import Modal from "@Obsidian/Controls/modal.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import NumberBox from "@Obsidian/Controls/numberBox.obs";
+    import RockLiteral from "@Obsidian/Controls/rockLiteral.obs";
+    import { useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { debounce } from "@Obsidian/Utility/util";
+    import { PaymentPlanConfigurationBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationDetail/paymentPlanConfigurationBag";
+    import { PaymentPlanConfigurationRequestBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationDetail/paymentPlanConfigurationRequestBag";
+    import { RegistrationActionResultBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationDetail/registrationActionResultBag";
+    import { RegistrationBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationDetail/registrationBag";
+
+    const props = defineProps({
+        modelValue: {
+            type: Boolean,
+            default: false
+        },
+
+        registrationKey: {
+            type: String as PropType<string | null>,
+            default: null
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: boolean): void,
+        (e: "updated", registration: RegistrationBag): void
+    }>();
+
+    const invokeBlockAction = useInvokeBlockAction();
+
+    // #region Values
+
+    const isVisible = ref(props.modelValue);
+    const isLoading = ref(false);
+    const isSaving = ref(false);
+    const pendingPreviewCount = ref(0);
+    const isPreviewQueued = ref(false);
+    const errorMessage = ref("");
+    const warningMessage = ref("");
+    const configuration = ref<PaymentPlanConfigurationBag | null>(null);
+    const frequencyGuid = ref("");
+    const startDate = ref<string | null>(null);
+    const numberOfPayments = ref<number | null>(null);
+
+    /** Identifies the most recent preview request so older responses are ignored. */
+    let previewSequence = 0;
+
+    /** Recalculates the plan once typing in the number of payments pauses. */
+    const debouncedPreview = debounce(() => {
+        isPreviewQueued.value = false;
+        void refreshPreview(false);
+    }, 500);
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    const isSaveDisabled = computed((): boolean => {
+        return isLoading.value || isSaving.value || isPreviewQueued.value || pendingPreviewCount.value > 0 || !configuration.value;
+    });
+
+    // #endregion Computed Values
+
+    // #region Event Handlers
+
+    /**
+     * Updates the frequency and recalculates the plan.
+     *
+     * @param value The selected frequency.
+     */
+    function onFrequencyUpdated(value: string | string[]): void {
+        frequencyGuid.value = Array.isArray(value) ? value[0] ?? "" : value;
+        void refreshPreview(false);
+    }
+
+    /**
+     * Updates the start date and recalculates the plan.
+     *
+     * @param value The selected start date.
+     */
+    function onStartDateUpdated(value: string | null): void {
+        startDate.value = value;
+        void refreshPreview(false);
+    }
+
+    /**
+     * Updates the number of payments and recalculates the plan once typing pauses.
+     *
+     * @param value The entered number of payments.
+     */
+    function onNumberOfPaymentsUpdated(value: number | null): void {
+        numberOfPayments.value = value;
+        isPreviewQueued.value = true;
+
+        // Ignore any preview still in flight so it cannot overwrite what is being typed.
+        previewSequence++;
+        debouncedPreview();
+    }
+
+    /**
+     * Saves the payment plan.
+     */
+    async function onSave(): Promise<void> {
+        errorMessage.value = "";
+        warningMessage.value = "";
+        isSaving.value = true;
+
+        try {
+            const result = await invokeBlockAction<RegistrationActionResultBag>("UpdatePaymentPlan", {
+                key: props.registrationKey,
+                request: getRequest(false)
+            });
+
+            if (!result.isSuccess || !result.data) {
+                errorMessage.value = result.errorMessage ?? "Unknown error while trying to update the payment plan.";
+                return;
+            }
+
+            if (result.data.registration) {
+                emit("updated", result.data.registration);
+                isVisible.value = false;
+                return;
+            }
+
+            warningMessage.value = result.data.warningMessage ?? "";
+        }
+        finally {
+            isSaving.value = false;
+        }
+    }
+
+    // #endregion Event Handlers
+
+    // #region Functions
+
+    /**
+     * Gets the request that describes the current dialog values.
+     *
+     * @param isInitial True to calculate the plan from the existing payment plan.
+     *
+     * @returns The request bag.
+     */
+    function getRequest(isInitial: boolean): PaymentPlanConfigurationRequestBag {
+        return {
+            isInitial,
+            frequencyGuid: frequencyGuid.value || null,
+            startDate: startDate.value,
+            numberOfPayments: numberOfPayments.value
+        };
+    }
+
+    /**
+     * Recalculates the plan on the server from the dialog values.
+     *
+     * @param isInitial True to calculate the plan from the existing payment plan.
+     */
+    async function refreshPreview(isInitial: boolean): Promise<void> {
+        const sequence = ++previewSequence;
+        pendingPreviewCount.value++;
+
+        try {
+            const result = await invokeBlockAction<PaymentPlanConfigurationBag>("GetPaymentPlanConfiguration", {
+                key: props.registrationKey,
+                request: getRequest(isInitial)
+            });
+
+            if (sequence !== previewSequence) {
+                return;
+            }
+
+            if (!result.isSuccess || !result.data) {
+                errorMessage.value = result.errorMessage ?? "Unknown error while trying to calculate the payment plan.";
+                return;
+            }
+
+            errorMessage.value = "";
+            configuration.value = result.data;
+            frequencyGuid.value = result.data.frequencyGuid ?? "";
+            startDate.value = result.data.startDate ?? null;
+            numberOfPayments.value = result.data.numberOfPayments;
+        }
+        finally {
+            pendingPreviewCount.value--;
+        }
+    }
+
+    /**
+     * Loads the plan from the existing payment plan when the dialog opens.
+     */
+    async function loadInitialConfiguration(): Promise<void> {
+        errorMessage.value = "";
+        warningMessage.value = "";
+        configuration.value = null;
+        frequencyGuid.value = "";
+        startDate.value = null;
+        numberOfPayments.value = null;
+        isLoading.value = true;
+
+        try {
+            await refreshPreview(true);
+        }
+        finally {
+            isLoading.value = false;
+        }
+    }
+
+    // #endregion Functions
+
+    // #region Watchers
+
+    watch(() => props.modelValue, () => {
+        isVisible.value = props.modelValue;
+
+        if (props.modelValue) {
+            void loadInitialConfiguration();
+        }
+    });
+
+    watch(isVisible, () => {
+        emit("update:modelValue", isVisible.value);
+    });
+
+    // #endregion Watchers
+</script>

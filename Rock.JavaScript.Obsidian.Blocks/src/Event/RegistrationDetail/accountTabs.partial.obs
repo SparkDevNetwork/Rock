@@ -1,0 +1,305 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <TabbedBar v-model="internalSelectedTab" :tabs="tabs" />
+
+    <div class="tab-content">
+        <div v-show="isAccountTabSelected" class="tab-pane active">
+            <NotificationBox v-if="accountWarningMessage" alertType="warning" class="margin-t-md">{{ accountWarningMessage }}</NotificationBox>
+
+            <div class="row fee-totals">
+                <div class="col-sm-6 fee-totals-options">
+                    <PaymentPlanSummary v-if="registration.paymentPlan"
+                                        :paymentPlan="registration.paymentPlan"
+                                        :registrationKey="registration.idKey ?? null"
+                                        @updated="onPaymentPlanUpdated"
+                                        @deleted="onPaymentPlanDeleted" />
+                </div>
+                <div class="col-sm-2">
+                </div>
+                <div class="col-sm-4 fee-totals-options">
+                    <RockLiteral label="Total Cost">{{ registration.costText }}</RockLiteral>
+                    <RockLiteral label="Paid">{{ registration.totalPaidText }}</RockLiteral>
+                    <RockLiteral label="Amount Remaining">{{ registration.balanceDueText }}</RockLiteral>
+                </div>
+            </div>
+        </div>
+
+        <div v-show="isFeesTabSelected" class="tab-pane active">
+            <FeeTable :rows="registration.feeRows ?? []"
+                      :isDiscountedAmountColumnVisible="registration.isDiscountedAmountColumnVisible" />
+        </div>
+
+        <!-- The payments pane stays mounted so a payment in progress is never interrupted by a tab change. -->
+        <div v-show="isPaymentsTabSelected" class="tab-pane active">
+            <PaymentForm v-if="isPaymentFormOpen"
+                         :mode="paymentFormMode"
+                         :registrationKey="registration.idKey ?? null"
+                         :defaultPayer="registration.personAlias ?? null"
+                         @saved="onPaymentSaved"
+                         @cancel="onPaymentCancel"
+                         @chargedNotRecorded="onChargedNotRecorded" />
+
+            <div v-else class="well">
+                <h4>Payments</h4>
+
+                <div class="table-responsive">
+                    <table class="grid-table table table-condensed table-light">
+                        <thead>
+                            <tr>
+                                <th>Date / Time</th>
+                                <th>Details</th>
+                                <th class="grid-columncurrency">Amount</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr v-if="payments.length === 0">
+                                <td colspan="3">No Payments Found</td>
+                            </tr>
+                            <tr v-for="payment in payments" :key="payment.idKey ?? ''">
+                                <td>
+                                    <a v-if="getTransactionUrl(payment)" :href="getTransactionUrl(payment)">
+                                        {{ payment.transactionDateText }}<br />{{ payment.transactionTimeText }}
+                                    </a>
+                                    <template v-else>
+                                        {{ payment.transactionDateText }}<br />{{ payment.transactionTimeText }}
+                                    </template>
+                                </td>
+                                <td>
+                                    <span v-if="payment.isRefund" class="label label-danger">Refund</span>
+                                    <template v-for="(line, index) in getDetailLines(payment)" :key="index">
+                                        <br v-if="index > 0" />{{ line }}
+                                    </template>
+                                </td>
+                                <td class="grid-columncurrency">{{ payment.amountText }}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-12">
+                        <NotificationBox v-if="registration.isLinkToIndividualMessageVisible" alertType="info" class="margin-t-md">
+                            In order to process a payment you will need to link this registration to an individual.
+                        </NotificationBox>
+
+                        <span v-if="registration.isProcessPaymentVisible" :title="processPaymentDisabledReason">
+                            <RockButton btnType="primary"
+                                        btnSize="xs"
+                                        class="margin-t-sm"
+                                        :disabled="isProcessPaymentDisabled"
+                                        @click="onProcessPaymentClick">Process New Payment</RockButton>
+                        </span>
+
+                        <RockButton v-if="registration.isAddManualPaymentVisible"
+                                    btnType="default"
+                                    btnSize="xs"
+                                    class="margin-t-sm margin-l-sm"
+                                    @click="onAddManualPaymentClick">Add Manual Payment</RockButton>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</template>
+
+<script setup lang="ts">
+    import { computed, PropType, ref, watch } from "vue";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import RockLiteral from "@Obsidian/Controls/rockLiteral.obs";
+    import TabbedBar from "@Obsidian/Controls/tabbedBar.obs";
+    import { RegistrationBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationDetail/registrationBag";
+    import { RegistrationPaymentRowBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationDetail/registrationPaymentRowBag";
+    import FeeTable from "./feeTable.partial.obs";
+    import PaymentForm from "./paymentForm.partial.obs";
+    import PaymentPlanSummary from "./paymentPlanSummary.partial.obs";
+    import { AccountTab, getKeyedUrl, PaymentFormMode } from "./types.partial";
+
+    const props = defineProps({
+        registration: {
+            type: Object as PropType<RegistrationBag>,
+            required: true
+        },
+
+        selectedTab: {
+            type: String as PropType<AccountTab>,
+            default: AccountTab.Account
+        },
+
+        transactionDetailPageUrl: {
+            type: String,
+            default: ""
+        },
+
+        isProcessPaymentBlocked: {
+            type: Boolean,
+            default: false
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:selectedTab", value: AccountTab): void,
+        (e: "updated", registration: RegistrationBag, tab: AccountTab): void,
+        (e: "chargedNotRecorded", message: string): void
+    }>();
+
+    // #region Values
+
+    const tabs: string[] = [AccountTab.Account, AccountTab.Fees, AccountTab.Payments];
+    const internalSelectedTab = ref<string>(props.selectedTab);
+    const paymentFormMode = ref<PaymentFormMode>(PaymentFormMode.None);
+    const accountWarningMessage = ref("");
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    const isAccountTabSelected = computed((): boolean => {
+        return internalSelectedTab.value === AccountTab.Account;
+    });
+
+    const isFeesTabSelected = computed((): boolean => {
+        return internalSelectedTab.value === AccountTab.Fees;
+    });
+
+    const isPaymentsTabSelected = computed((): boolean => {
+        return internalSelectedTab.value === AccountTab.Payments;
+    });
+
+    const isPaymentFormOpen = computed((): boolean => {
+        return paymentFormMode.value !== PaymentFormMode.None;
+    });
+
+    const payments = computed((): RegistrationPaymentRowBag[] => {
+        return props.registration.payments ?? [];
+    });
+
+    const isProcessPaymentDisabled = computed((): boolean => {
+        return props.registration.isProcessPaymentDisabled || props.isProcessPaymentBlocked;
+    });
+
+    const processPaymentDisabledReason = computed((): string | undefined => {
+        if (props.registration.isProcessPaymentDisabled) {
+            return "The payment gateway used by this event's registration template does not support making payments here.";
+        }
+
+        if (props.isProcessPaymentBlocked) {
+            return "Reload the page before processing another payment.";
+        }
+
+        return undefined;
+    });
+
+    // #endregion Computed Values
+
+    // #region Event Handlers
+
+    /**
+     * Opens the form used to charge a new payment through the gateway.
+     */
+    function onProcessPaymentClick(): void {
+        paymentFormMode.value = PaymentFormMode.Hosted;
+        internalSelectedTab.value = AccountTab.Payments;
+    }
+
+    /**
+     * Opens the form used to record a manual payment.
+     */
+    function onAddManualPaymentClick(): void {
+        paymentFormMode.value = PaymentFormMode.Manual;
+        internalSelectedTab.value = AccountTab.Payments;
+    }
+
+    /**
+     * Closes the payment form and shows the rebuilt registration on the
+     * payments tab.
+     *
+     * @param registration The rebuilt registration.
+     */
+    function onPaymentSaved(registration: RegistrationBag): void {
+        paymentFormMode.value = PaymentFormMode.None;
+        internalSelectedTab.value = AccountTab.Payments;
+        emit("updated", registration, AccountTab.Payments);
+    }
+
+    /**
+     * Closes the payment form.
+     */
+    function onPaymentCancel(): void {
+        paymentFormMode.value = PaymentFormMode.None;
+        internalSelectedTab.value = AccountTab.Payments;
+    }
+
+    /**
+     * Closes the payment form after a payment was charged but not recorded,
+     * so it cannot be submitted again.
+     *
+     * @param message The message describing what happened.
+     */
+    function onChargedNotRecorded(message: string): void {
+        paymentFormMode.value = PaymentFormMode.None;
+        emit("chargedNotRecorded", message);
+    }
+
+    /**
+     * Shows the registration rebuilt after the payment plan was changed.
+     *
+     * @param registration The rebuilt registration.
+     */
+    function onPaymentPlanUpdated(registration: RegistrationBag): void {
+        accountWarningMessage.value = "";
+        emit("updated", registration, AccountTab.Account);
+    }
+
+    /**
+     * Shows the registration rebuilt after the payment plan was deleted.
+     *
+     * @param registration The rebuilt registration.
+     * @param warningMessage Any warning raised while deactivating the plan.
+     */
+    function onPaymentPlanDeleted(registration: RegistrationBag, warningMessage: string): void {
+        accountWarningMessage.value = warningMessage;
+        emit("updated", registration, AccountTab.Account);
+    }
+
+    // #endregion Event Handlers
+
+    // #region Functions
+
+    /**
+     * Gets the URL of the transaction detail page of a payment.
+     *
+     * @param payment The payment.
+     *
+     * @returns The URL, or an empty string when there is no page.
+     */
+    function getTransactionUrl(payment: RegistrationPaymentRowBag): string {
+        return getKeyedUrl(props.transactionDetailPageUrl, payment.idKey);
+    }
+
+    /**
+     * Gets the detail lines of a payment, skipping empty values.
+     *
+     * @param payment The payment.
+     *
+     * @returns The detail lines.
+     */
+    function getDetailLines(payment: RegistrationPaymentRowBag): string[] {
+        return [payment.payerName, payment.currencyAndCreditCardType, payment.accountNumberMasked, payment.transactionCode]
+            .filter((line): line is string => !!line);
+    }
+
+    // #endregion Functions
+
+    // #region Watchers
+
+    watch(() => props.selectedTab, () => {
+        internalSelectedTab.value = props.selectedTab;
+    });
+
+    watch(internalSelectedTab, () => {
+        emit("update:selectedTab", internalSelectedTab.value as AccountTab);
+    });
+
+    // #endregion Watchers
+</script>

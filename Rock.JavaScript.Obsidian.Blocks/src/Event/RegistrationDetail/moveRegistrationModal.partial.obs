@@ -1,0 +1,258 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Modal v-model="isVisible"
+           title="Move Registration"
+           saveText="Move"
+           cancelText=""
+           :isSaveButtonDisabled="isLoading || isMoving"
+           :onSave="onMove">
+        <NotificationBox v-if="errorMessage" alertType="danger">{{ errorMessage }}</NotificationBox>
+
+        <div class="row">
+            <div class="col-md-6">
+                <RockLiteral label="Current Registration Instance">{{ currentInstanceName }}</RockLiteral>
+
+                <TextBox v-model="comment"
+                         label="Comment"
+                         help="Optional comment that will be added to the audit history."
+                         textMode="multiline"
+                         :rows="2"
+                         :maxLength="200" />
+            </div>
+
+            <div class="col-md-6">
+                <div class="row">
+                    <div class="col-sm-7">
+                        <DropDownList :modelValue="instanceKey"
+                                      label="New Registration Instance"
+                                      :items="instances"
+                                      showBlankItem
+                                      rules="required"
+                                      @update:modelValue="onInstanceUpdated" />
+                    </div>
+                    <div class="col-sm-5">
+                        <CheckBox :modelValue="isShowAllInstances"
+                                  label="Show All Instances"
+                                  help="By default, only active instances are listed. Select this option to show all instances."
+                                  @update:modelValue="onShowAllUpdated" />
+                    </div>
+                </div>
+
+                <DropDownList v-if="groups.length > 0"
+                              v-model="groupKey"
+                              label="Move Registrants To Group"
+                              help="Select a group here to remove all the registrants from their existing associated group, and add them to this group."
+                              :items="groups"
+                              showBlankItem />
+            </div>
+        </div>
+    </Modal>
+</template>
+
+<script setup lang="ts">
+    import { PropType, ref, watch } from "vue";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import Modal from "@Obsidian/Controls/modal.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import RockLiteral from "@Obsidian/Controls/rockLiteral.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import { useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { MoveRegistrationOptionsBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationDetail/moveRegistrationOptionsBag";
+    import { MoveRegistrationRequestBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationDetail/moveRegistrationRequestBag";
+    import { RegistrationActionResultBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationDetail/registrationActionResultBag";
+    import { RegistrationBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationDetail/registrationBag";
+
+    const props = defineProps({
+        modelValue: {
+            type: Boolean,
+            default: false
+        },
+
+        registrationKey: {
+            type: String as PropType<string | null>,
+            default: null
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: boolean): void,
+        (e: "moved", registration: RegistrationBag): void
+    }>();
+
+    const invokeBlockAction = useInvokeBlockAction();
+
+    // #region Values
+
+    const isVisible = ref(props.modelValue);
+    const isLoading = ref(false);
+    const isMoving = ref(false);
+    const errorMessage = ref("");
+    const currentInstanceName = ref("");
+    const comment = ref("");
+    const instances = ref<ListItemBag[]>([]);
+    const instanceKey = ref("");
+    const isShowAllInstances = ref(false);
+    const groups = ref<ListItemBag[]>([]);
+    const groupKey = ref("");
+
+    /** Identifies the most recent instance list request so older responses are ignored. */
+    let optionsSequence = 0;
+
+    // #endregion Values
+
+    // #region Event Handlers
+
+    /**
+     * Updates the selected registration instance and loads its groups.
+     *
+     * @param value The selected registration instance.
+     */
+    async function onInstanceUpdated(value: string | string[]): Promise<void> {
+        instanceKey.value = Array.isArray(value) ? value[0] ?? "" : value;
+        groupKey.value = "";
+        groups.value = [];
+
+        if (!instanceKey.value) {
+            return;
+        }
+
+        const selectedInstanceKey = instanceKey.value;
+        const result = await invokeBlockAction<ListItemBag[]>("GetMoveGroups", {
+            key: props.registrationKey,
+            registrationInstanceKey: selectedInstanceKey
+        });
+
+        if (selectedInstanceKey !== instanceKey.value) {
+            return;
+        }
+
+        if (!result.isSuccess) {
+            errorMessage.value = result.errorMessage ?? "Unknown error while trying to load the groups.";
+            return;
+        }
+
+        errorMessage.value = "";
+        groups.value = result.data ?? [];
+    }
+
+    /**
+     * Shows or hides inactive and ended registration instances.
+     *
+     * @param value True to show all registration instances.
+     */
+    async function onShowAllUpdated(value: boolean): Promise<void> {
+        isShowAllInstances.value = value;
+        await loadOptions();
+    }
+
+    /**
+     * Moves the registration.
+     */
+    async function onMove(): Promise<void> {
+        errorMessage.value = "";
+        isMoving.value = true;
+
+        try {
+            const request: MoveRegistrationRequestBag = {
+                registrationInstanceKey: instanceKey.value,
+                groupKey: groupKey.value || null,
+                comment: comment.value
+            };
+
+            const result = await invokeBlockAction<RegistrationActionResultBag>("MoveRegistration", {
+                key: props.registrationKey,
+                request
+            });
+
+            if (result.isSuccess && result.data?.registration) {
+                emit("moved", result.data.registration);
+                isVisible.value = false;
+                return;
+            }
+
+            errorMessage.value = result.errorMessage ?? "Unknown error while trying to move the registration.";
+        }
+        finally {
+            isMoving.value = false;
+        }
+    }
+
+    // #endregion Event Handlers
+
+    // #region Functions
+
+    /**
+     * Loads the registration instances the registration can be moved to,
+     * keeping the selected instance when it is still listed.
+     */
+    async function loadOptions(): Promise<void> {
+        const sequence = ++optionsSequence;
+        isLoading.value = true;
+
+        try {
+            const result = await invokeBlockAction<MoveRegistrationOptionsBag>("GetMoveOptions", {
+                key: props.registrationKey,
+                isShowAllInstances: isShowAllInstances.value
+            });
+
+            if (sequence !== optionsSequence) {
+                return;
+            }
+
+            if (!result.isSuccess || !result.data) {
+                errorMessage.value = result.errorMessage ?? "Unknown error while trying to load the registration instances.";
+                return;
+            }
+
+            errorMessage.value = "";
+            currentInstanceName.value = result.data.currentRegistrationInstanceName ?? "";
+            instances.value = result.data.registrationInstances ?? [];
+
+            if (instanceKey.value && !instances.value.some(i => i.value === instanceKey.value)) {
+                instanceKey.value = "";
+                groupKey.value = "";
+                groups.value = [];
+            }
+        }
+        finally {
+            if (sequence === optionsSequence) {
+                isLoading.value = false;
+            }
+        }
+    }
+
+    /**
+     * Clears the dialog and loads its options when it opens.
+     */
+    async function resetAndLoad(): Promise<void> {
+        errorMessage.value = "";
+        comment.value = "";
+        instanceKey.value = "";
+        isShowAllInstances.value = false;
+        groups.value = [];
+        groupKey.value = "";
+        instances.value = [];
+
+        await loadOptions();
+    }
+
+    // #endregion Functions
+
+    // #region Watchers
+
+    watch(() => props.modelValue, () => {
+        isVisible.value = props.modelValue;
+
+        if (props.modelValue) {
+            void resetAndLoad();
+        }
+    });
+
+    watch(isVisible, () => {
+        emit("update:modelValue", isVisible.value);
+    });
+
+    // #endregion Watchers
+</script>

@@ -1,0 +1,424 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <NotificationBox v-if="blockError" alertType="warning">{{ blockError }}</NotificationBox>
+
+    <NotificationBox v-if="errorMessage" alertType="danger">{{ errorMessage }}</NotificationBox>
+
+    <template v-if="!blockError && registrationViewBag">
+        <Wizard :templateName="registrationViewBag.registrationTemplateName ?? ''"
+                :templateUrl="registrationViewBag.registrationTemplateUrl ?? ''"
+                :instanceName="registrationViewBag.registrationInstanceName ?? ''"
+                :instanceUrl="registrationViewBag.registrationInstanceUrl ?? ''"
+                :registrationName="registrationViewBag.registrationName ?? ''" />
+
+        <DetailBlock v-model:mode="panelMode"
+                     name="Registration"
+                     title="Registration Details"
+                     :labels="blockLabels"
+                     :showLabelsInHeader="true"
+                     :alwaysShowLabels="true"
+                     :entityKey="entityKey"
+                     :entityTypeGuid="entityTypeGuid"
+                     entityTypeName="Registration"
+                     :isAuditHidden="true"
+                     :isBadgesVisible="false"
+                     :isDeleteVisible="isEditable"
+                     :isEditVisible="isEditable"
+                     :isFollowVisible="false"
+                     :isSecurityHidden="true"
+                     additionalDeleteMessage="All of the registrants will also be deleted!"
+                     @cancelEdit="onCancelEdit"
+                     @delete="onDelete"
+                     @edit="onEdit"
+                     @save="onSave">
+            <template #view>
+                <ViewPanel :modelValue="registrationViewBag"
+                           :isEditable="isEditable"
+                           :selectedTab="selectedAccountTab"
+                           :transactionDetailPageUrl="transactionDetailPageUrl"
+                           :isProcessPaymentBlocked="isProcessPaymentBlocked"
+                           :actionErrorMessage="actionErrorMessage"
+                           @update:selectedTab="onSelectedAccountTabUpdated"
+                           @updated="onRegistrationUpdated"
+                           @chargedNotRecorded="onChargedNotRecorded"
+                           @error="onActionError" />
+            </template>
+
+            <template #edit>
+                <EditPanel v-model="registrationEditBag" @propertyChanged="baseBlock.onPropertyChanged" />
+            </template>
+
+            <template v-if="isViewMode" #footerSecondaryActions>
+                <RockButton v-if="auditPageUrl" btnType="default" btnSize="sm" title="View Audit Log" @click="onAuditLogClick">
+                    <i class="ti ti-file-type-txt"></i> Audit Log
+                </RockButton>
+                <RockButton v-if="isEditable"
+                            btnType="default"
+                            btnSize="sm"
+                            isSquare
+                            class="margin-l-sm"
+                            title="Move Registration"
+                            @click="onMoveClick">
+                    <i class="ti ti-external-link"></i>
+                </RockButton>
+            </template>
+        </DetailBlock>
+
+        <template v-if="isViewMode">
+            <RegistrantPanel v-for="(registrant, index) in registrants"
+                             :key="registrant.idKey ?? index"
+                             :registrant="registrant"
+                             :attributeDefinitions="registrationViewBag.registrantAttributes ?? {}"
+                             :isEditable="isEditable"
+                             :registrantPageUrl="registrantPageUrl"
+                             :groupMemberPageUrl="groupMemberPageUrl"
+                             @addToGroup="onAddRegistrantToGroup"
+                             @delete="onDeleteRegistrant" />
+
+            <div v-if="isEditable && addRegistrantUrl" class="row">
+                <div class="col-md-12">
+                    <a :href="addRegistrantUrl" class="btn btn-default btn-xs pull-right margin-b-sm">
+                        <i class="ti ti-plus"></i> Add New Registrant
+                    </a>
+                </div>
+            </div>
+        </template>
+
+        <MoveRegistrationModal v-model="isMoveModalVisible"
+                               :registrationKey="entityKey"
+                               @moved="onRegistrationMoved" />
+    </template>
+</template>
+
+<script setup lang="ts">
+    import { computed, ref } from "vue";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import DetailBlock from "@Obsidian/Templates/detailBlock";
+    import { DetailPanelMode } from "@Obsidian/Enums/Controls/detailPanelMode";
+    import { EntityType } from "@Obsidian/SystemGuids/entityType";
+    import { PanelAction } from "@Obsidian/Types/Controls/panelAction";
+    import { onConfigurationValuesChanged, useConfigurationValues, useEntityDetailBlock, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
+    import { alert, confirm } from "@Obsidian/Utility/dialogs";
+    import { makeUrlRedirectSafe } from "@Obsidian/Utility/url";
+    import { DetailBlockBox } from "@Obsidian/ViewModels/Blocks/detailBlockBox";
+    import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
+    import { RegistrantPanelBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationDetail/registrantPanelBag";
+    import { RegistrationActionResultBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationDetail/registrationActionResultBag";
+    import { RegistrationBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationDetail/registrationBag";
+    import { RegistrationDeleteResultBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationDetail/registrationDeleteResultBag";
+    import { RegistrationDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationDetail/registrationDetailOptionsBag";
+    import EditPanel from "./RegistrationDetail/editPanel.partial.obs";
+    import MoveRegistrationModal from "./RegistrationDetail/moveRegistrationModal.partial.obs";
+    import RegistrantPanel from "./RegistrationDetail/registrantPanel.partial.obs";
+    import ViewPanel from "./RegistrationDetail/viewPanel.partial.obs";
+    import Wizard from "./RegistrationDetail/wizard.partial.obs";
+    import { AccountTab, getKeyedUrl, NavigationUrlKey } from "./RegistrationDetail/types.partial";
+
+    const config = useConfigurationValues<DetailBlockBox<RegistrationBag, RegistrationDetailOptionsBag>>();
+    const invokeBlockAction = useInvokeBlockAction();
+
+    onConfigurationValuesChanged(useReloadBlock());
+
+    // #region Values
+
+    const blockError = ref(config.errorMessage ?? "");
+    const errorMessage = ref("");
+    const actionErrorMessage = ref("");
+
+    const registrationViewBag = ref<RegistrationBag | null>(config.entity ?? null);
+    const registrationEditBag = ref<ValidPropertiesBox<RegistrationBag>>({
+        bag: {} as RegistrationBag
+    });
+
+    const entityTypeGuid = EntityType.Registration;
+    const panelMode = ref<DetailPanelMode>(DetailPanelMode.View);
+    const selectedAccountTab = ref<AccountTab>(AccountTab.Account);
+    const isMoveModalVisible = ref(false);
+    const isProcessPaymentBlocked = ref(false);
+
+    const baseBlock = useEntityDetailBlock({
+        blockConfig: config,
+        entity: registrationEditBag
+    });
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    const entityKey = computed((): string => {
+        return registrationViewBag.value?.idKey ?? "";
+    });
+
+    const isEditable = computed((): boolean => {
+        return config.isEditable === true;
+    });
+
+    const isViewMode = computed((): boolean => {
+        return panelMode.value === DetailPanelMode.View;
+    });
+
+    const registrants = computed((): RegistrantPanelBag[] => {
+        return registrationViewBag.value?.registrants ?? [];
+    });
+
+    const registrantPageUrl = computed((): string => {
+        return config.navigationUrls?.[NavigationUrlKey.RegistrantPage] ?? "";
+    });
+
+    const groupMemberPageUrl = computed((): string => {
+        return config.navigationUrls?.[NavigationUrlKey.GroupMemberPage] ?? "";
+    });
+
+    const transactionDetailPageUrl = computed((): string => {
+        return config.navigationUrls?.[NavigationUrlKey.TransactionDetailPage] ?? "";
+    });
+
+    const auditPageUrl = computed((): string => {
+        return config.navigationUrls?.[NavigationUrlKey.AuditPage] ?? "";
+    });
+
+    const addRegistrantUrl = computed((): string => {
+        return getKeyedUrl(registrantPageUrl.value, "0");
+    });
+
+    // Labels come from the view bag so they stay visible while editing.
+    const blockLabels = computed((): PanelAction[] | undefined => {
+        const bag = registrationViewBag.value;
+
+        if (!bag?.isCostLabelVisible) {
+            return undefined;
+        }
+
+        return [
+            {
+                title: bag.costText ?? "",
+                type: "info",
+                tooltip: "Cost"
+            },
+            {
+                title: bag.balanceDueText ?? "",
+                type: bag.balanceDueLabelType ?? "success",
+                tooltip: "Balance Due",
+                iconCssClass: bag.isPaymentPlanActive ? "ti ti-calendar-event" : undefined
+            }
+        ];
+    });
+
+    // #endregion Computed Values
+
+    // #region Event Handlers
+
+    /**
+     * Event handler for the Cancel button being clicked while in Edit mode.
+     *
+     * @returns true so the panel returns to view mode.
+     */
+    async function onCancelEdit(): Promise<boolean> {
+        return true;
+    }
+
+    /**
+     * Event handler for the Delete button being clicked. The first
+     * confirmation has already been shown by the panel.
+     *
+     * @returns false if it should stay on the page; or a string containing a redirect URL.
+     */
+    async function onDelete(): Promise<false | string> {
+        errorMessage.value = "";
+
+        if (registrationViewBag.value?.isPaymentPlanActive) {
+            const isConfirmed = await confirm("This registration has an active payment plan. Are you sure that you want to delete the registration? The payment plan will be deactivated and will no longer be associated with a registration.");
+
+            if (!isConfirmed) {
+                return false;
+            }
+        }
+
+        const result = await invokeBlockAction<RegistrationDeleteResultBag>("Delete", {
+            key: entityKey.value
+        });
+
+        if (!result.isSuccess || !result.data) {
+            errorMessage.value = result.errorMessage ?? "Unknown error while trying to delete registration.";
+            return false;
+        }
+
+        if (result.data.warningMessage) {
+            await alert(result.data.warningMessage);
+        }
+
+        return result.data.redirectUrl || "/";
+    }
+
+    /**
+     * Event handler for the Edit button being clicked.
+     *
+     * @returns true if the panel should enter edit mode; otherwise false.
+     */
+    async function onEdit(): Promise<boolean> {
+        errorMessage.value = "";
+
+        const result = await invokeBlockAction<ValidPropertiesBox<RegistrationBag>>("Edit", {
+            key: entityKey.value
+        });
+
+        if (result.isSuccess && result.data?.bag) {
+            registrationEditBag.value = {
+                bag: result.data.bag,
+                validProperties: result.data.validProperties ?? []
+            };
+
+            return true;
+        }
+
+        errorMessage.value = result.errorMessage ?? "Unknown error while trying to edit registration.";
+        return false;
+    }
+
+    /**
+     * Event handler for the Save button being clicked.
+     *
+     * @returns true if the panel should leave edit mode; otherwise false.
+     */
+    async function onSave(): Promise<boolean> {
+        errorMessage.value = "";
+
+        const result = await invokeBlockAction<RegistrationActionResultBag>("Save", {
+            box: registrationEditBag.value
+        });
+
+        if (result.isSuccess && result.data?.registration) {
+            setRegistration(result.data.registration, AccountTab.Account);
+            return true;
+        }
+
+        errorMessage.value = result.errorMessage ?? "Unknown error while trying to save registration.";
+        return false;
+    }
+
+    /**
+     * Navigates to the audit log of the registration.
+     */
+    function onAuditLogClick(): void {
+        if (auditPageUrl.value) {
+            window.location.href = makeUrlRedirectSafe(auditPageUrl.value);
+        }
+    }
+
+    /**
+     * Opens the move registration dialog.
+     */
+    function onMoveClick(): void {
+        isMoveModalVisible.value = true;
+    }
+
+    /**
+     * Shows the registration rebuilt after it was moved.
+     *
+     * @param registration The rebuilt registration.
+     */
+    function onRegistrationMoved(registration: RegistrationBag): void {
+        setRegistration(registration, AccountTab.Account);
+    }
+
+    /**
+     * Updates the selected account tab.
+     *
+     * @param tab The selected tab.
+     */
+    function onSelectedAccountTabUpdated(tab: AccountTab): void {
+        selectedAccountTab.value = tab;
+    }
+
+    /**
+     * Shows a registration rebuilt by an action.
+     *
+     * @param registration The rebuilt registration.
+     * @param tab The account tab to show.
+     */
+    function onRegistrationUpdated(registration: RegistrationBag, tab: AccountTab): void {
+        setRegistration(registration, tab);
+    }
+
+    /**
+     * Blocks further gateway payments after a payment was charged but could
+     * not be recorded, and tells the person what happened.
+     *
+     * @param message The message describing what happened.
+     */
+    async function onChargedNotRecorded(message: string): Promise<void> {
+        isProcessPaymentBlocked.value = true;
+        actionErrorMessage.value = message;
+        await alert(message);
+    }
+
+    /**
+     * Shows the error of an action.
+     *
+     * @param message The error message.
+     */
+    function onActionError(message: string): void {
+        actionErrorMessage.value = message;
+    }
+
+    /**
+     * Adds a registrant to the target group.
+     *
+     * @param registrantKey The identifier key of the registrant.
+     */
+    async function onAddRegistrantToGroup(registrantKey: string): Promise<void> {
+        actionErrorMessage.value = "";
+
+        const result = await invokeBlockAction<RegistrationActionResultBag>("AddRegistrantToGroup", {
+            key: entityKey.value,
+            registrantKey
+        });
+
+        if (result.isSuccess && result.data?.registration) {
+            setRegistration(result.data.registration, AccountTab.Account);
+            return;
+        }
+
+        actionErrorMessage.value = result.errorMessage ?? "Unknown error while trying to add the registrant to the group.";
+    }
+
+    /**
+     * Deletes a registrant.
+     *
+     * @param registrantKey The identifier key of the registrant.
+     */
+    async function onDeleteRegistrant(registrantKey: string): Promise<void> {
+        actionErrorMessage.value = "";
+
+        const result = await invokeBlockAction<RegistrationActionResultBag>("DeleteRegistrant", {
+            key: entityKey.value,
+            registrantKey
+        });
+
+        if (result.isSuccess && result.data?.registration) {
+            setRegistration(result.data.registration, AccountTab.Account);
+            return;
+        }
+
+        await alert(result.errorMessage ?? "Unknown error while trying to delete the registrant.");
+    }
+
+    // #endregion Event Handlers
+
+    // #region Functions
+
+    /**
+     * Shows a rebuilt registration and the selected account tab.
+     *
+     * @param registration The rebuilt registration.
+     * @param tab The account tab to show.
+     */
+    function setRegistration(registration: RegistrationBag, tab: AccountTab): void {
+        registrationViewBag.value = registration;
+        selectedAccountTab.value = tab;
+        actionErrorMessage.value = "";
+    }
+
+    // #endregion Functions
+</script>

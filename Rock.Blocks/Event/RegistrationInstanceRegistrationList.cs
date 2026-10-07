@@ -591,15 +591,20 @@ namespace Rock.Blocks.Event
         #region Block Actions
 
         /// <summary>
-        /// Deletes the specified registration. The payment plan (if active) is
-        /// deactivated in the same unit of work so the database never has a
-        /// cancelled plan referencing a deleted registration.
+        /// Deletes the specified registration. An active payment plan is
+        /// deactivated first and that deactivation is saved before the
+        /// registration is deleted.
         /// </summary>
         /// <param name="key">The identifier of the registration to be deleted.</param>
-        /// <returns>An empty result that indicates if the operation succeeded.</returns>
+        /// <returns>A result that contains any warning raised while deactivating the payment plan.</returns>
         [BlockAction]
         public BlockActionResult Delete( string key )
         {
+            if ( RequestContext.HttpMethod != "POST" )
+            {
+                return ActionBadRequest( "Invalid request method." );
+            }
+
             var registrationService = new RegistrationService( RockContext );
             var financialScheduledTransactionService = new FinancialScheduledTransactionService( RockContext );
 
@@ -628,22 +633,32 @@ namespace Rock.Blocks.Event
                 return ActionBadRequest( cancelError ?? "An unknown error occurred while deactivating a payment plan. The registration was not cancelled." );
             }
 
-            if ( cancelWarning.IsNotNullOrWhiteSpace() )
+            /*
+                4/21/2026 - MSE (revised 10/6/2026 - MSE)
+
+                A successful cancel (with or without a warning) means the gateway
+                has stopped the payment plan (or the plan record no longer exists),
+                so the delete continues instead of aborting. A warning usually means
+                the plan was canceled on the gateway but not marked inactive in Rock,
+                so the plan is marked inactive to match the gateway.
+
+                The deactivation is saved immediately, before and outside of the
+                delete's transaction, so a later failure can never roll back a cancel
+                the gateway already confirmed. A retry then sees an inactive plan and
+                skips the cancel. A canceled plan that still references a live
+                registration is a legitimate state (the same as after a failed delete).
+
+                A failed cancel returns before anything is saved, which keeps the
+                in-memory InactivateDateTime set by the cancel attempt out of the
+                database.
+
+                Reason: Never lose or roll back a gateway-confirmed payment plan cancel.
+            */
+            if ( cancelWarning.IsNotNullOrWhiteSpace() && registration.PaymentPlanFinancialScheduledTransaction != null )
             {
-                return ActionBadRequest( cancelWarning );
+                registration.PaymentPlanFinancialScheduledTransaction.IsActive = false;
             }
 
-            /*
-                4/21/2026 - MSE
-
-                SaveChanges runs here — after TryCancelPaymentPlan has marked
-                the payment plan cancelled in-memory, but before deleting the
-                registration — so that any error/warning from the cancel flow
-                exits early without persisting a cancelled plan that still
-                references a live registration record.
-
-                Reason: Transactional safety for the payment-plan cancel + delete pair.
-            */
             RockContext.SaveChanges();
 
             var changes = new History.HistoryChangeList();
@@ -662,7 +677,7 @@ namespace Rock.Blocks.Event
                 RockContext.SaveChanges();
             } );
 
-            return ActionOk();
+            return ActionOk( cancelWarning.IsNotNullOrWhiteSpace() ? cancelWarning : null );
         }
 
         #endregion

@@ -1,0 +1,279 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <fieldset>
+        <div class="row">
+            <div class="col-md-6">
+                <PersonPicker :modelValue="personAlias"
+                              label="Registered By"
+                              enableSelfSelection
+                              @update:modelValue="onPersonAliasUpdated" />
+
+                <EmailBox v-model="confirmationEmail"
+                          label="Confirmation Email" />
+
+                <CampusPicker v-model="campus"
+                              label="Campus"
+                              includeInactive />
+
+                <DropDownList v-if="groupOptions.length > 0"
+                              v-model="groupValue"
+                              label="Target Group"
+                              :items="groupOptions"
+                              showBlankItem />
+
+                <AttributeValuesContainer v-model="attributeValues"
+                                          :attributes="attributes"
+                                          isEditMode
+                                          :showCategoryLabel="false"
+                                          :numberOfColumns="1" />
+            </div>
+
+            <div class="col-md-6">
+                <TextBox v-model="firstName"
+                         label="Registered by First Name"
+                         :rules="nameRules" />
+
+                <TextBox v-model="lastName"
+                         label="Registered by Last Name"
+                         :rules="nameRules" />
+
+                <DropDownList :modelValue="discountCode"
+                              label="Discount Code"
+                              :items="discountCodeItems"
+                              showBlankItem
+                              @update:modelValue="onDiscountCodeUpdated" />
+
+                <NumberBox :modelValue="discountPercentage"
+                           label="Discount Percentage"
+                           :decimalCount="2"
+                           :minimumValue="0"
+                           :maximumValue="100"
+                           inputGroupClasses="input-width-md"
+                           @update:modelValue="onDiscountPercentageUpdated">
+                    <template #inputGroupAppend>
+                        <span class="input-group-addon">%</span>
+                    </template>
+                </NumberBox>
+
+                <CurrencyBox :modelValue="discountAmount"
+                             label="Discount Amount (per Registrant)"
+                             :minimumValue="0"
+                             formGroupClasses="input-width-md"
+                             @update:modelValue="onDiscountAmountUpdated" />
+            </div>
+        </div>
+    </fieldset>
+</template>
+
+<script setup lang="ts">
+    import { computed, PropType, ref, watch } from "vue";
+    import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
+    import CampusPicker from "@Obsidian/Controls/campusPicker.obs";
+    import CurrencyBox from "@Obsidian/Controls/currencyBox.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import EmailBox from "@Obsidian/Controls/emailBox.obs";
+    import NumberBox from "@Obsidian/Controls/numberBox.obs";
+    import PersonPicker from "@Obsidian/Controls/personPicker.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import { setPropertiesBoxValue, useInvokeBlockAction, watchPropertyChanges } from "@Obsidian/Utility/block";
+    import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
+    import { ValidationRule } from "@Obsidian/ValidationRules";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
+    import { RegistrarDetailsBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationDetail/registrarDetailsBag";
+    import { RegistrationBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationDetail/registrationBag";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<ValidPropertiesBox<RegistrationBag>>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: ValidPropertiesBox<RegistrationBag>): void,
+        (e: "propertyChanged", value: string): void
+    }>();
+
+    const invokeBlockAction = useInvokeBlockAction();
+
+    // #region Values
+
+    const nameRules: ValidationRule[] = ["required", "nospecialcharacters", "noemojisorspecialfonts"];
+
+    const attributes = ref(props.modelValue.bag?.attributes ?? {});
+    const attributeValues = ref(props.modelValue.bag?.attributeValues ?? {});
+
+    const personAlias = propertyRef(props.modelValue.bag?.personAlias ?? undefined, "PersonAlias");
+    const firstName = propertyRef(props.modelValue.bag?.firstName ?? "", "FirstName");
+    const lastName = propertyRef(props.modelValue.bag?.lastName ?? "", "LastName");
+    const confirmationEmail = propertyRef(props.modelValue.bag?.confirmationEmail ?? "", "ConfirmationEmail");
+    const campus = propertyRef<ListItemBag | null>(props.modelValue.bag?.campus ?? null, "Campus");
+    const group = propertyRef(props.modelValue.bag?.group ?? null, "Group");
+    const discountCode = propertyRef(props.modelValue.bag?.discountCode ?? "", "DiscountCode");
+    const discountPercentage = propertyRef(props.modelValue.bag?.discountPercentage ?? null, "DiscountPercentage");
+    const discountAmount = propertyRef(props.modelValue.bag?.discountAmount ?? null, "DiscountAmount");
+
+    const propRefs = [personAlias, firstName, lastName, confirmationEmail, campus, group, discountCode, discountPercentage, discountAmount];
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    const groupOptions = computed((): ListItemBag[] => {
+        return props.modelValue.bag?.groupOptions ?? [];
+    });
+
+    const groupValue = computed({
+        get: (): string => group.value?.value ?? "",
+        set: (value: string) => {
+            group.value = groupOptions.value.find(g => g.value === value) ?? null;
+        }
+    });
+
+    const discountCodeItems = computed((): ListItemBag[] => {
+        return (props.modelValue.bag?.discountCodeOptions ?? []).map(d => ({
+            value: d.code ?? "",
+            text: d.text ?? d.code ?? ""
+        }));
+    });
+
+    // #endregion Computed Values
+
+    // #region Event Handlers
+
+    /**
+     * Updates the registrar and fills in the registrar name and confirmation
+     * email from the selected person.
+     *
+     * @param value The selected person alias.
+     */
+    async function onPersonAliasUpdated(value: ListItemBag | ListItemBag[] | null | undefined): Promise<void> {
+        const selectedPersonAlias = Array.isArray(value) ? value[0] : value;
+
+        if (selectedPersonAlias?.value === personAlias.value?.value) {
+            return;
+        }
+
+        personAlias.value = selectedPersonAlias ?? undefined;
+
+        if (!selectedPersonAlias?.value) {
+            return;
+        }
+
+        const result = await invokeBlockAction<RegistrarDetailsBag>("GetRegistrarDetails", {
+            key: props.modelValue.bag?.idKey,
+            personAliasGuid: selectedPersonAlias.value
+        });
+
+        if (!result.isSuccess || !result.data) {
+            return;
+        }
+
+        if (result.data.email) {
+            confirmationEmail.value = result.data.email;
+        }
+
+        if (result.data.firstName) {
+            firstName.value = result.data.firstName;
+        }
+
+        if (result.data.lastName) {
+            lastName.value = result.data.lastName;
+        }
+    }
+
+    /**
+     * Updates the discount code and fills in the discount of the selected code.
+     *
+     * @param value The selected discount code.
+     */
+    function onDiscountCodeUpdated(value: string | string[]): void {
+        const code = Array.isArray(value) ? value[0] ?? "" : value;
+
+        if (code === discountCode.value) {
+            return;
+        }
+
+        discountCode.value = code;
+
+        const discount = (props.modelValue.bag?.discountCodeOptions ?? [])
+            .find(d => !!code && (d.code ?? "").toLowerCase() === code.toLowerCase());
+
+        discountPercentage.value = discount && discount.discountPercentage !== 0 ? discount.discountPercentage : null;
+        discountAmount.value = discount && discount.discountAmount !== 0 ? discount.discountAmount : null;
+    }
+
+    /**
+     * Updates the discount percentage. Only one kind of discount can be
+     * entered, so the code and amount are cleared.
+     *
+     * @param value The entered percentage.
+     */
+    function onDiscountPercentageUpdated(value: number | null): void {
+        if (value === discountPercentage.value) {
+            return;
+        }
+
+        discountPercentage.value = value;
+        discountCode.value = "";
+        discountAmount.value = null;
+    }
+
+    /**
+     * Updates the discount amount. Only one kind of discount can be entered,
+     * so the code and percentage are cleared.
+     *
+     * @param value The entered amount.
+     */
+    function onDiscountAmountUpdated(value: number | null): void {
+        if (value === discountAmount.value) {
+            return;
+        }
+
+        discountAmount.value = value;
+        discountCode.value = "";
+        discountPercentage.value = null;
+    }
+
+    // #endregion Event Handlers
+
+    // #region Watchers
+
+    watch(() => props.modelValue, () => {
+        updateRefValue(attributes, props.modelValue.bag?.attributes ?? {});
+        updateRefValue(attributeValues, props.modelValue.bag?.attributeValues ?? {});
+        updateRefValue(personAlias, props.modelValue.bag?.personAlias ?? undefined);
+        updateRefValue(firstName, props.modelValue.bag?.firstName ?? "");
+        updateRefValue(lastName, props.modelValue.bag?.lastName ?? "");
+        updateRefValue(confirmationEmail, props.modelValue.bag?.confirmationEmail ?? "");
+        updateRefValue(campus, props.modelValue.bag?.campus ?? null);
+        updateRefValue(group, props.modelValue.bag?.group ?? null);
+        updateRefValue(discountCode, props.modelValue.bag?.discountCode ?? "");
+        updateRefValue(discountPercentage, props.modelValue.bag?.discountPercentage ?? null);
+        updateRefValue(discountAmount, props.modelValue.bag?.discountAmount ?? null);
+    });
+
+    watch([attributeValues, ...propRefs], () => {
+        const newValue: ValidPropertiesBox<RegistrationBag> = {
+            bag: { ...props.modelValue.bag } as RegistrationBag
+        };
+
+        setPropertiesBoxValue(newValue, "attributeValues", attributeValues.value);
+        setPropertiesBoxValue(newValue, "personAlias", personAlias.value ?? null);
+        setPropertiesBoxValue(newValue, "firstName", firstName.value);
+        setPropertiesBoxValue(newValue, "lastName", lastName.value);
+        setPropertiesBoxValue(newValue, "confirmationEmail", confirmationEmail.value);
+        setPropertiesBoxValue(newValue, "campus", campus.value);
+        setPropertiesBoxValue(newValue, "group", group.value);
+        setPropertiesBoxValue(newValue, "discountCode", discountCode.value);
+        setPropertiesBoxValue(newValue, "discountPercentage", discountPercentage.value);
+        setPropertiesBoxValue(newValue, "discountAmount", discountAmount.value);
+
+        emit("update:modelValue", newValue);
+    });
+
+    watchPropertyChanges(propRefs, emit);
+
+    // #endregion Watchers
+</script>

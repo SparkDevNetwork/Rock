@@ -18,10 +18,12 @@ using System;
 using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
+using System.Threading.Tasks;
 
 using Rock.Attribute;
 using Rock.Configuration;
 using Rock.Data;
+using Rock.Model.Event.Registration.Options;
 using Rock.ViewModels.Blocks;
 using Rock.Web.Cache;
 
@@ -87,6 +89,144 @@ namespace Rock.Model
             error = null;
             warning = null;
             return true;
+        }
+
+        /// <summary>
+        /// Saves a payment transaction for a registration. The transaction is stamped as an
+        /// event registration payment, given a transaction detail for the registration,
+        /// placed in a batch, and the batch control amount is incremented. Any gateway
+        /// charge must already have happened before this is called. Registration history
+        /// is not written here since each caller describes the payment differently.
+        /// </summary>
+        /// <param name="registration">The registration the payment is for.</param>
+        /// <param name="transaction">The transaction to save.</param>
+        /// <param name="options">The options that describe how the transaction is saved.</param>
+        internal void SaveRegistrationPaymentTransaction( Registration registration, FinancialTransaction transaction, RegistrationPaymentTransactionOptions options )
+        {
+            if ( registration == null )
+            {
+                throw new ArgumentNullException( nameof( registration ) );
+            }
+
+            if ( transaction == null )
+            {
+                throw new ArgumentNullException( nameof( transaction ) );
+            }
+
+            if ( options == null )
+            {
+                throw new ArgumentNullException( nameof( options ) );
+            }
+
+            var amount = options.Amount ?? options.PaymentInfo?.Amount;
+            if ( !amount.HasValue )
+            {
+                throw new ArgumentException( "Either an amount or payment information must be provided.", nameof( options ) );
+            }
+
+            var rockContext = ( RockContext ) this.Context;
+
+            transaction.AuthorizedPersonAliasId = options.AuthorizedPersonAliasId ?? registration.PersonAliasId;
+            transaction.TransactionDateTime = RockDateTime.Now;
+
+            if ( options.FinancialGatewayId.HasValue )
+            {
+                transaction.FinancialGatewayId = options.FinancialGatewayId;
+            }
+
+            var transactionType = DefinedValueCache.Get( new Guid( Rock.SystemGuid.DefinedValue.TRANSACTION_TYPE_EVENT_REGISTRATION ) );
+            transaction.TransactionTypeValueId = transactionType.Id;
+
+            if ( transaction.FinancialPaymentDetail == null )
+            {
+                transaction.FinancialPaymentDetail = new FinancialPaymentDetail();
+            }
+
+            /* 02/17/2022 MDP
+            Note that after the transaction, the HostedGateway knows more about the FinancialPaymentDetail than Rock does
+            since it is the gateway that collects the payment info. But just in case paymentInfo has information the the gateway hasn't set,
+            we'll fill in any missing details.
+            But then we'll want to use FinancialPaymentDetail as the most accurate values for the payment info.
+            */
+
+            if ( options.PaymentInfo != null )
+            {
+                transaction.FinancialPaymentDetail.SetFromPaymentInfo( options.PaymentInfo, options.GatewayComponent, rockContext );
+            }
+
+            if ( options.SourceTypeValueId.HasValue )
+            {
+                transaction.SourceTypeValueId = options.SourceTypeValueId;
+            }
+
+            transaction.Summary = options.Summary ?? registration.GetSummary();
+
+            var transactionDetail = transaction.TransactionDetails.FirstOrDefault();
+            if ( transactionDetail == null )
+            {
+                transactionDetail = new FinancialTransactionDetail();
+                transaction.TransactionDetails.Add( transactionDetail );
+            }
+
+            transactionDetail.Amount = amount.Value;
+            transactionDetail.AccountId = options.AccountId ?? transactionDetail.AccountId;
+            transactionDetail.EntityTypeId = EntityTypeCache.Get( typeof( Rock.Model.Registration ) ).Id;
+            transactionDetail.EntityId = registration.Id;
+
+            var batchChanges = new History.HistoryChangeList();
+
+            /*
+                10/6/2026 - MSE
+
+                The control amount is incremented with an atomic SQL update instead of
+                adding to the in-memory batch, so two payments saved at the same time
+                cannot overwrite each other's increment. Only the database work is inside
+                the transaction; gateway calls must happen before this method so a slow
+                gateway never holds a database transaction open.
+
+                Reason: Concurrency safe batch totals and short database transactions.
+            */
+            rockContext.WrapTransaction( () =>
+            {
+                var batchService = new FinancialBatchService( rockContext );
+
+                // Get the batch.
+                var batch = batchService.GetForNewTransaction( transaction, options.BatchNamePrefix );
+                FinancialBatchService.EvaluateNewBatchHistory( batch, batchChanges );
+
+                var financialTransactionService = new FinancialTransactionService( rockContext );
+
+                // If this is a new Batch, SaveChanges so that we can get the Batch.Id
+                if ( batch.Id == 0 )
+                {
+                    rockContext.SaveChanges();
+                }
+
+                transaction.BatchId = batch.Id;
+
+                // use the financialTransactionService to add the transaction instead of batch.Transactions to avoid lazy-loading the transactions already associated with the batch
+                financialTransactionService.Add( transaction );
+                rockContext.SaveChanges();
+
+                batchService.IncrementControlAmount( batch.Id, transaction.TotalAmount, batchChanges );
+                rockContext.SaveChanges();
+            } );
+
+            if ( transaction.BatchId.HasValue )
+            {
+                var batchId = transaction.BatchId.Value;
+                var modifiedByPersonAliasId = options.ModifiedByPersonAliasId;
+
+                Task.Run( () =>
+                    HistoryService.SaveChanges(
+                        RockApp.Current.CreateRockContext(),
+                        typeof( FinancialBatch ),
+                        Rock.SystemGuid.Category.HISTORY_FINANCIAL_BATCH.AsGuid(),
+                        batchId,
+                        batchChanges,
+                        true,
+                        modifiedByPersonAliasId ) );
+            }
         }
 
         /// <summary>

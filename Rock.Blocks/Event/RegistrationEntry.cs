@@ -36,6 +36,7 @@ using Rock.Enums.Reporting;
 using Rock.Field;
 using Rock.Financial;
 using Rock.Model;
+using Rock.Model.Event.Registration.Options;
 using Rock.Model.Event.RegistrationInstance.Options;
 using Rock.Model.Event.RegistrationTemplate.Options;
 using Rock.Pdf;
@@ -5391,108 +5392,21 @@ namespace Rock.Blocks.Event
             }
 
             var currentPerson = GetCurrentPerson();
+            var sourceGuid = GetAttributeValue( AttributeKey.Source ).AsGuidOrNull();
+            var batchPrefix = context.RegistrationSettings.BatchNamePrefix.IsNullOrWhiteSpace() ?
+                GetAttributeValue( AttributeKey.BatchNamePrefix ) :
+                context.RegistrationSettings.BatchNamePrefix;
 
-            transaction.AuthorizedPersonAliasId = context.Registration.PersonAliasId;
-            transaction.TransactionDateTime = RockDateTime.Now;
-            transaction.FinancialGatewayId = context.RegistrationSettings.FinancialGatewayId;
-
-            var txnType = DefinedValueCache.Get( new Guid( Rock.SystemGuid.DefinedValue.TRANSACTION_TYPE_EVENT_REGISTRATION ) );
-            transaction.TransactionTypeValueId = txnType.Id;
-
-            if ( transaction.FinancialPaymentDetail == null )
+            new RegistrationService( rockContext ).SaveRegistrationPaymentTransaction( context.Registration, transaction, new RegistrationPaymentTransactionOptions
             {
-                transaction.FinancialPaymentDetail = new FinancialPaymentDetail();
-            }
-
-            /* 02/17/2022 MDP
-            Note that after the transaction, the HostedGateway knows more about the FinancialPaymentDetail than Rock does
-            since it is the gateway that collects the payment info. But just in case paymentInfo has information the the gateway hasn't set,
-            we'll fill in any missing details.
-            But then we'll want to use FinancialPaymentDetail as the most accurate values for the payment info. 
-            */
-
-            if ( paymentInfo != null )
-            {
-                transaction.FinancialPaymentDetail.SetFromPaymentInfo( paymentInfo, gateway, rockContext );
-            }
-
-            var currencyTypeValue = transaction.FinancialPaymentDetail?.CurrencyTypeValueId != null
-                ? DefinedValueCache.Get( transaction.FinancialPaymentDetail.CurrencyTypeValueId.Value )
-                : null;
-
-            var creditCardTypeValue = transaction.FinancialPaymentDetail?.CreditCardTypeValueId != null
-                ? DefinedValueCache.Get( transaction.FinancialPaymentDetail.CreditCardTypeValueId.Value )
-                : null;
-
-            Guid sourceGuid = Guid.Empty;
-            if ( Guid.TryParse( GetAttributeValue( AttributeKey.Source ), out sourceGuid ) )
-            {
-                var source = DefinedValueCache.Get( sourceGuid );
-                if ( source != null )
-                {
-                    transaction.SourceTypeValueId = source.Id;
-                }
-            }
-
-            transaction.Summary = context.Registration.GetSummary();
-
-            var transactionDetail = transaction.TransactionDetails.FirstOrDefault();
-            if ( transactionDetail == null )
-            {
-                transactionDetail = new FinancialTransactionDetail();
-                transaction.TransactionDetails.Add( transactionDetail );
-            }
-
-            transactionDetail.Amount = paymentInfo.Amount;
-            transactionDetail.AccountId = context.RegistrationSettings.FinancialAccountId ?? transactionDetail.AccountId;
-            transactionDetail.EntityTypeId = EntityTypeCache.Get( typeof( Rock.Model.Registration ) ).Id;
-            transactionDetail.EntityId = context.Registration.Id;
-
-            var batchChanges = new History.HistoryChangeList();
-
-            rockContext.WrapTransaction( () =>
-            {
-                var batchService = new FinancialBatchService( rockContext );
-
-                // determine batch prefix
-                var batchPrefix = context.RegistrationSettings.BatchNamePrefix.IsNullOrWhiteSpace() ?
-                    GetAttributeValue( AttributeKey.BatchNamePrefix ) :
-                    context.RegistrationSettings.BatchNamePrefix;
-
-                // Get the batch
-                var batch = batchService.GetForNewTransaction( transaction, batchPrefix );
-                FinancialBatchService.EvaluateNewBatchHistory( batch, batchChanges );
-
-                var financialTransactionService = new FinancialTransactionService( rockContext );
-
-                // If this is a new Batch, SaveChanges so that we can get the Batch.Id
-                if ( batch.Id == 0 )
-                {
-                    rockContext.SaveChanges();
-                }
-
-                transaction.BatchId = batch.Id;
-
-                // use the financialTransactionService to add the transaction instead of batch.Transactions to avoid lazy-loading the transactions already associated with the batch
-                financialTransactionService.Add( transaction );
-                rockContext.SaveChanges();
-
-                batchService.IncrementControlAmount( batch.Id, transaction.TotalAmount, batchChanges );
-                rockContext.SaveChanges();
+                PaymentInfo = paymentInfo,
+                GatewayComponent = gateway,
+                FinancialGatewayId = context.RegistrationSettings.FinancialGatewayId,
+                AccountId = context.RegistrationSettings.FinancialAccountId,
+                SourceTypeValueId = sourceGuid.HasValue ? DefinedValueCache.Get( sourceGuid.Value )?.Id : null,
+                BatchNamePrefix = batchPrefix,
+                ModifiedByPersonAliasId = currentPerson?.PrimaryAliasId
             } );
-
-            if ( transaction.BatchId.HasValue )
-            {
-                Task.Run( () =>
-                    HistoryService.SaveChanges(
-                        RockApp.Current.CreateRockContext(),
-                        typeof( FinancialBatch ),
-                        Rock.SystemGuid.Category.HISTORY_FINANCIAL_BATCH.AsGuid(),
-                        transaction.BatchId.Value,
-                        batchChanges,
-                        true,
-                        currentPerson?.PrimaryAliasId ) );
-            }
 
             var registrationChanges = new History.HistoryChangeList();
             registrationChanges.AddChange( History.HistoryVerb.Add, History.HistoryChangeType.Record, "Payment" ).SetNewValue( string.Format( "{0} payment", transaction.TotalAmount.FormatAsCurrency() ) );

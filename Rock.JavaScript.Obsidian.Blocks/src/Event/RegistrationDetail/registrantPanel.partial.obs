@@ -1,0 +1,195 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <a :name="registrant.idKey ?? undefined"></a>
+    <Panel type="block" :title="registrant.personName ?? ''" titleIconCssClass="ti ti-user">
+        <template #panelLabels>
+            <HighlightLabel v-if="registrant.isOnWaitList" labelType="warning" customClass="margin-r-sm">Wait List</HighlightLabel>
+            <HighlightLabel v-if="registrant.costLabelText" labelType="info" tooltip="Cost">{{ registrant.costLabelText }}</HighlightLabel>
+            <a v-if="registrant.personProfileUrl" :href="registrant.personProfileUrl" class="btn btn-default btn-xs btn-square margin-l-sm" title="View Profile">
+                <i class="ti ti-user"></i>
+            </a>
+        </template>
+
+        <div class="row">
+            <div class="col-md-6">
+                <RockLiteral v-if="registrant.isGroupVisible" label="Group">
+                    <template v-if="registrant.groupMemberIdKey">
+                        <a v-if="groupMemberUrl" :href="groupMemberUrl">{{ registrant.groupName }}</a>
+                        <template v-else>{{ registrant.groupName }}</template>
+                        <template v-if="registrant.isGroupMemberArchived">
+                            <span class="label label-danger margin-l-sm">Archived</span>
+                        </template>
+                    </template>
+                    <template v-else-if="isEditable">
+                        None (<a href="#" @click.prevent="onAddToGroupClick">Add {{ registrant.firstName }} to Target Group</a>)
+                    </template>
+                    <template v-else>None</template>
+                </RockLiteral>
+
+                <template v-for="(row, index) in fieldRows" :key="index">
+                    <RockField v-if="row.attribute"
+                               :modelValue="row.field.attributeValue ?? ''"
+                               :attribute="row.attribute"
+                               :isEditMode="false"
+                               showLabel />
+                    <RockLiteral v-else-if="!row.field.attributeGuid" :label="row.field.label ?? ''">{{ row.field.textValue }}</RockLiteral>
+                </template>
+            </div>
+
+            <div class="col-md-6">
+                <div v-if="registrant.costText" class="row">
+                    <div :class="registrant.discountedCostText ? 'col-xs-6' : 'col-xs-12'">
+                        <RockLiteral label="Cost">{{ registrant.costText }}</RockLiteral>
+                    </div>
+                    <div v-if="registrant.discountedCostText" class="col-xs-6">
+                        <RockLiteral label="Discounted Cost">{{ registrant.discountedCostText }}</RockLiteral>
+                    </div>
+                </div>
+
+                <div v-for="(fee, index) in fees" :key="index" class="row">
+                    <div :class="fee.discountedText ? 'col-xs-6' : 'col-xs-12'">
+                        <RockLiteral :label="fee.label ?? ''">{{ fee.text }}</RockLiteral>
+                    </div>
+                    <div v-if="fee.discountedText" class="col-xs-6">
+                        <RockLiteral label="Discounted Amount">{{ fee.discountedText }}</RockLiteral>
+                    </div>
+                </div>
+
+                <RockLiteral v-if="registrant.isSignatureDocumentVisible" :label="registrant.signatureDocumentTemplateName ?? ''">
+                    <div class="icon-property">
+                        <div class="icon" :style="signatureIconStyle">
+                            <i class="ti ti-signature"></i>
+                        </div>
+                        <div class="property">
+                            <template v-if="registrant.isSignatureDocumentSigned">
+                                <a :href="registrant.signatureDocumentUrl ?? undefined" target="_blank" rel="noopener noreferrer">
+                                    <template v-if="registrant.signedOnText">Signed on {{ registrant.signedOnText }}</template>
+                                    <template v-else>Signed</template>
+                                </a>
+                                <small v-if="registrant.signedByName"> Signed by {{ registrant.signedByName }}</small>
+                            </template>
+                            <span v-else>Not yet Signed</span>
+                        </div>
+                    </div>
+                </RockLiteral>
+            </div>
+        </div>
+
+        <div v-if="isEditable" class="actions">
+            <a v-if="editUrl" :href="editUrl" class="btn btn-primary">Edit</a>
+            <RockButton btnType="link" autoDisable @click="onDeleteClick">Delete</RockButton>
+        </div>
+    </Panel>
+</template>
+
+<script setup lang="ts">
+    import { computed, PropType } from "vue";
+    import HighlightLabel from "@Obsidian/Controls/highlightLabel.obs";
+    import Panel from "@Obsidian/Controls/panel.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import RockField from "@Obsidian/Controls/rockField.obs";
+    import RockLiteral from "@Obsidian/Controls/rockLiteral.obs";
+    import { Guid } from "@Obsidian/Types";
+    import { confirmDelete } from "@Obsidian/Utility/dialogs";
+    import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
+    import { RegistrantFeeRowBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationDetail/registrantFeeRowBag";
+    import { RegistrantFieldValueBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationDetail/registrantFieldValueBag";
+    import { RegistrantPanelBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationDetail/registrantPanelBag";
+    import { getKeyedUrl } from "./types.partial";
+
+    // #region Types
+
+    type FieldRow = {
+        field: RegistrantFieldValueBag;
+        attribute?: PublicAttributeBag;
+    };
+
+    // #endregion Types
+
+    const props = defineProps({
+        registrant: {
+            type: Object as PropType<RegistrantPanelBag>,
+            required: true
+        },
+
+        attributeDefinitions: {
+            type: Object as PropType<Record<Guid, PublicAttributeBag>>,
+            default: () => ({})
+        },
+
+        isEditable: {
+            type: Boolean,
+            default: false
+        },
+
+        registrantPageUrl: {
+            type: String,
+            default: ""
+        },
+
+        groupMemberPageUrl: {
+            type: String,
+            default: ""
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "addToGroup", registrantKey: string): void,
+        (e: "delete", registrantKey: string): void
+    }>();
+
+    // #region Computed Values
+
+    const fieldRows = computed((): FieldRow[] => {
+        return (props.registrant.fields ?? []).map(field => ({
+            field,
+            attribute: field.attributeGuid ? props.attributeDefinitions[field.attributeGuid] : undefined
+        }));
+    });
+
+    const fees = computed((): RegistrantFeeRowBag[] => {
+        return props.registrant.fees ?? [];
+    });
+
+    const editUrl = computed((): string => {
+        return getKeyedUrl(props.registrantPageUrl, props.registrant.idKey);
+    });
+
+    const groupMemberUrl = computed((): string => {
+        return getKeyedUrl(props.groupMemberPageUrl, props.registrant.groupMemberIdKey);
+    });
+
+    const signatureIconStyle = computed((): Record<string, string> => {
+        return props.registrant.isSignatureDocumentSigned
+            ? { background: "#D6FFF1", color: "#16C98D" }
+            : { background: "#DFE0E1", color: "#737475" };
+    });
+
+    // #endregion Computed Values
+
+    // #region Event Handlers
+
+    /**
+     * Asks for the registrant to be added to the target group.
+     */
+    function onAddToGroupClick(): void {
+        if (props.registrant.idKey) {
+            emit("addToGroup", props.registrant.idKey);
+        }
+    }
+
+    /**
+     * Confirms and then asks for the registrant to be deleted.
+     */
+    async function onDeleteClick(): Promise<void> {
+        if (!props.registrant.idKey) {
+            return;
+        }
+
+        if (await confirmDelete("Registrant")) {
+            emit("delete", props.registrant.idKey);
+        }
+    }
+
+    // #endregion Event Handlers
+</script>

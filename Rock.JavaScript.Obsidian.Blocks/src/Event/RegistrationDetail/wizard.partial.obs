@@ -1,0 +1,74 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="wizard">
+        <div class="wizard-item complete">
+            <a v-if="templateUrl" :href="templateUrl" class="wizard-item-link">
+                <div class="wizard-item-icon">
+                    <i class="ti ti-fw ti-clipboard"></i>
+                </div>
+                <div class="wizard-item-label">{{ templateName || "Template" }}</div>
+            </a>
+            <template v-else>
+                <div class="wizard-item-icon">
+                    <i class="ti ti-fw ti-clipboard"></i>
+                </div>
+                <div class="wizard-item-label">{{ templateName || "Template" }}</div>
+            </template>
+        </div>
+        <div class="wizard-item complete">
+            <a v-if="instanceUrl" :href="instanceUrl" class="wizard-item-link">
+                <div class="wizard-item-icon">
+                    <i class="ti ti-fw ti-file"></i>
+                </div>
+                <div class="wizard-item-label">{{ instanceName || "Instance" }}</div>
+            </a>
+            <template v-else>
+                <div class="wizard-item-icon">
+                    <i class="ti ti-fw ti-file"></i>
+                </div>
+                <div class="wizard-item-label">{{ instanceName || "Instance" }}</div>
+            </template>
+        </div>
+        <div class="wizard-item active">
+            <div class="wizard-item-icon">
+                <i class="ti ti-fw ti-users"></i>
+            </div>
+            <div class="wizard-item-label">{{ registrationName || "Registration" }}</div>
+        </div>
+        <div class="wizard-item">
+            <div class="wizard-item-icon">
+                <i class="ti ti-fw ti-user"></i>
+            </div>
+            <div class="wizard-item-label">Registrant</div>
+        </div>
+    </div>
+</template>
+
+<script setup lang="ts">
+    defineProps({
+        templateName: {
+            type: String,
+            default: ""
+        },
+
+        templateUrl: {
+            type: String,
+            default: ""
+        },
+
+        instanceName: {
+            type: String,
+            default: ""
+        },
+
+        instanceUrl: {
+            type: String,
+            default: ""
+        },
+
+        registrationName: {
+            type: String,
+            default: ""
+        }
+    });
+</script>
