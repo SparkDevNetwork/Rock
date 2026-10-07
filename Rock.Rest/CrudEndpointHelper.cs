@@ -203,12 +203,19 @@ namespace Rock.Rest
                         return authorizationResult;
                     }
 
-                    if ( CheckIsSystem( entity, out var isSystemResult ) || CheckIsSystem( entity, out isSystemResult ) )
+                    if ( CheckIsSystem( entity, out var isSystemResult ) || CheckIsSystem( targetEntity, out isSystemResult ) )
                     {
                         return isSystemResult;
                     }
 
                     service.SetValues( entity, targetEntity );
+
+                    // The check above authorized the record as it is stored. Authorize it again with the
+                    // posted values applied, since they may change who is allowed to edit it.
+                    if ( !CheckAuthorizedAfterUpdate( targetEntity, out authorizationResult ) )
+                    {
+                        return authorizationResult;
+                    }
 
                     if ( !targetEntity.IsValid )
                     {
@@ -370,6 +377,13 @@ namespace Rock.Rest
 
                             property.SetValue( entity, castedValue );
                         }
+                    }
+
+                    // The check above authorized the record as it is stored. Authorize it again with the
+                    // patched values applied, since they may change who is allowed to edit it.
+                    if ( !CheckAuthorizedAfterUpdate( entity, out authorizationResult ) )
+                    {
+                        return authorizationResult;
                     }
 
                     // Verify model is valid before saving
@@ -718,6 +732,44 @@ namespace Rock.Rest
             errorResult = null;
 
             return true;
+        }
+
+        /// <summary>
+        /// Checks that the current person can still EDIT the entity after the caller's values have been applied.
+        /// </summary>
+        /// <param name="entity">The tracked entity with the caller's values applied.</param>
+        /// <param name="errorResult">The error result if <c>false</c> is returned; otherwise <c>null</c>.</param>
+        /// <returns><c>true</c> if the person is authorized or security is disabled or not supported, <c>false</c> otherwise.</returns>
+        private bool CheckAuthorizedAfterUpdate( TEntity entity, out IActionResult errorResult )
+        {
+            if ( IsSecurityIgnored || !( entity is ISecured ) )
+            {
+                errorResult = null;
+
+                return true;
+            }
+
+            using ( var rockContext = new RockContext() )
+            {
+                rockContext.Configuration.ProxyCreationEnabled = true;
+
+                // Use a fresh copy so the parent authority and any related records load from the new
+                // foreign keys, not the ones already loaded on the tracked entity. This context is never saved.
+                var service = ( Service<TEntity> ) Activator.CreateInstance( typeof( TService ), rockContext );
+                var updatedEntity = service.Get( entity.Id );
+
+                if ( updatedEntity == null )
+                {
+                    errorResult = Unauthorized( "You are not authorized to edit this item." );
+
+                    return false;
+                }
+
+                service.SetValues( entity, updatedEntity );
+
+                // Must run while this context is open so related records can lazy-load.
+                return CheckAuthorized( Security.Authorization.EDIT, updatedEntity, out errorResult );
+            }
         }
 
         /// <summary>
