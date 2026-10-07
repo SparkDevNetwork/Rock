@@ -73,6 +73,8 @@ namespace Rock.Model
                 .WhereIsActive( codeLifetime, now )
                 .WhereUsingCode( code, codeIssueDate, codeLifetime )
                 .Where( s => s.DeviceUniqueIdentifier != null && s.DeviceUniqueIdentifier == uniqueIdentifier )
+                // Sessions for a site are started by TV apps, not passwordless sign in.
+                .Where( s => !s.SiteId.HasValue )
                 .OrderByDescending( s => s.SessionStartDateTime.Value )
                 .FirstOrDefault();
 
