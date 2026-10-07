@@ -130,7 +130,7 @@
 
 <script setup lang="ts">
     import { computed, PropType, ref, watch } from "vue";
-    import { RecipientActivityIconCssClass, RecipientActivityIconLabelType, RecipientTimelineActivity } from "./CommunicationRecipientActivity/types.partial";
+    import { RecipientActivityIconCssClass, RecipientActivityIconLabelType, RecipientTimelineActivity } from "./types.partial";
     import DisplayCard from "@Obsidian/Controls/displayCard.obs";
     import ContentSection from "@Obsidian/Controls/contentSection.obs";
     import LoadingIndicator from "@Obsidian/Controls/loadingIndicator.obs";
@@ -138,15 +138,12 @@
     import PersonAvatar from "@Obsidian/Controls/personAvatar.obs";
     import { CommunicationRecipientActivityDescription } from "@Obsidian/Enums/Communication/communicationRecipientActivity";
     import { AlertType } from "@Obsidian/Enums/Controls/alertType";
-    import { useSecurityGrantToken } from "@Obsidian/Utility/block";
-    import { useHttp } from "@Obsidian/Utility/http";
+    import { useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
-    import { CommunicationRecipientGetActivityOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/communicationRecipientGetActivityOptionsBag";
-    import { CommunicationRecipientGetActivityResultsBag } from "@Obsidian/ViewModels/Rest/Controls/communicationRecipientGetActivityResultsBag";
+    import { CommunicationRecipientActivityResultsBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationDetail/communicationRecipientActivityResultsBag";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
-    const http = useHttp();
-    const securityGrantToken = useSecurityGrantToken();
+    const invokeBlockAction = useInvokeBlockAction();
 
     const props = defineProps({
         recpientIdkey: {
@@ -164,7 +161,7 @@
 
     const isLoadingActivity = ref(false);
     const errorMessage = ref("");
-    const recipientActivity = ref<CommunicationRecipientGetActivityResultsBag | null>(null);
+    const recipientActivity = ref<CommunicationRecipientActivityResultsBag | null>(null);
 
     // #endregion Values
 
@@ -257,12 +254,9 @@
 
         isLoadingActivity.value = true;
 
-        const options: CommunicationRecipientGetActivityOptionsBag = {
-            communicationRecipientIdKey: props.recpientIdkey,
-            securityGrantToken: securityGrantToken.value
-        };
-
-        const result = await http.post<CommunicationRecipientGetActivityResultsBag>("/api/v2/Controls/CommunicationRecipientGetActivity", undefined, options);
+        const result = await invokeBlockAction<CommunicationRecipientActivityResultsBag>("GetRecipientActivity", {
+            communicationRecipientKey: props.recpientIdkey
+        });
 
         isLoadingActivity.value = false;
 
