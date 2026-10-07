@@ -28,7 +28,6 @@ using Rock.Enums.Communication;
 using Rock.Model;
 using Rock.Obsidian.UI;
 using Rock.Security;
-using Rock.Security.SecurityGrantRules;
 using Rock.Tasks;
 using Rock.Utility;
 using Rock.ViewModels.Blocks.Communication.CommunicationDetail;
@@ -282,11 +281,6 @@ namespace Rock.Blocks.Communication
         private int PersonEntityTypeId => EntityTypeCache.Get<Person>()?.Id ?? 0;
 
         /// <summary>
-        /// Gets the <see cref="Rock.Model.Communication"/> <see cref="EntityType"/> identifier.
-        /// </summary>
-        private int CommunicationEntityTypeId => EntityTypeCache.Get<Rock.Model.Communication>()?.Id ?? 0;
-
-        /// <summary>
         /// A lazy-loaded dictionary of <see cref="CommunicationType"/>s by medium <see cref="EntityType"/> identifiers.
         /// </summary>
         private static Dictionary<int, CommunicationType> CommunicationTypeByMediumEntityTypeId = _communicationTypeByMediumEntityTypeId.Value;
@@ -426,21 +420,7 @@ namespace Rock.Blocks.Communication
 
             box.Permissions = GetPermissions( communication );
 
-            box.SecurityGrantToken = GetSecurityGrantToken( communication.Id );
-
             return box;
-        }
-
-        /// <inheritdoc/>
-        protected override string RenewSecurityGrantToken()
-        {
-            var communication = GetCommunicationQueryFromPageParameter()?.AsNoTracking().FirstOrDefault();
-            if ( !GetIsAuthorizedToView( communication ) )
-            {
-                return string.Empty;
-            }
-
-            return GetSecurityGrantToken( communication.Id );
         }
 
         #endregion RockBlockType Implementation
@@ -652,6 +632,263 @@ namespace Rock.Blocks.Communication
                 GridData = gridDataBag,
                 GridDefinition = builder.BuildDefinition()
             } );
+        }
+
+        /// <summary>
+        /// Gets the activity for a recipient of the current communication.
+        /// </summary>
+        /// <param name="communicationRecipientKey">The hashed identifier of the communication recipient.</param>
+        /// <returns>A bag containing the recipient's details and activity.</returns>
+        [BlockAction]
+        public BlockActionResult GetRecipientActivity( string communicationRecipientKey )
+        {
+            var communication = GetCommunicationQueryFromPageParameter()?.FirstOrDefault();
+            if ( communication == null )
+            {
+                return ActionBadRequest( $"Unable to find {CommunicationFriendlyName}." );
+            }
+
+            if ( !GetIsAuthorizedToView( communication ) )
+            {
+                return ActionUnauthorized( EditModeMessage.NotAuthorizedToView( CommunicationFriendlyName ) );
+            }
+
+            var recipientData = new CommunicationRecipientService( RockContext )
+                .GetQueryableByKey( communicationRecipientKey, false )
+                .AsNoTracking()
+                .Where( cr =>
+                    cr.CommunicationId == communication.Id
+                    && cr.PersonAlias != null
+                )
+                .Select( cr => new
+                {
+                    CommunicationRecipient = cr,
+                    cr.PersonAlias.Person,
+                    cr.PersonAlias.Person.PhoneNumbers,
+                    CampusName = cr.PersonAlias.Person.PrimaryCampus != null
+                        ? cr.PersonAlias.Person.PrimaryCampus.Name
+                        : string.Empty
+                } )
+                .FirstOrDefault();
+
+            if ( recipientData == null )
+            {
+                return ActionBadRequest();
+            }
+
+            var recipient = recipientData.CommunicationRecipient;
+            var person = recipientData.Person;
+
+            var personConnectionStatus = person.ConnectionStatusValueId.HasValue
+                ? DefinedValueCache.Get( person.ConnectionStatusValueId.Value )?.Value
+                : string.Empty;
+
+            var personMaritalStatus = person.MaritalStatusValueId.HasValue
+                ? DefinedValueCache.Get( person.MaritalStatusValueId.Value )?.Value
+                : string.Empty;
+
+            string personPhoneNumber = string.Empty;
+            if ( recipientData.PhoneNumbers?.Any() == true )
+            {
+                // Prefer SMS phone number; fall back to first phone number.
+                var phoneNumber = recipientData.PhoneNumbers
+                    .FirstOrDefault( p => p.IsMessagingEnabled )
+                    ?? recipientData.PhoneNumbers.First();
+
+                personPhoneNumber = phoneNumber.NumberFormatted;
+            }
+
+            var results = new CommunicationRecipientActivityResultsBag
+            {
+                PersonIdKey = person.IdKey,
+                PersonNickName = person.NickName,
+                PersonLastName = person.LastName,
+                PersonPhotoUrl = person.PhotoUrl,
+                PersonEmail = person.Email,
+                PersonCampusName = recipientData.CampusName,
+                PersonAge = person.Age,
+                PersonConnectionStatus = personConnectionStatus,
+                PersonMaritalStatus = personMaritalStatus,
+                PersonPhoneNumber = personPhoneNumber
+            };
+
+            var activities = new List<CommunicationRecipientActivityBag>();
+
+            // A local function to aid with consistent adding and sorting of activities when we've determined there
+            // are no more activities to add below.
+            BlockActionResult ResponseWithSortedActivities()
+            {
+                results.Activities = activities
+                    .OrderBy( a => a.ActivityDateTime )
+                    .ThenBy( a => a.Activity ) // Order "Opened" before "Click" (Etc.) when the timestamps match.
+                    .ToList();
+
+                return ActionOk( results );
+            }
+
+            var recipientModifiedDateTime = recipient.ModifiedDateTime ?? recipient.CreatedDateTime ?? RockDateTime.Now;
+
+            if ( recipient.Status == CommunicationRecipientStatus.Pending )
+            {
+                activities.Add( new CommunicationRecipientActivityBag
+                {
+                    Activity = CommunicationRecipientActivity.Pending,
+                    ActivityDateTime = recipientModifiedDateTime,
+                    Description = $"Message created {communication.CreatedDateTime?.ToString( "g" ) ?? string.Empty}."
+                } );
+
+                return ResponseWithSortedActivities();
+            }
+
+            if ( recipient.Status == CommunicationRecipientStatus.Cancelled )
+            {
+                activities.Add( new CommunicationRecipientActivityBag
+                {
+                    Activity = CommunicationRecipientActivity.Cancelled,
+                    ActivityDateTime = recipientModifiedDateTime,
+                    Description = "Message cancelled before delivering."
+                } );
+
+                return ResponseWithSortedActivities();
+            }
+
+            if ( recipient.SendDateTime.HasValue )
+            {
+                activities.Add( new CommunicationRecipientActivityBag
+                {
+                    Activity = CommunicationRecipientActivity.Sent,
+                    ActivityDateTime = recipient.SendDateTime.Value,
+                    Description = "Message successfully sent."
+                } );
+            }
+
+            if ( recipient.Status == CommunicationRecipientStatus.Failed )
+            {
+                activities.Add( new CommunicationRecipientActivityBag
+                {
+                    Activity = CommunicationRecipientActivity.DeliveryFailed,
+                    ActivityDateTime = recipientModifiedDateTime,
+                    Description = recipient.StatusNote ?? "Message delivery failed."
+                } );
+
+                return ResponseWithSortedActivities();
+            }
+
+            if ( recipient.DeliveredDateTime.HasValue )
+            {
+                activities.Add( new CommunicationRecipientActivityBag
+                {
+                    Activity = CommunicationRecipientActivity.Delivered,
+                    ActivityDateTime = recipient.DeliveredDateTime.Value,
+                    Description = "Message successfully delivered to recipient."
+                } );
+            }
+
+            if ( recipient.SpamComplaintDateTime.HasValue )
+            {
+                activities.Add( new CommunicationRecipientActivityBag
+                {
+                    Activity = CommunicationRecipientActivity.MarkedAsSpam,
+                    ActivityDateTime = recipient.SpamComplaintDateTime.Value,
+                    Description = "Recipient marked email as spam."
+                } );
+            }
+
+            if ( recipient.UnsubscribeDateTime.HasValue )
+            {
+                activities.Add( new CommunicationRecipientActivityBag
+                {
+                    Activity = CommunicationRecipientActivity.Unsubscribed,
+                    ActivityDateTime = recipient.UnsubscribeDateTime.Value,
+                    Description = "Recipient unsubscribed from email."
+                } );
+            }
+
+            var interactionChannelId = InteractionChannelCache.Get( Rock.SystemGuid.InteractionChannel.COMMUNICATION.AsGuid() )?.Id;
+
+            var interactionsByOperation = new InteractionService( RockContext )
+                .Queryable()
+                .AsNoTracking()
+                .Where( i =>
+                    i.InteractionComponent.InteractionChannelId == interactionChannelId
+                    && i.InteractionComponent.EntityId == communication.Id
+                    && i.EntityId == recipient.Id
+                )
+                .Select( i => new
+                {
+                    i.InteractionDateTime,
+                    i.Operation,
+                    i.InteractionData,
+
+                    IpAddress = i.InteractionSession != null
+                        ? i.InteractionSession.IpAddress
+                        : string.Empty,
+
+                    DeviceTypeName = i.InteractionSession != null
+                        && i.InteractionSession.DeviceType != null
+                            ? i.InteractionSession.DeviceType.Name
+                            : string.Empty
+                } )
+                .GroupBy( i => i.Operation )
+                .ToDictionary(
+                    g => g.Key,
+                    g => g.Select( i =>
+                        {
+                            var ipAddressSuffix = i.IpAddress.IsNotNullOrWhiteSpace()
+                                ? $" from {i.IpAddress}"
+                                : string.Empty;
+
+                            var deviceTypeSuffix = i.DeviceTypeName.IsNotNullOrWhiteSpace()
+                                ? $" using {i.DeviceTypeName}"
+                                : string.Empty;
+
+                            return new
+                            {
+                                i.InteractionDateTime,
+                                i.Operation,
+                                i.InteractionData,
+                                DescriptionSuffix = $"{ipAddressSuffix}{deviceTypeSuffix}"
+                            };
+                        } )
+                        .OrderBy( i => i.InteractionDateTime )
+                        .ToList()
+                );
+
+            interactionsByOperation.TryGetValue( "Opened", out var openedInteractions );
+            interactionsByOperation.TryGetValue( "Click", out var clickInteractions );
+
+            if ( openedInteractions?.Any() != true && clickInteractions?.Any() == true )
+            {
+                // Treat the first click as an open. This is to capture the scenario where an email is viewed
+                // without loading the image links that are required to trigger the open event.
+                var firstClick = clickInteractions.First();
+                activities.Add( new CommunicationRecipientActivityBag
+                {
+                    Activity = CommunicationRecipientActivity.Opened,
+                    ActivityDateTime = firstClick.InteractionDateTime,
+                    Description = $"Recipient opened message{firstClick.DescriptionSuffix}."
+                } );
+            }
+
+            openedInteractions?.ForEach( i =>
+                activities.Add( new CommunicationRecipientActivityBag
+                {
+                    Activity = CommunicationRecipientActivity.Opened,
+                    ActivityDateTime = i.InteractionDateTime,
+                    Description = $"Recipient opened message{i.DescriptionSuffix}."
+                } )
+            );
+
+            clickInteractions?.ForEach( i =>
+                activities.Add( new CommunicationRecipientActivityBag
+                {
+                    Activity = CommunicationRecipientActivity.Clicked,
+                    ActivityDateTime = i.InteractionDateTime,
+                    Description = $"Recipient clicked link{( i.InteractionData.IsNotNullOrWhiteSpace() ? $": {i.InteractionData}" : string.Empty )}{i.DescriptionSuffix}."
+                } )
+            );
+
+            return ResponseWithSortedActivities();
         }
 
         /// <summary>
@@ -2807,20 +3044,6 @@ namespace Rock.Blocks.Communication
             pageParams.Remove( "PageId" );
 
             return pageParams;
-        }
-
-        /// <summary>
-        /// Gets the security grant token that will be used by UI controls on
-        /// this block to ensure they have the proper permissions.
-        /// </summary>
-        /// <returns>A string that represents the security grant token.</returns>
-        private string GetSecurityGrantToken( int communicationId )
-        {
-            var securityGrant = new SecurityGrant();
-
-            securityGrant.AddRule( new EntitySecurityGrantRule( CommunicationEntityTypeId, communicationId ) );
-
-            return securityGrant.ToToken();
         }
 
         #endregion Private Methods
