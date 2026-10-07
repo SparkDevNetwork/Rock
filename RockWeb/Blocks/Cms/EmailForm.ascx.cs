@@ -524,8 +524,17 @@ namespace RockWeb.Blocks.Cms
 
                 message.CCEmails = GetAttributeValue( AttributeKey.CCEmail ).ResolveMergeFields( mergeFields, GetAttributeValue( AttributeKey.EnabledLavaCommands ) ).Split( ',' ).ToList();
                 message.BCCEmails = GetAttributeValue( AttributeKey.BCCEmail ).ResolveMergeFields( mergeFields, GetAttributeValue( AttributeKey.EnabledLavaCommands ) ).Split( ',' ).ToList();
-                message.FromEmail = GetAttributeValue( AttributeKey.FromEmail ).ResolveMergeFields( mergeFields, GetAttributeValue( AttributeKey.EnabledLavaCommands ) );
-                message.FromName = GetAttributeValue( AttributeKey.FromName ).ResolveMergeFields( mergeFields, GetAttributeValue( AttributeKey.EnabledLavaCommands ) );
+                /*
+                    10/7/2026 - MSE
+
+                    From Email and From Name are passed as templates, the same as
+                    Subject and Message Body. The transport resolves them once
+                    with the recipient merge fields.
+
+                    Reason: Keep all email templates resolved in one place.
+                */
+                message.FromEmail = GetAttributeValue( AttributeKey.FromEmail );
+                message.FromName = GetAttributeValue( AttributeKey.FromName );
                 message.Subject = GetAttributeValue( AttributeKey.Subject );
                 message.Message = GetAttributeValue( AttributeKey.MessageBody );
                 message.AppRoot = ResolveRockUrl( "~/" );
