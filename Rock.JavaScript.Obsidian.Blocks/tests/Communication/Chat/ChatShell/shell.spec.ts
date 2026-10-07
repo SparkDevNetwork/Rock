@@ -756,3 +756,16 @@ describe("a direct message's first message", () => {
         expect(h.sent).toEqual([]);
     });
 });
+
+describe("the error toast", () => {
+    test("dismissing one of two toasts under one code removes exactly the one dismissed", () => {
+        const { shell } = build();
+        const first = { code: "door.first_message_failed", severity: "failed" as const, text: "Your message to Ada could not be sent." };
+        const second = { code: "door.first_message_failed", severity: "failed" as const, text: "Your message to Bo could not be sent." };
+        shell.state.errors.push(first, second);
+
+        shell.dismissError(second);
+
+        expect(shell.state.errors).toEqual([first]);
+    });
+});

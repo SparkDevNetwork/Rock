@@ -45,3 +45,23 @@ describe("the composer", () => {
         expect(box).toBe("");
     });
 });
+
+describe("the composer's box", () => {
+    test("tells the shell each change to its text, so a draft holds what the person sees", async () => {
+        const wrapper = mount(Composer);
+        await wrapper.get("[data-testid='composer-input']").setValue("hello, edited");
+
+        expect(wrapper.emitted("edit")?.slice(-1)).toEqual([["hello, edited"]]);
+    });
+});
+
+describe("the composer's held text", () => {
+    test("is put back in the box whenever what holds it changes, so a new empty draft does not show text typed in a channel", async () => {
+        const wrapper = mount(Composer, { props: { heldText: "", heldBy: null } });
+        await wrapper.get("[data-testid='composer-input']").setValue("typed in a channel");
+
+        await wrapper.setProps({ heldText: "", heldBy: { people: [] } });
+
+        expect((wrapper.get("[data-testid='composer-input']").element as HTMLTextAreaElement).value).toBe("");
+    });
+});

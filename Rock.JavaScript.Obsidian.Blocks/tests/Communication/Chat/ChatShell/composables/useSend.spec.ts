@@ -87,6 +87,25 @@ describe("createSender", () => {
         expect(timelines.state(channel).messages).toEqual([]);
     });
 
+    test("a send that rejects instead of answering leaves its row failed with its text, so it can be retried or discarded", async () => {
+        const timelines = createTimelines({ fetchPage: async () => ({ messages: [], read_cursor: null, unread_count: 0, has_more: false }) });
+        await timelines.loadNewest(channel);
+        const sender = createSender({
+            send: () => Promise.reject(new Error("network")),
+            timelines,
+            personAliasGuid: me,
+            newLocalId: () => "local-1"
+        });
+
+        expect(await sender.send(channel, "keep me")).toBe(false);
+
+        expect(sender.pending(channel)).toEqual([
+            { localId: "local-1", channelId: channel, body: "keep me", status: "failed", errorCode: "rpc.transport" }
+        ]);
+        sender.discard("local-1");
+        expect(sender.pending(channel)).toEqual([]);
+    });
+
     test("retry sends the same text again and replaces the row with the confirmed message", async () => {
         const { sender, timelines, sent } = await setup([
             { ok: false, error: { code: "rpc.transport", severity: "failed" } },
