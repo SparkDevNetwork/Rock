@@ -214,8 +214,22 @@ namespace Rock.Tests.Integration.Communication.Chat.Platform.Sync
         public JObject WaitForChannel( Guid tenantId, Guid channelId, Func<JObject, bool> isReady )
         {
             return WaitFor(
-                $"chat_channels?select=channel_type,absent_since&tenant_id=eq.{tenantId}&channel_id=eq.{channelId}",
+                $"chat_channels?select=channel_type,name,absent_since&tenant_id=eq.{tenantId}&channel_id=eq.{channelId}",
                 isReady );
+        }
+
+        /// <summary>
+        /// Reads a channel's system lines until one with this text is there, or null when none ever is.
+        /// </summary>
+        /// <param name="tenantId">The church.</param>
+        /// <param name="channelId">The channel, which is the chat group's Guid.</param>
+        /// <param name="body">The line's whole text.</param>
+        /// <returns>The line, or null.</returns>
+        public JObject WaitForSystemLine( Guid tenantId, Guid channelId, string body )
+        {
+            return WaitFor(
+                $"messages?select=id,person_alias_guid,body&tenant_id=eq.{tenantId}&channel_id=eq.{channelId}&message_type=eq.system&body=eq.{Uri.EscapeDataString( body )}",
+                r => r != null );
         }
 
         /// <summary>

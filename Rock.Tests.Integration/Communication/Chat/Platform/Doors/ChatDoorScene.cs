@@ -232,6 +232,97 @@ namespace Rock.Tests.Integration.Communication.Chat.Platform.Doors
             return ChatDoorHelper.SendWorkflowChannelMessage( groupGuid, senderId, body, Configuration );
         }
 
+        /// <summary>
+        /// Joins a channel as the caller, inside a request of its own, as the block does.
+        /// </summary>
+        public ChatMembershipResultBag Join( int callerId, Guid channelGuid )
+        {
+            return AsCaller( callerId, ( caller, context, rockContext ) => ChatDoorHelper.JoinChannelAsync( caller, channelGuid, context, rockContext ) );
+        }
+
+        /// <summary>
+        /// Leaves a channel or a conversation as the caller, inside a request of its own.
+        /// </summary>
+        public ChatMembershipResultBag Leave( int callerId, Guid channelGuid )
+        {
+            return AsCaller( callerId, ( caller, context, rockContext ) => ChatDoorHelper.LeaveChannelAsync( caller, channelGuid, context, rockContext ) );
+        }
+
+        /// <summary>
+        /// Adds people to a channel or a conversation as the caller, inside a request of its own.
+        /// </summary>
+        public ChatMembershipResultBag Add( int callerId, Guid channelGuid, params Guid[] personAliasGuids )
+        {
+            return AsCaller( callerId, ( caller, context, rockContext ) => ChatDoorHelper.AddMembersAsync( caller, channelGuid, personAliasGuids, context, rockContext ) );
+        }
+
+        /// <summary>
+        /// Removes a person from a channel or a conversation as the caller, inside a request of its own.
+        /// </summary>
+        public ChatMembershipResultBag Remove( int callerId, Guid channelGuid, Guid personAliasGuid )
+        {
+            return AsCaller( callerId, ( caller, context, rockContext ) => ChatDoorHelper.RemoveMemberAsync( caller, channelGuid, personAliasGuid, context, rockContext ) );
+        }
+
+        /// <summary>
+        /// Renames a conversation as the caller, inside a request of its own.
+        /// </summary>
+        public ChatMembershipResultBag Rename( int callerId, Guid channelGuid, string name )
+        {
+            return AsCaller( callerId, ( caller, context, rockContext ) => ChatDoorHelper.RenameConversationAsync( caller, channelGuid, name, context, rockContext ) );
+        }
+
+        /// <summary>
+        /// Runs a door as the caller inside a request of its own, with the caller's session context.
+        /// </summary>
+        private ChatMembershipResultBag AsCaller( int callerId, Func<Person, ChatSessionContext, RockContext, Task<ChatMembershipResultBag>> door )
+        {
+            using ( ChatSyncProjectionFixture.InsideRequest() )
+            using ( var rockContext = new RockContext() )
+            {
+                var caller = new PersonService( rockContext ).Get( callerId );
+                var context = ChatSessionHelper.BuildSessionContext( caller, Configuration, rockContext );
+
+                return door( caller, context, rockContext ).GetAwaiter().GetResult();
+            }
+        }
+
+        /// <summary>
+        /// A role on the fixture's shared type whose holders may manage a group's members.
+        /// </summary>
+        public int AddManagerRole()
+        {
+            var roleId = Fixture.AddRole( Fixture.SharedGroupTypeId, "Manager", isLeader: false );
+
+            using ( var rockContext = new RockContext() )
+            {
+                rockContext.Database.ExecuteSqlCommand( "UPDATE [GroupTypeRole] SET [CanManageMembers] = 1 WHERE [Id] = @p0", roleId );
+            }
+
+            return roleId;
+        }
+
+        /// <summary>
+        /// Every membership a person holds in a group, archived ones included.
+        /// </summary>
+        public List<GroupMember> Memberships( Guid groupGuid, int personId )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                return new GroupMemberService( rockContext ).AsNoFilter().AsNoTracking()
+                    .Where( m => m.Group.Guid == groupGuid && m.PersonId == personId )
+                    .ToList();
+            }
+        }
+
+        /// <summary>
+        /// The person's name as a system line writes it.
+        /// </summary>
+        public string Name( int personId )
+        {
+            return Person( personId ).FullName;
+        }
+
         public Group Group( Guid groupGuid )
         {
             using ( var rockContext = new RockContext() )
@@ -327,6 +418,27 @@ namespace Rock.Tests.Integration.Communication.Chat.Platform.Doors
         public List<Guid> ChannelGuids { get; set; }
 
         public List<Newtonsoft.Json.Linq.JArray> Aliases { get; set; }
+
+        public List<Newtonsoft.Json.Linq.JArray> Channels { get; set; }
+
+        public List<Newtonsoft.Json.Linq.JArray> Members { get; set; }
+
+        /// <summary>
+        /// The memberships the push stamped absent, each as its channel and primary alias.
+        /// </summary>
+        public List<(Guid ChannelGuid, Guid AliasGuid)> AbsentMembers { get; set; }
+    }
+
+    /// <summary>
+    /// One system line as the stand-in received it.
+    /// </summary>
+    internal sealed class PostedLine
+    {
+        public Guid ChannelGuid { get; set; }
+
+        public string Body { get; set; }
+
+        public Guid? SenderAliasGuid { get; set; }
     }
 
     /// <summary>
@@ -338,12 +450,33 @@ namespace Rock.Tests.Integration.Communication.Chat.Platform.Doors
 
         private readonly List<RecordedPush> _pushes = new List<RecordedPush>();
 
+        private readonly List<PostedLine> _lines = new List<PostedLine>();
+
         public TimeSpan PushDelay { get; set; } = TimeSpan.Zero;
 
         /// <summary>
         /// How many posts Rock has made through the system post.
         /// </summary>
         public int Posts { get; private set; }
+
+        /// <summary>
+        /// Whether the system post fails, as a platform that cannot take it would.
+        /// </summary>
+        public bool IsPostFailing { get; set; }
+
+        /// <summary>
+        /// Each system line Rock has posted, in order.
+        /// </summary>
+        public List<PostedLine> Lines
+        {
+            get
+            {
+                lock ( _sync )
+                {
+                    return _lines.ToList();
+                }
+            }
+        }
 
         public List<RecordedPush> Pushes
         {
@@ -367,9 +500,21 @@ namespace Rock.Tests.Integration.Communication.Chat.Platform.Doors
 
             if ( path == ChatDoorScene.SystemPostPath )
             {
+                if ( IsPostFailing )
+                {
+                    return new HttpResponseMessage( HttpStatusCode.ServiceUnavailable );
+                }
+
+                var post = Newtonsoft.Json.Linq.JObject.Parse( await request.Content.ReadAsStringAsync() );
                 lock ( _sync )
                 {
                     Posts++;
+                    _lines.Add( new PostedLine
+                    {
+                        ChannelGuid = ( Guid ) post["p_channel_id"],
+                        Body = ( string ) post["p_body"],
+                        SenderAliasGuid = ( Guid? ) post["p_sender_alias"]
+                    } );
                 }
 
                 return Answer( "{\"id\":1,\"created_at\":\"2026-10-06T00:00:00.000000+00:00\"}" );
@@ -386,7 +531,12 @@ namespace Rock.Tests.Integration.Communication.Chat.Platform.Doors
                 _pushes.Add( new RecordedPush
                 {
                     ChannelGuids = body["channels"].Select( r => ( Guid ) r[0] ).ToList(),
-                    Aliases = body["aliases"].Cast<Newtonsoft.Json.Linq.JArray>().ToList()
+                    Aliases = body["aliases"].Cast<Newtonsoft.Json.Linq.JArray>().ToList(),
+                    Channels = body["channels"].Cast<Newtonsoft.Json.Linq.JArray>().ToList(),
+                    Members = body["members"].Cast<Newtonsoft.Json.Linq.JArray>().ToList(),
+                    AbsentMembers = ( body["absent"]?["members"] ?? new Newtonsoft.Json.Linq.JArray() )
+                        .Select( k => ( ( Guid ) k[0], ( Guid ) k[1] ) )
+                        .ToList()
                 } );
             }
 

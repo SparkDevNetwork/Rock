@@ -16,7 +16,7 @@
 //
 // Sending: a pending row at once, a timeline message once confirmed, and a failed send that
 // keeps its text so it can be sent again.
-import { createSender, isComposerOpen, SendResult, textAfterSend } from "../../../../../src/Communication/Chat/ChatShell/composables/useSend.partial";
+import { createSender, isComposerOpen, JoinResult, SendResult, textAfterSend } from "../../../../../src/Communication/Chat/ChatShell/composables/useSend.partial";
 import { createTimelines } from "../../../../../src/Communication/Chat/ChatShell/composables/useHistory.partial";
 
 const channel = "c0000001-0000-4000-8000-000000000000";
@@ -235,6 +235,149 @@ describe("a send the platform can recognise again", () => {
         await sender.send(channel, "plain");
 
         expect((timelines.state(channel).messages[0] as Record<string, unknown>).notice ?? null).toBeNull();
+    });
+});
+
+describe("a send into a room the person has not joined", () => {
+    // The refusal as the shell's call path hands it over: the platform's code, classified as a
+    // permission, with the sentence the database gives it.
+    const joinRequired: SendResult = {
+        ok: false,
+        error: { code: "authz.join_required", severity: "permission", text: "Join this channel to post." }
+    };
+
+    type Sent = { body: string, key: string | undefined };
+
+    async function joinSetup(
+        answers: Array<SendResult | Deferred<SendResult>>,
+        joins: Array<JoinResult | Deferred<JoinResult> | Error>
+    ): Promise<{
+        sender: ReturnType<typeof createSender>,
+        timelines: ReturnType<typeof createTimelines>,
+        sent: Sent[],
+        joined: string[],
+        waits: Array<Deferred<void>>
+    }> {
+        const sent: Sent[] = [];
+        const joined: string[] = [];
+        const waits: Array<Deferred<void>> = [];
+        let next = 0;
+        const timelines = createTimelines({ fetchPage: async () => ({ messages: [], read_cursor: null, unread_count: 0, has_more: false }) });
+        await timelines.loadNewest(channel);
+
+        const sender = createSender({
+            send: (_c, body, key) => {
+                sent.push({ body, key });
+                const answer = answers.shift() as SendResult | Deferred<SendResult>;
+                return "promise" in answer ? answer.promise : Promise.resolve(answer);
+            },
+            join: channelId => {
+                joined.push(channelId);
+                const answer = joins.shift() as JoinResult | Deferred<JoinResult> | Error;
+                if (answer instanceof Error) {
+                    return Promise.reject(answer);
+                }
+                return "promise" in answer ? answer.promise : Promise.resolve(answer);
+            },
+            waitBeforeResend: () => {
+                const wait = deferred<void>();
+                waits.push(wait);
+                return wait.promise;
+            },
+            timelines,
+            personAliasGuid: me,
+            newLocalId: () => `local-${++next}`
+        });
+
+        return { sender, timelines, sent, joined, waits };
+    }
+
+    /** Lets every promise already settled run its continuations. */
+    async function settle(): Promise<void> {
+        for (let i = 0; i < 10; i++) {
+            await Promise.resolve();
+        }
+    }
+
+    test("joins through Rock's door and sends again under the same key", async () => {
+        const { sender, timelines, sent, joined } = await joinSetup(
+            [joinRequired, { ok: true, id: 51, createdAt: "2026-10-07T10:00:00Z" }],
+            [{ code: "ok", message: null, isPending: false }]);
+
+        expect(await sender.send(channel, "hello room")).toBe(true);
+
+        expect(joined).toEqual([channel]);
+        expect(sent.map(s => s.body)).toEqual(["hello room", "hello room"]);
+        expect(sent[1].key).toBe(sent[0].key);
+        expect(sender.pending(channel)).toEqual([]);
+        expect(timelines.state(channel).messages[0].id).toBe(51);
+    });
+
+    test("a join the door refuses fails the message with the door's code and sends nothing more", async () => {
+        const { sender, sent } = await joinSetup(
+            [joinRequired],
+            [{ code: "door.not_allowed", message: "You can't join this channel.", isPending: false }]);
+
+        expect(await sender.send(channel, "hello room")).toBe(false);
+
+        expect(sent).toHaveLength(1);
+        expect(sender.pending(channel)).toEqual([
+            { localId: "local-1", channelId: channel, body: "hello room", status: "failed", errorCode: "door.not_allowed" }
+        ]);
+    });
+
+    test("a join that does not reach Rock fails the message so it can be tried again", async () => {
+        const { sender, sent } = await joinSetup([joinRequired], [new Error("network")]);
+
+        expect(await sender.send(channel, "hello room")).toBe(false);
+
+        expect(sent).toHaveLength(1);
+        expect(sender.pending(channel)[0]).toMatchObject({ status: "failed", errorCode: "door.unreachable" });
+    });
+
+    test("a join still reaching the platform waits and sends again until the membership is there", async () => {
+        const { sender, sent, joined, waits } = await joinSetup(
+            [joinRequired, joinRequired, { ok: true, id: 52, createdAt: "2026-10-07T10:00:01Z" }],
+            [{ code: "ok", message: null, isPending: true }]);
+
+        const sending = sender.send(channel, "hello room");
+        await settle();
+
+        // The resend found the membership not there yet, so the sender waits before the next.
+        expect(sent).toHaveLength(2);
+        expect(waits).toHaveLength(1);
+        expect(sender.pending(channel)[0].status).toBe("sending");
+
+        waits[0].resolve();
+        expect(await sending).toBe(true);
+
+        expect(joined).toEqual([channel]);
+        expect(sent).toHaveLength(3);
+        expect(new Set(sent.map(s => s.key)).size).toBe(1);
+    });
+
+    test("a membership that never arrives fails the message as needing a join after five sends", async () => {
+        const { sender, sent, waits } = await joinSetup(
+            [joinRequired, joinRequired, joinRequired, joinRequired, joinRequired, joinRequired],
+            [{ code: "ok", message: null, isPending: true }]);
+
+        const sending = sender.send(channel, "hello room");
+        for (let i = 0; i < 4; i++) {
+            await settle();
+            waits[i].resolve();
+        }
+
+        expect(await sending).toBe(false);
+        expect(sent).toHaveLength(6);
+        expect(sender.pending(channel)[0]).toMatchObject({ status: "failed", errorCode: "authz.join_required" });
+    });
+
+    test("without a join door the refusal fails the message as before", async () => {
+        const { sender } = await setup([joinRequired]);
+
+        expect(await sender.send(channel, "hello room")).toBe(false);
+
+        expect(sender.pending(channel)[0]).toMatchObject({ status: "failed", errorCode: "authz.join_required" });
     });
 });
 

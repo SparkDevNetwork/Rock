@@ -16,6 +16,8 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Globalization;
 using System.Linq;
 using System.Net.Http;
 
@@ -95,6 +97,82 @@ namespace Rock.Tests.Integration.Communication.Chat.Platform.Sync
         }
 
         #endregion The door
+
+        #region The membership doors
+
+        [TestMethod]
+        public void AJoinThroughTheDoorIsOnThePlatformWithItsLineWhenItAnswers()
+        {
+            using ( var scene = new Scene() )
+            {
+                scene.Platform.AddSystemAuthor( scene.TenantId );
+                var ada = scene.AddChatPerson( "Ada" );
+                var pip = scene.AddChatPerson( "Pip" );
+                var room = scene.Fixture.AddChannel( scene.Fixture.SharedGroupTypeId, "Open room" );
+                scene.Push( room, pip );
+                Assert.IsNotNull( scene.Platform.WaitForChannel( scene.TenantId, room, r => r != null ), "the room is on the platform" );
+
+                var result = scene.Join( ada, room );
+
+                Assert.AreEqual( "ok", result.Code, result.Message );
+                Assert.IsFalse( result.IsPending, "the push landed within the door's budget" );
+
+                // Read at once, not waited for: the door's answer is the promise that it is there.
+                var member = scene.Platform.WaitForMember( scene.TenantId, room, scene.Fixture.PrimaryAliasGuid( ada ), r => true );
+                Assert.IsNotNull( member, "the person is a member on the platform when the door answers" );
+                Assert.IsTrue( member["absent_since"].Type == Newtonsoft.Json.Linq.JTokenType.Null );
+
+                var name = new PersonService( new RockContext() ).Get( ada ).FullName;
+                var line = scene.Platform.WaitForSystemLine( scene.TenantId, room, name + " joined the channel." );
+                Assert.IsNotNull( line, "the join line is in the room" );
+                Assert.IsTrue( line["person_alias_guid"].Type == Newtonsoft.Json.Linq.JTokenType.Null || ( Guid ) line["person_alias_guid"] == Rock.SystemGuid.Person.CHAT_SYSTEM_AUTHOR.AsGuid(),
+                    "under nobody but chat itself" );
+
+                // How long a person waits on a join: twenty more, each after a leave, timed from
+                // the call to its answer, the awaited push and the line included.
+                var elapsed = new List<double>();
+                var pending = 0;
+                for ( var i = 0; i < 20; i++ )
+                {
+                    Assert.AreEqual( "ok", scene.Leave( ada, room ).Code );
+
+                    var stopwatch = Stopwatch.StartNew();
+                    var again = scene.Join( ada, room );
+                    elapsed.Add( stopwatch.Elapsed.TotalMilliseconds );
+
+                    Assert.AreEqual( "ok", again.Code, again.Message );
+                    pending += again.IsPending ? 1 : 0;
+                }
+
+                elapsed.Sort();
+                TestContext.WriteLine( string.Join( Environment.NewLine,
+                    $"joins timed: {elapsed.Count}, from the call to its answer, the awaited push and the line included; pending: {pending}",
+                    $"p50 ms: {Percentile( elapsed, 0.50 ).ToString( "F1", CultureInfo.InvariantCulture )}",
+                    $"p95 ms: {Percentile( elapsed, 0.95 ).ToString( "F1", CultureInfo.InvariantCulture )}",
+                    $"max ms: {elapsed.Last().ToString( "F1", CultureInfo.InvariantCulture )}" ) );
+            }
+        }
+
+        [TestMethod]
+        public void AGroupConversationsNewNameIsOnThePlatformWhenTheDoorAnswers()
+        {
+            using ( var scene = new Scene() )
+            {
+                scene.Platform.AddSystemAuthor( scene.TenantId );
+                var ada = scene.AddChatPerson( "Ada" );
+                var bo = scene.AddChatPerson( "Bo" );
+                var cy = scene.AddChatPerson( "Cy" );
+                var group = scene.Start( ada, bo, cy );
+
+                var result = scene.Rename( bo, group, "Trip planning" );
+
+                Assert.AreEqual( "ok", result.Code, result.Message );
+                var channel = scene.Platform.WaitForChannel( scene.TenantId, group, r => true );
+                Assert.AreEqual( "Trip planning", ( string ) channel["name"], "the name is on the platform when the door answers" );
+            }
+        }
+
+        #endregion The membership doors
 
         #region Workflow posts
 
@@ -187,6 +265,16 @@ namespace Rock.Tests.Integration.Communication.Chat.Platform.Sync
         #region Support
 
         /// <summary>
+        /// The nearest-rank percentile of values already sorted.
+        /// </summary>
+        private static double Percentile( IList<double> sorted, double fraction )
+        {
+            var rank = ( int ) Math.Ceiling( fraction * sorted.Count );
+
+            return sorted[Math.Max( 0, rank - 1 )];
+        }
+
+        /// <summary>
         /// A church provisioned on the platform, its settings stored in Rock, a public lobby that
         /// enrols people, and the immediate sync sending to the real platform.
         /// </summary>
@@ -232,6 +320,72 @@ namespace Rock.Tests.Integration.Communication.Chat.Platform.Sync
                 }
 
                 return personId;
+            }
+
+            /// <summary>
+            /// Puts a person in a room inside a request and waits for the push, so the room is on
+            /// the platform the ordinary way.
+            /// </summary>
+            public void Push( Guid groupGuid, int personId )
+            {
+                using ( ChatSyncProjectionFixture.InsideRequest() )
+                using ( var rockContext = new RockContext() )
+                {
+                    var group = new GroupService( rockContext ).Queryable( "GroupType" ).Single( g => g.Guid == groupGuid );
+                    new GroupMemberService( rockContext ).Add( new GroupMember
+                    {
+                        GroupId = group.Id,
+                        GroupTypeId = group.GroupTypeId,
+                        PersonId = personId,
+                        GroupRoleId = group.GroupType.DefaultGroupRoleId.Value,
+                        GroupMemberStatus = GroupMemberStatus.Active
+                    } );
+                    rockContext.SaveChanges();
+                    ChatPlatformSyncHelper.FlushAsync( rockContext ).GetAwaiter().GetResult();
+                }
+            }
+
+            /// <summary>
+            /// Starts a group conversation through its door and answers its Guid.
+            /// </summary>
+            public Guid Start( int callerId, params int[] others )
+            {
+                var result = AsCaller( callerId, ( caller, context, rockContext ) =>
+                    ChatDoorHelper.StartDirectMessageAsync( caller, others.Select( Fixture.PrimaryAliasGuid ), context, rockContext ) );
+                Made( result.ChannelGuid );
+                Assert.AreEqual( "ok", result.Code, result.Message );
+
+                return result.ChannelGuid.Value;
+            }
+
+            public ChatMembershipResultBag Join( int callerId, Guid channelGuid )
+            {
+                return AsCaller( callerId, ( caller, context, rockContext ) => ChatDoorHelper.JoinChannelAsync( caller, channelGuid, context, rockContext ) );
+            }
+
+            public ChatMembershipResultBag Leave( int callerId, Guid channelGuid )
+            {
+                return AsCaller( callerId, ( caller, context, rockContext ) => ChatDoorHelper.LeaveChannelAsync( caller, channelGuid, context, rockContext ) );
+            }
+
+            public ChatMembershipResultBag Rename( int callerId, Guid channelGuid, string name )
+            {
+                return AsCaller( callerId, ( caller, context, rockContext ) => ChatDoorHelper.RenameConversationAsync( caller, channelGuid, name, context, rockContext ) );
+            }
+
+            /// <summary>
+            /// Runs a door as the caller inside a request of its own, as the block does.
+            /// </summary>
+            private T AsCaller<T>( int callerId, Func<Person, ChatSessionContext, RockContext, System.Threading.Tasks.Task<T>> door )
+            {
+                using ( ChatSyncProjectionFixture.InsideRequest() )
+                using ( var rockContext = new RockContext() )
+                {
+                    var caller = new PersonService( rockContext ).Get( callerId );
+                    var context = ChatSessionHelper.BuildSessionContext( caller, Configuration, rockContext );
+
+                    return door( caller, context, rockContext ).GetAwaiter().GetResult();
+                }
             }
 
             public void Made( Guid? channelGuid )
