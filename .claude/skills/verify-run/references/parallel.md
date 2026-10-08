@@ -68,6 +68,17 @@ When all workers finish (or one stops early):
 4. Gather the Lessons and Defects sections for SKILL.md steps 5 and 6.
 5. Keep the staging folder until the user has reviewed the results, then offer to delete it.
 
+## First run notes (10/7/2026, registrationdetail plan, 132 tests)
+
+The mode worked: one seeding agent, then four workers (one with the browser, three with scripted HTTP sessions and SQL), then one browser worker for the screen-only items the others left blank. What went wrong, and what to do instead:
+
+- **Seed one data set per worker.** Workers changed or deleted shared seed rows another worker needed (one deleted a registration another test used, one changed a registration's group). Give each worker its own named records in the seed, or tell workers to create throwaway rows instead of editing shared ones.
+- **Cache clears from several workers took the site down.** On SQL Server Express (1 GB) each clear made the next requests reload attribute caches with huge queries, and several at once timed out site wide every 30 seconds. Tell workers to clear the cache at most once after a batch of SQL changes, and to retry a timed out request once before judging.
+- **A worker left a background loop running.** It reported finished while a background job kept calling a block action, which kept the timeouts going. Tell workers never to leave background shells or monitors running, and stop any worker that reports "waiting on background work".
+- **Split API and browser work.** Scripted workers marked screen-only expectations blank with "API/SQL parts passed; needs browser: <items>", and a single browser worker finished them afterwards. This kept the browser free of contention.
+- **Merge order matters.** `plan.js merge` re-applies every staging row, including blank ones, so a result the orchestrator set with `plan.js set` after an earlier merge was overwritten back to blank. Merge all staging files first, then make orchestrator corrections with `set`, or update the staging row instead.
+- **Give the seeding agent the whole plan.** It read every test's setup and created the extra records up front, and wrote a re-runnable seed script plus an Id/Guid/IdKey list. Keeping the delete section of that script as a separate cleanup script made the final cleanup one command.
+
 ## Future option: one database per worker
 
 The most isolated setup is a copy of the database and a copy of the site (on its own port) per worker. Workers then cannot interfere, restarts only affect their own site, and almost no tests need classifying. It costs setup time (restores, site copies, connection strings) and is not automated yet. If a developer has set this up, `.verification/environment.json` can list one `siteUrl` and database per worker and each worker gets its own.
