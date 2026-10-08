@@ -76,7 +76,9 @@ function build(options: { startDirectMessage?: (personAliasGuids: string[]) => P
     mintGate: { value: string },
     bootstrap: { value: unknown },
     pageDocument: { visibilityState: string },
-    sent: Array<{ channelId: string, body: string }>
+    sent: Array<{ channelId: string, body: string }>,
+    tokenPerson: { value: string | null },
+    reloads: { count: number }
 } {
     const topics: LiveTopic[] = [];
     const counts = { mints: 0, clients: 0, setAuths: 0, bootstraps: 0 };
@@ -88,6 +90,9 @@ function build(options: { startDirectMessage?: (personAliasGuids: string[]) => P
     const removed: string[] = [];
     const stored: Record<string, string> = {};
     const sent: Array<{ channelId: string, body: string }> = [];
+    // The person the platform token names; null hands out a token that is not a JWT.
+    const tokenPerson: { value: string | null } = { value: null };
+    const reloads = { count: 0 };
     const windowListeners: Record<string, Array<() => void>> = {};
     const pageDocument = { visibilityState: "visible", addEventListener: () => undefined, removeEventListener: () => undefined };
 
@@ -134,7 +139,7 @@ function build(options: { startDirectMessage?: (personAliasGuids: string[]) => P
         },
         fetch: async (url, init) => {
             if (url.endsWith("/functions/v1/token-exchange")) {
-                return fakeResponse(200, { access_token: "platform", expires_in: 300 });
+                return fakeResponse(200, { access_token: tokenFor(tokenPerson.value), expires_in: 300 });
             }
             const body = JSON.parse(init.body as string);
             // Every platform call is a POST through the shell's one call path.
@@ -168,13 +173,25 @@ function build(options: { startDirectMessage?: (personAliasGuids: string[]) => P
             }
         },
         mark: () => undefined,
-        startDirectMessage: options.startDirectMessage
+        startDirectMessage: options.startDirectMessage,
+        reloadPage: () => {
+            reloads.count++;
+        }
     });
 
     return {
-        shell, history, saves, joined, removed, stored, topics, counts, mintGate, bootstrap, pageDocument, sent,
+        shell, history, saves, joined, removed, stored, topics, counts, mintGate, bootstrap, pageDocument, sent, tokenPerson, reloads,
         fireBlur: () => (windowListeners["blur"] ?? []).forEach(l => l())
     };
+}
+
+/** A platform token naming a person in its subject, as the token exchange signs one; unsigned here. */
+function tokenFor(personAliasGuid: string | null): string {
+    if (personAliasGuid === null) {
+        return "platform";
+    }
+    const part = (value: unknown): string => Buffer.from(JSON.stringify(value)).toString("base64url");
+    return `${part({ alg: "ES256" })}.${part({ sub: personAliasGuid, tid: tenant })}.signature`;
 }
 
 /** Answers the oldest pending history call for a channel. */
@@ -375,6 +392,26 @@ describe("the live cut", () => {
         expect(h.removed.sort()).toEqual([channelTopic(tenant, channelA), personalTopic(tenant, person)].sort());
         expect(h.shell.state.phase).toBe("refused");
         expect(h.shell.state.gate).toBe("banned");
+    });
+
+    test("a refreshed token that names another person, after a merge, reloads the page", async () => {
+        const h = await started();
+        h.tokenPerson.value = "a0000099-0000-4000-8000-000000000000";
+
+        personal(h, "session.recheck", {});
+        await settle();
+
+        expect(h.reloads.count).toBe(1);
+    });
+
+    test("a refreshed token that names the same person does not reload the page", async () => {
+        const h = await started();
+        h.tokenPerson.value = person;
+
+        personal(h, "session.recheck", {});
+        await settle();
+
+        expect(h.reloads.count).toBe(0);
     });
 
     test("a refresh keeps the one platform client and its socket", async () => {

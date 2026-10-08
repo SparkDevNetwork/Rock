@@ -435,6 +435,11 @@ namespace Rock.Tests.Integration.Communication.Chat.Platform.Doors
         /// The memberships the push stamped absent, each as its channel and primary alias.
         /// </summary>
         public List<(Guid ChannelGuid, Guid AliasGuid)> AbsentMembers { get; set; }
+
+        /// <summary>
+        /// The channels the push stamped absent.
+        /// </summary>
+        public List<Guid> AbsentChannels { get; set; }
     }
 
     /// <summary>
@@ -544,6 +549,9 @@ namespace Rock.Tests.Integration.Communication.Chat.Platform.Doors
                     Members = body["members"].Cast<Newtonsoft.Json.Linq.JArray>().ToList(),
                     AbsentMembers = ( body["absent"]?["members"] ?? new Newtonsoft.Json.Linq.JArray() )
                         .Select( k => ( ( Guid ) k[0], ( Guid ) k[1] ) )
+                        .ToList(),
+                    AbsentChannels = ( body["absent"]?["channels"] ?? new Newtonsoft.Json.Linq.JArray() )
+                        .Select( k => ( Guid ) k )
                         .ToList()
                 } );
             }

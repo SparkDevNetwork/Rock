@@ -28,6 +28,7 @@ using Rock.Communication.Chat.Platform.Doors;
 using Rock.Communication.Chat.Platform.Session;
 using Rock.Communication.Chat.Platform.Sync;
 using Rock.Data;
+using Rock.Jobs;
 using Rock.Model;
 using Rock.Tests.Integration.TestFramework.Database;
 using Rock.ViewModels.Blocks.Communication.Chat.ChatShell;
@@ -262,6 +263,73 @@ namespace Rock.Tests.Integration.Communication.Chat.Platform.Sync
 
         #endregion Workflow posts
 
+        #region Person merge
+
+        [TestMethod]
+        public void APersonMergeLeavesOneConversationWithAllItsHistoryAndKeepsTheBan()
+        {
+            using ( var scene = new Scene() )
+            {
+                var ada = scene.AddChatPerson( "Ada" );
+                var lou = scene.AddChatPerson( "Lou" );
+                var cal = scene.AddChatPerson( "Cal" );
+                var adaAlias = scene.Fixture.PrimaryAliasGuid( ada );
+                var louAlias = scene.Fixture.PrimaryAliasGuid( lou );
+
+                // A room Lou is banned from and Ada is not, both members.
+                var room = scene.Fixture.AddChannel( scene.Fixture.SharedGroupTypeId, "Merge room" );
+                scene.Push( room, ada );
+                scene.Push( room, lou, m => m.IsChatBanned = true );
+
+                // Cal's conversation with Lou first, so it is the oldest, then with Ada; one
+                // message in each.
+                var oldest = scene.Start( cal, lou );
+                var twin = scene.Start( cal, ada );
+                var first = ChatDoorHelper.SendWorkflowDirectMessage( lou, cal, "Before the merge, from Lou", scene.Configuration );
+                var second = ChatDoorHelper.SendWorkflowDirectMessage( ada, cal, "Before the merge, from Ada", scene.Configuration );
+                Assert.AreEqual( oldest, first.ChannelGuid, "the workflow reused Lou's conversation" );
+                Assert.AreEqual( twin, second.ChannelGuid, "and Ada's" );
+
+                // The Person Merge block's path, then the full sync that restates the church.
+                using ( ChatSyncProjectionFixture.InsideRequest() )
+                using ( var rockContext = new RockContext() )
+                {
+                    rockContext.WrapTransaction( () =>
+                    {
+                        rockContext.Database.ExecuteSqlCommand( "EXEC dbo.spCrm_PersonMerge @p0, @p1", lou, ada );
+                        ChatPlatformSyncHelper.RecordPersonMerge( rockContext, ada );
+                    } );
+                }
+
+                Assert.AreEqual( 2, scene.Platform.WaitForMessageCount( scene.TenantId, oldest, n => n == 2 ),
+                    "the kept conversation holds both conversations' messages once the merge's push lands" );
+
+                using ( var rockContext = new RockContext() )
+                {
+                    var run = ChatPlatformSync.Run( rockContext, scene.Configuration, true );
+                    Assert.IsFalse( run.IsFailure, run.Message );
+                }
+
+                Assert.AreEqual( 2, scene.Platform.WaitForMessageCount( scene.TenantId, oldest, n => n == 2 ),
+                    "and still does after the full sync restates the church" );
+                Assert.AreEqual( 0, scene.Platform.WaitForMessageCount( scene.TenantId, twin, n => n == 0 ), "the twin holds none" );
+                Assert.IsNotNull( scene.Platform.WaitForChannel( scene.TenantId, twin, r => r != null && r["absent_since"].Type != Newtonsoft.Json.Linq.JTokenType.Null ),
+                    "and is gone from chat" );
+
+                var member = scene.Platform.WaitForMember( scene.TenantId, room, adaAlias, r => r != null && ( bool ) r["is_banned"] );
+                Assert.IsNotNull( member, "the one membership left in the room carries the ban Lou held" );
+                Assert.IsNotNull( scene.Platform.WaitForMember( scene.TenantId, room, louAlias, r => r != null && r["absent_since"].Type != Newtonsoft.Json.Linq.JTokenType.Null ),
+                    "and Lou's old membership is gone" );
+
+                var stamp = scene.Platform.ReadMessage( scene.TenantId, first.MessageId.Value );
+                Assert.AreEqual( louAlias, ( Guid ) stamp["person_alias_guid"], "Lou's message keeps the alias it was written under" );
+                Assert.IsNotNull( scene.Platform.WaitForAlias( scene.TenantId, louAlias, r => r != null && ( Guid ) r["primary_person_alias_guid"] == adaAlias ),
+                    "and that alias now names Ada, so the message reads as hers" );
+            }
+        }
+
+        #endregion Person merge
+
         #region Support
 
         /// <summary>
@@ -326,20 +394,22 @@ namespace Rock.Tests.Integration.Communication.Chat.Platform.Sync
             /// Puts a person in a room inside a request and waits for the push, so the room is on
             /// the platform the ordinary way.
             /// </summary>
-            public void Push( Guid groupGuid, int personId )
+            public void Push( Guid groupGuid, int personId, Action<GroupMember> edit = null )
             {
                 using ( ChatSyncProjectionFixture.InsideRequest() )
                 using ( var rockContext = new RockContext() )
                 {
                     var group = new GroupService( rockContext ).Queryable( "GroupType" ).Single( g => g.Guid == groupGuid );
-                    new GroupMemberService( rockContext ).Add( new GroupMember
+                    var member = new GroupMember
                     {
                         GroupId = group.Id,
                         GroupTypeId = group.GroupTypeId,
                         PersonId = personId,
                         GroupRoleId = group.GroupType.DefaultGroupRoleId.Value,
                         GroupMemberStatus = GroupMemberStatus.Active
-                    } );
+                    };
+                    edit?.Invoke( member );
+                    new GroupMemberService( rockContext ).Add( member );
                     rockContext.SaveChanges();
                     ChatPlatformSyncHelper.FlushAsync( rockContext ).GetAwaiter().GetResult();
                 }

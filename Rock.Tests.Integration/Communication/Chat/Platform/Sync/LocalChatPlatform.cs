@@ -186,7 +186,7 @@ namespace Rock.Tests.Integration.Communication.Chat.Platform.Sync
         public JObject WaitForMember( Guid tenantId, Guid channelId, Guid aliasGuid, Func<JObject, bool> isReady )
         {
             return WaitFor(
-                $"chat_channel_members?select=synced_at,absent_since,can_mention_all,can_post_announcements&tenant_id=eq.{tenantId}&channel_id=eq.{channelId}&person_alias_guid=eq.{aliasGuid}",
+                $"chat_channel_members?select=synced_at,absent_since,can_mention_all,can_post_announcements,is_banned&tenant_id=eq.{tenantId}&channel_id=eq.{channelId}&person_alias_guid=eq.{aliasGuid}",
                 isReady );
         }
 
@@ -200,7 +200,7 @@ namespace Rock.Tests.Integration.Communication.Chat.Platform.Sync
         public JObject WaitForAlias( Guid tenantId, Guid aliasGuid, Func<JObject, bool> isReady )
         {
             return WaitFor(
-                $"chat_aliases?select=synced_at,is_globally_banned,is_open_dm_allowed&tenant_id=eq.{tenantId}&person_alias_guid=eq.{aliasGuid}",
+                $"chat_aliases?select=synced_at,is_globally_banned,is_open_dm_allowed,primary_person_alias_guid&tenant_id=eq.{tenantId}&person_alias_guid=eq.{aliasGuid}",
                 isReady );
         }
 
@@ -230,6 +230,25 @@ namespace Rock.Tests.Integration.Communication.Chat.Platform.Sync
             return WaitFor(
                 $"messages?select=id,person_alias_guid,body&tenant_id=eq.{tenantId}&channel_id=eq.{channelId}&message_type=eq.system&body=eq.{Uri.EscapeDataString( body )}",
                 r => r != null );
+        }
+
+        /// <summary>
+        /// How many messages a channel holds on the platform, read until a condition holds.
+        /// </summary>
+        /// <param name="tenantId">The church.</param>
+        /// <param name="channelId">The channel, which is the chat group's Guid.</param>
+        /// <param name="isReady">Whether the count read is the one waited for.</param>
+        /// <returns>The last count read.</returns>
+        public int WaitForMessageCount( Guid tenantId, Guid channelId, Func<int, bool> isReady )
+        {
+            var count = 0;
+            WaitFor( $"messages?select=count&tenant_id=eq.{tenantId}&channel_id=eq.{channelId}", r =>
+            {
+                count = ( int ) r["count"];
+                return isReady( count );
+            } );
+
+            return count;
         }
 
         /// <summary>
