@@ -1240,19 +1240,7 @@ namespace Rock.Blocks.Event
             return ActionOk( new ValidPropertiesBox<RegistrationBag>
             {
                 Bag = bag,
-                ValidProperties = new List<string>
-                {
-                    nameof( bag.PersonAlias ),
-                    nameof( bag.FirstName ),
-                    nameof( bag.LastName ),
-                    nameof( bag.ConfirmationEmail ),
-                    nameof( bag.Campus ),
-                    nameof( bag.Group ),
-                    nameof( bag.DiscountCode ),
-                    nameof( bag.DiscountPercentage ),
-                    nameof( bag.DiscountAmount ),
-                    nameof( bag.AttributeValues )
-                }
+                ValidProperties = bag.GetType().GetProperties().Select( p => p.Name ).ToList()
             } );
         }
 
@@ -1502,6 +1490,16 @@ namespace Rock.Blocks.Event
                 return ActionBadRequest( InvalidRequestMethodMessage );
             }
 
+            /*
+                10/8/2026 - MSE
+
+                WebForms showed Resend Confirmation to everyone who could view the
+                block and never checked permission on the server. Sending email is a
+                state-changing action, so it now requires edit access, the same as
+                Move and Add to Group.
+
+                Reason: Server-side authorization for state-changing actions.
+            */
             if ( !TryGetEntityForEditAction( key, out var registration, out var actionError ) )
             {
                 return actionError;
@@ -2123,7 +2121,15 @@ namespace Rock.Blocks.Event
                 }
 
                 paymentInfo.GatewayPersonIdentifier = customerToken;
+            }
+            catch ( Exception ex )
+            {
+                ExceptionLogService.LogException( ex );
+                return ActionBadRequest( "There was a problem processing the payment." );
+            }
 
+            try
+            {
                 transaction = component.Charge( gateway, paymentInfo, out var chargeError );
 
                 if ( transaction == null )
@@ -2133,8 +2139,20 @@ namespace Rock.Blocks.Event
             }
             catch ( Exception ex )
             {
-                ExceptionLogService.LogException( ex );
-                return ActionBadRequest( "There was a problem processing the payment." );
+                /*
+                    10/8/2026 - MSE
+
+                    An exception thrown by Charge (for example a timeout) leaves it unknown
+                    whether the card was charged. A Conflict status tells the client not to
+                    retry, the same as a charge that could not be recorded. Exceptions from
+                    CreateCustomerAccount above stay a Bad Request because no charge has
+                    been attempted yet.
+
+                    Reason: Never invite a second charge when the first may have succeeded.
+                */
+                ExceptionLogService.LogException( new Exception( $"A registration payment for registration {registration.Id} failed with an exception and may have been charged by the gateway.", ex ) );
+
+                return ActionConflict( "There was a problem processing the payment and the card may have been charged. Do not resubmit; contact your finance team to confirm." );
             }
 
             transaction.Guid = request.TransactionGuid;
@@ -2700,6 +2718,16 @@ namespace Rock.Blocks.Event
                 .Where( r => !existingPersonIds.Contains( r.PersonAlias.PersonId ) )
                 .ToList();
 
+            /*
+                10/8/2026 - MSE
+
+                WebForms always created moved registrants as Active, while its Add to
+                Group action used the template's group member status. Moves now use the
+                same rule as Add to Group and Registration Entry: the template's status
+                when the group is of the template's group type, otherwise Active.
+
+                Reason: Moved and added registrants follow the same status rule.
+            */
             var memberStatus = targetGroup.GroupTypeId == template.GroupTypeId
                 ? template.GroupMemberStatus
                 : GroupMemberStatus.Active;
@@ -3197,6 +3225,16 @@ namespace Rock.Blocks.Event
 
             var component = gateway.GetGatewayComponent();
 
+            /*
+                10/8/2026 - MSE
+
+                The Obsidian payment form needs the gateway's Obsidian control, so
+                gateways that only implement the WebForms hosted interface no longer
+                offer Process New Payment here. Registration Entry has the same
+                requirement. Manual payments are unaffected.
+
+                Reason: The Obsidian gateway control is required to collect payments.
+            */
             return component is IObsidianHostedGatewayComponent
                 && component is IHostedGatewayComponent hostedComponent
                 && hostedComponent.GetSupportedHostedGatewayModes( gateway ).Contains( HostedGatewayMode.Hosted );
@@ -3857,6 +3895,16 @@ namespace Rock.Blocks.Event
                     CreditCardTypeValueId = t.FinancialPaymentDetail.CreditCardTypeValueId,
                     AccountNumberMasked = t.FinancialPaymentDetail.AccountNumberMasked,
                     IsRefund = t.RefundDetails != null,
+
+                    /*
+                        10/8/2026 - MSE
+
+                        WebForms showed the transaction's TotalAmount. A transaction can
+                        include details for other entities, so only this registration's
+                        portion is shown and the rows add up to the registration's paid amount.
+
+                        Reason: Payment rows match the registration's paid total.
+                    */
                     RegistrationAmount = t.TransactionDetails
                         .Where( d => d.EntityTypeId == registrationEntityTypeId && d.EntityId == registrationId )
                         .Sum( d => ( decimal? ) d.Amount ) ?? 0.0m
@@ -4193,6 +4241,16 @@ namespace Rock.Blocks.Event
                 }
             }
 
+            /*
+                10/8/2026 - MSE
+
+                WebForms also showed a "There is not a signed document" alert with a
+                Send/Resend Signature Request button for legacy signature providers.
+                That feature was not carried over because the legacy provider
+                (SendLegacyProviderDocument) is obsolete as of Rock 19.0.
+
+                Reason: Legacy signature providers are obsolete.
+            */
             if ( template.RequiredSignatureDocumentTemplate != null )
             {
                 panel.IsSignatureDocumentVisible = true;

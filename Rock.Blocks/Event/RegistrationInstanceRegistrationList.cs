@@ -172,9 +172,18 @@ namespace Rock.Blocks.Event
             var box = new ListBlockBox<RegistrationInstanceRegistrationListOptionsBag>();
             var builder = GetGridBuilder();
 
-            var isAddDeleteEnabled = GetIsAddDeleteEnabled();
-            box.IsAddEnabled = isAddDeleteEnabled;
-            box.IsDeleteEnabled = isAddDeleteEnabled;
+            /*
+                10/8/2026 - MSE
+
+                The Obsidian Registration Detail block does not create registrations;
+                a blank or 0 RegistrationId shows "not found". The Add button linked
+                there with RegistrationId=0, so it is turned off. Registrations are
+                created through the Registration Entry block.
+
+                Reason: Avoid an Add button that leads to a "not found" page.
+            */
+            box.IsAddEnabled = false;
+            box.IsDeleteEnabled = GetIsAddDeleteEnabled();
             box.ExpectedRowCount = null;
             box.NavigationUrls = GetBoxNavigationUrls();
             box.Options = GetBoxOptions();
