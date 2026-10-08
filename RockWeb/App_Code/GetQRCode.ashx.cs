@@ -59,6 +59,14 @@ namespace RockWeb
                     return;
                 }
 
+                if ( !IsValidHexColor( foregroundColor ) || !IsValidHexColor( backgroundColor ) )
+                {
+                    context.Response.StatusCode = System.Net.HttpStatusCode.BadRequest.ConvertToInt();
+                    context.Response.StatusDescription = "foreground and background must be 3, 4, 6 or 8 digit hex colors";
+                    context.ApplicationInstance.CompleteRequest();
+                    return;
+                }
+
                 var pixelsPerModule = context.Request.QueryString["pixelsPerModule"].AsIntegerOrNull() ?? 20;
 
                 using ( var qrGenerator = new QRCodeGenerator() )
@@ -66,6 +74,7 @@ namespace RockWeb
                     var qrCodeData = qrGenerator.CreateQrCode( data, QRCodeGenerator.ECCLevel.Q );
                     var responseStream = GetResponseStream( qrCodeData, outputType, pixelsPerModule, backgroundColor, foregroundColor );
 
+                    AddResponseSecurityHeaders( context );
                     responseStream.CopyTo( context.Response.OutputStream );
                     context.Response.ContentType = outputType.Equals( "svg", StringComparison.OrdinalIgnoreCase ) ? "image/svg+xml" : "image/png";
                     context.Response.Flush();
@@ -125,7 +134,7 @@ namespace RockWeb
         /// <exception cref="ArgumentException">Thrown when the hex color string is not a valid 6 or 8 digit hex value.</exception>
         private byte[] HexToByteArray( string hex )
         {
-            if ( !Regex.IsMatch( hex, @"^#?([0-9A-Fa-f]{6}|[0-9A-Fa-f]{8})$" ) )
+            if ( !Regex.IsMatch( hex, @"^#?([0-9A-Fa-f]{6}|[0-9A-Fa-f]{8})\z" ) )
             {
                 throw new ArgumentException( "Color must be a valid 6 or 8 digit hex value." );
             }
@@ -158,6 +167,25 @@ namespace RockWeb
             return bytes;
         }
 
+        /// <summary>
+        /// Determines whether the value is a 3, 4, 6 or 8 digit hex color, with or without a leading '#'.
+        /// </summary>
+        /// <param name="value">The color value.</param>
+        /// <returns><c>true</c> if the value is a valid hex color; otherwise, <c>false</c>.</returns>
+        private static bool IsValidHexColor( string value )
+        {
+            return value != null && Regex.IsMatch( value, @"^#?([0-9A-Fa-f]{3}|[0-9A-Fa-f]{4}|[0-9A-Fa-f]{6}|[0-9A-Fa-f]{8})\z" );
+        }
+
+        /// <summary>
+        /// Adds headers that prevent the returned SVG from running script if opened directly.
+        /// </summary>
+        /// <param name="context">The context.</param>
+        private void AddResponseSecurityHeaders( HttpContext context )
+        {
+            context.Response.AddHeader( "Content-Security-Policy", "default-src 'none'; sandbox" );
+            context.Response.AddHeader( "X-Content-Type-Options", "nosniff" );
+        }
 
         /// <summary>
         /// Gets a value indicating whether another request can use the <see cref="T:System.Web.IHttpHandler" /> instance.
