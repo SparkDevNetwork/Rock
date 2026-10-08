@@ -852,7 +852,10 @@ WHERE [RT].[Guid] = '" + SystemGuid.DefinedValue.PERSON_RECORD_TYPE_RESTUSER + "
 
             if ( familyId.IsNotNullOrWhiteSpace() )
             {
+                var familyGroupTypeId = GroupTypeCache.GetFamilyGroupType( rockContext ).Id;
+
                 group = new GroupService( rockContext ).GetQueryableByKey( familyId, false )
+                    .Where( g => g.GroupTypeId == familyGroupTypeId )
                     .Include( g => g.Members.Select( gm => gm.Person ) )
                     .FirstOrDefault();
 
@@ -1772,6 +1775,13 @@ WHERE [RT].[Guid] = '" + SystemGuid.DefinedValue.PERSON_RECORD_TYPE_RESTUSER + "
                 return ActionBadRequest( "Missing family identifier." );
             }
 
+            var family = new GroupService( RockContext ).GetNoTracking( options.FamilyId, false );
+
+            if ( family == null || family.GroupTypeId != GroupTypeCache.GetFamilyGroupType( RockContext ).Id )
+            {
+                return ActionBadRequest( "Family not found." );
+            }
+
             // Make the same kiosk check that BeginAddIndividual makes.
             var addMode = kiosk.GetAttributeValue( SystemKey.DeviceAttributeKey.DEVICE_KIOSK_ALLOW_ADDING_INDIVIDUALS_TO_EXISTING_FAMILIES ).ConvertToEnum<AdultsOrChildrenSelectionMode>();
 
@@ -1795,7 +1805,7 @@ WHERE [RT].[Guid] = '" + SystemGuid.DefinedValue.PERSON_RECORD_TYPE_RESTUSER + "
 
             var response = new SaveFamilyResponseBag
             {
-                FamilyId = result.PrimaryFamily.IdKey,
+                FamilyId = result.PrimaryFamily?.IdKey,
                 IsCheckInAllowed = true,
                 IsSuccess = result.IsSuccess,
                 ErrorMessage = result.ErrorMessage
