@@ -212,5 +212,93 @@ namespace Rock.Tests.Security
         }
 
         #endregion
+
+        #region Save Financial Account Rule
+
+        private static readonly System.Guid GatewayGuid = new System.Guid( "6432d2d2-32ff-443d-b5b3-fb6c8414c3ad" );
+
+        private static SaveFinancialAccountSecurityGrantRule.SaveFinancialAccountAccess CreateSaveAccess( System.Guid gatewayGuid, string transactionCode, string gatewayPersonIdentifier )
+        {
+            return new SaveFinancialAccountSecurityGrantRule.SaveFinancialAccountAccess( gatewayGuid, transactionCode, gatewayPersonIdentifier );
+        }
+
+        [TestMethod]
+        public void SaveFinancialAccountRuleAllowsSameTransaction()
+        {
+            var grant = new SecurityGrant()
+                .AddRule( new SaveFinancialAccountSecurityGrantRule( GatewayGuid, "T100", "P100" ) );
+
+            Assert.IsTrue( grant.IsAccessGranted( CreateSaveAccess( GatewayGuid, "T100", "P100" ), Authorization.EDIT ) );
+        }
+
+        [TestMethod]
+        public void SaveFinancialAccountRuleDeniesOtherTransactions()
+        {
+            var grant = new SecurityGrant()
+                .AddRule( new SaveFinancialAccountSecurityGrantRule( GatewayGuid, "T100", "P100" ) );
+
+            Assert.IsFalse( grant.IsAccessGranted( CreateSaveAccess( GatewayGuid, "T101", "P100" ), Authorization.EDIT ) );
+            Assert.IsFalse( grant.IsAccessGranted( CreateSaveAccess( GatewayGuid, "t100", "P100" ), Authorization.EDIT ) );
+            Assert.IsFalse( grant.IsAccessGranted( CreateSaveAccess( GatewayGuid, "T100", "P101" ), Authorization.EDIT ) );
+            Assert.IsFalse( grant.IsAccessGranted( CreateSaveAccess( System.Guid.NewGuid(), "T100", "P100" ), Authorization.EDIT ) );
+            Assert.IsFalse( grant.IsAccessGranted( CreateSaveAccess( GatewayGuid, null, null ), Authorization.EDIT ) );
+        }
+
+        [TestMethod]
+        public void SaveFinancialAccountRuleWithMissingValuesDeniesAccess()
+        {
+            var grant = new SecurityGrant()
+                .AddRule( new SaveFinancialAccountSecurityGrantRule( GatewayGuid, "", "" ) )
+                .AddRule( new SaveFinancialAccountSecurityGrantRule( System.Guid.Empty, "T100", "P100" ) );
+
+            Assert.IsFalse( grant.IsAccessGranted( CreateSaveAccess( GatewayGuid, "", "" ), Authorization.EDIT ) );
+            Assert.IsFalse( grant.IsAccessGranted( CreateSaveAccess( System.Guid.Empty, "T100", "P100" ), Authorization.EDIT ) );
+        }
+
+        [TestMethod]
+        public void SaveFinancialAccountRuleOnlyGrantsEdit()
+        {
+            var grant = new SecurityGrant()
+                .AddRule( new SaveFinancialAccountSecurityGrantRule( GatewayGuid, "T100", "P100" ) );
+
+            Assert.IsFalse( grant.IsAccessGranted( CreateSaveAccess( GatewayGuid, "T100", "P100" ), Authorization.VIEW ) );
+        }
+
+        [TestMethod]
+        public void SaveFinancialAccountRuleSurvivesTokenRoundTrip()
+        {
+            var token = new SecurityGrant()
+                .AddRule( new SaveFinancialAccountSecurityGrantRule( GatewayGuid, "T100", "P100" ) )
+                .ToToken();
+
+            var grant = SecurityGrant.FromToken( token );
+
+            Assert.IsNotNull( grant );
+            Assert.IsTrue( grant.IsAccessGranted( CreateSaveAccess( GatewayGuid, "T100", "P100" ), Authorization.EDIT ) );
+            Assert.IsFalse( grant.IsAccessGranted( CreateSaveAccess( GatewayGuid, "T101", "P100" ), Authorization.EDIT ) );
+        }
+
+        [TestMethod]
+        public void SaveFinancialAccountRuleDoesNotAllowOtherAccess()
+        {
+            var grant = new SecurityGrant()
+                .AddRule( new SaveFinancialAccountSecurityGrantRule( GatewayGuid, "T100", "P100" ) );
+
+            Assert.IsFalse( grant.IsAccessGranted( new FileUploadSecurityGrantRule.FileUploadAccess( "~/Content" ), Authorization.EDIT ) );
+            Assert.IsFalse( grant.IsAccessGranted( AssetAndFileManagerSecurityGrantRule.AssetAndFileManagerAccess.Instance, Authorization.EDIT ) );
+        }
+
+        [TestMethod]
+        public void OtherRulesDoNotAllowSavingFinancialAccounts()
+        {
+            var grant = new SecurityGrant()
+                .AddRule( new FileUploadSecurityGrantRule( "~/" ) )
+                .AddRule( new AssetAndFileManagerSecurityGrantRule( Authorization.EDIT ) )
+                .AddRule( new GroupPickerSecurityGrantRule() );
+
+            Assert.IsFalse( grant.IsAccessGranted( CreateSaveAccess( GatewayGuid, "T100", "P100" ), Authorization.EDIT ) );
+        }
+
+        #endregion
     }
 }
