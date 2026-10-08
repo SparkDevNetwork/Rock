@@ -376,6 +376,22 @@ namespace Rock.Blocks.Core
         private bool TryGetDefinedTypeForAttributeAction( string idKey, out DefinedType definedType, out BlockActionResult error )
         {
             error = null;
+
+            /*
+                10/8/2026 - MSE
+
+                Attributes can't be changed when the block is configured for a
+                single defined type.
+
+                Reason: Matches the UI, which doesn't offer attribute editing there.
+            */
+            if ( GetAttributeValue( AttributeKey.DefinedType ).AsGuidOrNull().HasValue )
+            {
+                definedType = null;
+                error = ActionBadRequest( "Attributes cannot be changed when the block is configured for a single defined type." );
+                return false;
+            }
+
             definedType = idKey.IsNotNullOrWhiteSpace()
                 ? new DefinedTypeService( RockContext ).Get( idKey, !PageCache.Layout.Site.DisablePredictableIds )
                 : null;
@@ -601,9 +617,14 @@ namespace Rock.Blocks.Core
                     ? new DefinedTypeService( RockContext ).Get( definedTypeId.Value )
                     : null;
 
-                if ( definedType == null || !definedType.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
+                if ( definedType == null )
                 {
                     return ActionBadRequest();
+                }
+
+                if ( !TryGetDefinedTypeForAttributeAction( definedType.IdKey, out _, out var actionError ) )
+                {
+                    return actionError;
                 }
             }
 
