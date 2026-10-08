@@ -21,6 +21,7 @@ using System.Net;
 using System.Net.Http;
 using System.Web.Http;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Rest.Filters;
@@ -153,7 +154,7 @@ namespace Rock.Rest.Controllers
         /// <returns>The transaction identifier, or null.</returns>
         private int? GetExistingTransactionId( int imageId )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 return new FinancialTransactionImageService( rockContext ).GetSelect( imageId, i => ( int? ) i.TransactionId );
             }
@@ -189,7 +190,7 @@ namespace Rock.Rest.Controllers
         /// <param name="transactionId">The transaction identifier.</param>
         private void EnsureCanEditTransaction( int transactionId )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var transaction = new FinancialTransactionService( rockContext ).Get( transactionId );
 
@@ -206,7 +207,7 @@ namespace Rock.Rest.Controllers
         /// <param name="binaryFileId">The binary file identifier.</param>
         private void EnsureBinaryFileExists( int binaryFileId )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 if ( !new BinaryFileService( rockContext ).Queryable().Any( f => f.Id == binaryFileId ) )
                 {
