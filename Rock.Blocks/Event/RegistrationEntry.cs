@@ -687,7 +687,7 @@ namespace Rock.Blocks.Event
                     return ActionBadRequest( errorMessage );
                 }
 
-                var successViewModel = GetSuccessViewModel( context.Registration.Id, context.TransactionCode, context.GatewayPersonIdentifier );
+                var successViewModel = GetSuccessViewModel( context.Registration.Id, context.RegistrationSettings.FinancialGatewayId, context.TransactionCode, context.GatewayPersonIdentifier );
 
                 return new BlockActionResult( System.Net.HttpStatusCode.Created, successViewModel );
             }
@@ -4047,7 +4047,7 @@ namespace Rock.Blocks.Event
                         }
                     }
 
-                    successViewModel = GetSuccessViewModel( context.Registration.Id, context.TransactionCode, context.GatewayPersonIdentifier );
+                    successViewModel = GetSuccessViewModel( context.Registration.Id, context.RegistrationSettings.FinancialGatewayId, context.TransactionCode, context.GatewayPersonIdentifier );
                 }
             }
 
@@ -5266,10 +5266,11 @@ namespace Rock.Blocks.Event
         /// Gets the success view model.
         /// </summary>
         /// <param name="registrationId">The registration identifier.</param>
+        /// <param name="financialGatewayId">The financial gateway identifier that processed the transaction.</param>
         /// <param name="transactionCode">The transaction code.</param>
         /// <param name="gatewayPersonIdentifier">The gateway person identifier.</param>
         /// <returns></returns>
-        private RegistrationEntrySuccessBag GetSuccessViewModel( int registrationId, string transactionCode, string gatewayPersonIdentifier )
+        private RegistrationEntrySuccessBag GetSuccessViewModel( int registrationId, int? financialGatewayId, string transactionCode, string gatewayPersonIdentifier )
         {
             // Create a view model with default values in case anything goes wrong
             var viewModel = new RegistrationEntrySuccessBag
@@ -5282,6 +5283,28 @@ namespace Rock.Blocks.Event
                 RegisteredCount = 0,
                 WaitListedCount = 0,
             };
+
+            // Allow the payment method used for this transaction to be saved
+            // for future use.
+            if ( financialGatewayId.HasValue && transactionCode.IsNotNullOrWhiteSpace() && gatewayPersonIdentifier.IsNotNullOrWhiteSpace() )
+            {
+                Guid? financialGatewayGuid;
+
+                using ( var gatewayRockContext = new RockContext() )
+                {
+                    financialGatewayGuid = new FinancialGatewayService( gatewayRockContext ).GetGuid( financialGatewayId.Value );
+                }
+
+                if ( financialGatewayGuid.HasValue )
+                {
+                    var grant = new SecurityGrant()
+                        .AddRule( new Rock.Security.SecurityGrantRules.SaveFinancialAccountSecurityGrantRule( financialGatewayGuid.Value, transactionCode, gatewayPersonIdentifier ) );
+
+                    grant.SetLifetime( TimeSpan.FromMinutes( 60 ) );
+
+                    viewModel.SaveAccountSecurityGrantToken = grant.ToToken();
+                }
+            }
 
             try
             {

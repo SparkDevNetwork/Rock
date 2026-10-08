@@ -19,6 +19,10 @@ using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 
+using Rock.Data;
+using Rock.Model;
+using Rock.Security;
+
 namespace Rock.Field
 {
     /// <summary>
@@ -120,6 +124,62 @@ namespace Rock.Field
             }
 
             return items;
+        }
+
+        /// <summary>
+        /// Returns a copy of the configuration values with list source values
+        /// cleared when they cannot be used by the person. Use this on
+        /// configuration values provided by the client.
+        /// </summary>
+        /// <param name="configurationValues">The private configuration values to check.</param>
+        /// <param name="person">The person making the request.</param>
+        /// <returns>The configuration values that can be used.</returns>
+        internal static Dictionary<string, string> RemoveDynamicListSources( Dictionary<string, string> configurationValues, Person person )
+        {
+            if ( configurationValues == null || new GlobalDefault().IsAuthorized( Authorization.ADMINISTRATE, person ) )
+            {
+                return configurationValues;
+            }
+
+            configurationValues = new Dictionary<string, string>( configurationValues, configurationValues.Comparer );
+
+            var listSourceKeys = configurationValues.Keys
+                .Where( k => k.Equals( "values", StringComparison.OrdinalIgnoreCase )
+                    || k.Equals( "customvalues", StringComparison.OrdinalIgnoreCase ) )
+                .ToList();
+
+            foreach ( var key in listSourceKeys )
+            {
+                var listSource = configurationValues[key] ?? string.Empty;
+
+                var isDynamic = listSource.IsLavaTemplate()
+                    || ( listSource.ToUpper().Contains( "SELECT" ) && listSource.ToUpper().Contains( "FROM" ) );
+
+                if ( isDynamic && !IsSavedListSource( listSource ) )
+                {
+                    configurationValues[key] = string.Empty;
+                }
+            }
+
+            return configurationValues;
+        }
+
+        /// <summary>
+        /// Determines whether the list source exactly matches one that is
+        /// already saved on an attribute.
+        /// </summary>
+        /// <param name="listSource">The list source to check.</param>
+        /// <returns><c>true</c> if the list source is already saved; otherwise <c>false</c>.</returns>
+        private static bool IsSavedListSource( string listSource )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                return new AttributeQualifierService( rockContext ).Queryable()
+                    .Where( q => ( q.Key == "values" || q.Key == "customvalues" ) && q.Value == listSource )
+                    .Select( q => q.Value )
+                    .ToList()
+                    .Any( v => v == listSource );
+            }
         }
     }
 }

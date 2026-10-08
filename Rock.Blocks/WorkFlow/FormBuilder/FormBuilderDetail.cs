@@ -903,6 +903,7 @@ namespace Rock.Blocks.Workflow.FormBuilder
                 // Convert the attribute configuration into values that can be used
                 // for filtering a value.
                 var privateConfigurationValues = fieldType.Field.GetPrivateConfigurationValues( field.ConfigurationValues );
+                privateConfigurationValues = Field.Helper.RemoveDynamicListSources( privateConfigurationValues, RequestContext.CurrentPerson );
                 var publicConfigurationValues = fieldType.Field.GetPublicConfigurationValues( privateConfigurationValues, Field.ConfigurationValueUsage.Edit, null );
 
                 /*
@@ -958,6 +959,7 @@ namespace Rock.Blocks.Workflow.FormBuilder
             }
 
             var privateConfigurationValues = fieldType.Field.GetPrivateConfigurationValues( configurationValues );
+            privateConfigurationValues = Field.Helper.RemoveDynamicListSources( privateConfigurationValues, RequestContext.CurrentPerson );
 
             var publicEditConfigurationValues = fieldType.Field.GetPublicConfigurationValues( privateConfigurationValues, ConfigurationValueUsage.Edit, null );
 

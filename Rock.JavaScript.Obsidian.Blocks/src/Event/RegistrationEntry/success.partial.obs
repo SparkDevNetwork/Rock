@@ -16,10 +16,11 @@
             <p>{{ allRegistrantsWaitListedMessage }}</p>
         </NotificationBox>
         <div v-html="messageHtml"></div>
-        <SaveFinancialAccountForm v-if="gatewayGuid && transactionCode && gatewayPersonIdentifier && enableSaveAccount && isSaveAccountSupported"
+        <SaveFinancialAccountForm v-if="gatewayGuid && transactionCode && gatewayPersonIdentifier && saveAccountSecurityGrantToken && enableSaveAccount && isSaveAccountSupported"
                                   :gatewayGuid="gatewayGuid"
                                   :transactionCode="transactionCode"
                                   :gatewayPersonIdentifier="gatewayPersonIdentifier"
+                                  :securityGrantToken="saveAccountSecurityGrantToken"
                                   saveAccountCheckBoxLabel="Save account information for future payments"
                                   class="well">
             <template #header>
@@ -117,6 +118,11 @@
     /** The token returned for the payment method */
     const gatewayPersonIdentifier = computed<string>(() => {
         return registrationEntryState.successViewModel?.gatewayPersonIdentifier || "";
+    });
+
+    /** The security grant token that allows the payment method to be saved */
+    const saveAccountSecurityGrantToken = computed<string>(() => {
+        return registrationEntryState.successViewModel?.saveAccountSecurityGrantToken || "";
     });
 
     const enableSaveAccount = computed<boolean>(() => {
