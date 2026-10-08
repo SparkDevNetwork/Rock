@@ -1477,6 +1477,13 @@ namespace Rock.Blocks.Group.Scheduling
                 return;
             }
 
+            // Notes are saved to PersonScheduleExclusion.Title, which has a max length of 100.
+            if ( bag.Notes?.Length > 100 )
+            {
+                errorMessage = "Unavailability Notes cannot be more than 100 characters.";
+                return;
+            }
+
             var config = new GetToolboxDataConfig
             {
                 SelectedPersonGuidOverride = bag.SelectedPersonGuid,
