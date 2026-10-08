@@ -1,0 +1,56 @@
+name: Relay AppVeyor Results to Mirror
+
+# When AppVeyor finishes building a develop commit, sends the result to the
+# private mirror (SparkStealth/Rock-Mirror). There, private-build-results.yml
+# matches the build to the PRs that shipped into it.
+#
+# One AppVeyor result sends one event, so each build is handled exactly once in
+# the mirror, however many PRs it covers.
+#
+# Only sends the commit ID, the result and the AppVeyor link, which are already
+# public.
+#
+# Required in this repo (shared with mirror-to-private.yml):
+#   vars.MIRROR_APP_ID              App ID of the "Rock Mirror Sync" GitHub App
+#   secrets.MIRROR_APP_PRIVATE_KEY  Private key of that App
+
+on:
+  status:
+
+permissions:
+  contents: read
+
+jobs:
+  relay:
+    # Final results of AppVeyor's branch builds that include develop. Pending
+    # statuses and AppVeyor's pull request builds are ignored.
+    if: >-
+      github.repository == 'SparkDevNetwork/Rock'
+      && github.event.context == 'continuous-integration/appveyor/branch'
+      && contains(fromJSON('["success", "failure", "error"]'), github.event.state)
+      && contains(github.event.branches.*.name, 'develop')
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Create mirror token
+        id: app
+        uses: actions/create-github-app-token@v2
+        with:
+          app-id: ${{ vars.MIRROR_APP_ID }}
+          private-key: ${{ secrets.MIRROR_APP_PRIVATE_KEY }}
+          owner: SparkStealth
+          repositories: Rock-Mirror
+
+      - name: Send the result to the mirror
+        env:
+          GH_TOKEN: ${{ steps.app.outputs.token }}
+          SHA: ${{ github.event.sha }}
+          STATE: ${{ github.event.state }}
+          URL: ${{ github.event.target_url }}
+        run: |
+          gh api -X POST repos/SparkStealth/Rock-Mirror/dispatches \
+            -f event_type=appveyor-result \
+            -f "client_payload[sha]=$SHA" \
+            -f "client_payload[state]=$STATE" \
+            -f "client_payload[url]=$URL"
+          echo "Sent $STATE for $SHA"
