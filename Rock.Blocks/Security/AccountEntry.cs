@@ -1572,11 +1572,16 @@ namespace Rock.Blocks.Security
 
             var isFromPasswordlessAuthentication = IsFromPasswordlessAuthentication( box, out var passwordlessAuthenticationState );
 
-            // Passwordless updates the person only after the code is verified.
-            if ( !isFromPasswordlessAuthentication )
-            {
-                UpdatePerson( person, box.PersonInfo, rockContext );
-            }
+            /*
+                10/7/2026 - MSE
+
+                The form's attribute values are only saved to an existing
+                person after a passwordless code is verified. Registering as
+                an existing person with a username and password does not save
+                them. The person can update them after signing in.
+
+                Reason: Account Entry existing person registration.
+            */
 
             if ( !isFromPasswordlessAuthentication && CanPersonAuthenticateWithExistingUserLogin( person, rockContext ) )
             {
