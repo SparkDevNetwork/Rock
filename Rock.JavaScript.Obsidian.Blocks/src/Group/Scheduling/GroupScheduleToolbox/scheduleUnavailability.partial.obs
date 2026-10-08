@@ -22,6 +22,7 @@
         <TextBox v-model="notes"
                  label="Unavailability Notes"
                  formGroupClasses="unavailability-notes"
+                 :maxLength="100"
                  :disabled="isSavingUnavailability" />
 
         <DropDownList v-model="groupGuidOrEmptyString"
