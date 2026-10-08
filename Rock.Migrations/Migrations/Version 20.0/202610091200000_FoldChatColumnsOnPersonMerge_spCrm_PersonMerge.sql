@@ -20,7 +20,7 @@
 	</code>
 </doc>
 */
-ALTER PROCEDURE [dbo].[spCrm_PersonMerge]
+CREATE PROCEDURE [dbo].[spCrm_PersonMerge]
 	  @OldId int
 	, @NewId int
 
@@ -261,7 +261,7 @@ BEGIN
 
                     -- Pick ONE deterministic mapping per (FinalLoserGMId, GroupId) so later joins are stable.
                     -- Prefer non-archived rows; then newest modified/created; then lowest Id as a tie-breaker.
-       rn = ROW_NUMBER() OVER (
+                    rn = ROW_NUMBER() OVER (
                         PARTITION BY
                             CASE WHEN LA.Id IS NOT NULL THEN GMKeep.Id ELSE GMOld.Id END,  -- FinalLoserGMId
                             GMOld.GroupId
@@ -602,7 +602,7 @@ BEGIN
                     INSERT INTO [PersonPreviousName] ( [PersonAliasId], [LastName], [Guid], [CreatedDateTime], [ModifiedDateTime] )
                     VALUES ( @NewPrimaryAliasId, @OldLastName, NEWID(), GETDATE(), GETDATE() );
                 END
-           END
+            END
 
 		    -- Delete any duplicate previous names
 		    DELETE PN

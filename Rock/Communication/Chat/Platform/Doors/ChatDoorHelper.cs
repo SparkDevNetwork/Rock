@@ -1228,6 +1228,51 @@ namespace Rock.Communication.Chat.Platform.Doors
 
         #endregion The membership read and writes
 
+        #region Person merge
+
+        /// <summary>
+        /// Archives each live direct message of a person whose active members are exactly those of
+        /// an older live one, keeping the oldest of each set.
+        /// </summary>
+        /// <param name="rockContext">The context the merge runs in, read after the merge moved the memberships.</param>
+        /// <param name="personId">The person the merge kept.</param>
+        /// <returns>The conversations archived, not yet saved.</returns>
+        /// <remarks>
+        /// When each of two merged people had a conversation with the same third person, both hold
+        /// the same people once they are one. The oldest is the one the door already reopens, so it
+        /// is kept, and the chat platform moves the history of each archived one into it.
+        /// </remarks>
+        internal static List<Group> ArchiveDirectMessageTwins( RockContext rockContext, int personId )
+        {
+            var directMessageTypeId = GroupTypeCache.GetId( Rock.SystemGuid.GroupType.GROUPTYPE_CHAT_DIRECT_MESSAGE.AsGuid() ) ?? 0;
+            var groupService = new GroupService( rockContext );
+
+            var conversations = groupService.Queryable()
+                .Where( g => g.GroupTypeId == directMessageTypeId && g.IsActive && !g.IsArchived )
+                .Where( g => g.Members.Any( m => m.PersonId == personId && m.GroupMemberStatus == GroupMemberStatus.Active && !m.IsArchived ) )
+                .Select( g => new
+                {
+                    Group = g,
+                    People = g.Members.Where( m => m.GroupMemberStatus == GroupMemberStatus.Active && !m.IsArchived ).Select( m => m.PersonId ).Distinct()
+                } )
+                .ToList();
+
+            var twins = conversations
+                .GroupBy( c => string.Join( ",", c.People.OrderBy( id => id ) ) )
+                .SelectMany( set => set.OrderBy( c => c.Group.Id ).Skip( 1 ) )
+                .Select( c => c.Group )
+                .ToList();
+
+            foreach ( var twin in twins )
+            {
+                groupService.Archive( twin, null, false );
+            }
+
+            return twins;
+        }
+
+        #endregion Person merge
+
         #region Support
 
         /// <summary>

@@ -969,7 +969,7 @@ namespace RockWeb.Blocks.Crm
 
                         // The procedure moves aliases and memberships where no save hook sees them, so
                         // chat is told about the survivor here and pushes them once this commits.
-                        Rock.Communication.Chat.Platform.Sync.ChatPlatformSyncHelper.RecordPersonChange( rockContext, primaryPersonId.Value );
+                        Rock.Communication.Chat.Platform.Sync.ChatPlatformSyncHelper.RecordPersonMerge( rockContext, primaryPersonId.Value );
 
                         logger.Write( $"Merge completed." );
 

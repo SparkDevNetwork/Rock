@@ -2817,6 +2817,10 @@ namespace Rock.Model
             parms.Add( "OldId", namelessPerson.Id );
             parms.Add( "NewId", targetPerson.Id );
             DbService.ExecuteCommand( "spCrm_PersonMerge", CommandType.StoredProcedure, parms );
+
+            // The procedure moves aliases and memberships where no save hook sees them, so chat is
+            // told about the person they now belong to.
+            Rock.Communication.Chat.Platform.Sync.ChatPlatformSyncHelper.RecordPersonMerge( this.Context as RockContext, targetPerson.Id );
         }
 
         #endregion

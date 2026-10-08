@@ -173,7 +173,7 @@ namespace Rock.Tests.Integration.Communication.Chat.Platform.Sync
         }
 
         [TestMethod]
-        public void TheMergePushListsTheArchivedTwinsAsGone()
+        public void TheMergePushNamesTheArchivedTwinsMembersAsGone()
         {
             using ( var scene = new ChatDoorScene() )
             {
@@ -189,8 +189,12 @@ namespace Rock.Tests.Integration.Communication.Chat.Platform.Sync
 
                 var merge = scene.WaitForPushes().Skip( before ).ToList();
                 Assert.AreEqual( 1, merge.Count, "the merge pushes once, after it commits" );
-                Assert.IsTrue( merge[0].AbsentChannels.Contains( twin ),
-                    "the archived twin is in the push, so the platform stamps it gone at once" );
+                // An archived group keeps its channel and loses its members, which is what tells the
+                // platform the conversation is now empty and its history belongs to the one kept.
+                CollectionAssert.IsSubsetOf(
+                    new[] { (twin, scene.Alias( survivorId )), (twin, scene.Alias( otherId )) },
+                    merge[0].AbsentMembers,
+                    "every member of the archived twin is named gone in the push, at once" );
             }
         }
 

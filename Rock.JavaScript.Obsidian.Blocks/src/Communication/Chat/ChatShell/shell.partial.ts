@@ -99,7 +99,30 @@ export type ShellOptions = {
 
     /** The browser's push, or nothing where this browser has none. */
     push?: Omit<PushDependencies, "settings" | "call">;
+
+    /** Loads the page again; the browser's own reload when not given. */
+    reloadPage?: () => void;
 };
+
+/**
+ * The person a platform token names, or null where it names none this client can read. The
+ * token's signature is the platform's to check; this only reads whom it is for.
+ */
+export function tokenPerson(token: string | null): string | null {
+    const payload = token?.split(".")[1];
+    if (!payload) {
+        return null;
+    }
+
+    try {
+        const claims = JSON.parse(atob(payload.replace(/-/g, "+").replace(/_/g, "/")));
+        return typeof claims?.sub === "string" ? claims.sub.toLowerCase() : null;
+    }
+    catch {
+        // Not a token this client can read, so it says nothing about whom it is for.
+        return null;
+    }
+}
 
 /** What the page shows. */
 export type ShellState = {
@@ -294,6 +317,16 @@ export function createChatShell(options: ShellOptions): ChatShell {
         exchange: (churchToken: string) => exchange(churchToken),
         pushTokenToConnection: async (): Promise<void> => {
             showSettings();
+
+            // A token for someone other than the person the page loaded for means a merge made
+            // them part of another person. The page listens on a personal topic that is no longer
+            // theirs, so it loads again rather than move every topic under a live connection.
+            const person = tokenPerson(session.currentToken());
+            if (person !== null && personAliasGuid !== "" && person !== personAliasGuid.toLowerCase()) {
+                (options.reloadPage ?? (() => globalThis.location?.reload()))();
+                return;
+            }
+
             await client?.realtime.setAuth();
         },
         random: Math.random,

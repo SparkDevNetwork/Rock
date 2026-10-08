@@ -313,8 +313,12 @@ namespace Rock.Tests.Integration.Communication.Chat.Platform.Sync
                 Assert.AreEqual( 2, scene.Platform.WaitForMessageCount( scene.TenantId, oldest, n => n == 2 ),
                     "and still does after the full sync restates the church" );
                 Assert.AreEqual( 0, scene.Platform.WaitForMessageCount( scene.TenantId, twin, n => n == 0 ), "the twin holds none" );
-                Assert.IsNotNull( scene.Platform.WaitForChannel( scene.TenantId, twin, r => r != null && r["absent_since"].Type != Newtonsoft.Json.Linq.JTokenType.Null ),
-                    "and is gone from chat" );
+                // Rock archived it, which keeps its channel and takes everyone out of it.
+                foreach ( var personAlias in new[] { adaAlias, scene.Fixture.PrimaryAliasGuid( cal ) } )
+                {
+                    Assert.IsNotNull( scene.Platform.WaitForMember( scene.TenantId, twin, personAlias, r => r != null && r["absent_since"].Type != Newtonsoft.Json.Linq.JTokenType.Null ),
+                        "and nobody is in it" );
+                }
 
                 var member = scene.Platform.WaitForMember( scene.TenantId, room, adaAlias, r => r != null && ( bool ) r["is_banned"] );
                 Assert.IsNotNull( member, "the one membership left in the room carries the ban Lou held" );

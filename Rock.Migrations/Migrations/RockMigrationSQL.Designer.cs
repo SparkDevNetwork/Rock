@@ -2264,6 +2264,15 @@ namespace Rock.Migrations.Migrations {
         }
 
         /// <summary>
+        ///   Looks up a localized string similar to the [spCrm_PersonMerge] stored procedure keeping a chat ban or mute on the membership it keeps..
+        /// </summary>
+        public static string _202610091200000_FoldChatColumnsOnPersonMerge_spCrm_PersonMerge {
+            get {
+                return ResourceManager.GetString("_202610091200000_FoldChatColumnsOnPersonMerge_spCrm_PersonMerge", resourceCulture);
+            }
+        }
+
+        /// <summary>
         ///   Looks up a localized resource of type System.Byte[].
         /// </summary>
         public static byte[] lms_header_min {

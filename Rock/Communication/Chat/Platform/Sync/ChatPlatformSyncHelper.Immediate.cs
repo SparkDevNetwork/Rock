@@ -30,6 +30,7 @@ using Newtonsoft.Json.Linq;
 
 using Rock.Communication.Chat.Platform.Configuration;
 using Rock.Communication.Chat.Platform.Contract;
+using Rock.Communication.Chat.Platform.Doors;
 using Rock.Data;
 using Rock.Logging;
 using Rock.Model;
@@ -619,6 +620,48 @@ namespace Rock.Communication.Chat.Platform.Sync
                 {
                     changes.MemberKeys.Add( (membership.GroupGuid, personId) );
                 }
+            }
+        }
+
+        /// <summary>
+        /// Records a person merge: archives the conversations the merge left as twins of an older
+        /// one, and records the surviving person and those conversations, so all of it is pushed
+        /// after the merge commits.
+        /// </summary>
+        /// <param name="rockContext">The context the merge runs in.</param>
+        /// <param name="personId">The person the merge kept.</param>
+        /// <remarks>
+        /// It saves, so the archive is part of the merge's transaction where there is one, and
+        /// where there is none the push starts as the save commits. A twin left live is still a
+        /// conversation, so failing to archive one is logged and never fails the merge.
+        /// </remarks>
+        [Rock.Attribute.RockInternal( "20.0", true )]
+        public static void RecordPersonMerge( RockContext rockContext, int personId )
+        {
+            RecordPersonChange( rockContext, personId );
+
+            List<Group> twins = null;
+            try
+            {
+                twins = ChatDoorHelper.ArchiveDirectMessageTwins( rockContext, personId );
+
+                // Named before the save, which pushes at once when no transaction holds it.
+                foreach ( var twin in twins )
+                {
+                    RecordGroupChange( rockContext, twin.Guid );
+                }
+
+                rockContext.SaveChanges();
+            }
+            catch ( Exception exception )
+            {
+                // Undone in the context, so no later save in the merge tries the archive again.
+                foreach ( var entry in rockContext.ChangeTracker.Entries<Group>().Where( e => twins?.Contains( e.Entity ) == true ) )
+                {
+                    entry.State = System.Data.Entity.EntityState.Unchanged;
+                }
+
+                ExceptionLogService.LogException( new Exception( "Chat could not archive the conversations a person merge left as twins.", exception ) );
             }
         }
 
