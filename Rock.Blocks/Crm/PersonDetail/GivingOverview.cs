@@ -402,7 +402,7 @@ $@"<span title=""{growthPercentText}"" class=""small text-{growthPercentClass}""
             // Giving journey KPI.
             var journeyStage = ( GivingJourneyStage ) person.GetAttributeValue( Rock.SystemGuid.Attribute.PERSON_GIVING_CURRENT_GIVING_JOURNEY_STAGE.AsGuid() ).AsInteger();
             var journeyStageName = journeyStage.GetDisplayName();
-            var kpiGivingJourney = GetKpiShortCode( "Giving Journey", journeyStageName, icon: "fa fa-hiking" );
+            var kpiGivingJourney = GetKpiShortCode( "Giving Journey", journeyStageName, icon: "ti-trekking" );
 
             var kpi = kpiLast12Months + kpiLast90Days + kpiGivesAs + kpiGivingJourney;
 
@@ -428,7 +428,7 @@ $@"<span title=""{growthPercentText}"" class=""small text-{growthPercentClass}""
                 "Typical Gift",
                 $"<span class=\"currency-span\">{FormatAsCurrency( giftAmountMedian )}</span>",
                 $"{giftAmountIqr}",
-                "fa-fw fa-money-bill",
+                "ti-cash",
                 "left",
                 $"A typical gift amount has a median value of ${giftAmountMedian} with a variability of ${giftAmountIqr}." );
 
@@ -445,13 +445,13 @@ $@"<span title=""{growthPercentText}"" class=""small text-{growthPercentClass}""
                 "Typical Frequency",
                 giftFrequencyDaysMean + "d",
                 $"{PlusOrMinus}{giftFrequencyDaysStdDev}d",
-                "fa-fw fa-clock",
+                "ti-clock",
                 description: $"A typical gift frequency has a mean value of {giftFrequencyDaysMean} {giftFrequencyDaysMeanUnits} with a variability of {giftFrequencyDaysStdDev} {giftFrequencyDaysStdDevUnits}." );
 
             stringBuilder.Append( typicalFrequencyKpi );
 
             // Percent of gifts that are scheduled KPI.
-            stringBuilder.Append( GetKpiShortCode( "Percent Scheduled", person.GetAttributeValue( "PercentofGiftsScheduled" ).AsInteger() + "%", icon: "fa-fw fa-percentage" ) );
+            stringBuilder.Append( GetKpiShortCode( "Percent Scheduled", person.GetAttributeValue( "PercentofGiftsScheduled" ).AsInteger() + "%", icon: "ti-percentage" ) );
 
             // Frequency label KPI.
             var frequencyLabelAttribute = AttributeCache.Get( Rock.SystemGuid.Attribute.PERSON_GIVING_FREQUENCY_LABEL );
@@ -459,7 +459,7 @@ $@"<span title=""{growthPercentText}"" class=""small text-{growthPercentClass}""
             if ( frequencyLabelAttribute != null )
             {
                 var frequencyLabel = frequencyLabelAttribute.FieldType.Field.GetTextValue( person.GetAttributeValue( "FrequencyLabel" ), frequencyLabelAttribute.ConfigurationValues );
-                stringBuilder.Append( GetKpiShortCode( "Frequency", frequencyLabel, icon: "fa-fw fa-calendar-alt", textAlign: "left" ) );
+                stringBuilder.Append( GetKpiShortCode( "Frequency", frequencyLabel, icon: "ti-calendar", textAlign: "left" ) );
             }
 
             // Preferred currency KPI.
