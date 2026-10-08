@@ -10299,6 +10299,21 @@ namespace Rock.Rest.v2
                 };
             }
 
+            // The account can only be saved for the transaction that the
+            // security grant was issued for.
+            var grant = SecurityGrant.FromToken( options.SecurityGrantToken );
+            var saveAccess = new Rock.Security.SecurityGrantRules.SaveFinancialAccountSecurityGrantRule.SaveFinancialAccountAccess( options.GatewayGuid, options.TransactionCode, options.GatewayPersonIdentifier );
+
+            if ( grant?.IsAccessGranted( saveAccess, Security.Authorization.EDIT ) != true )
+            {
+                return new SaveFinancialAccountFormSaveAccountResultBag
+                {
+                    Title = "Invalid Transaction",
+                    Detail = "Sorry, the account information cannot be saved as there's not a valid transaction to reference",
+                    IsSuccess = false
+                };
+            }
+
             var currentPerson = GetPerson();
             var isAnonymous = currentPerson == null;
 
@@ -10371,6 +10386,19 @@ namespace Rock.Rest.v2
                     };
                 }
 
+                // Only one saved account can be created from a transaction.
+                var financialPersonSavedAccountService = new FinancialPersonSavedAccountService( rockContext );
+
+                if ( financialPersonSavedAccountService.Queryable().Any( a => a.FinancialGatewayId == financialGateway.Id && a.TransactionCode == options.TransactionCode ) )
+                {
+                    return new SaveFinancialAccountFormSaveAccountResultBag
+                    {
+                        Title = "Account Already Saved",
+                        Detail = "The account information for this transaction has already been saved",
+                        IsSuccess = false
+                    };
+                }
+
                 // Create the login if needed
                 if ( isAnonymous )
                 {
@@ -10416,7 +10444,6 @@ namespace Rock.Rest.v2
                     }
                 };
 
-                var financialPersonSavedAccountService = new FinancialPersonSavedAccountService( rockContext );
                 financialPersonSavedAccountService.Add( savedAccount );
 
                 System.Web.HttpContext.Current.AddOrReplaceItem( "CurrentPerson", RockRequestContext.CurrentPerson );

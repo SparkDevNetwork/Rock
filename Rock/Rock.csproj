@@ -1947,6 +1947,7 @@
     <Compile Include="Security\SecurityGrantRules\GroupMemberPickerSecurityGrantRule.cs" />
     <Compile Include="Security\SecurityGrantRules\GroupPickerSecurityGrantRule.cs" />
     <Compile Include="Security\SecurityGrantRules\GroupRolePickerSecurityGrantRule.cs" />
+    <Compile Include="Security\SecurityGrantRules\SaveFinancialAccountSecurityGrantRule.cs" />
     <Compile Include="Security\StringValueValidator.cs" />
     <Compile Include="Storage\AssetManagerAsset.cs" />
     <Compile Include="SystemGuid\EmailSection.cs" />
