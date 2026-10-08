@@ -1692,19 +1692,21 @@ WHERE [RT].[Guid] = '" + SystemGuid.DefinedValue.PERSON_RECORD_TYPE_RESTUSER + "
             {
                 var group = new GroupService( RockContext ).Get( familyId, false );
 
-                if ( group != null )
+                if ( group == null || group.GroupTypeId != GroupTypeCache.GetFamilyGroupType( RockContext ).Id )
                 {
-                    allowedPersonIds.UnionWith( group.Members.Select( gm => gm.PersonId ) );
-
-                    var canCheckInPersonIds = new CheckInDirector( RockContext )
-                        .CreateSession( template )
-                        .SearchProvider
-                        .GetCanCheckInFamilyMembersQuery( group.IdKey )
-                        .Select( gm => gm.PersonId )
-                        .ToList();
-
-                    allowedPersonIds.UnionWith( canCheckInPersonIds );
+                    return ActionBadRequest( "Family not found." );
                 }
+
+                allowedPersonIds.UnionWith( group.Members.Select( gm => gm.PersonId ) );
+
+                var canCheckInPersonIds = new CheckInDirector( RockContext )
+                    .CreateSession( template )
+                    .SearchProvider
+                    .GetCanCheckInFamilyMembersQuery( group.IdKey )
+                    .Select( gm => gm.PersonId )
+                    .ToList();
+
+                allowedPersonIds.UnionWith( canCheckInPersonIds );
             }
 
             var personService = new PersonService( RockContext );
@@ -1732,7 +1734,7 @@ WHERE [RT].[Guid] = '" + SystemGuid.DefinedValue.PERSON_RECORD_TYPE_RESTUSER + "
 
             var response = new SaveFamilyResponseBag
             {
-                FamilyId = result.PrimaryFamily.IdKey,
+                FamilyId = result.PrimaryFamily?.IdKey,
                 IsCheckInAllowed = template.IsCheckInAfterRegistrationAllowed,
                 IsSuccess = result.IsSuccess,
                 ErrorMessage = result.ErrorMessage
