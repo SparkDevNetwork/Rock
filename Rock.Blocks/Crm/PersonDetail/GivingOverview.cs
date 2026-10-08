@@ -459,7 +459,7 @@ $@"<span title=""{growthPercentText}"" class=""small text-{growthPercentClass}""
             if ( frequencyLabelAttribute != null )
             {
                 var frequencyLabel = frequencyLabelAttribute.FieldType.Field.GetTextValue( person.GetAttributeValue( "FrequencyLabel" ), frequencyLabelAttribute.ConfigurationValues );
-                stringBuilder.Append( GetKpiShortCode( "Frequency", frequencyLabel, icon: "ti-calendar", textAlign: "left" ) );
+                stringBuilder.Append( GetKpiShortCode( "Frequency", frequencyLabel, icon: "ti-calendar-month", textAlign: "left" ) );
             }
 
             // Preferred currency KPI.
