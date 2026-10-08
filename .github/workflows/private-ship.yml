@@ -1,7 +1,9 @@
 name: Ship to Public
 
 # The "Ship it" button. Adding the `ship` label to a PR in the private mirror:
-#   1. Checks the PR is approved and its PR build passed on its latest commit.
+#   1. Checks no reviewer has outstanding "Request changes" on the PR. Adding the
+#      label is the approval, so authors can ship their own PRs (GitHub doesn't
+#      let anyone approve their own PR).
 #   2. Rebases the PR onto the LIVE public branch (not the mirror's copy).
 #   3. Checks commit messages use the release-note format (+ or -).
 #   4. Merges the change up every branch it must reach, following the
@@ -10,6 +12,8 @@ name: Ship to Public
 #      either all of them update or none do. Git rejects the push if public
 #      moved, so nothing on public can ever be overwritten.
 #   6. Comments with the public commit links and closes the PR.
+#   7. After the verify build passes, deletes the PR's branch from the mirror.
+#      If the build fails, the branch is kept so the fix can go on it.
 # On any failure, including a merge-up conflict, nothing is pushed. It comments
 # the reason and removes the label.
 #
@@ -17,10 +21,10 @@ name: Ship to Public
 # no merge-up. It's the escape hatch when a merge-up conflicts: ship with
 # `ship-only`, then do that merge-up by hand.
 #
-# Shipping does NOT rebuild, so it takes about a minute. The PR build already
-# passed. A separate verify job then builds the exact commit that shipped and
-# comments on the PR if it broke, which catches the rare case where two
-# changes break each other without a git conflict.
+# Shipping does NOT wait on a build, so it takes about a minute. This matches
+# how Rock already works: code lands, then gets built. A verify job builds the
+# last branch updated (develop when the merge-up reaches it) and comments on
+# the PR, tagging whoever shipped, if the build fails.
 #
 # This file also exists in the public repo (the mirror copies develop), but the
 # repository checks below keep it from ever running there.
@@ -38,17 +42,19 @@ name: Ship to Public
 #                     hotfix-17.11 and hotfix-18.6) gets one merge from each.
 #
 # Build runner for the verify job (optional):
-#   vars.BUILD_RUNNER  Same variable as private-build.yml.
+#   vars.BUILD_RUNNER  JSON for runs-on. Unset uses GitHub-hosted "windows-latest".
+#                      Set to ["self-hosted","windows","rock-build"] to use our own
+#                      Windows VM.
 
 on:
   pull_request:
     types: [labeled]
 
 permissions:
-  contents: read
+  # Write is only used to delete the PR's branch from the mirror after shipping.
+  contents: write
   pull-requests: write
   issues: write
-  checks: read
 
 jobs:
   ship:
@@ -69,6 +75,7 @@ jobs:
       PR: ${{ github.event.pull_request.number }}
       BASE: ${{ github.event.pull_request.base.ref }}
       HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+      HEAD_REF: ${{ github.event.pull_request.head.ref }}
       ACTOR: ${{ github.actor }}
       LABEL: ${{ github.event.label.name }}
     steps:
@@ -81,30 +88,17 @@ jobs:
               exit 1 ;;
           esac
 
-      - name: Check the PR is approved
+      - name: Check nobody has requested changes
         run: |
-          # Reads reviews directly instead of GitHub's reviewDecision, which is
-          # only set when a ruleset requires reviews. Works on Free and Team.
-          # Each reviewer's latest approve / request-changes / dismiss counts.
-          decision=$(gh api "repos/$GITHUB_REPOSITORY/pulls/$PR/reviews?per_page=100" -q '
+          # Adding the label is the approval, so no approving review is needed.
+          # Only blocks if a reviewer's latest review is still "Request changes".
+          blockers=$(gh api "repos/$GITHUB_REPOSITORY/pulls/$PR/reviews?per_page=100" -q '
             [.[] | select(.state == "APPROVED" or .state == "CHANGES_REQUESTED" or .state == "DISMISSED")]
-            | group_by(.user.login) | map(last.state)
-            | if any(. == "CHANGES_REQUESTED") then "CHANGES_REQUESTED"
-              elif any(. == "APPROVED") then "APPROVED"
-              else "NONE" end')
+            | group_by(.user.login) | map(select(last.state == "CHANGES_REQUESTED") | last.user.login)
+            | join(", ")')
 
-          if [ "$decision" != "APPROVED" ]; then
-            echo "SHIP_FAIL=This PR is not approved (review status: $decision)." >> "$GITHUB_ENV"
-            exit 1
-          fi
-
-      - name: Check the PR build passed on the latest commit
-        run: |
-          result=$(gh api "repos/$GITHUB_REPOSITORY/commits/$HEAD_SHA/check-runs?check_name=build" \
-            -q '.check_runs | sort_by(.started_at) | last | (.status + "/" + (.conclusion // ""))')
-
-          if [ "$result" != "completed/success" ]; then
-            echo "SHIP_FAIL=The PR build hasn't passed on the latest commit (\`${HEAD_SHA:0:7}\`, status: ${result:-not run}). Wait for it to finish green, then add the \`$LABEL\` label again." >> "$GITHUB_ENV"
+          if [ -n "$blockers" ]; then
+            echo "SHIP_FAIL=Changes were requested by $blockers. Address them and get the review dismissed or re-approved, then add the \`$LABEL\` label again." >> "$GITHUB_ENV"
             exit 1
           fi
 
@@ -144,7 +138,7 @@ jobs:
               echo "Rebasing onto public \`$BASE\` hit conflicts in:"
               echo "$files"
               echo ""
-              echo "Run \`git fetch origin\` and \`git rebase origin/$BASE\` locally, resolve, push to this branch, wait for the build, then add the \`$LABEL\` label again."
+              echo "Run \`git fetch origin\` and \`git rebase origin/$BASE\` locally, resolve, push to this branch, then add the \`$LABEL\` label again."
               echo "EOF"
             } >> "$GITHUB_ENV"
             exit 1
@@ -327,8 +321,27 @@ jobs:
           BRANCH: ${{ needs.ship.outputs.branch }}
           SHA: ${{ needs.ship.outputs.sha }}
           ACTOR: ${{ github.actor }}
+          HEAD_REF: ${{ github.event.pull_request.head.ref }}
         run: |
           gh pr comment "$PR" -R "$GITHUB_REPOSITORY" \
-            -b "**Public \`$BRANCH\` is broken after this ship.** @$ACTOR, commit https://github.com/SparkDevNetwork/Rock/commit/$SHA doesn't build. This usually means another change that landed first conflicts with this one without a git conflict. Please push a fix to public \`$BRANCH\` right away.
+            -b "**Public \`$BRANCH\` is broken after this ship.** @$ACTOR, commit https://github.com/SparkDevNetwork/Rock/commit/$SHA doesn't build. This usually means another change that landed first conflicts with this one without a git conflict.
+
+          Your branch \`$HEAD_REF\` was kept. Push the fix to it, reopen this PR, and add \`ship\` again. The commits that already shipped are skipped automatically.
 
           [Build log]($GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID)"
+
+      - name: Delete the PR's branch from the mirror
+        # Only after the build passes. If it fails, the branch is kept for the fix.
+        if: success()
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          HEAD_REF: ${{ github.event.pull_request.head.ref }}
+        run: |
+          # Never delete a shared branch, even if a PR was opened from one.
+          case "$HEAD_REF" in
+            develop|release-*|hotfix-*) echo "Not deleting shared branch $HEAD_REF."; exit 0 ;;
+          esac
+          gh api -X DELETE "repos/$GITHUB_REPOSITORY/git/refs/heads/$HEAD_REF" \
+            && echo "Deleted $HEAD_REF." \
+            || echo "::warning::Couldn't delete $HEAD_REF. Delete it by hand."
