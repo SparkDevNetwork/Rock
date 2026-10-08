@@ -128,6 +128,14 @@ namespace Rock.Tests.Integration.Communication.Chat.Platform.Doors
             Fixture.AddMember( Rock.SystemGuid.Group.GROUP_CHAT_BAN_LIST.AsGuid(), personId );
         }
 
+        public void MakeDeceased( int personId )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                rockContext.Database.ExecuteSqlCommand( "UPDATE [Person] SET [IsDeceased] = 1 WHERE [Id] = @p0", personId );
+            }
+        }
+
         public void MakeInactive( int personId )
         {
             var inactive = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE.AsGuid() ).Id;

@@ -611,5 +611,205 @@ namespace Rock.Tests.Integration.Communication.Chat.Platform.Doors
         }
 
         #endregion Rename
+
+        #region Every door
+
+        [TestMethod]
+        public void EveryDoorFindsNothingInAGroupThatIsNotAChatChannelOrAGuidThatIsAPerson()
+        {
+            using ( var scene = new ChatDoorScene() )
+            {
+                var ada = scene.AddChatPerson( "Ada" );
+                var bo = scene.AddChatPerson( "Bo" );
+                var notChat = scene.Fixture.AddChannel( scene.Fixture.SharedGroupTypeId, "Not chat", g => g.IsChatEnabledOverride = false );
+                scene.Fixture.AddMember( notChat, ada );
+                scene.Fixture.AddMember( notChat, bo );
+
+                foreach ( var target in new[] { notChat, scene.Alias( ada ) } )
+                {
+                    Assert.AreEqual( "door.not_found", scene.Leave( ada, target ).Code );
+                    Assert.AreEqual( "door.not_found", scene.Add( ada, target, scene.Alias( bo ) ).Code );
+                    Assert.AreEqual( "door.not_found", scene.Remove( ada, target, scene.Alias( bo ) ).Code );
+                    Assert.AreEqual( "door.not_found", scene.Rename( ada, target, "Name" ).Code );
+                }
+
+                Assert.AreEqual( 2, scene.ActiveMemberCount( notChat ), "nothing was written" );
+                Assert.AreEqual( 0, scene.Platform.Posts );
+            }
+        }
+
+        [TestMethod]
+        public void AnInactiveGroupIsNotAChannelAnyDoorChanges()
+        {
+            using ( var scene = new ChatDoorScene() )
+            {
+                var lee = scene.AddChatPerson( "Lee" );
+                var bo = scene.AddChatPerson( "Bo" );
+                var manager = scene.AddManagerRole();
+                var room = scene.Fixture.AddChannel( scene.Fixture.SharedGroupTypeId, "Ended team", g => g.IsActive = false );
+                scene.Fixture.AddMember( room, lee, m => m.GroupRoleId = manager );
+
+                Assert.AreEqual( "door.not_found", scene.Add( lee, room, scene.Alias( bo ) ).Code );
+                Assert.AreEqual( "door.not_found", scene.Join( bo, room ).Code );
+                CollectionAssert.DoesNotContain( scene.ActiveMembers( room ), bo );
+                Assert.AreEqual( 0, scene.Platform.Posts );
+            }
+        }
+
+        [TestMethod]
+        public void EveryDoorRefusesACallerTheSessionGatesKeepOut()
+        {
+            using ( var scene = new ChatDoorScene() )
+            {
+                var gil = scene.AddChatPerson( "Gil", isOpenDmAllowed: true );
+                var bo = scene.AddChatPerson( "Bo", isOpenDmAllowed: true );
+                var cy = scene.AddChatPerson( "Cy", isOpenDmAllowed: true );
+                var group = scene.Start( gil, scene.Alias( bo ), scene.Alias( cy ) ).ChannelGuid.Value;
+                var dee = scene.AddChatPerson( "Dee", isOpenDmAllowed: true );
+                scene.AddToBanList( gil );
+
+                Assert.AreEqual( "banned", scene.Leave( gil, group ).Code );
+                Assert.AreEqual( "banned", scene.Add( gil, group, scene.Alias( dee ) ).Code );
+                Assert.AreEqual( "banned", scene.Remove( gil, group, scene.Alias( cy ) ).Code );
+                Assert.AreEqual( "banned", scene.Rename( gil, group, "Mine" ).Code );
+                Assert.AreEqual( 3, scene.ActiveMemberCount( group ) );
+                Assert.AreEqual( "Chat Direct Message", scene.Group( group ).Name );
+                Assert.AreEqual( 0, scene.Platform.Posts );
+            }
+        }
+
+        [TestMethod]
+        public void EveryDoorAnswersPendingWhenItsPushMissesTheBudgetAndTheChangeStands()
+        {
+            using ( var scene = new ChatDoorScene() )
+            {
+                var ada = scene.AddChatPerson( "Ada", isOpenDmAllowed: true );
+                var bo = scene.AddChatPerson( "Bo", isOpenDmAllowed: true );
+                var cy = scene.AddChatPerson( "Cy", isOpenDmAllowed: true );
+                var dee = scene.AddChatPerson( "Dee", isOpenDmAllowed: true );
+                var eve = scene.AddChatPerson( "Eve", isOpenDmAllowed: true );
+                var group = scene.Start( ada, scene.Alias( bo ), scene.Alias( cy ), scene.Alias( dee ) ).ChannelGuid.Value;
+                scene.WaitForPushes();
+                scene.Platform.PushDelay = TimeSpan.FromSeconds( 4 );
+
+                var added = scene.Add( ada, group, scene.Alias( eve ) );
+                Assert.AreEqual( "ok", added.Code );
+                Assert.IsTrue( added.IsPending, "an add" );
+
+                var renamed = scene.Rename( ada, group, "Trip" );
+                Assert.AreEqual( "ok", renamed.Code );
+                Assert.IsTrue( renamed.IsPending, "a rename" );
+
+                var removed = scene.Remove( ada, group, scene.Alias( eve ) );
+                Assert.AreEqual( "ok", removed.Code );
+                Assert.IsTrue( removed.IsPending, "a remove" );
+
+                var left = scene.Leave( dee, group );
+                Assert.AreEqual( "ok", left.Code );
+                Assert.IsTrue( left.IsPending, "a leave" );
+
+                CollectionAssert.AreEquivalent( new[] { ada, bo, cy }, scene.ActiveMembers( group ) );
+                Assert.AreEqual( "Trip", scene.Group( group ).Name );
+            }
+        }
+
+        [TestMethod]
+        public void AnInactiveRowThatStillCarriesABanIsNotRestoredByAJoin()
+        {
+            using ( var scene = new ChatDoorScene() )
+            {
+                var ada = scene.AddChatPerson( "Ada" );
+                var room = scene.Fixture.AddChannel( scene.Fixture.SharedGroupTypeId, "Open room" );
+                scene.Fixture.AddMember( room, ada, m =>
+                {
+                    m.GroupMemberStatus = GroupMemberStatus.Inactive;
+                    m.IsChatBanned = true;
+                } );
+
+                Assert.AreEqual( "door.not_allowed", scene.Join( ada, room ).Code, "a ban is not stepped around by coming back" );
+                Assert.AreEqual( GroupMemberStatus.Inactive, scene.Memberships( room, ada ).Single().GroupMemberStatus );
+                Assert.AreEqual( 0, scene.Platform.Posts );
+            }
+        }
+
+        [TestMethod]
+        public void ADeceasedPersonIsRefusedAsSomeoneChatKeepsOutAndStaysRemovable()
+        {
+            using ( var scene = new ChatDoorScene() )
+            {
+                var lee = scene.AddChatPerson( "Lee" );
+                var gone = scene.AddChatPerson( "Gone" );
+                var late = scene.AddChatPerson( "Late" );
+                var manager = scene.AddManagerRole();
+                var room = scene.Fixture.AddChannel( scene.Fixture.SharedGroupTypeId, "Team" );
+                scene.Fixture.AddMember( room, lee, m => m.GroupRoleId = manager );
+                scene.Fixture.AddMember( room, late );
+                scene.MakeDeceased( gone );
+                scene.MakeDeceased( late );
+
+                var added = scene.Add( lee, room, scene.Alias( gone ) );
+                Assert.AreEqual( "door.target_not_eligible", added.Code );
+                Assert.AreEqual( scene.Alias( gone ), added.PersonAliasGuid );
+
+                Assert.AreEqual( "ok", scene.Remove( lee, room, scene.Alias( late ) ).Code );
+                CollectionAssert.DoesNotContain( scene.ActiveMembers( room ), late );
+            }
+        }
+
+        [TestMethod]
+        public void SomeoneWhoseInactiveRowStillCarriesABanIsNotAdded()
+        {
+            using ( var scene = new ChatDoorScene() )
+            {
+                var lee = scene.AddChatPerson( "Lee" );
+                var bea = scene.AddChatPerson( "Bea" );
+                var manager = scene.AddManagerRole();
+                var room = scene.Fixture.AddChannel( scene.Fixture.SharedGroupTypeId, "Team" );
+                scene.Fixture.AddMember( room, lee, m => m.GroupRoleId = manager );
+                scene.Fixture.AddMember( room, bea, m =>
+                {
+                    m.GroupMemberStatus = GroupMemberStatus.Inactive;
+                    m.IsChatBanned = true;
+                } );
+
+                var result = scene.Add( lee, room, scene.Alias( bea ) );
+
+                Assert.AreEqual( "door.target_not_eligible", result.Code );
+                Assert.AreEqual( scene.Alias( bea ), result.PersonAliasGuid );
+                Assert.AreEqual( GroupMemberStatus.Inactive, scene.Memberships( room, bea ).Single().GroupMemberStatus );
+                Assert.AreEqual( 0, scene.Platform.Posts );
+            }
+        }
+
+        [TestMethod]
+        public void ABanOnASecondRowIsNotDeletedByLeavingOrRemovingAndAMemberJoiningAgainIsAnsweredOk()
+        {
+            using ( var scene = new ChatDoorScene() )
+            {
+                var lee = scene.AddChatPerson( "Lee" );
+                var ada = scene.AddChatPerson( "Ada" );
+                var manager = scene.AddManagerRole();
+                var other = scene.Fixture.AddRole( scene.Fixture.SharedGroupTypeId, "Other", isLeader: false );
+                var room = scene.Fixture.AddChannel( scene.Fixture.SharedGroupTypeId, "Open room" );
+                scene.Fixture.AddMember( room, lee, m => m.GroupRoleId = manager );
+
+                // one live row, and a second, inactive one in another role still under a ban
+                scene.Fixture.AddMember( room, ada );
+                scene.Fixture.AddMember( room, ada, m =>
+                {
+                    m.GroupRoleId = other;
+                    m.GroupMemberStatus = GroupMemberStatus.Inactive;
+                    m.IsChatBanned = true;
+                } );
+
+                Assert.AreEqual( "ok", scene.Join( ada, room ).Code, "a member joining again is answered as done" );
+                Assert.AreEqual( "door.not_allowed", scene.Leave( ada, room ).Code, "leaving would delete the banned row" );
+                Assert.AreEqual( "door.not_allowed", scene.Remove( lee, room, scene.Alias( ada ) ).Code, "and so would removing" );
+                Assert.AreEqual( 2, scene.Memberships( room, ada ).Count );
+                Assert.AreEqual( 0, scene.Platform.Posts );
+            }
+        }
+
+        #endregion Every door
     }
 }
