@@ -385,18 +385,19 @@ namespace Rock.CheckIn.v2
 
             var groupService = new GroupService( _rockContext );
             var primaryFamily = groupService.GetInclude( familyId, g => g.Members.Select( gm => gm.Person ), false );
-            var adults = primaryFamily.Members
-                .Select( gm => gm.Person )
-                .Where( p => p.AgeClassification == AgeClassification.Adult )
-                .ToList();
 
-            if ( primaryFamily == null )
+            if ( primaryFamily == null || primaryFamily.GroupTypeId != GroupTypeCache.GetFamilyGroupType( _rockContext ).Id )
             {
                 return new FamilyRegistrationSaveResult
                 {
                     ErrorMessage = $"Family was not found."
                 };
             }
+
+            var adults = primaryFamily.Members
+                .Select( gm => gm.Person )
+                .Where( p => p.AgeClassification == AgeClassification.Adult )
+                .ToList();
 
             try
             {
