@@ -424,6 +424,14 @@ upnlFiles.ClientID // {2}
                 return;
             }
 
+            // The root folder of a provider can't be deleted.
+            var rootFolder = component.GetRootFolder( provider.ToEntity() ) ?? string.Empty;
+
+            if ( hfSelectFolder.Value.IsNullOrWhiteSpace() || hfSelectFolder.Value.Trim().TrimEnd( '/' ).Equals( rootFolder.Trim().TrimEnd( '/' ), StringComparison.OrdinalIgnoreCase ) )
+            {
+                return;
+            }
+
             component.DeleteAsset( provider.ToEntity(), new Asset { Key = hfSelectFolder.Value, Type = AssetType.Folder } );
 
             hfSelectFolder.Value = string.Empty;

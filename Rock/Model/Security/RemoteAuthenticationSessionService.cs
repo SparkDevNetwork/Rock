@@ -16,6 +16,7 @@
 //
 using System;
 using System.Linq;
+using System.Security.Cryptography;
 
 namespace Rock.Model
 {
@@ -23,7 +24,6 @@ namespace Rock.Model
     {
         #region Constants
 
-        private static readonly Random Random = new Random();
         private const int GeneratedCodeLength = 6;
         private const int MaxCodeGenerationAttempts = 50;
 
@@ -164,8 +164,49 @@ namespace Rock.Model
             // the number nine to prevent other immature references,
             // and other characters that can cause confusion.
             const string AllowedChars = "BCDFGHJKLMNPRSTXZ245678";
-            return new string( Enumerable.Repeat( AllowedChars, length )
-                .Select( s => s[Random.Next( s.Length )] ).ToArray() );
+
+            /*
+                10/8/2026 - MSE
+
+                Codes are now generated using RandomNumberGenerator.
+
+                Reason: Improved code generation.
+            */
+            var chars = new char[length];
+
+            using ( var rng = RandomNumberGenerator.Create() )
+            {
+                for ( var i = 0; i < length; i++ )
+                {
+                    chars[i] = AllowedChars[GetRandomIndex( rng, AllowedChars.Length )];
+                }
+            }
+
+            return new string( chars );
+        }
+
+        /// <summary>
+        /// Gets a random index that is greater than or equal to 0 and less than
+        /// <paramref name="exclusiveUpperBound"/>.
+        /// </summary>
+        /// <param name="rng">The random number generator.</param>
+        /// <param name="exclusiveUpperBound">The exclusive upper bound.</param>
+        /// <returns>The random index.</returns>
+        private static int GetRandomIndex( RandomNumberGenerator rng, int exclusiveUpperBound )
+        {
+            // Discard values above the largest multiple of the bound so
+            // every index is equally likely.
+            var limit = uint.MaxValue - ( uint.MaxValue % ( uint ) exclusiveUpperBound );
+            var bytes = new byte[4];
+            uint value;
+
+            do
+            {
+                rng.GetBytes( bytes );
+                value = BitConverter.ToUInt32( bytes, 0 );
+            } while ( value >= limit );
+
+            return ( int ) ( value % ( uint ) exclusiveUpperBound );
         }
 
         /// <summary>
