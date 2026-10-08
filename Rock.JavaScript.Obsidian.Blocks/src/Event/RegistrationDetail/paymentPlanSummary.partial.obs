@@ -12,14 +12,14 @@
                 <RockButton btnType="default"
                             btnSize="xs"
                             class="margin-t-sm"
-                            :disabled="paymentPlan.isChangeDisabled"
+                            :disabled="paymentPlan.isChangeDisabled || isPaymentProcessing"
                             @click="onChangeClick">Change</RockButton>
             </span>
 
             <RockButton btnType="link"
                         btnSize="xs"
                         class="margin-t-sm text-primary"
-                        :disabled="paymentPlan.isDeleteDisabled"
+                        :disabled="paymentPlan.isDeleteDisabled || isPaymentProcessing"
                         @click="onDeleteClick">Delete</RockButton>
         </template>
 
@@ -63,6 +63,16 @@
         registrationKey: {
             type: String as PropType<string | null>,
             default: null
+        },
+
+        /**
+         * True while a payment is processing. The plan cannot be changed or
+         * deleted then, because both the payment and the plan change what is
+         * still owed on the registration.
+         */
+        isPaymentProcessing: {
+            type: Boolean,
+            default: false
         }
     });
 
@@ -88,6 +98,10 @@
      * Opens the dialog used to change the payment plan.
      */
     function onChangeClick(): void {
+        if (props.isPaymentProcessing) {
+            return;
+        }
+
         isChangeModalVisible.value = true;
     }
 
@@ -95,6 +109,10 @@
      * Opens the dialog used to confirm deleting the payment plan.
      */
     function onDeleteClick(): void {
+        if (props.isPaymentProcessing) {
+            return;
+        }
+
         isDeleteModalVisible.value = true;
     }
 
@@ -112,6 +130,12 @@
      */
     async function onDeleteConfirmed(): Promise<void> {
         if (isDeleting.value) {
+            return;
+        }
+
+        // A payment may have started while the dialog was open.
+        if (props.isPaymentProcessing) {
+            deleteErrorMessage.value = "Please wait for the payment to finish.";
             return;
         }
 

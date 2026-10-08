@@ -11,6 +11,7 @@
                     <PaymentPlanSummary v-if="registration.paymentPlan"
                                         :paymentPlan="registration.paymentPlan"
                                         :registrationKey="registration.idKey ?? null"
+                                        :isPaymentProcessing="isPaymentProcessing"
                                         @updated="onPaymentPlanUpdated"
                                         @deleted="onPaymentPlanDeleted" />
                 </div>
@@ -37,7 +38,8 @@
                          :defaultPayer="registration.personAlias ?? null"
                          @saved="onPaymentSaved"
                          @cancel="onPaymentCancel"
-                         @chargedNotRecorded="onChargedNotRecorded" />
+                         @chargedNotRecorded="onChargedNotRecorded"
+                         @processingChanged="onPaymentProcessingChanged" />
 
             <div v-else class="well">
                 <h4>Payments</h4>
@@ -55,7 +57,7 @@
                             <tr v-if="payments.length === 0">
                                 <td colspan="3">No Payments Found</td>
                             </tr>
-                            <tr v-for="payment in payments" :key="payment.idKey ?? ''">
+                            <tr v-for="(payment, index) in payments" :key="payment.idKey ?? index">
                                 <td>
                                     <a v-if="getTransactionUrl(payment)" :href="getTransactionUrl(payment)">
                                         {{ payment.transactionDateText }}<br />{{ payment.transactionTimeText }}
@@ -66,8 +68,8 @@
                                 </td>
                                 <td>
                                     <span v-if="payment.isRefund" class="label label-danger">Refund</span>
-                                    <template v-for="(line, index) in getDetailLines(payment)" :key="index">
-                                        <br v-if="index > 0" />{{ line }}
+                                    <template v-for="(line, lineIndex) in getDetailLines(payment)" :key="lineIndex">
+                                        <br v-if="lineIndex > 0" />{{ line }}
                                     </template>
                                 </td>
                                 <td class="grid-columncurrency">{{ payment.amountText }}</td>
@@ -134,13 +136,20 @@
         isProcessPaymentBlocked: {
             type: Boolean,
             default: false
+        },
+
+        /** True while a payment is processing, which blocks payment plan changes. */
+        isPaymentProcessing: {
+            type: Boolean,
+            default: false
         }
     });
 
     const emit = defineEmits<{
         (e: "update:selectedTab", value: AccountTab): void,
         (e: "updated", registration: RegistrationBag, tab: AccountTab): void,
-        (e: "chargedNotRecorded", message: string): void
+        (e: "chargedNotRecorded", message: string): void,
+        (e: "paymentProcessingChanged", isProcessing: boolean): void
     }>();
 
     // #region Values
@@ -149,6 +158,12 @@
     const internalSelectedTab = ref<string>(props.selectedTab);
     const paymentFormMode = ref<PaymentFormMode>(PaymentFormMode.None);
     const accountWarningMessage = ref("");
+
+    /**
+     * True when the next registration change comes from deleting the payment
+     * plan, so the warning raised by that delete stays visible once.
+     */
+    let isAccountWarningKept = false;
 
     // #endregion Values
 
@@ -242,6 +257,15 @@
     }
 
     /**
+     * Passes on whether a payment is processing.
+     *
+     * @param isProcessing True from the payment token request until the payment finishes.
+     */
+    function onPaymentProcessingChanged(isProcessing: boolean): void {
+        emit("paymentProcessingChanged", isProcessing);
+    }
+
+    /**
      * Shows the registration rebuilt after the payment plan was changed.
      *
      * @param registration The rebuilt registration.
@@ -259,6 +283,7 @@
      */
     function onPaymentPlanDeleted(registration: RegistrationBag, warningMessage: string): void {
         accountWarningMessage.value = warningMessage;
+        isAccountWarningKept = !!warningMessage;
         emit("updated", registration, AccountTab.Account);
     }
 
@@ -294,7 +319,27 @@
     // #region Watchers
 
     watch(() => props.selectedTab, () => {
+        // An action can rebuild the registration while a payment form is
+        // open; the form's tab stays selected so the payment is not hidden.
+        if (isPaymentFormOpen.value) {
+            if (props.selectedTab !== internalSelectedTab.value) {
+                emit("update:selectedTab", internalSelectedTab.value as AccountTab);
+            }
+
+            return;
+        }
+
         internalSelectedTab.value = props.selectedTab;
+    });
+
+    watch(() => props.registration, () => {
+        // The delete-plan warning only describes the delete that raised it.
+        if (isAccountWarningKept) {
+            isAccountWarningKept = false;
+            return;
+        }
+
+        accountWarningMessage.value = "";
     });
 
     watch(internalSelectedTab, () => {

@@ -31,12 +31,12 @@ namespace Rock.ViewModels.Blocks.Event.RegistrationDetail
         public string Label { get; set; }
 
         /// <summary>
-        /// Gets or sets the plain text value of a person field, or null for an attribute field.
+        /// Gets or sets the plain text value of a person field, or of an attribute field that has no attribute definition; otherwise null.
         /// </summary>
         public string TextValue { get; set; }
 
         /// <summary>
-        /// Gets or sets the unique identifier of the attribute definition, or null for a person field.
+        /// Gets or sets the key of the attribute definition in the registrant attribute definitions, or null when the field is shown as plain text.
         /// </summary>
         public Guid? AttributeGuid { get; set; }
 

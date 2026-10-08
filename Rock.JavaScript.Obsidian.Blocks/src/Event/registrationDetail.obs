@@ -4,6 +4,8 @@
 
     <NotificationBox v-if="errorMessage" alertType="danger">{{ errorMessage }}</NotificationBox>
 
+    <NotificationBox v-if="chargedNotRecordedMessage" alertType="danger">{{ chargedNotRecordedMessage }}</NotificationBox>
+
     <template v-if="!blockError && registrationViewBag">
         <Wizard :templateName="registrationViewBag.registrationTemplateName ?? ''"
                 :templateUrl="registrationViewBag.registrationTemplateUrl ?? ''"
@@ -22,8 +24,8 @@
                      entityTypeName="Registration"
                      :isAuditHidden="true"
                      :isBadgesVisible="false"
-                     :isDeleteVisible="isEditable"
-                     :isEditVisible="isEditable"
+                     :isDeleteVisible="isEditOrDeleteVisible"
+                     :isEditVisible="isEditOrDeleteVisible"
                      :isFollowVisible="false"
                      :isSecurityHidden="true"
                      additionalDeleteMessage="All of the registrants will also be deleted!"
@@ -37,10 +39,12 @@
                            :selectedTab="selectedAccountTab"
                            :transactionDetailPageUrl="transactionDetailPageUrl"
                            :isProcessPaymentBlocked="isProcessPaymentBlocked"
+                           :isPaymentProcessing="isPaymentProcessing"
                            :actionErrorMessage="actionErrorMessage"
                            @update:selectedTab="onSelectedAccountTabUpdated"
                            @updated="onRegistrationUpdated"
                            @chargedNotRecorded="onChargedNotRecorded"
+                           @paymentProcessingChanged="onPaymentProcessingChanged"
                            @error="onActionError" />
             </template>
 
@@ -58,6 +62,7 @@
                             isSquare
                             class="margin-l-sm"
                             title="Move Registration"
+                            :disabled="isPaymentProcessing"
                             @click="onMoveClick">
                     <i class="ti ti-external-link"></i>
                 </RockButton>
@@ -70,6 +75,7 @@
                              :registrant="registrant"
                              :attributeDefinitions="registrationViewBag.registrantAttributes ?? {}"
                              :isEditable="isEditable"
+                             :isActionDisabled="isRegistrantActionRunning || isPaymentProcessing"
                              :registrantPageUrl="registrantPageUrl"
                              :groupMemberPageUrl="groupMemberPageUrl"
                              @addToGroup="onAddRegistrantToGroup"
@@ -91,7 +97,7 @@
 </template>
 
 <script setup lang="ts">
-    import { computed, ref } from "vue";
+    import { computed, nextTick, onMounted, ref } from "vue";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import RockButton from "@Obsidian/Controls/rockButton.obs";
     import DetailBlock from "@Obsidian/Templates/detailBlock";
@@ -126,6 +132,12 @@
     const errorMessage = ref("");
     const actionErrorMessage = ref("");
 
+    /**
+     * Describes a payment that was charged but not recorded. It is kept until
+     * the page is reloaded so the transaction code stays visible.
+     */
+    const chargedNotRecordedMessage = ref("");
+
     const registrationViewBag = ref<RegistrationBag | null>(config.entity ?? null);
     const registrationEditBag = ref<ValidPropertiesBox<RegistrationBag>>({
         bag: {} as RegistrationBag
@@ -136,6 +148,25 @@
     const selectedAccountTab = ref<AccountTab>(AccountTab.Account);
     const isMoveModalVisible = ref(false);
     const isProcessPaymentBlocked = ref(false);
+
+    /**
+     * True from the moment a payment token is asked for until the payment
+     * finishes (or the token wait ends without a payment). Edit, delete,
+     * move, registrant actions and payment plan changes are blocked then,
+     * because a token that arrives starts the payment at once, and leaving
+     * view mode would unmount the payment form and lose the result of the
+     * payment.
+     */
+    const isPaymentProcessing = ref(false);
+
+    /** The identifier key of the registrant whose action is running, if any. */
+    const busyRegistrantKey = ref("");
+
+    /** Shown when a registrant action is asked for while another one is running. */
+    const registrantActionBusyMessage = "Please wait for the current action to finish.";
+
+    /** Shown when a registrant action is asked for while a payment is processing. */
+    const paymentProcessingBusyMessage = "Please wait for the payment to finish.";
 
     const baseBlock = useEntityDetailBlock({
         blockConfig: config,
@@ -152,6 +183,14 @@
 
     const isEditable = computed((): boolean => {
         return config.isEditable === true;
+    });
+
+    const isEditOrDeleteVisible = computed((): boolean => {
+        return isEditable.value && !isPaymentProcessing.value;
+    });
+
+    const isRegistrantActionRunning = computed((): boolean => {
+        return !!busyRegistrantKey.value;
     });
 
     const isViewMode = computed((): boolean => {
@@ -227,12 +266,21 @@
     async function onDelete(): Promise<false | string> {
         errorMessage.value = "";
 
+        if (isPaymentProcessing.value) {
+            return false;
+        }
+
         if (registrationViewBag.value?.isPaymentPlanActive) {
             const isConfirmed = await confirm("This registration has an active payment plan. Are you sure that you want to delete the registration? The payment plan will be deactivated and will no longer be associated with a registration.");
 
             if (!isConfirmed) {
                 return false;
             }
+        }
+
+        // A payment may have started while a confirmation was open.
+        if (isPaymentProcessing.value) {
+            return false;
         }
 
         const result = await invokeBlockAction<RegistrationDeleteResultBag>("Delete", {
@@ -259,9 +307,20 @@
     async function onEdit(): Promise<boolean> {
         errorMessage.value = "";
 
+        // Edit mode unmounts the view, which would lose the result of a
+        // payment that is being sent. This also covers the keyboard shortcut.
+        if (isPaymentProcessing.value) {
+            return false;
+        }
+
         const result = await invokeBlockAction<ValidPropertiesBox<RegistrationBag>>("Edit", {
             key: entityKey.value
         });
+
+        // A payment may have started while the edit values were loading.
+        if (isPaymentProcessing.value) {
+            return false;
+        }
 
         if (result.isSuccess && result.data?.bag) {
             registrationEditBag.value = {
@@ -290,6 +349,13 @@
 
         if (result.isSuccess && result.data?.registration) {
             setRegistration(result.data.registration, AccountTab.Account);
+
+            // The registration was saved but a follow-up step (such as adding
+            // registrants to the target group) did not complete.
+            if (result.data.warningMessage) {
+                await alert(result.data.warningMessage);
+            }
+
             return true;
         }
 
@@ -310,6 +376,11 @@
      * Opens the move registration dialog.
      */
     function onMoveClick(): void {
+        // A move rebuilds the registration under a payment that is running.
+        if (isPaymentProcessing.value) {
+            return;
+        }
+
         isMoveModalVisible.value = true;
     }
 
@@ -349,8 +420,17 @@
      */
     async function onChargedNotRecorded(message: string): Promise<void> {
         isProcessPaymentBlocked.value = true;
-        actionErrorMessage.value = message;
+        chargedNotRecordedMessage.value = message;
         await alert(message);
+    }
+
+    /**
+     * Tracks whether a payment is processing.
+     *
+     * @param isProcessing True from the payment token request until the payment finishes.
+     */
+    function onPaymentProcessingChanged(isProcessing: boolean): void {
+        isPaymentProcessing.value = isProcessing;
     }
 
     /**
@@ -368,19 +448,37 @@
      * @param registrantKey The identifier key of the registrant.
      */
     async function onAddRegistrantToGroup(registrantKey: string): Promise<void> {
-        actionErrorMessage.value = "";
-
-        const result = await invokeBlockAction<RegistrationActionResultBag>("AddRegistrantToGroup", {
-            key: entityKey.value,
-            registrantKey
-        });
-
-        if (result.isSuccess && result.data?.registration) {
-            setRegistration(result.data.registration, AccountTab.Account);
+        if (busyRegistrantKey.value) {
+            await alert(registrantActionBusyMessage);
             return;
         }
 
-        actionErrorMessage.value = result.errorMessage ?? "Unknown error while trying to add the registrant to the group.";
+        // This action rebuilds the registration, which would race with the
+        // registration returned by the payment that is running.
+        if (isPaymentProcessing.value) {
+            await alert(paymentProcessingBusyMessage);
+            return;
+        }
+
+        actionErrorMessage.value = "";
+        busyRegistrantKey.value = registrantKey;
+
+        try {
+            const result = await invokeBlockAction<RegistrationActionResultBag>("AddRegistrantToGroup", {
+                key: entityKey.value,
+                registrantKey
+            });
+
+            if (result.isSuccess && result.data?.registration) {
+                setRegistration(result.data.registration, AccountTab.Account);
+                return;
+            }
+
+            actionErrorMessage.value = result.errorMessage ?? "Unknown error while trying to add the registrant to the group.";
+        }
+        finally {
+            busyRegistrantKey.value = "";
+        }
     }
 
     /**
@@ -389,19 +487,39 @@
      * @param registrantKey The identifier key of the registrant.
      */
     async function onDeleteRegistrant(registrantKey: string): Promise<void> {
-        actionErrorMessage.value = "";
-
-        const result = await invokeBlockAction<RegistrationActionResultBag>("DeleteRegistrant", {
-            key: entityKey.value,
-            registrantKey
-        });
-
-        if (result.isSuccess && result.data?.registration) {
-            setRegistration(result.data.registration, AccountTab.Account);
+        // The delete was confirmed while another registrant action started,
+        // so say why nothing happens instead of dropping it silently.
+        if (busyRegistrantKey.value) {
+            await alert(registrantActionBusyMessage);
             return;
         }
 
-        await alert(result.errorMessage ?? "Unknown error while trying to delete the registrant.");
+        // A payment may have started while the delete was being confirmed;
+        // deleting a registrant changes the cost the payment is charged for.
+        if (isPaymentProcessing.value) {
+            await alert(paymentProcessingBusyMessage);
+            return;
+        }
+
+        actionErrorMessage.value = "";
+        busyRegistrantKey.value = registrantKey;
+
+        try {
+            const result = await invokeBlockAction<RegistrationActionResultBag>("DeleteRegistrant", {
+                key: entityKey.value,
+                registrantKey
+            });
+
+            if (result.isSuccess && result.data?.registration) {
+                setRegistration(result.data.registration, AccountTab.Account);
+                return;
+            }
+
+            await alert(result.errorMessage ?? "Unknown error while trying to delete the registrant.");
+        }
+        finally {
+            busyRegistrantKey.value = "";
+        }
     }
 
     // #endregion Event Handlers
@@ -420,5 +538,103 @@
         actionErrorMessage.value = "";
     }
 
+    /**
+     * Scrolls to the registrant named in the URL hash. The registrant panels
+     * render after the browser has already tried to follow the hash, so the
+     * browser cannot do it on its own.
+     */
+    async function scrollToRegistrantAnchor(): Promise<void> {
+        const hash = window.location.hash;
+
+        if (hash.length < 2) {
+            return;
+        }
+
+        let anchorName: string;
+
+        try {
+            anchorName = decodeURIComponent(hash.substring(1));
+        }
+        catch {
+            // Intentionally ignored: a malformed hash simply does not name a registrant.
+            return;
+        }
+
+        // Only registrant anchors are followed, and the name is looked up
+        // directly so it is never parsed as a selector.
+        if (!registrants.value.some(r => r.idKey === anchorName)) {
+            return;
+        }
+
+        const anchor = document.getElementsByName(anchorName)[0];
+
+        if (!anchor) {
+            return;
+        }
+
+        await waitForBlockLoaded(anchor);
+
+        anchor.scrollIntoView();
+    }
+
+    /**
+     * Waits until the block that contains an element has finished loading,
+     * which is when its loading placeholder has been removed.
+     *
+     * @param element An element inside this block.
+     *
+     * @returns A promise that resolves once the block has finished loading.
+     */
+    function waitForBlockLoaded(element: HTMLElement): Promise<void> {
+        /*
+            10/7/2026 - MSE
+
+            The block is mounted inside a fixed height loading placeholder that
+            the page removes shortly afterwards. Scrolling before then scrolls
+            the placeholder, which is reset when it is removed, so the page
+            never moves. The page marks the block's root element with loading
+            classes until the placeholder is gone, so the scroll waits for this
+            block's root to lose them. Other blocks on the page do not matter.
+            A timeout makes sure the scroll still happens if the classes are
+            never removed.
+
+            Reason: Scroll to the registrant only after this block's placeholder is gone.
+        */
+        const loadingSelector = ".obsidian-block-loading, .obsidian-block-has-placeholder";
+        const blockRoot = element.closest(loadingSelector);
+
+        return new Promise(resolve => {
+            if (!blockRoot) {
+                resolve();
+                return;
+            }
+
+            const observer = new MutationObserver(() => {
+                if (!blockRoot.matches(loadingSelector)) {
+                    finish();
+                }
+            });
+
+            const timeoutId = window.setTimeout(() => finish(), 6000);
+
+            function finish(): void {
+                observer.disconnect();
+                window.clearTimeout(timeoutId);
+                resolve();
+            }
+
+            observer.observe(blockRoot, { attributes: true, attributeFilter: ["class"] });
+        });
+    }
+
     // #endregion Functions
+
+    // #region Lifecycle Hooks
+
+    onMounted(async () => {
+        await nextTick();
+        await scrollToRegistrantAnchor();
+    });
+
+    // #endregion Lifecycle Hooks
 </script>

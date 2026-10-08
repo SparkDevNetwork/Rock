@@ -211,7 +211,7 @@ namespace Rock.ViewModels.Blocks.Event.RegistrationDetail
 
         /// <summary>
         /// Gets or sets the attribute definitions used by the registrant field values,
-        /// keyed by attribute unique identifier. Only set for view.
+        /// keyed by the attribute unique identifier, or by a per value key when the view configuration depends on the value. Only set for view.
         /// </summary>
         public Dictionary<Guid, PublicAttributeBag> RegistrantAttributes { get; set; }
 

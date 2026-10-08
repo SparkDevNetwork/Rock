@@ -600,6 +600,8 @@ namespace Rock.Blocks.Event
         [BlockAction]
         public BlockActionResult Delete( string key )
         {
+            // Every block action can also be called with a GET request, so this
+            // state changing action rejects anything else to block cross-site links.
             if ( RequestContext.HttpMethod != "POST" )
             {
                 return ActionBadRequest( "Invalid request method." );

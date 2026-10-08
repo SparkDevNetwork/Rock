@@ -4,7 +4,7 @@
            title="Move Registration"
            saveText="Move"
            cancelText=""
-           :isSaveButtonDisabled="isLoading || isMoving"
+           :isSaveButtonDisabled="isLoading || isGroupsLoading || isMoving"
            :onSave="onMove">
         <NotificationBox v-if="errorMessage" alertType="danger">{{ errorMessage }}</NotificationBox>
 
@@ -87,6 +87,7 @@
 
     const isVisible = ref(props.modelValue);
     const isLoading = ref(false);
+    const isGroupsLoading = ref(false);
     const isMoving = ref(false);
     const errorMessage = ref("");
     const currentInstanceName = ref("");
@@ -99,6 +100,9 @@
 
     /** Identifies the most recent instance list request so older responses are ignored. */
     let optionsSequence = 0;
+
+    /** Identifies the most recent group list request so older responses are ignored. */
+    let groupsSequence = 0;
 
     // #endregion Values
 
@@ -114,27 +118,42 @@
         groupKey.value = "";
         groups.value = [];
 
+        const sequence = ++groupsSequence;
+
         if (!instanceKey.value) {
+            isGroupsLoading.value = false;
             return;
         }
 
         const selectedInstanceKey = instanceKey.value;
-        const result = await invokeBlockAction<ListItemBag[]>("GetMoveGroups", {
-            key: props.registrationKey,
-            registrationInstanceKey: selectedInstanceKey
-        });
 
-        if (selectedInstanceKey !== instanceKey.value) {
-            return;
+        // Move stays disabled until the groups load, so the move never
+        // ignores a group the person had no chance to pick.
+        isGroupsLoading.value = true;
+
+        try {
+            const result = await invokeBlockAction<ListItemBag[]>("GetMoveGroups", {
+                key: props.registrationKey,
+                registrationInstanceKey: selectedInstanceKey
+            });
+
+            if (sequence !== groupsSequence || selectedInstanceKey !== instanceKey.value) {
+                return;
+            }
+
+            if (!result.isSuccess) {
+                errorMessage.value = result.errorMessage ?? "Unknown error while trying to load the groups.";
+                return;
+            }
+
+            errorMessage.value = "";
+            groups.value = result.data ?? [];
         }
-
-        if (!result.isSuccess) {
-            errorMessage.value = result.errorMessage ?? "Unknown error while trying to load the groups.";
-            return;
+        finally {
+            if (sequence === groupsSequence) {
+                isGroupsLoading.value = false;
+            }
         }
-
-        errorMessage.value = "";
-        groups.value = result.data ?? [];
     }
 
     /**
@@ -234,6 +253,11 @@
         groups.value = [];
         groupKey.value = "";
         instances.value = [];
+
+        // A group load still running from the last time the dialog was open
+        // must neither fill the groups nor keep Move disabled.
+        groupsSequence++;
+        isGroupsLoading.value = false;
 
         await loadOptions();
     }

@@ -46,9 +46,11 @@
                              :selectedTab="selectedTab"
                              :transactionDetailPageUrl="transactionDetailPageUrl"
                              :isProcessPaymentBlocked="isProcessPaymentBlocked"
+                             :isPaymentProcessing="isPaymentProcessing"
                              @update:selectedTab="onSelectedTabUpdated"
                              @updated="onRegistrationUpdated"
-                             @chargedNotRecorded="onChargedNotRecorded" />
+                             @chargedNotRecorded="onChargedNotRecorded"
+                             @paymentProcessingChanged="onPaymentProcessingChanged" />
             </div>
         </div>
     </fieldset>
@@ -93,6 +95,12 @@
             default: false
         },
 
+        /** True while a payment is processing, which blocks payment plan changes. */
+        isPaymentProcessing: {
+            type: Boolean,
+            default: false
+        },
+
         actionErrorMessage: {
             type: String,
             default: ""
@@ -103,6 +111,7 @@
         (e: "update:selectedTab", value: AccountTab): void,
         (e: "updated", registration: RegistrationBag, tab: AccountTab): void,
         (e: "chargedNotRecorded", message: string): void,
+        (e: "paymentProcessingChanged", isProcessing: boolean): void,
         (e: "error", message: string): void
     }>();
 
@@ -140,6 +149,9 @@
 
         if (result.isSuccess) {
             confirmationMessage.value = result.data?.successMessage ?? "A new confirmation email has been sent.";
+
+            // An empty message clears an error left by an earlier attempt.
+            emit("error", "");
             return;
         }
 
@@ -172,6 +184,15 @@
      */
     function onChargedNotRecorded(message: string): void {
         emit("chargedNotRecorded", message);
+    }
+
+    /**
+     * Passes on whether a payment is processing.
+     *
+     * @param isProcessing True from the payment token request until the payment finishes.
+     */
+    function onPaymentProcessingChanged(isProcessing: boolean): void {
+        emit("paymentProcessingChanged", isProcessing);
     }
 
     // #endregion Event Handlers

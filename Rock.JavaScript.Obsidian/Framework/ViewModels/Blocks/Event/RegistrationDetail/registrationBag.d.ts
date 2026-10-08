@@ -176,7 +176,7 @@ export type RegistrationBag = {
 
     /**
      * Gets or sets the attribute definitions used by the registrant field values,
-     * keyed by attribute unique identifier. Only set for view.
+     * keyed by the attribute unique identifier, or by a per value key when the view configuration depends on the value. Only set for view.
      */
     registrantAttributes?: Record<Guid, PublicAttributeBag> | null;
 

@@ -178,8 +178,9 @@ namespace Rock.Model
             /*
                 10/6/2026 - MSE
 
-                The control amount is incremented with an atomic SQL update instead of
-                adding to the in-memory batch, so two payments saved at the same time
+                The control amount is incremented with an atomic SQL update, as the
+                registration entry block already did before this method was shared with
+                the registration detail block, so two payments saved at the same time
                 cannot overwrite each other's increment. Only the database work is inside
                 the transaction; gateway calls must happen before this method so a slow
                 gateway never holds a database transaction open.
@@ -210,23 +211,39 @@ namespace Rock.Model
 
                 batchService.IncrementControlAmount( batch.Id, transaction.TotalAmount, batchChanges );
                 rockContext.SaveChanges();
-            } );
 
-            if ( transaction.BatchId.HasValue )
-            {
-                var batchId = transaction.BatchId.Value;
+                /*
+                    10/7/2026 - MSE
+
+                    The batch history is written on a background task with its own
+                    context, so it must not start until the batch and transaction are
+                    committed. It is queued with ExecuteAfterCommit from inside this
+                    transaction: when this is the outermost transaction (registration
+                    entry) it runs right after this commit, exactly as before; when a
+                    caller wraps this method in its own transaction (registration
+                    detail) it waits for that outer commit and does not run when that
+                    transaction rolls back. Rock does not clear queued actions on a
+                    rollback, so a caller must not commit anything else on the same
+                    context after a failed payment save.
+
+                    Reason: Never write batch history for a payment that was rolled back.
+                */
+                var batchId = batch.Id;
                 var modifiedByPersonAliasId = options.ModifiedByPersonAliasId;
 
-                Task.Run( () =>
-                    HistoryService.SaveChanges(
-                        RockApp.Current.CreateRockContext(),
-                        typeof( FinancialBatch ),
-                        Rock.SystemGuid.Category.HISTORY_FINANCIAL_BATCH.AsGuid(),
-                        batchId,
-                        batchChanges,
-                        true,
-                        modifiedByPersonAliasId ) );
-            }
+                rockContext.ExecuteAfterCommit( () =>
+                {
+                    Task.Run( () =>
+                        HistoryService.SaveChanges(
+                            RockApp.Current.CreateRockContext(),
+                            typeof( FinancialBatch ),
+                            Rock.SystemGuid.Category.HISTORY_FINANCIAL_BATCH.AsGuid(),
+                            batchId,
+                            batchChanges,
+                            true,
+                            modifiedByPersonAliasId ) );
+                } );
+            } );
         }
 
         /// <summary>

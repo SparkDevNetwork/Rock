@@ -13,7 +13,7 @@
 
                 <CampusPicker v-model="campus"
                               label="Campus"
-                              includeInactive />
+                              showBlankItem />
 
                 <DropDownList v-if="groupOptions.length > 0"
                               v-model="groupValue"
@@ -45,7 +45,7 @@
 
                 <NumberBox :modelValue="discountPercentage"
                            label="Discount Percentage"
-                           :decimalCount="2"
+                           :decimalCount="0"
                            :minimumValue="0"
                            :maximumValue="100"
                            inputGroupClasses="input-width-md"
@@ -58,7 +58,7 @@
                 <CurrencyBox :modelValue="discountAmount"
                              label="Discount Amount (per Registrant)"
                              :minimumValue="0"
-                             formGroupClasses="input-width-md"
+                             inputGroupClasses="input-width-md"
                              @update:modelValue="onDiscountAmountUpdated" />
             </div>
         </div>
@@ -165,6 +165,11 @@
             key: props.modelValue.bag?.idKey,
             personAliasGuid: selectedPersonAlias.value
         });
+
+        // A newer selection replaced this one while the request was running.
+        if (personAlias.value?.value !== selectedPersonAlias.value) {
+            return;
+        }
 
         if (!result.isSuccess || !result.data) {
             return;

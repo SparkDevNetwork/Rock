@@ -347,7 +347,6 @@ namespace Rock.Blocks.Event
                 .AddPersonField( "person", r => r.PersonAlias?.Person )
                 .AddTextField( "personIdKey", r => r.PersonAlias?.Person?.IdKey )
                 .AddTextField( "registrationIdKey", r => IdHasher.Instance.GetHash( r.RegistrationId ) )
-                .AddField( "registrantId", r => r.Id )
                 .AddField( "waitListOrder", r => GetWaitListOrder( r ) )
                 .AddTextField( "registeredBy", r => r.Registration?.PersonAlias?.Person?.FullName )
                 .AddDateTimeField( "createdDateTime", r => r.CreatedDateTime );

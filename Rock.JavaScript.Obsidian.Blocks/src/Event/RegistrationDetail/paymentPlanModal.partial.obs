@@ -35,6 +35,7 @@
                 <div class="col-md-4">
                     <NumberBox :modelValue="numberOfPayments"
                                label="Number of Payments"
+                               inputClasses="input-width-sm"
                                :minimumValue="configuration.minNumberOfPayments"
                                :decimalCount="0"
                                rules="required"
@@ -108,6 +109,13 @@
 
     /** Recalculates the plan once typing in the number of payments pauses. */
     const debouncedPreview = debounce(() => {
+        // A queued preview is dropped when the dialog was closed, or was
+        // reopened (which clears the queue) before typing paused.
+        if (!isPreviewQueued.value || !isVisible.value) {
+            isPreviewQueued.value = false;
+            return;
+        }
+
         isPreviewQueued.value = false;
         void refreshPreview(false);
     }, 500);
@@ -249,6 +257,9 @@
      * Loads the plan from the existing payment plan when the dialog opens.
      */
     async function loadInitialConfiguration(): Promise<void> {
+        // Drop any preview queued while the dialog was last open so it cannot
+        // replace the initial plan with the values being reset below.
+        isPreviewQueued.value = false;
         errorMessage.value = "";
         warningMessage.value = "";
         configuration.value = null;

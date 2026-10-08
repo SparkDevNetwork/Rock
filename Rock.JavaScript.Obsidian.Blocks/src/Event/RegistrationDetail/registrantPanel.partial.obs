@@ -21,7 +21,11 @@
                         </template>
                     </template>
                     <template v-else-if="isEditable">
-                        None (<a href="#" @click.prevent="onAddToGroupClick">Add {{ registrant.firstName }} to Target Group</a>)
+                        None (<a href="#"
+                                 :class="{ 'text-muted': isActionDisabled, 'cursor-not-allowed': isActionDisabled }"
+                                 :aria-disabled="isActionDisabled ? 'true' : undefined"
+                                 :tabindex="isActionDisabled ? -1 : undefined"
+                                 @click.prevent="onAddToGroupClick">Add {{ registrant.firstName }} to Target Group</a>)
                     </template>
                     <template v-else>None</template>
                 </RockLiteral>
@@ -77,7 +81,7 @@
 
         <div v-if="isEditable" class="actions">
             <a v-if="editUrl" :href="editUrl" class="btn btn-primary">Edit</a>
-            <RockButton btnType="link" autoDisable @click="onDeleteClick">Delete</RockButton>
+            <RockButton btnType="link" autoDisable :disabled="isActionDisabled" @click="onDeleteClick">Delete</RockButton>
         </div>
     </Panel>
 </template>
@@ -118,6 +122,12 @@
         },
 
         isEditable: {
+            type: Boolean,
+            default: false
+        },
+
+        /** True while an action on any registrant, or a payment, is running. */
+        isActionDisabled: {
             type: Boolean,
             default: false
         },
@@ -173,6 +183,10 @@
      * Asks for the registrant to be added to the target group.
      */
     function onAddToGroupClick(): void {
+        if (props.isActionDisabled) {
+            return;
+        }
+
         if (props.registrant.idKey) {
             emit("addToGroup", props.registrant.idKey);
         }
@@ -182,7 +196,7 @@
      * Confirms and then asks for the registrant to be deleted.
      */
     async function onDeleteClick(): Promise<void> {
-        if (!props.registrant.idKey) {
+        if (props.isActionDisabled || !props.registrant.idKey) {
             return;
         }
 

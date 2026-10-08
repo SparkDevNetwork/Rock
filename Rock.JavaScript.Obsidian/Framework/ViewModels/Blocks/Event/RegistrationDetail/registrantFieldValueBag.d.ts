@@ -28,7 +28,7 @@ import { Guid } from "@Obsidian/Types";
  * attribute fields reference a shared attribute definition.
  */
 export type RegistrantFieldValueBag = {
-    /** Gets or sets the unique identifier of the attribute definition, or null for a person field. */
+    /** Gets or sets the key of the attribute definition in the registrant attribute definitions, or null when the field is shown as plain text. */
     attributeGuid?: Guid | null;
 
     /** Gets or sets the public value of an attribute field. */
@@ -37,6 +37,6 @@ export type RegistrantFieldValueBag = {
     /** Gets or sets the label of the field. */
     label?: string | null;
 
-    /** Gets or sets the plain text value of a person field, or null for an attribute field. */
+    /** Gets or sets the plain text value of a person field, or of an attribute field that has no attribute definition; otherwise null. */
     textValue?: string | null;
 };

@@ -428,13 +428,14 @@
         }
 
         const registrationIdKey = row["registrationIdKey"] as string;
-        const registrantId = row["registrantId"];
+        const registrantIdKey = row["idKey"] as string | undefined;
 
         let url = registrationUrl.replace("((Key))", registrationIdKey ?? "");
 
-        // Anchor to the selected registrant on the registration page.
-        if (registrantId != null) {
-            url += `#${registrantId}`;
+        // Anchor to the selected registrant on the registration page, which
+        // names each registrant anchor by its identifier key.
+        if (registrantIdKey) {
+            url += `#${encodeURIComponent(registrantIdKey)}`;
         }
 
         window.location.href = url;

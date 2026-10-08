@@ -106,8 +106,8 @@ namespace Rock.Blocks.Event
     #endregion Block Attributes
 
     [Rock.SystemGuid.EntityTypeGuid( "2356BD81-F2E0-46FC-807C-56AEEB682A33" )]
-    // WAS [Rock.SystemGuid.BlockTypeGuid( "A1C967B2-EEDA-416F-A53C-7BE46D6DA4E1" )]
-    [Rock.SystemGuid.BlockTypeGuid( "DB8EA84A-4087-4919-9CF0-9353E45ECEEC" )]
+    // was [Rock.SystemGuid.BlockTypeGuid( "DB8EA84A-4087-4919-9CF0-9353E45ECEEC" )]
+    [Rock.SystemGuid.BlockTypeGuid( "A1C967B2-EEDA-416F-A53C-7BE46D6DA4E1" )]
     public class RegistrationDetail : RockEntityDetailBlockType<Registration, RegistrationBag>
     {
         #region Keys
@@ -138,7 +138,6 @@ namespace Rock.Blocks.Event
 
         private static class NavigationUrlKey
         {
-            public const string ParentPage = "ParentPage";
             public const string RegistrantPage = "RegistrantPage";
             public const string GroupMemberPage = "GroupMemberPage";
             public const string TransactionDetailPage = "TransactionDetailPage";
@@ -176,6 +175,13 @@ namespace Rock.Blocks.Event
         private static readonly string AccountConfigurationMessage = "There was a problem with the account configuration for this registration.";
 
         /// <summary>
+        /// The message returned when registrants could not be added to a group.
+        /// Every message built by <see cref="GetGroupMemberSaveErrorMessage(Exception)"/>
+        /// starts with it.
+        /// </summary>
+        private static readonly string GroupMemberSaveErrorMessage = "The registrants could not be added to the group.";
+
+        /// <summary>
         /// The maximum number of characters allowed in payment comments.
         /// </summary>
         private static readonly int MaximumPaymentCommentsLength = 1000;
@@ -184,6 +190,51 @@ namespace Rock.Blocks.Event
         /// The maximum number of characters allowed in a history caption.
         /// </summary>
         private static readonly int MaximumHistoryCaptionLength = 200;
+
+        /// <summary>
+        /// The configuration key of the Memo field type that allows HTML values.
+        /// </summary>
+        private static readonly string MemoAllowHtmlConfigurationKey = "allowhtml";
+
+        /// <summary>
+        /// The public configuration key that holds the rendered HTML of a
+        /// Markdown field type value.
+        /// </summary>
+        private static readonly string MarkdownHtmlValueConfigurationKey = "htmlvalue";
+
+        /// <summary>
+        /// The public configuration key that holds the condensed HTML of an
+        /// Html field type value.
+        /// </summary>
+        private static readonly string HtmlCondensedHtmlConfigurationKey = "condensedHtml";
+
+        /// <summary>
+        /// The public configuration key that holds the MIME type of the file of
+        /// a Video File or Audio File field type value.
+        /// </summary>
+        private static readonly string FileMimeTypeConfigurationKey = "mimeType";
+
+        /// <summary>
+        /// The public configuration key that holds the thumbnail URL of a Media
+        /// Element field type value.
+        /// </summary>
+        private static readonly string MediaElementThumbnailUrlConfigurationKey = "thumbnailUrl";
+
+        /// <summary>
+        /// The property of a Background Check public value that holds the
+        /// record key of the provider.
+        /// </summary>
+        private static readonly string BackgroundCheckRecordKeyPropertyName = "recordKey";
+
+        /// <summary>
+        /// Matches a URL that starts with a scheme, such as "https:" or "javascript:".
+        /// </summary>
+        private static readonly System.Text.RegularExpressions.Regex UrlSchemeRegex = new System.Text.RegularExpressions.Regex( @"^[a-zA-Z][a-zA-Z0-9+.\-]*:" );
+
+        /// <summary>
+        /// The URL schemes that are safe to use in a link.
+        /// </summary>
+        private static readonly HashSet<string> SafeUrlSchemes = new HashSet<string>( StringComparer.OrdinalIgnoreCase ) { "http:", "https:", "mailto:", "tel:" };
 
         /// <summary>
         /// The registration loaded from the page parameters, cached for the request.
@@ -290,7 +341,6 @@ namespace Rock.Blocks.Event
         {
             return new Dictionary<string, string>
             {
-                [NavigationUrlKey.ParentPage] = GetRegistrationParentPageUrl( registration ),
                 [NavigationUrlKey.RegistrantPage] = this.GetLinkedPageUrl( AttributeKey.RegistrantPage, new Dictionary<string, string>
                 {
                     [PageParameterKey.RegistrantId] = "((Key))",
@@ -425,13 +475,26 @@ namespace Rock.Blocks.Event
                 return false;
             }
 
-            entity = new RegistrationService( RockContext ).Get( idKey, !PageCache.Layout.Site.DisablePredictableIds );
+            /*
+                10/7/2026 - MSE
+
+                Block actions only accept an IdKey or Guid. Integer ids are only
+                accepted from the RegistrationId page parameter (see LoadInitialEntity),
+                where the site's DisablePredictableIds setting decides.
+
+                Reason: Block actions must not accept predictable integer ids.
+            */
+            var query = new RegistrationService( RockContext ).GetQueryableByKey( idKey, false );
+
+            entity = IncludeRegistrationGraph( query ).FirstOrDefault();
 
             if ( entity == null )
             {
                 error = ActionNotFound( $"The {Registration.FriendlyTypeName} was not found." );
                 return false;
             }
+
+            _hydratedRegistration = entity;
 
             if ( !CanEdit( entity ) )
             {
@@ -463,6 +526,7 @@ namespace Rock.Blocks.Event
 
             var bag = GetCommonEntityBag( entity );
             bag.LoadAttributesAndValuesForPublicView( entity, RequestContext.CurrentPerson, enforceSecurity: true );
+            MakePublicAttributesSafeForView( entity, bag );
 
             bag.Group = entity.Group != null
                 ? new ListItemBag { Value = entity.Group.Guid.ToString(), Text = entity.Group.Name }
@@ -567,7 +631,7 @@ namespace Rock.Blocks.Event
                     ? new ListItemBag { Value = campus.Guid.ToString(), Text = campus.Name }
                     : null,
                 DiscountCode = entity.DiscountCode,
-                DiscountPercentage = entity.DiscountPercentage != 0.0m ? entity.DiscountPercentage * 100.0m : ( decimal? ) null,
+                DiscountPercentage = entity.DiscountPercentage != 0.0m ? Math.Round( entity.DiscountPercentage * 100.0m, 0 ) : ( decimal? ) null,
                 DiscountAmount = entity.DiscountAmount != 0.0m ? entity.DiscountAmount : ( decimal? ) null
             };
         }
@@ -616,6 +680,12 @@ namespace Rock.Blocks.Event
                 }
 
                 var firstName = bag.FirstName.Trim();
+
+                if ( !IsValidRegistrarName( "Registered by First Name", firstName, entity.FirstName, out errorMessage ) )
+                {
+                    return false;
+                }
+
                 History.EvaluateChange( changes, "First Name", entity.FirstName, firstName );
                 entity.FirstName = firstName;
             }
@@ -629,6 +699,12 @@ namespace Rock.Blocks.Event
                 }
 
                 var lastName = bag.LastName.Trim();
+
+                if ( !IsValidRegistrarName( "Registered by Last Name", lastName, entity.LastName, out errorMessage ) )
+                {
+                    return false;
+                }
+
                 History.EvaluateChange( changes, "Last Name", entity.LastName, lastName );
                 entity.LastName = lastName;
             }
@@ -672,6 +748,21 @@ namespace Rock.Blocks.Event
                     return false;
                 }
 
+                /*
+                    10/7/2026 - MSE
+
+                    Registration.DiscountPercentage is a decimal(18,2) column that
+                    stores a fraction (0.15 for 15%), so only whole percentages can be
+                    stored. A fractional percentage would be silently truncated when saved.
+
+                    Reason: Reject values that cannot be saved exactly.
+                */
+                if ( percentage != decimal.Truncate( percentage ) )
+                {
+                    errorMessage = "Discount Percentage must be a whole number.";
+                    return false;
+                }
+
                 var discountPercentage = percentage / 100.0m;
                 History.EvaluateChange( changes, "Discount Percentage", entity.DiscountPercentage, discountPercentage );
                 entity.DiscountPercentage = discountPercentage;
@@ -697,6 +788,55 @@ namespace Rock.Blocks.Event
             {
                 entity.LoadAttributes( RockContext );
                 entity.SetPublicAttributeValues( bag.AttributeValues, RequestContext.CurrentPerson, enforceSecurity: true );
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// Determines whether a registrar name is free of special characters,
+        /// emojis and special fonts. An unchanged name is always accepted.
+        /// </summary>
+        /// <param name="label">The label of the name used in the error message.</param>
+        /// <param name="name">The trimmed name that was posted.</param>
+        /// <param name="currentName">The name currently saved on the registration.</param>
+        /// <param name="errorMessage">Set to the validation error when <c>false</c> is returned.</param>
+        /// <returns><c>true</c> if the name can be saved.</returns>
+        private static bool IsValidRegistrarName( string label, string name, string currentName, out string errorMessage )
+        {
+            errorMessage = null;
+
+            /*
+                10/7/2026 - MSE
+
+                These checks mirror the client "nospecialcharacters" and
+                "noemojisorspecialfonts" rules using the server patterns (precedent
+                UtilityPaymentEntry.ValidateEnteredName). The server emoji pattern is
+                broader than the client one (for example it also matches curly quotes
+                and the copyright sign), so a name that was saved before these checks
+                existed, or was entered on the registration entry block, is accepted
+                while it is unchanged. Otherwise staff could not edit any other value
+                on such a registration.
+
+                Reason: Validate new names without blocking edits of existing data.
+            */
+            // The posted name is trimmed, so the saved name is trimmed too or
+            // a saved name with spaces around it would never match.
+            if ( name == currentName?.Trim() )
+            {
+                return true;
+            }
+
+            if ( System.Text.RegularExpressions.Regex.IsMatch( name ?? string.Empty, RegexPatterns.SpecialCharacterRemovalPattern ) )
+            {
+                errorMessage = $"{label} cannot contain special characters such as quotes, parentheses, etc.";
+                return false;
+            }
+
+            if ( System.Text.RegularExpressions.Regex.IsMatch( name ?? string.Empty, RegexPatterns.EmojiAndSpecialFontRemovalPattern ) )
+            {
+                errorMessage = $"{label} cannot contain emojis or special fonts.";
+                return false;
             }
 
             return true;
@@ -916,7 +1056,9 @@ namespace Rock.Blocks.Event
                     Text = discountString.IsNullOrWhiteSpace()
                         ? discount.Code
                         : $"{discount.Code} ({System.Net.WebUtility.HtmlDecode( discountString )})",
-                    DiscountPercentage = discount.DiscountPercentage * 100.0m,
+                    // Stored percentages are whole numbers, so rounding only removes
+                    // trailing decimal artifacts (15.00 instead of 15.0000).
+                    DiscountPercentage = Math.Round( discount.DiscountPercentage * 100.0m, 0 ),
                     DiscountAmount = discount.DiscountAmount
                 } );
             }
@@ -948,14 +1090,16 @@ namespace Rock.Blocks.Event
                 .ToList();
 
             var group = GetGroupSummary( entity.GroupId );
-            currentGroup = group != null
+            var currentGroupItem = group != null
                 ? new ListItemBag { Value = group.Guid.ToString(), Text = group.Name }
                 : null;
 
-            if ( currentGroup != null && !options.Any( o => o.Value == currentGroup.Value ) )
+            if ( currentGroupItem != null && !options.Any( o => o.Value == currentGroupItem.Value ) )
             {
-                options.Insert( 0, currentGroup );
+                options.Insert( 0, currentGroupItem );
             }
+
+            currentGroup = currentGroupItem;
 
             return options;
         }
@@ -1091,10 +1235,7 @@ namespace Rock.Blocks.Event
                 return actionError;
             }
 
-            var registration = GetHydratedRegistration( entity.Id );
-            registration.LoadAttributes( RockContext );
-
-            var bag = GetEntityBagForEdit( registration );
+            var bag = GetEntityBagForEdit( entity );
 
             return ActionOk( new ValidPropertiesBox<RegistrationBag>
             {
@@ -1165,17 +1306,56 @@ namespace Rock.Blocks.Event
                 entity.SaveAttributeValues( RockContext );
             } );
 
+            var registrationId = entity.Id;
+            string warningMessage = null;
+
             if ( isGroupChanged && entity.GroupId.HasValue )
             {
-                var registration = GetHydratedRegistration( entity.Id );
-                AddRegistrantsToGroup( registration, registration.Registrants.Where( r => !r.GroupMemberId.HasValue ).ToList() );
+                try
+                {
+                    var registration = GetHydratedRegistration( registrationId );
+                    AddRegistrantsToGroup( registration, registration.Registrants.Where( r => !r.GroupMemberId.HasValue ).ToList() );
+                }
+                catch ( Exception ex )
+                {
+                    /*
+                        10/7/2026 - MSE
+
+                        The registration edits were already committed above, so a failure
+                        while adding registrants to the new group must not turn the save
+                        into an error. The failed add leaves group members, registrant
+                        links and history on the block's RockContext: some still pending
+                        and some marked as saved even though their transaction was rolled
+                        back. Every tracked entity is detached so the rebuilt view bag is
+                        loaded fresh from the database and shows only the saved state.
+                        Detaching does not clear actions queued to run after a commit by
+                        the rolled back saves, so nothing may call SaveChanges on this
+                        context after this point.
+
+                        Reason: Report a partial save as a warning without showing unsaved data.
+                    */
+                    ExceptionLogService.LogException( ex );
+
+                    foreach ( var entry in RockContext.ChangeTracker.Entries().ToList() )
+                    {
+                        entry.State = EntityState.Detached;
+                    }
+
+                    // Include the reason (such as group capacity) when one is known.
+                    var errorDetails = GetGroupMemberSaveErrorMessage( ex )
+                        .Substring( GroupMemberSaveErrorMessage.Length )
+                        .Trim();
+
+                    warningMessage = $"The registration was saved, but the registrants could not be added to the target group. {errorDetails}".Trim();
+                }
             }
 
             ClearRegistrationMemos();
 
             return ActionOk( new RegistrationActionResultBag
             {
-                Registration = GetViewBag( entity.Id )
+                Registration = GetViewBag( registrationId ),
+                WarningMessage = warningMessage
             } );
         }
 
@@ -1198,7 +1378,8 @@ namespace Rock.Blocks.Event
             }
 
             var registrationService = new RegistrationService( RockContext );
-            var registration = registrationService.Get( key, !PageCache.Layout.Site.DisablePredictableIds );
+            // Block actions only accept an IdKey or Guid, never a predictable integer id.
+            var registration = registrationService.Get( key, false );
 
             if ( registration == null )
             {
@@ -1456,7 +1637,18 @@ namespace Rock.Blocks.Event
 
                 Reason: Remove a call that could never have an effect.
             */
-            AddRegistrantsToGroup( registration, new List<RegistrationRegistrant> { registrant } );
+            try
+            {
+                AddRegistrantsToGroup( registration, new List<RegistrationRegistrant> { registrant } );
+            }
+            catch ( Exception ex )
+            {
+                // The add runs in a transaction that was rolled back, so nothing
+                // was saved. Only the error is returned, never a view bag built
+                // from the unsaved changes left on the context.
+                ExceptionLogService.LogException( ex );
+                return ActionBadRequest( GetGroupMemberSaveErrorMessage( ex ) );
+            }
 
             ClearRegistrationMemos();
 
@@ -1585,7 +1777,7 @@ namespace Rock.Blocks.Event
                 return ActionBadRequest( errorMessage );
             }
 
-            Group targetGroup = null;
+            Rock.Model.Group targetGroup = null;
             int? groupRoleId = null;
 
             if ( request.GroupKey.IsNotNullOrWhiteSpace() )
@@ -1620,23 +1812,36 @@ namespace Rock.Blocks.Event
                 CategoryId = CategoryCache.Get( Rock.SystemGuid.Category.HISTORY_EVENT_REGISTRATION ).Id
             };
 
-            RockContext.WrapTransaction( () =>
+            try
             {
-                new HistoryService( RockContext ).Add( historyRecord );
-
-                registration.RegistrationInstanceId = targetInstance.Id;
-                registration.RegistrationInstance = targetInstance;
-
-                if ( targetGroup != null )
+                RockContext.WrapTransaction( () =>
                 {
-                    registration.GroupId = targetGroup.Id;
-                    MoveRegistrantsToGroup( registration, targetGroup, groupRoleId.Value, template );
-                }
-                else
-                {
-                    RockContext.SaveChanges();
-                }
-            } );
+                    new HistoryService( RockContext ).Add( historyRecord );
+
+                    registration.RegistrationInstanceId = targetInstance.Id;
+                    registration.RegistrationInstance = targetInstance;
+
+                    if ( targetGroup != null )
+                    {
+                        registration.GroupId = targetGroup.Id;
+                        MoveRegistrantsToGroup( registration, targetGroup, groupRoleId.Value, template );
+                    }
+                    else
+                    {
+                        RockContext.SaveChanges();
+                    }
+                } );
+            }
+            catch ( Exception ex )
+            {
+                // The move runs in a transaction that was rolled back, so nothing
+                // was saved. Only the error is returned, never a view bag built
+                // from the unsaved changes left on the context.
+                ExceptionLogService.LogException( ex );
+                return ActionBadRequest( targetGroup != null
+                    ? GetGroupMemberSaveErrorMessage( ex )
+                    : "The registration could not be moved." );
+            }
 
             ClearRegistrationMemos();
 
@@ -1713,8 +1918,8 @@ namespace Rock.Blocks.Event
 
             try
             {
-                // History is saved first: the payment helper queues the batch
-                // history on a background task, so it must be the last step.
+                // The payment helper queues the batch history to run after this
+                // transaction commits, so nothing is written if the save rolls back.
                 RockContext.WrapTransaction( () =>
                 {
                     SaveRegistrationHistory( registration.Id, changes );
@@ -1827,17 +2032,6 @@ namespace Rock.Blocks.Event
 
             var registration = GetHydratedRegistration( entity.Id );
             var template = registration.RegistrationInstance.RegistrationTemplate;
-            var gateway = template.FinancialGateway;
-
-            if ( gateway == null )
-            {
-                return ActionBadRequest( "A Financial Gateway must be set on the Registration Template." );
-            }
-
-            if ( !IsHostedPaymentSupported( gateway ) )
-            {
-                return ActionBadRequest( "There was a problem creating the payment gateway information" );
-            }
 
             /*
                 10/6/2026 - MSE
@@ -1847,6 +2041,10 @@ namespace Rock.Blocks.Event
                 this Guid was already recorded for this registration, the earlier attempt
                 succeeded (for example the response was lost), so report success without
                 charging again. A Guid that belongs to anything else is rejected.
+
+                This check only reads data and runs before the gateway checks, so a
+                retry still reports the recorded payment even if the gateway was
+                changed or deactivated in the meantime.
 
                 Reason: Never charge or record the same payment twice.
             */
@@ -1872,6 +2070,18 @@ namespace Rock.Blocks.Event
                 {
                     Registration = GetViewBag( registration.Id )
                 } );
+            }
+
+            var gateway = template.FinancialGateway;
+
+            if ( gateway == null )
+            {
+                return ActionBadRequest( "A Financial Gateway must be set on the Registration Template." );
+            }
+
+            if ( !IsHostedPaymentSupported( gateway ) )
+            {
+                return ActionBadRequest( "There was a problem creating the payment gateway information" );
             }
 
             if ( !TryValidatePayment( registration, request.Amount, request.PayerPersonAliasGuid, request.Comments, out var payerPersonAliasId, out var errorMessage ) )
@@ -1939,8 +2149,8 @@ namespace Rock.Blocks.Event
 
             try
             {
-                // History is saved first: the payment helper queues the batch
-                // history on a background task, so it must be the last step.
+                // The payment helper queues the batch history to run after this
+                // transaction commits, so nothing is written if the save rolls back.
                 RockContext.WrapTransaction( () =>
                 {
                     SaveRegistrationHistory( registration.Id, changes );
@@ -1959,9 +2169,13 @@ namespace Rock.Blocks.Event
 
                     Reason: Never invite a second charge after a failed save.
                 */
-                ExceptionLogService.LogException( new Exception( $"A registration payment was charged by the gateway (transaction code {transaction.TransactionCode}) for registration {registration.Id} but could not be recorded.", ex ) );
+                var transactionCodeText = transaction.TransactionCode.IsNotNullOrWhiteSpace()
+                    ? $" (transaction code {transaction.TransactionCode})"
+                    : string.Empty;
 
-                return ActionConflict( $"The payment was charged (transaction code {transaction.TransactionCode}) but could not be recorded. Do not resubmit; contact your finance team." );
+                ExceptionLogService.LogException( new Exception( $"A registration payment was charged by the gateway{transactionCodeText} for registration {registration.Id} but could not be recorded.", ex ) );
+
+                return ActionConflict( $"The payment was charged{transactionCodeText} but could not be recorded. Do not resubmit; contact your finance team." );
             }
 
             ClearRegistrationMemos();
@@ -2113,14 +2327,14 @@ namespace Rock.Blocks.Event
                 paymentPlan.IsActive = false;
             }
 
+            // The gateway already canceled the plan, so the deactivation is saved
+            // on its own. A history failure must never roll it back.
+            RockContext.SaveChanges();
+
             var changes = new History.HistoryChangeList();
             changes.AddChange( History.HistoryVerb.Delete, History.HistoryChangeType.Record, "Payment Plan" );
 
-            RockContext.WrapTransaction( () =>
-            {
-                RockContext.SaveChanges();
-                SaveRegistrationHistory( registration.Id, changes );
-            } );
+            TrySaveRegistrationHistory( registration.Id, changes );
 
             ClearRegistrationMemos();
 
@@ -2262,7 +2476,7 @@ namespace Rock.Blocks.Event
         /// <param name="group">The group being moved to.</param>
         /// <param name="template">The registration template.</param>
         /// <returns>The group role identifier, or <c>null</c> when the group type has no roles.</returns>
-        private static int? GetMoveGroupRoleId( Group group, RegistrationTemplate template )
+        private static int? GetMoveGroupRoleId( Rock.Model.Group group, RegistrationTemplate template )
         {
             if ( group.GroupTypeId == template.GroupTypeId && template.GroupMemberRoleId.HasValue )
             {
@@ -2381,41 +2595,48 @@ namespace Rock.Blocks.Event
                 .GroupBy( m => m.PersonId )
                 .ToDictionary( g => g.Key, g => g.First() );
 
+            // Existing members that are not active are set to the template status
+            // below, so they take a seat just like a new member does.
+            var newPersonCount = personIds.Count( personId => !membersByPersonId.TryGetValue( personId, out var existingMember )
+                || existingMember.GroupMemberStatus != GroupMemberStatus.Active );
+
+            EnsureGroupCapacity( group, template.GroupMemberStatus, newPersonCount );
+
             var registrantChanges = new List<(RegistrationRegistrant Registrant, History.HistoryChangeList Changes)>();
-
-            foreach ( var registrant in candidates )
-            {
-                var personId = registrant.PersonAlias.PersonId;
-                var changes = new History.HistoryChangeList();
-
-                if ( !membersByPersonId.TryGetValue( personId, out var groupMember ) )
-                {
-                    groupMember = new GroupMember
-                    {
-                        GroupId = group.Id,
-                        PersonId = personId,
-                        GroupRoleId = groupRoleId.Value,
-                        GroupMemberStatus = template.GroupMemberStatus
-                    };
-
-                    groupMemberService.Add( groupMember );
-                    membersByPersonId[personId] = groupMember;
-
-                    changes.AddChange( History.HistoryVerb.Add, History.HistoryChangeType.Record, $"Registrant to {group.Name} group" );
-                }
-                else
-                {
-                    changes.AddChange( History.HistoryVerb.Modify, History.HistoryChangeType.Record, $"Registrant to existing person in {group.Name} group" );
-                }
-
-                groupMember.GroupMemberStatus = template.GroupMemberStatus;
-                registrant.GroupMember = groupMember;
-
-                registrantChanges.Add( (registrant, changes) );
-            }
 
             RockContext.WrapTransaction( () =>
             {
+                foreach ( var registrant in candidates )
+                {
+                    var personId = registrant.PersonAlias.PersonId;
+                    var changes = new History.HistoryChangeList();
+
+                    if ( !membersByPersonId.TryGetValue( personId, out var groupMember ) )
+                    {
+                        groupMember = new GroupMember
+                        {
+                            GroupId = group.Id,
+                            PersonId = personId,
+                            GroupRoleId = groupRoleId.Value,
+                            GroupMemberStatus = template.GroupMemberStatus
+                        };
+
+                        groupMemberService.Add( groupMember );
+                        membersByPersonId[personId] = groupMember;
+
+                        changes.AddChange( History.HistoryVerb.Add, History.HistoryChangeType.Record, $"Registrant to {group.Name} group" );
+                    }
+                    else
+                    {
+                        changes.AddChange( History.HistoryVerb.Modify, History.HistoryChangeType.Record, $"Registrant to existing person in {group.Name} group" );
+                    }
+
+                    groupMember.GroupMemberStatus = template.GroupMemberStatus;
+                    registrant.GroupMember = groupMember;
+
+                    registrantChanges.Add( (registrant, changes) );
+                }
+
                 RockContext.SaveChanges();
 
                 foreach ( var registrantChange in registrantChanges )
@@ -2445,7 +2666,7 @@ namespace Rock.Blocks.Event
         /// <param name="targetGroup">The group being moved to.</param>
         /// <param name="groupRoleId">The role of the new group members.</param>
         /// <param name="template">The registration template.</param>
-        private void MoveRegistrantsToGroup( Registration registration, Group targetGroup, int groupRoleId, RegistrationTemplate template )
+        private void MoveRegistrantsToGroup( Registration registration, Rock.Model.Group targetGroup, int groupRoleId, RegistrationTemplate template )
         {
             /*
                 10/6/2026 - MSE
@@ -2479,6 +2700,13 @@ namespace Rock.Blocks.Event
                 .Where( r => !existingPersonIds.Contains( r.PersonAlias.PersonId ) )
                 .ToList();
 
+            var memberStatus = targetGroup.GroupTypeId == template.GroupTypeId
+                ? template.GroupMemberStatus
+                : GroupMemberStatus.Active;
+
+            // Every person being moved gets one new member in the target group.
+            EnsureGroupCapacity( targetGroup, memberStatus, registrantsToMove.Select( r => r.PersonAlias.PersonId ).Distinct().Count() );
+
             var previousMemberIds = registrantsToMove
                 .Where( r => r.GroupMemberId.HasValue )
                 .Select( r => r.GroupMemberId.Value )
@@ -2491,14 +2719,36 @@ namespace Rock.Blocks.Event
 
             previousMembers.LoadAttributes( RockContext );
 
+            /*
+                10/7/2026 - MSE
+
+                The same person can be placed in a group by more than one
+                registration, and those registrants then share one group member.
+                Deleting a previous membership that a registrant outside this move
+                still points to would fail on the foreign key and roll back the whole
+                move. Such a membership belongs to the other registration as well, so
+                it is kept and only the moved registrants are relinked.
+
+                Reason: Moving one registration must not break another registration's placement.
+            */
+            var movedRegistrantIds = registrantsToMove.Select( r => r.Id ).ToList();
+
+            var sharedMemberIds = previousMemberIds.Any()
+                ? new RegistrationRegistrantService( RockContext )
+                    .Queryable()
+                    .Where( r => r.GroupMemberId.HasValue
+                        && previousMemberIds.Contains( r.GroupMemberId.Value )
+                        && !movedRegistrantIds.Contains( r.Id ) )
+                    .Select( r => r.GroupMemberId.Value )
+                    .Distinct()
+                    .ToList()
+                    .ToHashSet()
+                : new HashSet<int>();
+
             var previousMembersById = previousMembers.ToDictionary( m => m.Id );
             var newMembersByPersonId = new Dictionary<int, GroupMember>();
             var previousValuesByNewMember = new Dictionary<GroupMember, Dictionary<string, string>>();
-            var deletedMemberIds = new HashSet<int>();
-
-            var memberStatus = targetGroup.GroupTypeId == template.GroupTypeId
-                ? template.GroupMemberStatus
-                : GroupMemberStatus.Active;
+            var membersToDelete = new Dictionary<int, GroupMember>();
 
             foreach ( var registrant in registrantsToMove )
             {
@@ -2512,9 +2762,9 @@ namespace Rock.Blocks.Event
                     registrant.GroupMember = null;
                     registrant.GroupMemberId = null;
 
-                    if ( deletedMemberIds.Add( previousMember.Id ) )
+                    if ( !sharedMemberIds.Contains( previousMember.Id ) )
                     {
-                        groupMemberService.Delete( previousMember );
+                        membersToDelete[previousMember.Id] = previousMember;
                     }
                 }
 
@@ -2538,6 +2788,24 @@ namespace Rock.Blocks.Event
                 }
 
                 registrant.GroupMember = newMember;
+            }
+
+            /*
+                10/7/2026 - MSE
+
+                Previous memberships are deleted only after every moved registrant
+                points to its new member, and everything is written in the single
+                save below. Removing a tracked member makes Entity Framework clear
+                the link on any loaded registrant that still points to it, so a
+                delete inside the loop would unlink a later registrant that shared
+                the same previous member before it was moved. Within the save,
+                Entity Framework updates the registrants before deleting the members.
+
+                Reason: Delete previous memberships only when nothing still references them.
+            */
+            foreach ( var memberToDelete in membersToDelete.Values )
+            {
+                groupMemberService.Delete( memberToDelete );
             }
 
             RockContext.SaveChanges();
@@ -2571,6 +2839,100 @@ namespace Rock.Blocks.Event
         }
 
         /// <summary>
+        /// Ensures that adding new members to a group with a hard capacity does
+        /// not put the group over its capacity.
+        /// </summary>
+        /// <param name="group">The tracked group the members are added to.</param>
+        /// <param name="memberStatus">The status of the new members.</param>
+        /// <param name="newMemberCount">The number of new group members that will be added.</param>
+        /// <exception cref="GroupMemberValidationException">Thrown when the new members would put the group over capacity.</exception>
+        private static void EnsureGroupCapacity( Rock.Model.Group group, GroupMemberStatus memberStatus, int newMemberCount )
+        {
+            /*
+                10/7/2026 - MSE
+
+                A group with a hard capacity checks the capacity as each member is
+                saved, counting the active members already in the group except the
+                one being saved. New members added in the same save all have an Id
+                of 0, so they do not count each other and could put the group over
+                capacity. Saving each member separately would fix the count, but
+                every save inside the transaction also starts the member's workflow
+                triggers, which a later failure cannot roll back. So the members are
+                still saved together, and the capacity of the whole add is checked
+                here first, using the same rule (hard capacity, active members only)
+                and the same count of active members.
+
+                Reason: Respect hard group capacity without side effects from a rolled back add.
+            */
+            if ( newMemberCount <= 0 || memberStatus != GroupMemberStatus.Active || !group.GroupCapacity.HasValue )
+            {
+                return;
+            }
+
+            var groupType = GroupTypeCache.Get( group.GroupTypeId );
+
+            if ( groupType == null || groupType.GroupCapacityRule != GroupCapacityRule.Hard )
+            {
+                return;
+            }
+
+            var activeMemberCount = group.ActiveMembers().Count( m => m.Id != 0 );
+
+            if ( activeMemberCount + newMemberCount > group.GroupCapacity.Value )
+            {
+                throw new GroupMemberValidationException( "Adding these registrants would put the group over capacity." );
+            }
+        }
+
+        /// <summary>
+        /// Gets the message shown when registrants could not be added to a
+        /// group. Group member validation errors (such as group capacity or
+        /// group requirements) and entity validation errors are included
+        /// without their technical prefixes; any other error only gets a
+        /// general message so no internal details are shown.
+        /// </summary>
+        /// <param name="exception">The exception thrown while saving.</param>
+        /// <returns>The message to show.</returns>
+        private static string GetGroupMemberSaveErrorMessage( Exception exception )
+        {
+            var generalMessage = GroupMemberSaveErrorMessage;
+            const string validationPrefix = "Entity Validation Error: ";
+
+            for ( var ex = exception; ex != null; ex = ex.InnerException )
+            {
+                string validationMessage;
+
+                if ( ex is GroupMemberValidationException )
+                {
+                    validationMessage = ex.Message;
+                }
+                else if ( ex.Message != null && ex.Message.StartsWith( validationPrefix ) )
+                {
+                    validationMessage = ex.Message.Substring( validationPrefix.Length );
+                }
+                else
+                {
+                    continue;
+                }
+
+                // Errors are separated by semicolons, and entity validation errors
+                // start with "[GroupMember/Added/Id=0/Property=...]".
+                var details = ( validationMessage ?? string.Empty )
+                    .Split( ';' )
+                    .Select( m => System.Text.RegularExpressions.Regex.Replace( m, @"\[.*?\]", string.Empty ).Trim() )
+                    .Where( m => m.IsNotNullOrWhiteSpace() )
+                    .Distinct()
+                    .ToList();
+
+                return details.Any()
+                    ? $"{generalMessage} {details.JoinStrings( " " )}"
+                    : generalMessage;
+            }
+
+            return generalMessage;
+        }
+
+        /// <summary>
         /// Saves registration history changes on the block context.
         /// </summary>
         /// <param name="registrationId">The registration identifier.</param>
@@ -2583,6 +2945,44 @@ namespace Rock.Blocks.Event
                 Rock.SystemGuid.Category.HISTORY_EVENT_REGISTRATION.AsGuid(),
                 registrationId,
                 changes );
+        }
+
+        /// <summary>
+        /// Saves registration history changes for a change that is already
+        /// saved and confirmed by the gateway. A failure is logged instead of
+        /// thrown.
+        /// </summary>
+        /// <param name="registrationId">The registration identifier.</param>
+        /// <param name="changes">The changes to save.</param>
+        private void TrySaveRegistrationHistory( int registrationId, History.HistoryChangeList changes )
+        {
+            /*
+                10/7/2026 - MSE
+
+                This is only used after a payment plan change that the gateway has
+                already applied and that has already been saved. The history row is
+                secondary, so failing to write it must not report the whole action
+                as failed (the person would retry a change that already happened).
+
+                A failed save leaves the new history rows on the block's RockContext
+                in the Added state. They are detached so no later save in this
+                request writes them and the rebuilt view bag only shows saved data.
+
+                Reason: Never turn a confirmed payment plan change into an error because of history.
+            */
+            try
+            {
+                SaveRegistrationHistory( registrationId, changes );
+            }
+            catch ( Exception ex )
+            {
+                ExceptionLogService.LogException( ex );
+
+                foreach ( var entry in RockContext.ChangeTracker.Entries<History>().Where( e => e.State == EntityState.Added ).ToList() )
+                {
+                    entry.State = EntityState.Detached;
+                }
+            }
         }
 
         /// <summary>
@@ -2723,7 +3123,9 @@ namespace Rock.Blocks.Event
                 AccountId = registration.RegistrationInstance.AccountId,
                 AuthorizedPersonAliasId = payerPersonAliasId ?? registration.PersonAliasId,
                 SourceTypeValueId = sourceGuid.HasValue ? DefinedValueCache.Get( sourceGuid.Value )?.Id : null,
-                Summary = comments.IsNotNullOrWhiteSpace() ? $"{paymentComment}: {comments.Trim()}" : paymentComment,
+                // Always "{payment comment}: {comments}", even when the comments are
+                // empty, to match the summary saved by earlier versions of this block.
+                Summary = $"{paymentComment}: {comments?.Trim()}",
                 BatchNamePrefix = template.BatchNamePrefix.IsNotNullOrWhiteSpace()
                     ? template.BatchNamePrefix
                     : GetAttributeValue( AttributeKey.BatchNamePrefix ),
@@ -3143,11 +3545,11 @@ namespace Rock.Blocks.Event
                 changes.AddChange( History.HistoryVerb.Modify, History.HistoryChangeType.Record, "Payment Plan" )
                     .SetNewValue( $"{configuration.AmountPerPayment.FormatAsCurrency()} × {configuration.NumberOfPayments} {configuration.PaymentFrequencyConfiguration?.PaymentFrequency} starting {configuration.StartDate.ToShortDateString()}" );
 
-                RockContext.WrapTransaction( () =>
-                {
-                    RockContext.SaveChanges();
-                    SaveRegistrationHistory( registration.Id, changes );
-                } );
+                // The gateway already has the new schedule, so the plan is saved on
+                // its own. A history failure must never roll it back.
+                RockContext.SaveChanges();
+
+                TrySaveRegistrationHistory( registration.Id, changes );
 
                 return true;
             }
@@ -3224,7 +3626,6 @@ namespace Rock.Blocks.Event
         {
             return query
                 .Include( r => r.RegistrationInstance.RegistrationTemplate.Forms.Select( f => f.Fields ) )
-                .Include( r => r.RegistrationInstance.RegistrationTemplate.Fees )
                 .Include( r => r.RegistrationInstance.RegistrationTemplate.FinancialGateway )
                 .Include( r => r.RegistrationInstance.RegistrationTemplate.RequiredSignatureDocumentTemplate )
                 .Include( r => r.PersonAlias.Person )
@@ -3612,10 +4013,14 @@ namespace Rock.Blocks.Event
             var paymentPlan = GetPaymentPlan( registration );
             var nextPaymentDate = GetNextPaymentDate( registration );
 
+            // The plan projection is missing when the scheduled transaction row
+            // cannot be found; the amount then comes from the loaded scheduled transaction.
+            var amountPerPayment = paymentPlan?.AmountPerPayment ?? scheduledTransaction.TotalAmount;
+
             var summary = new RegistrationPaymentPlanSummaryBag
             {
                 PaymentAmountLabel = $"{scheduledTransaction.TransactionFrequencyValue} Payment Amount",
-                PaymentAmountText = $"{( paymentPlan?.AmountPerPayment ?? 0.0m ).FormatAsCurrency()} × {scheduledTransaction.NumberOfPayments}",
+                PaymentAmountText = $"{amountPerPayment.FormatAsCurrency()} × {scheduledTransaction.NumberOfPayments}",
                 IsEditable = CanEditPaymentPlan() && CanEdit( registration ),
                 IsAmountMismatch = IsPaymentPlanAmountMismatch( paymentPlan, amounts.BalanceDue )
             };
@@ -3637,7 +4042,8 @@ namespace Rock.Blocks.Event
             }
             else
             {
-                // The plan is complete, so it can be neither changed nor deleted.
+                // No next payment (the plan is complete or its gateway is
+                // unavailable), so it can be neither changed nor deleted.
                 summary.IsChangeDisabled = true;
                 summary.IsDeleteDisabled = true;
             }
@@ -3700,7 +4106,7 @@ namespace Rock.Blocks.Event
                 .SelectMany( f => f.Fields.OrderBy( field => field.Order ) )
                 .ToList();
 
-            var lookups = new RegistrantLookups( registration, registrants, fields );
+            var lookups = new RegistrantLookups( registrants, fields );
             LoadGroupMemberInfo( lookups );
             LoadPersonFieldValues( lookups );
             LoadAttributeValues( lookups );
@@ -3908,29 +4314,486 @@ namespace Rock.Blocks.Event
                     continue;
                 }
 
-                if ( !attributeDefinitions.ContainsKey( attribute.Guid ) )
+                // Registrants with the same value reuse the definition (and its
+                // random key) built for the first one instead of building it again.
+                var definitionCacheKey = (attribute.Id, value);
+
+                if ( !lookups.AttributeDefinitionKeysByValue.TryGetValue( definitionCacheKey, out var attributeDefinitionKey ) )
                 {
-                    attributeDefinitions[attribute.Guid] = PublicAttributeHelper.GetPublicAttributeForView( attribute, null );
+                    attributeDefinitionKey = AddRegistrantAttributeDefinition( attribute, value, attributeDefinitions );
+                    lookups.AttributeDefinitionKeysByValue[definitionCacheKey] = attributeDefinitionKey;
                 }
 
-                var publicValue = PublicAttributeHelper.GetPublicValueForView( attribute, value );
-
-                // Registrants enter these values on a public form, so markup is
-                // cleaned before it can be rendered as HTML.
-                if ( attribute.FieldType.Field is Rock.Field.Types.HtmlFieldType )
+                if ( !attributeDefinitionKey.HasValue )
                 {
-                    publicValue = publicValue.SanitizeHtml( false );
+                    // No definition could be built, so show the plain text value,
+                    // which the client renders as text, never as HTML.
+                    values.Add( new RegistrantFieldValueBag
+                    {
+                        Label = attribute.Name,
+                        TextValue = textValue
+                    } );
+
+                    continue;
                 }
+
+                // Registrants enter these values on a public form, so they are
+                // made safe before the client renders them as HTML.
+                var publicValue = GetSafePublicViewValue( attribute, PublicAttributeHelper.GetPublicValueForView( attribute, value ) );
 
                 values.Add( new RegistrantFieldValueBag
                 {
                     Label = attribute.Name,
-                    AttributeGuid = attribute.Guid,
+                    AttributeGuid = attributeDefinitionKey,
                     AttributeValue = publicValue
                 } );
             }
 
             return values;
+        }
+
+        /// <summary>
+        /// Adds the attribute definition a registrant field value is rendered
+        /// with. The definition is shared by every registrant unless the field
+        /// type builds its view configuration from the value, in which case a
+        /// definition is added for this value.
+        /// </summary>
+        /// <param name="attribute">The attribute of the field.</param>
+        /// <param name="value">The private value of the field.</param>
+        /// <param name="attributeDefinitions">The attribute definitions to add to.</param>
+        /// <returns>The key of the definition in <paramref name="attributeDefinitions"/>, or <c>null</c> when no definition could be built.</returns>
+        private static Guid? AddRegistrantAttributeDefinition( AttributeCache attribute, string value, Dictionary<Guid, PublicAttributeBag> attributeDefinitions )
+        {
+            /*
+                10/7/2026 - MSE
+
+                Definitions are sent once per attribute to keep the response small,
+                but several field types build their view configuration from the
+                value: Markdown (the rendered HTML), Html (the condensed HTML),
+                Video File, Audio File and Label (file path, Guid and MIME type),
+                Image (image URL), Media Element (thumbnail URL), Background Check
+                (provider entity type), and the list types such as Defined Value,
+                Campus, Select Multi, Group Type, Group Types, Reminder Type and
+                Reminder Types (only the selected options). These are examples. A
+                definition built without a value renders those blank or broken.
+
+                Rather than keep a list of such field types, the definition is also
+                built for the actual value and compared with the shared one. When
+                the configuration differs, the per-value definition is added under a
+                new random key (see the note below), and the
+                field value points at that key, so the client lookup
+                attributeDefinitions[field.attributeGuid] keeps working with no bag
+                change. Value-independent field types still share one definition.
+                A field type whose configuration differs on every call (Html also
+                sends encrypted folder roots, which use a new IV each time) always
+                gets a per-value definition, which is correct, just larger.
+
+                Building the extra definition is cheap for most field types; the
+                file and media types (and Matrix) run one small query per value, and
+                SQL backed select types run their configured query again per value.
+                The work is bounded by the registrants of this one registration.
+
+                Reason: Render value-dependent field types correctly while sending shared definitions once.
+            */
+            /*
+                10/7/2026 - MSE
+
+                The shared definition is built with an empty value, never null.
+                Several field types (Defined Value, Group Types, Reminder Types)
+                call string methods on the value while building their view
+                configuration and throw for null. With an empty value they list no
+                options, which differs from the per-value definition, so the
+                per-value definition is used for them, which is correct.
+
+                Building either definition is still guarded: a field type that
+                throws for a broken value or broken configuration (for example a
+                plugin field type) must not break the whole page. Without any
+                definition the field is shown as plain text instead.
+
+                Reason: One field type or one bad value must never stop the registration from loading.
+            */
+            if ( !attributeDefinitions.TryGetValue( attribute.Guid, out var sharedDefinition ) )
+            {
+                try
+                {
+                    sharedDefinition = GetSafePublicAttributeForView( attribute, string.Empty );
+                    attributeDefinitions[attribute.Guid] = sharedDefinition;
+                }
+                catch ( Exception ex )
+                {
+                    // Intentionally handled, see the engineering note above.
+                    ExceptionLogService.LogException( ex );
+                    sharedDefinition = null;
+                }
+            }
+
+            PublicAttributeBag valueDefinition;
+
+            try
+            {
+                valueDefinition = GetSafePublicAttributeForView( attribute, value );
+            }
+            catch ( Exception ex )
+            {
+                // Intentionally handled, see the engineering note above.
+                ExceptionLogService.LogException( ex );
+
+                return sharedDefinition != null ? attribute.Guid : ( Guid? ) null;
+            }
+
+            if ( sharedDefinition != null && AreConfigurationValuesEqual( sharedDefinition.ConfigurationValues, valueDefinition.ConfigurationValues ) )
+            {
+                return attribute.Guid;
+            }
+
+            /*
+                10/7/2026 - MSE
+
+                The per-value key is a new random Guid, never derived from the
+                registrant. Registrant Guids can be chosen by the person registering
+                and attribute Guids are public, so a derived key could be made equal
+                to another attribute's Guid and replace the definition (field type and
+                configuration) another field is rendered with. A random key that is
+                never already in the dictionary cannot overwrite any definition.
+
+                Reason: Public registration data must not be able to change how another field renders.
+            */
+            Guid definitionKey;
+
+            do
+            {
+                definitionKey = Guid.NewGuid();
+            }
+            while ( attributeDefinitions.ContainsKey( definitionKey ) );
+
+            attributeDefinitions.Add( definitionKey, valueDefinition );
+
+            return definitionKey;
+        }
+
+        /// <summary>
+        /// Gets the public attribute for viewing a value with its configuration
+        /// values made safe to render.
+        /// </summary>
+        /// <param name="attribute">The attribute.</param>
+        /// <param name="value">The private value, or an empty string for a definition not tied to a value.</param>
+        /// <returns>The public attribute.</returns>
+        private static PublicAttributeBag GetSafePublicAttributeForView( AttributeCache attribute, string value )
+        {
+            var publicAttribute = PublicAttributeHelper.GetPublicAttributeForView( attribute, value );
+            SanitizePublicViewConfigurationValues( attribute, publicAttribute );
+
+            return publicAttribute;
+        }
+
+        /// <summary>
+        /// Determines whether two sets of public configuration values are the same.
+        /// </summary>
+        /// <param name="first">The first configuration values.</param>
+        /// <param name="second">The second configuration values.</param>
+        /// <returns><c>true</c> if both have the same keys and values.</returns>
+        private static bool AreConfigurationValuesEqual( Dictionary<string, string> first, Dictionary<string, string> second )
+        {
+            if ( first == null || second == null )
+            {
+                return first == second;
+            }
+
+            if ( first.Count != second.Count )
+            {
+                return false;
+            }
+
+            foreach ( var configurationValue in first )
+            {
+                if ( !second.TryGetValue( configurationValue.Key, out var otherValue ) || !string.Equals( configurationValue.Value, otherValue, StringComparison.Ordinal ) )
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// Makes the registration attributes of a view bag safe to render. The
+        /// values are entered by registrants on a public form and the client
+        /// renders them as HTML.
+        /// </summary>
+        /// <param name="entity">The registration with its attributes loaded.</param>
+        /// <param name="bag">The view bag with its public attributes and values loaded.</param>
+        private static void MakePublicAttributesSafeForView( Registration entity, RegistrationBag bag )
+        {
+            if ( entity.Attributes == null )
+            {
+                return;
+            }
+
+            if ( bag.Attributes != null )
+            {
+                foreach ( var publicAttribute in bag.Attributes )
+                {
+                    if ( entity.Attributes.TryGetValue( publicAttribute.Key, out var attribute ) )
+                    {
+                        SanitizePublicViewConfigurationValues( attribute, publicAttribute.Value );
+                    }
+                }
+            }
+
+            if ( bag.AttributeValues == null )
+            {
+                return;
+            }
+
+            foreach ( var key in bag.AttributeValues.Keys.ToList() )
+            {
+                if ( entity.Attributes.TryGetValue( key, out var attribute ) )
+                {
+                    bag.AttributeValues[key] = GetSafePublicViewValue( attribute, bag.AttributeValues[key] );
+                }
+            }
+        }
+
+        /// <summary>
+        /// Gets a public attribute value that is safe to render with the
+        /// Obsidian field type's HTML formatter, which this page shows with
+        /// <c>v-html</c>. The value keeps its meaning: the browser decodes an
+        /// encoded value back to the original text when it renders it.
+        /// </summary>
+        /// <param name="attribute">The attribute.</param>
+        /// <param name="publicValue">The public value for viewing.</param>
+        /// <returns>The value to send to the client.</returns>
+        private static string GetSafePublicViewValue( AttributeCache attribute, string publicValue )
+        {
+            /*
+                10/7/2026 - MSE
+
+                RockField and AttributeValuesContainer render values through each
+                Obsidian field type's getHtmlValue (FieldType.Formatted, v-html).
+                Every file in Rock.JavaScript.Obsidian/Framework/FieldTypes was
+                checked:
+
+                - Escape the value already (left alone so nothing is double encoded):
+                  every type that does not override getHtmlValue (base escapeHtml of
+                  getTextValue), Asset, Conditional Scale, Rating, Color Selector (only
+                  configured colors are output).
+                - Output HTML (sanitized with SanitizeHtml( false )): HTML, Memo with
+                  Allow HTML, Matrix (the Text of its JSON is the Lava formatted HTML),
+                  Markdown (the HTML is in the "htmlvalue" configuration value, see
+                  SanitizePublicViewConfigurationValues).
+                - Interpolate the raw value into markup (HTML encoded): URL Link (href
+                  and text), Email (mailto href and text), Audio URL (single quoted
+                  src), Media Element (single quoted alt). An encoded value cannot
+                  close the attribute or open a tag, and the browser decodes it back
+                  to the original text. URL Link and Audio URL also have any scheme
+                  other than http, https, mailto or tel made inert, since encoding
+                  does not stop a "javascript:" link.
+                - Background Check: the value is JSON and the client puts its
+                  recordKey raw into a single quoted href. The record key is free
+                  text (BackgroundCheckFieldType.GetPrivateEditValue keeps whatever
+                  was posted after the provider), so it is HTML encoded inside the
+                  JSON. Its fileName is escaped by the client and its
+                  binaryFileGuid is a Guid, so they are left alone.
+                - Interpolate only server generated values (file Guids, configuration
+                  values, file names already escaped or XML encoded): Audio File,
+                  Binary File, File, Image, Label, Video File. Left alone here. The
+                  MIME types and thumbnail URL these types put in their configuration
+                  are encoded in SanitizePublicViewConfigurationValues.
+
+                Reason: Values entered on the public registration form must not run script for staff.
+            */
+            if ( publicValue.IsNullOrWhiteSpace() || attribute?.FieldType?.Field == null )
+            {
+                return publicValue;
+            }
+
+            var field = attribute.FieldType.Field;
+
+            if ( field is Rock.Field.Types.HtmlFieldType )
+            {
+                return publicValue.SanitizeHtml( false );
+            }
+
+            if ( field is Rock.Field.Types.MemoFieldType )
+            {
+                var isHtmlAllowed = attribute.ConfigurationValues != null
+                    && attribute.ConfigurationValues.TryGetValue( MemoAllowHtmlConfigurationKey, out var allowHtml )
+                    && allowHtml.AsBoolean();
+
+                return isHtmlAllowed ? publicValue.SanitizeHtml( false ) : publicValue;
+            }
+
+            if ( field is Rock.Field.Types.MatrixFieldType )
+            {
+                var matrixValue = publicValue.FromJsonOrNull<ListItemBag>();
+
+                if ( matrixValue == null )
+                {
+                    return string.Empty;
+                }
+
+                matrixValue.Text = matrixValue.Text.SanitizeHtml( false );
+
+                return matrixValue.ToCamelCaseJson( false, true );
+            }
+
+            if ( field is Rock.Field.Types.UrlLinkFieldType || field is Rock.Field.Types.AudioUrlFieldType )
+            {
+                return GetInertUrl( publicValue ).EncodeHtml();
+            }
+
+            if ( field is Rock.Field.Types.EmailFieldType || field is Rock.Field.Types.MediaElementFieldType )
+            {
+                return publicValue.EncodeHtml();
+            }
+
+            if ( field is Rock.Field.Types.BackgroundCheckFieldType )
+            {
+                return GetSafeBackgroundCheckPublicValue( publicValue );
+            }
+
+            return publicValue;
+        }
+
+        /// <summary>
+        /// Gets a Background Check public value with its record key HTML
+        /// encoded. The JSON keeps every other property and the camel case
+        /// names the field type produces.
+        /// </summary>
+        /// <param name="publicValue">The public value for viewing.</param>
+        /// <returns>The value to send to the client.</returns>
+        private static string GetSafeBackgroundCheckPublicValue( string publicValue )
+        {
+            var backgroundCheckValue = publicValue.FromJsonOrNull<Newtonsoft.Json.Linq.JObject>();
+
+            // The client cannot render a value it cannot parse, so nothing is lost.
+            if ( backgroundCheckValue == null )
+            {
+                return string.Empty;
+            }
+
+            if ( backgroundCheckValue[BackgroundCheckRecordKeyPropertyName] is Newtonsoft.Json.Linq.JValue recordKey
+                && recordKey.Type == Newtonsoft.Json.Linq.JTokenType.String )
+            {
+                recordKey.Value = ( ( string ) recordKey.Value ).EncodeHtml();
+            }
+
+            return backgroundCheckValue.ToString( Newtonsoft.Json.Formatting.None );
+        }
+
+        /// <summary>
+        /// Makes the public configuration values of an attribute safe to render
+        /// where the client puts them into markup without escaping them: HTML
+        /// built from the value is sanitized and text from file or media data is
+        /// HTML encoded.
+        /// </summary>
+        /// <param name="attribute">The attribute.</param>
+        /// <param name="publicAttribute">The public attribute for viewing.</param>
+        private static void SanitizePublicViewConfigurationValues( AttributeCache attribute, PublicAttributeBag publicAttribute )
+        {
+            /*
+                10/7/2026 - MSE
+
+                The client field types read these configuration values in
+                getHtmlValue or getCondensedHtmlValue and output them unescaped:
+
+                - Markdown "htmlvalue" and Html "condensedHtml": HTML rendered from
+                  the value, sanitized with SanitizeHtml( false ) like the values.
+                - Video File and Audio File "mimeType": from the uploaded BinaryFile,
+                  so the uploader controls it; put raw into a single quoted type
+                  attribute. HTML encoded. Video File "fileName" is not used by the
+                  view, and "filePath" and "fileGuid" are server generated.
+                - Media Element "thumbnailUrl": from the synced media data, put raw
+                  into a single quoted src attribute. HTML encoded, which the
+                  browser decodes back to the same URL.
+
+                Every one of these field types builds a new configuration dictionary
+                for each call, so changing it never changes the cached attribute.
+                Label (file name already HTML encoded), Image and Background Check
+                (server generated URLs and Guids) were checked and need nothing.
+
+                Reason: Configuration values built from public form data must not run script for staff.
+            */
+            var field = attribute?.FieldType?.Field;
+
+            if ( field == null || publicAttribute?.ConfigurationValues == null )
+            {
+                return;
+            }
+
+            if ( field is Rock.Field.Types.MarkdownFieldType )
+            {
+                SanitizeHtmlConfigurationValue( publicAttribute.ConfigurationValues, MarkdownHtmlValueConfigurationKey );
+            }
+            else if ( field is Rock.Field.Types.HtmlFieldType )
+            {
+                SanitizeHtmlConfigurationValue( publicAttribute.ConfigurationValues, HtmlCondensedHtmlConfigurationKey );
+            }
+            else if ( field is Rock.Field.Types.VideoFileFieldType || field is Rock.Field.Types.AudioFileFieldType )
+            {
+                EncodeHtmlConfigurationValue( publicAttribute.ConfigurationValues, FileMimeTypeConfigurationKey );
+            }
+            else if ( field is Rock.Field.Types.MediaElementFieldType )
+            {
+                EncodeHtmlConfigurationValue( publicAttribute.ConfigurationValues, MediaElementThumbnailUrlConfigurationKey );
+            }
+        }
+
+        /// <summary>
+        /// Sanitizes a configuration value that holds HTML.
+        /// </summary>
+        /// <param name="configurationValues">The public configuration values.</param>
+        /// <param name="key">The key of the configuration value.</param>
+        private static void SanitizeHtmlConfigurationValue( Dictionary<string, string> configurationValues, string key )
+        {
+            if ( configurationValues.TryGetValue( key, out var html ) && html.IsNotNullOrWhiteSpace() )
+            {
+                configurationValues[key] = html.SanitizeHtml( false );
+            }
+        }
+
+        /// <summary>
+        /// HTML encodes a configuration value that holds plain text.
+        /// </summary>
+        /// <param name="configurationValues">The public configuration values.</param>
+        /// <param name="key">The key of the configuration value.</param>
+        private static void EncodeHtmlConfigurationValue( Dictionary<string, string> configurationValues, string key )
+        {
+            if ( configurationValues.TryGetValue( key, out var text ) && text.IsNotNullOrWhiteSpace() )
+            {
+                configurationValues[key] = text.EncodeHtml();
+            }
+        }
+
+        /// <summary>
+        /// Gets a URL that cannot run script when used as a link. A URL with
+        /// a scheme other than http, https, mailto or tel has its scheme
+        /// separator encoded as "%3A", which turns it into a harmless relative
+        /// URL. The link then shows "%3A" in place of the colon. Any such
+        /// scheme is neutered on purpose, even a harmless one such as "ftp:" or
+        /// "sms:", because an allowlist cannot miss a dangerous scheme the way
+        /// a blocklist can. A relative URL, which has no scheme, is returned as is.
+        /// </summary>
+        /// <param name="url">The URL.</param>
+        /// <returns>The URL, or an inert version of it.</returns>
+        private static string GetInertUrl( string url )
+        {
+            // Browsers ignore tabs and new lines anywhere in a URL and control
+            // characters or spaces around it, so a tab inside "javascript:"
+            // still runs.
+            var normalizedUrl = new string( url.Where( c => c != '\t' && c != '\n' && c != '\r' ).ToArray() )
+                .Trim( Enumerable.Range( 0, 33 ).Select( c => ( char ) c ).ToArray() );
+
+            var match = UrlSchemeRegex.Match( normalizedUrl );
+
+            if ( !match.Success || SafeUrlSchemes.Contains( match.Value ) )
+            {
+                return url;
+            }
+
+            var colonIndex = url.IndexOf( ':' );
+
+            return $"{url.Substring( 0, colonIndex )}%3A{url.Substring( colonIndex + 1 )}";
         }
 
         /// <summary>
@@ -4061,7 +4924,6 @@ namespace Rock.Blocks.Event
                 .ToList()
                 .ToDictionary( gm => gm.Id, gm => new GroupMemberInfo
                 {
-                    Id = gm.Id,
                     GroupName = gm.GroupName,
                     IsGroupMemberArchived = gm.IsArchived,
                     IsGroupArchived = gm.IsGroupArchived
@@ -4157,6 +5019,7 @@ namespace Rock.Blocks.Event
                     gl.Location.Street1,
                     gl.Location.Street2,
                     gl.Location.City,
+                    gl.Location.County,
                     gl.Location.State,
                     gl.Location.PostalCode,
                     gl.Location.Country
@@ -4176,6 +5039,7 @@ namespace Rock.Blocks.Event
                     Street1 = location.Street1,
                     Street2 = location.Street2,
                     City = location.City,
+                    County = location.County,
                     State = location.State,
                     PostalCode = location.PostalCode,
                     Country = location.Country
@@ -4238,8 +5102,10 @@ namespace Rock.Blocks.Event
 
             if ( groupMemberAttributeIds.Any() && groupMemberIds.Any() )
             {
+                // Archived members are included so their values still show next
+                // to the archived group member link.
                 var groupMembers = new GroupMemberService( RockContext )
-                    .Queryable()
+                    .AsNoFilter()
                     .Where( gm => groupMemberIds.Contains( gm.Id ) )
                     .ToList();
 
@@ -4290,7 +5156,6 @@ namespace Rock.Blocks.Event
                 .ToList()
                 .ToDictionary( d => d.Id, d => new SignatureDocumentInfo
                 {
-                    Id = d.Id,
                     BinaryFileId = d.BinaryFileId,
                     SignedDateTime = d.SignedDateTime,
                     SignedName = d.SignedName
@@ -4359,11 +5224,6 @@ namespace Rock.Blocks.Event
         private sealed class GroupMemberInfo
         {
             /// <summary>
-            /// Gets or sets the group member identifier.
-            /// </summary>
-            public int Id { get; set; }
-
-            /// <summary>
             /// Gets or sets the group name.
             /// </summary>
             public string GroupName { get; set; }
@@ -4406,11 +5266,6 @@ namespace Rock.Blocks.Event
         private sealed class SignatureDocumentInfo
         {
             /// <summary>
-            /// Gets or sets the signature document identifier.
-            /// </summary>
-            public int Id { get; set; }
-
-            /// <summary>
             /// Gets or sets the binary file identifier of the signed document.
             /// </summary>
             public int BinaryFileId { get; set; }
@@ -4444,12 +5299,10 @@ namespace Rock.Blocks.Event
             /// <summary>
             /// Initializes a new instance of the <see cref="RegistrantLookups"/> class.
             /// </summary>
-            /// <param name="registration">The registration.</param>
             /// <param name="registrants">The registrants in display order.</param>
             /// <param name="fields">The form fields of the template in display order.</param>
-            public RegistrantLookups( Registration registration, List<RegistrationRegistrant> registrants, List<RegistrationTemplateFormField> fields )
+            public RegistrantLookups( List<RegistrationRegistrant> registrants, List<RegistrationTemplateFormField> fields )
             {
-                Registration = registration;
                 Registrants = registrants;
                 Fields = fields;
                 Persons = registrants
@@ -4460,11 +5313,6 @@ namespace Rock.Blocks.Event
                     .ToList();
                 PersonIds = Persons.Select( p => p.Id ).ToList();
             }
-
-            /// <summary>
-            /// Gets the registration.
-            /// </summary>
-            public Registration Registration { get; }
 
             /// <summary>
             /// Gets the registrants in display order.
@@ -4515,6 +5363,13 @@ namespace Rock.Blocks.Event
             /// Gets or sets the signed documents keyed by signature document identifier.
             /// </summary>
             public Dictionary<int, SignatureDocumentInfo> SignatureDocumentsById { get; set; } = new Dictionary<int, SignatureDocumentInfo>();
+
+            /// <summary>
+            /// Gets the key of the attribute definition already built for an
+            /// attribute and value, so registrants with the same value share one
+            /// definition. A <c>null</c> key means no definition could be built.
+            /// </summary>
+            public Dictionary<(int AttributeId, string Value), Guid?> AttributeDefinitionKeysByValue { get; } = new Dictionary<(int AttributeId, string Value), Guid?>();
 
             /// <summary>
             /// Gets the formatted phone number of a person for a phone field.
