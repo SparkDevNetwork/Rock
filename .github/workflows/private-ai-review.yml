@@ -1,17 +1,22 @@
 name: Private AI Review
 
-# Runs AI reviewers on every PR in the private mirror. Findings are posted as
-# PR comments, which are only visible to people with access to the mirror.
+# Runs AI reviewers on PRs in the private mirror. Findings are posted as PR
+# comments, which are only visible to people with access to the mirror.
+#
+#   code      Runs automatically on every non-draft PR when it's opened or updated.
+#   sentinel  Runs only when someone adds the `sentinel` label, because a full
+#             Sentinel security review uses a lot of credits. The label is removed
+#             when the review finishes, so adding it again runs a fresh review.
 #
 # This file also exists in the public repo (the mirror copies develop), but the
-# repository check below keeps it from ever running there.
+# repository checks below keep it from ever running there.
 #
 # Required in the private repo:
 #   secrets.ANTHROPIC_API_KEY
 
 on:
   pull_request:
-    types: [opened, synchronize, reopened, ready_for_review]
+    types: [opened, synchronize, reopened, ready_for_review, labeled]
 
 permissions:
   contents: read
@@ -20,29 +25,16 @@ permissions:
   id-token: write
 
 jobs:
-  review:
-    if: github.repository == 'SparkStealth/Rock-Mirror' && !github.event.pull_request.draft
+  code:
+    if: >-
+      github.repository == 'SparkStealth/Rock-Mirror'
+      && github.event.action != 'labeled'
+      && !github.event.pull_request.draft
     runs-on: ubuntu-latest
     timeout-minutes: 30
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - name: code
-            prompt: |
-              Review this pull request for correctness bugs, missing edge cases, and
-              violations of the Rock conventions in CLAUDE.md and .claude/rules/.
-              Only report issues you are confident are real. Use inline comments on
-              the exact lines, then post one summary comment.
-          - name: security
-            prompt: |
-              Use the sentinel subagent (.claude/agents/sentinel.md) to run a security
-              review of the changes in this pull request. This repository is private,
-              so include enough detail for the author to understand and fix each
-              finding. Use inline comments on the exact lines, then post one summary
-              comment titled "Sentinel security review".
+    # A new push to the PR cancels the review of the previous push.
     concurrency:
-      group: ai-review-${{ matrix.name }}-${{ github.event.pull_request.number }}
+      group: ai-review-code-${{ github.event.pull_request.number }}
       cancel-in-progress: true
     steps:
       - name: Checkout
@@ -50,7 +42,7 @@ jobs:
         with:
           fetch-depth: 1
 
-      - name: Run ${{ matrix.name }} review
+      - name: Run code review
         uses: anthropics/claude-code-action@v1
         with:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
@@ -59,7 +51,58 @@ jobs:
             REPO: ${{ github.repository }}
             PR NUMBER: ${{ github.event.pull_request.number }}
 
-            ${{ matrix.prompt }}
+            Review this pull request for correctness bugs, missing edge cases, and
+            violations of the Rock conventions in CLAUDE.md and .claude/rules/.
+            Only report issues you are confident are real. Use inline comments on
+            the exact lines, then post one summary comment.
           claude_args: |
             --model claude-opus-5-5
             --allowedTools "mcp__github_inline_comment__create_inline_comment,Bash(gh pr comment:*),Bash(gh pr diff:*),Bash(gh pr view:*)"
+
+  sentinel:
+    if: >-
+      github.repository == 'SparkStealth/Rock-Mirror'
+      && github.event.action == 'labeled'
+      && github.event.label.name == 'sentinel'
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    concurrency:
+      group: ai-review-sentinel-${{ github.event.pull_request.number }}
+      cancel-in-progress: true
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          # HEAD is the PR merged into its target branch. Depth 2 also brings in
+          # the target branch's commit, so `git diff HEAD^1 HEAD` is the PR's change.
+          fetch-depth: 2
+
+      - name: Run Sentinel security review
+        uses: anthropics/claude-code-action@v1
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          track_progress: true
+          prompt: |
+            REPO: ${{ github.repository }}
+            PR NUMBER: ${{ github.event.pull_request.number }}
+
+            Use the sentinel subagent (.claude/agents/sentinel.md) to run a security
+            review of the changes in this pull request. The PR's changes are
+            `git diff HEAD^1 HEAD`. If the sentinel agent file doesn't exist on this
+            branch, do the security review yourself and say so in the summary.
+
+            This repository is private, so include enough detail for the author to
+            understand and fix each finding. Use inline comments on the exact lines,
+            then post one summary comment titled "Sentinel security review".
+          # Task/Agent lets Claude start the Sentinel sub-agent. The git commands
+          # are read-only, for inspecting the change.
+          claude_args: |
+            --model claude-opus-5-5
+            --allowedTools "Task,Agent,Read,Grep,Glob,mcp__github_inline_comment__create_inline_comment,Bash(gh pr comment:*),Bash(gh pr diff:*),Bash(gh pr view:*),Bash(git diff:*),Bash(git log:*),Bash(git show:*)"
+
+      - name: Remove the sentinel label
+        # Always remove it, so adding the label again starts a fresh review.
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh api -X DELETE "repos/${{ github.repository }}/issues/${{ github.event.pull_request.number }}/labels/sentinel" || true
