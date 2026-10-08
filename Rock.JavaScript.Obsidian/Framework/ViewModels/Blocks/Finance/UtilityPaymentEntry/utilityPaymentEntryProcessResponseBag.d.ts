@@ -52,6 +52,12 @@ export type UtilityPaymentEntryProcessResponseBag = {
     isSuccess: boolean;
 
     /**
+     * Gets or sets the security grant token that allows the payment
+     * method to be saved for future use.
+     */
+    saveAccountSecurityGrantToken?: string | null;
+
+    /**
      * Gets or sets the unique identifier of the scheduled transaction when the gift was a scheduled
      * (recurring) gift, so the shared save-account control can save the payment method from it. Null for
      * a one-time gift.
