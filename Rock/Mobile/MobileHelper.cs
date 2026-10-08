@@ -510,6 +510,12 @@ namespace Rock.Mobile
                 EntraClientId = additionalSettings.EntraClientId,
                 OrganizationBeaconGuid = Rock.Web.SystemSettings.GetRockInstanceId(),
                 OrganizationName = organizationName,
+                ImpersonationTokenDomains = SiteCache.All()
+                    .Where( s => s.IsActive )
+                    .SelectMany( s => s.SiteDomainNames )
+                    .Where( d => d.IsNotNullOrWhiteSpace() )
+                    .Distinct( StringComparer.OrdinalIgnoreCase )
+                    .ToList(),
             };
 
             if ( ChatHelper.IsChatEnabled )
