@@ -23,6 +23,12 @@ name: Ship to Public
 # no merge-up. It's the escape hatch when a merge-up conflicts: ship with
 # `ship-only`, then do that merge-up by hand.
 #
+# The `squash` label (add it BEFORE `ship` or `ship-only`) squashes the PR's
+# commits into one after step 2. The PR title becomes the commit message, so it
+# must be a release note. The first commit's author keeps authorship, other
+# committers get Co-authored-by credit, and the original commit messages are
+# listed in the description. Merge-ups are still real merge commits.
+#
 # Shipping does NOT wait on a build, so it takes about a minute. This matches
 # how Rock already works: code lands on develop, then AppVeyor builds it.
 #
@@ -51,16 +57,55 @@ permissions:
   pull-requests: write
   issues: write
 
+# One queue PER PR. A second `ship` on the same PR waits until the first run
+# has completely finished, so the gate job below sees the PR's real state.
+#
+# Deliberately NOT one queue for all PRs: GitHub keeps only one waiting run per
+# queue and silently cancels the older one, which would drop another PR's ship.
+# Two different PRs shipping at the same moment run side by side instead. The
+# atomic push protects public: whichever pushes second is rejected and told to
+# retry.
+#
+# Other labels (sentinel, squash, ...) get a unique group, so they never wait
+# behind or cancel a ship.
+concurrency:
+  group: ${{ (github.event.label.name == 'ship' || github.event.label.name == 'ship-only') && format('ship-pr-{0}', github.event.pull_request.number) || format('ship-noop-{0}', github.run_id) }}
+  cancel-in-progress: false
+
 jobs:
+  gate:
+    # Cheap filter on the event first. The event's PR state can be stale, so
+    # the step below checks the live state too.
+    if: >-
+      github.repository == 'SparkStealth/Rock-Mirror'
+      && github.event.pull_request.state == 'open'
+      && (github.event.label.name == 'ship' || github.event.label.name == 'ship-only')
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      open: ${{ steps.state.outputs.open }}
+    steps:
+      - name: Check the PR is still open
+        id: state
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR: ${{ github.event.pull_request.number }}
+        run: |
+          # An earlier run for this PR may have shipped and closed it while this
+          # run waited its turn. Stop quietly in that case.
+          state=$(gh pr view "$PR" -R "$GITHUB_REPOSITORY" --json state -q .state)
+          echo "PR #$PR is $state"
+          if [ "$state" = "OPEN" ]; then
+            echo "open=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "open=false" >> "$GITHUB_OUTPUT"
+          fi
+
   ship:
-    if: github.repository == 'SparkStealth/Rock-Mirror' && (github.event.label.name == 'ship' || github.event.label.name == 'ship-only')
+    needs: gate
+    if: needs.gate.outputs.open == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 20
-    # One ship at a time across ALL branches. A merge-up can touch several
-    # branches, so two ships to different branches could otherwise collide.
-    concurrency:
-      group: ship
-      cancel-in-progress: false
     env:
       GH_TOKEN: ${{ github.token }}
       PR: ${{ github.event.pull_request.number }}
@@ -69,6 +114,8 @@ jobs:
       HEAD_REF: ${{ github.event.pull_request.head.ref }}
       ACTOR: ${{ github.actor }}
       LABEL: ${{ github.event.label.name }}
+      PR_TITLE: ${{ github.event.pull_request.title }}
+      SQUASH: ${{ contains(github.event.pull_request.labels.*.name, 'squash') }}
     steps:
       - name: Check the target branch
         run: |
@@ -129,11 +176,53 @@ jobs:
               echo "Rebasing onto public \`$BASE\` hit conflicts in:"
               echo "$files"
               echo ""
-              echo "Run \`git fetch origin\` and \`git rebase origin/$BASE\` locally, resolve, push to this branch, then add the \`$LABEL\` label again."
+              echo "Merge \`$BASE\` into your branch locally, resolve the conflicts, push to this branch, then add the \`$LABEL\` label again."
               echo "EOF"
             } >> "$GITHUB_ENV"
             exit 1
           fi
+
+          # Every commit was already on public (for example, it was shipped
+          # before). Stop rather than run a merge-up with nothing of this PR's in it.
+          if [ "$(git rev-list --count "public/$BASE..HEAD")" -eq 0 ]; then
+            echo "SHIP_FAIL=Nothing to ship: every commit in this PR is already on public \`$BASE\`." >> "$GITHUB_ENV"
+            exit 1
+          fi
+
+      - name: Squash into one commit
+        # Only when the PR also has the `squash` label.
+        if: env.SQUASH == 'true'
+        run: |
+          count=$(git rev-list --count --no-merges "public/$BASE..HEAD")
+          if [ "$count" -eq 0 ]; then
+            echo "SHIP_FAIL=This PR has no changes that aren't already on public \`$BASE\`." >> "$GITHUB_ENV"
+            exit 1
+          fi
+
+          # The PR title becomes the commit message, so it must be a release note.
+          if ! printf '%s' "$PR_TITLE" | grep -qE '^[+-] '; then
+            echo "SHIP_FAIL=With \`squash\`, the PR title becomes the commit message, so it must use the release-note format (\`+ (Domain) ...\` or \`- ...\`). Edit the title, then add the \`$LABEL\` label again." >> "$GITHUB_ENV"
+            exit 1
+          fi
+
+          # The author of the PR's first commit keeps authorship. Anyone else who
+          # committed to the PR gets a Co-authored-by credit.
+          author=$(git log --reverse --no-merges --format='%an <%ae>' "public/$BASE..HEAD" | head -1)
+          coauthors=$(git log --no-merges --format='%an <%ae>' "public/$BASE..HEAD" | sort -u | grep -vxF "$author" || true)
+
+          {
+            printf '%s\n\n' "$PR_TITLE"
+            echo "Squashed from $count commits:"
+            git log --reverse --no-merges --format='* %s' "public/$BASE..HEAD"
+            if [ -n "$coauthors" ]; then
+              echo
+              echo "$coauthors" | sed 's/^/Co-authored-by: /'
+            fi
+          } > squash-message.txt
+
+          git reset --soft "public/$BASE"
+          git commit -q --author="$author" -F squash-message.txt
+          echo "Squashed $count commits into: $(git log -1 --format='%h %s')"
 
       - name: Check commit messages
         run: |
