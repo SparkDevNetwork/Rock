@@ -5433,6 +5433,7 @@ namespace Rock.Rest.v2
             // Convert the public configuration options into our private
             // configuration options (values).
             var configurationValues = fieldType.GetPrivateConfigurationValues( options.ConfigurationValues );
+            configurationValues = Field.Helper.RemoveDynamicListSources( configurationValues, RockRequestContext.CurrentPerson );
 
             // Convert the default value from the public value into our
             // private internal value.
@@ -5444,6 +5445,19 @@ namespace Rock.Rest.v2
 
             // Get the public configuration options from the internal options (values).
             var publicAdminConfigurationValues = fieldType.GetPublicConfigurationValues( configurationValues, Field.ConfigurationValueUsage.Configure, null );
+
+            // Return the custom values exactly as they were posted so the
+            // editor keeps them when the attribute is saved.
+            foreach ( var key in publicAdminConfigurationValues.Keys.ToList() )
+            {
+                var postedKey = options.ConfigurationValues?.Keys
+                    .FirstOrDefault( k => k.Equals( key, StringComparison.OrdinalIgnoreCase ) );
+
+                if ( postedKey != null && key.Equals( "customValues", StringComparison.OrdinalIgnoreCase ) )
+                {
+                    publicAdminConfigurationValues[key] = options.ConfigurationValues[postedKey];
+                }
+            }
 
             // Get the public configuration options from the internal options (values).
             var publicEditConfigurationValues = fieldType.GetPublicConfigurationValues( configurationValues, Field.ConfigurationValueUsage.Edit, options.DefaultValue );

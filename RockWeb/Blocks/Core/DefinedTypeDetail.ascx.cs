@@ -462,6 +462,11 @@ namespace RockWeb.Blocks.Core
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void gDefinedTypeAttributes_Add( object sender, EventArgs e )
         {
+            if ( !CanEditDefinedTypeAttributes() )
+            {
+                return;
+            }
+
             gDefinedTypeAttributes_ShowEdit( Guid.Empty );
         }
 
@@ -472,6 +477,11 @@ namespace RockWeb.Blocks.Core
         /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
         protected void gDefinedTypeAttributes_Edit( object sender, RowEventArgs e )
         {
+            if ( !CanEditDefinedTypeAttributes() )
+            {
+                return;
+            }
+
             Guid attributeGuid = ( Guid ) e.RowKeyValue;
             gDefinedTypeAttributes_ShowEdit( attributeGuid );
         }
@@ -522,6 +532,11 @@ namespace RockWeb.Blocks.Core
         /// <param name="e">The <see cref="GridReorderEventArgs"/> instance containing the event data.</param>
         void gDefinedTypeAttributes_GridReorder( object sender, GridReorderEventArgs e )
         {
+            if ( !CanEditDefinedTypeAttributes() )
+            {
+                return;
+            }
+
             string qualifierValue = hfDefinedTypeId.Value;
 
             var rockContext = new RockContext();
@@ -576,6 +591,11 @@ namespace RockWeb.Blocks.Core
         /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
         protected void gDefinedTypeAttributes_Delete( object sender, RowEventArgs e )
         {
+            if ( !CanEditDefinedTypeAttributes() )
+            {
+                return;
+            }
+
             Guid attributeGuid = ( Guid ) e.RowKeyValue;
             var rockContext = new RockContext();
             AttributeService attributeService = new AttributeService( rockContext );
@@ -614,6 +634,11 @@ namespace RockWeb.Blocks.Core
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void btnSaveDefinedTypeAttribute_Click( object sender, EventArgs e )
         {
+            if ( !CanEditDefinedTypeAttributes() )
+            {
+                return;
+            }
+
             var attribute = Rock.Attribute.Helper.SaveAttributeEdits(
                 edtDefinedTypeAttributes, EntityTypeCache.Get( typeof( DefinedValue ) ).Id, "DefinedTypeId", hfDefinedTypeId.Value );
 
@@ -662,8 +687,30 @@ namespace RockWeb.Blocks.Core
             gDefinedTypeAttributes.DataSource = attributes;
             gDefinedTypeAttributes.DataBind();
 
-            pnlAttributeTypes.Visible = !_isStandAlone || attributes.Count > 0;
+            // Only show the attribute actions to people that can edit the defined type.
+            var canEditAttributes = !_isStandAlone && CanEditDefinedTypeAttributes();
 
+            if ( !_isStandAlone && !canEditAttributes )
+            {
+                gDefinedTypeAttributes.Columns[0].Visible = false;
+                gDefinedTypeAttributes.Columns[2].Visible = false;
+                gDefinedTypeAttributes.Columns[3].Visible = false;
+                gDefinedTypeAttributes.Actions.ShowAdd = false;
+            }
+
+            pnlAttributeTypes.Visible = canEditAttributes || attributes.Count > 0;
+        }
+
+        /// <summary>
+        /// Determines whether the current person can edit the attributes of
+        /// the defined type.
+        /// </summary>
+        /// <returns><c>true</c> if the current person can edit the attributes; otherwise <c>false</c>.</returns>
+        private bool CanEditDefinedTypeAttributes()
+        {
+            var definedType = new DefinedTypeService( new RockContext() ).Get( hfDefinedTypeId.ValueAsInt() );
+
+            return definedType != null && definedType.IsAuthorized( Authorization.EDIT, CurrentPerson );
         }
 
         #endregion       
