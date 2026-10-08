@@ -16,9 +16,11 @@
 //
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -49,6 +51,10 @@ namespace Rock.Configuration.ConnectedServices.MobileApp
     ///         answers <c>400 validation_failed</c> with the failing fields.</item>
     ///         <item>The response to a config write that follows a gateway enable, and the
     ///         gateway's error bodies, which Rock has never parsed.</item>
+    ///         <item>The campus publish. This fake accepts every call and counts the campuses
+    ///         itself. The real directory answers <c>404 not_enrolled</c> or
+    ///         <c>409 church_inactive</c> for a church it does not list, so retest the campus
+    ///         job against a church that was disabled at the gateway but not in Rock.</item>
     ///     </list>
     ///     <para>
     ///         The mobile shell's fake church directory does not know the code this class
@@ -119,6 +125,24 @@ namespace Rock.Configuration.ConnectedServices.MobileApp
                     Link = $"https://{TestLinkHost}/c/{churchCode}",
                     IsActive = true,
                     Name = request?.Name
+                }
+            } );
+        }
+
+        /// <inheritdoc/>
+        public Task<ConfigurationResult<MobileAppCampusesResponse>> SetCampusesAsync( MobileAppCampusesRequest request, CancellationToken cancellationToken )
+        {
+            var campuses = request.Campuses.ValueKind == JsonValueKind.Array
+                ? request.Campuses.EnumerateArray().ToList()
+                : new List<JsonElement>();
+
+            return Task.FromResult( new ConfigurationResult<MobileAppCampusesResponse>
+            {
+                IsSuccess = true,
+                Data = new MobileAppCampusesResponse
+                {
+                    CampusCount = campuses.Count,
+                    GeocodedCount = campuses.Count( c => c.TryGetProperty( "lat", out _ ) )
                 }
             } );
         }

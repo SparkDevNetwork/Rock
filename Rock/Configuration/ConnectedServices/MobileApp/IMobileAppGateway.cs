@@ -24,8 +24,9 @@ using Rock.Configuration.ConnectedServices.MobileApp.DataTransferObjects;
 namespace Rock.Configuration.ConnectedServices.MobileApp
 {
     /// <summary>
-    /// The two calls the Connected Services card makes to enroll the church in
-    /// the shared mobile application, or take it out again.
+    /// The calls the Connected Services card makes to enroll the church in the shared
+    /// mobile application or take it out again, and the call the daily campus job makes
+    /// to keep the church's campuses current.
     /// </summary>
     /// <remarks>
     /// ARGUS-LIVE: This seam exists only so the card can be built and tested before
@@ -57,5 +58,14 @@ namespace Rock.Configuration.ConnectedServices.MobileApp
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>The result of the call, carrying the church code and the poster link.</returns>
         Task<ConfigurationResult<MobileAppConfigurationResponse>> SetConfigurationAsync( MobileAppConfigurationRequest request, CancellationToken cancellationToken );
+
+        /// <summary>
+        /// Replaces the church's campus set in the directory. Called by the daily campus job
+        /// when the campuses have changed since they were last sent.
+        /// </summary>
+        /// <param name="request">The church's full campus set.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>The result of the call, carrying the directory's campus counts.</returns>
+        Task<ConfigurationResult<MobileAppCampusesResponse>> SetCampusesAsync( MobileAppCampusesRequest request, CancellationToken cancellationToken );
     }
 }

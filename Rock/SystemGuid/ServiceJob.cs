@@ -605,5 +605,11 @@ namespace Rock.SystemGuid
         /// The job to run Post v20.0 Data Migrations to remove Anonymous Visitor PersonAlias records that were created for bot traffic whose page view interaction was subsequently discarded as a crawler.
         /// </summary>
         public const string DATA_MIGRATIONS_200_REMOVE_ORPHANED_ANONYMOUS_VISITOR_ALIASES = "900876CC-F6E1-4FBE-A7BB-F8DF5124BA43";
+
+        /// <summary>
+        /// The job that publishes the church's campuses to the church directory for the shared
+        /// mobile application when they change. <see cref="Rock.Jobs.PublishPlatformMobileAppCampuses"/>
+        /// </summary>
+        public const string PUBLISH_PLATFORM_MOBILE_APP_CAMPUSES = "47B6BE6A-E230-4846-B0CC-5449024FEEF0";
     }
 }

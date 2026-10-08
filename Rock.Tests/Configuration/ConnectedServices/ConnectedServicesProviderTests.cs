@@ -1511,6 +1511,46 @@ namespace Rock.Tests.Configuration.ConnectedServices
         }
 
         [TestMethod]
+        public async Task SetMobileAppCampusesAsync_WithSuccessResponse_SendsCampusesAndReturnsCounts()
+        {
+            using ( var ctx = CreateTestContext() )
+            {
+                SeedAuthToken( "token" );
+
+                ctx.Handler.SetResponse( HttpMethod.Put, $"/svcs/v1/{ConnectedServicesProvider.MobileAppServiceId}/campuses", HttpStatusCode.OK, @"{ ""campusCount"": 1, ""geocodedCount"": 1 }" );
+
+                var request = Rock.Mobile.PlatformMobileAppCampusPublisher.BuildRequest( new System.Collections.Generic.List<Rock.Mobile.PlatformMobileAppCampus>
+                {
+                    new Rock.Mobile.PlatformMobileAppCampus { Name = "Tempe", Latitude = 33.4255, Longitude = -111.94 }
+                } );
+                var result = await ctx.Provider.SetMobileAppCampusesAsync( request, CancellationToken.None );
+
+                Assert.IsTrue( result.IsSuccess );
+                Assert.AreEqual( 1, result.Data.CampusCount );
+                Assert.AreEqual( 1, result.Data.GeocodedCount );
+                Assert.AreEqual( "token", GetSentAuthHeader( ctx.Handler ) );
+                StringAssert.Contains( GetSentRequestBody( ctx.Handler ), "\"campuses\":[{\"name\":\"Tempe\",\"lat\":33.4255,\"long\":-111.94}]" );
+            }
+        }
+
+        [TestMethod]
+        public async Task SetMobileAppCampusesAsync_WithConflict_ReturnsFailureResult()
+        {
+            using ( var ctx = CreateTestContext() )
+            {
+                SeedAuthToken( "token" );
+
+                ctx.Handler.SetResponse( HttpMethod.Put, $"/svcs/v1/{ConnectedServicesProvider.MobileAppServiceId}/campuses", HttpStatusCode.Conflict, @"{ ""error"": ""church_inactive"" }" );
+
+                var request = Rock.Mobile.PlatformMobileAppCampusPublisher.BuildRequest( new System.Collections.Generic.List<Rock.Mobile.PlatformMobileAppCampus>() );
+                var result = await ctx.Provider.SetMobileAppCampusesAsync( request, CancellationToken.None );
+
+                Assert.IsFalse( result.IsSuccess );
+                Assert.IsFalse( result.ErrorMessage.IsNullOrWhiteSpace() );
+            }
+        }
+
+        [TestMethod]
         public async Task SetMobileAppEnabledAsync_PostsToGenericEnable()
         {
             using ( var ctx = CreateTestContext() )

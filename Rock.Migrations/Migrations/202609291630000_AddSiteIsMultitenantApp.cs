@@ -21,16 +21,21 @@ namespace Rock.Migrations
 
     /// <summary>
     /// Adds the IsMultitenantApp flag to Site, which marks the Site served to the
-    /// shared (multitenant) mobile application.
+    /// shared (multitenant) mobile application, and the daily job that publishes the
+    /// church's campuses to the church directory for that application.
     /// </summary>
     public partial class AddSiteIsMultitenantApp : Rock.Migrations.RockMigration
     {
+        private const string PublishCampusesJobClass = "Rock.Jobs.PublishPlatformMobileAppCampuses";
+
         /// <summary>
         /// Operations to be performed during the upgrade process.
         /// </summary>
         public override void Up()
         {
             AddColumn("dbo.Site", "IsMultitenantApp", c => c.Boolean(nullable: false, defaultValue: false));
+
+            AddPublishPlatformMobileAppCampusesJobUp();
         }
 
         /// <summary>
@@ -38,7 +43,49 @@ namespace Rock.Migrations
         /// </summary>
         public override void Down()
         {
+            AddPublishPlatformMobileAppCampusesJobDown();
+
             DropColumn("dbo.Site", "IsMultitenantApp");
+        }
+
+        /// <summary>
+        /// Adds the job that publishes the church's campuses to the church directory.
+        /// </summary>
+        private void AddPublishPlatformMobileAppCampusesJobUp()
+        {
+            // 3:30am daily. Campus addresses rarely change and a run that finds nothing new makes no call.
+            var cronSchedule = "0 30 3 1/1 * ? *";
+
+            Sql( $@"
+IF NOT EXISTS( SELECT [Id] FROM [ServiceJob] WHERE [Guid] = '{SystemGuid.ServiceJob.PUBLISH_PLATFORM_MOBILE_APP_CAMPUSES}' )
+BEGIN
+    INSERT INTO [ServiceJob] (
+        [IsSystem],
+        [IsActive],
+        [Name],
+        [Description],
+        [Class],
+        [CronExpression],
+        [NotificationStatus],
+        [Guid] )
+    VALUES (
+        1,
+        1,
+        'Publish Platform Mobile App Campuses',
+        'Publishes the church''s active campuses to the church directory for the shared mobile application when they change. Does nothing unless the church is enrolled in the shared mobile application.',
+        '{PublishCampusesJobClass}',
+        '{cronSchedule}',
+        1,
+        '{SystemGuid.ServiceJob.PUBLISH_PLATFORM_MOBILE_APP_CAMPUSES}' );
+END" );
+        }
+
+        /// <summary>
+        /// Removes the job that publishes the church's campuses to the church directory.
+        /// </summary>
+        private void AddPublishPlatformMobileAppCampusesJobDown()
+        {
+            Sql( $"DELETE FROM [ServiceJob] WHERE [Guid] = '{SystemGuid.ServiceJob.PUBLISH_PLATFORM_MOBILE_APP_CAMPUSES}'" );
         }
     }
 }

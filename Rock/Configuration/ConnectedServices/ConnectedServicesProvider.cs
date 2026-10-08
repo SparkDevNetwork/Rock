@@ -1136,6 +1136,58 @@ namespace Rock.Configuration.ConnectedServices
             }
         }
 
+        /// <summary>
+        /// Replaces the church's campus set in the directory for the shared mobile
+        /// application. Whatever is sent becomes the church's campus set.
+        /// </summary>
+        /// <param name="request">The church's full campus set.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>A <see cref="ConfigurationResult"/> carrying the directory's campus counts.</returns>
+        internal async Task<ConfigurationResult<MobileApp.DataTransferObjects.MobileAppCampusesResponse>> SetMobileAppCampusesAsync( MobileApp.DataTransferObjects.MobileAppCampusesRequest request, CancellationToken cancellationToken )
+        {
+            if ( _deploymentEnvironment == DeploymentEnvironment.Demo )
+            {
+                throw new InvalidOperationException( "Connected services are not available in the demo environment." );
+            }
+
+            var apiKey = GetAuthToken();
+
+            if ( apiKey.IsNullOrWhiteSpace() )
+            {
+                throw new InvalidOperationException( "Connected Services API Key is not configured." );
+            }
+
+            try
+            {
+                // ARGUS-LIVE: The campuses route is a proposal (card impl spec, section 5).
+                // Confirm the path with Spark's gateway team, and check how the gateway reports
+                // Argus's 404 not_enrolled and 409 church_inactive so the job's status message
+                // can say which one it was instead of the bare status code.
+                var httpRequest = new HttpRequestMessage( HttpMethod.Put, $"svcs/v1/{MobileAppServiceId}/campuses" );
+                httpRequest.Headers.Add( "X-Gateway-Api-Key", apiKey );
+                httpRequest.Content = new StringContent( Serialize( request ), Encoding.UTF8, "application/json" );
+
+                var response = await _httpClient.SendAsync( httpRequest, cancellationToken );
+                response.EnsureSuccessStatusCode();
+
+                var responseJson = await response.Content.ReadAsStringAsync();
+
+                return new ConfigurationResult<MobileApp.DataTransferObjects.MobileAppCampusesResponse>
+                {
+                    IsSuccess = true,
+                    Data = DeserializeOrDefault<MobileApp.DataTransferObjects.MobileAppCampusesResponse>( responseJson ),
+                };
+            }
+            catch ( HttpRequestException ex )
+            {
+                return new ConfigurationResult<MobileApp.DataTransferObjects.MobileAppCampusesResponse>
+                {
+                    IsSuccess = false,
+                    ErrorMessage = $"Failed to publish the mobile app campuses: {ex.InnerException?.Message ?? ex.Message}"
+                };
+            }
+        }
+
         #endregion
 
         #region Methods

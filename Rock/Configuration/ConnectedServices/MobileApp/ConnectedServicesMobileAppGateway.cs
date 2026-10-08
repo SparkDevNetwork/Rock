@@ -58,5 +58,11 @@ namespace Rock.Configuration.ConnectedServices.MobileApp
         {
             return _provider.SetMobileAppConfigurationAsync( request, cancellationToken );
         }
+
+        /// <inheritdoc/>
+        public Task<ConfigurationResult<MobileAppCampusesResponse>> SetCampusesAsync( MobileAppCampusesRequest request, CancellationToken cancellationToken )
+        {
+            return _provider.SetMobileAppCampusesAsync( request, cancellationToken );
+        }
     }
 }
