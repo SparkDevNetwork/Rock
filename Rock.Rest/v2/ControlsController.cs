@@ -11783,7 +11783,7 @@ namespace Rock.Rest.v2
             // The account can only be saved for the transaction that the
             // security grant was issued for.
             var grant = SecurityGrant.FromToken( options.SecurityGrantToken );
-            var saveAccess = new Rock.Security.SecurityGrantRules.SaveFinancialAccountSecurityGrantRule.SaveFinancialAccountAccess( options.GatewayGuid, options.TransactionCode, options.GatewayPersonIdentifier );
+            var saveAccess = new Rock.Security.SecurityGrantRules.SaveFinancialAccountSecurityGrantRule.SaveFinancialAccountAccess( options.GatewayGuid, options.TransactionCode, options.GatewayPersonIdentifier, options.ScheduledTransactionGuid );
 
             if ( grant?.IsAccessGranted( saveAccess, Security.Authorization.EDIT ) != true )
             {

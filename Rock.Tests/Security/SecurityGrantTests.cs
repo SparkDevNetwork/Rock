@@ -289,6 +289,53 @@ namespace Rock.Tests.Security
         }
 
         [TestMethod]
+        public void SaveFinancialAccountRuleMatchesScheduledTransaction()
+        {
+            var scheduledTransactionGuid = System.Guid.NewGuid();
+            var grant = new SecurityGrant()
+                .AddRule( new SaveFinancialAccountSecurityGrantRule( GatewayGuid, "T100", "P100", scheduledTransactionGuid ) );
+
+            Assert.IsTrue( grant.IsAccessGranted( new SaveFinancialAccountSecurityGrantRule.SaveFinancialAccountAccess( GatewayGuid, "T100", "P100", scheduledTransactionGuid ), Authorization.EDIT ) );
+            Assert.IsFalse( grant.IsAccessGranted( new SaveFinancialAccountSecurityGrantRule.SaveFinancialAccountAccess( GatewayGuid, "T100", "P100", System.Guid.NewGuid() ), Authorization.EDIT ) );
+            Assert.IsFalse( grant.IsAccessGranted( CreateSaveAccess( GatewayGuid, "T100", "P100" ), Authorization.EDIT ) );
+        }
+
+        [TestMethod]
+        public void SaveFinancialAccountRuleWithoutScheduledTransactionDeniesScheduledTransaction()
+        {
+            var grant = new SecurityGrant()
+                .AddRule( new SaveFinancialAccountSecurityGrantRule( GatewayGuid, "T100", "P100" ) );
+
+            Assert.IsFalse( grant.IsAccessGranted( new SaveFinancialAccountSecurityGrantRule.SaveFinancialAccountAccess( GatewayGuid, "T100", "P100", System.Guid.NewGuid() ), Authorization.EDIT ) );
+        }
+
+        [TestMethod]
+        public void SaveFinancialAccountRuleWithEmptyGatewayPersonIdentifierOnlyMatchesEmpty()
+        {
+            var grant = new SecurityGrant()
+                .AddRule( new SaveFinancialAccountSecurityGrantRule( GatewayGuid, "T100", "" ) );
+
+            Assert.IsTrue( grant.IsAccessGranted( CreateSaveAccess( GatewayGuid, "T100", null ), Authorization.EDIT ) );
+            Assert.IsTrue( grant.IsAccessGranted( CreateSaveAccess( GatewayGuid, "T100", "" ), Authorization.EDIT ) );
+            Assert.IsFalse( grant.IsAccessGranted( CreateSaveAccess( GatewayGuid, "T100", "P100" ), Authorization.EDIT ) );
+        }
+
+        [TestMethod]
+        public void SaveFinancialAccountRuleWithScheduledTransactionSurvivesTokenRoundTrip()
+        {
+            var scheduledTransactionGuid = System.Guid.NewGuid();
+            var token = new SecurityGrant()
+                .AddRule( new SaveFinancialAccountSecurityGrantRule( GatewayGuid, "T100", "P100", scheduledTransactionGuid ) )
+                .ToToken();
+
+            var grant = SecurityGrant.FromToken( token );
+
+            Assert.IsNotNull( grant );
+            Assert.IsTrue( grant.IsAccessGranted( new SaveFinancialAccountSecurityGrantRule.SaveFinancialAccountAccess( GatewayGuid, "T100", "P100", scheduledTransactionGuid ), Authorization.EDIT ) );
+            Assert.IsFalse( grant.IsAccessGranted( CreateSaveAccess( GatewayGuid, "T100", "P100" ), Authorization.EDIT ) );
+        }
+
+        [TestMethod]
         public void OtherRulesDoNotAllowSavingFinancialAccounts()
         {
             var grant = new SecurityGrant()

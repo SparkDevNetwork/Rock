@@ -52,6 +52,14 @@ namespace Rock.Security.SecurityGrantRules
         [JsonProperty( "gp" )]
         public string GatewayPersonIdentifier { get; private set; }
 
+        /// <summary>
+        /// Gets the unique identifier of the scheduled transaction when the
+        /// payment method is saved from a scheduled transaction.
+        /// </summary>
+        /// <value>The scheduled transaction unique identifier.</value>
+        [JsonProperty( "st", DefaultValueHandling = DefaultValueHandling.Ignore )]
+        public Guid? ScheduledTransactionGuid { get; private set; }
+
         #endregion
 
         #region Constructors
@@ -71,12 +79,14 @@ namespace Rock.Security.SecurityGrantRules
         /// <param name="financialGatewayGuid">The unique identifier of the financial gateway that processed the transaction.</param>
         /// <param name="transactionCode">The transaction code of the transaction.</param>
         /// <param name="gatewayPersonIdentifier">The gateway person identifier of the payment method.</param>
-        public SaveFinancialAccountSecurityGrantRule( Guid financialGatewayGuid, string transactionCode, string gatewayPersonIdentifier )
+        /// <param name="scheduledTransactionGuid">The unique identifier of the scheduled transaction, if the payment method is saved from one.</param>
+        public SaveFinancialAccountSecurityGrantRule( Guid financialGatewayGuid, string transactionCode, string gatewayPersonIdentifier, Guid? scheduledTransactionGuid = null )
             : base( Authorization.EDIT )
         {
             FinancialGatewayGuid = financialGatewayGuid;
             TransactionCode = transactionCode;
             GatewayPersonIdentifier = gatewayPersonIdentifier;
+            ScheduledTransactionGuid = scheduledTransactionGuid;
         }
 
         #endregion
@@ -91,14 +101,17 @@ namespace Rock.Security.SecurityGrantRules
                 return false;
             }
 
-            if ( FinancialGatewayGuid == Guid.Empty || TransactionCode.IsNullOrWhiteSpace() || GatewayPersonIdentifier.IsNullOrWhiteSpace() )
+            if ( FinancialGatewayGuid == Guid.Empty || TransactionCode.IsNullOrWhiteSpace() )
             {
                 return false;
             }
 
+            // Some gateways do not provide a gateway person identifier, so
+            // an empty value only matches another empty value.
             return access.FinancialGatewayGuid == FinancialGatewayGuid
                 && string.Equals( access.TransactionCode, TransactionCode, StringComparison.Ordinal )
-                && string.Equals( access.GatewayPersonIdentifier, GatewayPersonIdentifier, StringComparison.Ordinal );
+                && string.Equals( access.GatewayPersonIdentifier ?? string.Empty, GatewayPersonIdentifier ?? string.Empty, StringComparison.Ordinal )
+                && access.ScheduledTransactionGuid == ScheduledTransactionGuid;
         }
 
         #endregion
@@ -130,16 +143,24 @@ namespace Rock.Security.SecurityGrantRules
             public string GatewayPersonIdentifier { get; }
 
             /// <summary>
+            /// Gets the unique identifier of the scheduled transaction.
+            /// </summary>
+            /// <value>The scheduled transaction unique identifier.</value>
+            public Guid? ScheduledTransactionGuid { get; }
+
+            /// <summary>
             /// Initializes a new instance of the <see cref="SaveFinancialAccountAccess"/> class.
             /// </summary>
             /// <param name="financialGatewayGuid">The unique identifier of the financial gateway.</param>
             /// <param name="transactionCode">The transaction code.</param>
             /// <param name="gatewayPersonIdentifier">The gateway person identifier.</param>
-            public SaveFinancialAccountAccess( Guid financialGatewayGuid, string transactionCode, string gatewayPersonIdentifier )
+            /// <param name="scheduledTransactionGuid">The unique identifier of the scheduled transaction, if any.</param>
+            public SaveFinancialAccountAccess( Guid financialGatewayGuid, string transactionCode, string gatewayPersonIdentifier, Guid? scheduledTransactionGuid = null )
             {
                 FinancialGatewayGuid = financialGatewayGuid;
                 TransactionCode = transactionCode;
                 GatewayPersonIdentifier = gatewayPersonIdentifier;
+                ScheduledTransactionGuid = scheduledTransactionGuid;
             }
         }
 
