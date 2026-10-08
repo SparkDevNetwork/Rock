@@ -315,6 +315,16 @@ namespace RockWeb.Blocks.BulkImport
                 return;
             }
 
+            if ( tbForeignSystemKey.Text.IsNullOrWhiteSpace() || tbForeignSystemKey.Text.Length > 100 )
+            {
+                nbCheckForeignSystemKey.Text = "A Foreign System Key of 100 characters or fewer is required.";
+                nbCheckForeignSystemKey.Details = string.Empty;
+                nbCheckForeignSystemKey.NotificationBoxType = NotificationBoxType.Warning;
+                nbCheckForeignSystemKey.Visible = true;
+                upnlContent.Update();
+                return;
+            }
+
             var physicalSlingshotFile = this.Request.MapPath( hfMainSlingshotFileName.Value );
             long totalMilliseconds = 0;
 
