@@ -90,6 +90,13 @@ namespace Rock.ViewModels.Rest.Controls
         /// The confirmation email system communication unique identifier.
         /// </value>
         public Guid? ConfirmationEmailTemplateGuid { get; set; }
+
+        /// <summary>
+        /// Gets or sets the security grant token that allows the account
+        /// to be saved.
+        /// </summary>
+        /// <value>The security grant token.</value>
+        public string SecurityGrantToken { get; set; }
     }
 
 }

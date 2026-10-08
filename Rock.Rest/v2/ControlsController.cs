@@ -3630,10 +3630,14 @@ namespace Rock.Rest.v2
                 var clientService = new CategoryClientService( rockContext, GetPerson( rockContext ) );
                 var grant = SecurityGrant.FromToken( options.SecurityGrantToken );
 
+                // Categorized items are only included for people with access
+                // to the REST action. The category picker only requests categories.
+                var canViewItems = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_READ );
+
                 var items = clientService.GetCategorizedTreeItems( new CategoryItemTreeOptions
                 {
                     ParentGuid = options.ParentGuid,
-                    GetCategorizedItems = options.GetCategorizedItems,
+                    GetCategorizedItems = options.GetCategorizedItems && canViewItems,
                     EntityTypeGuid = options.EntityTypeGuid,
                     EntityTypeQualifierColumn = options.EntityTypeQualifierColumn,
                     EntityTypeQualifierValue = GetQualifierValueLookupResult( options.EntityTypeQualifierValue, rockContext ),
@@ -3641,8 +3645,8 @@ namespace Rock.Rest.v2
                     IncludeCategoriesWithoutChildren = options.IncludeCategoriesWithoutChildren,
                     DefaultIconCssClass = options.DefaultIconCssClass,
                     IncludeInactiveItems = options.IncludeInactiveItems,
-                    ItemFilterPropertyName = options.ItemFilterPropertyName,
-                    ItemFilterPropertyValue = options.ItemFilterPropertyValue,
+                    ItemFilterPropertyName = canViewItems ? options.ItemFilterPropertyName : null,
+                    ItemFilterPropertyValue = canViewItems ? options.ItemFilterPropertyValue : null,
                     LazyLoad = options.LazyLoad,
                     SecurityGrant = grant
                 } );
@@ -6178,6 +6182,7 @@ namespace Rock.Rest.v2
             // Convert the public configuration options into our private
             // configuration options (values).
             var configurationValues = fieldType.GetPrivateConfigurationValues( options.ConfigurationValues );
+            configurationValues = Field.Helper.RemoveDynamicListSources( configurationValues, RockRequestContext.CurrentPerson );
 
             // Convert the default value from the public value into our
             // private internal value.
@@ -6189,6 +6194,19 @@ namespace Rock.Rest.v2
 
             // Get the public configuration options from the internal options (values).
             var publicAdminConfigurationValues = fieldType.GetPublicConfigurationValues( configurationValues, Field.ConfigurationValueUsage.Configure, null );
+
+            // Return the custom values exactly as they were posted so the
+            // editor keeps them when the attribute is saved.
+            foreach ( var key in publicAdminConfigurationValues.Keys.ToList() )
+            {
+                var postedKey = options.ConfigurationValues?.Keys
+                    .FirstOrDefault( k => k.Equals( key, StringComparison.OrdinalIgnoreCase ) );
+
+                if ( postedKey != null && key.Equals( "customValues", StringComparison.OrdinalIgnoreCase ) )
+                {
+                    publicAdminConfigurationValues[key] = options.ConfigurationValues[postedKey];
+                }
+            }
 
             // Get the public configuration options from the internal options (values).
             var publicEditConfigurationValues = fieldType.GetPublicConfigurationValues( configurationValues, Field.ConfigurationValueUsage.Edit, options.DefaultValue );
@@ -11766,6 +11784,21 @@ namespace Rock.Rest.v2
                 };
             }
 
+            // The account can only be saved for the transaction that the
+            // security grant was issued for.
+            var grant = SecurityGrant.FromToken( options.SecurityGrantToken );
+            var saveAccess = new Rock.Security.SecurityGrantRules.SaveFinancialAccountSecurityGrantRule.SaveFinancialAccountAccess( options.GatewayGuid, options.TransactionCode, options.GatewayPersonIdentifier, options.ScheduledTransactionGuid );
+
+            if ( grant?.IsAccessGranted( saveAccess, Security.Authorization.EDIT ) != true )
+            {
+                return new SaveFinancialAccountFormSaveAccountResultBag
+                {
+                    Title = "Invalid Transaction",
+                    Detail = "Sorry, the account information cannot be saved as there's not a valid transaction to reference",
+                    IsSuccess = false
+                };
+            }
+
             var currentPerson = GetPerson();
             var isAnonymous = currentPerson == null;
 
@@ -11871,6 +11904,19 @@ namespace Rock.Rest.v2
                     };
                 }
 
+                // Only one saved account can be created from a transaction.
+                var financialPersonSavedAccountService = new FinancialPersonSavedAccountService( rockContext );
+
+                if ( financialPersonSavedAccountService.Queryable().Any( a => a.FinancialGatewayId == financialGateway.Id && a.TransactionCode == options.TransactionCode ) )
+                {
+                    return new SaveFinancialAccountFormSaveAccountResultBag
+                    {
+                        Title = "Account Already Saved",
+                        Detail = "The account information for this transaction has already been saved",
+                        IsSuccess = false
+                    };
+                }
+
                 // Create the login if needed
                 if ( isAnonymous )
                 {
@@ -11929,7 +11975,6 @@ namespace Rock.Rest.v2
                     }
                 };
 
-                var financialPersonSavedAccountService = new FinancialPersonSavedAccountService( rockContext );
                 financialPersonSavedAccountService.Add( savedAccount );
 
                 System.Web.HttpContext.Current.AddOrReplaceItem( "CurrentPerson", RockRequestContext.CurrentPerson );

@@ -168,6 +168,11 @@ namespace Rock.Blocks.BulkImport
                 return ActionBadRequest( "Slingshot file not found." );
             }
 
+            if ( request.ForeignSystemKey.IsNullOrWhiteSpace() || request.ForeignSystemKey.Length > 100 )
+            {
+                return ActionBadRequest( "A Foreign System Key of 100 characters or fewer is required." );
+            }
+
             // Use Task.Run( async () => ... ) instead of new Task( async () => ... )
             // because the latter compiles to async void, where any unhandled exception crashes the app pool.
             Task.Run( async () =>

@@ -323,6 +323,7 @@
                                                   :transactionCode="completedTransactionCode"
                                                   :gatewayPersonIdentifier="gatewayPersonIdentifier"
                                                   :scheduledTransactionGuid="completedScheduledTransactionGuid"
+                                                  :securityGrantToken="saveAccountSecurityGrantToken"
                                                   :confirmationEmailTemplateGuid="accountConfirmationEmailTemplateGuid"
                                                   saveAccountCheckBoxLabel="Save as New Account">
                             <template #header><span /></template>
@@ -702,6 +703,7 @@ table.utility-payment-entry-summary > tbody > tr:not(.utility-payment-entry-summ
     const gatewayGuid = ref("");
     const gatewayPersonIdentifier = ref("");
     const completedScheduledTransactionGuid = ref<Guid | null>(null);
+    const saveAccountSecurityGrantToken = ref<string | null>(null);
 
     // #endregion Values
 
@@ -1367,6 +1369,7 @@ table.utility-payment-entry-summary > tbody > tr:not(.utility-payment-entry-summ
         gatewayGuid.value = result.data.gatewayGuid ?? "";
         gatewayPersonIdentifier.value = result.data.gatewayPersonIdentifier ?? "";
         completedScheduledTransactionGuid.value = result.data.scheduledTransactionGuid ?? null;
+        saveAccountSecurityGrantToken.value = result.data.saveAccountSecurityGrantToken ?? null;
         currentStep.value = Step.Success;
     }
 

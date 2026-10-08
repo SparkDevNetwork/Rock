@@ -8,7 +8,9 @@ jobs:
   style-check:
     name: Obsidian Style Checker
     runs-on: ubuntu-latest
-    if: ${{ !contains(github.event.head_commit.message, 'style cleanup') }}
+    # Only run on the public repo. The private mirror receives the same pushes
+    # through the mirror sync and must not create duplicate Asana tasks.
+    if: ${{ github.repository == 'SparkDevNetwork/Rock' && !contains(github.event.head_commit.message, 'style cleanup') }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v5

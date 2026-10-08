@@ -402,7 +402,7 @@ namespace Rock.Blocks.Core
         /// <summary>
         /// Gets the defined type whose attributes are being managed by an
         /// attribute block action and makes sure the current person is
-        /// allowed to view it.
+        /// allowed to edit it.
         /// </summary>
         /// <param name="idKey">The identifier of the defined type.</param>
         /// <param name="definedType">On return contains the defined type.</param>
@@ -421,7 +421,7 @@ namespace Rock.Blocks.Core
                 return false;
             }
 
-            if ( !definedType.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson ) )
+            if ( !definedType.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
             {
                 error = ActionBadRequest( $"Not authorized to edit {DefinedType.FriendlyTypeName}." );
                 definedType = null;
@@ -636,7 +636,7 @@ namespace Rock.Blocks.Core
                     ? new DefinedTypeService( RockContext ).Get( definedTypeId.Value )
                     : null;
 
-                if ( definedType == null || !definedType.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson ) )
+                if ( definedType == null || !definedType.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
                 {
                     return ActionBadRequest();
                 }
