@@ -176,7 +176,7 @@ namespace Rock.Tests.Integration.Core.Model
         {
             var userLoginId = CreateTestLogin( true, false );
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var userLogin = new UserLoginService( rockContext ).Get( userLoginId );
                 userLogin.LastPasswordChangedDateTime = null;
@@ -204,7 +204,7 @@ namespace Rock.Tests.Integration.Core.Model
         {
             var personGuid = Guid.NewGuid();
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var person = new Person
                 {
@@ -243,7 +243,7 @@ namespace Rock.Tests.Integration.Core.Model
         /// </summary>
         private static string BuildConfirmationCode( int userLoginId, DateTime issued )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var userLogin = new UserLoginService( rockContext ).Get( userLoginId );
 
@@ -258,7 +258,7 @@ namespace Rock.Tests.Integration.Core.Model
         /// </summary>
         private static UserLogin GetByConfirmationCode( string code )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 return new UserLoginService( rockContext ).GetByConfirmationCode( code );
             }
@@ -269,7 +269,7 @@ namespace Rock.Tests.Integration.Core.Model
         /// </summary>
         private static void ChangePassword( int userLoginId )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var userLoginService = new UserLoginService( rockContext );
                 var userLogin = userLoginService.Get( userLoginId );
