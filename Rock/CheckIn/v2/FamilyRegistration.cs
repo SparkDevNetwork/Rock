@@ -293,19 +293,28 @@ namespace Rock.CheckIn.v2
                 };
             }
 
+            Group existingFamily = null;
+
+            if ( registrationFamily.Bag.Id.IsNotNullOrWhiteSpace() )
+            {
+                existingFamily = new GroupService( _rockContext ).Get( registrationFamily.Bag.Id, false );
+
+                if ( existingFamily == null || existingFamily.GroupTypeId != GroupTypeCache.GetFamilyGroupType( _rockContext ).Id )
+                {
+                    return new FamilyRegistrationSaveResult
+                    {
+                        ErrorMessage = "Family was not found."
+                    };
+                }
+            }
+
             try
             {
                 var saveResult = new FamilyRegistrationSaveResult();
 
                 _rockContext.WrapTransaction( () =>
                 {
-                    var groupService = new GroupService( _rockContext );
-                    Group primaryFamily = null;
-
-                    if ( registrationFamily.Bag.Id.IsNotNullOrWhiteSpace() )
-                    {
-                        primaryFamily = groupService.Get( registrationFamily.Bag.Id, false );
-                    }
+                    Group primaryFamily = existingFamily;
 
                     var registrationPeople = new List<(ValidPropertiesBox<RegistrationPersonBag> RegistrationPerson, Person Person)>();
 
