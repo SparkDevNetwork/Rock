@@ -39,6 +39,16 @@ namespace Rock.Model
         private static readonly TimeSpan ConfirmationCodeLifetime = TimeSpan.FromHours( 2 );
 
         /// <summary>
+        /// How far in the future a confirmation code's issue time can be and still be accepted.
+        /// </summary>
+        private static readonly TimeSpan ConfirmationCodeFutureAllowance = TimeSpan.FromHours( 1 );
+
+        /// <summary>
+        /// How far the stored password change date can be after a code's issue time and still be accepted.
+        /// </summary>
+        private static readonly TimeSpan PasswordChangedRoundingAllowance = TimeSpan.FromSeconds( 1 );
+
+        /// <summary>
         /// Returns an enumerable collection of <see cref="Rock.Model.UserLogin"/> entities by their API Key.
         /// </summary>
         /// <param name="apiKey">A <see cref="System.String"/> representing the API key to search by.</param>
@@ -143,11 +153,24 @@ namespace Rock.Model
 
                         DateTime dateTime = new DateTime( ticks );
 
-                        // Confirmation codes are valid for two hours from issue. The one hour
-                        // negative allowance covers the daylight saving fall-back (the ticks are
-                        // org-local RockDateTime) and clock drift between web servers.
+                        /*
+                            10/8/2026 - CH
+
+                            Confirmation codes are valid for two hours from issue, and a code issued
+                            before the most recent password change is no longer valid.
+
+                            The future allowance covers the daylight saving fall-back (the ticks are
+                            org-local RockDateTime) and clock drift between web servers. The rounding
+                            allowance covers SQL datetime rounding when the confirmation email is built
+                            in the same request that creates the login. Don't tighten either one.
+
+                            Reason: Codes stayed valid long after issue and after they were used.
+                        */
                         var codeAge = RockDateTime.Now - dateTime;
-                        if ( codeAge > ConfirmationCodeLifetime || codeAge < TimeSpan.FromHours( -1 ) )
+                        var isExpired = codeAge > ConfirmationCodeLifetime;
+                        var isIssuedInFuture = codeAge < -ConfirmationCodeFutureAllowance;
+
+                        if ( isExpired || isIssuedInFuture )
                         {
                             return null;
                         }
@@ -155,8 +178,10 @@ namespace Rock.Model
                         UserLogin user = this.GetByEncryptedKey( publicKey );
                         if ( user != null && user.UserName == username )
                         {
-                            // A code issued before the most recent password change is no longer valid.
-                            if ( user.LastPasswordChangedDateTime.HasValue && user.LastPasswordChangedDateTime.Value > dateTime.AddSeconds( 1 ) )
+                            var isIssuedBeforePasswordChange = user.LastPasswordChangedDateTime.HasValue
+                                && user.LastPasswordChangedDateTime.Value > dateTime + PasswordChangedRoundingAllowance;
+
+                            if ( isIssuedBeforePasswordChange )
                             {
                                 return null;
                             }
