@@ -1,5 +1,5 @@
 name: Build Rock
-description: Installs the build toolchain and builds Rock.sln. Shared by the mirror's PR build and the Ship it verify build.
+description: Installs the build toolchain and builds Rock.sln. Used by the Ship it verify build.
 
 inputs:
   working-directory:
@@ -10,10 +10,23 @@ inputs:
 runs:
   using: composite
   steps:
+    - name: Pick the Node version this branch needs
+      id: node
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+      run: |
+        # 20.0 and newer declare a minimum in package.json "engines", for
+        # example ">=24.5.0", and npm refuses to install on anything older.
+        # Use that major version. Older branches have no "engines", so they
+        # keep the Node version they were built with.
+        major=$(tr -d '\n' < Rock.JavaScript.Obsidian/package.json | grep -oE '"engines"[^}]*"node": *"[^0-9]*[0-9]+' | grep -oE '[0-9]+$' || true)
+        echo "version=${major:-22.17.1}" >> "$GITHUB_OUTPUT"
+        echo "Using Node ${major:-22.17.1}"
+
     - name: Set up Node
       uses: actions/setup-node@v6
       with:
-        node-version: '22.17.1'
+        node-version: ${{ steps.node.outputs.version }}
 
     - name: Set up MSBuild
       uses: microsoft/setup-msbuild@v2
