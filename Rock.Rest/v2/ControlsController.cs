@@ -1216,7 +1216,22 @@ namespace Rock.Rest.v2
                     return BadRequest();
                 }
 
-                return Ok( component.DeleteAsset( provider.ToEntity(), new Asset { Key = asset.FullPath, Type = AssetType.Folder } ) );
+                // The root folder of a provider can't be deleted.
+                var providerRootFolder = component.GetRootFolder( provider.ToEntity() ) ?? string.Empty;
+
+                if ( asset.SubPath.IsNullOrWhiteSpace() || asset.FullPath.TrimEnd( '/' ).Equals( providerRootFolder.TrimEnd( '/' ), StringComparison.OrdinalIgnoreCase ) )
+                {
+                    return BadRequest();
+                }
+
+                try
+                {
+                    return Ok( component.DeleteAsset( provider.ToEntity(), new Asset { Key = asset.FullPath, Type = AssetType.Folder } ) );
+                }
+                catch ( Exception ex )
+                {
+                    return InternalServerError( ex );
+                }
             }
 
             return BadRequest();
