@@ -140,6 +140,29 @@ namespace Rock.Tests.Integration.Communication.Chat.Platform.Sync
             }
         }
 
+        [TestMethod]
+        public void AMuteOnTheSurvivorsOwnMembershipSurvivesWhenTheProcedureKeepsTheOtherOne()
+        {
+            using ( var scene = new ChatDoorScene() )
+            {
+                var fixture = scene.Fixture;
+                var channel = fixture.AddChannel( fixture.SharedGroupTypeId, "Merge mute kept other" );
+                var survivorId = fixture.AddPerson( "Survivor" );
+                var loserId = fixture.AddPerson( "Merged" );
+
+                // The procedure keeps the merged-away person's active membership and deletes the
+                // survivor's muted, inactive one.
+                fixture.AddMember( channel, survivorId, m => { m.GroupMemberStatus = GroupMemberStatus.Inactive; m.IsChatMuted = true; } );
+                fixture.AddMember( channel, loserId );
+
+                Merge( loserId, survivorId );
+
+                var kept = scene.Memberships( channel, survivorId ).Single();
+                Assert.AreEqual( GroupMemberStatus.Active, kept.GroupMemberStatus, "the procedure kept the active membership" );
+                Assert.IsTrue( kept.IsChatMuted, "and the mute the survivor held is on it" );
+            }
+        }
+
         #endregion Bans and mutes
 
         #region Twin conversations
