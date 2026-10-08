@@ -8,6 +8,7 @@
         <TextBox v-model="foreignSystemKey"
                  isre
                  label="Foreign System Key"
+                 :maxLength="100"
                  help="The Key used to uniquely identify the source system. For example, use the domain of the source system's website: 'somechurch.ccbchurch.com'. Click 'Check Foreign System Key' to see what keys have already been used or to see if the key has already been used."
                  rules="required" />
 
