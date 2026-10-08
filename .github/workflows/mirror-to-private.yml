@@ -13,6 +13,11 @@ name: Mirror to Private
 #
 # No force pushes: if the mirror ever diverges, this job fails loudly instead
 # of overwriting anything.
+#
+# Speed: a full clone of Rock is ~2.2 GB and took 12+ minutes per run. Instead,
+# a bare copy of the repo is kept in the Actions cache. Each run restores it,
+# fetches only what's new, and pushes. Only runs on develop save the cache,
+# because caches saved on other branches can't be read by runs on develop.
 
 on:
   push:
@@ -49,18 +54,43 @@ jobs:
           owner: SparkStealth
           repositories: Rock-Mirror
 
-      - name: Checkout all branches and tags
-        uses: actions/checkout@v5
+      - name: Restore the cached copy of the repo
+        id: cache
+        uses: actions/cache/restore@v6
         with:
-          fetch-depth: 0
-          persist-credentials: false
+          path: rock.git
+          key: rock-mirror-${{ github.run_id }}
+          restore-keys: rock-mirror-
+
+      - name: Fetch new branches and tags from public
+        run: |
+          # No cache yet (first run, or the cache expired): start an empty
+          # copy, and this fetch downloads the full history once.
+          if [ ! -d rock.git ]; then
+            git init -q --bare rock.git
+          fi
+
+          # Public repo, so no token is needed to read it.
+          git -C rock.git fetch --prune --tags https://github.com/SparkDevNetwork/Rock.git \
+            "+refs/heads/develop:refs/heads/develop" \
+            "+refs/heads/release-*:refs/heads/release-*" \
+            "+refs/heads/hotfix-*:refs/heads/hotfix-*"
 
       - name: Push shared branches and tags to the mirror
         env:
           TOKEN: ${{ steps.app.outputs.token }}
         run: |
-          git push "https://x-access-token:${TOKEN}@github.com/SparkStealth/Rock-Mirror.git" \
-            "refs/remotes/origin/develop:refs/heads/develop" \
-            "refs/remotes/origin/release-*:refs/heads/release-*" \
-            "refs/remotes/origin/hotfix-*:refs/heads/hotfix-*" \
+          git -C rock.git push "https://x-access-token:${TOKEN}@github.com/SparkStealth/Rock-Mirror.git" \
+            "refs/heads/develop:refs/heads/develop" \
+            "refs/heads/release-*:refs/heads/release-*" \
+            "refs/heads/hotfix-*:refs/heads/hotfix-*" \
             "refs/tags/*:refs/tags/*"
+
+      - name: Save the updated copy to the cache
+        # Hourly and manual runs refresh the cache. Push runs only save when no
+        # cache existed yet, so the cache isn't rewritten on every push.
+        if: github.ref == 'refs/heads/develop' && (github.event_name != 'push' || steps.cache.outputs.cache-matched-key == '')
+        uses: actions/cache/save@v6
+        with:
+          path: rock.git
+          key: rock-mirror-${{ github.run_id }}
