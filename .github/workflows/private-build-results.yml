@@ -1,0 +1,171 @@
+name: Private Build Results
+
+# Receives AppVeyor results for public develop (sent by appveyor-relay.yml) and
+# matches them to shipped PRs labeled `awaiting-build`.
+#
+# Which PRs a build covers: a PR is covered when the develop commit it shipped
+# (recorded by private-ship.yml in a "develop-sha" marker comment) is the built
+# commit or an ancestor of it. That handles AppVeyor skipping commits: if
+# AppVeyor never built the shipped commit itself, the next build that includes
+# it counts.
+#
+#   success  Deletes each covered PR's branch and clears `awaiting-build`.
+#   failure  Comments on each covered PR, labels it `build-failed`, keeps the
+#            branch, then runs ONE Claude analysis for the whole build and posts
+#            it on every covered PR. Several PRs caught in one build never start
+#            several analyses.
+#   error    AppVeyor itself had a problem (not a build failure). Covered PRs
+#            stay `awaiting-build` and are picked up by the next build.
+#
+# This file also exists in the public repo (the mirror copies develop), but the
+# repository check below keeps it from ever running there.
+#
+# Required in the private repo:
+#   secrets.ANTHROPIC_API_KEY  For the failure analysis.
+
+on:
+  repository_dispatch:
+    types: [appveyor-result]
+
+permissions:
+  # Write is only used to delete PR branches after a passing build.
+  contents: write
+  pull-requests: write
+  issues: write
+  id-token: write
+
+# One result at a time, so two builds can never both claim the same PR.
+concurrency:
+  group: build-results
+  cancel-in-progress: false
+
+jobs:
+  match:
+    if: github.repository == 'SparkStealth/Rock-Mirror'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    outputs:
+      prs: ${{ steps.match.outputs.prs }}
+    env:
+      GH_TOKEN: ${{ github.token }}
+      SHA: ${{ github.event.client_payload.sha }}
+      STATE: ${{ github.event.client_payload.state }}
+      URL: ${{ github.event.client_payload.url }}
+    steps:
+      - name: Find the shipped PRs this build covers
+        id: match
+        run: |
+          covered=""
+          for pr in $(gh pr list -R "$GITHUB_REPOSITORY" -s closed -l awaiting-build -L 100 --json number -q '.[].number'); do
+            shipped=$(gh api "repos/$GITHUB_REPOSITORY/issues/$pr/comments?per_page=100" -q '.[].body' \
+              | grep -oE 'develop-sha: [0-9a-f]{40}' | tail -1 | cut -d' ' -f2)
+            [ -n "$shipped" ] || continue
+
+            # "ahead": the build includes the shipped commit. "identical": it is
+            # the shipped commit. Anything else (including a commit the mirror
+            # hasn't synced yet) means not covered; the next build will catch it.
+            relation=$(gh api "repos/$GITHUB_REPOSITORY/compare/$shipped...$SHA" -q .status 2>/dev/null || echo unknown)
+            if [ "$relation" = "ahead" ] || [ "$relation" = "identical" ]; then
+              covered="$covered $pr"
+            fi
+          done
+
+          covered=$(echo $covered)
+          echo "AppVeyor $STATE on ${SHA:0:7} covers PRs: ${covered:-none}"
+          echo "prs=$covered" >> "$GITHUB_OUTPUT"
+
+      - name: Update the covered PRs
+        if: steps.match.outputs.prs != ''
+        env:
+          PRS: ${{ steps.match.outputs.prs }}
+        run: |
+          for pr in $PRS; do
+            head=$(gh pr view "$pr" -R "$GITHUB_REPOSITORY" --json headRefName -q .headRefName)
+            author=$(gh pr view "$pr" -R "$GITHUB_REPOSITORY" --json author -q .author.login)
+
+            case "$STATE" in
+              success)
+                # Never delete a shared branch, even if a PR was opened from one.
+                case "$head" in
+                  develop|release-*|hotfix-*) ;;
+                  *) gh api -X DELETE "repos/$GITHUB_REPOSITORY/git/refs/heads/$head" > /dev/null 2>&1 || true ;;
+                esac
+                gh api -X DELETE "repos/$GITHUB_REPOSITORY/issues/$pr/labels/awaiting-build" > /dev/null 2>&1 || true
+                gh pr comment "$pr" -R "$GITHUB_REPOSITORY" \
+                  -b "AppVeyor passed on \`develop\` ([build]($URL), commit \`${SHA:0:7}\`). Branch \`$head\` deleted."
+                ;;
+
+              failure)
+                gh api -X DELETE "repos/$GITHUB_REPOSITORY/issues/$pr/labels/awaiting-build" > /dev/null 2>&1 || true
+                gh api -X POST "repos/$GITHUB_REPOSITORY/issues/$pr/labels" -f "labels[]=build-failed" > /dev/null
+                gh pr comment "$pr" -R "$GITHUB_REPOSITORY" \
+                  -b "**AppVeyor failed on \`develop\`** ([build]($URL), commit \`${SHA:0:7}\`), and that build includes this PR's change. @$author, your branch \`$head\` was kept. An analysis of the failure will be posted here in a few minutes."
+                ;;
+
+              error)
+                echo "AppVeyor error (not a build failure); PR #$pr stays awaiting-build."
+                ;;
+            esac
+          done
+
+  analyze:
+    # One analysis per failed build, however many PRs it covers.
+    needs: match
+    if: needs.match.outputs.prs != '' && github.event.client_payload.state == 'failure'
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    env:
+      SHA: ${{ github.event.client_payload.sha }}
+      URL: ${{ github.event.client_payload.url }}
+      PRS: ${{ needs.match.outputs.prs }}
+    steps:
+      - name: Checkout the failed commit
+        uses: actions/checkout@v5
+        with:
+          ref: ${{ github.event.client_payload.sha }}
+          fetch-depth: 100
+
+      - name: Download the AppVeyor logs
+        run: |
+          # URL looks like https://ci.appveyor.com/project/<account>/<project>/builds/<id>
+          path=$(echo "$URL" | sed -E 's#^https://ci.appveyor.com/project/##')
+          account=$(echo "$path" | cut -d/ -f1)
+          project=$(echo "$path" | cut -d/ -f2)
+          build=$(echo "$path" | cut -d/ -f4)
+
+          mkdir -p .appveyor
+          for job in $(curl -sf "https://ci.appveyor.com/api/projects/$account/$project/builds/$build" | jq -r '.build.jobs[].jobId'); do
+            curl -sf "https://ci.appveyor.com/api/buildjobs/$job/log" > ".appveyor/$job.log" || true
+          done
+
+          # A short list of the errors, so the analysis starts in the right place.
+          grep -hE ': error |error [A-Z]+[0-9]+:|Build FAILED|npm error' .appveyor/*.log | sort -u | head -200 > .appveyor/errors.txt || true
+          ls -la .appveyor
+
+      - name: Analyze the failure
+        uses: anthropics/claude-code-action@v1
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          prompt: |
+            REPO: ${{ github.repository }}
+
+            AppVeyor's build of public Rock `develop` failed at commit ${{ github.event.client_payload.sha }}.
+            Build: ${{ github.event.client_payload.url }}
+
+            The full AppVeyor logs are in `.appveyor/*.log`, and `.appveyor/errors.txt`
+            lists the error lines. The repository is checked out at the failed commit.
+
+            These pull requests shipped changes into this build: ${{ needs.match.outputs.prs }}
+            Use `gh pr view <number>` and `gh pr diff <number>` to see what each changed.
+
+            1. Find the root cause of the failure.
+            2. Say which PR's change caused it, if any. It may come from a commit that
+               didn't go through a PR, or from AppVeyor itself; say so if so.
+            3. Propose a concrete fix, as a code change.
+
+            Do not push any changes. Post the same analysis as one comment on each
+            PR listed above with `gh pr comment <number> -b "..."`, titled
+            "AppVeyor build failure analysis".
+          claude_args: |
+            --model claude-opus-5-5
+            --allowedTools "Read,Grep,Glob,Bash(gh pr comment:*),Bash(gh pr view:*),Bash(gh pr diff:*),Bash(git log:*),Bash(git show:*),Bash(git diff:*)"
