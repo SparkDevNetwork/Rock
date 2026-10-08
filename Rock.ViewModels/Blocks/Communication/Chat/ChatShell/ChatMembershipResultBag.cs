@@ -16,30 +16,34 @@
 //
 using System;
 
-using Rock.ViewModels.Blocks;
-
 namespace Rock.ViewModels.Blocks.Communication.Chat.ChatShell
 {
     /// <summary>
-    /// What the chat shell is given when it opens.
+    /// What a door that changes who is in a room came to: joining, leaving, adding, removing or
+    /// renaming.
     /// </summary>
-    public class ChatShellInitializationBox : BlockBox
+    public class ChatMembershipResultBag
     {
         /// <summary>
-        /// Gets or sets whether chat may open for this person and, if so, where the platform is.
+        /// Gets or sets the outcome as a stable code: "ok" when the change was made, otherwise the
+        /// reason it was not.
         /// </summary>
-        public ChatShellSessionBag Session { get; set; }
+        public string Code { get; set; }
 
         /// <summary>
-        /// Gets or sets the channel named by the ChannelGuid page parameter, which opens first
-        /// when present, or null.
+        /// Gets or sets the sentence to show the person when the change was refused.
         /// </summary>
-        public Guid? ChannelGuid { get; set; }
+        public string Message { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether the page narrows the directory, the people
-        /// search and the rooms pinned for everyone to the person's campus.
+        /// Gets or sets a value indicating whether Rock made the change but the chat platform had
+        /// not taken it yet when the answer was sent.
         /// </summary>
-        public bool AreSharedChannelsFilteredByCampus { get; set; }
+        public bool IsPending { get; set; }
+
+        /// <summary>
+        /// Gets or sets the person who could not be added, when that is the refusal.
+        /// </summary>
+        public Guid? PersonAliasGuid { get; set; }
     }
 }

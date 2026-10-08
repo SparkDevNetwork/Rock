@@ -41,11 +41,31 @@ namespace Rock.Blocks.Communication.Chat
     [IconCssClass( "ti ti-messages" )]
     [SupportedSiteTypes( Model.SiteType.Web )]
 
+    #region Block Attributes
+
+    [BooleanField( "Filter Shared Channels by Campus",
+        Description = "Only show channels that match the individual's campus or have no campus set.",
+        DefaultBooleanValue = false,
+        Key = AttributeKey.FilterSharedChannelsByCampus,
+        BooleanControlType = Rock.Enums.Controls.BooleanControlType.Checkbox,
+        Order = 0 )]
+
+    #endregion Block Attributes
+
     [Rock.SystemGuid.EntityTypeGuid( "31F2556F-3BF1-4D8A-85B5-D6B3DD3646B6" )]
     [Rock.SystemGuid.BlockTypeGuid( "079E31A8-F2EF-4A1B-A0F7-23AA0E28CF90" )]
     public class ChatShell : RockBlockType
     {
         #region Keys
+
+        private static class AttributeKey
+        {
+            /// <summary>
+            /// Whether the directory, the people search and the rooms pinned for everyone are
+            /// narrowed to the person's campus. A room the person is in always shows.
+            /// </summary>
+            public const string FilterSharedChannelsByCampus = "FilterSharedChannelsByCampus";
+        }
 
         private static class PageParameterKey
         {
@@ -66,7 +86,8 @@ namespace Rock.Blocks.Communication.Chat
             return new ChatShellInitializationBox
             {
                 Session = ChatSessionHelper.OpenSession( GetCurrentPerson(), RockContext ),
-                ChannelGuid = PageParameter( PageParameterKey.ChannelGuid ).AsGuidOrNull()
+                ChannelGuid = PageParameter( PageParameterKey.ChannelGuid ).AsGuidOrNull(),
+                AreSharedChannelsFilteredByCampus = GetAttributeValue( AttributeKey.FilterSharedChannelsByCampus ).AsBoolean()
             };
         }
 
@@ -129,6 +150,82 @@ namespace Rock.Blocks.Communication.Chat
             var context = ChatSessionHelper.BuildSessionContext( person, ChatPlatformConfigurationService.Read(), RockContext );
 
             return ActionOk( await ChatDoorHelper.SavePersonSettingAsync( person, setting, value, context, RockContext ) );
+        }
+
+        /// <summary>
+        /// Joins the person to a public or pinned channel, as the Join button or a first send into
+        /// it asks, and waits for chat to take it.
+        /// </summary>
+        /// <param name="channelGuid">The channel.</param>
+        /// <returns>Whether the person is in it now, or why not.</returns>
+        [BlockAction]
+        public async Task<BlockActionResult> JoinChannel( Guid channelGuid )
+        {
+            var person = GetCurrentPerson();
+            var context = ChatSessionHelper.BuildSessionContext( person, ChatPlatformConfigurationService.Read(), RockContext );
+
+            return ActionOk( await ChatDoorHelper.JoinChannelAsync( person, channelGuid, context, RockContext ) );
+        }
+
+        /// <summary>
+        /// Takes the person out of a channel that lets them leave, or a group conversation.
+        /// </summary>
+        /// <param name="channelGuid">The channel.</param>
+        /// <returns>Whether the person has left, or why not.</returns>
+        [BlockAction]
+        public async Task<BlockActionResult> LeaveChannel( Guid channelGuid )
+        {
+            var person = GetCurrentPerson();
+            var context = ChatSessionHelper.BuildSessionContext( person, ChatPlatformConfigurationService.Read(), RockContext );
+
+            return ActionOk( await ChatDoorHelper.LeaveChannelAsync( person, channelGuid, context, RockContext ) );
+        }
+
+        /// <summary>
+        /// Adds people to a channel the person manages, or to a group conversation they are in.
+        /// </summary>
+        /// <param name="channelGuid">The channel.</param>
+        /// <param name="personAliasGuids">The people, one to eight, by any of their aliases.</param>
+        /// <returns>Whether they were added, or who could not be.</returns>
+        [BlockAction]
+        public async Task<BlockActionResult> AddMembers( Guid channelGuid, List<Guid> personAliasGuids )
+        {
+            var person = GetCurrentPerson();
+            var context = ChatSessionHelper.BuildSessionContext( person, ChatPlatformConfigurationService.Read(), RockContext );
+
+            return ActionOk( await ChatDoorHelper.AddMembersAsync( person, channelGuid, personAliasGuids, context, RockContext ) );
+        }
+
+        /// <summary>
+        /// Removes a person from a channel the person manages, or from a group conversation they
+        /// are in.
+        /// </summary>
+        /// <param name="channelGuid">The channel.</param>
+        /// <param name="personAliasGuid">The person removed, by any of their aliases.</param>
+        /// <returns>Whether they were removed, or why not.</returns>
+        [BlockAction]
+        public async Task<BlockActionResult> RemoveMember( Guid channelGuid, Guid personAliasGuid )
+        {
+            var person = GetCurrentPerson();
+            var context = ChatSessionHelper.BuildSessionContext( person, ChatPlatformConfigurationService.Read(), RockContext );
+
+            return ActionOk( await ChatDoorHelper.RemoveMemberAsync( person, channelGuid, personAliasGuid, context, RockContext ) );
+        }
+
+        /// <summary>
+        /// Renames a group conversation the person is in, or gives it back its members' names
+        /// when the name is blank.
+        /// </summary>
+        /// <param name="channelGuid">The conversation.</param>
+        /// <param name="name">The new name, or blank for none.</param>
+        /// <returns>Whether it was renamed, or why not.</returns>
+        [BlockAction]
+        public async Task<BlockActionResult> RenameConversation( Guid channelGuid, string name )
+        {
+            var person = GetCurrentPerson();
+            var context = ChatSessionHelper.BuildSessionContext( person, ChatPlatformConfigurationService.Read(), RockContext );
+
+            return ActionOk( await ChatDoorHelper.RenameConversationAsync( person, channelGuid, name, context, RockContext ) );
         }
 
         #endregion Block Actions

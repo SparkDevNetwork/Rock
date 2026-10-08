@@ -104,6 +104,7 @@
     import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { ChatBirthdateResultBag } from "@Obsidian/ViewModels/Blocks/Communication/Chat/ChatShell/chatBirthdateResultBag";
     import { ChatChurchTokenBag } from "@Obsidian/ViewModels/Blocks/Communication/Chat/ChatShell/chatChurchTokenBag";
+    import { ChatMembershipResultBag } from "@Obsidian/ViewModels/Blocks/Communication/Chat/ChatShell/chatMembershipResultBag";
     import { ChatShellInitializationBox } from "@Obsidian/ViewModels/Blocks/Communication/Chat/ChatShell/chatShellInitializationBox";
     import { DatePartsPickerValueBag } from "@Obsidian/ViewModels/Controls/datePartsPickerValueBag";
     import { birthdateOutcome, isBirthdatePromptShown } from "./ChatShell/birthdate.partial";
@@ -259,6 +260,7 @@
         return createChatShell({
             session,
             linkedChannelId: config.channelGuid ?? null,
+            areSharedChannelsFilteredByCampus: config.areSharedChannelsFilteredByCampus ?? false,
             mintChurchToken: async () => {
                 const result = await invokeBlockAction<ChatChurchTokenBag>("MintChurchToken");
                 return { isSuccess: result.isSuccess, statusCode: result.statusCode, data: result.data };
@@ -278,6 +280,15 @@
                     message: result.errorMessage ?? "The conversation could not be started. Try again.",
                     personAliasGuid: null
                 };
+            },
+            joinChannel: async channelId => {
+                const result = await invokeBlockAction<ChatMembershipResultBag>("JoinChannel", { channelGuid: channelId });
+                if (result.isSuccess && result.data) {
+                    return result.data;
+                }
+
+                // Rock did not answer with a door result, so the message fails and can be sent again.
+                return { code: "door.unavailable", message: result.errorMessage ?? null, isPending: false };
             },
             createPlatformClient: (url, key, accessToken, realtime) => createClient(url, key, { accessToken, realtime }) as unknown as PlatformClientLike,
             fetch: (url, init) => window.fetch(url, init),

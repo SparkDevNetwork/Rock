@@ -24,10 +24,13 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
+using Microsoft.Extensions.Logging;
+
 using Rock.Communication.Chat.Platform.Configuration;
 using Rock.Communication.Chat.Platform.Session;
 using Rock.Communication.Chat.Platform.Sync;
 using Rock.Data;
+using Rock.Logging;
 using Rock.Model;
 using Rock.ViewModels.Blocks.Communication.Chat.ChatShell;
 using Rock.Web.Cache;
@@ -36,7 +39,8 @@ namespace Rock.Communication.Chat.Platform.Doors
 {
     /// <summary>
     /// The doors that change who is in a conversation: starting a direct message from the Chat
-    /// block, and the direct message and channel post a workflow sends.
+    /// block; joining, leaving, adding and removing people and renaming a group conversation; and
+    /// the direct message and channel post a workflow sends.
     /// </summary>
     /// <remarks>
     /// Everything a door decides is read from Rock. Whether a group is a chat channel, who is
@@ -54,6 +58,14 @@ namespace Rock.Communication.Chat.Platform.Doors
 
         // A conversation holds nine people, the one starting it included.
         internal const int MaxOthers = 8;
+
+        // The platform's names for the kinds of channel a door tells apart.
+        private const string SharedChannelType = "shared";
+
+        private const string DirectChannelType = "dm";
+
+        // The longest name a conversation carries, Rock's own width for a group's name.
+        private const int MaxNameLength = 100;
 
         // Rock requires a group name, and the platform treats this one as no name at all.
         private const string DirectMessageName = "Chat Direct Message";
@@ -249,6 +261,341 @@ namespace Rock.Communication.Chat.Platform.Doors
         }
 
         #endregion The door
+
+        #region The membership doors
+
+        /// <summary>
+        /// Joins the caller to a public or pinned channel, as the Join button or a first send into
+        /// it asks.
+        /// </summary>
+        /// <param name="caller">The person joining.</param>
+        /// <param name="channelGuid">The channel, as the browser names it.</param>
+        /// <param name="context">The church's settings, for the session gates.</param>
+        /// <param name="rockContext">The context the membership is saved in.</param>
+        /// <returns>Whether the caller is in the channel now, and whether the platform had taken it yet.</returns>
+        internal static async Task<ChatMembershipResultBag> JoinChannelAsync( Person caller, Guid channelGuid, ChatSessionContext context, RockContext rockContext )
+        {
+            var gate = ChatSessionHelper.Evaluate( caller, context, rockContext );
+            if ( !gate.Success )
+            {
+                return Membership( ChatSessionHelper.ToGateCode( gate.Gate ), "Chat is not available to you right now." );
+            }
+
+            var room = ReadRoom( rockContext, context.Configuration, channelGuid, new[] { caller.Id } );
+            if ( room == null )
+            {
+                return Membership( "door.not_found", "That channel could not be found." );
+            }
+
+            // Only a shared room everyone can read is joined, and a ban is never stepped around by
+            // joining again.
+            var isJoinable = room.Channel.ChannelType == SharedChannelType && ( room.Channel.IsPublic || room.Channel.IsAlwaysShown );
+            if ( !isJoinable || room.BannedPersonIds.Contains( caller.Id ) )
+            {
+                return Membership( "door.not_allowed", "You can't join this channel." );
+            }
+
+            // A join sent twice is done once, and the second posts no second line.
+            if ( room.LivePersonIds.Contains( caller.Id ) )
+            {
+                return Membership( OkCode, null );
+            }
+
+            AddOrRestoreMember( rockContext, room.GroupId, caller.Id );
+            rockContext.SaveChanges();
+
+            return await FinishAsync( context.Configuration, rockContext, channelGuid, caller.FullName + " joined the channel." ).ConfigureAwait( false );
+        }
+
+        /// <summary>
+        /// Takes the caller out of a channel that lets them leave, or a group conversation, and out
+        /// of the Rock group with it.
+        /// </summary>
+        /// <param name="caller">The person leaving.</param>
+        /// <param name="channelGuid">The channel, as the browser names it.</param>
+        /// <param name="context">The church's settings, for the session gates.</param>
+        /// <param name="rockContext">The context the membership is removed in.</param>
+        /// <returns>Whether the caller has left, and whether the platform had taken it yet.</returns>
+        internal static async Task<ChatMembershipResultBag> LeaveChannelAsync( Person caller, Guid channelGuid, ChatSessionContext context, RockContext rockContext )
+        {
+            var gate = ChatSessionHelper.Evaluate( caller, context, rockContext );
+            if ( !gate.Success )
+            {
+                return Membership( ChatSessionHelper.ToGateCode( gate.Gate ), "Chat is not available to you right now." );
+            }
+
+            var room = ReadRoom( rockContext, context.Configuration, channelGuid, new[] { caller.Id } );
+            if ( room == null )
+            {
+                return Membership( "door.not_found", "That channel could not be found." );
+            }
+
+            // Leaving would delete the banned row, and the ban with it.
+            if ( room.BannedPersonIds.Contains( caller.Id ) )
+            {
+                return Membership( "door.not_allowed", "You can't leave this channel." );
+            }
+
+            if ( !room.LivePersonIds.Contains( caller.Id ) )
+            {
+                return Membership( "door.not_member", "You're not in this conversation." );
+            }
+
+            // A conversation of two is hidden rather than left, so the other person is never left
+            // talking to nobody.
+            var isDirect = room.Channel.ChannelType == DirectChannelType;
+            var mayLeave = isDirect
+                ? room.PersonCount > 2
+                : room.Channel.ChannelType == SharedChannelType && room.Channel.IsLeaveAllowed;
+            if ( !mayLeave )
+            {
+                return Membership( "door.not_allowed", isDirect ? "A conversation of two can be hidden but not left." : "This channel can't be left." );
+            }
+
+            RemoveMember( rockContext, room.GroupId, caller.Id );
+            rockContext.SaveChanges();
+
+            return await FinishAsync( context.Configuration, rockContext, channelGuid, isDirect ? caller.FullName + " left the conversation." : null ).ConfigureAwait( false );
+        }
+
+        /// <summary>
+        /// Adds people to a shared channel the caller manages, or to a group conversation the caller
+        /// is in.
+        /// </summary>
+        /// <param name="caller">The person adding.</param>
+        /// <param name="channelGuid">The channel, as the browser names it.</param>
+        /// <param name="personAliasGuids">The people, one to eight, by any of their aliases.</param>
+        /// <param name="context">The church's settings, for the session gates.</param>
+        /// <param name="rockContext">The context the memberships are saved in.</param>
+        /// <returns>Whether they were added, or who could not be.</returns>
+        internal static async Task<ChatMembershipResultBag> AddMembersAsync( Person caller, Guid channelGuid, IEnumerable<Guid> personAliasGuids, ChatSessionContext context, RockContext rockContext )
+        {
+            var gate = ChatSessionHelper.Evaluate( caller, context, rockContext );
+            if ( !gate.Success )
+            {
+                return Membership( ChatSessionHelper.ToGateCode( gate.Gate ), "Chat is not available to you right now." );
+            }
+
+            var requested = ( personAliasGuids ?? Enumerable.Empty<Guid>() ).Distinct().ToList();
+            if ( requested.Count == 0 || requested.Count > MaxOthers )
+            {
+                return Membership( "door.bad_request", "Choose between one and eight people." );
+            }
+
+            var chosen = new PersonAliasService( rockContext ).Queryable()
+                .Where( a => requested.Contains( a.Guid ) )
+                .Select( a => new { a.Guid, a.PersonId } )
+                .ToList();
+            if ( chosen.Count != requested.Count )
+            {
+                return Membership( "door.not_found", "One of the people chosen could not be found." );
+            }
+
+            // Two aliases of one person are one person, named by the first alias given for them.
+            var others = chosen.GroupBy( a => a.PersonId ).Select( g => g.First() ).ToList();
+            if ( others.Any( o => o.PersonId == caller.Id ) )
+            {
+                return Membership( "door.bad_request", "You're already in it." );
+            }
+
+            var room = ReadRoom( rockContext, context.Configuration, channelGuid, others.Select( o => o.PersonId ).Concat( new[] { caller.Id } ) );
+            if ( room == null )
+            {
+                return Membership( "door.not_found", "That channel could not be found." );
+            }
+
+            var refusal = RefuseManaging( rockContext, room, caller, "You can't add people to this channel." );
+            if ( refusal != null )
+            {
+                return refusal;
+            }
+
+            var isDirect = room.Channel.ChannelType == DirectChannelType;
+            var newcomers = others.Where( o => !room.LivePersonIds.Contains( o.PersonId ) ).ToList();
+            if ( isDirect && room.PersonCount + newcomers.Count > MaxOthers + 1 )
+            {
+                return Membership( "door.bad_request", "A conversation holds at most nine people." );
+            }
+
+            // Everyone is checked before anyone is added, so a refusal adds nobody.
+            // A list, because Entity Framework translates a list's Contains and not a projection's.
+            var newcomerIds = newcomers.Select( n => n.PersonId ).ToList();
+            var people = new PersonService( rockContext ).Queryable().Where( p => newcomerIds.Contains( p.Id ) ).ToList();
+            var gateContext = new ChatSessionContext { Configuration = context.Configuration };
+            foreach ( var newcomer in newcomers )
+            {
+                var person = people.First( p => p.Id == newcomer.PersonId );
+                var isKeptOut = room.BannedPersonIds.Contains( newcomer.PersonId )
+                    || ChatSessionHelper.Evaluate( person, gateContext, rockContext ).Gate != ChatMintGate.Ok;
+
+                if ( isKeptOut )
+                {
+                    return NotAddable( newcomer.Guid, person.FullName );
+                }
+            }
+
+            // A conversation takes only someone the caller could start one with: their Open DM is
+            // on, or the two share a private room.
+            if ( isDirect && newcomers.Any() )
+            {
+                var read = ReadDirectMessage( rockContext, context.Configuration, caller.Id, newcomers.Select( n => n.PersonId ).Concat( new[] { caller.Id } ).ToList(), true );
+                var unreachable = newcomers.FirstOrDefault( n =>
+                {
+                    var projected = read.People[n.PersonId];
+                    return projected == null || projected.IsGloballyBanned || projected.IsInactive
+                        || ( !projected.IsOpenDmAllowed && !read.SharedPersonIds.Contains( n.PersonId ) );
+                } );
+
+                if ( unreachable != null )
+                {
+                    return NotAddable( unreachable.Guid, people.First( p => p.Id == unreachable.PersonId ).FullName );
+                }
+            }
+
+            if ( !newcomers.Any() )
+            {
+                return Membership( OkCode, null );
+            }
+
+            // Someone who has never opened chat is enrolled, and their own row goes with the push,
+            // since a membership needs its person on the platform.
+            foreach ( var person in people )
+            {
+                ChatSessionHelper.EnsureEnrollment( person, gateContext, rockContext );
+                ChatPlatformSyncHelper.RecordPersonChange( rockContext, person.Id );
+                AddOrRestoreMember( rockContext, room.GroupId, person.Id );
+            }
+
+            rockContext.SaveChanges();
+
+            var names = newcomers.Select( n => people.First( p => p.Id == n.PersonId ).FullName ).ToList();
+            return await FinishAsync( context.Configuration, rockContext, channelGuid, caller.FullName + " added " + JoinNames( names ) + "." ).ConfigureAwait( false );
+        }
+
+        /// <summary>
+        /// Removes a person from a shared channel the caller manages, or from a group conversation
+        /// the caller is in.
+        /// </summary>
+        /// <param name="caller">The person removing.</param>
+        /// <param name="channelGuid">The channel, as the browser names it.</param>
+        /// <param name="personAliasGuid">The person removed, by any of their aliases.</param>
+        /// <param name="context">The church's settings, for the session gates.</param>
+        /// <param name="rockContext">The context the membership is removed in.</param>
+        /// <returns>Whether they were removed, and whether the platform had taken it yet.</returns>
+        internal static async Task<ChatMembershipResultBag> RemoveMemberAsync( Person caller, Guid channelGuid, Guid personAliasGuid, ChatSessionContext context, RockContext rockContext )
+        {
+            var gate = ChatSessionHelper.Evaluate( caller, context, rockContext );
+            if ( !gate.Success )
+            {
+                return Membership( ChatSessionHelper.ToGateCode( gate.Gate ), "Chat is not available to you right now." );
+            }
+
+            var targetId = new PersonAliasService( rockContext ).Queryable()
+                .Where( a => a.Guid == personAliasGuid )
+                .Select( a => ( int? ) a.PersonId )
+                .FirstOrDefault();
+            if ( !targetId.HasValue )
+            {
+                return Membership( "door.not_found", "That person could not be found." );
+            }
+
+            // Leaving has its own door and its own line.
+            if ( targetId.Value == caller.Id )
+            {
+                return Membership( "door.bad_request", "Leave the conversation instead." );
+            }
+
+            var room = ReadRoom( rockContext, context.Configuration, channelGuid, new[] { caller.Id, targetId.Value } );
+            if ( room == null )
+            {
+                return Membership( "door.not_found", "That channel could not be found." );
+            }
+
+            var refusal = RefuseManaging( rockContext, room, caller, "You can't remove people from this channel." );
+            if ( refusal != null )
+            {
+                return refusal;
+            }
+
+            // Removing a banned row would lift the ban, which is a moderator's act and not this one.
+            if ( room.BannedPersonIds.Contains( targetId.Value ) )
+            {
+                return Membership( "door.not_allowed", "That person is banned here; lift the ban instead." );
+            }
+
+            if ( !room.LivePersonIds.Contains( targetId.Value ) )
+            {
+                return Membership( "door.not_member", "That person isn't in this conversation." );
+            }
+
+            var targetName = new PersonService( rockContext ).Get( targetId.Value ).FullName;
+            RemoveMember( rockContext, room.GroupId, targetId.Value );
+            rockContext.SaveChanges();
+
+            var isDirect = room.Channel.ChannelType == DirectChannelType;
+            return await FinishAsync( context.Configuration, rockContext, channelGuid, isDirect ? caller.FullName + " removed " + targetName + "." : null ).ConfigureAwait( false );
+        }
+
+        /// <summary>
+        /// Renames a group conversation the caller is in, or gives it back its members' names when
+        /// the name is blank.
+        /// </summary>
+        /// <param name="caller">The person renaming.</param>
+        /// <param name="channelGuid">The conversation, as the browser names it.</param>
+        /// <param name="name">The new name, or blank for none.</param>
+        /// <param name="context">The church's settings, for the session gates.</param>
+        /// <param name="rockContext">The context the group is saved in.</param>
+        /// <returns>Whether it was renamed, and whether the platform had taken it yet.</returns>
+        internal static async Task<ChatMembershipResultBag> RenameConversationAsync( Person caller, Guid channelGuid, string name, ChatSessionContext context, RockContext rockContext )
+        {
+            var gate = ChatSessionHelper.Evaluate( caller, context, rockContext );
+            if ( !gate.Success )
+            {
+                return Membership( ChatSessionHelper.ToGateCode( gate.Gate ), "Chat is not available to you right now." );
+            }
+
+            var room = ReadRoom( rockContext, context.Configuration, channelGuid, new[] { caller.Id } );
+            if ( room == null )
+            {
+                return Membership( "door.not_found", "That conversation could not be found." );
+            }
+
+            // A channel's name is staff's, set in Rock.
+            if ( room.Channel.ChannelType != DirectChannelType )
+            {
+                return Membership( "door.not_allowed", "Only a group conversation can be renamed here." );
+            }
+
+            if ( !room.LivePersonIds.Contains( caller.Id ) )
+            {
+                return Membership( "door.not_member", "You're not in this conversation." );
+            }
+
+            if ( room.PersonCount <= 2 )
+            {
+                return Membership( "door.not_allowed", "A conversation of two is named by the other person." );
+            }
+
+            var trimmed = ( name ?? string.Empty ).Trim();
+            if ( trimmed.Length > MaxNameLength )
+            {
+                return Membership( "door.bad_request", "A name is at most 100 characters." );
+            }
+
+            // Rock requires a name, and chat reads its placeholder as none, showing the members' names.
+            var group = new GroupService( rockContext ).Get( room.GroupId );
+            group.Name = trimmed.Length == 0 ? DirectMessageName : trimmed;
+            ChatPlatformSyncHelper.RecordGroupChange( rockContext, channelGuid );
+            rockContext.SaveChanges();
+
+            var line = trimmed.Length == 0
+                ? caller.FullName + " removed the conversation's name."
+                : caller.FullName + " named the conversation " + trimmed + ".";
+
+            return await FinishAsync( context.Configuration, rockContext, channelGuid, line ).ConfigureAwait( false );
+        }
+
+        #endregion The membership doors
 
         #region Workflow posts
 
@@ -528,7 +875,7 @@ namespace Rock.Communication.Chat.Platform.Doors
             }
 
             // A private room counts when the caller and the person are both unbanned members of it.
-            var privateRooms = projection.Channels.Where( c => !c.Value ).Select( c => c.Key ).ToList();
+            var privateRooms = projection.Channels.Where( c => !c.Value.IsPublic ).Select( c => c.Key ).ToList();
             foreach ( var room in privateRooms )
             {
                 var unbanned = projection.Members.Where( m => m.ChannelGuid == room && !m.IsBanned && m.PersonId.HasValue ).Select( m => m.PersonId.Value ).ToList();
@@ -648,6 +995,215 @@ namespace Rock.Communication.Chat.Platform.Doors
 
         #endregion The read and the create
 
+        #region The membership read and writes
+
+        /// <summary>
+        /// What one projection read says about a channel and some of its people: the channel's
+        /// own flags, which of them are in it and which are banned from it.
+        /// </summary>
+        private sealed class RoomRead
+        {
+            public int GroupId { get; set; }
+
+            public ChatPlatformSyncHelper.ProjectedChannel Channel { get; set; }
+
+            public HashSet<int> LivePersonIds { get; } = new HashSet<int>();
+
+            public HashSet<int> BannedPersonIds { get; } = new HashSet<int>();
+
+            /// <summary>
+            /// How many people a conversation holds; zero for a channel, which is never counted.
+            /// </summary>
+            public int PersonCount { get; set; }
+        }
+
+        /// <summary>
+        /// Reads a channel the browser named, and these people's memberships of it, through one
+        /// scoped projection call.
+        /// </summary>
+        /// <param name="rockContext">The context read in.</param>
+        /// <param name="configuration">The church's chat settings.</param>
+        /// <param name="channelGuid">The channel.</param>
+        /// <param name="personIds">The people whose memberships matter, the caller included.</param>
+        /// <returns>The channel, or null when it is not a live chat channel.</returns>
+        private static RoomRead ReadRoom( RockContext rockContext, ChatPlatformConfiguration configuration, Guid channelGuid, IEnumerable<int> personIds )
+        {
+            var groupId = new GroupService( rockContext ).Queryable()
+                .Where( g => g.Guid == channelGuid )
+                .Select( g => ( int? ) g.Id )
+                .FirstOrDefault();
+            if ( !groupId.HasValue )
+            {
+                return null;
+            }
+
+            // The channel's own row and these people's memberships of it, never its whole roster,
+            // so a room of thousands costs what a room of two does. Whether it is a chat channel at
+            // all is the projection's answer, the same one the platform is sent.
+            var changes = new ChatPlatformSyncHelper.ImmediateChanges();
+            changes.ChannelGuids.Add( channelGuid );
+            foreach ( var personId in personIds )
+            {
+                changes.PersonIds.Add( personId );
+                changes.MemberKeys.Add( (channelGuid, personId) );
+            }
+
+            var projection = ChatPlatformSyncHelper.ReadScopedProjection( rockContext, configuration, changes );
+            if ( !projection.Channels.TryGetValue( channelGuid, out var channel ) )
+            {
+                return null;
+            }
+
+            var room = new RoomRead { GroupId = groupId.Value, Channel = channel };
+            foreach ( var member in projection.Members.Where( m => m.ChannelGuid == channelGuid && m.PersonId.HasValue ) )
+            {
+                if ( member.IsBanned )
+                {
+                    room.BannedPersonIds.Add( member.PersonId.Value );
+                }
+                else
+                {
+                    room.LivePersonIds.Add( member.PersonId.Value );
+                }
+            }
+
+            // A conversation's size decides what may be done to it; it holds nine at most, so
+            // Rock's own count costs nothing.
+            if ( channel.ChannelType == DirectChannelType )
+            {
+                room.PersonCount = new GroupMemberService( rockContext ).Queryable()
+                    .Where( m => m.GroupId == groupId.Value && m.GroupMemberStatus == GroupMemberStatus.Active )
+                    .Select( m => m.PersonId )
+                    .Distinct()
+                    .Count();
+            }
+
+            return room;
+        }
+
+        /// <summary>
+        /// Why the caller may not add or remove people here: in a shared channel they need to
+        /// manage its members, in a conversation of more than two they need to be in it.
+        /// </summary>
+        /// <returns>The refusal, or null where they may.</returns>
+        private static ChatMembershipResultBag RefuseManaging( RockContext rockContext, RoomRead room, Person caller, string channelRefusal )
+        {
+            if ( room.Channel.ChannelType == DirectChannelType )
+            {
+                if ( !room.LivePersonIds.Contains( caller.Id ) )
+                {
+                    return Membership( "door.not_member", "You're not in this conversation." );
+                }
+
+                // A conversation of two stays private; adding someone starts a new one instead.
+                return room.PersonCount <= 2
+                    ? Membership( "door.not_allowed", "A conversation of two stays as it is; start a new conversation instead." )
+                    : null;
+            }
+
+            // Rock's own rule for who manages a group's members: security, or a group role that
+            // may manage members or edit.
+            var group = new GroupService( rockContext ).Get( room.GroupId );
+            var isManager = room.Channel.ChannelType == SharedChannelType
+                && group.IsAuthorized( Rock.Security.Authorization.MANAGE_MEMBERS, caller );
+
+            return isManager ? null : Membership( "door.not_allowed", channelRefusal );
+        }
+
+        /// <summary>
+        /// Puts a person in a group, using a row they already hold, archived or inactive, so a
+        /// return never leaves two side by side. Unsaved.
+        /// </summary>
+        private static void AddOrRestoreMember( RockContext rockContext, int groupId, int personId )
+        {
+            var service = new GroupMemberService( rockContext );
+            var existing = service.AsNoFilter()
+                .Where( m => m.GroupId == groupId && m.PersonId == personId )
+                .OrderBy( m => m.IsArchived )
+                .ThenBy( m => m.Id )
+                .FirstOrDefault();
+
+            if ( existing != null )
+            {
+                if ( existing.IsArchived )
+                {
+                    service.Restore( existing );
+                }
+
+                existing.GroupMemberStatus = GroupMemberStatus.Active;
+                return;
+            }
+
+            var groupTypeId = new GroupService( rockContext ).GetSelect( groupId, g => g.GroupTypeId );
+            service.Add( new GroupMember
+            {
+                GroupId = groupId,
+                GroupTypeId = groupTypeId,
+                PersonId = personId,
+                GroupRoleId = GroupTypeCache.Get( groupTypeId ).DefaultGroupRoleId ?? 0,
+                GroupMemberStatus = GroupMemberStatus.Active
+            } );
+        }
+
+        /// <summary>
+        /// Takes a person out of a group, every row they hold in it. Rock decides whether each is
+        /// deleted or archived, as it does for any removal from a group. Unsaved.
+        /// </summary>
+        private static void RemoveMember( RockContext rockContext, int groupId, int personId )
+        {
+            var service = new GroupMemberService( rockContext );
+            foreach ( var member in service.Queryable().Where( m => m.GroupId == groupId && m.PersonId == personId ).ToList() )
+            {
+                service.Delete( member );
+            }
+        }
+
+        /// <summary>
+        /// Waits for the saved change to reach the platform, then posts the room's line for it.
+        /// </summary>
+        /// <param name="configuration">The church's chat settings.</param>
+        /// <param name="rockContext">The context the change was saved in, whose push is awaited.</param>
+        /// <param name="channelGuid">The channel the line goes to.</param>
+        /// <param name="line">The line, or null where this change posts none.</param>
+        /// <returns>Done, and whether the platform had taken the change yet.</returns>
+        private static async Task<ChatMembershipResultBag> FinishAsync( ChatPlatformConfiguration configuration, RockContext rockContext, Guid channelGuid, string line )
+        {
+            var push = await ChatPlatformSyncHelper.FlushAsync( rockContext ).ConfigureAwait( false );
+
+            if ( line != null )
+            {
+                // What the person asked for was the change, and it is made; a line the platform
+                // cannot take is logged and the door still answers that it is done.
+                using ( var timeout = new CancellationTokenSource( ChatPlatformSyncHelper.AwaitedPushBudget ) )
+                {
+                    var answer = await ChatPlatformSyncHelper.SendSystemMessageAsync( configuration, channelGuid, line, null, timeout.Token ).ConfigureAwait( false );
+                    if ( !answer.Id.HasValue )
+                    {
+                        RockLogger.LoggerFactory.CreateLogger( typeof( ChatDoorHelper ).FullName )
+                            .LogWarning( "A chat line was not posted to {ChannelGuid}: {Code} {Message}", channelGuid, answer.Code, answer.Message );
+                    }
+                }
+            }
+
+            return new ChatMembershipResultBag
+            {
+                Code = OkCode,
+                IsPending = push == ChatPlatformSyncHelper.PushOutcome.Pending
+            };
+        }
+
+        /// <summary>
+        /// Names the people a line lists: "Ada", "Ada and Bo", "Ada, Bo and Cy".
+        /// </summary>
+        private static string JoinNames( IList<string> names )
+        {
+            return names.Count == 1
+                ? names[0]
+                : string.Join( ", ", names.Take( names.Count - 1 ) ) + " and " + names.Last();
+        }
+
+        #endregion The membership read and writes
+
         #region Support
 
         /// <summary>
@@ -694,6 +1250,27 @@ namespace Rock.Communication.Chat.Platform.Doors
                 Code = "door.target_not_eligible",
                 PersonAliasGuid = personAliasGuid,
                 Message = name.IsNullOrWhiteSpace() ? "Someone chosen cannot be messaged." : name + " cannot be messaged."
+            };
+        }
+
+        /// <summary>
+        /// A membership door's answer with the sentence the person reads.
+        /// </summary>
+        private static ChatMembershipResultBag Membership( string code, string message )
+        {
+            return new ChatMembershipResultBag { Code = code, Message = message };
+        }
+
+        /// <summary>
+        /// The refusal that names the person who cannot be added.
+        /// </summary>
+        private static ChatMembershipResultBag NotAddable( Guid personAliasGuid, string name )
+        {
+            return new ChatMembershipResultBag
+            {
+                Code = "door.target_not_eligible",
+                PersonAliasGuid = personAliasGuid,
+                Message = name.IsNullOrWhiteSpace() ? "Someone chosen cannot be added." : name + " cannot be added."
             };
         }
 

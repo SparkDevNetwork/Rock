@@ -197,15 +197,42 @@ namespace Rock.Communication.Chat.Platform.Sync
             public Dictionary<int, ProjectedAlias> People { get; } = new Dictionary<int, ProjectedAlias>();
 
             /// <summary>
-            /// Each live channel by its Guid, and whether it is public.
+            /// Each live channel by its Guid, with the flags a door decides from.
             /// </summary>
-            public Dictionary<Guid, bool> Channels { get; } = new Dictionary<Guid, bool>();
+            public Dictionary<Guid, ProjectedChannel> Channels { get; } = new Dictionary<Guid, ProjectedChannel>();
 
             /// <summary>
             /// Each membership of a live channel: the person when they are one of those asked for,
             /// and whether a ban on it is in force now.
             /// </summary>
             public List<(Guid ChannelGuid, int? PersonId, bool IsBanned)> Members { get; } = new List<(Guid ChannelGuid, int? PersonId, bool IsBanned)>();
+        }
+
+        /// <summary>
+        /// One channel row as the projection resolved it: the effective values, each group's
+        /// override already read against its group type.
+        /// </summary>
+        internal sealed class ProjectedChannel
+        {
+            /// <summary>
+            /// "shared", "dm" or "livestream".
+            /// </summary>
+            public string ChannelType { get; set; }
+
+            /// <summary>
+            /// Whether it is listed in the public directory.
+            /// </summary>
+            public bool IsPublic { get; set; }
+
+            /// <summary>
+            /// Whether it is pinned into everyone's sidebar.
+            /// </summary>
+            public bool IsAlwaysShown { get; set; }
+
+            /// <summary>
+            /// Whether a member may leave it.
+            /// </summary>
+            public bool IsLeaveAllowed { get; set; }
         }
 
         /// <summary>
@@ -1019,7 +1046,13 @@ namespace Rock.Communication.Chat.Platform.Sync
 
             foreach ( var row in SectionRows( body, contract, "channels", "chat_channels", out var column ) )
             {
-                read.Channels[GuidAt( row, column["channel_id"] )] = FlagAt( row, column["is_public"] );
+                read.Channels[GuidAt( row, column["channel_id"] )] = new ProjectedChannel
+                {
+                    ChannelType = ( string ) row[column["channel_type"]],
+                    IsPublic = FlagAt( row, column["is_public"] ),
+                    IsAlwaysShown = FlagAt( row, column["always_shown"] ),
+                    IsLeaveAllowed = FlagAt( row, column["leave_allowed"] )
+                };
             }
 
             foreach ( var row in SectionRows( body, contract, "members", "chat_channel_members", out var column ) )

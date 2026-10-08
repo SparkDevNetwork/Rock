@@ -23,13 +23,13 @@
 // message on screen can be split into the steps that make it up.
 import { reactive } from "vue";
 import { classifyActionFailure, classifyPlatformError } from "./errors.partial";
-import { CallResult, createPlatformCall, exchangeChurchToken } from "./platformCall.partial";
+import { CallResult, computeBackoff, createPlatformCall, exchangeChurchToken } from "./platformCall.partial";
 import { createDirectMessages, DirectMessages, DoorResult, isNewMessageShown } from "./composables/useDirectMessage.partial";
 import { createTimelines, Timelines } from "./composables/useHistory.partial";
 import { createKeepaliveSave, createReadTracker, PageEventTargets, ReadTracker } from "./composables/useMarkRead.partial";
 import { createRealtimeHub, RealtimeClientLike, RealtimeHub, realtimeOptions } from "./composables/useRealtimeHub.partial";
 import { createPushRegistration, PushDependencies, PushRegistration } from "./composables/usePush.partial";
-import { createSender, isComposerOpen, newLocalId, Sender } from "./composables/useSend.partial";
+import { createSender, isComposerOpen, JoinResult, newLocalId, Sender } from "./composables/useSend.partial";
 import { ChatSession, ChurchTokenResult, createSession, ExchangeResult, serviceBanner } from "./composables/useSession.partial";
 import {
     openChannel,
@@ -79,6 +79,15 @@ export type ShellOptions = {
 
     /** Asks Rock's door for the conversation with these people; without it, none can start. */
     startDirectMessage?: (personAliasGuids: string[]) => Promise<DoorResult>;
+
+    /** Asks Rock's door to join a public or pinned room; without it, a send never joins. */
+    joinChannel?: (channelId: string) => Promise<JoinResult>;
+
+    /**
+     * Whether the page narrows the sidebar's pinned rooms and the people search to the person's
+     * campus, as its block setting says.
+     */
+    areSharedChannelsFilteredByCampus?: boolean;
 
     /** Creates the platform client, whose every request reads the token through the callback. */
     createPlatformClient: (url: string, key: string, accessToken: () => Promise<string>, realtime: RealtimeOptions) => PlatformClientLike;
@@ -418,6 +427,9 @@ export function createChatShell(options: ShellOptions): ChatShell {
             return { ok: true, id: sent.id as number, createdAt: sent.created_at ?? new Date().toISOString(), notice: sent.notice ?? null };
         },
         timelines,
+        join: options.joinChannel,
+        waitBeforeResend: attempt => new Promise(resolve => setTimeout(resolve,
+            computeBackoff(attempt, session.settings().limits.reconnect_base_ms, session.settings().limits.reconnect_cap_ms, Math.random))),
         personAliasGuid,
         newLocalId
     });
@@ -430,7 +442,7 @@ export function createChatShell(options: ShellOptions): ChatShell {
 
     const directMessages = createDirectMessages({
         search: async query => {
-            const result = await call("chat_search_people", { p_query: query, p_limit: 10 });
+            const result = await call("chat_search_people", { p_query: query, p_limit: 10, p_campus_only: options.areSharedChannelsFilteredByCampus ?? false });
             return result.ok
                 ? { ok: true, people: (result.data as Partial<PeopleSearchAnswer> | null)?.people ?? [] }
                 : { ok: false, error: result.error };
@@ -458,7 +470,7 @@ export function createChatShell(options: ShellOptions): ChatShell {
 
     /** Fetches the sidebar and replaces the rows with it. */
     async function loadSidebar(): Promise<SidebarRow[]> {
-        const result = await call("chat_get_bootstrap", {});
+        const result = await call("chat_get_bootstrap", { p_campus_only: options.areSharedChannelsFilteredByCampus ?? false });
         options.mark("chat:sidebar");
 
         if (!result.ok) {

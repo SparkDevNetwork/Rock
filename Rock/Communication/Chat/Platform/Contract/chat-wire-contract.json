@@ -385,6 +385,7 @@
       "sync.busy",
       "sync.superseded",
       "auth.expired",
+      "authz.join_required",
       "authz.no_announcement_right",
       "authz.no_mention_all_right",
       "authz.no_roster_right",

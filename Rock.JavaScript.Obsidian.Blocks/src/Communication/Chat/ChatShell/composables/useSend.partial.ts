@@ -19,10 +19,28 @@
 // the person can send it again; nothing typed is lost to a failure. Each row's identifier goes
 // with every try as the send's key, so a retry after a lost confirmation is answered with the
 // message the first try posted rather than posting it twice; the live echo of a confirmed send
-// is matched by its id.
+// is matched by its id. A send into a public or pinned room the person has not joined is refused
+// until they join, which is Rock's door, so the sender joins through it and sends again under the
+// same key.
 import { reactive } from "vue";
 import { ChatError, PendingMessage } from "../types.partial";
 import { Timelines } from "./useHistory.partial";
+
+/** What Rock's Join door answers. */
+export type JoinResult = {
+    code?: string | null;
+    message?: string | null;
+    isPending: boolean;
+};
+
+/** The refusal of a send into a room the person may join and has not. */
+const joinRequiredCode = "authz.join_required";
+
+/**
+ * How many times a send waits and tries again while a join is still reaching the platform, after
+ * the first send that follows the join: five sends in all.
+ */
+const joinWaits = 4;
 
 /** What the platform's send answers. */
 export type SendResult =
@@ -81,6 +99,18 @@ export type SenderDependencies = {
     /** The timelines a confirmed message is put into. */
     timelines: Pick<Timelines, "upsert">;
 
+    /**
+     * Rock's Join door, for a send refused until the person joins a public or pinned room.
+     * Without it the refusal stands.
+     */
+    join?: (channelId: string) => Promise<JoinResult>;
+
+    /**
+     * Waits before a send is tried again while a join is still reaching the platform; a short
+     * doubling wait by default.
+     */
+    waitBeforeResend?: (attempt: number) => Promise<void>;
+
     /** The person sending, as the platform knows them. */
     personAliasGuid: string;
 
@@ -124,20 +154,56 @@ export type Sender = {
  */
 export function createSender(dependencies: SenderDependencies): Sender {
     const rows = reactive<PendingMessage[]>([]) as PendingMessage[];
+    const waitBeforeResend = dependencies.waitBeforeResend
+        ?? ((attempt: number): Promise<void> => new Promise(resolve => setTimeout(resolve, 250 * 2 ** attempt)));
+
+    /** Sends a row's text once, under its key. */
+    async function sendOnce(row: PendingMessage): Promise<SendResult> {
+        // A send that rejects is a failure like any other, so its row ends failed with a Retry
+        // and a Discard rather than sending for good.
+        try {
+            return await dependencies.send(row.channelId, row.body, row.localId);
+        }
+        catch {
+            return { ok: false, error: { code: "rpc.transport", severity: "failed" } };
+        }
+    }
+
+    /**
+     * Joins the row's room through Rock and sends again under the same key. A join Rock made
+     * but the platform has not taken yet is refused as not joined, so the send waits and tries
+     * again a few times before the row fails.
+     */
+    async function joinAndResend(row: PendingMessage, join: (channelId: string) => Promise<JoinResult>): Promise<SendResult> {
+        let joined: JoinResult;
+        try {
+            joined = await join(row.channelId);
+        }
+        catch {
+            return { ok: false, error: { code: "door.unreachable", severity: "failed" } };
+        }
+
+        if (joined.code !== "ok") {
+            return { ok: false, error: { code: joined.code ?? "door.unavailable", severity: "permission", text: joined.message ?? null } };
+        }
+
+        let result = await sendOnce(row);
+        for (let attempt = 0; attempt < joinWaits && !result.ok && result.error.code === joinRequiredCode; attempt++) {
+            await waitBeforeResend(attempt);
+            result = await sendOnce(row);
+        }
+
+        return result;
+    }
 
     /** Sends a row's text and settles the row by the answer. */
     async function deliver(row: PendingMessage, isLast = true): Promise<boolean> {
         row.status = "sending";
         row.errorCode = null;
 
-        // A send that rejects is a failure like any other, so its row ends failed with a Retry
-        // and a Discard rather than sending for good.
-        let result: SendResult;
-        try {
-            result = await dependencies.send(row.channelId, row.body, row.localId);
-        }
-        catch {
-            result = { ok: false, error: { code: "rpc.transport", severity: "failed" } };
+        let result = await sendOnce(row);
+        if (!result.ok && result.error.code === joinRequiredCode && dependencies.join) {
+            result = await joinAndResend(row, dependencies.join);
         }
 
         if (!result.ok) {

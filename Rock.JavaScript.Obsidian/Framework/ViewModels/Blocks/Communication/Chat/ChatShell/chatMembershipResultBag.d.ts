@@ -22,31 +22,27 @@
 //
 
 import { Guid } from "@Obsidian/Types";
-import { ChatShellSessionBag } from "./chatShellSessionBag";
 
-/** What the chat shell is given when it opens. */
-export type ChatShellInitializationBox = {
-    /** Gets or sets any error the block wants shown instead of itself. */
-    errorMessage?: string | null;
+/**
+ * What a door that changes who is in a room came to: joining, leaving, adding, removing or
+ * renaming.
+ */
+export type ChatMembershipResultBag = {
+    /**
+     * Gets or sets the outcome as a stable code: "ok" when the change was made, otherwise the
+     * reason it was not.
+     */
+    code?: string | null;
 
-    /** Gets or sets the URLs the block navigates to. */
-    navigationUrls?: Record<string, string> | null;
-
-    /** Gets or sets the security grant token for this block. */
-    securityGrantToken?: string | null;
-
-    /** Gets or sets whether chat may open for this person and, if so, where the platform is. */
-    session?: ChatShellSessionBag | null;
+    /** Gets or sets the sentence to show the person when the change was refused. */
+    message?: string | null;
 
     /**
-     * Gets or sets the channel named by the ChannelGuid page parameter, which opens first
-     * when present, or null.
+     * Gets or sets a value indicating whether Rock made the change but the chat platform had
+     * not taken it yet when the answer was sent.
      */
-    channelGuid?: Guid | null;
+    isPending: boolean;
 
-    /**
-     * Gets or sets a value indicating whether the page narrows the directory, the people
-     * search and the rooms pinned for everyone to the person's campus.
-     */
-    areSharedChannelsFilteredByCampus: boolean;
+    /** Gets or sets the person who could not be added, when that is the refusal. */
+    personAliasGuid?: Guid | null;
 };

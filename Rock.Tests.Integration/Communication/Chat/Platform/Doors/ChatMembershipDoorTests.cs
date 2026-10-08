@@ -140,7 +140,12 @@ namespace Rock.Tests.Integration.Communication.Chat.Platform.Doors
                 var ada = scene.AddChatPerson( "Ada" );
                 var bo = scene.AddChatPerson( "Bo", isOpenDmAllowed: true );
                 var cy = scene.AddChatPerson( "Cy", isOpenDmAllowed: true );
-                var room = scene.Fixture.AddChannel( scene.Fixture.SharedGroupTypeId, "Private room", g => g.IsChatChannelPublicOverride = false );
+                // The fixture's type pins every room, so this one is made neither public nor pinned.
+                var room = scene.Fixture.AddChannel( scene.Fixture.SharedGroupTypeId, "Private room", g =>
+                {
+                    g.IsChatChannelPublicOverride = false;
+                    g.IsChatChannelAlwaysShownOverride = false;
+                } );
                 var conversation = scene.Start( bo, scene.Alias( cy ) ).ChannelGuid.Value;
 
                 Assert.AreEqual( "door.not_allowed", scene.Join( ada, room ).Code );
