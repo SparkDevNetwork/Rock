@@ -3438,6 +3438,8 @@ namespace Rock.Blocks.Event
                     continue;
                 }
 
+                privateConfigurationValues = Field.Helper.RemoveDynamicListSources( privateConfigurationValues, RequestContext.CurrentPerson );
+
                 var isPersonField = field.FieldSource == RegistrationFieldSource.PersonField;
 
                 /*
