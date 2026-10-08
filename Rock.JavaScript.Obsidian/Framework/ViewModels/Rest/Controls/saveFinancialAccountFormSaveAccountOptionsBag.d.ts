@@ -40,6 +40,12 @@ export type SaveFinancialAccountFormSaveAccountOptionsBag = {
     /** Gets or sets the name of the saved account. */
     savedAccountName?: string | null;
 
+    /**
+     * Gets or sets the security grant token that allows the account
+     * to be saved.
+     */
+    securityGrantToken?: string | null;
+
     /** Gets or sets the transaction code. */
     transactionCode?: string | null;
 
