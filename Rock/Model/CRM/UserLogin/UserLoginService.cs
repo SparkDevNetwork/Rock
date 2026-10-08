@@ -33,6 +33,11 @@ namespace Rock.Model
     public partial class UserLoginService
     {
         /// <summary>
+        /// How long a confirmation code is valid after it is issued.
+        /// </summary>
+        private static readonly TimeSpan ConfirmationCodeLifetime = TimeSpan.FromHours( 2 );
+
+        /// <summary>
         /// Returns an enumerable collection of <see cref="Rock.Model.UserLogin"/> entities by their API Key.
         /// </summary>
         /// <param name="apiKey">A <see cref="System.String"/> representing the API key to search by.</param>
@@ -130,10 +135,18 @@ namespace Rock.Model
                             ticks = 0;
                         }
 
+                        if ( ticks <= 0 || ticks > DateTime.MaxValue.Ticks )
+                        {
+                            return null;
+                        }
+
                         DateTime dateTime = new DateTime( ticks );
 
-                        // Confirmation Code is only valid for an hour
-                        if ( RockDateTime.Now.Subtract( dateTime ).Hours > 1 )
+                        // Confirmation codes are valid for two hours from issue. The one hour
+                        // negative allowance covers the daylight saving fall-back (the ticks are
+                        // org-local RockDateTime) and clock drift between web servers.
+                        var codeAge = RockDateTime.Now - dateTime;
+                        if ( codeAge > ConfirmationCodeLifetime || codeAge < TimeSpan.FromHours( -1 ) )
                         {
                             return null;
                         }
@@ -141,6 +154,12 @@ namespace Rock.Model
                         UserLogin user = this.GetByEncryptedKey( publicKey );
                         if ( user != null && user.UserName == username )
                         {
+                            // A code issued before the most recent password change is no longer valid.
+                            if ( user.LastPasswordChangedDateTime.HasValue && user.LastPasswordChangedDateTime.Value > dateTime.AddSeconds( 1 ) )
+                            {
+                                return null;
+                            }
+
                             return user;
                         }
                     }
