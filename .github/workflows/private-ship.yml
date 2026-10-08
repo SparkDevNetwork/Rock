@@ -12,8 +12,10 @@ name: Ship to Public
 #      either all of them update or none do. Git rejects the push if public
 #      moved, so nothing on public can ever be overwritten.
 #   6. Comments with the public commit links and closes the PR.
-#   7. After the verify build passes, deletes the PR's branch from the mirror.
-#      If the build fails, the branch is kept so the fix can go on it.
+#   7. If develop was updated, labels the PR `awaiting-build` and records the
+#      develop commit. private-build-results.yml deletes the branch once
+#      AppVeyor passes, or comments with an analysis if it fails. If develop
+#      wasn't updated (AppVeyor only builds develop), deletes the branch now.
 # On any failure, including a merge-up conflict, nothing is pushed. It comments
 # the reason and removes the label.
 #
@@ -22,9 +24,7 @@ name: Ship to Public
 # `ship-only`, then do that merge-up by hand.
 #
 # Shipping does NOT wait on a build, so it takes about a minute. This matches
-# how Rock already works: code lands, then gets built. A verify job builds the
-# last branch updated (develop when the merge-up reaches it) and comments on
-# the PR, tagging whoever shipped, if the build fails.
+# how Rock already works: code lands on develop, then AppVeyor builds it.
 #
 # This file also exists in the public repo (the mirror copies develop), but the
 # repository checks below keep it from ever running there.
@@ -40,18 +40,13 @@ name: Ship to Public
 #                     for example {"release-20.0": ["hotfix-20.1"], "hotfix-20.1": ["develop"]}.
 #                     A branch with two parents (like hotfix-18.7, fed by both
 #                     hotfix-17.11 and hotfix-18.6) gets one merge from each.
-#
-# Build runner for the verify job (optional):
-#   vars.BUILD_RUNNER  JSON for runs-on. Unset uses GitHub-hosted "windows-latest".
-#                      Set to ["self-hosted","windows","rock-build"] to use our own
-#                      Windows VM.
 
 on:
   pull_request:
     types: [labeled]
 
 permissions:
-  # Write is only used to delete the PR's branch from the mirror after shipping.
+  # Write is only used to delete the PR's branch from the mirror.
   contents: write
   pull-requests: write
   issues: write
@@ -63,13 +58,9 @@ jobs:
     timeout-minutes: 20
     # One ship at a time across ALL branches. A merge-up can touch several
     # branches, so two ships to different branches could otherwise collide.
-    # Scoped to this job only, so a running verify build doesn't hold up the next ship.
     concurrency:
       group: ship
       cancel-in-progress: false
-    outputs:
-      sha: ${{ steps.push.outputs.sha }}
-      branch: ${{ steps.push.outputs.branch }}
     env:
       GH_TOKEN: ${{ github.token }}
       PR: ${{ github.event.pull_request.number }}
@@ -265,19 +256,44 @@ jobs:
             echo "EOF"
           } >> "$GITHUB_ENV"
 
-          # Verify the last branch updated: develop when the merge-up reached it.
-          last=$(echo $PUSH_BRANCHES | awk '{print $NF}')
-          echo "branch=$last" >> "$GITHUB_OUTPUT"
-          echo "sha=$(git rev-parse "$last")" >> "$GITHUB_OUTPUT"
-          echo "VERIFY_BRANCH=$last" >> "$GITHUB_ENV"
+          # If develop was updated, AppVeyor builds it. Record the develop commit
+          # so the build-results workflow can match this PR to that build.
+          if echo " $PUSH_BRANCHES " | grep -q " develop "; then
+            echo "DEVELOP_SHA=$(git rev-parse develop)" >> "$GITHUB_ENV"
+          fi
 
       - name: Close the PR
         run: |
+          if [ -n "$DEVELOP_SHA" ]; then
+            # The marker comment is how the build-results workflow finds the
+            # develop commit for this PR. Don't remove it.
+            next="AppVeyor will build \`develop\`. When it passes, this PR's branch is deleted. If it fails, you'll get a comment here with an analysis, and the branch is kept.
+
+          <!-- develop-sha: $DEVELOP_SHA -->"
+          else
+            next="AppVeyor only builds \`develop\`, which this ship didn't reach, so there's no build to wait for. This PR's branch has been deleted."
+          fi
+
           gh pr close "$PR" -R "$GITHUB_REPOSITORY" \
             -c "Shipped to public by @$ACTOR ($LABEL):
           $SHIPPED
 
-          A verify build of \`$VERIFY_BRANCH\` is running now. You'll get a comment here if it fails."
+          $next"
+
+      - name: Wait for AppVeyor, or delete the branch now
+        run: |
+          if [ -n "$DEVELOP_SHA" ]; then
+            gh api -X POST "repos/$GITHUB_REPOSITORY/issues/$PR/labels" -f "labels[]=awaiting-build" > /dev/null
+            exit 0
+          fi
+
+          # Never delete a shared branch, even if a PR was opened from one.
+          case "$HEAD_REF" in
+            develop|release-*|hotfix-*) echo "Not deleting shared branch $HEAD_REF."; exit 0 ;;
+          esac
+          gh api -X DELETE "repos/$GITHUB_REPOSITORY/git/refs/heads/$HEAD_REF" \
+            && echo "Deleted $HEAD_REF." \
+            || echo "::warning::Couldn't delete $HEAD_REF. Delete it by hand."
 
       - name: Report failure
         if: failure()
@@ -288,60 +304,3 @@ jobs:
 
           [Workflow log]($GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID)"
           gh api -X DELETE "repos/$GITHUB_REPOSITORY/issues/$PR/labels/$LABEL" || true
-
-  verify:
-    # Builds the exact commit that just landed on public. If it fails, two
-    # changes broke each other without a git conflict and develop needs a fix.
-    needs: ship
-    if: needs.ship.outputs.sha != ''
-    runs-on: ${{ fromJSON(vars.BUILD_RUNNER || '"windows-latest"') }}
-    timeout-minutes: 60
-    steps:
-      - name: Checkout the shipped commit
-        uses: actions/checkout@v5
-        with:
-          repository: SparkDevNetwork/Rock
-          ref: ${{ needs.ship.outputs.sha }}
-          # Separate folder, so a self-hosted runner keeps its mirror clone intact.
-          path: shipped
-          fetch-depth: 1
-          persist-credentials: false
-
-      - name: Build
-        uses: ./shipped/.github/actions/build-rock
-        with:
-          working-directory: shipped
-
-      - name: Report a broken build
-        if: failure()
-        shell: bash
-        env:
-          GH_TOKEN: ${{ github.token }}
-          PR: ${{ github.event.pull_request.number }}
-          BRANCH: ${{ needs.ship.outputs.branch }}
-          SHA: ${{ needs.ship.outputs.sha }}
-          ACTOR: ${{ github.actor }}
-          HEAD_REF: ${{ github.event.pull_request.head.ref }}
-        run: |
-          gh pr comment "$PR" -R "$GITHUB_REPOSITORY" \
-            -b "**Public \`$BRANCH\` is broken after this ship.** @$ACTOR, commit https://github.com/SparkDevNetwork/Rock/commit/$SHA doesn't build. This usually means another change that landed first conflicts with this one without a git conflict.
-
-          Your branch \`$HEAD_REF\` was kept. Push the fix to it, reopen this PR, and add \`ship\` again. The commits that already shipped are skipped automatically.
-
-          [Build log]($GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID)"
-
-      - name: Delete the PR's branch from the mirror
-        # Only after the build passes. If it fails, the branch is kept for the fix.
-        if: success()
-        shell: bash
-        env:
-          GH_TOKEN: ${{ github.token }}
-          HEAD_REF: ${{ github.event.pull_request.head.ref }}
-        run: |
-          # Never delete a shared branch, even if a PR was opened from one.
-          case "$HEAD_REF" in
-            develop|release-*|hotfix-*) echo "Not deleting shared branch $HEAD_REF."; exit 0 ;;
-          esac
-          gh api -X DELETE "repos/$GITHUB_REPOSITORY/git/refs/heads/$HEAD_REF" \
-            && echo "Deleted $HEAD_REF." \
-            || echo "::warning::Couldn't delete $HEAD_REF. Delete it by hand."
