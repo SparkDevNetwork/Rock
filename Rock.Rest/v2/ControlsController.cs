@@ -3567,10 +3567,14 @@ namespace Rock.Rest.v2
                 var clientService = new CategoryClientService( rockContext, GetPerson( rockContext ) );
                 var grant = SecurityGrant.FromToken( options.SecurityGrantToken );
 
+                // Categorized items are only included for people with access
+                // to the REST action. The category picker only requests categories.
+                var canViewItems = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_READ );
+
                 var items = clientService.GetCategorizedTreeItems( new CategoryItemTreeOptions
                 {
                     ParentGuid = options.ParentGuid,
-                    GetCategorizedItems = options.GetCategorizedItems,
+                    GetCategorizedItems = options.GetCategorizedItems && canViewItems,
                     EntityTypeGuid = options.EntityTypeGuid,
                     EntityTypeQualifierColumn = options.EntityTypeQualifierColumn,
                     EntityTypeQualifierValue = GetQualifierValueLookupResult( options.EntityTypeQualifierValue, rockContext ),
@@ -3578,8 +3582,8 @@ namespace Rock.Rest.v2
                     IncludeCategoriesWithoutChildren = options.IncludeCategoriesWithoutChildren,
                     DefaultIconCssClass = options.DefaultIconCssClass,
                     IncludeInactiveItems = options.IncludeInactiveItems,
-                    ItemFilterPropertyName = options.ItemFilterPropertyName,
-                    ItemFilterPropertyValue = options.ItemFilterPropertyValue,
+                    ItemFilterPropertyName = canViewItems ? options.ItemFilterPropertyName : null,
+                    ItemFilterPropertyValue = canViewItems ? options.ItemFilterPropertyValue : null,
                     LazyLoad = options.LazyLoad,
                     SecurityGrant = grant
                 } );
