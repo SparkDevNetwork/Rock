@@ -4,10 +4,18 @@ name: Ship to Public
 #   1. Checks the PR is approved and its PR build passed on its latest commit.
 #   2. Rebases the PR onto the LIVE public branch (not the mirror's copy).
 #   3. Checks commit messages use the release-note format (+ or -).
-#   4. Pushes to the public branch. Git rejects the push if public moved, so
-#      nothing on public can ever be overwritten.
-#   5. Comments with the public commit link and closes the PR.
-# On any failure it comments the reason and removes the label.
+#   4. Merges the change up every branch it must reach, following the
+#      MERGE_CHAIN variable. Every step is a real merge commit, never a squash.
+#   5. Pushes the target branch and every merged-up branch in ONE atomic push:
+#      either all of them update or none do. Git rejects the push if public
+#      moved, so nothing on public can ever be overwritten.
+#   6. Comments with the public commit links and closes the PR.
+# On any failure, including a merge-up conflict, nothing is pushed. It comments
+# the reason and removes the label.
+#
+# The `ship-only` label does steps 1 to 3 and 5 for the target branch only, with
+# no merge-up. It's the escape hatch when a merge-up conflicts: ship with
+# `ship-only`, then do that merge-up by hand.
 #
 # Shipping does NOT rebuild, so it takes about a minute. The PR build already
 # passed. A separate verify job then builds the exact commit that shipped and
@@ -22,6 +30,12 @@ name: Ship to Public
 #   secrets.SHIP_APP_PRIVATE_KEY  Private key of that App
 # The App is installed on SparkDevNetwork/Rock with Contents and Workflows write,
 # and is allowed to bypass any rules on the public shippable branches.
+#
+# Merge paths (required for `ship`):
+#   vars.MERGE_CHAIN  JSON map of each branch to the branches it merges into,
+#                     for example {"release-20.0": ["hotfix-20.1"], "hotfix-20.1": ["develop"]}.
+#                     A branch with two parents (like hotfix-18.7, fed by both
+#                     hotfix-17.11 and hotfix-18.6) gets one merge from each.
 #
 # Build runner for the verify job (optional):
 #   vars.BUILD_RUNNER  Same variable as private-build.yml.
@@ -38,22 +52,25 @@ permissions:
 
 jobs:
   ship:
-    if: github.repository == 'SparkStealth/Rock-Mirror' && github.event.label.name == 'ship'
+    if: github.repository == 'SparkStealth/Rock-Mirror' && (github.event.label.name == 'ship' || github.event.label.name == 'ship-only')
     runs-on: ubuntu-latest
     timeout-minutes: 20
-    # One ship at a time per target branch, so two ships never race each other.
+    # One ship at a time across ALL branches. A merge-up can touch several
+    # branches, so two ships to different branches could otherwise collide.
     # Scoped to this job only, so a running verify build doesn't hold up the next ship.
     concurrency:
-      group: ship-${{ github.event.pull_request.base.ref }}
+      group: ship
       cancel-in-progress: false
     outputs:
       sha: ${{ steps.push.outputs.sha }}
+      branch: ${{ steps.push.outputs.branch }}
     env:
       GH_TOKEN: ${{ github.token }}
       PR: ${{ github.event.pull_request.number }}
       BASE: ${{ github.event.pull_request.base.ref }}
       HEAD_SHA: ${{ github.event.pull_request.head.sha }}
       ACTOR: ${{ github.actor }}
+      LABEL: ${{ github.event.label.name }}
     steps:
       - name: Check the target branch
         run: |
@@ -87,7 +104,7 @@ jobs:
             -q '.check_runs | sort_by(.started_at) | last | (.status + "/" + (.conclusion // ""))')
 
           if [ "$result" != "completed/success" ]; then
-            echo "SHIP_FAIL=The PR build hasn't passed on the latest commit (\`${HEAD_SHA:0:7}\`, status: ${result:-not run}). Wait for it to finish green, then add the \`ship\` label again." >> "$GITHUB_ENV"
+            echo "SHIP_FAIL=The PR build hasn't passed on the latest commit (\`${HEAD_SHA:0:7}\`, status: ${result:-not run}). Wait for it to finish green, then add the \`$LABEL\` label again." >> "$GITHUB_ENV"
             exit 1
           fi
 
@@ -127,7 +144,7 @@ jobs:
               echo "Rebasing onto public \`$BASE\` hit conflicts in:"
               echo "$files"
               echo ""
-              echo "Run \`git fetch origin\` and \`git rebase origin/$BASE\` locally, resolve, push to this branch, wait for the build, then add the \`ship\` label again."
+              echo "Run \`git fetch origin\` and \`git rebase origin/$BASE\` locally, resolve, push to this branch, wait for the build, then add the \`$LABEL\` label again."
               echo "EOF"
             } >> "$GITHUB_ENV"
             exit 1
@@ -139,32 +156,134 @@ jobs:
           if [ -n "$bad" ]; then
             {
               echo "SHIP_FAIL<<EOF"
-              echo "These commit messages don't use the release-note format (\`+ (Domain) ...\` or \`- ...\`). Reword or squash them, then add the \`ship\` label again:"
+              echo "These commit messages don't use the release-note format (\`+ (Domain) ...\` or \`- ...\`). Reword them, then add the \`$LABEL\` label again:"
               echo "$bad" | sed 's/^/- /'
               echo "EOF"
             } >> "$GITHUB_ENV"
             exit 1
           fi
 
+          # The rebased PR becomes the new tip of the target branch. Named after
+          # the real branch so merge commits read "Merge branch '<branch>' into ...".
+          git branch -f "$BASE" HEAD
+          echo "PUSH_BRANCHES=$BASE" >> "$GITHUB_ENV"
+
+      - name: Work out the merge-up order
+        if: env.LABEL == 'ship'
+        env:
+          MERGE_CHAIN: ${{ vars.MERGE_CHAIN }}
+        run: |
+          if [ -z "$MERGE_CHAIN" ]; then
+            echo "SHIP_FAIL=The \`MERGE_CHAIN\` variable isn't set on this repo, so the merge-up path is unknown. Use \`ship-only\` for now." >> "$GITHUB_ENV"
+            exit 1
+          fi
+
+          # Prints one "<from> <into>" line per merge, in the order to run them.
+          # A branch is only merged onward after every branch feeding it is done.
+          python3 - > merge-plan.txt <<'PY'
+          import json, os, sys
+          base = os.environ["BASE"]
+          chain = json.loads(os.environ["MERGE_CHAIN"])
+
+          # Every branch this change must reach.
+          reach, todo = {base}, [base]
+          while todo:
+              for nxt in chain.get(todo.pop(), []):
+                  if nxt not in reach:
+                      reach.add(nxt)
+                      todo.append(nxt)
+
+          parents = {n: [p for p in reach if n in chain.get(p, [])] for n in reach}
+          done, order = [base], []
+          while len(done) < len(reach):
+              ready = sorted(n for n in reach if n not in done and all(p in done for p in parents[n]))
+              if not ready:
+                  sys.exit("MERGE_CHAIN contains a loop.")
+              for n in ready:
+                  order.append(n)
+                  done.append(n)
+
+          for n in order:
+              for p in sorted(parents[n], key=done.index):
+                  print(p, n)
+          PY
+
+          echo "Merge plan:"
+          cat merge-plan.txt
+
+      - name: Merge up
+        if: env.LABEL == 'ship'
+        env:
+          TOKEN: ${{ steps.app.outputs.token }}
+        run: |
+          targets=$(awk '{print $2}' merge-plan.txt | awk '!seen[$0]++')
+          if [ -z "$targets" ]; then
+            echo "Nothing to merge up from $BASE."
+            exit 0
+          fi
+
+          # Start every target branch from the live public version.
+          refspecs=""
+          for t in $targets; do refspecs="$refspecs +refs/heads/$t:refs/remotes/public/$t"; done
+          git fetch "https://x-access-token:${TOKEN}@github.com/SparkDevNetwork/Rock.git" $refspecs
+          for t in $targets; do git branch -f "$t" "public/$t"; done
+
+          # Real merge commits (--no-ff), never a squash.
+          while read -r from into; do
+            git switch -q "$into"
+            if ! git merge --no-ff --no-edit "$from"; then
+              files=$(git diff --name-only --diff-filter=U | sed 's/^/- `/; s/$/`/')
+              git merge --abort
+              {
+                echo "SHIP_FAIL<<EOF"
+                echo "Merging \`$from\` into \`$into\` hit conflicts. Nothing was pushed to any branch."
+                echo "$files"
+                echo ""
+                echo "To ship now: add the \`ship-only\` label to ship to \`$BASE\` without merging up, then do the merge-up by hand in SmartGit."
+                echo "EOF"
+              } >> "$GITHUB_ENV"
+              exit 1
+            fi
+          done < merge-plan.txt
+
+          # Unquoted on purpose: collapses the newline-separated targets onto one line.
+          echo "PUSH_BRANCHES=$(echo $BASE $targets)" >> "$GITHUB_ENV"
+
       - name: Push to public
         id: push
         env:
           TOKEN: ${{ steps.app.outputs.token }}
         run: |
-          if ! git push "https://x-access-token:${TOKEN}@github.com/SparkDevNetwork/Rock.git" "HEAD:refs/heads/$BASE"; then
-            echo "SHIP_FAIL=Public \`$BASE\` changed during the ship. Add the \`ship\` label again to retry." >> "$GITHUB_ENV"
+          refspecs=""
+          for b in $PUSH_BRANCHES; do refspecs="$refspecs refs/heads/$b:refs/heads/$b"; done
+
+          # --atomic: every branch updates, or none do.
+          if ! git push --atomic "https://x-access-token:${TOKEN}@github.com/SparkDevNetwork/Rock.git" $refspecs; then
+            echo "SHIP_FAIL=One of the public branches changed during the ship, so nothing was pushed. Add the \`$LABEL\` label again to retry." >> "$GITHUB_ENV"
             exit 1
           fi
-          sha=$(git rev-parse HEAD)
-          echo "sha=$sha" >> "$GITHUB_OUTPUT"
-          echo "SHIPPED_SHA=$sha" >> "$GITHUB_ENV"
+
+          {
+            echo "SHIPPED<<EOF"
+            for b in $PUSH_BRANCHES; do
+              echo "- \`$b\`: https://github.com/SparkDevNetwork/Rock/commit/$(git rev-parse "$b")"
+            done
+            echo "EOF"
+          } >> "$GITHUB_ENV"
+
+          # Verify the last branch updated: develop when the merge-up reached it.
+          last=$(echo $PUSH_BRANCHES | awk '{print $NF}')
+          echo "branch=$last" >> "$GITHUB_OUTPUT"
+          echo "sha=$(git rev-parse "$last")" >> "$GITHUB_OUTPUT"
+          echo "VERIFY_BRANCH=$last" >> "$GITHUB_ENV"
 
       - name: Close the PR
         run: |
           gh pr close "$PR" -R "$GITHUB_REPOSITORY" \
-            -c "Shipped to public \`$BASE\` by @$ACTOR as https://github.com/SparkDevNetwork/Rock/commit/$SHIPPED_SHA
+            -c "Shipped to public by @$ACTOR ($LABEL):
+          $SHIPPED
 
-          A verify build of that exact commit is running now. You'll get a comment here if it fails."
+          A verify build of \`$VERIFY_BRANCH\` is running now. You'll get a comment here if it fails."
 
       - name: Report failure
         if: failure()
@@ -174,7 +293,7 @@ jobs:
             -b "**Ship failed.** $reason
 
           [Workflow log]($GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID)"
-          gh api -X DELETE "repos/$GITHUB_REPOSITORY/issues/$PR/labels/ship" || true
+          gh api -X DELETE "repos/$GITHUB_REPOSITORY/issues/$PR/labels/$LABEL" || true
 
   verify:
     # Builds the exact commit that just landed on public. If it fails, two
@@ -205,11 +324,11 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           PR: ${{ github.event.pull_request.number }}
-          BASE: ${{ github.event.pull_request.base.ref }}
+          BRANCH: ${{ needs.ship.outputs.branch }}
           SHA: ${{ needs.ship.outputs.sha }}
           ACTOR: ${{ github.actor }}
         run: |
           gh pr comment "$PR" -R "$GITHUB_REPOSITORY" \
-            -b "**Public \`$BASE\` is broken after this ship.** @$ACTOR, commit https://github.com/SparkDevNetwork/Rock/commit/$SHA doesn't build. This usually means another change that landed first conflicts with this one without a git conflict. Please push a fix to public \`$BASE\` right away.
+            -b "**Public \`$BRANCH\` is broken after this ship.** @$ACTOR, commit https://github.com/SparkDevNetwork/Rock/commit/$SHA doesn't build. This usually means another change that landed first conflicts with this one without a git conflict. Please push a fix to public \`$BRANCH\` right away.
 
           [Build log]($GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID)"
