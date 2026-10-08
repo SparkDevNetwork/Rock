@@ -512,7 +512,17 @@ ORDER BY [Text]",
             var rockContext = new RockContext();
             var personService = new PersonService( rockContext );
             var personQuery = new PersonService.PersonMatchQuery( tbFirstName.Text.Trim(), tbLastName.Text.Trim(), tbEmail.Text.Trim(), pnbPhone.Text.Trim(), birthDate: bpBirthDay.SelectedDate );
-            var person = personService.FindPerson( personQuery, true );
+
+            /*
+                10/8/2026 - MSE
+
+                A match only updates the person's email when someone is signed
+                in. Existing records are not changed by a visitor who is not
+                signed in.
+
+                Reason: A name and email or phone match is not proof of ownership.
+            */
+            var person = personService.FindPerson( personQuery, CurrentPerson != null );
 
             if ( person != null )
             {
@@ -694,31 +704,45 @@ ORDER BY [Text]",
                 primaryPerson = GetLoggedInPerson( rockContext );
                 var family = primaryPerson.GetFamily( rockContext );
 
-                primaryPerson.NickName = PrimaryWatcher.NickName.FixCase();
-                primaryPerson.LastName = PrimaryWatcher.LastName.FixCase();
+                /*
+                    10/8/2026 - MSE
 
-                if ( PrimaryWatcher.BirthDate.HasValue )
+                    A visitor recognized only by the person cookie can still
+                    check in and add new people, but existing records are only
+                    updated when someone is signed in.
+
+                    Reason: A name and email or phone match is not proof of ownership.
+                */
+                var canUpdateExistingPeople = CurrentPerson != null;
+
+                if ( canUpdateExistingPeople )
                 {
-                    primaryPerson.SetBirthDate( PrimaryWatcher.BirthDate );
+                    primaryPerson.NickName = PrimaryWatcher.NickName.FixCase();
+                    primaryPerson.LastName = PrimaryWatcher.LastName.FixCase();
+
+                    if ( PrimaryWatcher.BirthDate.HasValue )
+                    {
+                        primaryPerson.SetBirthDate( PrimaryWatcher.BirthDate );
+                    }
+
+                    // Save the email address
+                    if ( PrimaryWatcher.EmailAddress.IsNotNullOrWhiteSpace() )
+                    {
+                        primaryPerson.Email = PrimaryWatcher.EmailAddress;
+                    }
+
+                    rockContext.SaveChanges();
+
+                    // Save the mobile phone number
+                    if ( PrimaryWatcher.MobilePhoneNumber.IsNotNullOrWhiteSpace() )
+                    {
+                        SavePhoneNumber( primaryPerson.Id, PrimaryWatcher, rockContext );
+                    }
+
+                    SaveHomeAddress( rockContext, family );
                 }
 
-                // Save the email address
-                if ( PrimaryWatcher.EmailAddress.IsNotNullOrWhiteSpace() )
-                {
-                    primaryPerson.Email = PrimaryWatcher.EmailAddress;
-                }
-
-                rockContext.SaveChanges();
-
-                // Save the mobile phone number
-                if ( PrimaryWatcher.MobilePhoneNumber.IsNotNullOrWhiteSpace() )
-                {
-                    SavePhoneNumber( primaryPerson.Id, PrimaryWatcher, rockContext );
-                }
-
-                SaveHomeAddress( rockContext, family );
-
-                AddOrUpdateOtherWatchers( rockContext, primaryPerson, family );
+                AddOrUpdateOtherWatchers( rockContext, primaryPerson, family, canUpdateExistingPeople, canUpdateExistingPeople );
             }
 
             pnlOtherWatcher.Visible = false;
@@ -799,6 +823,18 @@ ORDER BY [Text]",
                 person = personService.Get( PrimaryWatcher.Id );
             }
 
+            /*
+                10/8/2026 - MSE
+
+                An existing person matched by a visitor who is not signed in
+                can still check in and add new people, but their record is
+                not updated.
+
+                Reason: A name and email or phone match is not proof of ownership.
+            */
+            var canUpdateExistingPeople = CurrentPerson != null;
+            var canUpdatePerson = person == null || canUpdateExistingPeople;
+
             // Otherwise create a new person
             if ( person == null )
             {
@@ -817,17 +853,21 @@ ORDER BY [Text]",
             else
             {
                 family = person.GetFamily( rockContext );
-                person.NickName = PrimaryWatcher.NickName.FixCase();
-                person.LastName = PrimaryWatcher.LastName.FixCase();
+
+                if ( canUpdatePerson )
+                {
+                    person.NickName = PrimaryWatcher.NickName.FixCase();
+                    person.LastName = PrimaryWatcher.LastName.FixCase();
+                }
             }
 
-            if ( PrimaryWatcher.BirthDate.HasValue )
+            if ( canUpdatePerson && PrimaryWatcher.BirthDate.HasValue )
             {
                 person.SetBirthDate( PrimaryWatcher.BirthDate );
             }
 
             // Save the email address
-            if ( PrimaryWatcher.EmailAddress.IsNotNullOrWhiteSpace() )
+            if ( canUpdatePerson && PrimaryWatcher.EmailAddress.IsNotNullOrWhiteSpace() )
             {
                 person.Email = PrimaryWatcher.EmailAddress;
             }
@@ -840,13 +880,16 @@ ORDER BY [Text]",
             rockContext.SaveChanges();
             PrimaryWatcher.Id = person.Id;
 
-            // Save the mobile phone number
-            if ( PrimaryWatcher.MobilePhoneNumber.IsNotNullOrWhiteSpace() )
+            if ( canUpdatePerson )
             {
-                SavePhoneNumber( person.Id, PrimaryWatcher, rockContext );
-            }
+                // Save the mobile phone number
+                if ( PrimaryWatcher.MobilePhoneNumber.IsNotNullOrWhiteSpace() )
+                {
+                    SavePhoneNumber( person.Id, PrimaryWatcher, rockContext );
+                }
 
-            SaveHomeAddress( rockContext, family );
+                SaveHomeAddress( rockContext, family );
+            }
 
             if ( isAccountRequired )
             {
@@ -860,7 +903,7 @@ ORDER BY [Text]",
                     true );
             }
 
-            AddOrUpdateOtherWatchers( rockContext, person, family );
+            AddOrUpdateOtherWatchers( rockContext, person, family, canUpdatePerson, canUpdateExistingPeople );
 
             Rock.Security.Authorization.SetUnsecurePersonIdentifier( person.PrimaryAlias.Guid );
 
@@ -1350,13 +1393,18 @@ ORDER BY [Text]",
         /// <summary>
         /// Update the other watchers
         /// </summary>
-        private void AddOrUpdateOtherWatchers( RockContext rockContext, Person primaryPerson, Group family )
+        /// <param name="rockContext">The rock context.</param>
+        /// <param name="primaryPerson">The primary person.</param>
+        /// <param name="family">The primary person's family.</param>
+        /// <param name="canUpdatePrimaryPerson">If <c>true</c>, the primary person's marital status and known relationships may be changed.</param>
+        /// <param name="canUpdateExistingPeople">If <c>true</c>, existing people that are matched may be updated. New people are always saved.</param>
+        private void AddOrUpdateOtherWatchers( RockContext rockContext, Person primaryPerson, Group family, bool canUpdatePrimaryPerson, bool canUpdateExistingPeople )
         {
             var personService = new PersonService( rockContext );
             var groupMemberService = new GroupMemberService( rockContext );
 
             var configuredKnownRelationships = GetConfiguredKnownRelationship();
-            if ( configuredKnownRelationships.Any() )
+            if ( canUpdatePrimaryPerson && configuredKnownRelationships.Any() )
             {
                 var existingKnownRelationshipWatchers = GetKnownRelationshipWatchers( primaryPerson, configuredKnownRelationships, rockContext );
                 if ( existingKnownRelationshipWatchers.Any() )
@@ -1413,19 +1461,29 @@ ORDER BY [Text]",
                     person.RecordStatusValueId = recordStatusValue != null ? recordStatusValue.Id : ( int? ) null;
                     person.ConnectionStatusValueId = connectionStatusValue != null ? connectionStatusValue.Id : ( int? ) null;
                 }
-                else
+                else if ( canUpdateExistingPeople )
                 {
                     person.NickName = watcher.NickName;
                     person.LastName = watcher.LastName;
                 }
 
-                if ( watcher.BirthDate.HasValue )
+                /*
+                    10/8/2026 - MSE
+
+                    An existing person matched here is only updated when
+                    allowed. They are still linked and can still be checked in.
+
+                    Reason: A name and email or phone match is not proof of ownership.
+                */
+                var canUpdatePerson = isNew || canUpdateExistingPeople;
+
+                if ( canUpdatePerson && watcher.BirthDate.HasValue )
                 {
                     person.SetBirthDate( watcher.BirthDate );
                 }
 
                 // Save the email address
-                if ( watcher.EmailAddress.IsNotNullOrWhiteSpace() )
+                if ( canUpdatePerson && watcher.EmailAddress.IsNotNullOrWhiteSpace() )
                 {
                     person.Email = watcher.EmailAddress;
                 }
@@ -1436,9 +1494,12 @@ ORDER BY [Text]",
                     var roleId = familyGroupType.Roles.FirstOrDefault( r => r.Guid == watcher.RelationshipTypeGuid ).Id;
                     if ( watcher.RelationshipTypeGuid == Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT.AsGuid() )
                     {
+                        if ( canUpdatePerson )
+                        {
+                            person.MaritalStatusValueId = marriedMaritalStatusValueId;
+                        }
 
-                        person.MaritalStatusValueId = marriedMaritalStatusValueId;
-                        if ( primaryPerson.MaritalStatusValueId != marriedMaritalStatusValueId )
+                        if ( canUpdatePrimaryPerson && primaryPerson.MaritalStatusValueId != marriedMaritalStatusValueId )
                         {
                             primaryPerson.MaritalStatusValueId = marriedMaritalStatusValueId;
                         }
@@ -1456,7 +1517,7 @@ ORDER BY [Text]",
                 else
                 {
                     // Get any other family memberships.
-                    if ( !groupMemberService.Queryable()
+                    if ( canUpdatePerson && !groupMemberService.Queryable()
                         .Any( m =>
                             m.Group.GroupTypeId == familyGroupType.Id &&
                             m.PersonId == person.Id &&
@@ -1488,7 +1549,7 @@ ORDER BY [Text]",
                 watcher.Id = person.Id;
 
                 // Save the mobile phone number
-                if ( watcher.MobilePhoneNumber.IsNotNullOrWhiteSpace() )
+                if ( canUpdatePerson && watcher.MobilePhoneNumber.IsNotNullOrWhiteSpace() )
                 {
                     SavePhoneNumber( person.Id, watcher, rockContext );
                 }
