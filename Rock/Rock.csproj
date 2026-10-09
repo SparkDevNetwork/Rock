@@ -4143,6 +4143,7 @@
     <Compile Include="UniversalSearch\Crawler\RobotsTxt\Robots.cs" />
     <Compile Include="UniversalSearch\Crawler\RobotsTxt\Rule.cs" />
     <Compile Include="UniversalSearch\Crawler\RobotsTxt\Sitemap.cs" />
+    <Compile Include="Net\RemoteImageDownloader.cs" />
     <Compile Include="Net\RockWebRequest.cs" />
     <Compile Include="Badge\Component\GeofencedByGroup.cs" />
     <Compile Include="Plugin\HotFixes\001_FixPhoneCountryCode.cs" />

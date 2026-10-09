@@ -287,6 +287,7 @@
     <Compile Include="Model\ConnectionRequestTest.cs" />
     <Compile Include="Model\EntityExtensionMethodTests.cs" />
     <Compile Include="Model\PersonTest.cs" />
+    <Compile Include="Net\RemoteImageDownloaderTests.cs" />
     <Compile Include="Observability\LogExporterWrapperTests.cs" />
     <Compile Include="Observability\ObservabilityHelperTests.cs" />
     <Compile Include="Security\EncryptionTests.cs" />

@@ -18,10 +18,7 @@ using System;
 using System.Collections.Concurrent;
 using System.ComponentModel;
 using System.IdentityModel.Tokens.Jwt;
-using System.Net;
 using System.Threading.Tasks;
-
-using RestSharp;
 
 using Rock.Attribute;
 using Rock.Common.Mobile.Blocks.Login;
@@ -880,13 +877,8 @@ namespace Rock.Blocks.Types.Mobile.Cms
                         if ( !userPerson.PhotoId.HasValue && !string.IsNullOrWhiteSpace( personInfo.Picture ) )
                         {
                             // Download the photo from the url provided.
-                            var restClient = new RestClient( personInfo.Picture );
-                            var restRequest = new RestRequest( Method.GET );
-                            var restResponse = restClient.Execute( restRequest );
-                            if ( restResponse.StatusCode == HttpStatusCode.OK )
+                            if ( Rock.Net.RemoteImageDownloader.TryDownloadImage( personInfo.Picture, out var bytes, out var mimeType, out var fileExtension ) )
                             {
-                                var bytes = restResponse.RawBytes;
-
                                 // Create and save the image.
                                 BinaryFileType fileType = new BinaryFileTypeService( rockContext ).Get( Rock.SystemGuid.BinaryFiletype.PERSON_IMAGE.AsGuid() );
                                 if ( fileType != null )
@@ -896,8 +888,8 @@ namespace Rock.Blocks.Types.Mobile.Cms
                                     binaryFileService.Add( binaryFile );
                                     binaryFile.IsTemporary = false;
                                     binaryFile.BinaryFileType = fileType;
-                                    binaryFile.MimeType = restResponse.ContentType;
-                                    binaryFile.FileName = user.Person.NickName + user.Person.LastName + ".jpg";
+                                    binaryFile.MimeType = mimeType;
+                                    binaryFile.FileName = user.Person.NickName + user.Person.LastName + "." + fileExtension;
                                     binaryFile.FileSize = bytes.Length;
                                     binaryFile.ContentStream = new System.IO.MemoryStream( bytes );
 
