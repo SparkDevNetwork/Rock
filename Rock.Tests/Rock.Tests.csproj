@@ -38,4 +38,8 @@
     <Reference Include="System.Web" />
   </ItemGroup>
 
+  <ItemGroup>
+    <EmbeddedResource Include="Lava\Tags\StylesheetLessCompilerTests.less" />
+  </ItemGroup>
+
 </Project>
