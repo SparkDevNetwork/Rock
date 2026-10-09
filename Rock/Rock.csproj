@@ -1841,6 +1841,7 @@
     <Compile Include="Plugin\HotFixes\325_AddVersionSecurityNoticeBlock.cs" />
     <Compile Include="Plugin\HotFixes\326_FixCheckScannerTransactionImages.cs" />
     <Compile Include="Plugin\HotFixes\327_CleanSocialMediaAccountValues.cs" />
+    <Compile Include="Plugin\HotFixes\280_AuthFixForIssue6712.cs" />
     <Compile Include="Plugin\HotFixes\HotFixMigrationResource.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>

@@ -204,6 +204,26 @@ namespace Rock.Model
                                 supportedActions.Add( Authorization.ADMINISTRATE, "The roles and/or users that have access to administrate." );
                                 return supportedActions;
                             }
+
+                        /*
+                            10/9/2026 - KH
+
+                            Workflow Types use their Category as their parent authority, so the
+                            "ViewList" check for a categorized Workflow Type is resolved through
+                            the Category chain. Exposing "ViewList" here lets it be secured on the
+                            Category. Hotfix 280 adds the matching "All Users" default.
+
+                            Reason: Restore Workflow list access for categorized Workflow Types (GitHub issue #7088).
+                        */
+                        case "Rock.Model.WorkflowType":
+                            {
+                                var supportedActions = new Dictionary<string, string>();
+                                supportedActions.Add( Authorization.VIEW, "The roles and/or users that have access to view." );
+                                supportedActions.Add( "ViewList", "The roles and/or users that have access to view the workflow lists of this type." );
+                                supportedActions.Add( Authorization.EDIT, "The roles and/or users that have access to edit." );
+                                supportedActions.Add( Authorization.ADMINISTRATE, "The roles and/or users that have access to administrate." );
+                                return supportedActions;
+                            }
                     }
                 }
 
