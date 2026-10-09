@@ -20,8 +20,6 @@ using System.IO;
 using System.Text.RegularExpressions;
 using System.Web;
 
-using dotless.Core;
-using dotless.Core.configuration;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 
@@ -89,9 +87,6 @@ namespace Rock.Lava.Blocks
                 {
                     if ( parms["compile"] == "less" )
                     {
-                        DotlessConfiguration dotLessConfiguration = new DotlessConfiguration();
-                        dotLessConfiguration.MinifyOutput = true;
-
                         if ( parms.ContainsKey( "import" ) )
                         {
                             // import statements should go at the end to allow for default variable assignment in the beginning
@@ -119,7 +114,8 @@ namespace Rock.Lava.Blocks
 
                                     var fullPath = page.MapPath( "~/" ) + filePath;
 
-                                    if ( File.Exists( fullPath ) )
+                                    // Only files the Less compiler is allowed to read are imported.
+                                    if ( StylesheetLessCompiler.IsAllowedPath( fullPath ) && File.Exists( fullPath ) )
                                     {
                                         importStatements = $"{importStatements}{Environment.NewLine}@import \"{fullPath}\";";
                                     }
@@ -133,7 +129,7 @@ namespace Rock.Lava.Blocks
                         // ok we have our less stylesheet let's see if it's been cached (less can take ~100ms to compile so let's try not to do that if necessary)
                         if ( parms.ContainsKey( "cacheduration" ) )
                         {
-                            var cacheKey = stylesheet.GetHashCode().ToString();
+                            var cacheKey = "Lava:StylesheetLess:" + stylesheet.Sha256Hash();
                             var cachedStylesheet = RockCache.Get( cacheKey ) as string;
 
                             if ( cachedStylesheet.IsNotNullOrWhiteSpace() )
@@ -142,7 +138,7 @@ namespace Rock.Lava.Blocks
                             }
                             else
                             {
-                                stylesheet = LessWeb.Parse( stylesheet, dotLessConfiguration );
+                                stylesheet = StylesheetLessCompiler.Compile( stylesheet );
 
                                 // check if we should cache this
                                 if ( parms.ContainsKey( "cacheduration" ) && stylesheet.IsNotNullOrWhiteSpace() )
@@ -160,7 +156,7 @@ namespace Rock.Lava.Blocks
                         }
                         else
                         {
-                            stylesheet = LessWeb.Parse( stylesheet, dotLessConfiguration );
+                            stylesheet = StylesheetLessCompiler.Compile( stylesheet );
                         }
                     }
 
