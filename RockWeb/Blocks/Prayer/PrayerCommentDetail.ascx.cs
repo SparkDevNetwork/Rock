@@ -75,12 +75,6 @@ namespace RockWeb.Blocks.Prayer
 
                 if ( noteId.HasValue )
                 {
-                    // Set up to scroll to the top of the given note...
-                    string script = string.Format(
-                        @"$('html, body').animate({{scrollTop: $(""[rel='{0}']"").offset().top}}, {{ duration: 'slow', easing: 'swing'}});", noteId.Value );
-
-                    this.Page.ClientScript.RegisterStartupScript( this.GetType(), string.Format( "scroll-to-comment-{0}", this.ClientID ), script, true );
-
                     prayerComment = new NoteService( new RockContext() ).Get( noteId.Value );
                 }
                 else
@@ -291,6 +285,13 @@ namespace RockWeb.Blocks.Prayer
             dtbText.Text = prayerComment.Text;
             dtbCaption.Text = prayerComment.Caption;
             dtbText.Attributes.Add( "rel", prayerComment.Id.ToString() );
+
+            // Set up to scroll to the top of the given note. This is only registered
+            // here because the edit box is the only element with the matching rel.
+            string script = string.Format(
+                @"$('html, body').animate({{scrollTop: $(""[rel='{0}']"").offset().top}}, {{ duration: 'slow', easing: 'swing'}});", prayerComment.Id );
+
+            this.Page.ClientScript.RegisterStartupScript( this.GetType(), string.Format( "scroll-to-comment-{0}", this.ClientID ), script, true );
         }
 
         /// <summary>
