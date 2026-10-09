@@ -173,12 +173,15 @@ function combine(held: TimelineMessage, incoming: TimelineMessage): TimelineMess
     const isNewerEditHeld = !!held.edited_at && (!incoming.edited_at || incoming.edited_at < held.edited_at);
     if (isNewerEditHeld) {
         result.body = held.body;
+        result.pieces = held.pieces;
         result.edited_at = held.edited_at;
     }
 
     if (held.deleted_at && !incoming.deleted_at) {
         result.deleted_at = held.deleted_at;
         result.body = null;
+        result.pieces = null;
+        result.blocks = null;
         result.metadata = null;
     }
 
@@ -333,7 +336,7 @@ export function createTimelines(dependencies: TimelineDependencies): Timelines {
                 }
             }
             if (incoming.deleted_at || (incoming.visibility !== undefined && incoming.visibility !== "visible")) {
-                incoming = { ...incoming, body: null, metadata: null };
+                incoming = { ...incoming, body: null, pieces: null, blocks: null, metadata: null };
             }
 
             upsert(channelId, incoming);

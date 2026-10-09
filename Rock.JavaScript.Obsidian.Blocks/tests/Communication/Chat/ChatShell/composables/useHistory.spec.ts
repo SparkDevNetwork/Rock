@@ -1129,4 +1129,31 @@ describe("a message's pieces and blocks, live", () => {
         timelines.applyEvent(channel, "message.visibility", { id: 2, channel_id: channel, state: "visible", notice: null, body: "m2", pieces: linked, blocks });
         expect([timelines.state(channel).messages[1].pieces, timelines.state(channel).messages[1].blocks]).toEqual([linked, blocks]);
     });
+    test("a late copy of a message does not pair an edit's body with older pieces, nor bring pieces back to a deleted one", async () => {
+        const timelines = createTimelines({ fetchPage: async () => page([1, 2]) });
+        await timelines.loadNewest(channel);
+        const created = (id: number): Record<string, unknown> => ({
+            id, channel_id: channel, parent_id: null, shown_in_channel: false, person_alias_guid: "a0000001-0000-4000-8000-000000000000",
+            message_type: "text", body: `m${id}`, pieces: [{ type: "text", text: "old" }], blocks, created_at: "2026-09-23T10:00:01Z"
+        });
+
+        timelines.applyEvent(channel, "message.edited", { id: 1, channel_id: channel, body: "see https://x.org", pieces: linked, edited_at: "2026-10-09T10:05:00Z" });
+        timelines.applyEvent(channel, "message.deleted", { id: 2, channel_id: channel, deleted_at: "2026-10-09T10:06:00Z" });
+        timelines.applyEvent(channel, "message.created", created(1));
+        timelines.applyEvent(channel, "message.created", created(2));
+
+        const [one, two] = timelines.state(channel).messages;
+        expect([one.body, one.pieces]).toEqual(["see https://x.org", linked]);
+        expect([two.body, two.pieces, two.blocks]).toEqual([null, null, null]);
+    });
+
+    test("a page copy of a deleted or hidden message never carries pieces or blocks", async () => {
+        const gone = { ...message(1), deleted_at: "2026-10-09T10:06:00Z", pieces: linked, blocks } as TimelineMessage;
+        const hidden = { ...message(2), visibility: "hidden", pieces: linked, blocks } as TimelineMessage;
+        const timelines = createTimelines({ fetchPage: async () => ({ messages: [hidden, gone], read_cursor: null, unread_count: 0, has_more: false }) });
+        await timelines.loadNewest(channel);
+
+        const [one, two] = timelines.state(channel).messages;
+        expect([one.pieces, one.blocks, two.pieces, two.blocks]).toEqual([null, null, null, null]);
+    });
 });
