@@ -21,7 +21,7 @@
                 </div>
             </div>
 
-            <div class="actions">
+            <div v-if="bag.isEditable" class="actions">
                 <RockButton :btnType="BtnType.Primary"
                             shortcutKey="e"
                             @click="onEditClick">Edit</RockButton>

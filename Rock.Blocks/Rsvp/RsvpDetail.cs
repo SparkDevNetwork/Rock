@@ -22,9 +22,11 @@ using System.Data.Entity;
 using System.Linq;
 
 using Rock.Attribute;
+using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
 using Rock.Obsidian.UI;
+using Rock.Security;
 using Rock.Utility;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Rsvp.RsvpDetail;
@@ -97,7 +99,28 @@ namespace Rock.Blocks.Rsvp
                 return box;
             }
 
+            if ( !group.IsAuthorized( Authorization.VIEW, GetCurrentPerson() ) )
+            {
+                box.ErrorMessage = EditModeMessage.NotAuthorizedToView( Rock.Model.Group.FriendlyTypeName );
+                return box;
+            }
+
             var occurrence = GetOccurrence();
+
+            // The OccurrenceId and GroupId page parameters are independent, so make
+            // sure the occurrence really belongs to the page's group.
+            if ( occurrence != null && occurrence.GroupId != group.Id )
+            {
+                box.ErrorMessage = "The AttendanceOccurrence does not exist.";
+                return box;
+            }
+
+            // A new occurrence opens in the edit form.
+            if ( occurrence == null && !CanEditRsvp( group ) )
+            {
+                box.ErrorMessage = EditModeMessage.NotAuthorizedToEdit( Rock.Model.Group.FriendlyTypeName );
+                return box;
+            }
 
             box.Bag = BuildDetailBag( group, occurrence );
             box.Options = BuildOptions( group );
@@ -169,6 +192,7 @@ namespace Rock.Blocks.Rsvp
             {
                 GroupName = group.Name,
                 IsNewOccurrence = occurrence == null,
+                IsEditable = CanEditRsvp( group ),
                 OccurrenceIdKey = occurrence?.IdKey,
                 AllDeclineReasons = allDeclineReasons.Select( v => v.ToListItemBag() ).ToList(),
                 Attendees = new List<RsvpAttendeeBag>()
@@ -436,6 +460,11 @@ namespace Rock.Blocks.Rsvp
                 return ActionBadRequest( "A valid group is required." );
             }
 
+            if ( !CanEditRsvp( group ) )
+            {
+                return ActionForbidden( EditModeMessage.NotAuthorizedToEdit( Rock.Model.Group.FriendlyTypeName ) );
+            }
+
             var occurrenceService = new AttendanceOccurrenceService( RockContext );
             var occurrence = GetOccurrence();
             var isNew = occurrence == null;
@@ -531,6 +560,11 @@ namespace Rock.Blocks.Rsvp
             if ( group == null )
             {
                 return ActionBadRequest( "A valid group is required." );
+            }
+
+            if ( !CanEditRsvp( group ) )
+            {
+                return ActionForbidden( EditModeMessage.NotAuthorizedToEdit( Rock.Model.Group.FriendlyTypeName ) );
             }
 
             var occurrence = GetOccurrence();
@@ -636,6 +670,30 @@ namespace Rock.Blocks.Rsvp
         #endregion Block Actions
 
         #region Helpers
+
+        /// <summary>
+        /// Determines whether the current person can edit the occurrences and RSVP responses of the group.
+        /// </summary>
+        /// <param name="group">The group.</param>
+        /// <returns><c>true</c> if the current person can edit the RSVP details; otherwise, <c>false</c>.</returns>
+        private bool CanEditRsvp( Rock.Model.Group group )
+        {
+            /*
+                10/9/2026 - MSE
+
+                Changing RSVPs can add people to the group, so it needs the same
+                rights as managing the group's attendance: EDIT, MANAGE_MEMBERS or
+                TAKE_ATTENDANCE on the group. People who can only view the group
+                see the RSVP details read-only.
+
+                Reason: Limit RSVP changes to people who can manage the group.
+            */
+            var currentPerson = GetCurrentPerson();
+
+            return group.IsAuthorized( Authorization.EDIT, currentPerson )
+                || group.IsAuthorized( Authorization.MANAGE_MEMBERS, currentPerson )
+                || group.IsAuthorized( Authorization.TAKE_ATTENDANCE, currentPerson );
+        }
 
         /// <summary>
         /// Resolves a Location selection (Guid string in <see cref="ListItemBag.Value"/>) to an integer Location.Id, or null.
