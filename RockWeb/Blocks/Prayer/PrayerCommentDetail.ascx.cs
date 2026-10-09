@@ -66,30 +66,20 @@ namespace RockWeb.Blocks.Prayer
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            string noteId = PageParameter( PrayerCommentKeyParameter );
+            int? noteId = PageParameter( PrayerCommentKeyParameter ).AsIntegerOrNull();
 
             RegisterScripts();
             if ( !Page.IsPostBack )
             {
                 lTitle.Text = GetAttributeValue( "Title" );
 
-                if ( !string.IsNullOrWhiteSpace( noteId ) )
+                if ( noteId.HasValue )
                 {
-                    // Set up to scroll to the top of the given note...
-                    string script = string.Format(
-                        @"$('html, body').animate({{scrollTop: $(""[rel='{0}']"").offset().top}}, {{ duration: 'slow', easing: 'swing'}});", noteId );
-
-                    this.Page.ClientScript.RegisterStartupScript( this.GetType(), string.Format( "scroll-to-comment-{0}", this.ClientID ), script, true );
-
-                    prayerComment = new NoteService( new RockContext() ).Get( int.Parse( noteId ) );
-                }
-                else
-                {
-                    fieldsetEditDetails.Visible = false;
+                    prayerComment = new NoteService( new RockContext() ).Get( noteId.Value );
                 }
             }
 
-            contextEntity = this.ContextEntity();
+            contextEntity = this.ContextEntity<PrayerRequest>();
 
             if ( contextEntity != null )
             {
@@ -97,14 +87,16 @@ namespace RockWeb.Blocks.Prayer
 
                 if ( !Page.IsPostBack )
                 {
+                    fieldsetEditDetails.Visible = false;
+
                     // This will produce a complete list of related context entity notes with the editable one
                     // inline (in the middle of the note stream).
                     ShowNotes();
                 }
             }
-            else if ( !string.IsNullOrWhiteSpace( noteId ) && !Page.IsPostBack )
+            else
             {
-                ShowEditDetails( prayerComment );
+                fieldsetEditDetails.Visible = false;
             }
 
             base.OnLoad( e );
@@ -153,6 +145,12 @@ namespace RockWeb.Blocks.Prayer
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void lbAddNote_Click( object sender, EventArgs e )
         {
+            // Adding a comment requires a prayer request and EDIT on the Prayer Comment note type.
+            if ( contextEntity == null || noteType == null || !noteType.IsAuthorized( Authorization.EDIT, CurrentPerson ) )
+            {
+                return;
+            }
+
             var rockContext = new RockContext();
             var service = new NoteService( rockContext );
 
@@ -193,7 +191,7 @@ namespace RockWeb.Blocks.Prayer
             {
                 if ( note.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
                 {
-                    if ( prayerComment != null && note.Id == prayerComment.Id )
+                    if ( prayerComment != null && note.Id == prayerComment.Id && note.IsAuthorized( Authorization.EDIT, CurrentPerson ) )
                     {
                         ShowEditDetails( note );
                     }
@@ -289,6 +287,13 @@ namespace RockWeb.Blocks.Prayer
             dtbText.Text = prayerComment.Text;
             dtbCaption.Text = prayerComment.Caption;
             dtbText.Attributes.Add( "rel", prayerComment.Id.ToString() );
+
+            // Set up to scroll to the top of the given note. This is only registered
+            // here because the edit box is the only element with the matching rel.
+            string script = string.Format(
+                @"$('html, body').animate({{scrollTop: $(""[rel='{0}']"").offset().top}}, {{ duration: 'slow', easing: 'swing'}});", prayerComment.Id );
+
+            this.Page.ClientScript.RegisterStartupScript( this.GetType(), string.Format( "scroll-to-comment-{0}", this.ClientID ), script, true );
         }
 
         /// <summary>
@@ -333,17 +338,14 @@ namespace RockWeb.Blocks.Prayer
             Note note = noteService.Get( noteId );
             if ( note != null )
             {
-                // When there is a context entity, the note must be one that
-                // ShowNotes() would have displayed for editing.
-                if ( contextEntity != null )
+                // The note must be one that ShowNotes() would have displayed for editing.
+                if ( contextEntity == null
+                    || noteType == null
+                    || note.NoteTypeId != noteType.Id
+                    || note.EntityId != contextEntity.Id
+                    || !note.IsAuthorized( Authorization.EDIT, CurrentPerson ) )
                 {
-                    if ( noteType == null
-                        || note.NoteTypeId != noteType.Id
-                        || note.EntityId != contextEntity.Id
-                        || !note.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
-                    {
-                        return;
-                    }
+                    return;
                 }
 
                 note.Text = dtbText.Text;
