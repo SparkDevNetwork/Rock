@@ -12,10 +12,11 @@ name: Ship to Public
 #      either all of them update or none do. Git rejects the push if public
 #      moved, so nothing on public can ever be overwritten.
 #   6. Comments with the public commit links and closes the PR.
-#   7. If develop was updated, labels the PR `awaiting-build` and records the
-#      develop commit. private-build-results.yml deletes the branch once
-#      AppVeyor passes, or comments with an analysis if it fails. If develop
-#      wasn't updated (AppVeyor only builds develop), deletes the branch now.
+#   7. Labels the PR `awaiting-build` and records the commit it shipped as.
+#      private-build-results.yml waits for the first AppVeyor build of develop
+#      that includes that commit, then deletes the branch if it passes or
+#      comments with an analysis if it fails. With `ship-only`, that build comes
+#      after someone merges the change up to develop by hand.
 # On any failure, including a merge-up conflict, nothing is pushed. It comments
 # the reason and removes the label.
 #
@@ -345,44 +346,35 @@ jobs:
             echo "EOF"
           } >> "$GITHUB_ENV"
 
-          # If develop was updated, AppVeyor builds it. Record the develop commit
-          # so the build-results workflow can match this PR to that build.
+          # Record the PR's commit as it landed on its target branch. The
+          # build-results workflow matches this PR to the first AppVeyor build of
+          # develop that includes it, however it gets there: this ship's merge-up
+          # (`ship`), or a later manual merge-up (`ship-only`).
+          echo "SHIPPED_SHA=$(git rev-parse "$BASE")" >> "$GITHUB_ENV"
           if echo " $PUSH_BRANCHES " | grep -q " develop "; then
-            echo "DEVELOP_SHA=$(git rev-parse develop)" >> "$GITHUB_ENV"
+            echo "REACHED_DEVELOP=true" >> "$GITHUB_ENV"
           fi
 
       - name: Close the PR
         run: |
-          if [ -n "$DEVELOP_SHA" ]; then
-            # The marker comment is how the build-results workflow finds the
-            # develop commit for this PR. Don't remove it.
-            next="AppVeyor will build \`develop\`. When it passes, this PR's branch is deleted. If it fails, you'll get a comment here with an analysis, and the branch is kept.
-
-          <!-- develop-sha: $DEVELOP_SHA -->"
+          if [ "$REACHED_DEVELOP" = "true" ]; then
+            next="AppVeyor will build \`develop\`. When it passes, this PR's branch is deleted. If it fails, you'll get a comment here with an analysis, and the branch is kept."
           else
-            next="AppVeyor only builds \`develop\`, which this ship didn't reach, so there's no build to wait for. This PR's branch has been deleted."
+            next="This ship didn't reach \`develop\`, which is the only branch AppVeyor builds. Once this change is merged up to \`develop\` and AppVeyor builds it, this PR gets checked: a pass deletes the branch, a failure comments here with an analysis. The branch is kept until then."
           fi
 
+          # The marker is how the build-results workflow finds this PR's commit.
+          # Don't remove it.
           gh pr close "$PR" -R "$GITHUB_REPOSITORY" \
             -c "Shipped to public by \`$ACTOR\` ($LABEL):
           $SHIPPED
 
-          $next"
+          $next
 
-      - name: Wait for AppVeyor, or delete the branch now
-        run: |
-          if [ -n "$DEVELOP_SHA" ]; then
-            gh api -X POST "repos/$GITHUB_REPOSITORY/issues/$PR/labels" -f "labels[]=awaiting-build" > /dev/null
-            exit 0
-          fi
+          <!-- shipped-sha: $SHIPPED_SHA -->"
 
-          # Never delete a shared branch, even if a PR was opened from one.
-          case "$HEAD_REF" in
-            develop|release-*|hotfix-*) echo "Not deleting shared branch $HEAD_REF."; exit 0 ;;
-          esac
-          gh api -X DELETE "repos/$GITHUB_REPOSITORY/git/refs/heads/$HEAD_REF" \
-            && echo "Deleted $HEAD_REF." \
-            || echo "::warning::Couldn't delete $HEAD_REF. Delete it by hand."
+      - name: Mark the PR as waiting for AppVeyor
+        run: gh api -X POST "repos/$GITHUB_REPOSITORY/issues/$PR/labels" -f "labels[]=awaiting-build" > /dev/null
 
       - name: Report failure
         if: failure()
