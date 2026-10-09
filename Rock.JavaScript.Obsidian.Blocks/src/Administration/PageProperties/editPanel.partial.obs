@@ -1,6 +1,7 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <TabbedBar v-model="selectedTab" :tabs="tabs" type="pills" />
+    <!-- Pulled up against the title and out to the edges when hosted in a modal. The classes have no effect on the full page. -->
+    <TabbedBar v-model="selectedTab" :tabs="tabs" type="pills" class="tight-to-modal-top tight-to-modal-sides" />
 
     <div ref="tabbedContentElement" class="tabbed-content mt-4">
         <div v-if="selectedTab == 'Basic Settings'">
