@@ -25,6 +25,7 @@ using Rock.Common.Mobile.Blocks.Groups.GroupAttendanceEntry;
 using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
+using Rock.Security;
 
 namespace Rock.Blocks.Types.Mobile.Groups
 {
@@ -392,6 +393,21 @@ namespace Rock.Blocks.Types.Mobile.Groups
         }
 
         /// <summary>
+        /// Determines whether the current person is allowed to take attendance
+        /// for the group.
+        /// </summary>
+        /// <param name="group">The group.</param>
+        /// <returns><c>true</c> if the current person can take attendance; otherwise, <c>false</c>.</returns>
+        private bool CanTakeAttendance( Group group )
+        {
+            var currentPerson = RequestContext.CurrentPerson;
+
+            return group.IsAuthorized( Authorization.TAKE_ATTENDANCE, currentPerson )
+                || group.IsAuthorized( Authorization.EDIT, currentPerson )
+                || group.IsAuthorized( Authorization.MANAGE_MEMBERS, currentPerson );
+        }
+
+        /// <summary>
         /// Saves the attendance data.
         /// </summary>
         /// <param name="rockContext">The rock context.</param>
@@ -433,7 +449,14 @@ namespace Rock.Blocks.Types.Mobile.Groups
             }
             else
             {
-                foreach ( var attendee in attendees )
+                // Only allow attendance to be recorded for people who are
+                // members of the group.
+                var memberPersonGuids = new HashSet<Guid>( new GroupMemberService( rockContext )
+                    .Queryable( true, true )
+                    .Where( gm => gm.GroupId == group.Id )
+                    .Select( gm => gm.Person.Guid ) );
+
+                foreach ( var attendee in attendees.Where( a => memberPersonGuids.Contains( a.PersonGuid ) ) )
                 {
                     var attendance = existingAttendees
                         .Where( a => a.PersonAlias.Person.Guid == attendee.PersonGuid )
@@ -489,6 +512,11 @@ namespace Rock.Blocks.Types.Mobile.Groups
                 if ( group == null )
                 {
                     return ActionNotFound();
+                }
+
+                if ( !CanTakeAttendance( group ) )
+                {
+                    return ActionForbidden( "You are not authorized to take attendance for this group." );
                 }
 
                 // Special case, we are dealing with absolute dates so don't
@@ -574,6 +602,11 @@ namespace Rock.Blocks.Types.Mobile.Groups
                     return ActionNotFound();
                 }
 
+                if ( !CanTakeAttendance( group ) )
+                {
+                    return ActionForbidden( "You are not authorized to take attendance for this group." );
+                }
+
                 // Special case, we are dealing with absolute dates so don't
                 // convert to organization date time.
                 var absDate = date.Date;
@@ -609,6 +642,11 @@ namespace Rock.Blocks.Types.Mobile.Groups
                 if ( group == null )
                 {
                     return ActionNotFound();
+                }
+
+                if ( !CanTakeAttendance( group ) )
+                {
+                    return ActionForbidden( "You are not authorized to take attendance for this group." );
                 }
 
                 // Special case, we are dealing with absolute dates so don't
