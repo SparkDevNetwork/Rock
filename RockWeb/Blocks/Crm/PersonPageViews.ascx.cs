@@ -310,7 +310,7 @@ namespace RockWeb.Blocks.Crm
                     hlNext.Visible = hlNext.Enabled = true;
                     Dictionary<string, string> queryStringNext = new Dictionary<string, string>();
                     queryStringNext.Add( "Page", ( pageNumber + 1 ).ToString() );
-                    queryStringNext.Add( "Person", person.UrlEncodedKey );
+                    queryStringNext.Add( "PersonGuid", person.Guid.ToString() );
                     if ( siteId != -1 )
                     {
                         queryStringNext.Add( "SiteId", siteId.ToString() );
@@ -344,7 +344,7 @@ namespace RockWeb.Blocks.Crm
                     hlPrev.Visible = hlPrev.Enabled = true;
                     Dictionary<string, string> queryStringPrev = new Dictionary<string, string>();
                     queryStringPrev.Add( "Page", ( pageNumber - 1 ).ToString() );
-                    queryStringPrev.Add( "Person", person.UrlEncodedKey );
+                    queryStringPrev.Add( "PersonGuid", person.Guid.ToString() );
                     if ( siteId != -1 )
                     {
                         queryStringPrev.Add( "SiteId", siteId.ToString() );
