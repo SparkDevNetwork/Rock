@@ -177,26 +177,32 @@ namespace Rock.Blocks.Finance
         /// Resolves the fundraising opportunity (and participant, when supplied) from the query string.
         /// </summary>
         /// <param name="groupMember">The resolved participant, or <c>null</c> when one was not supplied.</param>
-        /// <returns>The resolved fundraising opportunity group, or <c>null</c>.</returns>
+        /// <returns>The resolved fundraising opportunity group, or <c>null</c> when none was supplied or it is not a valid opportunity.</returns>
         private Rock.Model.Group GetGroupFromParameters( out GroupMember groupMember )
         {
             groupMember = null;
+            var group = new Rock.Model.Group();
 
             // Integer ids are still accepted here so existing links into this page keep working.
             var groupMemberKey = PageParameter( PageParameterKey.GroupMemberId );
+            var groupKey = PageParameter( PageParameterKey.GroupId );
             if ( groupMemberKey.IsNotNullOrWhiteSpace() )
             {
                 groupMember = new GroupMemberService( RockContext ).Get( groupMemberKey, true );
-                return groupMember?.Group;
+                group = groupMember?.Group;
             }
-
-            var groupKey = PageParameter( PageParameterKey.GroupId );
-            if ( groupKey.IsNotNullOrWhiteSpace() )
+            else if ( groupKey.IsNotNullOrWhiteSpace() )
             {
-                return new GroupService( RockContext ).Get( groupKey, true );
+                group = new GroupService( RockContext ).Get( groupKey, true );
             }
 
-            return null;
+            if ( group == null || !IsValidOpportunity( group ) )
+            {
+                groupMember = null;
+                return null;
+            }
+
+            return group;
         }
 
         /// <summary>
@@ -503,6 +509,37 @@ namespace Rock.Blocks.Finance
             }
 
             return BuildOpportunityOptions().Any( o => o.Value == group.IdKey );
+        }
+
+        /// <summary>
+        /// Determines whether a group supplied by the page parameters is a valid opportunity for this block:
+        /// it must be an active fundraising opportunity (or a type that inherits from it) inside the
+        /// configured root group. The donation window is not checked here so participant payment
+        /// links keep working.
+        /// </summary>
+        /// <param name="group">The group named by the page parameters.</param>
+        /// <returns><c>true</c> if the group is a valid opportunity; otherwise <c>false</c>.</returns>
+        private bool IsValidOpportunity( Rock.Model.Group group )
+        {
+            if ( !group.IsActive )
+            {
+                return false;
+            }
+
+            var fundraisingGroupTypeId = GroupTypeCache.GetId( Rock.SystemGuid.GroupType.GROUPTYPE_FUNDRAISINGOPPORTUNITY.AsGuid() );
+            var groupType = GroupTypeCache.Get( group.GroupTypeId );
+            if ( !fundraisingGroupTypeId.HasValue || groupType == null )
+            {
+                return false;
+            }
+
+            if ( groupType.Id != fundraisingGroupTypeId.Value && groupType.InheritedGroupTypeId != fundraisingGroupTypeId.Value )
+            {
+                return false;
+            }
+
+            var rootGroupGuid = GetAttributeValue( AttributeKey.RootGroup ).AsGuidOrNull();
+            return !rootGroupGuid.HasValue || GetRootGroupIds( rootGroupGuid.Value ).Contains( group.Id );
         }
 
         #endregion Methods

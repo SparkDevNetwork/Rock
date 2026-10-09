@@ -464,19 +464,48 @@ namespace Rock.Blocks.Fundraising
 
         /// <summary>
         /// Gets the fundraising opportunity group, loading it (and its attributes) once from
-        /// the page parameter. The parameter may be supplied as an Id, IdKey, or Guid.
+        /// the page parameter. The parameter may be supplied as an Id, IdKey, or Guid. Groups
+        /// that are not fundraising opportunities are treated as not found.
         /// </summary>
         /// <returns>The group, or <c>null</c> when it could not be found.</returns>
         private Rock.Model.Group GetGroup()
         {
             if ( _group == null )
             {
-                _group = new GroupService( RockContext )
+                var group = new GroupService( RockContext )
                     .Get( PageParameter( PageParameterKey.GroupId ), !PageCache.Layout.Site.DisablePredictableIds );
-                _group?.LoadAttributes( RockContext );
+
+                if ( group != null && IsFundraisingOpportunityGroupType( group.GroupTypeId ) )
+                {
+                    group.LoadAttributes( RockContext );
+                    _group = group;
+                }
             }
 
             return _group;
+        }
+
+        /// <summary>
+        /// Determines whether the group type is Fundraising Opportunity or inherits from it.
+        /// </summary>
+        /// <param name="groupTypeId">The group type identifier.</param>
+        /// <returns><c>true</c> if the group type is a fundraising opportunity type; otherwise, <c>false</c>.</returns>
+        private static bool IsFundraisingOpportunityGroupType( int groupTypeId )
+        {
+            var fundraisingGroupTypeId = GroupTypeCache.GetId( Rock.SystemGuid.GroupType.GROUPTYPE_FUNDRAISINGOPPORTUNITY.AsGuid() );
+            if ( !fundraisingGroupTypeId.HasValue )
+            {
+                return false;
+            }
+
+            var groupType = GroupTypeCache.Get( groupTypeId );
+            if ( groupType == null )
+            {
+                return false;
+            }
+
+            return groupType.Id == fundraisingGroupTypeId.Value
+                || groupType.InheritedGroupTypeId == fundraisingGroupTypeId.Value;
         }
 
         /// <summary>
