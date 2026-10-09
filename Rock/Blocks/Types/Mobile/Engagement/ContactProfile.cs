@@ -79,8 +79,7 @@ namespace Rock.Blocks.Types.Mobile.Engagement
         [BlockAction]
         public BlockActionResult GetContactProfile( string contactIdKey )
         {
-            ContactService contactService = new ContactService( RockContext );
-            var contact = contactService.Get( contactIdKey );
+            var contact = OutreachContactHelper.GetOwnedContact( RockContext, contactIdKey, RequestContext.CurrentPerson, !PageCache.Layout.Site.DisablePredictableIds );
 
             if ( contact == null )
             {
@@ -143,8 +142,7 @@ namespace Rock.Blocks.Types.Mobile.Engagement
         [BlockAction]
         public BlockActionResult ChangeContactImage( string contactIdKey, Guid photoGuid )
         {
-            ContactService contactService = new ContactService( RockContext );
-            var contact = contactService.Get( contactIdKey );
+            var contact = OutreachContactHelper.GetOwnedContact( RockContext, contactIdKey, RequestContext.CurrentPerson, !PageCache.Layout.Site.DisablePredictableIds );
             if ( contact == null )
             {
                 return ActionBadRequest( "Contact not found." );
@@ -184,8 +182,7 @@ namespace Rock.Blocks.Types.Mobile.Engagement
         [BlockAction]
         public BlockActionResult UpdateContact( string contactIdKey, ContactProfileBag contactProfileBag )
         {
-            ContactService contactService = new ContactService( RockContext );
-            var contact = contactService.Get( contactIdKey );
+            var contact = OutreachContactHelper.GetOwnedContact( RockContext, contactIdKey, RequestContext.CurrentPerson, !PageCache.Layout.Site.DisablePredictableIds );
             if ( contact == null )
             {
                 return ActionBadRequest( "Contact not found." );
@@ -251,8 +248,7 @@ namespace Rock.Blocks.Types.Mobile.Engagement
         [BlockAction]
         public BlockActionResult UpdateContactNoteAndCadence( UpdateContactNoteAndCadence bag )
         {
-            ContactService contactService = new ContactService( RockContext );
-            var contact = contactService.Get( bag.ContactIdKey );
+            var contact = OutreachContactHelper.GetOwnedContact( RockContext, bag.ContactIdKey, RequestContext.CurrentPerson, !PageCache.Layout.Site.DisablePredictableIds );
             if ( contact == null )
             {
                 return ActionBadRequest( "Contact not found." );
@@ -283,8 +279,7 @@ namespace Rock.Blocks.Types.Mobile.Engagement
                 return ActionBadRequest( "Contact not found." );
             }
 
-            ContactService contactService = new ContactService( RockContext );
-            var contact = contactService.Get( idKey );
+            var contact = OutreachContactHelper.GetOwnedContact( RockContext, idKey, RequestContext.CurrentPerson, !PageCache.Layout.Site.DisablePredictableIds );
             if ( contact == null )
             {
                 return ActionBadRequest( "Contact not found." );
@@ -332,8 +327,7 @@ namespace Rock.Blocks.Types.Mobile.Engagement
         [BlockAction]
         public BlockActionResult AddReminderTouchpoint( string contactIdKey, DateTimeOffset reminderDate, string reminderNote )
         {
-            ContactService contactService = new ContactService( RockContext );
-            var contact = contactService.Get( contactIdKey );
+            var contact = OutreachContactHelper.GetOwnedContact( RockContext, contactIdKey, RequestContext.CurrentPerson, !PageCache.Layout.Site.DisablePredictableIds );
             if ( contact == null )
             {
                 return ActionBadRequest( "Contact not found." );
@@ -361,8 +355,7 @@ namespace Rock.Blocks.Types.Mobile.Engagement
         [BlockAction]
         public BlockActionResult StopContactTouchpoint( int contactId )
         {
-            ContactService contactService = new ContactService( RockContext );
-            var contact = contactService.Get( contactId );
+            var contact = OutreachContactHelper.GetOwnedContact( RockContext, contactId, RequestContext.CurrentPerson );
             if ( contact == null )
             {
                 return ActionBadRequest( "Contact not found." );
