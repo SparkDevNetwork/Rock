@@ -149,6 +149,12 @@ namespace RockWeb.Blocks.Prayer
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void lbAddNote_Click( object sender, EventArgs e )
         {
+            // Adding a comment requires a prayer request and EDIT on the Prayer Comment note type.
+            if ( contextEntity == null || noteType == null || !noteType.IsAuthorized( Authorization.EDIT, CurrentPerson ) )
+            {
+                return;
+            }
+
             var rockContext = new RockContext();
             var service = new NoteService( rockContext );
 
