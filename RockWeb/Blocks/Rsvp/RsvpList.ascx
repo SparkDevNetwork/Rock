@@ -5,6 +5,8 @@
 
         <asp:Panel ID="pnlContent" runat="server">
 
+            <Rock:NotificationBox ID="nbNotAuthorized" runat="server" NotificationBoxType="Warning" Visible="false" />
+
             <div id="pnlRSVPItems" runat="server">
 
                 <div class="panel panel-block">
