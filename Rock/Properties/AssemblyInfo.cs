@@ -22,6 +22,7 @@ using System.Runtime.CompilerServices;
 [assembly: InternalsVisibleTo( "Rock.CodeGeneration" )]
 [assembly: InternalsVisibleTo( "Rock.Migrations" )]
 [assembly: InternalsVisibleTo( "Rock.RealTime.Dynamic" )]
+[assembly: InternalsVisibleTo( "Rock.Security.Authentication.Auth0" )]
 [assembly: InternalsVisibleTo( "Rock.Rest" )]
 [assembly: InternalsVisibleTo( "Rock.Tests.Shared" )]
 [assembly: InternalsVisibleTo( "Rock.Tests" )]
