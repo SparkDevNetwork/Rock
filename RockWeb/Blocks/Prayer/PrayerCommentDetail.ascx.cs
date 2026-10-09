@@ -77,10 +77,6 @@ namespace RockWeb.Blocks.Prayer
                 {
                     prayerComment = new NoteService( new RockContext() ).Get( noteId.Value );
                 }
-                else
-                {
-                    fieldsetEditDetails.Visible = false;
-                }
             }
 
             contextEntity = this.ContextEntity<PrayerRequest>();
