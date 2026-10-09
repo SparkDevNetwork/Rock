@@ -22,6 +22,7 @@ using System.Data.Entity;
 using System.Linq;
 
 using Rock.Attribute;
+using Rock.Constants;
 using Rock.Data;
 using Rock.Enums.Controls;
 using Rock.Model;
@@ -148,8 +149,7 @@ namespace Rock.Blocks.Rsvp
                 Locations = new List<ListItemBag>()
             };
 
-            var groupId = PageParameter( PageParameterKey.GroupId );
-            var group = new GroupService( RockContext ).Get( groupId );
+            var group = GetViewableGroup( RockContext );
 
             if ( group == null )
             {
@@ -204,7 +204,44 @@ namespace Rock.Blocks.Rsvp
         /// <returns>A boolean value that indicates if the add button should be enabled.</returns>
         private bool GetIsAddEnabled()
         {
-            return BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson );
+            var group = GetViewableGroup( RockContext );
+
+            return BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson )
+                && group != null
+                && CanEditRsvp( group );
+        }
+
+        /// <summary>
+        /// Gets the group from the page parameter, if the current person is allowed to view it.
+        /// </summary>
+        /// <param name="rockContext">The database context.</param>
+        /// <returns>The group, or <c>null</c> if it does not exist or the current person can not view it.</returns>
+        private Rock.Model.Group GetViewableGroup( RockContext rockContext )
+        {
+            var groupId = PageParameter( PageParameterKey.GroupId );
+            var group = new GroupService( rockContext ).Get( groupId, !PageCache.Layout.Site.DisablePredictableIds );
+
+            if ( group == null || !group.IsAuthorized( Authorization.VIEW, GetCurrentPerson() ) )
+            {
+                return null;
+            }
+
+            return group;
+        }
+
+        /// <summary>
+        /// Determines whether the current person can edit the occurrences and RSVP responses of the group.
+        /// This matches the rule in the RSVP Detail block.
+        /// </summary>
+        /// <param name="group">The group.</param>
+        /// <returns><c>true</c> if the current person can edit the RSVP details; otherwise, <c>false</c>.</returns>
+        private bool CanEditRsvp( Rock.Model.Group group )
+        {
+            var currentPerson = GetCurrentPerson();
+
+            return group.IsAuthorized( Authorization.EDIT, currentPerson )
+                || group.IsAuthorized( Authorization.MANAGE_MEMBERS, currentPerson )
+                || group.IsAuthorized( Authorization.TAKE_ATTENDANCE, currentPerson );
         }
 
         /// <summary>
@@ -269,8 +306,7 @@ namespace Rock.Blocks.Rsvp
         /// <inheritdoc/>
         protected override IQueryable<RsvpListBag> GetListQueryable( RockContext rockContext )
         {
-            var groupId = PageParameter( PageParameterKey.GroupId );
-            var group = new GroupService( rockContext ).Get( groupId, !PageCache.Layout.Site.DisablePredictableIds );
+            var group = GetViewableGroup( rockContext );
 
             if ( group == null )
             {
@@ -335,8 +371,7 @@ namespace Rock.Blocks.Rsvp
             // Virtual occurrences from the group's schedules are always appended regardless
             // of the location filter, matching GetGroupOccurrences behavior where the location
             // filter only applies to the DB query and not to schedule-generated rows.
-            var groupId = PageParameter( PageParameterKey.GroupId );
-            var group = new GroupService( RockContext ).Get( groupId );
+            var group = GetViewableGroup( RockContext );
 
             // Mirror GetGroupOccurrences exactly: only Group.ScheduleId is used for virtual
             // occurrence generation. Location schedules do not produce virtual occurrences.
@@ -529,6 +564,11 @@ namespace Rock.Blocks.Rsvp
                 return ActionBadRequest( "Group not found." );
             }
 
+            if ( !group.IsAuthorized( Authorization.VIEW, GetCurrentPerson() ) )
+            {
+                return ActionForbidden( EditModeMessage.NotAuthorizedToView( Rock.Model.Group.FriendlyTypeName ) );
+            }
+
             var attendanceOccurrenceService = new AttendanceOccurrenceService( RockContext );
 
             //If this occurrence has already been created, just return the existing one.
@@ -543,6 +583,11 @@ namespace Rock.Blocks.Rsvp
             if ( id != 0 )
             {
                 return ActionOk( id.AsIdKey() );
+            }
+
+            if ( !CanEditRsvp( group ) )
+            {
+                return ActionForbidden( EditModeMessage.NotAuthorizedToEdit( Rock.Model.Group.FriendlyTypeName ) );
             }
 
             var attendanceOccurrence = new AttendanceOccurrence();

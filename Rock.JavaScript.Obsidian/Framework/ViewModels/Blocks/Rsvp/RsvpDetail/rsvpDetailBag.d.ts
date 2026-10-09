@@ -71,6 +71,12 @@ export type RsvpDetailBag = {
     groupName?: string | null;
 
     /**
+     * Gets or sets a value indicating whether the current person can edit the occurrence and the
+     * invitee responses. When false, the block is shown read-only.
+     */
+    isEditable: boolean;
+
+    /**
      * Gets or sets a value indicating whether this represents a new (not yet persisted) occurrence.
      * When true, the block opens directly into edit mode and the attendee grid is hidden.
      */
