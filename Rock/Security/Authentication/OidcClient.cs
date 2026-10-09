@@ -18,12 +18,9 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
-using System.Drawing;
-using System.Drawing.Imaging;
 using System.IdentityModel.Tokens.Jwt;
 using System.IO;
 using System.Linq;
-using System.Net.Http;
 using System.Web;
 
 using IdentityModel;
@@ -486,37 +483,9 @@ namespace Rock.Security.ExternalAuthentication
         {
             if ( !person.PhotoId.HasValue && photoUri.IsNotNullOrWhiteSpace() )
             {
-                byte[] bytes = null;
-                string contentType = string.Empty;
-                var photoExtension = string.Empty;
-                using ( var client = new HttpClient() )
+                if ( !Rock.Net.RemoteImageDownloader.TryDownloadImage( photoUri, out var bytes, out var contentType, out var photoExtension ) )
                 {
-                    var photoResponse = client.GetAsync( photoUri ).GetAwaiter().GetResult();
-                    if ( photoResponse.IsSuccessStatusCode )
-                    {
-                        bytes = photoResponse.Content.ReadAsByteArrayAsync().GetAwaiter().GetResult();
-                        contentType = photoResponse.Content.Headers.ContentType.MediaType;
-                        photoExtension = GetValidExtensionFromContentType( contentType );
-
-                        // if content type is empty assume jpeg.
-                        if ( contentType.IsNullOrWhiteSpace() )
-                        {
-                            using ( MemoryStream mem = new MemoryStream( bytes ) )
-                            {
-                                using ( var yourImage = Image.FromStream( mem ) )
-                                {
-                                    contentType = "image/jpeg";
-                                    photoExtension = "jpg";
-
-                                    using ( MemoryStream tempImage = new MemoryStream() )
-                                    {
-                                        yourImage.Save( tempImage, ImageFormat.Jpeg );
-                                        bytes = tempImage.ToArray();
-                                    }
-                                }
-                            }
-                        }
-                    }
+                    return;
                 }
 
                 if ( bytes != null && contentType.IsNotNullOrWhiteSpace() && photoExtension.IsNotNullOrWhiteSpace() )
@@ -634,31 +603,6 @@ namespace Rock.Security.ExternalAuthentication
             {
                 person.Gender = Gender.Unknown;
             }
-        }
-
-        /// <summary>
-        /// Gets the valid image extension. This method will return only gif, jpg, or png. All other content types will return empty string and therefore should not be processed.
-        /// </summary>
-        /// <param name="contentType">Content type</param>
-        /// <returns></returns>
-        private string GetValidExtensionFromContentType( string contentType )
-        {
-            if ( contentType.Equals( "image/gif", StringComparison.InvariantCultureIgnoreCase ) )
-            {
-                return "gif";
-            }
-
-            if ( contentType.Equals( "image/jpeg", StringComparison.InvariantCultureIgnoreCase ) )
-            {
-                return "jpg";
-            }
-
-            if ( contentType.Equals( "image/png", StringComparison.InvariantCultureIgnoreCase ) )
-            {
-                return "png";
-            }
-
-            return string.Empty;
         }
 
         private string EncodeBcrypt( string input )

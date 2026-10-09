@@ -280,13 +280,8 @@ namespace Rock.Security.Authentication.Auth0
                             if ( !person.PhotoId.HasValue && !string.IsNullOrWhiteSpace( auth0UserInfo.picture ) )
                             {
                                 // Download the photo from the url provided
-                                var restClient = new RestClient( auth0UserInfo.picture );
-                                var restRequest = new RestRequest( Method.GET );
-                                var restResponse = restClient.Execute( restRequest );
-                                if ( restResponse.StatusCode == HttpStatusCode.OK )
+                                if ( Rock.Net.RemoteImageDownloader.TryDownloadImage( auth0UserInfo.picture, out var bytes, out var mimeType, out var fileExtension ) )
                                 {
-                                    var bytes = restResponse.RawBytes;
-
                                     // Create and save the image
                                     BinaryFileType fileType = new BinaryFileTypeService( rockContext ).Get( Rock.SystemGuid.BinaryFiletype.PERSON_IMAGE.AsGuid() );
                                     if ( fileType != null )
@@ -296,8 +291,8 @@ namespace Rock.Security.Authentication.Auth0
                                         binaryFileService.Add( binaryFile );
                                         binaryFile.IsTemporary = false;
                                         binaryFile.BinaryFileType = fileType;
-                                        binaryFile.MimeType = restResponse.ContentType;
-                                        binaryFile.FileName = user.Person.NickName + user.Person.LastName + ".jpg";
+                                        binaryFile.MimeType = mimeType;
+                                        binaryFile.FileName = user.Person.NickName + user.Person.LastName + "." + fileExtension;
                                         binaryFile.FileSize = bytes.Length;
                                         binaryFile.ContentStream = new System.IO.MemoryStream( bytes );
 
