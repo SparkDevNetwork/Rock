@@ -81,7 +81,6 @@ jobs:
         run: |
           for pr in $PRS; do
             head=$(gh pr view "$pr" -R "$GITHUB_REPOSITORY" --json headRefName -q .headRefName)
-            author=$(gh pr view "$pr" -R "$GITHUB_REPOSITORY" --json author -q .author.login)
 
             case "$STATE" in
               success)
@@ -99,7 +98,7 @@ jobs:
                 gh api -X DELETE "repos/$GITHUB_REPOSITORY/issues/$pr/labels/awaiting-build" > /dev/null 2>&1 || true
                 gh api -X POST "repos/$GITHUB_REPOSITORY/issues/$pr/labels" -f "labels[]=build-failed" > /dev/null
                 gh pr comment "$pr" -R "$GITHUB_REPOSITORY" \
-                  -b "**AppVeyor failed on \`develop\`** ([build]($URL), commit \`${SHA:0:7}\`), and that build includes this PR's change. @$author, your branch \`$head\` was kept. An analysis of the failure will be posted here in a few minutes."
+                  -b "**AppVeyor failed on \`develop\`** ([build]($URL), commit \`${SHA:0:7}\`), and that build includes this PR's change. Your branch \`$head\` was kept. An analysis of the failure will be posted here in a few minutes."
                 ;;
 
               error)
@@ -165,7 +164,7 @@ jobs:
 
             Do not push any changes. Post the same analysis as one comment on each
             PR listed above with `gh pr comment <number> -b "..."`, titled
-            "AppVeyor build failure analysis".
+            "AppVeyor build failure analysis". Never @-mention anyone.
           claude_args: |
             --model claude-opus-5-5
             --allowedTools "Read,Grep,Glob,Bash(gh pr comment:*),Bash(gh pr view:*),Bash(gh pr diff:*),Bash(git log:*),Bash(git show:*),Bash(git diff:*)"
