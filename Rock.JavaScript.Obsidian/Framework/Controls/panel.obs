@@ -135,6 +135,7 @@
             <TabbedBar v-if="tabs && tabs.length > 0"
                        v-model="selectedTab"
                        :tabs="tabs"
+                       :type="tabBarType"
                        selectedTabQueryParameterKey="tab" />
 
             <template v-if="$slots.preBody">
@@ -292,6 +293,15 @@
         selectedTab: {
             type: String as PropType<string>,
             default: ""
+        },
+
+        /**
+         * The style of the tab bar shown when `tabs` is provided. Pills render
+         * as a band below the header.
+         */
+        tabBarType: {
+            type: String as PropType<"tabs" | "pills">,
+            default: "tabs"
         },
 
         /**

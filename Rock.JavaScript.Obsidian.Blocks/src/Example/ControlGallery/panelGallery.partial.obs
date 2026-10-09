@@ -13,6 +13,7 @@
                title="Panel Title"
                :headerSecondaryActions="headerSecondaryActions"
                :tabs="tabs"
+               :tabBarType="tabBarType"
                :worksurfaceMode="worksurfaceMode">
             <template v-if="simulateHelp" #helpContent>
                 This is some help text.
@@ -136,6 +137,7 @@
                 <CheckBox v-model="hasQuickFilter" label="Has Quick Filter" />
             </div>
             <CheckBoxList v-model="simulateValues" label="Simulate" :items="simulateOptions" horizontal :repeatColumns="4" />
+            <Toggle v-model="isPillsTabBar" label="Tab Bar Type" trueText="Pills" falseText="Tabs" btnSize="xs" :disabled="!simulateTabs" />
 
             <p class="text-semibold font-italic">Not all settings are demonstrated in this gallery.</p>
         </template>
@@ -156,6 +158,7 @@
     import CheckBoxList from "@Obsidian/Controls/checkBoxList.obs";
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
     import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import Toggle from "@Obsidian/Controls/toggle.obs";
     import { getSfcControlImportPath } from "./common/utils.partial";
     import { PanelAction } from "@Obsidian/Types/Controls/panelAction";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
@@ -274,6 +277,10 @@
     const tabs = computed((): string[] => {
         return simulateTabs.value ? ["Mathew", "Mark", "Luke", "John"] : [];
     });
+
+    /** Whether the simulated tabs render as pills instead of underlined tabs. */
+    const isPillsTabBar = ref(false);
+    const tabBarType = computed((): "tabs" | "pills" => isPillsTabBar.value ? "pills" : "tabs");
 
     const exampleCode = `<Panel v-model="isExanded" v-model:isDrawerOpen="false" title="Panel Title" :hasCollapse="true" :hasFullscreen="false" :isFullscreenPageOnly="true" :headerSecondaryActions="false">
     <template #helpContent>Help Content</template>
