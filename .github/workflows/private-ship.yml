@@ -364,7 +364,7 @@ jobs:
           fi
 
           gh pr close "$PR" -R "$GITHUB_REPOSITORY" \
-            -c "Shipped to public by @$ACTOR ($LABEL):
+            -c "Shipped to public by \`$ACTOR\` ($LABEL):
           $SHIPPED
 
           $next"
