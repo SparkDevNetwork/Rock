@@ -1096,3 +1096,37 @@ describe("catching up when fetches fail or are overtaken", () => {
     // 25 interleavings take several seconds; each is still a few hundred steps
     }, 30000);
 });
+
+describe("a message's pieces and blocks, live", () => {
+    const linked = [{ type: "text", text: "see " }, { type: "link", text: "https://x.org", url: "https://x.org" }];
+    const blocks = [{ type: "divider", fallback: { type: "text", text: "---" } }];
+
+    test("an edit replaces the pieces, and a page read before it does not undo that", async () => {
+        const answers = [page([1]), page([1])];
+        const timelines = createTimelines({ fetchPage: async () => answers.shift() as HistoryPage });
+        await timelines.loadNewest(channel);
+
+        timelines.applyEvent(channel, "message.edited", { id: 1, channel_id: channel, body: "see https://x.org", pieces: linked, edited_at: "2026-10-09T10:05:00Z" });
+        await timelines.onJoined(channel);
+
+        expect(timelines.state(channel).messages[0].pieces).toEqual(linked);
+
+        timelines.applyEvent(channel, "message.edited", { id: 1, channel_id: channel, body: "plain", pieces: null, edited_at: "2026-10-09T10:06:00Z" });
+        expect(timelines.state(channel).messages[0].pieces).toBeNull();
+    });
+
+    test("a delete and a hide clear the pieces and blocks with the body, and showing again brings them back", async () => {
+        const held = { ...message(1, "see https://x.org"), pieces: linked, blocks } as TimelineMessage;
+        const timelines = createTimelines({ fetchPage: async () => ({ messages: [held, { ...message(2), pieces: linked, blocks } as TimelineMessage], read_cursor: null, unread_count: 0, has_more: false }) });
+        await timelines.loadNewest(channel);
+
+        timelines.applyEvent(channel, "message.deleted", { id: 1, channel_id: channel, deleted_at: "2026-10-09T10:06:00Z" });
+        timelines.applyEvent(channel, "message.visibility", { id: 2, channel_id: channel, state: "hidden", notice: "Under review." });
+
+        const [one, two] = timelines.state(channel).messages;
+        expect([one.pieces, one.blocks, two.pieces, two.blocks]).toEqual([null, null, null, null]);
+
+        timelines.applyEvent(channel, "message.visibility", { id: 2, channel_id: channel, state: "visible", notice: null, body: "m2", pieces: linked, blocks });
+        expect([timelines.state(channel).messages[1].pieces, timelines.state(channel).messages[1].blocks]).toEqual([linked, blocks]);
+    });
+});
