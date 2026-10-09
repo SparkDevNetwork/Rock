@@ -85,7 +85,7 @@
     import TextBox from "@Obsidian/Controls/textBox.obs";
     import { getFilterGroupTitleHtml } from "@Obsidian/Core/Reporting/fieldFilter";
     import { ValidationResult, ValidationRule } from "@Obsidian/ValidationRules";
-    import { useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { FormError } from "@Obsidian/Utility/form";
     import { areEqual, toGuidOrNull } from "@Obsidian/Utility/guid";
     import { List } from "@Obsidian/Utility/linq";
@@ -94,6 +94,7 @@
     import { FieldFilterRuleBag } from "@Obsidian/ViewModels/Reporting/fieldFilterRuleBag";
     import { FieldFilterSourceBag } from "@Obsidian/ViewModels/Reporting/fieldFilterSourceBag";
     import { FormField, FormFieldType } from "../Shared/types.partial";
+    import { FormBuilderDetailConfiguration } from "./types.partial";
     import { getFilterRuleDescription, timeoutAsync, useFormSources } from "./utils.partial";
     import { Guid } from "@Obsidian/Types";
 
@@ -150,6 +151,7 @@
 
     // #region Values
 
+    const config = useConfigurationValues<FormBuilderDetailConfiguration>();
     const invokeBlockAction = useInvokeBlockAction();
     const fieldTypes = useFormSources().fieldTypes ?? [];
     let conditionalSourcesLoadAttempted = false;
@@ -317,6 +319,7 @@
         const fields = props.formFields.filter(f => !areEqual(f.guid, providedGuid));
 
         const getFilterSources = invokeBlockAction<FieldFilterSourceBag[]>("GetFilterSources", {
+            formGuid: config.formGuid,
             formFields: fields
         });
 
@@ -384,6 +387,7 @@
             const configurationValuesJson = JSON.stringify(configurationValues);
 
             const data = {
+                formGuid: config.formGuid,
                 fieldTypeGuid: fieldTypeGuid,
                 configurationValues
             };

@@ -700,6 +700,34 @@ namespace Rock.Blocks.Workflow.FormBuilder
                 .ToList();
         }
 
+        /// <summary>
+        /// Determines whether the current person can edit the specified form,
+        /// using the same check as <see cref="SaveForm(Guid, FormSettingsViewModel)"/>.
+        /// </summary>
+        /// <param name="formGuid">The unique identifier of the form.</param>
+        /// <returns><c>true</c> if the current person can edit the form; otherwise <c>false</c>.</returns>
+        private bool CanEditForm( Guid formGuid )
+        {
+            /*
+                10/9/2026 - MSE
+
+                The preview actions run field type configuration sent by the
+                browser, so they need the same edit access as saving the form.
+
+                Reason: Limit the preview actions to people who can edit the form.
+            */
+            if ( formGuid == Guid.Empty )
+            {
+                return false;
+            }
+
+            var workflowType = new WorkflowTypeService( RockContext ).Get( formGuid );
+
+            return workflowType != null
+                && workflowType.IsFormBuilder
+                && workflowType.Category?.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) == true;
+        }
+
         #endregion
 
         #region Block Action
@@ -754,11 +782,22 @@ namespace Rock.Blocks.Workflow.FormBuilder
         /// <summary>
         /// Gets the field filter sources that relate to the specified form fields.
         /// </summary>
+        /// <param name="formGuid">The unique identifier of the form being edited.</param>
         /// <param name="formFields">The form fields that need to be represented as filter sources.</param>
         /// <returns>A response that contains the list of <see cref="FieldFilterSourceBag"/> objects.</returns>
         [BlockAction]
-        public BlockActionResult GetFilterSources( List<FormFieldViewModel> formFields )
+        public BlockActionResult GetFilterSources( Guid formGuid, List<FormFieldViewModel> formFields )
         {
+            if ( !CanEditForm( formGuid ) )
+            {
+                return ActionForbidden( "You are not authorized to edit this form." );
+            }
+
+            if ( formFields == null )
+            {
+                return ActionBadRequest( "Invalid parameters provided." );
+            }
+
             var fieldFilterSources = new List<FieldFilterSourceBag>();
 
             foreach ( var field in formFields )
@@ -816,12 +855,23 @@ namespace Rock.Blocks.Workflow.FormBuilder
         /// values. This allows the UI to refresh the preview fields as the user
         /// is making changes to the configuration values.
         /// </summary>
+        /// <param name="formGuid">The unique identifier of the form being edited.</param>
         /// <param name="fieldTypeGuid">The field type unique identifier.</param>
         /// <param name="configurationValues">The admin configuration values.</param>
         /// <returns>The edit configuration values.</returns>
         [BlockAction]
-        public BlockActionResult GetEditConfigurationValues( Guid fieldTypeGuid, Dictionary<string, string> configurationValues )
+        public BlockActionResult GetEditConfigurationValues( Guid formGuid, Guid fieldTypeGuid, Dictionary<string, string> configurationValues )
         {
+            if ( !CanEditForm( formGuid ) )
+            {
+                return ActionForbidden( "You are not authorized to edit this form." );
+            }
+
+            if ( configurationValues == null )
+            {
+                return ActionBadRequest( "Invalid parameters provided." );
+            }
+
             var fieldType = FieldTypeCache.Get( fieldTypeGuid );
 
             // If the field type or its C# component could not be found then
