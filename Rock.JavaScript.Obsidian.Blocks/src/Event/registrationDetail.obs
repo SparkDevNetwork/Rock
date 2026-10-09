@@ -2,7 +2,7 @@
 <template>
     <NotificationBox v-if="blockError" alertType="warning">{{ blockError }}</NotificationBox>
 
-    <NotificationBox v-if="errorMessage" alertType="danger">{{ errorMessage }}</NotificationBox>
+    <NotificationBox v-if="errorMessage" ref="errorMessageElement" alertType="danger">{{ errorMessage }}</NotificationBox>
 
     <NotificationBox v-if="chargedNotRecordedMessage" alertType="danger">{{ chargedNotRecordedMessage }}</NotificationBox>
 
@@ -36,12 +36,11 @@
             <template #view>
                 <ViewPanel :modelValue="registrationViewBag"
                            :isEditable="isEditable"
-                           :selectedTab="selectedAccountTab"
+                           v-model:selectedTab="selectedAccountTab"
                            :transactionDetailPageUrl="transactionDetailPageUrl"
                            :isProcessPaymentBlocked="isProcessPaymentBlocked"
                            :isPaymentProcessing="isPaymentProcessing"
                            :actionErrorMessage="actionErrorMessage"
-                           @update:selectedTab="onSelectedAccountTabUpdated"
                            @updated="onRegistrationUpdated"
                            @chargedNotRecorded="onChargedNotRecorded"
                            @paymentProcessingChanged="onPaymentProcessingChanged"
@@ -128,8 +127,9 @@
 
     // #region Values
 
-    const blockError = ref(config.errorMessage ?? "");
+    const blockError = ref(config.errorMessage || (!config.entity ? "The specified registration could not be viewed." : ""));
     const errorMessage = ref("");
+    const errorMessageElement = ref<InstanceType<typeof NotificationBox> | null>(null);
     const actionErrorMessage = ref("");
 
     /**
@@ -289,6 +289,7 @@
 
         if (!result.isSuccess || !result.data) {
             errorMessage.value = result.errorMessage ?? "Unknown error while trying to delete registration.";
+            scrollToErrorNotification();
             return false;
         }
 
@@ -325,13 +326,14 @@
         if (result.isSuccess && result.data?.bag) {
             registrationEditBag.value = {
                 bag: result.data.bag,
-                validProperties: result.data.validProperties ?? []
+                validProperties: result.data.validProperties ?? Object.keys(result.data.bag)
             };
 
             return true;
         }
 
         errorMessage.value = result.errorMessage ?? "Unknown error while trying to edit registration.";
+        scrollToErrorNotification();
         return false;
     }
 
@@ -360,6 +362,7 @@
         }
 
         errorMessage.value = result.errorMessage ?? "Unknown error while trying to save registration.";
+        scrollToErrorNotification();
         return false;
     }
 
@@ -391,15 +394,6 @@
      */
     function onRegistrationMoved(registration: RegistrationBag): void {
         setRegistration(registration, AccountTab.Account);
-    }
-
-    /**
-     * Updates the selected account tab.
-     *
-     * @param tab The selected tab.
-     */
-    function onSelectedAccountTabUpdated(tab: AccountTab): void {
-        selectedAccountTab.value = tab;
     }
 
     /**
@@ -474,7 +468,7 @@
                 return;
             }
 
-            actionErrorMessage.value = result.errorMessage ?? "Unknown error while trying to add the registrant to the group.";
+            await alert(result.errorMessage ?? "Unknown error while trying to add the registrant to the group.");
         }
         finally {
             busyRegistrantKey.value = "";
@@ -525,6 +519,19 @@
     // #endregion Event Handlers
 
     // #region Functions
+
+    /**
+     * Scrolls the error message into view, since it is shown above the panel
+     * and can be off screen on a long form.
+     */
+    function scrollToErrorNotification(): void {
+        nextTick(() => {
+            errorMessageElement.value?.$el?.scrollIntoView({
+                behavior: "smooth",
+                block: "nearest"
+            });
+        });
+    }
 
     /**
      * Shows a rebuilt registration and the selected account tab.

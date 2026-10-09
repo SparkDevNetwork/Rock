@@ -43,11 +43,10 @@
                 <RockLiteral v-if="modelValue.discountAmountText" label="Discount Amount">{{ modelValue.discountAmountText }}</RockLiteral>
 
                 <AccountTabs :registration="modelValue"
-                             :selectedTab="selectedTab"
+                             v-model:selectedTab="internalSelectedTab"
                              :transactionDetailPageUrl="transactionDetailPageUrl"
                              :isProcessPaymentBlocked="isProcessPaymentBlocked"
                              :isPaymentProcessing="isPaymentProcessing"
-                             @update:selectedTab="onSelectedTabUpdated"
                              @updated="onRegistrationUpdated"
                              @chargedNotRecorded="onChargedNotRecorded"
                              @paymentProcessingChanged="onPaymentProcessingChanged" />
@@ -63,6 +62,7 @@
     import RockButton from "@Obsidian/Controls/rockButton.obs";
     import RockLiteral from "@Obsidian/Controls/rockLiteral.obs";
     import { useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { useVModelPassthrough } from "@Obsidian/Utility/component";
     import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
     import { RegistrationActionResultBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationDetail/registrationActionResultBag";
     import { RegistrationBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationDetail/registrationBag";
@@ -120,6 +120,7 @@
     // #region Values
 
     const confirmationMessage = ref("");
+    const internalSelectedTab = useVModelPassthrough(props, "selectedTab", emit);
 
     // #endregion Values
 
@@ -156,15 +157,6 @@
         }
 
         emit("error", result.errorMessage ?? "Unknown error while trying to send the confirmation.");
-    }
-
-    /**
-     * Passes on the selected account tab.
-     *
-     * @param value The selected tab.
-     */
-    function onSelectedTabUpdated(value: AccountTab): void {
-        emit("update:selectedTab", value);
     }
 
     /**

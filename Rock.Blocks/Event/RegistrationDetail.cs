@@ -324,7 +324,6 @@ namespace Rock.Blocks.Event
             else
             {
                 box.IsEditable = CanEdit( entity );
-                entity.LoadAttributes( RockContext );
                 box.Entity = GetEntityBagForView( entity );
             }
 
@@ -528,9 +527,6 @@ namespace Rock.Blocks.Event
             bag.LoadAttributesAndValuesForPublicView( entity, RequestContext.CurrentPerson, enforceSecurity: true );
             MakePublicAttributesSafeForView( entity, bag );
 
-            bag.Group = entity.Group != null
-                ? new ListItemBag { Value = entity.Group.Guid.ToString(), Text = entity.Group.Name }
-                : null;
             bag.RegistrarName = person != null
                 ? person.FullName
                 : $"{entity.FirstName} {entity.LastName}".Trim();
@@ -579,7 +575,7 @@ namespace Rock.Blocks.Event
             bag.RegistrationTemplateName = template.Name;
             bag.RegistrationTemplateUrl = GetRegistrationTemplateUrl( template );
             bag.RegistrationInstanceName = instance.Name;
-            bag.RegistrationInstanceUrl = GetRegistrationInstanceUrl( instance );
+            bag.RegistrationInstanceUrl = GetRegistrationParentPageUrl( entity );
             bag.RegistrationName = entity.ToString();
 
             return bag;
@@ -621,15 +617,11 @@ namespace Rock.Blocks.Event
             return new RegistrationBag
             {
                 IdKey = entity.IdKey,
-                PersonAlias = person != null
-                    ? new ListItemBag { Value = entity.PersonAlias.Guid.ToString(), Text = person.FullName }
-                    : null,
+                PersonAlias = person != null ? entity.PersonAlias.ToListItemBag( person.FullName ) : null,
                 FirstName = entity.FirstName,
                 LastName = entity.LastName,
                 ConfirmationEmail = entity.ConfirmationEmail,
-                Campus = campus != null
-                    ? new ListItemBag { Value = campus.Guid.ToString(), Text = campus.Name }
-                    : null,
+                Campus = campus.ToListItemBag(),
                 DiscountCode = entity.DiscountCode,
                 DiscountPercentage = entity.DiscountPercentage != 0.0m ? Math.Round( entity.DiscountPercentage * 100.0m, 0 ) : ( decimal? ) null,
                 DiscountAmount = entity.DiscountAmount != 0.0m ? entity.DiscountAmount : ( decimal? ) null
@@ -1179,26 +1171,6 @@ namespace Rock.Blocks.Event
         }
 
         /// <summary>
-        /// Gets the URL of the registration instance page.
-        /// </summary>
-        /// <param name="instance">The registration instance.</param>
-        /// <returns>The URL, or <c>null</c> when there is no parent page.</returns>
-        private string GetRegistrationInstanceUrl( RegistrationInstance instance )
-        {
-            var instancePage = PageCache.ParentPage;
-
-            if ( instancePage == null )
-            {
-                return null;
-            }
-
-            return new Rock.Web.PageReference( instancePage.Id, 0, new Dictionary<string, string>
-            {
-                [PageParameterKey.RegistrationInstanceId] = instance.IdKey
-            } ).BuildUrl();
-        }
-
-        /// <summary>
         /// Gets the URL of the registration template page.
         /// </summary>
         /// <param name="template">The registration template.</param>
@@ -1284,12 +1256,7 @@ namespace Rock.Blocks.Event
             {
                 RockContext.SaveChanges();
 
-                HistoryService.SaveChanges(
-                    RockContext,
-                    typeof( Registration ),
-                    Rock.SystemGuid.Category.HISTORY_EVENT_REGISTRATION.AsGuid(),
-                    entity.Id,
-                    changes );
+                SaveRegistrationHistory( entity.Id, changes );
 
                 entity.SaveAttributeValues( RockContext );
             } );
@@ -1366,7 +1333,10 @@ namespace Rock.Blocks.Event
             }
 
             var registrationService = new RegistrationService( RockContext );
+
             // Block actions only accept an IdKey or Guid, never a predictable integer id.
+            // This does not use TryGetEntityForEditAction on purpose: the delete
+            // does not need the full registrant and fee graph that it loads.
             var registration = registrationService.Get( key, false );
 
             if ( registration == null )
@@ -1424,12 +1394,7 @@ namespace Rock.Blocks.Event
 
             RockContext.WrapTransaction( () =>
             {
-                HistoryService.SaveChanges(
-                    RockContext,
-                    typeof( Registration ),
-                    Rock.SystemGuid.Category.HISTORY_EVENT_REGISTRATION.AsGuid(),
-                    registration.Id,
-                    changes );
+                SaveRegistrationHistory( registration.Id, changes );
 
                 registrationService.Delete( registration );
                 RockContext.SaveChanges();
@@ -1520,12 +1485,7 @@ namespace Rock.Blocks.Event
             var changes = new History.HistoryChangeList();
             changes.AddChange( History.HistoryVerb.Sent, History.HistoryChangeType.Record, "Confirmation" ).SetRelatedData( "Resent", null, null );
 
-            HistoryService.SaveChanges(
-                RockContext,
-                typeof( Registration ),
-                Rock.SystemGuid.Category.HISTORY_EVENT_REGISTRATION.AsGuid(),
-                registration.Id,
-                changes );
+            SaveRegistrationHistory( registration.Id, changes );
 
             return ActionOk( new RegistrationActionResultBag
             {
@@ -1579,12 +1539,7 @@ namespace Rock.Blocks.Event
 
             RockContext.WrapTransaction( () =>
             {
-                HistoryService.SaveChanges(
-                    RockContext,
-                    typeof( Registration ),
-                    Rock.SystemGuid.Category.HISTORY_EVENT_REGISTRATION.AsGuid(),
-                    registration.Id,
-                    changes );
+                SaveRegistrationHistory( registration.Id, changes );
 
                 registrantService.Delete( registrant );
                 RockContext.SaveChanges();
@@ -1994,11 +1949,7 @@ namespace Rock.Blocks.Event
                     } )
                 },
                 Amount = amounts.BalanceDue,
-                Payer = new ListItemBag
-                {
-                    Value = registration.PersonAlias.Guid.ToString(),
-                    Text = registrar.FullName
-                },
+                Payer = registration.PersonAlias.ToListItemBag( registrar.FullName ),
                 BillingAddress = GetHomeAddress( registrar )
             } );
         }
