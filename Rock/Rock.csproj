@@ -3587,6 +3587,7 @@
     <Compile Include="Lava\Blocks\CacheBlock.cs" />
     <Compile Include="Lava\Blocks\TagListTag.cs" />
     <Compile Include="Lava\Blocks\StylesheetBlock.cs" />
+    <Compile Include="Lava\Blocks\StylesheetLessCompiler.cs" />
     <Compile Include="Lava\Blocks\WebRequestBlock.cs" />
     <Compile Include="Lava\Blocks\SqlBlock.cs" />
     <Compile Include="Lava\Blocks\WorkflowActivateBlock.cs" />
