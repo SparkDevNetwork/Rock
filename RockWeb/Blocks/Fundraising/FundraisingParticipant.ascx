@@ -98,6 +98,8 @@
                     </div>
                 </div>
 
+                <Rock:NotificationBox ID="nbEditPreferencesError" runat="server" NotificationBoxType="Warning" Visible="false" EnableViewState="false" />
+
                 <div class="actions">
                     <asp:LinkButton ID="btnSaveEditPreferences" runat="server" AccessKey="s" ToolTip="Alt+s" Text="Save" CssClass="btn btn-primary" ValidationGroup="vgProfileEdit" OnClick="btnSaveEditPreferences_Click" />
                     <asp:LinkButton ID="btnCancelEditPreferences" runat="server" AccessKey="c" ToolTip="Alt+c" Text="Cancel" CssClass="btn btn-link" ValidationGroup="vgProfileEdit" CausesValidation="false" OnClick="btnCancelEditPreferences_Click" />

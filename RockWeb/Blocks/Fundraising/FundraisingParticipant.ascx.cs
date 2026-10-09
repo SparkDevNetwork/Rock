@@ -27,6 +27,7 @@ using Rock.Attribute;
 using Rock.Data;
 using Rock.Lava;
 using Rock.Model;
+using Rock.Security;
 using Rock.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI;
@@ -407,6 +408,19 @@ namespace RockWeb.Blocks.Fundraising
             var personService = new PersonService( rockContext );
             var person = personService.Get( groupMember.PersonId );
 
+            // Read the GroupMember Attributes and validate the introduction before anything is changed.
+            groupMember.LoadAttributes();
+            var originalIntroduction = groupMember.GetAttributeValue( "PersonalOpportunityIntroduction" );
+            Rock.Attribute.Helper.GetEditValues( phGroupMemberAttributes, groupMember );
+
+            string introductionErrorMessage;
+            if ( !IsIntroductionValid( groupMember, originalIntroduction, out introductionErrorMessage ) )
+            {
+                nbEditPreferencesError.Text = introductionErrorMessage;
+                nbEditPreferencesError.Visible = true;
+                return;
+            }
+
             int? orphanedPhotoId = null;
             var photoId = imgProfilePhoto.BinaryFileId;
 
@@ -442,10 +456,6 @@ namespace RockWeb.Blocks.Fundraising
                     photoRequestRockContext.SaveChanges();
                 }
             }
-
-            // Save the GroupMember Attributes
-            groupMember.LoadAttributes();
-            Rock.Attribute.Helper.GetEditValues( phGroupMemberAttributes, groupMember );
 
             // Save selected Person Attributes (The ones picked in Block Settings)
             var personAttributes = this.GetAttributeValue( AttributeKey.PersonAttributes ).SplitDelimitedValues().AsGuidList().Select( a => AttributeCache.Get( a ) );
@@ -522,6 +532,42 @@ namespace RockWeb.Blocks.Fundraising
         #region Methods
 
         /// <summary>
+        /// Validates a changed personal opportunity introduction against the
+        /// attribute's own field type rules (e.g. a plain text Memo rejects HTML).
+        /// </summary>
+        /// <param name="groupMember">The group member with the posted attribute values.</param>
+        /// <param name="originalIntroduction">The introduction value before the posted values were applied.</param>
+        /// <param name="errorMessage">The error message if the introduction is not valid.</param>
+        /// <returns><c>true</c> if the introduction is unchanged or valid; otherwise <c>false</c>.</returns>
+        private static bool IsIntroductionValid( GroupMember groupMember, string originalIntroduction, out string errorMessage )
+        {
+            errorMessage = null;
+
+            AttributeCache introductionAttribute = null;
+            groupMember.Attributes?.TryGetValue( "PersonalOpportunityIntroduction", out introductionAttribute );
+            var newIntroduction = groupMember.GetAttributeValue( "PersonalOpportunityIntroduction" );
+
+            if ( introductionAttribute == null || newIntroduction == originalIntroduction )
+            {
+                return true;
+            }
+
+            var rules = introductionAttribute.FieldType.Field.GetValidationRules( introductionAttribute.ConfigurationValues );
+
+            try
+            {
+                StringValueValidator.Validate( newIntroduction, rules, typeof( AttributeValue ), nameof( AttributeValue.Value ) );
+            }
+            catch ( PropertyValidationException ex )
+            {
+                errorMessage = $"{introductionAttribute.Name} {ex.Reason}.";
+                return false;
+            }
+
+            return true;
+        }
+
+        /// <summary>
         /// Determines whether the group member is the current person. This matches
         /// the check used to show the Edit Profile button.
         /// </summary>
@@ -590,6 +636,9 @@ namespace RockWeb.Blocks.Fundraising
             mergeFields.Add( "Group", group );
 
             groupMember.LoadAttributes( rockContext );
+
+            // The introduction is plain text, so encode it before any Lava template prints it.
+            groupMember.SetAttributeValue( "PersonalOpportunityIntroduction", groupMember.GetAttributeValue( "PersonalOpportunityIntroduction" ).EncodeHtml() );
             mergeFields.Add( "GroupMember", groupMember );
 
             // Left Top Sidebar
