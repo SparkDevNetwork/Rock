@@ -47,6 +47,26 @@ export type SidebarRow = {
     dm_other_count: number | null;
 };
 
+/**
+ * One piece of a message body as the server built it. Every piece has a text, which is what a
+ * client that does not know its type shows; the other keys depend on the type.
+ */
+export type DisplayPiece = {
+    type: string;
+    text: string;
+    [key: string]: unknown;
+};
+
+/**
+ * One block of a laid-out message. Every block carries a fallback text block, drawn when this
+ * client does not know the block's type.
+ */
+export type MessageBlock = {
+    type: string;
+    fallback?: DisplayPiece;
+    [key: string]: unknown;
+};
+
 /** One message of a channel's timeline, as chat_get_history returns it. */
 export type TimelineMessage = {
     id: number;
@@ -60,6 +80,12 @@ export type TimelineMessage = {
     sender_listed?: boolean;
     message_type: string;
     body: string | null;
+
+    /** The body's pieces as the server built them; null when the body is plain text. */
+    pieces?: DisplayPiece[] | null;
+
+    /** The message laid out in blocks, drawn in place of the body; null for an ordinary message. */
+    blocks?: MessageBlock[] | null;
     metadata?: unknown;
     reply_count?: number;
     last_reply_at?: string | null;
@@ -126,6 +152,8 @@ export type MessageCreatedEvent = {
     person_alias_guid: string | null;
     message_type: string;
     body: string | null;
+    pieces?: DisplayPiece[] | null;
+    blocks?: MessageBlock[] | null;
     created_at: string;
 };
 
@@ -134,6 +162,7 @@ export type MessageEditedEvent = {
     id: number;
     channel_id: string;
     body: string | null;
+    pieces?: DisplayPiece[] | null;
     edited_at: string | null;
 };
 
@@ -154,6 +183,8 @@ export type MessageVisibilityEvent = {
     state: string;
     notice: string | null;
     body?: string;
+    pieces?: DisplayPiece[] | null;
+    blocks?: MessageBlock[] | null;
 };
 
 /** The person's own "something new here" signal, on their personal topic. */

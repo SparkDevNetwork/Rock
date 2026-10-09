@@ -1,0 +1,204 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="chat-message-body" data-testid="message-body">
+        <template v-for="(row, rowIndex) in rows" :key="rowIndex">
+            <hr v-if="row.kind === 'divider'" class="chat-block-divider" data-testid="block-divider" />
+            <div v-else-if="row.kind === 'image'" class="chat-block-image" data-testid="block-image">
+                <img :src="row.url" :alt="row.alt" />
+            </div>
+            <div v-else :class="row.cssClass" :data-testid="row.testId">
+                <template v-for="(piece, pieceIndex) in row.pieces" :key="pieceIndex">
+                    <a v-if="piece.kind === 'link'" :href="piece.url" target="_blank" rel="noopener noreferrer nofollow">{{ piece.text }}</a>
+                    <span v-else-if="piece.kind === 'mention'" class="chat-mention" data-testid="piece-mention">{{ piece.text }}</span>
+                    <span v-else-if="piece.kind === 'emoji'" class="chat-emoji" data-testid="piece-emoji" :title="piece.label">{{ piece.text }}</span>
+                    <img v-else-if="piece.kind === 'image'" class="chat-emoji-image" :src="piece.url" :alt="piece.label" :title="piece.label" />
+                    <template v-else>{{ piece.text }}</template>
+                </template>
+            </div>
+        </template>
+    </div>
+</template>
+
+<style scoped>
+.chat-message-body {
+    white-space: pre-wrap;
+    word-break: break-word;
+}
+
+.chat-mention {
+    font-weight: 600;
+    color: var(--color-primary-strong, #1d4ed8);
+}
+
+.chat-emoji-image {
+    height: 1.25em;
+    vertical-align: text-bottom;
+}
+
+.chat-block-context {
+    font-size: 12px;
+    color: var(--color-interface-medium, #6c757d);
+}
+
+.chat-block-divider {
+    margin: 6px 0;
+}
+
+.chat-block-image img {
+    max-width: 100%;
+    border-radius: 6px;
+}
+</style>
+
+<script setup lang="ts">
+    import { computed, PropType } from "vue";
+
+    // #region Types
+
+    /** A piece as this client draws it, reduced to the kinds it knows. */
+    type DrawnPiece = {
+        kind: "text" | "mention" | "link" | "emoji" | "image";
+        text: string;
+        url?: string;
+        label?: string;
+    };
+
+    /** One line of the body: the body's own pieces, or one block. */
+    type DrawnRow = {
+        kind: "pieces" | "divider" | "image";
+        pieces?: DrawnPiece[];
+        cssClass?: string;
+        testId?: string;
+        url?: string;
+        alt?: string;
+    };
+
+    // #endregion Types
+
+    const props = defineProps({
+        /** The body as text, or the sentence shown in place of a deleted or hidden message. */
+        text: {
+            type: String as PropType<string | null>,
+            default: null
+        },
+
+        /** The body's pieces as the server built them, or null for a plain body. */
+        pieces: {
+            type: Array as PropType<unknown[] | null>,
+            default: null
+        },
+
+        /** The message's blocks, drawn in place of the body when present. */
+        blocks: {
+            type: Array as PropType<unknown[] | null>,
+            default: null
+        }
+    });
+
+    // #region Computed Values
+
+    /**
+     * What is drawn. The server's pieces and blocks are read as untrusted shapes: a kind this
+     * client was not built with is drawn by the text the server put beside it, so a released
+     * client still shows what later platforms send.
+     */
+    const rows = computed((): DrawnRow[] => {
+        if (Array.isArray(props.blocks) && props.blocks.length > 0) {
+            return props.blocks.map(blockRow);
+        }
+
+        return [{ kind: "pieces", cssClass: "chat-body-text", pieces: drawnPieces(props.pieces, props.text) }];
+    });
+
+    // #endregion Computed Values
+
+    // #region Functions
+
+    /** Whether an address may be opened as a link: only the web, never script or another scheme. */
+    function isWebAddress(value: unknown): value is string {
+        return typeof value === "string" && /^https?:\/\/./i.test(value);
+    }
+
+    /** Whether an address may be loaded as an image: only https, so a page never mixes content. */
+    function isSecureAddress(value: unknown): value is string {
+        return typeof value === "string" && /^https:\/\/./i.test(value);
+    }
+
+    function asRecord(value: unknown): Record<string, unknown> | null {
+        return typeof value === "object" && value !== null && !Array.isArray(value) ? value as Record<string, unknown> : null;
+    }
+
+    function textOf(value: unknown): string {
+        return typeof value === "string" ? value : "";
+    }
+
+    /** One server piece as drawn. A link or image this client does not trust is drawn as its text. */
+    function drawnPiece(value: unknown): DrawnPiece | null {
+        const piece = asRecord(value);
+        if (!piece) {
+            return null;
+        }
+
+        const text = textOf(piece.text);
+        if (piece.type === "mention") {
+            return { kind: "mention", text };
+        }
+
+        if (piece.type === "link" && isWebAddress(piece.url)) {
+            return { kind: "link", text, url: piece.url };
+        }
+
+        if (piece.type === "emoji") {
+            const label = textOf(piece.label) || text;
+            if (typeof piece.emoji === "string" && piece.emoji) {
+                return { kind: "emoji", text: piece.emoji, label };
+            }
+
+            if (isSecureAddress(piece.image_url)) {
+                return { kind: "image", text, url: piece.image_url, label };
+            }
+        }
+
+        return { kind: "text", text };
+    }
+
+    /** The pieces to draw, or the text as one piece when the server sent none. */
+    function drawnPieces(pieces: unknown, text: string | null): DrawnPiece[] {
+        if (Array.isArray(pieces) && pieces.length > 0) {
+            return pieces.map(drawnPiece).filter((piece): piece is DrawnPiece => piece !== null);
+        }
+
+        return text ? [{ kind: "text", text }] : [];
+    }
+
+    /** One block as drawn: a kind this client knows, else its fallback text. */
+    function blockRow(value: unknown): DrawnRow {
+        const block = asRecord(value) ?? {};
+
+        if (block.type === "text" || block.type === "context") {
+            return {
+                kind: "pieces",
+                cssClass: `chat-block-${block.type}`,
+                testId: `block-${block.type}`,
+                pieces: drawnPieces(block.pieces, textOf(block.text))
+            };
+        }
+
+        if (block.type === "divider") {
+            return { kind: "divider" };
+        }
+
+        if (block.type === "image" && isSecureAddress(block.url)) {
+            return { kind: "image", url: block.url, alt: textOf(block.alt) };
+        }
+
+        return {
+            kind: "pieces",
+            cssClass: "chat-block-fallback",
+            testId: "block-fallback",
+            pieces: drawnPieces(null, textOf(asRecord(block.fallback)?.text))
+        };
+    }
+
+    // #endregion Functions
+</script>

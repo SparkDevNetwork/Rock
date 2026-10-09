@@ -8,7 +8,9 @@
             <span class="chat-message-time">{{ time }}</span>
             <span v-if="message.edited_at && display.kind === 'message'" class="chat-message-edited">(edited)</span>
         </div>
-        <div class="chat-message-body">{{ display.text }}</div>
+        <MessageBody :text="display.text"
+                     :pieces="isDrawnFromServer ? message.pieces : null"
+                     :blocks="isDrawnFromServer ? message.blocks : null" />
         <div v-if="isOwn && message.notice" class="chat-message-notice" data-testid="message-notice">{{ message.notice }}</div>
     </div>
 </template>
@@ -33,7 +35,7 @@
     color: var(--color-interface-medium, #6c757d);
 }
 
-.chat-message.is-deleted .chat-message-body {
+.chat-message.is-deleted :deep(.chat-message-body) {
     font-style: italic;
     color: var(--color-interface-medium, #6c757d);
 }
@@ -49,11 +51,6 @@
     font-weight: 600;
 }
 
-.chat-message-body {
-    white-space: pre-wrap;
-    word-break: break-word;
-}
-
 .chat-message-notice {
     font-size: 12px;
     color: var(--color-interface-medium, #6c757d);
@@ -62,6 +59,7 @@
 
 <script setup lang="ts">
     import { computed, PropType } from "vue";
+    import MessageBody from "./messageBody.partial.obs";
     import { MessageDisplay, messageDisplay } from "../composables/useHistory.partial";
     import { TimelineMessage } from "../types.partial";
 
@@ -81,6 +79,9 @@
 
     /** What the row draws, as the server decided it: a message type this client does not know is its text. */
     const display = computed((): MessageDisplay => messageDisplay(props.message));
+
+    /** A deleted or hidden message shows only the sentence in its place, never its pieces or blocks. */
+    const isDrawnFromServer = computed((): boolean => display.value.kind === "message" || display.value.kind === "system");
 
     const senderName = computed((): string => {
         if (props.isOwn) {

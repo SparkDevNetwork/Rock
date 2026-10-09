@@ -392,11 +392,13 @@ export function createTimelines(dependencies: TimelineDependencies): Timelines {
         else if (event === "message.edited") {
             const edited = payload as MessageEditedEvent;
             const message = find(channelId, edited.id);
+            const pieces = edited.pieces ?? null;
             if (message && !message.deleted_at) {
                 message.body = edited.body;
+                message.pieces = pieces;
                 message.edited_at = edited.edited_at;
             }
-            recordLive(edited.id, { body: edited.body, edited_at: edited.edited_at });
+            recordLive(edited.id, { body: edited.body, pieces, edited_at: edited.edited_at });
         }
         else if (event === "message.deleted") {
             const deleted = payload as MessageDeletedEvent;
@@ -404,9 +406,11 @@ export function createTimelines(dependencies: TimelineDependencies): Timelines {
             if (message) {
                 message.deleted_at = deleted.deleted_at;
                 message.body = null;
+                message.pieces = null;
+                message.blocks = null;
                 message.metadata = null;
             }
-            recordLive(deleted.id, { deleted_at: deleted.deleted_at, body: null, metadata: null });
+            recordLive(deleted.id, { deleted_at: deleted.deleted_at, body: null, pieces: null, blocks: null, metadata: null });
         }
         else if (event === "message.visibility") {
             const changed = payload as MessageVisibilityEvent;
@@ -419,17 +423,23 @@ export function createTimelines(dependencies: TimelineDependencies): Timelines {
                 // body back, so the row draws it without waiting for a page.
                 if (changed.state !== "visible") {
                     message.body = null;
+                    message.pieces = null;
+                    message.blocks = null;
                     message.metadata = null;
                 }
                 else if (typeof changed.body === "string" && !message.deleted_at) {
                     message.body = changed.body;
+                    message.pieces = changed.pieces ?? null;
+                    message.blocks = changed.blocks ?? null;
                 }
             }
             const shown = changed.state === "visible";
             recordLive(changed.id, {
                 visibility: changed.state,
                 visibility_notice: changed.notice,
-                ...(shown ? (typeof changed.body === "string" ? { body: changed.body } : {}) : { body: null, metadata: null })
+                ...(shown
+                    ? (typeof changed.body === "string" ? { body: changed.body, pieces: changed.pieces ?? null, blocks: changed.blocks ?? null } : {})
+                    : { body: null, pieces: null, blocks: null, metadata: null })
             });
         }
     }
