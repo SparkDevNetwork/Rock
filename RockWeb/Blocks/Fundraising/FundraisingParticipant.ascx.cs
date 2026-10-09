@@ -533,6 +533,23 @@ namespace RockWeb.Blocks.Fundraising
         }
 
         /// <summary>
+        /// Determines whether the group type is Fundraising Opportunity or inherits from it.
+        /// </summary>
+        /// <param name="groupTypeId">The group type identifier.</param>
+        /// <returns><c>true</c> if the group type is a fundraising opportunity type; otherwise, <c>false</c>.</returns>
+        private static bool IsFundraisingOpportunityGroupType( int groupTypeId )
+        {
+            var fundraisingGroupTypeId = GroupTypeCache.GetId( Rock.SystemGuid.GroupType.GROUPTYPE_FUNDRAISINGOPPORTUNITY.AsGuid() );
+            if ( !fundraisingGroupTypeId.HasValue )
+            {
+                return false;
+            }
+
+            var groupType = GroupTypeCache.Get( groupTypeId );
+            return groupType != null && ( groupType.Id == fundraisingGroupTypeId.Value || groupType.InheritedGroupTypeId == fundraisingGroupTypeId.Value );
+        }
+
+        /// <summary>
         /// Shows the view.
         /// </summary>
         /// <param name="groupId">The group identifier.</param>
@@ -547,7 +564,7 @@ namespace RockWeb.Blocks.Fundraising
             var rockContext = new RockContext();
 
             var group = new GroupService( rockContext ).Get( groupId );
-            if ( group == null )
+            if ( group == null || !IsFundraisingOpportunityGroupType( group.GroupTypeId ) )
             {
                 pnlView.Visible = false;
                 return;
