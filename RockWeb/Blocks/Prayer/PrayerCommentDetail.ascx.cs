@@ -66,22 +66,22 @@ namespace RockWeb.Blocks.Prayer
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            string noteId = PageParameter( PrayerCommentKeyParameter );
+            int? noteId = PageParameter( PrayerCommentKeyParameter ).AsIntegerOrNull();
 
             RegisterScripts();
             if ( !Page.IsPostBack )
             {
                 lTitle.Text = GetAttributeValue( "Title" );
 
-                if ( !string.IsNullOrWhiteSpace( noteId ) )
+                if ( noteId.HasValue )
                 {
                     // Set up to scroll to the top of the given note...
                     string script = string.Format(
-                        @"$('html, body').animate({{scrollTop: $(""[rel='{0}']"").offset().top}}, {{ duration: 'slow', easing: 'swing'}});", noteId );
+                        @"$('html, body').animate({{scrollTop: $(""[rel='{0}']"").offset().top}}, {{ duration: 'slow', easing: 'swing'}});", noteId.Value );
 
                     this.Page.ClientScript.RegisterStartupScript( this.GetType(), string.Format( "scroll-to-comment-{0}", this.ClientID ), script, true );
 
-                    prayerComment = new NoteService( new RockContext() ).Get( int.Parse( noteId ) );
+                    prayerComment = new NoteService( new RockContext() ).Get( noteId.Value );
                 }
                 else
                 {
@@ -89,7 +89,7 @@ namespace RockWeb.Blocks.Prayer
                 }
             }
 
-            contextEntity = this.ContextEntity();
+            contextEntity = this.ContextEntity<PrayerRequest>();
 
             if ( contextEntity != null )
             {
@@ -97,14 +97,16 @@ namespace RockWeb.Blocks.Prayer
 
                 if ( !Page.IsPostBack )
                 {
+                    fieldsetEditDetails.Visible = false;
+
                     // This will produce a complete list of related context entity notes with the editable one
                     // inline (in the middle of the note stream).
                     ShowNotes();
                 }
             }
-            else if ( !string.IsNullOrWhiteSpace( noteId ) && !Page.IsPostBack )
+            else
             {
-                ShowEditDetails( prayerComment );
+                fieldsetEditDetails.Visible = false;
             }
 
             base.OnLoad( e );
@@ -193,7 +195,7 @@ namespace RockWeb.Blocks.Prayer
             {
                 if ( note.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
                 {
-                    if ( prayerComment != null && note.Id == prayerComment.Id )
+                    if ( prayerComment != null && note.Id == prayerComment.Id && note.IsAuthorized( Authorization.EDIT, CurrentPerson ) )
                     {
                         ShowEditDetails( note );
                     }
@@ -333,17 +335,14 @@ namespace RockWeb.Blocks.Prayer
             Note note = noteService.Get( noteId );
             if ( note != null )
             {
-                // When there is a context entity, the note must be one that
-                // ShowNotes() would have displayed for editing.
-                if ( contextEntity != null )
+                // The note must be one that ShowNotes() would have displayed for editing.
+                if ( contextEntity == null
+                    || noteType == null
+                    || note.NoteTypeId != noteType.Id
+                    || note.EntityId != contextEntity.Id
+                    || !note.IsAuthorized( Authorization.EDIT, CurrentPerson ) )
                 {
-                    if ( noteType == null
-                        || note.NoteTypeId != noteType.Id
-                        || note.EntityId != contextEntity.Id
-                        || !note.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
-                    {
-                        return;
-                    }
+                    return;
                 }
 
                 note.Text = dtbText.Text;
