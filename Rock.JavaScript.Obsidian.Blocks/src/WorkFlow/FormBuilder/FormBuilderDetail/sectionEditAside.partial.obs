@@ -71,13 +71,13 @@
     import Switch from "@Obsidian/Controls/switch.obs";
     import TextBox from "@Obsidian/Controls/textBox.obs";
     import { getFilterGroupTitleHtml } from "@Obsidian/Core/Reporting/fieldFilter";
-    import { SectionAsideSettings } from "./types.partial";
+    import { FormBuilderDetailConfiguration, SectionAsideSettings } from "./types.partial";
     import { useFormSources, getFilterRuleDescription, timeoutAsync } from "./utils.partial";
     import { FormError } from "@Obsidian/Utility/form";
     import { FieldFilterGroupBag } from "@Obsidian/ViewModels/Reporting/fieldFilterGroupBag";
     import { FieldFilterSourceBag } from "@Obsidian/ViewModels/Reporting/fieldFilterSourceBag";
     import { FieldFilterRuleBag } from "@Obsidian/ViewModels/Reporting/fieldFilterRuleBag";
-    import { useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { FormField } from "../Shared/types.partial";
 
     const props = defineProps({
@@ -100,6 +100,7 @@
 
     // #region Values
 
+    const config = useConfigurationValues<FormBuilderDetailConfiguration>();
     const invokeBlockAction = useInvokeBlockAction();
     let conditionalSourcesLoadAttempted = false;
 
@@ -189,6 +190,7 @@
      */
     async function loadConditionalSources(): Promise<void> {
         const getFilterSources = invokeBlockAction<FieldFilterSourceBag[]>("GetFilterSources", {
+            formGuid: config.formGuid,
             formFields: props.formFields
         });
 
